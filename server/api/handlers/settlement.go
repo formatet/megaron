@@ -786,10 +786,12 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// A prayer is said at its own god's temple (ORDER 15); a legacy prayer
+	// without a god (empty GodID) still takes any temple.
 	var hasTemple bool
 	_ = tx.QueryRow(r.Context(),
-		`SELECT EXISTS(SELECT 1 FROM buildings WHERE settlement_id = $1 AND building_type = 'temple')`,
-		settlementID,
+		`SELECT EXISTS(SELECT 1 FROM buildings WHERE settlement_id = $1 AND building_type = 'temple' AND ($2 = '' OR god_id = $2))`,
+		settlementID, spec.GodID,
 	).Scan(&hasTemple)
 	if !hasTemple {
 		// Distinguish "no temple at all" from "temple finishing" — the latter is
@@ -799,12 +801,16 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		// real cause instead of a bare "temple required".
 		var queued bool
 		_ = tx.QueryRow(r.Context(),
-			`SELECT EXISTS(SELECT 1 FROM build_queue WHERE settlement_id = $1 AND building_type = 'temple')`,
-			settlementID,
+			`SELECT EXISTS(SELECT 1 FROM build_queue WHERE settlement_id = $1 AND building_type = 'temple' AND ($2 = '' OR god_id = $2))`,
+			settlementID, spec.GodID,
 		).Scan(&queued)
 		if queued {
 			writeError(w, http.StatusBadRequest,
 				"temple is still finishing here — it becomes usable within a day of completion; retry shortly")
+		} else if spec.GodID != "" {
+			writeError(w, http.StatusBadRequest,
+				fmt.Sprintf("%s is prayed at the %s — build it here first (`keryx build --type temple --god %s`)",
+					spec.Name, religion.TempleName(spec.GodID), spec.GodID))
 		} else {
 			writeError(w, http.StatusBadRequest,
 				"temple required — build a temple here first (rites are performed at a temple)")

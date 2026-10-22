@@ -1,5 +1,7 @@
 A **rite** is a request to the gods. Open **Kult → Prayers**.
 
+Each prayer is said at its own god's [[temples|temple]], so a city needs that temple standing: Potnia's Vision and Mistress of the Walls need a Temple of Potnia, Green Shoots a Temple of Velchanos, The Thread Shows a Path a Temple of Asterion, Favourable Passage a Temple of the Sea Daimons of Stillness. Level 1 is enough. Without it the prayer shows "no Temple of …".
+
 Each prayer names its god, the minimum standing it needs, and its traditional offering. Press **Offer**: a row opens with a field for each good, filled with the prayer's recipe. Bring it as it stands, or change the numbers first.
 
 ## A rite is a wager

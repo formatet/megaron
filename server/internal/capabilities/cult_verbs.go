@@ -10,7 +10,6 @@ import (
 // default prayer (battle_frenzy) — the same pair SettlementHandler.Rite
 // enforces before the cooldown/offering checks. TODO: Fas 3 unify with handler gate.
 func canRite(cc checkContext) Verb {
-	hasTemple := cc.hasBuilding("temple")
 	culture := cc.cultureID()
 	prayerID := religion.DefaultBattleFrenzyFor(culture)
 	spec, ok := religion.PrayerSpecs[prayerID]
@@ -18,15 +17,22 @@ func canRite(cc checkContext) Verb {
 	if ok {
 		minKharis = spec.MinKharis
 	}
+	// The default prayer is said at its own god's temple (ORDER 15).
+	hasTemple := cc.hasTempleOf(spec.GodID)
+	templeName, buildHint := "temple", "build a temple (`keryx build --type temple`)"
+	if spec.GodID != "" {
+		templeName = religion.TempleName(spec.GodID)
+		buildHint = fmt.Sprintf("build the %s (`keryx build --type temple --god %s`)", templeName, spec.GodID)
+	}
 	kharis := cc.kharisAmount()
 	kharisOK := kharis >= minKharis
 
 	return verb("rite", CategoryCult,
 		"Perform a cultural prayer at your temple (kharis-gated; consumes a material offering).",
 		[]Requirement{
-			req("temple built", hasTemple,
-				boolDetail(hasTemple, "temple built", "no temple"),
-				"build a temple (`keryx build --type temple`)"),
+			req(templeName+" built", hasTemple,
+				boolDetail(hasTemple, templeName+" built", "no "+templeName),
+				buildHint),
 			req(fmt.Sprintf("kharis >= %.0f (default prayer: %s)", minKharis, prayerID), kharisOK,
 				fmt.Sprintf("kharis %.0f/%.0f", kharis, minKharis),
 				"raise divine standing (feed diverse goods, avoid starvation) before casting"),

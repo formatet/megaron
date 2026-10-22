@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -150,17 +151,22 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			Type       string    `json:"type"`
 			CreatedAt  time.Time `json:"created_at"`
 			CompleteAt time.Time `json:"complete_at"`
+			GodID      string    `json:"god_id,omitempty"`
+			Name       string    `json:"name,omitempty"`
 		}
 		var buildQueue []buildItem
 		qrows, _ := h.pool.Query(r.Context(),
-			`SELECT id, building_type, created_at, complete_at FROM build_queue
+			`SELECT id, building_type, created_at, complete_at, coalesce(god_id,'') FROM build_queue
 			 WHERE settlement_id = $1 ORDER BY complete_at`,
 			sett.ID,
 		)
 		if qrows != nil {
 			for qrows.Next() {
 				var bi buildItem
-				_ = qrows.Scan(&bi.ID, &bi.Type, &bi.CreatedAt, &bi.CompleteAt)
+				_ = qrows.Scan(&bi.ID, &bi.Type, &bi.CreatedAt, &bi.CompleteAt, &bi.GodID)
+				if bi.GodID != "" {
+					bi.Name = religion.TempleName(bi.GodID)
+				}
 				buildQueue = append(buildQueue, bi)
 			}
 			qrows.Close()
@@ -215,16 +221,22 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			Level int       `json:"level"`
 			HexQ  *int      `json:"hex_q,omitempty"`
 			HexR  *int      `json:"hex_r,omitempty"`
+			// A temple's god and name ("Temple of Potnia"); empty otherwise.
+			GodID string `json:"god_id,omitempty"`
+			Name  string `json:"name,omitempty"`
 		}
 		var buildings []buildingItem
 		brows, _ := h.pool.Query(r.Context(),
-			`SELECT id, building_type, level, hex_q, hex_r FROM buildings WHERE settlement_id = $1 ORDER BY building_type, hex_q, hex_r`,
+			`SELECT id, building_type, level, hex_q, hex_r, coalesce(god_id,'') FROM buildings WHERE settlement_id = $1 ORDER BY building_type, god_id, hex_q, hex_r`,
 			sett.ID,
 		)
 		if brows != nil {
 			for brows.Next() {
 				var bi buildingItem
-				_ = brows.Scan(&bi.ID, &bi.Type, &bi.Level, &bi.HexQ, &bi.HexR)
+				_ = brows.Scan(&bi.ID, &bi.Type, &bi.Level, &bi.HexQ, &bi.HexR, &bi.GodID)
+				if bi.GodID != "" {
+					bi.Name = religion.TempleName(bi.GodID)
+				}
 				buildings = append(buildings, bi)
 			}
 			brows.Close()
@@ -448,12 +460,15 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			templeOffers = offers
 		}
 
-		// Temple presence — required by the rite handler for any prayer.
-		var hasTemple bool
+		// Temple presence — a prayer needs its own god's temple (ORDER 15); a
+		// legacy prayer without a god takes any temple, as the rite handler does.
+		var templeGods []string
 		_ = h.pool.QueryRow(r.Context(),
-			`SELECT EXISTS(SELECT 1 FROM buildings WHERE settlement_id = $1 AND building_type = 'temple')`,
+			`SELECT coalesce(array_agg(god_id), '{}') FROM buildings WHERE settlement_id = $1 AND building_type = 'temple'`,
 			sett.ID,
-		).Scan(&hasTemple)
+		).Scan(&templeGods)
+		hasTemple := len(templeGods) > 0
+		hasTempleFor := func(god string) bool { return (god == "" && hasTemple) || slices.Contains(templeGods, god) }
 
 		// available_prayers: the settlement culture's prayers with full affordability:
 		// material offering costs + kharis tier gate + temple presence.
@@ -469,6 +484,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			ID                  string             `json:"id"`
 			Name                string             `json:"name"`
 			God                 string             `json:"god"`
+			Temple              string             `json:"temple,omitempty"` // the temple it is prayed at
 			EffectType          string             `json:"effect_type"`
 			Effect              string             `json:"effect"`
 			MinKharis           float64            `json:"min_kharis"`
@@ -511,7 +527,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		prayers := []prayerRow{}
 		for _, pid := range religion.CulturePrayers[string(sett.CultureID)] {
 			spec := religion.PrayerSpecs[pid]
-			afford := hasTemple && kharisNow >= spec.MinKharis
+			afford := hasTempleFor(spec.GodID) && kharisNow >= spec.MinKharis
 			if afford {
 				for g, need := range spec.Offering {
 					if !province.GoodsAffordable(goodsStock[g], need) {
@@ -566,15 +582,22 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				activeRemainingDays = 0
 			}
 			reason := ""
-			if !hasTemple {
+			temple := ""
+			if spec.GodID != "" {
+				temple = religion.TempleName(spec.GodID)
+			}
+			if !hasTempleFor(spec.GodID) {
 				reason = "no temple"
+				if temple != "" {
+					reason = "no " + temple
+				}
 			} else if kharisNow < spec.MinKharis {
 				reason = "insufficient kharis"
 			} else if !afford {
 				reason = "insufficient offering or a waiting time applies"
 			}
 			prayers = append(prayers, prayerRow{DeparturePending: departurePending,
-				ID: spec.ID, Name: spec.Name, God: spec.God, EffectType: spec.EffectType,
+				ID: spec.ID, Name: spec.Name, God: spec.God, Temple: temple, EffectType: spec.EffectType,
 				Default: spec.ID == religion.DefaultBattleFrenzyFor(string(sett.CultureID)), ActiveRemainingDays: activeRemainingDays,
 				Effect:    spec.Description,
 				MinKharis: spec.MinKharis, Offering: spec.Offering, Affordable: afford, UnavailableReason: reason,
@@ -774,6 +797,8 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			// Physical temple workers share the settlement workforce.
 			"temple_staffed":  templeStaff.Staffed,
 			"temple_capacity": templeStaff.Capacity,
+			// One row per god's temple; the two sums above are these added up.
+			"temples": templeRows(templeStaff.Temples),
 			"settlement_cap": map[string]any{
 				"used": settlementsOwned,
 				"max":  province.MaxSettlementsPerWanax,
@@ -1116,6 +1141,7 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		BuildingType string `json:"building_type"`
 		HexQ         *int   `json:"hex_q"`
 		HexR         *int   `json:"hex_r"`
+		God          string `json:"god"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
@@ -1125,6 +1151,21 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 	spec, ok := province.BuildingSpecs[province.BuildingType(req.BuildingType)]
 	if !ok {
 		writeError(w, http.StatusBadRequest, "unknown building type")
+		return
+	}
+	// A temple is built for one god; building it again raises that god's
+	// temple (ORDER 15). godArg stays nil for every other building, which the
+	// queries below match with IS NOT DISTINCT FROM.
+	var godArg *string
+	if req.BuildingType == string(province.BuildingTemple) {
+		if _, ok := religion.TempleGodByID(req.God); !ok {
+			writeError(w, http.StatusBadRequest,
+				fmt.Sprintf("a temple is built for one god — choose god: %s", religion.TempleGodIDs()))
+			return
+		}
+		godArg = &req.God
+	} else if req.God != "" {
+		writeError(w, http.StatusBadRequest, "only a temple is built for a god")
 		return
 	}
 
@@ -1289,14 +1330,14 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 			).Scan(&lvl)
 		} else {
 			_ = h.pool.QueryRow(r.Context(),
-				`SELECT COALESCE(MAX(level), 0) FROM buildings WHERE settlement_id = $1 AND building_type = $2`,
-				settlementID, req.BuildingType,
+				`SELECT COALESCE(MAX(level), 0) FROM buildings WHERE settlement_id = $1 AND building_type = $2 AND god_id IS NOT DISTINCT FROM $3`,
+				settlementID, req.BuildingType, godArg,
 			).Scan(&lvl)
 		}
 		currentLevel = lvl
 		if lvl >= province.MaxBuildingLevel {
 			writeError(w, http.StatusUnprocessableEntity,
-				(buildErrorContext{BuildQuote: quoteBuild(bType, lvl, req.HexQ, req.HexR, false), City: buildCity}).message(""))
+				(buildErrorContext{BuildQuote: quoteBuild(bType, lvl, req.HexQ, req.HexR, false).forGod(godArg), City: buildCity}).message(""))
 			return
 		}
 		nextSpec, specOK := province.LevelledSpec(bType, lvl+1)
@@ -1325,7 +1366,7 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		spec = province.WallLevelSpecs[wl+1]
 	}
 
-	buildContext := buildErrorContext{BuildQuote: quoteBuild(bType, currentLevel, req.HexQ, req.HexR, false), City: buildCity}
+	buildContext := buildErrorContext{BuildQuote: quoteBuild(bType, currentLevel, req.HexQ, req.HexR, false).forGod(godArg), City: buildCity}
 	var queueDepth int
 	var dupQueued bool
 	if isHexBound {
@@ -1340,9 +1381,9 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		_ = h.pool.QueryRow(r.Context(),
 			`SELECT
 			   COUNT(*),
-			   COUNT(*) FILTER (WHERE building_type = $2) > 0
+			   COUNT(*) FILTER (WHERE building_type = $2 AND god_id IS NOT DISTINCT FROM $3) > 0
 			 FROM build_queue WHERE settlement_id = $1`,
-			settlementID, req.BuildingType,
+			settlementID, req.BuildingType, godArg,
 		).Scan(&queueDepth, &dupQueued)
 	}
 	if dupQueued {
@@ -1401,9 +1442,9 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 	completeAt := tick.EtaAt(h.clk, buildDueTick, buildCurrentTick)
 	var queueID uuid.UUID
 	err = h.pool.QueryRow(r.Context(),
-		`INSERT INTO build_queue (settlement_id, world_id, building_type, complete_at, hex_q, hex_r)
-		 VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-		settlementID, worldID, req.BuildingType, completeAt, req.HexQ, req.HexR,
+		`INSERT INTO build_queue (settlement_id, world_id, building_type, complete_at, hex_q, hex_r, god_id)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+		settlementID, worldID, req.BuildingType, completeAt, req.HexQ, req.HexR, godArg,
 	).Scan(&queueID)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not queue build")
@@ -1446,10 +1487,11 @@ func cancelQueuedBuild(ctx context.Context, tx economy.Tx, queueID uuid.UUID) (s
 	var settlementID uuid.UUID
 	var buildingType string
 	var hexQ, hexR *int
+	var godID *string
 	if err := tx.QueryRow(ctx,
-		`SELECT settlement_id, building_type, hex_q, hex_r FROM build_queue WHERE id = $1`,
+		`SELECT settlement_id, building_type, hex_q, hex_r, god_id FROM build_queue WHERE id = $1`,
 		queueID,
-	).Scan(&settlementID, &buildingType, &hexQ, &hexR); err != nil {
+	).Scan(&settlementID, &buildingType, &hexQ, &hexR, &godID); err != nil {
 		return "", errQueuedBuildGone
 	}
 
@@ -1485,8 +1527,8 @@ func cancelQueuedBuild(ctx context.Context, tx economy.Tx, queueID uuid.UUID) (s
 			).Scan(&lvl)
 		} else {
 			_ = tx.QueryRow(ctx,
-				`SELECT COALESCE(MAX(level), 0) FROM buildings WHERE settlement_id = $1 AND building_type = $2`,
-				settlementID, buildingType,
+				`SELECT COALESCE(MAX(level), 0) FROM buildings WHERE settlement_id = $1 AND building_type = $2 AND god_id IS NOT DISTINCT FROM $3`,
+				settlementID, buildingType, godID,
 			).Scan(&lvl)
 		}
 		next := lvl + 1
@@ -1612,7 +1654,7 @@ func (h *ProvinceHandler) Buildings(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT id, building_type, level, built_at, hex_q, hex_r FROM buildings WHERE settlement_id = $1 ORDER BY built_at`,
+		`SELECT id, building_type, level, built_at, hex_q, hex_r, coalesce(god_id,'') FROM buildings WHERE settlement_id = $1 ORDER BY built_at`,
 		settlementID,
 	)
 	if err != nil {
@@ -1631,13 +1673,18 @@ func (h *ProvinceHandler) Buildings(w http.ResponseWriter, r *http.Request) {
 		HexQ *int `json:"hex_q,omitempty"`
 		HexR *int `json:"hex_r,omitempty"`
 		// CurrentLevel mirrors Level.
-		CurrentLevel int `json:"current_level"`
+		CurrentLevel int    `json:"current_level"`
+		GodID        string `json:"god_id,omitempty"`
+		Name         string `json:"name,omitempty"`
 	}
 	var result []buildingRow
 	for rows.Next() {
 		var b buildingRow
-		if err := rows.Scan(&b.ID, &b.Type, &b.Level, &b.BuiltAt, &b.HexQ, &b.HexR); err == nil {
+		if err := rows.Scan(&b.ID, &b.Type, &b.Level, &b.BuiltAt, &b.HexQ, &b.HexR, &b.GodID); err == nil {
 			b.CurrentLevel = b.Level
+			if b.GodID != "" {
+				b.Name = religion.TempleName(b.GodID)
+			}
 			result = append(result, b)
 		}
 	}
@@ -3713,3 +3760,22 @@ func harvestBlessingStatus(until *int, currentTick int) any {
 // Population food balance is also the growth gate; army drain is a separate
 // projection, never a change to FoodTick or growth. Shared by both read APIs.
 func foodNetAfterArmy(foodNet, grainUpkeep float64) float64 { return foodNet - grainUpkeep }
+
+type templeRow struct {
+	BuildingID uuid.UUID `json:"building_id"`
+	GodID      string    `json:"god_id"`
+	Name       string    `json:"name"`
+	Level      int       `json:"level"`
+	Staffed    int       `json:"staffed"`
+	Capacity   int       `json:"capacity"`
+}
+
+// templeRows names each temple after its god for every surface (ORDER 15).
+func templeRows(temples []economy.TempleWorkplace) []templeRow {
+	out := make([]templeRow, 0, len(temples))
+	for _, t := range temples {
+		out = append(out, templeRow{BuildingID: t.BuildingID, GodID: t.GodID, Name: religion.TempleName(t.GodID),
+			Level: t.Level, Staffed: t.Staffed, Capacity: t.Capacity})
+	}
+	return out
+}

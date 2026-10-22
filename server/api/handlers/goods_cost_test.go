@@ -19,7 +19,7 @@ func TestBuildTemple_FloatingPointExactCost(t *testing.T) {
 	if raw != stored || raw >= 24 {
 		t.Fatalf("raw stone = %.17g, want literal under 24", raw)
 	}
-	code, body := f.do(t, http.MethodPost, f.buildPath(), map[string]any{"building_type": "temple"})
+	code, body := f.do(t, http.MethodPost, f.buildPath(), map[string]any{"building_type": "temple", "god": "potnia"})
 	if code != http.StatusCreated {
 		t.Fatalf("build temple at stored %.17g: HTTP %d: %v", raw, code, body)
 	}

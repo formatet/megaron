@@ -77,7 +77,7 @@ export async function loadKultDrawer() {
         const statusHtml = prayerStatusHTML(p, frenzyActive, sd.battle_frenzy_until);
 
         html += `<div class="stat-row" style="align-items:flex-start;flex-wrap:wrap">
-          <span class="sr-label">${esc(p.name)} <span style="color:var(--text-dim);font-size:.68rem">(${esc(p.god)}, ≥${p.min_kharis} kharis)</span><br>
+          <span class="sr-label">${esc(p.name)} <span style="color:var(--text-dim);font-size:.68rem">(${esc(p.god)}, ≥${p.min_kharis} kharis${p.temple ? ', ' + esc(p.temple) : ''})</span><br>
           <span style="color:var(--text-dim);font-size:.7rem">${esc(p.effect || '')}<br>traditional offering: ${offeringStr}</span></span>
           <span class="sr-val">${statusHtml}</span>
         </div><div class="offer-row" id="offer-row-${esc(p.id)}"></div>`;
@@ -111,7 +111,7 @@ export function templeOfferingsHTML(offers) {
   for (const t of offers) {
     const mark = t.fed ? '<span style="color:var(--safe)">✓</span>' : '<span style="color:var(--accent)">✗</span>';
     const next = t.fed ? templeGoodsText(t.offering, ' + ') : 'unfunded (nothing taken)';
-    html += '<div class="stat-row" style="align-items:flex-start;flex-wrap:wrap"><span class="sr-label">' + esc(t.name || '') + ': </span> ' +
+    html += '<div class="stat-row" style="align-items:flex-start;flex-wrap:wrap"><span class="sr-label">' + esc(t.name || '') + (t.temple ? ' — ' + esc(t.temple) : '') + ': </span> ' +
       '<span class="sr-val">reference ' + templeGoodsText(t.required_goods, ' + ') + ' per day<br>' +
       'Alternatives: ' + templeGoodsText(t.alternatives, ' or ') + '<br>' +
       'Stock: ' + templeGoodsText(t.stock, ', ') + '<br>' +
@@ -186,6 +186,7 @@ async function castRite(prayerID, offering, host) {
 // Server-owned waiting/active state gates the same Offer button the drawer uses.
 export function prayerStatusHTML(p, frenzyActive = false, frenzyUntil = null) {
   const waitDays = p.cooldown_remaining_game_days || 0;
+  if (p.unavailable_reason) return `<span class="empty-state">${esc(p.unavailable_reason)}</span>`;
   if (p.departure_pending) {
     const waiting = waitDays > 0 ? `; god waits ${esc(fmtDays(waitDays))}` : '';
     return `<span class="empty-state">awaiting next departure${waiting}</span>`;

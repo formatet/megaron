@@ -15,7 +15,7 @@ func staffTestTemple(t *testing.T, pool *pgxpool.Pool, sid uuid.UUID, count int)
 	if _, err := pool.Exec(ctx, `DELETE FROM settlement_placement WHERE settlement_id=$1`, sid); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := pool.Exec(ctx, `INSERT INTO settlement_placement(settlement_id,gubbe_ordinal,target_kind,building_type,good_key) SELECT $1,n,'building','temple','cult' FROM generate_series(1,$2::int) n`, sid, count); err != nil {
+	if _, err := pool.Exec(ctx, `INSERT INTO settlement_placement(settlement_id,gubbe_ordinal,target_kind,building_type,good_key,building_id) SELECT $1,n,'building','temple','cult',(SELECT id FROM buildings WHERE settlement_id=$1 AND building_type='temple' ORDER BY level DESC LIMIT 1) FROM generate_series(1,$2::int) n`, sid, count); err != nil {
 		t.Fatal(err)
 	}
 }

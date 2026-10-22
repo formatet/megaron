@@ -179,6 +179,15 @@ const _BLD_LBL = {
   temple:'Temple', pen:'Pen', silo:'Granary',
 };
 
+// A temple is built for one god: the Construct list has one row per god, its
+// value "temple:<god_id>". splitBuildValue gives back the type and the god.
+const TEMPLE_GODS = { potnia:'Potnia', velchanos:'Velchanos', asterion:'Asterion', sea_daimons_stillness:'the Sea Daimons of Stillness' };
+export function splitBuildValue(value) {
+  const [type, god] = String(value).split(':');
+  return { type, god: god || '' };
+}
+export function templeName(god) { return `Temple of ${TEMPLE_GODS[god] || god}`; }
+
 export async function startBuild() {
   const capital = activeCitySettlement();
   if (!capital) return;
@@ -186,9 +195,10 @@ export async function startBuild() {
   const hexSel = document.getElementById('city-build-hex');
   const resultEl = document.getElementById('city-build-result');
   if (!sel || !resultEl) return;
-  const btype = sel.value;
+  const { type: btype, god } = splitBuildValue(sel.value);
   resultEl.textContent = '';
   const body = { building_type: btype };
+  if (btype === 'temple') body.god = god;
   // A hex-bound type (farm/mine/lumbermill/stonequarry) needs hex_q/hex_r —
   // the picker is only visible (see onCityBuildTypeChange) when the selected
   // type is hex-bound, so a visible, non-empty value is exactly when to send
@@ -207,7 +217,7 @@ export async function startBuild() {
   const d = await r.json().catch(() => ({}));
   if (r.ok) {
     resultEl.style.color = 'var(--safe-text)';
-    resultEl.textContent = `${_BLD_LBL[btype]||btype} queued${hexLabel}.`;
+    resultEl.textContent = `${btype === 'temple' ? templeName(god) : (_BLD_LBL[btype]||btype)} queued${hexLabel}.`;
     // Refresh only the buildings section — avoids resetting the active tab
     await refreshCityBuildings(capital.id);
   } else {
@@ -229,7 +239,7 @@ function showBuildQuote(quote) {
 }
 export function buildQuoteHTML(quote) {
  if(!quote)return '<p class="empty-state">Build price unavailable.</p>';
- const name=esc(_BLD_LBL[quote.type]||quote.type);
+ const name=esc(quote.name||_BLD_LBL[quote.type]||quote.type);
  if(quote.at_max_level)return `<p class="empty-state">${name} L${quote.current_level} — maximum level.</p>`;
  return `<p class="empty-state">${name}: L${quote.current_level} → L${quote.next_level}<br>${esc(fmtBuildCost(quote))} · ${fmtDays(quote.duration_game_days)}</p>`;
 }
@@ -244,9 +254,10 @@ export async function onCityBuildTypeChange(preferredHex) {
   const seq = ++buildTypeSeq;
   const catalogue = await getBuildingCatalogue();
   if (seq !== buildTypeSeq) return;
-  const entry = (catalogue || []).find(e => e.type === typeSel.value);
+  const { type: selType, god: selGod } = splitBuildValue(typeSel.value);
+  const entry = (catalogue || []).find(e => e.type === selType);
   if (!entry || !entry.hex_bound) {
-    showBuildQuote(cityBuildQuotes.find(q=>q.type===entry?.type && !q.new_site && q.hex_q==null));
+    showBuildQuote(cityBuildQuotes.find(q=>q.type===entry?.type && !q.new_site && q.hex_q==null && (selType!=='temple' || q.god_id===selGod)));
     hexSel.style.display = 'none';
     hexSel.innerHTML = '';
     return;
@@ -371,9 +382,23 @@ export function wallOptionHTML(entry, ctx) {
   return `<option value="wall">${next.name} — ${fmtBuildCost({ costs: next.costs })} (${holds})</option>`;
 }
 
+// One row per god. Prices come from the server's per-god build_quotes.
+function templeOptionsHTML(entry, ctx) {
+  const hasQuotes = ctx && Object.hasOwn(ctx, 'buildQuotes');
+  return Object.keys(TEMPLE_GODS).map(god => {
+    const value = `temple:${god}`, label = templeName(god);
+    const quote = (ctx?.buildQuotes || []).find(q => q.type === 'temple' && q.god_id === god);
+    if (hasQuotes && !quote) return `<option value="${value}" disabled>${label} — price unavailable</option>`;
+    if (quote?.at_max_level) return `<option value="${value}" disabled>${label} L${quote.current_level} — maximum level</option>`;
+    const level = quote ? ` L${quote.current_level} → L${quote.next_level}` : '';
+    return `<option value="${value}">${label}${level} — ${fmtBuildCost(quote || entry)}</option>`;
+  }).join('');
+}
+
 export function buildingOptionsHTML(catalogue, ctx) {
   return (catalogue || []).map(entry => {
     if (entry.type === 'wall') return wallOptionHTML(entry, ctx);
+    if (entry.type === 'temple') return templeOptionsHTML(entry, ctx);
     const label = _BLD_LBL[entry.type] || entry.type;
     if (entry.hex_bound && ctx?.buildQuotes) return `<option value="${entry.type}">${label} — choose a hex for its level and price</option>`;
     const hasQuotes = ctx && Object.hasOwn(ctx, 'buildQuotes');
@@ -505,8 +530,8 @@ async function refreshCityBuildings(provinceID) {
     // so the hex is the only way to tell them apart in this list.
     let h2 = blds.length
       ? `<div class="dsec-title">Built</div><table class="goods-mini">${
-          blds.map(b => `<tr><td>${_BLD_LBL[b.type]||b.type}${b.hex_q != null ? ` @ (${b.hex_q},${b.hex_r})` : ''}</td><td>L${b.level}</td>` +
-            (b.id ? `<td style="text-align:right"><button class="btn-small" onclick="demolishBuilding('${provinceID}','${b.id}','${esc(demolishLabel(_BLD_LBL[b.type]||b.type, b.hex_q, b.hex_r))}')" style="padding:.05rem .3rem;font-size:.68rem;cursor:pointer">Demolish</button></td>` : '') +
+          blds.map(b => `<tr><td>${esc(b.name||_BLD_LBL[b.type]||b.type)}${b.hex_q != null ? ` @ (${b.hex_q},${b.hex_r})` : ''}</td><td>L${b.level}</td>` +
+            (b.id ? `<td style="text-align:right"><button class="btn-small" onclick="demolishBuilding('${provinceID}','${b.id}','${esc(demolishLabel(b.name||_BLD_LBL[b.type]||b.type, b.hex_q, b.hex_r))}')" style="padding:.05rem .3rem;font-size:.68rem;cursor:pointer">Demolish</button></td>` : '') +
             `</tr>`).join('')
         }</table><div id="city-demolish-res"></div>`
       : '<p class="empty-state">No buildings yet.</p>';
@@ -514,7 +539,7 @@ async function refreshCityBuildings(provinceID) {
     if (bq.length) h2 += `<div class="dsec-title" style="margin-top:.8rem">Build queue</div><table class="goods-mini">${
       // A building finishes, it doesn't arrive — say "ready" (matches the
       // Training column below and war.js's ship-build phrasing).
-      bq.map(b => `<tr><td>${_BLD_LBL[b.type]||b.type}</td><td>${arrivalHTML(b.complete_at, undefined, 'ready')}</td>` +
+      bq.map(b => `<tr><td>${esc(b.name||_BLD_LBL[b.type]||b.type)}</td><td>${arrivalHTML(b.complete_at, undefined, 'ready')}</td>` +
         `<td style="text-align:right"><button class="btn-small" onclick="cancelBuild('${provinceID}','${b.id}')" style="padding:.05rem .3rem;font-size:.68rem;cursor:pointer">✕</button></td></tr>`).join('')
     }</table>`;
     if (tu.length) {

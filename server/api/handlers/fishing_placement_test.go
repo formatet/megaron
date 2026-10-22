@@ -64,7 +64,7 @@ func TestBayFishingHTTPUsesLocalCapacity(t *testing.T) {
 	pool := p10TestPool(t)
 	for _, level := range []int{0, 1, 2, 3} {
 		if level > 0 {
-			if _, err := pool.Exec(context.Background(), `INSERT INTO buildings(settlement_id,building_type,level) VALUES($1,'harbour',$2) ON CONFLICT(settlement_id,building_type) WHERE hex_q IS NULL DO UPDATE SET level=EXCLUDED.level`, f.settlementID, level); err != nil {
+			if _, err := pool.Exec(context.Background(), `INSERT INTO buildings(settlement_id,building_type,level) VALUES($1,'harbour',$2) ON CONFLICT(settlement_id,building_type) WHERE hex_q IS NULL AND building_type <> 'temple' DO UPDATE SET level=EXCLUDED.level`, f.settlementID, level); err != nil {
 				t.Fatal(err)
 			}
 		}

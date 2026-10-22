@@ -31,7 +31,7 @@ func TestRealmKharis_CountsTempledCitiesIncludingCapital(t *testing.T) {
 	}
 	for i := 1; i < 6; i++ {
 		col := realmColony(t, pool, wid, pid, 10*i, "active")
-		if _, err := pool.Exec(ctx, `INSERT INTO buildings(settlement_id,building_type,level) VALUES($1,'temple',1)`, col); err != nil {
+		if _, err := pool.Exec(ctx, `INSERT INTO buildings(settlement_id,building_type,level,god_id) VALUES($1,'temple',1,'potnia')`, col); err != nil {
 			t.Fatal(err)
 		}
 	}

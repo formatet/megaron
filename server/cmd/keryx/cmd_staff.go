@@ -17,14 +17,15 @@ import (
 // today (none exist yet, economy.LoadBuildingProductionOptions's doc
 // comment) — staff refuses to guess which one a bare delta means.
 func staffCmd() *cobra.Command {
-	var provinceID string
+	var provinceID, god string
 	cmd := &cobra.Command{
 		Use:   "staff <byggnad> [+n|-n]",
 		Short: "Show a named building workplace, or place/remove citizens with +n/-n",
 		Long: `<building> is a city workplace (e.g. olive_press). Hex buildings use place. +n places n more idle
 citizens there; -n returns n citizens to the idle pool. The building name is required. Omit the delta to just
-see current occupancy.`,
-		Example: `  keryx staff olive_press
+see current occupancy. A city may hold one temple per god: with more than one, name it with --god.`,
+		Example: `  keryx staff temple +1 --god potnia
+  keryx staff olive_press
   keryx staff olive_press +2
   keryx staff olive_press -1 --province <prov-id>`,
 		Args: func(cmd *cobra.Command, args []string) error {
@@ -50,11 +51,26 @@ see current occupancy.`,
 				return err
 			}
 			var building *placementBuilding
+			var gods []string
 			for i := range opts.Buildings {
-				if opts.Buildings[i].BuildingType == buildingType {
-					building = &opts.Buildings[i]
-					break
+				b := &opts.Buildings[i]
+				if b.BuildingType != buildingType {
+					continue
 				}
+				if b.GodID != "" {
+					gods = append(gods, b.GodID)
+					if god != "" && b.GodID != god {
+						continue
+					}
+				}
+				if building != nil {
+					// Two temples and no --god: the choice is the Wanax's.
+					return fmt.Errorf("this city has a temple to each of: %s — choose one with --god", strings.Join(gods, ", "))
+				}
+				building = b
+			}
+			if building == nil && god != "" && len(gods) > 0 {
+				return fmt.Errorf("no temple to %s here — this city has: %s", god, strings.Join(gods, ", "))
 			}
 			if building == nil {
 				for _, h := range opts.Hexes {
@@ -77,7 +93,6 @@ see current occupancy.`,
 					}
 				}
 
-
 				return fmt.Errorf("no built workplace %q here (see `keryx city` for what's built)", buildingType)
 			}
 			if len(building.Goods) == 0 {
@@ -88,8 +103,12 @@ see current occupancy.`,
 					printJSON(building)
 					return nil
 				}
+				label := buildingType
+				if building.Name != "" {
+					label = building.Name
+				}
 				for _, g := range building.Goods {
-					fmt.Printf("%-14s L%-2d %s\n", buildingType, building.Level, goodCell(g))
+					fmt.Printf("%-14s L%-2d %s\n", label, building.Level, goodCell(g))
 				}
 				return nil
 			}
@@ -108,7 +127,11 @@ see current occupancy.`,
 			var stopErr error
 			if delta > 0 {
 				for ; applied < delta; applied++ {
-					if _, err := c.post(path, map[string]any{"target_kind": "building", "building_type": buildingType, "good_key": good.GoodKey}); err != nil {
+					body := map[string]any{"target_kind": "building", "building_type": buildingType, "good_key": good.GoodKey}
+					if building.GodID != "" {
+						body["god"] = building.GodID
+					}
+					if _, err := c.post(path, body); err != nil {
 						if applied == 0 && !jsonMode {
 							return err
 						}
@@ -192,6 +215,7 @@ see current occupancy.`,
 		},
 	}
 	cmd.Flags().StringVar(&provinceID, "province", "", "province ID/name (default: your capital)")
+	cmd.Flags().StringVar(&god, "god", "", "which temple, when the city has one to several gods")
 	// A bare "-1" delta is otherwise misparsed by pflag as an attempted
 	// shorthand flag ("unknown shorthand flag: '1' in -1"). Disabling
 	// interspersion stops flag parsing at the first positional (<byggnad>),

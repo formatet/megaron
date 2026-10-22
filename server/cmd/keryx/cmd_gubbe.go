@@ -80,6 +80,8 @@ type placementBuilding struct {
 	BuildingType string          `json:"building_type"`
 	Level        int             `json:"level"`
 	Goods        []placementGood `json:"goods"`
+	GodID        string          `json:"god_id,omitempty"` // a temple's god (one temple per god)
+	Name         string          `json:"name,omitempty"`
 }
 
 type placementOptionsResp struct {

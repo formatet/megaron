@@ -332,7 +332,7 @@ export function notifText(kind, body) {
 
     case 'OpeningDispatch': return esc(body.title || 'Opening dispatch');
     case 'agora_ready': return `Community chat account ready: ${body.user_id || 'your Wanax account'} — open Account to get your chat password.`;
-    case 'BuildComplete':      return `Build complete: ${body.building_type || ''}`;
+    case 'BuildComplete':      return `Build complete: ${esc(body.temple || body.building_type || '')}`;
     case 'GoodsCrafted': {
       // Payload per ProvinceHandler.Craft: output_key, produced, consumed{good:qty}.
       // Name what went in — casting bronze is the moment the copper/tin chain pays

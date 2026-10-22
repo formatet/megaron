@@ -67,8 +67,8 @@ func TestPlaytestKharis_SameRealmPoolInTwoCities(t *testing.T) {
 			t.Fatal("expected culture prayers")
 		}
 		for _, pr := range body.Settlement.Prayers {
-			if pr.Reason != "no temple" {
-				t.Fatalf("unready reason %q, want no temple", pr.Reason)
+			if !strings.HasPrefix(pr.Reason, "no Temple of ") {
+				t.Fatalf("unready reason %q, want the missing god's temple named", pr.Reason)
 			}
 		}
 		if body.Settlement.Kharis != 14.7 {

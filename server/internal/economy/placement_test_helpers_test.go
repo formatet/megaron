@@ -28,8 +28,9 @@ func placeHexGubbe(t *testing.T, pool Tx, settlementID uuid.UUID, gubbeOrdinal i
 func placeBuildingGubbe(t *testing.T, pool Tx, settlementID uuid.UUID, gubbeOrdinal int, buildingType, goodKey string) {
 	t.Helper()
 	if _, err := pool.Exec(context.Background(),
-		`INSERT INTO settlement_placement (settlement_id, gubbe_ordinal, target_kind, building_type, good_key)
-		 VALUES ($1, $2, 'building', $3, $4)`,
+		`INSERT INTO settlement_placement (settlement_id, gubbe_ordinal, target_kind, building_type, good_key, building_id)
+		 VALUES ($1, $2, 'building', $3, $4,
+		         (SELECT id FROM buildings WHERE settlement_id = $1 AND building_type = 'temple' AND $3 = 'temple' ORDER BY god_id LIMIT 1))`,
 		settlementID, gubbeOrdinal, buildingType, goodKey,
 	); err != nil {
 		t.Fatalf("place building gubbe #%d in %s for %s: %v", gubbeOrdinal, buildingType, goodKey, err)

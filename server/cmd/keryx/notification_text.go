@@ -71,6 +71,7 @@ func printNotificationSummary(c *Client, n notificationItem) {
 		Type              string             `json:"type"`
 		UnitType          string             `json:"unit_type"`
 		BuildingType      string             `json:"building_type"`
+		Temple            string             `json:"temple"` // a temple's name, "Temple of Potnia"
 		OutputKey         string             `json:"output_key"`
 		Produced          float64            `json:"produced"`
 		Consumed          map[string]float64 `json:"consumed"`
@@ -135,7 +136,11 @@ func printNotificationSummary(c *Client, n notificationItem) {
 	case "OpeningDispatch":
 		line = firstNotificationText(b.Title, "Opening dispatch")
 	case "BuildComplete":
-		line = fmt.Sprintf("%s completed %s", city, notificationWords(b.BuildingType))
+		what := notificationWords(b.BuildingType)
+		if b.Temple != "" {
+			what = b.Temple
+		}
+		line = fmt.Sprintf("%s completed %s", city, what)
 		if b.Level > 0 {
 			line += fmt.Sprintf(" (level %d)", b.Level)
 		}

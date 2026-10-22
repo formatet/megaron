@@ -318,30 +318,46 @@ func computeOfferFraction(fed, total int) float64 {
 	return float64(fed) / float64(total)
 }
 
-// applyTempleOffering charges each temple city's own shared early-gift plan.
-func (h *TickHandler) applyTempleOffering(ctx context.Context, playerID, worldID uuid.UUID) (fed, total int) {
+// applyTempleOffering charges every temple its own gift, city by city, and
+// returns how many temples were fed and how many workers serve those temples.
+func (h *TickHandler) applyTempleOffering(ctx context.Context, playerID, worldID uuid.UUID) (fed, total int, fedWorkers float64) {
 	values, err := religion.LoadDivineValues(ctx, h.pool, worldID)
 	if err != nil {
 		slog.Error("temple offering valuations", "err", err)
-		return 0, 0
+		return 0, 0, 0
+	}
+	temples, err := economy.RealmTemples(ctx, h.pool, playerID, worldID)
+	if err != nil {
+		slog.Error("temple offering staffing", "err", err)
+		return 0, 0, 0
+	}
+	workers := map[uuid.UUID]int{}
+	for _, t := range temples {
+		workers[t.BuildingID] = t.Staffed
 	}
 	offers, err := loadTempleOffers(ctx, h.pool, playerID, worldID, values)
 	if err != nil {
 		slog.Error("temple offering cities", "err", err)
-		return 0, 0
+		return 0, 0, 0
 	}
+	total = len(offers)
+	charged := map[uuid.UUID]bool{}
 	for _, offer := range offers {
-		total++
+		if charged[offer.SettlementID] {
+			continue
+		}
+		charged[offer.SettlementID] = true
 		paid, err := h.chargeTempleOffering(ctx, offer.SettlementID, values)
 		if err != nil {
 			slog.Error("temple offering debit", "settlement", offer.SettlementID, "err", err)
 			continue
 		}
-		if paid {
+		for id := range paid {
 			fed++
+			fedWorkers += float64(workers[id])
 		}
 	}
-	return fed, total
+	return fed, total, fedWorkers
 }
 
 func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, worldID uuid.UUID, eventID int64) error {
@@ -388,7 +404,8 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 		// Devotion counts actual workers serving the temple — read, never produced
 		// (mig 094). A temple with no one tending it is a building, not a cult.
 		devotionGain := w.devotionSum * KharisPerTempleWorker
-		offerFed, offerTotal = h.applyTempleOffering(ctx, w.playerID, worldID)
+		var fedWorkers float64
+		offerFed, offerTotal, fedWorkers = h.applyTempleOffering(ctx, w.playerID, worldID)
 		offerFraction = computeOfferFraction(offerFed, offerTotal)
 
 		// The gods reckon the offering by what the WORLD can spare, not by a
@@ -396,7 +413,8 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 		// stående gudstjänster"). Feeding a temple grain during a grain shortage is
 		// a greater gift than feeding it grain in a year of plenty, and earns more.
 		scarcity := h.templeOfferScarcity(ctx, worldID)
-		gain = devotionGain * offerFraction * scarcity
+		// Each temple's workers count only when that temple was fed (ORDER 15).
+		gain = fedWorkers * KharisPerTempleWorker * scarcity
 
 		_, _ = h.store.Append(ctx, w.settlementID, events.StreamProvince, "KharisOffering",
 			map[string]any{
@@ -404,6 +422,7 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 				"temples_total":       offerTotal,
 				"offer_fraction":      offerFraction,
 				"temple_workers":      w.devotionSum,
+				"fed_temple_workers":  fedWorkers,
 				"scarcity_factor":     scarcity,
 				"valuation_version":   religion.LaborValuationVersion,
 				"offering_value_unit": religion.LaborValueUnit,

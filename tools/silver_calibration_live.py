@@ -67,7 +67,7 @@ try:
   (OUT/'natural-first-founding.json').write_text(json.dumps({'response':founded,'goods':initial_goods,'expected_silver':expected_bank,'no_SQL_before_founding':True},indent=2)+'\n')
   # Fixture is explicit, scoped to this newly registered city/realm, before
   # user action; this proves temple interaction, not natural temple construction.
-  sql=f"""INSERT INTO buildings(settlement_id,building_type,level) VALUES('{settlement}','temple',3);
+  sql=f"""INSERT INTO buildings(settlement_id,building_type,level,god_id) VALUES('{settlement}','temple',3,'potnia');
   UPDATE settlement_goods SET amount=1000,rate=0,calc_tick=current_world_tick() WHERE settlement_id='{settlement}' AND good_key IN('grain','timber','fish','silver');
   UPDATE player_world_records SET kharis_amount=90,kharis_rate=0,kharis_calc_tick=current_world_tick() WHERE world_id='{world}' AND settlement_id='{settlement}';"""
   run('docker','exec',containers[0],'psql','-U','postgres','-d','religion_b_proof','-v','ON_ERROR_STOP=1','-c',sql)

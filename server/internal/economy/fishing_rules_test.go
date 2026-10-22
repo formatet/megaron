@@ -101,7 +101,7 @@ func TestFishingOwnerOptionsCapacityEffectsAndDemolition(t *testing.T) {
 		t.Fatalf("goods=%v err=%v", goods, err)
 	}
 	for level := 1; level <= 3; level++ {
-		if _, err := pool.Exec(ctx, `INSERT INTO buildings(settlement_id,building_type,level) VALUES($1,'harbour',$2) ON CONFLICT(settlement_id,building_type) WHERE hex_q IS NULL DO UPDATE SET level=EXCLUDED.level`, sid, level); err != nil {
+		if _, err := pool.Exec(ctx, `INSERT INTO buildings(settlement_id,building_type,level) VALUES($1,'harbour',$2) ON CONFLICT(settlement_id,building_type) WHERE hex_q IS NULL AND building_type <> 'temple' DO UPDATE SET level=EXCLUDED.level`, sid, level); err != nil {
 			t.Fatal(err)
 		}
 		check(level, []int{0, 1, 2, 4}[level])
@@ -132,7 +132,7 @@ func TestFishingOwnerOptionsCapacityEffectsAndDemolition(t *testing.T) {
 	if _, err := tx.Exec(ctx, `DELETE FROM buildings WHERE settlement_id=$1 AND building_type='harbour'`, sid); err != nil {
 		t.Fatal(err)
 	}
-	lifted, err := LiftPlacementsAfterDemolish(ctx, tx, sid, "harbour", nil, nil)
+	lifted, err := LiftPlacementsAfterDemolish(ctx, tx, sid, uuid.Nil, "harbour", nil, nil)
 	if err != nil || len(lifted) != 1 || lifted[0] != 1 {
 		t.Fatalf("lifted=%v err=%v", lifted, err)
 	}

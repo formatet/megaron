@@ -28,7 +28,7 @@ func TestEarlyTempleStatusPlanAndOwnerPrivacy(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT province_id FROM settlements WHERE id=$1`, sid).Scan(&prov); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := pool.Exec(ctx, `INSERT INTO buildings(settlement_id,building_type,level) VALUES($1,'temple',1);
+	if _, err := pool.Exec(ctx, `INSERT INTO buildings(settlement_id,building_type,level,god_id) VALUES($1,'temple',1,'potnia');
 	`, sid); err != nil {
 		t.Fatal(err)
 	}

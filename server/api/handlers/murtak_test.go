@@ -17,7 +17,7 @@ func setSilo(t *testing.T, f *mineGateFixture, level int) {
 	t.Helper()
 	if _, err := f.pool.Exec(context.Background(),
 		`INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, 'silo', $2)
-		 ON CONFLICT (settlement_id, building_type) WHERE hex_q IS NULL DO UPDATE SET level = EXCLUDED.level`,
+		 ON CONFLICT (settlement_id, building_type) WHERE hex_q IS NULL AND building_type <> 'temple' DO UPDATE SET level = EXCLUDED.level`,
 		f.settlementID, level); err != nil {
 		t.Fatal(err)
 	}

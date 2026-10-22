@@ -342,8 +342,12 @@ type BuildingOption struct {
 	StaffingOnly bool // real workplaces whose service produces no stock
 	BuildingType string
 	Level        int
-	RatePerGood  map[string]float64
-	CapPerGood   map[string]int
+	// BuildingID/GodID name one temple; a city may hold one per god (ORDER 15).
+	// Zero for every other building, which is one per type.
+	BuildingID  uuid.UUID
+	GodID       string
+	RatePerGood map[string]float64
+	CapPerGood  map[string]int
 
 	// CapL1PerGood is CapPerGood's Form A sibling — WorkplaceSlots(BuildingType, 1),
 	// frozen regardless of Level. See HexOption.CapL1PerGood's doc comment;
@@ -460,10 +464,10 @@ func LoadBuildingProductionOptions(ctx context.Context, tx Tx, settlementID uuid
 	if err != nil {
 		return nil, err
 	}
-	if staff.Capacity > 0 {
-		out = append(out, BuildingOption{BuildingType: "temple", Level: staff.Capacity / TempleWorkersPerLevel, StaffingOnly: true,
-			RatePerGood: map[string]float64{GoodCult: 0}, CapPerGood: map[string]int{GoodCult: staff.Capacity},
-			CapL1PerGood: map[string]int{GoodCult: staff.Capacity}, PlaceCapPerGood: map[string]int{GoodCult: staff.Capacity}, MultPerGood: map[string]float64{GoodCult: 1}})
+	for _, t := range staff.Temples {
+		out = append(out, BuildingOption{BuildingType: "temple", Level: t.Level, BuildingID: t.BuildingID, GodID: t.GodID, StaffingOnly: true,
+			RatePerGood: map[string]float64{GoodCult: 0}, CapPerGood: map[string]int{GoodCult: t.Capacity},
+			CapL1PerGood: map[string]int{GoodCult: t.Capacity}, PlaceCapPerGood: map[string]int{GoodCult: t.Capacity}, MultPerGood: map[string]float64{GoodCult: 1}})
 	}
 	return out, nil
 }

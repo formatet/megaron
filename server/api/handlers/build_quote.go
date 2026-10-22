@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/religion"
 	"github.com/google/uuid"
 	"sort"
 	"strings"
@@ -24,6 +25,18 @@ type BuildQuote struct {
 	HexQ         *int               `json:"hex_q,omitempty"`
 	HexR         *int               `json:"hex_r,omitempty"`
 	NewSite      bool               `json:"new_site,omitempty"`
+	GodID        string             `json:"god_id,omitempty"`
+	Name         string             `json:"name,omitempty"`
+}
+
+// forGod names a temple quote after its god ("Temple of Potnia"); nil leaves
+// every other building as it is.
+func (q BuildQuote) forGod(godID *string) BuildQuote {
+	if godID != nil {
+		q.GodID = *godID
+		q.Name = religion.TempleName(*godID)
+	}
+	return q
 }
 
 func quoteBuild(bt province.BuildingType, current int, q, r *int, newSite bool) BuildQuote {
@@ -57,21 +70,25 @@ func loadBuildQuotes(ctx context.Context, db economy.Tx, sid uuid.UUID) ([]Build
 	if err := db.QueryRow(ctx, `SELECT wall_level FROM settlements WHERE id=$1`, sid).Scan(&wall); err != nil {
 		return nil, err
 	}
-	rows, err := db.Query(ctx, `SELECT building_type,level,hex_q,hex_r FROM buildings WHERE settlement_id=$1 ORDER BY building_type,hex_q,hex_r`, sid)
+	rows, err := db.Query(ctx, `SELECT building_type,level,hex_q,hex_r,god_id FROM buildings WHERE settlement_id=$1 ORDER BY building_type,hex_q,hex_r`, sid)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	city := map[string]int{}
+	temples := map[string]int{}
 	var hexes []BuildQuote
 	for rows.Next() {
 		var bt string
 		var level int
 		var q, r *int
-		if err := rows.Scan(&bt, &level, &q, &r); err != nil {
+		var god *string
+		if err := rows.Scan(&bt, &level, &q, &r, &god); err != nil {
 			return nil, err
 		}
-		if province.HexBoundBuildings[province.BuildingType(bt)] {
+		if god != nil {
+			temples[*god] = level
+		} else if province.HexBoundBuildings[province.BuildingType(bt)] {
 			hexes = append(hexes, quoteBuild(province.BuildingType(bt), level, q, r, false))
 		} else {
 			city[bt] = max(city[bt], level)
@@ -87,6 +104,13 @@ func loadBuildQuotes(ctx context.Context, db economy.Tx, sid uuid.UUID) ([]Build
 	sort.Strings(types)
 	out := make([]BuildQuote, 0, len(types)+len(hexes))
 	for _, bt := range types {
+		if bt == string(province.BuildingTemple) {
+			// One quote per god: each god's temple has its own level (ORDER 15).
+			for _, g := range religion.TempleGods {
+				out = append(out, quoteBuild(province.BuildingTemple, temples[g.ID], nil, nil, false).forGod(&g.ID))
+			}
+			continue
+		}
 		current := city[bt]
 		if bt == string(province.BuildingWall) {
 			current = wall
@@ -102,6 +126,9 @@ type buildErrorContext struct {
 }
 
 func (b buildErrorContext) label() string {
+	if b.Name != "" {
+		return b.Name
+	}
 	label := strings.ReplaceAll(b.Type, "_", " ")
 	if len(label) > 0 {
 		label = strings.ToUpper(label[:1]) + label[1:]

@@ -177,13 +177,19 @@ func templeGoodsText(raw any, separator string) string {
 
 func templeOfferingLine(row map[string]any) string {
 	name, _ := row["name"].(string)
+	temple, _ := row["temple"].(string)
+	if temple == "" {
+		temple = "Temple"
+	}
 	fed, _ := row["fed"].(bool)
 	mark, next := "✗", "unfunded (nothing taken)"
 	if fed {
 		mark, next = "✓", templeGoodsText(row["offering"], " + ")
 	}
-	return fmt.Sprintf("  Temple in %s: reference %s per day — alternatives: %s — stock: %s — next gift: %s  %s",
-		name, templeGoodsText(row["required_goods"], " + "), templeGoodsText(row["alternatives"], " or "),
+	// Each temple has its own gift; a city's temples take from one store in turn,
+	// so "stock" is what the temples before this one left.
+	return fmt.Sprintf("  %s in %s: reference %s per day — alternatives: %s — stock: %s — next gift: %s  %s",
+		temple, name, templeGoodsText(row["required_goods"], " + "), templeGoodsText(row["alternatives"], " or "),
 		templeGoodsText(row["stock"], ", "), next, mark)
 }
 
@@ -1041,7 +1047,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				fmt.Println("\nBuildings")
 				for _, it := range bs {
 					m, _ := it.(map[string]any)
-					t, _ := m["type"].(string)
+					t := buildingLabel(m)
 					lvl, _ := m["level"].(float64)
 					fmt.Printf("  %-12s L%.0f\n", t, lvl)
 				}
@@ -1051,7 +1057,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				fmt.Println("\nConstruction")
 				for _, it := range bq {
 					m, _ := it.(map[string]any)
-					t, _ := m["type"].(string)
+					t := buildingLabel(m)
 					ca, _ := m["complete_at"].(string)
 					fmt.Printf("  %-12s %s\n", t, buildQueueETA(c, ca))
 				}
@@ -1317,4 +1323,14 @@ func kharisCapLine(sett map[string]any) string {
 		return fmt.Sprintf("  → the cap %.0f is set by your level-%.0f temple, but your kharis is falling toward the floor — staff the temple with `keryx staff temple +1` (if it has room) or build a higher temple.\n", kcap, mtl)
 	}
 	return fmt.Sprintf("  → the cap %.0f is set by your level-%.0f temple; your kharis holds but doesn't climb — staff the temple with `keryx staff temple +1` or build a higher temple.\n", kcap, mtl)
+}
+
+// buildingLabel names a temple after its god ("Temple of Potnia"); every
+// other building by its type.
+func buildingLabel(m map[string]any) string {
+	if name, _ := m["name"].(string); name != "" {
+		return name
+	}
+	t, _ := m["type"].(string)
+	return t
 }

@@ -84,7 +84,7 @@ func TestAIRound4_AutomaticFoodAPIAndFixedQueue(t *testing.T) {
 		}
 	}
 	for _, kind := range []string{"market", "temple"} {
-		if _, err := pool.Exec(ctx, `INSERT INTO build_queue(world_id,settlement_id,building_type,complete_at) VALUES($1,$2,$3,$4)`, wid, sid, kind, time.Unix(4102444800, 0)); err != nil {
+		if _, err := pool.Exec(ctx, `INSERT INTO build_queue(world_id,settlement_id,building_type,complete_at,god_id) VALUES($1,$2,$3,$4,CASE WHEN $3='temple' THEN 'potnia' END)`, wid, sid, kind, time.Unix(4102444800, 0)); err != nil {
 			t.Fatal(err)
 		}
 	}

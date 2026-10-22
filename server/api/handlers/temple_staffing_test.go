@@ -17,7 +17,7 @@ func TestTempleUsesRealWorkforceAndActualLevelCapacity(t *testing.T) {
 			if _, err := pool.Exec(ctx, `UPDATE settlements SET population=1000 WHERE id=$1`, f.settlementID); err != nil {
 				t.Fatal(err)
 			}
-			if _, err := pool.Exec(ctx, `INSERT INTO buildings(settlement_id,building_type,level) VALUES($1,'temple',$2)`, f.settlementID, level); err != nil {
+			if _, err := pool.Exec(ctx, `INSERT INTO buildings(settlement_id,building_type,level,god_id) VALUES($1,'temple',$2,'potnia')`, f.settlementID, level); err != nil {
 				t.Fatal(err)
 			}
 			body := map[string]any{"target_kind": "building", "building_type": "temple", "good_key": "cult"}
@@ -61,7 +61,7 @@ func TestTempleCannotEmployAWorkerAlreadyWorkingFood(t *testing.T) {
 	if _, err := pool.Exec(ctx, `UPDATE settlements SET population=100 WHERE id=$1`, f.settlementID); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := pool.Exec(ctx, `INSERT INTO buildings(settlement_id,building_type,level) VALUES($1,'temple',1)`, f.settlementID); err != nil {
+	if _, err := pool.Exec(ctx, `INSERT INTO buildings(settlement_id,building_type,level,god_id) VALUES($1,'temple',1,'potnia')`, f.settlementID); err != nil {
 		t.Fatal(err)
 	}
 	code, resp := f.do(t, http.MethodPost, f.placementsPath(), map[string]any{"target_kind": "hex", "hex_q": 1, "hex_r": 0, "good_key": "grain"})
