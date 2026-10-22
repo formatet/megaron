@@ -75,6 +75,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err := economy.CompleteTempleStaffingTransition(ctx, pool); err != nil {
+		slog.Error("complete temple staffing transition", "err", err)
+		os.Exit(1)
+	}
+
 	redisURL := mustEnv("REDIS_URL")
 	rdb := redis.NewClient(&redis.Options{Addr: redisURL})
 	if err := rdb.Ping(ctx).Err(); err != nil {
@@ -437,7 +442,6 @@ func main() {
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/trade/destinations", ph.TransferDestinations)
 			r.Get("/worlds/{worldID}/gifts", ph.GiftHistory)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/disband", ph.Disband)
-			r.Put("/worlds/{worldID}/provinces/{provinceID}/labor", ph.LaborAlloc)
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/placement-options", ph.PlacementOptions)
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/placements", ph.Placements)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/placements", ph.PlaceGubbe)
@@ -448,7 +452,6 @@ func main() {
 			r.Post("/worlds/{worldID}/standing-orders/{orderID}/pause", soh.Pause)
 			r.Post("/worlds/{worldID}/standing-orders/{orderID}/resume", soh.Resume)
 			r.Delete("/worlds/{worldID}/standing-orders/{orderID}", soh.Delete)
-
 
 			r.Post("/worlds/{worldID}/join", jh.Join)
 			// The last city fell: rise again as a host elsewhere, or leave (megaron_sista_staden.md).

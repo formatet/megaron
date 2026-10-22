@@ -13,6 +13,7 @@ import (
 // here once instead of being redeclared per file.
 
 type placementGood struct {
+	StaffingOnly   bool    `json:"staffing_only"`
 	GoodKey        string  `json:"good_key"`
 	RatePerTick    float64 `json:"rate_per_tick"`
 	Cap            *int    `json:"cap,omitempty"` // nil = uncapped (grain — placementYield's exemption)
@@ -174,6 +175,9 @@ func isFoodGood(goodKey string) bool {
 // (2 placed, next +12.0/tick)" for an uncapped good, or "fish 1/1 FULL" /
 // "stone 1/4 (next +6.0/tick)" for a capped one.
 func goodCell(g placementGood) string {
+	if g.StaffingOnly {
+		return fmt.Sprintf("%-10s %d/%d temple workers", "devotion", g.Placed, *g.Cap)
+	}
 	if g.Cap == nil {
 		return fmt.Sprintf("%-10s %-9s  (%d placed, next %s)", g.GoodKey, rate(g.RatePerTick), g.Placed, rate(g.MarginalYield))
 	}

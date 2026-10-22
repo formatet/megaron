@@ -17,7 +17,6 @@ export function productionSectionsHTML(city) {
     <div class="dsec"><div class="dsec-title">Food</div><div id="city-food-sec"></div></div>
     <details id="city-more" class="dsec"><summary class="dsec-title">More</summary>
       <div class="dsec-title">People at work</div><div id="city-people-details"></div>
-      <div class="dsec-title">Devotion</div><div id="city-devotion-sec"></div>
       <div class="dsec-title">Food details</div><div id="city-food-details-sec"></div>
       <div class="dsec-title">Last day</div><div id="city-lasttick-sec"></div>
       <div class="dsec-title">Daily history <button class="btn-small" onclick="loadTicklog()">Show recent days</button></div><div id="city-ticklog-sec"></div>

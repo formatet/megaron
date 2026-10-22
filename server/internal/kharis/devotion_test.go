@@ -1,21 +1,24 @@
 package kharis
 
-import "testing"
+import (
+	"formatet/megaron/server/internal/economy"
+	"testing"
+)
 
 // Mig 094 replaced a summed `cult` STOCK with temple state read directly:
 // presence × devotion × fed. The numbers moved; the SHAPE must not. This test
 // locks the shape the design states — "skött tempel ≈ långsam klättring,
-// försummelse = fade" — so a future tuner who changes kharisPerTempleDay or
+// försummelse = fade" — so a future tuner who changes KharisPerTempleWorker or
 // decayBas sees immediately which invariant they broke.
 
 // dayNet models one maintained day: what devotion earns, minus the day's decay.
 func dayNet(devotionSum float64, offerFraction, scarcity float64, cityCount int) float64 {
-	gain := devotionSum * kharisPerTempleDay * offerFraction * scarcity
+	gain := devotionSum * KharisPerTempleWorker * offerFraction * scarcity
 	return gain - computeDailyDecay(cityCount)
 }
 
 func TestDevotionCalibration_ModestClimbsGrandClimbsFaster(t *testing.T) {
-	l1 := templeDevotionCapacity(1)
+	l1 := float64(economy.TempleWorkplaces(1))
 
 	// Timothy2026-10-13: ordinary fully staffed and fed L1 must climb under the current realm burden.
 	net := dayNet(l1, 1, 1, 0)
@@ -30,7 +33,7 @@ func TestDevotionCalibration_ModestClimbsGrandClimbsFaster(t *testing.T) {
 
 	// A larger temple employs more of the city and climbs faster: it must
 	// climb outright in ordinary times — the whole reason to raise one.
-	l2 := dayNet(templeDevotionCapacity(2), 1.0, 1.0, 0)
+	l2 := dayNet(float64(economy.TempleWorkplaces(2)), 1.0, 1.0, 0)
 	if l2 <= 0 {
 		t.Errorf("a level-2 temple must climb in ordinary times, got %+.2f/day", l2)
 	}
@@ -45,31 +48,10 @@ func TestDevotionCalibration_ModestClimbsGrandClimbsFaster(t *testing.T) {
 	}
 }
 
-// The temple is a workplace: devotion allocated beyond what the building can
-// employ has no altar to serve at, and must not pay. Without this a Wanax could
-// pour 100%% of a city into an L1 shrine and skip temple levels entirely.
-func TestTempleDevotionCapacity_ScalesWithLevelAndFloorsAtOne(t *testing.T) {
-	if got := templeDevotionCapacity(1); got != TempleDevotionPerLevel {
-		t.Errorf("level 1 capacity = %.2f, want %.2f", got, TempleDevotionPerLevel)
-	}
-	if templeDevotionCapacity(2) <= templeDevotionCapacity(1) {
-		t.Error("a larger temple must employ more")
-	}
-	if got := templeDevotionCapacity(0); got != TempleDevotionPerLevel {
-		t.Errorf("a malformed level must fall back to level 1, got %.2f", got)
-	}
-	// Level 1 capacity is exactly the floor LaborAlloc applies, so every existing
-	// city is already staffed to capacity — the design premise for the raise.
-	if templeDevotionCapacity(1) != 0.15 {
-		t.Errorf("level-1 capacity must match the server devotion floor, got %.2f",
-			templeDevotionCapacity(1))
-	}
-}
-
 // Feeding is a gate on the whole gain, not a bonus beside it: an unfed temple
 // earns nothing however devoted its people are.
 func TestDevotionCalibration_UnfedTempleEarnsNothing(t *testing.T) {
-	gain := 5.0 * kharisPerTempleDay * 0.0 * 1.0
+	gain := 5.0 * KharisPerTempleWorker * 0.0 * 1.0
 	if gain != 0 {
 		t.Fatalf("an unfed temple must earn nothing, got %.2f", gain)
 	}

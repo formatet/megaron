@@ -30,8 +30,11 @@ export function kharisNetView(pd) {
       (v >= 0 ? '+' : '') + v.toFixed(1) + ' kharis per day</span></div>';
   }
 
+  if (Number.isInteger(pd.temple_staffed) && Number.isInteger(pd.temple_capacity)) {
+    out.netHtml += '<div class="stat-row"><span class="sr-label">Temple workers here</span><span class="sr-val">' + pd.temple_staffed + '/' + pd.temple_capacity + '</span></div>';
+  }
   if (pd.kharis_devotion_idle === true) {
-    out.idleHtml = '<p class="kult-warn">Temple capacity is standing idle — raise cult labor to put it to work.</p>';
+    out.idleHtml = '<p class="kult-warn">Temple workplaces remain unfilled — place citizens in the temple in City.</p>';
   }
 
   return out;

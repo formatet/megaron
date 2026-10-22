@@ -38,7 +38,6 @@ Mätt mot koden 2026-09-05 (`cmd/keryx/main.go` · `cmd/server/main.go`s routeta
 | recruit | `POST /provinces/:id/recruit` | `recruit` | ✓ | 2026-10-04 arbetskopia: naval crew i capabilities; betalning/enhet/jobb/event atomiska. CLI/webb behåller befintlig payload, Codex units förtydligad. Testat på färskDB, ej deployat. [[megaron_kodgranskning_20261004]] §12 |
 | place / staff | `POST/DELETE /provinces/:id/placements` | `place`, `staff` | ✓ | P5 |
 | place → ta hex (gren av `place`) | `POST /provinces/:id/placements` på en hållen hex (tagbar när egen enhet står i fortify/sentry och hållaren saknar) → 201; `placement-options` bär `held_by`/`takeable`/`held_workers`/`held_building`; notis `HexTaken` till förloraren | `place` (serverns 409-text oförändrad), `city` markerar `held by`/`TAKEABLE`, `HexTaken` i notiser | ✓ citygrid *Take: …*-knapp, `format.js` | `catchment.md`, `stances.md`, `sieges.md` · 2026-10-02 (delad catchment, `megaron_plan_delad_catchment.md`) |
-| labor (cult) | `PUT /provinces/:id/labor` | `allocate` | ✓ | **endast cult** sedan P4 |
 | disband | `POST /provinces/:id/disband` | `disband` | ✓ | |
 | transfer | `POST /provinces/:id/trade` | `transfer` | ✓ | egna städer eller kontaktad främmande stad som gåva/tribut utan motprestation; Economy Transfer, gåvorad i Diplomacy, Codex gifts. S byggd på codex/gava, väntar granskning/BILD före merge. |
 | abandon | `POST /settlements/:id/abandon` | `abandon` | ✓ | |

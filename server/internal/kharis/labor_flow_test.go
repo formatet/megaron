@@ -33,6 +33,7 @@ func TestSilverCalibrationKharisFlowLeavesStalePriceClamp(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+	staffTestTemple(t, pool, sid, 2)
 	h := newTestTickHandler(pool)
 	if factor := h.templeOfferScarcity(ctx, wid); factor != 1.5 {
 		t.Fatalf("actual maintenance factor=%g want1.5, stale price denominator must be gone", factor)
@@ -41,13 +42,13 @@ func TestSilverCalibrationKharisFlowLeavesStalePriceClamp(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := .15*kharisPerTempleDay*1.5 - decayBas
-	if !has || dev != .15 || math.Abs(net-want) > 1e-8 {
+	want := 2*KharisPerTempleWorker*1.5 - decayBas
+	if !has || dev != 2 || math.Abs(net-want) > 1e-8 {
 		t.Fatalf("projection %g devotion%g has%v want%g", net, dev, has, want)
 	}
 	// Simulate the old valuation scale's stale denominator to display the change.
 	oldFactor := scarcityFromValues(map[string]float64{"grain": 129.6}, map[string]float64{"grain": 1}, nil)
-	oldNet := .15*kharisPerTempleDay*oldFactor - decayBas
+	oldNet := 2*KharisPerTempleWorker*oldFactor - decayBas
 	if oldFactor != 2 || oldNet <= net {
 		t.Fatalf("old price clamp %g should overstate catalogue-based net%g", oldNet, net)
 	}
@@ -55,7 +56,7 @@ func TestSilverCalibrationKharisFlowLeavesStalePriceClamp(t *testing.T) {
 	before := 20.0
 	eid := atomic.AddInt64(&advanceOneDayEventID, 1)
 	if err := h.processMaintenance(ctx, wanaxSnap{cityCount: 1, playerID: pid, settlementID: sid, kharis: before,
-		kharisCap: 100, devotionSum: .15, templeCities: 1, maxTempleLevel: 1}, wid, eid); err != nil {
+		kharisCap: 100, devotionSum: 2, templeCities: 1, maxTempleLevel: 1}, wid, eid); err != nil {
 		t.Fatal(err)
 	}
 	var after float64

@@ -13,7 +13,6 @@ export const VERB_EVENTS = [
   {"verb": "place", "method": "POST", "route": "/api/v1/worlds/:world/provinces/:province/placements", "event": "worker_placed"},
   {"verb": "staff", "method": "POST", "route": "/api/v1/worlds/:world/provinces/:province/placements", "event": "workplace_staffed"},
   {"verb": "unplace", "method": "DELETE", "route": "/api/v1/worlds/:world/provinces/:province/placements/:ordinal", "event": "placement_removed"},
-  {"verb": "labor", "method": "PUT", "route": "/api/v1/worlds/:world/provinces/:province/labor", "event": "cult_allocated"},
   {"verb": "disband", "method": "POST", "route": "/api/v1/worlds/:world/provinces/:province/disband", "event": "army_disbanded"},
   {"verb": "transfer", "method": "POST", "route": "/api/v1/worlds/:world/provinces/:province/trade", "event": "transfer_sent"},
   {"verb": "gift/tribute", "method": "POST", "route": "/api/v1/worlds/:world/provinces/:province/trade", "event": "gift_sent"},
@@ -107,7 +106,7 @@ function propsFor(entry, opts) {
   if (entry.verb === 'march') include('intent', body.intent || body.stance || 'march', INTENTS);
   if (entry.verb === 'stance') include('stance', body.stance, INTENTS);
   if (entry.verb === 'trade-offer') include('kind', body.trade_offer?.kind, ['buy', 'sell']);
-  if (['place', 'staff', 'transfer'].includes(entry.verb)) include('good', body.good_key, GOODS);
+  if (['place', 'staff', 'transfer'].includes(entry.verb)) include('good', body.good_key, entry.verb === 'transfer' ? GOODS : [...GOODS, 'cult']);
   if (entry.verb === 'notification-preferences') props.action = opts.method.toUpperCase() === 'PUT' ? 'mute' : 'unmute';
   return Object.keys(props).length ? props : undefined;
 }

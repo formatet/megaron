@@ -36,8 +36,7 @@ type rosterAssign struct {
 // är och arbetar utan att behöva gå in på särskilda hexar … för att minska
 // bemanningen och frigöra gubbar"): `keryx city` shows ONE settlement; this
 // shows all of them at once, so a Wanax can find idle citizens to place, or
-// spot which city to thin out, without opening each one. cult is not here —
-// it's temple devotion (`keryx allocate --cult`), not a placed gubbe.
+// spot which city to thin out, including temple workers.
 func rosterCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "roster",
@@ -45,8 +44,7 @@ func rosterCmd() *cobra.Command {
 		Long: `A realm-wide view of where your citizens work. Each settlement shows how many
 of its gubbar are placed vs idle, then every hex/building assignment with a
 count. Use ` + "`keryx city <name>`" + ` to drill into one settlement and ` +
-			"`keryx place`/`keryx staff`" + ` to move gubbar. (Temple devotion is set with ` +
-			"`keryx allocate --cult`" + `, not shown here — it isn't a placed gubbe.)`,
+			"`keryx place`/`keryx staff`" + ` to move gubbar, including temple workers.`,
 		Args: noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)

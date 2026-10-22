@@ -113,6 +113,9 @@ var workplaceSlotTable = map[string][4]int{
 // level return 0: an unrecognised building grants no slots rather than a
 // silent guess (arbetssätt §7: no fallback that invents a value).
 func WorkplaceSlots(buildingType string, level int) int {
+	if buildingType == "temple" {
+		return TempleWorkplaces(level)
+	}
 	tiers, ok := workplaceSlotTable[buildingType]
 	if !ok || level < 1 || level >= len(tiers) {
 		return 0
@@ -564,6 +567,9 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		}
 	}
 	for _, opt := range buildingOptions {
+		if opt.StaffingOnly {
+			continue
+		}
 		for good := range opt.RatePerGood {
 			producible[good] = true
 		}
@@ -586,6 +592,9 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		}
 	}
 	for _, opt := range buildingOptions {
+		if opt.StaffingOnly {
+			continue
+		}
 		placedHere := placements.Building[opt.BuildingType]
 		for good, rate := range opt.RatePerGood {
 			// weakestLinkRefiningBuilding's goods (oil, wine) and bronze are
@@ -633,6 +642,9 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		}
 		refiningCapacity := 0.0
 		for _, opt := range buildingOptions {
+			if opt.StaffingOnly {
+				continue
+			}
 			rate, ok := opt.RatePerGood[good]
 			if !ok {
 				continue
@@ -732,6 +744,9 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	// smoothly between calls.
 	bronzeRefiningCapacity := 0.0
 	for _, opt := range buildingOptions {
+		if opt.StaffingOnly {
+			continue
+		}
 		rate, ok := opt.RatePerGood[GoodBronze]
 		if !ok {
 			continue

@@ -204,6 +204,7 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 
 	type goodOut struct {
 		GoodKey        string  `json:"good_key"`
+		StaffingOnly   bool    `json:"staffing_only,omitempty"`
 		RatePerTick    float64 `json:"rate_per_tick"`
 		Cap            *int    `json:"cap,omitempty"` // absent/null = no P3 hexCapacityRule/WorkplaceSlots entry for this good at all
 		Placed         int     `json:"placed"`
@@ -379,6 +380,11 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 	}
 	buildings := make([]buildingOut, 0, len(buildingOptions))
 	for _, opt := range buildingOptions {
+		if opt.StaffingOnly {
+			cap := opt.PlaceCapPerGood[economy.GoodCult]
+			buildings = append(buildings, buildingOut{BuildingType: opt.BuildingType, Level: opt.Level, Goods: []goodOut{{GoodKey: economy.GoodCult, StaffingOnly: true, Cap: &cap, Placed: placed.Building[opt.BuildingType][economy.GoodCult], PlacedOrdinals: placedOrdinals.Building[opt.BuildingType][economy.GoodCult]}}})
+			continue
+		}
 		buildings = append(buildings, buildingOut{
 			BuildingType: opt.BuildingType,
 			Level:        opt.Level,
@@ -811,7 +817,7 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 		}
-		if opt == nil || opt.RatePerGood[req.GoodKey] <= 0 {
+		if opt == nil || (!opt.StaffingOnly && opt.RatePerGood[req.GoodKey] <= 0) || (opt.StaffingOnly && req.GoodKey != economy.GoodCult) {
 			writeError(w, http.StatusUnprocessableEntity, "this building has no production option for that good")
 			return
 		}

@@ -1987,18 +1987,6 @@ func (h *UnitArrivalHandler) foundColony(
 		return fmt.Errorf("foundColony: clear carried purse: %w", err)
 	}
 
-	// Cult floor keeps a temple (once built) non-inert — cult labor is a
-	// separate path from P4's placement model (megaron_cult_ar_ingen_vara_plan.md),
-	// untouched by the grain seed it used to sit alongside.
-	if _, err := tx.Exec(ctx,
-		`INSERT INTO settlement_labor (settlement_id, good_key, weight)
-		 VALUES ($1,'cult',0.15)
-		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
-		colonyID,
-	); err != nil {
-		return fmt.Errorf("foundColony: seed labor: %w", err)
-	}
-
 	// P4 (megaron_plan_fysisk_gubbemodell.md): auto-place the starting gubbar on
 	// the best available food hexes, greedily, stopping once the colony is
 	// self-sufficient — see economy.PlaceStartingWorkforce's doc comment.

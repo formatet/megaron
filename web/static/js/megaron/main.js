@@ -36,7 +36,7 @@ import {
   renderColonizePreviewHTML,
 } from './ui/marchctx.js';
 import {
-  loadCityDrawer, cycleCityView, saveLaborAlloc, startBuild,
+  loadCityDrawer, cycleCityView, startBuild,
   loadTicklog, cancelBuild, demolishBuilding,
   onCityBuildTypeChange,
 } from './ui/drawers/city.js';
@@ -217,7 +217,6 @@ Object.assign(window, {
   pauseStandingOrder,
   resetView,
   resumeStandingOrder,
-  saveLaborAlloc,
   saveRetreatDefault,
   sendMarch,
   sendMessengerFromInspect,
