@@ -1,3 +1,4 @@
+import { openMobilePanel, closeMobilePanel } from './mobile_panels.js';
 import { fetchAuth } from '../api.js';
 import { loadSearchMessages, searchMessagesHTML } from './search_messages.js';
 import { State } from '../state.js';
@@ -15,6 +16,7 @@ export function toggleSearch() {
   const o = document.getElementById('search-overlay');
   o.classList.toggle('open');
   if (o.classList.contains('open')) {
+    openMobilePanel(o, closeSearch);
     State.searchFocusIdx = -1;
     const input = document.getElementById('search-input');
     input.value = '';
@@ -50,6 +52,7 @@ export function toggleSearch() {
 export function closeSearch(e) {
   ++searchSession;
   correspondence = {};
+  closeMobilePanel(document.getElementById('search-overlay'));
   document.getElementById('search-overlay').classList.remove('open');
 }
 

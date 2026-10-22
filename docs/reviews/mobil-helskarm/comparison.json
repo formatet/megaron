@@ -1,0 +1,44 @@
+{
+  "baseline-firefox": {
+    "identical_scene_pairs": 16,
+    "clean_contexts": 4
+  },
+  "firefox": {
+    "identical_scene_pairs": 16,
+    "clean_contexts": 4
+  },
+  "desktop": {
+    "city": {
+      "changed_pixels": 0,
+      "bbox": null
+    },
+    "hex": {
+      "changed_pixels": 0,
+      "bbox": null
+    },
+    "march": {
+      "changed_pixels": 0,
+      "bbox": null
+    },
+    "drawer": {
+      "changed_pixels": 0,
+      "bbox": null
+    },
+    "notice": {
+      "changed_pixels": 0,
+      "bbox": null
+    },
+    "account": {
+      "changed_pixels": 0,
+      "bbox": null
+    },
+    "search": {
+      "changed_pixels": 0,
+      "bbox": null
+    },
+    "codex": {
+      "changed_pixels": 0,
+      "bbox": null
+    }
+  }
+}

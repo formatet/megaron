@@ -1,3 +1,4 @@
+import { openMobilePanel, closeMobilePanel } from '../ui/mobile_panels.js';
 import { physicalHostState, hostStatusText } from '../ui/host_state.js';
 import { State, ownCapital, activeCitySettlement } from '../state.js';
 import { fetchAuth } from '../api.js';
@@ -3438,6 +3439,7 @@ function openFogPanel(h) {
   document.getElementById('ip-deposits-row').style.display = 'none';
   document.getElementById('ip-produces').textContent = '—';
   document.getElementById('ip-foot').innerHTML = '<p class="empty-state">Sail or march nearby to reveal.</p>';
+  openMobilePanel(document.getElementById('inspect-panel'), closeInspect);
   document.getElementById('inspect-panel').style.display = 'flex';
 }
 
@@ -3485,6 +3487,7 @@ function openCityPanel(h, tile, marker, units, foreignUnits) {
   bindUnitButtons(foot);
   bindMarchButton(document.getElementById('ip-march-btn'), destFromHex(h, tile, marker), 'land');
 
+  openMobilePanel(document.getElementById('inspect-panel'), closeInspect);
   document.getElementById('inspect-panel').style.display = 'flex';
 }
 
@@ -3512,6 +3515,7 @@ function openTerrainPanel(h, tile, isMountain, isSea, units, foreignUnits) {
     footHtml += '<p class="empty-state">Impassable — armies cannot go here.</p>';
     foot.innerHTML = footHtml;
     bindUnitButtons(foot);
+    openMobilePanel(document.getElementById('inspect-panel'), closeInspect);
     document.getElementById('inspect-panel').style.display = 'flex';
     return;
   }
@@ -3582,6 +3586,7 @@ function openTerrainPanel(h, tile, isMountain, isSea, units, foreignUnits) {
     });
   }
 
+  openMobilePanel(document.getElementById('inspect-panel'), closeInspect);
   document.getElementById('inspect-panel').style.display = 'flex';
 }
 
@@ -3612,11 +3617,13 @@ function openRuralPanel(h, tile, rural, units, foreignUnits) {
   foot.innerHTML = footHtml;
   bindUnitButtons(foot);
   document.getElementById('ip-rural-city-btn').addEventListener('click', () => {
+    closeMobilePanel(document.getElementById('inspect-panel'));
     document.getElementById('inspect-panel').style.display = 'none';
     State.cityViewID = rural.province_id;
     window.openDrawer('city');
   });
 
+  openMobilePanel(document.getElementById('inspect-panel'), closeInspect);
   document.getElementById('inspect-panel').style.display = 'flex';
 }
 
@@ -3673,6 +3680,7 @@ async function openHostPanel(h, tile) {
     document.getElementById('ip-body-extra').textContent=hostState
       ? `The Host is now at (${hostState.q},${hostState.r}). Select its marker again.` : 'The Host has moved. Select its marker again.';
     document.getElementById('ip-foot').replaceChildren();
+    openMobilePanel(document.getElementById('inspect-panel'), closeInspect);
     document.getElementById('inspect-panel').style.display='flex';
     return;
   }
@@ -3712,6 +3720,7 @@ async function openHostPanel(h, tile) {
   foot.innerHTML =
     `<button id="ip-settle-btn" style="${MARCH_BTN_STYLE}">⚒ Found the metropolis here</button>
      <div id="ip-settle-err"></div>`;
+  openMobilePanel(document.getElementById('inspect-panel'), closeInspect);
   document.getElementById('inspect-panel').style.display = 'flex';
 
   // Glow the 7 catchment hexes the host would found on, for as long as the Host
@@ -3804,6 +3813,7 @@ function openHexPanel(h) {
 
   if (prov && prov.own) {
     // Own settlement — no mid-panel, the city drawer IS the info (framgångskriterium 2).
+    closeMobilePanel(document.getElementById('inspect-panel'));
     document.getElementById('inspect-panel').style.display = 'none';
     State.cityViewID = prov.id;
     window.openDrawer('city');
@@ -3841,6 +3851,7 @@ export function reopenSelectedHex() {
 export function closeInspect() {
   State.selectedHex = null;
   State.fovPreview = null;
+  closeMobilePanel(document.getElementById('inspect-panel'));
   document.getElementById('inspect-panel').style.display = 'none';
   State.dirty = true;
 }

@@ -1,3 +1,4 @@
+import { openMobilePanel, closeMobilePanel } from './mobile_panels.js';
 // ── Codex — the player's wiki inside the game (megaron_plan_kodex.md) ──────
 // Timothy 2026-09-24: "bygg in manualen i spelet — uppe till höger som en
 // ikon, organiserad på wiki-sätt snarare än som en manual, och länkad från
@@ -211,6 +212,7 @@ function panel() { return document.getElementById('codex-panel'); }
 export async function openCodex(id) {
   const el = panel();
   if (!el) return;
+  openMobilePanel(el, closeCodex);
   el.classList.add('open');
   const body = document.getElementById('codex-body');
   if (!bodies) body.innerHTML = '<div class="loading">Loading…</div>';
@@ -235,6 +237,7 @@ export function openCodexForDrawer(drawer) {
 
 export function closeCodex() {
   const el = panel();
+  closeMobilePanel(el);
   if (el) el.classList.remove('open');
 }
 

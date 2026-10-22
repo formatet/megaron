@@ -1,3 +1,4 @@
+import { openMobilePanel, closeMobilePanel } from './ui/mobile_panels.js';
 import { updateDiplomacyBadge } from './ui/diplomacy_reads.js';
 // main.js — the map client's only entry point (loaded by web/static/map.html
 // as <script type="module">). Responsibilities, in order:
@@ -83,6 +84,7 @@ export function openDrawer(name) {
   // 2026-08-22 ("testa att stänga den"): close it explicitly, so what is on
   // screen matches what the client thinks is selected.
   closeInspect();
+  openMobilePanel(el, () => closeDrawer(name));
   el.classList.add('open');
   if (tr) tr.classList.add('active');
   document.getElementById('map-dim').classList.add('visible');
@@ -96,6 +98,7 @@ export function openDrawer(name) {
 export function closeDrawer(name) {
   const el = document.getElementById('drawer-' + name);
   const tr = document.getElementById('trig-' + name);
+  closeMobilePanel(el);
   if (el) el.classList.remove('open');
   if (tr) tr.classList.remove('active');
   document.getElementById('map-dim').classList.remove('visible');
@@ -112,7 +115,7 @@ document.addEventListener('keydown', e => {
     if (State.activeDrawer) { closeDrawer(State.activeDrawer); return; }
     closeDispatchWindow();
     closeAccountWindow();
-    document.getElementById('search-overlay').classList.remove('open');
+    closeSearch();
   }
 });
 

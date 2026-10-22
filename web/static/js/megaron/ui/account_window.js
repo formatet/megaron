@@ -1,3 +1,4 @@
+import { openMobilePanel, closeMobilePanel } from './mobile_panels.js';
 import { fetchAuth, getAgoraAccount, requestAgoraPassword } from '../api.js';
 import { formatApiError, esc } from './format.js';
 import { State } from '../state.js';
@@ -33,6 +34,7 @@ export function closeAccountWindow() {
   accountGeneration++;
   clearChatPassword();
   const el = document.getElementById('account-window-overlay');
+  closeMobilePanel(el);
   if (el) el.classList.remove('open');
 }
 
@@ -77,6 +79,7 @@ export function openAccountWindow() {
     <p class="account-delete-note">To delete your account, write to the admin in the community chat.</p>
     <button class="dw-goto-btn" id="acc-signout-btn">Sign out</button>
   `;
+  openMobilePanel(overlay, closeAccountWindow);
   overlay.classList.add('open');
 
   document.getElementById('acc-pw-form').addEventListener('submit', e => {
