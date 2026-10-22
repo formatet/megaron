@@ -44,3 +44,5 @@ The row disappears when the blessing ends; fish receives no harvest bonus.
 The temple shows how much each good counts with the gods, before a particular god's preferences. What the world can spare can raise what devotion earns; this is the gods' reckoning, not a buying price. The ordinary daily offering and your choice of devotion remain separate from a prayer's one-time gift.
 
 A notification marks each change between **Favorable**, **Indifferent**, **Suspicious** and **Wrathful**, with the new Kharis value and recorded day. Check **Kult** for decay and temple support; staff and feed your [[temples]].
+
+Demolishing a temple voluntarily costs **10 kharis per level**, with a floor of **1**; plundering causes no such debt. A lowered ceiling stops growth without cutting existing standing; ordinary daily upkeep continues above it. The confirmation shows the loss and any ceiling change. See [[temple-demolition]].

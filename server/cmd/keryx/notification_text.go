@@ -10,6 +10,13 @@ import (
 // The archive also contains retired kinds. Keep their summaries readable;
 // current producers and the Codex client's archive kinds are checked together.
 func printNotificationSummary(c *Client, n notificationItem) {
+	if n.Kind == "TempleDemolitionWrath" {
+		var b demolitionKharis
+		if json.Unmarshal(n.Body, &b) == nil {
+			fmt.Printf("      %s\n", demolitionKharisText(b))
+			return
+		}
+	}
 	if n.Kind == "KharisDeclining" {
 		var b struct {
 			Kharis    float64 `json:"kharis"`

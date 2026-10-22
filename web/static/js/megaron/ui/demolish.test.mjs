@@ -21,3 +21,14 @@ test('result line pluralises the idle citizens', () => {
   assert.match(demolishResultLine('Mine', 3), /3 citizens are idle now/);
   assert.match(demolishResultLine('Mine', undefined), /No one was working there/);
 });
+
+test('temple confirmation and result use actual server loss and ceiling, including floor', () => {
+  const quote = {god_id:'potnia', level:3, kharis_loss:4, kharis_before:5, kharis_after:1, cap_before:100, cap_after:50};
+  for (const text of [demolishPrompt('Temple of Potnia', quote), demolishResultLine('Temple of Potnia', 2, quote)]) {
+    assert.match(text, /potnia is angered/);
+    assert.match(text, /−4 \(5 → 1; floor 1\)/);
+    assert.match(text, /100 → 50/);
+    assert.match(text, /does not cut existing kharis/);
+    assert.doesNotMatch(text, /−30/);
+  }
+});
