@@ -1,0 +1,140 @@
+[
+  {
+    "city": "Vasiliki",
+    "id": "105fddec-cdba-46aa-9a3d-2a8c950ca6c1",
+    "observed_at": "2026-10-22T16:14:19.376194+00:00",
+    "population": 2310,
+    "target": 2,
+    "free_ordinals": [
+      15,
+      16
+    ],
+    "reassign": []
+  },
+  {
+    "city": "Gournia",
+    "id": "25bafcae-9ab5-4139-ba59-2ecb466e0c2d",
+    "observed_at": "2026-10-22T16:14:19.376194+00:00",
+    "population": 6617,
+    "target": 2,
+    "free_ordinals": [],
+    "reassign": [
+      {
+        "q": null,
+        "r": null,
+        "good": "bronze",
+        "kind": "building",
+        "ordinal": 48,
+        "building": "foundry"
+      },
+      {
+        "q": 38,
+        "r": 27,
+        "good": "wine",
+        "kind": "hex",
+        "ordinal": 31,
+        "building": null
+      }
+    ]
+  },
+  {
+    "city": "Amnissos",
+    "id": "39b4ef45-52c8-4e6d-9ad4-4d4cdb9fd904",
+    "observed_at": "2026-10-22T16:14:19.376194+00:00",
+    "population": 11215,
+    "target": 2,
+    "free_ordinals": [],
+    "reassign": [
+      {
+        "q": 5,
+        "r": 39,
+        "good": "wine",
+        "kind": "hex",
+        "ordinal": 96,
+        "building": null
+      },
+      {
+        "q": 5,
+        "r": 39,
+        "good": "wine",
+        "kind": "hex",
+        "ordinal": 95,
+        "building": null
+      }
+    ]
+  },
+  {
+    "city": "Damon",
+    "id": "99d83998-0ee5-4585-a50e-2520f4b411e5",
+    "observed_at": "2026-10-22T16:14:19.376194+00:00",
+    "population": 19212,
+    "target": 2,
+    "free_ordinals": [
+      88,
+      89
+    ],
+    "reassign": []
+  },
+  {
+    "city": "Zakros",
+    "id": "b5fa9b93-a296-40b3-85ba-e0051ea7715f",
+    "observed_at": "2026-10-22T16:14:19.376194+00:00",
+    "population": 12622,
+    "target": 2,
+    "free_ordinals": [
+      86,
+      87
+    ],
+    "reassign": []
+  },
+  {
+    "city": "Lato",
+    "id": "c8c2cbbc-509b-4ca6-a90e-c73b8b8342a8",
+    "observed_at": "2026-10-22T16:14:19.376194+00:00",
+    "population": 16262,
+    "target": 2,
+    "free_ordinals": [
+      84,
+      85
+    ],
+    "reassign": []
+  },
+  {
+    "city": "Kydonia",
+    "id": "c9627aa1-9084-4723-b589-54285de581ed",
+    "observed_at": "2026-10-22T16:14:19.376194+00:00",
+    "population": 7423,
+    "target": 2,
+    "free_ordinals": [],
+    "reassign": [
+      {
+        "q": 7,
+        "r": 27,
+        "good": "wine",
+        "kind": "hex",
+        "ordinal": 74,
+        "building": null
+      },
+      {
+        "q": 5,
+        "r": 28,
+        "good": "oil",
+        "kind": "hex",
+        "ordinal": 73,
+        "building": null
+      }
+    ]
+  },
+  {
+    "city": "Petras",
+    "id": "fccc03d1-1fdd-4777-9733-1f19c479fefe",
+    "observed_at": "2026-10-22T16:14:19.376194+00:00",
+    "population": 14535,
+    "target": 2,
+    "free_ordinals": [
+      72,
+      73
+    ],
+    "reassign": []
+  }
+]
