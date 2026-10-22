@@ -1,0 +1,338 @@
+{
+  "tick": 3218,
+  "cities": [
+    {
+      "id": "39b4ef45-52c8-4e6d-9ad4-4d4cdb9fd904",
+      "name": "Amnissos",
+      "state": "active",
+      "stock": {
+        "fish": 108.01149278258586,
+        "grain": 3187.3054400529704,
+        "silver": 94.39999999999998,
+        "timber": 2414.112475072497
+      },
+      "temples": [
+        {
+          "id": "0c8c0c8a-dcbb-4334-870f-2b8f2fd5c723",
+          "level": 1,
+          "god_id": "potnia",
+          "staffed": 2
+        }
+      ],
+      "owner_id": "9624a09b-a544-44e2-88bb-4d312d4e959d",
+      "population": 11215
+    },
+    {
+      "id": "99d83998-0ee5-4585-a50e-2520f4b411e5",
+      "name": "Damon",
+      "state": "active",
+      "stock": {
+        "fish": 122.66909303876683,
+        "grain": 174.18176236085017,
+        "silver": 0.8999999999997206,
+        "timber": 18.162072241400747
+      },
+      "temples": [
+        {
+          "id": "ae47f493-7ac1-483e-b80f-8f258d535c49",
+          "level": 1,
+          "god_id": "potnia",
+          "staffed": 2
+        }
+      ],
+      "owner_id": "a16b484b-7925-4ebb-9acd-3dfb45987ab4",
+      "population": 12547
+    },
+    {
+      "id": "25bafcae-9ab5-4139-ba59-2ecb466e0c2d",
+      "name": "Gournia",
+      "state": "active",
+      "stock": {
+        "fish": 2.491559735029097,
+        "grain": 430.5226029044134,
+        "silver": 377.5,
+        "timber": 901.1323229573297
+      },
+      "temples": [
+        {
+          "id": "fad6e4ea-b792-4e09-a41e-d3dd58b2a16f",
+          "level": 1,
+          "god_id": "potnia",
+          "staffed": 2
+        }
+      ],
+      "owner_id": "b60bbf65-6a3b-4645-adb5-17dfa4bf2264",
+      "population": 6517
+    },
+    {
+      "id": "c9627aa1-9084-4723-b589-54285de581ed",
+      "name": "Kydonia",
+      "state": "active",
+      "stock": {
+        "fish": 147.28316073692827,
+        "grain": 1964.1819270488145,
+        "silver": 960,
+        "timber": 1533.227012780475
+      },
+      "temples": [
+        {
+          "id": "8af7b8e9-460e-4f02-9b1d-a6c209b3c6d7",
+          "level": 1,
+          "god_id": "potnia",
+          "staffed": 2
+        }
+      ],
+      "owner_id": "9e1d4859-f37a-4fbb-957e-0d46f20a8d65",
+      "population": 7423
+    },
+    {
+      "id": "c8c2cbbc-509b-4ca6-a90e-c73b8b8342a8",
+      "name": "Lato",
+      "state": "active",
+      "stock": {
+        "fish": 0,
+        "grain": 0,
+        "silver": 1.350000000005875,
+        "timber": 282.9921946037436
+      },
+      "temples": [
+        {
+          "id": "d732bdeb-8c8d-43a1-97ad-e6a8d7c24a29",
+          "level": 1,
+          "god_id": "potnia",
+          "staffed": 2
+        }
+      ],
+      "owner_id": "c3a51eae-557b-42c7-9631-7c9ae2edb4bf",
+      "population": 11277
+    },
+    {
+      "id": "fccc03d1-1fdd-4777-9733-1f19c479fefe",
+      "name": "Petras",
+      "state": "active",
+      "stock": {
+        "fish": 38.32849135804911,
+        "grain": 0.3130016357582214,
+        "silver": 0,
+        "timber": 1186.049366605605
+      },
+      "temples": [
+        {
+          "id": "8d857f6d-b439-46d7-97dc-3f047fccc416",
+          "level": 1,
+          "god_id": "potnia",
+          "staffed": 2
+        }
+      ],
+      "owner_id": "2a6c5435-4c24-4363-96df-6f3b76d206ed",
+      "population": 9833
+    },
+    {
+      "id": "9a8a9a6b-8928-431c-b32b-43e68ec28a67",
+      "name": "Phaistos",
+      "state": "active",
+      "stock": {
+        "fish": 1980.7432657805282,
+        "grain": 969.5998493173236,
+        "silver": 45.44000000000046,
+        "timber": 63.39522738542592
+      },
+      "temples": [],
+      "owner_id": "9624a09b-a544-44e2-88bb-4d312d4e959d",
+      "population": 2583
+    },
+    {
+      "id": "11872add-0825-49ce-bb2a-3f4f093c8d4d",
+      "name": "Phalasarna",
+      "state": "active",
+      "stock": {
+        "fish": 1694.753061294101,
+        "grain": 2.025651104102926,
+        "silver": 736.9800000000009,
+        "timber": 457.3312892672142
+      },
+      "temples": [],
+      "owner_id": "9e1d4859-f37a-4fbb-957e-0d46f20a8d65",
+      "population": 2000
+    },
+    {
+      "id": "81747004-5e8b-460c-8058-e1072f327486",
+      "name": "Plateia",
+      "state": "active",
+      "stock": {
+        "fish": 56.97102041264441,
+        "grain": 1.9044731973163722,
+        "silver": 0.20000000000129958,
+        "timber": 0.006281304731441951
+      },
+      "temples": [],
+      "owner_id": "2a6c5435-4c24-4363-96df-6f3b76d206ed",
+      "population": 342
+    },
+    {
+      "id": "47d92957-6871-43e8-9a7e-91d934f7cf5c",
+      "name": "Pylos",
+      "state": "active",
+      "stock": {
+        "fish": 1508.5113625589527,
+        "grain": 669.0866170760777,
+        "silver": 865.2500000000066,
+        "timber": 41.10810505211011
+      },
+      "temples": [],
+      "owner_id": "b60bbf65-6a3b-4645-adb5-17dfa4bf2264",
+      "population": 2000
+    },
+    {
+      "id": "48ced6c7-f54a-41d8-8ebc-d23f71cc2c72",
+      "name": "Thapsos",
+      "state": "active",
+      "stock": {
+        "fish": 114.25586488291962,
+        "grain": 1.7238571200241166,
+        "silver": 30,
+        "timber": 5.1310458721471095
+      },
+      "temples": [],
+      "owner_id": "b60bbf65-6a3b-4645-adb5-17dfa4bf2264",
+      "population": 258
+    },
+    {
+      "id": "105fddec-cdba-46aa-9a3d-2a8c950ca6c1",
+      "name": "Vasiliki",
+      "state": "active",
+      "stock": {
+        "fish": 1753.4605936956157,
+        "grain": 17.880637794891165,
+        "silver": 0,
+        "timber": 99.00000682819149
+      },
+      "temples": [
+        {
+          "id": "66f6b261-af77-4ea4-b2fc-d66eafc5fd75",
+          "level": 1,
+          "god_id": "potnia",
+          "staffed": 2
+        }
+      ],
+      "owner_id": "c3a51eae-557b-42c7-9631-7c9ae2edb4bf",
+      "population": 2310
+    },
+    {
+      "id": "b5fa9b93-a296-40b3-85ba-e0051ea7715f",
+      "name": "Zakros",
+      "state": "active",
+      "stock": {
+        "fish": 2226.5224875260706,
+        "grain": 1147.2302792117578,
+        "silver": 959.9,
+        "timber": 1916.5627740437787
+      },
+      "temples": [
+        {
+          "id": "e0c4b36e-c5ed-4a40-a212-4fb293d4c74e",
+          "level": 1,
+          "god_id": "potnia",
+          "staffed": 2
+        }
+      ],
+      "owner_id": "df0b3731-25e1-4371-b745-4555c6d0a661",
+      "population": 12562
+    }
+  ],
+  "values": {
+    "oil": 1.1560476685874328,
+    "tin": 2.0141918625317308,
+    "fish": 1.1523156880190908,
+    "wine": 1.563207308876609,
+    "cedar": 2.1896361463891547,
+    "grain": 1.1597303480756158,
+    "stone": 2,
+    "bronze": 32.999999999999986,
+    "copper": 1.8177307571560042,
+    "silver": 1.5760614033120373,
+    "timber": 1.1572800654333188,
+    "incense": 7.95100588622417,
+    "livestock": 1.4995737965168696
+  },
+  "wanaxes": [
+    {
+      "username": "zilip",
+      "player_id": "d819e820-4844-44d8-ae2c-8d4074cba49c",
+      "kharis_rate": 0,
+      "kharis_amount": 1,
+      "kharis_calc_tick": 280
+    },
+    {
+      "username": "gpt-kleio",
+      "player_id": "2a6c5435-4c24-4363-96df-6f3b76d206ed",
+      "kharis_rate": 0.009999999999999998,
+      "kharis_amount": 50,
+      "kharis_calc_tick": 3218
+    },
+    {
+      "username": "Pheidon",
+      "player_id": "9624a09b-a544-44e2-88bb-4d312d4e959d",
+      "kharis_rate": 0.0025000000000000005,
+      "kharis_amount": 50,
+      "kharis_calc_tick": 3218
+    },
+    {
+      "username": "Hephaistos",
+      "player_id": "9e1d4859-f37a-4fbb-957e-0d46f20a8d65",
+      "kharis_rate": 0.018499999999999996,
+      "kharis_amount": 50,
+      "kharis_calc_tick": 3218
+    },
+    {
+      "username": "gpt-damon",
+      "player_id": "a16b484b-7925-4ebb-9acd-3dfb45987ab4",
+      "kharis_rate": 0.0025000000000000005,
+      "kharis_amount": 50,
+      "kharis_calc_tick": 3218
+    },
+    {
+      "username": "Talthybios",
+      "player_id": "b60bbf65-6a3b-4645-adb5-17dfa4bf2264",
+      "kharis_rate": 0.024,
+      "kharis_amount": 50,
+      "kharis_calc_tick": 3218
+    },
+    {
+      "username": "formatet",
+      "player_id": "c3a51eae-557b-42c7-9631-7c9ae2edb4bf",
+      "kharis_rate": 0.038000000000000006,
+      "kharis_amount": 50,
+      "kharis_calc_tick": 3218
+    },
+    {
+      "username": "gpt-lykon",
+      "player_id": "df0b3731-25e1-4371-b745-4555c6d0a661",
+      "kharis_rate": 0.038000000000000006,
+      "kharis_amount": 50,
+      "kharis_calc_tick": 3218
+    }
+  ],
+  "world_id": "2178e795-1303-4cc3-865a-6386847d68d1",
+  "migration": {
+    "dirty": false,
+    "version": 202
+  },
+  "base_values": {
+    "oil": 1,
+    "tin": 1,
+    "fish": 1,
+    "wine": 1,
+    "cedar": 1,
+    "grain": 1,
+    "stone": 2,
+    "bronze": 11,
+    "copper": 1,
+    "silver": 1,
+    "timber": 1,
+    "incense": 4,
+    "livestock": 1
+  },
+  "observed_at": "2026-10-22T22:27:06.021497+00:00",
+  "transaction_read_only": "on"
+}
