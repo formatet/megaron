@@ -1,0 +1,697 @@
+web/static/codex/kharis.md:7:| **Suspicious** (5 to below 30) | Without a standing temple, a 3% chance of punishment each day. |
+web/static/codex/kharis.md:16:Daily decay is **0.1 base + 0.1 × N × (N − 1) / 2**, where **N** counts all your active cities, including your capital, whether or not they have temples. Sunk, collapsed and razed cities do not count. Five cities cost **1.0 per day**, plus the **0.1 base**: **1.1 total**. Each additional city adds more cost than the last.
+web/static/codex/kharis.md:18:**Kult → Daily decay** and `keryx status` show the base, city count, city cost and total alongside the projected net. A temple earns favour; it does not remove a city's cost. A standing temple protects you from punishment: below 30 Kharis without one, there is a 3% chance each day. A punishment chooses a random eligible city of yours with something it can take; it need not strike the capital.
+web/static/codex/kharis.md:24:1. **You have a temple.** Without one, kharis decays.
+web/static/codex/kharis.md:25:2. **People serve in it** — placed temple workers, 2 workplaces per level. Each earns 1.05 kharis per day before the offering factor, scarcity and decay. See [[temples]].
+web/static/codex/kharis.md:26:3. **The temple is fed** — a daily reference gift of 0.25 grain, with local fish, timber or silver as substitutes of equal divine value. See [[temples]] for the selection order and planned gift.
+web/static/codex/kharis.md:28:In a small realm, a fully staffed, fed level-1 temple can earn more favour than the realm loses each day. Compare the projected net; a larger realm may need more temples or higher levels. Larger temples can employ more devotion and raise kharis faster when staffed and fed.
+web/static/codex/kharis.md:30:**Your best temple sets your ceiling:** no temple **40**, level 1 **50**, level 2 **75**, level 3 **100**. A level-1 temple can never earn you a blessing. To reach blessings, you need a higher-level temple.
+web/static/codex/kharis.md:32:Kharis decays every day regardless. Expansion increases that cost even when every city has a temple ([[colonies]]).
+web/static/codex/kharis.md:40:The temple shows how much each good counts with the gods, before a particular god's preferences. What the world can spare can raise what devotion earns; this is the gods' reckoning, not a buying price. The ordinary daily offering and your choice of devotion remain separate from a prayer's one-time gift.
+web/static/codex/kharis.md:42:A notification marks each change between **Favorable**, **Indifferent**, **Suspicious** and **Wrathful**, with the new Kharis value and recorded day. Check **Kult** for decay and temple support; staff and feed your [[temples]].
+web/static/codex/citizens.md:35:Temple workers use the same citizen pool as other jobs. Use `keryx staff temple +1` to assign one, `staff temple -1` to free one, and `roster` to see their assignments. See [[temples]].
+web/static/codex/keryx.md:61:Temple workers use the same citizen pool as other jobs. Use `keryx staff temple +1` to assign one, `staff temple -1` to free one, and `roster` to see their assignments. See [[temples]].
+web/static/codex/city.md:13:Open **More** for people in service and the labour pool, **Devotion** ([[temples]]), **Food details** ([[food]]), **Last day**, and **Daily history → Show recent days**. These details and controls remain available while the main view stays short.
+server/internal/religion/prayers_test.go:180:		if spec.GodID != "" || id == "minoan_oracle_deposits" || id == "minoan_battle_frenzy" {
+web/static/codex/coming-back.md:21:A [[kharis|Kharis]] notice marks each change between Favorable, Indifferent, Suspicious and Wrathful. Check **Kult** for Kharis and its daily decay breakdown. It fades from the start; every active city counts toward the cost. Below 30 without a standing temple, punishment can fall. Staff and feed temples, then check the projected net.
+web/static/codex/goods.md:24:The gods weigh goods differently: bronze can count for far more than grain. **Kult**, at the temple, and `keryx rite --list` show their current reckoning before each god's preferences. What the world can spare and what the god favours both matter ([[rites]]). Wanaxes agree their own trade prices.
+server/internal/religion/model.go:2:// Gods are probabilistic and lynniga — temple rites shift probability, not guarantee outcomes.
+server/internal/religion/model.go:30:	InterventionSilence    InterventionType = "silence"    // kharis to zero, temples lose power
+server/internal/religion/model.go:33:// Temple is a religious structure in a province.
+server/internal/religion/model.go:34:type Temple struct {
+server/internal/religion/model.go:50:	Probability float64 // shaped by temple rites; resolved probabilistically at trigger time
+web/static/codex/colonies.md:17:Every active city, including your capital, counts toward [[kharis|Kharis decay]], even with a temple. The daily city cost is 0.1 × N × (N − 1) / 2, plus 0.1 base: five cities cost 1.0 per day plus the base. Each additional city costs more than the last. Sunk, collapsed and razed cities do not count. Check the realm breakdown in **Kult** or `keryx status` before expanding.
+web/static/codex/incense.md:13:Bronze Age temples burned resin, not one perfume. Around the east of the Mediterranean the common kind was the sap of the terebinth tree (*Pistacia*), gathered on the dry hills of Kna'an and Cyprus and shipped in jars. The wreck at Uluburun, sunk off the south coast of Anatolia at the end of the thirteenth century before our era, carried about a hundred and fifty such jars among its copper and tin. Amphorae from Kna'an turn up in Egypt with traces of the same resin. The rarer frankincense and myrrh came to Egypt from Punt, far down the Red Sea, in small and precious loads; labdanum, scraped from the rock-rose shrubs of Crete, was the Minoan smell. Here they are all one good, **Incense**.
+web/static/codex/buildings.md:18:| **Temple** | Enables rites, produces cult, and unlocks oracle prayers. More important than it looks — see [[temples]]. |
+web/static/codex/buildings.md:42:Levelling a Harbour, Shipyard or Temple further also needs **cedar**, which is scarce and often only available by [[trade]].
+web/static/codex/buildings.md:44:A building costs what it is made of: **timber** for the Farm, Market, Stable, Harbour, Shipyard and Palisade; **stone** for the Stone Quarry, Mine, Barracks, Temple and Stone Wall. The prices are shown live in Construct. If you are short of timber, your **cedar** pays the difference one for one — in buildings, ships and chariots alike.
+web/static/js/megaron/verb_telemetry.js:68:const BUILDINGS = ["farm", "barracks", "mine", "lumbermill", "stonequarry", "market", "wall", "harbour", "shipyard", "foundry", "stable", "temple", "olive_press", "winery", "pen", "silo"];
+server/internal/religion/cooldown.go:20:	err := db.QueryRow(ctx, `SELECT COALESCE((SELECT until_tick FROM prayer_cooldowns WHERE world_id=$1 AND player_id=$2 AND god_id=$3),0)`, world, player, god).Scan(&until)
+server/internal/religion/cooldown.go:30:	_, err := db.Exec(ctx, `INSERT INTO prayer_cooldowns(world_id,player_id,god_id,until_tick) VALUES($1,$2,$3,$4) ON CONFLICT(world_id,player_id,god_id) DO UPDATE SET until_tick=EXCLUDED.until_tick`, world, player, god, untilTick)
+server/internal/religion/index.go:164:// LaborValueUnit labels the internal measure in persistent event payloads; the temple presents offering values.
+web/static/codex/glossary.md:11:**Kult** — the drawer for the gods and the temple.
+web/static/codex/temples.md:1:A **Temple** ([[buildings]]) is how you keep the gods' favour ([[kharis]]). It needs two things from you.
+web/static/codex/temples.md:5:**City → Catchment & workplaces → Temple**: place or remove whole [[citizens]] with the same controls as other workplaces. In Keryx, use `staff temple +1` or `staff temple -1`; `roster` includes them.
+web/static/codex/temples.md:7:Each temple level provides **2 workplaces**: level 1 holds 2, level 2 holds 4 and level 3 holds 6. These people leave the idle pool, and cannot work another job at the same time. An empty temple has no devotion gain. Founding a city grants no automatic temple staffing.
+web/static/codex/temples.md:9:Each placed temple worker earns **1.05 kharis per day** before the offering factor, scarcity and realm decay. A fully staffed level-1 temple earns **2.1** before these adjustments. Kult shows local staffing and the projected realm net. <!-- src: server/internal/kharis/tick.go KharisPerTempleWorker -->
+web/static/codex/temples.md:13:Each temple's daily reference gift is **0.25 grain**, taken only from its own city's stock. Fish, timber and silver can replace grain at the same divine value; a gift may combine goods. The amount of a substitute can change with the world's divine values. <!-- src: server/internal/kharis/temple_offering.go TempleOfferingGrain -->
+web/static/codex/temples.md:15:The temple uses **grain first, then fish, then timber, and silver last**. Silver is never required. Oil and wine are not used for this standing gift; [[rites|prayers]] keep their own offerings.
+web/static/codex/temples.md:17:**Kult → Temple offerings** and `keryx status` show the reference, equivalent alternatives, local stock and planned next gift, with a ✓ or ✗. If the city cannot fund the whole gift, nothing is taken and that temple earns no offering gain for the day. Devotion and the daily decay still determine your net kharis change.
+web/static/codex/temples.md:21:With full devotion and its daily gift, a level-1 temple can raise kharis in a small realm. Compare its gain with the cost of all your active cities in **Kult → Daily decay** and the projected net. A temple does not cancel city costs, but while one stands the gods do not punish you. Higher-level temples can employ more devotion and make it grow faster when staffed and fed.
+web/static/codex/temples.md:23:**Your best temple sets your kharis ceiling:** no temple 40, level 1 50, level 2 75, level 3 100. A level-1 temple can never bring a blessing; a higher-level temple raises the ceiling. Levelling a temple further needs cedar.
+web/static/codex/index.json:21:    {"id": "buildings",    "title": "Buildings",                    "category": "Your city", "kinds": ["BuildComplete", "GoodsCrafted"], "related": ["citizens", "goods", "temples"]},
+web/static/codex/index.json:52:    {"id": "kharis",       "title": "Kharis",                       "category": "The gods", "drawer": "kult", "kinds": ["KharisBandChanged", "DivineBlessing", "DivinePunishment"], "related": ["temples", "rites"]},
+web/static/codex/index.json:53:    {"id": "temples",      "title": "Temples and devotion",         "category": "The gods", "related": ["kharis", "buildings"]},
+server/internal/religion/prayers.go:16:// answer (Plan A / A7, megaron_kult_legibilitet_plan.md) — shown in `available_prayers`
+server/internal/religion/prayers.go:21:	GodID         string             // stable cooldown key; empty preserves legacy per-temple prayers
+server/internal/religion/prayers.go:263:	PrayerSpecs[PrayerPotniaVision] = PrayerSpec{ID: PrayerPotniaVision, GodID: "potnia", EffectType: EffectOracleMemory, MinKharis: MoodSuspicious, Offering: map[string]float64{"grain": 10, "silver": 3}, CooldownTicks: 24, God: "Potnia", Name: "Potnia's Vision", Description: "Marks an unseen ore deposit and the unknown ground within two hexes as memory; no live activity.", Favours: potniaTheronOracleFavours}
+server/internal/religion/prayers.go:264:	PrayerSpecs[PrayerPotniaWalls] = PrayerSpec{ID: PrayerPotniaWalls, GodID: "potnia", EffectType: EffectGarrisonDefense, MinKharis: MoodSuspicious, Offering: map[string]float64{"grain": 8, "timber": 4}, CooldownTicks: 24, God: "Potnia", Name: "Mistress of the Walls", Description: "Your own garrison defending this city fights a quarter stronger for 6 days.", Favours: favoursByEffect[EffectBattleFrenzy]}
+server/internal/religion/prayers.go:265:	PrayerSpecs[PrayerGreenShoots] = PrayerSpec{ID: PrayerGreenShoots, GodID: "velchanos", EffectType: EffectHarvestBlessing, MinKharis: MoodIndifferent, Offering: map[string]float64{"grain": 15, "silver": 2}, CooldownTicks: 25, God: "Velchanos", Name: "Green Shoots", Description: "Grain, livestock, oil and wine yield a quarter more for 25 days; fish is unchanged."}
+server/internal/religion/prayers.go:266:	PrayerSpecs[PrayerAsterionThread] = PrayerSpec{ID: PrayerAsterionThread, GodID: "asterion", EffectType: EffectNextLandDeparture, MinKharis: MoodSuspicious, Offering: map[string]float64{"timber": 4, "silver": 3}, CooldownTicks: 12, God: "Asterion", Name: "The Thread Shows a Path", Description: "Your next land caravan or Runner from this city travels faster; the caravan is harder to intercept."}
+server/internal/religion/prayers.go:267:	PrayerSpecs[PrayerStillnessPassage] = PrayerSpec{ID: PrayerStillnessPassage, GodID: "sea_daimons_stillness", EffectType: EffectNextShipDeparture, MinKharis: MoodSuspicious, Offering: map[string]float64{"fish": 6, "silver": 3}, CooldownTicks: 12, God: "The Sea Daimons of Stillness", Name: "Favourable Passage", Description: "The next ship leaving this port sails faster and takes no storm damage on its outward leg."}
+web/static/codex/rites.md:30:Vision, Walls and the two departure prayers require at least 5 kharis; Green Shoots requires 30. The temple's ordinary daily offering is separate.
+web/static/codex/rites.md:38:Bronze can weigh far more with the gods than grain. The temple shows their current reckoning: how much each good counts before a particular god's preferences. What the world can spare and what the god favours both change an offering's meaning. **Kult** and `keryx rite --list` show these values beside your prayers.
+server/internal/religion/alpha_test.go:11:		if !ok || spec.GodID == "" {
+server/internal/religion/alpha_test.go:15:	if PrayerSpecs[PrayerPotniaVision].GodID != PrayerSpecs[PrayerPotniaWalls].GodID {
+server/internal/kharis/offering_test.go:28:func TestComputeOfferFraction_NoTemplesIsZeroNotNaN(t *testing.T) {
+server/internal/kharis/offering_test.go:45:		t.Errorf("net = %v, want < 0 (unfed temples: depreciation must win)", net)
+server/internal/kharis/offering_test.go:53:// fully-fed temple set passes the cult gain through unmodified.
+server/internal/kharis/temple_offering_test.go:12:func TestEarlyTempleOfferingLocalGiftAndProjection(t *testing.T) {
+server/internal/kharis/temple_offering_test.go:25:			if _, err := pool.Exec(ctx, `UPDATE buildings SET level=2 WHERE settlement_id=$1 AND building_type='temple';`, sid); err != nil {
+server/internal/kharis/temple_offering_test.go:31:			staffTestTemple(t, pool, sid, 4)
+server/internal/kharis/temple_offering_test.go:43:			offers, err := LoadTempleOffers(ctx, pool, pid, wid)
+server/internal/kharis/temple_offering_test.go:54:			if math.Abs(net-(4*KharisPerTempleWorker-decayBas)) > 1e-8 {
+server/internal/kharis/temple_offering_test.go:59:			w := wanaxSnap{cityCount: 1, playerID: pid, settlementID: sid, kharis: 20, kharisCap: 75, devotionSum: 4, templeCities: 1, maxTempleLevel: 2}
+server/internal/kharis/temple_offering_test.go:76:			if math.Abs(after-(20+net)) > 1e-8 || amount != 0 || math.Abs(gain-4*KharisPerTempleWorker) > 1e-8 {
+server/internal/kharis/temple_offering_test.go:79:			// A richer remote city of the same Wanax is never charged for this temple.
+server/internal/kharis/temple_offering_test.go:97:				t.Fatalf("empty local temple borrowed remote goods: net%g", net)
+server/internal/kharis/temple_offering_test.go:99:			fed, total := h.applyTempleOffering(ctx, pid, wid)
+server/internal/kharis/temple_offering_test.go:113:func TestEarlyTempleOfferingMixedGiftAtomic(t *testing.T) {
+server/internal/kharis/temple_offering_test.go:128:	if _, err := pool.Exec(ctx, `CREATE FUNCTION reject_early_temple_fish() RETURNS trigger LANGUAGE plpgsql AS $$
+server/internal/kharis/temple_offering_test.go:130:	 CREATE TRIGGER reject_early_temple_fish BEFORE UPDATE ON settlement_goods FOR EACH ROW EXECUTE FUNCTION reject_early_temple_fish()`); err != nil {
+server/internal/kharis/temple_offering_test.go:134:		_, _ = pool.Exec(ctx, `DROP TRIGGER IF EXISTS reject_early_temple_fish ON settlement_goods; DROP FUNCTION IF EXISTS reject_early_temple_fish()`)
+server/internal/kharis/temple_offering_test.go:136:	if fed, err := h.chargeTempleOffering(ctx, sid, values); err == nil || fed {
+server/internal/kharis/temple_offering_test.go:146:	if _, err := pool.Exec(ctx, `DROP TRIGGER reject_early_temple_fish ON settlement_goods; DROP FUNCTION reject_early_temple_fish()`); err != nil {
+server/internal/kharis/temple_offering_test.go:149:	if fed, err := h.chargeTempleOffering(ctx, sid, values); err != nil || !fed {
+server/internal/kharis/temple_offering_test.go:155:func TestEarlyTempleOfferingScarcityAndDeterministicSubstitutes(t *testing.T) {
+server/internal/kharis/temple_offering_test.go:161:		plan, fed := planTempleOffering(map[string]float64{"grain": .1, "fish": 1, "timber": 1, "silver": 1}, values)
+server/internal/kharis/temple_offering_test.go:166:	plan, fed := planTempleOffering(map[string]float64{"grain": .1, "fish": .01, "oil": 999, "wine": 999}, values)
+server/internal/capabilities/capabilities_test.go:248:// ---- rite (temple + kharis) ---------------------------------------------------
+server/internal/capabilities/capabilities_test.go:250:func TestCanRite_LockedWithoutTemple(t *testing.T) {
+server/internal/capabilities/capabilities_test.go:258:		t.Fatal("rite must be locked without a temple")
+server/internal/capabilities/capabilities_test.go:262:func TestCanRite_UnlockedWithTempleAndKharis(t *testing.T) {
+server/internal/capabilities/capabilities_test.go:265:	f.exec(t, `INSERT INTO buildings (settlement_id, building_type) VALUES ($1, 'temple')`, f.settlementID)
+server/internal/capabilities/capabilities_test.go:271:		t.Fatalf("rite must be unlocked with temple + kharis: %+v", v.Requirements)
+server/internal/kharis/project.go:13:// maintained day: temple workers × KharisPerTempleWorker × offerFraction × scarcity −
+server/internal/kharis/project.go:18:// and temple maintenance entirely, so a fading L1 Wanax read a rising number
+server/internal/kharis/project.go:19:// (soak 2026-07-24). Nothing here mutates state — it never feeds a temple, it
+server/internal/kharis/project.go:22:// hasTemples is false when the Wanax holds no standing temple: then the day is
+server/internal/kharis/project.go:24:func ProjectDailyNet(ctx context.Context, pool *pgxpool.Pool, playerID, worldID uuid.UUID) (net float64, hasTemples bool, devotionSum, devotionCapacity float64, err error) {
+server/internal/kharis/project.go:25:	var templeCities, cityCount int
+server/internal/kharis/project.go:32:		        JOIN buildings b ON b.settlement_id = s2.id AND b.building_type = 'temple'
+server/internal/kharis/project.go:43:	).Scan(&devotionSum, &devotionCapacity, &templeCities, &cityCount)
+server/internal/kharis/project.go:48:	staffed, capacity, serr := economy.RealmTempleStaffing(ctx, pool, playerID, worldID)
+server/internal/kharis/project.go:55:	if templeCities == 0 {
+server/internal/kharis/project.go:66:	fed := projectFedTemples(ctx, pool, playerID, worldID, values)
+server/internal/kharis/project.go:67:	offerFraction := computeOfferFraction(fed, templeCities)
+server/internal/kharis/project.go:69:	gain := devotionSum * KharisPerTempleWorker * offerFraction * scarcity
+server/internal/kharis/project.go:73:// scarcityFromValues mirrors templeOfferScarcity without a TickHandler receiver,
+server/internal/kharis/project.go:79:	offering := templeOfferingRecipe()
+server/internal/kharis/project.go:88:	return clampTempleScarcity(divine / base)
+server/internal/kharis/project.go:91:// projectFedTemples uses the same local gift plan as maintenance and status.
+server/internal/kharis/project.go:92:func projectFedTemples(ctx context.Context, pool *pgxpool.Pool, playerID, worldID uuid.UUID, values map[string]float64) int {
+server/internal/kharis/project.go:93:	offers, err := loadTempleOffers(ctx, pool, playerID, worldID, values)
+server/internal/kharis/temple_ceiling_test.go:5:// TestTempleCeiling_Level1StaysBelowBless — kärnan i hela åtgärden. Ett blygsamt
+server/internal/kharis/temple_ceiling_test.go:7:// Efter att kharisPerTempleDay höjdes 1.2→8.0 och feedTempleBySubstitution gjorde
+server/internal/kharis/temple_ceiling_test.go:10:func TestTempleCeiling_Level1StaysBelowBless(t *testing.T) {
+server/internal/kharis/temple_ceiling_test.go:11:	l1 := TempleKharisCeiling(1)
+server/internal/kharis/temple_ceiling_test.go:13:		t.Errorf("a level-1 temple must not reach the bless threshold %.0f, ceiling is %.0f",
+server/internal/kharis/temple_ceiling_test.go:17:		t.Errorf("a level-1 temple must still keep a Wanax clear of divine punishment (<%.0f), ceiling is %.0f",
+server/internal/kharis/temple_ceiling_test.go:22:// TestTempleCeiling_HigherTemplesReachFurther — nivåerna ska vara en klättring mot
+server/internal/kharis/temple_ceiling_test.go:24:func TestTempleCeiling_HigherTemplesReachFurther(t *testing.T) {
+server/internal/kharis/temple_ceiling_test.go:25:	prev := TempleKharisCeiling(0)
+server/internal/kharis/temple_ceiling_test.go:27:		got := TempleKharisCeiling(level)
+server/internal/kharis/temple_ceiling_test.go:33:	if top := TempleKharisCeiling(3); top < 100 {
+server/internal/kharis/temple_ceiling_test.go:34:		t.Errorf("the grandest temple must reach the full pool (100), got %.0f", top)
+server/internal/kharis/temple_ceiling_test.go:36:	if TempleKharisCeiling(2) < blessThreshold {
+server/internal/kharis/temple_ceiling_test.go:37:		t.Errorf("a level-2 temple must be able to attract divine favour (≥%.0f), got %.0f",
+server/internal/kharis/temple_ceiling_test.go:38:			blessThreshold, TempleKharisCeiling(2))
+server/internal/kharis/temple_ceiling_test.go:42:// TestEffectiveKharisCap_TakesTheLower — templet får höja ambitionen, aldrig
+server/internal/kharis/temple_ceiling_test.go:45:	if got := EffectiveKharisCap(100, 1); got != TempleKharisCeiling(1) {
+server/internal/kharis/temple_ceiling_test.go:46:		t.Errorf("a modest temple must bind below the record cap, got %.0f", got)
+server/internal/kharis/temple_ceiling_test.go:49:		t.Errorf("a level-3 temple must not exceed the record cap of 100, got %.0f", got)
+server/internal/kharis/temple_ceiling_test.go:56:// TestClampKharis_RespectsTheTempleCeiling — vakten mot återfall: en Wanax som
+server/internal/kharis/temple_ceiling_test.go:59:func TestClampKharis_RespectsTheTempleCeiling(t *testing.T) {
+server/internal/kharis/temple_ceiling_test.go:62:		t.Errorf("a Wanax sitting at 100 with a level-1 temple must be pulled down to %.0f, got %.0f",
+server/internal/kharis/temple_ceiling_test.go:67:// TestTempleCeiling_NoTempleStillHasAFloor — ingen panik utan tempel: taket är
+server/internal/kharis/temple_ceiling_test.go:69:func TestTempleCeiling_NoTempleStillHasAFloor(t *testing.T) {
+server/internal/kharis/temple_ceiling_test.go:70:	if got := TempleKharisCeiling(0); got <= 0 {
+server/internal/kharis/temple_ceiling_test.go:71:		t.Errorf("even a templeless Wanax needs a positive ceiling, got %.0f", got)
+server/internal/kharis/temple_ceiling_test.go:73:	if TempleKharisCeiling(0) >= TempleKharisCeiling(1) {
+server/internal/kharis/temple_ceiling_test.go:74:		t.Error("having a temple must be better than having none")
+server/internal/capabilities/province_verbs.go:13:// building types (farm, barracks, temple, ...) carry no structural gate at
+server/internal/kharis/labor_flow_test.go:36:	staffTestTemple(t, pool, sid, 2)
+server/internal/kharis/labor_flow_test.go:38:	if factor := h.templeOfferScarcity(ctx, wid); factor != 1.5 {
+server/internal/kharis/labor_flow_test.go:45:	want := 2*KharisPerTempleWorker*1.5 - decayBas
+server/internal/kharis/labor_flow_test.go:51:	oldNet := 2*KharisPerTempleWorker*oldFactor - decayBas
+server/internal/kharis/labor_flow_test.go:59:		kharisCap: 100, devotionSum: 2, templeCities: 1, maxTempleLevel: 1}, wid, eid); err != nil {
+server/internal/kharis/tick.go:1:// Package kharis implements the daily temple maintenance tick for Megaron.
+server/internal/kharis/tick.go:3:// Settlements that maintain their temples accumulate divine favour;
+server/internal/kharis/tick.go:32:// StartingKharis is the founding value and no-temple ceiling (Timothy 2026-10-18).
+server/internal/kharis/tick.go:37:// with no standing temple and kharis below Indifferent is at risk. Timothy
+server/internal/kharis/tick.go:40:// up regular offerings is under review, so temple presence still protects.
+server/internal/kharis/tick.go:41:func PunishmentProbability(kharis float64, hasTemple bool) float64 {
+server/internal/kharis/tick.go:42:	if hasTemple || kharis >= religion.MoodIndifferent {
+server/internal/kharis/tick.go:48:// KharisPerTempleWorker is the one gain coefficient per placed temple worker.
+server/internal/kharis/tick.go:50:const KharisPerTempleWorker = 1.05
+server/internal/kharis/tick.go:53:// the previous one. A temple supplies gain; it never exempts a city from burden.
+server/internal/kharis/tick.go:56:// templeTierMultiplier is the FAS 4 hook point — DEFERRED, not built in this
+server/internal/kharis/tick.go:60:// every temple is level 1 and this always returns 1.0 (no-op multiplier) —
+server/internal/kharis/tick.go:62:// TODO: once temple upgrade tiers exist, multiply gain (and/or effective cap)
+server/internal/kharis/tick.go:64:func templeTierMultiplier(level int) float64 {
+server/internal/kharis/tick.go:101:// TickHandler applies daily temple maintenance to all active settlements in a world.
+server/internal/kharis/tick.go:117:// wanaxSnap holds the per-Wanax state needed for daily temple maintenance.
+server/internal/kharis/tick.go:118:// Kharis lives on player_world_records; devotionSum aggregates temple staffing across all
+server/internal/kharis/tick.go:125:	// Actual placed temple workers, bounded by standing temple capacity.
+server/internal/kharis/tick.go:127:	templeCities   int
+server/internal/kharis/tick.go:128:	maxTempleLevel int // grandest temple's level — sets the kharis ceiling
+server/internal/kharis/tick.go:153:		        JOIN buildings b ON b.settlement_id = s2.id AND b.building_type = 'temple'
+server/internal/kharis/tick.go:156:		    ), 0) AS temple_cities,
+server/internal/kharis/tick.go:158:		        -- The grandest temple sets the Wanax's kharis ceiling (see
+server/internal/kharis/tick.go:159:		        -- templeKharisCeiling). MAX, not SUM: ten modest shrines must not
+server/internal/kharis/tick.go:160:		        -- add up to what one great temple earns.
+server/internal/kharis/tick.go:163:		        JOIN buildings b ON b.settlement_id = s4.id AND b.building_type = 'temple'
+server/internal/kharis/tick.go:166:		    ), 0) AS max_temple_level,
+server/internal/kharis/tick.go:188:			&w.kharis, &w.kharisCap, &w.devotionSum, &w.templeCities,
+server/internal/kharis/tick.go:189:			&w.maxTempleLevel, &w.cityCount); err == nil {
+server/internal/kharis/tick.go:190:			// The grandest temple binds the ceiling from here on — processMaintenance
+server/internal/kharis/tick.go:192:			w.kharisCap = EffectiveKharisCap(w.kharisCap, w.maxTempleLevel)
+server/internal/kharis/tick.go:202:		staffed, _, err := economy.RealmTempleStaffing(ctx, h.pool, w.playerID, e.WorldID)
+server/internal/kharis/tick.go:204:			return fmt.Errorf("load temple staffing: %w", err)
+server/internal/kharis/tick.go:255:// kharisCapPerTempleLevel — the grandest temple a Wanax has built sets how close
+server/internal/kharis/tick.go:256:// to the gods they can come. Ceiling = kharisCapPerTempleLevel × (1 + max temple
+server/internal/kharis/tick.go:260:// kharisPerTempleDay was raised 1.2 → 8.0 to stop the universal fade, and
+server/internal/kharis/tick.go:261:// feedTempleBySubstitution made every temple always feedable, the two together
+server/internal/kharis/tick.go:268:// modest temple keeps their kharis and their rites, but never attracts divine
+server/internal/kharis/tick.go:269:// favour. Reaching the gods' notice requires a grander temple. That makes temple
+server/internal/kharis/tick.go:273:// Note this option was unbuildable until 8b85ee2 (same day): temples could not be
+server/internal/kharis/tick.go:276:const kharisCapPerTempleLevel = 25.0
+server/internal/kharis/tick.go:278:// TempleKharisCeiling returns the kharis ceiling earned by a Wanax's grandest
+server/internal/kharis/tick.go:279:// temple. Level 0 (no temple) holds the founding value 40 — such a
+server/internal/kharis/tick.go:281:func TempleKharisCeiling(maxTempleLevel int) float64 {
+server/internal/kharis/tick.go:282:	if maxTempleLevel <= 0 {
+server/internal/kharis/tick.go:285:	return kharisCapPerTempleLevel * float64(1+maxTempleLevel)
+server/internal/kharis/tick.go:289:// own kharis_cap and what their grandest temple earns them.
+server/internal/kharis/tick.go:290:func EffectiveKharisCap(recordCap float64, maxTempleLevel int) float64 {
+server/internal/kharis/tick.go:291:	if ceiling := TempleKharisCeiling(maxTempleLevel); ceiling < recordCap {
+server/internal/kharis/tick.go:309:// computeOfferFraction is the FAS 3 gain-scaling formula: fed/total temples.
+server/internal/kharis/tick.go:310:// 0 when there are no temples to feed — defensive only; a maintained day
+server/internal/kharis/tick.go:311:// (templeCities > 0) implies at least one temple stands, so
+server/internal/kharis/tick.go:321:// applyTempleOffering charges each temple city's own shared early-gift plan.
+server/internal/kharis/tick.go:322:func (h *TickHandler) applyTempleOffering(ctx context.Context, playerID, worldID uuid.UUID) (fed, total int) {
+server/internal/kharis/tick.go:325:		slog.Error("temple offering valuations", "err", err)
+server/internal/kharis/tick.go:328:	offers, err := loadTempleOffers(ctx, h.pool, playerID, worldID, values)
+server/internal/kharis/tick.go:330:		slog.Error("temple offering cities", "err", err)
+server/internal/kharis/tick.go:335:		paid, err := h.chargeTempleOffering(ctx, offer.SettlementID, values)
+server/internal/kharis/tick.go:337:			slog.Error("temple offering debit", "settlement", offer.SettlementID, "err", err)
+server/internal/kharis/tick.go:356:	// pass: the day's decay applied twice and the temple offering charged twice.
+server/internal/kharis/tick.go:373:	// A day is "maintained" when the Wanax holds at least one standing temple;
+server/internal/kharis/tick.go:375:	maintained := w.templeCities > 0
+server/internal/kharis/tick.go:378:	// many of the Wanax's temples were actually fed a material offer today.
+server/internal/kharis/tick.go:388:		// Devotion counts actual workers serving the temple — read, never produced
+server/internal/kharis/tick.go:389:		// (mig 094). A temple with no one tending it is a building, not a cult.
+server/internal/kharis/tick.go:390:		devotionGain := w.devotionSum * KharisPerTempleWorker
+server/internal/kharis/tick.go:391:		offerFed, offerTotal = h.applyTempleOffering(ctx, w.playerID, worldID)
+server/internal/kharis/tick.go:396:		// stående gudstjänster"). Feeding a temple grain during a grain shortage is
+server/internal/kharis/tick.go:398:		scarcity := h.templeOfferScarcity(ctx, worldID)
+server/internal/kharis/tick.go:403:				"temples_fed":         offerFed,
+server/internal/kharis/tick.go:404:				"temples_total":       offerTotal,
+server/internal/kharis/tick.go:406:				"temple_workers":      w.devotionSum,
+server/internal/kharis/tick.go:440:				"temple_workers": w.devotionSum,
+server/internal/kharis/tick.go:445:				"rule_version":   "temple_workers_v2",
+server/internal/kharis/tick.go:447:				"temples_fed":    offerFed,
+server/internal/kharis/tick.go:448:				"temples_total":  offerTotal,
+server/internal/kharis/tick.go:458:		// No temple production this day — dailyDecay above is the only kharis
+server/internal/kharis/tick.go:459:		// change (gain=0). This event still means no temple production;
+server/internal/kharis/tick.go:466:				"rule_version":   "temple_workers_v2",
+server/internal/kharis/tick.go:512:// mood, not a stored strength stat — there is nothing per-temple to regenerate.)
+server/internal/kharis/tick.go:1595:// generateOmen produces an atmospheric temple omen (20% chance per maintained day).
+server/internal/kharis/tick.go:1603:		"A serpent crossed the temple threshold and departed unharmed. Old powers watch this place.",
+server/internal/kharis/tick.go:1613:		"A child laughed outside the temple during the rite. The gods find something amusing.",
+server/internal/kharis/tick.go:1637:// templeOfferScarcity values the standing temple reference offering (grain) at the
+server/internal/kharis/tick.go:1645:func (h *TickHandler) templeOfferScarcity(ctx context.Context, worldID uuid.UUID) float64 {
+server/internal/kharis/tick.go:1654:// clampTempleScarcity bounds what a shortage can be worth to a temple. Pure, so
+server/internal/kharis/tick.go:1655:// the bound is testable without a rig: abundance never PUNISHES a tended temple
+server/internal/kharis/tick.go:1657:func clampTempleScarcity(factor float64) float64 {
+server/internal/kharis/tick.go:1661:	if factor > templeScarcityCeil {
+server/internal/kharis/tick.go:1662:		return templeScarcityCeil
+server/internal/kharis/tick.go:1667:// templeScarcityCeil bounds what a shortage can be worth to a temple.
+server/internal/kharis/tick.go:1668:const templeScarcityCeil = 2.0
+server/internal/kharis/devotion_test.go:8:// Mig 094 replaced a summed `cult` STOCK with temple state read directly:
+server/internal/kharis/devotion_test.go:11:// försummelse = fade" — so a future tuner who changes KharisPerTempleWorker or
+server/internal/kharis/devotion_test.go:16:	gain := devotionSum * KharisPerTempleWorker * offerFraction * scarcity
+server/internal/kharis/devotion_test.go:21:	l1 := float64(economy.TempleWorkplaces(1))
+server/internal/kharis/devotion_test.go:31:		t.Errorf("an unfed temple must lose more ground than a fed one, got %+.2f/day vs fed %+.2f/day", unfed, net)
+server/internal/kharis/devotion_test.go:34:	// A larger temple employs more of the city and climbs faster: it must
+server/internal/kharis/devotion_test.go:36:	l2 := dayNet(float64(economy.TempleWorkplaces(2)), 1.0, 1.0, 0)
+server/internal/kharis/devotion_test.go:38:		t.Errorf("a level-2 temple must climb in ordinary times, got %+.2f/day", l2)
+server/internal/kharis/devotion_test.go:41:		t.Errorf("a level-2 temple must out-climb a level-1: %+.2f vs %+.2f", l2, net)
+server/internal/kharis/devotion_test.go:44:	// Several tended temples are the other way up: their devotion sums, so enough
+server/internal/kharis/devotion_test.go:47:		t.Errorf("three tended temples' devotion should sum past the decay and climb, got %+.2f/day", many)
+server/internal/kharis/devotion_test.go:51:// Feeding is a gate on the whole gain, not a bonus beside it: an unfed temple
+server/internal/kharis/devotion_test.go:53:func TestDevotionCalibration_UnfedTempleEarnsNothing(t *testing.T) {
+server/internal/kharis/devotion_test.go:54:	gain := 5.0 * KharisPerTempleWorker * 0.0 * 1.0
+server/internal/kharis/devotion_test.go:56:		t.Fatalf("an unfed temple must earn nothing, got %.2f", gain)
+server/internal/kharis/devotion_test.go:59:		t.Errorf("unfed temples must lose ground to decay, got %+.2f/day", net)
+server/internal/kharis/devotion_test.go:64:func TestTempleScarcity_BoundedAndNeverPunishing(t *testing.T) {
+server/internal/kharis/devotion_test.go:66:	shortage := dayNet(1.0, 1.0, templeScarcityCeil, 0)
+server/internal/kharis/devotion_test.go:70:	// The bound lives in clampTempleScarcity, which is where it must be proven.
+server/internal/kharis/devotion_test.go:71:	if got := clampTempleScarcity(9.0); got != templeScarcityCeil {
+server/internal/kharis/devotion_test.go:72:		t.Errorf("a scarcity spike must be capped at %.1f×, got %.2f", templeScarcityCeil, got)
+server/internal/kharis/devotion_test.go:74:	if got := clampTempleScarcity(0.3); got != 1.0 {
+server/internal/kharis/devotion_test.go:75:		t.Errorf("abundance must not punish a tended temple, got %.2f", got)
+server/internal/kharis/devotion_test.go:79:// Expansion still costs when the same temples supply gain.
+server/internal/kharis/devotion_test.go:80:func TestDevotionCalibration_TemplelessColoniesStillBite(t *testing.T) {
+server/internal/capabilities/cult_verbs.go:9:// canRite checks the temple + kharis gate for this settlement's culture's
+server/internal/capabilities/cult_verbs.go:13:	hasTemple := cc.hasBuilding("temple")
+server/internal/capabilities/cult_verbs.go:25:		"Perform a cultural prayer at your temple (kharis-gated; consumes a material offering).",
+server/internal/capabilities/cult_verbs.go:27:			req("temple built", hasTemple,
+server/internal/capabilities/cult_verbs.go:28:				boolDetail(hasTemple, "temple built", "no temple"),
+server/internal/capabilities/cult_verbs.go:29:				"build a temple (`keryx build --type temple`)"),
+web/static/js/megaron/render/city.js:90:  function box(x, y, w, h, d = 3, reverse = false, temple = false) {
+web/static/js/megaron/render/city.js:126:        temple ? 'light' : 'roof'
+web/static/js/megaron/render/city.js:128:      rect(x, y + 1, x + w, y + h, temple ? 'plaster' : 'shade');
+web/static/js/megaron/render/city.js:136:        temple ? 'shade' : 'edge'
+web/static/js/megaron/render/city.js:143:        temple ? 'light' : 'earth'
+web/static/js/megaron/render/city.js:356:  if (byType.has('temple')) {
+web/static/js/megaron/render/city.js:357:    const level = byType.get('temple'),
+web/static/js/megaron/render/city.js:372:    anchors.temple = [x, y, w, h];
+web/static/js/megaron/render/city.js:603:      (item.type === 'temple'
+web/static/js/megaron/render/city.js:751:  // temple_offers.fed describes the NEXT gift, and devotion is staffing;
+server/internal/kharis/decay_test.go:28:func TestRealmKharis_OpeningAndTempleCalibration(t *testing.T) {
+server/internal/kharis/decay_test.go:30:		t.Fatal("start/no-temple cap must both40")
+server/internal/kharis/decay_test.go:35:	if net := 2*KharisPerTempleWorker - computeDailyDecay(6); math.Abs(net-.5) > 1e-10 {
+server/internal/kharis/decay_test.go:39:		if TempleKharisCeiling(level) != want {
+server/internal/kharis/decay_test.go:47:		temple bool
+server/internal/kharis/decay_test.go:50:		if got := PunishmentProbability(tc.k, tc.temple); got != tc.p {
+server/internal/kharis/decay_test.go:51:			t.Fatalf("k%g temple%v probability%g want%g", tc.k, tc.temple, got, tc.p)
+server/internal/kharis/l1_climb_test.go:13:func TestL1TempleClimbsToFirstPrayerAndCaps(t *testing.T) {
+server/internal/kharis/l1_climb_test.go:26:			if _, err := pool.Exec(ctx, `UPDATE buildings SET level=$2 WHERE settlement_id=$1 AND building_type='temple'`, sid, level); err != nil {
+server/internal/kharis/l1_climb_test.go:29:			staffTestTemple(t, pool, sid, level*2)
+server/internal/kharis/l1_climb_test.go:36:			cap := TempleKharisCeiling(level)
+server/internal/kharis/l1_climb_test.go:51:				w := wanaxSnap{cityCount: 1, playerID: pid, settlementID: sid, kharis: amount, kharisCap: cap, devotionSum: dev, templeCities: 1, maxTempleLevel: level}
+server/internal/kharis/l1_climb_test.go:78:			// An unfunded temple still earns zero gross and loses the same decay.
+server/internal/kharis/temple_staffing_test.go:11:func staffTestTemple(t *testing.T, pool *pgxpool.Pool, sid uuid.UUID, count int) {
+server/internal/kharis/temple_staffing_test.go:18:	if _, err := pool.Exec(ctx, `INSERT INTO settlement_placement(settlement_id,gubbe_ordinal,target_kind,building_type,good_key) SELECT $1,n,'building','temple','cult' FROM generate_series(1,$2::int) n`, sid, count); err != nil {
+server/internal/kharis/temple_staffing_test.go:23:func TestTempleProjectionCountsOnlyRealWorkers(t *testing.T) {
+server/internal/kharis/temple_staffing_test.go:37:		staffTestTemple(t, pool, sid, n)
+server/internal/kharis/temple_staffing_test.go:39:		want := float64(n)*KharisPerTempleWorker - computeDailyDecay(1)
+server/internal/kharis/temple_offering.go:13:// TempleOfferingGrain is the standing reference gift per temple and tick.
+server/internal/kharis/temple_offering.go:15:const TempleOfferingGrain = 0.25
+server/internal/kharis/temple_offering.go:19:var templeOfferingGoods = [...]string{"grain", "fish", "timber", "silver"}
+server/internal/kharis/temple_offering.go:21:func templeOfferingRecipe() map[string]float64 {
+server/internal/kharis/temple_offering.go:22:	return map[string]float64{"grain": TempleOfferingGrain}
+server/internal/kharis/temple_offering.go:25:// TempleOffer is the actual next-tick plan, shared by status and maintenance.
+server/internal/kharis/temple_offering.go:27:type TempleOffer struct {
+server/internal/kharis/temple_offering.go:39:func planTempleOffering(stock, values map[string]float64) (map[string]float64, bool) {
+server/internal/kharis/temple_offering.go:41:	if stock["grain"] >= TempleOfferingGrain {
+server/internal/kharis/temple_offering.go:42:		return templeOfferingRecipe(), true
+server/internal/kharis/temple_offering.go:44:	due := TempleOfferingGrain * values["grain"]
+server/internal/kharis/temple_offering.go:50:	for _, good := range templeOfferingGoods {
+server/internal/kharis/temple_offering.go:66:func newTempleOffer(id uuid.UUID, name string, stock, values map[string]float64) TempleOffer {
+server/internal/kharis/temple_offering.go:67:	o := TempleOffer{SettlementID: id, Name: name, Required: templeOfferingRecipe(),
+server/internal/kharis/temple_offering.go:70:		for _, good := range templeOfferingGoods[1:] {
+server/internal/kharis/temple_offering.go:72:				o.Alternatives[good] = TempleOfferingGrain * values["grain"] / values[good]
+server/internal/kharis/temple_offering.go:76:	o.Offering, o.Fed = planTempleOffering(stock, values)
+server/internal/kharis/temple_offering.go:80:// LoadTempleOffers reads the same local stocks and plan that the tick charges.
+server/internal/kharis/temple_offering.go:81:func LoadTempleOffers(ctx context.Context, db religion.Execer, playerID, worldID uuid.UUID) ([]TempleOffer, error) {
+server/internal/kharis/temple_offering.go:86:	return loadTempleOffers(ctx, db, playerID, worldID, values)
+server/internal/kharis/temple_offering.go:89:func loadTempleOffers(ctx context.Context, db religion.Execer, playerID, worldID uuid.UUID, values map[string]float64) ([]TempleOffer, error) {
+server/internal/kharis/temple_offering.go:95:	 AND EXISTS(SELECT 1 FROM buildings b WHERE b.settlement_id=s.id AND b.building_type='temple')
+server/internal/kharis/temple_offering.go:96:	 ORDER BY s.name,s.id,sg.good_key`, playerID, worldID, templeOfferingGoods[:])
+server/internal/kharis/temple_offering.go:101:	offers := []TempleOffer{}
+server/internal/kharis/temple_offering.go:112:			for _, key := range templeOfferingGoods {
+server/internal/kharis/temple_offering.go:115:			offers = append(offers, TempleOffer{SettlementID: id, Name: name, Stock: stock})
+server/internal/kharis/temple_offering.go:125:		offers[i] = newTempleOffer(o.SettlementID, o.Name, o.Stock, values)
+server/internal/kharis/temple_offering.go:130:// chargeTempleOffering replans under row locks and commits the whole local gift
+server/internal/kharis/temple_offering.go:132:func (h *TickHandler) chargeTempleOffering(ctx context.Context, settlementID uuid.UUID, values map[string]float64) (bool, error) {
+server/internal/kharis/temple_offering.go:140:	 AND EXISTS(SELECT 1 FROM buildings b WHERE b.settlement_id=s.id AND b.building_type='temple')
+server/internal/kharis/temple_offering.go:147:	 ORDER BY good_key FOR UPDATE`, settlementID, templeOfferingGoods[:])
+server/internal/kharis/temple_offering.go:166:	take, fed := planTempleOffering(stock, values)
+server/internal/kharis/temple_offering.go:170:	for _, good := range templeOfferingGoods {
+server/internal/kharis/temple_offering.go:179:			return false, fmt.Errorf("temple offering %s: %w", good, err)
+web/static/js/megaron/render/city.test.mjs:5:  { type: 'temple', level: 1 },
+web/static/js/megaron/render/city.test.mjs:39:    build = scene(4500, {}, buildings, [{ type: 'temple' }]);
+web/static/js/megaron/render/city.test.mjs:45:    { type: 'temple' }
+web/static/js/megaron/render/city.test.mjs:70:test('no fabricated temple, harbour, mine or construction on an empty city', () => {
+web/static/js/megaron/render/city.test.mjs:79:  const queue = scene(1000, {}, [], [{ type: 'temple' }]);
+web/static/js/megaron/render/city.test.mjs:81:  assert.equal(queue.anchors.temple, undefined);
+web/static/js/megaron/render/citybuildings.js:174:  // Templet — HORN OF CONSECRATION på taket, ockrapelare i fasaden, altare
+web/static/js/megaron/render/citybuildings.js:177:  temple(g, x, base, lvl) {
+server/internal/kharis/grain_growth_test.go:44:// buildings (farm/lumbermill/temple/market) and genesis labor weights
+server/internal/kharis/grain_growth_test.go:122:		 SELECT $1, bt, 1 FROM unnest(ARRAY['temple','market']) AS bt`,
+server/internal/kharis/realm_rules_test.go:25:func TestRealmKharis_CountsTempledCitiesIncludingCapital(t *testing.T) {
+server/internal/kharis/realm_rules_test.go:34:		if _, err := pool.Exec(ctx, `INSERT INTO buildings(settlement_id,building_type,level) VALUES($1,'temple',1)`, col); err != nil {
+server/internal/kharis/realm_rules_test.go:68:		t.Fatalf("actual all-templed-six-city kharis%g want38.4", amount)
+server/internal/kharis/realm_rules_test.go:72:func TestRealmPunishment_TemplelessHitsEligibleColony(t *testing.T) {
+server/internal/kharis/realm_rules_test.go:99:	snap := wanaxSnap{playerID: pid, settlementID: sid, kharis: 29, kharisCap: 50, templeCities: 0, cityCount: 2}
+server/internal/kharis/realm_rules_test.go:125:	// A standing temple still protects, even below Indifferent with a certain roll.
+server/internal/kharis/realm_rules_test.go:126:	snap.templeCities = 1
+server/internal/kharis/realm_rules_test.go:134:		t.Fatalf("temple did not protect: punishments%d want1", count)
+web/static/js/megaron/ui/misc.test.mjs:129:  const list = ['m_bygget_sf', 'm_bygget_synth', 'm_templet_sf', 'm_templet_synth'];
+web/static/js/megaron/ui/misc.test.mjs:131:    assert.match(nextBedTrack(list, 'm_bygget_sf', () => r), /templet/);
+web/static/js/megaron/ui/misc.test.mjs:132:    assert.match(nextBedTrack(list, 'm_templet_synth', () => r), /bygget/);
+web/static/js/megaron/ui/misc.test.mjs:134:  assert.equal(nextBedTrack(list, 'm_bygget_sf', () => 0), 'm_templet_sf', 'both timbres of the other piece are reachable');
+web/static/js/megaron/ui/misc.test.mjs:135:  assert.equal(nextBedTrack(list, 'm_bygget_sf', () => 0.999), 'm_templet_synth');
+server/internal/kharis/realm_opening_test.go:19:	if _, err := pool.Exec(ctx, `DELETE FROM buildings WHERE settlement_id=$1 AND building_type='temple'`, sid); err != nil {
+web/static/js/megaron/ui/format.js:330:    case 'KharisBandChanged': return `Kharis: ${esc(body.from_band || '?')} → ${esc(body.to_band || '?')} (${fmtNum(body.kharis || 0)}). Check Kult for decay and temple support; staff and feed your temples.`;
+server/api/handlers/kharis_status_test.go:24:// maintenance owner, including a negative net when the realm has no temples.
+server/api/handlers/kharis_status_test.go:60:		net, hasTemples, _, _, err := kharis.ProjectDailyNet(ctx, pool, pid, wid)
+server/api/handlers/kharis_status_test.go:64:		if count != i+1 || hasTemples {
+server/api/handlers/kharis_status_test.go:65:			t.Fatalf("bad fixture count=%d temples=%v", count, hasTemples)
+server/api/handlers/kharis_status_test.go:74:			t.Fatal("templeless realm hides its known negative net")
+server/api/handlers/kharis_status_test.go:87:		fmt.Sprintf("no temple **%g**", kharis.EffectiveKharisCap(100, 0)),
+server/api/handlers/kharis_status_test.go:92:		"including your capital", "whether or not they have temples", "random eligible city",
+server/api/handlers/kharis_status_test.go:93:		"A standing temple protects you from punishment",
+server/internal/economy/placement_prune_test.go:14:// the craft and temple rows and keeps BOTH food rows.
+server/internal/economy/placement_prune_test.go:21:	placeBuildingGubbe(t, pool, settlementID, 2, "temple", GoodCult)
+server/cmd/keryx/cmd_status.go:77:	for _, kind := range []province.BuildingType{province.BuildingHarbour, province.BuildingBarracks, province.BuildingFoundry, province.BuildingTemple} {
+server/cmd/keryx/cmd_status.go:122:	templeOfferingPerTick map[string]float64 // planned local debits from temple_offers[].offering
+server/cmd/keryx/cmd_status.go:125:// localTempleOffering counts only this city's planned gift. The status payload
+server/cmd/keryx/cmd_status.go:126:// includes realm-wide temple rows; another city's goods are not a local sink.
+server/cmd/keryx/cmd_status.go:127:func localTempleOffering(sett map[string]any) map[string]float64 {
+server/cmd/keryx/cmd_status.go:130:	temples, _ := sett["temple_offers"].([]any)
+server/cmd/keryx/cmd_status.go:131:	for _, item := range temples {
+server/cmd/keryx/cmd_status.go:147:func templeGoodsText(raw any, separator string) string {
+server/cmd/keryx/cmd_status.go:178:func templeOfferingLine(row map[string]any) string {
+server/cmd/keryx/cmd_status.go:183:		mark, next = "✓", templeGoodsText(row["offering"], " + ")
+server/cmd/keryx/cmd_status.go:185:	return fmt.Sprintf("  Temple in %s: reference %s per day — alternatives: %s — stock: %s — next gift: %s  %s",
+server/cmd/keryx/cmd_status.go:186:		name, templeGoodsText(row["required_goods"], " + "), templeGoodsText(row["alternatives"], " or "),
+server/cmd/keryx/cmd_status.go:187:		templeGoodsText(row["stock"], ", "), next, mark)
+server/cmd/keryx/cmd_status.go:293://     Each city's own temple_offers[].offering specifies the actual goods,
+server/cmd/keryx/cmd_status.go:314:	for good, amount := range ctx.templeOfferingPerTick {
+server/cmd/keryx/cmd_status.go:513:// cities saw only the capital's temple level and assumed the other city's
+server/cmd/keryx/cmd_status.go:874:				templeOffering := localTempleOffering(sett)
+server/cmd/keryx/cmd_status.go:886:					templeOfferingPerTick: templeOffering,
+server/cmd/keryx/cmd_status.go:951:			// The DAILY MAINTENANCE net (temple gain − decay) is what actually moves
+server/cmd/keryx/cmd_status.go:956:				netStr = fmt.Sprintf("net %+.1f per day (temple − decay)", knet)
+server/cmd/keryx/cmd_status.go:970:			// Kult: each temple city's reference, stock and planned local gift — answers
+server/cmd/keryx/cmd_status.go:973:				fmt.Println("  → your temple has empty workplaces — assign an idle citizen with `keryx staff temple +1` to let kharis climb.")
+server/cmd/keryx/cmd_status.go:975:			if temples, ok := sett["temple_offers"].([]any); ok {
+server/cmd/keryx/cmd_status.go:976:				if len(temples) == 0 {
+server/cmd/keryx/cmd_status.go:977:					fmt.Println("  Temples: none — kharis doesn't climb without a temple + offerings.")
+server/cmd/keryx/cmd_status.go:980:				for _, it := range temples {
+server/cmd/keryx/cmd_status.go:984:					fmt.Println(templeOfferingLine(m))
+server/cmd/keryx/cmd_status.go:987:					fmt.Println("  → feed the temples with local grain, fish, timber or silver or cast a rite — see `keryx rite --list`.")
+server/cmd/keryx/cmd_status.go:1305:// kharisCapLine explains the temple cap. Legibilitet (2026-07-24): ett L1-tempel
+server/cmd/keryx/cmd_status.go:1312:	mtl, _ := sett["max_temple_level"].(float64)
+server/cmd/keryx/cmd_status.go:1320:		return fmt.Sprintf("  → your kharis is at the cap %.0f (set by your level-%.0f temple) — build a higher temple to raise the cap further.\n", kcap, mtl)
+server/cmd/keryx/cmd_status.go:1322:		return fmt.Sprintf("  → your kharis is climbing toward the cap %.0f (set by your level-%.0f temple) — build a higher temple to raise the cap further.\n", kcap, mtl)
+server/cmd/keryx/cmd_status.go:1324:		return fmt.Sprintf("  → the cap %.0f is set by your level-%.0f temple, but your kharis is falling toward the floor — staff the temple with `keryx staff temple +1` (if it has room) or build a higher temple.\n", kcap, mtl)
+server/cmd/keryx/cmd_status.go:1326:	return fmt.Sprintf("  → the cap %.0f is set by your level-%.0f temple; your kharis holds but doesn't climb — staff the temple with `keryx staff temple +1` or build a higher temple.\n", kcap, mtl)
+server/internal/economy/temple_staffing.go:8:// TempleWorkersPerLevel is physical capacity, not a population share.
+server/internal/economy/temple_staffing.go:9:const TempleWorkersPerLevel = 2
+server/internal/economy/temple_staffing.go:11:func TempleWorkplaces(level int) int { return max(0, level) * TempleWorkersPerLevel }
+server/internal/economy/temple_staffing.go:13:type TempleStaffing struct {
+server/internal/economy/temple_staffing.go:20:func templeStaffing(ctx context.Context, db Tx, world, owner, settlement uuid.UUID) ([]TempleStaffing, error) {
+server/internal/economy/temple_staffing.go:22: coalesce((SELECT max(level) FROM buildings b WHERE b.settlement_id=s.id AND b.building_type='temple'),0),
+server/internal/economy/temple_staffing.go:23: (SELECT count(*) FROM settlement_placement p WHERE p.settlement_id=s.id AND p.target_kind='building' AND p.building_type='temple' AND p.good_key='cult')
+server/internal/economy/temple_staffing.go:32:	var out []TempleStaffing
+server/internal/economy/temple_staffing.go:34:		var s TempleStaffing
+server/internal/economy/temple_staffing.go:39:		s.Capacity = TempleWorkplaces(level)
+server/internal/economy/temple_staffing.go:45:func LoadTempleStaffing(ctx context.Context, db Tx, id uuid.UUID) (TempleStaffing, error) {
+server/internal/economy/temple_staffing.go:46:	rows, err := templeStaffing(ctx, db, uuid.Nil, uuid.Nil, id)
+server/internal/economy/temple_staffing.go:48:		return TempleStaffing{}, err
+server/internal/economy/temple_staffing.go:51:		return TempleStaffing{}, nil
+server/internal/economy/temple_staffing.go:55:func RealmTempleStaffing(ctx context.Context, db Tx, owner, world uuid.UUID) (staffed, capacity int, err error) {
+server/internal/economy/temple_staffing.go:56:	rows, err := templeStaffing(ctx, db, world, owner, uuid.Nil)
+server/internal/economy/labor_capacity_test.go:85:// tabellen (temple — cult labor, en egen väg) eller en nivå utanför tabellens
+web/static/js/megaron/ui/citygrid.js:79:  const nextLabel = good.staffing_only ? (full ? 'full' : 'serves the temple') : full ? 'full' : `+${fmtNum(Number(good.marginal_yield.toFixed(1)))} per day next`;
+web/static/js/megaron/ui/citygrid.js:85:        <span style="color:var(--text-dim)"> ${good.staffing_only ? fmtNum(good.placed) + ' temple workers' : fmtNum(Number(good.rate_per_tick.toFixed(1))) + ' per day total'} · ${nextLabel}</span>
+server/api/handlers/create_metropolis_founding_test.go:165:	for _, bt := range []string{"temple", "lumbermill", "market"} {
+server/api/handlers/create_metropolis_founding_test.go:179:		t.Error("cult labor weight should not be seeded (no starter temple)")
+server/api/handlers/create_metropolis_founding_test.go:206:	for _, bt := range []string{"farm", "temple", "lumbermill", "market"} {
+server/internal/economy/temple_transition.go:13:// CompleteTempleStaffingTransition runs before workers/HTTP at startup. Its one
+server/internal/economy/temple_transition.go:16:func CompleteTempleStaffingTransition(ctx context.Context, pool *pgxpool.Pool) error {
+server/internal/economy/temple_transition.go:22:	if err := transitionTempleStaffing(ctx, tx); err != nil {
+server/internal/economy/temple_transition.go:28:func transitionTempleStaffing(ctx context.Context, tx pgx.Tx) error {
+server/internal/economy/temple_transition.go:30:	if err := tx.QueryRow(ctx, `SELECT completed FROM temple_staffing_transition WHERE id=true FOR UPDATE`).Scan(&done); err != nil {
+server/internal/economy/temple_transition.go:36:	rows, err := tx.Query(ctx, `SELECT s.id,s.population,l.weight,coalesce((SELECT max(level) FROM buildings b WHERE b.settlement_id=s.id AND b.building_type='temple'),0)
+server/internal/economy/temple_transition.go:69:		target := min(TempleWorkplaces(c.level), total, max(1, int(math.Round(c.weight*float64(c.population)/100))))
+server/internal/economy/temple_transition.go:90:			if good == GoodCult && kind == "building" && building == "temple" {
+server/internal/economy/temple_transition.go:112:			if _, err := tx.Exec(ctx, `INSERT INTO settlement_placement(settlement_id,gubbe_ordinal,target_kind,building_type,good_key) VALUES($1,$2,'building','temple','cult')`, c.id, n); err != nil {
+server/internal/economy/temple_transition.go:127:			if _, err := tx.Exec(ctx, `UPDATE settlement_placement SET target_kind='building',building_type='temple',good_key='cult',hex_q=NULL,hex_r=NULL WHERE settlement_id=$1 AND gubbe_ordinal=$2`, c.id, job.ordinal); err != nil {
+server/internal/economy/temple_transition.go:133:			return fmt.Errorf("temple staffing transition: settlement %s needs %d workers; only %d free/non-food workers available", c.id, target, staffed)
+server/internal/economy/temple_transition.go:139:	if _, err := tx.Exec(ctx, `DROP TABLE settlement_labor; UPDATE temple_staffing_transition SET completed=true WHERE id=true`); err != nil {
+server/internal/economy/tithe.go:3:// The temple tithe: when a city sells a religiously coded good (goods.religious
+server/internal/economy/tithe.go:4:// in the catalog — e.g. wine, oil, purple) the temple takes a share of the silver.
+server/internal/economy/tithe.go:14:// gods want are the goods the temple taxes.
+server/internal/economy/tithe.go:17:	// titheRate is the share of trade silver the temple takes on a religious
+server/internal/economy/tithe.go:22:	// temple waves the caravan through rather than count out coppers. Without
+server/internal/economy/tithe.go:27:// Tithe returns the silver the temple takes from a trade payment, and the
+server/internal/economy/tithe.go:30:// hasTemple gates it: no temple, no collection. That makes the tithe a
+server/internal/economy/tithe.go:32:// the temple returns.
+server/internal/economy/tithe.go:33:func Tithe(silver float64, goodIsReligious, hasTemple bool) (toTemple, toSeller float64) {
+server/internal/economy/tithe.go:34:	if !goodIsReligious || !hasTemple || silver < titheMinSilver {
+server/internal/economy/tithe.go:37:	toTemple = silver * titheRate
+server/internal/economy/tithe.go:38:	return toTemple, silver - toTemple
+server/internal/economy/founding_placement.go:393:// the cap (returns 0, no-op). Temple workers participate in the same pruning order as every other job.
+server/internal/economy/founding_placement.go:409:		                 WHEN $5 THEN 2                                -- cult: temple workers
+server/internal/economy/temple_transition_test.go:11:func TestTempleTransitionIdleFirstThenNonFoodAndIdempotent(t *testing.T) {
+server/internal/economy/temple_transition_test.go:21:	if _, err = transitionSeed(ctx, tx, `DELETE FROM settlement_labor; UPDATE temple_staffing_transition SET completed=false; INSERT INTO buildings(settlement_id,building_type,level) VALUES($1,'temple',1); INSERT INTO settlement_labor(settlement_id,good_key,weight) VALUES($1,'cult',.45); INSERT INTO settlement_placement(settlement_id,gubbe_ordinal,target_kind,hex_q,hex_r,good_key) VALUES($1,1,'hex',0,0,'grain'),($1,2,'hex',0,0,'timber'),($1,3,'hex',0,0,'wine'),($1,4,'hex',0,0,'wine')`, sid); err != nil {
+server/internal/economy/temple_transition_test.go:24:	if err = transitionTempleStaffing(ctx, tx); err != nil {
+server/internal/economy/temple_transition_test.go:42:	if err = transitionTempleStaffing(ctx, tx); err != nil {
+server/internal/economy/temple_transition_test.go:46:func TestTempleTransitionNeverStealsFood(t *testing.T) {
+server/internal/economy/temple_transition_test.go:55:	if _, err = transitionSeed(ctx, tx, `DELETE FROM settlement_labor; UPDATE temple_staffing_transition SET completed=false; INSERT INTO buildings(settlement_id,building_type,level) VALUES($1,'temple',1); INSERT INTO settlement_labor(settlement_id,good_key,weight) VALUES($1,'cult',.15); INSERT INTO settlement_placement(settlement_id,gubbe_ordinal,target_kind,hex_q,hex_r,good_key) VALUES($1,1,'hex',0,0,'grain')`, sid); err != nil {
+server/internal/economy/temple_transition_test.go:58:	if err = transitionTempleStaffing(ctx, tx); err == nil {
+server/internal/economy/placement_yield.go:459:	staff, err := LoadTempleStaffing(ctx, tx, settlementID)
+server/internal/economy/placement_yield.go:464:		out = append(out, BuildingOption{BuildingType: "temple", Level: staff.Capacity / TempleWorkersPerLevel, StaffingOnly: true,
+server/api/handlers/web.go:66:		"temple":      "Temple",
+server/internal/economy/trade.go:232:	// Temple tithe (Timothy 2026-07-22, vägval c): when the silver leg of a sale
+server/internal/economy/trade.go:233:	// of a RELIGIOUSLY CODED good lands, the temple takes its tenth before the
+server/internal/economy/trade.go:234:	// seller sees it. Only where a temple stands — no temple, no collection.
+server/internal/economy/trade.go:244:			var religious, hasTemple bool
+server/internal/economy/trade.go:248:				                WHERE b.settlement_id = $2 AND b.building_type = 'temple')`,
+server/internal/economy/trade.go:250:			).Scan(&religious, &hasTemple); err != nil {
+server/internal/economy/trade.go:254:			if toTemple, toSeller := Tithe(delivered, religious, hasTemple); toTemple > 0 {
+server/internal/economy/trade.go:256:				slog.Info("temple tithe", "settlement", p.DestinationID, "good", counterpart.GoodKey,
+server/internal/economy/trade.go:257:					"silver", delivered, "tithe", toTemple)
+server/internal/economy/trade.go:259:					titheEvent, err = h.eventStore.AppendTx(ctx, tx, p.DestinationID, events.StreamProvince, "TempleTithe",
+server/internal/economy/trade.go:263:							"tithe":        toTemple,
+server/cmd/keryx/notification_text.go:58:			fmt.Printf("      Kharis: %s → %s (%.1f). Check `keryx status` for decay and temple support; staff and feed your temples.\n", b.FromBand, b.ToBand, b.Kharis)
+web/static/js/megaron/ui/drawers/kult.test.mjs:9:const { cultLevelLabel, prayerStatusHTML, templeOfferingsHTML } = await import('./kult.js');
+web/static/js/megaron/ui/drawers/kult.test.mjs:71:const templeFixture = {
+web/static/js/megaron/ui/drawers/kult.test.mjs:78:test('temple rows render the server reference and mixed next gift without repricing', () => {
+web/static/js/megaron/ui/drawers/kult.test.mjs:79:  const html = templeOfferingsHTML([templeFixture]);
+web/static/js/megaron/ui/drawers/kult.test.mjs:90:  const html = templeOfferingsHTML([{ ...templeFixture, required_goods: { grain: .25 }, offering: { silver: .0125 } }]);
+web/static/js/megaron/ui/drawers/kult.test.mjs:95:test('unfunded temple shows all-or-nothing outcome and escapes the city name', () => {
+web/static/js/megaron/ui/drawers/kult.test.mjs:96:  const html = templeOfferingsHTML([{ ...templeFixture, name: '<Knossos>', fed: false, offering: {} }]);
+web/static/js/megaron/ui/drawers/kult.test.mjs:103:test('realm without temples explains the missing gain', () => {
+web/static/js/megaron/ui/drawers/kult.test.mjs:104:  assert.match(templeOfferingsHTML([]), /No temples — kharis will not climb/);
+web/static/js/megaron/ui/drawers/kult.test.mjs:107:test('Kult controller renders the realm breakdown and templeless net from the province API', async t => {
+web/static/js/megaron/ui/drawers/kult.test.mjs:119:    kharis_net_known:true,kharis_net_per_tick:-1.1,kharis_per_tick:0,temple_offers:[],available_prayers:[]};
+web/static/js/megaron/ui/drawers/kult.test.mjs:130:  assert.match(body.innerHTML,/No temples/);
+web/static/js/megaron/ui/drawers/kult_kharis.test.mjs:45:test('realm decay breakdown uses authoritative base, city cost and total, including templeless realms', () => {
+web/static/js/megaron/ui/drawers/kult_kharis.test.mjs:47:    kharis_net_known: true, kharis_net_per_tick: -1.1, temple_offers: []};
+server/cmd/keryx/cmd_status_temple_test.go:9:func templeStatusFixture(t *testing.T) map[string]any {
+server/cmd/keryx/cmd_status_temple_test.go:12:	err := json.Unmarshal([]byte(`{"id":"local","temple_offers":[
+server/cmd/keryx/cmd_status_temple_test.go:23:func TestTempleOfferingLineRendersServerReferenceAndMixedPlan(t *testing.T) {
+server/cmd/keryx/cmd_status_temple_test.go:24:	sett := templeStatusFixture(t)
+server/cmd/keryx/cmd_status_temple_test.go:25:	row := sett["temple_offers"].([]any)[0].(map[string]any)
+server/cmd/keryx/cmd_status_temple_test.go:26:	line := templeOfferingLine(row)
+server/cmd/keryx/cmd_status_temple_test.go:27:	for _, want := range []string{"Temple in Phaistos: reference 0.375 grain per day", "alternatives: 0.75 fish or 0.125 timber or 0.5 silver", "stock: 0.1 grain, 0.55 fish, 0 timber, 3 silver", "next gift: 0.1 grain + 0.55 fish", "✓"} {
+server/cmd/keryx/cmd_status_temple_test.go:37:func TestTempleOfferingLineUnfundedHasNoDebit(t *testing.T) {
+server/cmd/keryx/cmd_status_temple_test.go:38:	row := templeStatusFixture(t)["temple_offers"].([]any)[1].(map[string]any)
+server/cmd/keryx/cmd_status_temple_test.go:39:	line := templeOfferingLine(row)
+server/cmd/keryx/cmd_status_temple_test.go:45:func TestLocalTempleOfferingCountsOnlyLocalPlan(t *testing.T) {
+server/cmd/keryx/cmd_status_temple_test.go:46:	sett := templeStatusFixture(t)
+server/cmd/keryx/cmd_status_temple_test.go:47:	got := localTempleOffering(sett)
+server/cmd/keryx/cmd_status_temple_test.go:51:	// Reference quantities never create a debit for an unfunded local temple.
+server/cmd/keryx/cmd_status_temple_test.go:53:	if got := localTempleOffering(sett); len(got) != 0 {
+server/cmd/keryx/cmd_status_temple_test.go:57:	if got := localTempleOffering(sett); len(got) != 0 {
+server/internal/economy/goods.go:79:// cult is devotion, produced by temple labor and converted to kharis in
+web/static/js/megaron/ui/drawers/kult_kharis.js:7:// Net and decay are authoritative server projections, including templeless realms.
+web/static/js/megaron/ui/drawers/kult_kharis.js:25:  // net (temple gain − decay), the figure that actually answers "did raising
+web/static/js/megaron/ui/drawers/kult_kharis.js:33:  if (Number.isInteger(pd.temple_staffed) && Number.isInteger(pd.temple_capacity)) {
+web/static/js/megaron/ui/drawers/kult_kharis.js:34:    out.netHtml += '<div class="stat-row"><span class="sr-label">Temple workers here</span><span class="sr-val">' + pd.temple_staffed + '/' + pd.temple_capacity + '</span></div>';
+web/static/js/megaron/ui/drawers/kult_kharis.js:37:    out.idleHtml = '<p class="kult-warn">Temple workplaces remain unfilled — place citizens in the temple in City.</p>';
+server/cmd/keryx/speltest_text_test.go:29:	spec := province.BuildingSpecs[province.BuildingTemple]
+server/cmd/keryx/speltest_text_test.go:33:	if out := timberBottleneckWarning(0); !strings.Contains(out, "temple (13.25)") {
+server/cmd/keryx/speltest_text_test.go:54:	ready, _ := prayerReadiness(riteAvailablePrayer{UnavailableReason: "no temple"})
+server/cmd/keryx/speltest_text_test.go:55:	if !strings.Contains(ready, "no temple") {
+server/internal/economy/recompute.go:50:// bigger workplace. Temple staffing has its own non-producing option with
+server/internal/economy/recompute.go:51:// physical capacity supplied by TempleWorkplaces.
+server/internal/economy/recompute.go:65:// 2026-08-08). §8.2 also lists Fishing place, Pasture, Barracks, Temple and
+server/internal/economy/recompute.go:68:// trains units rather than producing a good, Temple is cult labor
+server/internal/economy/recompute.go:73:// shipbuilding/repair capacity the same way Temple's gate cult devotion.
+server/internal/economy/recompute.go:111:// workplaceSlotTable (temple — cult labor, a separate path) or an unrecognised
+server/internal/economy/recompute.go:115:	if buildingType == "temple" {
+server/internal/economy/recompute.go:116:		return TempleWorkplaces(level)
+server/internal/economy/recompute.go:442:// Staffing-only temple roles consume workers but produce no settlement goods.
+web/static/js/megaron/ui/drawers/kult.js:39:    const prayers = (pd && pd.available_prayers) || [];
+web/static/js/megaron/ui/drawers/kult.js:50:    // Net kharis (temple gain − decay) — the figure that answers "did raising
+web/static/js/megaron/ui/drawers/kult.js:56:    // Cult level — derived from kharis (read-only; set by daily temple tick)
+web/static/js/megaron/ui/drawers/kult.js:62:    if (pd && Array.isArray(pd.temple_offers)) {
+web/static/js/megaron/ui/drawers/kult.js:63:      html += templeOfferingsHTML(pd.temple_offers);
+web/static/js/megaron/ui/drawers/kult.js:71:      html += '<p class="empty-state">No prayers available — build a temple first.</p>';
+web/static/js/megaron/ui/drawers/kult.js:98:function templeGoodsText(goods, separator) {
+web/static/js/megaron/ui/drawers/kult.js:106:export function templeOfferingsHTML(offers) {
+web/static/js/megaron/ui/drawers/kult.js:107:  let html = '<div class="dsec"><div class="dsec-title">Temple offerings</div>';
+web/static/js/megaron/ui/drawers/kult.js:109:    return html + '<p class="empty-state">No temples — kharis will not climb without a temple and offerings.</p></div>';
+web/static/js/megaron/ui/drawers/kult.js:113:    const next = t.fed ? templeGoodsText(t.offering, ' + ') : 'unfunded (nothing taken)';
+web/static/js/megaron/ui/drawers/kult.js:115:      '<span class="sr-val">reference ' + templeGoodsText(t.required_goods, ' + ') + ' per day<br>' +
+web/static/js/megaron/ui/drawers/kult.js:116:      'Alternatives: ' + templeGoodsText(t.alternatives, ' or ') + '<br>' +
+web/static/js/megaron/ui/drawers/kult.js:117:      'Stock: ' + templeGoodsText(t.stock, ', ') + '<br>' +
+server/cmd/keryx/cmd_rite.go:16:// riteAvailablePrayer mirrors province.go's available_prayers shape (the
+server/cmd/keryx/cmd_rite.go:43:		AvailablePrayers []riteAvailablePrayer `json:"available_prayers"`
+server/cmd/keryx/cmd_rite.go:87:		Short: "Perform a cultural prayer at your settlement (requires temple + offering)",
+server/cmd/keryx/cmd_rite.go:99:			// the province status endpoint, which exposes `available_prayers`. Works for
+server/cmd/keryx/cmd_rite.go:103:				// not the login default — GPT19: a colony without a temple listed
+server/cmd/keryx/cmd_rite.go:104:				// "no temple" while the cast from the capital succeeded.
+server/cmd/keryx/cmd_rite.go:146:					// The temple's reading: an offering is composed now, and its
+server/cmd/keryx/cmd_rite.go:148:					// fog. The temple knows — so it says so here, where the choice
+server/cmd/keryx/cmd_rite.go:323:	// server-side, without needing the culture string — available_prayers is
+server/cmd/keryx/cmd_rite.go:455:		return "no: check temple, kharis and offering", "—"
+server/internal/economy/wine_beyond_hills_test.go:25:// starved its temple (kharis.OfferWinePerTemple, fed from the settlement's
+server/internal/economy/is_shippable_good_test.go:53:// "temple labor" message (province_trade_cult_test.go's
+web/static/js/megaron/ui/drawers/city.js:179:  temple:'Temple', pen:'Pen', silo:'Granary',
+server/internal/economy/temple_staffing_test.go:5:func TestTempleHasTwoRealWorkplacesPerLevel(t *testing.T) {
+server/internal/economy/temple_staffing_test.go:7:		if got := WorkplaceSlots("temple", level); got != 2*level {
+server/internal/economy/temple_staffing_test.go:8:			t.Fatalf("temple L%d has %d places, want %d", level, got, 2*level)
+server/cmd/keryx/cmd_goods.go:112:			fmt.Println("\nWanaxes agree trade prices. The temple shows how the gods weigh offerings: keryx rite --list.")
+server/api/handlers/ai_round_test.go:18:	code, body := f.do(t, http.MethodPost, f.buildPath(), map[string]any{"building_type": "temple"})
+web/static/js/megaron/ui/misc.js:12:  kult:      "The gods watch your megaron, Wanax. Your temple's cult level and divine mood shape what rites you may call upon — tend it, and the gods answer; neglect it, and they turn away. Each prayer asks its own offering; choose with care.",
+web/static/js/megaron/ui/misc.js:76:    'minoan_templet_sf', 'minoan_templet_synth',
+server/cmd/keryx/cmd_demolish.go:107:	cmd.Flags().StringVar(&buildingType, "type", "", "city building to demolish (market, temple, harbour, ...)")
+server/internal/economy/tithe_test.go:12:func TestTithe_OnlyOnReligiousTradeWithATemple(t *testing.T) {
+server/internal/economy/tithe_test.go:17:		hasTemple    bool
+server/internal/economy/tithe_test.go:18:		wantToTemple float64
+server/internal/economy/tithe_test.go:21:		{"wine sold by a temple city — tithed", 100, true, true, 10, 90},
+server/internal/economy/tithe_test.go:22:		{"grain sold by a temple city — untouched", 100, false, true, 0, 100},
+server/internal/economy/tithe_test.go:23:		{"wine sold where no temple stands — nothing to collect", 100, true, false, 0, 100},
+server/internal/economy/tithe_test.go:24:		{"neither religious nor templed", 100, false, false, 0, 100},
+server/internal/economy/tithe_test.go:29:			temple, seller := Tithe(tc.silver, tc.religious, tc.hasTemple)
+server/internal/economy/tithe_test.go:30:			if math.Abs(temple-tc.wantToTemple) > 1e-9 {
+server/internal/economy/tithe_test.go:31:				t.Errorf("temple got %.2f, want %.2f", temple, tc.wantToTemple)
+server/internal/economy/tithe_test.go:44:		temple, seller := Tithe(silver, true, true)
+server/internal/economy/tithe_test.go:45:		if math.Abs((temple+seller)-silver) > 1e-9 {
+server/internal/economy/tithe_test.go:46:			t.Errorf("silver %.2f split into %.2f + %.2f", silver, temple, seller)
+server/api/handlers/speltest_text_test.go:57:				} `json:"available_prayers"`
+server/api/handlers/speltest_text_test.go:70:			if pr.Reason != "no temple" {
+server/api/handlers/speltest_text_test.go:71:				t.Fatalf("unready reason %q, want no temple", pr.Reason)
+server/cmd/keryx/temple_staffing_test.go:11:func TestStaffTemplePostsPhysicalPlacement(t *testing.T) {
+server/cmd/keryx/temple_staffing_test.go:19:			if body["target_kind"] != "building" || body["building_type"] != "temple" || body["good_key"] != "cult" {
+server/cmd/keryx/temple_staffing_test.go:27:		fmt.Fprint(w, `{"total_gubbar":10,"pool_size":10,"hexes":[],"buildings":[{"building_type":"temple","level":1,"goods":[{"good_key":"cult","staffing_only":true,"cap":2,"placed":0,"placed_ordinals":[]}]}]}`)
+server/cmd/keryx/temple_staffing_test.go:30:	cmd.SetArgs([]string{"temple", "+1"})
+server/cmd/keryx/temple_staffing_test.go:37:	if !strings.Contains(out, "1/2 temple workers") || strings.Contains(out, "per day") {
+server/cmd/keryx/cmd_status_kharis_test.go:16:		{"capital without temple", 1, .1, 0, .1, "0.1 base + 1 city cost 0.0 per day = 0.1 total"},
+server/cmd/keryx/cmd_status_kharis_test.go:28:						"temple_offers": []any{},
+server/cmd/keryx/cmd_status_kharis_test.go:38:			for _, want := range []string{tc.want, "net -", "cap 40", "Temples: none"} {
+server/cmd/keryx/cmd_gubbe.go:179:		return fmt.Sprintf("%-10s %d/%d temple workers", "devotion", g.Placed, *g.Cap)
+server/cmd/keryx/cmd_roster.go:39:// spot which city to thin out, including temple workers.
+server/cmd/keryx/cmd_roster.go:47:			"`keryx place`/`keryx staff`" + ` to move gubbar, including temple workers.`,
+server/cmd/keryx/rite_list_settlement_test.go:10:// GPT19: after login the default province was a colony without a temple, so
+server/cmd/keryx/rite_list_settlement_test.go:20:			fmt.Fprint(w, `{"settlement":{"kharis_mood":"Content","kharis":50,"available_prayers":[{"id":"minoan_potnia_vision_v2","name":"Potnia's Vision"}]}}`)
+server/cmd/keryx/kharis_cap_line_test.go:11:		return map[string]any{"kharis": kv, "kharis_cap": 50.0, "max_temple_level": 1.0,
+server/cmd/keryx/kharis_cap_line_test.go:22:func TestKharisStalledHintNamesPhysicalTempleStaffing(t *testing.T) {
+server/cmd/keryx/kharis_cap_line_test.go:24:		out := kharisCapLine(map[string]any{"kharis": 40.0, "kharis_cap": 50.0, "max_temple_level": 1.0, "kharis_net_known": true, "kharis_net_per_tick": net})
+server/cmd/keryx/kharis_cap_line_test.go:25:		if strings.Contains(out, "allocate") || !strings.Contains(out, "keryx staff temple +1") {
+server/cmd/keryx/cmd_status_surplus_test.go:154:	t.Run("temple maintenance sizes the actual mixed gift over the horizon", func(t *testing.T) {
+server/cmd/keryx/cmd_status_surplus_test.go:156:			templeOfferingPerTick: map[string]float64{"grain": .1, "fish": .05, "timber": .2, "silver": .03}})
+server/cmd/keryx/cmd_status_surplus_test.go:167:	t.Run("a good with no building/upkeep/food/temple source has zero capacity", func(t *testing.T) {
+server/api/handlers/opening_dispatch.go:55:		fmt.Sprintf("The gods. A new Wanax starts at %g Kharis. It fades slowly from the start; each additional city increases the daily cost, even with a temple. A temple takes %d days to build: staff and feed it to earn favour. Low standing risks punishment.", kharis.StartingKharis, province.BuildingSpecs[province.BuildingTemple].DurationTicks),
+server/api/handlers/opening_dispatch.go:62:		body.Paragraphs[4] = fmt.Sprintf("The gods. Your standing is kept and fades from the start. Each additional city increases the daily cost, even with a temple. A temple takes %d days to build: staff and feed it to earn favour. Low standing risks punishment.", province.BuildingSpecs[province.BuildingTemple].DurationTicks)
+server/api/handlers/silver_calibration_test.go:140:	legacyCult := map[string]any{"scarcity_factor": 2.0, "kharis_gain": 2.4, "temples_fed": 1.0}
+server/api/handlers/rite_odds_hidden_test.go:40:// available_prayers (province.go, the prayerRow struct) must never carry a
+server/api/handlers/goods_placement_labor_test.go:63:	// Temple devotion is the same people; it must not shrink idle (Haiku-7).
+server/api/handlers/goods_cost_test.go:11:func TestBuildTemple_FloatingPointExactCost(t *testing.T) {
+server/api/handlers/goods_cost_test.go:22:	code, body := f.do(t, http.MethodPost, f.buildPath(), map[string]any{"building_type": "temple"})
+server/api/handlers/goods_cost_test.go:24:		t.Fatalf("build temple at stored %.17g: HTTP %d: %v", raw, code, body)
+server/api/handlers/goods_cost_test.go:30:	if err := f.pool.QueryRow(context.Background(), `SELECT count(*) FROM build_queue WHERE settlement_id=$1 AND building_type='temple'`, f.settlementID).Scan(&queued); err != nil {
+server/api/handlers/goods_cost_test.go:34:		t.Fatalf("queued temples = %d", queued)
+server/api/handlers/oracle_reveal_map_test.go:31:// needed to call applyOracleRevealDeposits directly (kharis, temple and cooldown
+server/api/handlers/ai_round4_test.go:86:	for _, kind := range []string{"market", "temple"} {
+server/api/handlers/temple_staffing_test.go:11:func TestTempleUsesRealWorkforceAndActualLevelCapacity(t *testing.T) {
+server/api/handlers/temple_staffing_test.go:20:			if _, err := pool.Exec(ctx, `INSERT INTO buildings(settlement_id,building_type,level) VALUES($1,'temple',$2)`, f.settlementID, level); err != nil {
+server/api/handlers/temple_staffing_test.go:23:			body := map[string]any{"target_kind": "building", "building_type": "temple", "good_key": "cult"}
+server/api/handlers/temple_staffing_test.go:38:			staff, err := economy.LoadTempleStaffing(ctx, pool, f.settlementID)
+server/api/handlers/temple_staffing_test.go:46:			staff, err = economy.LoadTempleStaffing(ctx, pool, f.settlementID)
+server/api/handlers/temple_staffing_test.go:57:func TestTempleCannotEmployAWorkerAlreadyWorkingFood(t *testing.T) {
+server/api/handlers/temple_staffing_test.go:64:	if _, err := pool.Exec(ctx, `INSERT INTO buildings(settlement_id,building_type,level) VALUES($1,'temple',1)`, f.settlementID); err != nil {
+server/api/handlers/temple_staffing_test.go:71:	code, resp = f.do(t, http.MethodPost, f.placementsPath(), map[string]any{"target_kind": "building", "building_type": "temple", "good_key": "cult"})
+server/api/handlers/settlement.go:223:// duplicates the ring math. Temple service is an ordinary building assignment.
+server/api/handlers/settlement.go:627:// a modest (L1) temple cannot sustain and a grander, climbing one slowly can.
+server/api/handlers/settlement.go:703:// Performs a cultural prayer — requires a temple, costs a material offering.
+server/api/handlers/settlement.go:789:	var hasTemple bool
+server/api/handlers/settlement.go:791:		`SELECT EXISTS(SELECT 1 FROM buildings WHERE settlement_id = $1 AND building_type = 'temple')`,
+server/api/handlers/settlement.go:793:	).Scan(&hasTemple)
+server/api/handlers/settlement.go:794:	if !hasTemple {
+server/api/handlers/settlement.go:795:		// Distinguish "no temple at all" from "temple finishing" — the latter is
+server/api/handlers/settlement.go:796:		// the surprise a Wanax hits performing a rite right after a temple build
+server/api/handlers/settlement.go:799:		// real cause instead of a bare "temple required".
+server/api/handlers/settlement.go:802:			`SELECT EXISTS(SELECT 1 FROM build_queue WHERE settlement_id = $1 AND building_type = 'temple')`,
+server/api/handlers/settlement.go:807:				"temple is still finishing here — it becomes usable within a day of completion; retry shortly")
+server/api/handlers/settlement.go:810:				"temple required — build a temple here first (rites are performed at a temple)")
+server/api/handlers/settlement.go:827:	if spec.GodID != "" {
+server/api/handlers/settlement.go:855:	if spec.GodID != "" {
+server/api/handlers/settlement.go:856:		remaining, cdErr := religion.GodCooldownRemaining(r.Context(), tx, worldID, playerID, spec.GodID, nowTick)
+server/api/handlers/settlement.go:866:	// Cooldown check: query last successful RiteCast for this (player, prayer, temple) from events table.
+server/api/handlers/settlement.go:869:	// a Wanax with temples in five cities can cast five prayers per cycle (one per city).
+server/api/handlers/settlement.go:870:	if spec.GodID == "" && spec.CooldownTicks > 0 {
+server/api/handlers/settlement.go:1060:	if success && spec.GodID != "" {
+server/api/handlers/settlement.go:1061:		if err = religion.SetGodCooldown(r.Context(), tx, worldID, playerID, spec.GodID, nowTick+spec.CooldownTicks); err != nil {
+server/api/handlers/settlement.go:1066:	eventPayload["god_id"] = spec.GodID
+server/api/handlers/opening_dispatch_test.go:159:		for _, want := range []string{tc.label, "3 Wanaxes", fmt.Sprintf("%g grain", float64(nomadicHostDowryGrain)), fmt.Sprintf("%g silver", nomadicHostStartingSilver), fmt.Sprintf("starts at %g Kharis", kharis.StartingKharis), fmt.Sprintf("temple takes %d days", province.BuildingSpecs[province.BuildingTemple].DurationTicks), fmt.Sprintf("below %d people", economy.CollapseBelowPopulation), fmt.Sprintf("olive woodland in %g", province.TerrainMoveTicks("forest_olive_grove")), "reserves do not drain"} {
+server/api/handlers/opening_dispatch_test.go:168:	t.Logf("actual starting kharis %g, temple duration%d", kharis.StartingKharis, province.BuildingSpecs[province.BuildingTemple].DurationTicks)
+server/api/handlers/province.go:416:		var maxTempleLevel int
+server/api/handlers/province.go:423:				kharisCap, maxTempleLevel = k.Cap, k.MaxTempleLevel
+server/api/handlers/province.go:441:		templeOffers := []kharis.TempleOffer{}
+server/api/handlers/province.go:443:			offers, err := kharis.LoadTempleOffers(r.Context(), h.pool, *sett.OwnerID, worldID)
+server/api/handlers/province.go:445:				writeError(w, http.StatusInternalServerError, "could not load temple offerings")
+server/api/handlers/province.go:448:			templeOffers = offers
+server/api/handlers/province.go:451:		// Temple presence — required by the rite handler for any prayer.
+server/api/handlers/province.go:452:		var hasTemple bool
+server/api/handlers/province.go:454:			`SELECT EXISTS(SELECT 1 FROM buildings WHERE settlement_id = $1 AND building_type = 'temple')`,
+server/api/handlers/province.go:456:		).Scan(&hasTemple)
+server/api/handlers/province.go:458:		// available_prayers: the settlement culture's prayers with full affordability:
+server/api/handlers/province.go:459:		// material offering costs + kharis tier gate + temple presence.
+server/api/handlers/province.go:487:			// The temple's reading of the gods (temenos_prayers_komposition_plan.md).
+server/api/handlers/province.go:489:			// data no Wanax can observe through the fog. The temple is exactly the
+server/api/handlers/province.go:499:		// Devotion + what this settlement's temple can employ.
+server/api/handlers/province.go:500:		templeStaff, err := economy.LoadTempleStaffing(r.Context(), h.pool, sett.ID)
+server/api/handlers/province.go:502:			writeError(w, http.StatusInternalServerError, "could not load temple staffing")
+server/api/handlers/province.go:514:			afford := hasTemple && kharisNow >= spec.MinKharis
+server/api/handlers/province.go:526:			if spec.GodID == "" && spec.CooldownTicks > 0 && sett.OwnerID != nil {
+server/api/handlers/province.go:548:			if spec.GodID != "" && sett.OwnerID != nil {
+server/api/handlers/province.go:550:				cooldownRemainingDays, cdErr = religion.GodCooldownRemaining(r.Context(), h.pool, worldID, *sett.OwnerID, spec.GodID, prayerTick)
+server/api/handlers/province.go:569:			if !hasTemple {
+server/api/handlers/province.go:570:				reason = "no temple"
+server/api/handlers/province.go:742:			"max_temple_level":     maxTempleLevel,
+server/api/handlers/province.go:747:			"temple_offers":        templeOffers,
+server/api/handlers/province.go:771:			"available_prayers":                prayers,
+server/api/handlers/province.go:773:			// Physical temple workers share the settlement workforce.
+server/api/handlers/province.go:774:			"temple_staffed":  templeStaff.Staffed,
+server/api/handlers/province.go:775:			"temple_capacity": templeStaff.Capacity,
+server/api/handlers/province.go:2773:// settlement_placement, including temple service; cult remains absent from the goods inventory.
+server/api/handlers/province.go:2952:	// Every placement, including temple service, consumes the same workforce.
+server/api/handlers/province.go:3289:			"cannot transfer cult — cult is produced by temple labor and converted to kharis in place, it cannot be shipped")
+server/api/handlers/settlement_rite_offering_test.go:106:	// 15 independent casts (fresh settlement each time to dodge the per-temple
+server/api/handlers/settlement_rite_offering_test.go:128:			`INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, 'temple', 1)`,
+server/api/handlers/settlement_rite_offering_test.go:131:			t.Fatalf("create temple %d: %v", i, err)
+server/api/handlers/goods_catalog_test.go:82:	// and temple labor respectively, never a tradeable good (see
+server/api/handlers/goods.go:28:// apart. Excludes silver (payment currency) and cult (temple labor, not a
+server/api/handlers/messenger.go:52:// (temple labor); those two are rejected by their own dedicated checks before
+server/api/handlers/messenger.go:176:				writeError(w, http.StatusBadRequest, "cannot trade for cult — cult is temple labor, not a tradeable good")
+server/api/handlers/messenger.go:193:				writeError(w, http.StatusBadRequest, "cannot sell cult — cult is temple labor, not a tradeable good")
+server/api/handlers/temple_offering_status_test.go:19:func TestEarlyTempleStatusPlanAndOwnerPrivacy(t *testing.T) {
+server/api/handlers/temple_offering_status_test.go:23:	svc := auth.NewService(pool, "early-temple-test")
+server/api/handlers/temple_offering_status_test.go:24:	pid, token := settlementsOverviewRegisterPlayer(t, svc, ctx, "temple-owner-"+uuid.New().String())
+server/api/handlers/temple_offering_status_test.go:25:	_, otherToken := settlementsOverviewRegisterPlayer(t, svc, ctx, "temple-viewer-"+uuid.New().String())
+server/api/handlers/temple_offering_status_test.go:31:	if _, err := pool.Exec(ctx, `INSERT INTO buildings(settlement_id,building_type,level) VALUES($1,'temple',1);
+server/api/handlers/temple_offering_status_test.go:62:					Offers []kharis.TempleOffer `json:"temple_offers"`
+server/api/handlers/standing_order_test.go:238:		t.Fatalf("Create with good_key=cult = %d %v, want 400 (cult is temple labor, never shippable)", code, resp)
+server/api/handlers/settlement_test.go:125:// TestRiteAffordableFlag_RequiresTempleAndKharis verifies the contract for the
+server/api/handlers/settlement_test.go:126:// affordable:bool field returned in available_prayers (province status endpoint).
+server/api/handlers/settlement_test.go:127:// Before BUG B fix the field ignored the temple gate and MinKharis threshold,
+server/api/handlers/settlement_test.go:128:// so it was always true — agents cast prayers at temples that didn't exist.
+server/api/handlers/settlement_test.go:130:// The province handler now checks hasTemple && kharisNow >= spec.MinKharis BEFORE
+server/api/handlers/settlement_test.go:147:// TestRiteAffordableFlag_SufficientKharisAndTempleIsAffordable is the positive case:
+server/api/handlers/db.go:122:	// MaxTempleLevel is the level of the Wanax's grandest temple. It BINDS Cap
+server/api/handlers/db.go:125:	MaxTempleLevel int
+server/api/handlers/db.go:196:// Wanax's grandest temple earns. Reporting the raw column would show 100 while
+server/api/handlers/db.go:207:		        JOIN buildings b ON b.settlement_id = s.id AND b.building_type = 'temple'
+server/api/handlers/db.go:214:	).Scan(&k.Amount, &k.Rate, &k.Cap, &k.CultLevel, &k.MaxTempleLevel)
+server/api/handlers/db.go:216:		k.Cap = kharis.EffectiveKharisCap(k.Cap, k.MaxTempleLevel)
+server/api/handlers/province_trade_cult_test.go:12:// by temple labor and converted to kharis in place (internal/kharis/tick.go),
+server/api/handlers/province_trade_cult_test.go:46:	if !strings.Contains(msg, "cult") || !strings.Contains(msg, "temple labor") {
+server/api/handlers/province_trade_cult_test.go:47:		t.Errorf("error message = %q, want it to name cult and explain temple labor (actionable for human and LLM agent)", msg)
+server/api/handlers/province_trade_cult_test.go:91:	if !strings.Contains(msg, "cult") || !strings.Contains(msg, "temple labor") {
+server/api/handlers/province_trade_cult_test.go:92:		t.Errorf("error message = %q, want it to name cult and explain temple labor", msg)
+server/api/handlers/epitaph_test.go:138:	f.event(mycenae, 3, "BuildComplete", `{"building_type":"temple"}`)
+server/api/handlers/epitaph_test.go:169:		"Raised temple in " + my + ".",
+server/api/handlers/create_metropolis.go:194:	// raises farm/lumbermill/temple/market themselves. The single exception is a
+server/api/handlers/religion_alpha_test.go:66:		_, err = f.pool.Exec(ctx, `INSERT INTO buildings(settlement_id,building_type,level) VALUES($1,'temple',1)`, city)
+server/api/handlers/messenger_trade_offer_good_validation_test.go:21:// temple labor, never a tradeable good — see migration 094_cult_is_not_a_good, which
+server/api/handlers/messenger_trade_offer_good_validation_test.go:315:// invariants (silver = payment currency, cult = temple labor) so the new
+server/api/handlers/messenger_trade_offer_good_validation_test.go:359:	if !strings.Contains(cultResp.Error, "cult") || !strings.Contains(cultResp.Error, "temple labor") {
+server/api/handlers/messenger_trade_offer_good_validation_test.go:360:		t.Errorf("cult rejection message = %q, want it to name cult as temple labor / not tradeable", cultResp.Error)

@@ -1,0 +1,37 @@
+server/internal/economy/siege_dispatch.go:74:		`UPDATE settlements SET siege_notified = $2 WHERE id = $1`,
+server/internal/economy/food_tick.go:168:	if _, err := tx.Exec(ctx, `UPDATE settlements SET food_unmet_amount=$2,food_consumed=$3,food_consumed_tick=current_world_tick() WHERE id=$1`, settlementID, unmet, meal.Used); err != nil {
+server/internal/economy/recompute.go:484:		`UPDATE settlements SET besieged = $2 WHERE id = $1 AND besieged <> $2`,
+server/cmd/erase-player/main.go:158:			`UPDATE settlements SET owner_id = NULL, kingdom_id = NULL, state = 'abandoned', updated_at = now()
+server/internal/kharis/tick.go:1040:				`UPDATE settlements SET population = population - $1 WHERE id = $2`,
+server/api/handlers/unit_lay_up.go:145:	if _, err = tx.Exec(ctx, `UPDATE settlements SET population=population+$2 WHERE id=$1`, *sid, delta); err != nil {
+server/internal/combat/battle.go:588:		// Until 2026-09-01 this loop ran `UPDATE settlements SET population =
+server/api/handlers/disband.go:112:	if err = tx.QueryRow(ctx, `UPDATE settlements SET population=population+$1 WHERE id=$2 RETURNING population`, popRestored, settlementID).Scan(&popAfter); err != nil {
+server/api/handlers/settlement_placement.go:711:				`UPDATE buildings SET settlement_id = $1
+server/internal/combat/succession.go:97:		`UPDATE settlements SET is_capital = true, updated_at = now() WHERE id = $1`,
+server/api/handlers/settlement.go:585:		`UPDATE settlements SET
+server/api/handlers/settlement.go:1016:			_, err = tx.Exec(r.Context(), `UPDATE settlements SET garrison_defense_until_tick=$2,garrison_defense_owner_id=$3 WHERE id=$1`, settlementID, until, playerID)
+server/api/handlers/settlement.go:1127:		`UPDATE settlements SET battle_frenzy_until = $1 WHERE id = $2`,
+server/api/handlers/settlement.go:1421:		`UPDATE settlements SET owner_id = NULL, kingdom_id = NULL,
+server/api/handlers/kingdom.go:138:		`UPDATE settlements SET kingdom_id = $1 WHERE id = $2`,
+server/api/handlers/kingdom.go:264:		`UPDATE settlements SET kingdom_id = $1 WHERE id = $2`,
+server/api/handlers/kingdom.go:339:		`UPDATE settlements SET kingdom_id = NULL
+server/api/handlers/kingdom.go:554:		`UPDATE settlements SET
+server/api/handlers/province.go:1413:		`INSERT INTO build_queue (settlement_id, world_id, building_type, complete_at, hex_q, hex_r)
+server/api/handlers/province.go:2375:		`UPDATE settlements SET population = population - $1 WHERE id = $2
+server/api/handlers/building_demolish.go:138:	ct, err := tx.Exec(ctx, `DELETE FROM buildings WHERE id = $1`, buildingID)
+server/internal/combat/occupation_check.go:81:			if _, err := tx.Exec(ctx, `UPDATE settlements SET annex_ready_notified = true WHERE id = $1`, p.SettlementID); err != nil {
+server/api/handlers/create_metropolis.go:215:				`INSERT INTO buildings (settlement_id, building_type, level, hex_q, hex_r) VALUES ($1, 'farm', 1, $2, $3)
+server/internal/combat/cancel_training.go:113:	if _, err := tx.Exec(ctx, `UPDATE settlements SET population=population+$2 WHERE id=$1`, city, restored); err != nil {
+server/internal/combat/build.go:80:			`INSERT INTO buildings (settlement_id, building_type, level, hex_q, hex_r) VALUES ($1, $2, 1, $3, $4)
+server/internal/combat/build.go:87:			`INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, $2, 1)
+server/internal/combat/build.go:192:			`UPDATE settlements SET wall_level = LEAST(wall_level + $1, 3) WHERE id = $2`,
+server/internal/combat/collapse.go:249:		`UPDATE settlements SET
+server/internal/combat/siege_capitulation.go:113:			`UPDATE settlements SET siege_starvation_ticks = 0 WHERE id = $1`, p.SettlementID,
+server/internal/combat/siege_capitulation.go:129:		`UPDATE settlements SET
+server/internal/combat/occupation.go:231:		`UPDATE settlements SET
+server/internal/combat/occupation.go:279:		`UPDATE settlements SET occupied_since_tick = $2, annex_ready_notified = false, updated_at = now()
+server/internal/combat/occupation.go:414:		`UPDATE settlements SET
+server/internal/combat/occupation.go:500:			`UPDATE settlements SET
+server/internal/combat/occupation.go:562:		`UPDATE settlements SET
+server/internal/combat/occupation.go:649:		if _, err := tx.Exec(ctx, `DELETE FROM buildings WHERE id = $1`, topID); err != nil {
+server/internal/combat/occupation.go:653:		if _, err := tx.Exec(ctx, `UPDATE buildings SET level = level - 1 WHERE id = $1`, topID); err != nil {
