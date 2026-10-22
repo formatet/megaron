@@ -44,7 +44,7 @@ func TestDeepFishingHTTPZeroCapAndHarbour(t *testing.T) {
 			t.Fatal("visible deep hex missing")
 		}
 	}
-	check(0, 1.0/6)
+	check(0, 1)
 	code, _ := f.do(t, http.MethodPost, f.placementsPath(), map[string]any{"target_kind": "hex", "hex_q": 1, "hex_r": 0, "good_key": "fish"})
 	if code != http.StatusConflict {
 		t.Fatalf("deep without harbour placement=%d want409", code)
@@ -52,7 +52,7 @@ func TestDeepFishingHTTPZeroCapAndHarbour(t *testing.T) {
 	if _, err := pool.Exec(ctx, `INSERT INTO buildings(settlement_id,building_type,level) VALUES($1,'harbour',1)`, f.settlementID); err != nil {
 		t.Fatal(err)
 	}
-	check(4, 1.7/6)
+	check(1, 1)
 	code, resp := f.do(t, http.MethodPost, f.placementsPath(), map[string]any{"target_kind": "hex", "hex_q": 1, "hex_r": 0, "good_key": "fish"})
 	if code != http.StatusCreated {
 		t.Fatalf("deep with harbour placement=%d %v", code, resp)
@@ -89,12 +89,15 @@ func TestBayFishingHTTPUsesLocalCapacity(t *testing.T) {
 				if g["good_key"] != "fish" {
 					continue
 				}
-				want := 3
+				want := 2
 				if level > 0 {
-					want = 7
+					want = 2
 				}
 				if g["cap"] != float64(want) {
 					t.Fatalf("L%d bay=%v want%d", level, g["cap"], want)
+				}
+				if g["marginal_yield"] != float64(2) {
+					t.Fatalf("bay L%d rate=%v want2", level, g["marginal_yield"])
 				}
 			}
 		}

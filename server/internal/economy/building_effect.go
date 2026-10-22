@@ -21,6 +21,7 @@ type HexBuildEffect struct {
 	PlacesWithout int     // worker places without the building (0 = the good cannot be produced without it: silver)
 	RateWithout   float64 // r0, rate per worker without the building (0 when NeedsBuilding)
 	PlacesWith    int     // P0 + BuildingExtraPlaces
+	PlacesByLevel [3]int  // same at every level except deep-water harbour places
 	RateByLevel   [3]float64
 	NeedsBuilding bool // silver: no base yield, the hex gives nothing without a mine
 }
@@ -69,12 +70,15 @@ func HexBuildEffects(ctx context.Context, tx Tx, buildingType string, worldID uu
 		if r0 <= 0 {
 			continue // the rule names the good but the world has no production row for it here
 		}
-		e := HexBuildEffect{Good: rule.good, PlacesWith: rule.basePlaces + BuildingExtraPlaces, NeedsBuilding: needs}
+		places1, _ := rule.placesAndMult(1)
+		e := HexBuildEffect{Good: rule.good, PlacesWith: places1, NeedsBuilding: needs}
 		if !needs {
 			e.PlacesWithout, e.RateWithout = rule.basePlaces, r0
 		}
 		for l := 1; l <= 3; l++ {
-			e.RateByLevel[l-1] = r0 * (1.0 + BuildingRatePerLevel*float64(l))
+			places, mult := rule.placesAndMult(l)
+			e.PlacesByLevel[l-1] = places
+			e.RateByLevel[l-1] = r0 * mult
 		}
 		out = append(out, e)
 	}
@@ -122,6 +126,10 @@ func UpgradeEffectText(effects []HexBuildEffect, currentLevel int) string {
 	}
 	parts := make([]string, 0, len(effects))
 	for _, e := range effects {
+		if e.PlacesByLevel[currentLevel-1] != e.PlacesByLevel[currentLevel] {
+			parts = append(parts, fmt.Sprintf("this hex's %s places %d → %d", e.Good, e.PlacesByLevel[currentLevel-1], e.PlacesByLevel[currentLevel]))
+			continue
+		}
 		parts = append(parts, fmt.Sprintf("this hex's %s output %s → %s", e.Good, levelMult(currentLevel), levelMult(currentLevel+1)))
 	}
 	return strings.Join(parts, "; ")

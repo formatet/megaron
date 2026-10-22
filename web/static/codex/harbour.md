@@ -1,7 +1,12 @@
-A harbour stands in the city and helps **every coastal-water and deep-water hex in its [[catchment]]**. Build it through **City → Buildings → Construct**, or `keryx build --type harbour`. The city must meet the coast rule described in [[buildings]].
+A harbour stands in the city and opens fishing places on **every deep-water hex in its [[catchment]]**. Build it through **City → Buildings → Construct**, or `keryx build --type harbour`. The city must meet the coast rule described in [[buildings]].
 
-The harbour adds **four fishing places** to each of those hexes, including deep water that has no places without it. Coastal water has 6 places with a harbour; a sheltered bay has 7; deep water has 4. See [[fishing]] for the bay rule.
+| Harbour level | Fishing places on each deep-water hex |
+|---|---|
+| No harbour | 0 |
+| Level 1 | 1 |
+| Level 2 | 2 |
+| Level 3 | 4 |
 
-Every fisher on these hexes produces **×1.7 at level 1, ×2.4 at level 2 and ×3.1 at level 3**. These multipliers apply to deep-water fishing too. Later levels raise output per worker; they do not add further places. Rivers and fords receive no harbour bonus.
+Each deep-water fisher catches **1 fish per day**, at every harbour level. The harbour has no fishing multiplier and adds no coastal places. Coastal water always has two places producing 1 fish per fisher per day; a bay has two places producing 2 each. See [[fishing]] for the bay rule. Rivers and fords receive no harbour bonus.
 
-The harbour has no city workplaces to staff. Place your [[citizens]] on the water hexes themselves. A Shipyard is a separate building for building and repairing [[sea|ships]].
+The harbour has no city workplaces to staff. Place your [[citizens]] on the deep-water hexes themselves. Its role in sea trade is separate from fishing. A Shipyard is a separate building for building and repairing [[sea|ships]].

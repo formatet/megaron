@@ -112,7 +112,7 @@ func (bs BuildingSet) levelsAt(c hexgrid.Coord) map[string]int {
 
 // builtAt reports whether buildingType counts as built FOR HEX c: Hex[c]'s
 // own presence for a hex-bound type, City's settlement-wide presence for
-// everything else (harbour's coastal_sea+fish row is the one HexOption case
+// everything else (harbour's deep_sea+fish row is the one HexOption case
 // that reaches this — a terrain-gated row naming a city-wide building).
 func (bs BuildingSet) builtAt(c hexgrid.Coord, buildingType string) bool {
 	if HexBoundBuildingTypes[buildingType] {

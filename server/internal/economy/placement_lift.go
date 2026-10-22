@@ -50,6 +50,21 @@ func LiftPlacementsAfterDemolish(ctx context.Context, tx Tx, settlementID uuid.U
 	if err != nil {
 		return nil, fmt.Errorf("lift placements: %w", err)
 	}
+	hexLifted, err := liftHexPlacementsToCapacity(ctx, tx, settlementID, goods, hexQ, hexR)
+	if err != nil {
+		return nil, err
+	}
+	lifted = append(lifted, hexLifted...)
+
+	sort.Ints(lifted)
+	return lifted, nil
+}
+
+// liftHexPlacementsToCapacity retains the lowest ordinals on each hex and
+// frees only surplus workers. Demolition and fishing migration share this path;
+// it never auto-places people in a different job.
+func liftHexPlacementsToCapacity(ctx context.Context, tx Tx, settlementID uuid.UUID, goods []string, hexQ, hexR *int) ([]int, error) {
+	var lifted []int
 	if len(goods) > 0 {
 		opts, err := LoadHexProductionOptions(ctx, tx, settlementID, nil)
 		if err != nil {
@@ -100,6 +115,5 @@ func LiftPlacementsAfterDemolish(ctx context.Context, tx Tx, settlementID uuid.U
 		}
 		lifted = append(lifted, drop...)
 	}
-	sort.Ints(lifted)
 	return lifted, nil
 }

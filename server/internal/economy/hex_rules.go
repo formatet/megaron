@@ -7,12 +7,14 @@ package economy
 //     base rate per worker r0(h,g) from production_rules (building NULL rows,
 //     plus the silver/mine rows, which only apply when a mine stands on the hex);
 //   - when the rule's relevant building stands on h (harbour: the city's harbour,
-//     acting on every coastal_sea and deep_sea hex) at level L >= 1, places = P0 + BuildingExtraPlaces
+//     acting on deep_sea fishing only; fish has no building rate multiplier) at level L >= 1, places = P0 + BuildingExtraPlaces
 //     (same at every level) and rate per worker = r0 * (1 + BuildingRatePerLevel*L);
 //   - otherwise places = P0 and rate per worker = r0.
 //
-// Output = rate per worker * min(placed, places). No good is an exception.
-// Silver is the one good the rule cannot give without its building: its
+// Output = rate per worker * min(placed, places). Fishing places and intrinsic
+// bay yield are resolved by this owner before consumers see the options.
+// Silver requires its mine row; deep-water fish requires harbour places. Silver
+// production is additionally gated by its catalogue rows: its
 // production_rules rows are the mine rows, which only load when a mine stands
 // on the hex.
 
@@ -23,6 +25,10 @@ import (
 	"formatet/megaron/server/internal/hexgrid"
 	"github.com/google/uuid"
 )
+
+// Deep-water places are the harbour's entire fishing effect. Coastal water
+// remains two places; bays raise the intrinsic rate, not the headcount.
+var deepFishingPlaces = [4]int{0, 1, 2, 4}
 
 // BuildingExtraPlaces is how many worker places a hex-bound building adds to its hex.
 const BuildingExtraPlaces = 4
@@ -39,56 +45,57 @@ const HexFallbackCap = 2
 type hexRule struct {
 	good       string
 	basePlaces int
-	building   string // "" = no building raises this (good, hex)
+	building   string  // "" = no building raises this (good, hex)
+	rateMult   float64 // 0 means 1; bays have intrinsic rate 2
 }
 
 // fieldStone is the stone every land hex without a quarry-grade deposit gives
 // (mig 156, Timothy 2026-10-02): one place, raised by the stonequarry. Its base
 // rate (0,5) is the production_rules row; hills and limestone keep their own.
-var fieldStone = hexRule{"stone", 1, "stonequarry"}
+var fieldStone = hexRule{"stone", 1, "stonequarry", 0}
 
 // hexRules returns the rule rows for a hex of this terrain and deposits.
 func hexRules(terrain string, copperDep, tinDep, silverDep, incenseDep bool) []hexRule {
 	var out []hexRule
 	switch terrain {
 	case "plains":
-		out = append(out, hexRule{GoodGrain, 4, "farm"}, fieldStone)
+		out = append(out, hexRule{GoodGrain, 4, "farm", 0}, fieldStone)
 	case "hills":
-		out = append(out, hexRule{GoodGrain, 1, "farm"}, hexRule{"stone", 2, "stonequarry"}, hexRule{"timber", 1, "lumbermill"})
+		out = append(out, hexRule{GoodGrain, 1, "farm", 0}, hexRule{"stone", 2, "stonequarry", 0}, hexRule{"timber", 1, "lumbermill", 0})
 	case "mountain_limestone":
-		out = append(out, hexRule{"stone", 2, "stonequarry"})
+		out = append(out, hexRule{"stone", 2, "stonequarry", 0})
 	case "river_valley":
-		out = append(out, hexRule{GoodGrain, 2, "farm"}, fieldStone, hexRule{"timber", 1, "lumbermill"})
+		out = append(out, hexRule{GoodGrain, 2, "farm", 0}, fieldStone, hexRule{"timber", 1, "lumbermill", 0})
 	case "river_delta":
-		out = append(out, hexRule{GoodGrain, 3, "farm"}, fieldStone)
+		out = append(out, hexRule{GoodGrain, 3, "farm", 0}, fieldStone)
 	case "forest_olive_grove":
-		out = append(out, hexRule{"timber", 1, "lumbermill"}, fieldStone)
+		out = append(out, hexRule{"timber", 1, "lumbermill", 0}, fieldStone)
 	case "forest_cedar":
-		out = append(out, hexRule{"cedar", 3, "lumbermill"}, fieldStone)
+		out = append(out, hexRule{"cedar", 3, "lumbermill", 0}, fieldStone)
 	case "scrub_maquis":
-		out = append(out, fieldStone, hexRule{"timber", 1, "lumbermill"})
+		out = append(out, fieldStone, hexRule{"timber", 1, "lumbermill", 0})
 	case "semi_desert", "mountain_red":
 		out = append(out, fieldStone)
 	case "coastal_sea":
-		out = append(out, hexRule{"fish", 2, "harbour"}) // 2 places: fisket ska kunna ge mycket mat (Timothy 2026-10-01); rate stays 1,0 — the dagsverkesskala
+		out = append(out, hexRule{"fish", 2, "", 0}) // 2 places: fisket ska kunna ge mycket mat (Timothy 2026-10-01); rate stays 1,0 — the dagsverkesskala
 	case "deep_sea":
-		out = append(out, hexRule{"fish", 0, "harbour"})
+		out = append(out, hexRule{"fish", 0, "harbour", 0})
 	case "river", "river_ford":
-		out = append(out, hexRule{"fish", 1, ""})
+		out = append(out, hexRule{"fish", 1, "", 0})
 	}
 	if copperDep {
-		out = append(out, hexRule{"copper", 1, "mine"})
+		out = append(out, hexRule{"copper", 1, "mine", 0})
 	}
 	if tinDep {
-		out = append(out, hexRule{"tin", 1, "mine"})
+		out = append(out, hexRule{"tin", 1, "mine", 0})
 	}
 	if silverDep {
-		out = append(out, hexRule{"silver", 1, "mine"})
+		out = append(out, hexRule{"silver", 1, "mine", 0})
 	}
 	if incenseDep {
 		// Two places, no building (Timothy 2026-10-19): one hex, two gubbar. The
 		// production_rules row (mig 193) carries requires_deposit='incense'.
-		out = append(out, hexRule{GoodIncense, 2, ""})
+		out = append(out, hexRule{GoodIncense, 2, "", 0})
 	}
 	return out
 }
@@ -136,7 +143,7 @@ func rulesWithLandNeighbors(terrain string, copper, tin, silver, incense bool, l
 	if terrain == "coastal_sea" && land >= 4 {
 		for i := range rules {
 			if rules[i].good == "fish" {
-				rules[i].basePlaces++
+				rules[i].rateMult = 2
 			}
 		}
 	}
@@ -166,6 +173,17 @@ func RuleBuildingSupportsHex(buildingType, terrain string, copperDep, tinDep, si
 
 // placesAndMult applies the rule at a building level (0 = not built).
 func (r hexRule) placesAndMult(level int) (places int, mult float64) {
+	if r.good == "fish" {
+		if r.building == "harbour" {
+			return deepFishingPlaces[min(3, max(0, level))], 1
+		}
+		mult := r.rateMult
+		if mult == 0 {
+			mult = 1
+		}
+		return r.basePlaces, mult
+	}
+
 	if r.building == "" || level <= 0 {
 		return r.basePlaces, 1.0
 	}

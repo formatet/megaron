@@ -64,6 +64,9 @@ func loadProductionRules(t *testing.T, pool *pgxpool.Pool) []ruleRow {
 func TestRuleTable_NoBuildingLowersPerGubbe(t *testing.T) {
 	for _, terrain := range append(append([]string{}, ruleTerrains...), "hills_with_deposits") {
 		for _, rule := range hexRules(terrain, true, true, true, true) {
+			if rule.good == GoodFish {
+				continue
+			} // Fishing has its own level table, pinned by TestFinalFishingNumbers.
 			p0, m0 := rule.placesAndMult(0)
 			if m0 != 1.0 || p0 != rule.basePlaces {
 				t.Errorf("%s/%s: unbuilt must be P0 x r0, got %d x %.2f", terrain, rule.good, p0, m0)
