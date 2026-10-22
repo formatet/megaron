@@ -1,7 +1,7 @@
 # ORDER 6 — hela förband vid disband
 
 ## Sammanfattning
-Ett val av soldatantal kunde krympa en godtyckligt vald kohort. Disband väljer nu ett eller flera hela förbands-id:n och återför deras verkliga kvarvarande personer. Fyra ytor uppdaterade på `codex/hela-forband`, bas `7c2a906b`. Full fresh Go/mig198 GREEN (world154.194s),704 JS/vet GREEN, named mutation RED→restored GREEN. Ingen merge/push/deploy; BILD väntar Timothy via Claude.
+Ett val av soldatantal kunde krympa en godtyckligt vald kohort. Disband väljer nu ett eller flera hela förbands-id:n och återför deras verkliga kvarvarande personer. Fyra ytor uppdaterade på `codex/hela-forband`, bas `7c2a906b`. Full fresh Go/mig198 GREEN (world154.194s),705 JS efter kvittensgranskning, vet GREEN på grundimplementationen, named mutation RED→restored GREEN. Ingen merge/push/deploy; BILD godkänd av Timothy enligt Claude, med kvittensändringen nedan.
 
 ## Kontrakt före kod
 Kontraktsskissen skickades till Claude 2026-10-22 02:16 före implementation.
@@ -23,7 +23,7 @@ Baslinje på ny PG16/mig198: ursprungliga Disband API/Keryx-prov gröna (`baseli
 - Samma route: `POST /worlds/{w}/provinces/{p}/disband`, body `{"unit_ids":["uuid",…]}`. Tomt, dubbletter, ogiltigt id och gamla mängdnycklar nekas med 400. Gamla former får `disband a whole unit by its id`.
 - Lås aktiv egen stad → förband i stabil id-ordning. Kontrollera värld/ägare/stad/status och samma sex typer som tidigare. Validera hela batchen före skrivning. Återför faktisk land-size eller naval-crew; laid_up återför 0. RecomputeProduction och commit i samma transaktion.
 - Svar: `disbanded:[{id,type,display_name,people_returned}],pop_restored,population,settlement_name`. Ingen befintlig eventtyp ändras; det gamla kommandot skrev inget event och detta behålls.
-- Keryx `disband --unit ID/unik namn` (upprepbar), valfri `--province`. Namn/id-prefix matchas bland egna förband, tvetydighet vägras. Kvittensen säger `returns N people to <stad>`. Typ/mängdflaggorna är borttagna.
+- Keryx `disband --unit ID/unik namn` (upprepbar), valfri `--province`. Namn/id-prefix matchas bland egna förband, tvetydighet vägras. Kvittensen namnger varje förband, följt av dess återförda personer och stad. Typ/mängdflaggorna är borttagna.
 - City → Garrison använder egna förbandsrader med serverns namn, en gubbe och knapp per förband, inga mängdfält. Förbrukad/skadad kohort återför bara verkliga personer. Den gamla aggregattabellens `count×POP_COSTS` togs bort från denna yta eftersom den gav fel antal personer (100 spearmen visades som 500).
 - Webben skickar ett id; pending-skydd hindrar dubbelklick, sena svar får inte skriva i en annan stad/värld. Garnisonsfliken återöppnas efter omladdning så kvittensen syns. Befintlig Umami-route `army_disbanded` används.
 - Codex `units.md` och vaultens `temenos_enheter`/`megaron_verblista` uppdaterade. Silverpolicy införs inte; 77 silver står kvar i DB-provet.
@@ -54,4 +54,14 @@ Disband har samma tillåtna typer/statusar som förut. Denna slice bygger ingen 
 | TEXT | Personåterföring och förbandsval prövas i speltest efter integration. |
 | Drift | Ingen deploy eller ändring i den levande världen. |
 
-Proveniens: egen worktree `/home/tk/wt/codex-hela-forband`, bas `7c2a906b`, färska testdatabaser via tools/gotest.sh. SHA256 för testade ändrade server-/webbfiler i `tested-files.json`; Go-koden ändrades inte under/efter helsviten. Efter helsvitstart justerades endast webbens0-crew-fallback för ListUnits `omitempty`; slutliga704JS och båda rena Firefox-omkörningarna kördes därefter. Inga främmande arbetskopior eller tjänster ändrades. Delad acceptansstack lämnades orörd; browsern använder isolerad HTTP-fixtur, DB/API-testerna riktig PostgreSQL.
+Proveniens: egen worktree `/home/tk/wt/codex-hela-forband`, bas `7c2a906b`, färska testdatabaser via tools/gotest.sh. SHA256 för testade ändrade server-/webbfiler i `tested-files.json`; Go-koden ändrades inte under helsviten; efterföljande kvittensfix verifieras separat nedan. Efter helsvitstart justerades endast webbens0-crew-fallback för ListUnits `omitempty`; slutliga704JS och båda rena Firefox-omkörningarna kördes därefter. Inga främmande arbetskopior eller tjänster ändrades. Delad acceptansstack lämnades orörd; browsern använder isolerad HTTP-fixtur, DB/API-testerna riktig PostgreSQL.
+
+
+## Godkänd BILD och kvittensändring efter 9c48df9c
+Claude meddelade att servern granskats OK och att Timothy godkänt BILD med en ändring. Webb och Keryx skriver nu en mening per post i `disbanded`, utifrån just den postens `people_returned`:
+
+`2nd Spearmen of Phaistos disbanded — 41 people return to Phaistos.`
+
+En batch skriver en mening per förband (radbrytningar i webb och Keryx), aldrig en hopslagen personsumma. En person använder `person returns`. Codex `units.md` beskriver samma kvittens. Ingen bekräftelsedialog har lagts till. Lyckad webbkvittens får klassen `disband-success` och befintliga `--safe-text`, inte den vanliga action-result-radens accent/farafärg. Fel lämnas som fel.
+
+Verifiering efter denna ändring: riktad `GOTEST_PORT=57900 tools/gotest.sh ./cmd/keryx -run TestDisband` GREEN på ny tom PG16/mig198; hela JS-sviten705/705 GREEN. Båda ytorna har ett exakt batchprov med41+1 personer som kräver två namngivna meningar. Firefox upprepar båda resetkörningarna på1000/390, kräver exakt namngiven41-kvittens och kontrollerar lyckad CSS-klass/färg; noll page errors. Uppdaterade efterbilder är granskade1:1. Loggar `receipt-fresh198-keryx.log`, `receipt-js-summary.log`, `receipt-browser-proof.json`. Initiala helsvitens filmanifest är sparat som `tested-files-initial.json`; `tested-files.json` avser slutliga ändrade server-/webbfiler. Ingen ny helsvit enligt Claudes granskningsorder (riktade prov+JS räcker). Ingen merge/push/deploy.

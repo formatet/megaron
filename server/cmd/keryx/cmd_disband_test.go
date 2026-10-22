@@ -38,7 +38,7 @@ func TestDisbandWholeUnitNameAndReceipt(t *testing.T) {
 	cmd := disbandCmd()
 	cmd.SetArgs([]string{"--unit", "1st Spearmen of Phaistos"})
 	out, err := captureStdout(t, cmd.Execute)
-	if err != nil || posts != 1 || !strings.Contains(out, "returns 41 people to Phaistos") || !strings.Contains(out, "1st Spearmen") {
+	if err != nil || posts != 1 || !strings.Contains(out, "41 people return to Phaistos.") || !strings.Contains(out, "1st Spearmen") {
 		t.Fatalf("%v %s posts%d", err, out, posts)
 	}
 	for _, args := range [][]string{nil, {"--spearman", "20"}} {
@@ -65,5 +65,16 @@ func TestDisbandAmbiguousNameNeverDispatches(t *testing.T) {
 	cfg = &Config{Server: srv.URL, WorldID: "world"}
 	if _, err := disbandUnitIDs(newClient(cfg), []string{"Asterion"}); err == nil || !strings.Contains(err.Error(), "matches 2") {
 		t.Fatal(err)
+	}
+}
+
+func TestDisbandReceiptNamesEachUnitBeforePeopleAndCity(t *testing.T) {
+	got := formatDisbandResult(map[string]any{"settlement_name": "Phaistos", "pop_restored": float64(42), "disbanded": []any{
+		map[string]any{"display_name": "2nd Spearmen of Phaistos", "people_returned": float64(41)},
+		map[string]any{"display_name": "Asterion", "people_returned": float64(1)},
+	}})
+	want := "2nd Spearmen of Phaistos disbanded — 41 people return to Phaistos.\nAsterion disbanded — 1 person returns to Phaistos."
+	if got != want {
+		t.Fatalf("%q want %q", got, want)
 	}
 }

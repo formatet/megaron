@@ -2065,3 +2065,5 @@ h4.cx-h { font-size: var(--fs-base); }
 .disband-figure { width:16px; height:24px; flex:none; color:var(--text); shape-rendering:crispEdges; }
 .disband-info { flex:1; min-width:0; font-size:var(--fs-sm); }
 .disband-info > div { color:var(--text-dim); font-size:var(--fs-xs); }
+
+.action-result.disband-success { color:var(--safe-text); white-space:pre-line; }

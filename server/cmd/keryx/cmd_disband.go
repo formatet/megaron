@@ -9,22 +9,28 @@ import (
 )
 
 func formatDisbandResult(resp map[string]any) string {
-	names := []string{}
+	city, _ := resp["settlement_name"].(string)
+	lines := []string{}
 	if units, ok := resp["disbanded"].([]any); ok {
 		for _, raw := range units {
 			if u, ok := raw.(map[string]any); ok {
-				if name, ok := u["display_name"].(string); ok {
-					names = append(names, name)
+				name, _ := u["display_name"].(string)
+				people, known := u["people_returned"].(float64)
+				if name == "" || !known {
+					continue
 				}
+				noun, verb := "people", "return"
+				if people == 1 {
+					noun, verb = "person", "returns"
+				}
+				lines = append(lines, fmt.Sprintf("%s disbanded — %d %s %s to %s.", name, int(people), noun, verb, city))
 			}
 		}
 	}
-	line := "Disbanded " + strings.Join(names, ", ")
-	if people, ok := resp["pop_restored"].(float64); ok {
-		city, _ := resp["settlement_name"].(string)
-		line += fmt.Sprintf(" — returns %d people to %s", int(people), city)
+	if len(lines) == 0 {
+		return "Unit disbanded. Refresh units to see the result."
 	}
-	return line
+	return strings.Join(lines, "\n")
 }
 
 // Resolve only among the player's units, preserving ambiguity instead of guessing.

@@ -1,3 +1,4 @@
+import { disbandReceipt } from '../disband.js';
 import { submitRecruitment, recruitmentPending, recruitmentReceipt, rememberRecruitmentReceipt } from '../recruitment.js';
 import { foodGoodsText } from '../food.js';
 import { showInlineResult, confirmInline } from '../inline_result.js';
@@ -393,7 +394,7 @@ export async function warDisband(provinceID, unitID, button) {
   const worldID=State.WORLD_ID;
   if(button)button.disabled=true;
   let received=false;
-  const status=text=>{if(State.WORLD_ID===worldID && activeCitySettlement()?.id===provinceID){const el=document.getElementById('war-disband-res');if(el)el.textContent=text;}};
+  const status=(text,success=false)=>{if(State.WORLD_ID===worldID && activeCitySettlement()?.id===provinceID){const el=document.getElementById('war-disband-res');if(el){el.textContent=text;el.classList?.toggle('disband-success',success);}}};
   try {
     const res = await fetchAuth('/api/v1/worlds/' + worldID + '/provinces/' + provinceID + '/disband', {
       method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({unit_ids:[unitID]}),
@@ -404,7 +405,7 @@ export async function warDisband(provinceID, unitID, button) {
     if(State.WORLD_ID!==worldID || activeCitySettlement()?.id!==provinceID)return;
     await loadCityDrawer();
     if(activeCitySettlement()?.id===provinceID)document.querySelector('#city-body .dtab[data-tab="garnison"]')?.click();
-    status(`Disbanded — returns ${data.pop_restored} people to ${data.settlement_name}.`);
+    status(disbandReceipt(data),true);
   } catch (_) { status(received?'Unit disbanded. Reopen the city to see the result.':'Could not confirm disbanding. Refresh units before trying again.'); }
   finally {disbandingUnits.delete(key);if(button && button.isConnected)button.disabled=false;}
 }

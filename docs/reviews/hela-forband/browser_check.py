@@ -50,8 +50,11 @@ try:
     if run==2:page.screenshot(path=str(OUT/f'firefox-{width}-before.png'))
     page.locator('[data-disband-unit="hurt"]').click()
     expect(page.locator('[data-disband-unit]')).to_have_count(2)
-    expect(page.locator('#war-disband-res')).to_have_text('Disbanded — returns 41 people to Phaistos.')
+    expect(page.locator('#war-disband-res')).to_have_text('2nd Spearmen of Phaistos disbanded — 41 people return to Phaistos.')
     expect(page.locator('#ctab-garnison')).to_be_visible()
+    expect(page.locator('#war-disband-res')).to_have_class('action-result disband-success')
+    color=page.locator('#war-disband-res').evaluate('(el)=>getComputedStyle(el).color')
+    assert color=='rgb(120, 98, 0)',color
     if run==2:page.screenshot(path=str(OUT/f'firefox-{width}-after.png'))
     assert len(state['posts'])==1 and state['population']==1041
     assert not errors,errors

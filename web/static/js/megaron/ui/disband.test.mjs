@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {disbandUnitsHTML,disbandPeople} from './disband.js';
+import {disbandUnitsHTML,disbandPeople,disbandReceipt} from './disband.js';
 import {State} from '../state.js';
 const noopEl=new Proxy({}, {get:(_t,k)=>k==='style'?{}:k==='value'?'':()=>noopEl,set:()=>true});
 globalThis.ResizeObserver=class {observe(){}};
@@ -41,4 +41,11 @@ test('whole-unit click sends selected id once while pending and preserves refusa
  assert.equal(calls,1);assert.deepEqual(payload,{unit_ids:['u2']});
  release();await first;
  assert.equal(result.textContent,'unit is marching');assert.equal(button.disabled,false);
+});
+
+test('receipt names each unit before its people and city, one sentence per unit',()=>{
+ assert.equal(disbandReceipt({settlement_name:'Phaistos',pop_restored:42,disbanded:[
+  {display_name:'2nd Spearmen of Phaistos',people_returned:41},
+  {display_name:'Asterion',people_returned:1},
+ ]}),'2nd Spearmen of Phaistos disbanded — 41 people return to Phaistos.\nAsterion disbanded — 1 person returns to Phaistos.');
 });
