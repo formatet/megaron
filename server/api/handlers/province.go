@@ -1385,7 +1385,7 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 				`SELECT settled(amount, rate, calc_tick) FROM settlement_goods
 				  WHERE settlement_id = $1 AND good_key = 'silver'`,
 				settlementID).Scan(&have)
-			writeGoodsError(w, &insufficientGoodsError{Short: []goodShortfall{{Good: "silver", Need: spec.CostSilver, Have: have}}}, buildContext)
+			writeJSON(w, http.StatusUnprocessableEntity, map[string]any{"error": fmt.Sprintf("insufficient silver (%s)", shortfall(spec.CostSilver, have)), "build_context": buildContext, "message": buildContext.message(fmt.Sprintf("silver (%s)", shortfall(spec.CostSilver, have)))})
 			return
 		}
 	}

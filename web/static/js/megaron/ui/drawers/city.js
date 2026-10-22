@@ -251,6 +251,7 @@ export async function onCityBuildTypeChange(preferredHex) {
     hexSel.innerHTML = '';
     return;
   }
+  showBuildQuote(null);
   const capital = activeCitySettlement();
   if (!capital) return;
   let placementOpts = null;
@@ -266,7 +267,7 @@ export async function onCityBuildTypeChange(preferredHex) {
   hexSel.innerHTML = html || '<option value="">(no valid catchment hex)</option>';
   if (chosen && [...hexSel.options].some(o => o.value === chosen)) hexSel.value = chosen;
   hexSel.style.display = 'block';
-  hexSel.onchange=()=>{const [q,r]=hexSel.value.split(',').map(Number);const quotes=placementOpts?.build_quotes||[];showBuildQuote(quotes.find(x=>x.type===entry.type && x.hex_q===q && x.hex_r===r)||quotes.find(x=>x.type===entry.type && x.new_site));};
+  hexSel.onchange=()=>{if(!hexSel.value){showBuildQuote(null);return;}const [q,r]=hexSel.value.split(',').map(Number);const quotes=placementOpts?.build_quotes||[];showBuildQuote(quotes.find(x=>x.type===entry.type && x.hex_q===q && x.hex_r===r)||quotes.find(x=>x.type===entry.type && x.new_site));};
   hexSel.onchange();
 }
 
