@@ -1,0 +1,200 @@
+web/static/js/megaron/verb_telemetry.js:69:const BUILDINGS = ["farm", "barracks", "mine", "lumbermill", "stonequarry", "market", "wall", "harbour", "shipyard", "foundry", "stable", "temple", "olive_press", "winery", "pen", "silo"];
+web/static/js/megaron/verb_telemetry.js:72:const GOODS = ['grain', 'fish', 'livestock', 'horses', 'timber', 'stone', 'copper', 'tin', 'bronze', 'silver', 'oil', 'wine', 'pottery', 'purple'];
+web/static/codex/food.md:1:Your people eat **grain, fish, oil and wine** every day. One unit of each supplies one unit of food. The meal is shared in proportion to what is available, including the day’s production: a city with 100 grain and 900 fish takes one tenth of its meal as grain and nine tenths as fish. No food good is used up first. If these four cannot feed the people, livestock remains their emergency food: each animal supplies 3 food. Armies, ships and caravans use the four food goods, not livestock.
+web/static/codex/food.md:23:- Put more [[citizens]] on grain or fish hexes. Check the *next citizen would add* figure.
+web/static/codex/food.md:29:Your city has food stocks: the grain, fish, oil and wine in its [[goods|stores]]. **Food for N days** shows those stocks at current consumption, without counting future production. **City → More → Food details** shows production, the last meal by good and army food separately. Different goods forming a real share of the meal improve [[growth|population growth]]; merely storing another food does not. Stored food buys time during a shortfall. A city under [[sieges|siege]] starves because its fields are cut off, not because it produces too little.
+web/static/codex/citizens.md:31:One placeable **citizen represents 100 people**. Population counts people; City and Goods count these citizens. The food-workers estimate assumes the best grain and fish slots for the population. Moving workers may require rearranging the remaining food placements; the army draws from the same food stocks, as shown separately in the food balance.
+web/static/codex/citizens.md:33:People outside whole groups of 100 automatically produce a fraction of the best food worker’s output: 42 people give 42 hundredths. They make grain or fish, whichever their best food hex produces most of, including its building bonus. This work is invisible and takes no place from your citizens. Nearby ground supplies its grain separately. City food details show these automatic contributions beside the placed citizens needed for meals. The count uses production rather than stored food; it is an estimate for the best food slots, not a recommendation to remove particular citizens.
+web/static/codex/keryx.md:38:Use a city name or province ID either positionally or with `--province` in `city`, `placements`, `status` and `build`. For placement: `keryx place Knossos fish 13 -1` or `keryx place --province Knossos fish 13 -1`. Put flags before the good when using a negative delta. If no citizens work that good on the chosen hex, the result lists where they do work it. `founding settle --yes` skips the question. Travel estimates use days; if an arrival cannot be calculated it is reported as unavailable.
+web/static/codex/keryx.md:40:Hex selection accepts the ordinal shown by City, with or without `#`: `build --type lumbermill --hex 6` or `--hex '#6'`. Placement can use `place fish 6 +1`, `place fish '#6' +1`, or `place --hex 6 fish +1`; `--hex q,r` also works. Put flags before the good when giving a negative delta. `staff` is for city workplaces; hex-bound buildings are worked with `place` on their hex.
+web/static/codex/keryx.md:45:Start construction with `keryx build --type harbour`. A positional argument in `build`
+web/static/codex/keryx.md:46:is the **city**, as in `keryx build Knossos --type harbour`; it is not the building type.
+web/static/codex/city.md:11:- **Food** — how many days the city’s current grain, fish, oil and wine stocks last at current consumption, whether stocks are growing, and whether the fields can feed everyone. See [[food]].
+web/static/codex/coming-back.md:17:2. **Pay and bread** — [[upkeep]] warnings mean soldiers need silver or food. Soldiers share grain, fish, oil and wine with the people, but their meals are itemized separately. Produce more food or send a [[transfers|transfer]]. A notice marks when garrison hunger starts and when it ends.
+web/static/codex/buildings.md:19:| **Granary** | A city stores 2 000 of each food — grain, fish, oil and wine, not the herd. Granary level 1 to 3 raises that to 4 000, 10 000 and 20 000. A wall of level N needs a Granary of level N. Works inside the city. |
+web/static/codex/buildings.md:36:A farm, mine, lumbermill, stonequarry or harbour makes **space for four more workers** on its hex, and multiplies the hex's own **production** per worker: ×1.7 at level 1, ×2.4 at level 2, ×3.1 at level 3. Silver can only be mined with a mine — without one a silver deposit gives nothing. Olive press, winery and foundry work inside the city as before.
+web/static/codex/glossary.md:21:**Food coverage** — how long the city’s grain, fish, oil and wine stocks last at current consumption. See [[food]].
+web/static/codex/growth.md:1:A city grows when it has a **surplus of food** — when it produces more food each day than its people eat. Growing costs no food: the surplus stays in the same city grain, fish, oil and wine stocks that feed your people.
+web/static/codex/growth.md:3:- **Surplus, not store.** What counts is the daily balance — grain, fish, oil and wine produced, minus what the people eat — shown as the food *net* on the city. A positive net grows the city; zero or below holds it steady, even with full stores.
+web/static/codex/rites.md:19:The row disappears when the blessing ends; fish receives no harvest bonus.
+web/static/codex/rites.md:28:- **Favourable Passage** — offer 6 fish + 3 silver to The Sea Daimons of Stillness. The next ship leaving this city takes a quarter less time and suffers no storm damage on its outward leg. A Runner aboard travels at that ship's actual speed. The Sea Daimons wait 12 days after answering.
+web/static/codex/founding.md:5:The [[horde|Host]] panel shows the terrain and four short assessments for the hex you stand on: **Feeds itself: yes/no**, **Timber: yes/no**, **Stone: yes/no**, and **Ships: yes / never — inland**. An inland metropolis can never build a harbour or ships ([[buildings]]). They use the existing forecast for known ground; unknown means the forecast is unavailable. The [[catchment]] you would claim glows on the map. Open **Details** for the full founding forecast, deposits, production, gifts, each catchment hex, and the Host’s people and supplies. It updates as you walk.
+web/static/codex/founding.md:31:- **Poseidon's gift**: found on the coast and a galley is waiting in the harbour — instead of the farm. The sea feeds a harbour city; a gift is one or the other, never both.
+web/static/codex/founding.md:36:The forecast lists grain and fish production separately from the population's full food consumption. A production deficit uses up carried grain before hunger begins. Fish counts as food. Hunger begins only when daily meals are not fully covered, after stored grain, fish, oil, wine and emergency livestock have been used. A production deficit warns of future hunger once reserves run out; it does not by itself mean the population is starving.
+web/static/codex/routes.md:5:- **Keep at destination** — choose a good and the stock to keep there, for example two hundred grain and fifty fish. Use **Add a good** for another row and **Remove** to drop a row. The caravan keeps those goods topped up to that level at the destination.
+web/static/codex/routes.md:20:A route between two coastal or harboured settlements with a sea lane between them sails instead of walking — if you have a free Galley or Emporos in the sending port ([[sea]]). That ship is then **locked to the route for as long as it runs**, including the time it spends docked between trips: it cannot be sent anywhere else, loaded, or repaired until the route is paused or deleted. No free hull, and no land road either, pauses the route with the same reason a shortfall would. The ship's hold limits both legs: out, it carries what fits; home, it brings back what fits above your floors, and the rest waits at the destination for the next trip.
+web/static/codex/goods.md:5:| **Grain, fish, oil, wine** | Equal food goods, eaten in proportion to availability ([[food]]). Oil and wine also serve as offerings for [[rites|prayers]]. |
+web/static/codex/goods.md:26:Production per day is output before meals and other uses. Food net combines grain, fish, oil and wine production minus population demand. The city has one stock of each good; food coverage counts these four goods together. Shortfall waiting estimates assume current production continues, before other use.
+web/static/codex/goods.md:28:Food for people combines the four food goods minus the population’s meal. **Food after army** subtracts the food supplied by this city to its supported troops as well. The army shares grain, fish, oil and wine in the same proportions; its silver pay is shown separately. Population growth still uses the population-only food balance.
+web/static/codex/goods.md:33:Each good has its own storage capacity in each city. A city stores **2 000 of each food** — grain, fish, oil and wine — and a [[buildings|Granary]] raises that to 4 000, 10 000 and 20 000. The herd has its own pens. A city that already held more food when this ceiling came in keeps it and can eat it, but it never fills back above the ceiling. **StorageCapacityWarning** is an advance dispatch when the server forecasts a stock nearing its cap. Keryx status and the City drawer show the good, stored amount, capacity and **full in N days**. The estimate uses the current net rate and deliveries on the way; it is a forecast, so changing production or orders can change it.
+web/static/js/megaron/ui/food.js:5:  return ['grain', 'fish', 'oil', 'wine', 'livestock']
+web/static/codex/trade.md:24:If both cities are coastal or harboured and a sea lane connects them, the trade sails instead of walking — carried by **your own** ship, whichever of you *sent* the offer. It makes the whole round trip: out with your half of the deal when the other side accepts, home again with their half. The other side's ships are never touched.
+web/static/codex/temples.md:13:The temple uses **grain first, then fish, then timber, and silver last**. Silver is never required. Oil and wine are not used for this standing gift; [[rites|prayers]] keep their own offerings.
+web/static/js/megaron/ui/format.js:237:// "200 grain, 50 fish" from a [{good_key, quantity}] payload list
+web/static/js/megaron/ui/format.js:327:      ? `${esc(body.name || 'Your city')}: the garrison is losing men to hunger. Soldiers share the city's grain, fish, oil and wine. Produce or transfer more food here.`
+web/static/js/megaron/ui/format.js:821:          ? `A divine storm sank ${body.unit_name} in your harbour${place} — the ship is lost`
+web/static/js/megaron/ui/format.js:822:          : `A divine storm claimed a vessel from your harbour${place}`;
+web/static/js/megaron/ui/format.js:835:        case 'sea_blessing':     return `Poseidon guides a vessel to your harbour${place} — +${amount} galley`;
+web/static/js/megaron/ui/format.js:841:      return `${esc(body.name || 'Your city')}: people are going hungry — the meal fell short by ${amount} ${body.food_category === true ? 'food' : 'grain'}. ${body.food_category === true ? 'Produce grain, fish, oil or wine' : 'Place citizens on grain or fish'}, or transfer food here.`;
+web/static/codex/sea.md:20:- **Supplies.** Rowers eat the same per-person ration as spearmen, doubled while marching, posted or freighting ([[upkeep]]). The actual surviving crew determines the ration, and any carried soldiers need their own field rations too. A crew eats grain, fish, oil and wine, with the same proportional sharing as the city. The port loads food for the voyage from these four goods; livestock is not ship provision. The unit shows food for N days and the goods aboard. Unused provisions come home as the goods that were loaded, so fish does not turn into grain. A ship whose crew runs short of food turns for home on its own — you are told why, and a thinned crew sails slower ([[upkeep]]). At sea it eats only what was loaded aboard, never from a city's granary. The food gauge counts whole days; "less than a day" means the last ration is being eaten, "out of food" means nothing is left.
+web/static/codex/sea.md:32:Ships are damaged in [[battle]] and by storms. A damaged ship can be **Repaired** at a Shipyard (**War → Army → Repair**); you are notified when the work is done. Ships can also be lost at sea outright — and the gods, when angry, sometimes take one from the harbour ([[kharis]]).
+web/static/codex/sea.md:40:- It runs to **your own nearest coastal or harboured city** and waits there — you are told which one, and why. If you have no coastal or harboured city anywhere, the message is refused outright at the moment you send it, rather than dispatched to wait forever.
+web/static/codex/transfers.md:15:When both ends are coastal or harboured and a sea lane connects them, a transfer sails instead of walking — **if you have a free Galley or Emporos waiting in the sending port** ([[sea]]). No free hull there, and no land road either, and the transfer is refused with the reason why; build one at a Shipyard, or wait for one to come home.
+web/static/codex/upkeep.md:1:Soldiers eat **food: grain, fish, oil and wine**, shared in proportion to the stocks available. Professionals also need **silver pay** every day.
+web/static/codex/sieges.md:21:- full [[food|city food stores]] — the city eats its grain, fish, oil and wine while the fields are cut off;
+web/static/js/megaron/ui/drawers/kult_offer.js:5:const EDIBLE = ['grain', 'fish', 'oil', 'wine'];
+web/static/codex/kharis.md:5:| **Favorable** | The gods may bless you: a blessed harvest (a quarter more food for 25 days, fish excepted) or unexpected recruits. |
+web/static/codex/kharis.md:26:3. **The temple is fed** — a daily reference gift of 0.25 grain, with local fish, timber or silver as substitutes of equal divine value. See [[temples]] for the selection order and planned gift.
+web/static/codex/kharis.md:38:The row disappears when the blessing ends; fish receives no harvest bonus.
+server/cmd/keryx/cmd_args.go:14:// The bug this closes: `keryx build harbour` (meant as `keryx build --type
+server/cmd/keryx/cmd_args.go:15:// harbour`) used to be accepted — cobra's zero-value Args takes any number of
+server/cmd/keryx/cmd_args.go:16:// positionals when a command declares none — so "harbour" was thrown away,
+web/static/js/megaron/ui/drawers/kult.js:97:const TEMPLE_GOOD_ORDER = ['grain', 'fish', 'timber', 'silver'];
+web/static/js/megaron/ui/drawers/city.js:287:  harbour:'Harbour', shipyard:'Shipyard', foundry:'Foundry', stable:'Stable',
+server/cmd/keryx/cmd_map.go:236:				case t.Terrain == "deep_sea" || t.Terrain == "coastal_sea":
+server/cmd/keryx/cmd_map.go:254:				if t.Terrain == "deep_sea" || t.Terrain == "coastal_sea" {
+server/cmd/keryx/cmd_map.go:276:					coastTag = " [coastal hex — a city founded here could build a harbour]"
+server/cmd/keryx/cmd_route.go:16:// parseGoodAmountPairs parses "grain:200,fish:50" into good→amount. Used for
+server/cmd/keryx/cmd_route.go:79:  keryx route --from Petras --to Colony --out grain:200,fish:50 --home silver:0,stone:20 --crew from`,
+server/cmd/keryx/cmd_route.go:146:	cmd.Flags().StringVar(&outSpec, "out", "", "outbound goods to keep topped up at the destination, e.g. grain:200,fish:50")
+web/static/js/megaron/ui/drawers/war.js:436:    garrison: naval ? 'in harbour' : 'in the city',
+web/static/js/megaron/ui/drawers/war.js:480:    // A galley idle at its coastal settlement is docked — say it is "in harbour"
+web/static/js/megaron/ui/drawers/war.js:483:    loc = (isNaval && isGarrison) ? '⚓ in harbour — ' + place : place;
+web/static/js/megaron/ui/drawers/war.js:704:		else actions += '<button disabled title="Needs enough people in your active harbour" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;opacity:.55">Fit out</button> ';
+web/static/js/megaron/render/sight.js:7:  return terrain === 'coastal_sea' || terrain === 'deep_sea';
+web/static/js/megaron/ui/drawers/city_production.js:93:  const grain = shared ? row('Food for people', `production ${n(s.production_per_tick)} − people eat ${n(s.consumption_per_tick)} = ${n(peopleNet)} net before army`) : pd?.grain_prod_rate != null ? row('Food for people', `grain ${n(pd.grain_prod_rate)} + fish ${n(pd.resources?.fish?.rate || 0)} − people eat ${n(pd.grain_consum_rate || 0)}${peopleNet != null ? ` = ${n(peopleNet)} net before army` : ''}`) : '';
+web/static/js/megaron/ui/drawers/city_production.js:98:  const automatic = a ? `<p class="empty-state">Automatic food: ${Number(a.nearjord_grain_per_tick + a.remainder_grain_per_tick).toFixed(2)} grain + ${Number(a.remainder_fish_per_tick || 0).toFixed(2)} fish per day without placed citizens (nearby ground ${Number(a.nearjord_grain_per_tick).toFixed(2)} grain; ${a.remainder_people} people outside whole citizens: ${Number(a.remainder_grain_per_tick).toFixed(2)} grain + ${Number(a.remainder_fish_per_tick || 0).toFixed(2)} fish, a fraction of the best food worker).</p>` : '';
+web/static/js/megaron/ui/drawers/city_production.js:100:    ? row('City stocks', `${fmtDays(s.coverage_ticks)} at current consumption · ${s.goods ? foodGoodsText(s.goods) : 'grain + fish'}`)
+server/cmd/keryx/cmd_status.go:153:	order := map[string]int{"grain": 0, "fish": 1, "timber": 2, "silver": 3}
+server/cmd/keryx/cmd_status.go:279:// showed it warned on fish/livestock and stayed silent on timber, exactly
+server/cmd/keryx/cmd_status.go:283:// silenced fish/livestock outright even though the population eating them
+server/cmd/keryx/cmd_status.go:300://     grain, fish, oil and wine, never livestock.
+server/cmd/keryx/cmd_status.go:628:				coastalNote = "  [coastal — ships need a harbour and a shipyard]"
+server/cmd/keryx/cmd_status.go:756:						fish := 0.0
+server/cmd/keryx/cmd_status.go:757:						if row, ok := res["fish"].(map[string]any); ok {
+server/cmd/keryx/cmd_status.go:758:							fish, _ = row["rate"].(float64)
+server/cmd/keryx/cmd_status.go:760:						netTick += fish
+server/cmd/keryx/cmd_status.go:767:							fmt.Printf("  Food     grain %.1f + fish %.1f − people eat %.1f = net %s per day (before army)\n", prodTick, fish, consumTick, formatNetPerTick(netTick))
+server/cmd/keryx/cmd_status.go:829:				// Fish (fisk-föder-befolkningen, 2026-07-31): a coastal/river
+server/cmd/keryx/cmd_status.go:830:				// city's fish covers whatever grain does not reach — surfaced
+server/cmd/keryx/cmd_status.go:833:				printRes("Fish", "fish", false)
+server/cmd/keryx/cmd_status.go:987:					fmt.Println("  → feed the temples with local grain, fish, timber or silver or cast a rite — see `keryx rite --list`.")
+web/static/js/megaron/render/citybuildings.js:129:  harbour(g, x, base, lvl) {
+web/static/js/megaron/render/markraster.js:7:    deep_sea:           {c0:'#1A5276', c1:'#154360'},
+web/static/js/megaron/render/markraster.js:21:    coastal_sea:        {c0:'#3E7C9E', c1:'#33667F'},
+web/static/js/megaron/render/markraster.js:34:    // floden hamnar 16 L från `coastal_sea` är medvetet betalt: de två bär
+web/static/js/megaron/render/markraster.js:41:    // itself (which is deliberately darker than coastal_sea, see the note
+web/static/js/megaron/render/markraster.js:241:  const isSeaTerrain = t => t === 'deep_sea' || t === 'coastal_sea';
+web/static/js/megaron/render/markraster.js:250:  const isWaterTerrain = t => t === 'deep_sea' || t === 'coastal_sea' || t === 'river';
+web/static/js/megaron/render/markraster.js:898:      if (nt === 'coastal_sea' || nt === 'deep_sea') {
+web/static/js/megaron/render/markraster.js:1266:    if (t === 'coastal_sea') return 3;
+web/static/js/megaron/render/markraster.js:1267:    if (t === 'deep_sea') return 4;
+web/static/js/megaron/render/markraster.js:1770:      case 'coastal_sea':
+web/static/js/megaron/render/markraster.js:1771:      case 'deep_sea':
+web/static/js/megaron/ui/marchctx.js:213:  if (p.harbour_note) html += `<div>${esc(p.harbour_note)}</div>`;
+web/static/js/megaron/ui/marchctx.js:214:  html += `<div>Food: grain ${prodTick.toFixed(1)} + fish ${(g.fish_per_tick || 0).toFixed(1)} − consumption ${consTick.toFixed(1)} per day = ` +
+web/static/js/megaron/render/city.js:509:  // Sea contact comes from a real harbour/shipyard (these cannot be built inland).
+web/static/js/megaron/render/city.js:510:  // A harbour does not fabricate a ship in the settlement's garrison.
+web/static/js/megaron/render/city.js:511:  if (byType.has('harbour') || byType.has('shipyard')) {
+web/static/js/megaron/render/city.js:528:    if (byType.has('harbour')) {
+web/static/js/megaron/render/city.js:546:      anchors.harbour = [0, 82, 34, 13];
+server/api/handlers/web.go:63:		"harbour":     "Harbour",
+server/cmd/keryx/notification_text.go:32:				fmt.Printf("      %s: the garrison is losing men to hunger. Soldiers share the city’s grain, fish, oil and wine. Produce or transfer more food here (`keryx transfer`).\n", b.Name)
+server/cmd/keryx/notification_text.go:47:				fmt.Printf("      %s: people are going hungry — the meal fell short by %s food. Produce grain, fish, oil or wine, or transfer food here (`keryx transfer`).\n", b.Name, amount)
+server/cmd/keryx/notification_text.go:50:			fmt.Printf("      %s: people are going hungry — the meal fell short by %s grain. Place citizens on grain or fish (`keryx place`), or transfer food here (`keryx transfer`).\n", b.Name, amount)
+web/static/js/megaron/ui/citygrid.js:29:const WATER_TERRAINS = new Set(['coastal_sea', 'deep_sea', 'river', 'river_ford']);
+server/cmd/keryx/cmd_place.go:25:		Long: `<roll> is a good key (grain, timber, fish, ...) and <ordinal> is the hex
+server/api/handlers/join.go:368:		   AND mt.terrain NOT IN ('coastal_sea','deep_sea','river','river_ford','mountain_limestone','mountain_red','semi_desert')
+server/cmd/keryx/cmd_goods.go:81:				// the city to fish behind a level-1 harbour and see no difference from a
+server/cmd/keryx/cmd_gubbe.go:167:// food_gubbar_placed counts (api/handlers/province.go: grain, fish — never
+server/cmd/keryx/cmd_gubbe.go:170:	return goodKey == "grain" || goodKey == "fish"
+server/cmd/keryx/cmd_gubbe.go:174:// (2 placed, next +12.0/tick)" for an uncapped good, or "fish 1/1 FULL" /
+server/cmd/keryx/cmd_gubbe.go:224:	fish, _ := a["remainder_fish_per_tick"].(float64)
+server/cmd/keryx/cmd_gubbe.go:225:	return fmt.Sprintf("Automatic food: %.2f grain + %.2f fish per day without placed citizens (nearby ground %.2f grain; %.0f people outside whole citizens: %.2f grain + %.2f fish, a fraction of the best food worker)", base+grain, fish, base, people, grain, fish)
+server/cmd/keryx/cmd_unit.go:90:	return shipPortCmd("lay-up", "Lay up an empty ship in your active harbour; its crew returns to the city")
+server/cmd/keryx/cmd_unit.go:98:// unitPatrolCmd posts a naval unit on patrol at a coastal_sea hex. It is a
+server/cmd/keryx/cmd_unit.go:110:// Deliberately coastal_sea only — river is water too, but not a sea patrol's
+server/cmd/keryx/cmd_unit.go:121:		Long: `Send a naval unit to a shallow-water (coastal_sea) hex you have seen and hold it
+server/cmd/keryx/cmd_unit.go:746:  Naval units only:        coastal_sea, deep_sea, river
+server/cmd/keryx/cmd_unit.go:1027:		FishPerTick         float64  `json:"fish_per_tick"`
+server/cmd/keryx/cmd_unit.go:1041:	HarbourNote     string `json:"harbour_note,omitempty"`
+server/cmd/keryx/cmd_unit.go:1137:	fmt.Printf("  Food: grain ~%.1f + fish ~%.1f per day − consumption ~%.1f per day = net %s per day\n", prodPerTick, p.Grain.FishPerTick, consPerTick, formatNetPerTick(netPerTick))
+web/static/js/megaron/render/map.js:1010:// Djupbrytet. `coastal_sea` möter `deep_sea` på en hexkant, och när dyningen
+web/static/js/megaron/render/map.js:1021:  ctx.fillStyle = TERRAIN_BASE.coastal_sea.c0;
+web/static/js/megaron/render/map.js:2684:      if (t.terrain !== 'deep_sea') continue;
+web/static/js/megaron/render/map.js:2685:      const shelf = neighborDirs(t.q, t.r, n => n === 'coastal_sea');
+web/static/js/megaron/render/map.js:3281:// terrain with a `coastal` boolean flag on land tiles, so fish is folded into
+web/static/js/megaron/render/map.js:3294:  coastal_sea:        'fish',
+web/static/js/megaron/render/map.js:3295:  deep_sea:           'fish',
+web/static/js/megaron/render/map.js:3296:  river:              'fish',
+web/static/js/megaron/render/map.js:3297:  // river_ford (megaron_plan_flodbudget_och_vadstalle.md): same fish rate as
+web/static/js/megaron/render/map.js:3301:  river_ford:         'fish (crossable)',
+web/static/js/megaron/render/map.js:3307:  return base === '—' ? 'fish' : base + ', fish';
+web/static/js/megaron/render/map.js:3374:  coastal_sea: 'Coastal Sea', deep_sea: 'Deep Sea',
+web/static/js/megaron/render/map.js:3655:  // The harbour rule is the one irreversible geography fact: an inland
+web/static/js/megaron/render/map.js:3657:  const ships = typeof p?.harbour_note === 'string' ? (p.harbour_note.startsWith('Coastal') ? 'yes' : 'never — inland') : 'unknown';
+server/cmd/keryx/cmd_allocate.go:144:	// Devotion is printed apart from the work split (Haiku round 6: fish 95% +
+server/cmd/keryx/food_format.go:9:var foodDisplayGoods = []string{"grain", "fish", "oil", "wine", "livestock"}
+server/cmd/keryx/food_format.go:34:		detail = "city grain + fish stocks"
+server/cmd/keryx/cmd_build.go:45:  keryx build --type harbour          # requires coastal (adjacent sea hex)
+server/cmd/keryx/cmd_build.go:52:				return fmt.Errorf("no building type given — use --type <building> (for example: keryx build --type harbour), or add --list to view the catalogue for a city")
+server/cmd/keryx/cmd_demolish.go:107:	cmd.Flags().StringVar(&buildingType, "type", "", "city building to demolish (market, temple, harbour, ...)")
+server/cmd/keryx/cmd_recruit.go:205:		RequiresHarbour  bool `json:"requires_harbour"`
+server/cmd/keryx/cmd_recruit.go:310:			reqs = append(reqs, "harbour")
+server/api/handlers/unit_lay_up.go:62:	var active, harbour bool
+server/api/handlers/unit_lay_up.go:64:		EXISTS(SELECT 1 FROM buildings b WHERE b.settlement_id=s.id AND b.building_type='harbour')
+server/api/handlers/unit_lay_up.go:66:		Scan(&portOwner, &population, &active, &harbour)
+server/api/handlers/unit_lay_up.go:67:	if err != nil || portOwner != owner || !active || !harbour {
+server/api/handlers/unit_lay_up.go:68:		writeError(w, http.StatusUnprocessableEntity, "ship must be in your active harbour")
+server/api/handlers/settlement.go:1137:// applyHarvestBlessing raises the yield of every food good but fish by a
+server/api/handlers/settlement.go:1259:	// the map — coastal_sea and deep_sea are ordinary map_tiles rows (1893 of the
+server/api/handlers/messenger_passage.go:337:// harboured (the common case — most cities are, and the target is already
+server/api/handlers/messenger_passage.go:457:	case "coastal_sea", "deep_sea", "river", "river_ford",
+server/api/handlers/messenger_passage.go:470:	case "coastal_sea", "deep_sea", "river", "river_ford":
+server/api/handlers/messenger_passage.go:505:// (q,r) and is coastal or has a harbour — the same predicate messenger.
+server/api/handlers/messenger_passage.go:516:		           OR EXISTS(SELECT 1 FROM buildings b WHERE b.settlement_id = s.id AND b.building_type = 'harbour')))`,
+server/api/handlers/opening_dispatch.go:52:		fmt.Sprintf("Foot soldiers cross a plains hex in %g day, olive woodland in %g, hills or cedar forest in %g, desert in %g. War chariots cross plains in %g day but need %g in olive woodland and %g in hills, cedar forest or desert. A full-crewed galley crosses %g coastal or %g open-sea hexes a day.", province.TerrainMoveTicks("plains"), province.TerrainMoveTicks("forest_olive_grove"), province.TerrainMoveTicks("hills"), province.TerrainMoveTicks("semi_desert"), province.TerrainMoveTicksFor("plains", province.CategoryWarChariot), province.TerrainMoveTicksFor("forest_olive_grove", province.CategoryWarChariot), province.TerrainMoveTicksFor("hills", province.CategoryWarChariot), 1/province.TerrainMoveTicksFor("coastal_sea", "naval"), 1/province.TerrainMoveTicksFor("deep_sea", "naval")),
+server/api/handlers/host_position.go:76: AND mt.terrain NOT IN ('coastal_sea','deep_sea','river','river_ford','mountain_limestone','mountain_red','semi_desert')`, worldID, q, r).Scan(&site.terrain, &site.copper, &site.tin, &site.silver, &site.cedar, &site.incense, &site.coastal)
+server/api/handlers/messenger.go:318:	// two coastal/harboured cities goes to sea on the INITIATOR's own ship —
+server/api/handlers/messenger.go:327:			writeError(w, http.StatusInternalServerError, "could not check origin harbour")
+server/api/handlers/messenger.go:332:			writeError(w, http.StatusInternalServerError, "could not check destination harbour")
+server/api/handlers/messenger.go:1134:	// trade sails or walks — same coastal/harbour gate as internal transfers
+server/api/handlers/messenger.go:1140:		writeError(w, http.StatusInternalServerError, "could not check origin harbour")
+server/api/handlers/messenger.go:1145:		writeError(w, http.StatusInternalServerError, "could not check destination harbour")
+server/api/handlers/world.go:750:			"fish_per_tick":               foodForecast.FishProduction,
+server/api/handlers/world.go:768:	// The harbour rule, told before the irreversible step (only when the centre
+server/api/handlers/world.go:771:		resp["harbour_note"] = harbourNote(coastalCentre)
+server/api/handlers/world.go:812:// harbourNote is the forecast line for the harbour rule (province.HarbourRule*).
+server/api/handlers/world.go:813:func harbourNote(coastalCentre bool) string {
+server/api/handlers/unit.go:616:		isSea := destTerrain == "coastal_sea" || destTerrain == "deep_sea" || destTerrain == "river"
+server/api/handlers/unit.go:1083://   - Origin must be a coastal settlement (adjacent to sea) or have a harbour.
+server/api/handlers/unit.go:1178:	// Embark-gating: settlement must be coastal or have a harbour.
+server/api/handlers/unit.go:1196:			   WHERE s.id = $1 AND b.building_type = 'harbour'
+server/api/handlers/unit.go:1201:			writeError(w, http.StatusUnprocessableEntity, "units can only embark at coastal settlements or harbours")
+server/api/handlers/unit.go:1302://     harbour — cargo joins that settlement's garrison. A ship standing to sea
+server/api/handlers/unit.go:1370:	// Ship is docked at a settlement — disembark gating: must be coastal or harbour.
+server/api/handlers/unit.go:1388:			   WHERE s.id = $1 AND b.building_type = 'harbour'
+server/api/handlers/unit.go:1393:			writeError(w, http.StatusUnprocessableEntity, "units can only disembark at coastal settlements or harbours")
+server/api/handlers/unit.go:2410:		AND EXISTS(SELECT 1 FROM buildings b WHERE b.settlement_id=s.id AND b.building_type='harbour')`, worldID, ownerID)
+server/api/handlers/province.go:108:		   AND mt.terrain NOT IN ('deep_sea','coastal_sea','river','river_ford')`,
+server/api/handlers/province.go:374:			if afford && spec.RequiresHarbour && !builtTypes["harbour"] {
+server/api/handlers/province.go:645:		// food_gubbar_placed counts ONLY grain/fish rows — the exact good set
+server/api/handlers/province.go:861:	// Coverage is measured on the whole food basket (B6) — grain first, fish
+server/api/handlers/province.go:863:	// grain alone would call a fish-fed city starving.
+server/api/handlers/province.go:919:	// §2): how many gubbar the catchment's food (grain/fish) slots need for
+server/api/handlers/province.go:1195:	// harbour (megaron_plan_skeppsreparation.md Slice A, §Beslut B1) and
+server/api/handlers/province.go:1212:			     AND terrain IN ('coastal_sea','deep_sea','river','river_ford')
+server/api/handlers/province.go:1890:		RequiresHarbour  bool `json:"requires_harbour,omitempty"`
+server/api/handlers/province.go:2225:			`SELECT EXISTS(SELECT 1 FROM buildings WHERE settlement_id = $1 AND building_type = 'harbour')`,
+server/api/handlers/province.go:2229:			writeError(w, http.StatusUnprocessableEntity, "harbour required")
+server/api/handlers/province.go:2314:		{"harbour", spec.RequiresHarbour}, {"shipyard", spec.RequiresShipyard},
+server/api/handlers/province.go:2867:		     AND (mt.terrain NOT IN ('deep_sea','coastal_sea','river','river_ford') OR pr.terrain_type = mt.terrain)
+server/api/handlers/province.go:2899:	// Wanax cannot tell "producing flat out from a level-1 harbour" from "half my
+server/api/handlers/province.go:2900:	// fishermen have no boat to crew". (Playtest 2026-07-23, Deiphobos:
+server/api/handlers/province.go:3011:		// hint that half your fishermen have no boat to crew.
+server/api/handlers/province.go:3235:// settlementHasHarbour reports whether a settlement has built a harbour —
+server/api/handlers/province.go:3236:// half of the "coastal OR harbour" naval-eligibility gate unit.go's
+server/api/handlers/province.go:3240:// covers the building fallback for an inland settlement that dug a harbour.
+server/api/handlers/province.go:3246:		`SELECT EXISTS(SELECT 1 FROM buildings WHERE settlement_id = $1 AND building_type = 'harbour')`,
+server/api/handlers/province.go:3346:		writeError(w, http.StatusInternalServerError, "could not check origin harbour")
+server/api/handlers/province.go:3351:		writeError(w, http.StatusInternalServerError, "could not check destination harbour")

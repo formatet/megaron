@@ -1,0 +1,24 @@
+Pager usage is off.
+BEGIN
+    name    | remainder_people | unaffected_base_food_lower_bound 
+------------+------------------+----------------------------------
+ Amnissos   |               15 |               1.6666666666666665
+ Damon      |               12 |                                1
+ Gournia    |               17 |               0.9999999999999999
+ Kydonia    |               23 |               0.9999999999999999
+ Lato       |               62 |                                1
+ Petras     |               35 |                                1
+ Phaistos   |               23 |                2.666666666666666
+ Phalasarna |                0 |                                1
+ Plateia    |                0 |                                1
+ Pylos      |                0 |                2.666666666666666
+ Vasiliki   |               10 |                                1
+ Zakros     |               22 |                                1
+(12 rows)
+
+               world_id               | coastal_hexes_with_four_land_neighbors 
+--------------------------------------+----------------------------------------
+ 2178e795-1303-4cc3-865a-6386847d68d1 |                                     22
+(1 row)
+
+COMMIT
