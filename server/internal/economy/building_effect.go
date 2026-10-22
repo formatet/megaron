@@ -8,6 +8,8 @@ package economy
 import (
 	"context"
 	"fmt"
+	"formatet/megaron/server/internal/hexgrid"
+	"github.com/google/uuid"
 	"math"
 	"strconv"
 	"strings"
@@ -26,17 +28,26 @@ type HexBuildEffect struct {
 // HexBuildEffects returns the effect rows of buildingType on a hex of this
 // terrain/deposits. r0 is read from production_rules: the building-free
 // terrain/deposit row(s) for the good, or (silver) the mine row.
-func HexBuildEffects(ctx context.Context, tx Tx, buildingType, terrain string, copperDep, tinDep, silverDep bool) ([]HexBuildEffect, error) {
-	rules := hexRules(terrain, copperDep, tinDep, silverDep, false) // incense has no building, so no build effect
+func HexBuildEffects(ctx context.Context, tx Tx, buildingType string, worldID uuid.UUID, coord hexgrid.Coord) ([]HexBuildEffect, error) {
+	tiles, err := loadHexRuleTiles(ctx, tx, worldID, []hexgrid.Coord{coord})
+	if err != nil {
+		return nil, err
+	}
+	tile, ok := tiles[coord]
+	if !ok {
+		return nil, fmt.Errorf("hex build effects: missing hex")
+	}
+	terrain, copperDep, tinDep, silverDep := tile.terrain, tile.copper, tile.tin, tile.silver
+	rules := tile.rules
 	var out []HexBuildEffect
 	for _, rule := range rules {
 		if rule.building != buildingType {
 			continue
 		}
-		needs := rule.good == "silver"
+		needs := rule.good == "silver" || rule.basePlaces == 0
 		var r0 float64
 		var err error
-		if needs {
+		if rule.good == "silver" {
 			err = tx.QueryRow(ctx,
 				`SELECT COALESCE(SUM(pr.rate_per_tick), 0) FROM production_rules pr
 				 JOIN goods g ON g.key = pr.good_key AND g.status = 'active'
@@ -91,7 +102,11 @@ func BuildEffectText(effects []HexBuildEffect) string {
 	parts := make([]string, 0, len(effects))
 	for _, e := range effects {
 		if e.NeedsBuilding {
-			parts = append(parts, fmt.Sprintf("%s can be mined · space for %d workers", e.Good, e.PlacesWith))
+			verb := "produced"
+			if e.Good == "silver" {
+				verb = "mined"
+			}
+			parts = append(parts, fmt.Sprintf("%s can be %s · space for %d workers", e.Good, verb, e.PlacesWith))
 			continue
 		}
 		parts = append(parts, fmt.Sprintf("this hex's %s output %s · space for %d more workers", e.Good, levelMult(1), e.PlacesWith-e.PlacesWithout))

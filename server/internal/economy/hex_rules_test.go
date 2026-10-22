@@ -107,7 +107,11 @@ func TestEffectParity_EffectTextMatchesRecompute(t *testing.T) {
 	settlementID := seedFullRingFixture(t, 100, 500, "plains")
 	hex := hexgrid.Ring(hexgrid.Coord{Q: 0, R: 0}, hexgrid.CatchmentRadius)[0]
 
-	fx, err := HexBuildEffects(ctx, pool, "farm", "plains", false, false, false)
+	var worldID uuid.UUID
+	if err := pool.QueryRow(ctx, `SELECT world_id FROM settlements WHERE id=$1`, settlementID).Scan(&worldID); err != nil {
+		t.Fatal(err)
+	}
+	fx, err := HexBuildEffects(ctx, pool, "farm", worldID, hex)
 	if err != nil {
 		t.Fatalf("HexBuildEffects: %v", err)
 	}

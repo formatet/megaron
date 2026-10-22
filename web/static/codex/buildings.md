@@ -3,7 +3,7 @@ Open **City → Buildings**. The tab shows what is **built** (and its level), th
 | Building | What it is for |
 |---|---|
 | **Farm** | Stands on a grain hex you choose and works that field. |
-| **Harbour** | Works the settlement's coastal waters and enables sea trade ([[sea]]). Stands in the city — see below. |
+| **Harbour** | Works the settlement's coastal and deep waters and enables sea trade ([[harbour]]). Stands in the city — see below. |
 | **Shipyard** | Builds and repairs ships (needs a coastal city). |
 | **Lumbermill** | Stands on olive groves, cedar forest, maquis, hills or river valleys and raises their wood production. |
 | **Stone Quarry** | Stands on a land hex you choose and works the stone there — far more on hills and limestone. |
@@ -29,11 +29,11 @@ Open **City → Buildings**. The tab shows what is **built** (and its level), th
 
 **One building per hex.** A hex that already has one of these four — yours, or a neighbouring city's on a hex you share — cannot take another. Building the same kind again on its own hex raises its level.
 
-Every other building, including **Harbour**, stands in the city itself. Harbour is the one exception worth naming: though it stands in the city (and needs the city's own hex to border the sea), its effect reaches every coastal-sea hex in your catchment at once, not just one.
+Every other building, including **Harbour**, stands in the city itself. Harbour is the one exception worth naming: though it stands in the city (and needs the city's own hex to border the sea), its effect reaches every coastal-sea and deep-sea hex in your catchment at once. See [[fishing]] and [[harbour]].
 
 ## The rule
 
-A farm, mine, lumbermill, stonequarry or harbour makes **space for four more workers** on its hex, and multiplies the hex's own **production** per worker: ×1.7 at level 1, ×2.4 at level 2, ×3.1 at level 3. Silver can only be mined with a mine — without one a silver deposit gives nothing. Olive press, winery and foundry work inside the city as before.
+A farm, mine, lumbermill or stonequarry makes **space for four more workers** on its hex. A harbour adds four fishing places to each coastal or deep-water hex in the catchment. Each of these buildings multiplies the hex's own **production** per worker: ×1.7 at level 1, ×2.4 at level 2, ×3.1 at level 3. Silver can only be mined with a mine — without one a silver deposit gives nothing. Olive press, winery and foundry work inside the city as before.
 
 ## Levels
 
