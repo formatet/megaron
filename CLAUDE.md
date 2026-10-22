@@ -188,9 +188,7 @@ Get the shape wrong and you write wrong code. Everything else: `megaron_moc.md`.
   (19 hexes, 18 worked; P1, 2026-08-07 — was radius-1/7 hexes before), worked without outposts; dynamic,
   lazy, deterministic. Radius lives in `internal/hexgrid.CatchmentRadius`.
 - **Coast is not a terrain** — it's a property (neighbour of sea); `coast_beach` is gone from the enum.
-- **Labor = individual placement (P4, 2026-08-08), NOT a weight/share of pop.** `settlement_labor`
-  (good_key weight) is **repealed for every good except `cult`** (temple devotion — its own path,
-  `megaron_cult_ar_ingen_vara_plan.md`, untouched). Production is derived from `settlement_placement`:
+- **Labor = individual placement (P4, 2026-08-08), NOT a weight/share of pop.** Legacy `settlement_labor` weights are retired by migration 201 and its atomic startup transition. Temple service uses physical placements too. Production is derived from `settlement_placement`:
   one row = one gubbe (`Temenos_varutaxonomi_sol.md` §1.1, 1 gubbe = 100 invånare) bound to ONE hex or
   building slot doing ONE good. **Hex production** uses `economy.hexYield` and `hex_rules.go`:
   terrain/deposits set base places and per-worker rate; the relevant building adds
@@ -210,10 +208,7 @@ Get the shape wrong and you write wrong code. Everything else: `megaron_moc.md`.
   (`api/handlers/settlement_placement.go`). Plan: `megaron_plan_fysisk_gubbemodell.md` (vault) §P4;
   design `Temenos_varutaxonomi_sol.md` §1.1, §8. **P1–P6 are ALL built and deployed** — including
   **P5, the web placement surface** (`web/static/js/megaron/ui/citygrid.js`, commit `c8197f0`,
-  imported by `ui/drawers/city.js`; keryx `place`/`staff`). **`LaborAlloc` (`PUT …/labor`) is NOT dead code
-  and must not be deleted** — it was NARROWED to cult only (`megaron_plan_riv_procentallokeringen.md`),
-  and cult devotion is `settlement_labor`'s permanent home, read live by `kharis/tick.go`. The web
-  side is one `.labor-input` with `data-good="cult"`. Trust the code, not older notes about it.
+  imported by `ui/drawers/city.js`; keryx `place`/`staff`). Temple staffing uses the same placement endpoints and workforce; economy owns its capacity and actual staffed count. `LaborAlloc`, PUT labor and Keryx allocate are removed.
   August's hex-cap/Form-A/Form-B formulas are historical — the current hex contract is `megaron_plan_byggnadsregeln.md`.
 - **Cost ↔ upkeep** — upkeep = grain+silver ∝ build cost. Strategic metals belong in build gates, recruit
   and attrition, **never flat upkeep** (bronze upkeep = desertion spiral).

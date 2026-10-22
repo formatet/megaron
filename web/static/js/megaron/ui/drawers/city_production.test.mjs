@@ -9,7 +9,7 @@ test('J: only three primary sections, all secondary abilities remain under close
  const html=productionSectionsHTML({is_capital:false}),[primary,more]=html.split('<details');
  assert.equal((primary.match(/class="dsec"/g)||[]).length,3,'three primary sections');
  for(const id of ['city-pop-sec','city-prod-sec','city-food-sec'])assert.ok(primary.includes(id));
- for(const id of ['city-devotion-sec','city-food-details-sec','city-lasttick-sec','city-ticklog-sec'])assert.ok(more.includes(id),'retained '+id);
+ for(const id of ['city-food-details-sec','city-lasttick-sec','city-ticklog-sec'])assert.ok(more.includes(id),'retained '+id);
  assert.match(more,/onclick="loadTicklog\(\)"/);assert.doesNotMatch(more,/\bopen\b/,'More starts closed');
  for (const is_capital of [true, false]) assert.doesNotMatch(productionSectionsHTML({is_capital}), /city-gift-sec|city-loyalty-sec|Loyalty log|Gift from capital/);
 });

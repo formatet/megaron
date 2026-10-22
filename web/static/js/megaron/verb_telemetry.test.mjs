@@ -16,7 +16,7 @@ const coverage = {
   'name_place': ['name_place'],
   'build': ['build'], 'cancel-build': ['cancel-build'], 'demolish': ['demolish'], 'recruit': ['recruit'], 'cancel-training': ['cancel-training'],
   'place / staff': ['place', 'staff', 'unplace'],
-  'place → ta hex (gren av `place`)': ['place'], 'labor (cult)': ['labor'],
+  'place → ta hex (gren av `place`)': ['place'],
   'disband': ['disband'], 'transfer': ['transfer', 'gift/tribute'],
   'abandon': ['abandon'], 'rite': ['rite'], 'gift': [], // Own-colony gifts were removed in slice 20.
   'password': ['password'],

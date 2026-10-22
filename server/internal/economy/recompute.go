@@ -47,9 +47,8 @@ const NearjordGrainPerTick = 0.5
 // it can put to work, as a hard count of people, not a share of the city. Labor
 // allocated past what the fields and buildings can employ is not served and
 // produces nothing — so the only way to devote MORE of a city to a good is a
-// bigger workplace. This generalises what kharis.templeDevotionCapacity already
-// did for the temple (which is NOT in this table — cult labor is a separate
-// path, megaron_cult_ar_ingen_vara_plan.md, deliberately untouched here).
+// bigger workplace. Temple staffing has its own non-producing option with
+// physical capacity supplied by TempleWorkplaces.
 //
 // P2 replaces the old share-based BuildingLaborPerLevel (0.5 of the city per
 // level — DE2=B, Timothy 2026-08-07: "arbetskraft räknas hädanefter i hela
@@ -113,6 +112,9 @@ var workplaceSlotTable = map[string][4]int{
 // level return 0: an unrecognised building grants no slots rather than a
 // silent guess (arbetssätt §7: no fallback that invents a value).
 func WorkplaceSlots(buildingType string, level int) int {
+	if buildingType == "temple" {
+		return TempleWorkplaces(level)
+	}
 	tiers, ok := workplaceSlotTable[buildingType]
 	if !ok || level < 1 || level >= len(tiers) {
 		return 0
@@ -419,9 +421,7 @@ type Tx interface {
 //   - The population REMAINDER (pop mod100) produces that fraction of the
 //     best eligible food worker, grain or fish, without taking a real slot.
 //
-// settlement_labor is UNTOUCHED by this function — cult labor (temple
-// devotion, good_key='cult') is a separate path (megaron_cult_ar_ingen_vara_plan.md)
-// that was never part of this formula even before P4.
+// Staffing-only temple roles consume workers but produce no settlement goods.
 //
 // Must be called inside an existing transaction. Passes ctx to every DB call.
 func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) error {
@@ -546,6 +546,9 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		}
 	}
 	for _, opt := range buildingOptions {
+		if opt.StaffingOnly {
+			continue
+		}
 		for good := range opt.RatePerGood {
 			producible[good] = true
 		}
@@ -568,6 +571,9 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		}
 	}
 	for _, opt := range buildingOptions {
+		if opt.StaffingOnly {
+			continue
+		}
 		placedHere := placements.Building[opt.BuildingType]
 		for good, rate := range opt.RatePerGood {
 			// weakestLinkRefiningBuilding's goods (oil, wine) and bronze are
@@ -615,6 +621,9 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		}
 		refiningCapacity := 0.0
 		for _, opt := range buildingOptions {
+			if opt.StaffingOnly {
+				continue
+			}
 			rate, ok := opt.RatePerGood[good]
 			if !ok {
 				continue
@@ -714,6 +723,9 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	// smoothly between calls.
 	bronzeRefiningCapacity := 0.0
 	for _, opt := range buildingOptions {
+		if opt.StaffingOnly {
+			continue
+		}
 		rate, ok := opt.RatePerGood[GoodBronze]
 		if !ok {
 			continue

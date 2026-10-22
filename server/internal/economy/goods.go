@@ -29,7 +29,7 @@ const (
 	GoodBronze    = "bronze"
 	GoodPurple    = "purple"
 	GoodPottery   = "pottery"
-	GoodCult      = "cult" // internal sacred good produced by temple labor → converted to kharis daily
+	GoodCult      = "cult" // internal staffing role/FK anchor; never produced or stocked
 )
 
 // FoodGoods is the sole ordinary food category: equal food value, proportional

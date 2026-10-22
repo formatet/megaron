@@ -18,3 +18,12 @@ func TestKharisCapLineAtCapDoesNotClimb(t *testing.T) {
 		t.Fatalf("below cap: %q", got)
 	}
 }
+
+func TestKharisStalledHintNamesPhysicalTempleStaffing(t *testing.T) {
+	for _, net := range []float64{0, -.1} {
+		out := kharisCapLine(map[string]any{"kharis": 40.0, "kharis_cap": 50.0, "max_temple_level": 1.0, "kharis_net_known": true, "kharis_net_per_tick": net})
+		if strings.Contains(out, "allocate") || !strings.Contains(out, "keryx staff temple +1") {
+			t.Fatal(out)
+		}
+	}
+}

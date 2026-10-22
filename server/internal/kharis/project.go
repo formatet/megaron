@@ -3,13 +3,14 @@ package kharis
 import (
 	"context"
 
+	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/religion"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // ProjectDailyNet computes, read-only, the kharis a Wanax would net on the NEXT
-// maintained day: devotionSum × kharisPerTempleDay × offerFraction × scarcity −
+// maintained day: temple workers × KharisPerTempleWorker × offerFraction × scarcity −
 // dailyDecay — the exact formula processMaintenance applies, with the exact same
 // feeding rule (early grain reference or local substitutions to the same divine worth).
 // It exists so `status` can answer "will my kharis rise or fall" honestly: the
@@ -24,26 +25,7 @@ func ProjectDailyNet(ctx context.Context, pool *pgxpool.Pool, playerID, worldID 
 	var templeCities, cityCount int
 	err = pool.QueryRow(ctx,
 		`SELECT
-		    COALESCE((
-		        SELECT SUM(LEAST(GREATEST(0, COALESCE(sl.weight, 0)), $3::float8 * GREATEST(1, b.level)))
-		        FROM settlements s2
-		        JOIN buildings b ON b.settlement_id = s2.id AND b.building_type = 'temple'
-		        LEFT JOIN settlement_labor sl ON sl.settlement_id = s2.id AND sl.good_key = 'cult'
-		        WHERE s2.owner_id = $1 AND s2.world_id = $2
-		          AND s2.state NOT IN ('sunk', 'collapsed', 'razed')
-		    ), 0),
-		    COALESCE((
-		        -- The devotion the Wanax's temples COULD employ if fully staffed —
-		        -- $3 × level per temple. When this exceeds the allocated devotionSum,
-		        -- a bigger temple is standing idle: the Wanax raised its level but
-		        -- never allocated the cult labor to fill it, so kharis does not climb
-		        -- (sondrunda 2026-07-24: built L2, net stayed −0.1, blamed wine).
-		        SELECT SUM($3::float8 * GREATEST(1, b.level))
-		        FROM settlements s5
-		        JOIN buildings b ON b.settlement_id = s5.id AND b.building_type = 'temple'
-		        WHERE s5.owner_id = $1 AND s5.world_id = $2
-		          AND s5.state NOT IN ('sunk', 'collapsed', 'razed')
-		    ), 0),
+            0::float8, 0::float8,
 		    COALESCE((
 		        SELECT COUNT(DISTINCT s2.id)
 		        FROM settlements s2
@@ -57,11 +39,17 @@ func ProjectDailyNet(ctx context.Context, pool *pgxpool.Pool, playerID, worldID 
 		        WHERE s3.owner_id = $1 AND s3.world_id = $2
 		          AND s3.state NOT IN ('sunk', 'collapsed', 'razed')
 		    ), 0)`,
-		playerID, worldID, TempleDevotionPerLevel,
+		playerID, worldID,
 	).Scan(&devotionSum, &devotionCapacity, &templeCities, &cityCount)
 	if err != nil {
 		return 0, false, 0, 0, err
 	}
+
+	staffed, capacity, serr := economy.RealmTempleStaffing(ctx, pool, playerID, worldID)
+	if serr != nil {
+		return 0, false, 0, 0, serr
+	}
+	devotionSum, devotionCapacity = float64(staffed), float64(capacity)
 
 	dailyDecay := computeDailyDecay(cityCount)
 	if templeCities == 0 {
@@ -78,7 +66,7 @@ func ProjectDailyNet(ctx context.Context, pool *pgxpool.Pool, playerID, worldID 
 	fed := projectFedTemples(ctx, pool, playerID, worldID, values)
 	offerFraction := computeOfferFraction(fed, templeCities)
 
-	gain := devotionSum * kharisPerTempleDay * offerFraction * scarcity
+	gain := devotionSum * KharisPerTempleWorker * offerFraction * scarcity
 	return gain - dailyDecay, true, devotionSum, devotionCapacity, nil
 }
 

@@ -32,7 +32,7 @@ func TestRealmKharis_OpeningAndTempleCalibration(t *testing.T) {
 	if got := clampKharis(40-computeDailyDecay(1), EffectiveKharisCap(100, 0)); math.Abs(got-39.9) > 1e-10 {
 		t.Fatalf("opening clipped:%g", got)
 	}
-	if net := .15*kharisPerTempleDay - computeDailyDecay(6); math.Abs(net-.5) > 1e-10 {
+	if net := 2*KharisPerTempleWorker - computeDailyDecay(6); math.Abs(net-.5) > 1e-10 {
 		t.Fatalf("six-city L1 net%g", net)
 	}
 	for level, want := range []float64{40, 50, 75, 100} {

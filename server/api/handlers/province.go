@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"math"
 	"net/http"
 	"sort"
 	"strconv"
@@ -428,10 +427,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			// hides (soak 2026-07-24: a fading L1 Wanax saw "+0.1/dygn"). Read-only.
 			if net, has, devSum, devCap, nerr := kharis.ProjectDailyNet(r.Context(), h.pool, *sett.OwnerID, worldID); nerr == nil {
 				kharisNetPerDay, kharisNetKnown = net, true
-				// Idle temple capacity: the Wanax raised a temple's level but hasn't
-				// allocated the cult labor to fill it, so it can't lift kharis. 0.02 =
-				// a hair above float noise, well under one 0.15 devotion step.
-				kharisDevotionIdle = has && (devCap-devSum) > 0.02
+				kharisDevotionIdle = has && devCap > devSum
 			}
 		}
 
@@ -495,15 +491,12 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		divineValues, _ := religion.LoadDivineValues(r.Context(), h.pool, worldID)
 
 		// Devotion + what this settlement's temple can employ.
-		var devotionWeight, devotionCapacity float64
-		_ = h.pool.QueryRow(r.Context(),
-			`SELECT COALESCE((SELECT weight FROM settlement_labor
-			                  WHERE settlement_id = $1 AND good_key = 'cult'), 0),
-			        COALESCE((SELECT $2::float8 * GREATEST(1, level) FROM buildings
-			                  WHERE settlement_id = $1 AND building_type = 'temple'
-			                  ORDER BY level DESC LIMIT 1), 0)`,
-			sett.ID, kharis.TempleDevotionPerLevel,
-		).Scan(&devotionWeight, &devotionCapacity)
+		templeStaff, err := economy.LoadTempleStaffing(r.Context(), h.pool, sett.ID)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "could not load temple staffing")
+			return
+		}
+
 		var prayerTick int
 		if err := h.pool.QueryRow(r.Context(), `SELECT current_tick FROM worlds WHERE id=$1`, worldID).Scan(&prayerTick); err != nil {
 			writeError(w, http.StatusInternalServerError, "could not read prayer time")
@@ -771,15 +764,9 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"can_recruit":                      recruitAfford,
 			"available_prayers":                prayers,
 			"divine_values":                    divineValues,
-			// Devotion: the share of the city serving the temple. Mig 094 made cult
-			// a labor weight that produces nothing, which removed it from the goods
-			// list — and with it the only place a Wanax could see or tend it. A
-			// mechanic you cannot see is a mechanic you cannot tend, so it is
-			// reported here with the capacity that bounds it (a temple employs
-			// kharis.TempleDevotionPerLevel of the city per level; beyond that the
-			// devotion has no altar to serve at).
-			"devotion":          devotionWeight,
-			"devotion_capacity": devotionCapacity,
+			// Physical temple workers share the settlement workforce.
+			"temple_staffed":  templeStaff.Staffed,
+			"temple_capacity": templeStaff.Capacity,
 			"settlement_cap": map[string]any{
 				"used": settlementsOwned,
 				"max":  province.MaxSettlementsPerWanax,
@@ -2759,9 +2746,7 @@ func settlementUpkeepCapacity(ctx context.Context, pool *pgxpool.Pool, settlemen
 // employed per good — one placed gubbe = 100 citizens (Temenos_varutaxonomi_sol
 // §1.1). This is the honest post-P4 replacement for the pre-P4 settlement_labor
 // weights the goods surface used to read: production is driven by
-// settlement_placement, so the worker counts shown beside it must be too. Cult
-// is NOT here — it stays on its settlement_labor devotion path (the one good P4
-// left on weights).
+// settlement_placement, including temple service; cult remains absent from the goods inventory.
 func placedCitizensByGood(pc economy.PlacementCounts) map[string]int {
 	out := make(map[string]int)
 	for _, byGood := range pc.Hex {
@@ -2803,21 +2788,6 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	laborPool := population
 	if laborPool < 0 {
 		laborPool = 0
-	}
-
-	// Load labor weights (weight ∈ [0,1] = fraction of labor_pool).
-	wrows, _ := h.pool.Query(r.Context(),
-		`SELECT good_key, weight FROM settlement_labor WHERE settlement_id = $1`, settlementID,
-	)
-	laborWeights := make(map[string]float64)
-	if wrows != nil {
-		for wrows.Next() {
-			var k string
-			var w float64
-			_ = wrows.Scan(&k, &w)
-			laborWeights[k] = w
-		}
-		wrows.Close()
 	}
 
 	// Load base_potential per good from production_rules using catchment tiles
@@ -2955,10 +2925,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	marginalPlaced := economy.PlacementCounts{Hex: globalHexOccupancyForYield, Building: placed.Building}
 	marginalYields := economy.MarginalYieldPerGood(hexOptionsForYield, buildingOptionsForYield, marginalPlaced)
 
-	// Idle = population not placed on a good. Temple devotion is the same
-	// people serving the temple besides their work; it never limits how many
-	// can be placed (Haiku-7: /goods said 37 idle while city, brief and place
-	// said 54).
+	// Every placement, including temple service, consumes the same workforce.
 	idleCitizens := laborPool - placed.Total*100
 	if idleCitizens < 0 {
 		idleCitizens = 0
@@ -3009,26 +2976,9 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		bp := basePotential[key]
 		capacity := economy.LaborCapacity(key, hasFieldPath[key], hexSlots[key], workplaceSlots[key], laborPool)
 		var employed, unserved int
-		if key == economy.GoodCult {
-			// Cult is unchanged from the pre-P4 path: devotion weight clamped to
-			// temple capacity, with any over-allocation reported as unserved.
-			// It is the one good still driven by settlement_labor.
-			allocated := laborWeights[key]
-			served := allocated
-			if served > capacity {
-				served = capacity
-			}
-			employed = int(math.Round(served * float64(laborPool)))
-			unserved = int(math.Round((allocated - served) * float64(laborPool)))
-			if unserved < 0 {
-				unserved = 0
-			}
-		} else {
-			// Every other good is staffed by real placements. Placement enforces
-			// caps at write time, so there is no "unserved" over-allocation state.
-			employed = employedByGood[key]
-			unserved = 0
-		}
+		employed = employedByGood[key]
+		unserved = 0
+
 		percent := 0.0
 		if laborPool > 0 {
 			percent = float64(employed) / float64(laborPool) * 100.0
@@ -3729,190 +3679,6 @@ func (h *ProvinceHandler) TradeRoutes(w http.ResponseWriter, r *http.Request) {
 		result = []routeItem{}
 	}
 	writeJSON(w, http.StatusOK, result)
-}
-
-// LaborAlloc handles PUT /worlds/:worldID/provinces/:provinceID/labor.
-// Body: {"percent":{"cult":30}}
-//
-// This is a CULT-DEVOTION endpoint, not a production lever. Production goods
-// were moved to gubbe placement in P4 (2026-08-08, settlement_placement) —
-// every other good's settlement_labor weight has been a dead write since
-// then. This handler used to accept a percent per good; it now accepts and
-// persists only "cult" and explicitly reports every other key as ignored,
-// rather than silently no-opping them (megaron_plan_riv_procentallokeringen.md).
-// `settlement_labor` itself is not going anywhere: cult (temple devotion)
-// still lives there and is the one row still read live (kharis/tick.go).
-func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
-	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
-	if err != nil {
-		writeError(w, http.StatusBadRequest, "invalid world ID")
-		return
-	}
-	provinceID, err := uuid.Parse(chi.URLParam(r, "provinceID"))
-	if err != nil {
-		writeError(w, http.StatusBadRequest, "invalid province ID")
-		return
-	}
-	playerID, ok := auth.PlayerIDFromContext(r.Context())
-	if !ok {
-		writeError(w, http.StatusUnauthorized, "not authenticated")
-		return
-	}
-
-	var req struct {
-		Percent map[string]float64 `json:"percent"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || len(req.Percent) == 0 {
-		writeError(w, http.StatusBadRequest, "invalid JSON — expected {\"percent\":{\"cult\":25}} (temple devotion, % of population; production is set with placements — see `keryx place`)")
-		return
-	}
-
-	// Verify ownership.
-	var settlementID uuid.UUID
-	if err := h.pool.QueryRow(r.Context(),
-		`SELECT s.id FROM settlements s WHERE s.province_id=$1 AND s.world_id=$2 AND s.owner_id=$3`,
-		provinceID, worldID, playerID,
-	).Scan(&settlementID); err != nil {
-		writeError(w, http.StatusForbidden, "not your settlement")
-		return
-	}
-
-	var templeLevel int
-	_ = h.pool.QueryRow(r.Context(),
-		`SELECT COALESCE(MAX(level), 0) FROM buildings WHERE settlement_id = $1 AND building_type = 'temple'`,
-		settlementID,
-	).Scan(&templeLevel)
-	// Temple devotion capacity: a temple of level L can employ up to
-	// kharis.TempleDevotionPerLevel x L of the population at the altar (Timothy
-	// 2026-07-24). Cult labor is allocatable up to this cap, ADDITIVE, so devoting
-	// more never starves the producing jobs. Before this, cult was pinned at the
-	// 0.15 floor and unallocatable, so a level-2 temple's extra capacity could never
-	// be filled and its kharis could never climb (sondrunda 2026-07-24).
-	cultCapacity := kharis.TempleDevotionPerLevel * float64(templeLevel)
-
-	// Accept only "cult"; every other key is reported back as ignored rather
-	// than silently dropped — the whole point of this slice is that a Wanax
-	// who names grain/timber/… gets told plainly that it does nothing here.
-	cultWeight := -1.0 // sentinel: player did not name cult → KH1 preserves existing devotion below
-	pct, named := req.Percent["cult"]
-	var ignoredKeys []string
-	for key := range req.Percent {
-		if key != "cult" {
-			ignoredKeys = append(ignoredKeys, key)
-		}
-	}
-	sort.Strings(ignoredKeys)
-
-	if named {
-		if pct < 0 || pct > 100 {
-			writeError(w, http.StatusUnprocessableEntity, "percent for cult must be between 0 and 100")
-			return
-		}
-		if templeLevel == 0 {
-			writeError(w, http.StatusUnprocessableEntity,
-				"cult (devotion) needs a temple here — build one first")
-			return
-		}
-		cw := pct / 100.0
-		if cw < kharis.TempleDevotionPerLevel {
-			cw = kharis.TempleDevotionPerLevel // never below the holy floor
-		}
-		if cw > cultCapacity {
-			writeError(w, http.StatusUnprocessableEntity,
-				fmt.Sprintf("cult capped at %.0f%% by your level-%d temple — build a higher temple to devote more of the city",
-					cultCapacity*100, templeLevel))
-			return
-		}
-		cultWeight = cw
-	}
-
-	// KH1 (decision A, locked 2026-08-07): when the client omits cult, the server
-	// PRESERVES the settlement's current devotion instead of resetting it to the
-	// floor. Keryx/agents that don't resend cult must behave identically to a
-	// web client that does. Read the live value now and carry it forward,
-	// clamped to the temple's capacity (in case the temple was downgraded
-	// since the value was set).
-	if cultWeight < 0 && templeLevel > 0 {
-		var existing float64
-		if err := h.pool.QueryRow(r.Context(),
-			`SELECT weight FROM settlement_labor WHERE settlement_id = $1 AND good_key = 'cult'`,
-			settlementID,
-		).Scan(&existing); err == nil {
-			if existing > cultCapacity {
-				existing = cultCapacity
-			}
-			if existing > kharis.TempleDevotionPerLevel {
-				cultWeight = existing // above the floor → worth preserving
-			}
-		}
-	}
-
-	explainer := "labor percentages only apply to cult (temple devotion); production is set with placements — see `keryx place`"
-	if len(ignoredKeys) > 0 {
-		explainer = fmt.Sprintf("%s (ignored: %s)", explainer, strings.Join(ignoredKeys, ", "))
-	}
-
-	if templeLevel == 0 {
-		// No temple → no devotion lever at all; nothing to persist.
-		writeJSON(w, http.StatusOK, map[string]any{
-			"message": "this settlement has no temple — " + explainer,
-		})
-		return
-	}
-
-	cw := cultWeight
-	if cw < 0 {
-		cw = kharis.TempleDevotionPerLevel // player didn't name cult → hold the floor
-	}
-
-	tx, err := h.pool.Begin(r.Context())
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "transaction error")
-		return
-	}
-	defer tx.Rollback(r.Context())
-
-	// Targeted UPSERT on the cult row only. This replaces the old
-	// DELETE-all-then-reinsert, which is what made KH1's preservation logic
-	// necessary in the first place — touching only the cult row means there
-	// is no other row to lose.
-	if _, err := tx.Exec(r.Context(),
-		`INSERT INTO settlement_labor (settlement_id, good_key, weight)
-		 VALUES ($1, 'cult', $2)
-		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET weight = $2`,
-		settlementID, cw,
-	); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not apply cult labor")
-		return
-	}
-
-	if err := economy.RecomputeProduction(r.Context(), tx, settlementID); err != nil {
-		writeError(w, http.StatusInternalServerError, "recompute production failed")
-		return
-	}
-
-	if err := tx.Commit(r.Context()); err != nil {
-		writeError(w, http.StatusInternalServerError, "commit failed")
-		return
-	}
-
-	// Audit the devotion change. LaborAllocated's semantics ("the labour
-	// weights changed") are unchanged and frozen forever (CLAUDE.md §Events) —
-	// only the payload shrank to the one weight that is still real.
-	if h.eventStore != nil {
-		auditPayload := map[string]any{"weights": map[string]float64{"cult": cw}}
-		_, _ = h.eventStore.Append(r.Context(), settlementID, events.StreamProvince, "LaborAllocated",
-			auditPayload, worldID, nil)
-	}
-
-	message := "cult devotion updated and production recomputed"
-	if len(ignoredKeys) > 0 {
-		message += "; " + explainer
-	}
-	writeJSON(w, http.StatusOK, map[string]any{
-		"cult_percent": cw * 100.0,
-		"message":      message,
-	})
 }
 
 // harvestBlessingStatus reports the same strict expiry gate and tuning as

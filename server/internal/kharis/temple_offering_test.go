@@ -25,9 +25,10 @@ func TestEarlyTempleOfferingLocalGiftAndProjection(t *testing.T) {
 			if _, err := pool.Exec(ctx, `UPDATE buildings SET level=2 WHERE settlement_id=$1 AND building_type='temple';`, sid); err != nil {
 				t.Fatal(err)
 			}
-			if _, err := pool.Exec(ctx, `UPDATE settlement_labor SET weight=.3 WHERE settlement_id=$1 AND good_key='cult'`, sid); err != nil {
+			if _, err := pool.Exec(ctx, `DELETE FROM settlement_placement WHERE settlement_id=$1`, sid); err != nil {
 				t.Fatal(err)
 			}
+			staffTestTemple(t, pool, sid, 4)
 			if _, err := pool.Exec(ctx, `UPDATE settlement_goods SET amount=0,rate=0 WHERE settlement_id=$1`, sid); err != nil {
 				t.Fatal(err)
 			}
@@ -50,12 +51,12 @@ func TestEarlyTempleOfferingLocalGiftAndProjection(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if math.Abs(net-(.3*kharisPerTempleDay-decayBas)) > 1e-8 {
+			if math.Abs(net-(4*KharisPerTempleWorker-decayBas)) > 1e-8 {
 				t.Fatalf("fed staffed L2 net=%g want shared yield minus decay", net)
 			}
 			h := newTestTickHandler(pool)
 			eid := atomic.AddInt64(&advanceOneDayEventID, 1)
-			w := wanaxSnap{cityCount: 1, playerID: pid, settlementID: sid, kharis: 20, kharisCap: 75, devotionSum: .3, templeCities: 1, maxTempleLevel: 2}
+			w := wanaxSnap{cityCount: 1, playerID: pid, settlementID: sid, kharis: 20, kharisCap: 75, devotionSum: 4, templeCities: 1, maxTempleLevel: 2}
 			if err := h.processMaintenance(ctx, w, wid, eid); err != nil {
 				t.Fatal(err)
 			}
@@ -72,7 +73,7 @@ func TestEarlyTempleOfferingLocalGiftAndProjection(t *testing.T) {
 			if err := pool.QueryRow(ctx, `SELECT (payload->>'kharis_gain')::float8 FROM events WHERE world_id=$1 AND event_type='KharisOffering' ORDER BY id DESC LIMIT 1`, wid).Scan(&gain); err != nil {
 				t.Fatal(err)
 			}
-			if math.Abs(after-(20+net)) > 1e-8 || amount != 0 || math.Abs(gain-.3*kharisPerTempleDay) > 1e-8 {
+			if math.Abs(after-(20+net)) > 1e-8 || amount != 0 || math.Abs(gain-4*KharisPerTempleWorker) > 1e-8 {
 				t.Fatalf("actual after%g amount%g gain%g", after, amount, gain)
 			}
 			// A richer remote city of the same Wanax is never charged for this temple.

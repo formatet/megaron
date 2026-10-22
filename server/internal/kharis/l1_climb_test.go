@@ -26,9 +26,7 @@ func TestL1TempleClimbsToFirstPrayerAndCaps(t *testing.T) {
 			if _, err := pool.Exec(ctx, `UPDATE buildings SET level=$2 WHERE settlement_id=$1 AND building_type='temple'`, sid, level); err != nil {
 				t.Fatal(err)
 			}
-			if _, err := pool.Exec(ctx, `UPDATE settlement_labor SET weight=$2 WHERE settlement_id=$1 AND good_key='cult'`, sid, templeDevotionCapacity(level)); err != nil {
-				t.Fatal(err)
-			}
+			staffTestTemple(t, pool, sid, level*2)
 			if _, err := pool.Exec(ctx, `UPDATE settlement_goods SET amount=1000,rate=0,calc_tick=0 WHERE settlement_id=$1 AND good_key='grain'`, sid); err != nil {
 				t.Fatal(err)
 			}

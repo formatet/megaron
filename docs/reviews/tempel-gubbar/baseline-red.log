@@ -1,0 +1,5 @@
+--- FAIL: TestTempleHasTwoRealWorkplacesPerLevel (0.00s)
+    temple_staffing_test.go:4: temple L1 has 0 places, want 2
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.002s
+FAIL

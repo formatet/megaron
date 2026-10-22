@@ -77,19 +77,7 @@ see current occupancy.`,
 					}
 				}
 
-				// temple never appears in placement-options: it has no
-				// production_rules row (economy.LoadBuildingProductionOptions
-				// only lists buildings that do). cult is the one good still
-				// staffed via settlement_labor, not settlement_placement
-				// (CLAUDE.md §Labor) — so a built temple is invisible to
-				// `staff` by design, not by bug. Without this check the
-				// error below reads as "no temple here" even when one
-				// stands — check the real buildings list before saying that.
-				if buildingType == "temple" {
-					if lvl, built := fetchBuiltBuildingLevel(c, cfg.WorldID, prov, "temple"); built {
-						return fmt.Errorf("temple (L%d) is built, but cult isn't a placed citizen — it's devotion, set with `keryx allocate --cult <pct>`, not `keryx staff`", lvl)
-					}
-				}
+
 				return fmt.Errorf("no built workplace %q here (see `keryx city` for what's built)", buildingType)
 			}
 			if len(building.Goods) == 0 {
