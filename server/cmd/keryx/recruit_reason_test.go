@@ -27,7 +27,7 @@ func TestUnsustainableReason_NamesTheBindingResource(t *testing.T) {
 			unitGrain: 5, unitSilver: 2,
 			grainStock: 100000, silverStock: 36000,
 			// shortfall after this unit = 9/day; 36000/9 = 4000 ticks.
-			wantSubstrings:   []string{"silver", "-7.0", "9.0", "covers", "4000", "days"},
+			wantSubstrings:   []string{"silver", "-7", "9", "covers", "4000", "days"},
 			wantNotSubstring: []string{"grain upkeep"},
 		},
 		{
@@ -36,7 +36,7 @@ func TestUnsustainableReason_NamesTheBindingResource(t *testing.T) {
 			unitGrain: 5, unitSilver: 2,
 			grainStock: 800, silverStock: 5000,
 			// shortfall after this unit = 8/day; 800/8 = 100 ticks.
-			wantSubstrings:   []string{"grain", "-3.0", "8.0", "covers", "100", "days"},
+			wantSubstrings:   []string{"grain", "-3", "8", "covers", "100", "days"},
 			wantNotSubstring: []string{"silver"},
 		},
 		{
@@ -44,7 +44,7 @@ func TestUnsustainableReason_NamesTheBindingResource(t *testing.T) {
 			netGrain: -1, netSilver: -1,
 			unitGrain: 5, unitSilver: 2,
 			grainStock: 0, silverStock: 0, // no stock → no runway clause, just the shortfall
-			wantSubstrings: []string{"grain", "silver", "6.0", "3.0"},
+			wantSubstrings: []string{"grain", "silver", "6", "3"},
 		},
 	}
 	for _, tc := range cases {
@@ -75,5 +75,20 @@ func TestUnsustainableReason_FallsBackWhenNeitherMarginIsNegative(t *testing.T) 
 	}
 	if strings.Contains(got, "needs") {
 		t.Errorf("fallback must not claim a shortfall: %q", got)
+	}
+}
+
+func TestRecruitPayKeepsSmallCrewWagesAndShortfalls(t *testing.T) {
+	if got := recruitUpkeepLine(0.05, 0.05); got != "0.05 grain, 0.05 silver" {
+		t.Fatal(got)
+	}
+	if got := recruitUpkeepLine(0.005, 0.005); got != "0.005 grain, 0.005 silver" {
+		t.Fatal(got)
+	}
+	if got := unsustainableReason(1, 0, 0, 0.005, 0, 0); !strings.Contains(got, "needs 0.005 more") {
+		t.Fatal(got)
+	}
+	if got := unsustainableReason(0, 0, 0.005, 0.005, 0, 0); !strings.Contains(got, "0.005 more grain") || !strings.Contains(got, "0.005 more silver") {
+		t.Fatal(got)
 	}
 }
