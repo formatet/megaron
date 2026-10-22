@@ -2073,3 +2073,38 @@ h4.cx-h { font-size: var(--fs-base); }
 .mctx-city-row label { display: block; margin-bottom: .2rem; color: var(--text-dim); }
 .mctx-city-row select { width: 100%; min-width: 0; box-sizing: border-box; font: inherit; padding: .25rem; background: var(--warm-white); color: var(--text); border: 1px solid var(--border); }
 #mctx-city-note { display: block; font-size: .7rem; color: var(--text-dim); }
+
+/* Mobile windows share a single viewport; desktop anchoring stays with each surface. */
+@media (max-width: 480px) {
+  body.mobile-panel-open { overflow: hidden; }
+  .drawer:not(.open), .codex-panel:not(.open) { visibility: hidden; pointer-events: none; }
+  .mobile-panel-blocked { pointer-events: none; touch-action: none; }
+  .mobile-panel-blocked .mobile-fullscreen { pointer-events: auto; touch-action: pan-y; }
+  body.mobile-panel-open .tile-tooltip { display: none !important; }
+  .mobile-fullscreen.mobile-fullscreen {
+    position: fixed; inset: 0 !important; width: 100%; height: 100dvh;
+    max-width: none; max-height: none !important; box-sizing: border-box;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left) !important;
+    border: 0; background: var(--bg-panel); z-index: 600;
+    overflow: hidden; transform: none; transition: none;
+  }
+  .mobile-fullscreen > .dispatch-window,
+  .mobile-fullscreen > .search-box {
+    display: flex; flex-direction: column; width: 100%; height: 100%;
+    max-width: none; max-height: none !important; border: 0; box-shadow: none;
+    min-height: 0;
+  }
+  .mobile-fullscreen .dw-header, .mobile-fullscreen .drawer-header,
+  .mobile-fullscreen .codex-header, .mobile-fullscreen .inspect-header,
+  .mobile-fullscreen .search-input-row { flex-shrink: 0; }
+  .mobile-fullscreen .dw-body, .mobile-fullscreen .drawer-body,
+  .mobile-fullscreen .codex-body, .mobile-fullscreen .search-results {
+    flex: 1; min-height: 0; max-height: none; overflow-y: auto; overscroll-behavior: contain;
+  }
+  .mobile-fullscreen .inspect-header { flex-shrink: 0; }
+  .mobile-fullscreen .drawer-close, .mobile-fullscreen .inspect-close,
+  .mobile-fullscreen .mctx-close, .mobile-fullscreen .si-esc { min-width: 44px; min-height: 44px; flex-shrink: 0; }
+  .march-ctx.mobile-fullscreen { overflow-y: auto; overscroll-behavior: contain; }
+  .mobile-fullscreen .mctx-header { position: sticky; top: env(safe-area-inset-top); z-index: 1; }
+  .mobile-fullscreen .search-input-row .si-input { min-width: 0; }
+}

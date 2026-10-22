@@ -1,3 +1,4 @@
+import { openMobilePanel, closeMobilePanel } from './mobile_panels.js';
 import { notificationDay } from './notification_state.js';
 import { State } from '../state.js';
 import { openAccountWindow } from './account_window.js';
@@ -62,6 +63,7 @@ export function resolveDestination(kind, payload) {
 
 export function closeDispatchWindow() {
   const el = document.getElementById('dispatch-window-overlay');
+  closeMobilePanel(el);
   if (el) el.classList.remove('open');
 }
 
@@ -301,6 +303,7 @@ export function openDispatchWindow(kind, payload, timeLabel) {
       ${kind === 'OrderFailed' ? 'Stop all failed-order dispatches' : 'Stop these as dispatches'} (still kept in Notifications)
     </label>
   `;
+  openMobilePanel(overlay, closeDispatchWindow);
   overlay.classList.add('open');
 
   document.getElementById('dw-goto-btn').addEventListener('click', () => {

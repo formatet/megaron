@@ -1,3 +1,4 @@
+import { openMobilePanel, closeMobilePanel } from './mobile_panels.js';
 import { State } from '../state.js';
 import { fetchAuth } from '../api.js';
 import { esc, formatApiError, passageNote, supersededOrderNote, purseLine } from './format.js';
@@ -106,6 +107,7 @@ export function closeMarchCtx() {
   ++cityChoiceVersion;
   cityChoices=[];
   marchPreview.cancel();
+  closeMobilePanel(marchCtx);
   marchCtx.style.display = 'none';
   State.marchCtxUnitID = null;
   State.marchCtxDest   = null;
@@ -342,6 +344,7 @@ export function chooseMarchTarget(unitID) {
   document.getElementById('mctx-colonize-row').style.display = 'none';
   document.getElementById('mctx-more').style.display = 'none';
   document.getElementById('mctx-send').style.display = 'none';
+  openMobilePanel(marchCtx, closeMarchCtx);
   marchCtx.style.display = 'block';
   positionMarchCtx(8, 80);
   loadMarchCities();
@@ -428,6 +431,7 @@ export async function openMarchCtx(dest, screenX, screenY) {
 
   onColonizeToggle();
 
+  openMobilePanel(marchCtx, closeMarchCtx);
   marchCtx.style.display = 'block';
   positionMarchCtx(screenX, screenY);
 

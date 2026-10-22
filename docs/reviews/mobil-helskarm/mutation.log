@@ -1,0 +1,60 @@
+TAP version 13
+# Subtest: all mobile surfaces fill screen, close predecessor via cleanup, and restore map touch on close
+not ok 1 - all mobile surfaces fill screen, close predecessor via cleanup, and restore map touch on close
+  ---
+  duration_ms: 0.857966
+  type: 'test'
+  location: '/home/tk/wt/codex-mobil-helskarm/web/static/js/megaron/ui/mobile_panels.test.mjs:10:1'
+  failureType: 'testCodeFailure'
+  error: 'war closed predecessor'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-mobil-helskarm/web/static/js/megaron/ui/mobile_panels.test.mjs:16:22)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: desktop preserves simultaneous windows; shrinking keeps last and widening restores desktop classes
+ok 2 - desktop preserves simultaneous windows; shrinking keeps last and widening restores desktop classes
+  ---
+  duration_ms: 0.266425
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 1
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 39.195
+
+EXACT RESTORE
+TAP version 13
+# Subtest: all mobile surfaces fill screen, close predecessor via cleanup, and restore map touch on close
+ok 1 - all mobile surfaces fill screen, close predecessor via cleanup, and restore map touch on close
+  ---
+  duration_ms: 0.868346
+  type: 'test'
+  ...
+# Subtest: desktop preserves simultaneous windows; shrinking keeps last and widening restores desktop classes
+ok 2 - desktop preserves simultaneous windows; shrinking keeps last and widening restores desktop classes
+  ---
+  duration_ms: 0.270879
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 40.135889

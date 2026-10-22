@@ -1,0 +1,26 @@
+[
+  {
+    "width": 390,
+    "run": 1,
+    "touch": true,
+    "page_errors": []
+  },
+  {
+    "width": 390,
+    "run": 2,
+    "touch": true,
+    "page_errors": []
+  },
+  {
+    "width": 1000,
+    "run": 1,
+    "touch": true,
+    "page_errors": []
+  },
+  {
+    "width": 1000,
+    "run": 2,
+    "touch": true,
+    "page_errors": []
+  }
+]
