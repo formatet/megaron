@@ -58,4 +58,4 @@ The place is free at once — the new building then takes its normal time to bui
 
 Something still under construction is not demolished but cancelled, with its cost refunded: the ✕ in the Build queue, or `keryx cancel-build`.
 
-`keryx build --list [city]` and Construct show the current level and the cost of the next level. Without a city name, Keryx uses your capital. Each hex building has its own level and upgrade price. A resource refusal names the building and intended level; a level-2 price does not mean level 1 costs those materials.
+`keryx build --list [city]` and Construct show the current level and the cost of the next level. Without a city name, Keryx uses your capital. Each hex building has its own level and upgrade price. A refusal names the building and the level it would reach.
