@@ -1,3 +1,4 @@
+import { physicalHostState, hostStatusText } from '../ui/host_state.js';
 import { State, ownCapital, activeCitySettlement } from '../state.js';
 import { fetchAuth } from '../api.js';
 import { serverNow } from '../clock.js';
@@ -222,6 +223,7 @@ function pathPx(waypoints, progress, costs=null,durationTicks=null) {
 // glida isär från renderaren.
 function unitHexNow(u) {
  const pos=unitPixelNow(u);
+ if (u.type==='nomadic_host' && State.unitsData.some(own=>own.id===u.id)) return pos ? {q:pos.q,r:pos.r} : null;
  return pos&&pos.q!=null?{q:pos.q,r:pos.r}:u.q!=null?{q:u.q,r:u.r}:null;
 }
 
@@ -243,6 +245,11 @@ function legHexNow(oq, or, dq, dr, startIso, endIso) {
 // 5b's own drawing is unchanged, it just calls this now. Returns null when u
 // has neither a marching route nor a standing hex.
 function unitPixelNow(u,nowMs=serverNow()) {
+ if (u.type==='nomadic_host' && State.unitsData.some(own=>own.id===u.id)) {
+  const state=physicalHostState(State.founderPhase,State.unitsData);
+  return state && State.founderPhase?.host_unit_id===u.id ? {...hexPx(state.q,state.r),q:state.q,r:state.r} : null;
+ }
+
  if(u.status==='marching'&&u.departs_at&&u.arrives_at&&u.q!=null&&u.target_q!=null){
   const progress=routeProgress(u,nowMs,movementTickNow(nowMs));
   return u.path?.length>1?pathPx(u.path,progress,u.step_costs,u.arrival_tick-u.departure_tick):hexPathPx(u.q,u.r,u.target_q,u.target_r,progress);
@@ -3013,9 +3020,9 @@ export function render() {
         const intent = (u.march_intent === 'explore' || u.march_intent === 'explore_return') ? 'explore' : (u.march_intent || '');
         drawActor(ctx, kind, pos.x, pos.y, intent, walkPhase);
       }
-    } else if (u.status === 'positioned' && u.q != null && isTileVisible(u.q, u.r)) {
-      const {x, y} = hexPx(u.q, u.r);
-      drawActor(ctx, kind, x, y, '', walkPhase);
+    } else if (u.status === 'positioned' && unitPixelNow(u) && isTileVisible(unitPixelNow(u).q, unitPixelNow(u).r)) {
+      const point=unitPixelNow(u);
+      if (point) drawActor(ctx, kind, point.x, point.y, '', walkPhase);
     }
   }
 
@@ -3210,9 +3217,8 @@ export async function loadMap() {
 function homePosition() {
   const capital = ownCapital();
   if (capital) return { q: capital.q, r: capital.r };
-  if (State.founderPhase && State.founderPhase.q != null) {
-    return { q: State.founderPhase.q, r: State.founderPhase.r };
-  }
+  const host=physicalHostState(State.founderPhase,State.unitsData);
+  if (host) return {q:host.q,r:host.r};
   return null;
 }
 
@@ -3661,6 +3667,16 @@ async function openHostPanel(h, tile) {
   if (State.selectedHex?.q !== h.q || State.selectedHex?.r !== h.r) return;
   const fp = State.founderPhase;
   if (!fp) { openHexPanel(h); return; } // settled meanwhile — normal routing
+  const hostState=physicalHostState(fp,State.unitsData);
+  if (!hostState || hostState.q!==h.q || hostState.r!==h.r) {
+    document.getElementById('ip-name').textContent='Nomadic Host';
+    document.getElementById('ip-body-extra').textContent=hostState
+      ? `The Host is now at (${hostState.q},${hostState.r}). Select its marker again.` : 'The Host has moved. Select its marker again.';
+    document.getElementById('ip-foot').replaceChildren();
+    document.getElementById('inspect-panel').style.display='flex';
+    return;
+  }
+
 
   document.getElementById('ip-name').textContent = 'Nomadic Host';
   setCityFieldsVisible(false);
@@ -3678,7 +3694,7 @@ async function openHostPanel(h, tile) {
   // past the panel. The forecast is unbounded by nature; the button must not
   // share a container with it.
   document.getElementById('ip-body-extra').innerHTML =
-    placePanelHTML(tile, {showName:true}) + `<div id="ip-found-summary">Fetching founding forecast…</div>
+    placePanelHTML(tile, {showName:true}) + `<div class="inspect-row" id="ip-host-state">${esc(hostStatusText(hostState))} · (${hostState.q},${hostState.r})</div><div id="ip-found-summary">Fetching founding forecast…</div>
      <details id="ip-host-details" class="dsec"><summary class="dsec-title">Details</summary>
      <div style="margin-bottom:.5rem;line-height:1.5">
        <div>Deposits: ${esc(deposits)}</div>
@@ -3728,6 +3744,7 @@ async function openHostPanel(h, tile) {
 
   const settleButton = document.getElementById('ip-settle-btn');
   const result = document.getElementById('ip-settle-err');
+  settleButton.disabled = !hostState.can_found_here;
   let pending = false;
   settleButton.addEventListener('click', () => {
     if (pending) return;
@@ -3738,7 +3755,7 @@ async function openHostPanel(h, tile) {
         const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/founding/settle`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({}),
+          body: JSON.stringify({expected_q:hostState.q,expected_r:hostState.r}),
         });
         if (res.ok) {
           // New province, new eyes, host gone: refresh the changed world.
@@ -3780,7 +3797,7 @@ function openHexPanel(h) {
 
   // Founder phase: the host's own hex opens the Host panel, never a unit view.
   if (State.founderPhase && (State.unitsData || []).some(u =>
-      u.type === 'nomadic_host' && u.q === h.q && u.r === h.r)) {
+      u.type === 'nomadic_host' && unitHexNow(u)?.q === h.q && unitHexNow(u)?.r === h.r)) {
     openHostPanel(h, tile);
     return;
   }
@@ -3947,7 +3964,8 @@ export function initMap() {
           return p && p.name ? p.name : `(${q},${r})`;
         };
         const storms = (State.stormData || []).filter(st => st.hexes.some(sh => here(sh)));
-        const names = unitHoverLines({ own, foreign, caravans, runners, storms, placeName });
+        const namedOwn=own.map(u=>u.type==='nomadic_host'?{...u,host_state:physicalHostState(State.founderPhase,State.unitsData)}:u);
+        const names = unitHoverLines({ own:namedOwn, foreign, caravans, runners, storms, placeName });
         if (prov) {
           const parts = [prov.name, tl];
           if (prov.owner) parts.push(`Wanax: ${prov.owner}`);

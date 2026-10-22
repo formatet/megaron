@@ -83,82 +83,33 @@ func foundMetropolisFromNomadicHost(
 	ctx context.Context,
 	tx pgx.Tx,
 	eventStore *events.Store,
+	clk clock.Clock,
 
 	worldID, playerID uuid.UUID,
 	name, culture string,
+	expected *province.MapPosition,
 ) (foundedMetropolis, error) {
 	var out foundedMetropolis
 
-	// 1. Guard: an active founder phase, and the host still on the map.
-	var (
-		phaseID uuid.UUID
-		hostID  uuid.UUID
-		pop     int
-		q, r    int
-	)
-	err := tx.QueryRow(ctx,
-		`SELECT fp.id, fp.host_unit_id, fp.population, u.q, u.r
-		 FROM founder_phase fp
-		 JOIN units u ON u.id = fp.host_unit_id
-		 WHERE fp.world_id = $1 AND fp.owner_id = $2 AND fp.active
-		   AND u.q IS NOT NULL AND u.r IS NOT NULL`,
-		worldID, playerID,
-	).Scan(&phaseID, &hostID, &pop, &q, &r)
+	// Lock the active phase and Host before reading its physical tick position.
+	host, err := loadPhysicalHost(ctx, tx, worldID, playerID, clk.Now(), true)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return out, errNoFounderPhase
 	}
 	if err != nil {
 		return out, fmt.Errorf("load founder phase: %w", err)
 	}
-
-	// Belt and braces against a second metropolis: founder_phase.active is the
-	// real one-shot flag, but a player who somehow holds a settlement must never
-	// mint another capital row through this path.
-	var existing int
-	if err := tx.QueryRow(ctx,
-		`SELECT count(*) FROM settlements WHERE world_id = $1 AND owner_id = $2`,
-		worldID, playerID,
-	).Scan(&existing); err != nil {
-		return out, fmt.Errorf("check existing settlements: %w", err)
-	}
-	if existing > 0 {
-		return out, errAlreadySettled
+	phaseID, hostID, pop := host.PhaseID, host.ID, host.Population
+	q, r := host.Position.Q, host.Position.R
+	if expected != nil && *expected != host.Position {
+		return out, &hostMovedError{host.Position}
 	}
 
-	// 2. The hex must still be free and land. The host can be standing anywhere it
-	// walked, including next to someone who settled first while it was en route.
-	var terrain string
-	var copperDep, tinDep, silverDep, cedarDep, incenseDep, coastal bool
-	err = tx.QueryRow(ctx,
-		`SELECT mt.terrain, mt.copper_deposit, mt.tin_deposit,
-		        COALESCE(mt.silver_deposit,false), COALESCE(mt.cedar_deposit,false),
-		        COALESCE(mt.incense_deposit,false), COALESCE(mt.coastal,false)
-		 FROM map_tiles mt
-		 LEFT JOIN provinces p ON p.world_id = mt.world_id AND p.map_q = mt.q AND p.map_r = mt.r
-		 WHERE mt.world_id = $1 AND mt.q = $2 AND mt.r = $3
-		   AND p.id IS NULL
-		   AND mt.terrain NOT IN ('coastal_sea','deep_sea','river','river_ford','mountain_limestone','mountain_red','semi_desert')`,
-		worldID, q, r,
-	).Scan(&terrain, &copperDep, &tinDep, &silverDep, &cedarDep, &incenseDep, &coastal)
-	if errors.Is(err, pgx.ErrNoRows) {
-		return out, errHexNotSettlable
-	}
+	site, err := loadFoundingSite(ctx, tx, worldID, playerID, q, r)
 	if err != nil {
-		return out, fmt.Errorf("load founding tile: %w", err)
+		return out, err
 	}
-
-	// 2b. Catchment overlap: the delad-catchment-grind invariant (Timothy
-	// 2026-07-27/28: "finns delat catchment kan staden inte grundas") applies to
-	// a metropolis founding exactly like a colony — a Wanax cannot plant their
-	// capital on top of a neighbour's fields any more than a colony could.
-	// Authoritative (runs inside this transaction); the message is built by the
-	// caller (Settle), which owns the FOW knownToPlayer model this function
-	// does not have access to.
-	if conflict, cErr := province.SettlementCatchmentOverlap(ctx, tx, worldID, q, r); cErr != nil {
-		return out, fmt.Errorf("check catchment overlap: %w", cErr)
-	} else if conflict != nil {
-		return out, &catchmentOverlapError{q: q, r: r, conflict: conflict}
-	}
+	terrain, copperDep, tinDep, silverDep, cedarDep, incenseDep, coastal := site.terrain, site.copper, site.tin, site.silver, site.cedar, site.incense, site.coastal
 
 	// 3. Settle the store BEFORE anything else writes: settled() derives from the
 	// current tick, and the rows we are about to touch would otherwise re-anchor it.
@@ -397,10 +348,20 @@ func (h *JoinHandler) Settle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req struct {
-		Name    string `json:"name"`
-		Culture string `json:"culture"`
+		Name      string `json:"name"`
+		Culture   string `json:"culture"`
+		ExpectedQ *int   `json:"expected_q"`
+		ExpectedR *int   `json:"expected_r"`
 	}
 	_ = json.NewDecoder(r.Body).Decode(&req)
+	var expected *province.MapPosition
+	if (req.ExpectedQ == nil) != (req.ExpectedR == nil) {
+		writeError(w, http.StatusBadRequest, "expected_q and expected_r must be supplied together")
+		return
+	}
+	if req.ExpectedQ != nil {
+		expected = &province.MapPosition{Q: *req.ExpectedQ, R: *req.ExpectedR}
+	}
 
 	tx, err := h.pool.Begin(r.Context())
 	if err != nil {
@@ -426,10 +387,14 @@ func (h *JoinHandler) Settle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	founded, err := foundMetropolisFromNomadicHost(
-		r.Context(), tx, h.eventStore, worldID, playerID, req.Name, req.Culture,
+		r.Context(), tx, h.eventStore, h.clk, worldID, playerID, req.Name, req.Culture, expected,
 	)
 	var coErr *catchmentOverlapError
+	var moved *hostMovedError
 	switch {
+	case errors.As(err, &moved):
+		writeError(w, http.StatusConflict, fmt.Sprintf("the Host has moved to (%d,%d) — reopen its panel before founding", moved.Position.Q, moved.Position.R))
+		return
 	case errors.Is(err, errNoFounderPhase):
 		writeError(w, http.StatusConflict, "you have no wandering host to settle")
 		return
@@ -547,27 +512,39 @@ func (h *JoinHandler) FoundingStatus(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var (
-		hostID                *uuid.UUID
-		q, r2                 *int
 		population            int
 		grainAmt, grainRate   float64
 		silverAmt, silverRate float64
 		currentTick           int
 	)
 	err = h.pool.QueryRow(r.Context(),
-		`SELECT fp.host_unit_id, u.q, u.r, fp.population,
+		`SELECT fp.population,
 		        GREATEST(0, settled(fp.grain_amount, fp.grain_rate, fp.calc_tick)), fp.grain_rate,
 		        GREATEST(0, settled(fp.silver_amount, fp.silver_rate, fp.calc_tick)), fp.silver_rate,
 		        current_world_tick()
 		 FROM founder_phase fp
-		 LEFT JOIN units u ON u.id = fp.host_unit_id
 		 WHERE fp.world_id = $1 AND fp.owner_id = $2 AND fp.active`,
 		worldID, playerID,
-	).Scan(&hostID, &q, &r2, &population, &grainAmt, &grainRate, &silverAmt, &silverRate, &currentTick)
+	).Scan(&population, &grainAmt, &grainRate, &silverAmt, &silverRate, &currentTick)
 	if err != nil {
 		// No active phase — settled (or never a founder). Not an error: the panel
 		// and keryx both key off active=false to show nothing.
 		writeJSON(w, http.StatusOK, map[string]any{"active": false})
+		return
+	}
+
+	host, herr := loadPhysicalHost(r.Context(), h.pool, worldID, playerID, h.clk.Now(), false)
+	if errors.Is(herr, pgx.ErrNoRows) {
+		writeJSON(w, http.StatusOK, map[string]any{"active": false})
+		return
+	}
+	if herr != nil {
+		writeError(w, http.StatusInternalServerError, "could not resolve the Host's position")
+		return
+	}
+	state, herr := projectHostState(r.Context(), h.pool, worldID, playerID, host)
+	if herr != nil {
+		writeError(w, http.StatusInternalServerError, "could not check the Host's founding site")
 		return
 	}
 
@@ -588,9 +565,10 @@ func (h *JoinHandler) FoundingStatus(w http.ResponseWriter, r *http.Request) {
 	}
 	writeJSON(w, http.StatusOK, map[string]any{
 		"active":            true,
-		"host_unit_id":      hostID,
-		"q":                 q,
-		"r":                 r2,
+		"host_unit_id":      host.ID,
+		"host_state":        state,
+		"q":                 host.Position.Q,
+		"r":                 host.Position.R,
 		"population":        population,
 		"spearmen_in_field": spearmenInField,
 		"current_tick":      currentTick,

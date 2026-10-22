@@ -1,0 +1,4 @@
+# formatet/megaron/server/internal/province [formatet/megaron/server/internal/province.test]
+internal/province/eyes.go:9:2: "formatet/megaron/server/internal/movement" imported and not used
+FAIL	formatet/megaron/server/internal/province [build failed]
+FAIL

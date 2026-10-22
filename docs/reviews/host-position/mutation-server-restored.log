@@ -1,0 +1,7 @@
+» färsk DB på migration 198 · commit a44cd3a1+ändringar
+=== RUN   TestHostPhysicalPositionStatusEyesAndFounding
+2026/10/22 08:25:47 INFO player registered id=988af32e-2260-45f3-a701-be84a6eceb2d username=nomadhost-recall-9caee9c9-6e72-4f0b-a52c-fed16710be35
+    host_position_test.go:166: weighted Host: departure(0,0), marker/API/eyes(2,0), actual metropolis(2,0); old arrival and retry harmless
+--- PASS: TestHostPhysicalPositionStatusEyesAndFounding (0.14s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.139s

@@ -21,8 +21,10 @@ package handlers
 
 import (
 	"context"
+	"formatet/megaron/server/internal/clock"
 	"os"
 	"testing"
+	"time"
 
 	"formatet/megaron/server/internal/events"
 	"github.com/google/uuid"
@@ -141,7 +143,7 @@ func TestEscortAdoption_MovedCohortIsAdoptedInPlace(t *testing.T) {
 		t.Fatalf("move escort cohort off founding hex: %v", err)
 	}
 
-	founded, err := foundMetropolisFromNomadicHost(ctx, tx, eventStore, worldID, playerID, "Iolkos-"+uuid.New().String(), "achaean")
+	founded, err := foundMetropolisFromNomadicHost(ctx, tx, eventStore, clock.NewTestClock(time.Unix(0, 0)), worldID, playerID, "Iolkos-"+uuid.New().String(), "achaean", nil)
 	if err != nil {
 		t.Fatalf("foundMetropolisFromNomadicHost: %v", err)
 	}

@@ -21,7 +21,7 @@ globalThis.requestAnimationFrame=()=>0;
 let dialogs=0,reloads=0,calls=[],reply,resolveRequest;
 globalThis.confirm=()=>{dialogs++;return false;};
 globalThis.location={reload(){reloads++;}};
-const fp={active:true,population:1000,grain:{amount:1200},tick_seconds:6};
+const fp={active:true,host_unit_id:"host",q:0,r:0,host_state:{q:0,r:0,at_milli:0,status:"can_found_here",can_found_here:true},population:1000,grain:{amount:1200},tick_seconds:6};
 globalThis.fetch=async(url,options={})=>{
  if(url.endsWith('/founding/status'))return new Response(JSON.stringify(fp));
  if(url.includes('/colonize-preview'))return new Response('{}');
@@ -32,7 +32,7 @@ globalThis.fetch=async(url,options={})=>{
 const {State}=await import('../state.js');
 const {initMap}=await import('./map.js');initMap();
 async function openHost(){
- State.WORLD_ID='world';State.tileData=[{q:0,r:0,terrain:'plains'}];State.provinceData=[];State.unitsData=[{type:'nomadic_host',q:0,r:0}];State.founderPhase=fp;State.camera={x:0,y:0,zoom:1};
+ State.WORLD_ID='world';State.tileData=[{q:0,r:0,terrain:'plains'}];State.provinceData=[];State.unitsData=[{id:'host',type:'nomadic_host',status:'positioned',q:0,r:0}];State.founderPhase=fp;State.camera={x:0,y:0,zoom:1};
  const canvas=element('hex-canvas');canvas.events.pointerdown({pointerId:1,pointerType:'mouse',button:0,clientX:0,clientY:0});canvas.events.pointerup({pointerId:1,pointerType:'mouse',clientX:0,clientY:0});
  await new Promise(resolve=>setImmediate(resolve));
  element('ip-settle-err').replaceChildren();
@@ -46,7 +46,7 @@ test('Founding actual map click: opening/cancel never sends; confirmed request i
  await button.events.click();const yes=host.children[1];const sent=yes.events.click();yes.events.click();await button.events.click();
  assert.equal(host.children[1],yes,'pending founding cannot reopen confirmation');
  assert.equal(calls.length,1,'one founding request while pending');assert.equal(button.disabled,true);
- assert.equal(calls[0].url,'/api/v1/worlds/world/founding/settle');assert.equal(calls[0].options.method,'POST');assert.deepEqual(JSON.parse(calls[0].options.body),{});
+ assert.equal(calls[0].url,'/api/v1/worlds/world/founding/settle');assert.equal(calls[0].options.method,'POST');assert.deepEqual(JSON.parse(calls[0].options.body),{expected_q:0,expected_r:0});
  reply=new Response('{}');resolveRequest();await sent;assert.equal(reloads,1,'success refreshes changed world');
 });
 test('Founding actual handler: server and network errors stay inline and allow retry',async()=>{

@@ -3,6 +3,8 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"formatet/megaron/server/internal/clock"
+	"time"
 
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/religion"
@@ -46,7 +48,7 @@ func TestSilverCalibrationFirstFoundingCarriedOnly(t *testing.T) {
 			if _, err := tx.Exec(ctx, `UPDATE founder_phase SET silver_amount=$3,silver_rate=0,grain_amount=$4,grain_rate=0 WHERE world_id=$1 AND owner_id=$2`, wid, pid, tc.carried, grain); err != nil {
 				t.Fatal(err)
 			}
-			found, err := foundMetropolisFromNomadicHost(ctx, tx, store, wid, pid, "Silver-first", "minoan")
+			found, err := foundMetropolisFromNomadicHost(ctx, tx, store, clock.NewTestClock(time.Unix(0, 0)), wid, pid, "Silver-first", "minoan", nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -113,7 +115,7 @@ func TestSilverCalibrationRefugeeFoundingNeverMints(t *testing.T) {
 		if _, err := tx.Exec(ctx, `UPDATE founder_phase SET silver_amount=17,silver_rate=0,grain_amount=93.5,grain_rate=0 WHERE world_id=$1 AND owner_id=$2`, wid, pid); err != nil {
 			t.Fatal(err)
 		}
-		found, err := foundMetropolisFromNomadicHost(ctx, tx, store, wid, pid, "Silver-refugee", "minoan")
+		found, err := foundMetropolisFromNomadicHost(ctx, tx, store, clock.NewTestClock(time.Unix(0, 0)), wid, pid, "Silver-refugee", "minoan", nil)
 		if err != nil {
 			t.Fatal(err)
 		}

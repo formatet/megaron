@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"formatet/megaron/server/internal/hexgrid"
-	"formatet/megaron/server/internal/movement"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -90,21 +89,10 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 			if category == "naval" {
 				kind = EyeShip
 			}
-			pos := MapPosition{Q: q, R: r}
-			if saved, ok := movement.LoadActiveRoute(row.route, status, row.departTick, row.arriveTick); ok {
-				physical, err := movement.PositionAt(saved.Move(), movement.Milli(at))
-				if err == nil {
-					pos = MapPosition{Q: physical.Q, R: physical.R}
-				}
-			} else if status == "marching" && targetQ != nil && targetR != nil && departsAt != nil && arrivesAt != nil {
-				path, _, ok, pathErr := FindPath(ctx, db, worldID, pos,
-					MapPosition{Q: *targetQ, R: *targetR}, category)
-				if pathErr == nil && ok && len(path) > 0 {
-					pos = InterpolateAlongPath(now, *departsAt, *arrivesAt, path)
-				}
-				// FindPath failure/empty path: best-effort fallback to the stored
-				// origin (q,r) set above — never drop the eye.
-			}
+			pos := (UnitPosition{Status: status, Category: category, Q: q, R: r,
+				TargetQ: targetQ, TargetR: targetR, DepartsAt: departsAt, ArrivesAt: arrivesAt,
+				DepartTick: row.departTick, ArriveTick: row.arriveTick, Route: row.route}).Physical(ctx, db, worldID, now, at)
+
 			eyes = append(eyes, Eye{Pos: pos, Kind: kind})
 		}
 	}

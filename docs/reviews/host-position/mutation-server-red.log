@@ -1,0 +1,9 @@
+» färsk DB på migration 198 · commit a44cd3a1+ändringar
+=== RUN   TestHostPhysicalPositionStatusEyesAndFounding
+2026/10/22 08:25:44 INFO player registered id=d627c22b-0bde-4913-937d-3994dd7d70be username=nomadhost-recall-21e8fb23-444e-443d-8d1f-c5b5f934698e
+    host_position_test.go:101: founding position/state={"active":true,"current_tick":3,"grain":{"amount":100,"rate_per_tick":0},"host_state":{"at_milli":3000,"q":0,"r":0,"status":"marching","can_found_here":true},"host_unit_id":"22c642a0-7e2b-46a5-8354-482cfeeeedb2","population":1000,"q":0,"r":0,"silver":{"amount":100,"rate_per_tick":0},"spearmen_in_field":0,"tick_seconds":3600}
+        , want (2,0)/marching canFound=true
+--- FAIL: TestHostPhysicalPositionStatusEyesAndFounding (0.08s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.082s
+FAIL

@@ -20,7 +20,7 @@ globalThis.localStorage={getItem:()=>null};
 globalThis.setInterval=()=>0;
 globalThis.requestAnimationFrame=()=>0;
 let army={Spearman:2},refused=false,delay=null,calls=[];
-let fp={active:true,population:1000,spearmen_in_field:2,grain:{ticks_left:2.5},silver:{ticks_left:240},tick_seconds:6};
+let fp={active:true,host_unit_id:"host",q:0,r:0,host_state:{q:0,r:0,at_milli:0,status:"can_found_here",can_found_here:true},population:1000,spearmen_in_field:2,grain:{ticks_left:2.5},silver:{ticks_left:240},tick_seconds:6};
 globalThis.fetch=async(url)=>{
  calls.push(url);
  if(url.endsWith('/founding/status'))return new Response(JSON.stringify(fp));
@@ -35,7 +35,7 @@ const {State}=await import('../state.js');
 const {initMap}=await import('./map.js');initMap();
 const marker={id:'foreign-province',settlement_id:'foreign-settlement',name:'Kyme',owner:'Other Wanax',culture:'ionian',walls:0,q:0,r:0};
 async function click({terrain='plains',city=marker,host=false,river_name='',rural=null,place={}}={}){
- State.WORLD_ID='world';State.MY_SETTLEMENT_ID='own-settlement';State.tileData=[{q:0,r:0,terrain,river_name,...place}];State.provinceData=city?[city]:[];State.unitsData=host?[{type:'nomadic_host',q:0,r:0}]:[];State.foreignUnitData=[];State.ruralData=rural?[rural]:[];State.founderPhase=host?fp:null;State.camera={x:0,y:0,zoom:1};
+ State.WORLD_ID='world';State.MY_SETTLEMENT_ID='own-settlement';State.tileData=[{q:0,r:0,terrain,river_name,...place}];State.provinceData=city?[city]:[];State.unitsData=host?[{id:'host',type:'nomadic_host',status:'positioned',q:0,r:0}]:[];State.foreignUnitData=[];State.ruralData=rural?[rural]:[];State.founderPhase=host?fp:null;State.camera={x:0,y:0,zoom:1};
  const canvas=element('hex-canvas');canvas.events.pointerdown({pointerId:1,pointerType:'mouse',button:0,clientX:0,clientY:0});canvas.events.pointerup({pointerId:1,pointerType:'mouse',clientX:0,clientY:0});
  await new Promise(resolve=>setImmediate(resolve));
 }

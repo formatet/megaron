@@ -1,0 +1,193 @@
+» färsk DB på migration 198 · commit a44cd3a1+ändringar
+=== RUN   TestLoadLiveEyes_CourierSeesAlongRoute
+2026/10/22 08:18:47 INFO player registered id=b52b1daa-0190-4824-b774-76cf7c9fabad username=eye-d4851a83-e2db-4772-9dfd-92a8cdf08c97
+--- PASS: TestLoadLiveEyes_CourierSeesAlongRoute (0.07s)
+=== RUN   TestLoadLiveEyes_CourierSeesOnReturnLeg
+2026/10/22 08:18:47 INFO player registered id=b240e06b-fcf2-46e6-ae5e-7f137d8b5dff username=ret-9bc8ef05-ae5f-42d2-8e7f-19dabc57f0d3
+2026/10/22 08:18:47 INFO player registered id=5723892f-cab3-46c3-99ac-5df3f0c99b57 username=dst-534ade69-c9bb-4ac5-9167-9599fe88ef78
+--- PASS: TestLoadLiveEyes_CourierSeesOnReturnLeg (0.12s)
+=== RUN   TestEscortAdoption_MovedCohortIsAdoptedInPlace
+--- PASS: TestEscortAdoption_MovedCohortIsAdoptedInPlace (0.04s)
+=== RUN   TestEscortAdoption_HordeEatsNothingBeforeFounding
+--- PASS: TestEscortAdoption_HordeEatsNothingBeforeFounding (0.02s)
+=== RUN   TestPlacementLiveEyesTransaction
+=== RUN   TestPlacementLiveEyesTransaction/marching-unit
+2026/10/22 08:18:47 INFO player registered id=c0783940-4a4f-4289-8050-3de24ad9501e username=placement-5739d1f4-ee42-48e9-9418-96bf48f05156
+    eyes_tx_test.go:98: marching-unit placement201, pool/TX same eyes and TX healthy
+=== RUN   TestPlacementLiveEyesTransaction/outbound
+2026/10/22 08:18:47 INFO player registered id=3502ec50-6076-4c2a-bdd8-808ae0eb41c6 username=placement-c3b92ea2-9677-4fb7-9342-021fbc691762
+    eyes_tx_test.go:98: outbound placement201, pool/TX same eyes and TX healthy
+=== RUN   TestPlacementLiveEyesTransaction/returning
+2026/10/22 08:18:48 INFO player registered id=84ff4f43-b512-4e4f-a931-a2f60046b9c1 username=placement-5bc98386-62ea-4641-8271-61e9feece374
+    eyes_tx_test.go:98: returning placement201, pool/TX same eyes and TX healthy
+=== RUN   TestPlacementLiveEyesTransaction/combined
+2026/10/22 08:18:48 INFO player registered id=c290110e-651e-4e6c-a964-be3dfdda320f username=placement-d7cd554d-f858-40a8-a6d3-e14a4ab68c9d
+    eyes_tx_test.go:98: combined placement201, pool/TX same eyes and TX healthy
+--- PASS: TestPlacementLiveEyesTransaction (0.42s)
+    --- PASS: TestPlacementLiveEyesTransaction/marching-unit (0.10s)
+    --- PASS: TestPlacementLiveEyesTransaction/outbound (0.10s)
+    --- PASS: TestPlacementLiveEyesTransaction/returning (0.10s)
+    --- PASS: TestPlacementLiveEyesTransaction/combined (0.10s)
+=== RUN   TestJoinHostKharisFloorVisibleInMe
+2026/10/22 08:18:48 INFO player registered id=c8840796-8dec-470e-b723-9286c04518e3 username=host-floor-4287cfe2-8a89-4f3b-881a-a47f1a826ceb-f53a4c9c-f91b-493b-a2bc-fd68229b2884
+--- PASS: TestJoinHostKharisFloorVisibleInMe (0.08s)
+=== RUN   TestHostKharisFloorMigrationOnlyRepairsLivingHosts
+=== RUN   TestHostKharisFloorMigrationOnlyRepairsLivingHosts/low-host
+=== RUN   TestHostKharisFloorMigrationOnlyRepairsLivingHosts/high-host
+=== RUN   TestHostKharisFloorMigrationOnlyRepairsLivingHosts/city
+=== RUN   TestHostKharisFloorMigrationOnlyRepairsLivingHosts/finished-phase
+=== RUN   TestHostKharisFloorMigrationOnlyRepairsLivingHosts/dispossessed
+=== RUN   TestHostKharisFloorMigrationOnlyRepairsLivingHosts/no-phase
+--- PASS: TestHostKharisFloorMigrationOnlyRepairsLivingHosts (0.03s)
+    --- PASS: TestHostKharisFloorMigrationOnlyRepairsLivingHosts/low-host (0.00s)
+    --- PASS: TestHostKharisFloorMigrationOnlyRepairsLivingHosts/high-host (0.00s)
+    --- PASS: TestHostKharisFloorMigrationOnlyRepairsLivingHosts/city (0.00s)
+    --- PASS: TestHostKharisFloorMigrationOnlyRepairsLivingHosts/finished-phase (0.00s)
+    --- PASS: TestHostKharisFloorMigrationOnlyRepairsLivingHosts/dispossessed (0.00s)
+    --- PASS: TestHostKharisFloorMigrationOnlyRepairsLivingHosts/no-phase (0.00s)
+=== RUN   TestHostPhysicalPositionStatusEyesAndFounding
+2026/10/22 08:18:48 INFO player registered id=7c8209eb-e519-4cb4-9c83-7bb1a8268480 username=nomadhost-recall-42391dcd-16fd-4938-a60b-2af5f1f04e82
+    host_position_test.go:166: weighted Host: departure(0,0), marker/API/eyes(2,0), actual metropolis(2,0); old arrival and retry harmless
+--- PASS: TestHostPhysicalPositionStatusEyesAndFounding (0.13s)
+=== RUN   TestLoadLiveEyes_CalledBackSeesPortNotFarShore
+2026/10/22 08:18:48 INFO player registered id=d91d0662-3b62-4076-a2d5-bb66f7b28f43 username=initiator-5585de1b-dcab-49a8-a4b7-2903504ce16c
+2026/10/22 08:18:48 INFO player registered id=90a34581-3221-49be-92a2-bb98c9288cd2 username=counterparty-103e4ca9-ff18-451e-9522-b90691892357
+--- PASS: TestLoadLiveEyes_CalledBackSeesPortNotFarShore (0.12s)
+=== RUN   TestLoadLiveEyes_SentMessageSeesOwnOriginNotDestination
+2026/10/22 08:18:48 INFO player registered id=16a61ebe-497e-4918-8d39-ce2b094c87d7 username=origin-sender-dd0ebadf-53bf-46fe-a16b-969e1ca94449
+2026/10/22 08:18:48 INFO player registered id=ded99744-42a0-455a-8963-b02f20ad4607 username=origin-recipient-577ea46a-d992-4902-9f9d-a423bb33d034
+--- PASS: TestLoadLiveEyes_SentMessageSeesOwnOriginNotDestination (0.11s)
+=== RUN   TestLoadLiveEyes_HostSentMessageSeesHostPositionNotDestination
+2026/10/22 08:18:48 INFO player registered id=6a3523ea-5cf4-49b3-a5a3-37a83db03b5d username=host-sender-7887f0e7-52c2-4f9d-ab65-df73f347a01a
+2026/10/22 08:18:48 INFO player registered id=327064ea-3f0d-4df4-9d38-5a279fff5cb6 username=host-recipient-d025484a-a310-451f-a007-05dc36c63279
+--- PASS: TestLoadLiveEyes_HostSentMessageSeesHostPositionNotDestination (0.11s)
+=== RUN   TestLoadLiveEyes_AwaitingPassageSeesPortNotFarShore
+2026/10/22 08:18:48 INFO player registered id=e879d114-4550-48c9-943d-2adf17d9befb username=initiator-93560fcd-4e22-4614-ab78-e0b3593d1d66
+2026/10/22 08:18:48 INFO player registered id=424dc582-367a-4958-9d8f-1218387efcbd username=counterparty-8a2f2dcf-0026-4763-8235-9ea08d3c6df0
+--- PASS: TestLoadLiveEyes_AwaitingPassageSeesPortNotFarShore (0.12s)
+=== RUN   TestSeedNomadicHost_DowryGrainIsPinnedAt1200
+--- PASS: TestSeedNomadicHost_DowryGrainIsPinnedAt1200 (0.02s)
+=== RUN   TestSeedNomadicHost_SilverAmountIs480
+--- PASS: TestSeedNomadicHost_SilverAmountIs480 (0.02s)
+=== RUN   TestOpeningDispatchArchiveFailureRollsBackHost
+2026/10/22 08:18:49 INFO player registered id=4b81ee2f-890e-4468-a36f-cb37c1c8394c username=opening-rollback-abd47875-28b1-4da5-a941-cb1c0a0a972c-4a9bc5d1-66a9-40f3-a70e-50c380398881
+--- PASS: TestOpeningDispatchArchiveFailureRollsBackHost (0.09s)
+=== RUN   TestMarchCourier_OriginIsMarchingHostsCurrentPos
+2026/10/22 08:18:49 INFO player registered id=f1dd3b12-d75d-4de4-87d3-556a8bd9179f username=hostorigin-87ed8f1b-53dd-4bbf-aaa0-dd9854340fb8
+--- PASS: TestMarchCourier_OriginIsMarchingHostsCurrentPos (0.07s)
+=== RUN   TestRise_RefugeeHostOnAnotherLandmass_AndLeave
+2026/10/22 08:18:49 INFO player registered id=c276d1c0-0d79-4972-8ad8-7cd0076dc4e4 username=rise-01d13c17-9bdd-495c-9ac1-007644e78818
+2026/10/22 08:18:49 INFO player registered id=f7c7c956-68e1-4477-92a9-c03f638080d7 username=rise-zero-46c455e5-f1b6-43d1-ad9a-b21bbc1eb835
+2026/10/22 08:18:49 INFO player registered id=f1064f91-e333-4a3b-a48e-b0f38ecdb4b3 username=rise-lazy-ef25c717-b59e-445b-9613-6a90852a3323
+2026/10/22 08:18:49 INFO player registered id=8bff23d0-0276-42ab-89f1-9c0e8c74e194 username=never-joined-712289bf-86fa-4c7a-b2a0-282205d2dd6b
+2026/10/22 08:18:49 INFO player registered id=1c798f3f-e459-47fa-9fae-a404dbe91f47 username=leave-c4219bac-037e-4b4c-a54d-b66b23fb8270
+--- PASS: TestRise_RefugeeHostOnAnotherLandmass_AndLeave (0.28s)
+=== RUN   TestSilverCalibrationFirstFoundingCarriedOnly
+=== RUN   TestSilverCalibrationFirstFoundingCarriedOnly/inland_spent_purse
+=== RUN   TestSilverCalibrationFirstFoundingCarriedOnly/coast_spent_purse
+=== RUN   TestSilverCalibrationFirstFoundingCarriedOnly/inland_full_purse
+=== RUN   TestSilverCalibrationFirstFoundingCarriedOnly/coast_full_purse
+=== RUN   TestSilverCalibrationFirstFoundingCarriedOnly/existing_wealth_is_not_destroyed
+--- PASS: TestSilverCalibrationFirstFoundingCarriedOnly (0.21s)
+    --- PASS: TestSilverCalibrationFirstFoundingCarriedOnly/inland_spent_purse (0.04s)
+    --- PASS: TestSilverCalibrationFirstFoundingCarriedOnly/coast_spent_purse (0.04s)
+    --- PASS: TestSilverCalibrationFirstFoundingCarriedOnly/inland_full_purse (0.04s)
+    --- PASS: TestSilverCalibrationFirstFoundingCarriedOnly/coast_full_purse (0.04s)
+    --- PASS: TestSilverCalibrationFirstFoundingCarriedOnly/existing_wealth_is_not_destroyed (0.04s)
+=== RUN   TestSilverCalibrationDirectMetropolisPopulationIndependent
+--- PASS: TestSilverCalibrationDirectMetropolisPopulationIndependent (0.06s)
+=== RUN   TestSilverCalibrationRefugeeFoundingNeverMints
+--- PASS: TestSilverCalibrationRefugeeFoundingNeverMints (0.08s)
+=== RUN   TestSilverCalibrationOfferWorkAndLegacyPayloadRead
+2026/10/22 08:18:49 INFO player registered id=424f9cd1-fd0d-42be-b182-16edd5ec9167 username=alpha-e2e193ac-ee1e-42c2-9ca9-ce585267029e
+--- PASS: TestSilverCalibrationOfferWorkAndLegacyPayloadRead (0.08s)
+=== RUN   TestHostSpeed_HTTPPreviewDispatchAndStoredMarch
+=== RUN   TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/plains
+2026/10/22 08:18:49 INFO player registered id=786f1c99-61d4-4645-bfa7-7af9ffda3b82 username=nomadhost-recall-649303ae-6080-4f15-9d1c-5e9062cb8294
+    unit_host_speed_test.go:129: plains: preview=dispatch=stored 2 ticks; old host arrival 8 and row unchanged
+=== RUN   TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/forest_cedar
+2026/10/22 08:18:49 INFO player registered id=9a0471ed-a9a7-4769-af53-fb6ed65a721c username=nomadhost-recall-4deb2a4a-d05f-4c24-8bb8-f4d1a38f91ad
+    unit_host_speed_test.go:129: forest_cedar: preview=dispatch=stored 4 ticks; old host arrival 8 and row unchanged
+=== RUN   TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/forest_olive_grove
+2026/10/22 08:18:50 INFO player registered id=3795cfa1-f01e-4a61-baa5-cc37a5e405b0 username=nomadhost-recall-37cd884d-6c84-4e12-bf52-e060bbab408f
+    unit_host_speed_test.go:129: forest_olive_grove: preview=dispatch=stored 3 ticks; old host arrival 8 and row unchanged
+=== RUN   TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/hills
+2026/10/22 08:18:50 INFO player registered id=c86f6473-2fee-4019-a74c-79ef46836e4a username=nomadhost-recall-798456c3-4665-4104-9217-3d3c26c4e670
+    unit_host_speed_test.go:129: hills: preview=dispatch=stored 4 ticks; old host arrival 8 and row unchanged
+=== RUN   TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/semi_desert
+2026/10/22 08:18:50 INFO player registered id=eb53212e-872d-48a0-ad77-9cad331c4c62 username=nomadhost-recall-17b2dc14-459e-40db-ab9f-5b1eb519e863
+    unit_host_speed_test.go:129: semi_desert: preview=dispatch=stored 7 ticks; old host arrival 8 and row unchanged
+--- PASS: TestHostSpeed_HTTPPreviewDispatchAndStoredMarch (0.45s)
+    --- PASS: TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/plains (0.09s)
+    --- PASS: TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/forest_cedar (0.09s)
+    --- PASS: TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/forest_olive_grove (0.09s)
+    --- PASS: TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/hills (0.09s)
+    --- PASS: TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/semi_desert (0.09s)
+=== RUN   TestRecall_NomadicHostAppliesWithoutRunner
+2026/10/22 08:18:50 INFO player registered id=dacbe15f-7bc0-4cdc-b2c0-84a4ff0d1bfe username=nomadhost-recall-c361660b-12ad-4508-927e-51f81a120ee0
+2026/10/22 08:18:50 INFO recall/redirect order reached unit, new course set unit=c995ec18-3b2f-41a1-8590-2e94cb9956a0 mode=redirect from_q=3 from_r=0 to_q=3 to_r=1 arrives_at=2026-10-22T09:18:50.319+02:00
+--- PASS: TestRecall_NomadicHostAppliesWithoutRunner (0.07s)
+=== RUN   TestRecall_FieldUnitStillNeedsRunner_SameSetupAsHost
+2026/10/22 08:18:50 INFO player registered id=e021dd0d-6ef6-4f7b-9c53-041efdb2695e username=nomadhost-recall-85f82fed-d68d-4363-b7c6-edd76a779cbd
+--- PASS: TestRecall_FieldUnitStillNeedsRunner_SameSetupAsHost (0.07s)
+PASS
+ok  	formatet/megaron/server/api/handlers	2.861s
+=== RUN   TestLiveRadius_NomadicHostReadsGroundLikeALandUnit
+--- PASS: TestLiveRadius_NomadicHostReadsGroundLikeALandUnit (0.00s)
+=== RUN   TestLiveRadius_NomadicHostMatchesLandUnitOnLand
+--- PASS: TestLiveRadius_NomadicHostMatchesLandUnitOnLand (0.00s)
+=== RUN   TestAnyEyeSees_NomadicHostKeepsTheOpenHorizon
+--- PASS: TestAnyEyeSees_NomadicHostKeepsTheOpenHorizon (0.00s)
+PASS
+ok  	formatet/megaron/server/internal/province	0.003s
+=== RUN   TestAIRound_ColonizeConfirmationAndHost
+=== RUN   TestAIRound_ColonizeConfirmationAndHost/false
+=== RUN   TestAIRound_ColonizeConfirmationAndHost/true
+Error: a Nomadic Host founds its metropolis with keryx founding settle --name <name> (add --yes to confirm)
+Usage:
+  unit march [flags]
+
+Examples:
+  keryx unit march --unit <id> --q 5 --r -3
+  keryx unit march --unit <id> --target 5,-3
+  keryx unit march --unit <id> --q 5 --r -3 --stance fortify
+  keryx unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos --yes
+  # Colonize the hex the unit already stands on (no coords needed):
+  keryx unit march --unit <id> --intent colonize --name Thapsos --yes
+  # Any march reveals fog along its route toward a frontier coordinate:
+  keryx unit march --unit <id> --q 12 --r -8
+  # Explore an area for 12 days, then automatically return home
+  keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12
+  # Land troops from a laden ship in port, then sail home on its own:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land
+  # ...and found a colony there with no further order:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land --colonize --name Thapsos
+  # Attack an enemy settlement and annex it instead of the sack default:
+  keryx unit march --unit <id> --q 5 --r -3 --mode annex
+
+Flags:
+      --colonize        with --intent land: found a colony on arrival with no further order (use --name to name it)
+  -h, --help            help for march
+      --intent string   arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (first to the selected hex, then explores around it; turns home by half the chosen duration) | land (a laden ship in port lands its cargo on an unclaimed land hex, then sails home on its own; add --colonize to found a colony there)
+      --mode string     conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)
+      --name string     colony name (with --intent colonize, or --intent land --colonize)
+      --preview         estimate arrival without sending an order
+      --q int           target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --r int           target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --stance string   stance on arrival: fortify|storm|sentry
+      --target string   target hex as q,r — alternative to --q/--r (e.g. 5,-3)
+      --ticks int       explore duration in days (omit for server default)
+      --unit string     unit UUID (required)
+      --yes             skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)
+
+--- PASS: TestAIRound_ColonizeConfirmationAndHost (0.00s)
+    --- PASS: TestAIRound_ColonizeConfirmationAndHost/false (0.00s)
+    --- PASS: TestAIRound_ColonizeConfirmationAndHost/true (0.00s)
+=== RUN   TestFoundingHostPhysicalStatusText
+--- PASS: TestFoundingHostPhysicalStatusText (0.00s)
+=== RUN   TestJoinCmd_FreshJoin_ReportsHostAndNextStep
+--- PASS: TestJoinCmd_FreshJoin_ReportsHostAndNextStep (0.00s)
+=== RUN   TestJoinCmd_ExistingHost_IsNotAnError
+--- PASS: TestJoinCmd_ExistingHost_IsNotAnError (0.00s)
+PASS
+ok  	formatet/megaron/server/cmd/keryx	0.006s

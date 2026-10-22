@@ -16,6 +16,12 @@ Find it (the map centres on you) and **left-click the hex it stands on**. The in
 
 Unlike everything else you will ever command, **the Host obeys instantly**: you are walking with it. See [[runners]] for what comes after.
 
+## Where you are
+
+The Host's marker, sight and founding place follow the Province it physically occupies, including during a march. Its hover and panel say **Marching**, **Waiting** (with the reason this ground cannot be settled), or **Can found here**. Click the marker's current hex to open the Host panel. Keryx `founding status` and `status` show the same position and state.
+
+You can found on valid ground while the Host is marching. The city rises where the Host stands when you confirm, and the Host disappears. If it has moved from the place you confirmed, the order is refused; reopen its panel and read the new site before founding.
+
 ## Reserves for founding
 
 Before founding, the Host lives on subsistence and its reserves do not drain. Its grain and silver go into your city when you settle. Your [[welcome|opening dispatch]] records what your Host carries. Choose your site for its food, resources and position.
