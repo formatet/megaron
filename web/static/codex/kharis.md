@@ -31,7 +31,7 @@ In a small realm, a fully staffed, fed level-1 temple can earn more favour than 
 
 Kharis decays every day regardless. Expansion increases that cost even when every city has a temple ([[colonies]]).
 
-To *spend* kharis on a request, see [[rites]].
+Kharis is a requirement for [[rites|prayers]], never spent. Everyday prayers answer when their requirements are met; they cost goods and waiting time.
 
 An ongoing **blessed harvest** appears beside Food in the city drawer and in
 `keryx status` and `keryx city`, with its yield bonus, affected goods and days left.

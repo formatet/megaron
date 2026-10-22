@@ -42,3 +42,14 @@ func TestRiteReadinessAfterDeparture(t *testing.T) {
 		t.Fatalf("consumed gift after wait: got %q/%q", ready, detail)
 	}
 }
+
+func TestPrayerPaymentDistinguishesEverydayFromLegacy(t *testing.T) {
+	everyday := prayerPaymentText(riteAvailablePrayer{GodID: "potnia"})
+	if !strings.Contains(everyday, "not spent") || !strings.Contains(everyday, "god answers") || strings.Contains(everyday, "silent") {
+		t.Fatal(everyday)
+	}
+	legacy := prayerPaymentText(riteAvailablePrayer{})
+	if !strings.Contains(legacy, "silent") || !strings.Contains(legacy, "not spent") {
+		t.Fatal(legacy)
+	}
+}

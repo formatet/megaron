@@ -1,0 +1,42 @@
+» färsk DB på migration 202 · commit 1fbffdbe+ändringar
+2026/10/23 00:16:46 INFO player registered id=fe36b257-4f5f-4cca-a6b2-a17ad103f090 username=alpha-29e6f45e-5ff8-48ac-9d02-7bc498da3ea7
+2026/10/23 00:16:46 INFO player registered id=f9d445dd-317f-4fdb-8cbd-6d9e2fe67ad5 username=alpha-25156d53-78f9-4ef7-b9f7-c80a29bfe060
+2026/10/23 00:16:46 INFO player registered id=f244d7a6-6de2-403b-bbd8-3f9bf48e31b5 username=alpha-1e13b55d-2bc4-4c8a-8fc1-65aa84ec3f33
+2026/10/23 00:16:46 INFO player registered id=66d9df5b-29e4-457d-9c26-c5ffaa24dc84 username=alpha-a63e8bd6-bc88-4397-920a-334d8728c5a5
+2026/10/23 00:16:46 INFO player registered id=cf0f95b2-449e-4f77-9bdf-c8c5b2801815 username=alpha-0c9159f8-4909-481a-b1f9-0b0e43009481
+2026/10/23 00:16:46 INFO player registered id=658abc20-01d5-41af-b11b-51362c96954a username=alpha-ac9da144-190b-4cff-8e5f-5e6b84c64f74
+2026/10/23 00:16:46 INFO player registered id=a76779b1-0548-4d3c-95d9-1a4ea493a843 username=alpha-241350dc-523b-493b-a4f8-e16454e41111
+2026/10/23 00:16:46 INFO player registered id=339b01b2-e654-4df7-81a6-a2b246234e37 username=alpha-52a483c9-d369-48a3-957c-bbcedd0103f9
+2026/10/23 00:16:46 INFO player registered id=94bee1e8-cdd2-40b1-ba95-6ac40053923c username=alpha-a2207d65-32ed-4d6a-8582-22ac6c469701
+2026/10/23 00:16:46 INFO player registered id=375a2230-e32e-4ea3-9205-adf6bb59b360 username=alpha-6675cc6c-8ac8-4126-b9f2-1fc96e7484a9
+2026/10/23 00:16:46 INFO player registered id=d1cdefa1-ae73-4b92-a892-6dd49cb5a209 username=alpha-d044a4fa-a051-4974-870e-c0e11b0bcc97
+2026/10/23 00:16:46 INFO player registered id=dd6c0a14-c0f8-404d-a0c5-01dca611f10a username=alpha-6a02da42-e52f-40de-b866-d51468c07dac
+2026/10/23 00:16:46 INFO player registered id=7227760d-2ad7-470f-88a1-bc2d8bf870e8 username=alpha-a340d9d4-3ed0-4ad0-8c15-3beac01632fa
+2026/10/23 00:16:47 INFO player registered id=9b58c8ad-6c5c-4238-93a5-3c79660c3031 username=alpha-3bebcd56-2afd-40ae-84d8-b362798cb94a
+2026/10/23 00:16:47 INFO player registered id=e7a26ab6-9802-43cc-a579-a89ffe8fc92c username=alpha-edff0fcd-5fcf-4e16-80f5-7f9dd51a0a0a
+2026/10/23 00:16:47 INFO player registered id=61a3adf4-54dc-43e7-a67a-2f5d615ecc1d username=alpha-aac4a19e-df44-4caa-8629-2bc3a5835e42
+--- FAIL: TestAlphaOfferDebitsDecisionRecipeExactly (0.75s)
+    --- FAIL: TestAlphaOfferDebitsDecisionRecipeExactly/minoan_potnia_vision_v2/silent (0.08s)
+        religion_recipes_test.go:86: frozen outcome {"effect": {"revealed_ore": null, "revealed_tiles": []}, "god_id": "potnia", "prayer": "minoan_potnia_vision_v2", "success": true, "offering": {"grain": 10, "silver": 3}, "cast_tick": 100, "offer_mod": 0, "player_id": "339b01b2-e654-4df7-81a6-a2b246234e37", "effect_type": "oracle_memory_v2", "kharis_spent": 0, "offering_work": 0, "offer_multiplier": 1, "valuation_version": 2, "offering_value_unit": "worker_ticks", "offering_work_baseline": 0}
+    --- FAIL: TestAlphaOfferDebitsDecisionRecipeExactly/minoan_potnia_walls/silent (0.07s)
+        religion_recipes_test.go:86: frozen outcome {"effect": {"until_tick": 106, "strength_factor": 1.25}, "god_id": "potnia", "prayer": "minoan_potnia_walls", "success": true, "offering": {"grain": 8, "timber": 4}, "cast_tick": 100, "offer_mod": 0, "player_id": "375a2230-e32e-4ea3-9205-adf6bb59b360", "effect_type": "garrison_defense", "kharis_spent": 0, "offering_work": 0, "offer_multiplier": 1, "valuation_version": 2, "offering_value_unit": "worker_ticks", "offering_work_baseline": 0}
+    --- FAIL: TestAlphaOfferDebitsDecisionRecipeExactly/minoan_velchanos_green_shoots/silent (0.08s)
+        religion_recipes_test.go:86: frozen outcome {"effect": {"days": 25, "goods": ["grain", "oil", "wine", "livestock"], "until_tick": 125, "yield_bonus": 0.25}, "god_id": "velchanos", "prayer": "minoan_velchanos_green_shoots", "success": true, "offering": {"grain": 15, "silver": 2}, "cast_tick": 100, "offer_mod": 0, "player_id": "dd6c0a14-c0f8-404d-a0c5-01dca611f10a", "effect_type": "harvest_blessing", "kharis_spent": 0, "offering_work": 0, "offer_multiplier": 1, "valuation_version": 2, "offering_value_unit": "worker_ticks", "offering_work_baseline": 0}
+    --- FAIL: TestAlphaOfferDebitsDecisionRecipeExactly/minoan_asterion_thread/silent (0.07s)
+        religion_recipes_test.go:86: frozen outcome {"effect": {"time_factor": 0.75, "departure_pending": true}, "god_id": "asterion", "prayer": "minoan_asterion_thread", "success": true, "offering": {"silver": 3, "timber": 4}, "cast_tick": 100, "offer_mod": 0, "player_id": "9b58c8ad-6c5c-4238-93a5-3c79660c3031", "effect_type": "next_land_departure", "kharis_spent": 0, "offering_work": 0, "offer_multiplier": 1, "valuation_version": 2, "offering_value_unit": "worker_ticks", "offering_work_baseline": 0}
+    --- FAIL: TestAlphaOfferDebitsDecisionRecipeExactly/minoan_stillness_passage/silent (0.07s)
+        religion_recipes_test.go:86: frozen outcome {"effect": {"time_factor": 0.75, "departure_pending": true}, "god_id": "sea_daimons_stillness", "prayer": "minoan_stillness_passage", "success": true, "offering": {"fish": 6, "silver": 3}, "cast_tick": 100, "offer_mod": 0, "player_id": "61a3adf4-54dc-43e7-a67a-2f5d615ecc1d", "effect_type": "next_ship_departure", "kharis_spent": 0, "offering_work": 0, "offer_multiplier": 1, "valuation_version": 2, "offering_value_unit": "worker_ticks", "offering_work_baseline": 0}
+2026/10/23 00:16:47 INFO player registered id=76c1fa12-ffe9-4749-8dac-745541ed0e04 username=alpha-8899decc-7836-4819-a4d3-dcc1eba654f8
+2026/10/23 00:16:47 INFO player registered id=f5d2fa79-29a5-42b9-bed7-8ce4ad7f6f63 username=alpha-f5cc079f-b208-4342-9b4c-8af73d09d65a
+2026/10/23 00:16:47 INFO player registered id=70614148-098b-4461-bb68-ff95e1c9163f username=alpha-3fd281b9-1b0f-431d-b656-435cda9f9a1e
+2026/10/23 00:16:47 INFO player registered id=71606dc7-71d3-48e2-a4e3-9fd73ed1c9e0 username=alpha-bc093c68-0c78-48c1-ba3b-20e92e8b9526
+2026/10/23 00:16:47 INFO player registered id=ef343bdb-e359-4dd0-92d1-7aa628d24ea2 username=alpha-a64825b6-5a13-43b5-972c-f1f1e67cbd94
+2026/10/23 00:16:47 INFO player registered id=1709c0fb-d87e-4c82-b6c3-495cb1bacf9c username=alpha-b537c9c5-2640-4bff-8b49-96e02546336f
+2026/10/23 00:16:47 INFO player registered id=5e82d3e6-a0f0-42f7-abfe-9ecd31eea4fc username=alpha-d1e993fa-ae34-4076-8cd6-720d2d060484
+2026/10/23 00:16:47 INFO player registered id=7dcb6eb4-10a0-4702-ba35-eebb442cbcae username=alpha-069914f4-065b-4a40-bcee-ca953627d139
+2026/10/23 00:16:47 INFO player registered id=522a9c6f-f3da-4d9e-9e25-52d897181eda username=alpha-7cd93e82-3e3c-408a-8539-1ecb581e11b4
+2026/10/23 00:16:47 INFO player registered id=785c8739-8251-422e-8737-a1b81a1b5edf username=alpha-0571e7f8-b9f6-4c66-8061-6c5f33f63ba6
+2026/10/23 00:16:47 INFO player registered id=5ebe26da-89c0-40c6-ab48-b873c8939452 username=wanax-a443c8a6-d031-4a5e-96c4-42835c1e8daa
+FAIL
+FAIL	formatet/megaron/server/api/handlers	2.090s
+FAIL

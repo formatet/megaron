@@ -17,6 +17,7 @@ import (
 // prayerRow struct in api/handlers/province.go). Shared by --list and the
 // pre-cast confirmation so both read the exact same fields.
 type riteAvailablePrayer struct {
+	GodID                 string             `json:"god_id"`
 	DeparturePending      bool               `json:"departure_pending"`
 	Default               bool               `json:"is_default"`
 	ActiveRemainingDays   int                `json:"active_remaining_game_days"`
@@ -39,7 +40,6 @@ type riteProvinceStatus struct {
 		DivineValues     map[string]float64    `json:"divine_values"`
 		Kharis           float64               `json:"kharis"`
 		KharisMood       string                `json:"kharis_mood"`
-		RiteKharisCost   float64               `json:"rite_kharis_cost"`
 		AvailablePrayers []riteAvailablePrayer `json:"available_prayers"`
 	} `json:"settlement"`
 }
@@ -88,7 +88,7 @@ func riteCmd() *cobra.Command {
 		Example: `  keryx rite --list
   keryx rite --prayer <prayer-id>
   keryx rite --prayer <prayer-id> --settlement <settlement-uuid>
-  keryx rite --prayer <prayer-id> --offer-multiplier 2.0
+  keryx rite --prayer <prayer-id> --offer grain=10,silver=3
   keryx rite --prayer <prayer-id> --yes
   keryx rite --json`,
 		Args: rejectPositionalArgs("prayer"),
@@ -157,12 +157,7 @@ func riteCmd() *cobra.Command {
 						fmt.Printf("    %s\n", pr.God)
 					}
 				}
-				if p.Settlement.RiteKharisCost > 0 {
-					fmt.Printf("\nThe offering — and %.0f of your kharis — is consumed even if the gods stay silent: a rite spends standing, win or lose.\n",
-						p.Settlement.RiteKharisCost)
-				} else {
-					fmt.Println("\nThe offering is consumed even if the gods stay silent — they are fickle.")
-				}
+				fmt.Println("\nKharis is a requirement, never spent. Everyday prayers answer when their requirements are met; legacy prayers may remain silent. An accepted offering is spent either way.")
 				return nil
 			}
 
@@ -240,9 +235,6 @@ func riteCmd() *cobra.Command {
 				// What the offering achieved — separate from whether the gods
 				// answered. The odds stay hidden; whether MORE would help does not.
 				OfferingVerdict string `json:"offering_verdict"`
-				// The standing the petition itself drew down — a rite is a wager on
-				// kharis, not just a goods-fee (Timothy 2026-07-24).
-				KharisSpent float64 `json:"kharis_spent"`
 			}
 			if err := json.Unmarshal(data, &resp); err != nil {
 				return fmt.Errorf("parse response: %w", err)
@@ -263,9 +255,6 @@ func riteCmd() *cobra.Command {
 			if resp.OfferingVerdict != "" {
 				fmt.Printf("Offering: %s\n", resp.OfferingVerdict)
 			}
-			if resp.KharisSpent > 0 {
-				fmt.Printf("Kharis spent: %.0f (a rite draws down your standing, win or lose)\n", resp.KharisSpent)
-			}
 			return nil
 		},
 	}
@@ -276,9 +265,9 @@ func riteCmd() *cobra.Command {
 	cmd.Flags().StringVar(&targetID, "target", "", "target province UUID (for future targeted prayers)")
 	cmd.Flags().BoolVar(&yes, "yes", false, "skip the pre-cast confirmation (required for non-interactive/agent use)")
 	cmd.Flags().StringVar(&offer, "offer", "",
-		"composed offering, e.g. --offer wine=20,oil=10 (overrides --offer-multiplier; the gods value what the world is short of)")
+		"composed offering, e.g. --offer wine=20,oil=10 — worth at least the traditional offering; the gods value what the world is short of")
 	cmd.Flags().Float64Var(&offerMultiplier, "offer-multiplier", 0,
-		"scale the material offering (0.5-2.0; a fatter offer pleases the gods more, a stingy one less — omit for baseline 1.0)")
+		"scale the material offering (0.5-2.0) of an old prayer without a god; everyday prayers always take their traditional offering")
 	return cmd
 }
 
@@ -343,20 +332,10 @@ func confirmRiteCast(c *Client, markers []map[string]any, settlementID, prayerID
 	fmt.Printf("Prayer: %s (%s)\n", chosen.Name, chosen.God)
 	fmt.Printf("Effect: %s\n", chosen.Effect)
 	fmt.Printf("Offer: %s\n", formatOffering(chosen.Offering))
-	if offerMultiplier != 0 && offerMultiplier != 1.0 {
-		if offerMultiplier > 1.0 {
-			fmt.Printf("Offer multiplier: %.2fx — a fatter offer pleases the gods more.\n", offerMultiplier)
-		} else {
-			fmt.Printf("Offer multiplier: %.2fx — a stingier offer pleases the gods less.\n", offerMultiplier)
-		}
+	if chosen.GodID == "" && offerMultiplier != 0 && offerMultiplier != 1 {
+		fmt.Printf("Offer multiplier: %.2fx — changes the offering and the gods' response.\n", offerMultiplier)
 	}
-	if p.Settlement.RiteKharisCost > 0 {
-		fmt.Printf("The offering — and %.0f of your kharis (%.0f → %.0f) — is consumed even if the gods stay silent.\n",
-			p.Settlement.RiteKharisCost, p.Settlement.Kharis,
-			math.Max(1, p.Settlement.Kharis-p.Settlement.RiteKharisCost))
-	} else {
-		fmt.Println("The offering is consumed even if the gods stay silent.")
-	}
+	fmt.Println(prayerPaymentText(*chosen))
 	return askYesNo("Cast?")
 }
 
@@ -499,4 +478,12 @@ func riteSettlement(markers []map[string]any, given string) string {
 		}
 	}
 	return ""
+}
+
+// The server's stable god key distinguishes everyday prayers from legacy ones.
+func prayerPaymentText(prayer riteAvailablePrayer) string {
+	if prayer.GodID != "" {
+		return "Kharis is a requirement, not spent. When the requirements are met the god answers; more offering will not improve the answer."
+	}
+	return "The offering is consumed even if the gods stay silent; kharis is a requirement, not spent."
 }

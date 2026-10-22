@@ -1,0 +1,9 @@
+» färsk DB på migration 202 · commit f712df52
+=== RUN   TestRelationPlayerScenario
+2026/10/23 00:20:57 INFO player registered id=d555ea1b-f583-4568-832e-711eab08a513 username=alpha-6f16ca4a-79ae-493c-9a26-9095d9aeced7
+    zz_order23_player_scenario_test.go:43: scenario run1: {"run": 1, "cli_list": true, "cli_cast": true, "browser_cast": true, "page_errors": []}
+2026/10/23 00:20:59 INFO player registered id=282692d7-4ac7-48fd-8e85-a5c88db46649 username=alpha-e3eb80e7-0915-46db-93c4-180658a37bff
+    zz_order23_player_scenario_test.go:43: scenario run2: {"run": 2, "cli_list": true, "cli_cast": true, "browser_cast": true, "page_errors": []}
+--- PASS: TestRelationPlayerScenario (5.51s)
+PASS
+ok  	formatet/megaron/server/api/handlers	5.511s

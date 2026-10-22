@@ -77,8 +77,8 @@ export async function loadKultDrawer() {
         const statusHtml = prayerStatusHTML(p, frenzyActive, sd.battle_frenzy_until);
 
         html += `<div class="stat-row" style="align-items:flex-start;flex-wrap:wrap">
-          <span class="sr-label">${esc(p.name)} <span style="color:var(--text-dim);font-size:.68rem">(${esc(p.god)}, ≥${p.min_kharis} kharis${p.temple ? ', ' + esc(p.temple) : ''})</span><br>
-          <span style="color:var(--text-dim);font-size:.7rem">${esc(p.effect || '')}<br>traditional offering: ${offeringStr}</span></span>
+          <span class="sr-label">${esc(p.name)} <span style="color:var(--text-dim);font-size:.68rem">(${esc(p.god)}, ≥${p.min_kharis} kharis — requirement, not spent${p.temple ? ', ' + esc(p.temple) : ''})</span><br>
+          <span style="color:var(--text-dim);font-size:.7rem">${esc(p.effect || '')}<br>traditional offering: ${offeringStr}${p.god_id ? '<br>The god answers when the requirements are met. More offering will not improve the answer.' : ''}</span></span>
           <span class="sr-val">${statusHtml}</span>
         </div><div class="offer-row" id="offer-row-${esc(p.id)}"></div>`;
       });
@@ -177,7 +177,7 @@ async function castRite(prayerID, offering, host) {
   const d = await r.json().catch(function(){return {};});
   if (r.ok) {
     await loadKultDrawer();
-    showInlineResult('kult-body', d.message || (d.success ? 'The gods answered!' : 'The gods are silent.'));
+    showInlineResult('kult-body', prayerResultText(d, prayerCatalog.find(p => p.id === prayerID)));
   } else {
     showInlineResult(host || 'kult-body', d.error || 'Rite failed', true);
   }
@@ -204,4 +204,12 @@ export function prayerStatusHTML(p, frenzyActive = false, frenzyUntil = null) {
     return '<span style="color:var(--text-dim);font-size:.72rem">not affordable</span>';
   }
   return `<button class="obj-cta btn-small" onclick="okRite('${p.id}')">Offer</button>`;
+}
+
+// Current everyday prayers cannot receive a silent answer. Historical and legacy
+// refusals still keep their recorded meaning.
+export function prayerResultText(result, prayer) {
+  if (result.message) return result.message;
+  if (result.success) return 'The gods answered!';
+  return prayer?.god_id ? 'The prayer could not be completed.' : 'The gods are silent.';
 }
