@@ -165,7 +165,7 @@ export function notifDomain(kind) {
     // Diplomacy — the messenger channel.
     MessengerLostAtSea: 'diplomacy', MessengerRescuedAtSea: 'diplomacy', MessengerArrival: 'diplomacy', MessengerReturned: 'diplomacy', PassageStalled: 'diplomacy',
     // Kult — the gods answering.
-    KharisBandChanged: 'kult', DivinePunishment: 'kult', DivineBlessing: 'kult', KharisEvent: 'kult',
+    KharisDeclining: 'kult', KharisBandChanged: 'kult', DivinePunishment: 'kult', DivineBlessing: 'kult', KharisEvent: 'kult',
   };
   return domains[kind] || 'system';
 }
@@ -198,7 +198,7 @@ export function notifIcon(kind) {
     ForeignMarchSighted: '🛡',
     ForeignMarchSightedV2: '🛡',
     SubsistenceWarning: '🌾',
-    GarrisonStarvationStarted: '🌾', GarrisonStarvationEnded: '🌾', KharisBandChanged: '🏛',
+    GarrisonStarvationStarted: '🌾', GarrisonStarvationEnded: '🌾', KharisDeclining: '🏛', KharisBandChanged: '🏛',
     OfferAccepted:      '🤝',
     OfferDeclined:      '🚫',
     OfferExpired:       '⏳',
@@ -328,6 +328,7 @@ export function notifText(kind, body) {
       ? `${esc(body.name || 'Your city')}: the garrison is losing men to hunger. Soldiers share the city's grain, fish, oil and wine. Produce or transfer more food here.`
       : `${esc(body.name || 'Your city')}: the garrison is losing men to hunger. Soldiers need grain even when the city has a food surplus. Place citizens on grain or transfer grain here.`;
     case 'GarrisonStarvationEnded': return `${esc(body.name || 'Your city')}: the garrison is no longer losing men to hunger.`;
+    case 'KharisDeclining': return `Kharis is falling (${fmtNum(body.kharis || 0)}, net ${fmtNum(body.net_per_tick || 0)} per day). At this rate it reaches ${body.wrath_threshold || 15} in ${fmtDays(body.days_to_15 || 0)}. Below that, the gods may punish you, with or without a temple. Staff and feed your temples.`;
     case 'KharisBandChanged': return `Kharis: ${esc(body.from_band || '?')} → ${esc(body.to_band || '?')} (${fmtNum(body.kharis || 0)}). Check Kult for decay and temple support; staff and feed your temples.`;
 
     case 'OpeningDispatch': return esc(body.title || 'Opening dispatch');
@@ -815,14 +816,15 @@ export function notifText(kind, body) {
       // depends on type — a generic "+N" would be wrong for harvest_failure
       // (grain) vs the three man/ship-counting types.
       const place = body.name ? ` at ${body.name}` : '';
+      const protection = body.protection_until ? ` Protected from further divine punishment until ${fmtClock(body.protection_until)}.` : '';
       const amount = body.amount || 0;
       switch (body.type) {
-        case 'chariot_loss':    return `The gods scattered your war chariots in the night${place} — ${amount} lost`;
+        case 'chariot_loss':    return `The gods scattered your war chariots in the night${place} — ${amount} lost${protection}`;
         case 'ship_loss':       return body.unit_name
-          ? `A divine storm sank ${body.unit_name} in your harbour${place} — the ship is lost`
-          : `A divine storm claimed a vessel from your harbour${place}`;
-        case 'harvest_failure': return `The fields lay fallow by divine will${place} — ${Math.round(amount)} grain rotted`;
-        case 'garrison_plague': return `A pestilence swept the barracks${place} — ${amount} fell`;
+          ? `A divine storm sank ${body.unit_name} in your harbour${place} — the ship is lost${protection}`
+          : `A divine storm claimed a vessel from your harbour${place}${protection}`;
+        case 'harvest_failure': return `The fields lay fallow by divine will${place} — ${Math.round(amount)} grain rotted${protection}`;
+        case 'garrison_plague': return `A pestilence swept the barracks${place} — ${amount} fell${protection}`;
         default:                return `${kind} — ${payloadSummary(body)}`;
       }
     }

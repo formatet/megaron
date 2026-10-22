@@ -1,0 +1,9 @@
+» färsk DB på migration 202 · commit cfd774be+ändringar
+=== RUN   TestWrathPlayerScenario
+2026/10/23 00:52:54 INFO player registered id=41e0a0fe-2fbf-4ca2-91eb-37b3db4a000e username=alpha-829ed5cf-9377-4f69-9e33-aaa2a38f2256
+    zz_order25_player_scenario_test.go:55: scenario run1: {"run": 1, "cli_status": true, "cli_warning": true, "api_shield": true, "browser_status": true, "browser_actual_warning": true, "page_errors": []}
+2026/10/23 00:52:56 INFO player registered id=d19f997f-5cbe-40b8-80d5-a351924f0c50 username=alpha-2372e114-41b5-4c4e-8b39-d2de8c38e43f
+    zz_order25_player_scenario_test.go:55: scenario run2: {"run": 2, "cli_status": true, "cli_warning": true, "api_shield": true, "browser_status": true, "browser_actual_warning": true, "page_errors": []}
+--- PASS: TestWrathPlayerScenario (4.52s)
+PASS
+ok  	formatet/megaron/server/api/handlers	4.520s

@@ -15,7 +15,6 @@ import (
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/kharis"
-	"formatet/megaron/server/internal/religion"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
@@ -88,9 +87,9 @@ func TestKharisPlayerRulesSourceParity(t *testing.T) {
 		fmt.Sprintf("level 1 **%g**", kharis.EffectiveKharisCap(100, 1)),
 		fmt.Sprintf("level 2 **%g**", kharis.EffectiveKharisCap(100, 2)),
 		fmt.Sprintf("level 3 **%g**", kharis.EffectiveKharisCap(100, 3)),
-		fmt.Sprintf("a %.0f%% chance", 100*kharis.PunishmentProbability(religion.MoodIndifferent-1, false)),
+		fmt.Sprintf("a %.0f%% chance", 100*kharis.PunishmentProbability(kharis.WrathThreshold-1, false)),
 		"including your capital", "whether or not they have temples", "random eligible city",
-		"A standing temple protects you from punishment",
+		"with or without a temple",
 	} {
 		if !strings.Contains(article, want) {
 			t.Errorf("Codex missing active rule %q", want)
@@ -136,9 +135,34 @@ func TestProvinceCultUpkeepDoesNotRevealForeignRealm(t *testing.T) {
 	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
 		t.Fatal(err)
 	}
-	for _, key := range []string{"kharis_population", "kharis_population_decay", "kharis_daily_decay", "kharis_net_per_tick", "kharis_production_per_tick"} {
+	for _, key := range []string{"kharis_wrath", "kharis_population", "kharis_population_decay", "kharis_daily_decay", "kharis_net_per_tick", "kharis_production_per_tick"} {
 		if _, exists := body.Settlement[key]; exists {
 			t.Errorf("foreign realm field %s leaked", key)
 		}
+	}
+}
+
+func TestOwnerWrathExpiryUsesWorldAnchorAndStaysPrivate(t *testing.T) {
+	f := newAlphaFixture(t)
+	ctx := context.Background()
+	if _, err := f.pool.Exec(ctx, `INSERT INTO kharis_notice_state(world_id,player_id,scope_id,condition,state,observed_tick,context) VALUES($1,$2,$2,'divine_punishment','protected',100,'{"until_tick":107}')`, f.world, f.player); err != nil {
+		t.Fatal(err)
+	}
+	status, err := kharis.LoadWrathStatus(ctx, f.pool, f.player, f.world)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if status.ProtectionRemainingDays != 7 || status.ProtectionUntil == nil || status.Threshold != 15 || status.DailyProbability != .03 {
+		t.Fatalf("bad owner shield %+v", status)
+	}
+	if _, err := f.pool.Exec(ctx, `UPDATE worlds SET current_tick=107 WHERE id=$1`, f.world); err != nil {
+		t.Fatal(err)
+	}
+	status, err = kharis.LoadWrathStatus(ctx, f.pool, f.player, f.world)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if status.ProtectionRemainingDays != 0 || status.ProtectionUntil != nil {
+		t.Fatal("expiry boundary still protected")
 	}
 }

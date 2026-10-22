@@ -977,6 +977,21 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			if worker, ok := sett["kharis_per_temple_worker"].(float64); ok {
 				fmt.Printf("  One more fed temple worker gives +%.2f kharis per day before scarcity; requires a free citizen, a temple workplace and its daily offering.\n", worker)
 			}
+			if threshold, ok := sett["kharis_blessing_threshold"].(float64); ok {
+				fmt.Printf("  Everyday prayers work at a level-1 temple. Spontaneous blessings require at least %.0f kharis and a level-2 temple.\n", threshold)
+			}
+			if wrath, ok := sett["kharis_wrath"].(map[string]any); ok {
+				threshold, _ := wrath["threshold"].(float64)
+				probability, _ := wrath["daily_probability"].(float64)
+				fmt.Printf("  Below %.0f kharis: %.0f%% chance of divine punishment per day, with or without a temple.\n", threshold, probability*100)
+				if remaining, _ := wrath["protection_remaining_days"].(float64); remaining > 0 {
+					if iso, ok := wrath["protection_until"].(string); ok {
+						if at, err := time.Parse(time.RFC3339Nano, iso); err == nil {
+							fmt.Printf("  Protected from divine punishment until %s.\n", clockTime(at))
+						}
+					}
+				}
+			}
 			if line := kharisCapLine(sett); line != "" {
 				fmt.Print(line)
 			}

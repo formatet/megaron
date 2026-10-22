@@ -1,0 +1,11 @@
+{
+  "physical_red_cases": [
+    "shield",
+    "positive-net"
+  ],
+  "byte_exact_restore": {
+    "server/internal/kharis/tick.go": "7d576b9195dbfe7157a613af54166e6f7e4b278b14de5b6df4e508da9210d7c8",
+    "server/internal/kharis/transition_notices.go": "1aaa9659f65dea938e10d47996b41b91edb3e975d6bcd5ac609ac181f1880ef7"
+  },
+  "restored_green": true
+}

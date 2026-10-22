@@ -118,7 +118,7 @@ events(→clock) · carrier(→events; owns physical passenger witnesses, never 
   ↑
 economy(→carrier,clock,events,gossip,hexgrid,province,tick) · transport(→carrier,clock,economy,events,movement,province,religion,tick) · capabilities(→clock,province,religion,unit)
   ↑
-kharis(→ai,clock,economy,events,hexgrid,religion,unit) · loyalty(→clock,economy,events,settlement,tick)
+kharis(→ai,clock,economy,events,hexgrid,religion,tick,unit) · loyalty(→clock,economy,events,settlement,tick)
   ↑
 combat(→…,carrier,hexgrid,movement)  ← may use capabilities, economy, gossip, loyalty, province, religion, tick, transport, unit (+clock, events, movement)
   ↑

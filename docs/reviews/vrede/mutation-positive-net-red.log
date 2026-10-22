@@ -1,0 +1,6 @@
+» färsk DB på migration 202 · commit cfd774be+ändringar
+--- FAIL: TestWrathDeclinePositiveNetSuppressedAndRecoveryRearms (0.04s)
+    wrath_test.go:150: step0 warnings1 want0
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.043s
+FAIL

@@ -1,0 +1,4 @@
+» färsk DB på migration 202 · commit cfd774be+ändringar
+ok  	formatet/megaron/server/internal/kharis	0.231s
+ok  	formatet/megaron/server/api/handlers	0.198s
+ok  	formatet/megaron/server/cmd/keryx	0.005s

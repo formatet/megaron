@@ -14,6 +14,7 @@ import (
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/religion"
+	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -33,16 +34,13 @@ const (
 // Existing Wanaxes are not lifted to this value.
 const StartingKharis = 40.0
 
-// PunishmentProbability is the daily chance of divine punishment. Only a Wanax
-// with no standing temple and kharis below Indifferent is at risk. Timothy
-// 2026-10-18 lowered 30 % to 3 %: at six-minute ticks 30 % meant about two
-// dozen punishments over one night away. Whether a larger realm must also keep
-// up regular offerings is under review, so temple presence still protects.
-func PunishmentProbability(kharis float64, hasTemple bool) float64 {
-	if hasTemple || kharis >= religion.MoodIndifferent {
+// PunishmentProbability is independent of temple presence (R5).
+// Protection after an actual punishment is checked separately against realm state.
+func PunishmentProbability(kharis float64, _ bool) float64 {
+	if kharis >= WrathThreshold {
 		return 0
 	}
-	return .03
+	return WrathDailyProbability
 }
 
 // KharisPerTempleWorker is the one gain coefficient per placed temple worker.
@@ -390,7 +388,7 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 	}
 
 	// A day is "maintained" when the Wanax holds at least one standing temple;
-	// that controls gain, blessings and protection from punishment.
+	// that controls gain and eligibility for spontaneous blessings.
 	maintained := w.templeCities > 0
 
 	// FAS 3 — offer-underhåll: a maintained day's cult-gain is scaled by how
@@ -496,8 +494,14 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 	}
 
 	// The roll uses the post-maintenance value.
-	if probability := PunishmentProbability(newKharis, maintained); probability > 0 && h.randomFloat() < probability {
-		h.applyDivinePunishment(ctx, w.settlementID, worldID, w.playerID)
+	wrath, err := LoadWrathStatus(ctx, h.pool, w.playerID, worldID)
+	if err != nil {
+		return err
+	}
+	if probability := PunishmentProbability(newKharis, maintained); probability > 0 && wrath.ProtectionRemainingDays == 0 && h.randomFloat() < probability {
+		if err := h.applyDivinePunishment(ctx, w.settlementID, worldID, w.playerID); err != nil {
+			return err
+		}
 	}
 
 	// 3. Derive mood and write back cult_level (drives display).
@@ -1295,7 +1299,30 @@ func (h *TickHandler) emitSubsistenceWarning(ctx context.Context, worldID, owner
 // so the DivinePunishment event carried "type" only and no notification was
 // ever sent at all. "type" and its four values are UNCHANGED below — this
 // only ADDS "amount" beside it; old event rows and old readers keep working.
-func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, worldID, ownerID uuid.UUID) {
+func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, worldID, ownerID uuid.UUID) error {
+	tx, err := h.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+	anchor, err := tick.LoadAnchor(ctx, tx, worldID)
+	if err != nil {
+		return err
+	}
+	// The shield claim, actual loss, event and notification commit as one outcome.
+	if _, err := tx.Exec(ctx, `INSERT INTO kharis_notice_state(world_id,player_id,scope_id,condition,state,observed_tick)
+ VALUES($1,$2,$2,'divine_punishment','none',$3) ON CONFLICT DO NOTHING`, worldID, ownerID, anchor.Tick); err != nil {
+		return err
+	}
+	var until int
+	if err := tx.QueryRow(ctx, `SELECT COALESCE((context->>'until_tick')::int,0) FROM kharis_notice_state
+ WHERE world_id=$1 AND player_id=$2 AND scope_id=$2 AND condition='divine_punishment' FOR UPDATE`, worldID, ownerID).Scan(&until); err != nil {
+		return err
+	}
+	if anchor.Tick < until {
+		return nil
+	}
+
 	type punishment struct {
 		name string
 		text string
@@ -1367,7 +1394,7 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 	// merely the audit origin; it must not constrain the target.
 	var settlementName string
 	var eligible []int
-	err := h.pool.QueryRow(ctx, `
+	err = tx.QueryRow(ctx, `
  WITH candidates AS (
   SELECT s.id, s.name, ARRAY_REMOVE(ARRAY[
    CASE WHEN EXISTS(SELECT 1 FROM units u WHERE u.settlement_id=s.id AND u.world_id=$1 AND u.owner_id=$2 AND u.status='garrison' AND u.type='war_chariot' AND u.size>0) THEN 0 END,
@@ -1380,11 +1407,10 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
  )
  SELECT id,name,effects FROM candidates WHERE cardinality(effects)>0 ORDER BY random() LIMIT 1`, worldID, ownerID).Scan(&settlementID, &settlementName, &eligible)
 	if err == pgx.ErrNoRows {
-		return
+		return nil
 	}
 	if err != nil {
-		slog.Error("divine punishment: choose target", "world", worldID, "owner", ownerID, "err", err)
-		return
+		return fmt.Errorf("choose divine punishment target: %w", err)
 	}
 	p := punishments[eligible[rand.Intn(len(eligible))]]
 	// The galley the storm will take, named before it is disbanded (Haiku-7: a
@@ -1393,23 +1419,25 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 	var unitName string
 	if p.name == "ship_loss" {
 		var victimID uuid.UUID
-		if err := h.pool.QueryRow(ctx,
+		if err = tx.QueryRow(ctx,
 			`SELECT id FROM units
 			 WHERE settlement_id = $1 AND world_id=$2 AND owner_id=$3 AND size>0 AND status = 'garrison' AND type = 'galley'
 			 ORDER BY size, id LIMIT 1`, settlementID, worldID, ownerID).Scan(&victimID); err == nil {
-			unitName = unit.LoadDisplayName(ctx, h.pool, victimID)
+			unitName = unit.LoadDisplayName(ctx, tx, victimID)
 		}
 	}
 	var amount float64
-	if err := h.pool.QueryRow(ctx, p.sql, settlementID, worldID, ownerID).Scan(&amount); err != nil {
-		slog.Error("divine punishment failed", "settlement", settlementID, "type", p.name, "err", err)
-		return
+	if err = tx.QueryRow(ctx, p.sql, settlementID, worldID, ownerID).Scan(&amount); err != nil {
+		return fmt.Errorf("apply divine punishment: %w", err)
 	}
 	// Disband any garrison unit reduced to nothing by the punishment (no-op for
 	// the grain-only harvest_failure case). Army lives in units (SB7).
-	_, _ = h.pool.Exec(ctx,
+	_, err = tx.Exec(ctx,
 		`UPDATE units SET status = 'disbanded', updated_at = now()
 		 WHERE settlement_id = $1 AND status = 'garrison' AND size <= 0`, settlementID)
+	if err != nil {
+		return err
+	}
 
 	// Nothing to take, nothing to announce (acceptance sweep 2026-08-24). The
 	// roll picks one of four punishments blind, so a Wanax with no chariots and
@@ -1427,26 +1455,41 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 	if amount <= 0 {
 		slog.Info("divine punishment rolled but found nothing to take",
 			"settlement", settlementID, "type", p.name)
-		return
+		return nil
 	}
 
-	_, _ = h.store.Append(ctx, settlementID, events.StreamProvince, "DivinePunishment",
-		punishmentPayload(p.name, amount, settlementName, unitName), worldID, nil)
+	until = anchor.Tick + WrathProtectionTicks
+	untilAt := anchor.WallAt(int64(until) * 1000)
+	body := punishmentPayload(p.name, amount, settlementName, unitName)
+	body["player_id"] = ownerID
+	body["settlement_id"] = settlementID
+	body["protection_until_tick"] = until
+	body["protection_until"] = untilAt
+	if _, err := tx.Exec(ctx, `UPDATE kharis_notice_state SET state='protected',observed_tick=$3,context=jsonb_build_object('until_tick',$4::int)
+ WHERE world_id=$1 AND player_id=$2 AND scope_id=$2 AND condition='divine_punishment'`, worldID, ownerID, anchor.Tick, until); err != nil {
+		return err
+	}
+	event, err := h.store.AppendTx(ctx, tx, settlementID, events.StreamProvince, "DivinePunishment", body, worldID, nil)
+	if err != nil {
+		return err
+	}
+	var noticeID string
+	if err := tx.QueryRow(ctx, `INSERT INTO notifications(world_id,player_id,kind,level,body_json,world_tick)
+ VALUES($1,$2,'DivinePunishment',2,$3,$4) RETURNING id`, worldID, ownerID, body, anchor.Tick).Scan(&noticeID); err != nil {
+		return err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return err
+	}
+	h.store.RecordCommitted(ctx, event)
 	h.addDivineGossip(ctx, settlementID, worldID, "divine_wrath", p.text)
-	// Fel A (plan §Hål 1): NotifyPlayer was never called at all — the same
-	// nil-guarded hub already used elsewhere in this file (e.g. line ~1339's
-	// emitSubsistenceWarning). Level 2 (urgent) matches other involuntary
-	// losses (UnitLostAtSea, upkeep desertion) rather than routine info.
-	// "name" (megaron_plan_tre_tysta_notiserna.md): a Wanax with several cities
-	// otherwise only learns that ONE of them was struck, never which — not
-	// actionable, and exactly what grind 2 forbids. New field, old ones unchanged
-	// (CLAUDE.md §Events: semantics are frozen, additive is fine).
-	if h.hub != nil && ownerID != uuid.Nil {
-		body := punishmentPayload(p.name, amount, settlementName, unitName)
-		body["settlement_id"] = settlementID
+	if d, ok := h.hub.(committedNoticeDelivery); ok {
+		d.DeliverCommittedNotification(ctx, worldID, ownerID, noticeID, "DivinePunishment", 2, body)
+	} else if h.hub != nil {
 		_ = h.hub.NotifyPlayer(ctx, worldID, ownerID, "DivinePunishment", 2, body)
 	}
 	slog.Info("divine punishment applied", "settlement", settlementID, "type", p.name, "amount", amount)
+	return nil
 }
 
 // punishmentPayload is the DivinePunishment body. unit_name (additive) names

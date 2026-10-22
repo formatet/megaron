@@ -1039,10 +1039,11 @@ func notificationsCmd() *cobra.Command {
 // wrongly by a default.
 func printDivinePunishmentLine(n notificationItem) {
 	var body struct {
-		Type     string  `json:"type"`
-		Amount   float64 `json:"amount"`
-		Name     string  `json:"name"`
-		UnitName string  `json:"unit_name"`
+		ProtectionUntil string  `json:"protection_until"`
+		Type            string  `json:"type"`
+		Amount          float64 `json:"amount"`
+		Name            string  `json:"name"`
+		UnitName        string  `json:"unit_name"`
 	}
 	if err := json.Unmarshal(n.Body, &body); err != nil {
 		return
@@ -1075,6 +1076,11 @@ func printDivinePunishmentLine(n notificationItem) {
 		line = fmt.Sprintf("A plague swept through the barracks%s — %.0f men fell.", where, amount)
 	default:
 		return
+	}
+	if body.ProtectionUntil != "" {
+		if at, err := time.Parse(time.RFC3339Nano, body.ProtectionUntil); err == nil {
+			line += " Protected from further divine punishment until " + clockTime(at) + "."
+		}
 	}
 	fmt.Printf("      %s\n", line)
 }

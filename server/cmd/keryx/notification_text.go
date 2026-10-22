@@ -10,6 +10,18 @@ import (
 // The archive also contains retired kinds. Keep their summaries readable;
 // current producers and the Codex client's archive kinds are checked together.
 func printNotificationSummary(c *Client, n notificationItem) {
+	if n.Kind == "KharisDeclining" {
+		var b struct {
+			Kharis    float64 `json:"kharis"`
+			Net       float64 `json:"net_per_tick"`
+			Days      int     `json:"days_to_15"`
+			Threshold float64 `json:"wrath_threshold"`
+		}
+		if json.Unmarshal(n.Body, &b) == nil {
+			fmt.Printf("      Kharis is falling (%.1f, net %+.2f per day). At this rate it reaches %.0f in %s. Below that the gods may punish you, with or without a temple. Staff and feed your temples.\n", b.Kharis, b.Net, b.Threshold, formatDays(b.Days))
+			return
+		}
+	}
 	if printStorageNotification(n) {
 		return
 	}

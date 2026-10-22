@@ -1,0 +1,12 @@
+» färsk DB på migration 202 · commit cfd774be+ändringar
+2026/10/23 00:50:19 INFO divine punishment applied settlement=a54765b6-693b-4d28-9353-41fa38f77922 type=harvest_failure amount=50
+2026/10/23 00:50:19 INFO divine punishment applied settlement=a54765b6-693b-4d28-9353-41fa38f77922 type=harvest_failure amount=25
+2026/10/23 00:50:19 INFO divine punishment applied settlement=a54765b6-693b-4d28-9353-41fa38f77922 type=harvest_failure amount=12.5
+2026/10/23 00:50:19 INFO divine punishment applied settlement=a54765b6-693b-4d28-9353-41fa38f77922 type=harvest_failure amount=6.25
+--- FAIL: TestWrathProtectionLastsSevenTicksAndDoesNotExtendOnRetry (0.04s)
+    wrath_test.go:38: tick10 stock25 want50
+    wrath_test.go:38: tick16 stock12.5 want50
+    wrath_test.go:38: tick17 stock6.25 want25
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.040s
+FAIL

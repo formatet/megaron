@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"strings"
 
 	"formatet/megaron/server/internal/events"
@@ -52,10 +53,21 @@ func kharisBand(amount float64) string {
 
 // rememberInitialBand precedes the existing maintenance claim. If notification
 // persistence fails after maintenance, retry still compares against this baseline.
+func declineState(amount float64) string {
+	if amount >= religion.MoodIndifferent {
+		return "above"
+	}
+	return "below"
+}
 func (h *TickHandler) rememberInitialBand(ctx context.Context, w wanaxSnap, world uuid.UUID) error {
-	_, err := h.pool.Exec(ctx, `INSERT INTO kharis_notice_state(world_id,player_id,scope_id,condition,state,observed_tick)
- SELECT $1,$2,$2,'kharis_band',$3,current_tick-1 FROM worlds WHERE id=$1 ON CONFLICT DO NOTHING`, world, w.playerID, kharisBand(w.kharis))
-	return err
+	for _, state := range []struct{ condition, value string }{{"kharis_band", kharisBand(w.kharis)}, {"kharis_decline", declineState(w.kharis)}} {
+		_, err := h.pool.Exec(ctx, `INSERT INTO kharis_notice_state(world_id,player_id,scope_id,condition,state,observed_tick)
+ SELECT $1,$2,$2,$3,$4,current_tick-1 FROM worlds WHERE id=$1 ON CONFLICT DO NOTHING`, world, w.playerID, state.condition, state.value)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (h *TickHandler) recordTransition(ctx context.Context, tx pgx.Tx, world, owner, scope uuid.UUID, condition, initial, next string, tick int, kind string, level int, body map[string]any) (*transitionNotice, error) {
@@ -116,7 +128,7 @@ func (h *TickHandler) recordTransition(ctx context.Context, tx pgx.Tx, world, ow
 		return nil, nil
 	}
 	stream := events.StreamProvince
-	if condition == "kharis_band" {
+	if condition == "kharis_band" || condition == "kharis_decline" {
 		stream = events.StreamReligion
 	}
 	event, err := h.store.AppendTx(ctx, tx, scope, stream, kind, body, world, nil)
@@ -131,6 +143,11 @@ func (h *TickHandler) recordTransition(ctx context.Context, tx pgx.Tx, world, ow
 }
 
 func (h *TickHandler) observeKharisBand(ctx context.Context, w wanaxSnap, world uuid.UUID) error {
+	// Use the next-tick forecast, including the local gifts that remain after today's service.
+	net, _, _, _, err := ProjectDailyNet(ctx, h.pool, w.playerID, world)
+	if err != nil {
+		return err
+	}
 	tx, err := h.pool.Begin(ctx)
 	if err != nil {
 		return err
@@ -158,12 +175,32 @@ func (h *TickHandler) observeKharisBand(ctx context.Context, w wanaxSnap, world 
 	if err != nil {
 		return err
 	}
+	kind := ""
+	days := 0
+	if net < 0 {
+		kind = "KharisDeclining"
+		days = int(math.Max(0, math.Ceil((amount-WrathThreshold)/(-net))))
+	}
+	warningBody := map[string]any{"settlement_id": sid, "name": name, "province_id": pid, "q": q, "r": r, "kharis": amount, "net_per_tick": net, "days_to_15": days, "wrath_threshold": WrathThreshold}
+	// Record both directions, but announce only a downward crossing with negative net.
+	if declineState(amount) != "below" {
+		kind = ""
+	}
+	warning, err := h.recordTransition(ctx, tx, world, w.playerID, w.playerID, "kharis_decline", declineState(w.kharis), declineState(amount), tick, kind, 2, warningBody)
+	if err != nil {
+		return err
+	}
 	if err = tx.Commit(ctx); err != nil {
 		return err
 	}
+	var notices []transitionNotice
 	if n != nil {
-		h.deliverTransitions(ctx, []transitionNotice{*n})
+		notices = append(notices, *n)
 	}
+	if warning != nil {
+		notices = append(notices, *warning)
+	}
+	h.deliverTransitions(ctx, notices)
 	return nil
 }
 
