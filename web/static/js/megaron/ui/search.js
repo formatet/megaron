@@ -14,8 +14,12 @@ let correspondenceLoading = false;
 // ── Search overlay (Sprint 4) ─────────────────────────────────────────────
 export function toggleSearch() {
   const o = document.getElementById('search-overlay');
-  o.classList.toggle('open');
   if (o.classList.contains('open')) {
+    closeSearch();
+    return;
+  }
+  o.classList.add('open');
+  {
     openMobilePanel(o, closeSearch);
     State.searchFocusIdx = -1;
     const input = document.getElementById('search-input');
@@ -45,8 +49,6 @@ export function toggleSearch() {
         }
       }
     });
-  } else {
-    closeSearch();
   }
 }
 export function closeSearch(e) {
