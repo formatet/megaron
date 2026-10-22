@@ -1,0 +1,14 @@
+» färsk DB på migration 199 · commit 141031eb+ändringar
+2026/10/22 18:33:09 INFO player registered id=9b882855-5d48-4a2b-9a77-d5342ed75a3a username=placement-5ac0e2ea-d55e-47a0-8783-5f47602f7e70
+2026/10/22 18:33:09 INFO player registered id=32d4775f-e966-4dd1-8f37-094ea6c23976 username=placement-eaf6297a-a783-43d3-8b80-02c12461d202
+2026/10/22 18:33:09 INFO player registered id=8894503e-581e-48d0-a8e3-f0177ecb7e28 username=placement-65116b70-13ce-4043-a3d1-17b163ab5164
+--- FAIL: TestTempleUsesRealWorkforceAndActualLevelCapacity (0.27s)
+    --- FAIL: TestTempleUsesRealWorkforceAndActualLevelCapacity/1 (0.08s)
+        temple_staffing_test.go:32: over capacity 201 map[gubbe_ordinal:3]
+    --- FAIL: TestTempleUsesRealWorkforceAndActualLevelCapacity/2 (0.09s)
+        temple_staffing_test.go:32: over capacity 201 map[gubbe_ordinal:5]
+    --- FAIL: TestTempleUsesRealWorkforceAndActualLevelCapacity/3 (0.10s)
+        temple_staffing_test.go:32: over capacity 201 map[gubbe_ordinal:7]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.271s
+FAIL

@@ -1,0 +1,170 @@
+[
+  {
+    "width": 390,
+    "run": 1,
+    "scene": "city-empty",
+    "pixel_sha256": "5b4a241938b367ccee820fe7ebe751274cb4d3d973d5267c3c9efd9b0acfd07c"
+  },
+  {
+    "width": 390,
+    "run": 1,
+    "scene": "city-1-workers",
+    "pixel_sha256": "747eb522d0851d6639822e76b30e74ca27125a415f7b447efd0d4406b697f2d1"
+  },
+  {
+    "width": 390,
+    "run": 1,
+    "scene": "city-2-workers",
+    "pixel_sha256": "19c7e565ec6cc99f2d8446fe6a310d9a6832e68fb006a610a6d12ec35b67722b"
+  },
+  {
+    "width": 390,
+    "run": 1,
+    "scene": "city-worker-freed",
+    "pixel_sha256": "f8a75aa34b7b072592708cb3e077fe3f07836804d82912f0ef5c90b1fd1bc00b"
+  },
+  {
+    "width": 390,
+    "run": 1,
+    "scene": "city-l2",
+    "pixel_sha256": "8d3f6deeb79b12819f4e8edf84ffd03e1384a858bb6958baf98c5423a64aaa28"
+  },
+  {
+    "width": 390,
+    "run": 1,
+    "scene": "city-no-idle",
+    "pixel_sha256": "da0820fc3117047352ca0cf3e51c7da313192b5918524e6748cda6f3c34fffc9"
+  },
+  {
+    "width": 390,
+    "run": 1,
+    "scene": "kult",
+    "pixel_sha256": "fbe4b2466a8a3661282b071eb0fbfc4325b5d089d4b46bdaf0b5310ac1d4e4d5"
+  },
+  {
+    "width": 390,
+    "run": 2,
+    "scene": "city-empty",
+    "pixel_sha256": "5b4a241938b367ccee820fe7ebe751274cb4d3d973d5267c3c9efd9b0acfd07c"
+  },
+  {
+    "width": 390,
+    "run": 2,
+    "scene": "city-1-workers",
+    "pixel_sha256": "747eb522d0851d6639822e76b30e74ca27125a415f7b447efd0d4406b697f2d1"
+  },
+  {
+    "width": 390,
+    "run": 2,
+    "scene": "city-2-workers",
+    "pixel_sha256": "19c7e565ec6cc99f2d8446fe6a310d9a6832e68fb006a610a6d12ec35b67722b"
+  },
+  {
+    "width": 390,
+    "run": 2,
+    "scene": "city-worker-freed",
+    "pixel_sha256": "f8a75aa34b7b072592708cb3e077fe3f07836804d82912f0ef5c90b1fd1bc00b"
+  },
+  {
+    "width": 390,
+    "run": 2,
+    "scene": "city-l2",
+    "pixel_sha256": "8d3f6deeb79b12819f4e8edf84ffd03e1384a858bb6958baf98c5423a64aaa28"
+  },
+  {
+    "width": 390,
+    "run": 2,
+    "scene": "city-no-idle",
+    "pixel_sha256": "da0820fc3117047352ca0cf3e51c7da313192b5918524e6748cda6f3c34fffc9"
+  },
+  {
+    "width": 390,
+    "run": 2,
+    "scene": "kult",
+    "pixel_sha256": "fbe4b2466a8a3661282b071eb0fbfc4325b5d089d4b46bdaf0b5310ac1d4e4d5"
+  },
+  {
+    "width": 1000,
+    "run": 1,
+    "scene": "city-empty",
+    "pixel_sha256": "4f8cd3c68ce34ebace6a27f27a734228dc0e1e2ab4312992ed4cf5285c881c1c"
+  },
+  {
+    "width": 1000,
+    "run": 1,
+    "scene": "city-1-workers",
+    "pixel_sha256": "1a6596e5e1090172c7a96399a712f45642b5096d29ccda453541d505b5574311"
+  },
+  {
+    "width": 1000,
+    "run": 1,
+    "scene": "city-2-workers",
+    "pixel_sha256": "f18c31f87084024609b1fca63b51793c39b5199d9f1f942f4c069be7b210c73a"
+  },
+  {
+    "width": 1000,
+    "run": 1,
+    "scene": "city-worker-freed",
+    "pixel_sha256": "aae6bb0fa114e17a25877688e8cc358d0341b14a76ecb261b146fad76cbad587"
+  },
+  {
+    "width": 1000,
+    "run": 1,
+    "scene": "city-l2",
+    "pixel_sha256": "040064f4f7980578bdc7a2aaa83550d37dff22f8955df0b4487eadff403df6d1"
+  },
+  {
+    "width": 1000,
+    "run": 1,
+    "scene": "city-no-idle",
+    "pixel_sha256": "cf4f31a7591761fb545aae95152dcc8e264bbf03713827d2e3c5f83c13dad2a4"
+  },
+  {
+    "width": 1000,
+    "run": 1,
+    "scene": "kult",
+    "pixel_sha256": "50054af66b5fb4d718c99541111b86bec9e1d33290232f0adcc6ac6eda928bfe"
+  },
+  {
+    "width": 1000,
+    "run": 2,
+    "scene": "city-empty",
+    "pixel_sha256": "4f8cd3c68ce34ebace6a27f27a734228dc0e1e2ab4312992ed4cf5285c881c1c"
+  },
+  {
+    "width": 1000,
+    "run": 2,
+    "scene": "city-1-workers",
+    "pixel_sha256": "1a6596e5e1090172c7a96399a712f45642b5096d29ccda453541d505b5574311"
+  },
+  {
+    "width": 1000,
+    "run": 2,
+    "scene": "city-2-workers",
+    "pixel_sha256": "f18c31f87084024609b1fca63b51793c39b5199d9f1f942f4c069be7b210c73a"
+  },
+  {
+    "width": 1000,
+    "run": 2,
+    "scene": "city-worker-freed",
+    "pixel_sha256": "aae6bb0fa114e17a25877688e8cc358d0341b14a76ecb261b146fad76cbad587"
+  },
+  {
+    "width": 1000,
+    "run": 2,
+    "scene": "city-l2",
+    "pixel_sha256": "040064f4f7980578bdc7a2aaa83550d37dff22f8955df0b4487eadff403df6d1"
+  },
+  {
+    "width": 1000,
+    "run": 2,
+    "scene": "city-no-idle",
+    "pixel_sha256": "cf4f31a7591761fb545aae95152dcc8e264bbf03713827d2e3c5f83c13dad2a4"
+  },
+  {
+    "width": 1000,
+    "run": 2,
+    "scene": "kult",
+    "pixel_sha256": "50054af66b5fb4d718c99541111b86bec9e1d33290232f0adcc6ac6eda928bfe"
+  }
+]
