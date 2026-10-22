@@ -4,11 +4,15 @@ Each prayer is said at its own god's [[temples|temple]], so a city needs that te
 
 Each prayer names its god, the minimum standing it needs, and its traditional offering. Press **Offer**: a row opens with a field for each good, filled with the prayer's recipe. Bring it as it stands, or change the numbers first.
 
-## A rite is a wager
+## Standing is a requirement
 
-The offering is consumed whether the gods answer or not, and the rite **spends kharis** either way. Its chance is essentially your standing ([[kharis]]). You are never shown the exact odds — only the gods' mood, and whether they seem worth asking. That is on purpose.
+**Kharis is never spent on a prayer.** Each of the five Minoan everyday prayers answers when you meet its standing requirement, have its god's temple, and can bring its offering. Waiting time, an active gift or an unused departure gift can still prevent a new prayer.
 
-For the Minoan prayers, a successful answer starts a waiting time for that god across all your cities. A silent answer takes the offering and kharis, but starts no waiting time. Potnia's two prayers share her 24-day wait. An active gift cannot be renewed before it ends. A gift awaiting departure cannot be renewed before it is used.
+Bring the traditional recipe or a composed offering worth at least as much to that god. A smaller gift is refused without taking goods. Bringing more does not improve the answer. For these prayers, `--offer-multiplier` is ignored; omitting a composed offering always brings the traditional recipe.
+
+An answered prayer starts that god's waiting time across all your cities. Potnia's two prayers share her 24-day wait. An active gift cannot be renewed before it ends. A gift awaiting departure cannot be renewed before it is used.
+
+Older prayers outside the current Minoan catalogue retain their uncertain answer and offering multiplier. Their offering is spent even on a silent answer, but kharis is never spent. Old recorded outcomes remain as they happened.
 
 ## The prayers
 
@@ -41,4 +45,4 @@ Bronze can weigh far more with the gods than grain. The temple shows their curre
 
 These are offering values. Wanaxes agree their own trade prices. You may compose an offering in the Offer row on the web, or in Keryx with `rite --offer good=amount,...`. Each god has a taste, and the row tells you what this god favours and roughly what it expects. The traditional recipe always suffices.
 
-Any good may be offered. **Wine and oil** are offerings like any other — wine is also food, so do not give up what a hungry city needs. **Incense** is the dearest gift of all: it can move the gods further than any other offering ([[incense]]).
+Any good may be offered. **Wine and oil** are offerings like any other — wine is also food, so do not give up what a hungry city needs. **Incense** is a valuable gift ([[incense]]). For everyday prayers it can help meet the offering requirement; excess value does not improve the answer.

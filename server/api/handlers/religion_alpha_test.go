@@ -101,24 +101,15 @@ func (f alphaFixture) stock(t *testing.T, city uuid.UUID, good string) float64 {
 	return amount
 }
 
-func TestAlphaPrayerSharedGodCooldownAndSilentAnswer(t *testing.T) {
+func TestAlphaPrayerSharedGodCooldownAndCertainAnswer(t *testing.T) {
 	f := newAlphaFixture(t)
 	ctx := context.Background()
 	f.h.RiteDice = alphaDice{99}
-	if r := f.cast(f.cities[0], religion.PrayerPotniaWalls); r.Code != 200 || !strings.Contains(r.Body.String(), `"success":false`) {
-		t.Fatalf("silent response %d %s", r.Code, r.Body.String())
-	}
-	var count int
-	_ = f.pool.QueryRow(ctx, `SELECT count(*) FROM prayer_cooldowns WHERE world_id=$1`, f.world).Scan(&count)
-	if count != 0 {
-		t.Fatal("silent answer imposed a god cooldown")
+	if r := f.cast(f.cities[0], religion.PrayerPotniaWalls); r.Code != 200 || !strings.Contains(r.Body.String(), `"success":true`) {
+		t.Fatalf("everyday response %d %s", r.Code, r.Body.String())
 	}
 	if got := f.stock(t, f.cities[0], "grain"); got != 92 {
-		t.Fatalf("silent offering not consumed: %v", got)
-	}
-	f.h.RiteDice = alphaDice{0}
-	if r := f.cast(f.cities[0], religion.PrayerPotniaWalls); r.Code != 200 {
-		t.Fatalf("cast walls %d %s", r.Code, r.Body.String())
+		t.Fatalf("offering not consumed: %v", got)
 	}
 	var until int
 	var owner uuid.UUID

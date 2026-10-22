@@ -11,7 +11,7 @@ import (
 
 // The literal expected recipes come from Timothy's decision, independently of
 // the production catalogue. A web-style default Offer must debit exactly them,
-// and freeze that same sacrifice in RiteCast, even when the answer is silent.
+// and freeze that same sacrifice in RiteCast, even with a losing legacy dice value (everyday prayers never roll).
 func TestAlphaOfferDebitsDecisionRecipeExactly(t *testing.T) {
 	expected := map[string]map[string]float64{
 		religion.PrayerPotniaVision:     {"grain": 10, "silver": 3},
@@ -21,15 +21,15 @@ func TestAlphaOfferDebitsDecisionRecipeExactly(t *testing.T) {
 		religion.PrayerStillnessPassage: {"fish": 6, "silver": 3},
 	}
 	for id, recipe := range expected {
-		for _, silent := range []bool{false, true} {
+		for _, losingDice := range []bool{false, true} {
 			name := id + "/answered"
-			if silent {
-				name = id + "/silent"
+			if losingDice {
+				name = id + "/losing_dice"
 			}
 			t.Run(name, func(t *testing.T) {
 				f := newAlphaFixture(t)
 				ctx := context.Background()
-				if silent {
+				if losingDice {
 					f.h.RiteDice = alphaDice{99}
 				}
 				rows, err := f.pool.Query(ctx, `SELECT good_key,amount FROM settlement_goods WHERE settlement_id=$1`, f.cities[0])
@@ -82,7 +82,7 @@ func TestAlphaOfferDebitsDecisionRecipeExactly(t *testing.T) {
 				if err := json.Unmarshal(raw, &payload); err != nil {
 					t.Fatal(err)
 				}
-				if !reflect.DeepEqual(payload.Offering, recipe) || payload.Success == silent {
+				if !reflect.DeepEqual(payload.Offering, recipe) || !payload.Success {
 					t.Fatalf("frozen outcome %s", raw)
 				}
 			})

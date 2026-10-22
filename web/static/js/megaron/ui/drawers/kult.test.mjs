@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 // autostart) — same problem documented in cargo.test.mjs/economy.test.mjs.
 // Stub the one global it touches, then dynamically import.
 globalThis.document ??= { addEventListener() {} };
-const { cultLevelLabel, prayerStatusHTML, templeOfferingsHTML } = await import('./kult.js');
+const { cultLevelLabel, prayerStatusHTML, templeOfferingsHTML, prayerResultText } = await import('./kult.js');
 
 // The server never runs a five-tier cult-level model (forsummad/enkel/vardig/
 // praktfull/overdadig) — internal/kharis/tick.go's deriveMood "replaces
@@ -142,4 +142,11 @@ test('ORDER15: each temple names its own offering row; prayer shows the temple i
   assert.equal((html.match(/Next gift/g) || []).length, 2);
   assert.match(prayerStatusHTML({ id: 'x', affordable: true, unavailable_reason: 'no Temple of Velchanos' }), /no Temple of Velchanos/);
   assert.doesNotMatch(prayerStatusHTML({ id: 'x', affordable: true, unavailable_reason: 'no Temple of Velchanos' }), /Offer/);
+});
+
+test('everyday result has no synthetic silent answer; legacy and recorded history retain theirs', () => {
+ assert.equal(prayerResultText({success: true}, {god_id:'potnia'}), 'The gods answered!');
+ assert.equal(prayerResultText({success: false}, {god_id:'potnia'}), 'The prayer could not be completed.');
+ assert.equal(prayerResultText({success: false}, {}), 'The gods are silent.');
+ assert.equal(prayerResultText({message:'The gods were silent.'}, {god_id:'potnia'}), 'The gods were silent.');
 });

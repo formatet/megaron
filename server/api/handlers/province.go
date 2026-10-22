@@ -481,6 +481,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// gods are not machines. Gynnsamhet is read via the settlement's kharis_mood
 		// sibling field (kharisToMood, web.go), not a computed percentage.
 		type prayerRow struct {
+			GodID               string             `json:"god_id,omitempty"`
 			ID                  string             `json:"id"`
 			Name                string             `json:"name"`
 			God                 string             `json:"god"`
@@ -597,7 +598,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				reason = "insufficient offering or a waiting time applies"
 			}
 			prayers = append(prayers, prayerRow{DeparturePending: departurePending,
-				ID: spec.ID, Name: spec.Name, God: spec.God, Temple: temple, EffectType: spec.EffectType,
+				GodID: spec.GodID, ID: spec.ID, Name: spec.Name, God: spec.God, Temple: temple, EffectType: spec.EffectType,
 				Default: spec.ID == religion.DefaultBattleFrenzyFor(string(sett.CultureID)), ActiveRemainingDays: activeRemainingDays,
 				Effect:    spec.Description,
 				MinKharis: spec.MinKharis, Offering: spec.Offering, Affordable: afford, UnavailableReason: reason,
@@ -763,7 +764,6 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"kharis_city_decay":    kharisCityDecay,
 			"kharis_daily_decay":   kharisBaseDecay + kharisCityDecay,
 			"max_temple_level":     maxTempleLevel,
-			"rite_kharis_cost":     riteKharisCost,
 			"kharis_net_per_tick":  kharisNetPerDay,
 			"kharis_net_known":     kharisNetKnown,
 			"kharis_devotion_idle": kharisDevotionIdle,

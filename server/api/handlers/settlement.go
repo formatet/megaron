@@ -10,6 +10,7 @@ import (
 	"math/rand"
 	"net/http"
 	"sort"
+	"strings"
 	"time"
 
 	"formatet/megaron/server/internal/auth"
@@ -616,18 +617,6 @@ const (
 	riteCeil  = 0.98
 )
 
-// riteKharisCost is the standing a single rite draws down on cast — win or lose
-// (Timothy 2026-07-24, "make the rite a wager"). It aligns the kharis tick's stated
-// intent ("rites SPEND standing, they don't add kharis") which the handler had
-// never actually implemented: before this a rite cost only material goods and left
-// kharis untouched, so a Wanax pinned at their ceiling cast indefinitely at a fixed
-// high chance — the rite was a fee, not a wager (soak 2026-07-23: 594/837 = 71 %
-// success, 152 casts in one 5 h window). Now each petition draws down standing
-// (floored at the holy floor so it never zeroes), making rites a depleting resource
-// a modest (L1) temple cannot sustain and a grander, climbing one slowly can.
-// Strawman — temenos_balans_spakar.md §9.
-const riteKharisCost = 4.0
-
 // Offer-multiplier bounds and the offerMod it produces at each end. A "fett
 // offer" (offer_multiplier > 1, more goods than the prayer's baseline) nudges
 // success up; a "snålt offer" (< 1, cheaper than baseline) nudges it down.
@@ -707,13 +696,13 @@ func insufficientKharisMessage(prayerID string, required, current float64) strin
 // material offering up ("fett offer") or down ("snålt offer") and nudges the
 // success chance accordingly — see riteOfferMod.
 //
-// Success probability is continuous, not tiered (FAS 1): the kharis level
-// (0-100) IS the success percentage — kharis 95 → ~95%, kharis 40 → ~40% —
-// nudged by offerMod and clamped to [riteFloor, riteCeil]. See riteSuccessChance.
+// Everyday prayers (GodID set) answer when standing and offering requirements
+// are met. Legacy prayers retain the continuous, hidden success probability.
+// Standing is a requirement for every prayer, never a payment.
 //
 // The prayer must belong to the settlement's culture (403 otherwise).
 // The prayer must be off cooldown (409 otherwise).
-// Outcome is rolled once in the handler and stored in the RiteCast event (Fas 2.3).
+// Legacy outcomes are rolled once; every outcome is stored in the RiteCast event.
 func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
@@ -907,6 +896,13 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	// Determine success probability — continuous (FAS 1), not tiered: the kharis
 	// level IS the success percentage, nudged by how much was offered.
 	offerMultiplier := riteOfferMultiplier(body.OfferMultiplier)
+	// An everyday prayer (one with a god, R4 Timothy 2026-10-22) is answered
+	// whenever its kharis requirement is met: it takes its traditional gift or
+	// one worth as much, never a fatter or stingier one.
+	everyday := spec.GodID != ""
+	if everyday {
+		offerMultiplier = 1.0
+	}
 	// Composed offering (Timothy 2026-07-22): the Wanax may bring whatever they
 	// judge worthy instead of the prayer's inherited recipe. What it is worth is
 	// the world's scarcity (divine_valuations, repriced daily by the kharis tick)
@@ -923,6 +919,18 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	composed := len(body.Offering) > 0 && len(divineValues) > 0
+	if everyday && len(body.Offering) > 0 {
+		if len(divineValues) == 0 {
+			writeError(w, http.StatusServiceUnavailable, "the temple cannot value a composed offering yet — use the traditional offering")
+			return
+		}
+		for good, amount := range body.Offering {
+			if amount <= 0 || math.IsNaN(amount) || math.IsInf(amount, 0) || divineValues[good] <= 0 {
+				writeError(w, http.StatusBadRequest, "a composed offering needs positive amounts of goods the temple can value")
+				return
+			}
+		}
+	}
 	if composed {
 		offering = body.Offering
 	}
@@ -930,8 +938,13 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	offeringWorth := religion.OfferingWorth(offering, divineValues, favours)
 	offeringBaseline := religion.TraditionalBaseline(spec, divineValues)
 	offerCap := riteOfferModFat
-	if composed {
+	if composed && !everyday {
 		offerMod, offerCap = religion.ComposedOfferMod(offering, divineValues, favours, offeringBaseline)
+	}
+	if everyday && composed && offeringWorth < offeringBaseline*(1-1e-9) {
+		writeError(w, http.StatusBadRequest,
+			fmt.Sprintf("%s asks for a gift worth at least the traditional offering (%s)", spec.God, formatOffering(spec.Offering)))
+		return
 	}
 
 	successChance := riteSuccessChance(kharisNow, offerMod)
@@ -945,10 +958,8 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	// offerMultiplier (a "fett offer" costs proportionally more goods; a "snålt
 	// offer" costs less). The gods take the sacrifice regardless of outcome.
 	// The offering is in trade goods (wine/oil/silver/…), the deliberate economic
-	// sink that makes religion drive trade. The rite ALSO draws down kharis itself
-	// (riteKharisCost, deducted below after the goods clear) — a rite is a wager on
-	// standing, not just a goods-fee (Timothy 2026-07-24). The MinKharis gate above
-	// still guards eligibility on the pre-cast level.
+	// sink that makes religion drive trade. The MinKharis gate above checks
+	// eligibility; neither a success nor a refusal spends standing.
 	// `offering` was resolved above: either the composed one the Wanax brought or
 	// the prayer's traditional recipe scaled by offer_multiplier.
 	for good, need := range offering {
@@ -977,30 +988,20 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// The petition itself costs divine standing — a rite is a wager, not a fee
-	// (Timothy 2026-07-24). Spent whether or not the god answers (like the material
-	// offering above), floored at the holy floor so it never zeroes out. The row was
-	// locked FOR UPDATE when kharisNow was read, so this settled() reads the same
-	// stored tuple.
-	if _, err = tx.Exec(r.Context(),
-		`UPDATE player_world_records SET
-		    kharis_amount    = GREATEST(1.0, settled(kharis_amount, kharis_rate, kharis_calc_tick) - $1),
-		    kharis_calc_tick = current_world_tick()
-		 WHERE player_id = $2 AND world_id = $3`,
-		riteKharisCost, playerID, worldID,
-	); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not draw down divine standing")
-		return
-	}
+	// Kharis is the relationship, not a currency (R1 Timothy 2026-10-22): a
+	// prayer pays in goods and waiting time; standing is a requirement, never spent.
 
-	// Roll outcome once (Fas 2.3 — result goes into the event, not "roll_pending").
-	var roll int
-	if h.RiteDice != nil {
-		roll = h.RiteDice.Intn(100)
-	} else {
-		roll = rand.Intn(100)
+	// Everyday prayers never consult the dice. Legacy outcomes are rolled once.
+	success := everyday
+	if !everyday {
+		var roll int
+		if h.RiteDice != nil {
+			roll = h.RiteDice.Intn(100)
+		} else {
+			roll = rand.Intn(100)
+		}
+		success = roll < chance
 	}
-	success := roll < chance
 
 	// Apply effect on success.
 	effectPayload := map[string]any{}
@@ -1061,7 +1062,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		"offering_value_unit":    religion.LaborValueUnit,
 		"valuation_version":      religion.LaborValuationVersion,
 		"offer_mod":              offerMod,
-		"kharis_spent":           riteKharisCost,
+		"kharis_spent":           0.0,
 	}
 	if success && spec.GodID != "" {
 		if err = religion.SetGodCooldown(r.Context(), tx, worldID, playerID, spec.GodID, nowTick+spec.CooldownTicks); err != nil {
@@ -1088,7 +1089,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		"offer_multiplier": offerMultiplier,
 		"prayer":           prayerID,
 		"message":          message,
-		"kharis_spent":     riteKharisCost,
+		"kharis_spent":     0.0,
 	}
 	// What the offering achieved. A playtester tripled a gift (oil 150 → 500)
 	// across three casts and saw the identical failure line every time, because
@@ -1104,6 +1105,8 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		resp["valuation_version"] = religion.LaborValuationVersion
 		resp["offering_expected"] = offeringBaseline
 		switch {
+		case everyday:
+			resp["offering_verdict"] = "worthy — meets the prayer's requirement; more will not improve the answer"
 		case offerMod >= offerCap:
 			resp["offering_verdict"] = "as generous as the gods will notice — more would be wasted"
 		case math.Abs(offeringWorth-offeringBaseline) < 1e-9:
@@ -1506,4 +1509,18 @@ func scaleOffering(recipe map[string]float64, multiplier float64) map[string]flo
 		scaled[good] = amount * multiplier
 	}
 	return scaled
+}
+
+// formatOffering writes a recipe as "10 grain + 3 silver" in a stable order.
+func formatOffering(recipe map[string]float64) string {
+	goods := make([]string, 0, len(recipe))
+	for good := range recipe {
+		goods = append(goods, good)
+	}
+	sort.Strings(goods)
+	parts := make([]string, len(goods))
+	for i, good := range goods {
+		parts[i] = fmt.Sprintf("%g %s", recipe[good], good)
+	}
+	return strings.Join(parts, " + ")
 }
