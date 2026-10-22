@@ -763,7 +763,6 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"kharis_city_decay":    kharisCityDecay,
 			"kharis_daily_decay":   kharisBaseDecay + kharisCityDecay,
 			"max_temple_level":     maxTempleLevel,
-			"rite_kharis_cost":     riteKharisCost,
 			"kharis_net_per_tick":  kharisNetPerDay,
 			"kharis_net_known":     kharisNetKnown,
 			"kharis_devotion_idle": kharisDevotionIdle,
