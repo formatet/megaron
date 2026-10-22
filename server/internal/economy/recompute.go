@@ -47,9 +47,8 @@ const NearjordGrainPerTick = 0.5
 // it can put to work, as a hard count of people, not a share of the city. Labor
 // allocated past what the fields and buildings can employ is not served and
 // produces nothing — so the only way to devote MORE of a city to a good is a
-// bigger workplace. This generalises what kharis.templeDevotionCapacity already
-// did for the temple (which is NOT in this table — cult labor is a separate
-// path, megaron_cult_ar_ingen_vara_plan.md, deliberately untouched here).
+// bigger workplace. Temple staffing has its own non-producing option with
+// physical capacity supplied by TempleWorkplaces.
 //
 // P2 replaces the old share-based BuildingLaborPerLevel (0.5 of the city per
 // level — DE2=B, Timothy 2026-08-07: "arbetskraft räknas hädanefter i hela
