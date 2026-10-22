@@ -1,0 +1,97 @@
+TAP version 13
+# Subtest: AK1: kharis_net_known true draws a Net row, distinct from Passive, signed with one decimal
+ok 1 - AK1: kharis_net_known true draws a Net row, distinct from Passive, signed with one decimal
+  ---
+  duration_ms: 0.833499
+  type: 'test'
+  ...
+# Subtest: AK1b: a negative net is signed with a minus, not a double sign
+ok 2 - AK1b: a negative net is signed with a minus, not a double sign
+  ---
+  duration_ms: 0.171725
+  type: 'test'
+  ...
+# Subtest: AK2: kharis_net_known false draws no net row at all — not even "0.0"
+ok 3 - AK2: kharis_net_known false draws no net row at all — not even "0.0"
+  ---
+  duration_ms: 0.086252
+  type: 'test'
+  ...
+# Subtest: AK2b: kharis_net_known missing entirely (not strictly true) also draws nothing
+ok 4 - AK2b: kharis_net_known missing entirely (not strictly true) also draws nothing
+  ---
+  duration_ms: 0.093383
+  type: 'test'
+  ...
+# Subtest: AK3: kharis_devotion_idle true draws the idle-capacity warning
+ok 5 - AK3: kharis_devotion_idle true draws the idle-capacity warning
+  ---
+  duration_ms: 0.117515
+  type: 'test'
+  ...
+# Subtest: AK3b: kharis_devotion_idle false (or absent) draws no warning
+ok 6 - AK3b: kharis_devotion_idle false (or absent) draws no warning
+  ---
+  duration_ms: 0.086795
+  type: 'test'
+  ...
+# Subtest: a null/undefined payload draws nothing, crashes nothing
+ok 7 - a null/undefined payload draws nothing, crashes nothing
+  ---
+  duration_ms: 0.483906
+  type: 'test'
+  ...
+# Subtest: realm decay breakdown uses authoritative base, city cost and total, including templeless realms
+ok 8 - realm decay breakdown uses authoritative base, city cost and total, including templeless realms
+  ---
+  duration_ms: 0.298215
+  type: 'test'
+  ...
+# Subtest: missing or partial realm decay never claims zero cost
+ok 9 - missing or partial realm decay never claims zero cost
+  ---
+  duration_ms: 0.279513
+  type: 'test'
+  ...
+# Subtest: production and extra worker yield are server-owned; yield is conditional, not a staffing recommendation
+ok 10 - production and extra worker yield are server-owned; yield is conditional, not a staffing recommendation
+  ---
+  duration_ms: 0.559764
+  type: 'test'
+  ...
+# Subtest: R3/R5: everyday prayers work at L1, blessings need 60/L2, temple does not grant protection
+ok 11 - R3/R5: everyday prayers work at L1, blessings need 60/L2, temple does not grant protection
+  ---
+  duration_ms: 9.825845
+  type: 'test'
+  ...
+# file:///home/tk/wt/codex-vrede/web/static/js/megaron/ui/wrath.test.mjs:3
+# import {notifText,notifDrawer} from './format.js';
+#                   ^^^^^^^^^^^
+# SyntaxError: The requested module './format.js' does not provide an export named 'notifDrawer'
+#     at ModuleJob._instantiate (node:internal/modules/esm/module_job:226:21)
+#     at async ModuleJob.run (node:internal/modules/esm/module_job:335:5)
+#     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+#     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+# Node.js v22.23.2
+# Subtest: web/static/js/megaron/ui/wrath.test.mjs
+not ok 2 - web/static/js/megaron/ui/wrath.test.mjs
+  ---
+  duration_ms: 27.629526
+  type: 'test'
+  location: '/home/tk/wt/codex-vrede/web/static/js/megaron/ui/wrath.test.mjs:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 11
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 59.940464
