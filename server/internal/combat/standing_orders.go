@@ -39,18 +39,9 @@ package combat
 //     is simply never sent past what is actually there (the same guarantee
 //     any other transfer already has).
 //
-// Naval routing (plan §4 point 3, cheaper coastal upkeep — built
-// megaron_plan_tva_slices_20260905.md §2): a route whose both ends are
-// coastal-or-harboured AND connected by a navigable sea lane
-// (province.ResolveTradeRoute — same substrate api/handlers/province.go's
-// Trade handler now uses for the single-shot internal transfer) dispatches
-// "naval" and prices its crew as the bound transport ship's own flat
-// hull ration (UpkeepSpecs["merchantman"]) instead of a gubbe — see
-// standingOrderRation's naval sibling, standingOrderNavalRation, and the
-// category branch in dispatchOutboundIfNeeded. A naval leg draws no gubbe at
-// all (idleGubbar/busyOrdersCrewedBy are skipped): the plan is explicit this
-// slice requires no owned ship, so there is no population-scale crew to
-// reserve, only the flat grain ration to pay.
+// Naval routes use the actual bound ship's crew ration through VoyageRation,
+// instead of a land caravan gubbe. A ship remains freighting for the whole
+// route; its outbound provisions also reserve the wait between sweeps.
 import (
 	"context"
 	"errors"
@@ -65,7 +56,6 @@ import (
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/transport"
-	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -82,19 +72,6 @@ import (
 // unit type that only coincidentally matches.
 func standingOrderRation() float64 {
 	return economy.GrainConsumptionPerCitizenPerTick * 100 * upkeepFieldGrainFactor
-}
-
-// standingOrderNavalRation is what the bound transport ship eats per
-// tick on a naval leg — the merchantman's own flat hull ration from
-// UpkeepSpecs (megaron_plan_tva_slices_20260905.md §2: "Sjövägen ska kosta
-// fartygets egen besättning ... och skrovets platta ranson ur UpkeepSpecs.
-// Använd befintliga tal, hitta inte på nya"). UnitUpkeep's naval branch
-// never scales by size/crew (upkeep.go:105-107 — "naval: flat, status never
-// changes it"), so this is just the table value, unadorned; the plan names
-// merchantman specifically (crew 10, vs. galley's 20) as the everyday trade
-// hull.
-func standingOrderNavalRation() float64 {
-	return UpkeepSpecs[string(unit.TypeMerchantman)].Grain
 }
 
 // settlementCoastalOrHarboured reports whether a settlement may send/receive
@@ -384,17 +361,15 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 	if err != nil {
 		return fmt.Errorf("load source population: %w", err)
 	}
-	// Naval pays the bound ship's own flat hull ration instead of a
-	// gubbe's (plan §2: "Sjövägen ska kosta fartygets egen besättning ...
-	// och skrovets platta ranson ur UpkeepSpecs").
+	// Naval reserves the bound ship's actual crew ration through the voyage owner.
 	ration := standingOrderRation()
 	if category == "naval" {
 		var kind string
-		var size int
-		if err := tx.QueryRow(ctx, `SELECT type,size FROM units WHERE id=$1`, *shipID).Scan(&kind, &size); err != nil {
+		var size, crew int
+		if err := tx.QueryRow(ctx, `SELECT type,size,crew FROM units WHERE id=$1`, *shipID).Scan(&kind, &size, &crew); err != nil {
 			return err
 		}
-		ration = VoyageRation(kind, size, "", 0)
+		ration = VoyageRation(kind, size, "", 0, crew)
 	}
 	provisions := VoyageProvisions(ration, travelTicks, 0)
 	if category == "naval" {

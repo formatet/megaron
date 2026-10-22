@@ -26,12 +26,12 @@ func TestUnitUpkeep_Status(t *testing.T) {
 		wantSilver float64
 	}{
 		// Grain ÷100 (mig 136, UpkeepSpecs' own ÷100 calibration): 50→0.5,
-		// 100→1.0, 4→0.04, 60→0.6, 120→1.2, 80→0.8, 160→1.6. Silver untouched.
+		// 100→1.0, 60→0.6, 120→1.2, 80→0.8, 160→1.6. Silver untouched.
 		{"garrison spearman full size", "spearman", "land", 100, "garrison", 0.5, 0},
 		{"marching spearman full size — silver unchanged", "spearman", "land", 100, "marching", 1.0, 0},
 		{"positioned spearman half size", "spearman", "land", 50, "positioned", 0.5, 0},
-		{"garrison galley — naval never doubles", "galley", "naval", 1, "garrison", 0.04, 1.5},
-		{"marching galley — naval never doubles", "galley", "naval", 1, "marching", 0.04, 1.5},
+		{"garrison galley — home crew ration", "galley", "naval", 1, "garrison", 0.10, 1.5},
+		{"marching galley — field crew ration", "galley", "naval", 1, "marching", 0.20, 1.5},
 		{"garrison elite_infantry full size", "elite_infantry", "land", 100, "garrison", 0.6, 2},
 		{"marching elite_infantry full size", "elite_infantry", "land", 100, "marching", 1.2, 2},
 		{"garrison war_chariot full size", "war_chariot", "land", 100, "garrison", 0.8, 3},
@@ -41,7 +41,7 @@ func TestUnitUpkeep_Status(t *testing.T) {
 	const eps = 1e-9
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			up := UnitUpkeep(tc.unitType, tc.category, tc.size, tc.status)
+			up := UnitUpkeep(tc.unitType, tc.category, tc.size, tc.status, rationCrewForTest(tc.unitType))
 			if math.Abs(up.Grain-tc.wantGrain) > eps {
 				t.Errorf("Grain = %v, want %v", up.Grain, tc.wantGrain)
 			}

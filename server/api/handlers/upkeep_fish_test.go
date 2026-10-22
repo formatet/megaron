@@ -103,7 +103,7 @@ func TestUpkeep_EmptyGrainLargeFish_FeedsGarrison(t *testing.T) {
 	}
 
 	fishAfter := settledGoodAmount(t, pool, settlementID, "fish")
-	if fishAfter != fishBefore-combat.UnitUpkeep("spearman", "land", 100, "garrison").Grain {
+	if fishAfter != fishBefore-combat.UnitUpkeep("spearman", "land", 100, "garrison", 0).Grain {
 		t.Errorf("upkeep fish went %v -> %v, want exactly nominal food ration", fishBefore, fishAfter)
 	}
 

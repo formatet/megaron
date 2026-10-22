@@ -1373,7 +1373,7 @@ func voyageNeed(ctx context.Context, db interface {
 		// Provisioned for the whole length: out, on and home again.
 		stationTicks = plan.LengthTicks - 2*travelTicks
 	}
-	ration = VoyageRation(string(u.Type), u.Size, cargoType, cargoSize)
+	ration = VoyageRation(string(u.Type), u.Size, cargoType, cargoSize, u.Crew)
 	return ration, VoyageProvisions(ration, travelTicks, stationTicks), stationTicks
 }
 

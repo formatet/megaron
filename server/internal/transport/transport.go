@@ -229,8 +229,8 @@ func prepareJourney(ctx context.Context, tx pgx.Tx, p DispatchParams) (DispatchP
 			return p, fmt.Errorf("freight provisions require the physical departure port")
 		}
 		var kind string
-		var size int
-		if err := tx.QueryRow(ctx, `SELECT type,size FROM units WHERE id=$1`, *p.ShipUnitID).Scan(&kind, &size); err != nil {
+		var size, crew int
+		if err := tx.QueryRow(ctx, `SELECT type,size,crew FROM units WHERE id=$1`, *p.ShipUnitID).Scan(&kind, &size, &crew); err != nil {
 			return p, err
 		}
 		// Price the reverse path separately: winds/current and a departure prayer
@@ -239,9 +239,9 @@ func prepareJourney(ctx context.Context, tx pgx.Tx, p DispatchParams) (DispatchP
 		if err != nil {
 			return p, err
 		}
-		need := economy.VoyageProvisions(economy.VoyageRation(kind, size, "", 0), p.Journey.TravelTicks, home.TravelTicks-p.Journey.TravelTicks)
+		need := economy.VoyageProvisions(economy.VoyageRation(kind, size, "", 0, crew), p.Journey.TravelTicks, home.TravelTicks-p.Journey.TravelTicks)
 		if p.StandingOrderID != nil {
-			need = economy.VoyageProvisions(economy.VoyageRation(kind, size, "", 0), p.Journey.TravelTicks, max(0, home.TravelTicks-p.Journey.TravelTicks)+events.MacroTickInterval)
+			need = economy.VoyageProvisions(economy.VoyageRation(kind, size, "", 0, crew), p.Journey.TravelTicks, max(0, home.TravelTicks-p.Journey.TravelTicks)+events.MacroTickInterval)
 		}
 		// VoyageProvisions clamps negative station time; symmetric overpacking is
 		// intentional when the actual reverse path is faster.

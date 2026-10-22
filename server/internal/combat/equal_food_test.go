@@ -25,7 +25,7 @@ func TestFishOnlyTownFeedsArmyAndKeepsGrainAuditHonest(t *testing.T) {
 		t.Fatal(err)
 	}
 	runUpkeep(t, pool, f)
-	want := 500 - UnitUpkeep("spearman", "land", 100, "garrison").Grain
+	want := 500 - UnitUpkeep("spearman", "land", 100, "garrison", 0).Grain
 	if got := settledAmount(t, pool, f.capitalID, "fish"); got != want {
 		t.Fatalf("fish=%g want%g", got, want)
 	}

@@ -13,7 +13,7 @@ The **War (⚔)** drawer has three tabs: **Army**, **Recruit** and **Movements**
 | **War Galley** | Shipyard + Foundry | Costs cedar. The warship. |
 | **Emporos** | Shipyard | Trade hull. Does not fight. |
 
-Land units train as a whole hundred-man cohort (**Train 100**). Ships are built one at a time and can be named. Their cost and population draft cover the ship's crew, rather than a hundred-man cohort. Rejected recruitment consumes no people or goods. You are notified when training finishes. A cohort still gathering men or training cannot march. Once ready, it can still march after losing men; it does not have to refill to 100 first.
+Land units train as a whole hundred-man cohort (**Train 100**). Ships are built one at a time and can be named. Their cost and population draft cover the ship's crew, rather than a hundred-man cohort. Rowers eat like spearmen: the actual surviving crew draws a port ration at home and double on a mission ([[upkeep]]). Rejected recruitment consumes no people or goods. You are notified when training finishes. A cohort still gathering men or training cannot march. Once ready, it can still march after losing men; it does not have to refill to 100 first.
 
 Every cohort is numbered by its home city: **2nd Spearmen of Knossos**. A lost regiment's number is never given out again. Before you found your first city, your [[horde]]'s two escort cohorts carry your own name instead — **1st** and **2nd Spearmen of** *you* — and become the new city's 1st and 2nd when you settle.
 

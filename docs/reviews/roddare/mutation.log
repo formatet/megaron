@@ -1,0 +1,107 @@
+Isolated physical mutation at a6917953; production test worktree untouched.
+MUTANT: replace actual crew with fixed20
+--- FAIL: TestRowersEatSoldierRations (0.00s)
+    --- FAIL: TestRowersEatSoldierRations/galley/garrison/2 (0.00s)
+        ship_ration_crew_test.go:30: crew 2: got {Grain:0.1 Silver:1.5} want food 0.01 silver 1.5
+    --- FAIL: TestRowersEatSoldierRations/galley/repairing/2 (0.00s)
+        ship_ration_crew_test.go:30: crew 2: got {Grain:0.1 Silver:1.5} want food 0.01 silver 1.5
+    --- FAIL: TestRowersEatSoldierRations/galley/fitting_out/2 (0.00s)
+        ship_ration_crew_test.go:30: crew 2: got {Grain:0.1 Silver:1.5} want food 0.01 silver 1.5
+    --- FAIL: TestRowersEatSoldierRations/galley/marching/2 (0.00s)
+        ship_ration_crew_test.go:30: crew 2: got {Grain:0.2 Silver:1.5} want food 0.02 silver 1.5
+    --- FAIL: TestRowersEatSoldierRations/galley/positioned/2 (0.00s)
+        ship_ration_crew_test.go:30: crew 2: got {Grain:0.2 Silver:1.5} want food 0.02 silver 1.5
+    --- FAIL: TestRowersEatSoldierRations/galley/freighting/2 (0.00s)
+        ship_ration_crew_test.go:30: crew 2: got {Grain:0.2 Silver:1.5} want food 0.02 silver 1.5
+    --- FAIL: TestRowersEatSoldierRations/galley/garrison/0 (0.00s)
+        ship_ration_crew_test.go:30: crew 0: got {Grain:0.1 Silver:1.5} want food 0 silver 1.5
+    --- FAIL: TestRowersEatSoldierRations/galley/repairing/0 (0.00s)
+        ship_ration_crew_test.go:30: crew 0: got {Grain:0.1 Silver:1.5} want food 0 silver 1.5
+    --- FAIL: TestRowersEatSoldierRations/galley/fitting_out/0 (0.00s)
+        ship_ration_crew_test.go:30: crew 0: got {Grain:0.1 Silver:1.5} want food 0 silver 1.5
+    --- FAIL: TestRowersEatSoldierRations/galley/marching/0 (0.00s)
+        ship_ration_crew_test.go:30: crew 0: got {Grain:0.2 Silver:1.5} want food 0 silver 1.5
+    --- FAIL: TestRowersEatSoldierRations/galley/positioned/0 (0.00s)
+        ship_ration_crew_test.go:30: crew 0: got {Grain:0.2 Silver:1.5} want food 0 silver 1.5
+    --- FAIL: TestRowersEatSoldierRations/galley/freighting/0 (0.00s)
+        ship_ration_crew_test.go:30: crew 0: got {Grain:0.2 Silver:1.5} want food 0 silver 1.5
+    --- FAIL: TestRowersEatSoldierRations/war_galley/garrison/50 (0.00s)
+        ship_ration_crew_test.go:30: crew 50: got {Grain:0.1 Silver:2.5} want food 0.25 silver 2.5
+    --- FAIL: TestRowersEatSoldierRations/war_galley/repairing/50 (0.00s)
+        ship_ration_crew_test.go:30: crew 50: got {Grain:0.1 Silver:2.5} want food 0.25 silver 2.5
+    --- FAIL: TestRowersEatSoldierRations/war_galley/fitting_out/50 (0.00s)
+        ship_ration_crew_test.go:30: crew 50: got {Grain:0.1 Silver:2.5} want food 0.25 silver 2.5
+    --- FAIL: TestRowersEatSoldierRations/war_galley/marching/50 (0.00s)
+        ship_ration_crew_test.go:30: crew 50: got {Grain:0.2 Silver:2.5} want food 0.5 silver 2.5
+    --- FAIL: TestRowersEatSoldierRations/war_galley/positioned/50 (0.00s)
+        ship_ration_crew_test.go:30: crew 50: got {Grain:0.2 Silver:2.5} want food 0.5 silver 2.5
+    --- FAIL: TestRowersEatSoldierRations/war_galley/freighting/50 (0.00s)
+        ship_ration_crew_test.go:30: crew 50: got {Grain:0.2 Silver:2.5} want food 0.5 silver 2.5
+    --- FAIL: TestRowersEatSoldierRations/war_galley/garrison/2 (0.00s)
+        ship_ration_crew_test.go:30: crew 2: got {Grain:0.1 Silver:2.5} want food 0.01 silver 2.5
+    --- FAIL: TestRowersEatSoldierRations/war_galley/repairing/2 (0.00s)
+        ship_ration_crew_test.go:30: crew 2: got {Grain:0.1 Silver:2.5} want food 0.01 silver 2.5
+    --- FAIL: TestRowersEatSoldierRations/war_galley/fitting_out/2 (0.00s)
+        ship_ration_crew_test.go:30: crew 2: got {Grain:0.1 Silver:2.5} want food 0.01 silver 2.5
+    --- FAIL: TestRowersEatSoldierRations/war_galley/marching/2 (0.00s)
+        ship_ration_crew_test.go:30: crew 2: got {Grain:0.2 Silver:2.5} want food 0.02 silver 2.5
+    --- FAIL: TestRowersEatSoldierRations/war_galley/positioned/2 (0.00s)
+        ship_ration_crew_test.go:30: crew 2: got {Grain:0.2 Silver:2.5} want food 0.02 silver 2.5
+    --- FAIL: TestRowersEatSoldierRations/war_galley/freighting/2 (0.00s)
+        ship_ration_crew_test.go:30: crew 2: got {Grain:0.2 Silver:2.5} want food 0.02 silver 2.5
+    --- FAIL: TestRowersEatSoldierRations/war_galley/garrison/0 (0.00s)
+        ship_ration_crew_test.go:30: crew 0: got {Grain:0.1 Silver:2.5} want food 0 silver 2.5
+    --- FAIL: TestRowersEatSoldierRations/war_galley/repairing/0 (0.00s)
+        ship_ration_crew_test.go:30: crew 0: got {Grain:0.1 Silver:2.5} want food 0 silver 2.5
+    --- FAIL: TestRowersEatSoldierRations/war_galley/fitting_out/0 (0.00s)
+        ship_ration_crew_test.go:30: crew 0: got {Grain:0.1 Silver:2.5} want food 0 silver 2.5
+    --- FAIL: TestRowersEatSoldierRations/war_galley/marching/0 (0.00s)
+        ship_ration_crew_test.go:30: crew 0: got {Grain:0.2 Silver:2.5} want food 0 silver 2.5
+    --- FAIL: TestRowersEatSoldierRations/war_galley/positioned/0 (0.00s)
+        ship_ration_crew_test.go:30: crew 0: got {Grain:0.2 Silver:2.5} want food 0 silver 2.5
+    --- FAIL: TestRowersEatSoldierRations/war_galley/freighting/0 (0.00s)
+        ship_ration_crew_test.go:30: crew 0: got {Grain:0.2 Silver:2.5} want food 0 silver 2.5
+    --- FAIL: TestRowersEatSoldierRations/merchantman/garrison/10 (0.00s)
+        ship_ration_crew_test.go:30: crew 10: got {Grain:0.1 Silver:1} want food 0.05 silver 1
+    --- FAIL: TestRowersEatSoldierRations/merchantman/repairing/10 (0.00s)
+        ship_ration_crew_test.go:30: crew 10: got {Grain:0.1 Silver:1} want food 0.05 silver 1
+    --- FAIL: TestRowersEatSoldierRations/merchantman/fitting_out/10 (0.00s)
+        ship_ration_crew_test.go:30: crew 10: got {Grain:0.1 Silver:1} want food 0.05 silver 1
+    --- FAIL: TestRowersEatSoldierRations/merchantman/marching/10 (0.00s)
+        ship_ration_crew_test.go:30: crew 10: got {Grain:0.2 Silver:1} want food 0.1 silver 1
+    --- FAIL: TestRowersEatSoldierRations/merchantman/positioned/10 (0.00s)
+        ship_ration_crew_test.go:30: crew 10: got {Grain:0.2 Silver:1} want food 0.1 silver 1
+    --- FAIL: TestRowersEatSoldierRations/merchantman/freighting/10 (0.00s)
+        ship_ration_crew_test.go:30: crew 10: got {Grain:0.2 Silver:1} want food 0.1 silver 1
+    --- FAIL: TestRowersEatSoldierRations/merchantman/garrison/2 (0.00s)
+        ship_ration_crew_test.go:30: crew 2: got {Grain:0.1 Silver:1} want food 0.01 silver 1
+    --- FAIL: TestRowersEatSoldierRations/merchantman/repairing/2 (0.00s)
+        ship_ration_crew_test.go:30: crew 2: got {Grain:0.1 Silver:1} want food 0.01 silver 1
+    --- FAIL: TestRowersEatSoldierRations/merchantman/fitting_out/2 (0.00s)
+        ship_ration_crew_test.go:30: crew 2: got {Grain:0.1 Silver:1} want food 0.01 silver 1
+    --- FAIL: TestRowersEatSoldierRations/merchantman/marching/2 (0.00s)
+        ship_ration_crew_test.go:30: crew 2: got {Grain:0.2 Silver:1} want food 0.02 silver 1
+    --- FAIL: TestRowersEatSoldierRations/merchantman/positioned/2 (0.00s)
+        ship_ration_crew_test.go:30: crew 2: got {Grain:0.2 Silver:1} want food 0.02 silver 1
+    --- FAIL: TestRowersEatSoldierRations/merchantman/freighting/2 (0.00s)
+        ship_ration_crew_test.go:30: crew 2: got {Grain:0.2 Silver:1} want food 0.02 silver 1
+    --- FAIL: TestRowersEatSoldierRations/merchantman/garrison/0 (0.00s)
+        ship_ration_crew_test.go:30: crew 0: got {Grain:0.1 Silver:1} want food 0 silver 1
+    --- FAIL: TestRowersEatSoldierRations/merchantman/repairing/0 (0.00s)
+        ship_ration_crew_test.go:30: crew 0: got {Grain:0.1 Silver:1} want food 0 silver 1
+    --- FAIL: TestRowersEatSoldierRations/merchantman/fitting_out/0 (0.00s)
+        ship_ration_crew_test.go:30: crew 0: got {Grain:0.1 Silver:1} want food 0 silver 1
+    --- FAIL: TestRowersEatSoldierRations/merchantman/marching/0 (0.00s)
+        ship_ration_crew_test.go:30: crew 0: got {Grain:0.2 Silver:1} want food 0 silver 1
+    --- FAIL: TestRowersEatSoldierRations/merchantman/positioned/0 (0.00s)
+        ship_ration_crew_test.go:30: crew 0: got {Grain:0.2 Silver:1} want food 0 silver 1
+    --- FAIL: TestRowersEatSoldierRations/merchantman/freighting/0 (0.00s)
+        ship_ration_crew_test.go:30: crew 0: got {Grain:0.2 Silver:1} want food 0 silver 1
+--- FAIL: TestRowersDeriveFoodFromSpearmanAndVoyageMatchesActualCrew (0.00s)
+    ship_ration_crew_test.go:47: galley crew2: 0.34 want derived 0.034
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.002s
+FAIL
+
+EXACT RESTORE SHA256 920b6896ff5b6dcfe4b8ea697419cb1dccaf2d3e4417377d6cc269e8afe9a6fa
+ok  	formatet/megaron/server/internal/economy	0.002s

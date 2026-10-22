@@ -45,7 +45,7 @@ func TestFreightProvisionsDispatchAndShadowLifecycle(t *testing.T) {
 			if err := tx.QueryRow(ctx, `SELECT provisions,provision_goods FROM units WHERE id=$1`, ship).Scan(&loaded, &goods); err != nil {
 				t.Fatal(err)
 			}
-			if loaded < 0.08 || math.Abs(goods["fish"]-loaded) > 1e-9 {
+			if math.Abs(loaded-0.20) > 1e-9 || math.Abs(goods["fish"]-loaded) > 1e-9 {
 				t.Fatalf("provisions=%g goods=%v; want round-trip fish", loaded, goods)
 			}
 			var city float64
@@ -56,7 +56,7 @@ func TestFreightProvisionsDispatchAndShadowLifecycle(t *testing.T) {
 				t.Fatalf("food was created or double-charged: city=%g aboard=%g", city, loaded)
 			}
 			// The same upkeep meal owner consumes only onboard food.
-			fed, err := economy.EatProvisions(ctx, tx, ship, 0.04)
+			fed, err := economy.EatProvisions(ctx, tx, ship, economy.VoyageRation("galley", 1, "", 0, 10))
 			if err != nil || !fed {
 				t.Fatalf("fed=%v err=%v", fed, err)
 			}
@@ -95,8 +95,8 @@ func TestFreightProvisionsDispatchAndShadowLifecycle(t *testing.T) {
 			if err := tx.QueryRow(ctx, `SELECT amount FROM settlement_goods WHERE settlement_id=$1 AND good_key='fish'`, f.sourceID).Scan(&after); err != nil {
 				t.Fatal(err)
 			}
-			if math.Abs(after-9.96) > 1e-9 {
-				t.Fatalf("returned fish=%g want9.96 exactly once", after)
+			if math.Abs(after-9.90) > 1e-9 {
+				t.Fatalf("returned fish=%g want9.90 exactly once", after)
 			}
 			if err := tx.Commit(ctx); err != nil {
 				t.Fatal(err)

@@ -32,7 +32,7 @@ func TestAIRound3_FoodAfterArmyAPIParity(t *testing.T) {
 	if _, err := pool.Exec(ctx, `UPDATE settlement_goods SET rate=CASE good_key WHEN 'grain' THEN 0.5 ELSE 5 END WHERE settlement_id=$1`, sid); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := pool.Exec(ctx, `INSERT INTO units(world_id,owner_id,type,category,size,status,settlement_id,support_settlement_id) VALUES($1,$2,'galley','naval',1,'garrison',$3,$3)`, wid, owner, sid); err != nil {
+	if _, err := pool.Exec(ctx, `INSERT INTO units(world_id,owner_id,type,category,size,crew,status,settlement_id,support_settlement_id) VALUES($1,$2,'galley','naval',1,20,'garrison',$3,$3)`, wid, owner, sid); err != nil {
 		t.Fatal(err)
 	}
 	var pid uuid.UUID
@@ -45,7 +45,7 @@ func TestAIRound3_FoodAfterArmyAPIParity(t *testing.T) {
 	r := chi.NewRouter()
 	r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/provinces/{provinceID}", ph.Get)
 	r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/settlements/overview", sh.SettlementsOverview)
-	up := combat.UnitUpkeep("galley", "naval", 1, "garrison")
+	up := combat.UnitUpkeep("galley", "naval", 1, "garrison", 20)
 	if up.Grain <= 0 {
 		t.Fatal("no upkeep in fixture")
 	}

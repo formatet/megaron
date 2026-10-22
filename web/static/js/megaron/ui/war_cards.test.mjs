@@ -106,7 +106,7 @@ test('B: Army card shows server rations and explicit zero spearman silver withou
   [{upkeep_context:'active',upkeep_grain_per_tick:0.5,upkeep_silver_per_tick:0},'0.5 grain, 0 silver per day'],
   [{status:'marching',upkeep_grain_per_tick:1,upkeep_silver_per_tick:0},'1 grain, 0 silver per day'],
   [{type:'elite_infantry',upkeep_grain_per_tick:0.6,upkeep_silver_per_tick:2},'0.6 grain, 2 silver per day'],
-  [{category:'naval',type:'galley',upkeep_grain_per_tick:0.04,upkeep_silver_per_tick:1.5},'0.04 grain, 1.5 silver per day'],
+  [{category:'naval',type:'galley',upkeep_grain_per_tick:0.02,upkeep_silver_per_tick:1.5},'0.02 grain, 1.5 silver per day'],
  ]) {
   const html=renderUnitCard(unit(extra));
   assert.ok(html.includes('Upkeep: '+want));

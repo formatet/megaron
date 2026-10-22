@@ -81,7 +81,8 @@ func (h *UnitHandler) marchSilverForecast(ctx context.Context, worldID, ownerID,
 		default:
 			continue
 		}
-		gross := combat.UnitUpkeep(u.typ, u.category, u.size, u.status).Silver
+		// This projection consumes silver only; crew does not affect ship pay.
+		gross := combat.UnitUpkeep(u.typ, u.category, u.size, u.status, 0).Silver
 		atPayer := u.payer != nil && u.location != nil && *u.payer == *u.location
 		net := gross - combat.SoldCirculation(gross, atPayer, share)
 		after := net

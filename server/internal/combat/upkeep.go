@@ -54,11 +54,11 @@ type UpkeepSpec = economy.UpkeepSpec
 
 var UpkeepSpecs = economy.UpkeepSpecs
 
-func UnitUpkeep(kind, category string, size int, status string) UpkeepSpec {
-	return economy.UnitUpkeep(kind, category, size, status)
+func UnitUpkeep(kind, category string, size int, status string, crew int) UpkeepSpec {
+	return economy.UnitUpkeep(kind, category, size, status, crew)
 }
-func VoyageRation(kind string, size int, cargo string, cargoSize int) float64 {
-	return economy.VoyageRation(kind, size, cargo, cargoSize)
+func VoyageRation(kind string, size int, cargo string, cargoSize int, crew int) float64 {
+	return economy.VoyageRation(kind, size, cargo, cargoSize, crew)
 }
 func VoyageProvisions(ration float64, travelTicks, stationTicks int) float64 {
 	return economy.VoyageProvisions(ration, travelTicks, stationTicks)
@@ -209,8 +209,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 	// set (above) must list the same statuses, or a status stops being billed
 	// without stopping being billable.
 	// 'repairing' added for the same reason (megaron_plan_skeppsreparation.md
-	// Slice C, 2026-08-16): naval upkeep is flat-per-hull and "untouched by
-	// status entirely" (UnitUpkeep's own doc comment) — leaving a ship parked
+	// Slice C, 2026-08-16): naval silver upkeep is per hull — leaving a ship parked
 	// in a shipyard queue out of this filter would have made permanent repair
 	// a free way to dodge silver upkeep.
 	// 'freighting' added for the same reason (megaron_plan_sjohandel_kraver_
@@ -288,7 +287,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 
 	// 3. Process each unit.
 	for _, u := range units {
-		up := UnitUpkeep(u.unitType, u.category, u.size, u.status)
+		up := UnitUpkeep(u.unitType, u.category, u.size, u.status, u.crew)
 		if up.Grain == 0 && up.Silver == 0 {
 			continue // unknown type — no upkeep
 		}
