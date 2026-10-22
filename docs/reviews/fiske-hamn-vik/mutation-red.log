@@ -1,0 +1,11 @@
+» färsk DB på migration 198 · commit 245f18bd+ändringar
+--- FAIL: TestBayLoadedOwnerCountsRiversButNotMissingMap (0.03s)
+    fishing_rules_test.go:160: river+ford bay places=2 want3
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.029s
+2026/10/22 19:11:03 INFO player registered id=ac0d6562-a12d-4e2a-9780-6e3cf0189ca9 username=placement-8e592ae9-1e55-4b9d-bf1f-38634076828b
+--- FAIL: TestBayFishingHTTPUsesLocalCapacity (0.08s)
+    fishing_placement_test.go:97: L0 bay=2 want3
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.089s
+FAIL

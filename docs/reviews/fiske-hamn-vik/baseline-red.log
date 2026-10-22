@@ -1,0 +1,9 @@
+» färsk DB på migration 198 · commit 64532299
+--- FAIL: TestDeepFishingRequiresHarbour (0.00s)
+    fishing_rules_test.go:10: harbour L0 deep fishing=1 x 1, want 0 x 1
+    fishing_rules_test.go:10: harbour L1 deep fishing=1 x 1, want 4 x 1.7
+    fishing_rules_test.go:10: harbour L2 deep fishing=1 x 1, want 4 x 2.4
+    fishing_rules_test.go:10: harbour L3 deep fishing=1 x 1, want 4 x 3.0999999999999996
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.002s
+FAIL
