@@ -131,3 +131,24 @@ func TestTemplePerGod_PrayerNeedsItsGodsTemple(t *testing.T) {
 		t.Fatalf("temples %v", sett["temples"])
 	}
 }
+
+// The rite itself is refused at the wrong god's temple and names the temple
+// it needs; nothing is debited.
+func TestTemplePerGod_RiteRefusedWithoutItsGodsTemple(t *testing.T) {
+	f := newAlphaFixture(t)
+	ctx := context.Background()
+	city := f.cities[0]
+	if _, err := f.pool.Exec(ctx, `DELETE FROM buildings WHERE settlement_id=$1 AND building_type='temple' AND god_id<>'potnia'`, city); err != nil {
+		t.Fatal(err)
+	}
+	r := f.cast(city, religion.PrayerGreenShoots)
+	if r.Code != http.StatusBadRequest || !strings.Contains(r.Body.String(), "Temple of Velchanos") {
+		t.Fatalf("green shoots at a Temple of Potnia: %d %s", r.Code, r.Body.String())
+	}
+	if got := f.stock(t, city, "grain"); got != 100 {
+		t.Fatalf("refused rite debited grain %v", got)
+	}
+	if r := f.cast(city, religion.PrayerPotniaVision); r.Code != 200 {
+		t.Fatalf("potnia's vision at the Temple of Potnia: %d %s", r.Code, r.Body.String())
+	}
+}
