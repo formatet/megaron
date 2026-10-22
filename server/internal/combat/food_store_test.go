@@ -57,7 +57,7 @@ func TestFoodStore_MigratedGrainFeedsGarrison(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT size,(SELECT amount FROM settlement_goods WHERE settlement_id=$2 AND good_key='grain'),(SELECT count(*) FROM events WHERE stream_id=$1 AND event_type='UnitAttrition') FROM units WHERE id=$1`, uid, f.capitalID).Scan(&size, &grain, &losses); err != nil {
 		t.Fatal(err)
 	}
-	want := 10 - UnitUpkeep("spearman", "land", 100, "garrison").Grain
+	want := 10 - UnitUpkeep("spearman", "land", 100, "garrison", 0).Grain
 	if size != 100 || losses != 0 || math.Abs(grain-want) > 1e-9 {
 		t.Fatalf("migrated grain unavailable or double charged: size%d losses%d grain%f want%f", size, losses, grain, want)
 	}

@@ -145,7 +145,7 @@ func TestStorageForecastUsesCurrentMealAndPayerSold(t *testing.T) {
 	}
 	exec(`UPDATE settlement_goods SET rate=2 WHERE settlement_id=$1`, sid)
 	exec(`INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,'grain',100,1,1000,10),($1,'fish',900,9,1000,10)`, sid)
-	exec(`INSERT INTO units(world_id,owner_id,type,category,size,status,settlement_id,support_settlement_id) VALUES($1,$2,'galley','naval',1,'garrison',$3,$3)`, wid, owner, sid)
+	exec(`INSERT INTO units(world_id,owner_id,type,category,size,crew,status,settlement_id,support_settlement_id) VALUES($1,$2,'galley','naval',1,20,'garrison',$3,$3)`, wid, owner, sid)
 	tx, err := pool.Begin(ctx)
 	if err != nil {
 		t.Fatal(err)
@@ -157,12 +157,12 @@ func TestStorageForecastUsesCurrentMealAndPayerSold(t *testing.T) {
 	}
 	for _, f := range fs {
 		if f.GoodKey == "silver" {
-			want := 2 - UnitUpkeep("galley", "naval", 1, "garrison").Silver*(1-UpkeepSoldShare())
+			want := 2 - UnitUpkeep("galley", "naval", 1, "garrison", 20).Silver*(1-UpkeepSoldShare())
 			if math.Abs(f.NetPerTick-want) > 1e-9 {
 				t.Fatalf("net%g want%g", f.NetPerTick, want)
 			}
 		}
-		if f.GoodKey == "grain" && math.Abs(f.NetPerTick-.496) > 1e-9 {
+		if f.GoodKey == "grain" && math.Abs(f.NetPerTick-.49) > 1e-9 {
 			t.Fatalf("grain net%g must include proportional civilian+ship food", f.NetPerTick)
 		}
 	}

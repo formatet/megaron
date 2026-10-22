@@ -96,7 +96,7 @@ func TestFamine_GarrisonSurvivesWhilePopulationStarves(t *testing.T) {
 	// (Föda, priority 55, draws whatever remains) — so every single day the
 	// garrison eats in full and the population goes hungry, without the
 	// stock ever fully drying up under the garrison's feet.
-	armyGrainNeed := combat.UnitUpkeep("spearman", "land", 100, "garrison").Grain
+	armyGrainNeed := combat.UnitUpkeep("spearman", "land", 100, "garrison", 0).Grain
 	popDemand := economy.GrainConsumptionPerTick(startPop)
 	grainRate := armyGrainNeed * 3
 	if popDemand < grainRate*10 {

@@ -6,8 +6,8 @@ import "testing"
 // provianterar man för ett tal och debiterar ett annat — och skillnaden syns
 // först som ett skepp som svälter mitt i en resa det betalade fullt för.
 func TestVoyageRation_MatchesWhatUpkeepActuallyDraws(t *testing.T) {
-	got := VoyageRation("galley", 1, "", 0)
-	want := UnitUpkeep("galley", "naval", 1, "positioned").Grain
+	got := VoyageRation("galley", 1, "", 0, 20)
+	want := UnitUpkeep("galley", "naval", 1, "positioned", 20).Grain
 	if got != want {
 		t.Errorf("tom galär: ranson %.2f, upkeep drar %.2f — de måste vara samma tal", got, want)
 	}
@@ -17,8 +17,8 @@ func TestVoyageRation_MatchesWhatUpkeepActuallyDraws(t *testing.T) {
 // också. Testet jämför mot skeppet UTAN last i stället för mot en hårdkodad
 // summa — annars mäter det bara sin egen aritmetik.
 func TestVoyageRation_ProvisionsTheCohortAboard(t *testing.T) {
-	empty := VoyageRation("galley", 1, "", 0)
-	laden := VoyageRation("galley", 1, "spearman", 100)
+	empty := VoyageRation("galley", 1, "", 0, 20)
+	laden := VoyageRation("galley", 1, "spearman", 100, 20)
 	if laden <= empty {
 		t.Fatalf("lastad galär (%.2f) måste äta mer än tom (%.2f) — kohorten ombord "+
 			"äter ur skeppets lager", laden, empty)
@@ -26,8 +26,8 @@ func TestVoyageRation_ProvisionsTheCohortAboard(t *testing.T) {
 	// Kohorten ska betala FÄLTranson, inte garnisonsranson: en embarkerad soldat
 	// är maximalt borta från stadens förråd. Det var hela motiveringen till att
 	// 'embarked' lades i fältmängden 2026-08-05.
-	field := UnitUpkeep("spearman", "land", 100, "embarked").Grain
-	garrison := UnitUpkeep("spearman", "land", 100, "garrison").Grain
+	field := UnitUpkeep("spearman", "land", 100, "embarked", 0).Grain
+	garrison := UnitUpkeep("spearman", "land", 100, "garrison", 0).Grain
 	if field == garrison {
 		t.Skip("fältfaktorn är neutraliserad; det här testet mäter ingenting")
 	}

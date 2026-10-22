@@ -121,7 +121,7 @@ func TestLayUpReturnsCrewAndZeroesShipUpkeep_FitOutDraftsAndCompletesAfterThreeT
 	if lay, fit := f.portFlags(t); lay || !fit {
 		t.Fatalf("laid-up port flags lay=%v fit=%v", lay, fit)
 	}
-	up := combat.UnitUpkeep("galley", "naval", 1, status)
+	up := combat.UnitUpkeep("galley", "naval", 1, status, 20)
 	if up.Grain != 0 || up.Silver != 0 {
 		t.Fatalf("laid-up ship upkeep=%+v, want zero", up)
 	}

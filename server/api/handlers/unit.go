@@ -2872,7 +2872,7 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 				}
 			}
 			provisionDays = combat.ProvisionDaysLeft(u.Provisions,
-				combat.VoyageRation(string(u.Type), u.Size, cargoType, cargoSize))
+				combat.VoyageRation(string(u.Type), u.Size, cargoType, cargoSize, u.Crew))
 			provisionsAboard = u.Provisions > 0
 		}
 		// movement 2a, R7: current_q/r is read through the saved route — never
@@ -2887,7 +2887,7 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 				}
 			}
 		}
-		upkeep := combat.UnitUpkeep(string(u.Type), string(u.Category), u.Size, string(u.Status))
+		upkeep := combat.UnitUpkeep(string(u.Type), string(u.Category), u.Size, string(u.Status), u.Crew)
 		upkeepContext := "inactive"
 		switch string(u.Status) {
 		case "garrison", "marching", "positioned", "embarked", "repairing", "freighting", "fitting_out":

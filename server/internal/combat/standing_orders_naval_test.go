@@ -183,7 +183,7 @@ func TestStandingOrder_OutboundGoesNavalWhenBothEndsCoastal(t *testing.T) {
 	}
 	travelTicks := journey.TravelTicks
 
-	provisions := VoyageProvisions(standingOrderNavalRation(), travelTicks, events.MacroTickInterval)
+	provisions := VoyageProvisions(VoyageRation("merchantman", 1, "", 0, 10), travelTicks, events.MacroTickInterval)
 
 	// R1/R4: a merchantman's capacity (200 weight units) caps the manifest —
 	// grain weighs 2.0/unit (goods.weight), so at most 100 of the 200 needed

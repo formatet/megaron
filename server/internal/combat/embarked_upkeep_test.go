@@ -122,19 +122,12 @@ func TestUpkeepHandle_EmbarkedCohortIsBilledFieldRation(t *testing.T) {
 // 'embarked': the field-ration factor applies to it exactly like
 // marching/positioned, and silver never changes with status.
 func TestUnitUpkeep_EmbarkedDoublesGrainLikeMarching(t *testing.T) {
-	up := UnitUpkeep("spearman", "land", 100, "embarked")
+	up := UnitUpkeep("spearman", "land", 100, "embarked", 0)
 	// 100 → 1.0 (mig 136, UpkeepSpecs grain ÷100).
 	if up.Grain != 1.0 {
 		t.Errorf(`UnitUpkeep("spearman","land",100,"embarked").Grain = %v, want 1.0 (field ration, same as marching/positioned)`, up.Grain)
 	}
 	if up.Silver != 0 {
 		t.Errorf(`UnitUpkeep("spearman","land",100,"embarked").Silver = %v, want 0 (ordinary foot soldiers draw no silver)`, up.Silver)
-	}
-	// Naval never doubles regardless of status, including embarked (the ship
-	// itself, not its cargo — included for completeness of the status contract).
-	// 4 → 0.04 (mig 136, UpkeepSpecs grain ÷100).
-	upShip := UnitUpkeep("galley", "naval", 1, "embarked")
-	if upShip.Grain != 0.04 {
-		t.Errorf(`UnitUpkeep("galley","naval",1,"embarked").Grain = %v, want 0.04 (naval never doubles)`, upShip.Grain)
 	}
 }

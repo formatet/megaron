@@ -21,11 +21,11 @@ func TestUnitRosterRationsAndExplicitZeroSalary(t *testing.T) {
 		{"spearman", "marching", 100, 1, 0, "active"},
 		{"spearman", "forming", 40, .2, 0, "inactive"},
 		{"elite_infantry", "garrison", 100, .6, 2, "active"},
-		{"galley", "freighting", 1, .04, 1.5, "active"},
+		{"galley", "freighting", 1, .20, 1.5, "active"},
 		{"nomadic_host", "positioned", 1, 0, 0, "none"},
 	} {
 		t.Run(tc.typ+"/"+tc.status, func(t *testing.T) {
-			u := &unit.Unit{Type: unit.Type(tc.typ), Category: unit.CategoryOf(unit.Type(tc.typ)), Size: tc.size, Status: unit.Status(tc.status)}
+			u := &unit.Unit{Type: unit.Type(tc.typ), Category: unit.CategoryOf(unit.Type(tc.typ)), Size: tc.size, Crew: unit.CrewFor(unit.Type(tc.typ)), Status: unit.Status(tc.status)}
 			got := unitSummaries([]*unit.Unit{u}, 0, clock.NewTestClock(time.Unix(0, 0)), nil, "Wanax", 0, false)[0]
 			if math.Abs(got.UpkeepGrainPerTick-tc.grain) > 1e-9 || got.UpkeepSilverPerTick != tc.silver || got.UpkeepContext != tc.context {
 				t.Fatalf("roster upkeep %v/%v/%s, want%v/%v/%s", got.UpkeepGrainPerTick, got.UpkeepSilverPerTick, got.UpkeepContext, tc.grain, tc.silver, tc.context)

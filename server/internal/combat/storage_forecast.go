@@ -40,7 +40,7 @@ func (StorageForecaster) StorageForecast(ctx context.Context, tx pgx.Tx, sid uui
 	}
 	// Use the same billing set, payer and field ration as UpkeepHandler. Units
 	// consuming ship provisions do not draw food from a distant home store.
-	units, err := tx.Query(ctx, `SELECT u.id,u.type,u.category,u.size,u.status,u.settlement_id,
+	units, err := tx.Query(ctx, `SELECT u.id,u.type,u.category,u.size,u.status,u.crew,u.settlement_id,
  (SELECT c.id FROM units c WHERE c.cargo_unit_id=u.id AND c.world_id=u.world_id),
  COALESCE(u.settlement_id=s.id,false)
  FROM units u JOIN settlements s ON s.id=u.support_settlement_id AND s.owner_id=u.owner_id
@@ -54,11 +54,11 @@ func (StorageForecaster) StorageForecast(ctx context.Context, tx pgx.Tx, sid uui
 	for units.Next() {
 		var u upkeepUnitRow
 		var atPayer bool
-		if err := units.Scan(&u.id, &u.unitType, &u.category, &u.size, &u.status, &u.settlementID, &u.carrierID, &atPayer); err != nil {
+		if err := units.Scan(&u.id, &u.unitType, &u.category, &u.size, &u.status, &u.crew, &u.settlementID, &u.carrierID, &atPayer); err != nil {
 			units.Close()
 			return nil, err
 		}
-		need := UnitUpkeep(u.unitType, u.category, u.size, u.status)
+		need := UnitUpkeep(u.unitType, u.category, u.size, u.status, u.crew)
 		if provisionSourceFor(u) == nil || atHomePort(u) {
 			foodNeed += need.Grain
 		}

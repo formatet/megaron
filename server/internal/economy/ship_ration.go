@@ -8,7 +8,8 @@ type UpkeepSpec struct {
 	Silver float64
 }
 
-// UpkeepSpecs: landenheter skalas med size/100; navala är flat (size=1).
+// UpkeepSpecs: land food/pay scales with size/100; naval pay is per hull.
+// Naval food is derived from the spearman ration and actual crew in UnitUpkeep.
 // Präst = ingen upkeep (kult kostar inget löpande).
 //
 // Landenheternas grain (SLICE A, Timothy 2026-08-05): kalibrerad så att en
@@ -17,10 +18,8 @@ type UpkeepSpec struct {
 // Typvariationen är avsiktligt bevarad (elit äter mer, stridsvagnen har
 // hästar). UnitUpkeep dubblar grain ovanpå detta i fält (marching/positioned).
 //
-// Navala talen är ORÖRDA av samma beslut: naval upkeep är per skrov, skalar
-// inte med size alls, och "dubbelt så mycket som en medborgare" har därför
-// ingen innebörd för en besättning på det sättet landenheternas har för en
-// soldat. UnitUpkeep dubblar därför aldrig navalt grain, oavsett status.
+// Rowers eat like soldiers (Timothy 2026-10-22): actual crew,
+// with field rations while marching, positioned or freighting.
 //
 // Ordinary spearmen live on grain, not silver (Timothy 2026-10-13).
 // Professional troops and vessels keep their existing silver pay. Starting
@@ -40,14 +39,14 @@ var UpkeepSpecs = map[string]UpkeepSpec{
 	"spearman":       {Grain: 0.50, Silver: 0},
 	"elite_infantry": {Grain: 0.60, Silver: 2},
 	"war_chariot":    {Grain: 0.80, Silver: 3},
-	"galley":         {Grain: 0.04, Silver: 1.5},
-	"war_galley":     {Grain: 0.06, Silver: 2.5},
-	"merchantman":    {Grain: 0.03, Silver: 1},
+	"galley":         {Silver: 1.5},
+	"war_galley":     {Silver: 2.5},
+	"merchantman":    {Silver: 1},
 }
 
 // UnitUpkeep returns the grain + silver one unit costs per upkeep-period (the
-// daily upkeep tick). Land units scale with size/100; naval and everything else
-// are flat (per vessel); unknown types cost nothing. This is the single
+// daily upkeep tick). Land units scale with size/100; naval food scales with
+// actual crew, while naval silver remains per vessel. Unknown types cost nothing. This is the single
 // source of truth for the scaling — both the charging loop (Handle) and the army
 // read surface (api/handlers) call it, so shown upkeep can never drift from what
 // is actually debited.
@@ -57,10 +56,11 @@ var UpkeepSpecs = map[string]UpkeepSpec{
 // economy/recompute.go:359, pop×0.5/day). In the field — status "marching" or
 // "positioned" — he eats double: mobilising costs, and standing out costs more
 // than standing home. Silver (where paid) never changes with status — the pay is the
-// same wherever the man stands. Naval upkeep is per hull, not per person.
+// same wherever the man stands. Naval food uses the same soldier ration per
+// rower; garrison/repairing/fitting_out are home, freighting is in the field.
 // A laid-up ship has returned its crew to civilian population and is exempt
 // from both ship rations and pay until Fit out drafts them again.
-func UnitUpkeep(unitType, category string, size int, status string) UpkeepSpec {
+func UnitUpkeep(unitType, category string, size int, status string, crew int) UpkeepSpec {
 	if status == "laid_up" {
 		return UpkeepSpec{}
 	}
@@ -68,8 +68,15 @@ func UnitUpkeep(unitType, category string, size int, status string) UpkeepSpec {
 	if !ok {
 		return UpkeepSpec{}
 	}
+	if category == "naval" {
+		grain := UpkeepSpecs["spearman"].Grain * float64(max(0, crew)) / 100
+		if status == "marching" || status == "positioned" || status == "freighting" {
+			grain *= FieldGrainFactor
+		}
+		return UpkeepSpec{Grain: grain, Silver: spec.Silver}
+	}
 	if category != "land" {
-		return spec // naval/other: flat, status never changes it
+		return spec
 	}
 	f := float64(size) / 100.0
 	grain := spec.Grain * f
@@ -96,10 +103,10 @@ func UnitUpkeep(unitType, category string, size int, status string) UpkeepSpec {
 // soldat är maximalt borta från stadens förråd, vilket är precis den motivering
 // 'embarked' lades till i fältmängden för (2026-08-05, embarkerad ranson).
 // cargoType/cargoSize är nollvärden när skeppet går tomt.
-func VoyageRation(shipType string, shipSize int, cargoType string, cargoSize int) float64 {
-	ration := UnitUpkeep(shipType, "naval", shipSize, "positioned").Grain
+func VoyageRation(shipType string, shipSize int, cargoType string, cargoSize int, crew int) float64 {
+	ration := UnitUpkeep(shipType, "naval", shipSize, "positioned", crew).Grain
 	if cargoType != "" && cargoSize > 0 {
-		ration += UnitUpkeep(cargoType, "land", cargoSize, "embarked").Grain
+		ration += UnitUpkeep(cargoType, "land", cargoSize, "embarked", 0).Grain
 	}
 	return ration
 }

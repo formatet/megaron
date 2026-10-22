@@ -31,7 +31,7 @@ func TestUnitUpkeep_SilverHalved(t *testing.T) {
 	const eps = 1e-9
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			up := UnitUpkeep(tc.unitType, tc.category, tc.size, tc.status)
+			up := UnitUpkeep(tc.unitType, tc.category, tc.size, tc.status, rationCrewForTest(tc.unitType))
 			if math.Abs(up.Silver-tc.wantSilver) > eps {
 				t.Errorf("Silver = %v, want %v", up.Silver, tc.wantSilver)
 			}
@@ -43,7 +43,7 @@ func TestUnitUpkeep_SilverHalved(t *testing.T) {
 // the plan names: status never changes silver, checked directly rather than
 // via the table above.
 func TestUnitUpkeep_SpearmanSilverStatusIndependent(t *testing.T) {
-	got := UnitUpkeep("spearman", "land", 100, "marching").Silver
+	got := UnitUpkeep("spearman", "land", 100, "marching", 0).Silver
 	if got != 0 {
 		t.Errorf(`UnitUpkeep("spearman","land",100,"marching").Silver = %v, want 0`, got)
 	}

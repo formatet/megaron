@@ -79,9 +79,9 @@ func TestArmyUpkeep_SumsGarrisonViaUnitUpkeep(t *testing.T) {
 	}
 	for _, u := range seed {
 		if _, err := pool.Exec(ctx,
-			`INSERT INTO units (world_id, owner_id, type, category, size, status, settlement_id)
-			 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-			worldID, playerID, u.utype, u.category, u.size, u.status, settlementID,
+			`INSERT INTO units (world_id, owner_id, type, category, size, status, settlement_id, crew)
+			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+			worldID, playerID, u.utype, u.category, u.size, u.status, settlementID, rationCrewForTest(u.utype),
 		); err != nil {
 			t.Fatalf("seed unit %s/%s: %v", u.utype, u.status, err)
 		}
@@ -93,14 +93,14 @@ func TestArmyUpkeep_SumsGarrisonViaUnitUpkeep(t *testing.T) {
 	}
 
 	const eps = 1e-9
-	// 141 spearmen: grain 141/100*0.5 = 0.705, silver 141/100*1 = 1.41; galley flat 0.04/1.5.
+	// 141 spearmen: grain 141/100*0.5 = 0.705, silver 141/100*1 = 1.41; galley crew20 food0.10/silver1.5.
 	// (SLICE A, 2026-08-05: garrison grain is now a civilian's ration ×10 the
 	// pre-slice table, garrison itself carries no field-doubling. SLICE B,
 	// same day: the silver column is halved. Grain further ÷100 by mig 136,
 	// 2026-08-27, UpkeepSpecs' own calibration — 70.5→0.705, 4→0.04; silver
 	// untouched.)
-	if math.Abs(total.Grain-0.745) > eps {
-		t.Errorf("total grain = %v, want 0.745 (0.705 spearman + 0.04 galley; forming excluded)", total.Grain)
+	if math.Abs(total.Grain-0.805) > eps {
+		t.Errorf("total grain = %v, want 0.805 (0.705 spearman + 0.10 galley; forming excluded)", total.Grain)
 	}
 	if math.Abs(total.Silver-1.5) > eps {
 		t.Errorf("total silver = %v, want1.5 (spearman0 + galley1.5)", total.Silver)
@@ -108,7 +108,7 @@ func TestArmyUpkeep_SumsGarrisonViaUnitUpkeep(t *testing.T) {
 	if math.Abs(perType["spearman"].Grain-0.705) > eps {
 		t.Errorf("spearman grain = %v, want 0.705", perType["spearman"].Grain)
 	}
-	if math.Abs(perType["galley"].Grain-0.04) > eps {
-		t.Errorf("galley grain = %v, want 0.04 (naval flat, independent of size)", perType["galley"].Grain)
+	if math.Abs(perType["galley"].Grain-0.10) > eps {
+		t.Errorf("galley grain = %v, want 0.10 (20 actual rowers)", perType["galley"].Grain)
 	}
 }
