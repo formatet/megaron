@@ -11,7 +11,7 @@ import (
 // build at once. A hex building is addressed by --hex q,r (as `build` does), a
 // city building by --type. Placed citizens are lifted off to idle; no refund.
 func demolishCmd() *cobra.Command {
-	var buildingType, hexFlag, provinceID string
+	var buildingType, hexFlag, provinceID, god string
 
 	cmd := &cobra.Command{
 		Use:   "demolish [city]",
@@ -49,6 +49,7 @@ func demolishCmd() *cobra.Command {
 				Type string `json:"type"`
 				HexQ *int   `json:"hex_q"`
 				HexR *int   `json:"hex_r"`
+				God  string `json:"god_id"`
 			}
 			if err := json.Unmarshal(data, &buildings); err != nil {
 				return err
@@ -71,8 +72,17 @@ func demolishCmd() *cobra.Command {
 				if buildingType != "" && b.Type != buildingType {
 					continue
 				}
+				if god != "" && b.God != god {
+					continue
+				}
+				if id != "" && b.God != "" {
+					// One temple per god: never pick which god's temple falls.
+					return fmt.Errorf("this city has more than one temple — name it with --god")
+				}
 				id = b.ID
-				break
+				if b.God == "" {
+					break
+				}
 			}
 			if id == "" {
 				return fmt.Errorf("no finished building matches — `keryx city` shows what stands where (something still under construction is stopped with `keryx cancel-build`)")
@@ -106,6 +116,7 @@ func demolishCmd() *cobra.Command {
 	}
 	cmd.Flags().StringVar(&buildingType, "type", "", "city building to demolish (market, temple, harbour, ...)")
 	cmd.Flags().StringVar(&hexFlag, "hex", "", "hex building to demolish, as \"q,r\"")
+	cmd.Flags().StringVar(&god, "god", "", "which temple, when the city has one to several gods")
 	cmd.Flags().StringVar(&provinceID, "province", "", "city to demolish in (default: your capital)")
 	return cmd
 }

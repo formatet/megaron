@@ -101,7 +101,7 @@ func TestFishingOwnerOptionsCapacityEffectsAndDemolition(t *testing.T) {
 		t.Fatalf("goods=%v err=%v", goods, err)
 	}
 	for level := 1; level <= 3; level++ {
-		if _, err := pool.Exec(ctx, `INSERT INTO buildings(settlement_id,building_type,level) VALUES($1,'harbour',$2) ON CONFLICT(settlement_id,building_type) WHERE hex_q IS NULL DO UPDATE SET level=EXCLUDED.level`, sid, level); err != nil {
+		if _, err := pool.Exec(ctx, `INSERT INTO buildings(settlement_id,building_type,level) VALUES($1,'harbour',$2) ON CONFLICT(settlement_id,building_type) WHERE hex_q IS NULL AND building_type <> 'temple' DO UPDATE SET level=EXCLUDED.level`, sid, level); err != nil {
 			t.Fatal(err)
 		}
 		check(level, []int{0, 1, 2, 4}[level])

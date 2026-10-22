@@ -135,14 +135,26 @@ func (h *ProvinceHandler) DemolishBuilding(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	// Lift first: a temple's placements cascade with the building (mig 202),
-	// so they must be counted before it goes. A concurrent demolish that got
-	// here before us leaves 0 building rows below and rolls this back.
-	lifted, err := economy.LiftPlacementsAfterDemolish(ctx, tx, settlementID, buildingID, bType, hexQ, hexR)
-	if err != nil {
-		fail("could not lift citizens", err)
-		return
+	// A temple's workers stand at this one building and would cascade away
+	// with it (mig 202) — lift them first so they are counted. Every other
+	// workplace is lifted after the delete, against the capacity left behind.
+	var lifted []int
+	if godID != nil {
+		trows, err := tx.Query(ctx, `DELETE FROM settlement_placement WHERE building_id = $1 RETURNING gubbe_ordinal`, buildingID)
+		if err != nil {
+			fail("could not lift temple workers", err)
+			return
+		}
+		for trows.Next() {
+			var o int
+			if err := trows.Scan(&o); err == nil {
+				lifted = append(lifted, o)
+			}
+		}
+		trows.Close()
 	}
+
+	// Delete first: a concurrent demolish that got here before us leaves 0 rows.
 	ct, err := tx.Exec(ctx, `DELETE FROM buildings WHERE id = $1`, buildingID)
 	if err != nil {
 		fail("could not demolish", err)
@@ -179,6 +191,13 @@ func (h *ProvinceHandler) DemolishBuilding(w http.ResponseWriter, r *http.Reques
 			return
 		}
 	}
+
+	rest, err := economy.LiftPlacementsAfterDemolish(ctx, tx, settlementID, buildingID, bType, hexQ, hexR)
+	if err != nil {
+		fail("could not lift citizens", err)
+		return
+	}
+	lifted = append(lifted, rest...)
 
 	if err := economy.RecomputeProduction(ctx, tx, settlementID); err != nil {
 		fail("recompute production failed", err)

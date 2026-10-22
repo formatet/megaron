@@ -123,9 +123,7 @@ type wanaxSnap struct {
 	kharis       float64
 	kharisCap    float64
 	// Actual placed temple workers, bounded by standing temple capacity.
-	devotionSum float64
-	// The same workers per temple: gain follows each temple's own paid gift.
-	templeWorkers  map[uuid.UUID]int
+	devotionSum    float64
 	templeCities   int
 	maxTempleLevel int // grandest temple's level — sets the kharis ceiling
 	cityCount      int // all owned active cities, including the capital
@@ -201,16 +199,11 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 
 	rows.Close()
 	for _, w := range snaps {
-		temples, err := economy.RealmTemples(ctx, h.pool, w.playerID, e.WorldID)
+		staffed, _, err := economy.RealmTempleStaffing(ctx, h.pool, w.playerID, e.WorldID)
 		if err != nil {
 			return fmt.Errorf("load temple staffing: %w", err)
 		}
-		w.templeWorkers = map[uuid.UUID]int{}
-		w.devotionSum = 0 // the physical staffing below replaces the snapshot column
-		for _, t := range temples {
-			w.templeWorkers[t.BuildingID] = t.Staffed
-			w.devotionSum += float64(t.Staffed)
-		}
+		w.devotionSum = float64(staffed)
 		if err := h.processMaintenance(ctx, w, e.WorldID, e.ID); err != nil {
 			// Observation is an auxiliary projection: retain its atomic baseline
 			// for the next tick, while continuing maintenance for other Wanaxes.
@@ -327,11 +320,20 @@ func computeOfferFraction(fed, total int) float64 {
 
 // applyTempleOffering charges every temple its own gift, city by city, and
 // returns how many temples were fed and how many workers serve those temples.
-func (h *TickHandler) applyTempleOffering(ctx context.Context, playerID, worldID uuid.UUID, workers map[uuid.UUID]int) (fed, total int, fedWorkers float64) {
+func (h *TickHandler) applyTempleOffering(ctx context.Context, playerID, worldID uuid.UUID) (fed, total int, fedWorkers float64) {
 	values, err := religion.LoadDivineValues(ctx, h.pool, worldID)
 	if err != nil {
 		slog.Error("temple offering valuations", "err", err)
 		return 0, 0, 0
+	}
+	temples, err := economy.RealmTemples(ctx, h.pool, playerID, worldID)
+	if err != nil {
+		slog.Error("temple offering staffing", "err", err)
+		return 0, 0, 0
+	}
+	workers := map[uuid.UUID]int{}
+	for _, t := range temples {
+		workers[t.BuildingID] = t.Staffed
 	}
 	offers, err := loadTempleOffers(ctx, h.pool, playerID, worldID, values)
 	if err != nil {
@@ -403,7 +405,7 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 		// (mig 094). A temple with no one tending it is a building, not a cult.
 		devotionGain := w.devotionSum * KharisPerTempleWorker
 		var fedWorkers float64
-		offerFed, offerTotal, fedWorkers = h.applyTempleOffering(ctx, w.playerID, worldID, w.templeWorkers)
+		offerFed, offerTotal, fedWorkers = h.applyTempleOffering(ctx, w.playerID, worldID)
 		offerFraction = computeOfferFraction(offerFed, offerTotal)
 
 		// The gods reckon the offering by what the WORLD can spare, not by a

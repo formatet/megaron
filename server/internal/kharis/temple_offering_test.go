@@ -96,7 +96,7 @@ func TestEarlyTempleOfferingLocalGiftAndProjection(t *testing.T) {
 			if math.Abs(net+.2) > 1e-10 {
 				t.Fatalf("empty local temple borrowed remote goods: net%g", net)
 			}
-			fed, total, _ := h.applyTempleOffering(ctx, pid, wid, nil)
+			fed, total, _ := h.applyTempleOffering(ctx, pid, wid)
 			if fed != 0 || total != 1 {
 				t.Fatalf("empty local fed%d/%d", fed, total)
 			}
@@ -166,5 +166,49 @@ func TestEarlyTempleOfferingScarcityAndDeterministicSubstitutes(t *testing.T) {
 	plan, fed := planTempleOffering(map[string]float64{"grain": .1, "fish": .01, "oil": 999, "wine": 999}, values)
 	if fed || len(plan) != 0 {
 		t.Fatalf("incomplete/late gift should not pay: %v %v", plan, fed)
+	}
+}
+
+// ORDER 15: every temple has its own gift from the city's one store, in god
+// order, and its workers earn kharis only when that temple was fed. Grain for
+// one gift feeds Asterion (first by god ID) and leaves Potnia unfed.
+func TestTemplePerGodOfferFeedsInOrderAndGainFollowsFedTemple(t *testing.T) {
+	pool, wid, sid := newGrowthFixture(t, [6]string{"plains", "plains", "plains", "plains", "plains", "plains"}, 1000)
+	ctx := context.Background()
+	var pid uuid.UUID
+	if err := pool.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id=$1`, sid).Scan(&pid); err != nil {
+		t.Fatal(err)
+	}
+	// Potnia's temple (from the fixture) gets 2 workers, Asterion's 1.
+	staffTestTemple(t, pool, sid, 2)
+	var asterion uuid.UUID
+	if err := pool.QueryRow(ctx, `INSERT INTO buildings(settlement_id,building_type,level,god_id) VALUES($1,'temple',1,'asterion') RETURNING id`, sid).Scan(&asterion); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.Exec(ctx, `INSERT INTO settlement_placement(settlement_id,gubbe_ordinal,target_kind,building_type,good_key,building_id) VALUES($1,3,'building','temple','cult',$2)`, sid, asterion); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.Exec(ctx, `UPDATE settlement_goods SET amount=0,rate=0 WHERE settlement_id=$1`, sid); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.Exec(ctx, `INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick)
+	 VALUES($1,'grain',$2,0,100,current_world_tick()) ON CONFLICT(settlement_id,good_key) DO UPDATE SET amount=$2,rate=0`, sid, TempleOfferingGrain); err != nil {
+		t.Fatal(err)
+	}
+	offers, err := LoadTempleOffers(ctx, pool, pid, wid)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(offers) != 2 || offers[0].GodID != "asterion" || !offers[0].Fed || offers[1].GodID != "potnia" || offers[1].Fed {
+		t.Fatalf("plans: %+v", offers)
+	}
+	h := newTestTickHandler(pool)
+	fed, total, workers := h.applyTempleOffering(ctx, pid, wid)
+	if fed != 1 || total != 2 || workers != 1 {
+		t.Fatalf("fed %d/%d workers %g, want Asterion's one worker", fed, total, workers)
+	}
+	var grain float64
+	if err := pool.QueryRow(ctx, `SELECT amount FROM settlement_goods WHERE settlement_id=$1 AND good_key='grain'`, sid).Scan(&grain); err != nil || grain != 0 {
+		t.Fatalf("grain left %g %v", grain, err)
 	}
 }

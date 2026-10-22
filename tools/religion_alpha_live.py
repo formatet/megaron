@@ -55,7 +55,7 @@ try:
   settlement=city['settlement_id'];province=city['id']
   # Fixture is explicit, scoped to this newly registered city/realm, before
   # user action; this proves temple interaction, not natural temple construction.
-  sql=f"""INSERT INTO buildings(settlement_id,building_type,level) VALUES('{settlement}','temple',3);
+  sql=f"""INSERT INTO buildings(settlement_id,building_type,level,god_id) VALUES('{settlement}','temple',3,'potnia');
   UPDATE settlement_goods SET amount=100,rate=0,calc_tick=current_world_tick() WHERE settlement_id='{settlement}' AND good_key IN('grain','timber','fish','silver');
   UPDATE player_world_records SET kharis_amount=90,kharis_rate=0,kharis_calc_tick=current_world_tick() WHERE world_id='{world}' AND settlement_id='{settlement}';"""
   run('docker','exec',containers[0],'psql','-U','postgres','-d','ro1_proof','-v','ON_ERROR_STOP=1','-c',sql)

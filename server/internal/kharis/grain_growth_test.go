@@ -118,8 +118,8 @@ func newGrowthFixture(t *testing.T, terrains [6]string, pop int) (*pgxpool.Pool,
 		t.Fatalf("seed starter hex-bound buildings: %v", err)
 	}
 	if _, err := pool.Exec(ctx,
-		`INSERT INTO buildings (settlement_id, building_type, level)
-		 SELECT $1, bt, 1 FROM unnest(ARRAY['temple','market']) AS bt`,
+		`INSERT INTO buildings (settlement_id, building_type, level, god_id)
+		 SELECT $1, bt, 1, CASE WHEN bt = 'temple' THEN 'potnia' END FROM unnest(ARRAY['temple','market']) AS bt`,
 		settlementID,
 	); err != nil {
 		t.Fatalf("seed starter city buildings: %v", err)

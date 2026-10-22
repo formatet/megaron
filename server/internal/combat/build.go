@@ -251,7 +251,7 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 	}
 	if godID != nil {
 		completed["god_id"] = *godID
-		completed["name"] = religion.TempleName(*godID)
+		completed["temple"] = religion.TempleName(*godID)
 	}
 	if _, err := h.eventStore.Append(ctx, p.SettlementID, events.StreamProvince, "BuildComplete", completed, e.WorldID, nil); err != nil {
 		slog.Error("record BuildComplete event", "err", err)
@@ -268,7 +268,7 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 		}
 		if godID != nil {
 			body["god_id"] = *godID
-			body["name"] = religion.TempleName(*godID)
+			body["temple"] = religion.TempleName(*godID)
 		}
 		if len(unlockedGoods) > 0 {
 			// Post-P4 there is no auto-allocation: production comes from a

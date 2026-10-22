@@ -15,7 +15,7 @@ func TestAIRound_ShortfallCarriesCurrentRate(t *testing.T) {
 	if _, err := f.pool.Exec(context.Background(), `UPDATE settlement_goods SET amount=22,rate=2,calc_tick=current_world_tick() WHERE settlement_id=$1 AND good_key='stone'`, f.settlementID); err != nil {
 		t.Fatal(err)
 	}
-	code, body := f.do(t, http.MethodPost, f.buildPath(), map[string]any{"building_type": "temple"})
+	code, body := f.do(t, http.MethodPost, f.buildPath(), map[string]any{"building_type": "temple", "god": "potnia"})
 	if code != 422 {
 		t.Fatal(code, body)
 	}

@@ -63,7 +63,9 @@ func newAlphaFixture(t *testing.T) alphaFixture {
 		must(f.pool.QueryRow(ctx, `INSERT INTO provinces(world_id,map_q,map_r,terrain_type) VALUES($1,$2,0,'plains') RETURNING id`, f.world, q).Scan(&province))
 		must(f.pool.QueryRow(ctx, `INSERT INTO settlements(world_id,province_id,name,culture_id,owner_id,control_type,is_capital) VALUES($1,$2,$3,'minoan',$4,'capital',$5) RETURNING id`, f.world, province, "Alpha City", f.player, q == 0).Scan(&city))
 		f.cities = append(f.cities, city)
-		_, err = f.pool.Exec(ctx, `INSERT INTO buildings(settlement_id,building_type,level,god_id) VALUES($1,'temple',1,'potnia')`, city)
+		// One temple per god: each prayer is said at its own god's temple (ORDER 15).
+		_, err = f.pool.Exec(ctx, `INSERT INTO buildings(settlement_id,building_type,level,god_id)
+		 SELECT $1,'temple',1,g FROM unnest(ARRAY['potnia','velchanos','asterion','sea_daimons_stillness']) g`, city)
 		must(err)
 		_, err = f.pool.Exec(ctx, `INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) SELECT $1,key,100,0,1000,100 FROM goods`, city)
 		must(err)

@@ -104,7 +104,11 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 				for _, b := range opts.Buildings {
 					for i, g := range b.Goods {
 						if i == 0 {
-							fmt.Printf("  %-14s L%-2d %s%s\n", b.BuildingType, b.Level, goodCell(g), "")
+							label := b.BuildingType
+							if b.Name != "" {
+								label = b.Name
+							}
+							fmt.Printf("  %-14s L%-2d %s%s\n", label, b.Level, goodCell(g), "")
 						} else {
 							fmt.Printf("  %-14s %-3s %s%s\n", "", "", goodCell(g), "")
 						}

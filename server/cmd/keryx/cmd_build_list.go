@@ -18,6 +18,7 @@ type buildListQuote struct {
 	Q        *int               `json:"hex_q,omitempty"`
 	R        *int               `json:"hex_r,omitempty"`
 	NewSite  bool               `json:"new_site,omitempty"`
+	GodID    string             `json:"god_id,omitempty"`
 }
 
 func listCityBuilds(c *Client, world, prov string) error {
@@ -61,6 +62,7 @@ func listCityBuilds(c *Client, world, prov string) error {
 	fmt.Printf("Construction in %s — prices for the next level, not a reservation.\n", city.Settlement.Name)
 	fmt.Println("Build the same building again to raise its level. Hex rows refer to that exact site; a new hex starts at L1.")
 	fmt.Println("Build queue: `build --queue` shows remaining queue slots.")
+	fmt.Println("A temple is built for one god, one temple per god: `build --type temple --god <god>` (the Site column names the god).")
 	fmt.Printf("%-15s %-12s %-7s %-7s %-42s %-5s %s\n", "Type", "Site", "Current", "Next", "Costs (next level)", "Days", "Purpose / requires")
 	for _, b := range catalogue {
 		for _, q := range city.Settlement.Quotes {
@@ -68,7 +70,9 @@ func listCityBuilds(c *Client, world, prov string) error {
 				continue
 			}
 			site := "city"
-			if q.NewSite {
+			if q.GodID != "" {
+				site = q.GodID
+			} else if q.NewSite {
 				site = "new hex"
 			} else if q.Q != nil && q.R != nil {
 				site = fmt.Sprintf("(%d,%d)", *q.Q, *q.R)

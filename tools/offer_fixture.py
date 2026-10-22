@@ -14,7 +14,7 @@ INSERT INTO provinces(id,world_id,map_q,map_r,terrain_type) VALUES('{pid}','{wor
 INSERT INTO settlements(id,world_id,province_id,name,culture_id,owner_id,control_type,is_capital,population) VALUES('{sid}','{world}','{pid}','Mycenae','minoan','{owner}','capital',true,1200);
 UPDATE players SET wanax_name='Nestor of Mycenae' WHERE id='{owner}';
 UPDATE player_world_records SET kharis_amount=100,kharis_rate=0,kharis_cap=100,kharis_calc_tick=current_world_tick() WHERE player_id='{owner}' AND world_id='{world}';
-INSERT INTO buildings(settlement_id,building_type,level) VALUES('{sid}','temple',1);
+INSERT INTO buildings(settlement_id,building_type,level,god_id) VALUES('{sid}','temple',1,'potnia');
 INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) SELECT '{sid}',g,2000,0,5000,current_world_tick() FROM unnest(ARRAY['oil','wine','grain']) g;
 COMMIT;""")
 d=api(f'worlds/{world}/provinces/{pid}',token);prayers=d['settlement']['available_prayers'];assert len(prayers)==3 and all(p['affordable'] for p in prayers),prayers

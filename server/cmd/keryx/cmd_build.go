@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"formatet/megaron/server/internal/religion"
 	"github.com/spf13/cobra"
 )
 
@@ -32,7 +33,7 @@ func parseHexFlag(s string) (q, r int, err error) {
 func buildCmd() *cobra.Command {
 	var buildingType string
 	var provinceID string
-	var hexFlag string
+	var hexFlag, god string
 	var list bool
 	var queue bool
 
@@ -97,6 +98,9 @@ func buildCmd() *cobra.Command {
 				prov = resolved
 			}
 			body := map[string]any{"building_type": buildingType}
+			if god != "" {
+				body["god"] = god
+			}
 			effectLine := ""
 			if hexFlag != "" {
 				q, r, _, perr := resolveHexFlag(c, cfg.WorldID, prov, hexFlag)
@@ -127,6 +131,8 @@ func buildCmd() *cobra.Command {
 					fmt.Println(effectLine)
 				}
 				fmt.Printf("Construction queued: %s @ (%s)\n", buildingType, hexFlag)
+			} else if god != "" {
+				fmt.Printf("Construction queued: %s\n", religion.TempleName(god))
 			} else {
 				fmt.Printf("Construction queued: %s\n", buildingType)
 			}
@@ -137,6 +143,7 @@ func buildCmd() *cobra.Command {
 	cmd.Flags().SortFlags = false
 	cmd.Flags().StringVar(&provinceID, "province", "", "province ID to build in (default: your capital)")
 	cmd.Flags().StringVarP(&buildingType, "type", "t", "", "building type (omit to see list)")
+	cmd.Flags().StringVar(&god, "god", "", "the god a temple is built for (one temple per god and city): "+religion.TempleGodIDs())
 	cmd.Flags().StringVar(&hexFlag, "hex", "", "catchment q,r or ordinal 6/#6 — required for hex-bound building types")
 	cmd.Flags().BoolVar(&list, "list", false, "show the building catalogue and exit")
 	cmd.Flags().BoolVar(&queue, "queue", false, "show this settlement's build queue (with queue IDs for cancel-build) and exit")
@@ -182,7 +189,7 @@ func printBuildQueue(c *Client, worldID, provinceID string) error {
 	fmt.Println(strings.Repeat("─", 90))
 	for _, it := range bq {
 		m, _ := it.(map[string]any)
-		t, _ := m["type"].(string)
+		t := buildingLabel(m)
 		id, _ := m["id"].(string)
 		ca, _ := m["complete_at"].(string)
 		fmt.Printf("%-14s  %-38s  %s\n", t, id, buildQueueETA(c, ca))

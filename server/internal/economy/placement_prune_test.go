@@ -18,6 +18,10 @@ func TestPrunePlacementsToPopulation_S1bOrder(t *testing.T) {
 
 	settlementID := seedFullRingFixture(t, 100 /*pop*/, 250, "plains") // floor(250/100) = 2
 	placeBuildingGubbe(t, pool, settlementID, 1, "foundry", GoodBronze)
+	// A temple worker stands at a real temple (mig 202).
+	if _, err := pool.Exec(ctx, `INSERT INTO buildings(settlement_id,building_type,level,god_id) VALUES($1,'temple',1,'potnia')`, settlementID); err != nil {
+		t.Fatal(err)
+	}
 	placeBuildingGubbe(t, pool, settlementID, 2, "temple", GoodCult)
 	placeHexGubbe(t, pool, settlementID, 3, hexRing0(t)[0], GoodGrain)
 	placeHexGubbe(t, pool, settlementID, 4, hexRing0(t)[1], GoodGrain)
