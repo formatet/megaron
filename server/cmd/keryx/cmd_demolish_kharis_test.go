@@ -86,3 +86,10 @@ func TestTempleDemolitionNotificationSummary(t *testing.T) {
 		}
 	}
 }
+
+func TestTempleDemolitionUsesGodDisplayName(t *testing.T) {
+	text := demolitionKharisText(demolitionKharis{GodID: "sea_daimons_stillness", GodName: "Sea Daimons of Stillness"})
+	if !strings.Contains(text, "Sea Daimons of Stillness is angered") || strings.Contains(text, "sea_daimons_stillness") {
+		t.Fatal(text)
+	}
+}

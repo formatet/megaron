@@ -32,3 +32,8 @@ test('temple confirmation and result use actual server loss and ceiling, includi
     assert.doesNotMatch(text, /−30/);
   }
 });
+
+test('temple consequence uses the god display name rather than its technical key', () => {
+ const text=demolishPrompt('Temple', {god_id:'sea_daimons_stillness',god_name:'Sea Daimons of Stillness',kharis_loss:10,kharis_before:60,kharis_after:50,cap_before:75,cap_after:50});
+ assert.match(text,/Sea Daimons of Stillness is angered/); assert.doesNotMatch(text,/sea_daimons_stillness/);
+});

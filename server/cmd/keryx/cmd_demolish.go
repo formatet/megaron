@@ -158,6 +158,7 @@ func deleteBuilding(c *Client, worldID, provinceID, buildingID string) ([]byte, 
 }
 
 type demolitionKharis struct {
+	GodName         string  `json:"god_name"`
 	GodID           string  `json:"god_id"`
 	Level           int     `json:"level"`
 	PenaltyPerLevel float64 `json:"penalty_per_level"`
@@ -169,5 +170,9 @@ type demolitionKharis struct {
 }
 
 func demolitionKharisText(k demolitionKharis) string {
-	return fmt.Sprintf("The god %s is angered: kharis −%g (%g → %g; floor 1). Realm ceiling %g → %g. A lower ceiling stops growth; it does not cut existing kharis. Above the ceiling, ordinary daily upkeep continues and temple gains do not offset it.", k.GodID, k.KharisLoss, k.KharisBefore, k.KharisAfter, k.CapBefore, k.CapAfter)
+	godName := k.GodName
+	if godName == "" {
+		godName = k.GodID
+	}
+	return fmt.Sprintf("The god %s is angered: kharis −%g (%g → %g; floor 1). Realm ceiling %g → %g. A lower ceiling stops growth; it does not cut existing kharis. Above the ceiling, ordinary daily upkeep continues and temple gains do not offset it.", godName, k.KharisLoss, k.KharisBefore, k.KharisAfter, k.CapBefore, k.CapAfter)
 }
