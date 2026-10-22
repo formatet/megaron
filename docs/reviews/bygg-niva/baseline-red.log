@@ -1,0 +1,114 @@
+TAP version 13
+# Subtest: BK1: mine is buildable from the catalogue (was missing entirely from the old hardcoded list)
+ok 1 - BK1: mine is buildable from the catalogue (was missing entirely from the old hardcoded list)
+  ---
+  duration_ms: 0.90511
+  type: 'test'
+  ...
+# Subtest: silver_mine is gone from the Construct label map — an unlabelled fallback would betray a stale catalogue entry
+ok 2 - silver_mine is gone from the Construct label map — an unlabelled fallback would betray a stale catalogue entry
+  ---
+  duration_ms: 0.185781
+  type: 'test'
+  ...
+# Subtest: BK2: costs are read from the catalogue, not hardcoded — mutating the fixture mutates the rendered string
+ok 3 - BK2: costs are read from the catalogue, not hardcoded — mutating the fixture mutates the rendered string
+  ---
+  duration_ms: 0.175279
+  type: 'test'
+  ...
+# Subtest: BK3: cost rounding matches the CLI (%.0f per good, cmd_build.go), not the pre-mig-136 hardcoded values
+ok 4 - BK3: cost rounding matches the CLI (%.0f per good, cmd_build.go), not the pre-mig-136 hardcoded values
+  ---
+  duration_ms: 0.165805
+  type: 'test'
+  ...
+# Subtest: BK4: an option is name and price only — no purpose, no requires tail (Timothy 2026-09-30: too long)
+ok 5 - BK4: an option is name and price only — no purpose, no requires tail (Timothy 2026-09-30: too long)
+  ---
+  duration_ms: 0.14712
+  type: 'test'
+  ...
+# Subtest: BK6: wall keeps its old hardcoded upgrade-ladder copy — the catalogue entry has no upgrade_costs for it (stop condition, megaron_plan_byggkatalogen_i_webben.md §7)
+ok 6 - BK6: wall keeps its old hardcoded upgrade-ladder copy — the catalogue entry has no upgrade_costs for it (stop condition, megaron_plan_byggkatalogen_i_webben.md §7)
+  ---
+  duration_ms: 0.117913
+  type: 'test'
+  ...
+# Subtest: HX1: a valid, empty hex renders as a build option with its coords and terrain
+ok 7 - HX1: a valid, empty hex renders as a build option with its coords and terrain
+  ---
+  duration_ms: 0.251289
+  type: 'test'
+  ...
+# Subtest: HX2: a hex missing from valid_hexes_for_building but already carrying a SAME-type building is offered as an upgrade
+ok 8 - HX2: a hex missing from valid_hexes_for_building but already carrying a SAME-type building is offered as an upgrade
+  ---
+  duration_ms: 0.122501
+  type: 'test'
+  ...
+# Subtest: HX3: a hex carrying a DIFFERENT-type building is not offered at all
+ok 9 - HX3: a hex carrying a DIFFERENT-type building is not offered at all
+  ---
+  duration_ms: 0.3807
+  type: 'test'
+  ...
+# Subtest: HX4: a hex present in both lists is rendered once, as a build option (valid_hexes_for_building wins)
+ok 10 - HX4: a hex present in both lists is rendered once, as a build option (valid_hexes_for_building wins)
+  ---
+  duration_ms: 0.318751
+  type: 'test'
+  ...
+# Subtest: HX4b: server effect strings are escaped, and a missing effect leaves no dangling dash
+ok 11 - HX4b: server effect strings are escaped, and a missing effect leaves no dangling dash
+  ---
+  duration_ms: 0.198787
+  type: 'test'
+  ...
+# Subtest: HX5: no placement-options data yet renders no options, not an error
+ok 12 - HX5: no placement-options data yet renders no options, not an error
+  ---
+  duration_ms: 0.060065
+  type: 'test'
+  ...
+# Subtest: B1: the wall option shows the next rung, greyed with its reason until the Granary is high enough
+ok 13 - B1: the wall option shows the next rung, greyed with its reason until the Granary is high enough
+  ---
+  duration_ms: 8.533602
+  type: 'test'
+  ...
+# Subtest: ORDER17: standing shipyard quotes its next level instead of L1
+not ok 14 - ORDER17: standing shipyard quotes its next level instead of L1
+  ---
+  duration_ms: 0.583254
+  type: 'test'
+  location: '/home/tk/wt/codex-bygg-niva/web/static/js/megaron/ui/drawers/city.test.mjs:133:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /L1.*L2/. Input:
+    
+    '<option value="shipyard">Shipyard — 24 timber 12 stone</option>'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: '<option value="shipyard">Shipyard — 24 timber 12 stone</option>'
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-bygg-niva/web/static/js/megaron/ui/drawers/city.test.mjs:135:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 13
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 66.141558

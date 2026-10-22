@@ -39,7 +39,7 @@ A farm, mine, lumbermill or stonequarry makes **space for four more workers** on
 
 Buildings level up to three. **A higher level makes every worker on the hex produce more** — see the rule above.
 
-Levelling a Harbour, Shipyard or Temple further also needs **cedar**, which is scarce and often only available by [[trade]].
+Building the same building again raises it by one level; for a hex building, choose the same hex. **Levels 2 and 3 of a Harbour, Shipyard or Temple** also need **cedar**, which is scarce and often only available by [[trade]].
 
 A building costs what it is made of: **timber** for the Farm, Market, Stable, Harbour, Shipyard and Palisade; **stone** for the Stone Quarry, Mine, Barracks, Temple and Stone Wall. The prices are shown live in Construct. If you are short of timber, your **cedar** pays the difference one for one — in buildings, ships and chariots alike.
 
@@ -57,3 +57,5 @@ A finished building can be torn down so its hex or slot is free for something el
 The place is free at once — the new building then takes its normal time to build ([[catchment]] has the one-building-per-hex rule). **Nothing is refunded**, and anyone working in the building or on the places it made is lifted off and goes idle; they are not lost, and you can place them again ([[citizens]]). A hex keeps its base places, so a demolished farm's field still holds its first workers. A silver deposit gives nothing without its mine, so everyone mining it goes idle.
 
 Something still under construction is not demolished but cancelled, with its cost refunded: the ✕ in the Build queue, or `keryx cancel-build`.
+
+`keryx build --list [city]` and Construct show the current level and the cost of the next level. Without a city name, Keryx uses your capital. Each hex building has its own level and upgrade price. A refusal names the building and the level it would reach.

@@ -418,6 +418,11 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 		validHexesForBuilding[string(bt)] = list
 	}
 
+	buildQuotes, qerr := loadBuildQuotes(r.Context(), h.pool, settlementID)
+	if qerr != nil {
+		writeError(w, 500, "could not load build quotes")
+		return
+	}
 	totalGubbar := population / 100
 	writeJSON(w, http.StatusOK, map[string]any{
 		"hexes":                    hexes,
@@ -425,6 +430,7 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 		"total_gubbar":             totalGubbar,
 		"pool_size":                totalGubbar - placed.Total,
 		"valid_hexes_for_building": validHexesForBuilding,
+		"build_quotes":             buildQuotes,
 	})
 }
 

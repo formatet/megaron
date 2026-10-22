@@ -227,8 +227,10 @@ func apiError(body []byte, status int) error {
 		return fmt.Errorf("not logged in, or your session has expired — run `keryx login` (HTTP 401)")
 	}
 	var e struct {
-		Error   string `json:"error"`
-		Missing []struct {
+		Error        string          `json:"error"`
+		Message      string          `json:"message"`
+		BuildContext json.RawMessage `json:"build_context"`
+		Missing      []struct {
 			Good string  `json:"good"`
 			Need float64 `json:"need"`
 			Have float64 `json:"have"`
@@ -236,6 +238,9 @@ func apiError(body []byte, status int) error {
 		} `json:"missing"`
 	}
 	if err := json.Unmarshal(body, &e); err == nil && e.Error != "" {
+		if len(e.BuildContext) > 0 && e.Message != "" {
+			return fmt.Errorf("%s (HTTP %d)", e.Message, status)
+		}
 		if len(e.Missing) > 0 {
 			parts := make([]string, len(e.Missing))
 			for i, m := range e.Missing {

@@ -101,6 +101,7 @@ export function fmtAgo(iso) {
 // the plain error string exactly as every call site did before, so this is
 // additive, not a behaviour change for the common non-goods case.
 export function formatApiError(data, fallback) {
+  if (data?.build_context && data.message) return data.message;
   if (data && data.error === 'insufficient_goods' && Array.isArray(data.missing) && data.missing.length) {
     const parts = data.missing.map(m => {
       const need = Math.round(Number(m.need) || 0);

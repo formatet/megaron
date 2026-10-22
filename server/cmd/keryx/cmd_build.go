@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -74,112 +73,17 @@ func buildCmd() *cobra.Command {
 				return printBuildQueue(c, cfg.WorldID, prov)
 			}
 
-			// --list (or no --type): show the building catalogue and exit.
+			// The list quotes the selected city's next construction targets.
 			if list || buildingType == "" {
-				data, err := c.get("/api/v1/buildings")
-				if err != nil {
-					return err
+				prov := cfg.ProvinceID
+				if provinceID != "" {
+					resolved, err := resolveProvince(c, cfg.WorldID, provinceID)
+					if err != nil {
+						return err
+					}
+					prov = resolved
 				}
-				if jsonMode {
-					printRawJSON(data)
-					return nil
-				}
-				var catalogue []struct {
-					Type             string                        `json:"type"`
-					Costs            map[string]float64            `json:"costs"`
-					CostSilver       float64                       `json:"cost_silver"`
-					DurationGameDays int                           `json:"duration_game_days"`
-					RequiresCoastal  bool                          `json:"requires_coastal"`
-					RequiresDeposits []string                      `json:"requires_deposits"`
-					RequiresTerrain  []string                      `json:"requires_terrain"`
-					Purpose          string                        `json:"purpose"`
-					MaxLevel         int                           `json:"max_level"`
-					UpgradeCosts     map[string]map[string]float64 `json:"upgrade_costs"`
-					HexBound         bool                          `json:"hex_bound"`
-					WallLadder       []struct {
-						Level         int `json:"level"`
-						RequiresSilo  int `json:"requires_silo"`
-						PopulationCap int `json:"population_cap"`
-					} `json:"wall_ladder"`
-				}
-				if err := json.Unmarshal(data, &catalogue); err != nil {
-					return err
-				}
-				fmt.Println("Build queue: `build --queue` shows how many slots your settlement has left.")
-				fmt.Println("Producing buildings level up: build the same one again to raise its level.")
-				fmt.Println("A workplace's level is how many citizens it can employ on that good — labor")
-				fmt.Println("allocated beyond it is not served. Levels beyond 1 cost cedar (see Lvl below).")
-				fmt.Println()
-				fmt.Printf("%-14s  %-28s  %-6s  %-22s  %-26s  %s\n", "Type", "Costs (L1)", "Days", "Levels", "Requires", "Purpose")
-				fmt.Println(strings.Repeat("─", 126))
-				for _, b := range catalogue {
-					// Format costs: "timber×50 stone×20"
-					costParts := make([]string, 0, len(b.Costs))
-					for g, q := range b.Costs {
-						costParts = append(costParts, fmt.Sprintf("%s×%.0f", g, q))
-					}
-					sort.Strings(costParts)
-					if b.CostSilver > 0 {
-						costParts = append(costParts, fmt.Sprintf("silver×%.0f", b.CostSilver))
-					}
-					costStr := strings.Join(costParts, " ")
-
-					// Format gate requirements
-					reqs := []string{}
-					if b.HexBound {
-						// megaron_plan_byggnad_pa_hex.md §A: farm/mine/lumbermill/
-						// stonequarry are placed on ONE catchment hex and only affect
-						// that hex — the player must pick one with --hex q,r.
-						reqs = append(reqs, "hex-bound — pick with --hex q,r")
-					}
-					if b.RequiresCoastal {
-						reqs = append(reqs, "coastal city (sea or river)")
-					}
-					for _, d := range b.RequiresDeposits {
-						reqs = append(reqs, d+" deposit")
-					}
-					if len(b.RequiresTerrain) > 0 {
-						// P10 (soak 2026-07-18): buildings whose ENTIRE production is
-						// terrain-locked (e.g. winery — hills/plains/scrub_maquis, no
-						// NULL-terrain fallback rule) produced nothing off those
-						// terrains, silently, until you tried it. Surface the
-						// requirement up front.
-						reqs = append(reqs, strings.Join(b.RequiresTerrain, "/")+" terrain")
-					}
-					if len(b.WallLadder) > 0 {
-						// The wall is the population ceiling; each level needs the same
-						// Granary level (type silo).
-						steps := make([]string, 0, len(b.WallLadder))
-						for _, w := range b.WallLadder {
-							steps = append(steps, fmt.Sprintf("L%d needs Granary %d, holds %d", w.Level, w.RequiresSilo, w.PopulationCap))
-						}
-						reqs = append(reqs, strings.Join(steps, "; "))
-					}
-					reqStr := strings.Join(reqs, ", ")
-					if reqStr == "" {
-						reqStr = "—"
-					}
-
-					// Lvl column: "1" for a one-instance building, "1-3 +cedar" for a
-					// workplace whose level buys employment capacity.
-					lvlStr := "1"
-					if b.MaxLevel > 1 {
-						cedarParts := make([]string, 0, b.MaxLevel-1)
-						for lv := 2; lv <= b.MaxLevel; lv++ {
-							if costs, ok := b.UpgradeCosts[strconv.Itoa(lv)]; ok && costs["cedar"] > 0 {
-								cedarParts = append(cedarParts, fmt.Sprintf("L%d×%.0f", lv, costs["cedar"]))
-							}
-						}
-						lvlStr = fmt.Sprintf("1-%d", b.MaxLevel)
-						if len(cedarParts) > 0 {
-							lvlStr += " cedar " + strings.Join(cedarParts, "/")
-						}
-					}
-
-					fmt.Printf("%-14s  %-28s  %-6d  %-22s  %-26s  %s\n",
-						b.Type, costStr, b.DurationGameDays, lvlStr, reqStr, b.Purpose)
-				}
-				return nil
+				return listCityBuilds(c, cfg.WorldID, prov)
 			}
 
 			// Default to the capital; --province lets you build in any province you own
