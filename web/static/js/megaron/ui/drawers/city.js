@@ -222,6 +222,19 @@ export async function startBuild() {
 // field), fetched fresh each time since occupancy changes with every build
 // (unlike the catalogue, this is NOT memoized).
 let buildTypeSeq = 0;
+let cityBuildQuotes = [];
+function showBuildQuote(quote) {
+ const el=document.getElementById("city-build-quote");if(el)el.innerHTML=buildQuoteHTML(quote);
+ const button=document.querySelector("#city-bld-sec button[onclick=\"startBuild()\"]");if(button)button.disabled=!quote || quote.at_max_level;
+}
+export function buildQuoteHTML(quote) {
+ if(!quote)return '<p class="empty-state">Build price unavailable.</p>';
+ const name=esc(_BLD_LBL[quote.type]||quote.type);
+ if(quote.at_max_level)return `<p class="empty-state">${name} L${quote.current_level} — maximum level.</p>`;
+ return `<p class="empty-state">${name}: L${quote.current_level} → L${quote.next_level}<br>${esc(fmtBuildCost(quote))} · ${fmtDays(quote.duration_game_days)}</p>`;
+}
+
+
 export async function onCityBuildTypeChange(preferredHex) {
   const typeSel = document.getElementById('city-build-select');
   const hexSel = document.getElementById('city-build-hex');
@@ -233,6 +246,7 @@ export async function onCityBuildTypeChange(preferredHex) {
   if (seq !== buildTypeSeq) return;
   const entry = (catalogue || []).find(e => e.type === typeSel.value);
   if (!entry || !entry.hex_bound) {
+    showBuildQuote(cityBuildQuotes.find(q=>q.type===entry?.type && !q.new_site && q.hex_q==null));
     hexSel.style.display = 'none';
     hexSel.innerHTML = '';
     return;
@@ -248,10 +262,12 @@ export async function onCityBuildTypeChange(preferredHex) {
   // A hex the player picked while this refresh was pending survives if it is
   // still a valid choice.
   const chosen = preferredHex || hexSel.value;
-  const html = hexBuildOptionsHTML(entry.type, placementOpts);
+  const html = hexBuildOptionsHTML(entry.type, placementOpts, placementOpts?.build_quotes || []);
   hexSel.innerHTML = html || '<option value="">(no valid catchment hex)</option>';
   if (chosen && [...hexSel.options].some(o => o.value === chosen)) hexSel.value = chosen;
   hexSel.style.display = 'block';
+  hexSel.onchange=()=>{const [q,r]=hexSel.value.split(',').map(Number);const quotes=placementOpts?.build_quotes||[];showBuildQuote(quotes.find(x=>x.type===entry.type && x.hex_q===q && x.hex_r===r)||quotes.find(x=>x.type===entry.type && x.new_site));};
+  hexSel.onchange();
 }
 
 // Recipe catalogue (GET /api/v1/recipes) — static for a world's lifetime, so
@@ -358,11 +374,17 @@ export function buildingOptionsHTML(catalogue, ctx) {
   return (catalogue || []).map(entry => {
     if (entry.type === 'wall') return wallOptionHTML(entry, ctx);
     const label = _BLD_LBL[entry.type] || entry.type;
-    const costStr = fmtBuildCost(entry);
+    if (entry.hex_bound && ctx?.buildQuotes) return `<option value="${entry.type}">${label} — choose a hex for its level and price</option>`;
+    const hasQuotes = ctx && Object.hasOwn(ctx, 'buildQuotes');
+    const quote = (ctx?.buildQuotes || []).find(q => q.type === entry.type && !q.new_site && q.hex_q == null);
+    if (hasQuotes && !quote) return `<option value="${entry.type}" disabled>${label} — price unavailable</option>`;
+    if (quote?.at_max_level) return `<option value="${entry.type}" disabled>${label} L${quote.current_level} — maximum level</option>`;
+    const costStr = fmtBuildCost(quote || entry);
+    const level = quote ? ` L${quote.current_level} → L${quote.next_level}` : '';
     // Name and price only (Timothy 2026-09-30: the purpose/requires tail made
     // the list too long). Gates still hold: the hex picker only offers valid
     // hexes and the server's refusal names the missing condition.
-    return `<option value="${entry.type}">${label} — ${costStr}</option>`;
+    return `<option value="${entry.type}">${label}${level} — ${costStr}</option>`;
   }).join('');
 }
 
@@ -380,7 +402,9 @@ export function buildingOptionsHTML(catalogue, ctx) {
 // building of this exact type already standing there, and as "build"
 // otherwise. No client-side catchment/terrain validation is invented here —
 // both lists come straight from the server.
-export function hexBuildOptionsHTML(buildingType, placementOpts) {
+export function hexBuildOptionsHTML(buildingType, placementOpts, quotes) {
+  const price = (q,r) => quotes?.find(x=>x.type===buildingType && x.hex_q===q && x.hex_r===r) || quotes?.find(x=>x.type===buildingType && x.new_site);
+  const priced = (label,q,r) => {const quote=price(q,r);return quote ? (quote.at_max_level ? label + ` — L${quote.current_level}, maximum level` : label + ` — L${quote.current_level} → L${quote.next_level}: ${fmtBuildCost(quote)}`) : label + (quotes ? " — price unavailable" : "");};
   if (!placementOpts) return '';
   const hexesByCoord = new Map((placementOpts.hexes || []).map(h => [`${h.hex_q},${h.hex_r}`, h]));
   const valid = (placementOpts.valid_hexes_for_building || {})[buildingType] || [];
@@ -393,7 +417,7 @@ export function hexBuildOptionsHTML(buildingType, placementOpts) {
     const terrain = h ? terrainLabel(h.terrain) : '';
     // `effect` is the server's formatted string, printed verbatim (escaped).
     const tail = effect ? ` — ${esc(effect)}` : '';
-    rows.push({ q, r, label: `(${q},${r})${terrain ? ' ' + terrain : ''}${tail}` });
+    rows.push({ q, r, label: priced(`(${q},${r})${terrain ? ' ' + terrain : ''}${tail}`,q,r) });
   }
   for (const h of placementOpts.hexes || []) {
     const key = `${h.hex_q},${h.hex_r}`;
@@ -401,11 +425,11 @@ export function hexBuildOptionsHTML(buildingType, placementOpts) {
     if (h.building && h.building.type === buildingType) {
       const terrain = terrainLabel(h.terrain);
       const fx = h.building.upgrade_effect ? `: ${esc(h.building.upgrade_effect)}` : '';
-      const label = `(${h.hex_q},${h.hex_r})${terrain ? ' ' + terrain : ''} — upgrade to L${h.building.level + 1}${fx}`;
+      const label = quotes ? priced(`(${h.hex_q},${h.hex_r})${terrain ? ' ' + terrain : ''}${fx}`,h.hex_q,h.hex_r) : `(${h.hex_q},${h.hex_r})${terrain ? ' ' + terrain : ''} — upgrade to L${h.building.level + 1}${fx}`;
       rows.push({ q: h.hex_q, r: h.hex_r, label });
     }
   }
-  return rows.map(o => `<option value="${o.q},${o.r}">${o.label}</option>`).join('');
+  return rows.map(o => `<option value="${o.q},${o.r}" ${price(o.q,o.r)?.at_max_level ? "disabled" : ""}>${o.label}</option>`).join('');
 }
 
 export async function loadTicklog() {
@@ -541,11 +565,13 @@ async function refreshCityBuildings(provinceID) {
     // lumbermill/stonequarry) — hidden by default, shown and populated by
     // onCityBuildTypeChange() when the selected catalogue entry's hex_bound
     // is true (megaron_plan_byggnad_pa_hex.md §A2).
+    cityBuildQuotes = pd.build_quotes || [];
     const constructHTML = buildingCatalogue ? `
       <select id="city-build-select" class="build-select" onchange="onCityBuildTypeChange()">
-        ${buildingOptionsHTML(buildingCatalogue, { walls: pd.walls, siloLevel: pd.silo_level })}
+        ${buildingOptionsHTML(buildingCatalogue, { walls: pd.walls, siloLevel: pd.silo_level, buildQuotes: pd.build_quotes })}
       </select>
       <select id="city-build-hex" class="build-select" style="display:none;margin-top:.3rem"></select>
+      <div id="city-build-quote"></div>
       <button class="btn-primary btn-small" onclick="startBuild()" style="margin-top:.5rem;width:100%">+ Build</button>`
       : `<p class="empty-state">Could not load the building catalogue — try again.</p>
       <button class="btn-primary btn-small" disabled style="margin-top:.5rem;width:100%">+ Build</button>`;

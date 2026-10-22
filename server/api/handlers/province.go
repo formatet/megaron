@@ -260,6 +260,12 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		}
 		silverStock := sett.Resources.Silver.Current(now)
 
+		buildQuotes, qerr := loadBuildQuotes(r.Context(), h.pool, sett.ID)
+		if qerr != nil {
+			writeError(w, http.StatusInternalServerError, "could not load build quotes")
+			return
+		}
+
 		// can_afford per building. For a producing building that already stands, the
 		// next build raises its LEVEL, so affordability must be quoted against the
 		// next level's cost (base + cedar) — quoting level 1 would tell a Wanax they
@@ -760,6 +766,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"build_queue_max":                  maxParallelBuilds,
 			"training_units":                   trainingUnits,
 			"buildings":                        buildings,
+			"build_quotes":                     buildQuotes,
 			"can_afford":                       buildAfford,
 			"can_recruit":                      recruitAfford,
 			"available_prayers":                prayers,
@@ -1251,6 +1258,12 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 	bType := province.BuildingType(req.BuildingType)
 	isWall := req.BuildingType == "wall"
 
+	currentLevel := 0
+	var buildCity string
+	if err := h.pool.QueryRow(r.Context(), `SELECT name FROM settlements WHERE id=$1`, settlementID).Scan(&buildCity); err != nil {
+		writeError(w, 500, "could not load build city")
+		return
+	}
 	if !isWall && !province.LevelledBuildings[bType] {
 		var alreadyBuilt bool
 		_ = h.pool.QueryRow(r.Context(),
@@ -1280,9 +1293,10 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 				settlementID, req.BuildingType,
 			).Scan(&lvl)
 		}
+		currentLevel = lvl
 		if lvl >= province.MaxBuildingLevel {
 			writeError(w, http.StatusUnprocessableEntity,
-				fmt.Sprintf("%s is already at maximum level (%d)", req.BuildingType, province.MaxBuildingLevel))
+				(buildErrorContext{BuildQuote: quoteBuild(bType, lvl, req.HexQ, req.HexR, false), City: buildCity}).message(""))
 			return
 		}
 		nextSpec, specOK := province.LevelledSpec(bType, lvl+1)
@@ -1296,8 +1310,9 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		_ = h.pool.QueryRow(r.Context(),
 			`SELECT wall_level FROM settlements WHERE id = $1`, settlementID,
 		).Scan(&wl)
+		currentLevel = wl
 		if wl >= 3 {
-			writeError(w, http.StatusUnprocessableEntity, "walls are already at maximum (level 3)")
+			writeError(w, http.StatusUnprocessableEntity, (buildErrorContext{BuildQuote: quoteBuild(bType, wl, nil, nil, false), City: buildCity}).message(""))
 			return
 		}
 		// The wall is the population ceiling, and it may not outgrow the stores:
@@ -1310,6 +1325,7 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		spec = province.WallLevelSpecs[wl+1]
 	}
 
+	buildContext := buildErrorContext{BuildQuote: quoteBuild(bType, currentLevel, req.HexQ, req.HexR, false), City: buildCity}
 	var queueDepth int
 	var dupQueued bool
 	if isHexBound {
@@ -1351,7 +1367,7 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 	if err := deductGoods(r.Context(), tx, settlementID, spec.Costs); err != nil {
 		var insErr *insufficientGoodsError
 		if errors.As(err, &insErr) {
-			writeGoodsError(w, insErr)
+			writeGoodsError(w, insErr, buildContext)
 		} else {
 			writeError(w, http.StatusInternalServerError, "could not deduct resources")
 		}
@@ -1369,8 +1385,7 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 				`SELECT settled(amount, rate, calc_tick) FROM settlement_goods
 				  WHERE settlement_id = $1 AND good_key = 'silver'`,
 				settlementID).Scan(&have)
-			writeError(w, http.StatusUnprocessableEntity,
-				fmt.Sprintf("insufficient silver (%s)", shortfall(spec.CostSilver, have)))
+			writeGoodsError(w, &insufficientGoodsError{Short: []goodShortfall{{Good: "silver", Need: spec.CostSilver, Have: have}}}, buildContext)
 			return
 		}
 	}

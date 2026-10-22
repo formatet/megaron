@@ -1,3 +1,5 @@
+> Historisk inventering före kod. Claude godkände quote-/hex-formatet 18:42; implementation pågår enligt det beslutet.
+
 # ORDER 17 — inventering före kod
 
 Bas `ea97b332`, egen gren `codex/bygg-niva`, worktree `/home/tk/wt/codex-bygg-niva`.

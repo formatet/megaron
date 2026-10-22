@@ -129,3 +129,14 @@ test('B1: the wall option shows the next rung, greyed with its reason until the 
   assert.match(open, /20 timber 40 stone/);
   assert.match(wallOptionHTML(wall, { walls: 3, siloLevel: 3 }), /highest level/);
 });
+
+test('ORDER17: standing shipyard quotes its next level instead of L1',()=>{
+ const html=buildingOptionsHTML([{type:'shipyard',costs:{timber:24,stone:12}}],{buildQuotes:[{type:'shipyard',current_level:1,next_level:2,costs:{timber:48,stone:24,cedar:4}}]});
+ assert.match(html,/L1.*L2/);assert.match(html,/4 cedar/);assert.match(html,/48 timber/);
+});
+
+test('ORDER17: each farm hex has its own next price and max does not offer L4',()=>{
+ const quotes=[{type:'farm',new_site:true,current_level:0,next_level:1,costs:{timber:10}},{type:'farm',hex_q:1,hex_r:0,current_level:1,next_level:2,costs:{timber:20}},{type:'farm',hex_q:0,hex_r:1,current_level:3,next_level:null,at_max_level:true}];
+ const html=hexBuildOptionsHTML('farm',{valid_hexes_for_building:{farm:[{q:-1,r:0}]},hexes:[{hex_q:1,hex_r:0,terrain:'plains',building:{type:'farm',level:1}},{hex_q:0,hex_r:1,terrain:'plains',building:{type:'farm',level:3}}]},quotes);
+ assert.match(html,/L0 → L1: 10 timber/);assert.match(html,/L1 → L2: 20 timber/);assert.match(html,/value="0,1" disabled/);assert.doesNotMatch(html,/L4/);
+});
