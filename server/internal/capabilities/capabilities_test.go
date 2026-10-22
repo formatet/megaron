@@ -262,7 +262,7 @@ func TestCanRite_LockedWithoutTemple(t *testing.T) {
 func TestCanRite_UnlockedWithTempleAndKharis(t *testing.T) {
 	pool := testPool(t)
 	f := newFixture(t, pool)
-	f.exec(t, `INSERT INTO buildings (settlement_id, building_type) VALUES ($1, 'temple')`, f.settlementID)
+	f.exec(t, `INSERT INTO buildings(settlement_id,building_type,god_id) VALUES($1,'temple','potnia')`, f.settlementID)
 	f.exec(t, `INSERT INTO player_world_records (player_id, world_id, kharis_amount, kharis_rate, kharis_calc_tick)
 	           VALUES ($1, $2, 1000, 0, 0)`, f.playerID, f.worldID)
 

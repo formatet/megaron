@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -459,12 +460,15 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			templeOffers = offers
 		}
 
-		// Temple presence — required by the rite handler for any prayer.
-		var hasTemple bool
+		// Temple presence — a prayer needs its own god's temple (ORDER 15); a
+		// legacy prayer without a god takes any temple, as the rite handler does.
+		var templeGods []string
 		_ = h.pool.QueryRow(r.Context(),
-			`SELECT EXISTS(SELECT 1 FROM buildings WHERE settlement_id = $1 AND building_type = 'temple')`,
+			`SELECT coalesce(array_agg(god_id), '{}') FROM buildings WHERE settlement_id = $1 AND building_type = 'temple'`,
 			sett.ID,
-		).Scan(&hasTemple)
+		).Scan(&templeGods)
+		hasTemple := len(templeGods) > 0
+		hasTempleFor := func(god string) bool { return (god == "" && hasTemple) || slices.Contains(templeGods, god) }
 
 		// available_prayers: the settlement culture's prayers with full affordability:
 		// material offering costs + kharis tier gate + temple presence.
@@ -480,6 +484,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			ID                  string             `json:"id"`
 			Name                string             `json:"name"`
 			God                 string             `json:"god"`
+			Temple              string             `json:"temple,omitempty"` // the temple it is prayed at
 			EffectType          string             `json:"effect_type"`
 			Effect              string             `json:"effect"`
 			MinKharis           float64            `json:"min_kharis"`
@@ -522,7 +527,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		prayers := []prayerRow{}
 		for _, pid := range religion.CulturePrayers[string(sett.CultureID)] {
 			spec := religion.PrayerSpecs[pid]
-			afford := hasTemple && kharisNow >= spec.MinKharis
+			afford := hasTempleFor(spec.GodID) && kharisNow >= spec.MinKharis
 			if afford {
 				for g, need := range spec.Offering {
 					if !province.GoodsAffordable(goodsStock[g], need) {
@@ -577,15 +582,22 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				activeRemainingDays = 0
 			}
 			reason := ""
-			if !hasTemple {
+			temple := ""
+			if spec.GodID != "" {
+				temple = religion.TempleName(spec.GodID)
+			}
+			if !hasTempleFor(spec.GodID) {
 				reason = "no temple"
+				if temple != "" {
+					reason = "no " + temple
+				}
 			} else if kharisNow < spec.MinKharis {
 				reason = "insufficient kharis"
 			} else if !afford {
 				reason = "insufficient offering or a waiting time applies"
 			}
 			prayers = append(prayers, prayerRow{DeparturePending: departurePending,
-				ID: spec.ID, Name: spec.Name, God: spec.God, EffectType: spec.EffectType,
+				ID: spec.ID, Name: spec.Name, God: spec.God, Temple: temple, EffectType: spec.EffectType,
 				Default: spec.ID == religion.DefaultBattleFrenzyFor(string(sett.CultureID)), ActiveRemainingDays: activeRemainingDays,
 				Effect:    spec.Description,
 				MinKharis: spec.MinKharis, Offering: spec.Offering, Affordable: afford, UnavailableReason: reason,
@@ -785,6 +797,8 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			// Physical temple workers share the settlement workforce.
 			"temple_staffed":  templeStaff.Staffed,
 			"temple_capacity": templeStaff.Capacity,
+			// One row per god's temple; the two sums above are these added up.
+			"temples": templeRows(templeStaff.Temples),
 			"settlement_cap": map[string]any{
 				"used": settlementsOwned,
 				"max":  province.MaxSettlementsPerWanax,
@@ -3746,3 +3760,22 @@ func harvestBlessingStatus(until *int, currentTick int) any {
 // Population food balance is also the growth gate; army drain is a separate
 // projection, never a change to FoodTick or growth. Shared by both read APIs.
 func foodNetAfterArmy(foodNet, grainUpkeep float64) float64 { return foodNet - grainUpkeep }
+
+type templeRow struct {
+	BuildingID uuid.UUID `json:"building_id"`
+	GodID      string    `json:"god_id"`
+	Name       string    `json:"name"`
+	Level      int       `json:"level"`
+	Staffed    int       `json:"staffed"`
+	Capacity   int       `json:"capacity"`
+}
+
+// templeRows names each temple after its god for every surface (ORDER 15).
+func templeRows(temples []economy.TempleWorkplace) []templeRow {
+	out := make([]templeRow, 0, len(temples))
+	for _, t := range temples {
+		out = append(out, templeRow{BuildingID: t.BuildingID, GodID: t.GodID, Name: religion.TempleName(t.GodID),
+			Level: t.Level, Staffed: t.Staffed, Capacity: t.Capacity})
+	}
+	return out
+}

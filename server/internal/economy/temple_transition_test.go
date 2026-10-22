@@ -18,7 +18,7 @@ func TestTempleTransitionIdleFirstThenNonFoodAndIdempotent(t *testing.T) {
 	}
 	defer tx.Rollback(ctx)
 	// Isolate the transition scope without changing the shared fixture database.
-	if _, err = transitionSeed(ctx, tx, `DELETE FROM settlement_labor; UPDATE temple_staffing_transition SET completed=false; INSERT INTO buildings(settlement_id,building_type,level) VALUES($1,'temple',1); INSERT INTO settlement_labor(settlement_id,good_key,weight) VALUES($1,'cult',.45); INSERT INTO settlement_placement(settlement_id,gubbe_ordinal,target_kind,hex_q,hex_r,good_key) VALUES($1,1,'hex',0,0,'grain'),($1,2,'hex',0,0,'timber'),($1,3,'hex',0,0,'wine'),($1,4,'hex',0,0,'wine')`, sid); err != nil {
+	if _, err = transitionSeed(ctx, tx, `DELETE FROM settlement_labor; UPDATE temple_staffing_transition SET completed=false; INSERT INTO buildings(settlement_id,building_type,level,god_id) VALUES($1,'temple',1,'potnia'); INSERT INTO settlement_labor(settlement_id,good_key,weight) VALUES($1,'cult',.45); INSERT INTO settlement_placement(settlement_id,gubbe_ordinal,target_kind,hex_q,hex_r,good_key) VALUES($1,1,'hex',0,0,'grain'),($1,2,'hex',0,0,'timber'),($1,3,'hex',0,0,'wine'),($1,4,'hex',0,0,'wine')`, sid); err != nil {
 		t.Fatal(err)
 	}
 	if err = transitionTempleStaffing(ctx, tx); err != nil {
@@ -52,7 +52,7 @@ func TestTempleTransitionNeverStealsFood(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer tx.Rollback(ctx)
-	if _, err = transitionSeed(ctx, tx, `DELETE FROM settlement_labor; UPDATE temple_staffing_transition SET completed=false; INSERT INTO buildings(settlement_id,building_type,level) VALUES($1,'temple',1); INSERT INTO settlement_labor(settlement_id,good_key,weight) VALUES($1,'cult',.15); INSERT INTO settlement_placement(settlement_id,gubbe_ordinal,target_kind,hex_q,hex_r,good_key) VALUES($1,1,'hex',0,0,'grain')`, sid); err != nil {
+	if _, err = transitionSeed(ctx, tx, `DELETE FROM settlement_labor; UPDATE temple_staffing_transition SET completed=false; INSERT INTO buildings(settlement_id,building_type,level,god_id) VALUES($1,'temple',1,'potnia'); INSERT INTO settlement_labor(settlement_id,good_key,weight) VALUES($1,'cult',.15); INSERT INTO settlement_placement(settlement_id,gubbe_ordinal,target_kind,hex_q,hex_r,good_key) VALUES($1,1,'hex',0,0,'grain')`, sid); err != nil {
 		t.Fatal(err)
 	}
 	if err = transitionTempleStaffing(ctx, tx); err == nil {

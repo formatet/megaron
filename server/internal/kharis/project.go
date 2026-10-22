@@ -10,7 +10,7 @@ import (
 )
 
 // ProjectDailyNet computes, read-only, the kharis a Wanax would net on the NEXT
-// maintained day: temple workers × KharisPerTempleWorker × offerFraction × scarcity −
+// maintained day: workers at fed temples × KharisPerTempleWorker × scarcity −
 // dailyDecay — the exact formula processMaintenance applies, with the exact same
 // feeding rule (early grain reference or local substitutions to the same divine worth).
 // It exists so `status` can answer "will my kharis rise or fall" honestly: the
@@ -45,11 +45,16 @@ func ProjectDailyNet(ctx context.Context, pool *pgxpool.Pool, playerID, worldID 
 		return 0, false, 0, 0, err
 	}
 
-	staffed, capacity, serr := economy.RealmTempleStaffing(ctx, pool, playerID, worldID)
+	temples, serr := economy.RealmTemples(ctx, pool, playerID, worldID)
 	if serr != nil {
 		return 0, false, 0, 0, serr
 	}
-	devotionSum, devotionCapacity = float64(staffed), float64(capacity)
+	workers := map[uuid.UUID]int{}
+	for _, t := range temples {
+		workers[t.BuildingID] = t.Staffed
+		devotionSum += float64(t.Staffed)
+		devotionCapacity += float64(t.Capacity)
+	}
 
 	dailyDecay := computeDailyDecay(cityCount)
 	if templeCities == 0 {
@@ -63,10 +68,9 @@ func ProjectDailyNet(ctx context.Context, pool *pgxpool.Pool, playerID, worldID 
 		return 0, false, 0, 0, berr
 	}
 	scarcity := scarcityFromValues(values, baseValues, verr)
-	fed := projectFedTemples(ctx, pool, playerID, worldID, values)
-	offerFraction := computeOfferFraction(fed, templeCities)
+	fedWorkers := projectFedWorkers(ctx, pool, playerID, worldID, values, workers)
 
-	gain := devotionSum * KharisPerTempleWorker * offerFraction * scarcity
+	gain := fedWorkers * KharisPerTempleWorker * scarcity
 	return gain - dailyDecay, true, devotionSum, devotionCapacity, nil
 }
 
@@ -89,15 +93,17 @@ func scarcityFromValues(values, baseValues map[string]float64, err error) float6
 }
 
 // projectFedTemples uses the same local gift plan as maintenance and status.
-func projectFedTemples(ctx context.Context, pool *pgxpool.Pool, playerID, worldID uuid.UUID, values map[string]float64) int {
+// projectFedWorkers counts the workers at temples whose own gift is planned
+// in full — the tick's rule, read-only.
+func projectFedWorkers(ctx context.Context, pool *pgxpool.Pool, playerID, worldID uuid.UUID, values map[string]float64, workers map[uuid.UUID]int) float64 {
 	offers, err := loadTempleOffers(ctx, pool, playerID, worldID, values)
 	if err != nil {
 		return 0
 	}
-	fed := 0
+	var fed float64
 	for _, o := range offers {
 		if o.Fed {
-			fed++
+			fed += float64(workers[o.BuildingID])
 		}
 	}
 	return fed

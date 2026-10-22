@@ -62,6 +62,20 @@ func (cc checkContext) hasBuilding(buildingType string) bool {
 	return exists
 }
 
+// hasTempleOf reports whether this settlement holds the temple a prayer is
+// said at (ORDER 15); an empty god (legacy prayer) takes any temple.
+func (cc checkContext) hasTempleOf(godID string) bool {
+	if !cc.hasSettlement() {
+		return false
+	}
+	var exists bool
+	_ = cc.pool.QueryRow(cc.ctx,
+		`SELECT EXISTS(SELECT 1 FROM buildings WHERE settlement_id = $1 AND building_type = 'temple' AND ($2 = '' OR god_id = $2))`,
+		cc.settlementID, godID,
+	).Scan(&exists)
+	return exists
+}
+
 // goodAmount returns the live (lazily-settled) stock of a good at this
 // settlement, mirroring the settled(amount, rate, calc_tick) pattern used by
 // every goods-deducting handler.

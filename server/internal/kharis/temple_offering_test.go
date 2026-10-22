@@ -96,7 +96,7 @@ func TestEarlyTempleOfferingLocalGiftAndProjection(t *testing.T) {
 			if math.Abs(net+.2) > 1e-10 {
 				t.Fatalf("empty local temple borrowed remote goods: net%g", net)
 			}
-			fed, total := h.applyTempleOffering(ctx, pid, wid)
+			fed, total, _ := h.applyTempleOffering(ctx, pid, wid, nil)
 			if fed != 0 || total != 1 {
 				t.Fatalf("empty local fed%d/%d", fed, total)
 			}
@@ -133,7 +133,7 @@ func TestEarlyTempleOfferingMixedGiftAtomic(t *testing.T) {
 	t.Cleanup(func() {
 		_, _ = pool.Exec(ctx, `DROP TRIGGER IF EXISTS reject_early_temple_fish ON settlement_goods; DROP FUNCTION IF EXISTS reject_early_temple_fish()`)
 	})
-	if fed, err := h.chargeTempleOffering(ctx, sid, values); err == nil || fed {
+	if fed, err := h.chargeTempleOffering(ctx, sid, values); err == nil || len(fed) > 0 {
 		t.Fatalf("failed debit fed%v err%v", fed, err)
 	}
 	var grain, fish float64
@@ -146,7 +146,7 @@ func TestEarlyTempleOfferingMixedGiftAtomic(t *testing.T) {
 	if _, err := pool.Exec(ctx, `DROP TRIGGER reject_early_temple_fish ON settlement_goods; DROP FUNCTION reject_early_temple_fish()`); err != nil {
 		t.Fatal(err)
 	}
-	if fed, err := h.chargeTempleOffering(ctx, sid, values); err != nil || !fed {
+	if fed, err := h.chargeTempleOffering(ctx, sid, values); err != nil || len(fed) != 1 {
 		t.Fatalf("retry fed%v err%v", fed, err)
 	}
 	_ = wid

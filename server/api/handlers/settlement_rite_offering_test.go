@@ -125,7 +125,7 @@ func TestRiteOffering_DeductedRegardlessOfOutcome(t *testing.T) {
 			t.Fatalf("create settlement %d: %v", i, err)
 		}
 		if _, err := pool.Exec(ctx,
-			`INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, 'temple', 1)`,
+			`INSERT INTO buildings(settlement_id,building_type,level,god_id) VALUES($1,'temple', 1,'potnia')`,
 			settlementID,
 		); err != nil {
 			t.Fatalf("create temple %d: %v", i, err)
