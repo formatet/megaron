@@ -1,0 +1,9 @@
+» färsk DB på migration 202 · commit 600c0ca4+ändringar
+=== RUN   TestBurdenPlayerScenario
+2026/10/23 00:35:42 INFO player registered id=635fd286-fe49-4c61-8e1e-630577a3ef43 username=alpha-c42e6813-7be9-46b0-a897-5f1ee58bdb0c
+    zz_order24_player_scenario_test.go:47: scenario run1: {"run": 1, "cli_status": true, "api_breakdown": true, "browser_status": true, "page_errors": []}
+2026/10/23 00:35:44 INFO player registered id=f89fccb1-4ca2-4655-b4ad-be7c0ccead36 username=alpha-d664b1e4-a9b4-4bfc-a307-2e028cd1da80
+    zz_order24_player_scenario_test.go:47: scenario run2: {"run": 2, "cli_status": true, "api_breakdown": true, "browser_status": true, "page_errors": []}
+--- PASS: TestBurdenPlayerScenario (4.33s)
+PASS
+ok  	formatet/megaron/server/api/handlers	4.337s

@@ -37,10 +37,13 @@ text='''# ORDER24 — kultförsörjning efter städer och invånare
 
 '''+f"Snapshot {s['observed_at']}, tick{s['tick']}, BEGIN READ ONLY={s['transaction_read_only']}, mig{s['migration']['version']}. Körande healthz: {(out/'healthz.json').read_text().strip()}.\n\n"+'\n'.join(lines)+f'''\n\nNegativt efter: {len(negative)}/{len(rows)} samtliga PWR ({', '.join(negative)}); bland stadsägare {len(negf)}/{len(founded)} ({', '.join(negf)}). Nytt negativt: {', '.join(r['username'] for r in rows if r['old_net']>=0 and r['new_net']<0) or 'ingen'}.
 
-Produktion är planerad nästa ticks brutto från just de tempelgubbar vars eget offer kan betalas, inte nominell kapacitet. Knapphetsfaktor {scarcity:.8f}, härledd från snapshotens gudavärde för korn / goods.labor_value och klämd till1–2. Lokala lager settled() utan påhittad capklämning, tempel i gud-ID-ordning,2platser/nivå. Inga andra framtida förändringar antas. Nettot är före golv/tak. PWR utan städer visas separat från stadsägare; ingen negativ extra-stadterm för0städer.
+Produktion är planerad nästa ticks brutto från just de tempelgubbar vars eget offer kan betalas, inte nominell kapacitet. Knapphetsfaktor {scarcity:.8f}, härledd från snapshotens gudavärde för korn / goods.labor_value och klämd till1–2. Lokala lager settled() utan påhittad capklämning, tempel i gud-ID-ordning,2platser/nivå. Inga andra framtida förändringar antas. Nettot är före golv/tak. PWR utan städer visas separat från stadsägare; ingen negativ extra-stadterm för0städer. Stadsfria raden visar formel/projektionsnetto, inte faktisk Hostdebitering: KharisTick väljer kapitalägare.
 
 Invånarkälla: settlements.population i samma icke-avslutade städer som stadsräkning och tempelläsare (state NOT IN sunk/collapsed/razed); detta är stadsbefolkningen som mat/tillväxt läser. Inte units.size, gubbar avrundade till hundratal eller lagrad födelseprognos.
 
 Ingen kod eller DBskrivning föregick denna simulering. capture.py/snapshot.sql och simulate.py gör underlaget reproducerbart.
 '''
+previous=(out/'README.md').read_text() if (out/'README.md').exists() else ''
+marker='## Kontrakt och implementation'
+if marker in previous:text+='\n'+marker+previous.split(marker,1)[1]
 (out/'README.md').write_text(text);print('\n'.join(lines));print(f'negative {len(negative)}/{len(rows)}; founded {len(negf)}/{len(founded)}')

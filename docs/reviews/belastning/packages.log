@@ -1,0 +1,94 @@
+» färsk DB på migration 202 · commit 600c0ca4+ändringar
+2026/10/23 00:30:30 ERROR starvation observation failed world=8fa08c64-34e2-4a6e-b85c-bbd75e0a6c9c err="persist transition notice: ERROR: new row for relation \"notifications\" violates check constraint \"civil_notice_8fa08c64\" (SQLSTATE 23514)"
+2026/10/23 00:30:30 INFO divine punishment applied settlement=58d38bd7-0014-4675-8b28-7b47f7cb57f8 type=chariot_loss amount=10
+2026/10/23 00:30:30 INFO divine punishment applied settlement=58d38bd7-0014-4675-8b28-7b47f7cb57f8 type=garrison_plague amount=10
+2026/10/23 00:30:30 INFO divine punishment applied settlement=58d38bd7-0014-4675-8b28-7b47f7cb57f8 type=ship_loss amount=1
+2026/10/23 00:30:30 INFO divine punishment applied settlement=58d38bd7-0014-4675-8b28-7b47f7cb57f8 type=harvest_failure amount=200
+2026/10/23 00:30:30 INFO divine punishment applied settlement=58d38bd7-0014-4675-8b28-7b47f7cb57f8 type=ship_loss amount=1
+2026/10/23 00:30:30 INFO divine punishment applied settlement=58d38bd7-0014-4675-8b28-7b47f7cb57f8 type=garrison_plague amount=10
+2026/10/23 00:30:30 INFO divine punishment applied settlement=58d38bd7-0014-4675-8b28-7b47f7cb57f8 type=chariot_loss amount=10
+2026/10/23 00:30:30 INFO divine punishment applied settlement=58d38bd7-0014-4675-8b28-7b47f7cb57f8 type=chariot_loss amount=10
+2026/10/23 00:30:30 INFO divine punishment applied settlement=58d38bd7-0014-4675-8b28-7b47f7cb57f8 type=garrison_plague amount=10
+2026/10/23 00:30:30 INFO divine punishment applied settlement=58d38bd7-0014-4675-8b28-7b47f7cb57f8 type=chariot_loss amount=10
+2026/10/23 00:30:30 INFO divine punishment applied settlement=58d38bd7-0014-4675-8b28-7b47f7cb57f8 type=ship_loss amount=1
+2026/10/23 00:30:30 INFO divine punishment applied settlement=58d38bd7-0014-4675-8b28-7b47f7cb57f8 type=ship_loss amount=1
+2026/10/23 00:30:30 INFO divine punishment applied settlement=58d38bd7-0014-4675-8b28-7b47f7cb57f8 type=harvest_failure amount=200
+2026/10/23 00:30:30 INFO divine punishment applied settlement=58d38bd7-0014-4675-8b28-7b47f7cb57f8 type=harvest_failure amount=200
+2026/10/23 00:30:30 INFO divine punishment applied settlement=58d38bd7-0014-4675-8b28-7b47f7cb57f8 type=chariot_loss amount=10
+2026/10/23 00:30:30 INFO divine punishment applied settlement=58d38bd7-0014-4675-8b28-7b47f7cb57f8 type=ship_loss amount=1
+2026/10/23 00:30:30 INFO divine blessing applied settlement=16ecbf86-9790-4a6b-9d5b-77f1c5c5b091 type=bountiful_harvest amount=25
+2026/10/23 00:30:30 INFO divine blessing applied settlement=16ecbf86-9790-4a6b-9d5b-77f1c5c5b091 type=divine_recruits amount=10
+2026/10/23 00:30:30 INFO divine blessing applied settlement=16ecbf86-9790-4a6b-9d5b-77f1c5c5b091 type=divine_recruits amount=10
+2026/10/23 00:30:30 INFO divine blessing applied settlement=16ecbf86-9790-4a6b-9d5b-77f1c5c5b091 type=divine_recruits amount=10
+2026/10/23 00:30:30 INFO divine blessing applied settlement=16ecbf86-9790-4a6b-9d5b-77f1c5c5b091 type=divine_recruits amount=10
+2026/10/23 00:30:30 INFO divine blessing applied settlement=16ecbf86-9790-4a6b-9d5b-77f1c5c5b091 type=divine_recruits amount=10
+2026/10/23 00:30:30 INFO divine blessing applied settlement=16ecbf86-9790-4a6b-9d5b-77f1c5c5b091 type=bountiful_harvest amount=25
+2026/10/23 00:30:30 INFO divine blessing applied settlement=16ecbf86-9790-4a6b-9d5b-77f1c5c5b091 type=divine_recruits amount=10
+2026/10/23 00:30:30 INFO divine blessing applied settlement=16ecbf86-9790-4a6b-9d5b-77f1c5c5b091 type=bountiful_harvest amount=25
+2026/10/23 00:30:30 INFO divine blessing applied settlement=16ecbf86-9790-4a6b-9d5b-77f1c5c5b091 type=bountiful_harvest amount=25
+2026/10/23 00:30:30 INFO divine blessing applied settlement=16ecbf86-9790-4a6b-9d5b-77f1c5c5b091 type=bountiful_harvest amount=25
+2026/10/23 00:30:30 INFO divine blessing applied settlement=16ecbf86-9790-4a6b-9d5b-77f1c5c5b091 type=divine_recruits amount=10
+2026/10/23 00:30:30 INFO divine blessing applied settlement=16ecbf86-9790-4a6b-9d5b-77f1c5c5b091 type=divine_recruits amount=10
+2026/10/23 00:30:30 INFO divine blessing applied settlement=16ecbf86-9790-4a6b-9d5b-77f1c5c5b091 type=bountiful_harvest amount=25
+2026/10/23 00:30:31 INFO divine blessing applied settlement=16ecbf86-9790-4a6b-9d5b-77f1c5c5b091 type=divine_recruits amount=10
+2026/10/23 00:30:31 INFO divine blessing applied settlement=16ecbf86-9790-4a6b-9d5b-77f1c5c5b091 type=bountiful_harvest amount=25
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=divine_recruits amount=10
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=divine_recruits amount=10
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=divine_recruits amount=10
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=bountiful_harvest amount=25
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=divine_recruits amount=10
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=bountiful_harvest amount=25
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=bountiful_harvest amount=25
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=bountiful_harvest amount=25
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=bountiful_harvest amount=25
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=divine_recruits amount=10
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=bountiful_harvest amount=25
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=bountiful_harvest amount=25
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=bountiful_harvest amount=25
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=bountiful_harvest amount=25
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=divine_recruits amount=10
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=divine_recruits amount=10
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=divine_recruits amount=10
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=bountiful_harvest amount=25
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=divine_recruits amount=10
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=divine_recruits amount=10
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=divine_recruits amount=10
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=divine_recruits amount=10
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=bountiful_harvest amount=25
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=divine_recruits amount=10
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=divine_recruits amount=10
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=divine_recruits amount=10
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=divine_recruits amount=10
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=divine_recruits amount=10
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=divine_recruits amount=10
+2026/10/23 00:30:31 INFO divine blessing applied settlement=fc70cefc-9dcb-4285-8a7b-e7000f75f4b7 type=divine_recruits amount=10
+2026/10/23 00:30:31 INFO divine punishment applied settlement=8529066a-2c7e-44d7-b5e2-a60fea5e434a type=garrison_plague amount=10
+2026/10/23 00:30:31 INFO divine blessing applied settlement=9b53489a-67cf-4d3c-9074-9e86ec2bb5d8 type=bountiful_harvest amount=25
+2026/10/23 00:30:31 INFO divine punishment applied settlement=82880139-4e04-47be-b112-8e9c06f1a45e type=ship_loss amount=1
+--- FAIL: TestL1TempleClimbsToFirstPrayerAndCaps (0.12s)
+    --- FAIL: TestL1TempleClimbsToFirstPrayerAndCaps/1 (0.04s)
+        l1_climb_test.go:61: L1 tick1 actual3 projected2.9000000000000004
+    --- FAIL: TestL1TempleClimbsToFirstPrayerAndCaps/2 (0.04s)
+        l1_climb_test.go:61: L2 tick1 actual5.1000000000000005 projected5
+    --- FAIL: TestL1TempleClimbsToFirstPrayerAndCaps/3 (0.04s)
+        l1_climb_test.go:61: L3 tick1 actual7.200000000000001 projected7.1000000000000005
+--- FAIL: TestSilverCalibrationKharisFlowLeavesStalePriceClamp (0.04s)
+    labor_flow_test.go:67: persisted kharis 23.049999999999997 want projected22.95
+2026/10/23 00:30:36 INFO divine punishment applied settlement=d855bf8a-6d72-41d7-b430-35fc43ebd6a8 type=harvest_failure amount=50
+--- FAIL: TestEarlyTempleOfferingLocalGiftAndProjection (0.14s)
+    --- FAIL: TestEarlyTempleOfferingLocalGiftAndProjection/grain (0.03s)
+        temple_offering_test.go:55: fed staffed L2 net=4 want shared yield minus decay
+    --- FAIL: TestEarlyTempleOfferingLocalGiftAndProjection/fish (0.03s)
+        temple_offering_test.go:55: fed staffed L2 net=4 want shared yield minus decay
+    --- FAIL: TestEarlyTempleOfferingLocalGiftAndProjection/timber (0.03s)
+        temple_offering_test.go:55: fed staffed L2 net=4 want shared yield minus decay
+    --- FAIL: TestEarlyTempleOfferingLocalGiftAndProjection/silver (0.03s)
+        temple_offering_test.go:55: fed staffed L2 net=4 want shared yield minus decay
+2026/10/23 00:30:39 ERROR kharis maintenance failed player=00000000-0000-0000-0000-000000001401 world=f7fb86aa-bf0e-4162-ab22-b58d40e96908 err="persist transition notice: ERROR: new row for relation \"notifications\" violates check constraint \"test_notice_owner_failure\" (SQLSTATE 23514)"
+--- FAIL: TestTickNoticeFailureKeepsWorldRunning (0.07s)
+    tick_notice_failure_test.go:82: owner00000000-0000-0000-0000-000000001401 maintenance=29.89 want29.9
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	10.266s
+ok  	formatet/megaron/server/api/handlers	45.525s
+ok  	formatet/megaron/server/cmd/keryx	0.357s
+FAIL

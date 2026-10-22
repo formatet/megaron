@@ -1,0 +1,4 @@
+» färsk DB på migration 202 · commit 600c0ca4+ändringar
+ok  	formatet/megaron/server/api/handlers	0.316s
+ok  	formatet/megaron/server/internal/kharis	0.080s
+ok  	formatet/megaron/server/cmd/keryx	0.007s
