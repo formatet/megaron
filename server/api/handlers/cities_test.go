@@ -105,6 +105,22 @@ func TestCitiesRumourKnownIsNotContactable(t *testing.T) {
 		t.Fatalf("create subject settlement: %v", err)
 	}
 
+	// The destination shortcut must not gain an unseen foreign city from
+	// this shared catalogue. Own cities remain exact choices.
+	beforeRumour := (&WorldHandler{pool: pool, clk: clock.NewTestClock(time.Now())}).loadCities(ctx, worldID, viewerID)
+	foundOwn := false
+	for _, city := range beforeRumour {
+		if city.SettlementID == subjectSettlementID.String() {
+			t.Fatal("unseen foreign city leaked into destination directory")
+		}
+		if city.Name == "Viewerton" && city.Own && city.Knowledge == "known" && city.Q != nil && city.R != nil {
+			foundOwn = true
+		}
+	}
+	if !foundOwn {
+		t.Fatal("own city missing exact destination")
+	}
+
 	// The viewer has only heard OF Tinhaven via gossip.
 	if _, err := pool.Exec(ctx,
 		`INSERT INTO known_settlements (world_id, player_id, settlement_id, level, industry_hint)
@@ -149,4 +165,18 @@ func TestCitiesRumourKnownIsNotContactable(t *testing.T) {
 	if province.VisibleFrom(province.MapPosition{Q: 40, R: 40}, origins, 6) {
 		t.Errorf("rumour-known settlement must not be in the KNOWN set — Send would incorrectly allow it")
 	}
+	// Remembering the exact point promotes the same city to a usable target.
+	if _, err := pool.Exec(ctx, `INSERT INTO player_scouted_tiles(world_id,player_id,q,r) VALUES($1,$2,40,40)`, worldID, viewerID); err != nil {
+		t.Fatal(err)
+	}
+	foundKnown := false
+	for _, city := range h.loadCities(ctx, worldID, viewerID) {
+		if city.SettlementID == subjectSettlementID.String() && city.Knowledge == "known" && city.Q != nil && *city.Q == 40 && city.R != nil && *city.R == 40 {
+			foundKnown = true
+		}
+	}
+	if !foundKnown {
+		t.Fatal("remembered city missing exact destination")
+	}
+
 }

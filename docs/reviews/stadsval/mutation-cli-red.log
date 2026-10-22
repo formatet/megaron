@@ -1,0 +1,664 @@
+Error: you know no city called "Atlantis"
+Usage:
+  march [flags]
+
+Examples:
+  keryx unit march --unit <id> --q 5 --r -3
+  keryx unit march --unit <id> --target 5,-3
+  keryx unit march --unit <id> --q 5 --r -3 --stance fortify
+  keryx unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos --yes
+  # Colonize the hex the unit already stands on (no coords needed):
+  keryx unit march --unit <id> --intent colonize --name Thapsos --yes
+  # Any march reveals fog along its route toward a frontier coordinate:
+  keryx unit march --unit <id> --q 12 --r -8
+  # Explore an area for 12 days, then automatically return home
+  keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12
+  # Land troops from a laden ship in port, then sail home on its own:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land
+  # ...and found a colony there with no further order:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land --colonize --name Thapsos
+  # Attack an enemy settlement and annex it instead of the sack default:
+  keryx unit march --unit <id> --q 5 --r -3 --mode annex
+
+Flags:
+      --colonize        with --intent land: found a colony on arrival with no further order (use --name to name it)
+  -h, --help            help for march
+      --intent string   arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (first to the selected hex, then explores around it; turns home by half the chosen duration) | land (a laden ship in port lands its cargo on an unclaimed land hex, then sails home on its own; add --colonize to found a colony there)
+      --mode string     conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)
+      --name string     colony name (with --intent colonize, or --intent land --colonize)
+      --preview         estimate arrival without sending an order
+      --q int           target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --r int           target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --stance string   stance on arrival: fortify|storm|sentry
+      --target string   target hex as q,r — alternative to --q/--r (e.g. 5,-3)
+      --ticks int       explore duration in days (omit for server default)
+      --to string       known city name as destination — alternative to --q/--r or --target
+      --unit string     unit UUID (required)
+      --yes             skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)
+
+Error: you know no city called "Missing point"
+Usage:
+  march [flags]
+
+Examples:
+  keryx unit march --unit <id> --q 5 --r -3
+  keryx unit march --unit <id> --target 5,-3
+  keryx unit march --unit <id> --q 5 --r -3 --stance fortify
+  keryx unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos --yes
+  # Colonize the hex the unit already stands on (no coords needed):
+  keryx unit march --unit <id> --intent colonize --name Thapsos --yes
+  # Any march reveals fog along its route toward a frontier coordinate:
+  keryx unit march --unit <id> --q 12 --r -8
+  # Explore an area for 12 days, then automatically return home
+  keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12
+  # Land troops from a laden ship in port, then sail home on its own:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land
+  # ...and found a colony there with no further order:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land --colonize --name Thapsos
+  # Attack an enemy settlement and annex it instead of the sack default:
+  keryx unit march --unit <id> --q 5 --r -3 --mode annex
+
+Flags:
+      --colonize        with --intent land: found a colony on arrival with no further order (use --name to name it)
+  -h, --help            help for march
+      --intent string   arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (first to the selected hex, then explores around it; turns home by half the chosen duration) | land (a laden ship in port lands its cargo on an unclaimed land hex, then sails home on its own; add --colonize to found a colony there)
+      --mode string     conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)
+      --name string     colony name (with --intent colonize, or --intent land --colonize)
+      --preview         estimate arrival without sending an order
+      --q int           target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --r int           target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --stance string   stance on arrival: fortify|storm|sentry
+      --target string   target hex as q,r — alternative to --q/--r (e.g. 5,-3)
+      --ticks int       explore duration in days (omit for server default)
+      --to string       known city name as destination — alternative to --q/--r or --target
+      --unit string     unit UUID (required)
+      --yes             skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)
+
+Error: city name "Argos" is ambiguous: Argos — yours (2,3); Argos — Other ruler (5,6); use --target q,r
+Usage:
+  march [flags]
+
+Examples:
+  keryx unit march --unit <id> --q 5 --r -3
+  keryx unit march --unit <id> --target 5,-3
+  keryx unit march --unit <id> --q 5 --r -3 --stance fortify
+  keryx unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos --yes
+  # Colonize the hex the unit already stands on (no coords needed):
+  keryx unit march --unit <id> --intent colonize --name Thapsos --yes
+  # Any march reveals fog along its route toward a frontier coordinate:
+  keryx unit march --unit <id> --q 12 --r -8
+  # Explore an area for 12 days, then automatically return home
+  keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12
+  # Land troops from a laden ship in port, then sail home on its own:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land
+  # ...and found a colony there with no further order:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land --colonize --name Thapsos
+  # Attack an enemy settlement and annex it instead of the sack default:
+  keryx unit march --unit <id> --q 5 --r -3 --mode annex
+
+Flags:
+      --colonize        with --intent land: found a colony on arrival with no further order (use --name to name it)
+  -h, --help            help for march
+      --intent string   arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (first to the selected hex, then explores around it; turns home by half the chosen duration) | land (a laden ship in port lands its cargo on an unclaimed land hex, then sails home on its own; add --colonize to found a colony there)
+      --mode string     conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)
+      --name string     colony name (with --intent colonize, or --intent land --colonize)
+      --preview         estimate arrival without sending an order
+      --q int           target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --r int           target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --stance string   stance on arrival: fortify|storm|sentry
+      --target string   target hex as q,r — alternative to --q/--r (e.g. 5,-3)
+      --ticks int       explore duration in days (omit for server default)
+      --to string       known city name as destination — alternative to --q/--r or --target
+      --unit string     unit UUID (required)
+      --yes             skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)
+
+Error: give the target as either --to city, --target q,r or --q/--r
+Usage:
+  march [flags]
+
+Examples:
+  keryx unit march --unit <id> --q 5 --r -3
+  keryx unit march --unit <id> --target 5,-3
+  keryx unit march --unit <id> --q 5 --r -3 --stance fortify
+  keryx unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos --yes
+  # Colonize the hex the unit already stands on (no coords needed):
+  keryx unit march --unit <id> --intent colonize --name Thapsos --yes
+  # Any march reveals fog along its route toward a frontier coordinate:
+  keryx unit march --unit <id> --q 12 --r -8
+  # Explore an area for 12 days, then automatically return home
+  keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12
+  # Land troops from a laden ship in port, then sail home on its own:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land
+  # ...and found a colony there with no further order:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land --colonize --name Thapsos
+  # Attack an enemy settlement and annex it instead of the sack default:
+  keryx unit march --unit <id> --q 5 --r -3 --mode annex
+
+Flags:
+      --colonize        with --intent land: found a colony on arrival with no further order (use --name to name it)
+  -h, --help            help for march
+      --intent string   arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (first to the selected hex, then explores around it; turns home by half the chosen duration) | land (a laden ship in port lands its cargo on an unclaimed land hex, then sails home on its own; add --colonize to found a colony there)
+      --mode string     conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)
+      --name string     colony name (with --intent colonize, or --intent land --colonize)
+      --preview         estimate arrival without sending an order
+      --q int           target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --r int           target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --stance string   stance on arrival: fortify|storm|sentry
+      --target string   target hex as q,r — alternative to --q/--r (e.g. 5,-3)
+      --ticks int       explore duration in days (omit for server default)
+      --to string       known city name as destination — alternative to --q/--r or --target
+      --unit string     unit UUID (required)
+      --yes             skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)
+
+Error: give the target as either --to city, --target q,r or --q/--r
+Usage:
+  march [flags]
+
+Examples:
+  keryx unit march --unit <id> --q 5 --r -3
+  keryx unit march --unit <id> --target 5,-3
+  keryx unit march --unit <id> --q 5 --r -3 --stance fortify
+  keryx unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos --yes
+  # Colonize the hex the unit already stands on (no coords needed):
+  keryx unit march --unit <id> --intent colonize --name Thapsos --yes
+  # Any march reveals fog along its route toward a frontier coordinate:
+  keryx unit march --unit <id> --q 12 --r -8
+  # Explore an area for 12 days, then automatically return home
+  keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12
+  # Land troops from a laden ship in port, then sail home on its own:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land
+  # ...and found a colony there with no further order:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land --colonize --name Thapsos
+  # Attack an enemy settlement and annex it instead of the sack default:
+  keryx unit march --unit <id> --q 5 --r -3 --mode annex
+
+Flags:
+      --colonize        with --intent land: found a colony on arrival with no further order (use --name to name it)
+  -h, --help            help for march
+      --intent string   arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (first to the selected hex, then explores around it; turns home by half the chosen duration) | land (a laden ship in port lands its cargo on an unclaimed land hex, then sails home on its own; add --colonize to found a colony there)
+      --mode string     conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)
+      --name string     colony name (with --intent colonize, or --intent land --colonize)
+      --preview         estimate arrival without sending an order
+      --q int           target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --r int           target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --stance string   stance on arrival: fortify|storm|sentry
+      --target string   target hex as q,r — alternative to --q/--r (e.g. 5,-3)
+      --ticks int       explore duration in days (omit for server default)
+      --to string       known city name as destination — alternative to --q/--r or --target
+      --unit string     unit UUID (required)
+      --yes             skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)
+
+Error: --to needs a city name
+Usage:
+  march [flags]
+
+Examples:
+  keryx unit march --unit <id> --q 5 --r -3
+  keryx unit march --unit <id> --target 5,-3
+  keryx unit march --unit <id> --q 5 --r -3 --stance fortify
+  keryx unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos --yes
+  # Colonize the hex the unit already stands on (no coords needed):
+  keryx unit march --unit <id> --intent colonize --name Thapsos --yes
+  # Any march reveals fog along its route toward a frontier coordinate:
+  keryx unit march --unit <id> --q 12 --r -8
+  # Explore an area for 12 days, then automatically return home
+  keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12
+  # Land troops from a laden ship in port, then sail home on its own:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land
+  # ...and found a colony there with no further order:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land --colonize --name Thapsos
+  # Attack an enemy settlement and annex it instead of the sack default:
+  keryx unit march --unit <id> --q 5 --r -3 --mode annex
+
+Flags:
+      --colonize        with --intent land: found a colony on arrival with no further order (use --name to name it)
+  -h, --help            help for march
+      --intent string   arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (first to the selected hex, then explores around it; turns home by half the chosen duration) | land (a laden ship in port lands its cargo on an unclaimed land hex, then sails home on its own; add --colonize to found a colony there)
+      --mode string     conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)
+      --name string     colony name (with --intent colonize, or --intent land --colonize)
+      --preview         estimate arrival without sending an order
+      --q int           target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --r int           target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --stance string   stance on arrival: fortify|storm|sentry
+      --target string   target hex as q,r — alternative to --q/--r (e.g. 5,-3)
+      --ticks int       explore duration in days (omit for server default)
+      --to string       known city name as destination — alternative to --q/--r or --target
+      --unit string     unit UUID (required)
+      --yes             skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)
+
+Error: you know no city called "Atlantis"
+Usage:
+  march [flags]
+
+Examples:
+  keryx unit march --unit <id> --q 5 --r -3
+  keryx unit march --unit <id> --target 5,-3
+  keryx unit march --unit <id> --q 5 --r -3 --stance fortify
+  keryx unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos --yes
+  # Colonize the hex the unit already stands on (no coords needed):
+  keryx unit march --unit <id> --intent colonize --name Thapsos --yes
+  # Any march reveals fog along its route toward a frontier coordinate:
+  keryx unit march --unit <id> --q 12 --r -8
+  # Explore an area for 12 days, then automatically return home
+  keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12
+  # Land troops from a laden ship in port, then sail home on its own:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land
+  # ...and found a colony there with no further order:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land --colonize --name Thapsos
+  # Attack an enemy settlement and annex it instead of the sack default:
+  keryx unit march --unit <id> --q 5 --r -3 --mode annex
+
+Flags:
+      --colonize        with --intent land: found a colony on arrival with no further order (use --name to name it)
+  -h, --help            help for march
+      --intent string   arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (first to the selected hex, then explores around it; turns home by half the chosen duration) | land (a laden ship in port lands its cargo on an unclaimed land hex, then sails home on its own; add --colonize to found a colony there)
+      --mode string     conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)
+      --name string     colony name (with --intent colonize, or --intent land --colonize)
+      --preview         estimate arrival without sending an order
+      --q int           target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --r int           target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --stance string   stance on arrival: fortify|storm|sentry
+      --target string   target hex as q,r — alternative to --q/--r (e.g. 5,-3)
+      --ticks int       explore duration in days (omit for server default)
+      --to string       known city name as destination — alternative to --q/--r or --target
+      --unit string     unit UUID (required)
+      --yes             skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)
+
+Error: you know no city called "Missing point"
+Usage:
+  march [flags]
+
+Examples:
+  keryx unit march --unit <id> --q 5 --r -3
+  keryx unit march --unit <id> --target 5,-3
+  keryx unit march --unit <id> --q 5 --r -3 --stance fortify
+  keryx unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos --yes
+  # Colonize the hex the unit already stands on (no coords needed):
+  keryx unit march --unit <id> --intent colonize --name Thapsos --yes
+  # Any march reveals fog along its route toward a frontier coordinate:
+  keryx unit march --unit <id> --q 12 --r -8
+  # Explore an area for 12 days, then automatically return home
+  keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12
+  # Land troops from a laden ship in port, then sail home on its own:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land
+  # ...and found a colony there with no further order:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land --colonize --name Thapsos
+  # Attack an enemy settlement and annex it instead of the sack default:
+  keryx unit march --unit <id> --q 5 --r -3 --mode annex
+
+Flags:
+      --colonize        with --intent land: found a colony on arrival with no further order (use --name to name it)
+  -h, --help            help for march
+      --intent string   arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (first to the selected hex, then explores around it; turns home by half the chosen duration) | land (a laden ship in port lands its cargo on an unclaimed land hex, then sails home on its own; add --colonize to found a colony there)
+      --mode string     conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)
+      --name string     colony name (with --intent colonize, or --intent land --colonize)
+      --preview         estimate arrival without sending an order
+      --q int           target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --r int           target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --stance string   stance on arrival: fortify|storm|sentry
+      --target string   target hex as q,r — alternative to --q/--r (e.g. 5,-3)
+      --ticks int       explore duration in days (omit for server default)
+      --to string       known city name as destination — alternative to --q/--r or --target
+      --unit string     unit UUID (required)
+      --yes             skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)
+
+Error: city name "Argos" is ambiguous: Argos — yours (2,3); Argos — Other ruler (5,6); use --target q,r
+Usage:
+  march [flags]
+
+Examples:
+  keryx unit march --unit <id> --q 5 --r -3
+  keryx unit march --unit <id> --target 5,-3
+  keryx unit march --unit <id> --q 5 --r -3 --stance fortify
+  keryx unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos --yes
+  # Colonize the hex the unit already stands on (no coords needed):
+  keryx unit march --unit <id> --intent colonize --name Thapsos --yes
+  # Any march reveals fog along its route toward a frontier coordinate:
+  keryx unit march --unit <id> --q 12 --r -8
+  # Explore an area for 12 days, then automatically return home
+  keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12
+  # Land troops from a laden ship in port, then sail home on its own:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land
+  # ...and found a colony there with no further order:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land --colonize --name Thapsos
+  # Attack an enemy settlement and annex it instead of the sack default:
+  keryx unit march --unit <id> --q 5 --r -3 --mode annex
+
+Flags:
+      --colonize        with --intent land: found a colony on arrival with no further order (use --name to name it)
+  -h, --help            help for march
+      --intent string   arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (first to the selected hex, then explores around it; turns home by half the chosen duration) | land (a laden ship in port lands its cargo on an unclaimed land hex, then sails home on its own; add --colonize to found a colony there)
+      --mode string     conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)
+      --name string     colony name (with --intent colonize, or --intent land --colonize)
+      --preview         estimate arrival without sending an order
+      --q int           target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --r int           target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --stance string   stance on arrival: fortify|storm|sentry
+      --target string   target hex as q,r — alternative to --q/--r (e.g. 5,-3)
+      --ticks int       explore duration in days (omit for server default)
+      --to string       known city name as destination — alternative to --q/--r or --target
+      --unit string     unit UUID (required)
+      --yes             skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)
+
+Error: give the target as either --to city, --target q,r or --q/--r
+Usage:
+  march [flags]
+
+Examples:
+  keryx unit march --unit <id> --q 5 --r -3
+  keryx unit march --unit <id> --target 5,-3
+  keryx unit march --unit <id> --q 5 --r -3 --stance fortify
+  keryx unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos --yes
+  # Colonize the hex the unit already stands on (no coords needed):
+  keryx unit march --unit <id> --intent colonize --name Thapsos --yes
+  # Any march reveals fog along its route toward a frontier coordinate:
+  keryx unit march --unit <id> --q 12 --r -8
+  # Explore an area for 12 days, then automatically return home
+  keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12
+  # Land troops from a laden ship in port, then sail home on its own:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land
+  # ...and found a colony there with no further order:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land --colonize --name Thapsos
+  # Attack an enemy settlement and annex it instead of the sack default:
+  keryx unit march --unit <id> --q 5 --r -3 --mode annex
+
+Flags:
+      --colonize        with --intent land: found a colony on arrival with no further order (use --name to name it)
+  -h, --help            help for march
+      --intent string   arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (first to the selected hex, then explores around it; turns home by half the chosen duration) | land (a laden ship in port lands its cargo on an unclaimed land hex, then sails home on its own; add --colonize to found a colony there)
+      --mode string     conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)
+      --name string     colony name (with --intent colonize, or --intent land --colonize)
+      --preview         estimate arrival without sending an order
+      --q int           target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --r int           target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --stance string   stance on arrival: fortify|storm|sentry
+      --target string   target hex as q,r — alternative to --q/--r (e.g. 5,-3)
+      --ticks int       explore duration in days (omit for server default)
+      --to string       known city name as destination — alternative to --q/--r or --target
+      --unit string     unit UUID (required)
+      --yes             skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)
+
+Error: give the target as either --to city, --target q,r or --q/--r
+Usage:
+  march [flags]
+
+Examples:
+  keryx unit march --unit <id> --q 5 --r -3
+  keryx unit march --unit <id> --target 5,-3
+  keryx unit march --unit <id> --q 5 --r -3 --stance fortify
+  keryx unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos --yes
+  # Colonize the hex the unit already stands on (no coords needed):
+  keryx unit march --unit <id> --intent colonize --name Thapsos --yes
+  # Any march reveals fog along its route toward a frontier coordinate:
+  keryx unit march --unit <id> --q 12 --r -8
+  # Explore an area for 12 days, then automatically return home
+  keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12
+  # Land troops from a laden ship in port, then sail home on its own:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land
+  # ...and found a colony there with no further order:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land --colonize --name Thapsos
+  # Attack an enemy settlement and annex it instead of the sack default:
+  keryx unit march --unit <id> --q 5 --r -3 --mode annex
+
+Flags:
+      --colonize        with --intent land: found a colony on arrival with no further order (use --name to name it)
+  -h, --help            help for march
+      --intent string   arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (first to the selected hex, then explores around it; turns home by half the chosen duration) | land (a laden ship in port lands its cargo on an unclaimed land hex, then sails home on its own; add --colonize to found a colony there)
+      --mode string     conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)
+      --name string     colony name (with --intent colonize, or --intent land --colonize)
+      --preview         estimate arrival without sending an order
+      --q int           target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --r int           target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --stance string   stance on arrival: fortify|storm|sentry
+      --target string   target hex as q,r — alternative to --q/--r (e.g. 5,-3)
+      --ticks int       explore duration in days (omit for server default)
+      --to string       known city name as destination — alternative to --q/--r or --target
+      --unit string     unit UUID (required)
+      --yes             skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)
+
+Error: --to needs a city name
+Usage:
+  march [flags]
+
+Examples:
+  keryx unit march --unit <id> --q 5 --r -3
+  keryx unit march --unit <id> --target 5,-3
+  keryx unit march --unit <id> --q 5 --r -3 --stance fortify
+  keryx unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos --yes
+  # Colonize the hex the unit already stands on (no coords needed):
+  keryx unit march --unit <id> --intent colonize --name Thapsos --yes
+  # Any march reveals fog along its route toward a frontier coordinate:
+  keryx unit march --unit <id> --q 12 --r -8
+  # Explore an area for 12 days, then automatically return home
+  keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12
+  # Land troops from a laden ship in port, then sail home on its own:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land
+  # ...and found a colony there with no further order:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land --colonize --name Thapsos
+  # Attack an enemy settlement and annex it instead of the sack default:
+  keryx unit march --unit <id> --q 5 --r -3 --mode annex
+
+Flags:
+      --colonize        with --intent land: found a colony on arrival with no further order (use --name to name it)
+  -h, --help            help for march
+      --intent string   arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (first to the selected hex, then explores around it; turns home by half the chosen duration) | land (a laden ship in port lands its cargo on an unclaimed land hex, then sails home on its own; add --colonize to found a colony there)
+      --mode string     conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)
+      --name string     colony name (with --intent colonize, or --intent land --colonize)
+      --preview         estimate arrival without sending an order
+      --q int           target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --r int           target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --stance string   stance on arrival: fortify|storm|sentry
+      --target string   target hex as q,r — alternative to --q/--r (e.g. 5,-3)
+      --ticks int       explore duration in days (omit for server default)
+      --to string       known city name as destination — alternative to --q/--r or --target
+      --unit string     unit UUID (required)
+      --yes             skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)
+
+Error: you know no city called "Atlantis"
+Usage:
+  post [flags]
+
+Examples:
+  keryx unit post --unit <id> --q 8 --r -3
+  keryx unit post --unit <id> --target 8,-3
+
+Flags:
+  -h, --help            help for post
+      --q int           target hex Q — axial coordinate, read it off 'keryx map'
+      --r int           target hex R — axial coordinate, read it off 'keryx map'
+      --target string   target hex as q,r — alternative to --q/--r (e.g. 5,-3)
+      --to string       known city name as destination — alternative to --q/--r or --target
+      --unit string     unit id (required)
+
+Error: you know no city called "Missing point"
+Usage:
+  post [flags]
+
+Examples:
+  keryx unit post --unit <id> --q 8 --r -3
+  keryx unit post --unit <id> --target 8,-3
+
+Flags:
+  -h, --help            help for post
+      --q int           target hex Q — axial coordinate, read it off 'keryx map'
+      --r int           target hex R — axial coordinate, read it off 'keryx map'
+      --target string   target hex as q,r — alternative to --q/--r (e.g. 5,-3)
+      --to string       known city name as destination — alternative to --q/--r or --target
+      --unit string     unit id (required)
+
+Error: city name "Argos" is ambiguous: Argos — yours (2,3); Argos — Other ruler (5,6); use --target q,r
+Usage:
+  post [flags]
+
+Examples:
+  keryx unit post --unit <id> --q 8 --r -3
+  keryx unit post --unit <id> --target 8,-3
+
+Flags:
+  -h, --help            help for post
+      --q int           target hex Q — axial coordinate, read it off 'keryx map'
+      --r int           target hex R — axial coordinate, read it off 'keryx map'
+      --target string   target hex as q,r — alternative to --q/--r (e.g. 5,-3)
+      --to string       known city name as destination — alternative to --q/--r or --target
+      --unit string     unit id (required)
+
+Error: give the target as either --to city, --target q,r or --q/--r
+Usage:
+  post [flags]
+
+Examples:
+  keryx unit post --unit <id> --q 8 --r -3
+  keryx unit post --unit <id> --target 8,-3
+
+Flags:
+  -h, --help            help for post
+      --q int           target hex Q — axial coordinate, read it off 'keryx map'
+      --r int           target hex R — axial coordinate, read it off 'keryx map'
+      --target string   target hex as q,r — alternative to --q/--r (e.g. 5,-3)
+      --to string       known city name as destination — alternative to --q/--r or --target
+      --unit string     unit id (required)
+
+Error: give the target as either --to city, --target q,r or --q/--r
+Usage:
+  post [flags]
+
+Examples:
+  keryx unit post --unit <id> --q 8 --r -3
+  keryx unit post --unit <id> --target 8,-3
+
+Flags:
+  -h, --help            help for post
+      --q int           target hex Q — axial coordinate, read it off 'keryx map'
+      --r int           target hex R — axial coordinate, read it off 'keryx map'
+      --target string   target hex as q,r — alternative to --q/--r (e.g. 5,-3)
+      --to string       known city name as destination — alternative to --q/--r or --target
+      --unit string     unit id (required)
+
+Error: --to needs a city name
+Usage:
+  post [flags]
+
+Examples:
+  keryx unit post --unit <id> --q 8 --r -3
+  keryx unit post --unit <id> --target 8,-3
+
+Flags:
+  -h, --help            help for post
+      --q int           target hex Q — axial coordinate, read it off 'keryx map'
+      --r int           target hex R — axial coordinate, read it off 'keryx map'
+      --target string   target hex as q,r — alternative to --q/--r (e.g. 5,-3)
+      --to string       known city name as destination — alternative to --q/--r or --target
+      --unit string     unit id (required)
+
+Error: you know no city called "Atlantis"
+Usage:
+  redirect [flags]
+
+Examples:
+  keryx unit redirect --unit <id> --target 5,-3
+  keryx unit redirect --unit <id> --q 5 --r -3
+
+Flags:
+  -h, --help            help for redirect
+      --q int           new target hex Q — axial coordinate, alternative to --target
+      --r int           new target hex R — axial coordinate, alternative to --target
+      --target string   new target hex as q,r — axial coordinates, read them off 'keryx map' (alternative to --q/--r)
+      --to string       known city name as destination — alternative to --q/--r or --target
+      --unit string     unit UUID (required)
+
+Error: you know no city called "Missing point"
+Usage:
+  redirect [flags]
+
+Examples:
+  keryx unit redirect --unit <id> --target 5,-3
+  keryx unit redirect --unit <id> --q 5 --r -3
+
+Flags:
+  -h, --help            help for redirect
+      --q int           new target hex Q — axial coordinate, alternative to --target
+      --r int           new target hex R — axial coordinate, alternative to --target
+      --target string   new target hex as q,r — axial coordinates, read them off 'keryx map' (alternative to --q/--r)
+      --to string       known city name as destination — alternative to --q/--r or --target
+      --unit string     unit UUID (required)
+
+Error: city name "Argos" is ambiguous: Argos — yours (2,3); Argos — Other ruler (5,6); use --target q,r
+Usage:
+  redirect [flags]
+
+Examples:
+  keryx unit redirect --unit <id> --target 5,-3
+  keryx unit redirect --unit <id> --q 5 --r -3
+
+Flags:
+  -h, --help            help for redirect
+      --q int           new target hex Q — axial coordinate, alternative to --target
+      --r int           new target hex R — axial coordinate, alternative to --target
+      --target string   new target hex as q,r — axial coordinates, read them off 'keryx map' (alternative to --q/--r)
+      --to string       known city name as destination — alternative to --q/--r or --target
+      --unit string     unit UUID (required)
+
+Error: give the target as either --to city, --target q,r or --q/--r
+Usage:
+  redirect [flags]
+
+Examples:
+  keryx unit redirect --unit <id> --target 5,-3
+  keryx unit redirect --unit <id> --q 5 --r -3
+
+Flags:
+  -h, --help            help for redirect
+      --q int           new target hex Q — axial coordinate, alternative to --target
+      --r int           new target hex R — axial coordinate, alternative to --target
+      --target string   new target hex as q,r — axial coordinates, read them off 'keryx map' (alternative to --q/--r)
+      --to string       known city name as destination — alternative to --q/--r or --target
+      --unit string     unit UUID (required)
+
+Error: give the target as either --to city, --target q,r or --q/--r
+Usage:
+  redirect [flags]
+
+Examples:
+  keryx unit redirect --unit <id> --target 5,-3
+  keryx unit redirect --unit <id> --q 5 --r -3
+
+Flags:
+  -h, --help            help for redirect
+      --q int           new target hex Q — axial coordinate, alternative to --target
+      --r int           new target hex R — axial coordinate, alternative to --target
+      --target string   new target hex as q,r — axial coordinates, read them off 'keryx map' (alternative to --q/--r)
+      --to string       known city name as destination — alternative to --q/--r or --target
+      --unit string     unit UUID (required)
+
+Error: --to needs a city name
+Usage:
+  redirect [flags]
+
+Examples:
+  keryx unit redirect --unit <id> --target 5,-3
+  keryx unit redirect --unit <id> --q 5 --r -3
+
+Flags:
+  -h, --help            help for redirect
+      --q int           new target hex Q — axial coordinate, alternative to --target
+      --r int           new target hex R — axial coordinate, alternative to --target
+      --target string   new target hex as q,r — axial coordinates, read them off 'keryx map' (alternative to --q/--r)
+      --to string       known city name as destination — alternative to --q/--r or --target
+      --unit string     unit UUID (required)
+
+--- FAIL: TestCityTargetsCommandAndKnowledge (0.01s)
+    --- FAIL: TestCityTargetsCommandAndKnowledge/march/rumour (0.00s)
+        cmd_city_target_test.go:68: destination changed: map[target_q:9 target_r:9]
+        cmd_city_target_test.go:85: err=<nil> posts=1
+    --- FAIL: TestCityTargetsCommandAndKnowledge/alias/rumour (0.00s)
+        cmd_city_target_test.go:68: destination changed: map[target_q:9 target_r:9]
+        cmd_city_target_test.go:85: err=<nil> posts=1
+    --- FAIL: TestCityTargetsCommandAndKnowledge/post/rumour (0.00s)
+        cmd_city_target_test.go:68: destination changed: map[stance:sentry target_q:9 target_r:9]
+        cmd_city_target_test.go:85: err=<nil> posts=1
+    --- FAIL: TestCityTargetsCommandAndKnowledge/redirect/rumour (0.00s)
+        cmd_city_target_test.go:68: destination changed: map[target_q:9 target_r:9]
+        cmd_city_target_test.go:85: err=<nil> posts=1
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.010s
+FAIL

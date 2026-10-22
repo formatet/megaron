@@ -9,6 +9,7 @@ import { MusicPlayer } from './misc.js';
 import { playWarHorn } from './sfx.js';
 import { configureExpedition, expeditionTicks, expeditionMissionText } from './expedition.js';
 import { createMarchPreview } from './march_preview.js';
+import { destinationCities, destinationCityOptions, destinationFromCity, cityDestinationLabel } from './city_targets.js';
 import { canvas } from '../render/map.js';
 
 // ── March context menu (per-unit model) ───────────────────────────────────
@@ -24,6 +25,42 @@ import { canvas } from '../render/map.js';
 
 let expeditionRules;
 const marchCtx = document.getElementById('march-ctx');
+let cityChoices = [];
+let cityChoiceVersion = 0;
+async function loadMarchCities() {
+  const version=++cityChoiceVersion, world=State.WORLD_ID;
+  const select=document.getElementById('mctx-city');
+  if (!select) return;
+  cityChoices=[];
+  document.getElementById('mctx-city-row').hidden=false;
+  select.disabled=true;
+  select.innerHTML='<option value="">Loading known cities…</option>';
+  const note=document.getElementById('mctx-city-note');note.textContent='';
+  try {
+    const response=await fetchAuth(`/api/v1/worlds/${world}/cities`);
+    if (!response.ok) throw new Error('unavailable');
+    const rows=await response.json();
+    if (version!==cityChoiceVersion || world!==State.WORLD_ID) return;
+    cityChoices=destinationCities(rows);
+    select.innerHTML=destinationCityOptions(cityChoices);
+    select.disabled=!cityChoices.length;
+    const dest=State.marchCtxDest;
+    const current=cityChoices.find(c => dest && c.q===dest.q && c.r===dest.r);
+    select.value=current?.settlement_id || '';
+    if (!cityChoices.length) note.textContent='No known cities yet. Choose a destination on the map.';
+    repositionMarchCtx();
+  } catch {
+    if (version!==cityChoiceVersion || world!==State.WORLD_ID) return;
+    select.innerHTML='<option value="">City list unavailable</option>';
+    note.textContent='Choose a destination on the map, or reopen to retry.';
+  }
+}
+document.getElementById('mctx-city')?.addEventListener('change', event => {
+  event.stopPropagation();
+  const city=cityChoices.find(c => c.settlement_id===event.target.value);
+  if (city) openMarchCtx(destinationFromCity(city), lastCtxPos?.x ?? 8, lastCtxPos?.y ?? 80);
+});
+
 
 const marchPreview = createMarchPreview(html => {
   const el = document.getElementById('mctx-eta');
@@ -66,6 +103,8 @@ marchCtx.addEventListener('input', updateMarchPreview);
 marchCtx.addEventListener('change', updateMarchPreview);
 
 export function closeMarchCtx() {
+  ++cityChoiceVersion;
+  cityChoices=[];
   marchPreview.cancel();
   marchCtx.style.display = 'none';
   State.marchCtxUnitID = null;
@@ -305,6 +344,7 @@ export function chooseMarchTarget(unitID) {
   document.getElementById('mctx-send').style.display = 'none';
   marchCtx.style.display = 'block';
   positionMarchCtx(8, 80);
+  loadMarchCities();
 }
 
 export function marchDefaultQuantity(group, index) {
@@ -352,6 +392,7 @@ export async function openMarchCtx(dest, screenX, screenY) {
   more.style.display = '';
   document.getElementById('mctx-eta').style.display = 'none';
   document.getElementById('mctx-send').style.display = '';
+  document.getElementById('mctx-send').disabled = false;
   State.marchCtxDest  = dest;
   State.marchCtxUnits = [];
   document.getElementById('mctx-err').textContent = '';
@@ -390,6 +431,7 @@ export async function openMarchCtx(dest, screenX, screenY) {
   marchCtx.style.display = 'block';
   positionMarchCtx(screenX, screenY);
 
+  loadMarchCities();
   document.getElementById('mctx-units').innerHTML = '<span style="color:var(--text-dim);font-size:.75rem">Loading units…</span>';
   const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`);
   if (!res.ok) { document.getElementById('mctx-units').innerHTML = '<span style="color:var(--accent);font-size:.75rem">Could not load units.</span>'; return; }
@@ -528,7 +570,8 @@ export function renderMarchUnitList() {
 }
 
 export async function sendMarch() {
-  if (!State.marchCtxDest) return;
+  const destination=State.marchCtxDest;
+  if (!destination) return;
   // Each pick carries its own mode — a marching unit's send goes to
   // /recall (redirect), everyone else's to /march (Timothy 2026-09-25).
   // Mixed selections must work: some units march, some redirect, in the
@@ -574,7 +617,7 @@ export async function sendMarch() {
       // don't apply to an order already under way. A chosen stance does: it
       // rides its own Runner, which must catch up with the marching unit
       // (megaron_styrande_beslut §11) — sent only once the redirect is accepted.
-      const body = { target_q: State.marchCtxDest.q, target_r: State.marchCtxDest.r };
+      const body = { target_q: destination.q, target_r: destination.r };
       return fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units/${p.id}/recall`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
       }).then(async res => {
@@ -589,7 +632,7 @@ export async function sendMarch() {
           err: sres.ok ? '' : formatApiError(sdata, 'Stance order failed') };
       });
     }
-    const body = { target_q: State.marchCtxDest.q, target_r: State.marchCtxDest.r };
+    const body = { target_q: destination.q, target_r: destination.r };
     Object.assign(body, p.order);
     if (p.order.intent === 'explore' && ticks !== undefined) body.ticks = ticks;
     return fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units/${p.id}/march`, {
@@ -600,6 +643,7 @@ export async function sendMarch() {
     });
   }));
 
+  if (State.marchCtxDest !== destination) return;
   document.getElementById('mctx-send').disabled = false;
   const failed = results.filter(r => !r.ok);
   if (failed.length < results.length) {
@@ -643,11 +687,11 @@ export async function sendMarch() {
     // comment: "command is never instant").
     const redirecting = dispatched && first.data.verb === 'redirect';
     etaEl.innerHTML = dispatched
-      ? 'A messenger carries the order — reaches the unit ' +
+      ? 'A messenger carries the order' + esc(cityDestinationLabel(destination)) + ' — reaches the unit ' +
         arrivalHTML(first.data.courier_arrives_at, first.data.courier_due_tick) +
         (first.data.catch_up === 'at_destination' ? '; follows the unit to its destination and applies there if it is still present' : redirecting ? '; the unit holds its current course until then' : '; the march begins on delivery') +
         passageNote(first.data) + supersededOrderNote(first.data)
-      : '✓ Marching — arrives ' +
+      : '✓ Units marching' + esc(cityDestinationLabel(destination)) + ' — arrives ' +
         arrivalHTML(first.data.arrives_at_utc || first.data.arrives_at, first.data.arrival_tick);
     // The stance for a marching unit rides a second Runner that must catch up.
     if (first.data.expedition) etaEl.innerHTML += '<br>' + esc(expeditionMissionText(first.data.expedition));
@@ -672,6 +716,7 @@ export async function sendMarch() {
     // "March →" can't re-send the same (now marching) units. Escape/click-away
     // closes; openMarchCtx rebuilds the form from scratch next time.
     State.marchCtxUnitID = null;
+    document.getElementById('mctx-city-row').hidden = true;
     document.getElementById('mctx-more').style.display = 'none';
     document.getElementById('mctx-units').innerHTML = '';
     document.getElementById('mctx-stance-row').style.display = 'none';

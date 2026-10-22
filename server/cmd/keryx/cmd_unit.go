@@ -185,7 +185,7 @@ its own when the patrol timer runs out.`,
 func unitPostCmd() *cobra.Command {
 	var unitID string
 	var q, r int
-	var target string
+	var target, cityTo string
 	cmd := &cobra.Command{
 		Use:   "post",
 		Short: "March a land unit to a hex and hold it there as a forward watch (no auto-return)",
@@ -206,15 +206,15 @@ long as it stands out there. A watch is a standing expense, not a free eye.`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			// Samma delade parser som march och redirect (rad I, cli_sanning) —
 			// en tredje egen målform vore precis den drift den raden städade bort.
-			tq, tr, given, terr := resolveTargetHex(cmd, target, q, r)
+			c := newClient(cfg)
+			tq, tr, cityName, given, terr := resolveCityTarget(cmd, c, cityTo, target, q, r)
 			if terr != nil {
 				return terr
 			}
 			if !given {
-				return fmt.Errorf("give the hex to post at: --q/--r or --target q,r")
+				return fmt.Errorf("give the destination: --to city, --q/--r or --target q,r")
 			}
 			q, r = tq, tr
-			c := newClient(cfg)
 			resolvedID, rerr := resolveUnitID(c, cfg.WorldID, unitID)
 			if rerr != nil {
 				return rerr
@@ -229,7 +229,7 @@ long as it stands out there. A watch is a standing expense, not a free eye.`,
 				printRawJSON(data)
 				return nil
 			}
-			fmt.Printf("Watch order dispatched: %s → (%d,%d). It will hold there until you march or recall it.\n", unitID, q, r)
+			fmt.Printf("Unit %s posted to %s. It will hold there until you march or recall it.\n", unitID, cityTargetLabel(c, q, r, cityName))
 			fmt.Println("It eats double rations in the field.")
 			return nil
 		},
@@ -238,6 +238,7 @@ long as it stands out there. A watch is a standing expense, not a free eye.`,
 	cmd.Flags().IntVar(&q, "q", 0, "target hex Q — axial coordinate, read it off 'keryx map'")
 	cmd.Flags().IntVar(&r, "r", 0, "target hex R — axial coordinate, read it off 'keryx map'")
 	cmd.Flags().StringVar(&target, "target", "", "target hex as q,r — alternative to --q/--r (e.g. 5,-3)")
+	cmd.Flags().StringVar(&cityTo, "to", "", "known city name as destination — alternative to --q/--r or --target")
 	_ = cmd.MarkFlagRequired("unit")
 	return cmd
 }
@@ -721,7 +722,7 @@ func locationStr(c *Client, u unitRow, homes map[string]settlementPos) string {
 func unitMarchCmd() *cobra.Command {
 	var unitID string
 	var targetQ, targetR int
-	var target string
+	var target, cityTo string
 	var stance string
 	var intent, name string
 	var mode string
@@ -832,7 +833,7 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 					}
 				}
 			}
-			resolvedQ, resolvedR, given, terr := resolveTargetHex(cmd, target, targetQ, targetR)
+			resolvedQ, resolvedR, cityName, given, terr := resolveCityTarget(cmd, c, cityTo, target, targetQ, targetR)
 			if terr != nil {
 				return terr
 			}
@@ -848,7 +849,7 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 				}
 				targetQ, targetR = cq, cr
 			} else if !given {
-				return fmt.Errorf("--q/--r or --target q,r are required (or use --intent colonize alone to found a colony on the hex your unit already occupies)")
+				return fmt.Errorf("--to city, --q/--r or --target q,r are required (or use --intent colonize alone to found a colony on the hex your unit already occupies)")
 			}
 
 			body := map[string]any{
@@ -875,6 +876,9 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 			}
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/march", cfg.WorldID, unitID)
 			if previewOnly {
+				if !jsonMode && cityName != "" {
+					fmt.Printf("Unit %s — destination %s\n", unitID[:8], cityTargetLabel(c, targetQ, targetR, cityName))
+				}
 				return showMarchPreview(c, path+"-preview", body)
 			}
 			// Colonize catchment forecast (DEL A, megaron_koloni_legibilitet_plan.md):
@@ -923,7 +927,7 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 			// delivery (temenos_orderlopare_plan.md Fas 5) — the 202 is a
 			// dispatch receipt with the COURIER's ETA, not a march start.
 			if status, _ := resp["status"].(string); status == "order_dispatched" {
-				fmt.Printf("A Runner carries your march order to unit %s — target (%d,%d)", unitID[:8], targetQ, targetR)
+				fmt.Printf("A Runner carries your march order to unit %s — target %s", unitID[:8], cityTargetLabel(c, targetQ, targetR, cityName))
 				if courierAt, _ := resp["courier_arrives_at"].(string); courierAt != "" {
 					if t, err := time.Parse(time.RFC3339, courierAt); err == nil {
 						fmt.Printf("; the runner reaches it %s", gameETA(c, t))
@@ -943,7 +947,7 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 			} else if intent == "land" {
 				verb = "sailing to land troops at"
 			}
-			fmt.Printf("Unit %s %s (%d,%d)", unitID[:8], verb, targetQ, targetR)
+			fmt.Printf("Unit %s %s %s", unitID[:8], verb, cityTargetLabel(c, targetQ, targetR, cityName))
 			if arrivesAt != "" {
 				if t, err := time.Parse(time.RFC3339, arrivesAt); err == nil {
 					fmt.Printf(" — arrives %s", gameETA(c, t))
@@ -999,6 +1003,7 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 	cmd.Flags().StringVar(&mode, "mode", "", "conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)")
 	cmd.Flags().BoolVar(&yes, "yes", false, "skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)")
 	cmd.Flags().BoolVar(&landColonize, "colonize", false, "with --intent land: found a colony on arrival with no further order (use --name to name it)")
+	cmd.Flags().StringVar(&cityTo, "to", "", "known city name as destination — alternative to --q/--r or --target")
 	_ = cmd.MarkFlagRequired("unit")
 	return cmd
 }
@@ -1327,7 +1332,7 @@ at delivery appears in notifications with its reason.`,
 }
 
 func unitRedirectCmd() *cobra.Command {
-	var unitID, target string
+	var unitID, target, cityTo string
 	var q, r int
 
 	cmd := &cobra.Command{
@@ -1342,14 +1347,14 @@ with its reason.`,
   keryx unit redirect --unit <id> --q 5 --r -3`,
 		Args: rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			newQ, newR, given, err := resolveTargetHex(cmd, target, q, r)
+			c := newClient(cfg)
+			newQ, newR, cityName, given, err := resolveCityTarget(cmd, c, cityTo, target, q, r)
 			if err != nil {
 				return err
 			}
 			if !given {
-				return fmt.Errorf("--target q,r or --q/--r are required")
+				return fmt.Errorf("--to city, --target q,r or --q/--r are required")
 			}
-			c := newClient(cfg)
 			resolvedID, rerr := resolveUnitID(c, cfg.WorldID, unitID)
 			if rerr != nil {
 				return rerr
@@ -1366,7 +1371,7 @@ with its reason.`,
 			}
 			var resp map[string]any
 			json.Unmarshal(data, &resp)
-			fmt.Printf("Redirect order sent to unit %s (new course %d,%d)", unitID[:8], newQ, newR)
+			fmt.Printf("Unit %s receives a redirect order to %s", unitID[:8], cityTargetLabel(c, newQ, newR, cityName))
 			if resp["catch_up"] == "at_destination" {
 				fmt.Print("; the Runner follows the unit to its destination and applies the order there if it is still present")
 			}
@@ -1384,6 +1389,7 @@ with its reason.`,
 	cmd.Flags().StringVar(&target, "target", "", "new target hex as q,r — axial coordinates, read them off 'keryx map' (alternative to --q/--r)")
 	cmd.Flags().IntVar(&q, "q", 0, "new target hex Q — axial coordinate, alternative to --target")
 	cmd.Flags().IntVar(&r, "r", 0, "new target hex R — axial coordinate, alternative to --target")
+	cmd.Flags().StringVar(&cityTo, "to", "", "known city name as destination — alternative to --q/--r or --target")
 	_ = cmd.MarkFlagRequired("unit")
 	return cmd
 }

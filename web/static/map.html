@@ -271,6 +271,11 @@
     <button class="mctx-close" onclick="closeMarchCtx()">✕</button>
   </div>
   <div id="mctx-hint" style="padding:.35rem .55rem .15rem;font-size:.72rem;color:var(--text-dim)"></div>
+  <div class="mctx-city-row" id="mctx-city-row">
+    <label for="mctx-city">Destination city</label>
+    <select id="mctx-city" disabled><option>Loading known cities…</option></select>
+    <span id="mctx-city-note" aria-live="polite"></span>
+  </div>
   <div id="mctx-colonize-row" style="display:none;padding:.1rem .55rem;font-size:.75rem;color:var(--text-dim)">
     <label style="display:flex;align-items:center;gap:.35rem;cursor:pointer">
       <input type="checkbox" id="mctx-colonize-chk" onchange="onColonizeToggle()"> Found a new settlement on arrival

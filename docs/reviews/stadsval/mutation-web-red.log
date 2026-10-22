@@ -1,0 +1,50 @@
+TAP version 13
+# Subtest: city shortcut uses only exact Known entries, own first; duplicate names stay distinct
+not ok 1 - city shortcut uses only exact Known entries, own first; duplicate names stay distinct
+  ---
+  duration_ms: 6.213306
+  type: 'test'
+  location: '/home/tk/wt/codex-stadsval/web/static/js/megaron/ui/city_targets.test.mjs:5:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+      [
+        'own',
+        'foreign',
+    +   'rumour'
+      ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 'own'
+    1: 'foreign'
+  actual:
+    0: 'own'
+    1: 'foreign'
+    2: 'rumour'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-stadsval/web/static/js/megaron/ui/city_targets.test.mjs:12:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: city names and ids cannot inject option markup
+ok 2 - city names and ids cannot inject option markup
+  ---
+  duration_ms: 0.316112
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 1
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 48.623781
