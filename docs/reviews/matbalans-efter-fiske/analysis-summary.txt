@@ -1,0 +1,12 @@
+Amnissos net 31.648 stock 9315.5 idle 0 hunger None silver 114.4 pay 0.0 silverfail None
+Damon net -53.073 stock 1385.68 idle 137 hunger 30 silver 0.9 pay 0.0 silverfail None
+Gournia net -1.46 stock 2930.64 idle 0 hunger None silver 360 pay 0.0 silverfail None
+Kydonia net 14.836 stock 6171.09 idle 1 hunger None silver 484 pay 0.0 silverfail None
+Lato net -25.069 stock 2561.64 idle 103 hunger None silver 1.35 pay 0.0 silverfail None
+Petras net -43.992 stock 3951.14 idle 98 hunger None silver 0 pay 0.0 silverfail None
+Phaistos net 7.115 stock 3652.31 idle 8 hunger None silver 0.05 pay 0.1 silverfail 1
+Phalasarna net 0.5 stock 3747.96 idle 2 hunger None silver 760.25 pay 0 silverfail None
+Plateia net 0.0 stock 985.32 idle 2 hunger None silver 0.2 pay 0 silverfail None
+Pylos net 6.683 stock 2825.22 idle 3 hunger None silver 852.3 pay 0.15000000000000002 silverfail None
+Vasiliki net -1.85 stock 2261.54 idle 9 hunger None silver 0 pay 0 silverfail None
+Zakros net -19.198 stock 11307.45 idle 35 hunger None silver 891.33 pay 0.06 silverfail None

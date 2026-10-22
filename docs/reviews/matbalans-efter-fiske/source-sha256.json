@@ -1,0 +1,12 @@
+{
+  "docs/reviews/fiske-hamn-vik/final-live-snapshot.json": "c36cad39f4d9139cdbd50ab3bad98e020b19cd9aad83ca72c7be39e7baf15bf1",
+  "docs/reviews/sold/snapshot.json": "2ca57de3458819a04bc304af8de2dccfa30f2b5b97bcf1d9641d8d90319062e7",
+  "docs/reviews/sold/comparison.json": "c1cdefd3aca70137ae49d16d140d397bf27eab9500c30216fad6ecf585dbd4fe",
+  "server/internal/economy/hex_rules.go": "9c7acb2a5c991a64c4c6bce894e3b462848f4926fb9ca2d79c93a33104351be3",
+  "server/internal/economy/recompute.go": "77c2756102fdbf5e4d34982ad28bc87c5d91dda7c15443d3be07b5e3e129e0f5",
+  "server/internal/economy/food_basket.go": "54423a8eb42b1d31be985b91f34bc29318e226f0e7379066d962b513d12e9544",
+  "server/internal/economy/herd_births.go": "bc1c27a1a967980b497cd30e6da45fd0cb6c7a00102e44d282db6ce9e30cfb78",
+  "server/internal/economy/ship_ration.go": "d40ead50d34c80932e9463d92cbf6625909ffa14860f0f46c4a8b6536a5055f4",
+  "server/internal/kharis/temple_offering.go": "1332aa67037e2dadac692e9c3776926e8eabc615afa4852e5241926f7b78c0d9",
+  "tools/alfa_db.py": "8143e201a5b5eeb4b2d61b1160911cb2791d42de5282ddf454cd67eec87e9185"
+}

@@ -1,0 +1,1 @@
+PASS: read-only provenance; 60 reconstructed rates; 12 workforce counts; actual upkeep needs/pay; both forecast arms commodity mass balance; only Damon <=30; Phaistos actual unpaid.
