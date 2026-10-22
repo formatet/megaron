@@ -12,7 +12,8 @@ test('city shortcut uses only exact Known entries, own first; duplicate names st
  assert.deepEqual(cities.map(c=>c.settlement_id),['own','foreign']);
  const html=destinationCityOptions(cities);
  assert.match(html,/<optgroup label="Your cities">/);
- assert.match(html,/value="foreign">Argos — Nestor \(4,0\)/);
+ assert.match(html,/value="foreign">Argos — Nestor<\/option>/);
+ assert.doesNotMatch(html,/\(-?\d+,\s*-?\d+\)/);
  assert.doesNotMatch(html,/Troy|Unknown location/);
  assert.deepEqual(destinationFromCity(cities[1]),{q:4,r:0,terrain:undefined,isSea:false,known:true,name:'Argos',isSettlement:true,allied:false,settlementID:'foreign'});
  assert.equal(cityDestinationLabel(destinationFromCity(cities[1])),' to Argos');

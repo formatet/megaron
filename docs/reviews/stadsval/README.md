@@ -52,3 +52,7 @@ User: automated scripted orders above; human comprehension not claimed. BILD blo
 No new route, event, migration, catalogue, or movement/knowledge mechanics. No live account mutated.
 
 Final: full fresh Go suite GREEN (schema198, `GOTEST_PORT=57900`, world153.787s, core50a06375); 709/709 JS and vet GREEN. Named rumour mutants RED→exact-byte restored GREEN on both consumers. BILD sent to Claude; Timothy approval remains the integration gate.
+
+## BILD-rättning: stadsnamn utan koordinater
+
+Destination city visar `Pylos — Nestor`; koordinater används fortfarande som exakt ordermål men skrivs inte i alternativen. Wanax-namn särskiljer namnen. 709 JS-test gröna. Återinförda koordinater ger rött regressionstest, exakt återställning grönt (`no-coordinates-mutation.log`). Firefox-receptet kontrollerar den exakta etiketten och att alla alternativ saknar koordinater; två rena körningar vid 390/1000 px, inga pageerrors. Bilder select/selected samt receipt/long-name omtagna. HTTP-fixtur enligt tidigare avgränsning. BILD väntar på Timothy före merge.

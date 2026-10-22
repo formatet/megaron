@@ -47,6 +47,7 @@ try:
     if not baseline:
      expect(page.locator('#mctx-city')).to_be_enabled()
      choices=page.locator('#mctx-city option').all_text_contents()
+     assert 'Pylos — Nestor' in choices and not any(re.search(r'\(-?\d+,\s*-?\d+\)',x) for x in choices),choices
      assert 'Knossos' in choices[1] and any('Pylos' in choice for choice in choices) and not any('Troy' in x for x in choices),choices
      page.select_option('#mctx-city','pylos')
      expect(page.locator('#mctx-name')).to_have_text('Pylos')

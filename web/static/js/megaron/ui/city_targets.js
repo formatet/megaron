@@ -11,7 +11,7 @@ export function destinationCityOptions(cities) {
   const group = (own, label) => {
     const entries=cities.filter(c => !!c.own === own);
     if (!entries.length) return '';
-    return `<optgroup label="${label}">`+entries.map(c => `<option value="${esc(c.settlement_id)}">${esc(c.name)}${c.own ? '' : ' — '+esc(c.owner || 'Owner unknown')} (${c.q},${c.r})</option>`).join('')+'</optgroup>';
+    return `<optgroup label="${label}">`+entries.map(c => `<option value="${esc(c.settlement_id)}">${esc(c.name)}${c.owner ? ' — '+esc(c.owner) : c.own ? '' : ' — Owner unknown'}</option>`).join('')+'</optgroup>';
   };
   return '<option value="">Choose a city…</option>'+group(true,'Your cities')+group(false,'Known cities');
 }
