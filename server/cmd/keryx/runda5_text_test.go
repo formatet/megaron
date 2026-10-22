@@ -16,10 +16,3 @@ func TestInsufficientGoodsNamesTransfer(t *testing.T) {
 		t.Fatalf("transfer hint leaked into another error: %v", other)
 	}
 }
-
-// The allocate API counts people (labor_pool = population); a citizen is 100 of them.
-func TestAllocateCountsPeople(t *testing.T) {
-	if got := peopleCount(2000); got != "2000 people" {
-		t.Fatalf("peopleCount(2000) = %q", got)
-	}
-}

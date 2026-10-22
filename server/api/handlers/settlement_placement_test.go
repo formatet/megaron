@@ -110,7 +110,6 @@ func setupPlacementFixture(t *testing.T, catchmentTerrains map[[2]int]string) *p
 	r.Get("/worlds/{worldID}/provinces/{provinceID}/placements", ph.Placements)
 	r.Post("/worlds/{worldID}/provinces/{provinceID}/placements", ph.PlaceGubbe)
 	r.Delete("/worlds/{worldID}/provinces/{provinceID}/placements/{ordinal}", ph.UnplaceGubbe)
-	r.Put("/worlds/{worldID}/provinces/{provinceID}/labor", ph.LaborAlloc)
 	r.Get("/worlds/{worldID}/provinces/{provinceID}/goods", ph.Goods)
 
 	return &placementFixture{worldID: worldID, provinceID: provinceID, settlementID: settlementID, accessToken: accessToken, router: r}

@@ -85,8 +85,8 @@ func TestLaborCapacity_NeverExceedsWholeCity(t *testing.T) {
 // tabellen (temple — cult labor, en egen väg) eller en nivå utanför tabellens
 // spann ska ge noll platser, aldrig en gissning.
 func TestWorkplaceSlots_UnknownBuildingOrLevelReturnsZero(t *testing.T) {
-	if got := WorkplaceSlots("temple", 1); got != 0 {
-		t.Errorf("temple is cult labor, not a workplace-slot building — want 0, got %d", got)
+	if got := WorkplaceSlots("unknown", 1); got != 0 {
+		t.Errorf("unknown building — want 0, got %d", got)
 	}
 	if got := WorkplaceSlots("farm", 0); got != 0 {
 		t.Errorf("level 0 does not exist — want 0, got %d", got)

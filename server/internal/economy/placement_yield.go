@@ -339,6 +339,7 @@ func placementYield(good string, rate float64, capL1 int, placeCap int, mult flo
 // wine: min(boost potential, refining capacity)) or a stock drain (bronze —
 // see the bronze stock-drain step). market/stable's goods are still parked.
 type BuildingOption struct {
+	StaffingOnly bool // real workplaces whose service produces no stock
 	BuildingType string
 	Level        int
 	RatePerGood  map[string]float64
@@ -453,6 +454,16 @@ func LoadBuildingProductionOptions(ctx context.Context, tx Tx, settlementID uuid
 			}
 		}
 		out = append(out, *opt)
+	}
+	rows.Close()
+	staff, err := LoadTempleStaffing(ctx, tx, settlementID)
+	if err != nil {
+		return nil, err
+	}
+	if staff.Capacity > 0 {
+		out = append(out, BuildingOption{BuildingType: "temple", Level: staff.Capacity / TempleWorkersPerLevel, StaffingOnly: true,
+			RatePerGood: map[string]float64{GoodCult: 0}, CapPerGood: map[string]int{GoodCult: staff.Capacity},
+			CapL1PerGood: map[string]int{GoodCult: staff.Capacity}, PlaceCapPerGood: map[string]int{GoodCult: staff.Capacity}, MultPerGood: map[string]float64{GoodCult: 1}})
 	}
 	return out, nil
 }

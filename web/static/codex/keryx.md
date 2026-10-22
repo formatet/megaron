@@ -57,3 +57,5 @@ Without confirmation, the non-interactive text command only shows the forecast;
 JSON callers receive a refusal until they add `--yes`.
 
 To learn what a contacted city needs or can spare, ask its Wanax with `keryx messenger` and read the reply with `keryx inbox`. See [[messengers]] and [[trade]].
+
+Temple workers use the same citizen pool as other jobs. Use `keryx staff temple +1` to assign one, `staff temple -1` to free one, and `roster` to see their assignments. See [[temples]].

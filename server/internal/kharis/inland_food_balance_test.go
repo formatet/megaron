@@ -63,7 +63,7 @@ func balanceFixture(t *testing.T, kind string) (*pgxpool.Pool, uuid.UUID, uuid.U
 	t.Helper()
 	ctx := context.Background()
 	pool, wid, sid := newGrowthFixture(t, [6]string{"plains", "plains", "plains", "plains", "plains", "plains"}, 1000)
-	for _, q := range []string{"DELETE FROM settlement_placement WHERE settlement_id=$1", "DELETE FROM buildings WHERE settlement_id=$1", "DELETE FROM settlement_labor WHERE settlement_id=$1", "DELETE FROM settlement_goods WHERE settlement_id=$1"} {
+	for _, q := range []string{"DELETE FROM settlement_placement WHERE settlement_id=$1", "DELETE FROM buildings WHERE settlement_id=$1", "DELETE FROM settlement_goods WHERE settlement_id=$1"} {
 		if _, err := pool.Exec(ctx, q, sid); err != nil {
 			t.Fatal(err)
 		}

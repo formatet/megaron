@@ -25,71 +25,7 @@ export function cycleCityView(dir) {
   loadCityDrawer();
 }
 
-export async function saveLaborAlloc(provinceID) {
-  const btn = document.getElementById('labor-save-btn');
-  const msg = document.getElementById('labor-save-msg');
-  const err = document.getElementById('labor-save-err');
-  if (btn) btn.disabled = true;
-  if (msg) msg.textContent = '';
-  if (err) err.textContent = '';
-  const percent = {};
-  document.querySelectorAll('.labor-input').forEach(inp => {
-    const v = parseFloat(inp.value||0)||0;
-    // PUT .../labor is cult-only now (megaron_plan_riv_procentallokeringen.md
-    // — production is set via placements, see citygrid.js). This is the only
-    // .labor-input in the DOM (data-good="cult"); always name it explicitly,
-    // even at 0, so an untouched devotion is echoed back rather than omitted.
-    if (v > 0 || inp.dataset.good === 'cult') percent[inp.dataset.good] = v;
-  });
-  const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${provinceID}/labor`, {
-    method: 'PUT',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({percent}),
-  });
-  if (res.ok) {
-    if (msg) msg.textContent = 'Saved!';
-    // The PUT response only carries cult_percent/message now (server-side
-    // narrowing, megaron_plan_riv_procentallokeringen.md). Re-read the
-    // settlement so the shown value is the server's authoritative post-clamp
-    // devotion (what was typed may have been above the temple's cap, or below
-    // the 15%-per-level floor).
-    const cultInp = document.getElementById('labor-input-cult');
-    if (cultInp) {
-      const r2 = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${provinceID}`);
-      if (r2.ok) {
-        const pd2 = (await r2.json()).settlement;
-        if (pd2) {
-          const devPct2 = Math.round((pd2.devotion || 0) * 100);
-          const devCapPct2 = Math.round((pd2.devotion_capacity || 0) * 100);
-          cultInp.value = devPct2;
-          const cit = document.querySelector('.labor-cit[data-good="cult"]');
-          if (cit) cit.textContent = fmtNum(Math.round((pd2.devotion || 0) * (pd2.labor_pool || 0)));
-          const rateCell = document.getElementById('labor-rate-cult');
-          if (rateCell) {
-            const atCap = devPct2 >= devCapPct2;
-            rateCell.textContent = `${fmtNum(devPct2)} percent of ${fmtNum(devCapPct2)} percent capacity${atCap ? ' · at cap — build a higher-level temple to devote more' : ''}`;
-          }
-        }
-      }
-    }
-    setTimeout(() => { if (msg) msg.textContent = ''; }, 2000);
-  } else {
-    const body = await res.json().catch(() => ({}));
-    if (err) err.textContent = body.error || 'Save failed';
-  }
-  if (btn) btn.disabled = false;
-}
 
-// Extracted from the old generic loadDrawerContent(name) dispatcher's
-// `if (name === 'city') {...}` branch (plan: "en drawer = en modul") — the
-// prelude that used to run unconditionally for every drawer name (capital/
-// capitalTile/terrainLabel) was only ever consumed by this branch, so it
-// moves here whole; the outer `if (name === 'city')` test is gone because
-// this function is only ever called for the city drawer. `terrainLabel` is
-// computed but does not appear to be read anywhere below — a pre-existing
-// wart, not touched here.
-// A newer load rebuilds the drawer DOM; a slower older reply must not fill
-// (and so overwrite typed input in) the nodes that replaced its own.
 let cityLoadSeq = 0;
 export async function loadCityDrawer() {
   const seq = ++cityLoadSeq;
@@ -206,55 +142,9 @@ export async function loadCityDrawer() {
       document.getElementById('city-lasttick-sec').innerHTML = '<p class="empty-state">—</p>';
     }
 
-    const lp = pd ? (pd.labor_pool || 0) : 0;
 
-    // ── Devotion (cult) ─────────────────────────────────────────────────────
-    // Untouched by P5 (megaron_plan_fysisk_gubbemodell.md, explicit non-scope):
-    // cult is temple labor, its own path (megaron_cult_ar_ingen_vara_plan.md),
-    // never part of the gubbe-placement model. `pd.devotion`/
-    // `pd.devotion_capacity` are weights (0..1) already on the settlement
-    // payload fetched above. This used to share a table with the per-good
-    // percent allocation rows P5 removes (DE2=B, 2026-08-07) — now its own
-    // small block, logic unchanged.
-    const devWeight  = pd ? (pd.devotion || 0) : 0;
-    const devCapWt   = pd ? (pd.devotion_capacity || 0) : 0;
-    const devPct     = Math.round(devWeight * 100);
-    const devCapPct  = Math.round(devCapWt * 100);
-    const hasTemple  = (pd && pd.buildings || []).some(b => b.type === 'temple');
-    let devotionHTML;
-    if (hasTemple && devCapWt > 0) {
-      const atCap = devPct >= devCapPct;
-      devotionHTML = `
-        <div class="stat-row">
-          <span class="sr-label">Devotion <span style="color:var(--text-dim);font-size:.65rem">(cult, additive)</span></span>
-          <span class="sr-val">
-            <input type="number" class="labor-input" id="labor-input-cult" data-good="cult"
-              value="${devPct}" min="0" max="100" step="1"
-              style="width:3.5rem;background:var(--bg-raised);border:1px solid var(--border);color:var(--text);padding:.15rem .3rem;font-size:.8rem;text-align:right">%
-          </span>
-        </div>
-        <div style="font-size:.72rem;color:var(--text-dim)"><span class="labor-cit" data-good="cult">${fmtNum(Math.round(devWeight*lp))}</span> workers · <span id="labor-rate-cult">${fmtNum(devPct)} percent of ${fmtNum(devCapPct)} percent capacity${atCap ? ' · at cap — build a higher-level temple to devote more' : ''}</span></div>
-        <div style="margin-top:.4rem;display:flex;gap:.4rem;align-items:center">
-          <button id="labor-save-btn" onclick="saveLaborAlloc('${capital.id}')"
-            style="padding:.3rem .7rem;background:var(--accent);border:none;color:#000;font-size:.8rem;cursor:pointer">
-            Assign →
-          </button>
-          <span id="labor-save-msg" style="font-size:.75rem;color:var(--safe-text)"></span>
-          <span id="labor-save-err" style="font-size:.75rem;color:var(--danger)"></span>
-        </div>`;
-    } else {
-      // Mirrors the server's own 422 wording (province.go LaborAlloc, key=="cult"
-      // branch) rather than inventing separate copy — no temple, no control.
-      devotionHTML = `<p class="empty-state">Devotion (cult): needs a temple here — build one first.</p>`;
-    }
-
-    document.getElementById('city-devotion-sec').innerHTML = devotionHTML;
     document.getElementById('city-prod-sec').innerHTML = storageWarningsHTML(pd) + '<div id="city-gubbe-grid"><div class="loading">Loading…</div></div>';
-    const cultInp = document.getElementById('labor-input-cult');
-    if (cultInp) cultInp.addEventListener('input', () => {
-      const cit = document.querySelector('.labor-cit[data-good="cult"]');
-      if (cit) cit.textContent = fmtNum(Math.round((parseFloat(cultInp.value||0)||0)/100*lp));
-    });
+
 
     // ── Gubbe placement (P5) ────────────────────────────────────────────────
     const gridEl = document.getElementById('city-gubbe-grid');

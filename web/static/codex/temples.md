@@ -2,9 +2,11 @@ A **Temple** ([[buildings]]) is how you keep the gods' favour ([[kharis]]). It n
 
 ## Devotion — people
 
-**City → Production → More → Devotion**: type a percentage of the city and press **Assign →**. Devotion is *additive*: it does not take away from the [[citizens]] you have placed on hexes.
+**City → Catchment & workplaces → Temple**: place or remove whole [[citizens]] with the same controls as other workplaces. In Keryx, use `staff temple +1` or `staff temple -1`; `roster` includes them.
 
-A temple can only employ so much of the city — **15% per temple level** — and the row tells you when you are at the limit. <!-- src: server/internal/kharis/tick.go TempleDevotionPerLevel -->
+Each temple level provides **2 workplaces**: level 1 holds 2, level 2 holds 4 and level 3 holds 6. These people leave the idle pool, and cannot work another job at the same time. An empty temple has no devotion gain. Founding a city grants no automatic temple staffing.
+
+Each placed temple worker earns **1.05 kharis per day** before the offering factor, scarcity and realm decay. A fully staffed level-1 temple earns **2.1** before these adjustments. Kult shows local staffing and the projected realm net. <!-- src: server/internal/kharis/tick.go KharisPerTempleWorker -->
 
 ## Offerings — local early goods
 

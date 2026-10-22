@@ -22,7 +22,7 @@ Daily decay is **0.1 base + 0.1 × N × (N − 1) / 2**, where **N** counts all 
 Three things must be true, every day:
 
 1. **You have a temple.** Without one, kharis decays.
-2. **People serve in it** — devotion. See [[temples]].
+2. **People serve in it** — placed temple workers, 2 workplaces per level. Each earns 1.05 kharis per day before the offering factor, scarcity and decay. See [[temples]].
 3. **The temple is fed** — a daily reference gift of 0.25 grain, with local fish, timber or silver as substitutes of equal divine value. See [[temples]] for the selection order and planned gift.
 
 In a small realm, a fully staffed, fed level-1 temple can earn more favour than the realm loses each day. Compare the projected net; a larger realm may need more temples or higher levels. Larger temples can employ more devotion and raise kharis faster when staffed and fed.

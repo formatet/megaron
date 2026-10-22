@@ -124,7 +124,6 @@ func newRootCommand() *cobra.Command {
 		messengerCmd(),
 		messageCmd(),
 		tradeOfferCmd(),
-		allocateCmd(),
 		cityCmd(),
 		placementsAliasCmd(),
 		placeCmd(),
