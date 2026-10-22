@@ -1,10 +1,7 @@
 package combat
 
-// SLICE B (silverupkeep halveras, Timothy 2026-08-05): AG3 = lägre
-// silverupkeep, formen "halvera hela tabellen". Grain is untouched — slice A
-// set it. These cases pin the halved silver column, and confirm status never
-// changes silver (a field unit's pay is the same as garrisoned — only grain
-// doubles, per slice A).
+// Current wage anchors at home. Food is verified independently by the ration
+// tests; the shared wage owner scales professionals and actual rowers.
 
 import (
 	"math"

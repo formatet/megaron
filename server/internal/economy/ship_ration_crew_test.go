@@ -8,10 +8,9 @@ import (
 
 func TestRowersEatSoldierRations(t *testing.T) {
 	for _, boat := range []struct {
-		kind   string
-		crew   int
-		silver float64
-	}{{"galley", 20, 1.5}, {"war_galley", 50, 2.5}, {"merchantman", 10, 1}} {
+		kind string
+		crew int
+	}{{"galley", 20}, {"war_galley", 50}, {"merchantman", 10}} {
 		for _, crew := range []int{boat.crew, 2, 0} {
 			for _, status := range []string{"garrison", "repairing", "fitting_out", "marching", "positioned", "freighting", "laid_up"} {
 				t.Run(boat.kind+"/"+status+"/"+strconv.Itoa(crew), func(t *testing.T) {
@@ -20,17 +19,12 @@ func TestRowersEatSoldierRations(t *testing.T) {
 						soldierStatus = "positioned"
 					}
 					want := UnitUpkeep("spearman", "land", crew, soldierStatus, 0).Grain
-					silver := float64(crew) / 100
-					if soldierStatus == "garrison" {
-						silver *= .5
-					}
 					if status == "laid_up" {
 						want = 0
-						silver = 0
 					}
 					got := UnitUpkeep(boat.kind, "naval", 1, status, crew)
-					if math.Abs(got.Grain-want) > 1e-9 || math.Abs(got.Silver-silver) > 1e-9 {
-						t.Fatalf("crew %d: got %+v want food %g silver %g", crew, got, want, silver)
+					if math.Abs(got.Grain-want) > 1e-9 {
+						t.Fatalf("crew %d: got %+v want food %g", crew, got, want)
 					}
 				})
 			}

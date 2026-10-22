@@ -26,7 +26,7 @@ import (
 	"formatet/megaron/server/internal/auth"
 )
 
-func TestSettlementUpkeepDrain_PayerAndSoldCirculation(t *testing.T) {
+func TestSettlementUpkeepDrain_PayerAndWages(t *testing.T) {
 	pool := armyDisplayTestPool(t)
 	ctx := context.Background()
 
