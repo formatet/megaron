@@ -27,6 +27,9 @@ func TestTempleProjectionCountsOnlyRealWorkers(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id=$1`, sid).Scan(&owner); err != nil {
 		t.Fatal(err)
 	}
+	if _, err := pool.Exec(ctx, `INSERT INTO player_world_records(player_id,world_id,settlement_id,kharis_amount,kharis_rate,kharis_calc_tick) VALUES($1,$2,$3,40,0,current_world_tick())`, owner, wid, sid); err != nil {
+		t.Fatal(err)
+	}
 	if _, err := pool.Exec(ctx, `INSERT INTO divine_labor_valuations(world_id,good_key,rarity_spread,rarity_volume,divine_value,calc_tick) VALUES($1,'grain',0,0,1,0)`, wid); err != nil {
 		t.Fatal(err)
 	}

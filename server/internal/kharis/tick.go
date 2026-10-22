@@ -307,6 +307,16 @@ func clampKharis(newKharis, cap float64) float64 {
 	return newKharis
 }
 
+// maintenanceStanding preserves existing standing above a lowered temple
+// ceiling. Only ordinary burden acts there; offerings cannot offset it. Once
+// standing crosses below the ceiling, normal netted production resumes.
+func maintenanceStanding(current, gain, burden, cap float64) float64 {
+	if current > cap {
+		return max(kharisFloor, current-burden)
+	}
+	return clampKharis(current+gain-burden, cap)
+}
+
 // computeOfferFraction is the FAS 3 gain-scaling formula: fed/total temples.
 // 0 when there are no temples to feed — defensive only; a maintained day
 // (templeCities > 0) implies at least one temple stands, so
@@ -434,7 +444,7 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 	}
 
 	dailyDecay := computeDailyDecay(w.cityCount, w.population)
-	newKharis := clampKharis(w.kharis+gain-dailyDecay, w.kharisCap)
+	newKharis := maintenanceStanding(w.kharis, gain, dailyDecay, w.kharisCap)
 
 	// 1. Write the netted kharis value.
 	if _, err := h.pool.Exec(ctx,
@@ -457,17 +467,25 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 		// consume.)
 		_, _ = h.store.Append(ctx, w.settlementID, events.StreamProvince, "KharisMaintained",
 			map[string]any{
-				"temple_workers":     w.devotionSum,
-				"kharis_gain":        gain,
-				"daily_decay":        dailyDecay,
-				"net":                gain - dailyDecay,
-				"city_count":         w.cityCount,
-				"realm_population":   w.population,
-				"decay_rule_version": "cult_population_v1",
-				"rule_version":       "temple_workers_v2",
-				"offer_fraction":     offerFraction,
-				"temples_fed":        offerFed,
-				"temples_total":      offerTotal,
+				"temple_workers": w.devotionSum,
+				"kharis_gain":    gain,
+				"daily_decay":    dailyDecay,
+				"net":            gain - dailyDecay,
+				// Legacy gain/net describe available cult output. Add the
+				// committed outcome separately; older rows keep their meaning.
+				"standing_before":      w.kharis,
+				"standing_after":       newKharis,
+				"applied_net":          newKharis - w.kharis,
+				"effective_ceiling":    w.kharisCap,
+				"above_ceiling":        w.kharis > w.kharisCap,
+				"ceiling_rule_version": "retained_standing_v1",
+				"city_count":           w.cityCount,
+				"realm_population":     w.population,
+				"decay_rule_version":   "cult_population_v1",
+				"rule_version":         "temple_workers_v2",
+				"offer_fraction":       offerFraction,
+				"temples_fed":          offerFed,
+				"temples_total":        offerTotal,
 			},
 			worldID, nil)
 		if newKharis >= blessThreshold && rand.Float64() < blessProbability {
