@@ -2,8 +2,8 @@
 
 Mobile panels occupy the screen, close the previous panel through its own
 cleanup, and return map input when closed. Builds on rescued WIP d61992a5
-(base/master d6b0032c). Search continuation e8f4f900 makes the closing branch
-explicit. No merge, push or deployment. Proves mobile access in the chain gate;
+(base/master d6b0032c). Search production code is byte-identical to d61992a5; the unnecessary
+closing-branch rewrite was reverted on review. No merge, push or deployment. Proves mobile access in the chain gate;
 **BILD remains for Timothy before merge**.
 
 ## Results
@@ -40,6 +40,12 @@ and the loaded Codex index, and finishes finite CSS animations at their normal
 endpoint before capture. An additional baseline Codex repeat caught the old
 recipe photographing an asynchronous loading state; the explicit index-ready
 check resolves that independently. No production animation or renderer changed.
+
+During final verification Claude independently removed predecessor cleanup in
+this worktree (~17:32), causing the browser assertion that Notifications must
+close when Dispatch opens to fail. Claude confirmed the concurrent mutation
+in the shared chat log at 17:33 and restored the file. The final two-context
+run was performed afterwards with no concurrent edits.
 
 ## Reproduce
 

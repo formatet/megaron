@@ -11,7 +11,7 @@ registered panel IDs and their inline handlers. Reviewed against d61992a5.
 | March | marchctx.js closeMarchCtx; X, Escape, outside click, target change, send completion, map handoff | closeMobilePanel before display=none; unit/destination state reset |
 | Dispatch | dispatch_window.js closeDispatchWindow; X, backdrop, Escape, action/navigation handoffs | closeMobilePanel before remove(open) |
 | Account | account_window.js closeAccountWindow; X, backdrop, Escape, toggle, signout | closeMobilePanel before remove(open); generation invalidated and secret cleared |
-| Search | search.js closeSearch; ESC button/toggle, f or slash when not typing, backdrop, Escape, result click/Enter/drawer handoff | d61992a5 already had `else { closeSearch(); }` after classList.toggle. Now explicit early closeSearch+return, followed by add(open) only for opening. |
+| Search | search.js closeSearch; ESC button/toggle, f or slash when not typing, backdrop, Escape, result click/Enter/drawer handoff | d61992a5 already had `else { closeSearch(); }` after classList.toggle. Production code retained byte-for-byte; no change justified by the green baseline. |
 | Codex | codex.js closeCodex; X, topbar toggle, Escape, replacement | closeMobilePanel before remove(open) |
 
 Other matches hide child fields, tabs, badges, previews, tooltip or inline

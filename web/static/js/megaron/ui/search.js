@@ -14,40 +14,40 @@ let correspondenceLoading = false;
 // ── Search overlay (Sprint 4) ─────────────────────────────────────────────
 export function toggleSearch() {
   const o = document.getElementById('search-overlay');
+  o.classList.toggle('open');
   if (o.classList.contains('open')) {
-    closeSearch();
-    return;
-  }
-  o.classList.add('open');
-  openMobilePanel(o, closeSearch);
-  State.searchFocusIdx = -1;
-  const input = document.getElementById('search-input');
-  input.value = '';
-  input.focus();
-  const session = ++searchSession;
-  const worldID = State.WORLD_ID;
-  correspondence = {};
-  correspondenceLoading = true;
-  renderSearch('');
-  loadSearchMessages(worldID, fetchAuth).then(data => {
-    if (session !== searchSession || worldID !== State.WORLD_ID || !o.classList.contains('open')) return;
-    // The late message index must not drop an arrow-selection the player has
-    // already made: re-find the same row after the re-render.
-    const keep = State.searchFocusIdx >= 0
-      ? document.querySelector('#search-results .sr-item.focused .sr-name')?.textContent : null;
-    correspondence = data;
-    correspondenceLoading = false;
+    openMobilePanel(o, closeSearch);
     State.searchFocusIdx = -1;
-    renderSearch(input.value);
-    if (keep != null) {
-      const items = [...document.querySelectorAll('#search-results .sr-item')];
-      const idx = items.findIndex(el => el.querySelector('.sr-name')?.textContent === keep);
-      if (idx >= 0) {
-        State.searchFocusIdx = idx;
-        items.forEach((el, i) => el.classList.toggle('focused', i === idx));
+    const input = document.getElementById('search-input');
+    input.value = '';
+    input.focus();
+    const session = ++searchSession;
+    const worldID = State.WORLD_ID;
+    correspondence = {};
+    correspondenceLoading = true;
+    renderSearch('');
+    loadSearchMessages(worldID, fetchAuth).then(data => {
+      if (session !== searchSession || worldID !== State.WORLD_ID || !o.classList.contains('open')) return;
+      // The late message index must not drop an arrow-selection the player has
+      // already made: re-find the same row after the re-render.
+      const keep = State.searchFocusIdx >= 0
+        ? document.querySelector('#search-results .sr-item.focused .sr-name')?.textContent : null;
+      correspondence = data;
+      correspondenceLoading = false;
+      State.searchFocusIdx = -1;
+      renderSearch(input.value);
+      if (keep != null) {
+        const items = [...document.querySelectorAll('#search-results .sr-item')];
+        const idx = items.findIndex(el => el.querySelector('.sr-name')?.textContent === keep);
+        if (idx >= 0) {
+          State.searchFocusIdx = idx;
+          items.forEach((el, i) => el.classList.toggle('focused', i === idx));
+        }
       }
-    }
-  });
+    });
+  } else {
+    closeSearch();
+  }
 }
 export function closeSearch(e) {
   ++searchSession;
