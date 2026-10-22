@@ -452,15 +452,6 @@
         "battle.md"
       ]
     },
-    "/api/v1/worlds/{id}/market/wants": {
-      "terms": [
-        "want",
-        "wants"
-      ],
-      "articles": [
-        "trade.md"
-      ]
-    },
     "/api/v1/worlds/{id}/founding/settle": {
       "terms": [
         "found",

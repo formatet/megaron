@@ -25,7 +25,6 @@ keryx dispatches             # which kinds of news are pushed to you live
 keryx map                    # the map around you
 keryx city                   # people and placement in a city
 keryx goods                  # stock and production
-keryx wants                  # who needs what, among cities you have contacted
 keryx password               # change your password
 keryx occupation order ...   # sack, burn or annex an occupied city
 ```
@@ -56,3 +55,5 @@ for a question the rules did not answer. For colony founding in scripts, add
 `--yes`: `keryx unit march --unit <id> --target 5,-3 --intent colonize --name Thapsos --yes`.
 Without confirmation, the non-interactive text command only shows the forecast;
 JSON callers receive a refusal until they add `--yes`.
+
+To learn what a contacted city needs or can spare, ask its Wanax with `keryx messenger` and read the reply with `keryx inbox`. See [[messengers]] and [[trade]].

@@ -1,4 +1,4 @@
-Everything your cities make, eat and trade is a **good**. The **Economy (⚖)** drawer shows your goods across every settlement, in four tabs: **Goods**, **Transfer**, **Automation** and **Wants**.
+Everything your cities make, eat and trade is a **good**. The **Economy (⚖)** drawer shows your goods across every settlement, in three tabs: **Goods**, **Transfer** and **Automation**.
 
 | Good | What it is for |
 |---|---|
@@ -11,12 +11,13 @@ Everything your cities make, eat and trade is a **good**. The **Economy (⚖)** 
 | **Silver** | The currency, and the only thing that pays soldiers ([[silver]]). |
 | **Incense** | Rare; found only on marked dry hexes and needing no building. An offering of it pleases the gods more than any other gift ([[incense]]). |
 
-## The four tabs
+## The three tabs
 
 - **Goods** — stock, production and use of each good, city by city. The settlements table compares people, food produced minus food eaten, food days and shortage status; select a city to close Economy and open its City drawer. Goods piling up with nothing using them are marked — see [[surplus]].
 - **Transfer** — move goods between your own cities ([[transfers]]).
 - **Automation** — [[routes|standing orders]] that move goods for you while you are away.
-- **Wants** — shortages and surpluses in every city you have [[contact|contacted]]: where to [[trade]].
+
+To learn what another city needs or can spare, ask its Wanax in a [[messengers|letter]] through **Diplomacy → Correspondence**, then agree a [[trade|trade offer]].
 
 ## Offerings and trade
 

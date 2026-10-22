@@ -144,7 +144,6 @@ func newRootCommand() *cobra.Command {
 		buildRoadAliasCmd(),
 		roadsCmd(),
 		foundingCmd(),
-		wantsCmd(),
 		riteCmd(),
 		abandonCmd(),
 		godCmd(),

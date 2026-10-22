@@ -1,0 +1,16 @@
+TAP version 13
+# Subtest: N: drawer keeps three tabs and crew choices, replaces both CSV inputs with addable goods rows
+ok 1 - N: drawer keeps three tabs and crew choices, replaces both CSV inputs with addable goods rows
+  ---
+  duration_ms: 26.953564
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 74.032376

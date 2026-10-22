@@ -1,0 +1,35 @@
+» färsk DB på migration 198 · commit 4054bd63+ändringar
+ok  	formatet/megaron/server/api/handlers	42.897s
+?   	formatet/megaron/server/cmd/create-world	[no test files]
+ok  	formatet/megaron/server/cmd/erase-player	0.034s
+ok  	formatet/megaron/server/cmd/keryx	0.357s
+?   	formatet/megaron/server/cmd/mapgen-debug	[no test files]
+?   	formatet/megaron/server/cmd/material-measure	[no test files]
+ok  	formatet/megaron/server/cmd/recompute-all	0.037s
+ok  	formatet/megaron/server/cmd/seed-incense	1.263s
+ok  	formatet/megaron/server/cmd/server	2.917s
+ok  	formatet/megaron/server/internal/agora	0.038s
+ok  	formatet/megaron/server/internal/ai	0.024s
+ok  	formatet/megaron/server/internal/auth	0.722s
+ok  	formatet/megaron/server/internal/capabilities	0.584s
+?   	formatet/megaron/server/internal/carrier	[no test files]
+?   	formatet/megaron/server/internal/chronicle	[no test files]
+?   	formatet/megaron/server/internal/clock	[no test files]
+ok  	formatet/megaron/server/internal/combat	12.815s
+ok  	formatet/megaron/server/internal/economy	5.137s
+ok  	formatet/megaron/server/internal/events	0.107s
+ok  	formatet/megaron/server/internal/gossip	0.227s
+ok  	formatet/megaron/server/internal/hexgrid	0.001s
+ok  	formatet/megaron/server/internal/kharis	12.584s
+ok  	formatet/megaron/server/internal/messenger	2.714s
+ok  	formatet/megaron/server/internal/movement	0.003s
+ok  	formatet/megaron/server/internal/notify	1.142s
+ok  	formatet/megaron/server/internal/province	0.375s
+ok  	formatet/megaron/server/internal/religion	0.041s
+ok  	formatet/megaron/server/internal/settlement	0.001s
+ok  	formatet/megaron/server/internal/tick	0.159s
+ok  	formatet/megaron/server/internal/transport	1.034s
+ok  	formatet/megaron/server/internal/unit	0.022s
+?   	formatet/megaron/server/internal/unit/shipnames	[no test files]
+ok  	formatet/megaron/server/internal/world	153.658s
+» containern står kvar: megaron-gotest-3008442  (postgres://postgres:pw@localhost:57900/megaron_test?sslmode=disable)

@@ -9,7 +9,7 @@ async function rig(run) {
   const nodes=new Map(),calls=[];
   function node(id){if(!nodes.has(id))nodes.set(id,{id,value:'',innerHTML:'',textContent:'',insertAdjacentHTML(_position,html){this.innerHTML+=html;},style:{},classList:{add(){},remove(){}},dataset:{},rows:[],querySelectorAll(){return this.rows;},addEventListener(_,fn){this.listener=fn;}});return nodes.get(id);}
   const body=node('economy-body');
-  body.querySelectorAll=sel=>sel==='.dtab'?['goods','transfer','automation','wants'].map(name=>{const t=node('tab-'+name);t.dataset.tab=name;return t;}):[];
+  body.querySelectorAll=sel=>sel==='.dtab'?['goods','transfer','automation'].map(name=>{const t=node('tab-'+name);t.dataset.tab=name;return t;}):[];
   globalThis.document={getElementById:id=>id==='net-status'?null:node(id)};
   globalThis.localStorage={getItem:()=>null};
   State.WORLD_ID='world';State.provinceData=[{id:'province-a',settlement_id:'city-a',own:true,name:'Nostos'},{id:'province-b',settlement_id:'city-b',own:true,name:'Kyme'}];
@@ -33,11 +33,13 @@ test('N: blank optional rows leave an empty return array and source crew intact'
   const body=JSON.parse(post.opts.body);assert.equal(body.crewed_by_settlement_id,'city-a');assert.deepEqual(body.outbound,[{good_key:'grain',threshold:0}]);assert.deepEqual(body.return,[]);
 }));
 
-test('N: drawer keeps four tabs and crew choices, replaces both CSV inputs with addable goods rows',()=>rig(async({node,body,calls})=>{
+test('N: drawer keeps three tabs and crew choices, replaces both CSV inputs with addable goods rows',()=>rig(async({node,body,calls})=>{
   await economy.loadEconomyDrawer();await node('tab-automation').listener.call(node('tab-automation'));
   // Wait for catalogue request and its DOM continuation.
   for(let i=0;i<10;i++)await new Promise(resolve=>setImmediate(resolve));
-  assert.deepEqual([...body.innerHTML.matchAll(/data-tab="([^"]+)"/g)].map(m=>m[1]),['goods','transfer','automation','wants']);
+  assert.deepEqual([...body.innerHTML.matchAll(/data-tab="([^"]+)"/g)].map(m=>m[1]),['goods','transfer','automation']);
+  assert.doesNotMatch(body.innerHTML,/data-tab="wants"|ectab-wants/);
+  assert.ok(!calls.some(c=>c.url.includes('/market/wants')));
   const html=node('ectab-automation').innerHTML;
   assert.match(html,/Crewed by \(which end supplies the gubbe\)/);assert.match(html,/value="from"/);assert.match(html,/value="to"/);
   assert.doesNotMatch(html,/comma-separated|grain:200|silver:0/);

@@ -1,0 +1,12 @@
+[
+  {
+    "file": "server/internal/economy/market_snapshot.go",
+    "sha256": "a03c6602c430b425dc1791533c6e87604153d60443faaaf640e43d4ed5dc652c",
+    "unchanged_from": "4054bd63"
+  },
+  {
+    "file": "web/static/js/megaron/verb_telemetry.js",
+    "sha256": "82de5bf61eaa72d79171ab3a39229c68e01b439efeeb94c689ecfc3fffc41ee0",
+    "unchanged_from": "4054bd63"
+  }
+]

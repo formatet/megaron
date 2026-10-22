@@ -1,0 +1,39 @@
+{
+  "healthz": {
+    "commit": "4054bd6+dirty",
+    "migration": 198,
+    "status": "ok"
+  },
+  "worlds_status": 200,
+  "authenticated_me_status": 200,
+  "market_wants": [
+    {
+      "authenticated": false,
+      "method": "GET",
+      "status": 404,
+      "body": "404 page not found"
+    },
+    {
+      "authenticated": false,
+      "method": "POST",
+      "status": 404,
+      "body": "404 page not found"
+    },
+    {
+      "authenticated": true,
+      "method": "GET",
+      "status": 404,
+      "body": "404 page not found"
+    },
+    {
+      "authenticated": true,
+      "method": "POST",
+      "status": 404,
+      "body": "404 page not found"
+    }
+  ],
+  "keryx": {
+    "exit": 1,
+    "stderr": "Error: unknown command \"wants\" for \"keryx\"\nSee keryx --help"
+  }
+}

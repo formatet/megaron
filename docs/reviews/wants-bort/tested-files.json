@@ -1,0 +1,18 @@
+{
+  "server/api/handlers/market_wants_stock_rate_test.go": "deleted",
+  "server/api/handlers/province.go": "5a265e617d3b19b3dd0d137017c654aadec8bda6eaeba5cb927f619dd77ab1e7",
+  "server/cmd/keryx/cmd_wants.go": "deleted",
+  "server/cmd/keryx/cmd_wants_test.go": "403d37788d20a0c860d6fee2f5f2667c54d75e9fb2b68ca869a81f185d09f14e",
+  "server/cmd/keryx/main.go": "d1a2f807d280f4e9a3572dc44d46ccb45f25b3c136b275bed942a4ac6ccdce3c",
+  "server/cmd/server/main.go": "60d62ebfac83dcbf8678a688a7bd5b7554644514f1cceb3fff617295eb5ac4b0",
+  "server/internal/economy/discovery.go": "deleted",
+  "tools/verb_parity_allowlist.json": "c1fded420bab516be10ef35fb2b5ec4168c10f63282ce71acc7b810f0e87b410",
+  "web/static/codex/coming-back.md": "69953f56a6cef483e6bcead39bf2dd8d405d5a20a02d5263bbde722dbd1533c0",
+  "web/static/codex/contact.md": "2818f142a46b3a32fa9293cd5b3e630518203f99c228a75393503ed090b7142d",
+  "web/static/codex/goods.md": "7ec5a41711d1056f5c26d9c76eed83cb0edbbaf3604d7b3c2b97fa8a183a2f54",
+  "web/static/codex/keryx.md": "c128edd876b11cac7c30b57ffb3dc2716b709b25cbdcbcadc0d7f5af7f04b1ec",
+  "web/static/codex/surplus.md": "5cc5e52494777d197e143087b10b1c6174cd719756722d349607a2660ec0dc99",
+  "web/static/codex/trade.md": "995cc58faac2d333fd47538cea4fe48e82ae564d58e880d4b72cfb44800fd128",
+  "web/static/js/megaron/ui/drawers/economy.js": "77252564cd4bd97abddbbda5abb8e92e2379aa5303677256c7d0910e29e62221",
+  "web/static/js/megaron/ui/drawers/economy_rows.test.mjs": "c4a77276899e775e8b4690052e087531cda64fb595cb7224f2febf410f1f8d6f"
+}
