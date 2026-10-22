@@ -1,0 +1,7 @@
+» färsk DB på migration 198 · commit db36755b+ändringar
+2026/10/22 18:51:30 INFO player registered id=5b56a052-38aa-40da-a51a-58ce664d2cfd username=buildhex-21421d6c-81e4-48ac-a556-1a76256c239e
+--- FAIL: TestBuildShipyardRefusalNamesExistingAndTargetLevels (0.07s)
+    build_quote_test.go:28: missing "Raising Shipyard to level 2": map[error:insufficient_goods missing:[map[good:cedar have:0 need:4]]]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.073s
+FAIL

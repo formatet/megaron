@@ -1,0 +1,8 @@
+{
+  "commit": "db36755bfae59e5797f8e89373adee5628906305",
+  "mutation": "omit buildContext from the actual Build handler goods refusal",
+  "red": true,
+  "exact_restore": true,
+  "fresh_green": true,
+  "file_sha256": "e6d9c79098ea969a439fcaef18ccefebf085333cf31bff1cf255385345fb7bf2"
+}
