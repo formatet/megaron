@@ -1,0 +1,5 @@
+» färsk DB på migration 198 · commit b61378c0+ändringar
+ok  	formatet/megaron/server/internal/economy	5.308s
+ok  	formatet/megaron/server/internal/combat	13.521s
+ok  	formatet/megaron/server/internal/transport	1.056s
+ok  	formatet/megaron/server/api/handlers	43.461s

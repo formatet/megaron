@@ -1,0 +1,5 @@
+--- FAIL: TestRowersEatSoldierRations (0.00s)
+    ship_ration_crew_test.go:11: 20 rowers eat 0.04, want soldier ration 0.1
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.002s
+FAIL
