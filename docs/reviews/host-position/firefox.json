@@ -14,6 +14,7 @@
     "hover": "(2,0) Plains \u00b7 Nomadic Host of Minos \u2014 Marching \u2014 from (0,0) to (3,0)",
     "panel_status": "Marching \u00b7 (2,0)",
     "can_found_here": true,
+    "pixel_sha256": "fe3e6745b826bb9f5c034d265ecbb3b91953362dc77f7cd2bf6426faf727333b",
     "page_errors": []
   },
   {
@@ -31,6 +32,7 @@
     "hover": "(2,0) Plains \u00b7 Nomadic Host of Minos \u2014 Marching \u2014 from (0,0) to (3,0)",
     "panel_status": "Marching \u00b7 (2,0)",
     "can_found_here": true,
+    "pixel_sha256": "fe3e6745b826bb9f5c034d265ecbb3b91953362dc77f7cd2bf6426faf727333b",
     "page_errors": []
   },
   {
@@ -48,6 +50,7 @@
     "hover": "(2,0) Semi_desert \u00b7 Nomadic Host of Minos \u2014 Waiting \u2014 This ground cannot support a metropolis.",
     "panel_status": "Waiting \u2014 This ground cannot support a metropolis. \u00b7 (2,0)",
     "can_found_here": false,
+    "pixel_sha256": "6e3867300c3fed94dc5d42b97261d40e9fa06171bf23984bbafaa96028eb8d02",
     "page_errors": []
   },
   {
@@ -65,6 +68,7 @@
     "hover": "(2,0) Semi_desert \u00b7 Nomadic Host of Minos \u2014 Waiting \u2014 This ground cannot support a metropolis.",
     "panel_status": "Waiting \u2014 This ground cannot support a metropolis. \u00b7 (2,0)",
     "can_found_here": false,
+    "pixel_sha256": "6e3867300c3fed94dc5d42b97261d40e9fa06171bf23984bbafaa96028eb8d02",
     "page_errors": []
   },
   {
@@ -82,6 +86,7 @@
     "hover": "(2,0) Plains \u00b7 Nomadic Host of Minos \u2014 Can found here",
     "panel_status": "Can found here \u00b7 (2,0)",
     "can_found_here": true,
+    "pixel_sha256": "d03ea44834dd492355b2eba12148c2a1bc80cedc7acc30718349668ec3c57294",
     "page_errors": []
   },
   {
@@ -99,6 +104,7 @@
     "hover": "(2,0) Plains \u00b7 Nomadic Host of Minos \u2014 Can found here",
     "panel_status": "Can found here \u00b7 (2,0)",
     "can_found_here": true,
+    "pixel_sha256": "d03ea44834dd492355b2eba12148c2a1bc80cedc7acc30718349668ec3c57294",
     "page_errors": []
   },
   {
@@ -116,6 +122,7 @@
     "hover": "(2,0) Plains \u00b7 Nomadic Host of Minos \u2014 Marching \u2014 from (0,0) to (3,0)",
     "panel_status": "Marching \u00b7 (2,0)",
     "can_found_here": true,
+    "pixel_sha256": "438fa52172cc3f60f9ef9d05712ebf6c92d2a897038d8b743c3f81a93e0cfb57",
     "page_errors": []
   },
   {
@@ -133,6 +140,7 @@
     "hover": "(2,0) Plains \u00b7 Nomadic Host of Minos \u2014 Marching \u2014 from (0,0) to (3,0)",
     "panel_status": "Marching \u00b7 (2,0)",
     "can_found_here": true,
+    "pixel_sha256": "438fa52172cc3f60f9ef9d05712ebf6c92d2a897038d8b743c3f81a93e0cfb57",
     "page_errors": []
   },
   {
@@ -150,6 +158,7 @@
     "hover": "(2,0) Semi_desert \u00b7 Nomadic Host of Minos \u2014 Waiting \u2014 This ground cannot support a metropolis.",
     "panel_status": "Waiting \u2014 This ground cannot support a metropolis. \u00b7 (2,0)",
     "can_found_here": false,
+    "pixel_sha256": "8a96986c748a1e1b5a2d49fa605fbddce54dc231b89c2367b2a97d431f222879",
     "page_errors": []
   },
   {
@@ -167,6 +176,7 @@
     "hover": "(2,0) Semi_desert \u00b7 Nomadic Host of Minos \u2014 Waiting \u2014 This ground cannot support a metropolis.",
     "panel_status": "Waiting \u2014 This ground cannot support a metropolis. \u00b7 (2,0)",
     "can_found_here": false,
+    "pixel_sha256": "8a96986c748a1e1b5a2d49fa605fbddce54dc231b89c2367b2a97d431f222879",
     "page_errors": []
   },
   {
@@ -184,6 +194,7 @@
     "hover": "(2,0) Plains \u00b7 Nomadic Host of Minos \u2014 Can found here",
     "panel_status": "Can found here \u00b7 (2,0)",
     "can_found_here": true,
+    "pixel_sha256": "092df7f95fe5d668985ba72cc87517a6e37dbc683c72bba44ffbb5af99b7d3e0",
     "page_errors": []
   },
   {
@@ -201,6 +212,7 @@
     "hover": "(2,0) Plains \u00b7 Nomadic Host of Minos \u2014 Can found here",
     "panel_status": "Can found here \u00b7 (2,0)",
     "can_found_here": true,
+    "pixel_sha256": "092df7f95fe5d668985ba72cc87517a6e37dbc683c72bba44ffbb5af99b7d3e0",
     "page_errors": []
   }
 ]

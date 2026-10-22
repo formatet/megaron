@@ -1,5 +1,0 @@
-# formatet/megaron/server/api/handlers [formatet/megaron/server/api/handlers.test]
-api/handlers/host_position.go:50:7: host.AtMilli undefined (type physicalHost has no field or method AtMilli)
-api/handlers/host_position.go:100:38: host.AtMilli undefined (type physicalHost has no field or method AtMilli)
-FAIL	formatet/megaron/server/api/handlers [build failed]
-FAIL

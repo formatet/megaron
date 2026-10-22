@@ -45,7 +45,7 @@ func loadPhysicalHost(ctx context.Context, db hostPositionDB, worldID, playerID 
 	}
 	anchor, err := tick.LoadAnchor(ctx, db, worldID)
 	if err != nil {
-		return host, fmt.Errorf("load host tick anchor: %w", err)
+		return host, fmt.Errorf("load Host clock anchor: %w", err)
 	}
 	host.Status = row.Status
 	host.AtMilli = anchor.MilliAt(now)

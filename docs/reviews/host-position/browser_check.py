@@ -10,7 +10,7 @@ server=http.server.ThreadingHTTPServer(('127.0.0.1',0),functools.partial(Handler
 threading.Thread(target=server.serve_forever,daemon=True).start()
 # Keep actual map DOM/styles; bootstrap is replaced by explicit deterministic fixture setup.
 html=re.sub(r'<script\b[^>]*>.*?</script>','',(ROOT/'web/static/map.html').read_text(),flags=re.S)
-proof=[]
+proof=[];pixel_hashes={}
 try:
  with sync_playwright() as pw:
   browser=pw.firefox.launch()
@@ -73,9 +73,15 @@ try:
      page.mouse.move(point['x'],point['y'])
      expect(page.locator('#tile-tooltip')).to_contain_text({'marching':'Marching','waiting':'Waiting','can_found_here':'Can found here'}[status])
      assert not posts,posts
-     if run==2:page.screenshot(path=str(OUT/f'firefox-{width}-{status}.png'))
+     page.evaluate('document.fonts.ready')
+     pixels=page.screenshot()
+     digest=hashlib.sha256(pixels).hexdigest();key=(width,status)
+     if run==1:pixel_hashes[key]=digest
+     else:
+      assert pixel_hashes[key]==digest,('non-deterministic frozen frame',key,pixel_hashes[key],digest)
+      (OUT/f'firefox-{width}-{status}.png').write_bytes(pixels)
      assert not errors,errors
-     proof.append({'width':width,'status':status,'run':run,'physical_hex':[2,0],'stored_departure':[host['q'],0],'hover':hover,'panel_status':page.locator('#ip-host-state').inner_text(),'can_found_here':can,'page_errors':errors})
+     proof.append({'width':width,'status':status,'run':run,'physical_hex':[2,0],'stored_departure':[host['q'],0],'hover':hover,'panel_status':page.locator('#ip-host-state').inner_text(),'can_found_here':can,'pixel_sha256':digest,'page_errors':errors})
      page.close()
   browser.close()
  print(json.dumps(proof,indent=2))
