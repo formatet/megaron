@@ -328,8 +328,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			    COALESCE((SELECT rate FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'silver'), 0)`,
 			sett.ID,
 		).Scan(&upkeepGrainRate, &upkeepSilverRate)
-		soldShare := combat.UpkeepSoldShare()
-		armyUp, circulatedSilver, upErr := settlementUpkeepDrain(r.Context(), h.pool, sett.ID, soldShare)
+		armyUp, circulatedSilver, upErr := settlementUpkeepDrain(r.Context(), h.pool, sett.ID)
 		if upErr != nil {
 			writeError(w, http.StatusInternalServerError, "could not compute army upkeep")
 			return
@@ -341,7 +340,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// army's upkeep, or this chain-gate figure (can_recruit/sustainable below)
 		// would silently stop accounting for the population's food at all.
 		_, upkeepGrainNetOfPopulation := economy.GrainBalance(upkeepGrainRate, laborPool)
-		netGrainPerDay, netSilverPerDay := upkeepNetPerDay(upkeepGrainNetOfPopulation, upkeepSilverRate, armyUp, circulatedSilver)
+		netGrainPerDay, netSilverPerDay := upkeepNetPerDay(upkeepGrainNetOfPopulation, upkeepSilverRate, armyUp)
 
 		// can_recruit per unit: goods + labor pool + building requirements (for 1 unit).
 		// Mirrors the actual Recruit handler gates so can_recruit:false is trustworthy.
@@ -356,9 +355,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			// liquid at debit time (the war-chest is still charged in full).
 			UpkeepGrainPerDay  float64 `json:"upkeep_grain_per_tick"`
 			UpkeepSilverPerDay float64 `json:"upkeep_silver_per_tick"`
-			// Net is what the city actually loses per tick while the unit garrisons
-			// at home: the sold share circulates back (Del C). March it out and the
-			// cost is the gross figure again.
+			// Legacy net field equals gross; the owner has already applied home pay.
 			UpkeepSilverNetPerDay float64 `json:"upkeep_silver_net_per_tick"`
 			Sustainable           bool    `json:"sustainable"`
 		}
@@ -391,15 +388,12 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			fullSize := 100
 			cat := string(unit.CategoryOf(unit.Type(unitType)))
 			if cat != "land" {
-				fullSize = 1 // naval upkeep is flat, independent of size
+				fullSize = 1 // naval food/pay uses actual crew, not hull size
 			}
 			newUnitUp := combat.UnitUpkeep(unitType, cat, fullSize, "garrison", unit.CrewFor(unit.Type(unitType)))
-			// A unit recruited here garrisons here and is paid from here, so both
-			// unit columns point at this city and Del C's sold share circulates
-			// back the same tick. Judging sustainability on the gross would call a
-			// city that can carry the unit unsustainable — a false negative sitting
-			// directly on the recruit surface, i.e. on the chain gate.
-			newUnitNetSilver := newUnitUp.Silver * (1 - soldShare)
+			// Home pay is already halved by the wage owner; gross equals net.
+
+			newUnitNetSilver := newUnitUp.Silver
 			sustainable := (netGrainPerDay-newUnitUp.Grain) >= 0 && (netSilverPerDay-newUnitNetSilver) >= 0
 			recruitAfford = append(recruitAfford, recruitAffordRow{
 				Unit: unitType, CanRecruit: afford,
@@ -978,8 +972,7 @@ func (u upkeepAmount) MarshalJSON() ([]byte, error) {
 // force here costs to keep".
 //
 // It is NOT what this settlement pays. Since mig 100 the payer is
-// support_settlement_id, not settlement_id, and since Del C a garrison's sold
-// partly circulates back. Use settlementUpkeepDrain for anything that projects
+// support_settlement_id, not settlement_id. Use settlementUpkeepDrain for anything that projects
 // the city's own silver, or the projection will drift from the debit.
 //
 // The status filter is deliberately narrower than the tick's own billing set
@@ -1027,24 +1020,12 @@ func armyUpkeep(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID)
 //     still bills the town that raised it, while a unit garrisoning here may be
 //     paid by someone else entirely. Grouping by settlement_id understates the
 //     drain — the dangerous direction: it calls a city sustainable that isn't.
-//   - Sold circulation (silver-plan Del C). Soldiers standing in the town that
-//     pays them spend soldShare of their silver back into it, so that town's net
-//     silver drain is (1−share)·gross. Projecting gross overstates it — a false
-//     negative on the recruit surface, which sits on the chain gate.
 //
-// Mirrors the tick's own filters: the four upkeep-bearing statuses (garrison,
-// marching, positioned, embarked — the last added 2026-08-05, embarkerad
-// ranson: an embarked cohort is billed exactly like a marching one, so a read
-// surface that forgot it would show a settlement as solvent while the tick
-// was already charging it in full, or vice versa), and the payer must still
-// exist AND still be owned by the unit's owner (a fallen or captured town
-// pays nothing — combat/upkeep.go step 2). Returns the gross grain+silver
-// and, separately, the silver that comes back, so the caller can show the
-// player an arithmetic they can follow.
-func settlementUpkeepDrain(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID, soldShare float64) (gross upkeepAmount, circulatedSilver float64, err error) {
+// Wages already contain the home/field factor; no pay is credited back.
+// The legacy circulation return remains zero for compatible API fields.
+func settlementUpkeepDrain(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID) (gross upkeepAmount, circulatedSilver float64, err error) {
 	rows, qerr := pool.Query(ctx,
-		`SELECT u.type, u.category, u.size, u.status, u.crew,
-		        COALESCE(u.settlement_id = s.id, false) AS at_home
+		`SELECT u.type, u.category, u.size, u.status, u.crew
 		 FROM units u
 		 JOIN settlements s ON s.id = u.support_settlement_id AND s.owner_id = u.owner_id
 		 WHERE u.support_settlement_id = $1
@@ -1058,16 +1039,12 @@ func settlementUpkeepDrain(ctx context.Context, pool *pgxpool.Pool, settlementID
 	for rows.Next() {
 		var unitType, category, status string
 		var size, crew int
-		var atHome bool
-		if serr := rows.Scan(&unitType, &category, &size, &status, &crew, &atHome); serr != nil {
+		if serr := rows.Scan(&unitType, &category, &size, &status, &crew); serr != nil {
 			return gross, 0, serr
 		}
 		up := combat.UnitUpkeep(unitType, category, size, status, crew)
 		gross.Grain += up.Grain
 		gross.Silver += up.Silver
-		if atHome {
-			circulatedSilver += soldShare * up.Silver
-		}
 	}
 	return gross, circulatedSilver, rows.Err()
 }
@@ -1079,12 +1056,11 @@ func settlementUpkeepDrain(ctx context.Context, pool *pgxpool.Pool, settlementID
 // Army upkeep is a separate once-daily discrete debit (combat/upkeep.go),
 // never folded into the continuous rate, so a settlement's displayed grain
 // rate can look healthy right up until the daily upkeep tick disbands a unit
-// (P6, soak 2026-07-18). circulatedSilver is the Del C sold share that returns
-// to the town the same tick — it never leaves, so it must not count as drain.
+// (P6, soak 2026-07-18). Home/field wages are already resolved by UnitUpkeep.
 // Pure function — no DB — so it's unit-testable without a database.
-func upkeepNetPerDay(grainRatePerTick, silverRatePerTick float64, up upkeepAmount, circulatedSilver float64) (grainNetPerDay, silverNetPerDay float64) {
+func upkeepNetPerDay(grainRatePerTick, silverRatePerTick float64, up upkeepAmount) (grainNetPerDay, silverNetPerDay float64) {
 	grainNetPerDay = grainRatePerTick - up.Grain
-	silverNetPerDay = silverRatePerTick - (up.Silver - circulatedSilver)
+	silverNetPerDay = silverRatePerTick - up.Silver
 	return grainNetPerDay, silverNetPerDay
 }
 
@@ -2759,7 +2735,7 @@ func settlementUpkeepCapacity(ctx context.Context, pool *pgxpool.Pool, settlemen
 	).Scan(&grainRate, &silverRate, &population); err != nil {
 		return 0, 0, err
 	}
-	up, circulatedSilver, upErr := settlementUpkeepDrain(ctx, pool, settlementID, combat.UpkeepSoldShare())
+	up, _, upErr := settlementUpkeepDrain(ctx, pool, settlementID)
 	if upErr != nil {
 		return 0, 0, upErr
 	}
@@ -2773,7 +2749,7 @@ func settlementUpkeepCapacity(ctx context.Context, pool *pgxpool.Pool, settlemen
 	// figure (Recruit's own sustainability gate) doesn't silently start
 	// ignoring the population's food the moment D1 landed.
 	_, grainNetOfPopulation := economy.GrainBalance(grainRate, laborPool)
-	grainNetPerDay, silverNetPerDay = upkeepNetPerDay(grainNetOfPopulation, silverRate, up, circulatedSilver)
+	grainNetPerDay, silverNetPerDay = upkeepNetPerDay(grainNetOfPopulation, silverRate, up)
 	return grainNetPerDay, silverNetPerDay, nil
 }
 

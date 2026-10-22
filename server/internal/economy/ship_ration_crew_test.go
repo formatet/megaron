@@ -20,13 +20,16 @@ func TestRowersEatSoldierRations(t *testing.T) {
 						soldierStatus = "positioned"
 					}
 					want := UnitUpkeep("spearman", "land", crew, soldierStatus, 0).Grain
-					silver := boat.silver
+					silver := float64(crew) / 100
+					if soldierStatus == "garrison" {
+						silver *= .5
+					}
 					if status == "laid_up" {
 						want = 0
 						silver = 0
 					}
 					got := UnitUpkeep(boat.kind, "naval", 1, status, crew)
-					if math.Abs(got.Grain-want) > 1e-9 || got.Silver != silver {
+					if math.Abs(got.Grain-want) > 1e-9 || math.Abs(got.Silver-silver) > 1e-9 {
 						t.Fatalf("crew %d: got %+v want food %g silver %g", crew, got, want, silver)
 					}
 				})

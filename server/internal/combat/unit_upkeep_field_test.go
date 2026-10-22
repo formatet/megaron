@@ -4,8 +4,7 @@ package combat
 // = a civilian's ration (pop×0.5/day, economy/recompute.go:359 is the anchor —
 // UpkeepSpecs' land grain figures are calibrated to be exactly that at size
 // 100). In the field ("marching"/"positioned") he eats double: mobilising and
-// standing out cost more than standing home. Silver (sold) never changes with
-// status. Naval upkeep is per hull, flat, and status never touches it.
+// standing out cost more than standing home. Silver wages halve at home and use actual rowers.
 //
 // These cases pin the status contract on top of unit_upkeep_test.go's existing
 // scaling contract (land size/100, naval flat, unknown = 0).
@@ -30,12 +29,12 @@ func TestUnitUpkeep_Status(t *testing.T) {
 		{"garrison spearman full size", "spearman", "land", 100, "garrison", 0.5, 0},
 		{"marching spearman full size — silver unchanged", "spearman", "land", 100, "marching", 1.0, 0},
 		{"positioned spearman half size", "spearman", "land", 50, "positioned", 0.5, 0},
-		{"garrison galley — home crew ration", "galley", "naval", 1, "garrison", 0.10, 1.5},
-		{"marching galley — field crew ration", "galley", "naval", 1, "marching", 0.20, 1.5},
-		{"garrison elite_infantry full size", "elite_infantry", "land", 100, "garrison", 0.6, 2},
-		{"marching elite_infantry full size", "elite_infantry", "land", 100, "marching", 1.2, 2},
-		{"garrison war_chariot full size", "war_chariot", "land", 100, "garrison", 0.8, 3},
-		{"marching war_chariot full size", "war_chariot", "land", 100, "marching", 1.6, 3},
+		{"garrison galley — home crew ration", "galley", "naval", 1, "garrison", 0.10, 0.1},
+		{"marching galley — field crew ration", "galley", "naval", 1, "marching", 0.20, 0.2},
+		{"garrison elite_infantry full size", "elite_infantry", "land", 100, "garrison", 0.6, 0.75},
+		{"marching elite_infantry full size", "elite_infantry", "land", 100, "marching", 1.2, 1.5},
+		{"garrison war_chariot full size", "war_chariot", "land", 100, "garrison", 0.8, 1},
+		{"marching war_chariot full size", "war_chariot", "land", 100, "marching", 1.6, 2},
 		{"unknown type costs nothing regardless of status", "slinger", "land", 100, "marching", 0, 0},
 	}
 	const eps = 1e-9

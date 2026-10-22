@@ -19,15 +19,14 @@ import (
 // loop, so the audit event is one row per paying settlement per day (not per
 // unit — that would be an event flood).
 type upkeepAgg struct {
-	unitsPaid        int
-	unitsUnpaid      int
-	grainTotal       float64
-	foodTotal        float64
-	foodByGood       map[string]float64
-	silverGross      float64 // silver actually debited for upkeep
-	silverCirculated float64 // credited back to a garrison town (Del C; 0 until then)
-	silverDestroyed  float64 // left the world entirely
-	silverUnpaid     float64 // gate-stopped: never debited, never left the world
+	unitsPaid       int
+	unitsUnpaid     int
+	grainTotal      float64
+	foodTotal       float64
+	foodByGood      map[string]float64
+	silverGross     float64 // silver actually debited for upkeep
+	silverDestroyed float64 // left the world entirely
+	silverUnpaid    float64 // gate-stopped: never debited, never left the world
 }
 
 // UpkeepSettledPayload is the per-settlement daily upkeep outcome. For paid units
@@ -35,8 +34,9 @@ type upkeepAgg struct {
 // separate bucket for upkeep the affordability gate stopped (kept out of
 // destroyed so the flow analysis can tell real destruction from a gate-stop —
 // review condition, Perplexity). circulated_to maps recipient settlement → amount
-// for the credit leg; empty until Del C, present in the schema from the first
-// version so the later payer-variant (metropolis-as-payer) needs no schema change.
+// for historical credit outcomes. New wages have no credit: this map is empty,
+// silver_circulated is zero, and silver_gross equals silver_destroyed. Historical
+// events retain the exact same meaning and fields.
 type UpkeepSettledPayload struct {
 	FoodTotal        float64               `json:"food_total"`
 	FoodByGood       map[string]float64    `json:"food_by_good,omitempty"`
@@ -77,13 +77,9 @@ func (p SilverAuditPayload) total() float64 { return p.LiquidTotal + p.FundTotal
 // appends above).
 func (h *UpkeepHandler) emitUpkeepSettled(ctx context.Context, worldID uuid.UUID, aggs map[uuid.UUID]*upkeepAgg) {
 	for sid, a := range aggs {
-		// circulated_to: recipient → amount. In the MVP payer=recipient, so a single
-		// entry {sid: circulated} when anything circulated; empty ({}) otherwise. The
-		// map (not a scalar) is what carries the later metropolis-as-payer variant.
+		// Keep the historical event field, with no new circulation.
+
 		circulatedTo := map[uuid.UUID]float64{}
-		if a.silverCirculated > 0 {
-			circulatedTo[sid] = a.silverCirculated
-		}
 		_, _ = h.store.Append(ctx, sid, events.StreamProvince, "UpkeepSettled",
 			UpkeepSettledPayload{
 				SettlementID: sid,
@@ -92,7 +88,7 @@ func (h *UpkeepHandler) emitUpkeepSettled(ctx context.Context, worldID uuid.UUID
 				GrainTotal:   a.grainTotal,
 				FoodTotal:    a.foodTotal, FoodByGood: a.foodByGood,
 				SilverGross:      a.silverGross,
-				SilverCirculated: a.silverCirculated,
+				SilverCirculated: 0,
 				SilverDestroyed:  a.silverDestroyed,
 				SilverUnpaid:     a.silverUnpaid,
 				CirculatedTo:     circulatedTo,

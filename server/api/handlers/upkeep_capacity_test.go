@@ -64,7 +64,7 @@ func TestUpkeepNetPerTick(t *testing.T) {
 			up:            upkeepAmount{Grain: 5, Silver: 2},
 			circulated:    1.4, // share 0.7 of the whole 2
 			wantGrainNet:  0 - 5,
-			wantSilverNet: 0.05 - 0.6,
+			wantSilverNet: 0.05 - 2,
 		},
 		{
 			// A garrison that marches out keeps billing its home town, but stops
@@ -82,7 +82,7 @@ func TestUpkeepNetPerTick(t *testing.T) {
 	const eps = 1e-9
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			gotGrain, gotSilver := upkeepNetPerDay(tc.grainRate, tc.silverRate, tc.up, tc.circulated)
+			gotGrain, gotSilver := upkeepNetPerDay(tc.grainRate, tc.silverRate, tc.up)
 			if math.Abs(gotGrain-tc.wantGrainNet) > eps {
 				t.Errorf("grainNetPerTick = %v, want %v", gotGrain, tc.wantGrainNet)
 			}

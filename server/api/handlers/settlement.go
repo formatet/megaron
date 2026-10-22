@@ -177,7 +177,7 @@ func (h *SettlementHandler) SettlementsOverview(w http.ResponseWriter, r *http.R
 	result := make([]item, 0, len(settRows))
 	for _, s := range settRows {
 		fs := settlementFoodSummary(r.Context(), h.pool, s.id, s.population)
-		up, _, err := settlementUpkeepDrain(r.Context(), h.pool, s.id, combat.UpkeepSoldShare())
+		up, _, err := settlementUpkeepDrain(r.Context(), h.pool, s.id)
 		if err != nil {
 			writeError(w, http.StatusInternalServerError, "could not compute army upkeep")
 			return

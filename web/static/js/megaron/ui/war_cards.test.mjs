@@ -146,3 +146,18 @@ test('equal food: roster food alias wins and ship manifest preserves each good',
  assert.match(small,/food for less than a day.*0 grain, under 0.1 fish, under 0.1 oil, 0.1 wine/);
  assert.doesNotMatch(small,/&lt;|<0.1|0 fish/,'small positives remain safe plain text, distinct from zero');
 });
+
+test('B: Army pay preserves server home, field and surviving-crew amounts',()=>{
+ for(const [state,pay] of [
+  [{type:'elite_infantry',status:'garrison'},0.75],
+  [{type:'elite_infantry',status:'marching'},1.5],
+  [{type:'war_chariot',status:'positioned'},2],
+  [{category:'naval',type:'galley',status:'garrison',crew:20},0.1],
+  [{category:'naval',type:'galley',status:'freighting',crew:11},0.11],
+  [{category:'naval',type:'war_galley',status:'repairing',crew:50},0.25],
+  [{category:'naval',type:'emporos',status:'fitting_out',crew:10},0.05],
+ ]) {
+  const html=renderUnitCard(unit({...state,upkeep_context:'active',upkeep_food_per_tick:0.1,upkeep_silver_per_tick:pay}));
+  assert.ok(html.includes(pay+' silver per day'), JSON.stringify(state));
+ }
+});

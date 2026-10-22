@@ -157,7 +157,7 @@ func TestStorageForecastUsesCurrentMealAndPayerSold(t *testing.T) {
 	}
 	for _, f := range fs {
 		if f.GoodKey == "silver" {
-			want := 2 - UnitUpkeep("galley", "naval", 1, "garrison", 20).Silver*(1-UpkeepSoldShare())
+			want := 2 - UnitUpkeep("galley", "naval", 1, "garrison", 20).Silver
 			if math.Abs(f.NetPerTick-want) > 1e-9 {
 				t.Fatalf("net%g want%g", f.NetPerTick, want)
 			}

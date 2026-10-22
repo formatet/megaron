@@ -125,7 +125,7 @@ func TestLayUpReturnsCrewAndZeroesShipUpkeep_FitOutDraftsAndCompletesAfterThreeT
 	if up.Grain != 0 || up.Silver != 0 {
 		t.Fatalf("laid-up ship upkeep=%+v, want zero", up)
 	}
-	drain, _, err := settlementUpkeepDrain(ctx, f.pool, f.settlementID, 0)
+	drain, _, err := settlementUpkeepDrain(ctx, f.pool, f.settlementID)
 	if err != nil || drain.Grain != 0 || drain.Silver != 0 {
 		t.Fatalf("city drain=%+v err=%v, want zero", drain, err)
 	}
@@ -166,7 +166,7 @@ func TestLayUpReturnsCrewAndZeroesShipUpkeep_FitOutDraftsAndCompletesAfterThreeT
 	if scheduled != 13 {
 		t.Fatalf("scheduled completion at tick %d, want 13", scheduled)
 	}
-	drain, _, err = settlementUpkeepDrain(ctx, f.pool, f.settlementID, 0)
+	drain, _, err = settlementUpkeepDrain(ctx, f.pool, f.settlementID)
 	if err != nil || drain.Silver <= 0 || drain.Grain <= 0 {
 		t.Fatalf("fit-out crew upkeep=%+v err=%v, want positive", drain, err)
 	}

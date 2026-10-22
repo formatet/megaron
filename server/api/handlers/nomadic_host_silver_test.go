@@ -50,12 +50,12 @@ func TestSeedNomadicHost_SilverAmountIs480(t *testing.T) {
 // The unchanged reserve now supports only the professional fleet's pay.
 func TestNomadicReserveSupportsProfessionalFleet(t *testing.T) {
 	const startSilver = 480.0
-	spearmanSilver := combat.UpkeepSpecs["spearman"].Silver
-	galleySilver := combat.UpkeepSpecs["galley"].Silver
+	spearmanSilver := combat.UnitUpkeep("spearman", "land", 100, "garrison", 0).Silver
+	galleySilver := combat.UnitUpkeep("galley", "naval", 1, "garrison", 20).Silver
 
 	perTickDrain := 2*spearmanSilver + 2*galleySilver
 	ticks := startSilver / perTickDrain
-	if math.Abs(ticks-160) > 1e-9 {
-		t.Errorf("480 silver / (2 spearmen + 2 galleys) = %v ticks, want 160 (only the two galleys draw silver)", ticks)
+	if math.Abs(ticks-2400) > 1e-9 {
+		t.Errorf("480 silver / (2 spearmen + 2 galleys) = %v ticks, want 2400 (only the two galleys draw silver)", ticks)
 	}
 }

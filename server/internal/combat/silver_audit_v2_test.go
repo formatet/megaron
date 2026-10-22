@@ -44,7 +44,7 @@ func TestSilverAuditV2Conservation(t *testing.T) {
 	store := events.NewStore(pool)
 	sched := events.NewScheduler(pool, clk)
 	h := NewUpkeepHandler(pool, sched, store, nil, nil)
-	h.soldShare = .7
+
 	legacy, err := store.Append(ctx, world, events.StreamWorld, "SilverAudit", SilverAuditPayload{LiquidTotal: 999, FundTotal: 123, EscrowTotal: 7}, world, nil)
 	if err != nil {
 		t.Fatal(err)
@@ -132,22 +132,22 @@ func TestSilverAuditV2Conservation(t *testing.T) {
 	near(p.TotalSilver, 485)
 	near(p.MinedSinceLast, 0)
 	exec(`UPDATE settlement_goods SET rate=0 WHERE settlement_id=$1 AND good_key='silver'`, mother)
-	// Actual field payroll destroys 2 silver, paid from a fed city.
+	// Actual field payroll destroys 1.5 silver, paid from a fed city.
 	exec(`INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,'grain',1000,0,1000,2)`, mother)
 	exec(`UPDATE units SET type='elite_infantry',status='marching',size=100,support_settlement_id=$2 WHERE id=$1`, colonist, mother)
 	if err := h.Handle(ctx, events.ScheduledEvent{WorldID: world, ID: nextID(), DueTick: 2}); err != nil {
 		t.Fatal(err)
 	}
 	p = read()
-	near(p.TotalSilver, 483)
-	near(p.NetDelta, -2)
+	near(p.TotalSilver, 483.5)
+	near(p.NetDelta, -1.5)
 	near(p.MinedSinceLast, 0)
 	exec(`UPDATE units SET type='spearman',size=50,status='forming' WHERE id=$1`, colonist)
 	exec(`UPDATE settlement_goods SET rate=10 WHERE settlement_id=$1 AND good_key='silver'`, mother)
 	exec(`UPDATE worlds SET current_tick=3 WHERE id=$1`, world)
 	p = audit()
 	near(p.TotalSilver, 485)
-	near(p.MinedSinceLast, 2)
+	near(p.MinedSinceLast, 1.5)
 	exec(`UPDATE settlement_goods SET rate=0 WHERE settlement_id=$1 AND good_key='silver'`, mother)
 	// Trade reserve → physical first leg → delivered, with no minting.
 	var offer uuid.UUID

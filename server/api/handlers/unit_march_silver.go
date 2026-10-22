@@ -26,9 +26,10 @@ func (h *UnitHandler) marchSilverForecast(ctx context.Context, worldID, ownerID,
 		id                     uuid.UUID
 		typ, category, status  string
 		size                   int
+		crew                   int
 		location, payer, cargo *uuid.UUID
 	}
-	rows, err := h.pool.Query(ctx, `SELECT u.id,u.type,u.category,u.status,u.size,u.settlement_id,
+	rows, err := h.pool.Query(ctx, `SELECT u.id,u.type,u.category,u.status,u.size,u.crew,u.settlement_id,
 	 (SELECT s.id FROM settlements s WHERE s.id=u.support_settlement_id AND s.owner_id=u.owner_id AND s.world_id=u.world_id),u.cargo_unit_id
 	 FROM units u WHERE u.world_id=$1 AND u.owner_id=$2`, worldID, ownerID)
 	if err != nil {
@@ -37,7 +38,7 @@ func (h *UnitHandler) marchSilverForecast(ctx context.Context, worldID, ownerID,
 	all := map[uuid.UUID]row{}
 	for rows.Next() {
 		var u row
-		if err := rows.Scan(&u.id, &u.typ, &u.category, &u.status, &u.size, &u.location, &u.payer, &u.cargo); err != nil {
+		if err := rows.Scan(&u.id, &u.typ, &u.category, &u.status, &u.size, &u.crew, &u.location, &u.payer, &u.cargo); err != nil {
 			rows.Close()
 			return nil, err
 		}
@@ -70,7 +71,6 @@ func (h *UnitHandler) marchSilverForecast(ctx context.Context, worldID, ownerID,
 	if subsistence {
 		return result, nil
 	}
-	share := combat.UpkeepSoldShare()
 	home, field := 0.0, 0.0
 	drain := map[uuid.UUID]float64{}
 	payers := map[uuid.UUID]bool{}
@@ -81,18 +81,16 @@ func (h *UnitHandler) marchSilverForecast(ctx context.Context, worldID, ownerID,
 		default:
 			continue
 		}
-		// This projection consumes silver only; crew does not affect ship pay.
-		gross := combat.UnitUpkeep(u.typ, u.category, u.size, u.status, 0).Silver
-		atPayer := u.payer != nil && u.location != nil && *u.payer == *u.location
-		net := gross - combat.SoldCirculation(gross, atPayer, share)
-		after := net
+		current := combat.UnitUpkeep(u.typ, u.category, u.size, u.status, u.crew).Silver
+		after := current
 		if selected[id] {
-			home += net
-			field += gross
-			after = gross
+			fieldPay := combat.UnitUpkeep(u.typ, u.category, u.size, "marching", u.crew).Silver
+			home += current
+			field += fieldPay
+			after = fieldPay
 			if u.payer != nil {
 				payers[*u.payer] = true
-			} else if gross > 0 {
+			} else if after > 0 {
 				unfunded = true
 			}
 		}

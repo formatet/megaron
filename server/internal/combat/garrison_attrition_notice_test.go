@@ -42,7 +42,7 @@ func TestGarrisonAttritionAuditAndNoticeOwnership(t *testing.T) {
 			rec := &unpaidWarningRecorder{pool: pool}
 			clk := clock.NewTestClock(time.Unix(0, 0))
 			h := NewUpkeepHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), rec, nil)
-			h.soldShare = 0
+
 			for n := 0; n < tc.ticks; n++ {
 				if _, err := pool.Exec(ctx, `UPDATE worlds SET current_tick=$2 WHERE id=$1`, f.worldID, f.tick+n); err != nil {
 					t.Fatal(err)
