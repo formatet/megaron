@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
@@ -163,7 +164,7 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	//   land on ore-catchment tiles and produce ore from turn 1; a silver
 	//   deposit in catchment ranks below the hemisphere's own ore but above
 	//   no metal at all (megaron_silvergeografin.md).
-	q, r2, err := pickSpawnTile(r.Context(), h.pool, worldID, halfQ, nil)
+	q, r2, err := pickSpawnTile(r.Context(), h.pool, worldID, halfQ, nil, h.clk.Now())
 	if err != nil {
 		writeError(w, http.StatusConflict, "this world is full — every remaining tile is within 4 hexes of an existing settlement or host; retrying will not help. Join another world.")
 		return
@@ -290,21 +291,22 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 // every settlement and host, on the least-loaded viable landmass (see the
 // ORDER BY). excludeLandmass, when set, keeps the host off one landmass — a
 // Wanax rising after their last city fell lands elsewhere, as a refugee.
-func pickSpawnTile(ctx context.Context, pool *pgxpool.Pool, worldID uuid.UUID, halfQ int, excludeLandmass *int) (int, int, error) {
+func pickSpawnTile(ctx context.Context, pool *pgxpool.Pool, worldID uuid.UUID, halfQ int, excludeLandmass *int, now time.Time) (int, int, error) {
+	hostQ, hostR, err := loadSpawnHostPositions(ctx, pool, worldID, now)
+	if err != nil {
+		return 0, 0, err
+	}
 	var q, r int
 	var terrainType string
 	var copperDeposit, tinDeposit, silverDeposit, cedarDeposit, tileCoastal bool
-	err := pool.QueryRow(ctx,
+	err = pool.QueryRow(ctx,
 		// Occupancy counts BOTH settled provinces and wandering hosts: a host that
 		// has not founded yet is occupied ground too. Counting only provinces would
 		// compare 0 against 0 for the whole founder phase and pile every player into
 		// one valley — and worlds will later mix the two, when players spawn a host
 		// into an already-inhabited world (Timothy 2026-07-15).
 		`WITH hosts AS (
-		     SELECT hu.q, hu.r
-		     FROM units hu
-		     JOIN founder_phase fp ON fp.host_unit_id = hu.id AND fp.active
-		     WHERE hu.world_id = $1 AND hu.q IS NOT NULL AND hu.r IS NOT NULL
+		     SELECT q, r FROM unnest($5::int[], $6::int[]) AS physical(q, r)
 		 ),
 		 -- Per-landmass load: every occupied tile (settled province or active
 		 -- host) resolved to its map_tiles.landmass_id and counted. Tiles on a
@@ -446,7 +448,7 @@ func pickSpawnTile(ctx context.Context, pool *pgxpool.Pool, worldID uuid.UUID, h
 		   )::int) DESC,
 		   RANDOM()
 		 LIMIT 1`,
-		worldID, halfQ, hexgrid.CatchmentRadius, excludeLandmass,
+		worldID, halfQ, hexgrid.CatchmentRadius, excludeLandmass, hostQ, hostR,
 	).Scan(&q, &r, &terrainType, &copperDeposit, &tinDeposit, &silverDeposit, &cedarDeposit, &tileCoastal)
 	return q, r, err
 }

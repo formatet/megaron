@@ -1,0 +1,24 @@
+» färsk DB på migration 200 · commit d248b09e
+2026/10/22 20:54:23 INFO player registered id=639aa1da-b130-451e-8093-28369dc584f5 username=moving-spawn-owner-84502be9-f897-458b-a31d-fa4ad5ba0ad1
+2026/10/22 20:54:23 INFO player registered id=4cd1b2d9-02f8-4c23-8024-030ea740192c username=moving-spawn-joiner-8fb26fd0-24e4-41a9-93ec-a03f9510c551
+2026/10/22 20:54:23 INFO player registered id=f0e2dd9a-448e-4a1f-8aec-df1209709de2 username=moving-spawn-owner-e6e489b0-9739-4932-8cf2-4a3afc4d81a4
+2026/10/22 20:54:23 INFO player registered id=c32b4eec-bc41-48cf-928d-23ac663f4dca username=moving-spawn-joiner-cdcfe13b-7807-406f-a19e-2f83aa79c886
+--- FAIL: TestJoinSpawnUsesPhysicalHostClearance (0.26s)
+    --- FAIL: TestJoinSpawnUsesPhysicalHostClearance/departed_ground_is_free (0.13s)
+        join_host_position_test.go:73: join while Host physically at (11,0), candidate (2,0): got 409 {"error":"this world is full — every remaining tile is within 4 hexes of an existing settlement or host; retrying will not help. Join another world."}
+            ; want 201
+    --- FAIL: TestJoinSpawnUsesPhysicalHostClearance/physical_ground_is_occupied (0.13s)
+        join_host_position_test.go:73: join while Host physically at (11,0), candidate (11,0): got 201 {"culture":"minoan","host_unit_id":"1d6a7034-9014-48c0-a407-56f3ce29da42","population":1000,"tile":{"WorldID":"00000000-0000-0000-0000-000000000000","Q":11,"R":0,"Terrain":"","Coastal":false,"Fertility":0,"Mineral":0,"CopperDeposit":false,"TinDeposit":false,"SilverDeposit":false,"CedarDeposit":false,"IncenseDeposit":false}}
+            ; want 409
+2026/10/22 20:54:24 INFO player registered id=3ed184da-672f-41dc-9d85-e6b9f075bac1 username=landmass-moving-host-a65fde45-bf1d-4d94-b4b1-0ac7910149a9
+2026/10/22 20:54:24 INFO player registered id=ab78fce1-ced1-4e2c-b530-e2b4391d95a7 username=landmass-new-host-52749131-65f2-406a-9fce-5d9ee5119a0c
+--- FAIL: TestJoinSpawnBalancesPhysicalHostLandmass (0.12s)
+    join_host_position_test.go:144: spawn (20,20), want unloaded departure landmass1 at (0,20); Host actually occupies landmass2
+2026/10/22 20:54:24 INFO player registered id=8fa62066-c18a-40c6-8b19-7977825e3c90 username=rise-moving-host-f3bddbce-296b-438f-be92-eca10307e11c
+2026/10/22 20:54:24 INFO player registered id=d65137eb-8995-45d2-8f20-e6c33729cbad username=rising-new-host-77d27934-0a2b-41d2-8e7f-60f0de7a0d05
+--- FAIL: TestRiseSpawnClearsPhysicalHost (0.11s)
+    join_host_position_test.go:186: rise on departed ground 409 {"error":"no free land remains in this world for a host to stand on"}
+        , want201
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.499s
+FAIL

@@ -77,10 +77,11 @@ func (h *JoinHandler) Rise(w http.ResponseWriter, r *http.Request) {
 	halfQ := (mapWidth - 1) / 2
 
 	// Another landmass first; if none has room, anywhere a newcomer could stand.
-	q, r2, err := pickSpawnTile(r.Context(), h.pool, worldID, halfQ, fallenLandmass)
+	now := h.clk.Now()
+	q, r2, err := pickSpawnTile(r.Context(), h.pool, worldID, halfQ, fallenLandmass, now)
 	if errors.Is(err, pgx.ErrNoRows) && fallenLandmass != nil {
 		slog.Info("rise: no free land on another landmass, falling back", "player", playerID, "landmass", *fallenLandmass)
-		q, r2, err = pickSpawnTile(r.Context(), h.pool, worldID, halfQ, nil)
+		q, r2, err = pickSpawnTile(r.Context(), h.pool, worldID, halfQ, nil, now)
 	}
 	if err != nil {
 		writeError(w, http.StatusConflict, "no free land remains in this world for a host to stand on")

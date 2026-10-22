@@ -1,0 +1,6 @@
+{
+  "mutation": "Host clearance <=4 to <=3; settlement clearance unchanged",
+  "red_exit": 1,
+  "restored_exit": 0,
+  "restored_sha256": "825f0f953fa81f192c967e73ffc5a0d0b77a5cad2fd505ae1e71d00d8a81a884"
+}

@@ -1,0 +1,20 @@
+» färsk DB på migration 200 · commit d248b09e
+2026/10/22 20:53:53 INFO player registered id=78008793-cb63-4af0-8ccf-9e1f1dbdcea3 username=moving-spawn-owner-68504f5b-0695-41d9-9ba5-55951fa3ac48
+2026/10/22 20:53:53 INFO player registered id=ef80e174-b556-4b07-9e43-af9d6cfe03c7 username=moving-spawn-owner-08750615-48d9-4393-a6ac-5d784d320da4
+--- FAIL: TestJoinSpawnUsesPhysicalHostClearance (0.17s)
+    --- FAIL: TestJoinSpawnUsesPhysicalHostClearance/departed_ground_is_free (0.09s)
+        join_host_position_test.go:62: physical Host {AtMilli:3000 PhaseID:4aef5e5d-7c06-4344-b5c9-77e88eb74f96 ID:f0bd3e0a-d1c0-43a7-a487-d15d57c0c0ec Population:1000 Status:marching Position:{Q:11 R:0}}: <nil>
+    --- FAIL: TestJoinSpawnUsesPhysicalHostClearance/physical_ground_is_occupied (0.08s)
+        join_host_position_test.go:62: physical Host {AtMilli:3000 PhaseID:c9b49970-0111-4234-b70b-4f53b537d102 ID:b9a93d7b-be96-41e7-b415-4aace57ceba7 Population:1000 Status:marching Position:{Q:11 R:0}}: <nil>
+2026/10/22 20:53:53 INFO player registered id=592faae5-64a0-4012-91be-e186f7678822 username=landmass-moving-host-8b2a7a84-e564-4674-bf5c-1d10871056f4
+2026/10/22 20:53:53 INFO player registered id=ff98dc65-b663-4036-97bc-91d2bda55f9e username=landmass-new-host-d78ffc92-6ee1-4b02-9bdd-def68247fc34
+--- FAIL: TestJoinSpawnBalancesPhysicalHostLandmass (0.13s)
+    join_host_position_test.go:144: spawn (20,20), want unloaded departure landmass1 at (0,20); Host actually occupies landmass2
+2026/10/22 20:53:53 INFO player registered id=93247d08-0d3a-4d01-90aa-829f8ca3e60e username=rise-moving-host-92ae2743-8c5b-41a6-acb0-ae99e04b4924
+2026/10/22 20:53:53 INFO player registered id=16fa5903-ef9a-47ae-8993-27925fa4d33c username=rising-new-host-c4a57b95-8d74-4051-935f-b956c8b359fe
+--- FAIL: TestRiseSpawnClearsPhysicalHost (0.11s)
+    join_host_position_test.go:186: rise on departed ground 409 {"error":"no free land remains in this world for a host to stand on"}
+        , want201
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.407s
+FAIL

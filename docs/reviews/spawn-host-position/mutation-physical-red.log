@@ -1,0 +1,34 @@
+» färsk DB på migration 202 · commit f1ba9954+ändringar
+2026/10/23 01:24:52 INFO player registered id=f2548af3-7739-4c4a-9a0a-52fd8eeb9843 username=moving-spawn-owner-49388f51-f92d-4282-8144-2ae674b753e0
+2026/10/23 01:24:53 INFO player registered id=36d68c70-f700-4021-923e-4272a1bc9cc5 username=moving-spawn-joiner-c9e6c929-ffe8-444a-9217-8b9ad27ddaa8
+2026/10/23 01:24:53 INFO player registered id=2f0c657c-1561-4046-8c0c-a193d0ac9172 username=moving-spawn-owner-c825b86e-d314-4d56-a59e-2301cceff525
+2026/10/23 01:24:53 INFO player registered id=bbb504fa-0256-475f-9b90-51cc016096d0 username=moving-spawn-joiner-fd0d3d5d-4616-4ddc-aad2-5a8a139cf0b4
+2026/10/23 01:24:53 INFO player registered id=b48a8711-df36-4add-ab66-3c0c422fe985 username=moving-spawn-owner-e3c59f10-d793-4935-ac6f-eeefb0adf1d2
+2026/10/23 01:24:53 INFO player registered id=0fb55933-cdff-406f-b761-6dd4492d36f1 username=moving-spawn-joiner-6c018f9d-b6f2-45dc-8197-d4a0f945d07d
+2026/10/23 01:24:53 INFO player registered id=e0c356e3-26e1-4b0d-b306-c425c278449b username=moving-spawn-owner-3a107289-fa77-4bbb-9e71-964331dfb5c7
+2026/10/23 01:24:53 INFO player registered id=46e06142-f9ea-4f3a-a772-b73f2dce5e85 username=moving-spawn-joiner-68cb34f0-25d7-4622-9a2f-2f31388df95d
+2026/10/23 01:24:53 INFO player registered id=984198ec-394c-4075-ac4c-a45beb720b89 username=moving-spawn-owner-fff4b2d4-0922-417b-85b0-0026e38e3e65
+2026/10/23 01:24:53 INFO player registered id=0bdcf943-2a7d-4a62-8691-55565eaa79de username=moving-spawn-joiner-2c8a1628-1d7f-47b4-936b-dea648e4a6cb
+--- FAIL: TestJoinSpawnUsesPhysicalHostClearance (0.67s)
+    --- FAIL: TestJoinSpawnUsesPhysicalHostClearance/departed_ground_is_free (0.13s)
+        join_host_position_test.go:82: join while Host physically at (11,0), candidate (2,0): got 409 {"error":"this world is full — every remaining tile is within 4 hexes of an existing settlement or host; retrying will not help. Join another world."}
+            ; want 201
+    --- FAIL: TestJoinSpawnUsesPhysicalHostClearance/physical_ground_is_occupied (0.14s)
+        join_host_position_test.go:82: join while Host physically at (11,0), candidate (11,0): got 201 {"culture":"minoan","host_unit_id":"03d38c13-f882-415f-adbe-169510306e01","population":1000,"tile":{"WorldID":"00000000-0000-0000-0000-000000000000","Q":11,"R":0,"Terrain":"","Coastal":false,"Fertility":0,"Mineral":0,"CopperDeposit":false,"TinDeposit":false,"SilverDeposit":false,"CedarDeposit":false,"IncenseDeposit":false}}
+            ; want 409
+    --- FAIL: TestJoinSpawnUsesPhysicalHostClearance/four_hex_boundary_is_occupied (0.13s)
+        join_host_position_test.go:82: join while Host physically at (11,0), candidate (15,0): got 201 {"culture":"minoan","host_unit_id":"556feb12-c13c-4ab6-9dca-50732ef14c01","population":1000,"tile":{"WorldID":"00000000-0000-0000-0000-000000000000","Q":15,"R":0,"Terrain":"","Coastal":false,"Fertility":0,"Mineral":0,"CopperDeposit":false,"TinDeposit":false,"SilverDeposit":false,"CedarDeposit":false,"IncenseDeposit":false}}
+            ; want 409
+2026/10/23 01:24:53 INFO player registered id=59ef46f6-4430-4ff9-b709-d5d2ae5a3278 username=landmass-moving-host-82ee1ec5-1e03-432f-a761-a82771000944
+2026/10/23 01:24:53 INFO player registered id=b9ce4674-0066-4dca-8c84-6f8b6526687a username=landmass-new-host-ce1a756f-f133-4b2a-a1ef-c558469df783
+--- FAIL: TestJoinSpawnBalancesPhysicalHostLandmass (0.13s)
+    join_host_position_test.go:153: spawn (20,20), want unloaded departure landmass1 at (0,20); Host actually occupies landmass2
+2026/10/23 01:24:53 INFO player registered id=cddd301b-2290-4a2a-82f7-78e827adbe9d username=rise-moving-host-7cee1a60-64d5-4127-bc2d-ddcc04967e90
+2026/10/23 01:24:53 INFO player registered id=ddadd7da-a2e7-4f21-b3be-609ab6470ca2 username=rising-new-host-57d4fe25-26bd-47c3-a3cd-3348b6ec2696
+2026/10/23 01:24:53 INFO rise: no free land on another landmass, falling back player=ddadd7da-a2e7-4f21-b3be-609ab6470ca2 landmass=1
+--- FAIL: TestRiseSpawnClearsPhysicalHost (0.13s)
+    join_host_position_test.go:208: rise on departed ground 409 {"error":"no free land remains in this world for a host to stand on"}
+        , want201
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.932s
+FAIL
