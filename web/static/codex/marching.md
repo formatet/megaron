@@ -40,9 +40,9 @@ A marching army eats more than one in garrison and cannot forage ([[upkeep]]). I
 
 Choose **Explore** in the map menu; the default expedition duration is ready to use. Open **More** to change the duration in **days**. The chosen hex is the centre of an area, even in fog. The order summary shows its extent and duration before sending; **War → Army → March** offers the same controls.
 
-The unit chooses nearby unexplored ground on its own, and turns home by half the duration. It can turn earlier if the area is already explored or nothing further is reachable. **War → Army** and `keryx unit list` show the area, duration, latest turn and home day, and why it has turned. A Runner-delivered order begins when received, so those days become known when it starts. On return, Dispatches carries the report ([[sight]]).
+It travels first to the exact hex you chose, even if that hex is already seen, then chooses nearby unexplored ground on its own. It turns home by half the duration. It can turn earlier if the area is already explored or nothing further is reachable. **War → Army** and `keryx unit list` show the area, duration, latest turn and home day, and why it has turned. A Runner-delivered order begins when received, so those days become known when it starts. On return, Dispatches carries the report ([[sight]]).
 
-A chosen fog hex marks the search area; it does not guarantee a land or water route. If the order says there is no route to unseen ground in that area from this unit's position, choose another area or use a unit departing from elsewhere. The refusal says nothing about terrain outside the chosen area.
+The chosen hex is the first destination. If it cannot be reached from this unit's position, the order is refused without substituting another destination. Choose a reachable hex or use a unit departing from elsewhere. After reaching the chosen hex, a ship prefers unseen coastal water over open sea.
 
 In Keryx: `unit march --unit <id> --target q,r --intent explore --ticks N`. Omit `--ticks` for the server's default duration; the current allowed range comes from the game. Add `--preview` to check the order without dispatching. Exploration routes cross unknown ground, so their arrival forecast stays unavailable.
 
@@ -69,7 +69,7 @@ The route and its costs are fixed at departure. A journey already underway keeps
 its recorded costs and arrival day when the movement rules change. A finished
 [[roads|road]] shortens the hex it leads into for everyone who walks it.
 
-An expedition preview shows its planned length. For a unit in garrison it can also show the planned homecoming **if it departed immediately**. The order may still need physical delivery. The first destination inside the search area remains unknown; no hidden route or arrival time is revealed.
+An expedition preview shows its planned length. For a unit in garrison it can also show the planned homecoming **if it departed immediately**. The order may still need physical delivery. The preview names the selected first destination; its route and arrival time remain undisclosed.
 
 A march preview applies the same expedition budget checks as the order. It leaves unseen first-leg routes undisclosed. A Host founds with `founding settle`, not a colony march. Without confirmation, nothing is sent.
 
