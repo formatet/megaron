@@ -193,3 +193,22 @@ test('CG16: −1 is disabled on a held hex where none of the gubbar are yours', 
   const own = goodRowHTML(hex, { good_key: 'fish', rate_per_tick: 1, cap: 2, placed: 2, placed_ordinals: [3], marginal_yield: 0 }, null);
   assert.doesNotMatch(own, /data-verb="unplace1" disabled/);
 });
+
+// Fishing capacities arrive from economy, including a locked deep-water hex.
+test('CG fishing: zero places disables adding; coast, bay and harbour capacities and yields are server values', () => {
+  const target = { target_kind: 'hex', hex_ordinal: 8 };
+  const row = (cap, yieldPerWorker) => goodRowHTML(target, {
+    good_key: 'fish', cap, placed: 0, placed_ordinals: [],
+    rate_per_tick: 0, marginal_yield: yieldPerWorker,
+  });
+  const locked = row(0, 0);
+  assert.match(locked, /data-verb="place1" disabled/);
+  assert.doesNotMatch(locked, /data-verb="fill"/);
+  assert.doesNotMatch(locked, /gubbe-pip/);
+  for (const [cap, rate] of [[2, 1], [2, 2], [1, 1], [4, 1]]) {
+    const html = row(cap, rate);
+    assert.equal((html.match(/class="gubbe-pip empty"/g) || []).length, cap);
+    assert.match(html, new RegExp('\\+' + rate.toString().replace('.', '\\.') + ' per day next'));
+    assert.doesNotMatch(html, /data-verb="place1" disabled/);
+  }
+});

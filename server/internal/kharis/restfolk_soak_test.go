@@ -38,7 +38,10 @@ func TestRestfolk_Soak60(t *testing.T) {
 						t.Fatal(err)
 					}
 				}
-				for n := 1; n <= 3; n++ {
+				// One fisher keeps this a production-shortage fixture even on a
+				// final-rule bay (2 fish/worker). Three fishers may now sustain growth;
+				// this test isolates stored meals versus production, not fishing balance.
+				for n := 1; n <= 1; n++ {
 					c := ring[9+(n-1)/2]
 					if _, err := pool.Exec(ctx, `INSERT INTO settlement_placement(settlement_id,gubbe_ordinal,target_kind,hex_q,hex_r,good_key) VALUES($1,$2,'hex',$3,$4,'fish')`, sid, n, c.Q, c.R); err != nil {
 						t.Fatal(err)

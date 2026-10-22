@@ -112,7 +112,7 @@ func (bs BuildingSet) levelsAt(c hexgrid.Coord) map[string]int {
 
 // builtAt reports whether buildingType counts as built FOR HEX c: Hex[c]'s
 // own presence for a hex-bound type, City's settlement-wide presence for
-// everything else (harbour's coastal_sea+fish row is the one HexOption case
+// everything else (harbour's deep_sea+fish row is the one HexOption case
 // that reaches this — a terrain-gated row naming a city-wide building).
 func (bs BuildingSet) builtAt(c hexgrid.Coord, buildingType string) bool {
 	if HexBoundBuildingTypes[buildingType] {
@@ -198,6 +198,10 @@ func LoadHexProductionOptionsAt(ctx context.Context, tx Tx, worldID uuid.UUID, c
 // preview's CatchmentBasePotentialAt runs on, so the preview and a real
 // settlement share one rule.
 func loadHexOptionsForHexes(ctx context.Context, tx Tx, worldID uuid.UUID, ring []hexgrid.Coord, bs BuildingSet) ([]HexOption, error) {
+	tiles, err := loadHexRuleTiles(ctx, tx, worldID, ring)
+	if err != nil {
+		return nil, err
+	}
 	catchQ, catchR := hexgrid.QRArrays(ring)
 
 	builtTypes := bs.AllTypes()
@@ -240,8 +244,6 @@ func loadHexOptionsForHexes(ctx context.Context, tx Tx, worldID uuid.UUID, ring 
 	}
 	defer rows.Close()
 
-	type hexFlags struct{ copper, tin, silver, incense bool }
-	flags := make(map[hexgrid.Coord]hexFlags)
 	byCoord := make(map[hexgrid.Coord]*HexOption)
 	var order []hexgrid.Coord
 	for rows.Next() {
@@ -266,7 +268,6 @@ func loadHexOptionsForHexes(ctx context.Context, tx Tx, worldID uuid.UUID, ring 
 				PlaceCapPerGood:  make(map[string]int),
 			}
 			byCoord[c] = opt
-			flags[c] = hexFlags{copperDep, tinDep, silverDep, incenseDep}
 			order = append(order, c)
 		}
 		// A row naming a building only counts on THIS hex if that building is
@@ -289,13 +290,12 @@ func loadHexOptionsForHexes(ctx context.Context, tx Tx, worldID uuid.UUID, ring 
 	out := make([]HexOption, 0, len(order))
 	for _, c := range order {
 		opt := byCoord[c]
-		fl := flags[c]
 		levels := bs.levelsAt(c)
 		fill := func(good string) {
 			if _, done := opt.PlaceCapPerGood[good]; done {
 				return
 			}
-			places, mult := hexGoodPlaces(opt.Terrain, fl.copper, fl.tin, fl.silver, fl.incense, levels, good)
+			places, mult := tiles[c].goodPlaces(levels, good)
 			opt.PlaceCapPerGood[good] = places
 			opt.CapPerGood[good] = places
 			opt.MultPerGood[good] = mult
@@ -554,7 +554,7 @@ func ChooseFarmHex(ctx context.Context, tx Tx, worldID uuid.UUID, center hexgrid
 		var places int
 		var mult float64
 		found := false
-		for _, rule := range hexRules(terrain, false, false, false, false) {
+		for _, rule := range rulesWithLandNeighbors(terrain, false, false, false, false, 0) {
 			if rule.good == GoodGrain && rule.building == "farm" {
 				places, mult = rule.placesAndMult(1)
 				found = true

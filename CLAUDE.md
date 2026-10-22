@@ -195,8 +195,9 @@ Get the shape wrong and you write wrong code. Everything else: `megaron_moc.md`.
   building slot doing ONE good. **Hex production** uses `economy.hexYield` and `hex_rules.go`:
   terrain/deposits set base places and per-worker rate; the relevant building adds
   `BuildingExtraPlaces` and scales the rate by `1 + BuildingRatePerLevel * level`.
-  **Grain has no exemption** from this hex rule. Silver requires its mine; harbour applies to
-  the city's coastal-sea hexes. **City refining workplaces** (olive press/winery/foundry) keep
+  **Grain has no exemption** from this hex rule. Silver requires its mine. Fishing follows
+  the contextual economy owner and `temenos_arbete.md`: harbour enables deep-water places,
+  with no coastal bonus or fishing rate multiplier. **City refining workplaces** (olive press/winery/foundry) keep
   their own `placementYield` and P6 weakest-link recipe model. These are different production
   contexts, not two competing hex formulas. Current contract: `megaron_plan_byggnadsregeln.md`.
   Slot numbers are **gubbe-scale**, not citizen-scale: a slot is one gubbe, not one citizen.

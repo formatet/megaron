@@ -230,7 +230,7 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 				Placed:         placedGoods[good],
 				PlacedOrdinals: ordinalsGoods[good],
 			}
-			if c := placeCap[good]; c > 0 {
+			if c, hasCap := placeCap[good]; hasCap {
 				g.Cap = &c
 				// One worker's output, from the same formulas
 				// economy.MarginalYieldPerGood (/goods' aggregate) uses.
@@ -358,8 +358,8 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 		}
 		if b, built := hexBuiltAt[opt.Coord]; built {
 			ho.Building = &hexBuildingOut{Type: b.Type, Level: b.Level}
-			if t, ok := ringTiles[opt.Coord]; ok {
-				if fx, ferr := economy.HexBuildEffects(r.Context(), h.pool, b.Type, t.terrain, t.copper, t.tin, t.silver); ferr == nil {
+			if _, ok := ringTiles[opt.Coord]; ok {
+				if fx, ferr := economy.HexBuildEffects(r.Context(), h.pool, b.Type, worldID, opt.Coord); ferr == nil {
 					ho.Building.UpgradeEffect = economy.UpgradeEffectText(fx, b.Level)
 				}
 			}
@@ -402,8 +402,8 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 		list := make([]map[string]any, 0, len(valid))
 		for _, c := range valid {
 			entry := map[string]any{"q": c.Q, "r": c.R, "effect": ""}
-			if t, ok := ringTiles[c]; ok {
-				if fx, ferr := economy.HexBuildEffects(r.Context(), h.pool, string(bt), t.terrain, t.copper, t.tin, t.silver); ferr == nil {
+			if _, ok := ringTiles[c]; ok {
+				if fx, ferr := economy.HexBuildEffects(r.Context(), h.pool, string(bt), worldID, c); ferr == nil {
 					entry["effect"] = economy.BuildEffectText(fx)
 				}
 			}

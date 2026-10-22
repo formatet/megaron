@@ -1,0 +1,2 @@
+Original/restored recompute.go SHA256 b455b3e4878c3185a2bfb23b1652a8d238b7ff8f4e11e47ac66b68bc09faf2ea
+Mutation: omit the shared fishing trim from RecomputeProduction.

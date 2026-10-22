@@ -1,0 +1,154 @@
+» färsk DB på migration 200 · commit 060c8354
+ok  	formatet/megaron/server/api/handlers	43.112s
+?   	formatet/megaron/server/cmd/create-world	[no test files]
+ok  	formatet/megaron/server/cmd/erase-player	0.033s
+ok  	formatet/megaron/server/cmd/keryx	0.375s
+?   	formatet/megaron/server/cmd/mapgen-debug	[no test files]
+?   	formatet/megaron/server/cmd/material-measure	[no test files]
+ok  	formatet/megaron/server/cmd/recompute-all	0.040s
+ok  	formatet/megaron/server/cmd/seed-incense	1.277s
+ok  	formatet/megaron/server/cmd/server	2.960s
+ok  	formatet/megaron/server/internal/agora	0.037s
+ok  	formatet/megaron/server/internal/ai	0.023s
+ok  	formatet/megaron/server/internal/auth	0.714s
+ok  	formatet/megaron/server/internal/capabilities	0.566s
+?   	formatet/megaron/server/internal/carrier	[no test files]
+?   	formatet/megaron/server/internal/chronicle	[no test files]
+?   	formatet/megaron/server/internal/clock	[no test files]
+ok  	formatet/megaron/server/internal/combat	13.618s
+ok  	formatet/megaron/server/internal/economy	5.600s
+ok  	formatet/megaron/server/internal/events	0.110s
+ok  	formatet/megaron/server/internal/gossip	0.235s
+ok  	formatet/megaron/server/internal/hexgrid	0.001s
+2026/10/22 19:27:14 ERROR starvation observation failed world=67d95bf7-8072-445a-bde5-9201201e1951 err="persist transition notice: ERROR: new row for relation \"notifications\" violates check constraint \"civil_notice_67d95bf7\" (SQLSTATE 23514)"
+2026/10/22 19:27:14 INFO divine punishment applied settlement=75448ddd-aeb5-40e2-afc2-f706d7259321 type=chariot_loss amount=10
+2026/10/22 19:27:14 INFO divine punishment applied settlement=75448ddd-aeb5-40e2-afc2-f706d7259321 type=ship_loss amount=1
+2026/10/22 19:27:14 INFO divine punishment applied settlement=75448ddd-aeb5-40e2-afc2-f706d7259321 type=chariot_loss amount=10
+2026/10/22 19:27:14 INFO divine punishment applied settlement=75448ddd-aeb5-40e2-afc2-f706d7259321 type=chariot_loss amount=10
+2026/10/22 19:27:14 INFO divine punishment applied settlement=75448ddd-aeb5-40e2-afc2-f706d7259321 type=harvest_failure amount=200
+2026/10/22 19:27:14 INFO divine punishment applied settlement=75448ddd-aeb5-40e2-afc2-f706d7259321 type=harvest_failure amount=200
+2026/10/22 19:27:14 INFO divine punishment applied settlement=75448ddd-aeb5-40e2-afc2-f706d7259321 type=harvest_failure amount=200
+2026/10/22 19:27:14 INFO divine punishment applied settlement=75448ddd-aeb5-40e2-afc2-f706d7259321 type=ship_loss amount=1
+2026/10/22 19:27:14 INFO divine punishment applied settlement=75448ddd-aeb5-40e2-afc2-f706d7259321 type=chariot_loss amount=10
+2026/10/22 19:27:14 INFO divine punishment applied settlement=75448ddd-aeb5-40e2-afc2-f706d7259321 type=harvest_failure amount=200
+2026/10/22 19:27:14 INFO divine punishment applied settlement=75448ddd-aeb5-40e2-afc2-f706d7259321 type=garrison_plague amount=10
+2026/10/22 19:27:14 INFO divine punishment applied settlement=75448ddd-aeb5-40e2-afc2-f706d7259321 type=harvest_failure amount=200
+2026/10/22 19:27:14 INFO divine punishment applied settlement=75448ddd-aeb5-40e2-afc2-f706d7259321 type=chariot_loss amount=10
+2026/10/22 19:27:14 INFO divine punishment applied settlement=75448ddd-aeb5-40e2-afc2-f706d7259321 type=ship_loss amount=1
+2026/10/22 19:27:14 INFO divine punishment applied settlement=75448ddd-aeb5-40e2-afc2-f706d7259321 type=harvest_failure amount=200
+2026/10/22 19:27:14 INFO divine punishment applied settlement=75448ddd-aeb5-40e2-afc2-f706d7259321 type=garrison_plague amount=10
+2026/10/22 19:27:14 INFO divine blessing applied settlement=6d48055d-0dc4-48a2-819e-44d3eba56352 type=divine_recruits amount=10
+2026/10/22 19:27:14 INFO divine blessing applied settlement=6d48055d-0dc4-48a2-819e-44d3eba56352 type=divine_recruits amount=10
+2026/10/22 19:27:14 INFO divine blessing applied settlement=6d48055d-0dc4-48a2-819e-44d3eba56352 type=bountiful_harvest amount=25
+2026/10/22 19:27:14 INFO divine blessing applied settlement=6d48055d-0dc4-48a2-819e-44d3eba56352 type=bountiful_harvest amount=25
+2026/10/22 19:27:14 INFO divine blessing applied settlement=6d48055d-0dc4-48a2-819e-44d3eba56352 type=bountiful_harvest amount=25
+2026/10/22 19:27:14 INFO divine blessing applied settlement=6d48055d-0dc4-48a2-819e-44d3eba56352 type=divine_recruits amount=10
+2026/10/22 19:27:14 INFO divine blessing applied settlement=6d48055d-0dc4-48a2-819e-44d3eba56352 type=divine_recruits amount=10
+2026/10/22 19:27:14 INFO divine blessing applied settlement=6d48055d-0dc4-48a2-819e-44d3eba56352 type=bountiful_harvest amount=25
+2026/10/22 19:27:14 INFO divine blessing applied settlement=6d48055d-0dc4-48a2-819e-44d3eba56352 type=divine_recruits amount=10
+2026/10/22 19:27:14 INFO divine blessing applied settlement=6d48055d-0dc4-48a2-819e-44d3eba56352 type=divine_recruits amount=10
+2026/10/22 19:27:14 INFO divine blessing applied settlement=6d48055d-0dc4-48a2-819e-44d3eba56352 type=bountiful_harvest amount=25
+2026/10/22 19:27:14 INFO divine blessing applied settlement=6d48055d-0dc4-48a2-819e-44d3eba56352 type=bountiful_harvest amount=25
+2026/10/22 19:27:14 INFO divine blessing applied settlement=6d48055d-0dc4-48a2-819e-44d3eba56352 type=divine_recruits amount=10
+2026/10/22 19:27:14 INFO divine blessing applied settlement=6d48055d-0dc4-48a2-819e-44d3eba56352 type=bountiful_harvest amount=25
+2026/10/22 19:27:14 INFO divine blessing applied settlement=6d48055d-0dc4-48a2-819e-44d3eba56352 type=divine_recruits amount=10
+2026/10/22 19:27:14 INFO divine blessing applied settlement=6d48055d-0dc4-48a2-819e-44d3eba56352 type=divine_recruits amount=10
+2026/10/22 19:27:14 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=bountiful_harvest amount=25
+2026/10/22 19:27:14 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=divine_recruits amount=10
+2026/10/22 19:27:14 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=bountiful_harvest amount=25
+2026/10/22 19:27:14 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=divine_recruits amount=10
+2026/10/22 19:27:14 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=bountiful_harvest amount=25
+2026/10/22 19:27:14 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=bountiful_harvest amount=25
+2026/10/22 19:27:14 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=divine_recruits amount=10
+2026/10/22 19:27:14 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=bountiful_harvest amount=25
+2026/10/22 19:27:14 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=bountiful_harvest amount=25
+2026/10/22 19:27:14 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=divine_recruits amount=10
+2026/10/22 19:27:14 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=divine_recruits amount=10
+2026/10/22 19:27:14 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=bountiful_harvest amount=25
+2026/10/22 19:27:14 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=divine_recruits amount=10
+2026/10/22 19:27:14 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=bountiful_harvest amount=25
+2026/10/22 19:27:14 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=divine_recruits amount=10
+2026/10/22 19:27:14 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=bountiful_harvest amount=25
+2026/10/22 19:27:14 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=divine_recruits amount=10
+2026/10/22 19:27:14 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=divine_recruits amount=10
+2026/10/22 19:27:14 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=bountiful_harvest amount=25
+2026/10/22 19:27:14 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=bountiful_harvest amount=25
+2026/10/22 19:27:14 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=divine_recruits amount=10
+2026/10/22 19:27:14 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=bountiful_harvest amount=25
+2026/10/22 19:27:14 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=divine_recruits amount=10
+2026/10/22 19:27:14 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=bountiful_harvest amount=25
+2026/10/22 19:27:14 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=divine_recruits amount=10
+2026/10/22 19:27:14 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=divine_recruits amount=10
+2026/10/22 19:27:14 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=bountiful_harvest amount=25
+2026/10/22 19:27:14 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=divine_recruits amount=10
+2026/10/22 19:27:14 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=divine_recruits amount=10
+2026/10/22 19:27:15 INFO divine blessing applied settlement=404a2e16-145b-4dd7-a8bc-7e245456dcc9 type=divine_recruits amount=10
+2026/10/22 19:27:15 INFO divine punishment applied settlement=aacc4872-6eb7-413c-b9b9-bb07cd26ffc5 type=chariot_loss amount=10
+2026/10/22 19:27:15 INFO divine blessing applied settlement=9ba4d36a-1a1c-4e77-a5b3-994d1ac037ee type=divine_recruits amount=10
+2026/10/22 19:27:15 INFO divine punishment applied settlement=96da36a6-41b7-45c7-a58f-d880b2856842 type=ship_loss amount=1
+2026/10/22 19:27:21 INFO divine blessing applied settlement=a924d966-6e32-42d1-a2a2-4aba68bdfdde type=bountiful_harvest amount=25
+2026/10/22 19:27:21 INFO divine blessing applied settlement=a924d966-6e32-42d1-a2a2-4aba68bdfdde type=divine_recruits amount=2
+2026/10/22 19:27:21 INFO divine blessing applied settlement=a924d966-6e32-42d1-a2a2-4aba68bdfdde type=divine_recruits amount=2
+2026/10/22 19:27:21 INFO divine blessing applied settlement=a924d966-6e32-42d1-a2a2-4aba68bdfdde type=bountiful_harvest amount=25
+2026/10/22 19:27:21 INFO divine blessing applied settlement=a924d966-6e32-42d1-a2a2-4aba68bdfdde type=bountiful_harvest amount=25
+2026/10/22 19:27:21 INFO divine blessing applied settlement=a924d966-6e32-42d1-a2a2-4aba68bdfdde type=divine_recruits amount=2
+2026/10/22 19:27:21 INFO divine blessing applied settlement=a924d966-6e32-42d1-a2a2-4aba68bdfdde type=bountiful_harvest amount=25
+2026/10/22 19:27:21 INFO divine blessing applied settlement=a924d966-6e32-42d1-a2a2-4aba68bdfdde type=bountiful_harvest amount=25
+2026/10/22 19:27:21 INFO divine blessing applied settlement=a924d966-6e32-42d1-a2a2-4aba68bdfdde type=bountiful_harvest amount=25
+2026/10/22 19:27:21 INFO divine blessing applied settlement=a924d966-6e32-42d1-a2a2-4aba68bdfdde type=divine_recruits amount=2
+2026/10/22 19:27:21 INFO divine blessing applied settlement=a924d966-6e32-42d1-a2a2-4aba68bdfdde type=divine_recruits amount=2
+2026/10/22 19:27:21 INFO divine blessing applied settlement=a924d966-6e32-42d1-a2a2-4aba68bdfdde type=bountiful_harvest amount=25
+2026/10/22 19:27:21 INFO divine blessing applied settlement=a924d966-6e32-42d1-a2a2-4aba68bdfdde type=divine_recruits amount=2
+2026/10/22 19:27:21 INFO divine blessing applied settlement=a924d966-6e32-42d1-a2a2-4aba68bdfdde type=bountiful_harvest amount=25
+2026/10/22 19:27:21 INFO divine blessing applied settlement=a924d966-6e32-42d1-a2a2-4aba68bdfdde type=divine_recruits amount=2
+2026/10/22 19:27:21 INFO divine blessing applied settlement=a924d966-6e32-42d1-a2a2-4aba68bdfdde type=bountiful_harvest amount=25
+2026/10/22 19:27:21 INFO divine blessing applied settlement=a924d966-6e32-42d1-a2a2-4aba68bdfdde type=bountiful_harvest amount=25
+2026/10/22 19:27:21 INFO divine blessing applied settlement=a924d966-6e32-42d1-a2a2-4aba68bdfdde type=divine_recruits amount=2
+2026/10/22 19:27:21 INFO divine blessing applied settlement=a924d966-6e32-42d1-a2a2-4aba68bdfdde type=bountiful_harvest amount=25
+2026/10/22 19:27:21 INFO divine blessing applied settlement=a924d966-6e32-42d1-a2a2-4aba68bdfdde type=bountiful_harvest amount=25
+2026/10/22 19:27:21 INFO divine blessing applied settlement=a924d966-6e32-42d1-a2a2-4aba68bdfdde type=divine_recruits amount=3
+2026/10/22 19:27:22 INFO divine blessing applied settlement=aaaa0253-63cd-4522-ab5a-805ecb672f1d type=divine_recruits amount=2
+2026/10/22 19:27:22 INFO divine blessing applied settlement=aaaa0253-63cd-4522-ab5a-805ecb672f1d type=bountiful_harvest amount=25
+2026/10/22 19:27:22 INFO divine blessing applied settlement=aaaa0253-63cd-4522-ab5a-805ecb672f1d type=bountiful_harvest amount=25
+2026/10/22 19:27:22 INFO divine blessing applied settlement=aaaa0253-63cd-4522-ab5a-805ecb672f1d type=divine_recruits amount=2
+2026/10/22 19:27:22 INFO divine blessing applied settlement=aaaa0253-63cd-4522-ab5a-805ecb672f1d type=divine_recruits amount=2
+2026/10/22 19:27:22 INFO divine blessing applied settlement=aaaa0253-63cd-4522-ab5a-805ecb672f1d type=bountiful_harvest amount=25
+2026/10/22 19:27:22 INFO divine blessing applied settlement=aaaa0253-63cd-4522-ab5a-805ecb672f1d type=divine_recruits amount=2
+2026/10/22 19:27:22 INFO divine blessing applied settlement=aaaa0253-63cd-4522-ab5a-805ecb672f1d type=divine_recruits amount=2
+2026/10/22 19:27:22 INFO divine blessing applied settlement=aaaa0253-63cd-4522-ab5a-805ecb672f1d type=divine_recruits amount=2
+2026/10/22 19:27:22 INFO divine blessing applied settlement=aaaa0253-63cd-4522-ab5a-805ecb672f1d type=divine_recruits amount=2
+2026/10/22 19:27:22 INFO divine blessing applied settlement=aaaa0253-63cd-4522-ab5a-805ecb672f1d type=divine_recruits amount=2
+2026/10/22 19:27:22 INFO divine blessing applied settlement=aaaa0253-63cd-4522-ab5a-805ecb672f1d type=bountiful_harvest amount=25
+2026/10/22 19:27:22 INFO divine blessing applied settlement=aaaa0253-63cd-4522-ab5a-805ecb672f1d type=divine_recruits amount=3
+2026/10/22 19:27:22 INFO divine blessing applied settlement=aaaa0253-63cd-4522-ab5a-805ecb672f1d type=bountiful_harvest amount=25
+2026/10/22 19:27:22 INFO divine blessing applied settlement=aaaa0253-63cd-4522-ab5a-805ecb672f1d type=divine_recruits amount=3
+2026/10/22 19:27:22 INFO divine blessing applied settlement=aaaa0253-63cd-4522-ab5a-805ecb672f1d type=divine_recruits amount=4
+2026/10/22 19:27:22 INFO divine blessing applied settlement=aaaa0253-63cd-4522-ab5a-805ecb672f1d type=divine_recruits amount=5
+2026/10/22 19:27:22 INFO divine blessing applied settlement=aaaa0253-63cd-4522-ab5a-805ecb672f1d type=divine_recruits amount=6
+2026/10/22 19:27:22 INFO divine blessing applied settlement=aaaa0253-63cd-4522-ab5a-805ecb672f1d type=bountiful_harvest amount=25
+2026/10/22 19:27:22 INFO divine blessing applied settlement=aaaa0253-63cd-4522-ab5a-805ecb672f1d type=divine_recruits amount=7
+2026/10/22 19:27:22 INFO divine blessing applied settlement=aaaa0253-63cd-4522-ab5a-805ecb672f1d type=bountiful_harvest amount=25
+2026/10/22 19:27:22 INFO divine blessing applied settlement=aaaa0253-63cd-4522-ab5a-805ecb672f1d type=bountiful_harvest amount=25
+2026/10/22 19:27:22 INFO divine blessing applied settlement=aaaa0253-63cd-4522-ab5a-805ecb672f1d type=bountiful_harvest amount=25
+2026/10/22 19:27:22 INFO divine blessing applied settlement=aaaa0253-63cd-4522-ab5a-805ecb672f1d type=bountiful_harvest amount=25
+2026/10/22 19:27:22 INFO divine blessing applied settlement=aaaa0253-63cd-4522-ab5a-805ecb672f1d type=bountiful_harvest amount=25
+2026/10/22 19:27:22 INFO divine punishment applied settlement=58b7f2d7-f5ce-4423-9fed-41f0d5544e8f type=harvest_failure amount=50
+--- FAIL: TestRestfolk_Soak60 (1.85s)
+    --- FAIL: TestRestfolk_Soak60/scheria1042 (0.63s)
+        restfolk_soak_test.go:79: production shortage must hold growth even while stocks feed: {Tick:60 Population:1200 FoodWorkers:3 Grain:0.5 Fish:5 FoodNet:-0.5 GrainStock:469.872329209947 Timber:0 Stone:0 Unmet:0}
+2026/10/22 19:27:25 ERROR kharis maintenance failed player=00000000-0000-0000-0000-000000001401 world=11f70fe2-b3b9-4451-94c6-e484cb85d085 err="persist transition notice: ERROR: new row for relation \"notifications\" violates check constraint \"test_notice_owner_failure\" (SQLSTATE 23514)"
+2026/10/22 19:27:25 ERROR starvation observation failed world=11f70fe2-b3b9-4451-94c6-e484cb85d085 err="persist transition notice: ERROR: new row for relation \"notifications\" violates check constraint \"test_notice_garrison_failure\" (SQLSTATE 23514)"
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	12.928s
+ok  	formatet/megaron/server/internal/messenger	2.582s
+ok  	formatet/megaron/server/internal/movement	0.003s
+ok  	formatet/megaron/server/internal/notify	1.130s
+ok  	formatet/megaron/server/internal/province	0.393s
+ok  	formatet/megaron/server/internal/religion	0.041s
+ok  	formatet/megaron/server/internal/settlement	0.002s
+ok  	formatet/megaron/server/internal/tick	0.164s
+ok  	formatet/megaron/server/internal/transport	1.041s
+ok  	formatet/megaron/server/internal/unit	0.022s
+?   	formatet/megaron/server/internal/unit/shipnames	[no test files]
+ok  	formatet/megaron/server/internal/world	155.492s
+FAIL

@@ -1,0 +1,11 @@
+» färsk DB på migration 198 · commit c13443d2+ändringar
+--- FAIL: TestFinalFishingNumbers (0.00s)
+    fishing_rules_test.go:196: coastal_sea land0 L3=6 x3.0999999999999996 want2 x1
+    fishing_rules_test.go:196: coastal_sea land4 L0=3 x1 want2 x2
+    fishing_rules_test.go:196: coastal_sea land4 L3=7 x3.0999999999999996 want2 x2
+    fishing_rules_test.go:196: deep_sea land0 L1=4 x1.7 want1 x1
+    fishing_rules_test.go:196: deep_sea land0 L2=4 x2.4 want2 x1
+    fishing_rules_test.go:196: deep_sea land0 L3=4 x3.0999999999999996 want4 x1
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.002s
+FAIL

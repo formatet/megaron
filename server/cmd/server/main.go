@@ -75,6 +75,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err := economy.CompleteFishingRuleTransition(ctx, pool); err != nil {
+		slog.Error("complete fishing rule transition", "err", err)
+		os.Exit(1)
+	}
+
 	redisURL := mustEnv("REDIS_URL")
 	rdb := redis.NewClient(&redis.Options{Addr: redisURL})
 	if err := rdb.Ping(ctx).Err(); err != nil {
@@ -448,7 +453,6 @@ func main() {
 			r.Post("/worlds/{worldID}/standing-orders/{orderID}/pause", soh.Pause)
 			r.Post("/worlds/{worldID}/standing-orders/{orderID}/resume", soh.Resume)
 			r.Delete("/worlds/{worldID}/standing-orders/{orderID}", soh.Delete)
-
 
 			r.Post("/worlds/{worldID}/join", jh.Join)
 			// The last city fell: rise again as a host elsewhere, or leave (megaron_sista_staden.md).

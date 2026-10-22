@@ -7,12 +7,14 @@ package economy
 //     base rate per worker r0(h,g) from production_rules (building NULL rows,
 //     plus the silver/mine rows, which only apply when a mine stands on the hex);
 //   - when the rule's relevant building stands on h (harbour: the city's harbour,
-//     acting on every coastal_sea hex) at level L >= 1, places = P0 + BuildingExtraPlaces
+//     acting on deep_sea fishing only; fish has no building rate multiplier) at level L >= 1, places = P0 + BuildingExtraPlaces
 //     (same at every level) and rate per worker = r0 * (1 + BuildingRatePerLevel*L);
 //   - otherwise places = P0 and rate per worker = r0.
 //
-// Output = rate per worker * min(placed, places). No good is an exception.
-// Silver is the one good the rule cannot give without its building: its
+// Output = rate per worker * min(placed, places). Fishing places and intrinsic
+// bay yield are resolved by this owner before consumers see the options.
+// Silver requires its mine row; deep-water fish requires harbour places. Silver
+// production is additionally gated by its catalogue rows: its
 // production_rules rows are the mine rows, which only load when a mine stands
 // on the hex.
 
@@ -23,6 +25,10 @@ import (
 	"formatet/megaron/server/internal/hexgrid"
 	"github.com/google/uuid"
 )
+
+// Deep-water places are the harbour's entire fishing effect. Coastal water
+// remains two places; bays raise the intrinsic rate, not the headcount.
+var deepFishingPlaces = [4]int{0, 1, 2, 4}
 
 // BuildingExtraPlaces is how many worker places a hex-bound building adds to its hex.
 const BuildingExtraPlaces = 4
@@ -39,56 +45,118 @@ const HexFallbackCap = 2
 type hexRule struct {
 	good       string
 	basePlaces int
-	building   string // "" = no building raises this (good, hex)
+	building   string  // "" = no building raises this (good, hex)
+	rateMult   float64 // 0 means 1; bays have intrinsic rate 2
 }
 
 // fieldStone is the stone every land hex without a quarry-grade deposit gives
 // (mig 156, Timothy 2026-10-02): one place, raised by the stonequarry. Its base
 // rate (0,5) is the production_rules row; hills and limestone keep their own.
-var fieldStone = hexRule{"stone", 1, "stonequarry"}
+var fieldStone = hexRule{"stone", 1, "stonequarry", 0}
 
 // hexRules returns the rule rows for a hex of this terrain and deposits.
 func hexRules(terrain string, copperDep, tinDep, silverDep, incenseDep bool) []hexRule {
 	var out []hexRule
 	switch terrain {
 	case "plains":
-		out = append(out, hexRule{GoodGrain, 4, "farm"}, fieldStone)
+		out = append(out, hexRule{GoodGrain, 4, "farm", 0}, fieldStone)
 	case "hills":
-		out = append(out, hexRule{GoodGrain, 1, "farm"}, hexRule{"stone", 2, "stonequarry"}, hexRule{"timber", 1, "lumbermill"})
+		out = append(out, hexRule{GoodGrain, 1, "farm", 0}, hexRule{"stone", 2, "stonequarry", 0}, hexRule{"timber", 1, "lumbermill", 0})
 	case "mountain_limestone":
-		out = append(out, hexRule{"stone", 2, "stonequarry"})
+		out = append(out, hexRule{"stone", 2, "stonequarry", 0})
 	case "river_valley":
-		out = append(out, hexRule{GoodGrain, 2, "farm"}, fieldStone, hexRule{"timber", 1, "lumbermill"})
+		out = append(out, hexRule{GoodGrain, 2, "farm", 0}, fieldStone, hexRule{"timber", 1, "lumbermill", 0})
 	case "river_delta":
-		out = append(out, hexRule{GoodGrain, 3, "farm"}, fieldStone)
+		out = append(out, hexRule{GoodGrain, 3, "farm", 0}, fieldStone)
 	case "forest_olive_grove":
-		out = append(out, hexRule{"timber", 1, "lumbermill"}, fieldStone)
+		out = append(out, hexRule{"timber", 1, "lumbermill", 0}, fieldStone)
 	case "forest_cedar":
-		out = append(out, hexRule{"cedar", 3, "lumbermill"}, fieldStone)
+		out = append(out, hexRule{"cedar", 3, "lumbermill", 0}, fieldStone)
 	case "scrub_maquis":
-		out = append(out, fieldStone, hexRule{"timber", 1, "lumbermill"})
+		out = append(out, fieldStone, hexRule{"timber", 1, "lumbermill", 0})
 	case "semi_desert", "mountain_red":
 		out = append(out, fieldStone)
 	case "coastal_sea":
-		out = append(out, hexRule{"fish", 2, "harbour"}) // 2 places: fisket ska kunna ge mycket mat (Timothy 2026-10-01); rate stays 1,0 — the dagsverkesskala
-	case "river", "river_ford", "deep_sea":
-		out = append(out, hexRule{"fish", 1, ""})
+		out = append(out, hexRule{"fish", 2, "", 0}) // 2 places: fisket ska kunna ge mycket mat (Timothy 2026-10-01); rate stays 1,0 — the dagsverkesskala
+	case "deep_sea":
+		out = append(out, hexRule{"fish", 0, "harbour", 0})
+	case "river", "river_ford":
+		out = append(out, hexRule{"fish", 1, "", 0})
 	}
 	if copperDep {
-		out = append(out, hexRule{"copper", 1, "mine"})
+		out = append(out, hexRule{"copper", 1, "mine", 0})
 	}
 	if tinDep {
-		out = append(out, hexRule{"tin", 1, "mine"})
+		out = append(out, hexRule{"tin", 1, "mine", 0})
 	}
 	if silverDep {
-		out = append(out, hexRule{"silver", 1, "mine"})
+		out = append(out, hexRule{"silver", 1, "mine", 0})
 	}
 	if incenseDep {
 		// Two places, no building (Timothy 2026-10-19): one hex, two gubbar. The
 		// production_rules row (mig 193) carries requires_deposit='incense'.
-		out = append(out, hexRule{GoodIncense, 2, ""})
+		out = append(out, hexRule{GoodIncense, 2, "", 0})
 	}
 	return out
+}
+
+// hexRuleTile is the context-bearing rule owner. Consumers load it before
+// calculating options, aggregate capacity, building effects or affected goods.
+// Neighbor terrain stays inside economy; only the resulting local capacity is exposed.
+type hexRuleTile struct {
+	terrain                      string
+	copper, tin, silver, incense bool
+	rules                        []hexRule
+}
+
+func loadHexRuleTiles(ctx context.Context, tx Tx, worldID uuid.UUID, coords []hexgrid.Coord) (map[hexgrid.Coord]hexRuleTile, error) {
+	qs, rs := hexgrid.QRArrays(coords)
+	dirs := hexgrid.Neighbors(hexgrid.Coord{})
+	dqs, drs := hexgrid.QRArrays(dirs[:])
+	rows, err := tx.Query(ctx, `SELECT mt.q,mt.r,mt.terrain,COALESCE(mt.copper_deposit,false),
+ COALESCE(mt.tin_deposit,false),COALESCE(mt.silver_deposit,false),COALESCE(mt.incense_deposit,false),
+ CASE WHEN mt.terrain='coastal_sea' THEN (SELECT count(*) FROM unnest($4::int[],$5::int[]) d(q,r)
+ JOIN map_tiles n ON n.world_id=mt.world_id AND n.q=mt.q+d.q AND n.r=mt.r+d.r
+ WHERE n.terrain NOT IN ('sea','coastal_sea','deep_sea')) ELSE 0 END
+ FROM unnest($2::int[],$3::int[]) wanted(q,r)
+ JOIN map_tiles mt ON mt.world_id=$1 AND mt.q=wanted.q AND mt.r=wanted.r`, worldID, qs, rs, dqs, drs)
+	if err != nil {
+		return nil, fmt.Errorf("load hex rules: %w", err)
+	}
+	defer rows.Close()
+	out := make(map[hexgrid.Coord]hexRuleTile, len(coords))
+	for rows.Next() {
+		var c hexgrid.Coord
+		var tile hexRuleTile
+		var land int
+		if err := rows.Scan(&c.Q, &c.R, &tile.terrain, &tile.copper, &tile.tin, &tile.silver, &tile.incense, &land); err != nil {
+			return nil, fmt.Errorf("load hex rules: scan: %w", err)
+		}
+		tile.rules = rulesWithLandNeighbors(tile.terrain, tile.copper, tile.tin, tile.silver, tile.incense, land)
+		out[c] = tile
+	}
+	return out, rows.Err()
+}
+
+func rulesWithLandNeighbors(terrain string, copper, tin, silver, incense bool, land int) []hexRule {
+	rules := hexRules(terrain, copper, tin, silver, incense)
+	if terrain == "coastal_sea" && land >= 4 {
+		for i := range rules {
+			if rules[i].good == "fish" {
+				rules[i].rateMult = 2
+			}
+		}
+	}
+	return rules
+}
+
+func (tile hexRuleTile) goodPlaces(levels map[string]int, good string) (int, float64) {
+	for _, rule := range tile.rules {
+		if rule.good == good {
+			return rule.placesAndMult(levels[rule.building])
+		}
+	}
+	return HexFallbackCap, 1
 }
 
 // RuleBuildingSupportsHex reports whether the rule table names buildingType as
@@ -105,6 +173,17 @@ func RuleBuildingSupportsHex(buildingType, terrain string, copperDep, tinDep, si
 
 // placesAndMult applies the rule at a building level (0 = not built).
 func (r hexRule) placesAndMult(level int) (places int, mult float64) {
+	if r.good == "fish" {
+		if r.building == "harbour" {
+			return deepFishingPlaces[min(3, max(0, level))], 1
+		}
+		mult := r.rateMult
+		if mult == 0 {
+			mult = 1
+		}
+		return r.basePlaces, mult
+	}
+
 	if r.building == "" || level <= 0 {
 		return r.basePlaces, 1.0
 	}
@@ -184,32 +263,23 @@ func RuleBuildingGoods(ctx context.Context, tx Tx, settlementID uuid.UUID, build
 	if hexQ != nil && hexR != nil {
 		hexes = []hexgrid.Coord{{Q: *hexQ, R: *hexR}}
 	}
-	qs, rs := hexgrid.QRArrays(hexes)
-	rows, err := tx.Query(ctx,
-		`SELECT mt.terrain, COALESCE(mt.copper_deposit, false), COALESCE(mt.tin_deposit, false), COALESCE(mt.silver_deposit, false), COALESCE(mt.incense_deposit, false)
-		 FROM unnest($2::int[], $3::int[]) AS want(q, r)
-		 JOIN map_tiles mt ON mt.world_id = $1 AND mt.q = want.q AND mt.r = want.r`,
-		worldID, qs, rs)
+	tiles, err := loadHexRuleTiles(ctx, tx, worldID, hexes)
 	if err != nil {
-		return nil, fmt.Errorf("rule building goods: %w", err)
+		return nil, err
 	}
-	defer rows.Close()
+
 	seen := map[string]bool{}
 	var out []string
-	for rows.Next() {
-		var terrain string
-		var cu, tin, ag, inc bool
-		if err := rows.Scan(&terrain, &cu, &tin, &ag, &inc); err != nil {
-			return nil, fmt.Errorf("rule building goods: scan: %w", err)
-		}
-		for _, rule := range hexRules(terrain, cu, tin, ag, inc) {
+	for _, c := range hexes {
+		for _, rule := range tiles[c].rules {
 			if rule.building == buildingType && !seen[rule.good] {
 				seen[rule.good] = true
 				out = append(out, rule.good)
 			}
 		}
 	}
-	return out, rows.Err()
+
+	return out, nil
 }
 
 // IsRuleBuilding reports whether buildingType is one of RuleBuildingTypes.

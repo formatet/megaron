@@ -29,7 +29,6 @@ func TestRuleTable_LevelOneNumbersAndLevelMultipliers(t *testing.T) {
 		{"grain river_valley", "river_valley", false, false, false, GoodGrain, 5.0 / 3, 2, 6, 2.83, "1.67"},
 		{"grain river_delta", "river_delta", false, false, false, GoodGrain, 8.0 / 3, 3, 7, 4.53, "2.67"},
 		{"cedar", "forest_cedar", false, false, false, "cedar", 1.0, 3, 7, 1.70, "1.0"},
-		{"fish coastal", "coastal_sea", false, false, false, "fish", 1.0, 2, 6, 1.70, "1.0"},
 		{"copper", "hills", true, false, false, "copper", 1.0, 1, 5, 1.70, "1.0"},
 		{"tin", "mountain_limestone", false, true, false, "tin", 1.0, 1, 5, 1.70, "1.0"},
 		{"timber olive grove", "forest_olive_grove", false, false, false, "timber", 1.0, 1, 5, 1.70, "1.0"},
@@ -107,7 +106,11 @@ func TestEffectParity_EffectTextMatchesRecompute(t *testing.T) {
 	settlementID := seedFullRingFixture(t, 100, 500, "plains")
 	hex := hexgrid.Ring(hexgrid.Coord{Q: 0, R: 0}, hexgrid.CatchmentRadius)[0]
 
-	fx, err := HexBuildEffects(ctx, pool, "farm", "plains", false, false, false)
+	var worldID uuid.UUID
+	if err := pool.QueryRow(ctx, `SELECT world_id FROM settlements WHERE id=$1`, settlementID).Scan(&worldID); err != nil {
+		t.Fatal(err)
+	}
+	fx, err := HexBuildEffects(ctx, pool, "farm", worldID, hex)
 	if err != nil {
 		t.Fatalf("HexBuildEffects: %v", err)
 	}

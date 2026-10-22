@@ -1,0 +1,5 @@
+» färsk DB på migration 200 · commit 356d1bdf+ändringar
+ok  	formatet/megaron/server/internal/economy	5.549s
+ok  	formatet/megaron/server/api/handlers	43.745s
+ok  	formatet/megaron/server/internal/kharis	13.512s
+ok  	formatet/megaron/server/cmd/recompute-all	0.045s

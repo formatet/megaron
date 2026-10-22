@@ -1,0 +1,47 @@
+server/internal/economy/founding_placement.go:21:	cap     int // PlaceCapPerGood — capL1 for fish, the real level-actual cap for grain (see placement_yield.go)
+server/internal/economy/founding_placement.go:25:// rankedFoodSlots returns every grain/fish placement option in settlementID's
+server/internal/economy/founding_placement.go:28:// preview). Grain and fish now share the SAME real P3 hex cap
+server/internal/economy/founding_placement.go:33:// is the real physical ceiling, exactly like fish. Without this, greedy
+server/internal/economy/founding_placement.go:43:// (unaffected by Form B); fish's becomes capL1 (frozen).
+server/internal/economy/founding_placement.go:112:// grain/fish placement list — shared by rankedFoodSlots (settlement-scoped)
+server/internal/economy/founding_placement.go:118:		for _, good := range []string{GoodGrain, "fish"} {
+server/internal/economy/founding_placement.go:142:// gubbar on food (grain/fish) hexes, greedily by marginal yield, stopping the
+server/internal/economy/founding_placement.go:260:// must stand on the catchment's food (grain/fish) slots for the settlement's
+server/internal/economy/founding_placement.go:269:// EVERY gubbe placed on food (Gournia/Zakros in drift: no grain or fish
+server/internal/economy/founding_placement.go:311:// fisk-/grainutbyte som har ledig kapacitet; finns ingen sådan → ledig-pool."
+server/internal/economy/founding_placement.go:362:			continue // full — grain's real P3 cap now binds here too, same as fish (megaron_plan_grain_cap.md)
+server/internal/economy/founding_placement.go:409:		                 WHEN $2 THEN 1 WHEN $3 THEN 1 WHEN $4 THEN 1  -- grain/fish/livestock: mat SIST → survives longest
+server/internal/economy/hex_rules.go:9://   - when the rule's relevant building stands on h (harbour: the city's harbour,
+server/internal/economy/hex_rules.go:10://     acting on every coastal_sea hex) at level L >= 1, places = P0 + BuildingExtraPlaces
+server/internal/economy/hex_rules.go:72:	case "coastal_sea":
+server/internal/economy/hex_rules.go:73:		out = append(out, hexRule{"fish", 2, "harbour"}) // 2 places: fisket ska kunna ge mycket mat (Timothy 2026-10-01); rate stays 1,0 — the dagsverkesskala
+server/internal/economy/hex_rules.go:74:	case "river", "river_ford", "deep_sea":
+server/internal/economy/hex_rules.go:75:		out = append(out, hexRule{"fish", 1, ""})
+server/internal/economy/hex_rules.go:145:	"forest_olive_grove", "forest_cedar", "scrub_maquis", "semi_desert", "mountain_red", "coastal_sea", "river", "river_ford", "deep_sea"}
+server/internal/economy/hex_rules.go:148:var RuleBuildingTypes = []string{"farm", "mine", "lumbermill", "stonequarry", "harbour"}
+server/internal/economy/hex_rules.go:170:// hex it was built on (hexQ/hexR), or — for a city-scope rule building (harbour)
+server/internal/economy/placement_yield.go:57:// silver+mine, fish+harbour, livestock+pasture) are unaffected.
+server/internal/economy/placement_yield.go:65:// holds settlement-wide buildings (harbour, market, …) — presence anywhere
+server/internal/economy/placement_yield.go:115:// everything else (harbour's coastal_sea+fish row is the one HexOption case
+server/internal/economy/placement_yield.go:234:		 WHERE mt.terrain NOT IN ('deep_sea','coastal_sea','river','river_ford')
+server/internal/economy/founding_forecast.go:46:// Shares automatic grain/fish with RecomputeProduction: near ground plus
+server/internal/economy/founding_forecast.go:60:// separately: grain net alone cannot reveal how much food fish supplies.
+server/internal/economy/founding_forecast.go:86:	fishProd := automatic.RemainderFish
+server/internal/economy/founding_forecast.go:91:			fishProd += p.yield
+server/internal/economy/founding_forecast.go:95:	grainNet, _, _ := FoodConsumptionSplit(demand, grainProd, fishProd, 0)
+server/internal/economy/founding_forecast.go:96:	return FoundingFoodForecast{GrainProduction: grainProd, FishProduction: fishProd, Consumption: demand, GrainNet: grainNet, FoodNet: FoodNet(grainProd+fishProd, pop)}, nil
+server/internal/economy/automatic_food.go:9:	RemainderFish   float64 `json:"remainder_fish_per_tick"`
+server/internal/economy/recompute.go:170:// relevant building stands (hex-bound: on that very hex; harbour: city-wide).
+server/internal/economy/recompute.go:231:// instead, the way P3 covers grain/timber/cedar/livestock/copper/tin/silver/fish.
+server/internal/economy/recompute.go:297:// from the settlement's food stock once a day (grain first, then fish, then
+server/internal/economy/recompute.go:319:// with fish and livestock, which this function does not model.
+server/internal/economy/recompute.go:374:// FoodConsumptionSplit (grain, then fish, then livestock) — there is no manual
+server/internal/economy/recompute.go:377:// 2026-10-19 (order 28b): ett är ett, 1 animal = 1 food (mätt: herde = bonde = fiskare).
+server/internal/economy/recompute.go:399:func FoodConsumptionSplit(demand, grainProd, fishProd, livestockStock float64) (grainNet, fishNet float64, livestockConsumed int) {
+server/internal/economy/recompute.go:400:	meal := PlanFood(demand, map[string]float64{GoodGrain: grainProd, GoodFish: fishProd, GoodLivestock: livestockStock}, true)
+server/internal/economy/recompute.go:401:	return grainProd - meal.Used[GoodGrain] - meal.Unmet, fishProd - meal.Used[GoodFish], int(meal.Used[GoodLivestock])
+server/internal/economy/recompute.go:438://     best eligible food worker, grain or fish, without taking a real slot.
+server/internal/economy/recompute.go:675:	// The harvest blessing (harvest_blessing.go): every food good but fish
+server/internal/economy/recompute.go:688:	// 2026-08-26) grain and fish got a food-invariant NET rate here
+server/internal/economy/recompute.go:697:	// grain → fish → livestock, by FoodTick (food_tick.go, priority 55 —
+server/internal/economy/recompute.go:698:	// between Plikt and Tillväxt) — so every good, grain and fish included,

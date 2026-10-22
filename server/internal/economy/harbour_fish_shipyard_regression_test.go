@@ -3,14 +3,14 @@ package economy
 // Slice A regression guard (megaron_plan_skeppsreparation.md, §Beslut B1):
 // splitting shipbuilding into a new `shipyard` building must NOT move fishing
 // off the harbour. This must stay GREEN before and after the slice — the
-// harbour's fish boost (the coastal_sea fish rule, +places when "harbour" is built) is untouched by the split.
+// harbour still enables deep-water fishing independently of the shipyard.
 
 import (
 	"context"
 	"testing"
 )
 
-func TestHarbourStillBoostsFish_ShipyardSplitRegression(t *testing.T) {
+func TestHarbourEnablesDeepFishWithoutShipyard(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 
@@ -23,6 +23,10 @@ func TestHarbourStillBoostsFish_ShipyardSplitRegression(t *testing.T) {
 	const pop = 60
 	settlementID := recomputeWaterFixture(t, tick, pop /*grainTiles*/, 0 /*fishTiles*/, 1)
 
+	if _, err := pool.Exec(ctx, `UPDATE map_tiles SET terrain='deep_sea' WHERE world_id=(SELECT world_id FROM settlements WHERE id=$1) AND terrain='coastal_sea'`, settlementID); err != nil {
+		t.Fatal(err)
+	}
+
 	if _, err := pool.Exec(ctx,
 		`INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, 'harbour', 1)`,
 		settlementID,
@@ -30,21 +34,19 @@ func TestHarbourStillBoostsFish_ShipyardSplitRegression(t *testing.T) {
 		t.Fatalf("create harbour building: %v", err)
 	}
 
-	// Rule table: coastal_sea fish P0 2 (1 until 2026-10-01), harbour
-	// +BuildingExtraPlaces — with a harbour built, one fish hex carries 6 places, not 2.
+	// Final rule: a level-one harbour enables one deep-water fisher.
 	capBefore, err := LoadHexCapacity(ctx, pool, settlementID)
 	if err != nil {
 		t.Fatalf("LoadHexCapacity: %v", err)
 	}
-	if capBefore["fish"] != 2+BuildingExtraPlaces {
-		t.Fatalf("fish hex cap with harbour built = %d, want %d (harbour must still boost fish capacity)", capBefore["fish"], 2+BuildingExtraPlaces)
+	if capBefore["fish"] != 1 {
+		t.Fatalf("fish hex cap with harbour built = %d, want %d (harbour must still boost fish capacity)", capBefore["fish"], 1)
 	}
 
-	// Staff the fish hex to its harbour-boosted cap (2) and confirm production
+	// Staff the deep-water hex to its level-one cap and confirm production
 	// actually flows — the harbour's fish role still functions end-to-end
 	// through RecomputeProduction, not just the capacity table.
 	placeHexGubbe(t, pool, settlementID, 1, recomputeWaterFixtureOffsets[0], "fish")
-	placeHexGubbe(t, pool, settlementID, 2, recomputeWaterFixtureOffsets[0], "fish")
 
 	if err := RecomputeProduction(ctx, pool, settlementID); err != nil {
 		t.Fatalf("RecomputeProduction: %v", err)
