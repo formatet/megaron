@@ -1,0 +1,31 @@
+» färsk DB på migration 200 · commit f57f063f+ändringar
+2026/10/22 20:56:39 INFO player registered id=c358c73a-c76a-47e6-a305-37257de6f0b3 username=nomadhost-recall-cbce295d-3a1f-4d23-9596-11abed9e68dc
+2026/10/22 20:56:39 INFO player registered id=48b17477-5a73-4069-9b65-367ac0e47019 username=moving-spawn-owner-3bfa9e0a-7070-4c22-b068-cb58d418b050
+2026/10/22 20:56:39 INFO player registered id=f5d2019a-589a-42dd-ba55-55157f3e9a3e username=moving-spawn-joiner-e9e1f1b5-30d6-4d64-ba50-b86007f3c0ce
+2026/10/22 20:56:39 INFO player registered id=c38a90e0-205d-4b55-b951-fbda553cc470 username=moving-spawn-owner-473b1044-7d59-4dc1-98e0-8e2a5cf7ded6
+2026/10/22 20:56:39 INFO player registered id=f2c9ce3d-e93c-4bfa-9cab-f8d1d39e77d1 username=moving-spawn-joiner-f4e74d0f-3c43-42ed-a8e3-20e67372b286
+2026/10/22 20:56:39 INFO player registered id=0fd14b65-5bb1-4d07-be07-9f9bf423fd0b username=moving-spawn-owner-99819a61-26bc-4ff5-b9e8-14cafd291c3b
+2026/10/22 20:56:40 INFO player registered id=4dfb8fb8-2892-4b20-8ffd-a58860631c38 username=moving-spawn-joiner-65948bd3-6eba-4d94-b3c0-9dcc9edaf876
+2026/10/22 20:56:40 INFO player registered id=e57f05c0-272b-489a-ae89-5edc368503c6 username=moving-spawn-owner-f74eda7d-41a6-48e8-9d92-085bf85fb334
+2026/10/22 20:56:40 INFO player registered id=ca47dcd7-170e-4646-9d83-3cc136103886 username=moving-spawn-joiner-41478c78-802c-4223-a9bb-8b20f761e2b6
+2026/10/22 20:56:40 INFO player registered id=c95e112b-46a7-4790-870a-3efa718f5615 username=moving-spawn-owner-12fffe3d-795c-481c-99cf-d275cc554a24
+2026/10/22 20:56:40 INFO player registered id=9aae9649-020b-4bd7-b6c1-d6e0fb8c0fcd username=moving-spawn-joiner-a8b0ff06-f535-4334-90fa-846f4a881de1
+--- FAIL: TestJoinSpawnUsesPhysicalHostClearance (0.65s)
+    --- FAIL: TestJoinSpawnUsesPhysicalHostClearance/four_hex_boundary_is_occupied (0.13s)
+        join_host_position_test.go:82: join while Host physically at (11,0), candidate (15,0): got 201 {"culture":"minoan","host_unit_id":"7d38f937-ec1a-4feb-a4bd-4d736a92fbe6","population":1000,"tile":{"WorldID":"00000000-0000-0000-0000-000000000000","Q":15,"R":0,"Terrain":"","Coastal":false,"Fertility":0,"Mineral":0,"CopperDeposit":false,"TinDeposit":false,"SilverDeposit":false,"CedarDeposit":false,"IncenseDeposit":false}}
+            ; want 409
+2026/10/22 20:56:40 INFO player registered id=06ec2eab-51fa-4721-b8b1-b5b9cb04f52d username=landmass-moving-host-1b70b038-fcf0-48c7-bfc3-16495d353822
+2026/10/22 20:56:40 INFO player registered id=54169cf2-b972-4941-8164-9fb4b623ecc7 username=landmass-new-host-3b27263d-4c84-465d-b2fe-d8e8d4742e1b
+2026/10/22 20:56:40 INFO player registered id=94917b09-7554-45f9-af79-17f954cb2e30 username=rise-moving-host-37f7c9c6-3a50-4c39-97ab-29e3d5296103
+2026/10/22 20:56:40 INFO player registered id=02384061-d690-4869-9a27-50b56e4438fa username=rising-new-host-792866ff-86cb-4433-b7e4-8d72266a40c2
+2026/10/22 20:56:40 INFO rise: no free land on another landmass, falling back player=02384061-d690-4869-9a27-50b56e4438fa landmass=1
+2026/10/22 20:56:40 INFO player registered id=64610948-fcde-4c12-b25e-7dcd0d91e902 username=landmass-balance-1-5ec81f4f-7ba6-48d9-92aa-6fbc16cd5396
+2026/10/22 20:56:40 INFO player registered id=3746f20e-c61b-41d5-9a30-dc15d04476a2 username=landmass-balance-2-6b121b42-8fa0-4306-a9af-2a3b90a46e4f
+2026/10/22 20:56:40 INFO player registered id=f8336df9-9536-41d9-bb78-bb6fb4850437 username=rise-80eecf6d-ab4a-465e-82c8-b964edc494e4
+2026/10/22 20:56:40 INFO player registered id=2c8b1dca-a2ec-47f9-8cf5-e15ba2a9c57a username=rise-zero-8fb08b54-f2c4-4cac-b314-0d75fe7d2dcd
+2026/10/22 20:56:40 INFO player registered id=3ba6b6bf-5e52-4905-aa6b-c2022be8aee8 username=rise-lazy-8cbd4e92-3794-4765-86db-f704b04abe2d
+2026/10/22 20:56:40 INFO player registered id=e2f677b5-588b-4fb0-9781-1d2467bb9489 username=never-joined-1b28d76e-fe86-4e1d-8675-d39514705818
+2026/10/22 20:56:40 INFO player registered id=d27d78a9-6782-4fdf-b7d6-4bdc80e1b65a username=leave-d9e6c915-571d-4f25-bdf0-10e3427bbb7d
+FAIL
+FAIL	formatet/megaron/server/api/handlers	1.449s
+FAIL

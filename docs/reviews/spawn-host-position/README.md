@@ -1,13 +1,57 @@
 # ORDER19 — spawn consumes physical Host positions
 
-Contract before production edits: a new join/Rise must clear the Host's physical route position and balance landmass load using that same position. Consume province.UnitPosition.Physical and injected clock/tick anchor; never mutate saved movement, change spawn spacing, ore bias or landmass viability. Scope handlers join/rise + position batch reader and DB/API tests. Existing owner from ORDER10 remains authoritative. No player text/layout change or new verb: all four surfaces retain their existing joining behavior. This fixes the main gate (a stranger can join).
+## Summary / contract
 
-Baseline d248b09e. Named tests against unchanged production: TestJoinSpawnUsesPhysicalHostClearance (free departure vicinity and occupied physical ground), TestJoinSpawnBalancesPhysicalHostLandmass, TestRiseSpawnClearsPhysicalHost. Tests use authenticated HTTP and real fresh migrated PostgreSQL. Weighted persisted route at tick3 places Host at11,0 while q/r remain0,0; candidate fixtures eliminate random selection. Baseline result pending. Production implementation, own mutation and full fresh suite pending.
+Base `0825a0ac`, migration202. Rebasing original checkpoint313aeda4 produced
+runtime `b6a34c1a` and checkpoint `f1ba9954` without conflicts. A new join/Rise
+must clear the Host's physical route position and balance landmass load using
+that same position. Consume province.UnitPosition.Physical and injected
+clock/tick anchor; never mutate saved movement, change spawn spacing, ore bias
+or landmass viability. Proves the main chain: a stranger can join.
 
-## PAUS checkpoint, Claude order20:55
+Scope: join/rise picker + batch reader and actual DB/authenticated HTTP tests.
+No new verb, notification, protocol or client text/layout: temenos/keryx/web/
+Codex retain their existing joining behavior. No migration, BILD or deployment.
+ORDER20/21 remain outside scope, awaiting Claude's order.
 
-Production commit **f57f063f**. Named old-code baseline RED for free departure, occupied physical ground, landmass choice and Rise. First fixture-offset attempt expected10 while the existing owner correctly returned11; preserved separately in baseline-fixture-offset.log, corrected before the actual baseline-red.log. No production changed for that correction.
+## Baseline and experiments
 
-Batch reader uses province.UnitPosition.Physical, one injected clock instant/anchor; both SQL clearance and landmass CTE consume its physical arrays. Join and Rise including same-landmass fallback covered. Added4hex blocked/5hex free boundary and inactive-phase cases. Saved route/q/r invariant stays unchanged. Targeted fresh200 GREEN. Own physical mutation Host clearance<=4→<=3 gave named four_hex_boundary_is_occupied RED; exact SHA restore then fresh GREEN.716JS GREEN, vet GREEN.
+Original baseline d248b09e, named actual old-code RED in baseline-red.log:
+free departure vicinity, occupied physical ground, landmass load and Rise.
+Persisted weighted route places Host at11,0 at tick3 while saved q/r remain0,0.
+Single-candidate fixtures eliminate random selection. Initial fixture-offset
+attempt expected10 while existing owner correctly returned11; preserved in
+baseline-fixture-offset.log and corrected before the actual baseline.
 
-**Full fresh Go suite deliberately TERMINATED at Claude PAUS order; full-fresh.log is NOT a green proof.** No final delivery or integration approval. Resume must run full fresh suite after higher-priority13→17→15 and rebase if instructed. No live write, merge, push or deploy. No UI text/markup change, no BILD. No ORDER20/21 work started.
+One batch reads active founder projections; canonical owner resolves every
+physical hex from one injected clock instant and world tick anchor. Both SQL
+clearance and landmass CTEs consume those arrays. Join and Rise, including
+same-landmass fallback, covered. Fourhex blocked/fivehex free and inactive
+phase cases are explicit. Saved route/q/r remain unchanged.
+
+## Verification
+
+- targeted-rebased-green.log: actual fresh202 authenticated Join/Rise DB/API.
+- mutate.py: physical <=4→<=3 Host clearance mutation, settlement rule unchanged,
+  named four_hex_boundary_is_occupied RED; byte-exact restore, fresh GREEN.
+- mutate-physical.py: overwrite canonical positions with saved departureq/r;
+  named Join clearance, landmass and Rise RED; exact restore, fresh GREEN.
+- mutation-result.json and mutation-physical.json record restored source hashes.
+- full-fresh.log: final full fresh202 run after rebase; js.log and vet.log final
+  checks. No additional implementation changes after rebase.
+- checkpoint-20261022/: historical interrupted full suite and earlier migration200
+  JS/vet/targeted/mutation evidence. Interrupted log is NOT a green proof.
+
+Current tests preserve existing outcomes on genuine physical positions. No
+client screenshot or live-world claim: authenticated HTTP requests run against
+synthetic persisted movement/candidate terrain. Human experience of joining
+is not claimed as a new browser/CLI end-to-end test. No new positioning engine.
+
+## Gates / limits
+
+Code and semantics: named OLD RED→fixed GREEN, canonical single owner, exact
+movement projection unchanged. User surface: existing authenticated Join and
+Rise entrypoints exercised. No graphics/layout change; visual gate N/A.
+Claude owns review/merge/deploy. No live writes, merge, push or deploy by Codex.
+
+Final result: one full fresh202 Go run GREEN26 packages (world157.471s),733 JS GREEN, vet GREEN. Runtime remains byte-identical to rebased b6a34c1a. Both physical mutations RED→exact restore/fresh GREEN.

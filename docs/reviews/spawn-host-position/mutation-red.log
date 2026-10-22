@@ -1,31 +1,31 @@
-» färsk DB på migration 200 · commit f57f063f+ändringar
-2026/10/22 20:56:39 INFO player registered id=c358c73a-c76a-47e6-a305-37257de6f0b3 username=nomadhost-recall-cbce295d-3a1f-4d23-9596-11abed9e68dc
-2026/10/22 20:56:39 INFO player registered id=48b17477-5a73-4069-9b65-367ac0e47019 username=moving-spawn-owner-3bfa9e0a-7070-4c22-b068-cb58d418b050
-2026/10/22 20:56:39 INFO player registered id=f5d2019a-589a-42dd-ba55-55157f3e9a3e username=moving-spawn-joiner-e9e1f1b5-30d6-4d64-ba50-b86007f3c0ce
-2026/10/22 20:56:39 INFO player registered id=c38a90e0-205d-4b55-b951-fbda553cc470 username=moving-spawn-owner-473b1044-7d59-4dc1-98e0-8e2a5cf7ded6
-2026/10/22 20:56:39 INFO player registered id=f2c9ce3d-e93c-4bfa-9cab-f8d1d39e77d1 username=moving-spawn-joiner-f4e74d0f-3c43-42ed-a8e3-20e67372b286
-2026/10/22 20:56:39 INFO player registered id=0fd14b65-5bb1-4d07-be07-9f9bf423fd0b username=moving-spawn-owner-99819a61-26bc-4ff5-b9e8-14cafd291c3b
-2026/10/22 20:56:40 INFO player registered id=4dfb8fb8-2892-4b20-8ffd-a58860631c38 username=moving-spawn-joiner-65948bd3-6eba-4d94-b3c0-9dcc9edaf876
-2026/10/22 20:56:40 INFO player registered id=e57f05c0-272b-489a-ae89-5edc368503c6 username=moving-spawn-owner-f74eda7d-41a6-48e8-9d92-085bf85fb334
-2026/10/22 20:56:40 INFO player registered id=ca47dcd7-170e-4646-9d83-3cc136103886 username=moving-spawn-joiner-41478c78-802c-4223-a9bb-8b20f761e2b6
-2026/10/22 20:56:40 INFO player registered id=c95e112b-46a7-4790-870a-3efa718f5615 username=moving-spawn-owner-12fffe3d-795c-481c-99cf-d275cc554a24
-2026/10/22 20:56:40 INFO player registered id=9aae9649-020b-4bd7-b6c1-d6e0fb8c0fcd username=moving-spawn-joiner-a8b0ff06-f535-4334-90fa-846f4a881de1
---- FAIL: TestJoinSpawnUsesPhysicalHostClearance (0.65s)
+» färsk DB på migration 202 · commit f1ba9954+ändringar
+2026/10/23 01:24:36 INFO player registered id=af4cb58f-ffa9-4e47-a92a-477f35825d08 username=nomadhost-recall-23818fd0-d550-4c26-996d-98e42f3cd671
+2026/10/23 01:24:37 INFO player registered id=53ee12a5-538d-4e7e-8848-56fea3820876 username=moving-spawn-owner-36cd99cf-9334-4ae5-a946-5c09e637f9f8
+2026/10/23 01:24:37 INFO player registered id=2266ff62-ccbd-4774-8a5c-ac300f2eee1d username=moving-spawn-joiner-ef4ed0dc-4569-44fe-98b1-2ba2d9a5ce59
+2026/10/23 01:24:37 INFO player registered id=7aa70b66-dc87-47a5-af9b-89f8e3a3ea22 username=moving-spawn-owner-24ebb2d8-6b84-4c2e-9529-b42b5d48c5a5
+2026/10/23 01:24:37 INFO player registered id=2ed58a6d-fb1f-4515-9c4c-b326508aad5e username=moving-spawn-joiner-b092ea0b-4b50-43ab-a5ae-3a74666bf58e
+2026/10/23 01:24:37 INFO player registered id=076db86b-1420-49c9-8e62-5f4f9d48d1c3 username=moving-spawn-owner-82f4b0cd-3842-4ecb-8a5e-ef7f1269067f
+2026/10/23 01:24:37 INFO player registered id=17178668-2102-43e6-9c22-bc514a6b5a40 username=moving-spawn-joiner-db08cf9b-0d48-4d46-9025-bace748dfe01
+2026/10/23 01:24:37 INFO player registered id=8bd215b7-b72d-4756-8806-1fbc8e4bf5e1 username=moving-spawn-owner-4f538bb0-9648-4292-84f2-a1695a83e656
+2026/10/23 01:24:37 INFO player registered id=5108f500-f966-42cc-98e3-a60db7eb9eef username=moving-spawn-joiner-d6c3ba56-01f7-4fd7-9202-ef9158259df3
+2026/10/23 01:24:37 INFO player registered id=5528c263-8e8f-49a4-a6c1-08595e243e83 username=moving-spawn-owner-5e81cb9b-9bfb-4a6b-8d32-fb7b0f44364b
+2026/10/23 01:24:37 INFO player registered id=7b4988e6-b29a-4f77-b6a9-ca2504af1edf username=moving-spawn-joiner-fe8d3ec7-03eb-4ba0-9f84-157489dcea04
+--- FAIL: TestJoinSpawnUsesPhysicalHostClearance (0.66s)
     --- FAIL: TestJoinSpawnUsesPhysicalHostClearance/four_hex_boundary_is_occupied (0.13s)
-        join_host_position_test.go:82: join while Host physically at (11,0), candidate (15,0): got 201 {"culture":"minoan","host_unit_id":"7d38f937-ec1a-4feb-a4bd-4d736a92fbe6","population":1000,"tile":{"WorldID":"00000000-0000-0000-0000-000000000000","Q":15,"R":0,"Terrain":"","Coastal":false,"Fertility":0,"Mineral":0,"CopperDeposit":false,"TinDeposit":false,"SilverDeposit":false,"CedarDeposit":false,"IncenseDeposit":false}}
+        join_host_position_test.go:82: join while Host physically at (11,0), candidate (15,0): got 201 {"culture":"minoan","host_unit_id":"fc8bf48e-dcf3-41a9-8a3c-c0cfbaf35980","population":1000,"tile":{"WorldID":"00000000-0000-0000-0000-000000000000","Q":15,"R":0,"Terrain":"","Coastal":false,"Fertility":0,"Mineral":0,"CopperDeposit":false,"TinDeposit":false,"SilverDeposit":false,"CedarDeposit":false,"IncenseDeposit":false}}
             ; want 409
-2026/10/22 20:56:40 INFO player registered id=06ec2eab-51fa-4721-b8b1-b5b9cb04f52d username=landmass-moving-host-1b70b038-fcf0-48c7-bfc3-16495d353822
-2026/10/22 20:56:40 INFO player registered id=54169cf2-b972-4941-8164-9fb4b623ecc7 username=landmass-new-host-3b27263d-4c84-465d-b2fe-d8e8d4742e1b
-2026/10/22 20:56:40 INFO player registered id=94917b09-7554-45f9-af79-17f954cb2e30 username=rise-moving-host-37f7c9c6-3a50-4c39-97ab-29e3d5296103
-2026/10/22 20:56:40 INFO player registered id=02384061-d690-4869-9a27-50b56e4438fa username=rising-new-host-792866ff-86cb-4433-b7e4-8d72266a40c2
-2026/10/22 20:56:40 INFO rise: no free land on another landmass, falling back player=02384061-d690-4869-9a27-50b56e4438fa landmass=1
-2026/10/22 20:56:40 INFO player registered id=64610948-fcde-4c12-b25e-7dcd0d91e902 username=landmass-balance-1-5ec81f4f-7ba6-48d9-92aa-6fbc16cd5396
-2026/10/22 20:56:40 INFO player registered id=3746f20e-c61b-41d5-9a30-dc15d04476a2 username=landmass-balance-2-6b121b42-8fa0-4306-a9af-2a3b90a46e4f
-2026/10/22 20:56:40 INFO player registered id=f8336df9-9536-41d9-bb78-bb6fb4850437 username=rise-80eecf6d-ab4a-465e-82c8-b964edc494e4
-2026/10/22 20:56:40 INFO player registered id=2c8b1dca-a2ec-47f9-8cf5-e15ba2a9c57a username=rise-zero-8fb08b54-f2c4-4cac-b314-0d75fe7d2dcd
-2026/10/22 20:56:40 INFO player registered id=3ba6b6bf-5e52-4905-aa6b-c2022be8aee8 username=rise-lazy-8cbd4e92-3794-4765-86db-f704b04abe2d
-2026/10/22 20:56:40 INFO player registered id=e2f677b5-588b-4fb0-9781-1d2467bb9489 username=never-joined-1b28d76e-fe86-4e1d-8675-d39514705818
-2026/10/22 20:56:40 INFO player registered id=d27d78a9-6782-4fdf-b7d6-4bdc80e1b65a username=leave-d9e6c915-571d-4f25-bdf0-10e3427bbb7d
+2026/10/23 01:24:37 INFO player registered id=7017915a-ba1a-4a64-ad36-995a74a7b3f8 username=landmass-moving-host-2f0bd476-d296-433d-941d-339896c55167
+2026/10/23 01:24:37 INFO player registered id=f7d76348-e366-4de1-abbb-378896a19965 username=landmass-new-host-1cebc626-d5a9-4d01-9fc0-87f343f31a02
+2026/10/23 01:24:37 INFO player registered id=a123be01-7388-4677-b41e-1764b4c0043d username=rise-moving-host-38cf70e6-1caa-41f2-a29b-5263b24d87ec
+2026/10/23 01:24:37 INFO player registered id=0b780ade-6a8e-4ff4-b240-9e630d8dd271 username=rising-new-host-7eca1c4d-8feb-4cb3-8a4f-40d66447644c
+2026/10/23 01:24:37 INFO rise: no free land on another landmass, falling back player=0b780ade-6a8e-4ff4-b240-9e630d8dd271 landmass=1
+2026/10/23 01:24:38 INFO player registered id=ed1d167b-a54c-4a42-accf-90ac5593a42c username=landmass-balance-1-96fae6ea-3006-420f-97e7-0b3cc9e366fc
+2026/10/23 01:24:38 INFO player registered id=701f5f6c-006a-49bc-aacc-81146508da4b username=landmass-balance-2-cc4f6ef1-2fef-498e-b1ca-518cadaf50db
+2026/10/23 01:24:38 INFO player registered id=3812cf62-d8b0-451e-9e80-b492b4628e9d username=rise-c1822e03-8bc2-4af7-a94f-bab098e5a898
+2026/10/23 01:24:38 INFO player registered id=29255f5d-f5e6-436a-bed8-89493f476184 username=rise-zero-f549add8-6f81-4698-ad76-5910747380a6
+2026/10/23 01:24:38 INFO player registered id=cc58aa1b-56f3-499e-8a93-13a4c678bccd username=rise-lazy-126af5c4-1f19-4f14-af4f-aa0fcfb3b471
+2026/10/23 01:24:38 INFO player registered id=3a1fe1aa-cb32-45c4-9e4f-c165ded7fe48 username=never-joined-af1830eb-fb8f-4f18-adb2-bcba0262a574
+2026/10/23 01:24:38 INFO player registered id=62375ce3-1033-4195-9409-bff51f2b3e67 username=leave-3e17b521-48b3-42b5-883d-081119001e50
 FAIL
-FAIL	formatet/megaron/server/api/handlers	1.449s
+FAIL	formatet/megaron/server/api/handlers	1.465s
 FAIL
