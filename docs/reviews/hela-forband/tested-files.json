@@ -1,0 +1,15 @@
+{
+  "server/api/handlers/disband.go": "95dcc735565d4c821cd60cb0e7debf951dfbb31b353406cb726a1c286de78191",
+  "server/api/handlers/disband_plan_test.go": "894409e05e605ed27a2039b7a3544e522ab76926a69704d6de1ec9418052326e",
+  "server/api/handlers/disband_population_test.go": "913a5a8d795ff57dfc585a4d10cd288d0afb40a00ff08c4d07b129c97eb6faac",
+  "server/api/handlers/province.go": "2af7da9baefe7ac1db8a8e453c70ef5864dcf4259add560f7c2cbf855a00e3ba",
+  "server/api/handlers/unit_lay_up_test.go": "85c5f721a07c2530639acc7b0820b1deb81eb20b0825c1dfd55e73d580e492f0",
+  "server/cmd/keryx/cmd_disband.go": "1f72001c95561835f8ad04713676e5fcd6d7bcd3ab0fcb607ca2e6822afb824e",
+  "server/cmd/keryx/cmd_disband_test.go": "fe40c0aeeec75659beef4da0f41b7789edc9980be6e62adb7a277ab9ffec29bf",
+  "web/static/codex/units.md": "7962dc4de171e0cd1719357d00777fc77faca945dec83500cba5096ff8b89857",
+  "web/static/js/megaron/ui/disband.js": "6ce76fe70c7db4c1669aa7653d351765d83d05765e4f0e25161619d4076cad9b",
+  "web/static/js/megaron/ui/disband.test.mjs": "24c746ad02c51de5b88aff9230ebd6de53b56bd785522e5989ceb2fd856bb713",
+  "web/static/js/megaron/ui/drawers/city.js": "3718779f06088c58d81285d8288b3ddb7c08123a39d0d659382da0d6375fea5e",
+  "web/static/js/megaron/ui/drawers/war.js": "d08b5fbbe7f2e6f924f71277bc8621132c263c42f0cebfeacca4c48e2aa0e6dc",
+  "web/static/megaron.css": "a2058bfaa88f94ec40634bba17cbbe1939450a0f5914070e6e3a75333051c76b"
+}

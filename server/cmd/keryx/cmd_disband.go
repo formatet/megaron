@@ -3,129 +3,104 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"sort"
 	"strings"
 
-	"formatet/megaron/server/internal/unit"
 	"github.com/spf13/cobra"
 )
 
-// disbandWireToType maps the disband endpoint's request/response JSON keys to
-// the unit.DisplayName DB-type key they name — "ship" is the endpoint's wire
-// key for the canonical "galley" type (see the post() call below), so it's
-// the one entry that doesn't match its own DB type.
-var disbandWireToType = map[string]string{
-	"spearman":       string(unit.TypeSpearman),
-	"war_chariot":    string(unit.TypeWarChariot),
-	"ship":           string(unit.TypeGalley),
-	"elite_infantry": string(unit.TypeEliteInfantry),
-	"war_galley":     string(unit.TypeWarGalley),
-	"merchantman":    string(unit.TypeMerchantman),
+func formatDisbandResult(resp map[string]any) string {
+	city, _ := resp["settlement_name"].(string)
+	lines := []string{}
+	if units, ok := resp["disbanded"].([]any); ok {
+		for _, raw := range units {
+			if u, ok := raw.(map[string]any); ok {
+				name, _ := u["display_name"].(string)
+				people, known := u["people_returned"].(float64)
+				if name == "" || !known {
+					continue
+				}
+				noun, verb := "people", "return"
+				if people == 1 {
+					noun, verb = "person", "returns"
+				}
+				lines = append(lines, fmt.Sprintf("%s disbanded — %d %s %s to %s.", name, int(people), noun, verb, city))
+			}
+		}
+	}
+	if len(lines) == 0 {
+		return "Unit disbanded. Refresh units to see the result."
+	}
+	return strings.Join(lines, "\n")
 }
 
-// formatDisbandResult renders the server's {"disbanded":{...},"pop_restored":
-// N,"population":N} response as one line. A tyst fallback that guesses a
-// population figure is worse than omitting it — pop_restored missing (old
-// server) prints only what was disbanded, never a fabricated "+0".
-func formatDisbandResult(resp map[string]any) string {
-	var parts []string
-	if disbanded, ok := resp["disbanded"].(map[string]any); ok {
-		var keys []string
-		for k, v := range disbanded {
-			if n, _ := v.(float64); n > 0 {
-				keys = append(keys, k)
+// Resolve only among the player's units, preserving ambiguity instead of guessing.
+func disbandUnitIDs(c *Client, selectors []string) ([]string, error) {
+	data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/units", cfg.WorldID))
+	if err != nil {
+		return nil, err
+	}
+	var list struct {
+		Units []unitRow `json:"units"`
+	}
+	if err = json.Unmarshal(data, &list); err != nil {
+		return nil, err
+	}
+	ids := []string{}
+	seen := map[string]bool{}
+	for _, selector := range selectors {
+		needle := strings.ToLower(strings.TrimSpace(selector))
+		matches := []unitRow{}
+		for _, u := range list.Units {
+			if needle != "" && (strings.HasPrefix(strings.ToLower(u.ID), needle) || strings.EqualFold(u.DisplayName, selector) || (u.Name != nil && strings.EqualFold(*u.Name, selector))) {
+				matches = append(matches, u)
 			}
 		}
-		sort.Strings(keys)
-		for _, k := range keys {
-			n := int(disbanded[k].(float64))
-			typ := disbandWireToType[k]
-			if typ == "" {
-				typ = k
-			}
-			parts = append(parts, fmt.Sprintf("%d %s", n, unit.DisplayName(typ)))
+		if len(matches) != 1 {
+			return nil, fmt.Errorf("%q matches %d units — choose a unique name or id from keryx units", selector, len(matches))
 		}
-	}
-	line := "Disbanded"
-	if len(parts) > 0 {
-		line += " " + strings.Join(parts, ", ")
-	}
-	if popRestored, ok := resp["pop_restored"].(float64); ok {
-		population, hasPop := resp["population"].(float64)
-		if hasPop {
-			line += fmt.Sprintf(" · +%d population (now %d)", int(popRestored), int(population))
-		} else {
-			line += fmt.Sprintf(" · +%d population", int(popRestored))
+		if seen[matches[0].ID] {
+			return nil, fmt.Errorf("choose each whole unit only once")
 		}
+		seen[matches[0].ID] = true
+		ids = append(ids, matches[0].ID)
 	}
-	return line
+	return ids, nil
 }
 
 func disbandCmd() *cobra.Command {
-	var spearman, warChariot, galley, eliteInfantry, warGalley, merchantman int
-	cmd := &cobra.Command{
-		Use:   "disband",
-		Short: "Disband units — their men return to civilian life",
-		Example: `  keryx disband --spearman 20
-  keryx disband --spearman 10 --war-chariot 5 --elite-infantry 2
-  keryx disband --galley 3 --elite-infantry 1
-  keryx disband --war-galley 2 --merchantman 1`,
-		// No single flag is the obvious guess — one flag per unit type, so
-		// there is no "the" flag to name the way build has --type.
-		Args: noPositionalArgs(),
-		RunE: func(cmd *cobra.Command, _ []string) error {
-			if spearman+warChariot+galley+eliteInfantry+warGalley+merchantman == 0 {
-				return fmt.Errorf("specify at least one unit type to disband")
-			}
-			c := newClient(cfg)
-			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/disband", cfg.WorldID, cfg.ProvinceID)
-			data, err := c.post(path, map[string]any{
-				"spearman":       spearman,
-				"war_chariot":    warChariot,
-				"ship":           galley, // server's disband JSON key for the canonical "galley" DB type
-				"elite_infantry": eliteInfantry,
-				"war_galley":     warGalley,
-				"merchantman":    merchantman,
-			})
-			if err != nil {
-				return err
-			}
-			if jsonMode {
-				printRawJSON(data)
-				return nil
-			}
-			var resp map[string]any
-			if err := json.Unmarshal(data, &resp); err != nil {
-				return err
-			}
-			fmt.Println(formatDisbandResult(resp))
+	var selectors []string
+	var province string
+	cmd := &cobra.Command{Use: "disband", Short: "Disband a whole unit in a city; its remaining people return there", Args: noPositionalArgs(), Example: `  keryx disband --unit "1st Spearmen of Phaistos"
+  keryx disband --unit <unit-id> --province Phaistos
+  keryx disband --unit <unit-id> --unit <another-unit-id>`, RunE: func(cmd *cobra.Command, _ []string) error {
+		if len(selectors) == 0 {
+			return fmt.Errorf("disband a whole unit by its id or unique name: use --unit (see keryx units)")
+		}
+		c := newClient(cfg)
+		city, err := selectedProvince(c, province, nil)
+		if err != nil {
+			return err
+		}
+		ids, err := disbandUnitIDs(c, selectors)
+		if err != nil {
+			return err
+		}
+		data, err := c.post(fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/disband", cfg.WorldID, city), map[string]any{"unit_ids": ids})
+		if err != nil {
+			return err
+		}
+		if jsonMode {
+			printRawJSON(data)
 			return nil
-		},
-	}
-	cmd.Flags().IntVar(&spearman, "spearman", 0, "spearmen to disband")
-	cmd.Flags().IntVar(&warChariot, "war-chariot", 0, "war chariots to disband")
-	cmd.Flags().IntVar(&galley, "galley", 0, "galleys to disband")
-	cmd.Flags().IntVar(&eliteInfantry, "elite-infantry", 0, "elite infantry to disband")
-	cmd.Flags().IntVar(&warGalley, "war-galley", 0, "war galleys to disband")
-	cmd.Flags().IntVar(&merchantman, "merchantman", 0, "merchantmen to disband")
-
-	// Retired flag names (namn-hygien-svepet, mig 084, renamed the unit
-	// TYPES but missed this CLI's flags — internal/unit/naming_test.go
-	// TestRetiredNamesNeverSurface only ever checked DisplayName(), never
-	// flag names; megaron_plan_cli_sanning §E). Kept as hidden aliases,
-	// bound to the same variables: agent configs in keryx_playtest may still
-	// pass the old names, and a silent break is a worse lie than an old
-	// label — see naming_test.go's flag/example sweep for why these stay.
-	cmd.Flags().IntVar(&spearman, "hoplites", 0, "deprecated: use --spearman")
-	cmd.Flags().IntVar(&warChariot, "chariots", 0, "deprecated: use --war-chariot")
-	cmd.Flags().IntVar(&galley, "trireme", 0, "deprecated: use --galley")
-	cmd.Flags().IntVar(&eliteInfantry, "agema", 0, "deprecated: use --elite-infantry")
-	for old, canonical := range map[string]string{
-		"hoplites": "--spearman", "chariots": "--war-chariot",
-		"trireme": "--galley", "agema": "--elite-infantry",
-	} {
-		_ = cmd.Flags().MarkDeprecated(old, "use "+canonical+" instead")
-		_ = cmd.Flags().MarkHidden(old)
-	}
+		}
+		var resp map[string]any
+		if err = json.Unmarshal(data, &resp); err != nil {
+			return err
+		}
+		fmt.Println(formatDisbandResult(resp))
+		return nil
+	}}
+	cmd.Flags().StringArrayVar(&selectors, "unit", nil, "whole unit ID, unique ID prefix or name (repeat to select several)")
+	cmd.Flags().StringVar(&province, "province", "", "city name or province ID (default: selected city)")
 	return cmd
 }

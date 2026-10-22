@@ -1,3 +1,4 @@
+import { disbandUnitsHTML } from '../disband.js';
 import { showInlineResult, confirmInline } from '../inline_result.js';
 import { demolishLabel, demolishPrompt, demolishResultLine } from '../demolish.js';
 import { State, activeCitySettlement } from '../../state.js';
@@ -142,12 +143,14 @@ export async function loadCityDrawer() {
   const capitalTile2 = State.tileData.find(t => t.q === capital.q && t.r === capital.r);
 
   try {
-    const [settResp, goodsResp] = await Promise.all([
+    const [settResp, goodsResp, unitsResp] = await Promise.all([
       fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${capital.id}`),
       fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${capital.id}/goods`),
+      fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`),
     ]);
     const pd    = settResp.ok  ? (await settResp.json()).settlement : null;
     const goods = goodsResp.ok ? await goodsResp.json() : [];
+    const units = unitsResp.ok ? (await unitsResp.json()).units || [] : [];
     if (seq !== cityLoadSeq) return;
 
     // Canvas — start animated city scene.
@@ -264,28 +267,10 @@ export async function loadCityDrawer() {
 
     // ── Garnison ────────────────────────────────────────────────────────────
     if (pd) {
-      const army    = pd.army || {};
-      const present = Object.keys(POP_COSTS).filter(k => (army[k]||0) > 0);
-      const totalDP  = Object.entries(UNIT_DP).reduce((s,[k,d])  => s + (army[k]||0)*d, 0);
-      const totalPop = Object.entries(POP_COSTS).reduce((s,[k,c]) => s + (army[k]||0)*c, 0);
-      document.getElementById('city-gar-sec').innerHTML = present.length
-        ? `<table class="goods-mini">
-            <tr style="color:var(--text-dim);font-size:.7rem"><td>Unit</td><td style="text-align:right">Count</td><td style="text-align:right">Pop</td><td style="text-align:right">DP</td></tr>
-            ${present.map(k => {
-              const n = army[k]||0;
-              return `<tr><td>${unitTypeLabel(k)}</td><td style="text-align:right">${n}</td><td style="text-align:right;color:var(--text-dim)">${n*POP_COSTS[k]}</td><td style="text-align:right;color:var(--safe-text)">${n*UNIT_DP[k]}</td></tr>`;
-            }).join('')}
-            <tr style="border-top:1px solid var(--border);font-weight:bold"><td>Total</td><td></td><td style="text-align:right;color:var(--accent)">${totalPop}</td><td style="text-align:right;color:var(--safe-text)">${totalDP} DP</td></tr>
-          </table>`
-        : '<p class="empty-state">No garrison. Recruit units in the War tab.</p>';
-      document.getElementById('city-gar-sec').innerHTML += `
-        <div class="dsec-title" style="margin-top:.8rem">Disband</div>
-        <div style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;font-size:.75rem">
-          <label>Spearmen <input type="number" id="wdb-inf" min="0" value="0" style="width:3.2rem;background:var(--warm-white);border:1px solid var(--border);padding:.15rem .25rem;font-family:var(--mono)"></label>
-          <label>Chariot <input type="number" id="wdb-cha" min="0" value="0" style="width:3.2rem;background:var(--warm-white);border:1px solid var(--border);padding:.15rem .25rem;font-family:var(--mono)"></label>
-          <button class="btn-small" onclick="warDisband('${capital.id}')">Disband →</button>
-        </div>
-        <div id="war-disband-res" style="font-size:.72rem;margin-top:.2rem;min-height:.9rem"></div>`;
+      document.getElementById('city-gar-sec').innerHTML = `
+        <div class="dsec-title">Whole units in ${esc(capital.name)}</div>
+        ${unitsResp.ok ? disbandUnitsHTML(units, capital.settlement_id || pd.id, capital.id) : '<p class="empty-state">Could not load units. Reopen the city to try again.</p>'}
+        <div id="war-disband-res" class="action-result" role="status"></div>`;
     }
 
     const locked = await renderLockedActions('province', capital.id);
