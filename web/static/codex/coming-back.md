@@ -20,7 +20,7 @@ Click any row to open it in the **Dispatch window**. The same window opens from 
 
 A [[kharis|Kharis]] notice marks each change between Favorable, Indifferent, Suspicious and Wrathful. Check **Kult** for Kharis and its daily decay breakdown. It fades from the start; every active city counts toward the cost. Below 30 without a standing temple, punishment can fall. Staff and feed temples, then check the projected net.
 
-Then look at **City → Production** for idle [[citizens]], and **Economy → Wants** for trade.
+Then look at **City → Production** for idle [[citizens]], and **Diplomacy → Correspondence** to ask a contacted Wanax about [[trade]].
 
 ## Making the next absence easier
 

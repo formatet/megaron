@@ -156,12 +156,10 @@ export async function loadEconomyDrawer() {
       '<button class="dtab active" data-tab="goods">Goods</button>' +
       '<button class="dtab" data-tab="transfer">Transfer</button>' +
       '<button class="dtab" data-tab="automation">Automation</button>' +
-      '<button class="dtab" data-tab="wants">Wants</button>' +
     '</div>' +
     '<div id="ectab-goods" class="city-tab"></div>' +
     '<div id="ectab-transfer" class="city-tab" style="display:none"></div>' +
-    '<div id="ectab-automation" class="city-tab" style="display:none"></div>' +
-    '<div id="ectab-wants" class="city-tab" style="display:none"></div>';
+    '<div id="ectab-automation" class="city-tab" style="display:none"></div>';
 
   body.querySelectorAll('.dtab').forEach(tab => {
     tab.addEventListener('click', function() {
@@ -173,7 +171,6 @@ export async function loadEconomyDrawer() {
       if (this.dataset.tab === 'goods') loadEconomyGoods(mySettlements);
       else if (this.dataset.tab === 'transfer') loadEconomyTransfer(mySettlements);
       else if (this.dataset.tab === 'automation') loadEconomyAutomation(mySettlements);
-      else if (this.dataset.tab === 'wants') loadEconomyWants();
     });
   });
 
@@ -593,41 +590,4 @@ export async function resumeStandingOrder(id) {
 export async function deleteStandingOrder(id) {
   await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/standing-orders/${id}`, { method: 'DELETE' });
   refreshStandingOrders();
-}
-
-async function loadEconomyWants() {
-  const el = document.getElementById('ectab-wants');
-  el.innerHTML = '<div class="loading" style="padding:.5rem">Loading…</div>';
-  try {
-    const r = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/market/wants`);
-    if (!r.ok) { el.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load.</p>'; return; }
-    const data = await r.json();
-    const wants = data.wants || [], surplus = data.surplus || [];
-    if (!wants.length && !surplus.length) { el.innerHTML = '<p class="empty-state" style="padding:1rem">No known market intel yet — visit settlements to learn their market.</p>'; return; }
-    const rateCell = g => g.rate < 0
-      ? `<span style="color:var(--danger)">▼ ${fmtNum(Number(g.rate.toFixed(1)))} per day</span>`
-      : `<span style="color:var(--safe-text)">▲ +${fmtNum(Number(g.rate.toFixed(1)))} per day</span>`;
-    let html = '';
-    if (wants.length) {
-      html += '<div class="dsec-title">Wants — buy here at a premium</div>' + wants.map(sw => `
-        <div class="dsec">
-          <div class="dsec-title" style="font-size:.75rem">${esc(sw.name)}${sw.secondhand ? ' <span style="color:var(--text-dim);font-size:.68rem">(rumour)</span>' : ''}</div>
-          <table class="goods-mini">${sw.goods.map(g =>
-            `<tr><td>${g.good}</td><td>${fmtNum(Math.floor(g.stock))}</td><td style="text-align:right">${rateCell(g)}</td></tr>`
-          ).join('')}</table>
-        </div>`).join('');
-    }
-    if (surplus.length) {
-      html += '<div class="dsec-title" style="margin-top:.6rem">Surplus — sell cheap here</div>' + surplus.map(sw => `
-        <div class="dsec">
-          <div class="dsec-title" style="font-size:.75rem">${esc(sw.name)}${sw.secondhand ? ' <span style="color:var(--text-dim);font-size:.68rem">(rumour)</span>' : ''}</div>
-          <table class="goods-mini">${sw.goods.map(g =>
-            `<tr><td>${g.good}</td><td>${fmtNum(Math.floor(g.stock))}</td><td style="text-align:right">${rateCell(g)}</td></tr>`
-          ).join('')}</table>
-        </div>`).join('');
-    }
-    el.innerHTML = html;
-  } catch (_) {
-    el.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load.</p>';
-  }
 }

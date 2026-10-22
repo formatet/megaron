@@ -449,7 +449,6 @@ func main() {
 			r.Post("/worlds/{worldID}/standing-orders/{orderID}/resume", soh.Resume)
 			r.Delete("/worlds/{worldID}/standing-orders/{orderID}", soh.Delete)
 
-			r.Get("/worlds/{worldID}/market/wants", ph.MarketWants)
 
 			r.Post("/worlds/{worldID}/join", jh.Join)
 			// The last city fell: rise again as a host elsewhere, or leave (megaron_sista_staden.md).
