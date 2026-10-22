@@ -1,0 +1,93 @@
+» färsk DB på migration 198 · commit 166c51e1+ändringar
+2026/10/22 19:41:32 INFO trade delivery destination=8d141fba-52ca-4c6a-988a-1dcf1e981519 good=grain qty=5
+--- FAIL: TestSilverAuditV2Conservation (0.05s)
+    silver_audit_v2_test.go:142: got 483.500000000, want 483.000000000
+2026/10/22 19:41:32 INFO upkeep: grain attrition unit=b19c381c-e553-469a-b579-a3a26b7cce5b lost=2 disbanded=false
+2026/10/22 19:41:32 INFO upkeep: grain attrition unit=6e2a73b2-d519-43eb-86e2-07ac5bdb39da lost=2 disbanded=false
+2026/10/22 19:41:32 INFO upkeep: grain attrition unit=6e2a73b2-d519-43eb-86e2-07ac5bdb39da lost=2 disbanded=false
+2026/10/22 19:41:32 INFO upkeep: grain attrition unit=6e2a73b2-d519-43eb-86e2-07ac5bdb39da lost=2 disbanded=false
+2026/10/22 19:41:32 INFO upkeep: grain attrition unit=6e2a73b2-d519-43eb-86e2-07ac5bdb39da lost=2 disbanded=false
+2026/10/22 19:41:32 INFO upkeep: grain attrition unit=6e2a73b2-d519-43eb-86e2-07ac5bdb39da lost=2 disbanded=false
+2026/10/22 19:41:32 INFO upkeep: grain attrition unit=6e2a73b2-d519-43eb-86e2-07ac5bdb39da lost=2 disbanded=false
+2026/10/22 19:41:32 INFO upkeep: grain attrition unit=6e2a73b2-d519-43eb-86e2-07ac5bdb39da lost=2 disbanded=false
+2026/10/22 19:41:32 INFO upkeep: grain attrition unit=6e2a73b2-d519-43eb-86e2-07ac5bdb39da lost=2 disbanded=false
+2026/10/22 19:41:32 INFO upkeep: grain attrition unit=6e2a73b2-d519-43eb-86e2-07ac5bdb39da lost=2 disbanded=false
+2026/10/22 19:41:32 INFO upkeep: grain attrition unit=6e2a73b2-d519-43eb-86e2-07ac5bdb39da lost=2 disbanded=true
+2026/10/22 19:41:32 INFO upkeep: grain attrition unit=1c324da2-2e6e-4ca9-9699-8ea2ea591eaf lost=10 disbanded=false
+2026/10/22 19:41:32 INFO upkeep: grain attrition unit=7da8eed8-c40a-4752-bee0-4e96fd807fef lost=2 disbanded=false
+2026/10/22 19:41:32 INFO upkeep: grain attrition unit=07535fa5-128b-4d96-979b-b3b81daf0aa9 lost=2 disbanded=true
+2026/10/22 19:41:32 INFO upkeep: grain attrition unit=873d5849-6f56-4b56-8081-c55310045ee8 lost=2 disbanded=true
+2026/10/22 19:41:32 INFO upkeep: grain attrition unit=36735490-4181-49d0-9ca3-0575a57a0d70 lost=2 disbanded=true
+2026/10/22 19:41:32 INFO upkeep: grain attrition unit=2dedc261-8525-419d-89e6-859eade8f10b lost=2 disbanded=true
+2026/10/22 19:41:32 INFO upkeep: grain attrition unit=cc259e8c-5df0-4ecf-b4c4-5897b4631af6 lost=2 disbanded=true
+2026/10/22 19:41:32 INFO upkeep: grain attrition unit=ff04b6c4-35c2-4475-94b7-4fc2d13cc620 lost=2 disbanded=true
+2026/10/22 19:41:32 INFO upkeep: grain attrition unit=fbda13aa-3928-410b-9849-35670222dca3 lost=2 disbanded=true
+2026/10/22 19:41:32 INFO upkeep: grain attrition unit=a0083fdf-caff-49ed-a260-2903a9799ff7 lost=2 disbanded=true
+2026/10/22 19:41:32 INFO upkeep: grain attrition unit=0260213c-238a-4f7a-bbb2-de06ac95e5ad lost=2 disbanded=true
+2026/10/22 19:41:32 INFO upkeep: grain attrition unit=6baee513-198d-4f53-a7bc-3e6dec797fba lost=2 disbanded=true
+2026/10/22 19:41:32 INFO upkeep: silver desertion unit=8149dffd-b0a1-4ca5-9bc1-b97745aa6f75 lost=1 disbanded=true
+2026/10/22 19:41:32 INFO upkeep: silver desertion unit=1ce613ad-3d48-4135-9b52-6f4a73149eb3 lost=1 disbanded=true
+2026/10/22 19:41:32 INFO upkeep: silver desertion unit=823f5695-1e95-4f4d-a2fc-7a2ff40b70a2 lost=1 disbanded=true
+2026/10/22 19:41:32 INFO upkeep: silver desertion unit=22d31514-e32f-45ef-8d73-1c59d6a2d777 lost=1 disbanded=true
+2026/10/22 19:41:32 INFO upkeep: silver desertion unit=624120de-656f-4735-8a5b-15acf7eae888 lost=1 disbanded=true
+2026/10/22 19:41:32 INFO upkeep: silver desertion unit=22b01b79-1360-480c-b6e5-dc69376f32a4 lost=1 disbanded=true
+2026/10/22 19:41:32 INFO upkeep: silver desertion unit=7ead0ebb-5d07-4610-b234-132e9448c09f lost=1 disbanded=true
+2026/10/22 19:41:32 INFO upkeep: silver desertion unit=27af3469-2596-422d-bc7d-868cd84f08cf lost=1 disbanded=true
+2026/10/22 19:41:32 INFO upkeep: silver desertion unit=a40ce634-af0f-4873-9319-12f1b87e9c05 lost=1 disbanded=true
+2026/10/22 19:41:32 INFO upkeep: silver desertion unit=9c367a02-b5c4-45d1-8655-1d8fb48bef0b lost=1 disbanded=true
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=006074fa-cfcd-4bba-a7a9-72ea39a79fba lost=5 disbanded=false
+--- FAIL: TestUpkeepDesertion_CascadesEmbarkedCargo (0.03s)
+    upkeep_desertion_cargo_test.go:118: expected a UnitLostAtSea notification for the cargo unit, got kinds [UnitAttrition]
+    upkeep_desertion_cargo_test.go:129: ship status = "garrison", want disbanded (silver desertion should have sunk it)
+    upkeep_desertion_cargo_test.go:132: cargo status = "embarked", want disbanded — the ship's loss must cascade to its embarked cargo, not orphan it
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=10114e51-ebb1-4fc3-8fc2-f3d23b1b8523 lost=2 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=10114e51-ebb1-4fc3-8fc2-f3d23b1b8523 lost=2 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=10114e51-ebb1-4fc3-8fc2-f3d23b1b8523 lost=2 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=10114e51-ebb1-4fc3-8fc2-f3d23b1b8523 lost=2 disbanded=false
+2026/10/22 19:41:33 INFO field unit turning for home (starving) unit=10114e51-ebb1-4fc3-8fc2-f3d23b1b8523 from_q=3 from_r=0 home_q=1 home_r=0 crew_after=10
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=10114e51-ebb1-4fc3-8fc2-f3d23b1b8523 lost=2 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=ff5cc1f1-ff33-420b-a133-054b9c6bc137 lost=2 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=ff5cc1f1-ff33-420b-a133-054b9c6bc137 lost=2 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=ff5cc1f1-ff33-420b-a133-054b9c6bc137 lost=2 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=ff5cc1f1-ff33-420b-a133-054b9c6bc137 lost=2 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=ff5cc1f1-ff33-420b-a133-054b9c6bc137 lost=2 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=313f0c3b-c442-4d31-894a-8c22ff35e8b0 lost=2 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=313f0c3b-c442-4d31-894a-8c22ff35e8b0 lost=2 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=313f0c3b-c442-4d31-894a-8c22ff35e8b0 lost=2 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=313f0c3b-c442-4d31-894a-8c22ff35e8b0 lost=2 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=313f0c3b-c442-4d31-894a-8c22ff35e8b0 lost=2 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=2281c5f8-ff50-4b44-a1e0-a7f1a7a611fd lost=2 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=2281c5f8-ff50-4b44-a1e0-a7f1a7a611fd lost=2 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=2281c5f8-ff50-4b44-a1e0-a7f1a7a611fd lost=2 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=2281c5f8-ff50-4b44-a1e0-a7f1a7a611fd lost=2 disbanded=false
+2026/10/22 19:41:33 INFO field unit turning for home (starving) unit=2281c5f8-ff50-4b44-a1e0-a7f1a7a611fd from_q=3 from_r=0 home_q=1 home_r=0 crew_after=10
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=2281c5f8-ff50-4b44-a1e0-a7f1a7a611fd lost=2 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=d13700f0-36a7-4d22-9c21-880e24c5310f lost=10 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=d13700f0-36a7-4d22-9c21-880e24c5310f lost=9 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=d13700f0-36a7-4d22-9c21-880e24c5310f lost=9 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=d13700f0-36a7-4d22-9c21-880e24c5310f lost=8 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=d13700f0-36a7-4d22-9c21-880e24c5310f lost=7 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=d13700f0-36a7-4d22-9c21-880e24c5310f lost=6 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=d13700f0-36a7-4d22-9c21-880e24c5310f lost=6 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=d13700f0-36a7-4d22-9c21-880e24c5310f lost=5 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=d13700f0-36a7-4d22-9c21-880e24c5310f lost=4 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=14c1397e-5541-4d72-aa6e-cd1ec2fe5ab2 lost=2 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=14c1397e-5541-4d72-aa6e-cd1ec2fe5ab2 lost=2 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=14c1397e-5541-4d72-aa6e-cd1ec2fe5ab2 lost=2 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=73becd15-3a52-445a-81e3-9cf49307b5bc lost=2 disbanded=false
+2026/10/22 19:41:33 INFO upkeep: grain attrition unit=7476823f-c62e-477e-813c-60cea4109ed6 lost=10 disbanded=false
+2026/10/22 19:41:34 INFO upkeep: silver desertion unit=7a1dfbf9-d41f-46da-8ac3-945554d03010 lost=10 disbanded=false
+FAIL
+FAIL	formatet/megaron/server/internal/combat	2.019s
+2026/10/22 19:41:36 INFO player registered id=59ae9b1d-c66e-4b69-8fb7-564645f8dbf6 username=upkeepview-a0f05e9c-5d15-4b98-bd05-6a61529139c3
+2026/10/22 19:41:36 INFO player registered id=5f4e610f-cae9-4a3a-b6d3-11b8bdc78784 username=storage-owner-85d55a07-52ba-42bf-b6c3-b0a56cd9ea88
+2026/10/22 19:41:36 INFO player registered id=a5dd8d05-a1aa-49bb-bd5f-f2634efcef7d username=storage-other-3953524e-0bd0-476f-9bdf-d9a298232d3c
+--- FAIL: TestUnitRosterRationsAndExplicitZeroSalary (0.00s)
+    --- FAIL: TestUnitRosterRationsAndExplicitZeroSalary/elite_infantry/garrison (0.00s)
+        unit_upkeep_roster_test.go:31: roster upkeep 0.6/0.75/active, want0.6/2/active
+    --- FAIL: TestUnitRosterRationsAndExplicitZeroSalary/galley/freighting (0.00s)
+        unit_upkeep_roster_test.go:31: roster upkeep 0.2/0.2/active, want0.2/1.5/active
+2026/10/22 19:41:36 INFO player registered id=5dd72dc5-205b-4a96-b383-4cf7728c104a username=upkeepdrain-dc8256a2-437d-4569-b623-6b57908c3a29
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.340s
+FAIL

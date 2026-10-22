@@ -1,0 +1,36 @@
+» färsk DB på migration 198 · commit e9b01eca+ändringar
+--- FAIL: TestSoldierWagesUseActualMenAndHomeHalf (0.00s)
+    pay_test.go:30: elite_infantry size100 crew0 garrison pay=1.0499999999999998 want0.75
+    pay_test.go:30: elite_infantry size100 crew0 repairing pay=1.0499999999999998 want0.75
+    pay_test.go:30: elite_infantry size100 crew0 fitting_out pay=1.0499999999999998 want0.75
+    pay_test.go:30: elite_infantry size100 crew0 forming pay=1.0499999999999998 want0.75
+    pay_test.go:30: war_chariot size50 crew0 garrison pay=0.7 want0.5
+    pay_test.go:30: war_chariot size50 crew0 repairing pay=0.7 want0.5
+    pay_test.go:30: war_chariot size50 crew0 fitting_out pay=0.7 want0.5
+    pay_test.go:30: war_chariot size50 crew0 forming pay=0.7 want0.5
+    pay_test.go:30: galley size1 crew20 garrison pay=0.13999999999999999 want0.1
+    pay_test.go:30: galley size1 crew20 repairing pay=0.13999999999999999 want0.1
+    pay_test.go:30: galley size1 crew20 fitting_out pay=0.13999999999999999 want0.1
+    pay_test.go:30: galley size1 crew20 forming pay=0.13999999999999999 want0.1
+    pay_test.go:30: war_galley size1 crew7 garrison pay=0.049 want0.035
+    pay_test.go:30: war_galley size1 crew7 repairing pay=0.049 want0.035
+    pay_test.go:30: war_galley size1 crew7 fitting_out pay=0.049 want0.035
+    pay_test.go:30: war_galley size1 crew7 forming pay=0.049 want0.035
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.003s
+--- FAIL: TestWagesChargeActualPeopleWithoutCirculation (0.24s)
+    --- FAIL: TestWagesChargeActualPeopleWithoutCirculation/elite_infantry/garrison/a (0.03s)
+        upkeep_circulation_test.go:61: paid=true debit gives8.95 want9.25
+    --- FAIL: TestWagesChargeActualPeopleWithoutCirculation/elite_infantry/garrison/b (0.03s)
+        upkeep_circulation_test.go:61: paid=true debit gives9.475 want9.625
+    --- FAIL: TestWagesChargeActualPeopleWithoutCirculation/war_galley/garrison/e (0.03s)
+        upkeep_circulation_test.go:61: paid=true debit gives9.951 want9.965
+    --- FAIL: TestWagesChargeActualPeopleWithoutCirculation/galley/repairing/g (0.03s)
+        upkeep_circulation_test.go:61: paid=true debit gives9.986 want9.99
+    --- FAIL: TestWagesChargeActualPeopleWithoutCirculation/merchantman/fitting_out/h (0.03s)
+        upkeep_circulation_test.go:61: paid=true debit gives9.986 want9.99
+    --- FAIL: TestWagesChargeActualPeopleWithoutCirculation/elite_infantry/garrison/i (0.03s)
+        upkeep_circulation_test.go:75: unpaid audit=0/1.0499999999999998
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.250s
+FAIL

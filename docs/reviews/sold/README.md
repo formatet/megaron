@@ -1,37 +1,60 @@
-# ORDER 16 — inventering och live-lönejämförelse före kod
+# ORDER 16 — kodcheckpoint, INTE slutlig handover
 
-Endast dokument och read-only SELECT. Gren codex/sold, bas ea97b332.
-Live healthz ea97b33/mig198, snapshot2026-10-22 17:17:14UTC. Databasen bekräftar
-transaction_read_only=on; capture.py använder tools/alfa_db.Db.
-Runtime poleia-server pid52285 har ingen UPKEEP_SOLD_SHARE: kodens default0.7 gäller.
+Status: kod e9b01eca och Keryx-precision04c8fcf2 på codex/sold, bas ea97b332.
+Arbetet stannar efter ORDER14 enligt Claudes reviewinstruktion19:35.
+Ingen merge/push/deploy eller liveskrivning. Full färsk Go-svit är INTE körd för
+ORDER16; detta är uttryckligen ingen fullständigt verifierad slutleverans.
 
-Se [comparison.md](comparison.md) för varje enhet och före/efter;
-[consumer-inventory.md](consumer-inventory.md) för konsumenter och filkrockar.
-Snapshot/rateberäkningen kan upprepas med capture.py och compare.py. Kontrollera
-runtime-share igen före ny jämförelse; compare.py läser endast sparade filer.
+## Genomfört
 
-16 befintliga enheter:12spearman,1nomadic_host och3skepp varav1forming.
-Två aktiva avlönade skepp, båda garrison med betalande stad:
-full galley Crew20 och merchantman Crew10 (se radtabell). Forminggalären har
-ingen löpande debitering än; dess framtida prognos måste följa samma nya ägare.
-Spearman förblir0silver. Ingen elite/chariot/war_galley i snapshoten; deras
-faktorer är beslutad regel och behöver syntetiska riktiga DB-tester före implementationens handover.
+- Economy UnitUpkeep har grundlön1silver/100personer/tick × typfaktor, size för
+  land och faktisk Crew för skepp. Homehalva, spearman0, elite1.5/chariot2,
+  båtfaktor1 och laid_up0. Mat och lön delar operational statusägare;
+  ORDER12s mat och VoyageRation är numeriskt oförändrade.
+- UpkeepSoldShare/SoldCirculation/env och handlerknopp borttagna. Debiteringen
+  tar hela nya lönen utan kredit. Auditackumulatorn för cirkulation är borta,
+  historiska payloadfält finns kvar med0/{}; gross=destroyed, unpaid separat.
+- Payer och replay/desertionregler är oförändrade. Marschprognosen SELECT/Scan:ar
+  faktisk Crew och räknar nuvarande respektive fieldstatus separat, inklusive
+  cargo exakt en gång. Storage/recruit/province/settlement konsumerar ägaren.
+- Keryx återflödestext borttagen; 0.05 och0.005 bevaras i kostnad/bristvarningar.
+  Codex upkeep/units/sea samstämmiga. Ingen produktionswebb ändrad.
+  Klientbevis: ../sold-arbetarlon/client-surfaces.md.
 
-Ny lönegrund1silver/100man och tick i fält, halv hemma; elitefaktor1.5,
-chariot2, naval faktiskCrew/100. 70%-krediten tas bort. Mat/VoyageRation
-behåller ORDER12-regeln, silver är separat. Laid_up0. En ägare i UnitUpkeep,
-inte kopierade silverkolumnvärden. Aktuell nettolön är en behovsprognos;
-vi har inte dragit något, poolat kassor eller påstått att alla kan betala.
+## Sparade bevis och begränsningar
 
-Kritiska kodställen före genomförande: unit_march_silver.go SELECT/ScanCrew
-istället0, separat nuvarande/fältstatus; UpkeepSettled historisk semantik
-bevaras med circulation0/{} efter avvecklingen, gross=destroyed, unpaid separat;
-SilverAuditV2 stockmått kvar. Unpaid72ticks/desertion10man orörda.
+baseline-red.log: TestSoldierWagesUseActualMenAndHomeHalf rött mot gammal
+produktion. pure-final.log: nya siffror och ORDER12-ransoner gröna.
 
-Filkrockar: province.go delas med13/17; klient/Codex med13/14/17. Denna gren
-är endast inventering påea97b332 och ska utgå från integrerad master före kod.
-BILD om faktiskt webbutseende ändras; riktade DB/röda basprov/fysiskmutation,
-JS/vet och full fresh EN gång för kodslicen. Inga tester/mutationer körs eller
-påstås i denna docs-only inventering. Ingen produktionskod/migration/livedata ändrad.
+targeted-payroll-final.log: färsk198 combat/API payrollurval GREEN, inklusive
+syntetiska riktiga DB-fall elite/chariot/war_galley, damaged crews, home i annan
+stad än payer, field, otillräcklig kassa, återspelningsskydd och legacy-audit0/{}.
+Retired env satt till1 i DB-testet kan inte återinföra kredit. Denna delkörning
+ligger före den slutliga delade statushelperns refaktor och CLI-precisionen;
+slutlig bred verifiering återstår därför även om dessa lägen är oförändrade.
 
-STOPP: Claude ska granska denna konkreta jämförelse och ge kod-ok.
+Fysisk mutant i separat e9b01eca-checkout: homefaktor.5→.7 ger både namngivna
+prisprovet och verkliga debiteringsproven RED. Byteexakt SHA-restore och ny
+färsk198 GREEN; mutation-*.log/txt. Tempworktreen är borttagen.
+
+715JS/vet var GREEN före sista Keryx-precisionen. Agentens riktade Keryxprov
+inklusive små belopp är gröna efter precisionen. Kör slutligt vet/fullsuite efter
+återupptagning; inga färska helsvitpåståenden görs här.
+
+Tidiga röda utvecklingskörningar finns kvar i targeted-packages.log och
+targeted-payroll.log: gamla lönetal/roster/audit/fixturer behövde uppdateras,
+en testhjälpare seedGoods krävde int och ändrades till separat SQL för0.74kassa.
+Desertion-cascade-fixturen hade crew0 men krävde obetald lön; den har nu1roddare,
+positiv lön och oförändrat cascade-/tröskeltest. Produktionsdesertering72/10orörd.
+
+## Fortsättning
+
+1. Läs aktuell Claude-order och rebasera när13/14/17 mergats (Claude säger till).
+2. Kontrollera hela economy/combat/API och Keryx på frusen slutkod; full färsk
+   tools/gotest.sh EN gång på57900 efter eventuella relevanta rättningar, JS/vet.
+3. Nytt proof package och hash+STOPP till Claude. Ingen BILD behövs för nuvarande
+   diff (webbmarkup/JS/CSS orörda); eventuell ny webbändring måste bedömas separat.
+
+Inventering/liveföre-efter: inventory-before-code.md och comparison.md/json.
+READ ONLY17:17UTC/mig198: Pylos galley.45→.1, merchant.3→.05; total.75→.15silver/tick.
+Detta är behov ombetalt, inte genomförd debit/likviditetsgaranti. Snapshot är historisk.

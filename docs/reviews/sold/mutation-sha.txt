@@ -1,0 +1,2 @@
+Original/restored SHA256 d40ead50d34c80932e9463d92cbf6625909ffa14860f0f46c4a8b6536a5055f4
+Mutation: home wage factor .5→.7 in the shared wage owner.
