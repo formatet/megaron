@@ -294,44 +294,11 @@ func (h *UnitHandler) dispatchMarchCourier(w http.ResponseWriter, ctx context.Co
 // stood still (Timothys fynd 2026-07-17). Mirrors loadLiveEyes' marching-unit
 // eye: FindPath over the unit's own category + interpolatedEyePos.
 func hostCurrentPos(ctx context.Context, pool *pgxpool.Pool, now time.Time, worldID, playerID uuid.UUID) (uuid.UUID, province.MapPosition, bool) {
-	var hostID uuid.UUID
-	var status, category string
-	var q, r int
-	var targetQ, targetR *int
-	var departsAt, arrivesAt *time.Time
-	var departTick, arriveTick *int
-	var marchRouteRaw []byte
-	if err := pool.QueryRow(ctx,
-		`SELECT fp.host_unit_id, u.status, u.category, u.q, u.r, u.target_q, u.target_r, u.departs_at, u.arrives_at,
-		        u.depart_tick, u.arrive_tick, u.march_route
-		 FROM founder_phase fp JOIN units u ON u.id = fp.host_unit_id
-		 WHERE fp.world_id = $1 AND fp.owner_id = $2 AND fp.active
-		   AND u.q IS NOT NULL AND u.r IS NOT NULL`,
-		worldID, playerID,
-	).Scan(&hostID, &status, &category, &q, &r, &targetQ, &targetR, &departsAt, &arrivesAt,
-		&departTick, &arriveTick, &marchRouteRaw); err != nil {
+	host, err := loadPhysicalHost(ctx, pool, worldID, playerID, now, false)
+	if err != nil {
 		return uuid.Nil, province.MapPosition{}, false
 	}
-	pos := province.MapPosition{Q: q, R: r}
-	if status == "marching" && targetQ != nil && targetR != nil && departsAt != nil && arrivesAt != nil {
-		// movement 2a, R6.e: read via the saved route when it applies
-		// (invariant 2); otherwise the old FindPath + interpolatedEyePos,
-		// unchanged.
-		if route, ok := combat.LoadActiveRoute(marchRouteRaw, status, departTick, arriveTick); ok {
-			if anchor, aErr := tick.LoadAnchor(ctx, pool, worldID); aErr == nil {
-				if p, rErr := combat.RoutePositionAt(route, anchor.MilliAt(now)); rErr == nil {
-					return hostID, p, true
-				}
-			}
-		}
-		path, _, ok, err := province.FindPath(ctx, pool, worldID, pos,
-			province.MapPosition{Q: *targetQ, R: *targetR}, category)
-		if err == nil && ok && len(path) > 0 {
-			pos = interpolatedEyePos(now, *departsAt, *arrivesAt, path)
-		}
-		// FindPath failure: best-effort fallback to the stored origin hex.
-	}
-	return hostID, pos, true
+	return host.ID, host.Position, true
 }
 
 // orderOrigin is the resolved dispatching city — the NEAREST own settlement to
@@ -2107,6 +2074,10 @@ func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {
 	summaries := unitSummaries(units, currentTick, h.clk,
 		settlementNames(r.Context(), h.pool, worldID, playerID), wanax, nowMilli, hasAnchor)
 	if founderActive {
+		if err := attachHostState(r.Context(), h.pool, worldID, playerID, h.clk.Now(), summaries); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not resolve the Host's position")
+			return
+		}
 		for i := range summaries {
 			if summaries[i].UpkeepContext != "none" {
 				summaries[i].UpkeepContext = "subsistence"
@@ -2267,7 +2238,8 @@ func attachOrdersEnRoute(ctx context.Context, db province.Queryer, worldID, owne
 
 // unitSummary is the JSON shape returned to clients.
 type unitSummary struct {
-	CanCancelTraining bool `json:"can_cancel_training"`
+	HostState         *hostMapState `json:"host_state,omitempty"`
+	CanCancelTraining bool          `json:"can_cancel_training"`
 	// OrdersEnRoute: orders the player sent that have not been delivered yet.
 	OrdersEnRoute []orderEnRoute `json:"orders_en_route,omitempty"`
 	ID            uuid.UUID      `json:"id"`

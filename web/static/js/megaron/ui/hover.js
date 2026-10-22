@@ -1,3 +1,4 @@
+import { hostStatusText } from './host_state.js';
 import { fmtTickTime } from './fmt_clock.js';
 // ── Hover — what the map tooltip says about the units on a hex ──
 //
@@ -34,6 +35,7 @@ export function unitHoverLines({ own = [], foreign = [], caravans = [], runners 
   const lines = [];
   for (const u of own) {
     let line = actorName(u);
+    if (u.type==='nomadic_host' && u.host_state) line += ' — ' + hostStatusText(u.host_state);
     if (u.status === 'marching' && u.target_q != null && u.q != null) {
       line += ' — ' + route(placeName, u.q, u.r, u.target_q, u.target_r);
     }

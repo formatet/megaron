@@ -1,0 +1,40 @@
+{"time":"2026-10-22T08:29:31.284417891+02:00","level":"INFO","msg":"migrations applied"}
+{"time":"2026-10-22T08:29:31.304212891+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"723bc097-54c0-4407-af2e-e7690b397b86","seed":1792650571286697880,"width":64,"height":64,"err":"invalid map: productive tin = 1 (want >= 2)"}
+{"time":"2026-10-22T08:29:31.321444609+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"723bc097-54c0-4407-af2e-e7690b397b86","seed":1792650571286697881,"width":64,"height":64,"err":"invalid map: forest fraction = 0.215 (want 0.22..0.30)"}
+{"time":"2026-10-22T08:29:31.338654079+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"723bc097-54c0-4407-af2e-e7690b397b86","seed":1792650571286697882,"width":64,"height":64,"err":"invalid map: productive tin = 1 (want >= 2); no buildable east tile (q > maxQ/2) has tin in its 6-hex catchment"}
+{"time":"2026-10-22T08:29:31.355988746+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"723bc097-54c0-4407-af2e-e7690b397b86","seed":1792650571286697883,"width":64,"height":64,"err":"invalid map: forest fraction = 0.304 (want 0.22..0.30)"}
+{"time":"2026-10-22T08:29:31.373189711+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"723bc097-54c0-4407-af2e-e7690b397b86","seed":1792650571286697884,"width":64,"height":64,"err":"invalid map: landmass 3 (165 tiles) has 0 rivers (want 1-2)"}
+{"time":"2026-10-22T08:29:31.390255806+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"723bc097-54c0-4407-af2e-e7690b397b86","seed":1792650571286697885,"width":64,"height":64,"err":"invalid map: forest fraction = 0.319 (want 0.22..0.30); landmass 5 (127 tiles) has 0 rivers (want 1-2)"}
+{"time":"2026-10-22T08:29:31.408481272+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"723bc097-54c0-4407-af2e-e7690b397b86","seed":1792650571286697886,"width":64,"height":64,"err":"invalid map: landmass 10 (114 tiles) has 0 rivers (want 1-2)"}
+{"time":"2026-10-22T08:29:32.672400157+02:00","level":"INFO","msg":"world created","name":"Physical Host proof","id":"723bc097-54c0-4407-af2e-e7690b397b86","seed":1792650571286697887}
+{"time":"2026-10-22T08:29:32.67957622+02:00","level":"INFO","msg":"world ready","id":"723bc097-54c0-4407-af2e-e7690b397b86"}
+{"time":"2026-10-22T08:29:32.679827423+02:00","level":"INFO","msg":"chronicle opened","world":"Physical Host proof","dir":"/tmp/host-native-2ac41925c7zybjyy5n/chronicles"}
+{"time":"2026-10-22T08:29:32.681420945+02:00","level":"INFO","msg":"scheduled event worker started","poll":10000000000}
+{"time":"2026-10-22T08:29:32.681420941+02:00","level":"INFO","msg":"tick worker started","tick_seconds":3600}
+{"time":"2026-10-22T08:29:32.681463929+02:00","level":"INFO","msg":"build","commit":"a78e3c40"}
+{"time":"2026-10-22T08:29:32.681865826+02:00","level":"INFO","msg":"keryx server starting","addr":":41593"}
+{"time":"2026-10-22T08:29:32.688375334+02:00","level":"INFO","msg":"daily ticks seeded","worlds":1}
+2026/10/22 08:29:32 [tki9/6ztPDFqtlS-000001] "GET http://127.0.0.1:41593/healthz HTTP/1.1" from 127.0.0.1:39808 - 200 52B in 645.326µs
+2026/10/22 08:29:32 [tki9/6ztPDFqtlS-000002] "GET http://127.0.0.1:41593/api/v1/worlds HTTP/1.1" from 127.0.0.1:39824 - 200 157B in 733.912µs
+{"time":"2026-10-22T08:29:32.78354398+02:00","level":"INFO","msg":"player registered","id":"df95d496-5c21-405f-839d-d4c54ec17d2d","username":"Host-17946aaa"}
+2026/10/22 08:29:32 [tki9/6ztPDFqtlS-000003] "POST http://127.0.0.1:41593/api/v1/auth/register HTTP/1.1" from 127.0.0.1:39838 - 201 387B in 46.645892ms
+{"time":"2026-10-22T08:29:32.806032624+02:00","level":"INFO","msg":"world started","world":"723bc097-54c0-4407-af2e-e7690b397b86","wanaxes":1}
+2026/10/22 08:29:32 [tki9/6ztPDFqtlS-000004] "POST http://127.0.0.1:41593/api/v1/worlds/723bc097-54c0-4407-af2e-e7690b397b86/join HTTP/1.1" from 127.0.0.1:39842 - 201 326B in 21.966752ms
+2026/10/22 08:29:32 [tki9/6ztPDFqtlS-000005] "GET http://127.0.0.1:41593/api/v1/worlds/723bc097-54c0-4407-af2e-e7690b397b86/founding/status HTTP/1.1" from 127.0.0.1:39856 - 200 333B in 2.008096ms
+2026/10/22 08:29:32 [tki9/6ztPDFqtlS-000006] "GET http://127.0.0.1:41593/api/v1/worlds/723bc097-54c0-4407-af2e-e7690b397b86/units HTTP/1.1" from 127.0.0.1:39864 - 200 1375B in 6.538124ms
+2026/10/22 08:29:32 [tki9/6ztPDFqtlS-000007] "GET http://127.0.0.1:41593/api/v1/worlds/723bc097-54c0-4407-af2e-e7690b397b86/map HTTP/1.1" from 127.0.0.1:39878 - 200 251036B in 19.90415ms
+2026/10/22 08:29:32 [tki9/6ztPDFqtlS-000008] "POST http://127.0.0.1:41593/api/v1/worlds/723bc097-54c0-4407-af2e-e7690b397b86/units/7fdb9a86-92a7-4db0-8263-1a2034670f91/march HTTP/1.1" from 127.0.0.1:39890 - 202 203B in 17.968758ms
+2026/10/22 08:29:32 [tki9/6ztPDFqtlS-000009] "GET http://127.0.0.1:41593/api/v1/worlds/723bc097-54c0-4407-af2e-e7690b397b86/founding/status HTTP/1.1" from 127.0.0.1:39892 - 200 327B in 1.488217ms
+2026/10/22 08:29:32 [tki9/6ztPDFqtlS-000010] "GET http://127.0.0.1:41593/api/v1/worlds/723bc097-54c0-4407-af2e-e7690b397b86/units HTTP/1.1" from 127.0.0.1:39908 - 200 1638B in 2.886428ms
+2026/10/22 08:29:32 [tki9/6ztPDFqtlS-000011] "GET http://127.0.0.1:41593/api/v1/worlds/723bc097-54c0-4407-af2e-e7690b397b86/founding/status HTTP/1.1" from 127.0.0.1:39920 - 200 226B in 1.600009ms
+2026/10/22 08:29:32 [tki9/6ztPDFqtlS-000012] "GET http://127.0.0.1:41593/api/v1/auth/me HTTP/1.1" from 127.0.0.1:39930 - 200 182B in 424.238µs
+2026/10/22 08:29:32 [tki9/6ztPDFqtlS-000013] "GET http://127.0.0.1:41593/api/v1/worlds/723bc097-54c0-4407-af2e-e7690b397b86 HTTP/1.1" from 127.0.0.1:39930 - 200 230B in 480.283µs
+2026/10/22 08:29:32 [tki9/6ztPDFqtlS-000014] "GET http://127.0.0.1:41593/api/v1/worlds/723bc097-54c0-4407-af2e-e7690b397b86 HTTP/1.1" from 127.0.0.1:39930 - 200 230B in 214.635µs
+2026/10/22 08:29:32 [tki9/6ztPDFqtlS-000015] "GET http://127.0.0.1:41593/api/v1/worlds/723bc097-54c0-4407-af2e-e7690b397b86/founding/status HTTP/1.1" from 127.0.0.1:39930 - 200 226B in 1.3167ms
+2026/10/22 08:29:32 [tki9/6ztPDFqtlS-000016] "POST http://127.0.0.1:41593/api/v1/worlds/723bc097-54c0-4407-af2e-e7690b397b86/founding/settle HTTP/1.1" from 127.0.0.1:39938 - 409 78B in 1.941808ms
+2026/10/22 08:29:32 [tki9/6ztPDFqtlS-000017] "POST http://127.0.0.1:41593/api/v1/worlds/723bc097-54c0-4407-af2e-e7690b397b86/founding/settle HTTP/1.1" from 127.0.0.1:39954 - 201 460B in 94.409824ms
+2026/10/22 08:29:32 [tki9/6ztPDFqtlS-000018] "GET http://127.0.0.1:41593/api/v1/worlds/723bc097-54c0-4407-af2e-e7690b397b86/provinces HTTP/1.1" from 127.0.0.1:39960 - 200 286B in 5.76818ms
+2026/10/22 08:29:32 [tki9/6ztPDFqtlS-000019] "GET http://127.0.0.1:41593/api/v1/worlds/723bc097-54c0-4407-af2e-e7690b397b86/founding/status HTTP/1.1" from 127.0.0.1:39966 - 200 17B in 268.988µs
+{"time":"2026-10-22T08:29:32.982214582+02:00","level":"INFO","msg":"scheduled event worker stopped"}
+{"time":"2026-10-22T08:29:32.982219082+02:00","level":"INFO","msg":"shutting down"}
+{"time":"2026-10-22T08:29:32.982219355+02:00","level":"INFO","msg":"tick worker stopped"}

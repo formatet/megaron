@@ -1,0 +1,56 @@
+{
+  "healthz": {
+    "commit": "a78e3c40",
+    "migration": 198,
+    "status": "ok"
+  },
+  "natural_register_join": true,
+  "sql_fixtures_or_writes": false,
+  "api_overrides": false,
+  "origin": [
+    6,
+    48
+  ],
+  "target_terrain": "scrub_maquis",
+  "actual_moving_position": [
+    6,
+    49
+  ],
+  "host_state": {
+    "at_milli": 0,
+    "q": 6,
+    "r": 49,
+    "status": "marching",
+    "can_found_here": true
+  },
+  "stored_departure": [
+    6,
+    48
+  ],
+  "receipt": {
+    "arrival_tick": 2,
+    "arrives_at": "2026-10-22T10:29:32.857384654+02:00",
+    "arrives_at_utc": "2026-10-22T08:29:32.857384654Z",
+    "departs_at": "2026-10-22T08:29:32.857384654+02:00",
+    "duration_ticks": 2,
+    "expedition": null,
+    "origin_q": 6,
+    "origin_r": 48,
+    "target_q": 6,
+    "target_r": 49,
+    "unit_id": "7fdb9a86-92a7-4db0-8263-1a2034670f91"
+  },
+  "cli": {
+    "founding status": "Nomadic Host \u2014 your people on the move\n  Marching \u00b7 physical position (6,49)\n  1000 people \u00b7 cannot fight \u00b7 sight 2 hexes (4 by water or on mountains) \u00b7 position (6,49)\n  Grain (escort's ration): 1200 \u2014 lasts indefinitely\n  Silver reserve: 480 \u2014 lasts indefinitely\n  2 Spearmen-cohorts in the field \u00b7 messengers free to send\n\nNext steps:\n  keryx unit march --unit 7fdb9a86-92a7-4db0-8263-1a2034670f91 --q <q> --r <r>   # travel\n  keryx founding settle                       # found the metropolis where the host stands\n  keryx message --from-host --to <city> --text \"...\"",
+    "status": "Wanax Dunios \u00b7 today 08:29\n\nNomadic Host \u2014 your people on the move\n  Marching \u00b7 physical position (6,49)\n  1000 people \u00b7 cannot fight \u00b7 sight 2 hexes (4 by water or on mountains) \u00b7 position (6,49)\n  Grain (escort's ration): 1200 \u2014 lasts indefinitely\n  Silver reserve: 480 \u2014 lasts indefinitely\n  2 Spearmen-cohorts in the field \u00b7 messengers free to send\n\nNext steps:\n  keryx unit march --unit 7fdb9a86-92a7-4db0-8263-1a2034670f91 --q <q> --r <r>   # travel\n  keryx founding settle                       # found the metropolis where the host stands\n  keryx message --from-host --to <city> --text \"...\""
+  },
+  "stale_confirmation_status": 409,
+  "founding_status": 201,
+  "actual_metropolis": [
+    6,
+    49
+  ],
+  "founder_phase_after": {
+    "active": false
+  }
+}

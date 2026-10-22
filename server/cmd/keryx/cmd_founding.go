@@ -10,16 +10,39 @@ import (
 // foundingStatusResp mirrors GET /worlds/:id/founding/status — kept as a
 // CLI-side type (wire JSON only), matching the convention in cmd_actions.go.
 type foundingStatusResp struct {
-	Active          bool          `json:"active"`
-	HostUnitID      *string       `json:"host_unit_id"`
-	Q               *int          `json:"q"`
-	R               *int          `json:"r"`
-	Population      int           `json:"population"`
-	SpearmenInField int           `json:"spearmen_in_field"`
-	CurrentTick     int           `json:"current_tick"`
-	TickSeconds     float64       `json:"tick_seconds"`
-	Grain           foundingStore `json:"grain"`
-	Silver          foundingStore `json:"silver"`
+	HostState       *foundingHostState `json:"host_state"`
+	Active          bool               `json:"active"`
+	HostUnitID      *string            `json:"host_unit_id"`
+	Q               *int               `json:"q"`
+	R               *int               `json:"r"`
+	Population      int                `json:"population"`
+	SpearmenInField int                `json:"spearmen_in_field"`
+	CurrentTick     int                `json:"current_tick"`
+	TickSeconds     float64            `json:"tick_seconds"`
+	Grain           foundingStore      `json:"grain"`
+	Silver          foundingStore      `json:"silver"`
+}
+
+type foundingHostState struct {
+	Q            int    `json:"q"`
+	R            int    `json:"r"`
+	Status       string `json:"status"`
+	CanFoundHere bool   `json:"can_found_here"`
+	Reason       string `json:"reason"`
+}
+
+func foundingHostStatus(s *foundingHostState) string {
+	if s == nil {
+		return ""
+	}
+	label := map[string]string{"marching": "Marching", "waiting": "Waiting", "can_found_here": "Can found here"}[s.Status]
+	if label == "" {
+		return ""
+	}
+	if s.Reason != "" {
+		label += " — " + s.Reason
+	}
+	return label
 }
 
 type foundingStore struct {
@@ -80,6 +103,9 @@ func printFoundingStatus(fp *foundingStatusResp) error {
 		hostID = *fp.HostUnitID
 	}
 	fmt.Println("Nomadic Host — your people on the move")
+	if line := foundingHostStatus(fp.HostState); line != "" {
+		fmt.Printf("  %s · physical position %s\n", line, pos)
+	}
 	// Synradien är 2 sedan Timothy 2026-08-22 ("synradie för alla landenheter är
 	// två"), med hostets två gamla undantag kvar: vid vatten 4, på berg 2+2
 	// (province.LiveRadius, nomadic_host_vision_test.go). Raden sa "syn 1 hex"
@@ -189,6 +215,9 @@ settling. To found somewhere else: march the host there first
 				return fmt.Errorf("the host has no position on the map — cannot found")
 			}
 			q, r := *fp.Q, *fp.R
+			if fp.HostState != nil && !fp.HostState.CanFoundHere {
+				return fmt.Errorf("cannot found here: %s", fp.HostState.Reason)
+			}
 
 			if jsonMode {
 				// Machine caller: no interactive prompt possible, and the act is
@@ -232,6 +261,7 @@ settling. To found somewhere else: march the host there first
 			if culture != "" {
 				body["culture"] = culture
 			}
+			body["expected_q"], body["expected_r"] = q, r
 			data, err := c.post(fmt.Sprintf("/api/v1/worlds/%s/founding/settle", cfg.WorldID), body)
 			if err != nil {
 				return err
