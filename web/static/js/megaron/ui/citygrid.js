@@ -95,6 +95,15 @@ export function goodRowHTML(target, good, take) {
     </div>`;
 }
 
+// One card per workplace building; a temple is one card per god and its
+// placements carry `god` so the server knows which temple the worker stands at.
+export function cityBuildingsHTML(buildings) {
+  return buildings.map(b => `
+        <div class="dsec-title">${esc(b.name || b.building_type)} L${b.level}</div>
+        ${(b.goods || []).map(good => goodRowHTML({ target_kind: 'building', building_type: b.building_type, ...(b.god_id ? { god: b.god_id } : {}) }, good)).join('')}
+      `).join('');
+}
+
 // refusalText turns a failed placement response into the line the player reads.
 //
 // The server has written eight distinct, human-readable refusals for this
@@ -154,7 +163,8 @@ export async function placementOutcome(verb, ctx) {
     const list = (await listRes.json()).placements || [];
     const match = list.find(p =>
       p.good_key === good &&
-      (targetBody.target_kind === 'hex' ? p.hex_ordinal === targetBody.hex_ordinal : p.building_type === targetBody.building_type));
+      (targetBody.target_kind === 'hex' ? p.hex_ordinal === targetBody.hex_ordinal
+        : p.building_type === targetBody.building_type && (!targetBody.god || p.god_id === targetBody.god)));
     if (!match) {
       // The −1 button is only enabled when placed > 0, so an empty match means
       // the grid is stale — say so AND refresh, rather than the old silent
@@ -355,10 +365,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
         detail.innerHTML = '<p class="empty-state">No workplace buildings staffed here yet.</p>';
         return;
       }
-      detail.innerHTML = buildings.map(b => `
-        <div class="dsec-title">${b.building_type} L${b.level}</div>
-        ${(b.goods || []).map(good => goodRowHTML({ target_kind: 'building', building_type: b.building_type }, good)).join('')}
-      `).join('');
+      detail.innerHTML = cityBuildingsHTML(buildings);
     } else {
       const ordinal = Number(g.dataset.ordinal);
       const hex = hexes.find(h => h.hex_ordinal === ordinal);

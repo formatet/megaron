@@ -34,7 +34,7 @@ export function kharisNetView(pd) {
     out.netHtml += '<div class="stat-row"><span class="sr-label">Temple workers here</span><span class="sr-val">' + pd.temple_staffed + '/' + pd.temple_capacity + '</span></div>';
   }
   if (pd.kharis_devotion_idle === true) {
-    out.idleHtml = '<p class="kult-warn">Temple workplaces remain unfilled — place citizens in the temple in City.</p>';
+    out.idleHtml = '<p class="kult-warn">Temple workplaces remain unfilled — place citizens in your temples in City.</p>';
   }
 
   return out;

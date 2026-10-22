@@ -131,3 +131,15 @@ test('Kult controller renders the realm breakdown and templeless net from the pr
   assert.doesNotMatch(body.innerHTML,/Passive|144|holds for/);
   assert.equal(calls.length,3);
 });
+
+test('ORDER15: each temple names its own offering row; prayer shows the temple it needs', () => {
+  const html = templeOfferingsHTML([
+    { ...templeFixture, name: 'Phaistos', temple: 'Temple of Potnia' },
+    { ...templeFixture, name: 'Phaistos', temple: 'Temple of Velchanos', fed: false, offering: {} },
+  ]);
+  assert.match(html, /Phaistos — Temple of Potnia: /);
+  assert.match(html, /Phaistos — Temple of Velchanos: /);
+  assert.equal((html.match(/Next gift/g) || []).length, 2);
+  assert.match(prayerStatusHTML({ id: 'x', affordable: true, unavailable_reason: 'no Temple of Velchanos' }), /no Temple of Velchanos/);
+  assert.doesNotMatch(prayerStatusHTML({ id: 'x', affordable: true, unavailable_reason: 'no Temple of Velchanos' }), /Offer/);
+});

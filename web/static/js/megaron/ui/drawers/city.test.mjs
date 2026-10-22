@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildingOptionsHTML, hexBuildOptionsHTML, buildQuoteHTML } from './city.js';
+import { splitBuildValue, buildingOptionsHTML, hexBuildOptionsHTML, buildQuoteHTML } from './city.js';
 
 // megaron_plan_byggkatalogen_i_webben.md: the Construct dropdown used to be
 // 14 hardcoded <option> rows (silver_mine missing entirely, every cost
@@ -144,4 +144,33 @@ test('ORDER17: each farm hex has its own next price and max does not offer L4',(
 test('ORDER17: selected build price is readable below the picker with server duration',()=>{
  const html=buildQuoteHTML({type:'shipyard',current_level:1,next_level:2,costs:{timber:48,stone:24,cedar:4},duration_game_days:24});
  assert.match(html,/L1 → L2/);assert.match(html,/4 cedar/);assert.match(html,/24 days/);assert.doesNotMatch(buildQuoteHTML({type:'farm',current_level:3,at_max_level:true}),/L4/);
+});
+
+test('ORDER15: temple list has one row per god with its own quote, value carries the god',()=>{
+ const html=buildingOptionsHTML([{type:'temple',costs:{timber:5}}],{buildQuotes:[
+  {type:'temple',god_id:'potnia',name:'Temple of Potnia',current_level:1,next_level:2,costs:{timber:10}},
+  {type:'temple',god_id:'velchanos',name:'Temple of Velchanos',current_level:0,next_level:1,costs:{timber:5}}]});
+ assert.match(html,/value="temple:potnia">Temple of Potnia L1 → L2 — 10 timber/);
+ assert.match(html,/value="temple:velchanos">Temple of Velchanos L0 → L1 — 5 timber/);
+ assert.match(html,/value="temple:asterion" disabled>Temple of Asterion — price unavailable/);
+ assert.match(html,/the Sea Daimons of Stillness/);
+ assert.deepEqual(splitBuildValue('temple:velchanos'),{type:'temple',god:'velchanos'});
+ assert.deepEqual(splitBuildValue('farm'),{type:'farm',god:''});
+});
+
+test('ORDER15: startBuild POST body carries god for a temple and not for others',async t=>{
+ const {State}=await import('../../state.js');
+ const {startBuild}=await import('./city.js');
+ const saved={WORLD_ID:State.WORLD_ID,provinceData:State.provinceData,MY_SETTLEMENT_ID:State.MY_SETTLEMENT_ID};
+ const g={document:globalThis.document,fetch:globalThis.fetch,localStorage:globalThis.localStorage};globalThis.localStorage={getItem:()=>null,setItem(){},removeItem(){}};
+ t.after(()=>{Object.assign(State,saved);for(const [k,v] of Object.entries(g))v===undefined?delete globalThis[k]:globalThis[k]=v;});
+ Object.assign(State,{WORLD_ID:'w',MY_SETTLEMENT_ID:'c',provinceData:[{id:'p',own:true,is_capital:true,settlement_id:'c'}]});
+ const result={textContent:'',style:{}};let select={value:'temple:velchanos'};
+ globalThis.document={getElementById:id=>id==='city-build-select'?select:id==='city-build-result'?result:null,addEventListener(){}};
+ const bodies=[];
+ globalThis.fetch=async(url,o)=>{if(o&&o.method==='POST')bodies.push(JSON.parse(o.body));return new Response('{}',{status:o&&o.method==='POST'?200:404});};
+ await startBuild();
+ select={value:'farm'};await startBuild();
+ assert.deepEqual(bodies[0],{building_type:'temple',god:'velchanos'});
+ assert.deepEqual(bodies[1],{building_type:'farm'});
 });

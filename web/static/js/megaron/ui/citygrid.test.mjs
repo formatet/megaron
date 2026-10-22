@@ -19,7 +19,7 @@ globalThis.document ??= {
 globalThis.window ??= { addEventListener() {}, matchMedia: () => ({ matches: false, addEventListener() {} }) };
 globalThis.localStorage ??= { getItem: () => null, setItem() {}, removeItem() {} };
 
-const { placementOutcome, refusalText, selectionKey, takeLabel, goodRowHTML } = await import('./citygrid.js');
+const { placementOutcome, refusalText, selectionKey, takeLabel, goodRowHTML, cityBuildingsHTML } = await import('./citygrid.js');
 
 // The refusal sentences below are copied verbatim from the server
 // (api/handlers/settlement_placement.go) — they are the actual bodies this
@@ -211,4 +211,36 @@ test('CG fishing: zero places disables adding; coast, bay and harbour capacities
     assert.match(html, new RegExp('\\+' + rate.toString().replace('.', '\\.') + ' per day next'));
     assert.doesNotMatch(html, /data-verb="place1" disabled/);
   }
+});
+
+test('ORDER15: two temples are two named cards and each staffing target carries its god', () => {
+  const good = { good_key: 'cult', staffing_only: true, cap: 2, placed: 0, placed_ordinals: [] };
+  const html = cityBuildingsHTML([
+    { building_type: 'temple', god_id: 'potnia', name: 'Temple of Potnia', level: 1, goods: [good] },
+    { building_type: 'temple', god_id: 'velchanos', name: 'Temple of Velchanos', level: 1, goods: [good] },
+  ]);
+  assert.match(html, /Temple of Potnia L1/);
+  assert.match(html, /Temple of Velchanos L1/);
+  assert.match(html, /&quot;god&quot;:&quot;potnia&quot;/);
+  assert.match(html, /&quot;god&quot;:&quot;velchanos&quot;/);
+  assert.doesNotMatch(cityBuildingsHTML([{ building_type: 'farm', level: 1, goods: [good] }]), /god/);
+});
+
+test('ORDER15: staffing posts god and -1 removes a worker at that god\'s temple only', async () => {
+  const bodies = [];
+  const target = { target_kind: 'building', building_type: 'temple', god: 'velchanos' };
+  await placementOutcome('place1', { placementsURL: 'u', targetBody: target, good: 'cult', cap: 2,
+    fetchImpl: async (url, opts) => { bodies.push(JSON.parse(opts.body)); return accept(); } });
+  assert.equal(bodies[0].god, 'velchanos');
+  const urls = [];
+  const out = await placementOutcome('unplace1', { placementsURL: 'u', targetBody: target, good: 'cult', cap: 2,
+    fetchImpl: async (url, opts) => {
+      urls.push(url);
+      if (!opts) return accept({ placements: [
+        { good_key: 'cult', building_type: 'temple', god_id: 'potnia', gubbe_ordinal: 1 },
+        { good_key: 'cult', building_type: 'temple', god_id: 'velchanos', gubbe_ordinal: 9 }] });
+      return accept();
+    } });
+  assert.equal(out.changed, true);
+  assert.equal(urls[1], 'u/9');
 });

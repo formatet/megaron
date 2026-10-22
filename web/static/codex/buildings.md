@@ -15,7 +15,7 @@ Open **City → Buildings**. The tab shows what is **built** (and its level), th
 | **Winery** | Refines a vintner's wine from the settlement's vines. Works inside the city. |
 | **Pen** | Raises the herd cap by 100 per level (50 without one). Animals above the cap are eaten, then lost ([[food]]). Works inside the city. |
 | **Market** | Enables trade offers and updates market price snapshots. |
-| **Temple** | Enables rites, produces cult, and unlocks oracle prayers. More important than it looks — see [[temples]]. |
+| **Temple** | Enables rites, produces cult, and unlocks oracle prayers. Built for one god; a city can hold one temple per god. More important than it looks — see [[temples]]. |
 | **Granary** | A city stores 2 000 of each food — grain, fish, oil and wine, not the herd. Granary level 1 to 3 raises that to 4 000, 10 000 and 20 000. A wall of level N needs a Granary of level N. Works inside the city. |
 | **Wall** | Palisade, then Stone Wall, then Bronze Wall. Absorbs damage in [[battle]], and **the walls set how many people the city holds** (see below). |
 
@@ -39,7 +39,7 @@ A farm, mine, lumbermill or stonequarry makes **space for four more workers** on
 
 Buildings level up to three. **A higher level makes every worker on the hex produce more** — see the rule above.
 
-Building the same building again raises it by one level; for a hex building, choose the same hex. **Levels 2 and 3 of a Harbour, Shipyard or Temple** also need **cedar**, which is scarce and often only available by [[trade]].
+A temple is built for a god: Construct lists one row per god (`keryx build --type temple --god potnia`), and building that god's temple again raises it. Building the same building again raises it by one level; for a hex building, choose the same hex. **Levels 2 and 3 of a Harbour, Shipyard or Temple** also need **cedar**, which is scarce and often only available by [[trade]].
 
 A building costs what it is made of: **timber** for the Farm, Market, Stable, Harbour, Shipyard and Palisade; **stone** for the Stone Quarry, Mine, Barracks, Temple and Stone Wall. The prices are shown live in Construct. If you are short of timber, your **cedar** pays the difference one for one — in buildings, ships and chariots alike.
 
