@@ -96,7 +96,6 @@ POST  /worlds/:id/provinces/:pid/trade           → offer a trade (fog-of-war g
 POST  /worlds/:id/provinces/:pid/march           → send an army { target_id, intent, … }
 
 GET   /worlds/:id/marches | /messengers | /trades  → units in transit
-GET   /worlds/:id/market/wants                   → what your contacts are short of
 ```
 
 Kingdoms (`/worlds/:id/kingdoms/*`) exist server-side but are **post-MVP** and gated behind `KINGDOMS_ENABLED`; unset, they answer `403 kingdoms_disabled`.
