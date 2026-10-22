@@ -27,7 +27,7 @@ An empty ship in your own active Harbour can be **Laid up** from its Army card. 
 
 ## The Army tab
 
-Every unit you own, with its state and current grain and silver upkeep per day in plain words. **March** is shown while it can move; a damaged land cohort garrisoned in its **original home city** can also **Reinforce** — another city you own does not qualify. A land unit on the march shows **Recall**. The card also shows stance and **Set**, battle retreat, **Redirect**, **Fetch by ship**, **Load** / **Unload** or **Repair**, whenever that unit can use them. See [[marching]], [[stances]] and [[sea]].
+Every unit you own, with its state and current grain and silver upkeep per day in plain words. **March** is shown while it can move; a damaged land cohort garrisoned in its **original home city** can also **Reinforce** — another city you own does not qualify. A land unit on the march shows **Recall**. The card also shows stance and **Set**, battle retreat, **Redirect**, **Fetch by ship**, **Load** / **Unload** or **Repair**, whenever that unit can use them. Choose **Destination city** in a march or redirect form to target a known city quickly; map clicks remain available. Keryx accepts `--to "City name"` on march, post and redirect. See [[marching]], [[stances]] and [[sea]].
 
 **Movements** lists your units on the march (**Outgoing**) and every foreign unit you can see marching on one of your settlements (**Incoming**), soonest arrival first. You only see an incoming column once one of your eyes has it in sight — the *foreign march sighted* notification fires at the same moment ([[defence]]).
 

@@ -14,6 +14,10 @@ func TestExploreTicksOrderAndPreview(t *testing.T) {
 			t.Run(map[bool]string{true: "preview", false: "dispatch"}[preview]+map[bool]string{true: "alias", false: "unit"}[alias], func(t *testing.T) {
 				calls := 0
 				srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					if strings.HasSuffix(r.URL.Path, "/cities") {
+						w.Write([]byte(`[]`))
+						return
+					}
 					if testWorldTimeResponse(w, r) {
 						return
 					}

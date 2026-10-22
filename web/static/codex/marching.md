@@ -10,6 +10,10 @@ If a messenger must first deliver the order, or the destination is unexplored, t
 
 In Keryx, use `march --unit <id> --target q,r --preview` (or `unit march` with the same flags). Add `--json` for the server forecast. Omit `--preview` when you are ready to send.
 
+**Choose a city quickly:** the order menu's **Destination city** list offers your own cities first, followed by cities you have actually seen, remembered or contacted. Selecting one fills the destination; you can still choose a hex on the map. A city known only through rumours is not a destination yet. The confirmation names the city.
+
+In Keryx, `march --unit <id> --to "Pylos"` chooses that city's exact hex. The same shortcut works for `unit march`, `unit post` and `unit redirect`, including march previews. Use `--to`, `--target q,r` or `--q/--r`, one form at a time. If two known cities share a name, Keryx lists the candidates and asks for coordinates. An unknown city name is refused. Selecting a city does not change which missions are valid there: a patrol still needs coastal water, so patrol has no city shortcut.
+
 A notification tells you when a unit arrives.
 
 ## A marching unit is still reachable

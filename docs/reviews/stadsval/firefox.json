@@ -1,0 +1,62 @@
+[
+  {
+    "width": 1000,
+    "run": 1,
+    "page_errors": [],
+    "posts": [
+      {
+        "target_q": 4,
+        "target_r": 0
+      },
+      {
+        "target_q": 7,
+        "target_r": 0
+      }
+    ]
+  },
+  {
+    "width": 1000,
+    "run": 2,
+    "page_errors": [],
+    "posts": [
+      {
+        "target_q": 4,
+        "target_r": 0
+      },
+      {
+        "target_q": 7,
+        "target_r": 0
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "run": 1,
+    "page_errors": [],
+    "posts": [
+      {
+        "target_q": 4,
+        "target_r": 0
+      },
+      {
+        "target_q": 7,
+        "target_r": 0
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "run": 2,
+    "page_errors": [],
+    "posts": [
+      {
+        "target_q": 4,
+        "target_r": 0
+      },
+      {
+        "target_q": 7,
+        "target_r": 0
+      }
+    ]
+  }
+]
