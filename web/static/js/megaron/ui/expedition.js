@@ -16,11 +16,12 @@ export function expeditionTicks(input) {
 }
 export function expeditionOrderText(q, r, ticks, rules) {
   if (!rules) return 'Expedition rules unavailable — reload before choosing a duration.';
-  return `Explore around (${q},${r}), within ${rules.area_radius} hexes, for ${fmtDays(ticks)}. Turn home by half the duration; report on return.`;
+  return `Go first to (${q},${r}), then explore around it, within ${rules.area_radius} hexes, for ${fmtDays(ticks)}. Turn home by half the duration; report on return.`;
 }
 export function expeditionMissionText(e) {
   if (!e) return '';
   const reasons = {half_time:'half the time reached',area_known:'area explored',no_path:'no reachable unexplored ground',recalled:'recalled'};
   const state = e.homeward ? 'returning home' + (e.turn_reason ? ' — ' + (reasons[e.turn_reason] || e.turn_reason) : '') : `turns home by ${fmtTickTime(e.turn_tick)}`;
-  return `Expedition around (${e.area_q},${e.area_r}), ${fmtDays(e.length_ticks)}; ${state}; home by ${fmtTickTime(e.home_by_tick)}.`;
+  const destination = e.first_to_area ? `first to (${e.area_q},${e.area_r}), then explores around it` : `around (${e.area_q},${e.area_r})`;
+  return `Expedition ${destination}, ${fmtDays(e.length_ticks)}; ${state}; home by ${fmtTickTime(e.home_by_tick)}.`;
 }

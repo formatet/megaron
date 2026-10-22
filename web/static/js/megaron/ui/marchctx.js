@@ -361,7 +361,7 @@ export async function openMarchCtx(dest, screenX, screenY) {
   configureExpedition(document.getElementById('mctx-ticks'), undefined);
   const unknown = dest.known === false;
   let hint;
-  if (unknown)                hint = 'Explore reachable ground nearby, then return home.';
+  if (unknown)                hint = 'Travel here first, then explore nearby and return home.';
   else if (dest.isSea)        hint = 'Explore reachable sea nearby, then sail home.';
   else if (dest.isSettlement) hint = dest.allied ? 'March land units here to reinforce the garrison on arrival.' : 'March land units here to attack on arrival.';
   else                        hint = 'March land units to this hex, found a new settlement here, or explore and return home.';

@@ -94,8 +94,8 @@ func (h *UnitHandler) MarchPreview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	known := targetKnown(ctx, province.MapPosition{Q: q, R: rr}, terrain)
-	// An area expedition selects an unseen first leg, even if the chosen
-	// centre is known. Its travel time could disclose hidden geography.
+	// Expedition route times remain hidden: even a known destination can
+	// require a route through unseen terrain. The selected coordinates are public.
 	if order.Intent == "explore" {
 		// Validate through the order's read-only domain entry point, including
 		// the round-trip budget, then deliberately discard hidden route details.
@@ -109,6 +109,8 @@ func (h *UnitHandler) MarchPreview(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		finance["planned_expedition_ticks"] = order.ExpeditionTicks
+		finance["planned_first_target_q"] = q
+		finance["planned_first_target_r"] = rr
 		// Only a time-budget statement: no hidden first-leg distance or terrain.
 		// Garrison departure is hypothetical; a physical order may arrive later.
 		if u.Status == unit.StatusGarrison {

@@ -1,0 +1,11 @@
+{
+  "browser": "Firefox",
+  "scope": "production text modules only; not the whole order UI or live API",
+  "text": {
+    "order": "Go first to (24,20), then explore around it, within 5 hexes, for 100 days. Turn home by half the duration; report on return.",
+    "receipt": "Expedition first to (24,20), then explores around it, 100 days; turns home by today 08:31; home by today 09:21.",
+    "legacy": "Expedition around (24,20), 100 days; turns home by today 08:31; home by today 09:21.",
+    "preview": "Arrival not yet known \u2014 unexplored terrain.\nPlanned expedition: 100 days; first to (24,20), then explores around it. First-leg arrival remains unknown."
+  },
+  "pageerrors": []
+}

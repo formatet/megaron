@@ -1,0 +1,7 @@
+» färsk DB på migration 198 · commit 4054bd63+ändringar
+=== RUN   TestExpedition_SelectedGalleyTargetFirstThenCoast
+    expedition_selected_test.go:38: first leg=(25,24), want selected (24,20)
+--- FAIL: TestExpedition_SelectedGalleyTargetFirstThenCoast (0.08s)
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.080s
+FAIL

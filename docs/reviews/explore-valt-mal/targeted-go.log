@@ -1,0 +1,304 @@
+» färsk DB på migration 198 · commit 4054bd63+ändringar
+=== RUN   TestExpeditionLifecycle_AtomicReportRetry
+2026/10/22 07:38:38 INFO expedition turning for home unit=466f4fdd-178b-4298-9333-b6f14dafaac0 reason=half_time q=4 r=0 arrive_tick=8
+2026/10/22 07:38:38 INFO expedition home unit=466f4fdd-178b-4298-9333-b6f14dafaac0 ticks_out=8 hexes_seen=39 finds=0
+2026/10/22 07:38:38 INFO unit returned home from explore unit=466f4fdd-178b-4298-9333-b6f14dafaac0 settlement=70074fc3-918a-4830-93e3-c678adb214ed
+--- PASS: TestExpeditionLifecycle_AtomicReportRetry (0.14s)
+=== RUN   TestExpeditionLifecycle_HomeLost
+=== RUN   TestExpeditionLifecycle_HomeLost/outbound
+2026/10/22 07:38:38 INFO expedition turning for home unit=13eefdb5-7f7f-4b50-870e-47385154f1b8 reason=half_time q=4 r=0 arrive_tick=9
+2026/10/22 07:38:38 INFO expedition home unit=13eefdb5-7f7f-4b50-870e-47385154f1b8 ticks_out=9 hexes_seen=39 finds=1
+2026/10/22 07:38:38 INFO unit returned home from explore unit=13eefdb5-7f7f-4b50-870e-47385154f1b8 settlement=936d6a4a-3a23-4d0f-a63d-66be8cc41dd0
+=== RUN   TestExpeditionLifecycle_HomeLost/homeward
+2026/10/22 07:38:38 INFO expedition turning for home unit=a7db2387-0a36-4f0d-9b67-64fff28093c5 reason=half_time q=4 r=0 arrive_tick=8
+2026/10/22 07:38:38 INFO expedition home unit=a7db2387-0a36-4f0d-9b67-64fff28093c5 ticks_out=9 hexes_seen=39 finds=1
+2026/10/22 07:38:38 INFO unit returned home from explore unit=a7db2387-0a36-4f0d-9b67-64fff28093c5 settlement=27ddaa2b-dd2a-4255-bf21-ea3bbb8a085d
+=== RUN   TestExpeditionLifecycle_HomeLost/missing_home
+2026/10/22 07:38:38 INFO expedition turning for home unit=7e9dbf13-968d-4b84-9002-6aba98bdd419 reason=half_time q=4 r=0 arrive_tick=9
+2026/10/22 07:38:38 INFO expedition home unit=7e9dbf13-968d-4b84-9002-6aba98bdd419 ticks_out=9 hexes_seen=39 finds=1
+2026/10/22 07:38:38 INFO unit returned home from explore unit=7e9dbf13-968d-4b84-9002-6aba98bdd419 settlement=f843c628-74e1-490b-840e-79d19b0beb8b
+=== RUN   TestExpeditionLifecycle_HomeLost/no_fallback
+--- PASS: TestExpeditionLifecycle_HomeLost (0.43s)
+    --- PASS: TestExpeditionLifecycle_HomeLost/outbound (0.10s)
+    --- PASS: TestExpeditionLifecycle_HomeLost/homeward (0.12s)
+    --- PASS: TestExpeditionLifecycle_HomeLost/missing_home (0.11s)
+    --- PASS: TestExpeditionLifecycle_HomeLost/no_fallback (0.10s)
+=== RUN   TestExpeditionLifecycle_SameTickRedirectCancels
+2026/10/22 07:38:38 INFO recall/redirect order reached unit, new course set unit=eba6367b-5024-4b84-bfd2-f344462651d7 mode=redirect from_q=1 from_r=0 to_q=4 to_r=0 arrives_at=2026-10-22T10:38:38.744+02:00
+2026/10/22 07:38:38 INFO scout report filed unit=eba6367b-5024-4b84-bfd2-f344462651d7 q=4 r=0 terrain=plains copper=false tin=false silver=false cedar=false incense=false
+2026/10/22 07:38:38 INFO field unit turning for home unit=eba6367b-5024-4b84-bfd2-f344462651d7 from_q=4 from_r=0 home_q=0 home_r=0
+2026/10/22 07:38:38 INFO unit returned home from explore unit=eba6367b-5024-4b84-bfd2-f344462651d7 settlement=851fbcca-a20d-456d-9ac7-b09b68a13e23
+--- PASS: TestExpeditionLifecycle_SameTickRedirectCancels (0.12s)
+=== RUN   TestExpeditionLifecycle_ReservesAsymmetricHomeRoute
+2026/10/22 07:38:38 INFO expedition turning for home unit=fb16fe3e-29bc-4768-9ee3-243fb7840061 reason=half_time q=5 r=0 arrive_tick=11
+2026/10/22 07:38:38 INFO expedition home unit=fb16fe3e-29bc-4768-9ee3-243fb7840061 ticks_out=11 hexes_seen=8 finds=0
+2026/10/22 07:38:38 INFO unit returned home from explore unit=fb16fe3e-29bc-4768-9ee3-243fb7840061 settlement=92371ff7-22fc-48de-9fc3-8971335fb1dd
+--- PASS: TestExpeditionLifecycle_ReservesAsymmetricHomeRoute (0.09s)
+=== RUN   TestExpeditionLifecycle_FirstLegReservesHomeFromField
+--- PASS: TestExpeditionLifecycle_FirstLegReservesHomeFromField (0.06s)
+=== RUN   TestExpeditionLifecycle_ShorthandedNavalHomeBudget
+2026/10/22 07:38:39 INFO expedition turning for home unit=25e725f3-9d7b-4f52-8f39-fcdbb0857954 reason=area_known q=10 r=0 arrive_tick=10
+2026/10/22 07:38:39 INFO expedition home unit=25e725f3-9d7b-4f52-8f39-fcdbb0857954 ticks_out=10 hexes_seen=15 finds=0
+2026/10/22 07:38:39 INFO unit returned home from explore unit=25e725f3-9d7b-4f52-8f39-fcdbb0857954 settlement=dcd67d7f-3f09-41d5-9ed3-c8b6b9fe58a5
+--- PASS: TestExpeditionLifecycle_ShorthandedNavalHomeBudget (0.12s)
+=== RUN   TestExpeditionLifecycle_NewMarchClearsEvenMatchingTick
+--- PASS: TestExpeditionLifecycle_NewMarchClearsEvenMatchingTick (0.08s)
+=== RUN   TestExpeditionLifecycle_AtomicTurnRetry
+2026/10/22 07:38:39 INFO expedition turning for home unit=6ea87000-2d51-4366-b8b5-66c3d967ff44 reason=half_time q=4 r=0 arrive_tick=8
+--- PASS: TestExpeditionLifecycle_AtomicTurnRetry (0.10s)
+=== RUN   TestExpeditionLifecycle_HalfTimeWhileRoamingNearHome
+2026/10/22 07:38:39 INFO expedition turning for home unit=cfaf7993-41a0-45da-a988-91c69997c690 reason=half_time q=-2 r=3 arrive_tick=7
+2026/10/22 07:38:39 INFO expedition home unit=cfaf7993-41a0-45da-a988-91c69997c690 ticks_out=7 hexes_seen=34 finds=0
+2026/10/22 07:38:39 INFO unit returned home from explore unit=cfaf7993-41a0-45da-a988-91c69997c690 settlement=b415fd7b-c662-49df-9394-13d113e3cd59
+--- PASS: TestExpeditionLifecycle_HalfTimeWhileRoamingNearHome (0.09s)
+=== RUN   TestExpedition_SelectedGalleyTargetFirstThenCoast
+    expedition_selected_test.go:47: galley selected=(24,20) deep_sea; alternative=(23,16) deep_sea; actual first=(24,20)
+--- PASS: TestExpedition_SelectedGalleyTargetFirstThenCoast (0.09s)
+=== RUN   TestExpedition_SecondLegNearestUnseenFromSelected
+--- PASS: TestExpedition_SecondLegNearestUnseenFromSelected (0.10s)
+=== RUN   TestExpedition_LegacySavedLegUnchanged
+--- PASS: TestExpedition_LegacySavedLegUnchanged (0.10s)
+=== RUN   TestExpedition_TurnsByHalfTimeAndIsHomeByLength
+2026/10/22 07:38:39 INFO expedition turning for home unit=33ab4aa4-a26f-4cd8-9aa7-068590097188 reason=half_time q=4 r=0 arrive_tick=8
+2026/10/22 07:38:39 INFO expedition home unit=33ab4aa4-a26f-4cd8-9aa7-068590097188 ticks_out=8 hexes_seen=39 finds=0
+2026/10/22 07:38:39 INFO unit returned home from explore unit=33ab4aa4-a26f-4cd8-9aa7-068590097188 settlement=befacaa3-e1fc-476b-b203-026656b5bd43
+--- PASS: TestExpedition_TurnsByHalfTimeAndIsHomeByLength (0.10s)
+=== RUN   TestExpedition_RecordsSightAlongTheWholeLeg
+2026/10/22 07:38:39 INFO expedition turning for home unit=371213d4-caf0-43ce-96d1-a95363526415 reason=half_time q=4 r=0 arrive_tick=8
+--- PASS: TestExpedition_RecordsSightAlongTheWholeLeg (0.09s)
+=== RUN   TestExpedition_AreaKnownTurnsEarlyAndReportsFinds
+2026/10/22 07:38:39 INFO expedition turning for home unit=0224fa37-e9bc-4f90-bd92-326c3748fae2 reason=area_known q=6 r=0 arrive_tick=12
+2026/10/22 07:38:39 INFO expedition home unit=0224fa37-e9bc-4f90-bd92-326c3748fae2 ticks_out=12 hexes_seen=9 finds=1
+2026/10/22 07:38:39 INFO unit returned home from explore unit=0224fa37-e9bc-4f90-bd92-326c3748fae2 settlement=9c2df486-ea6e-4bd7-8857-87de83a2b45c
+--- PASS: TestExpedition_AreaKnownTurnsEarlyAndReportsFinds (0.08s)
+=== RUN   TestExpedition_NewCourseEndsTheExpedition
+2026/10/22 07:38:39 INFO scout report filed unit=b5b3f1d1-d489-4227-98da-507a4e954e53 q=4 r=0 terrain=plains copper=false tin=false silver=false cedar=false incense=false
+2026/10/22 07:38:39 INFO field unit turning for home unit=b5b3f1d1-d489-4227-98da-507a4e954e53 from_q=4 from_r=0 home_q=0 home_r=0
+2026/10/22 07:38:40 INFO unit returned home from explore unit=b5b3f1d1-d489-4227-98da-507a4e954e53 settlement=7aa6f323-5eb8-4af8-ac69-9fe3d9de7a1d
+--- PASS: TestExpedition_NewCourseEndsTheExpedition (0.10s)
+=== RUN   TestExpedition_DispatchRefusals
+--- PASS: TestExpedition_DispatchRefusals (0.09s)
+=== RUN   TestExpedition_UnseenWaterIsNotAlreadyKnown
+--- PASS: TestExpedition_UnseenWaterIsNotAlreadyKnown (0.07s)
+=== RUN   TestExpedition_UnreachableChosenAreaExplainsWithoutGlobalClaim
+--- PASS: TestExpedition_UnreachableChosenAreaExplainsWithoutGlobalClaim (0.03s)
+=== RUN   TestExpedition_ShipPrefersUnseenCoastOverNearerDeepSea
+--- PASS: TestExpedition_ShipPrefersUnseenCoastOverNearerDeepSea (0.00s)
+=== RUN   TestStartMarch_ExploreFromFieldPositionResolvesNearestOwnedHome
+--- PASS: TestStartMarch_ExploreFromFieldPositionResolvesNearestOwnedHome (0.02s)
+=== RUN   TestStartMarch_ExploreFromFieldPositionRejectedWithNoSettlement
+--- PASS: TestStartMarch_ExploreFromFieldPositionRejectedWithNoSettlement (0.01s)
+PASS
+ok  	formatet/megaron/server/internal/combat	2.132s
+=== RUN   TestMarchPreview_ReadOnlyAndTiming
+2026/10/22 07:38:40 INFO player registered id=864a4bcc-f099-4f8a-8251-ff540f051f96 username=ticker-d262aae6-4bf1-4c1f-bcc2-b56fb1526ae1
+2026/10/22 07:38:40 INFO player registered id=eb1f8ea8-f28e-4561-96c3-449a6528996d username=other-c53bcd7d-fb8f-46ca-b040-013e0d2bc58b
+--- PASS: TestMarchPreview_ReadOnlyAndTiming (0.16s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.166s
+=== RUN   TestExploreTicksOrderAndPreview
+=== RUN   TestExploreTicksOrderAndPreview/dispatchunit
+=== RUN   TestExploreTicksOrderAndPreview/dispatchalias
+=== RUN   TestExploreTicksOrderAndPreview/previewunit
+=== RUN   TestExploreTicksOrderAndPreview/previewalias
+--- PASS: TestExploreTicksOrderAndPreview (0.00s)
+    --- PASS: TestExploreTicksOrderAndPreview/dispatchunit (0.00s)
+    --- PASS: TestExploreTicksOrderAndPreview/dispatchalias (0.00s)
+    --- PASS: TestExploreTicksOrderAndPreview/previewunit (0.00s)
+    --- PASS: TestExploreTicksOrderAndPreview/previewalias (0.00s)
+=== RUN   TestExploreTicksRejectOtherIntents
+Error: --ticks requires --intent explore and a positive duration
+Usage:
+  march [flags]
+
+Examples:
+  keryx unit march --unit <id> --q 5 --r -3
+  keryx unit march --unit <id> --target 5,-3
+  keryx unit march --unit <id> --q 5 --r -3 --stance fortify
+  keryx unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos --yes
+  # Colonize the hex the unit already stands on (no coords needed):
+  keryx unit march --unit <id> --intent colonize --name Thapsos --yes
+  # Any march reveals fog along its route toward a frontier coordinate:
+  keryx unit march --unit <id> --q 12 --r -8
+  # Explore an area for 12 days, then automatically return home
+  keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12
+  # Land troops from a laden ship in port, then sail home on its own:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land
+  # ...and found a colony there with no further order:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land --colonize --name Thapsos
+  # Attack an enemy settlement and annex it instead of the sack default:
+  keryx unit march --unit <id> --q 5 --r -3 --mode annex
+
+Flags:
+      --colonize        with --intent land: found a colony on arrival with no further order (use --name to name it)
+  -h, --help            help for march
+      --intent string   arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (first to the selected hex, then explores around it; turns home by half the chosen duration) | land (a laden ship in port lands its cargo on an unclaimed land hex, then sails home on its own; add --colonize to found a colony there)
+      --mode string     conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)
+      --name string     colony name (with --intent colonize, or --intent land --colonize)
+      --preview         estimate arrival without sending an order
+      --q int           target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --r int           target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --stance string   stance on arrival: fortify|storm|sentry
+      --target string   target hex as q,r — alternative to --q/--r (e.g. 5,-3)
+      --ticks int       explore duration in days (omit for server default)
+      --unit string     unit UUID (required)
+      --yes             skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)
+
+Error: --ticks requires --intent explore and a positive duration
+Usage:
+  march [flags]
+
+Examples:
+  keryx unit march --unit <id> --q 5 --r -3
+  keryx unit march --unit <id> --target 5,-3
+  keryx unit march --unit <id> --q 5 --r -3 --stance fortify
+  keryx unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos --yes
+  # Colonize the hex the unit already stands on (no coords needed):
+  keryx unit march --unit <id> --intent colonize --name Thapsos --yes
+  # Any march reveals fog along its route toward a frontier coordinate:
+  keryx unit march --unit <id> --q 12 --r -8
+  # Explore an area for 12 days, then automatically return home
+  keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12
+  # Land troops from a laden ship in port, then sail home on its own:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land
+  # ...and found a colony there with no further order:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land --colonize --name Thapsos
+  # Attack an enemy settlement and annex it instead of the sack default:
+  keryx unit march --unit <id> --q 5 --r -3 --mode annex
+
+Flags:
+      --colonize        with --intent land: found a colony on arrival with no further order (use --name to name it)
+  -h, --help            help for march
+      --intent string   arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (first to the selected hex, then explores around it; turns home by half the chosen duration) | land (a laden ship in port lands its cargo on an unclaimed land hex, then sails home on its own; add --colonize to found a colony there)
+      --mode string     conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)
+      --name string     colony name (with --intent colonize, or --intent land --colonize)
+      --preview         estimate arrival without sending an order
+      --q int           target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --r int           target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --stance string   stance on arrival: fortify|storm|sentry
+      --target string   target hex as q,r — alternative to --q/--r (e.g. 5,-3)
+      --ticks int       explore duration in days (omit for server default)
+      --unit string     unit UUID (required)
+      --yes             skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)
+
+Error: --ticks requires --intent explore and a positive duration
+Usage:
+  march [flags]
+
+Examples:
+  keryx unit march --unit <id> --q 5 --r -3
+  keryx unit march --unit <id> --target 5,-3
+  keryx unit march --unit <id> --q 5 --r -3 --stance fortify
+  keryx unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos --yes
+  # Colonize the hex the unit already stands on (no coords needed):
+  keryx unit march --unit <id> --intent colonize --name Thapsos --yes
+  # Any march reveals fog along its route toward a frontier coordinate:
+  keryx unit march --unit <id> --q 12 --r -8
+  # Explore an area for 12 days, then automatically return home
+  keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12
+  # Land troops from a laden ship in port, then sail home on its own:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land
+  # ...and found a colony there with no further order:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land --colonize --name Thapsos
+  # Attack an enemy settlement and annex it instead of the sack default:
+  keryx unit march --unit <id> --q 5 --r -3 --mode annex
+
+Flags:
+      --colonize        with --intent land: found a colony on arrival with no further order (use --name to name it)
+  -h, --help            help for march
+      --intent string   arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (first to the selected hex, then explores around it; turns home by half the chosen duration) | land (a laden ship in port lands its cargo on an unclaimed land hex, then sails home on its own; add --colonize to found a colony there)
+      --mode string     conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)
+      --name string     colony name (with --intent colonize, or --intent land --colonize)
+      --preview         estimate arrival without sending an order
+      --q int           target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --r int           target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --stance string   stance on arrival: fortify|storm|sentry
+      --target string   target hex as q,r — alternative to --q/--r (e.g. 5,-3)
+      --ticks int       explore duration in days (omit for server default)
+      --unit string     unit UUID (required)
+      --yes             skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)
+
+--- PASS: TestExploreTicksRejectOtherIntents (0.00s)
+=== RUN   TestExpeditionMissionLifecycleText
+--- PASS: TestExpeditionMissionLifecycleText (0.00s)
+=== RUN   TestExpeditionTexts
+--- PASS: TestExpeditionTexts (0.00s)
+=== RUN   TestExpeditionClockETAUsesWorldAnchor
+--- PASS: TestExpeditionClockETAUsesWorldAnchor (0.00s)
+=== RUN   TestMarchPreviewNeverDispatches
+=== RUN   TestMarchPreviewNeverDispatches/unit/text/
+=== RUN   TestMarchPreviewNeverDispatches/unit/text/courier_required
+=== RUN   TestMarchPreviewNeverDispatches/unit/text/redirect
+=== RUN   TestMarchPreviewNeverDispatches/unit/text/unknown_terrain
+=== RUN   TestMarchPreviewNeverDispatches/unit/json/
+=== RUN   TestMarchPreviewNeverDispatches/unit/json/courier_required
+=== RUN   TestMarchPreviewNeverDispatches/unit/json/redirect
+=== RUN   TestMarchPreviewNeverDispatches/unit/json/unknown_terrain
+=== RUN   TestMarchPreviewNeverDispatches/alias/text/
+=== RUN   TestMarchPreviewNeverDispatches/alias/text/courier_required
+=== RUN   TestMarchPreviewNeverDispatches/alias/text/redirect
+=== RUN   TestMarchPreviewNeverDispatches/alias/text/unknown_terrain
+=== RUN   TestMarchPreviewNeverDispatches/alias/json/
+=== RUN   TestMarchPreviewNeverDispatches/alias/json/courier_required
+=== RUN   TestMarchPreviewNeverDispatches/alias/json/redirect
+=== RUN   TestMarchPreviewNeverDispatches/alias/json/unknown_terrain
+--- PASS: TestMarchPreviewNeverDispatches (0.00s)
+    --- PASS: TestMarchPreviewNeverDispatches/unit/text/ (0.00s)
+    --- PASS: TestMarchPreviewNeverDispatches/unit/text/courier_required (0.00s)
+    --- PASS: TestMarchPreviewNeverDispatches/unit/text/redirect (0.00s)
+    --- PASS: TestMarchPreviewNeverDispatches/unit/text/unknown_terrain (0.00s)
+    --- PASS: TestMarchPreviewNeverDispatches/unit/json/ (0.00s)
+    --- PASS: TestMarchPreviewNeverDispatches/unit/json/courier_required (0.00s)
+    --- PASS: TestMarchPreviewNeverDispatches/unit/json/redirect (0.00s)
+    --- PASS: TestMarchPreviewNeverDispatches/unit/json/unknown_terrain (0.00s)
+    --- PASS: TestMarchPreviewNeverDispatches/alias/text/ (0.00s)
+    --- PASS: TestMarchPreviewNeverDispatches/alias/text/courier_required (0.00s)
+    --- PASS: TestMarchPreviewNeverDispatches/alias/text/redirect (0.00s)
+    --- PASS: TestMarchPreviewNeverDispatches/alias/text/unknown_terrain (0.00s)
+    --- PASS: TestMarchPreviewNeverDispatches/alias/json/ (0.00s)
+    --- PASS: TestMarchPreviewNeverDispatches/alias/json/courier_required (0.00s)
+    --- PASS: TestMarchPreviewNeverDispatches/alias/json/redirect (0.00s)
+    --- PASS: TestMarchPreviewNeverDispatches/alias/json/unknown_terrain (0.00s)
+=== RUN   TestMarchPreviewErrorNeverDispatches
+Error: unit cannot march (HTTP 409)
+Usage:
+  march [flags]
+
+Examples:
+  keryx unit march --unit <id> --q 5 --r -3
+  keryx unit march --unit <id> --target 5,-3
+  keryx unit march --unit <id> --q 5 --r -3 --stance fortify
+  keryx unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos --yes
+  # Colonize the hex the unit already stands on (no coords needed):
+  keryx unit march --unit <id> --intent colonize --name Thapsos --yes
+  # Any march reveals fog along its route toward a frontier coordinate:
+  keryx unit march --unit <id> --q 12 --r -8
+  # Explore an area for 12 days, then automatically return home
+  keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12
+  # Land troops from a laden ship in port, then sail home on its own:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land
+  # ...and found a colony there with no further order:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land --colonize --name Thapsos
+  # Attack an enemy settlement and annex it instead of the sack default:
+  keryx unit march --unit <id> --q 5 --r -3 --mode annex
+
+Flags:
+      --colonize        with --intent land: found a colony on arrival with no further order (use --name to name it)
+  -h, --help            help for march
+      --intent string   arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (first to the selected hex, then explores around it; turns home by half the chosen duration) | land (a laden ship in port lands its cargo on an unclaimed land hex, then sails home on its own; add --colonize to found a colony there)
+      --mode string     conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)
+      --name string     colony name (with --intent colonize, or --intent land --colonize)
+      --preview         estimate arrival without sending an order
+      --q int           target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --r int           target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --stance string   stance on arrival: fortify|storm|sentry
+      --target string   target hex as q,r — alternative to --q/--r (e.g. 5,-3)
+      --ticks int       explore duration in days (omit for server default)
+      --unit string     unit UUID (required)
+      --yes             skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)
+
+--- PASS: TestMarchPreviewErrorNeverDispatches (0.00s)
+=== RUN   TestLiveRemainder_ConditionalExpeditionAndTimber
+--- PASS: TestLiveRemainder_ConditionalExpeditionAndTimber (0.00s)
+PASS
+ok  	formatet/megaron/server/cmd/keryx	0.012s

@@ -755,13 +755,14 @@ it can march. Once ready, a cohort can still march after losing men; it does
 not need to recover to 100 first.
 A unit in fortify stance must be cleared (stance none) before marching.
 
-Exploring: an explore order may target an area in fog. The server chooses
-unseen reachable ground there and records what the unit sees along its route.
+Exploring: an explore order first travels to the exact selected hex, even
+if it is already seen, then explores unseen reachable ground around it.
+It records what the unit sees along its route.
 Run 'keryx map' to see the frontier coordinates. Fog on the map does not
-guarantee a route for this unit. If the chosen area cannot be reached,
-try another area or a unit departing from elsewhere.
+guarantee a route for this unit. If the chosen hex cannot be reached,
+the order is refused; try another hex or a unit departing from elsewhere.
 
---intent explore explores an area around the chosen hex for --ticks days.
+--intent explore goes first to the chosen hex, then explores around it for --ticks days.
 It turns home by half the duration and reports what it saw on return. It needs
 a reachable city of yours to return to. A land unit in the field receives the
 order by Runner; a ship must be commanded in port. Works for land or naval
@@ -993,7 +994,7 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 	cmd.Flags().IntVar(&targetR, "r", 0, "target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)")
 	cmd.Flags().StringVar(&target, "target", "", "target hex as q,r — alternative to --q/--r (e.g. 5,-3)")
 	cmd.Flags().StringVar(&stance, "stance", "", "stance on arrival: fortify|storm|sentry")
-	cmd.Flags().StringVar(&intent, "intent", "", "arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (explores the surrounding area, turns home by half the chosen duration; unit must be garrisoned at a settlement) | land (a laden ship in port lands its cargo on an unclaimed land hex, then sails home on its own; add --colonize to found a colony there)")
+	cmd.Flags().StringVar(&intent, "intent", "", "arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (first to the selected hex, then explores around it; turns home by half the chosen duration) | land (a laden ship in port lands its cargo on an unclaimed land hex, then sails home on its own; add --colonize to found a colony there)")
 	cmd.Flags().StringVar(&name, "name", "", "colony name (with --intent colonize, or --intent land --colonize)")
 	cmd.Flags().StringVar(&mode, "mode", "", "conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)")
 	cmd.Flags().BoolVar(&yes, "yes", false, "skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)")

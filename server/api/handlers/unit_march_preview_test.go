@@ -203,6 +203,8 @@ func TestMarchPreview_ReadOnlyAndTiming(t *testing.T) {
 		}
 		if tc.reason == "unknown_terrain" {
 			var plan struct {
+				FirstQ    int  `json:"planned_first_target_q"`
+				FirstR    int  `json:"planned_first_target_r"`
 				Length    int  `json:"planned_expedition_ticks"`
 				Home      int  `json:"planned_home_by_tick_if_departing_now"`
 				Available bool `json:"available"`
@@ -218,7 +220,7 @@ func TestMarchPreview_ReadOnlyAndTiming(t *testing.T) {
 			} else if strings.Contains(tc.query, "ticks=365") {
 				want = 365
 			}
-			if plan.Length != want || plan.Home != 5+want || plan.Available {
+			if plan.FirstQ != 1 || plan.FirstR != 0 || plan.Length != want || plan.Home != 5+want || plan.Available {
 				t.Fatalf("planned budget lost or hidden ETA leaked: %s", rec.Body.String())
 			}
 			if snapshot() != before {

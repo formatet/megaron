@@ -11,7 +11,7 @@ test('duration follows changed server rules and refuses malformed or unavailable
  assert.equal(expeditionTicks(input),14);
  for(const value of ['',5,23,6.5,'bad']) {input.value=value;assert.throws(()=>expeditionTicks(input));}
  for(const value of [6,22]) {input.value=value;assert.equal(expeditionTicks(input),value);}
- assert.match(expeditionOrderText(9,-2,14,rules),/within 3 hexes, for 14 days/);
+ assert.match(expeditionOrderText(9,-2,14,rules),/first to \(9,-2\), then explore around it, within 3 hexes, for 14 days/);
  configureExpedition(input,undefined);assert.throws(()=>expeditionTicks(input),/rules unavailable/);
 });
 test('mission shows authoritative ticks until turn, then its actual return reason',()=>{
@@ -21,4 +21,11 @@ test('mission shows authoritative ticks until turn, then its actual return reaso
  assert.match(expeditionMissionText(e),new RegExp('returning home — no reachable unexplored ground; home by '+testTickTime(114)));
  assert.doesNotMatch(expeditionMissionText(e),/turns home/);
  assert.equal(expeditionMissionText(null),'');
+});
+
+test('new receipt names the selected first destination; saved missions make no first-leg claim',()=>{
+ const e={area_q:24,area_r:20,length_ticks:100,turn_tick:50,home_by_tick:100};
+ assert.doesNotMatch(expeditionMissionText(e),/first to/);
+ e.first_to_area=true;
+ assert.match(expeditionMissionText(e),/first to \(24,20\), then explores around it/);
 });

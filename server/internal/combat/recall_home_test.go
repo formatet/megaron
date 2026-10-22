@@ -29,7 +29,8 @@ func TestRecallExpeditionLaterLegHome(t *testing.T) {
 					t.Fatal(err)
 				}
 			}
-			f.start(t, 9, 0, 20)
+			// Reach the selected hex and leave time for a later outward leg.
+			f.start(t, 9, 0, 40)
 			if err := f.h.Handle(ctx, f.nextArrival(t)); err != nil {
 				t.Fatal(err)
 			}
@@ -114,7 +115,8 @@ func TestRecallPlainAndExpeditionRedirectDestinations(t *testing.T) {
 			f := newExpeditionFixture(t, -2, 16, nil)
 			ctx, pool := context.Background(), testPool(t)
 			if mode == "redirect" {
-				f.start(t, 9, 0, 20)
+				// Reach the selected hex and leave time for a later outward leg.
+				f.start(t, 9, 0, 40)
 				if err := f.h.Handle(ctx, f.nextArrival(t)); err != nil {
 					t.Fatal(err)
 				}
@@ -166,7 +168,8 @@ func TestRecallExpeditionLostHome(t *testing.T) {
 		t.Run(map[bool]string{true: "fallback", false: "refusal"}[fallback], func(t *testing.T) {
 			f := newExpeditionFixture(t, -2, 16, nil)
 			ctx, pool := context.Background(), testPool(t)
-			f.start(t, 9, 0, 20)
+			// Reach the selected hex and leave time for a later outward leg.
+			f.start(t, 9, 0, 40)
 			if err := f.h.Handle(ctx, f.nextArrival(t)); err != nil {
 				t.Fatal(err)
 			}
@@ -234,7 +237,8 @@ func TestRecallExpeditionPreservesMapKnowledge(t *testing.T) {
 	copper := [2]int{1, 2}
 	f := newExpeditionFixture(t, -2, 16, &copper)
 	ctx, pool := context.Background(), testPool(t)
-	f.start(t, 9, 0, 20)
+	// Reach the selected hex and leave time for a later outward leg.
+	f.start(t, 9, 0, 40)
 	if err := f.h.Handle(ctx, f.nextArrival(t)); err != nil {
 		t.Fatal(err)
 	}

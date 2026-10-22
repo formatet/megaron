@@ -216,6 +216,7 @@ func expeditionJSON(p *combat.ExpeditionPlan) map[string]any {
 	return map[string]any{
 		"area_q": p.AreaQ, "area_r": p.AreaR, "length_ticks": p.LengthTicks,
 		"turn_tick": p.TurnTick, "home_by_tick": p.HomeByTick,
+		"first_to_area": true, // New dispatch receipt only, never inferred for saved missions.
 	}
 }
 

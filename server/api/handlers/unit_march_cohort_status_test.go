@@ -49,6 +49,17 @@ func TestMarch_ExploreCompleted64AndForming40(t *testing.T) {
 			}
 			wantStatus := tc.status
 			if tc.code == http.StatusAccepted {
+				mission, ok := resp["expedition"].(map[string]any)
+				if !ok || mission["first_to_area"] != true || mission["area_q"] != float64(2) || mission["area_r"] != float64(0) {
+					t.Fatalf("new expedition receipt: %+v", resp)
+				}
+				var q, r int
+				if err := f.pool.QueryRow(ctx, `SELECT target_q,target_r FROM units WHERE id=$1`, id).Scan(&q, &r); err != nil {
+					t.Fatal(err)
+				}
+				if q != 2 || r != 0 {
+					t.Fatalf("saved first target=(%d,%d), want (2,0)", q, r)
+				}
 				wantStatus = "marching"
 			}
 			if status != wantStatus || size != tc.size {

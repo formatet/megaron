@@ -163,3 +163,9 @@ test('expedition plan is a known budget, conditional on departure, not a hidden 
   assert.match(html,/First-leg arrival remains unknown/);
   assert.doesNotMatch(html,/Estimated arrival:/);
 });
+
+test('expedition preview names exact first target without disclosing its ETA',()=>{
+ const html=marchPreviewHTML({available:false,reason:'unknown_terrain',planned_expedition_ticks:100,planned_first_target_q:24,planned_first_target_r:20});
+ assert.match(html,/first to \(24,20\), then explores around it/);
+ assert.match(html,/First-leg arrival remains unknown/);
+});

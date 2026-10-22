@@ -22,14 +22,14 @@ func TestExploreTicksOrderAndPreview(t *testing.T) {
 						if r.Method != "GET" || !strings.HasSuffix(r.URL.Path, "/march-preview") || r.URL.Query().Get("ticks") != "12" || r.URL.Query().Get("intent") != "explore" {
 							t.Errorf("wrong preview %s %s", r.Method, r.URL)
 						}
-						w.Write([]byte(`{"available":false,"reason":"unknown_terrain"}`))
+						w.Write([]byte(`{"available":false,"reason":"unknown_terrain","planned_expedition_ticks":12,"planned_first_target_q":5,"planned_first_target_r":-3}`))
 					} else {
 						var body map[string]any
 						json.NewDecoder(r.Body).Decode(&body)
 						if r.Method != "POST" || !strings.HasSuffix(r.URL.Path, "/march") || body["ticks"] != float64(12) || body["intent"] != "explore" {
 							t.Errorf("wrong dispatch %s %+v", r.Method, body)
 						}
-						w.Write([]byte(`{"expedition":{"area_q":5,"area_r":-3,"length_ticks":12,"turn_tick":106,"home_by_tick":112}}`))
+						w.Write([]byte(`{"expedition":{"area_q":5,"area_r":-3,"first_to_area":true,"length_ticks":12,"turn_tick":106,"home_by_tick":112}}`))
 					}
 				}))
 				defer srv.Close()
@@ -53,6 +53,9 @@ func TestExploreTicksOrderAndPreview(t *testing.T) {
 				if calls != 1 {
 					t.Fatalf("calls=%d", calls)
 				}
+				if !strings.Contains(out, "first to (5,-3), then explores around it") {
+					t.Fatalf("missing selected destination: %s", out)
+				}
 				if !preview && (!strings.Contains(out, "12 days") || !strings.Contains(out, "home by "+testTickTime(112))) {
 					t.Fatalf("missing mission: %s", out)
 				}
@@ -75,6 +78,9 @@ func TestExpeditionMissionLifecycleText(t *testing.T) {
 		t.Fatal(err)
 	}
 	text := expeditionMissionText(u.Expedition, testTimeClient())
+	if strings.Contains(text, "first to") {
+		t.Fatal("old saved mission falsely claims selected first leg")
+	}
 	for _, want := range []string{"(9,2)", "12 days", "returning home", "area explored", "home by " + testTickTime(14)} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %s: %s", want, text)

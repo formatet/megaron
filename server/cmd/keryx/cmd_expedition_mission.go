@@ -3,6 +3,7 @@ package main
 import "fmt"
 
 type expeditionMission struct {
+	FirstToArea bool    `json:"first_to_area"`
 	AreaQ       int     `json:"area_q"`
 	AreaR       int     `json:"area_r"`
 	LengthTicks int     `json:"length_ticks"`
@@ -21,7 +22,11 @@ func expeditionMissionText(e *expeditionMission, clients ...*Client) string {
 			state += " — " + expeditionReason(*e.TurnReason)
 		}
 	}
-	return fmt.Sprintf("Expedition around (%d,%d), %s; %s; home by %s", e.AreaQ, e.AreaR, formatDays(e.LengthTicks, "%d"), state, formatWorldTime(c, e.HomeByTick))
+	destination := fmt.Sprintf("around (%d,%d)", e.AreaQ, e.AreaR)
+	if e.FirstToArea {
+		destination = fmt.Sprintf("first to (%d,%d), then explores around it", e.AreaQ, e.AreaR)
+	}
+	return fmt.Sprintf("Expedition %s, %s; %s; home by %s", destination, formatDays(e.LengthTicks, "%d"), state, formatWorldTime(c, e.HomeByTick))
 }
 func expeditionReason(reason string) string {
 	switch reason {

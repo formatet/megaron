@@ -168,7 +168,7 @@ func (f expeditionFixture) eventPayloads(t *testing.T, eventType string) []json.
 // so the expedition must turn on time, not when it runs out of ground.
 func TestExpedition_TurnsByHalfTimeAndIsHomeByLength(t *testing.T) {
 	f := newExpeditionFixture(t, -2, 16, nil)
-	res := f.start(t, 9, 0, 12)
+	res := f.start(t, 4, 0, 12)
 	if res.Expedition == nil {
 		t.Fatal("MarchStarted.Expedition = nil for an explore order")
 	}
@@ -176,7 +176,7 @@ func TestExpedition_TurnsByHalfTimeAndIsHomeByLength(t *testing.T) {
 		t.Fatalf("plan turn/home = %d/%d, want 6/12", res.Expedition.TurnTick, res.Expedition.HomeByTick)
 	}
 	if res.TargetQ != 4 || res.TargetR != 0 {
-		t.Errorf("first leg = (%d,%d), want (4,0): the nearest unseen hex of the area from home", res.TargetQ, res.TargetR)
+		t.Errorf("first leg = (%d,%d), want (4,0): the selected hex", res.TargetQ, res.TargetR)
 	}
 
 	legs := f.runUntilHome(t)
@@ -217,7 +217,7 @@ func TestExpedition_TurnsByHalfTimeAndIsHomeByLength(t *testing.T) {
 // (4,0) but not from (4,0) itself, and nobody read the map in between.
 func TestExpedition_RecordsSightAlongTheWholeLeg(t *testing.T) {
 	f := newExpeditionFixture(t, -2, 16, nil)
-	f.start(t, 9, 0, 12)
+	f.start(t, 4, 0, 12)
 
 	pool := testPool(t)
 	ctx := context.Background()
@@ -304,7 +304,7 @@ func TestExpedition_AreaKnownTurnsEarlyAndReportsFinds(t *testing.T) {
 // let go rather than steer a unit that has been given another order.
 func TestExpedition_NewCourseEndsTheExpedition(t *testing.T) {
 	f := newExpeditionFixture(t, -2, 16, nil)
-	f.start(t, 9, 0, 12)
+	f.start(t, 4, 0, 12)
 
 	pool := testPool(t)
 	ctx := context.Background()
@@ -340,8 +340,7 @@ func TestExpedition_DispatchRefusals(t *testing.T) {
 	if err := order(9, 0, ExpeditionMaxTicks+1); err == nil {
 		t.Error("length above the maximum accepted")
 	}
-	// Nearest unseen ground around (14,0) from home is (9,0): 9 ticks away,
-	// more than half of 10.
+	// The selected hex (14,0) exceeds half of the allotted 10 ticks.
 	if err := order(14, 0, 10); err == nil {
 		t.Error("an expedition whose first leg ends after its turn tick was accepted")
 	}
@@ -399,13 +398,13 @@ func TestExpedition_UnreachableChosenAreaExplainsWithoutGlobalClaim(t *testing.T
 	order := MarchOrder{WorldID: f.worldID, PlayerID: f.ownerID, UnitID: f.unitID,
 		TargetQ: 3, TargetR: 0, Intent: "explore", ExpeditionTicks: 12}
 	_, err := StartMarch(ctx, pool, f.scheduler, f.eventStore, f.clk, order, nil)
-	if err == nil || !strings.Contains(err.Error(), "no route from this unit's current position") || !strings.Contains(err.Error(), "chosen hex marks a search area") {
+	if err == nil || !strings.Contains(err.Error(), "no route from this unit's current position") || !strings.Contains(err.Error(), "to the chosen hex (3,0)") {
 		t.Fatalf("refusal = %v, want chosen-area route explanation", err)
 	}
 	firstReason := err.Error()
-	// A still unseen reachable hex on this side must not change the reply:
-	// the chosen area is the only reachability question this order asked.
-	if _, err := pool.Exec(ctx, `DELETE FROM player_scouted_tiles WHERE world_id=$1 AND player_id=$2 AND q=0 AND r=-4`, f.worldID, f.ownerID); err != nil {
+	// Unseen reachable (1,0) is INSIDE the search area. It must not replace
+	// the unreachable selected destination (3,0).
+	if _, err := pool.Exec(ctx, `DELETE FROM player_scouted_tiles WHERE world_id=$1 AND player_id=$2 AND q=1 AND r=0`, f.worldID, f.ownerID); err != nil {
 		t.Fatal(err)
 	}
 	_, err = StartMarch(ctx, pool, f.scheduler, f.eventStore, f.clk, order, nil)

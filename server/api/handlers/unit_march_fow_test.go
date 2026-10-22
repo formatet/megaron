@@ -128,8 +128,9 @@ func TestMarch_FOWRule(t *testing.T) {
 	}
 
 	// 2. Explore-intent to the same unseen hex → allowed (202): explore is the
-	// sanctioned order into the unknown.
-	rec = march(unitB, map[string]any{"target_q": 10, "target_r": 0, "intent": "explore"})
+	// sanctioned order into the unknown. Give the selected (10,0) a full
+	// 20-tick round-trip budget; the old planner substituted nearer (5,0).
+	rec = march(unitB, map[string]any{"target_q": 10, "target_r": 0, "intent": "explore", "ticks": 20})
 	if rec.Code != http.StatusAccepted {
 		t.Fatalf("explore to never-seen hex = %d %q, want 202 (explore is exempt from the FOW rule)",
 			rec.Code, rec.Body.String())
