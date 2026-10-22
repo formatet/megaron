@@ -72,9 +72,31 @@ func TestStatusDivineProtectionAndBlessingRequirement(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{"Everyday prayers work at a level-1 temple", "at least 60 kharis", "with or without a temple", "Protected from divine punishment until"} {
+	for _, want := range []string{"Everyday prayers work at a level-1 temple", "at least 60 kharis", "level-2 ceiling lets you build standing", "standing retained above a lowered ceiling still counts", "with or without a temple", "Protected from divine punishment until"} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("missing %q: %s", want, out)
 		}
+	}
+}
+
+func TestStatusAboveCeilingIgnoresTempleGain(t *testing.T) {
+	round3Client(t, func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/provinces/default") {
+			json.NewEncoder(w).Encode(map[string]any{"settlement": map[string]any{"name": "Pylos", "population": 1000, "resources": map[string]any{}, "kharis": 80, "kharis_cap": 50, "kharis_net_known": true, "kharis_net_per_tick": -.2, "kharis_per_temple_worker": 1.05}})
+			return
+		}
+		json.NewEncoder(w).Encode([]any{})
+	})
+	out, err := captureStdout(t, statusCmd().Execute)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"standing drifts down; offerings do not raise it", "upkeep only above ceiling", "net -0.2"} {
+		if !strings.Contains(out, want) {
+			t.Fatalf("missing %q: %s", want, out)
+		}
+	}
+	if strings.Contains(out, "One more fed temple worker") {
+		t.Fatal(out)
 	}
 }

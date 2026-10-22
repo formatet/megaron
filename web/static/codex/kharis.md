@@ -31,7 +31,7 @@ Three things must be true, every day:
 
 In a small realm, a fully staffed, fed level-1 temple can earn more favour than the realm loses each day. Compare the projected net; a larger realm may need more temples or higher levels. Larger temples can employ more devotion and raise kharis faster when staffed and fed.
 
-**Your best temple sets your ceiling:** no temple **40**, level 1 **50**, level 2 **75**, level 3 **100**. Everyday prayers work at a level-1 temple. Spontaneous blessings require at least **60 kharis** and a level-2 temple.
+**Your best temple sets your ceiling:** no temple **40**, level 1 **50**, level 2 **75**, level 3 **100**. Everyday prayers work at a level-1 temple. Spontaneous blessings require at least **60 kharis** with a maintained temple. A level-2 ceiling lets you build standing to 60; standing retained above a lowered ceiling still counts.
 
 Kharis decays every day regardless. Additional cities and residents increase cult upkeep even when every city has a temple ([[colonies]]).
 
@@ -45,4 +45,4 @@ The temple shows how much each good counts with the gods, before a particular go
 
 A notification marks each change between **Favorable**, **Indifferent**, **Suspicious** and **Wrathful**, with the new Kharis value and recorded day. Check **Kult** for decay and temple support; staff and feed your [[temples]].
 
-Demolishing a temple voluntarily costs **10 kharis per level**, with a floor of **1**; plundering causes no such debt. A lowered ceiling stops growth without cutting existing standing; ordinary daily upkeep continues above it. The confirmation shows the loss and any ceiling change. See [[temple-demolition]].
+Demolishing a temple voluntarily costs **10 kharis per level**, with a floor of **1**; plundering causes no such debt. A lowered ceiling stops growth without cutting existing standing; ordinary daily upkeep continues above it and temple gains do not offset that decline. The confirmation shows the loss and any ceiling change. See [[temple-demolition]].

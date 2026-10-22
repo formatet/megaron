@@ -169,5 +169,5 @@ type demolitionKharis struct {
 }
 
 func demolitionKharisText(k demolitionKharis) string {
-	return fmt.Sprintf("The god %s is angered: kharis −%g (%g → %g; floor 1). Realm ceiling %g → %g. A lower ceiling stops growth; it does not cut existing kharis. Ordinary daily upkeep continues.", k.GodID, k.KharisLoss, k.KharisBefore, k.KharisAfter, k.CapBefore, k.CapAfter)
+	return fmt.Sprintf("The god %s is angered: kharis −%g (%g → %g; floor 1). Realm ceiling %g → %g. A lower ceiling stops growth; it does not cut existing kharis. Above the ceiling, ordinary daily upkeep continues and temple gains do not offset it.", k.GodID, k.KharisLoss, k.KharisBefore, k.KharisAfter, k.CapBefore, k.CapAfter)
 }
