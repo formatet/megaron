@@ -572,10 +572,9 @@ export function renderUnitCard(u) {
   // låg — till skillnad från hull-bricka ovan. Skälet är att det här är talet
   // som avgör om du kan ge en order alls, och ett skepp som tyst närmar sig
   // noll är precis det mekaniken finns för att göra synligt.
-  // 'freighting' excluded too (megaron_plan_sjohandel_kraver_skepp.md — this
-  // slice doesn't model per-ship provisions for a bound trade hull; showing
-  // a food badge the server never resolves would be a promise it can't keep).
-  const atSea = isNaval && (isMarching || isPositioned);
+  // Freight ships consume their own provisions too, including waits between
+  // legs. Display the same server projection as marching/positioned ships.
+  const atSea = isNaval && (isMarching || isPositioned || isFreighting);
   const days = u.provision_days || 0;
   const foodDetail = foodGoodsText(u.provisions_by_good);
   const foodBadge = atSea
