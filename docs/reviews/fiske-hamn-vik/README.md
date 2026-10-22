@@ -1,77 +1,101 @@
-# ORDER 14 — hamn och vik styr fiskplatser
+# ORDER 14 — SLUTLIG fiskeregel, Timothy2026-10-22 19:15
 
 ## Sammanfattning
 
-Djuphav kräver hamn; en kustvik med minst fyra landsidor har en extra plats.
-Kodcommit `245f18bd`, bas `ea97b332`, migration198 (ingen ny migration).
-Gren `codex/fiske-hamn-vik`. Ingen merge/push/deploy eller livedataändring.
-Inventering, SQL och historik: [inventory.md](inventory.md). Slutlig full fresh Go GREEN (world153.336s),714JS/vet GREEN, namngiven RED och fysisk mutation verifierade.
+Kust och vik håller två fiskare; viken ger dubbelt per fiskare. Hamnens enda
+fiskeeffekt är djuphavsplatser efter nivå. Gemensam economy-ägare, migration200
+och atomisk engångsövergång före workers/HTTP. Kod `060c8354`, testfixturrättning `190f5b97`, bas `ea97b332`.
+Ingen merge/push/deploy eller liveskrivning. Slutlig fresh200Go GREEN (world157.523s),714JS/vet GREEN.
 
 ## Slice-kontrakt
 
-Spelaren bemannar de fiskplatser servern faktiskt använder. Kust2/6, vik3/7,
-djuphav0/4 utan/med hamn. Alla hamnnivåer har samma antal; rate multipliceras
-med1+0.7×nivå även på djuphav. Flod/vad oförändrade. Land utesluter bara
-sea/coastal_sea/deep_sea; river/ford räknas, saknad kartgranne räknas inte.
-Ingen ny hamnbyggplats, ingen ändrad catchment eller informationsdelning.
-Stopp vid nytt kanon-/övergångsbeslut; Claude godkände land/FOW/deepökning före kod.
+| Vatten | Platser | Fisk per arbetare och tick | Hamneffekt |
+|---|---|---|---|
+| Kust coastal_sea | 2 | 1 | Ingen |
+| Vik coastal_sea med minst4landsidor | 2 | 2 | Ingen |
+| Djuphav deep_sea | 0/1/2/4 vid hamnL0/1/2/3 | 1 | Endast platser |
+| river/river_ford | 1 | 0.5, oförändrat | Ingen |
 
-## Baslinje och regelägare
+Land utesluter bara sea/coastal_sea/deep_sea. River/ford räknas; saknad
+kartgranne gör det inte. Faktisk lokal kapacitet visas på synlig produktiv hex,
+men ingen grannterräng eller nytt grannfält skickas. Hamnens handel-/skeppsgrind,
+catchmentradie och landbyggnadsregeln för övriga varor är orörda.
 
-`baseline-red.log`: TestDeepFishingRequiresHarbour körd mot gammal produktion
-på egen färsk mig198-databas; gammalkod gav1plats på alla nivåer istället0/4.
+## Ägare och övergång
 
-`loadHexRuleTiles` i economy/hex_rules.go äger kartkontexten och räknar
-kustens landgrannar med hexgrid.Neighbors-offsets. Produktionsoptions,
-LoadHexCapacity, HexBuildEffects och RuleBuildingGoods konsumerar dessa regler.
-Geometri är delad; grannterränger eller grannantal skickas inte till klienten.
-Råtabellens terräng-/byggnadsgrindar känner vilka varor byggnaden hjälper;
-ChooseFoundingFarmHex väljer fortsatt endast grain/farm och behöver ingen vikdata.
+`loadHexRuleTiles` i economy/hex_rules.go laddar kartkontext i en batch;
+hexgrid.Neighbors äger geometri. Samma regel används av LoadHexProductionOptions,
+LoadHexCapacity, HexBuildEffects och RuleBuildingGoods. Deepplatstabellen bor
+här, inte i konsumenterna. Bays höjer intrinsic rate, inte huvudantalet.
 
-HTTP buildGoods utelämnade tidigare cap0 som null, vilket skulle kunna visas som
-obegränsat. Nu serialiseras en närvarande kapacitetsnyckel även när värdet är0.
-PlaceGubbes befintliga cap<=0-avslag används. Ingen ny endpoint/klientformel.
+Migration200 sätter production_rules deep fish från1/6 till1 och skapar en
+engångsmarkör. CompleteFishingRuleTransition kör före workers/HTTP: en TX
+låser markören, besöker ägda icke-terminala städer i aktiva världar i id-ordning,
+låser staden, frigör överflödiga fiskare med högsta ordinaler och recompute.
+Markören sätts klar först efter alla städer. Demolition och övergång använder
+SAMMA utdragna liftHexPlacementsToCapacity; ingen ny automatisk matplacering.
+Recompute settle:ar gamla lager med sparad gammal rate innan ny rate skrivs.
+Replay gör ingenting. Fel i någon recompute rullar tillbaka beskärning och markör.
+Arkiverade världar återaktiveras inte eller projiceras om av denna övergång.
 
-## Experiment och grindar
+HTTP buildGoods behåller explicit cap0; null skulle kunna tolkas som obegränsat.
+Befintlig PlaceGubbes cap<=0-grind stoppar otillgängligt djuphav. Byggnadseffektens
+levelplatser/rate följer samma ägare; deepuppgradering visar platser1→2→4.
 
-| Prövning | Resultat/bevis |
+## Bevis och grindar
+
+| Grind | Bevis |
 |---|---|
-| Gammal kod | Named RED i baseline-red.log |
-| Kontextägare | Vik>=4, river/ford, kartkant; options/cap/effects/goods delar ägare |
-| Livscykel | TestFishingOwnerOptionsCapacityEffectsAndDemolition:18deephexar0/4, L1–L3 rate, faktisk placerad L3-produktion3.1/6, hamnrivning frigör fiskaren |
-| Grundning/restfolk | Nollkapacitet ger inga grundningsslots/restfolkfisk i samma owner-test |
-| HTTP | TestDeepFishingHTTPZeroCapAndHarbour: synligcap0,409utanhamn→cap4/201medhamn,1.7/6output; TestBayFishingHTTPUsesLocalCapacity:L0cap3,L1–3cap7,inga grannfält |
-| Egen mutation | Separat /tmp-worktree på245f18bd, land>=4→>=5; owner-DB och HTTP-test RED; byteexakt SHA-restore och ny färsk GREEN. mutation-*.log/txt |
-| Klienter | Befintliga Keryx/webb läser servercap/rate. 714JS gröna inklusive nollcap och2/3/4/6/7. Se client-surfaces.md |
-| Vet | go vet ./... GREEN, vet.log |
-| BILD | Ingen produktions-JS/CSS/markup ändrad. Befintlig hexpaneltext är oförändrad; ingen BILD-grind utlöses. Artikeltext i playtest |
-| Full fresh Go | GREEN, world153.336s; full-fresh.log, EN körning på57900 |
+| Named RED mot föregående produktion | TestFinalFishingNumbers på c13443d2: gamla kust-/vikplatser och hamnmultiplikatorer fel; final-rule-baseline-red.log |
+| Domän och livscykel | Final-rule-tabell, hamnL0–3, option/capacity/effects/goods, verkligt placerad deep-rate1, founding/restfolk cap0 och hamnrivning i fishing_rules_test.go |
+| Övergång | TestFishingTransitionPrunesHighestAndRecomputesOnce:6→2 på kusten, ordinal1/2 kvar, gamla fish10+2settlas12, ny rate2, populationoförändrad, replayno-op. TestFishingTransitionRollsBackPruningOnRecomputeFailure:provocerad stockskrivning misslyckas, alla3jobb kvar och markerfalse |
+| HTTP | TestDeepFishingHTTPZeroCapAndHarbour cap0/409→cap1/201/rate1; TestBayFishingHTTPUsesLocalCapacity cap2/rate2 på alla hamnnivåer, inga grannfält |
+| Hela berörda paket | Färsk200 economy5.488s och API43.477s GREEN, final-economy-api.log |
+| Egen fysisk mutant | Separat checkout060c8354:>=4→>=5. OwnerDB ochHTTP RED på utebliven vikrate; byteexakt SHA-restore och ny fresh200 GREEN. final-mutation-*.log/txt |
+| JS / vet | 714JS GREEN; final-js.log. go vet ./... GREEN; final-vet.log |
+| Full fresh Go | GREEN efter fixturrättning, world157.523s,57900; final-full-fresh.log |
+| Fyra ytor | Befintlig Keryx/webb läser servercap/rate; nya exakta fishing/harbourartiklar och rättade Buildings. client-surfaces.md |
+| BILD / TEXT | Ingen produktions-JS/CSS/markup eller ny hexpaneltext ändrad. Befintlig kapacitetsrendering fixturetestad för0/1/2/4ochrate1/2. Ingen BILD-grind utlöst; artiklar TEXT i playtest |
 
-Detta är riktiga PostgreSQL-/HTTP-tester och befintlig klientrendering med
-explicit fixtures. Ingen manuell spelarrunda eller ny Firefox-bildserie påstås.
-Targeted/economy-loggar är tidigare färska delkörningar; full-fresh är helsviten.
-En mellanliggande riktad körning stoppade på felstavat testhjälparnamn
-(optionsPath); det rättades till befintligt placementOptionsPath före gröna bevis.
-Den slutliga targeted.log ersätter delkörningens kompileringslogg; råutfallet
-återges här och tillskrivs inget produktionsfel.
+Detta är riktig PostgreSQL, HTTP och befintlig renderer med explicit fixtures.
+Ingen ny manuell spelarrunda eller Firefox-serie påstås. Äldre0/4- och0/2-order
+är ersatta. earlier-rule-report.md och loggar utan final-prefix är historik,
+INTE slutregelns bevis. Slutligt verifieringsscript kontrollerar final-loggarna.
 
-## Drift och begränsningar
+Första fulla körningen för slutregeln misslyckades endast i äldre
+TestRestfolk_Soak60/scheria1042. Den hade tre kustfiskare och antog konstant
+produktionsbrist; nya vikraten gav korrekt tillväxt till1200 före underskott.
+190f5b97 ändrar ENDAST fixturen till en fiskare så testets befintliga assertion
+om1042 och produktionsunderskott fortfarande prövar lager kontra tillväxt.
+Ingen produktionsfix eller försvagad assertion. Hela färska kharispaketet är
+sedan grönt (12.300s); den misslyckade fullrundan ligger öppet i
+final-full-first-fixture-failure.log. Ny helrunda är GREEN på oförändrad produktion.
 
-Kör live-readonly.sql och automatic-readonly.sql DIREKT före deploy och jämför
-med inventeringen. Kommando från grenroten:
+## Live före/efter, endast läst
+
+`final-live-capture.py` använder tools/alfa_db.Db:s READ ONLY-transaktion;
+raw snapshot och deterministisk ordinalmanifest finns i final-live-snapshot.json,
+final-live-impact.json/md. Det räknar placerad fisks potential före/efter,
+inte hunger/lager/armé/blockad eller restfolkets mat. 18deepjobb ligger på varsin
+hex och hamnL1; inget av dem är över nytt tak1. Deep3→18fisk/tick.
+Samtliga placerade fiskjobb i snapshoten305→89fisk/tick;109gubbar blir lediga.
+Det är främst kustens gamla hamnbonus som försvinner. Exakta orter/ordinaler i manifestet.
+Detta är en projektion, inte utförd liveövergång. Ingen skyddad övergång eller
+kompensation: Timothy godkände beskärning enligt slutordern.
+
+Upprepa direkt före deploy från grenroten:
 
 ```sh
-ssh root@10.0.1.92 'runuser -u postgres -- psql -X -v ON_ERROR_STOP=1 -d poleia' < docs/reviews/fiske-hamn-vik/live-readonly.sql
-ssh root@10.0.1.92 'runuser -u postgres -- psql -X -v ON_ERROR_STOP=1 -d poleia' < docs/reviews/fiske-hamn-vik/automatic-readonly.sql
+python3 docs/reviews/fiske-hamn-vik/final-live-capture.py
 ```
 
-Ingen snapshot är reservation. Om fiskare utan hamn tillkommit behövs uttryckligt
-övergångsbeslut före deploy. Ingen automatisk omplacering/backfill införs här.
-Ordinarie Kharistick anropar RecomputeProduction och uppdaterar sparade rates;
-API-options visar regeln direkt. Ingen generell extra uppstartsrekalkyl införs
-som också skulle kunna köra andra stockrecept. Claude har fått denna skillnad
-för samordning med ORDER13s uppstart. Ny regel gäller framåt; inga historiska
-matlager räknas om. Djuphavets grundrate1/6 och kust1 är oförändrade.
+## Integrationsordning och begränsningar
 
-ORDER13 och17 är ännu separata grenar; denna gren är byggd påea97b332.
-Integrationsordning/rebase och eventuell ny kontroll efter merge ägs av Claude.
+Migration199 tillhör ORDER13 och är INTE kopierad in här. Slutlig fresh-rigg
+migrerar denna grens198→200; Claude integrerar13före14 och löser main.go om
+båda sätter startupövergångar. ORDER17 ligger separat. Ingen osäker kontroll av
+live-schema har gjorts före ny process. Efter deploy verifierar Claude faktisk
+processcommit/migration/dirty, completed-markör, rates och nya tak i DB/API.
+
+Landregeln och FOW följer godkänt19:15beslut. Rå snapshot tar ingen reservation;
+spelvärlden kan ändras innan deploy. Ingen historisk fiskmängd räknas om.

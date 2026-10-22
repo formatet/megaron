@@ -1,3 +1,5 @@
+> HISTORISK första inventering. Talen ersattes av Timothys SLUTLIGA beslut19:15. Aktuellt kontrakt och bevis finns i README.md.
+
 # ORDER 14 — inventering före kod
 
 Bas: ea97b332, codex/fiske-hamn-vik. Endast dokument och READ ONLY SQL.
