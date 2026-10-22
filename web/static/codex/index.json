@@ -51,6 +51,7 @@
     {"id": "occupation",   "title": "Occupation and captured cities", "category": "War", "kinds": ["CityOccupied", "CityAnnexReady", "OccupationDefended", "SettlementCaptured", "SettlementSacked", "SettlementLooted", "SettlementBurned", "OutpostCaptured"], "related": ["sieges", "battle", "rough-edges"]},
     {"id": "upkeep",       "title": "Upkeep: pay and bread",        "category": "War", "kinds": ["GarrisonStarvationStarted", "GarrisonStarvationEnded", "UpkeepUnpaid", "UnitDeserted", "UnitAttrition", "UnitReturnedStarving"], "related": ["silver", "food", "units"]},
 
+    {"id":"temple-demolition","title":"Demolishing a temple","category":"The gods","drawer":"kult","kinds":["TempleDemolitionWrath"],"related":["kharis","temples","buildings","divine-wrath"]},
     {"id":"divine-wrath","title":"Divine wrath","category":"The gods","drawer":"kult","kinds":["KharisDeclining"],"related":["kharis","temples","rites"]},
     {"id": "kharis",       "title": "Kharis",                       "category": "The gods", "drawer": "kult", "kinds": ["KharisBandChanged", "DivineBlessing", "DivinePunishment"], "related": ["temples", "rites"]},
     {"id": "temples",      "title": "Temples and devotion",         "category": "The gods", "related": ["kharis", "buildings"]},

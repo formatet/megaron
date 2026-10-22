@@ -24,4 +24,6 @@ The temple uses **grain first, then fish, then timber, and silver last**. Silver
 
 With full devotion and its daily gift, a level-1 temple can raise kharis in a small realm. Compare its gain with the cost of all your active cities and residents in **Kult → Upkeep of the cult** and the projected net. A temple does not cancel city costs, but it does not protect low standing from [[divine-wrath|divine wrath]]. Higher-level temples can employ more devotion and make it grow faster when staffed and fed.
 
-**Your best temple sets your kharis ceiling:** no temple 40, level 1 50, level 2 75, level 3 100. Everyday prayers work at a level-1 temple. Spontaneous blessings require at least 60 kharis and a level-2 temple. Levelling a temple further needs cedar.
+**Your best temple sets your kharis ceiling:** no temple 40, level 1 50, level 2 75, level 3 100. Everyday prayers work at a level-1 temple. Spontaneous blessings require at least 60 kharis with a maintained temple. A level-2 ceiling lets you build standing to 60; standing retained above a lowered ceiling still counts. Levelling a temple further needs cedar.
+
+Demolishing a temple voluntarily costs **10 kharis per level**, with a floor of **1**; plundering causes no such debt. A lowered ceiling stops growth without cutting existing standing; ordinary daily upkeep continues above it and temple gains do not offset that decline. The confirmation shows the loss and any ceiling change. See [[temple-demolition]].

@@ -1,3 +1,4 @@
+import { demolitionKharisText } from './demolish.js';
 // ── Shared formatting helpers ──────────────────────────────────────────────
 // Formatting helpers; clock/world anchor are shared lower-layer dependencies.
 // No DOM dependencies — safe for any other module to import
@@ -165,7 +166,7 @@ export function notifDomain(kind) {
     // Diplomacy — the messenger channel.
     MessengerLostAtSea: 'diplomacy', MessengerRescuedAtSea: 'diplomacy', MessengerArrival: 'diplomacy', MessengerReturned: 'diplomacy', PassageStalled: 'diplomacy',
     // Kult — the gods answering.
-    KharisDeclining: 'kult', KharisBandChanged: 'kult', DivinePunishment: 'kult', DivineBlessing: 'kult', KharisEvent: 'kult',
+    TempleDemolitionWrath: 'kult', KharisDeclining: 'kult', KharisBandChanged: 'kult', DivinePunishment: 'kult', DivineBlessing: 'kult', KharisEvent: 'kult',
   };
   return domains[kind] || 'system';
 }
@@ -198,7 +199,7 @@ export function notifIcon(kind) {
     ForeignMarchSighted: '🛡',
     ForeignMarchSightedV2: '🛡',
     SubsistenceWarning: '🌾',
-    GarrisonStarvationStarted: '🌾', GarrisonStarvationEnded: '🌾', KharisDeclining: '🏛', KharisBandChanged: '🏛',
+    GarrisonStarvationStarted: '🌾', GarrisonStarvationEnded: '🌾', TempleDemolitionWrath: '🏛', KharisDeclining: '🏛', KharisBandChanged: '🏛',
     OfferAccepted:      '🤝',
     OfferDeclined:      '🚫',
     OfferExpired:       '⏳',
@@ -328,6 +329,7 @@ export function notifText(kind, body) {
       ? `${esc(body.name || 'Your city')}: the garrison is losing men to hunger. Soldiers share the city's grain, fish, oil and wine. Produce or transfer more food here.`
       : `${esc(body.name || 'Your city')}: the garrison is losing men to hunger. Soldiers need grain even when the city has a food surplus. Place citizens on grain or transfer grain here.`;
     case 'GarrisonStarvationEnded': return `${esc(body.name || 'Your city')}: the garrison is no longer losing men to hunger.`;
+    case 'TempleDemolitionWrath': return demolitionKharisText(body);
     case 'KharisDeclining': return `Kharis is falling (${fmtNum(body.kharis || 0)}, net ${fmtNum(body.net_per_tick || 0)} per day). At this rate it reaches ${body.wrath_threshold || 15} in ${fmtDays(body.days_to_15 || 0)}. Below that, the gods may punish you, with or without a temple. Staff and feed your temples.`;
     case 'KharisBandChanged': return `Kharis: ${esc(body.from_band || '?')} → ${esc(body.to_band || '?')} (${fmtNum(body.kharis || 0)}). Check Kult for decay and temple support; staff and feed your temples.`;
 

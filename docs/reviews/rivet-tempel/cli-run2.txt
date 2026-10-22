@@ -1,0 +1,8 @@
+UNCONFIRMED
+Error: The god Potnia is angered: kharis −30 (100 → 70; floor 1). Realm ceiling 100 → 50. A lower ceiling stops growth; it does not cut existing kharis. Above the ceiling, ordinary daily upkeep continues and temple gains do not offset it. Temple demolition requires --yes for non-interactive use
+See keryx demolish --help
+
+CONFIRMED
+The god Potnia is angered: kharis −30 (100 → 70; floor 1). Realm ceiling 100 → 50. A lower ceiling stops growth; it does not cut existing kharis. Above the ceiling, ordinary daily upkeep continues and temple gains do not offset it.
+Demolished: temple (level 3) in the city — the place is free to build on. 0 citizen(s) lifted off their work and are idle now.
+The god Potnia is angered: kharis −30 (100 → 70; floor 1). Realm ceiling 100 → 50. A lower ceiling stops growth; it does not cut existing kharis. Above the ceiling, ordinary daily upkeep continues and temple gains do not offset it.

@@ -1700,9 +1700,10 @@ func (h *ProvinceHandler) Buildings(w http.ResponseWriter, r *http.Request) {
 		HexQ *int `json:"hex_q,omitempty"`
 		HexR *int `json:"hex_r,omitempty"`
 		// CurrentLevel mirrors Level.
-		CurrentLevel int    `json:"current_level"`
-		GodID        string `json:"god_id,omitempty"`
-		Name         string `json:"name,omitempty"`
+		CurrentLevel     int                      `json:"current_level"`
+		GodID            string                   `json:"god_id,omitempty"`
+		Name             string                   `json:"name,omitempty"`
+		DemolitionKharis *kharis.TempleDemolition `json:"demolition_kharis,omitempty"`
 	}
 	var result []buildingRow
 	for rows.Next() {
@@ -1717,6 +1718,27 @@ func (h *ProvinceHandler) Buildings(w http.ResponseWriter, r *http.Request) {
 	}
 	rows.Close()
 
+	// Quotes contain realm standing and therefore belong only to the owner.
+	playerID, authenticated := auth.PlayerIDFromContext(r.Context())
+	if authenticated {
+		var owner *uuid.UUID
+		if err := h.pool.QueryRow(r.Context(), `SELECT owner_id FROM settlements WHERE id=$1`, settlementID).Scan(&owner); err != nil {
+			writeError(w, 500, "could not load building owner")
+			return
+		}
+		if owner != nil && *owner == playerID {
+			for i := range result {
+				if result[i].Type == "temple" {
+					quote, err := kharis.ProjectTempleDemolition(r.Context(), h.pool, playerID, worldID, result[i].ID)
+					if err != nil {
+						writeError(w, 500, "could not quote temple demolition")
+						return
+					}
+					result[i].DemolitionKharis = quote
+				}
+			}
+		}
+	}
 	if result == nil {
 		result = []buildingRow{}
 	}

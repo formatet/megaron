@@ -1,0 +1,36 @@
+1 citizen = 100 people
+Alpha City [minoan]  Pop: 100 people  Labor: 1 citizen  Walls: 0/3  Settlements: 2/5
+Walls hold 2.0k. The next wall needs a Granary of level 1 (yours: 0) — `keryx build --type silo`.
+Population 100 — not growing: food net +0.0 per day (needs more than 0)
+This is Alpha City. You have 2 cities — `keryx settlements` lists them, `keryx status --province <id>` shows another.
+
+Food for 800.0 days at current consumption (100 grain, 100 fish, 100 oil, 100 wine)
+Herd 100 / 50 — full: new animals are eaten, then lost. A pen raises the cap.
+
+Last time unavailable: 1 goods produced, 0 consumed  ·  keryx ticklog for details
+
+Resources
+  (per day; food and army balances are itemized below)
+  Silver      500  —
+  Food     production 0.5 − people eat 0.5 = net about even per day (before army)
+  Grain       100  production 0.5 per day  (0 citizens needed for people on best food slots · 0 on food)
+  Automatic food: 0.50 grain + 0.00 fish per day without placed citizens (nearby ground 0.50 grain; 0 people outside whole citizens: 0.00 grain + 0.00 fish, a fraction of the best food worker)
+  Army     eats 0 food per day → food net about even per day after army
+  Silver   net +0.0 per day after army pay
+  Fish        100  —
+  Timber      100  —
+  Stone       100  —
+  Copper      100  —
+  Tin         100  —
+  Bronze      100  —
+  ⚠ Timber production ~0 — timber gates harbour (16)/barracks (8)/foundry (8)/temple (8). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).
+  Kharis       60  (Favorable) · cap 40 · net -0.3 per day (upkeep only above ceiling)
+  Upkeep of the cult: 0.10 base + 2 cities cost 0.20 + 200 residents cost 0.02 = 0.32 kharis per day
+  Temple production: 0.00 kharis per day
+  Above your temple’s ceiling — standing drifts down; offerings do not raise it.
+  Everyday prayers work at a level-1 temple. Spontaneous blessings require at least 60 kharis with a maintained temple. A level-2 ceiling lets you build standing to that threshold; standing retained above a lowered ceiling still counts.
+  Below 15 kharis: 3% chance of divine punishment per day, with or without a temple.
+  Temples: none — kharis doesn't climb without a temple + offerings.
+
+Army (garrison in Alpha City)
+  Field units and other cities are shown in `keryx unit list`.

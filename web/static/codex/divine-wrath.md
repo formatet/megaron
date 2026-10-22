@@ -14,4 +14,4 @@ If there is nothing to take, there is no punishment and no new protection. Prote
 
 ## Temple levels
 
-Everyday prayers work at a level-1 temple. Spontaneous blessings require at least **60 kharis** and a level-2 temple. The ceilings remain **50 / 75 / 100** for temple levels 1 / 2 / 3. See [[kharis]] and [[rites]].
+Everyday prayers work at a level-1 temple. Spontaneous blessings require at least **60 kharis** with a maintained temple. A level-2 ceiling lets you build standing to 60; standing retained above a lowered ceiling still counts. The ceilings remain **50 / 75 / 100** for temple levels 1 / 2 / 3. See [[kharis]] and [[rites]].

@@ -53,14 +53,15 @@ func TestEffectiveKharisCap_TakesTheLower(t *testing.T) {
 	}
 }
 
-// TestClampKharis_RespectsTheTempleCeiling — vakten mot återfall: en Wanax som
-// redan står på 100 måste dras ned till sitt tempels tak vid nästa underhåll,
-// annars biter fixen bara nya spelare.
-func TestClampKharis_RespectsTheTempleCeiling(t *testing.T) {
-	capForL1 := EffectiveKharisCap(100, 1)
-	if got := clampKharis(100, capForL1); got != capForL1 {
-		t.Errorf("a Wanax sitting at 100 with a level-1 temple must be pulled down to %.0f, got %.0f",
-			capForL1, got)
+// A lower temple ceiling stops growth, never confiscates existing standing.
+func TestMaintenanceStandingPreservesAboveCeiling(t *testing.T) {
+	for _, tc := range []struct{ current, gain, burden, cap, want float64 }{
+		{80, 2.1, .2, 50, 79.8}, {80, 0, .2, 50, 79.8}, {50.1, 2.1, .2, 50, 49.9},
+		{50, 2.1, .2, 50, 50}, {49, 2.1, .2, 50, 50}, {1, 0, .2, 40, 1},
+	} {
+		if got := maintenanceStanding(tc.current, tc.gain, tc.burden, tc.cap); got != tc.want {
+			t.Errorf("%+v got%g", tc, got)
+		}
 	}
 }
 

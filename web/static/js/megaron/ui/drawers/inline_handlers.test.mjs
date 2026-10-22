@@ -56,13 +56,13 @@ test('K: real abandon handler cannot POST before inline confirmation; refusal re
 });
 
 test('demolish needs the inline confirm, then shows the server refusal beside the buildings',async()=>{
- globalThis.fetch=async(url,opts={})=>{calls.push([url,opts]);return new Response(JSON.stringify({error:'Server refused <literally>'}),{status:403});};
- calls.length=0;demolishBuilding('p','b1','Farm @ (1,0)');
+ globalThis.fetch=async(url,opts={})=>{calls.push([url,opts]);if (!opts.method) return new Response(JSON.stringify([{id:'b1',type:'farm'}]),{status:200});return new Response(JSON.stringify({error:'Server refused <literally>'}),{status:403});};
+ calls.length=0;await demolishBuilding('p','b1','Farm @ (1,0)');
  const host=els.get('city-demolish-res');
  assert.match(host.children[0].textContent,/Demolish Farm @ \(1,0\)\?/);
- assert.equal(calls.length,0,'opening the prompt must not send anything');
+ assert.equal(calls.length,1,'opening the prompt reads the server quote only');assert.equal(calls[0][1].method,undefined);
  const [,yes,no]=host.children;assert.equal(yes.textContent,'Demolish');assert.equal(no.textContent,'Keep it');
  await yes.events.click();
- assert.equal(calls.length,1);assert.equal(calls[0][1].method,'DELETE');assert.match(calls[0][0],/\/provinces\/p\/buildings\/b1$/);
+ assert.equal(calls.length,2);assert.equal(calls[1][1].method,'DELETE');assert.match(calls[1][0],/\/provinces\/p\/buildings\/b1$/);
  assert.equal(els.get('city-bld-sec').children.at(-1).textContent,'Server refused <literally>');
 });

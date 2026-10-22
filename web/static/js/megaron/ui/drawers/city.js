@@ -496,9 +496,19 @@ export async function cancelBuild(provinceID, queueID) {
 // Demolish a finished building: a deliberate second click (inline confirm, no
 // browser dialog), then DELETE .../buildings/:id. The server lifts the people
 // working there to idle, so the gubbe grid is redrawn too.
-export function demolishBuilding(provinceID, buildingID, label) {
+export async function demolishBuilding(provinceID, buildingID, label) {
   const host = document.getElementById('city-demolish-res');
-  confirmInline(host, demolishPrompt(label), async () => {
+  // Fetch the owner-only quote at the moment of confirmation, including after a
+  // buildings refresh; province summaries do not carry demolition consequences.
+  const quoteRes = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${provinceID}/buildings`);
+  if (!quoteRes.ok) { showInlineResult('city-bld-sec', 'Could not load demolition consequences. Try again.', true); return; }
+  const buildings = await quoteRes.json();
+  const building = buildings.find(b => b.id === buildingID);
+  if (!building) { showInlineResult('city-bld-sec', 'This building no longer stands.', true); return; }
+  if (building.type === 'temple' && !building.demolition_kharis) {
+    showInlineResult('city-bld-sec', 'Temple consequences are unavailable. Try again.', true); return;
+  }
+  confirmInline(host, demolishPrompt(label, building.demolition_kharis), async () => {
     const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${provinceID}/buildings/${buildingID}`, { method: 'DELETE' });
     if (res.ok) {
       const d = await res.json().catch(() => ({}));
@@ -506,7 +516,7 @@ export function demolishBuilding(provinceID, buildingID, label) {
       const gridEl = document.getElementById('city-gubbe-grid');
       const c = activeCitySettlement();
       if (gridEl && c) renderGubbeGrid(gridEl, c.id, c.q, c.r);
-      showInlineResult('city-bld-sec', demolishResultLine(label, d.citizens_lifted));
+      showInlineResult('city-bld-sec', demolishResultLine(label, d.citizens_lifted, d.demolition_kharis));
     } else {
       const d = await res.json().catch(() => ({}));
       showInlineResult('city-bld-sec', d.error || 'Could not demolish', true);

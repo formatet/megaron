@@ -1,0 +1,17 @@
+» färsk DB på migration 202 · commit 7ad311b5+ändringar
+2026/10/23 01:11:25 INFO player registered id=c491ec85-9506-44bc-ba6e-63b3825070cb username=buildhex-e36ed16f-26bb-4d4a-a3e2-a7fb5a1bea9a
+2026/10/23 01:11:25 INFO player registered id=a4eaa75f-79ec-453b-80f8-72ac4b56de68 username=buildhex-3f35e4da-fba7-4afb-bcac-2ed48d3e166e
+2026/10/23 01:11:25 INFO player registered id=dfbf04c8-1be1-49ef-aa10-8f27c4d711c1 username=buildhex-cc83104e-5528-43db-9f79-a9a136c1a005
+2026/10/23 01:11:26 INFO player registered id=65e080a9-7768-4410-b72f-470211cf4c91 username=buildhex-50687cf0-40bc-455f-91d4-30478a73c54b
+2026/10/23 01:11:26 INFO player registered id=8ca7acbb-f1a5-494f-a368-aa0f29be0e22 username=buildhex-84f730bf-11b4-445b-90b2-c0b29637ecbb
+2026/10/23 01:11:26 INFO player registered id=3aec60e0-c776-47d2-ac89-d038f93fd4cb username=observer-d410bca5-63c9-49ce-9fc9-129af2f82efa
+2026/10/23 01:11:26 INFO player registered id=afc1fd2b-af69-4b1b-aa94-19c874d5f530 username=buildhex-891d3f47-cc01-4643-83c6-b3d64481631b
+2026/10/23 01:11:26 ERROR demolish failed stage="could not notify temple wrath" world_id=696de215-7aa4-4885-846e-cc70536f6977 settlement_id=692c9f00-4830-46ff-89ca-b78ff6c15d7e building_id=83eb810c-dc6e-45db-aa20-c1f62f30d5ba player_id=afc1fd2b-af69-4b1b-aa94-19c874d5f530 err="ERROR: new row for relation \"notifications\" violates check constraint \"reject_demolition_test\" (SQLSTATE 23514)"
+2026/10/23 01:11:26 INFO player registered id=d4ddc74c-d2f8-4303-9d1e-6c9b06aa45cb username=buildhex-d252b4c7-3452-4e0c-bfe5-bf823ef39007
+--- FAIL: TestTempleDemolitionCancellationAndOrdinaryBuildingHaveNoDebt (0.07s)
+    temple_demolition_kharis_test.go:159: ERROR: column "complete_tick" of relation "build_queue" does not exist (SQLSTATE 42703)
+2026/10/23 01:11:26 INFO player registered id=0af3aca7-e27e-43d7-8fc3-2288262f52c7 username=buildhex-9596b8f6-54f1-4b49-951f-5c52ab90139c
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.692s
+ok  	formatet/megaron/server/internal/combat	0.035s
+FAIL

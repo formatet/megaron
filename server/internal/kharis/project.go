@@ -11,7 +11,8 @@ import (
 
 // ProjectDailyNet computes, read-only, the kharis a Wanax would net on the NEXT
 // maintained day: workers at fed temples × KharisPerTempleWorker × scarcity −
-// dailyDecay — the exact formula processMaintenance applies, with the exact same
+// dailyDecay below the ceiling. Above it, only ordinary decay applies;
+// offerings cannot offset that drift. This matches processMaintenance, with the same
 // feeding rule (early grain reference or local substitutions to the same divine worth).
 // It exists so `status` can answer "will my kharis rise or fall" honestly: the
 // bare geographic kharis_rate a Wanax sees ("passiv +0.1/dygn") excludes decay
@@ -73,6 +74,18 @@ func ProjectDailyNet(ctx context.Context, pool *pgxpool.Pool, playerID, worldID 
 	scarcity := scarcityFromValues(values, baseValues, verr)
 	fedWorkers := projectFedWorkers(ctx, pool, playerID, worldID, values, workers)
 
+	// Read current standing and ceiling using the same realm temples as the tick.
+	var amount, recordCap float64
+	if err := pool.QueryRow(ctx, `SELECT GREATEST($3,settled(kharis_amount,kharis_rate,kharis_calc_tick)),kharis_cap FROM player_world_records WHERE player_id=$1 AND world_id=$2`, playerID, worldID, Floor).Scan(&amount, &recordCap); err != nil {
+		return 0, false, 0, 0, err
+	}
+	maxLevel := 0
+	for _, temple := range temples {
+		maxLevel = max(maxLevel, temple.Level)
+	}
+	if amount > EffectiveKharisCap(recordCap, maxLevel) {
+		return -dailyDecay, true, devotionSum, devotionCapacity, nil
+	}
 	gain := fedWorkers * KharisPerTempleWorker * scarcity
 	return gain - dailyDecay, true, devotionSum, devotionCapacity, nil
 }

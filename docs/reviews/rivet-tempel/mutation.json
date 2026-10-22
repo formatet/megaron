@@ -1,0 +1,11 @@
+{
+  "physical_red_cases": [
+    "debt",
+    "ceiling"
+  ],
+  "byte_exact_restore": {
+    "server/internal/kharis/demolition.go": "012d4752d4f140bc50129d1ed22d2c0c206c611296cfadf35895e8ee943771ba",
+    "server/internal/kharis/tick.go": "eff9ea1c9be31d68a4e8c95fd4dbabcb785740e607fb6c7c422becfcc0775b90"
+  },
+  "restored_green": true
+}

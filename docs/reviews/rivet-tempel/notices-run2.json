@@ -1,0 +1,52 @@
+[
+  {
+    "id": "5430827b-f7be-45c5-9039-6550950a335b",
+    "kind": "TempleDemolitionWrath",
+    "level": 2,
+    "body": {
+      "q": 1,
+      "r": 0,
+      "name": "Alpha City",
+      "level": 1,
+      "god_id": "potnia",
+      "god_name": "Potnia",
+      "cap_after": 40,
+      "cap_before": 50,
+      "building_id": "30aed23e-f6c2-4259-9753-940fe3f3e01e",
+      "kharis_loss": 10,
+      "province_id": "0ef5ad2d-0d5a-49b7-a891-27b816a1d6b7",
+      "kharis_after": 60,
+      "kharis_before": 70,
+      "settlement_id": "0f7b63b1-7295-4bb8-b626-a5b0904d3a99",
+      "penalty_per_level": 10
+    },
+    "created_at": "2026-10-23T01:16:35.188917+02:00",
+    "read_at": null,
+    "world_tick": 100
+  },
+  {
+    "id": "6e1ea302-3984-4ed3-907e-b542c963bea0",
+    "kind": "TempleDemolitionWrath",
+    "level": 2,
+    "body": {
+      "q": 0,
+      "r": 0,
+      "name": "Alpha City",
+      "level": 3,
+      "god_id": "potnia",
+      "god_name": "Potnia",
+      "cap_after": 50,
+      "cap_before": 100,
+      "building_id": "5be082f2-b199-49be-8ead-b037cc309ce6",
+      "kharis_loss": 30,
+      "province_id": "a4a4d622-1c29-48cb-94b9-a7c5554c1b90",
+      "kharis_after": 70,
+      "kharis_before": 100,
+      "settlement_id": "9c30d7f0-f61c-451f-a419-ae63543e5046",
+      "penalty_per_level": 10
+    },
+    "created_at": "2026-10-23T01:16:33.563813+02:00",
+    "read_at": null,
+    "world_tick": 100
+  }
+]

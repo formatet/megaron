@@ -83,6 +83,10 @@ func TestTemplePerGod_StaffingAndDemolitionStayWithTheirTemple(t *testing.T) {
 	if count(ids["potnia"]) != 2 || count(ids["velchanos"]) != 1 {
 		t.Fatalf("workers potnia %d velchanos %d", count(ids["potnia"]), count(ids["velchanos"]))
 	}
+	// A real temple owner has a realm record; demolition now charges its standing.
+	if _, err := f.pool.Exec(ctx, `INSERT INTO player_world_records(player_id,world_id,settlement_id,kharis_amount,kharis_rate,kharis_calc_tick) SELECT owner_id,world_id,id,40,0,current_world_tick() FROM settlements WHERE id=$1`, f.settlementID); err != nil {
+		t.Fatal(err)
+	}
 	code, body := f.do(t, http.MethodDelete, demolishPath(f, ids["velchanos"]), nil)
 	if code != http.StatusOK || body["citizens_lifted"] != float64(1) {
 		t.Fatalf("demolish velchanos: %d %v", code, body)

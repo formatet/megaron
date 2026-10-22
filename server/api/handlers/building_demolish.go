@@ -8,6 +8,7 @@ import (
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/kharis"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -135,6 +136,35 @@ func (h *ProvinceHandler) DemolishBuilding(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	// The initial lookup is only routing. Charge the finished level that actually
+	// exists under lock, never the stale level from before a concurrent upgrade.
+	if err := tx.QueryRow(ctx, `SELECT building_type,level,hex_q,hex_r,god_id FROM buildings WHERE id=$1 AND settlement_id=$2 FOR UPDATE`, buildingID, settlementID).Scan(&bType, &level, &hexQ, &hexR, &godID); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			writeError(w, 404, "no such building")
+			return
+		}
+		fail("could not lock building", err)
+		return
+	}
+	var demolition *kharis.TempleDemolition
+	if bType == "temple" {
+		// Serialize debt across simultaneous demolitions in different owned cities.
+		var record uuid.UUID
+		if err := tx.QueryRow(ctx, `SELECT player_id FROM player_world_records WHERE player_id=$1 AND world_id=$2 FOR UPDATE`, playerID, worldID).Scan(&record); err != nil {
+			fail("could not lock kharis", err)
+			return
+		}
+		demolition, err = kharis.ProjectTempleDemolition(ctx, tx, playerID, worldID, buildingID)
+		if err != nil {
+			fail("could not calculate temple demolition", err)
+			return
+		}
+		if _, err = tx.Exec(ctx, `UPDATE player_world_records SET kharis_amount=$3,kharis_calc_tick=current_world_tick() WHERE player_id=$1 AND world_id=$2`, playerID, worldID, demolition.KharisAfter); err != nil {
+			fail("could not apply temple wrath", err)
+			return
+		}
+	}
+
 	// A temple's workers stand at this one building and would cascade away
 	// with it (mig 202) — lift them first so they are counted. Every other
 	// workplace is lifted after the delete, against the capacity left behind.
@@ -216,6 +246,37 @@ func (h *ProvinceHandler) DemolishBuilding(w http.ResponseWriter, r *http.Reques
 			return
 		}
 	}
+	var wrathEvent *events.Event
+	var wrathNoticeID string
+	var wrathBody any
+	if demolition != nil {
+		var name string
+		var q, r int
+		if err = tx.QueryRow(ctx, `SELECT s.name,p.map_q,p.map_r FROM settlements s JOIN provinces p ON p.id=s.province_id WHERE s.id=$1`, settlementID).Scan(&name, &q, &r); err != nil {
+			fail("could not describe temple wrath", err)
+			return
+		}
+		wrathBody = struct {
+			*kharis.TempleDemolition
+			BuildingID   uuid.UUID `json:"building_id"`
+			SettlementID uuid.UUID `json:"settlement_id"`
+			ProvinceID   uuid.UUID `json:"province_id"`
+			Name         string    `json:"name"`
+			Q            int       `json:"q"`
+			R            int       `json:"r"`
+		}{demolition, buildingID, settlementID, provinceID, name, q, r}
+		if h.eventStore != nil {
+			wrathEvent, err = h.eventStore.AppendTx(ctx, tx, settlementID, events.StreamReligion, "TempleDemolitionWrath", wrathBody, worldID, nil)
+			if err != nil {
+				fail("could not record temple wrath", err)
+				return
+			}
+		}
+		if err = tx.QueryRow(ctx, `INSERT INTO notifications(world_id,player_id,kind,level,body_json,world_tick) VALUES($1,$2,'TempleDemolitionWrath',2,$3,current_world_tick()) RETURNING id`, worldID, playerID, wrathBody).Scan(&wrathNoticeID); err != nil {
+			fail("could not notify temple wrath", err)
+			return
+		}
+	}
 	if err := tx.Commit(ctx); err != nil {
 		fail("commit failed", err)
 		return
@@ -224,8 +285,15 @@ func (h *ProvinceHandler) DemolishBuilding(w http.ResponseWriter, r *http.Reques
 		h.eventStore.RecordCommitted(ctx, ev)
 	}
 
+	if wrathEvent != nil {
+		h.eventStore.RecordCommitted(ctx, wrathEvent)
+	}
+	if demolition != nil && h.hub != nil {
+		h.hub.DeliverCommittedNotification(ctx, worldID, playerID, wrathNoticeID, "TempleDemolitionWrath", 2, wrathBody)
+	}
 	writeJSON(w, http.StatusOK, map[string]any{
-		"demolished": true, "building_type": bType, "level": level,
+		"demolition_kharis": demolition,
+		"demolished":        true, "building_type": bType, "level": level,
 		"hex_q": hexQ, "hex_r": hexR, "citizens_lifted": len(lifted),
 	})
 }

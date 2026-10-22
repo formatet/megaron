@@ -960,6 +960,9 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			netStr := "net not reported"
 			if netKnown {
 				netStr = fmt.Sprintf("net %+.1f per day (temple − decay)", knet)
+				if kcap > 0 && kv > kcap {
+					netStr = fmt.Sprintf("net %+.1f per day (upkeep only above ceiling)", knet)
+				}
 			}
 			if kcap > 0 {
 				fmt.Printf("  %-8s %6s  (%s) · cap %.0f · %s\n", "Kharis", resource(kv), mood, kcap, netStr)
@@ -974,11 +977,14 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 					fmt.Printf("  Temple production: %.2f kharis per day\n", production)
 				}
 			}
-			if worker, ok := sett["kharis_per_temple_worker"].(float64); ok {
+			if kcap > 0 && kv > kcap {
+				fmt.Println("  Above your temple’s ceiling — standing drifts down; offerings do not raise it.")
+			}
+			if worker, ok := sett["kharis_per_temple_worker"].(float64); ok && !(kcap > 0 && kv > kcap) {
 				fmt.Printf("  One more fed temple worker gives +%.2f kharis per day before scarcity; requires a free citizen, a temple workplace and its daily offering.\n", worker)
 			}
 			if threshold, ok := sett["kharis_blessing_threshold"].(float64); ok {
-				fmt.Printf("  Everyday prayers work at a level-1 temple. Spontaneous blessings require at least %.0f kharis and a level-2 temple.\n", threshold)
+				fmt.Printf("  Everyday prayers work at a level-1 temple. Spontaneous blessings require at least %.0f kharis with a maintained temple. A level-2 ceiling lets you build standing to that threshold; standing retained above a lowered ceiling still counts.\n", threshold)
 			}
 			if wrath, ok := sett["kharis_wrath"].(map[string]any); ok {
 				threshold, _ := wrath["threshold"].(float64)

@@ -66,10 +66,22 @@ test('production and extra worker yield are server-owned; yield is conditional, 
  assert.match(view.netHtml,/Requires a free citizen, a temple workplace and its daily offering/);
 });
 
-test('R3/R5: everyday prayers work at L1, blessings need 60/L2, temple does not grant protection', async () => {
+test('R3/R5: everyday prayers work at L1, blessings need standing 60, temple does not grant protection', async () => {
  const {kharisRulesHTML}=await import('./kult_kharis.js');
  const html=kharisRulesHTML({kharis_blessing_threshold:60,kharis_wrath:{threshold:15,daily_probability:.03,protection_remaining_days:2,protection_until:'2026-10-23T18:30:00Z'}});
  assert.match(html,/Everyday prayers work at a level-1 temple/);assert.match(html,/at least 60 kharis/);
  assert.match(html,/with or without a temple/);assert.match(html,/Protected from divine punishment/);
+ assert.match(html,/level-2 ceiling lets you build standing/);
+ assert.match(html,/standing retained above a lowered ceiling still counts/);
  assert.doesNotMatch(html,/Invalid|NaN|day 123/);
+});
+
+test('above ceiling explains ignored gains and does not promise a worker can increase standing', () => {
+ const view = kharisNetView({kharis:80,kharis_cap:50,kharis_net_known:true,kharis_net_per_tick:-.2,kharis_per_temple_worker:1.05});
+ assert.match(view.netHtml,/standing drifts down; offerings do not raise it/);
+ assert.match(view.netHtml,/-0.2 kharis per day/);
+ assert.doesNotMatch(view.netHtml,/One more fed temple worker/);
+ const normal=kharisNetView({kharis:50,kharis_cap:50,kharis_per_temple_worker:1.05});
+ assert.doesNotMatch(normal.netHtml,/standing drifts down/);
+ assert.match(normal.netHtml,/One more fed temple worker/);
 });

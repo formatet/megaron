@@ -12,6 +12,7 @@ import (
 // city building by --type. Placed citizens are lifted off to idle; no refund.
 func demolishCmd() *cobra.Command {
 	var buildingType, hexFlag, provinceID, god string
+	var yes bool
 
 	cmd := &cobra.Command{
 		Use:   "demolish [city]",
@@ -45,11 +46,12 @@ func demolishCmd() *cobra.Command {
 				return err
 			}
 			var buildings []struct {
-				ID   string `json:"id"`
-				Type string `json:"type"`
-				HexQ *int   `json:"hex_q"`
-				HexR *int   `json:"hex_r"`
-				God  string `json:"god_id"`
+				ID               string            `json:"id"`
+				Type             string            `json:"type"`
+				HexQ             *int              `json:"hex_q"`
+				HexR             *int              `json:"hex_r"`
+				God              string            `json:"god_id"`
+				DemolitionKharis *demolitionKharis `json:"demolition_kharis"`
 			}
 			if err := json.Unmarshal(data, &buildings); err != nil {
 				return err
@@ -61,6 +63,8 @@ func demolishCmd() *cobra.Command {
 				}
 			}
 			var id string
+			var quote *demolitionKharis
+			var isTemple bool
 			for _, b := range buildings {
 				if hexFlag != "" {
 					if b.HexQ == nil || b.HexR == nil || *b.HexQ != wantQ || *b.HexR != wantR {
@@ -80,12 +84,35 @@ func demolishCmd() *cobra.Command {
 					return fmt.Errorf("this city has more than one temple — name it with --god")
 				}
 				id = b.ID
+				quote = b.DemolitionKharis
+				isTemple = b.Type == "temple"
 				if b.God == "" {
 					break
 				}
 			}
 			if id == "" {
 				return fmt.Errorf("no finished building matches — `keryx city` shows what stands where (something still under construction is stopped with `keryx cancel-build`)")
+			}
+			if isTemple {
+				if quote == nil {
+					return fmt.Errorf("temple consequences are unavailable; no demolition performed")
+				}
+				if !yes && (jsonMode || !stdinIsTerminal()) {
+					return fmt.Errorf("%s Temple demolition requires --yes for non-interactive use", demolitionKharisText(*quote))
+				}
+				if !jsonMode {
+					fmt.Println(demolitionKharisText(*quote))
+				}
+				if !yes {
+					fmt.Println("Nothing is refunded; workers go idle. This cannot be undone.")
+					ok, err := askYesNo("Demolish temple?")
+					if err != nil {
+						return err
+					}
+					if !ok {
+						return nil
+					}
+				}
 			}
 			out, err := deleteBuilding(c, cfg.WorldID, prov, id)
 			if err != nil {
@@ -96,11 +123,12 @@ func demolishCmd() *cobra.Command {
 				return nil
 			}
 			var resp struct {
-				Type   string `json:"building_type"`
-				Level  int    `json:"level"`
-				HexQ   *int   `json:"hex_q"`
-				HexR   *int   `json:"hex_r"`
-				Lifted int    `json:"citizens_lifted"`
+				Type             string            `json:"building_type"`
+				Level            int               `json:"level"`
+				HexQ             *int              `json:"hex_q"`
+				HexR             *int              `json:"hex_r"`
+				Lifted           int               `json:"citizens_lifted"`
+				DemolitionKharis *demolitionKharis `json:"demolition_kharis"`
 			}
 			if err := json.Unmarshal(out, &resp); err != nil {
 				return err
@@ -111,9 +139,13 @@ func demolishCmd() *cobra.Command {
 			}
 			fmt.Printf("Demolished: %s (level %d) %s — the place is free to build on. %d citizen(s) lifted off their work and are idle now.\n",
 				resp.Type, resp.Level, where, resp.Lifted)
+			if resp.DemolitionKharis != nil {
+				fmt.Println(demolitionKharisText(*resp.DemolitionKharis))
+			}
 			return nil
 		},
 	}
+	cmd.Flags().BoolVar(&yes, "yes", false, "confirm temple demolition (required for non-interactive use)")
 	cmd.Flags().StringVar(&buildingType, "type", "", "city building to demolish (market, temple, harbour, ...)")
 	cmd.Flags().StringVar(&hexFlag, "hex", "", "hex building to demolish, as \"q,r\"")
 	cmd.Flags().StringVar(&god, "god", "", "which temple, when the city has one to several gods")
@@ -123,4 +155,24 @@ func demolishCmd() *cobra.Command {
 
 func deleteBuilding(c *Client, worldID, provinceID, buildingID string) ([]byte, error) {
 	return c.delete(fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/buildings/%s", worldID, provinceID, buildingID))
+}
+
+type demolitionKharis struct {
+	GodName         string  `json:"god_name"`
+	GodID           string  `json:"god_id"`
+	Level           int     `json:"level"`
+	PenaltyPerLevel float64 `json:"penalty_per_level"`
+	KharisLoss      float64 `json:"kharis_loss"`
+	KharisBefore    float64 `json:"kharis_before"`
+	KharisAfter     float64 `json:"kharis_after"`
+	CapBefore       float64 `json:"cap_before"`
+	CapAfter        float64 `json:"cap_after"`
+}
+
+func demolitionKharisText(k demolitionKharis) string {
+	godName := k.GodName
+	if godName == "" {
+		godName = k.GodID
+	}
+	return fmt.Sprintf("The god %s is angered: kharis −%g (%g → %g; floor 1). Realm ceiling %g → %g. A lower ceiling stops growth; it does not cut existing kharis. Above the ceiling, ordinary daily upkeep continues and temple gains do not offset it.", godName, k.KharisLoss, k.KharisBefore, k.KharisAfter, k.CapBefore, k.CapAfter)
 }
