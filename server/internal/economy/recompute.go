@@ -423,8 +423,20 @@ type Tx interface {
 // devotion, good_key='cult') is a separate path (megaron_cult_ar_ingen_vara_plan.md)
 // that was never part of this formula even before P4.
 //
-// Must be called inside an existing transaction. Passes ctx to every DB call.
-func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) error {
+// Uses an existing transaction or owns one for pool callers. Passes ctx to every DB call.
+func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) (err error) {
+	// The same trim runs after activation of a previously inactive world, even
+	// when the global startup transition was already completed in another world.
+	workTx, finish, _, err := placementWriteTx(ctx, tx, settlementID)
+	if err != nil {
+		return err
+	}
+	defer func() { err = finish(err) }()
+	tx = workTx
+	if _, err := liftHexPlacementsToCapacity(ctx, tx, settlementID, []string{GoodFish}, nil, nil); err != nil {
+		return err
+	}
+
 	// ── 1. Compute labor_pool ────────────────────────────────────────────────
 	// Part B: labor_pool = population. Soldiers are extracted from population at
 	// recruit time (population -= men), so the army columns are no longer a drain here.
@@ -433,7 +445,7 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	var worldID uuid.UUID
 	var settlementQ, settlementR int
 	var harvestBlessed bool
-	err := tx.QueryRow(ctx,
+	err = tx.QueryRow(ctx,
 		`SELECT s.population, s.owner_id, prov.world_id, prov.map_q, prov.map_r,
 		        COALESCE(s.harvest_blessing_until_tick > current_world_tick(), false)
 		 FROM settlements s JOIN provinces prov ON prov.id = s.province_id

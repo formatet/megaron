@@ -51,14 +51,8 @@ func transitionFishingRules(ctx context.Context, tx pgx.Tx) error {
 		return err
 	}
 	for _, id := range ids {
-		var locked uuid.UUID
-		if err := tx.QueryRow(ctx, `SELECT id FROM settlements WHERE id=$1 FOR UPDATE`, id).Scan(&locked); err != nil {
-			return err
-		}
-		if _, err := liftHexPlacementsToCapacity(ctx, tx, id, []string{GoodFish}, nil, nil); err != nil {
-			return fmt.Errorf("fishing trim %s: %w", id, err)
-		}
-		// Recompute settles each lazy stock at its saved old rate before writing the
+
+		// Recompute locks and trims via the shared demolition path, then settles each lazy stock at its saved old rate before writing the
 		// new rate; trimming never changes the people's population or old balance.
 		if err := RecomputeProduction(ctx, tx, id); err != nil {
 			return fmt.Errorf("fishing recompute %s: %w", id, err)
