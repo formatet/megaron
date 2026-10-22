@@ -970,7 +970,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			// Kult: each temple city's reference, stock and planned local gift — answers
 			// direkt på "kommer min kharis klättra idag" utan att vänta på tick.
 			if idle, _ := sett["kharis_devotion_idle"].(bool); idle {
-				fmt.Println("  → your temple can employ MORE devotion than you've allocated — raise cult labor (`keryx allocate --cult <%>`) to fill it and let kharis climb.")
+				fmt.Println("  → your temple has empty workplaces — assign an idle citizen with `keryx staff temple +1` to let kharis climb.")
 			}
 			if temples, ok := sett["temple_offers"].([]any); ok {
 				if len(temples) == 0 {
@@ -1321,7 +1321,7 @@ func kharisCapLine(sett map[string]any) string {
 	case netKnown && knet > 0.05:
 		return fmt.Sprintf("  → your kharis is climbing toward the cap %.0f (set by your level-%.0f temple) — build a higher temple to raise the cap further.\n", kcap, mtl)
 	case netKnown && knet < -0.05:
-		return fmt.Sprintf("  → the cap %.0f is set by your level-%.0f temple, but your kharis is falling toward the floor — raise cult labor (if the temple has room) or build a higher temple.\n", kcap, mtl)
+		return fmt.Sprintf("  → the cap %.0f is set by your level-%.0f temple, but your kharis is falling toward the floor — staff the temple with `keryx staff temple +1` (if it has room) or build a higher temple.\n", kcap, mtl)
 	}
-	return fmt.Sprintf("  → the cap %.0f is set by your level-%.0f temple; your kharis holds but doesn't climb — raise cult labor (`keryx allocate --cult`) or build a higher temple.\n", kcap, mtl)
+	return fmt.Sprintf("  → the cap %.0f is set by your level-%.0f temple; your kharis holds but doesn't climb — staff the temple with `keryx staff temple +1` or build a higher temple.\n", kcap, mtl)
 }

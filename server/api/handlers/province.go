@@ -2770,9 +2770,7 @@ func settlementUpkeepCapacity(ctx context.Context, pool *pgxpool.Pool, settlemen
 // employed per good — one placed gubbe = 100 citizens (Temenos_varutaxonomi_sol
 // §1.1). This is the honest post-P4 replacement for the pre-P4 settlement_labor
 // weights the goods surface used to read: production is driven by
-// settlement_placement, so the worker counts shown beside it must be too. Cult
-// is NOT here — it stays on its settlement_labor devotion path (the one good P4
-// left on weights).
+// settlement_placement, including temple service; cult remains absent from the goods inventory.
 func placedCitizensByGood(pc economy.PlacementCounts) map[string]int {
 	out := make(map[string]int)
 	for _, byGood := range pc.Hex {
