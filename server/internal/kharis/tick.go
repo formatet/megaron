@@ -385,7 +385,7 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 	var offerFed, offerTotal int
 	var offerFraction float64
 	if maintained {
-		// Devotion is the labor share serving the temple — read, never produced
+		// Devotion counts actual workers serving the temple — read, never produced
 		// (mig 094). A temple with no one tending it is a building, not a cult.
 		devotionGain := w.devotionSum * KharisPerTempleWorker
 		offerFed, offerTotal = h.applyTempleOffering(ctx, w.playerID, worldID)
@@ -433,7 +433,7 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 		// removed 2026-08-03: migration 094 deleted every such row and nothing
 		// recreates one with a positive amount, so the UPDATE had matched zero
 		// rows since 094 landed. Cult is devotion — internal/economy.GoodCult
-		// doc comment and settlement_labor, not a settlement_goods stock to
+		// doc comment and placement role, not a settlement_goods stock to
 		// consume.)
 		_, _ = h.store.Append(ctx, w.settlementID, events.StreamProvince, "KharisMaintained",
 			map[string]any{

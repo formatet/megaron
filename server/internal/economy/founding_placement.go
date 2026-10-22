@@ -390,8 +390,7 @@ func PlaceNextGubbeOnBestFoodHex(ctx context.Context, tx Tx, settlementID uuid.U
 // deletes exactly that tail in ONE DELETE — converges in a single pass, not
 // one row per tick, so an already-broken city self-heals the next time this
 // runs instead of needing hundreds of ticks. Idempotent when already within
-// the cap (returns 0, no-op). Never touches settlement_labor (cult
-// devotion, KH1) — this DELETE only ever targets settlement_placement.
+// the cap (returns 0, no-op). Temple workers participate in the same pruning order as every other job.
 // Caller must run RecomputeProduction afterwards in the same tick.
 func PrunePlacementsToPopulation(ctx context.Context, tx Tx, settlementID uuid.UUID) (pruned int, err error) {
 	workTx, finish, _, err := placementWriteTx(ctx, tx, settlementID)
@@ -407,7 +406,7 @@ func PrunePlacementsToPopulation(ctx context.Context, tx Tx, settlementID uuid.U
 		         SELECT id, row_number() OVER (
 		             ORDER BY CASE good_key
 		                 WHEN $2 THEN 1 WHEN $3 THEN 1 WHEN $4 THEN 1  -- grain/fish/livestock: mat SIST → survives longest
-		                 WHEN $5 THEN 2                                -- cult: tempel (never a real row today)
+		                 WHEN $5 THEN 2                                -- cult: temple workers
 		                 WHEN $6 THEN 4 WHEN $7 THEN 4 WHEN $8 THEN 4  -- bronze/oil/wine: hantverk/förädling → removed first
 		                 ELSE 3                                        -- övrig icke-mat (stone/timber/cedar/silver/copper/tin/…)
 		             END,
