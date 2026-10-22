@@ -188,7 +188,7 @@ Get the shape wrong and you write wrong code. Everything else: `megaron_moc.md`.
   (19 hexes, 18 worked; P1, 2026-08-07 — was radius-1/7 hexes before), worked without outposts; dynamic,
   lazy, deterministic. Radius lives in `internal/hexgrid.CatchmentRadius`.
 - **Coast is not a terrain** — it's a property (neighbour of sea); `coast_beach` is gone from the enum.
-- **Labor = individual placement (P4, 2026-08-08), NOT a weight/share of pop.** Legacy `settlement_labor` weights are retired by migration 199 and its atomic startup transition. Temple service uses physical placements too. Production is derived from `settlement_placement`:
+- **Labor = individual placement (P4, 2026-08-08), NOT a weight/share of pop.** Legacy `settlement_labor` weights are retired by migration 201 and its atomic startup transition. Temple service uses physical placements too. Production is derived from `settlement_placement`:
   one row = one gubbe (`Temenos_varutaxonomi_sol.md` §1.1, 1 gubbe = 100 invånare) bound to ONE hex or
   building slot doing ONE good. **Hex production** uses `economy.hexYield` and `hex_rules.go`:
   terrain/deposits set base places and per-worker rate; the relevant building adds

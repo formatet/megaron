@@ -24,7 +24,7 @@ Codex: temples/kharis/citizens/keryx samstämmiga. CLAUDE.md och vaultens tempel
 
 ## Övergång och före deploy
 
-Migration 199 skapar en övergångsmarkör. **Innan workers, HTTP eller tick startas** gör serverns uppstart en transaktion: lås markören, beräkna mål, slutreglera föregående produktion, flytta riktiga jobb, räkna om produktion, droppa `settlement_labor`, markera klar och commit. Fel ger rollback av hela övergången och stoppar uppstart. En andra uppstart är no-op. Schemaåterställning efter genomförd övergång kräver backup; down-migrationen vägrar en förlustfull låtsasåterställning.
+Migration 201 (ursprungligen 199, omnumrerad 2026-10-22 efter att live gått till 200) skapar en övergångsmarkör. **Innan workers, HTTP eller tick startas** gör serverns uppstart en transaktion: lås markören, beräkna mål, slutreglera föregående produktion, flytta riktiga jobb, räkna om produktion, droppa `settlement_labor`, markera klar och commit. Fel ger rollback av hela övergången och stoppar uppstart. En andra uppstart är no-op. Schemaåterställning efter genomförd övergång kräver backup; down-migrationen vägrar en förlustfull låtsasåterställning.
 
 Mål för en stad med tempel och positiv gammal vikt: `min(2×nivå, population/100, max(1, round(vikt×population/100)))`. Lediga ordinals i stigande ordning först, sedan icke-matjobb enligt befintlig pruningprioritet (bronze/oil/wine först), högsta ordinal först inom prioritet. Mat flyttas aldrig. Om fria + icke-mat inte räcker avbryts hela transaktionen.
 
