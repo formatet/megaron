@@ -96,3 +96,15 @@ Bevis: namngivet gammalkod-RED för djuphav0/4 och vik3/7, flodoförändring;
 HTTP cap/placering, founding/AutomaticFood, kapacitetsaggregat, hamnrivning;
 fysisk mutant→RED→exakt restore→GREEN; JS/vet och full fresh Go EN gång.
 BILD för ändrad hex-/optionstext. Kontraktets stopp: land/FOW/övergång först ok.
+
+## Överlämnat underlag och kontroll av nollcap
+
+Den gamla sessionen01a16435 skapade capture.py, snapshot.sql, live-readonly.json,
+core-grep.txt och surface-grep.txt innan dess STOPP. De övertogs med Claudes
+uttryckliga19:03instruktion, ligger bevarade i första inventeringscommiten och
+är råunderlag, inte nya mätningar av denna session. capture.py/snapshot.sql har
+granskats: en SELECT med nästlade SELECT, via alfa_db.Db, råsvaret säger
+transaction_read_only=on/mig198/17:01:09UTC. Dess18djupplaceringar stämmer med
+min separata READ ONLY-kontroll17:01:21UTC. Greplistorna är sökunderlag.
+PlaceGubbes kontrollerar faktiskt cap<=0 och avslår (settlement_placement.go771);
+ingen uncapped-fallback där. Inga produktionsfiler ändrade.
