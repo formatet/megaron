@@ -10,7 +10,7 @@ import { unitTypeLabel } from '../actornames.js';
 import { startCityAnim } from '../../render/city.js';
 import { renderGubbeGrid, terrainLabel } from '../citygrid.js';
 import { productionSectionsHTML, populationHTML, foodSummaryHTML, foodDetailsHTML, storageWarningsHTML } from './city_production.js';
-import { fmtNum } from '../fmt_num.js';
+import { fmtNum, fmtDays } from '../fmt_num.js';
 
 // The settlement the City drawer currently shows: cycle via the drawer's
 // prev/next arrows. Defaults to the capital (activeCitySettlement, state.js).
