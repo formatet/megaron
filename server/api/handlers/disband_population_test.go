@@ -95,16 +95,35 @@ func setupDisbandFixture(t *testing.T, population int) *disbandFixture {
 	return &f
 }
 
-func (f *disbandFixture) seedUnit(t *testing.T, utype, category string, size, crew int) {
+func (f *disbandFixture) seedUnit(t *testing.T, utype, category string, size, crew int) uuid.UUID {
 	t.Helper()
-	if _, err := f.pool.Exec(context.Background(),
-		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, settlement_id)
-		 SELECT $1, s.owner_id, $2, $3, $4, $5, 'garrison', $6
-		 FROM settlements s WHERE s.id = $6`,
-		f.worldID, utype, category, size, crew, f.settlementID,
-	); err != nil {
-		t.Fatalf("seed unit %s: %v", utype, err)
+	var id uuid.UUID
+	err := f.pool.QueryRow(context.Background(), `INSERT INTO units (world_id,owner_id,type,category,size,crew,status,settlement_id) SELECT $1,s.owner_id,$2,$3,$4,$5,'garrison',$6 FROM settlements s WHERE s.id=$6 RETURNING id`, f.worldID, utype, category, size, crew, f.settlementID).Scan(&id)
+	if err != nil {
+		t.Fatal(err)
 	}
+	return id
+}
+func (f *disbandFixture) unitBody(t *testing.T) string {
+	t.Helper()
+	rows, err := f.pool.Query(context.Background(), `SELECT id FROM units WHERE settlement_id=$1 AND status='garrison' ORDER BY id`, f.settlementID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rows.Close()
+	ids := []uuid.UUID{}
+	for rows.Next() {
+		var id uuid.UUID
+		if err = rows.Scan(&id); err != nil {
+			t.Fatal(err)
+		}
+		ids = append(ids, id)
+	}
+	if err = rows.Err(); err != nil {
+		t.Fatal(err)
+	}
+	body, _ := json.Marshal(map[string]any{"unit_ids": ids})
+	return string(body)
 }
 
 func (f *disbandFixture) population(t *testing.T) int {
@@ -140,7 +159,7 @@ func TestDisband_RestoresPopulationForLandUnits(t *testing.T) {
 	f := setupDisbandFixture(t, 1000)
 	f.seedUnit(t, "spearman", "land", 200, 0)
 
-	rec, resp := f.disband(t, `{"spearman":200}`)
+	rec, resp := f.disband(t, f.unitBody(t))
 	if rec.Code != http.StatusOK {
 		t.Fatalf("Disband = %d %q, want 200", rec.Code, rec.Body.String())
 	}
@@ -162,7 +181,7 @@ func TestDisband_RestoresCrewForNavalUnits(t *testing.T) {
 	f.seedUnit(t, "galley", "naval", 1, 30)
 	f.seedUnit(t, "galley", "naval", 1, 30)
 
-	rec, resp := f.disband(t, `{"ship":2}`)
+	rec, resp := f.disband(t, f.unitBody(t))
 	if rec.Code != http.StatusOK {
 		t.Fatalf("Disband = %d %q, want 200", rec.Code, rec.Body.String())
 	}
@@ -187,7 +206,7 @@ func TestDisband_RecruitDisbandRoundTripIsPopulationNeutral(t *testing.T) {
 	}
 	f.seedUnit(t, "spearman", "land", 100, 0)
 
-	rec, resp := f.disband(t, `{"spearman":100}`)
+	rec, resp := f.disband(t, f.unitBody(t))
 	if rec.Code != http.StatusOK {
 		t.Fatalf("Disband = %d %q, want 200", rec.Code, rec.Body.String())
 	}

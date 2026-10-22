@@ -1,7 +1,7 @@
 import { submitRecruitment, recruitmentPending, recruitmentReceipt, rememberRecruitmentReceipt } from '../recruitment.js';
 import { foodGoodsText } from '../food.js';
 import { showInlineResult, confirmInline } from '../inline_result.js';
-import { State, ownCapital } from '../../state.js';
+import { State, ownCapital, activeCitySettlement } from '../../state.js';
 import { serverNow } from '../../clock.js';
 import { fetchAuth } from '../../api.js';
 import { esc, formatApiError, passageNote, supersededOrderNote, purseLine } from '../format.js';
@@ -385,27 +385,28 @@ export async function unitCancelTraining(unitID) {
   } finally { cancellingTraining.delete(key); }
 }
 
-export async function warDisband(provinceID) {
-  const inf = parseInt(document.getElementById('wdb-inf')?.value || '0');
-  const cha = parseInt(document.getElementById('wdb-cha')?.value || '0');
-  if (inf + cha === 0) return;
-  const res = await fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/provinces/' + provinceID + '/disband', {
-    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ spearman: inf, war_chariot: cha }),
-  });
-  const data = await res.json().catch(() => ({}));
-  if (res.ok) {
-    // loadCityDrawer() re-renders #war-disband-res from scratch (city.js),
-    // so the result line is set on the fresh element afterwards, not before.
+const disbandingUnits = new Set();
+export async function warDisband(provinceID, unitID, button) {
+  const key = State.WORLD_ID + ':' + unitID;
+  if (!unitID || disbandingUnits.has(key)) return;
+  disbandingUnits.add(key);
+  const worldID=State.WORLD_ID;
+  if(button)button.disabled=true;
+  let received=false;
+  const status=text=>{if(State.WORLD_ID===worldID && activeCitySettlement()?.id===provinceID){const el=document.getElementById('war-disband-res');if(el)el.textContent=text;}};
+  try {
+    const res = await fetchAuth('/api/v1/worlds/' + worldID + '/provinces/' + provinceID + '/disband', {
+      method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({unit_ids:[unitID]}),
+    });
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok){status(data.error || 'Disband failed.');return;}
+    received=true;
+    if(State.WORLD_ID!==worldID || activeCitySettlement()?.id!==provinceID)return;
     await loadCityDrawer();
-    const resEl = document.getElementById('war-disband-res');
-    if (resEl && typeof data.pop_restored === 'number') {
-      resEl.style.color = 'var(--text-dim)';
-      resEl.textContent = '+' + data.pop_restored + ' population (now ' + data.population + ')';
-    }
-  } else {
-    const resEl = document.getElementById('war-disband-res');
-    if (resEl) resEl.textContent = formatApiError(data, 'failed');
-  }
+    if(activeCitySettlement()?.id===provinceID)document.querySelector('#city-body .dtab[data-tab="garnison"]')?.click();
+    status(`Disbanded — returns ${data.pop_restored} people to ${data.settlement_name}.`);
+  } catch (_) { status(received?'Unit disbanded. Reopen the city to see the result.':'Could not confirm disbanding. Refresh units before trying again.'); }
+  finally {disbandingUnits.delete(key);if(button && button.isConnected)button.disabled=false;}
 }
 
 // ── Discrete unit helpers (C8-web) ───────────────────────────────────────

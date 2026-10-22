@@ -1,0 +1,7 @@
+2026/10/22 02:23:13 INFO player registered id=b1d17f33-0ad5-4a79-af2c-02db61767947 username=disband-9e8effb7-f97c-4718-8a70-506beb2bcf96
+--- FAIL: TestDisbandSelectedWholeUnitAndDamagedSurvivors (0.07s)
+    disband_plan_test.go:38: unit 83974688-7c98-4a7d-b10c-31c6896d6f99: garrison/80 want disbanded/100
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.069s
+FAIL
+» färsk DB på migration 198 · commit 7c2a906b+ändringar

@@ -71,7 +71,7 @@ func TestDisbandLaidUpHullDoesNotReturnCrewTwice(t *testing.T) {
 	}
 	ph := NewProvinceHandler(f.pool, nil, clock.NewTestClock(time.Now()), nil, nil)
 	f.router.Post("/worlds/{worldID}/provinces/{provinceID}/disband", ph.Disband)
-	req := httptest.NewRequest(http.MethodPost, "/worlds/"+f.worldID.String()+"/provinces/"+provinceID.String()+"/disband", strings.NewReader(`{"ship":1}`))
+	req := httptest.NewRequest(http.MethodPost, "/worlds/"+f.worldID.String()+"/provinces/"+provinceID.String()+"/disband", strings.NewReader(`{"unit_ids":["`+f.shipID.String()+`"]}`))
 	req.Header.Set("Authorization", "Bearer "+f.accessToken)
 	rec := httptest.NewRecorder()
 	f.router.ServeHTTP(rec, req)
