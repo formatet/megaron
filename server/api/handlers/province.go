@@ -426,16 +426,21 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// it to know which prayers it can actually cast.
 		var kharisNow, kharisRate, kharisCap float64
 		var maxTempleLevel int
-		var kharisNetPerDay, kharisBaseDecay, kharisCityDecay float64
-		var kharisCityCount int
+		var kharisNetPerDay, kharisProduction, kharisBaseDecay, kharisCityDecay, kharisPopulationDecay float64
+		var kharisCityCount, kharisPopulation int
 		var kharisNetKnown, kharisDevotionIdle bool
+		viewerID, authenticated := auth.PlayerIDFromContext(r.Context())
+		ownCult := authenticated && sett.OwnerID != nil && *sett.OwnerID == viewerID
 		if sett.OwnerID != nil {
 			if k, kerr := loadPlayerKharis(r.Context(), h.pool, *sett.OwnerID, worldID); kerr == nil {
 				kharisNow, kharisRate = k.Amount, k.Rate
 				kharisCap, maxTempleLevel = k.Cap, k.MaxTempleLevel
 			}
-			var decayErr error
-			kharisCityCount, kharisBaseDecay, kharisCityDecay, decayErr = kharis.ProjectDecay(r.Context(), h.pool, *sett.OwnerID, worldID)
+		}
+		if ownCult {
+			decay, decayErr := kharis.ProjectDecay(r.Context(), h.pool, *sett.OwnerID, worldID)
+			kharisCityCount, kharisPopulation = decay.CityCount, decay.Population
+			kharisBaseDecay, kharisCityDecay, kharisPopulationDecay = decay.Base, decay.Cities, decay.Residents
 			if decayErr != nil {
 				writeError(w, http.StatusInternalServerError, "could not load kharis decay")
 				return
@@ -445,6 +450,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			// hides (soak 2026-07-24: a fading L1 Wanax saw "+0.1/dygn"). Read-only.
 			if net, has, devSum, devCap, nerr := kharis.ProjectDailyNet(r.Context(), h.pool, *sett.OwnerID, worldID); nerr == nil {
 				kharisNetPerDay, kharisNetKnown = net, true
+				kharisProduction = net + decay.Total
 				kharisDevotionIdle = has && devCap > devSum
 			}
 		}
@@ -740,43 +746,47 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		resp["settlement"] = map[string]any{
-			"id":                   sett.ID,
-			"name":                 sett.Name,
-			"owner_id":             sett.OwnerID,
-			"kingdom_id":           sett.KingdomID,
-			"culture":              sett.CultureID,
-			"state":                sett.State,
-			"besieged":             sett.Besieged,
-			"besieged_by":          besiegedBy,
-			"population":           sett.Population,
-			"labor_pool":           laborPool,
-			"walls":                sett.WallLevel,
-			"population_cap":       economy.PopulationCap(sett.WallLevel),
-			"silo_level":           economy.SiloLevel(r.Context(), h.pool, sett.ID),
-			"resources":            resSnap,
-			"kharis":               kharisNow,
-			"kharis_rate":          kharisRate,
-			"kharis_mood":          kharisToMood(kharisNow),
-			"kharis_per_tick":      kharisRate,
-			"kharis_cap":           kharisCap,
-			"kharis_city_count":    kharisCityCount,
-			"kharis_base_decay":    kharisBaseDecay,
-			"kharis_city_decay":    kharisCityDecay,
-			"kharis_daily_decay":   kharisBaseDecay + kharisCityDecay,
-			"max_temple_level":     maxTempleLevel,
-			"kharis_net_per_tick":  kharisNetPerDay,
-			"kharis_net_known":     kharisNetKnown,
-			"kharis_devotion_idle": kharisDevotionIdle,
-			"temple_offers":        templeOffers,
-			"grain_prod_rate":      grainProdRate,
-			"grain_consum_rate":    grainConsumRate,
-			"food_gubbar_required": foodGubbarRequired,
-			"automatic_food":       foodSummary.AutomaticFood,
-			"food_gubbar_placed":   foodGubbarPlaced,
-			"food_self_sufficient": foodSelfSufficient,
-			"harvest_blessing":     harvestBlessingStatus(harvestBlessingUntil, currentTick),
-			"army":                 sett.Army,
-			"army_upkeep":          armyUp,
+			"id":                         sett.ID,
+			"name":                       sett.Name,
+			"owner_id":                   sett.OwnerID,
+			"kingdom_id":                 sett.KingdomID,
+			"culture":                    sett.CultureID,
+			"state":                      sett.State,
+			"besieged":                   sett.Besieged,
+			"besieged_by":                besiegedBy,
+			"population":                 sett.Population,
+			"labor_pool":                 laborPool,
+			"walls":                      sett.WallLevel,
+			"population_cap":             economy.PopulationCap(sett.WallLevel),
+			"silo_level":                 economy.SiloLevel(r.Context(), h.pool, sett.ID),
+			"resources":                  resSnap,
+			"kharis":                     kharisNow,
+			"kharis_rate":                kharisRate,
+			"kharis_mood":                kharisToMood(kharisNow),
+			"kharis_per_tick":            kharisRate,
+			"kharis_cap":                 kharisCap,
+			"kharis_city_count":          kharisCityCount,
+			"kharis_base_decay":          kharisBaseDecay,
+			"kharis_city_decay":          kharisCityDecay,
+			"kharis_daily_decay":         kharisBaseDecay + kharisCityDecay + kharisPopulationDecay,
+			"kharis_population":          kharisPopulation,
+			"kharis_population_decay":    kharisPopulationDecay,
+			"kharis_production_per_tick": kharisProduction,
+			"kharis_per_temple_worker":   kharis.KharisPerTempleWorker,
+			"max_temple_level":           maxTempleLevel,
+			"kharis_net_per_tick":        kharisNetPerDay,
+			"kharis_net_known":           kharisNetKnown,
+			"kharis_devotion_idle":       kharisDevotionIdle,
+			"temple_offers":              templeOffers,
+			"grain_prod_rate":            grainProdRate,
+			"grain_consum_rate":          grainConsumRate,
+			"food_gubbar_required":       foodGubbarRequired,
+			"automatic_food":             foodSummary.AutomaticFood,
+			"food_gubbar_placed":         foodGubbarPlaced,
+			"food_self_sufficient":       foodSelfSufficient,
+			"harvest_blessing":           harvestBlessingStatus(harvestBlessingUntil, currentTick),
+			"army":                       sett.Army,
+			"army_upkeep":                armyUp,
 			// Del C: the sold a garrison spends back into the town it holds. Without
 			// this line the net below cannot be derived from the gross above, and the
 			// mechanic would be invisible — a silver flow the Wanax cannot see or plan
@@ -818,6 +828,14 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				"production":  lastTickProd,
 				"consumption": lastTickCons,
 			},
+		}
+		// The population term and total/net can reveal residents in cities the
+		// visitor has never seen. Cult upkeep is private, like local altar stocks.
+		if !ownCult {
+			private := resp["settlement"].(map[string]any)
+			for _, key := range []string{"kharis_city_count", "kharis_base_decay", "kharis_city_decay", "kharis_daily_decay", "kharis_population", "kharis_population_decay", "kharis_production_per_tick", "kharis_net_per_tick", "kharis_devotion_idle"} {
+				delete(private, key)
+			}
 		}
 	}
 

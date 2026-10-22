@@ -22,6 +22,6 @@ The temple uses **grain first, then fish, then timber, and silver last**. Silver
 
 ## Level
 
-With full devotion and its daily gift, a level-1 temple can raise kharis in a small realm. Compare its gain with the cost of all your active cities in **Kult → Daily decay** and the projected net. A temple does not cancel city costs, but while one stands the gods do not punish you. Higher-level temples can employ more devotion and make it grow faster when staffed and fed.
+With full devotion and its daily gift, a level-1 temple can raise kharis in a small realm. Compare its gain with the cost of all your active cities and residents in **Kult → Upkeep of the cult** and the projected net. A temple does not cancel city costs, but while one stands the gods do not punish you. Higher-level temples can employ more devotion and make it grow faster when staffed and fed.
 
 **Your best temple sets your kharis ceiling:** no temple 40, level 1 50, level 2 75, level 3 100. A level-1 temple can never bring a blessing; a higher-level temple raises the ceiling. Levelling a temple further needs cedar.

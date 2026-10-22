@@ -30,7 +30,7 @@ func TestRealmKharis_NoGrace_ProjectionAndTick(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if has || math.Abs(net+.1) > 1e-10 {
+		if has || math.Abs(net+.2) > 1e-10 {
 			t.Fatalf("age%d net%g has%v", age, net, has)
 		}
 	}
@@ -42,8 +42,8 @@ func TestRealmKharis_NoGrace_ProjectionAndTick(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT kharis_amount FROM player_world_records WHERE player_id=$1 AND world_id=$2`, pid, wid).Scan(&amount); err != nil {
 		t.Fatal(err)
 	}
-	if math.Abs(amount-39.9) > 1e-10 {
-		t.Fatalf("actual first tick%g want39.9", amount)
+	if math.Abs(amount-39.8) > 1e-10 {
+		t.Fatalf("actual first tick%g want39.8", amount)
 	}
 }
 

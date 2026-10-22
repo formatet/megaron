@@ -115,7 +115,7 @@ test('Kult controller renders the realm breakdown and templeless net from the pr
   globalThis.localStorage={getItem:()=>null};
   Object.assign(State,{WORLD_ID:'realm',MY_SETTLEMENT_ID:'capital',provinceData:[{id:'province',own:true,is_capital:true}]});
   const calls=[];
-  const pd={kharis_city_count:5,kharis_base_decay:0.1,kharis_city_decay:1,kharis_daily_decay:1.1,
+  const pd={kharis_population:2500,kharis_population_decay:.25,kharis_city_count:5,kharis_base_decay:0.1,kharis_city_decay:1,kharis_daily_decay:1.1,
     kharis_net_known:true,kharis_net_per_tick:-1.1,kharis_per_tick:0,temple_offers:[],available_prayers:[]};
   globalThis.fetch=async url=>{
     calls.push(url);
@@ -125,7 +125,7 @@ test('Kult controller renders the realm breakdown and templeless net from the pr
     assert.fail('Unexpected API request '+url);
   };
   await loadKultDrawer();
-  assert.match(body.innerHTML,/0.1 base \+ 5 cities cost 1.0 per day = 1.1 total/);
+  assert.match(body.innerHTML,/0.10 base \+ 5 cities cost 1.00 \+ 2500 residents cost 0.25 = 1.10 kharis per day/);
   assert.match(body.innerHTML,/-1.1 kharis per day/);
   assert.match(body.innerHTML,/No temples/);
   assert.doesNotMatch(body.innerHTML,/Passive|144|holds for/);

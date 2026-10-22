@@ -1,0 +1,7 @@
+{
+  "mutation": "drop residents only in ProjectDailyNet",
+  "red": true,
+  "byte_exact_restore": true,
+  "restored_green": true,
+  "project_sha256": "a28143796878b533b2d4975bc5af4932ea6e812a276f4dd2352bbcb67536ea27"
+}

@@ -42,18 +42,18 @@ func TestRealmKharis_CountsTempledCitiesIncludingCapital(t *testing.T) {
 	if _, err := pool.Exec(ctx, `INSERT INTO player_world_records(player_id,world_id,settlement_id,kharis_amount,kharis_rate,kharis_calc_tick,founded_tick) VALUES($1,$2,$3,40,0,current_world_tick(),current_world_tick())`, pid, wid, sid); err != nil {
 		t.Fatal(err)
 	}
-	n, base, extra, err := ProjectDecay(ctx, pool, pid, wid)
+	d, err := ProjectDecay(ctx, pool, pid, wid)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if n != 6 || base != .1 || math.Abs(extra-1.5) > 1e-10 {
-		t.Fatalf("burden n%d base%g extra%g", n, base, extra)
+	if d.CityCount != 6 || d.Base != .1 || math.Abs(d.Cities-1) > 1e-10 || math.Abs(d.Residents-.6) > 1e-10 {
+		t.Fatalf("burden n%d base%g extra%g", d.CityCount, d.Base, d.Cities)
 	}
 	net, _, _, _, err := ProjectDailyNet(ctx, pool, pid, wid)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if math.Abs(net+1.6) > 1e-10 {
+	if math.Abs(net+1.7) > 1e-10 {
 		t.Fatalf("projected%g", net)
 	}
 	h := newTestTickHandler(pool)
@@ -64,8 +64,8 @@ func TestRealmKharis_CountsTempledCitiesIncludingCapital(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT kharis_amount FROM player_world_records WHERE player_id=$1 AND world_id=$2`, pid, wid).Scan(&amount); err != nil {
 		t.Fatal(err)
 	}
-	if math.Abs(amount-38.4) > 1e-10 {
-		t.Fatalf("actual all-templed-six-city kharis%g want38.4", amount)
+	if math.Abs(amount-38.3) > 1e-10 {
+		t.Fatalf("actual all-templed-six-city kharis%g want38.3", amount)
 	}
 }
 

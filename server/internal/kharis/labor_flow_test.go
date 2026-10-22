@@ -42,7 +42,7 @@ func TestSilverCalibrationKharisFlowLeavesStalePriceClamp(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := 2*KharisPerTempleWorker*1.5 - decayBas
+	want := 2*KharisPerTempleWorker*1.5 - .2
 	if !has || dev != 2 || math.Abs(net-want) > 1e-8 {
 		t.Fatalf("projection %g devotion%g has%v want%g", net, dev, has, want)
 	}
@@ -55,7 +55,7 @@ func TestSilverCalibrationKharisFlowLeavesStalePriceClamp(t *testing.T) {
 	// Charge the actual maintenance path and compare the persisted relationship.
 	before := 20.0
 	eid := atomic.AddInt64(&advanceOneDayEventID, 1)
-	if err := h.processMaintenance(ctx, wanaxSnap{cityCount: 1, playerID: pid, settlementID: sid, kharis: before,
+	if err := h.processMaintenance(ctx, wanaxSnap{population: 1000, cityCount: 1, playerID: pid, settlementID: sid, kharis: before,
 		kharisCap: 100, devotionSum: 2, templeCities: 1, maxTempleLevel: 1}, wid, eid); err != nil {
 		t.Fatal(err)
 	}

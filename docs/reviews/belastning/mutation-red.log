@@ -1,0 +1,6 @@
+» färsk DB på migration 202 · commit 600c0ca4+ändringar
+--- FAIL: TestPopulationBurdenFullTickMatchesProjection (0.08s)
+    population_burden_test.go:40: population projection net-0.5 want-.85
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.086s
+FAIL

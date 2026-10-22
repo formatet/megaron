@@ -49,8 +49,8 @@ func PunishmentProbability(kharis float64, hasTemple bool) float64 {
 // Timothy 2026-10-22: two workers keep full L1 gain at 2.1 before modifiers.
 const KharisPerTempleWorker = 1.05
 
-// Every owned active city, including the capital, adds more realm burden than
-// the previous one. A temple supplies gain; it never exempts a city from burden.
+// Cult upkeep covers residents and every city beyond the first.
+// A temple supplies gain; it never exempts its city or residents from upkeep.
 const decayBas = 0.1
 
 // templeTierMultiplier is the FAS 4 hook point — DEFERRED, not built in this
@@ -127,6 +127,7 @@ type wanaxSnap struct {
 	templeCities   int
 	maxTempleLevel int // grandest temple's level — sets the kharis ceiling
 	cityCount      int // all owned active cities, including the capital
+	population     int // settlements.population in those same cities
 }
 
 // Handle processes a KharisTick scheduled event.
@@ -169,7 +170,10 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 		        FROM settlements s3
 		        WHERE s3.owner_id = pwr.player_id AND s3.world_id = pwr.world_id
 		          AND s3.state NOT IN ('sunk', 'collapsed', 'razed')
-		    ), 0) AS city_count
+		    ), 0) AS city_count,
+            COALESCE((SELECT SUM(s5.population) FROM settlements s5
+              WHERE s5.owner_id=pwr.player_id AND s5.world_id=pwr.world_id
+                AND s5.state NOT IN ('sunk','collapsed','razed')),0) AS population
 		 FROM player_world_records pwr
 		 JOIN settlements s ON s.owner_id = pwr.player_id AND s.world_id = pwr.world_id AND s.is_capital = true
 		 WHERE pwr.world_id = $1
@@ -186,7 +190,7 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 		var w wanaxSnap
 		if err := rows.Scan(&w.playerID, &w.settlementID,
 			&w.kharis, &w.kharisCap, &w.devotionSum, &w.templeCities,
-			&w.maxTempleLevel, &w.cityCount); err == nil {
+			&w.maxTempleLevel, &w.cityCount, &w.population); err == nil {
 			// The grandest temple binds the ceiling from here on — processMaintenance
 			// and everything downstream sees one already-resolved cap.
 			w.kharisCap = EffectiveKharisCap(w.kharisCap, w.maxTempleLevel)
@@ -243,14 +247,13 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 		struct{}{}, e.DueTick, events.MacroTickInterval)
 }
 
-// computeDailyDecay returns total realm burden for the current owned city count.
-func computeDailyDecay(cityCount int) float64 {
-	if cityCount < 0 {
-		cityCount = 0
-	}
-	n := float64(cityCount)
-	return decayBas + .1*n*(n-1)/2
+// computeDailyDecay is cult upkeep: base + additional cities + residents.
+// Residents are settlements.population, not rounded workers or army size.
+func computeDailyDecay(cityCount, population int) float64 {
+	return decayBas + cityDecay(cityCount) + populationDecay(population)
 }
+func cityDecay(cityCount int) float64        { return .2 * float64(max(0, cityCount-1)) }
+func populationDecay(population int) float64 { return .1 * float64(max(0, population)) / 1000 }
 
 // kharisCapPerTempleLevel — the grandest temple a Wanax has built sets how close
 // to the gods they can come. Ceiling = kharisCapPerTempleLevel × (1 + max temple
@@ -432,7 +435,7 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 			worldID, nil)
 	}
 
-	dailyDecay := computeDailyDecay(w.cityCount)
+	dailyDecay := computeDailyDecay(w.cityCount, w.population)
 	newKharis := clampKharis(w.kharis+gain-dailyDecay, w.kharisCap)
 
 	// 1. Write the netted kharis value.
@@ -456,15 +459,17 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 		// consume.)
 		_, _ = h.store.Append(ctx, w.settlementID, events.StreamProvince, "KharisMaintained",
 			map[string]any{
-				"temple_workers": w.devotionSum,
-				"kharis_gain":    gain,
-				"daily_decay":    dailyDecay,
-				"net":            gain - dailyDecay,
-				"city_count":     w.cityCount,
-				"rule_version":   "temple_workers_v2",
-				"offer_fraction": offerFraction,
-				"temples_fed":    offerFed,
-				"temples_total":  offerTotal,
+				"temple_workers":     w.devotionSum,
+				"kharis_gain":        gain,
+				"daily_decay":        dailyDecay,
+				"net":                gain - dailyDecay,
+				"city_count":         w.cityCount,
+				"realm_population":   w.population,
+				"decay_rule_version": "cult_population_v1",
+				"rule_version":       "temple_workers_v2",
+				"offer_fraction":     offerFraction,
+				"temples_fed":        offerFed,
+				"temples_total":      offerTotal,
 			},
 			worldID, nil)
 		if newKharis >= blessThreshold && rand.Float64() < blessProbability {
@@ -479,11 +484,13 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 		// it does not claim that punishment happened.
 		_, _ = h.store.Append(ctx, w.settlementID, events.StreamProvince, "KharisMissedMaintenance",
 			map[string]any{
-				"reason":         "no_cult_production",
-				"daily_decay":    dailyDecay,
-				"city_count":     w.cityCount,
-				"rule_version":   "temple_workers_v2",
-				"founding_grace": false, // legacy outcome field: no grace under this rule
+				"reason":             "no_cult_production",
+				"daily_decay":        dailyDecay,
+				"city_count":         w.cityCount,
+				"realm_population":   w.population,
+				"decay_rule_version": "cult_population_v1",
+				"rule_version":       "temple_workers_v2",
+				"founding_grace":     false, // legacy outcome field: no grace under this rule
 			},
 			worldID, nil)
 	}

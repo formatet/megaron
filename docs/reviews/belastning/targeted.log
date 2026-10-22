@@ -1,0 +1,11 @@
+» färsk DB på migration 202 · commit 600c0ca4+ändringar
+--- FAIL: TestRealmKharis_OpeningAndTempleCalibration (0.00s)
+    decay_test.go:36: six-city L1 net1
+--- FAIL: TestRealmKharis_NoGrace_ProjectionAndTick (0.03s)
+    realm_opening_test.go:34: age0 net-0.2 hasfalse
+--- FAIL: TestRealmKharis_CountsTempledCitiesIncludingCapital (0.04s)
+    realm_rules_test.go:57: projected-1.7000000000000002
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.156s
+ok  	formatet/megaron/server/api/handlers	0.093s
+FAIL
