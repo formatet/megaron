@@ -1,0 +1,50 @@
+[
+  {
+    "width": 390,
+    "run": 1,
+    "scene": "city",
+    "pixel_sha256": "f55d6546d6ca0d00c38f232eac040127be8129bdbddc2ec65eee75a6287ed312"
+  },
+  {
+    "width": 390,
+    "run": 1,
+    "scene": "kult",
+    "pixel_sha256": "1ffa10da932b7d5f8d134ea8dcf661f1557e829504fdcaf9ccf464c30d2a2a84"
+  },
+  {
+    "width": 390,
+    "run": 2,
+    "scene": "city",
+    "pixel_sha256": "f55d6546d6ca0d00c38f232eac040127be8129bdbddc2ec65eee75a6287ed312"
+  },
+  {
+    "width": 390,
+    "run": 2,
+    "scene": "kult",
+    "pixel_sha256": "1ffa10da932b7d5f8d134ea8dcf661f1557e829504fdcaf9ccf464c30d2a2a84"
+  },
+  {
+    "width": 1000,
+    "run": 1,
+    "scene": "city",
+    "pixel_sha256": "5607737a67a4dfeb7c114896d7e5e73c1acd8c24711d6ca74b186ea1a2b63806"
+  },
+  {
+    "width": 1000,
+    "run": 1,
+    "scene": "kult",
+    "pixel_sha256": "9bd1e11121e1f2c1cfa75429587f436fc55574743dbc72aff8c2540d4ed82b0d"
+  },
+  {
+    "width": 1000,
+    "run": 2,
+    "scene": "city",
+    "pixel_sha256": "5607737a67a4dfeb7c114896d7e5e73c1acd8c24711d6ca74b186ea1a2b63806"
+  },
+  {
+    "width": 1000,
+    "run": 2,
+    "scene": "kult",
+    "pixel_sha256": "9bd1e11121e1f2c1cfa75429587f436fc55574743dbc72aff8c2540d4ed82b0d"
+  }
+]

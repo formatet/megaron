@@ -1,3 +1,5 @@
+> Historisk inventering före kod, bevarad som beslutsunderlag. Claude godkände B 18:13 och Timothy beslutade 1,05 via Claude 18:17. Slutläge och bevis i [README](README.md).
+
 # ORDER 13 — inventering före kod
 
 Bas `ea97b332` efter ORDER12 LIVE. Gren `codex/tempel-gubbar`, egen worktree
