@@ -1,0 +1,37 @@
+» färsk DB på migration 202 · commit 1fbffdbe
+2026/10/23 00:15:38 INFO player registered id=05557057-3453-4182-8e8e-c938fc742c49 username=alpha-099973f5-4533-457e-98ef-3154f7b8230e
+2026/10/23 00:15:38 INFO player registered id=3f7a35c1-c61b-4989-8e05-7ef5d939cef8 username=alpha-91f13fd2-5ddd-4400-9df0-f22956eab24a
+2026/10/23 00:15:38 INFO player registered id=51e51cd3-47b2-4a8f-b553-96fbd03a0711 username=alpha-183dacbd-17bb-4afd-ab4b-522ca6fc9b02
+2026/10/23 00:15:39 INFO player registered id=ccb06181-5eb7-427b-b7a1-2830d2f04cc2 username=alpha-d9fe217d-5461-4cd6-b133-67e2b6e4ef04
+2026/10/23 00:15:39 INFO player registered id=19ccab59-8c18-434c-b0c5-e139ba314870 username=alpha-d46e55ba-9c63-46a4-84ff-2c10f8caa6ce
+--- FAIL: TestRelationEverydayExactThresholdNoDiceOrStandingDebit (0.35s)
+    --- FAIL: TestRelationEverydayExactThresholdNoDiceOrStandingDebit/minoan_potnia_vision_v2 (0.07s)
+        rite_relation_test.go:60: exact threshold response 200 {"kharis_spent":4,"message":"The gods are silent. Your offering was received, but they do not answer.","mood":"Suspicious","offer_multiplier":2,"prayer":"minoan_potnia_vision_v2","success":false}
+    --- FAIL: TestRelationEverydayExactThresholdNoDiceOrStandingDebit/minoan_potnia_walls (0.07s)
+        rite_relation_test.go:60: exact threshold response 200 {"kharis_spent":4,"message":"The gods are silent. Your offering was received, but they do not answer.","mood":"Suspicious","offer_multiplier":2,"prayer":"minoan_potnia_walls","success":false}
+    --- FAIL: TestRelationEverydayExactThresholdNoDiceOrStandingDebit/minoan_velchanos_green_shoots (0.07s)
+        rite_relation_test.go:60: exact threshold response 200 {"kharis_spent":4,"message":"The gods are silent. Your offering was received, but they do not answer.","mood":"Indifferent","offer_multiplier":2,"prayer":"minoan_velchanos_green_shoots","success":false}
+    --- FAIL: TestRelationEverydayExactThresholdNoDiceOrStandingDebit/minoan_asterion_thread (0.07s)
+        rite_relation_test.go:60: exact threshold response 200 {"kharis_spent":4,"message":"The gods are silent. Your offering was received, but they do not answer.","mood":"Suspicious","offer_multiplier":2,"prayer":"minoan_asterion_thread","success":false}
+    --- FAIL: TestRelationEverydayExactThresholdNoDiceOrStandingDebit/minoan_stillness_passage (0.07s)
+        rite_relation_test.go:60: exact threshold response 200 {"kharis_spent":4,"message":"The gods are silent. Your offering was received, but they do not answer.","mood":"Suspicious","offer_multiplier":2,"prayer":"minoan_stillness_passage","success":false}
+2026/10/23 00:15:39 INFO player registered id=4e9de032-e267-4645-b9ea-9d61e350dc3c username=alpha-9a5387ee-a790-441c-864c-62c3507f89c9
+2026/10/23 00:15:39 INFO player registered id=4e9f7d19-7134-470a-a70d-b8a19bc5a65d username=alpha-2872e9db-68e0-47fc-9629-b5025e41366d
+2026/10/23 00:15:39 INFO player registered id=37a37636-0dc9-40fa-a3ed-f61631423022 username=alpha-104105bf-4816-424f-9d14-845b6cb85c7c
+--- FAIL: TestRelationComposedOfferingThresholdAndRollback (0.21s)
+    --- FAIL: TestRelationComposedOfferingThresholdAndRollback/short (0.07s)
+        rite_relation_test.go:103: response 200 {"effect":{"strength_factor":1.25,"until_tick":106},"effect_type":"garrison_defense","kharis_spent":4,"message":"Potnia shelters your walls — your own garrison defends this city a quarter stronger for 6 days.","mood":"Favorable","offer_multiplier":1,"offering_expected":12,"offering_value_unit":"worker_ticks","offering_verdict":"short — worth 6.0 of the ~12 this god expects, 6.0 short","offering_work":6,"offering_worth":6,"prayer":"minoan_potnia_walls","success":true,"valuation_version":2}
+    --- FAIL: TestRelationComposedOfferingThresholdAndRollback/equal (0.07s)
+        rite_relation_test.go:106: composed prayer changed standing
+    --- FAIL: TestRelationComposedOfferingThresholdAndRollback/extra (0.07s)
+        rite_relation_test.go:106: composed prayer changed standing
+2026/10/23 00:15:39 INFO player registered id=28df5d07-f03f-41b0-b4cd-55a4ceee59e1 username=alpha-57883612-72d3-4b2d-b30c-ec70908c1140
+2026/10/23 00:15:39 INFO player registered id=19eb3b70-5855-4b29-bfa4-f71bb6709199 username=alpha-267df9ae-2f13-4588-8217-ad4d57de87ab
+--- FAIL: TestRelationLegacyRollAndMultiplierWithoutStandingDebit (0.14s)
+    --- FAIL: TestRelationLegacyRollAndMultiplierWithoutStandingDebit/a (0.07s)
+        rite_relation_test.go:156: legacy prayer debited standing
+    --- FAIL: TestRelationLegacyRollAndMultiplierWithoutStandingDebit/Ä (0.07s)
+        rite_relation_test.go:156: legacy prayer debited standing
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.708s
+FAIL

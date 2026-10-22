@@ -1,0 +1,20 @@
+» färsk DB på migration 202 · commit 1fbffdbe+ändringar
+2026/10/23 00:20:21 INFO player registered id=6d4e23b7-7883-42d5-9a50-6768c7b61b40 username=alpha-88244028-942b-4ea1-804a-718f0b391160
+2026/10/23 00:20:21 INFO player registered id=95609f99-b92b-48a1-8cd4-cbf8811a9df9 username=alpha-e713c219-b3ed-4db3-9197-273a4afc1368
+2026/10/23 00:20:21 INFO player registered id=c0425f24-9220-4ed3-a3be-40fe47f034fc username=alpha-54af3049-aab0-485c-9b45-80ea81f8ae4e
+2026/10/23 00:20:21 INFO player registered id=d8b600e4-1242-489f-a1d0-eb81089b0356 username=alpha-5fbd150b-7121-4475-84d1-c3823daa11fb
+2026/10/23 00:20:21 INFO player registered id=75067b38-335b-40a9-93b2-f3d8f86b23dd username=alpha-c7210f22-093b-418b-b9fe-2c66541565a5
+--- FAIL: TestRelationEverydayExactThresholdNoDiceOrStandingDebit (0.35s)
+    --- FAIL: TestRelationEverydayExactThresholdNoDiceOrStandingDebit/minoan_potnia_vision_v2 (0.07s)
+        rite_relation_test.go:64: exact threshold response 200 {"kharis_spent":0,"message":"The gods are silent. Your offering was received, but they do not answer.","mood":"Suspicious","offer_multiplier":1,"prayer":"minoan_potnia_vision_v2","success":false}
+    --- FAIL: TestRelationEverydayExactThresholdNoDiceOrStandingDebit/minoan_potnia_walls (0.07s)
+        rite_relation_test.go:64: exact threshold response 200 {"kharis_spent":0,"message":"The gods are silent. Your offering was received, but they do not answer.","mood":"Suspicious","offer_multiplier":1,"prayer":"minoan_potnia_walls","success":false}
+    --- FAIL: TestRelationEverydayExactThresholdNoDiceOrStandingDebit/minoan_velchanos_green_shoots (0.07s)
+        rite_relation_test.go:64: exact threshold response 200 {"kharis_spent":0,"message":"The gods are silent. Your offering was received, but they do not answer.","mood":"Indifferent","offer_multiplier":1,"prayer":"minoan_velchanos_green_shoots","success":false}
+    --- FAIL: TestRelationEverydayExactThresholdNoDiceOrStandingDebit/minoan_asterion_thread (0.07s)
+        rite_relation_test.go:64: exact threshold response 200 {"kharis_spent":0,"message":"The gods are silent. Your offering was received, but they do not answer.","mood":"Suspicious","offer_multiplier":1,"prayer":"minoan_asterion_thread","success":false}
+    --- FAIL: TestRelationEverydayExactThresholdNoDiceOrStandingDebit/minoan_stillness_passage (0.07s)
+        rite_relation_test.go:64: exact threshold response 200 {"kharis_spent":0,"message":"The gods are silent. Your offering was received, but they do not answer.","mood":"Suspicious","offer_multiplier":1,"prayer":"minoan_stillness_passage","success":false}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.354s
+FAIL
