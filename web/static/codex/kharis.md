@@ -4,8 +4,8 @@
 |---|---|
 | **Favorable** | The gods may bless you: a blessed harvest (a quarter more food for 25 days, fish excepted) or unexpected recruits. |
 | **Indifferent** | They have noticed you and do nothing. |
-| **Suspicious** (5 to below 30) | Without a standing temple, a 3% chance of punishment each day. |
-| **Wrathful** (below 5) | The same risk, and the gods are close to silent: chariots break, ships are lost, food rots or plague takes a garrison. |
+| **Suspicious** (5 to below 30) | Below 15, a 3% chance of punishment each day, with or without a temple; recent punishment gives seven days of protection. |
+| **Wrathful** (below 5) | The same risk below 15, except during protection: chariots break, ships are lost, food rots or plague takes a garrison. |
 
 Blessings and punishments arrive as notifications.
 
@@ -19,7 +19,7 @@ For **three cities with 2,500 residents altogether**, upkeep is **0.1 + 0.4 + 0.
 
 **Kult → Upkeep of the cult** and `keryx status` show the base, cities and residents separately, alongside projected temple production and net. One more fed temple worker gives **+1.05 kharis per day before scarcity**. This describes the extra worker's yield: employing one also requires a free citizen, an available temple workplace and that temple's daily offering. A temple earns favour; it does not remove its city's cost.
 
-A standing temple protects you from punishment: below 30 Kharis without one, there is a 3% chance each day. A punishment chooses a random eligible city of yours with something it can take; it need not strike the capital.
+Below **15 Kharis**, there is a 3% chance of punishment each day **with or without a temple**. An actual punishment gives **seven days of protection**, whose end date appears in Kult and `keryx status`. Nothing taken means no new protection. See [[divine-wrath]]. A punishment chooses a random eligible city of yours with something it can take; it need not strike the capital.
 
 ## How to raise it
 
@@ -31,7 +31,7 @@ Three things must be true, every day:
 
 In a small realm, a fully staffed, fed level-1 temple can earn more favour than the realm loses each day. Compare the projected net; a larger realm may need more temples or higher levels. Larger temples can employ more devotion and raise kharis faster when staffed and fed.
 
-**Your best temple sets your ceiling:** no temple **40**, level 1 **50**, level 2 **75**, level 3 **100**. A level-1 temple can never earn you a blessing. To reach blessings, you need a higher-level temple.
+**Your best temple sets your ceiling:** no temple **40**, level 1 **50**, level 2 **75**, level 3 **100**. Everyday prayers work at a level-1 temple. Spontaneous blessings require at least **60 kharis** and a level-2 temple.
 
 Kharis decays every day regardless. Additional cities and residents increase cult upkeep even when every city has a temple ([[colonies]]).
 

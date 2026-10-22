@@ -65,3 +65,11 @@ test('production and extra worker yield are server-owned; yield is conditional, 
  assert.match(view.netHtml,/worker gives \+1.05 kharis per day before scarcity/);
  assert.match(view.netHtml,/Requires a free citizen, a temple workplace and its daily offering/);
 });
+
+test('R3/R5: everyday prayers work at L1, blessings need 60/L2, temple does not grant protection', async () => {
+ const {kharisRulesHTML}=await import('./kult_kharis.js');
+ const html=kharisRulesHTML({kharis_blessing_threshold:60,kharis_wrath:{threshold:15,daily_probability:.03,protection_remaining_days:2,protection_until:'2026-10-23T18:30:00Z'}});
+ assert.match(html,/Everyday prayers work at a level-1 temple/);assert.match(html,/at least 60 kharis/);
+ assert.match(html,/with or without a temple/);assert.match(html,/Protected from divine punishment/);
+ assert.doesNotMatch(html,/Invalid|NaN|day 123/);
+});

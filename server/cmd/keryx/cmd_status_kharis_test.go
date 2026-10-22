@@ -56,3 +56,25 @@ func TestKharisDecayLineUnavailable(t *testing.T) {
 		}
 	}
 }
+
+func TestStatusDivineProtectionAndBlessingRequirement(t *testing.T) {
+	round3Client(t, func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/provinces/default") {
+			json.NewEncoder(w).Encode(map[string]any{"settlement": map[string]any{
+				"name": "Pylos", "population": 1000, "resources": map[string]any{}, "kharis_blessing_threshold": 60,
+				"kharis_wrath": map[string]any{"threshold": 15, "daily_probability": .03, "protection_remaining_days": 2, "protection_until": "2026-10-23T18:30:00Z"},
+			}})
+			return
+		}
+		json.NewEncoder(w).Encode([]any{})
+	})
+	out, err := captureStdout(t, statusCmd().Execute)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"Everyday prayers work at a level-1 temple", "at least 60 kharis", "with or without a temple", "Protected from divine punishment until"} {
+		if !strings.Contains(out, want) {
+			t.Fatalf("missing %q: %s", want, out)
+		}
+	}
+}

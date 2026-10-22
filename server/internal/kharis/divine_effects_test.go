@@ -119,6 +119,9 @@ func TestApplyDivinePunishment_EventAndNotificationCarryRealAmount(t *testing.T)
 	// random choice" pattern as economy's trade_internal_no_loss_test.go.
 	const n = 16
 	for i := 0; i < n; i++ {
+		if _, err := pool.Exec(ctx, `UPDATE worlds SET current_tick=$2 WHERE id=$1`, worldID, i*WrathProtectionTicks); err != nil {
+			t.Fatal(err)
+		}
 		seedDivineGarrison(t, pool, ctx, worldID, settlementID, ownerID)
 
 		rec := &divineNotifyRecorder{}

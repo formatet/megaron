@@ -69,7 +69,7 @@ func TestRealmKharis_CountsTempledCitiesIncludingCapital(t *testing.T) {
 	}
 }
 
-func TestRealmPunishment_TemplelessHitsEligibleColony(t *testing.T) {
+func TestRealmPunishmentHitsEligibleColonyAndReplayIsProtected(t *testing.T) {
 	pool, wid, sid := newGrowthFixture(t, [6]string{"plains", "plains", "plains", "plains", "plains", "plains"}, 1000)
 	ctx := context.Background()
 	var pid uuid.UUID
@@ -90,13 +90,13 @@ func TestRealmPunishment_TemplelessHitsEligibleColony(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	if _, err := pool.Exec(ctx, `INSERT INTO player_world_records(player_id,world_id,settlement_id,kharis_amount,kharis_rate,kharis_calc_tick,founded_tick) VALUES($1,$2,$3,29,0,current_world_tick(),current_world_tick())`, pid, wid, sid); err != nil {
+	if _, err := pool.Exec(ctx, `INSERT INTO player_world_records(player_id,world_id,settlement_id,kharis_amount,kharis_rate,kharis_calc_tick,founded_tick) VALUES($1,$2,$3,14,0,current_world_tick(),current_world_tick())`, pid, wid, sid); err != nil {
 		t.Fatal(err)
 	}
 	h := newTestTickHandler(pool)
 	h.randomFloat = func() float64 { return 0 }
 	eid := atomic.AddInt64(&advanceOneDayEventID, 1)
-	snap := wanaxSnap{playerID: pid, settlementID: sid, kharis: 29, kharisCap: 50, templeCities: 0, cityCount: 2}
+	snap := wanaxSnap{playerID: pid, settlementID: sid, kharis: 14, kharisCap: 50, templeCities: 0, cityCount: 2}
 	if err := h.processMaintenance(ctx, snap, wid, eid); err != nil {
 		t.Fatal(err)
 	}
@@ -122,7 +122,7 @@ func TestRealmPunishment_TemplelessHitsEligibleColony(t *testing.T) {
 	if count != 1 {
 		t.Fatalf("colony punishment outcomes%d want1", count)
 	}
-	// A standing temple still protects, even below Indifferent with a certain roll.
+	// The post-punishment shield, not a standing temple, protects this same tick.
 	snap.templeCities = 1
 	if err := h.processMaintenance(ctx, snap, wid, atomic.AddInt64(&advanceOneDayEventID, 1)); err != nil {
 		t.Fatal(err)
@@ -131,6 +131,6 @@ func TestRealmPunishment_TemplelessHitsEligibleColony(t *testing.T) {
 		t.Fatal(err)
 	}
 	if count != 1 {
-		t.Fatalf("temple did not protect: punishments%d want1", count)
+		t.Fatalf("shield did not protect: punishments%d want1", count)
 	}
 }

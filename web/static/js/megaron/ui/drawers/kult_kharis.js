@@ -1,3 +1,4 @@
+import { fmtClock } from '../fmt_clock.js';
 // kult_kharis.js — pure formatting for the kharis NET figure and the
 // devotion-idle warning shown in the Kult drawer. No DOM, no fetch: kult.js
 // already fetches `pd` (the province GET's settlement object) and hands it
@@ -44,4 +45,18 @@ export function kharisNetView(pd) {
       ' kharis per day before scarcity. Requires a free citizen, a temple workplace and its daily offering.</p>';
   }
   return out;
+}
+
+export function kharisRulesHTML(pd) {
+ const threshold=pd?.kharis_blessing_threshold;
+ if (!Number.isFinite(threshold)) return '';
+ let html='<p class="empty-state">Everyday prayers work at a level-1 temple. Spontaneous blessings require at least ' + threshold + ' kharis and a level-2 temple.</p>';
+ const wrath=pd?.kharis_wrath;
+ if (wrath && Number.isFinite(wrath.threshold) && Number.isFinite(wrath.daily_probability)) {
+  html+='<p class="empty-state">Below ' + wrath.threshold + ' kharis, there is a ' + Math.round(wrath.daily_probability*100) + '% chance of divine punishment each day, with or without a temple.</p>';
+  if (wrath.protection_remaining_days>0 && wrath.protection_until) {
+   html+='<div class="stat-row"><span class="sr-label">Protected from divine punishment</span><span class="sr-val">until ' + fmtClock(wrath.protection_until) + '</span></div>';
+  }
+ }
+ return html;
 }
