@@ -65,6 +65,7 @@ def main():
     scheduled_due=90 if name=='closed' else 100
     fixture += [f"INSERT INTO messengers(id,world_id,sender_id,origin_id,destination_id,message_text,status,hex_q,hex_r,sent_at,arrives_at) VALUES('{ident}','{world}','{sender['pid']}','{sender['sid']}','{recipient['sid']}','Return post {name} fixture','outbound',{recipient['province']['q']},{recipient['province']['r']},now(),now());",f"INSERT INTO scheduled_events(world_id,event_type,payload,process_after,due_tick,priority) VALUES('{world}','MessengerArrival','{{\"messenger_id\":\"{ident}\"}}',now(),{scheduled_due},0);"]
    fixture='BEGIN;\n'+'\n'.join(fixture)+'\nCOMMIT;';sql(fixture);(out/'fixture.sql').write_text(fixture)
+   (out/'fixture.json').write_text(json.dumps({'world':world,'map_seed':sql(f"SELECT map_seed FROM worlds WHERE id='{world}'"),'ids':ids,'sender':{k:v for k,v in sender.items() if k!='token'},'recipient':{k:v for k,v in recipient.items() if k!='token'}},indent=2))
    deadline=time.monotonic()+40
    while time.monotonic()<deadline:
     if int(sql(f"SELECT count(*) FROM messengers WHERE id IN('{ids['reply']}','{ids['closed']}') AND status='delivered'"))==2:break
@@ -90,10 +91,17 @@ def main():
     page.goto(base+'/world/'+world+'/map',wait_until='networkidle');page.locator('#trig-diplomacy').click();root=page.locator('#dtab-queue');letter=root.locator('[data-letter="'+ids['reply']+'"]');letter.wait_for();assert 'Return post before' in letter.inner_text()
     letter.locator('summary').click();letter.locator('[data-queue-reply]').fill('Carry this answer home on your own road.');letter.locator('[data-queue-action="reply"]').scroll_into_view_if_needed();page.screenshot(path=str(out/'desktop-window.png'))
     with page.expect_response(lambda r:r.request.method=='POST' and r.url.endswith('/'+ids['reply']+'/reply')) as response:letter.locator('[data-queue-action="reply"]').click()
-    assert response.value.status==200,response.value.text();letter.get_by_text('Reply dispatched.',exact=True).wait_for();page.screenshot(path=str(out/'desktop-replied.png'))
+    assert response.value.status==200,response.value.text();reply_response=response.value.json();(out/'reply-response.json').write_text(json.dumps(reply_response,indent=2));letter.get_by_text('Reply dispatched.',exact=True).wait_for();page.screenshot(path=str(out/'desktop-replied.png'))
     assert int(sql(f"SELECT count(*) FROM messengers WHERE world_id='{world}'"))==2,'reply created a new messenger'
-    ground=json.loads(sql(f"SELECT row_to_json(t) FROM(SELECT id,status,reply_text FROM messengers WHERE id='{ids['reply']}')t"));assert ground['status']=='returning' and ground['reply_text']=='Carry this answer home on your own road.',ground
-    assert int(sql(f"SELECT count(*) FROM scheduled_events WHERE world_id='{world}' AND event_type='MessengerReturn' AND payload->>'messenger_id'='{ids['reply']}'"))==1
+    ground=json.loads(sql(f"SELECT row_to_json(t) FROM(SELECT id,status,reply_text,passage_status,passage_port_id FROM messengers WHERE id='{ids['reply']}')t"));assert ground['status']=='returning' and ground['reply_text']=='Carry this answer home on your own road.',ground
+    return_timers=int(sql(f"SELECT count(*) FROM scheduled_events WHERE world_id='{world}' AND event_type='MessengerReturn' AND payload->>'messenger_id'='{ids['reply']}'"))
+    return_mode={'messenger':ground,'terminal_return_timers':return_timers,'response':reply_response}
+    (out/'return-mode.json').write_text(json.dumps(return_mode,indent=2))
+    print('RETURN_MODE',json.dumps(return_mode),flush=True)
+    if ground['passage_status']=='awaiting_passage':
+     assert return_timers==0 and ground['passage_port_id'] and reply_response.get('passage_status')=='awaiting_passage',return_mode
+    else:
+     assert return_timers==1 and not reply_response.get('passage_status'),return_mode
     assert not [p for p in posts if p['path'].endswith('/messengers')],posts
     mobile=context(390,844);phone=mobile.new_page();phone.on('pageerror',lambda e:errors.append(str(e)));phone.goto(base+'/world/'+world+'/map',wait_until='networkidle');phone.locator('#trig-diplomacy').click();mroot=phone.locator('#dtab-queue');pending=mroot.locator('[data-letter="'+ids['closed']+'"]');pending.wait_for();assert 'Return post before' in pending.inner_text();phone.screenshot(path=str(out/'mobile-window.png'))
     sql(f"UPDATE worlds SET current_tick=102,last_tick_at=now() WHERE id='{world}';")
@@ -107,7 +115,7 @@ def main():
    after=api(wp+'/messengers/queue?limit=100',token=recipient['token']);assert all(m['reply_window_closed'] and 'reply' not in m['actions'] for m in after['items']);(out/'queue-after.json').write_text(json.dumps(after,indent=2))
    for args,name in [(('inbox','--queue'),'cli-closed.txt'),(('inbox','--history'),'cli-history.txt')]:
     text=cli(*args);assert f'reply --id {ids["closed"]}' not in text;(out/name).write_text(text)
-   (out/'proof.json').write_text(json.dumps({'health':health,'world':world,'ids':ids,'saved_stays':saved,'reply_ground':ground,'posts':posts,'errors':errors,'source_hashes':hashes,'fixture':'normal register/join/found; 2 explicit outbound messengers+scheduled100/90 Arrival events; actual worker delivers at100 and saves102; tick102 advanced explicitly for cutoff view','result':'PASS'},indent=2))
+   (out/'proof.json').write_text(json.dumps({'health':health,'world':world,'ids':ids,'saved_stays':saved,'reply_ground':ground,'return_mode':return_mode,'posts':posts,'errors':errors,'source_hashes':hashes,'fixture':'normal register/join/found; 2 explicit outbound messengers+scheduled100/90 Arrival events; actual worker delivers at100 and saves102; tick102 advanced explicitly for cutoff view','result':'PASS'},indent=2))
    print('PASS',health,'actual Arrival100→saved102, same-bearer native reply, no new messenger, CLIdeadline+history, Firefox1280/390 closedwindow')
  finally:
   if proc is not None:proc.terminate();proc.wait(timeout=20)
