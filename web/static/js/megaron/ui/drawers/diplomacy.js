@@ -630,6 +630,8 @@ export async function dipReply(id) {
   const row = document.getElementById('dip-reply-row-' + id);
   if (res.ok && row) {
     row.outerHTML = '<div style="font-size:.72rem;color:var(--safe-text);margin-top:.2rem">✓ Reply dispatched · returns ' + arrivalHTML(data.returns_at) + passageNote(data) + '</div>';
+  } else if (row) {
+    showInlineResult(row, formatApiError(data, 'Reply failed'), true);
   }
 }
 

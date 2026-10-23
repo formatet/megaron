@@ -153,3 +153,10 @@ test('actual legacy Correspondence hides closed return post while preserving no-
  await dip.loadDiplomacyDrawer();await dip.switchDiplomacyTab('threads');const html=node('dtab-threads').innerHTML;
  assert.match(html,/Return post closed/);assert.doesNotMatch(html,/dip-reply-row-closed-letter/);assert.match(html,/dip-reply-row-legacy-letter/);
 }));
+
+test('legacy return-post refusal shows the real cutoff error beside the retained draft',()=>rig(async({node,calls})=>{
+ const input=node('dip-reply-closed'),row=node('dip-reply-row-closed'),result=node('reply-result');input.value='My late answer';row.querySelector=()=>result;
+ globalThis.fetch=async(url,opts)=>{calls.push({url,opts});return new Response(JSON.stringify({error:'the reply window has closed; the messenger is due to leave'}),{status:409});};
+ await dip.dipReply('closed');assert.match(result.textContent,/reply window has closed/);assert.equal(input.value,'My late answer');assert.equal(row.outerHTML,undefined);
+ assert.equal(calls.length,1);assert.equal(calls[0].url,'/api/v1/worlds/world/messengers/closed/reply');
+}));
