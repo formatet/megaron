@@ -1,0 +1,27 @@
+{
+  "measurements": 72,
+  "engines": [
+    "chromium",
+    "firefox",
+    "webkit"
+  ],
+  "modes": [
+    "desktop",
+    "mobile"
+  ],
+  "findings": 0,
+  "surfaces": [
+    "account",
+    "city",
+    "codex",
+    "diplomacy",
+    "economy",
+    "host",
+    "host-details",
+    "kult",
+    "map",
+    "notif",
+    "report",
+    "war"
+  ]
+}

@@ -1,0 +1,678 @@
+[
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 1280,
+   "top": 44,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 822,
+  "canvas_mismatch": null,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "desktop",
+  "surface": "map",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 536,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "map_facts": {
+   "known_rivers": 0,
+   "cities": 1,
+   "tiers": [
+    "fog",
+    "live"
+   ],
+   "zoom": 1
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 1068,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "desktop",
+  "surface": "city",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 536,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 622,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "desktop",
+  "surface": "war",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 536,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 640,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "desktop",
+  "surface": "diplomacy",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 536,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 709,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "desktop",
+  "surface": "economy",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 536,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 2417,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "desktop",
+  "surface": "kult",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 536,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 788,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "desktop",
+  "surface": "report",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 536,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 659,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "desktop",
+  "surface": "notif",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 536,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 440,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 2264,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "desktop",
+  "surface": "codex",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 536,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 430,
+   "right": 850,
+   "top": 108,
+   "bottom": 775
+  },
+  "box_outside": false,
+  "content_height": 619,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "desktop",
+  "surface": "account",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 536,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 44,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 732,
+  "canvas_mismatch": null,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "mobile",
+  "surface": "map",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 359,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "map_facts": {
+   "known_rivers": 0,
+   "cities": 1,
+   "tiers": [
+    "fog",
+    "live"
+   ],
+   "zoom": 1
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 0,
+   "bottom": 844
+  },
+  "box_outside": false,
+  "content_height": 1090,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "mobile",
+  "surface": "city",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 359,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 0,
+   "bottom": 844
+  },
+  "box_outside": false,
+  "content_height": 597,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "mobile",
+  "surface": "war",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 359,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 0,
+   "bottom": 844
+  },
+  "box_outside": false,
+  "content_height": 615,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "mobile",
+  "surface": "diplomacy",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 359,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 0,
+   "bottom": 844
+  },
+  "box_outside": false,
+  "content_height": 709,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "mobile",
+  "surface": "economy",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 359,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 0,
+   "bottom": 844
+  },
+  "box_outside": false,
+  "content_height": 2467,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "mobile",
+  "surface": "kult",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 359,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 0,
+   "bottom": 844
+  },
+  "box_outside": false,
+  "content_height": 781,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "mobile",
+  "surface": "report",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 359,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 0,
+   "bottom": 844
+  },
+  "box_outside": false,
+  "content_height": 652,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "mobile",
+  "surface": "notif",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 359,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 0,
+   "bottom": 844
+  },
+  "box_outside": false,
+  "content_height": 2264,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "mobile",
+  "surface": "codex",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 359,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 0,
+   "bottom": 844
+  },
+  "box_outside": false,
+  "content_height": 781,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "mobile",
+  "surface": "account",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 359,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 1060,
+   "right": 1280,
+   "top": 44,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 709,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "desktop",
+  "surface": "host",
+  "errors": [],
+  "worker": {
+   "chunks": 25,
+   "bakeMs": 432,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "ships": "SHIPS:\nnever — inland",
+  "ships_box": {
+   "x": 1073.9000244140625,
+   "y": 242.1999969482422,
+   "width": 194.199951171875,
+   "height": 23.116653442382812
+  },
+  "ships_visible": true
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 1060,
+   "right": 1280,
+   "top": 44,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 1176,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "desktop",
+  "surface": "host-details",
+  "errors": [],
+  "worker": {
+   "chunks": 25,
+   "bakeMs": 432,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "ships": "SHIPS:\nnever — inland",
+  "ships_box": {
+   "x": 1073.9000244140625,
+   "y": 242.1999969482422,
+   "width": 194.199951171875,
+   "height": 23.116653442382812
+  },
+  "ships_visible": true
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 0,
+   "bottom": 844
+  },
+  "box_outside": false,
+  "content_height": 727,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "mobile",
+  "surface": "host",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 347,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "ships": "SHIPS:\nnever — inland",
+  "ships_box": {
+   "x": 11.899999618530273,
+   "y": 219.0833282470703,
+   "width": 366.20000648498535,
+   "height": 23.116668701171875
+  },
+  "ships_visible": true
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 0,
+   "bottom": 844
+  },
+  "box_outside": false,
+  "content_height": 975,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "mobile",
+  "surface": "host-details",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 347,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "ships": "SHIPS:\nnever — inland",
+  "ships_box": {
+   "x": 11.899999618530273,
+   "y": 219.0833282470703,
+   "width": 366.20000648498535,
+   "height": 23.116668701171875
+  },
+  "ships_visible": true
+ }
+]
