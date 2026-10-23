@@ -91,19 +91,26 @@ export async function loadDiplomacyDrawer() {
     <div id="dtab-runners" class="city-tab" hidden></div>`;
 
   body.querySelectorAll('.dtab').forEach(tab => {
-    tab.addEventListener('click', function() {
-      body.querySelectorAll('.dtab').forEach(t => t.classList.remove('active'));
-      this.classList.add('active');
-      body.querySelectorAll('.city-tab').forEach(c => { c.hidden = true; c.style.display = 'none'; });
-      const el = document.getElementById('dtab-' + this.dataset.tab);
-      if (el) { el.hidden = false; el.style.display = ''; }
-      if (this.dataset.tab === 'queue' && !el?.dataset.loaded) return loadDipQueue();
-      if (this.dataset.tab === 'known') return loadDipKnown();
-      if (this.dataset.tab === 'runners') return loadDipRunners();
-    });
+    tab.addEventListener('click', function() { return switchDiplomacyTab(this.dataset.tab); });
   });
 
-  await Promise.all([loadDipQueue(), loadDipThreads()]);
+  await loadDipQueue();
+}
+
+export async function switchDiplomacyTab(name) {
+  const body = document.getElementById('diplomacy-body');
+  const el = document.getElementById('dtab-' + name);
+  if (!body || !el) return;
+  body.querySelectorAll('.dtab').forEach(tab => tab.classList.toggle('active', tab.dataset.tab === name));
+  body.querySelectorAll('.city-tab').forEach(tab => {
+    const show = tab === el;
+    tab.hidden = !show;
+    tab.style.display = show ? '' : 'none';
+  });
+  if (name === 'queue' && !el.dataset.loaded) return loadDipQueue();
+  if (name === 'threads' && !el.dataset.loaded) return loadDipThreads();
+  if (name === 'known') return loadDipKnown();
+  if (name === 'runners') return loadDipRunners();
 }
 
 async function loadDipKnown() {
@@ -207,9 +214,15 @@ function restoreDrafts(root, snap) {
   }
 }
 
+const threadRequests = new WeakMap();
+
 async function loadDipThreads() {
   const el = document.getElementById('dtab-threads');
   if (!el) return;
+  const request = Symbol('correspondence request');
+  threadRequests.set(el, request);
+  const world = State.WORLD_ID;
+  const alive = () => threadRequests.get(el) === request && State.WORLD_ID === world && document.getElementById('dtab-threads') === el;
   let myGoods = {};
   const capital = ownCapital();
   if (capital) {
@@ -226,11 +239,13 @@ async function loadDipThreads() {
         : '/founding/messengers')),
       fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/gifts'),
     ]);
+    if (!alive()) return;
     const inbox  = (inR && inR.ok)  ? await inR.json().catch(() => [])  : [];
     if (inR && inR.ok) updateDiplomacyBadge(inbox);
     unreadByThread = new Map();
     const sent   = (outR && outR.ok) ? await outR.json().catch(() => []) : [];
 
+    if (!alive()) return;
     // Normalise both sides into a common shape and group by counterpart name.
     // Inbox: from_name/from_id is the counterpart; Sent: destination_name/destination_id is counterpart.
     const threads = {}; // key → { name, settlement_id, messages[] }
@@ -268,7 +283,7 @@ async function loadDipThreads() {
     }
 
     const keys = Object.keys(threads);
-    if (!keys.length) { el.innerHTML = '<p class="empty-state" style="padding:.5rem">No correspondence yet.</p>'; return; }
+    if (!keys.length) { el.innerHTML = '<p class="empty-state" style="padding:.5rem">No correspondence yet.</p>'; el.dataset.loaded = '1'; return; }
 
     const msgTime = m => new Date(m.arrived_at || m.sent_at || m.created_at || 0).getTime();
     keys.sort((a,b) => {
@@ -463,9 +478,14 @@ async function loadDipThreads() {
     for (const thread of el.querySelectorAll('.dip-thread[data-open]')) acknowledgeThread(thread);
 
     // Do not recreate an already writable textarea when capability hints arrive.
-    el.insertAdjacentHTML('beforeend', await renderLockedActions('diplomacy'));
+    const locked = await renderLockedActions('diplomacy');
+    if (!alive()) return;
+    el.insertAdjacentHTML('beforeend', locked);
+    el.dataset.loaded = '1';
 
   } catch(e) {
+    if (!alive()) return;
+    delete el.dataset.loaded;
     console.error('loadDipThreads', e);
     el.innerHTML = '<p class="empty-state" style="padding:.5rem">Could not load correspondence.</p>';
   }

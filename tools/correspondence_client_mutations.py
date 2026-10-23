@@ -14,6 +14,8 @@ results = []
 for name, path, old, new, command, cwd in [
     ('cli-wrong-queue-path', 'server/cmd/keryx/cmd_correspondence_queue.go', '/messengers/queue?%s', '/messengers/inbox?%s',
      ['go', 'test', './cmd/keryx', '-run', 'TestInboxQueueUsesServerActions', '-count=1'], ROOT / 'server'),
+    ('web-eager-hidden-history', 'web/static/js/megaron/ui/drawers/diplomacy.js', '  await loadDipQueue();', '  await Promise.all([loadDipQueue(), loadDipThreads()]);',
+     ['node', '--experimental-default-type=module', '--test', '--test-name-pattern', 'Queue mount does not fetch legacy history', 'web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs'], ROOT),
     ('web-invents-accept', 'web/static/js/megaron/ui/drawers/diplomacy_queue.js', 'const actions = Array.isArray(item.actions) ? item.actions : [];',
      "const actions = ['read', 'reply', 'trade_accept', 'trade_decline'];",
      ['node', '--experimental-default-type=module', '--test', 'web/static/js/megaron/ui/drawers/diplomacy_queue.test.mjs'], ROOT),
@@ -35,4 +37,4 @@ for name, path, old, new, command, cwd in [
     assert result.returncode == 0, result.stdout
     results.append(dict(mutation=name, source=path, restore_sha256=sha, mutant='RED', restored='GREEN'))
 (OUT / 'client-mutations.json').write_text(json.dumps(results, indent=2))
-print('Both client mutations RED and SHA-exact restoration GREEN')
+print('All three client mutations RED and SHA-exact restoration GREEN')

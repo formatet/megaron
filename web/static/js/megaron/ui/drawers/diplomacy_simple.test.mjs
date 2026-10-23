@@ -111,8 +111,35 @@ test('received history stays in the actual drawer after departure without dead r
   {id:'old',from_name:'Kyme',from_id:'contact',status:'arrived',message:'An old received letter',reply_text:'My old answer',sent_at:'2026-10-01T09:00:00Z',arrived_at:'2026-10-01T09:01:00Z',read_at:'already'},
   {id:'offer',from_name:'Kyme',from_id:'contact',status:'arrived',message:'The previous bargain',trade_offer:{status:'declined'},sent_at:'2026-10-01T09:00:00Z',arrived_at:'2026-10-01T09:01:00Z',read_at:'already'}
  ])):real(url,opts);
- await dip.loadDiplomacyDrawer();
+ await dip.loadDiplomacyDrawer();await dip.switchDiplomacyTab('threads');
  const html=node('dtab-threads').innerHTML;
  assert.match(html,/An old received letter/);assert.match(html,/My old answer/);assert.match(html,/declined/);
  assert.doesNotMatch(html,/dip-reply-row-old|dipAccept\('offer'|dipDecline\('offer'/);
+}));
+
+test('Queue mount does not fetch legacy history; actual Correspondence click loads once and tab changes preserve a written draft',()=>rig(async({node,calls})=>{
+ await dip.loadDiplomacyDrawer();
+ assert.ok(calls.some(c=>c.url.includes('/messengers/queue?')));
+ assert.ok(!calls.some(c=>c.url.includes('/inbox?history=true')),'hidden old history must stay lazy');
+ await node('tab-threads').listener.call(node('tab-threads'));
+ assert.equal(calls.filter(c=>c.url.includes('/inbox?history=true')).length,1);
+ await node('tab-queue').listener.call(node('tab-queue'));
+ await node('tab-threads').listener.call(node('tab-threads'));
+ assert.equal(calls.filter(c=>c.url.includes('/inbox?history=true')).length,1,'same mounted tab should not reload');
+ await dip.dipWrite('contact');const text=node('dip-thread-Kyme-compose-text');text.value='Keep my unsent letter';
+ const reads=calls.filter(c=>c.url.includes('/inbox?history=true')).length;
+ await node('tab-queue').listener.call(node('tab-queue'));await node('tab-threads').listener.call(node('tab-threads'));
+ assert.equal(text.value,'Keep my unsent letter');assert.equal(calls.filter(c=>c.url.includes('/inbox?history=true')).length,reads);
+}));
+
+test('a late lazy history request cannot replace a newer Write composer or typed draft',()=>rig(async({node})=>{
+ await dip.loadDiplomacyDrawer();const real=globalThis.fetch;let release,history=0;
+ globalThis.fetch=async(url,opts)=>{
+  if(url.endsWith('/inbox?history=true')&&history++===0)return new Promise(resolve=>{release=()=>resolve(new Response(JSON.stringify([{id:'stale',from_name:'Old counterpart',from_id:'stale-city',message:'Stale response'}])));});
+  return real(url,opts);
+ };
+ const older=node('tab-threads').listener.call(node('tab-threads'));
+ for(let i=0;i<20&&!release;i++)await new Promise(resolve=>setImmediate(resolve));assert.ok(release);
+ await dip.dipWrite('contact');const text=node('dip-thread-Kyme-compose-text');text.value='My current draft';
+ release();await older;assert.equal(text.value,'My current draft');assert.match(node('dtab-threads').innerHTML,/dip-thread-Kyme/);assert.doesNotMatch(node('dtab-threads').innerHTML,/Stale response/);
 }));

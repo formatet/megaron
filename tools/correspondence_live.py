@@ -26,17 +26,23 @@ def browser_queue(base, world, token, out, expected):
     """Real HTTP/browser only. expected contains reply/poor/expired letter IDs."""
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
-    errors, posts, captures = [], [], []
+    errors, posts, captures, history_reads = [], [], [], []
     with sync_playwright() as pw:
         browser = pw.firefox.launch()
         for label, width, height in [('desktop', 1280, 900), ('mobile', 390, 844)]:
             reads_before = len([p for p in posts if p.endswith('/read')])
+            history_before = len(history_reads)
             ctx = browser.new_context(viewport={'width': width, 'height': height}, has_touch=label == 'mobile')
             ctx.add_cookies([{'name': 'poleia_token', 'value': token, 'url': base}])
             ctx.add_init_script('localStorage.setItem("poleia_token",' + json.dumps(token) + ')')
             page = ctx.new_page()
             page.on('pageerror', lambda e: errors.append(str(e)))
-            page.on('request', lambda request: posts.append(request.url.split(base)[-1]) if request.method == 'POST' else None)
+            def record_request(request):
+                if request.method == 'POST':
+                    posts.append(request.url.split(base)[-1])
+                if request.url.endswith('/messengers/inbox?history=true'):
+                    history_reads.append(request.url.split(base)[-1])
+            page.on('request', record_request)
             page.goto(base + '/world/' + world + '/map', wait_until='networkidle')
             for brief in page.locator('.lb-dismiss').all():
                 if brief.is_visible():
@@ -45,6 +51,7 @@ def browser_queue(base, world, token, out, expected):
             root = page.locator('#dtab-queue')
             root.locator('[data-letter]').first.wait_for()
             assert root.is_visible(), 'Queue must open by default'
+            assert len(history_reads) == history_before, 'Default Queue fetched hidden legacy history'
             assert 'Groups apply to this page' in root.inner_text()
             assert len([p for p in posts if p.endswith('/read')]) == reads_before, 'Listing acknowledged letters'
             poor = root.locator('[data-letter="' + expected['poor'] + '"]')
@@ -85,11 +92,17 @@ def browser_queue(base, world, token, out, expected):
                     root.locator('[data-letter="' + expected['poor'] + '"] [data-queue-action="trade_decline"]').click()
                 assert decline.value.status == 200, decline.value.text()
                 root.get_by_text('Offer declined.', exact=True).wait_for()
+            # The legacy unbounded history is fetched only on explicit selection.
+            page.locator('[data-tab="threads"]').click()
+            page.locator('#dtab-threads .dip-thread').first.wait_for()
+            assert len(history_reads) == history_before + 1, 'Explicit Correspondence click did not load history exactly once'
+            page.locator('[data-tab="queue"]').click()
+            assert root.is_visible()
             captures.append({'view': label, 'width': width, 'height': height, 'first_page': before_ids, 'next_page': next_ids})
             ctx.close()
         browser.close()
     assert not errors, errors
-    result = {'captures': captures, 'errors': errors, 'posts': posts}
+    result = {'captures': captures, 'errors': errors, 'posts': posts, 'history_reads': history_reads}
     (out / 'browser.json').write_text(json.dumps(result, indent=2))
     return result
 
