@@ -965,7 +965,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				}
 			}
 			if kcap > 0 {
-				fmt.Printf("  %-8s %6s  (%s) · cap %.0f · %s\n", "Kharis", resource(kv), mood, kcap, netStr)
+				fmt.Printf("  %-8s %6s  (%s) · ceiling %.0f · %s\n", "Kharis", resource(kv), mood, kcap, netStr)
 			} else {
 				fmt.Printf("  %-8s %6s  (%s) · %s\n", "Kharis", resource(kv), mood, netStr)
 			}
@@ -978,13 +978,13 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				}
 			}
 			if kcap > 0 && kv > kcap {
-				fmt.Println("  Above your temple’s ceiling — standing drifts down; offerings do not raise it.")
+				fmt.Printf("  Above your temple’s ceiling: kharis declines through daily cult upkeep until it is below the ceiling %.0f; temple workers and offerings do not raise it there.\n", kcap)
 			}
 			if worker, ok := sett["kharis_per_temple_worker"].(float64); ok && !(kcap > 0 && kv > kcap) {
-				fmt.Printf("  One more fed temple worker gives +%.2f kharis per day before scarcity; requires a free citizen, a temple workplace and its daily offering.\n", worker)
+				fmt.Printf("  One more fed temple worker gives at least +%.2f kharis per day, and more when the cult’s reference offering of grain is scarce in the world. Requires a free citizen, a temple workplace and its daily offering.\n", worker)
 			}
 			if threshold, ok := sett["kharis_blessing_threshold"].(float64); ok {
-				fmt.Printf("  Everyday prayers work at a level-1 temple. Spontaneous blessings require at least %.0f kharis with a maintained temple. A level-2 ceiling lets you build standing to that threshold; standing retained above a lowered ceiling still counts.\n", threshold)
+				fmt.Printf("  Everyday prayers work at a level-1 temple. Spontaneous blessings need %.0f kharis and a maintained temple. Only a level-2 temple or higher lets kharis grow that far. Kharis retained above a lowered ceiling still counts.\n", threshold)
 			}
 			if wrath, ok := sett["kharis_wrath"].(map[string]any); ok {
 				threshold, _ := wrath["threshold"].(float64)
@@ -1004,9 +1004,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 
 			// Kult: each temple city's reference, stock and planned local gift — answers
 			// direkt på "kommer min kharis klättra idag" utan att vänta på tick.
-			if idle, _ := sett["kharis_devotion_idle"].(bool); idle {
-				fmt.Println("  → your temple has empty workplaces — assign an idle citizen with `keryx staff temple +1` to let kharis climb.")
-			}
+
 			if temples, ok := sett["temple_offers"].([]any); ok {
 				if len(temples) == 0 {
 					fmt.Println("  Temples: none — kharis doesn't climb without a temple + offerings.")
@@ -1347,14 +1345,22 @@ func kharisCapLine(sett map[string]any) string {
 		return ""
 	}
 	switch {
+	case kv > kcap:
+		return fmt.Sprintf("  → kharis declines through daily cult upkeep until it is below the ceiling %.0f; temple workers and offerings do not raise it there.\n", kcap)
 	case netKnown && knet > 0.05 && kv >= kcap-0.05:
-		return fmt.Sprintf("  → your kharis is at the cap %.0f (set by your level-%.0f temple) — build a higher temple to raise the cap further.\n", kcap, mtl)
+		return fmt.Sprintf("  → your kharis is at the ceiling %.0f (set by your level-%.0f temple) — build a higher temple to raise the ceiling further.\n", kcap, mtl)
 	case netKnown && knet > 0.05:
-		return fmt.Sprintf("  → your kharis is climbing toward the cap %.0f (set by your level-%.0f temple) — build a higher temple to raise the cap further.\n", kcap, mtl)
+		return fmt.Sprintf("  → your kharis is climbing toward the ceiling %.0f (set by your level-%.0f temple) — build a higher temple to raise the ceiling further.\n", kcap, mtl)
 	case netKnown && knet < -0.05:
-		return fmt.Sprintf("  → the cap %.0f is set by your level-%.0f temple, but your kharis is falling toward the floor — staff the temple with `keryx staff temple +1` (if it has room) or build a higher temple.\n", kcap, mtl)
+		if idle, _ := sett["kharis_devotion_idle"].(bool); idle {
+			return fmt.Sprintf("  → ceiling %.0f is set by your level-%.0f temple; kharis is declining. Your temple has empty workplaces: assign a free citizen with `keryx staff temple +1` and supply its daily offering.\n", kcap, mtl)
+		}
+		return fmt.Sprintf("  → ceiling %.0f is set by your level-%.0f temple; kharis is declining. Check temple staffing and daily offering supplies in `keryx city`.\n", kcap, mtl)
 	}
-	return fmt.Sprintf("  → the cap %.0f is set by your level-%.0f temple; your kharis holds but doesn't climb — staff the temple with `keryx staff temple +1` or build a higher temple.\n", kcap, mtl)
+	if idle, _ := sett["kharis_devotion_idle"].(bool); idle {
+		return fmt.Sprintf("  → ceiling %.0f is set by your level-%.0f temple; kharis holds. Your temple has empty workplaces: assign a free citizen with `keryx staff temple +1` and supply its daily offering.\n", kcap, mtl)
+	}
+	return fmt.Sprintf("  → ceiling %.0f is set by your level-%.0f temple; kharis holds. Check temple staffing and daily offering supplies in `keryx city`.\n", kcap, mtl)
 }
 
 // buildingLabel names a temple after its god ("Temple of Potnia"); every

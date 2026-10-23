@@ -98,7 +98,13 @@ func demolishCmd() *cobra.Command {
 					return fmt.Errorf("temple consequences are unavailable; no demolition performed")
 				}
 				if !yes && (jsonMode || !stdinIsTerminal()) {
-					return fmt.Errorf("%s Temple demolition requires --yes for non-interactive use", demolitionKharisText(*quote))
+					if jsonMode {
+						printJSON(map[string]any{"demolished": false, "demolition_kharis": quote, "message": "Not demolished. Run again with --yes to confirm."})
+					} else {
+						fmt.Println(demolitionKharisText(*quote))
+						fmt.Println("Not demolished. Run again with --yes to confirm.")
+					}
+					return nil
 				}
 				if !jsonMode {
 					fmt.Println(demolitionKharisText(*quote))
@@ -174,5 +180,5 @@ func demolitionKharisText(k demolitionKharis) string {
 	if godName == "" {
 		godName = k.GodID
 	}
-	return fmt.Sprintf("The god %s is angered: kharis −%g (%g → %g; floor 1). Realm ceiling %g → %g. A lower ceiling stops growth; it does not cut existing kharis. Above the ceiling, ordinary daily upkeep continues and temple gains do not offset it.", godName, k.KharisLoss, k.KharisBefore, k.KharisAfter, k.CapBefore, k.CapAfter)
+	return fmt.Sprintf("The god %s is angered: demolition costs −%g kharis now (%g → %g; floor 1). Ceiling %g → %g. The lower ceiling takes no additional kharis. Above it, kharis declines only through daily cult upkeep; temple workers and offerings do not raise it.", godName, k.KharisLoss, k.KharisBefore, k.KharisAfter, k.CapBefore, k.CapAfter)
 }

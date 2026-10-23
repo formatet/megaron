@@ -18,5 +18,5 @@ export function demolishResultLine(label, lifted, kharis) {
 
 // All values come from the server quote or committed result; no local penalty rule.
 export function demolitionKharisText(k) {
-  return `The god ${k.god_name || k.god_id} is angered: kharis −${k.kharis_loss} (${k.kharis_before} → ${k.kharis_after}; floor 1). Realm ceiling ${k.cap_before} → ${k.cap_after}. A lower ceiling stops growth; it does not cut existing kharis. Above the ceiling, ordinary daily upkeep continues and temple gains do not offset it.`;
+  return `The god ${k.god_name || k.god_id} is angered: demolition costs −${k.kharis_loss} kharis now (${k.kharis_before} → ${k.kharis_after}; floor 1). Ceiling ${k.cap_before} → ${k.cap_after}. The lower ceiling takes no additional kharis. Above it, kharis declines only through daily cult upkeep; temple workers and offerings do not raise it.`;
 }
