@@ -278,6 +278,15 @@ func TestSilverAuditV2Conservation(t *testing.T) {
 	if _, err := tx.Exec(ctx, string(up)); err != nil {
 		t.Fatal(err)
 	}
+	// This test intentionally reinstalls179 to exercise a new epoch; restore
+	// the later trigger-only migration before publishing that state to others.
+	filter, err := os.ReadFile("../../db/migrations/203_silver_trigger_when.up.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := tx.Exec(ctx, string(filter)); err != nil {
+		t.Fatal(err)
+	}
 	if err := tx.Commit(ctx); err != nil {
 		t.Fatal(err)
 	}
