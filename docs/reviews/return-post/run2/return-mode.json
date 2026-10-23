@@ -1,0 +1,15 @@
+{
+  "messenger": {
+    "id": "40bfa196-e55e-40a3-85a9-6dc368535d94",
+    "status": "returning",
+    "reply_text": "Carry this answer home on your own road.",
+    "passage_status": "awaiting_passage",
+    "passage_port_id": "a7eca926-7e74-4a7b-9604-054addaec83b"
+  },
+  "terminal_return_timers": 0,
+  "response": {
+    "distance": 6,
+    "passage_status": "awaiting_passage",
+    "returns_at": "2026-10-23T21:18:26.150860941+02:00"
+  }
+}

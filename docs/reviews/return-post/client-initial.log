@@ -1,0 +1,46 @@
+TAP version 13
+# Subtest: queue shows missed and unaffordable offers, escapes text, and uses only server response actions
+ok 1 - queue shows missed and unaffordable offers, escapes text, and uses only server response actions
+  ---
+  duration_ms: 11.399066
+  type: 'test'
+  ...
+# Subtest: a page held across expiry loses accept and decline without inventing server mutations
+ok 2 - a page held across expiry loses accept and decline without inventing server mutations
+  ---
+  duration_ms: 0.845258
+  type: 'test'
+  ...
+# Subtest: actual loader pages by encoded cursor, refreshes from newest, and listing never posts read receipts
+ok 3 - actual loader pages by encoded cursor, refreshes from newest, and listing never posts read receipts
+  ---
+  duration_ms: 14.791585
+  type: 'test'
+  ...
+# Subtest: actual loader ignores a late response after world change or drawer replacement
+ok 4 - actual loader ignores a late response after world change or drawer replacement
+  ---
+  duration_ms: 0.343968
+  type: 'test'
+  ...
+# Subtest: opening one actual letter acknowledges only that ID, and replying uses the same delivered messenger
+ok 5 - opening one actual letter acknowledges only that ID, and replying uses the same delivered messenger
+  ---
+  duration_ms: 1.938338
+  type: 'test'
+  ...
+# Subtest: a second queue mount supersedes an older fetch in the same drawer and world
+ok 6 - a second queue mount supersedes an older fetch in the same drawer and world
+  ---
+  duration_ms: 0.963937
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 78.309332

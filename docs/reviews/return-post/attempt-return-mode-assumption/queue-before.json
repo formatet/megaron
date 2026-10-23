@@ -1,0 +1,46 @@
+{
+  "items": [
+    {
+      "reply_before": "2026-10-23T23:16:13.304809+02:00",
+      "reply_deadline_tick": 102,
+      "reply_window_closed": false,
+      "id": "fa459f2e-91ce-4519-88b0-a95349ef9c39",
+      "from_id": "5ab9ca37-112d-4580-a181-569758fe4376",
+      "from_name": "Return Kyme",
+      "to_id": "95aca3e8-e488-4014-886c-71d7911b31c9",
+      "to_name": "Return Nostos",
+      "message": "Return post closed fixture",
+      "status": "delivered",
+      "sent_at": "2026-10-23T21:16:13.304809+02:00",
+      "arrived_at": "2026-10-23T21:16:13.304809+02:00",
+      "read_at": null,
+      "queue_group": "waiting_you",
+      "offer_state": "",
+      "actions": [
+        "read",
+        "reply"
+      ]
+    },
+    {
+      "reply_before": "2026-10-23T23:16:13.304809+02:00",
+      "reply_deadline_tick": 102,
+      "reply_window_closed": false,
+      "id": "62b6b6f0-d81f-4d06-9e8d-2a5517607774",
+      "from_id": "5ab9ca37-112d-4580-a181-569758fe4376",
+      "from_name": "Return Kyme",
+      "to_id": "95aca3e8-e488-4014-886c-71d7911b31c9",
+      "to_name": "Return Nostos",
+      "message": "Return post reply fixture",
+      "status": "delivered",
+      "sent_at": "2026-10-23T21:16:13.304809+02:00",
+      "arrived_at": "2026-10-23T21:16:13.304809+02:00",
+      "read_at": null,
+      "queue_group": "waiting_you",
+      "offer_state": "",
+      "actions": [
+        "read",
+        "reply"
+      ]
+    }
+  ]
+}

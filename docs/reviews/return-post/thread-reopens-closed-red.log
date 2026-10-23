@@ -1,0 +1,33 @@
+TAP version 13
+# Subtest: actual legacy Correspondence hides closed return post while preserving no-deadline delivered reply
+not ok 1 - actual legacy Correspondence hides closed return post while preserving no-deadline delivered reply
+  ---
+  duration_ms: 19.533642
+  type: 'test'
+  location: '/home/tk/wt/codex-return-post/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:147:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input was expected to not match the regular expression /dip-reply-row-closed-letter/. Input:
+    
+    `<div class="dip-thread" id="dip-thread-Unknown_origin"><div class="dip-thread-header" onclick="dipToggleThread('dip-thread-Unknown_origin')"><span style="font-size:.82rem;font-weight:bold;color:var(--accent-diplomacy)">Unknown origin</span><span style="font-size:.68rem;color:var(--text-dim)"> <span class="dip-thread-expand-hint">▼</span></span></div><div class="dip-thread-preview" onclick="dipToggleThread('dip-thread-Unknown_origin')">"Legacy without deadline"</div><div class="dip-thread-body"><div id="dip-msg-closed-letter" class="dip-msg-row dip-msg-row-in"><div class="dip-bubble dip-bubble-in"><div class="dip-bubble-meta">← Unknown origin · </div><div class="dip-msg-text">Too late</div><div>Return post closed.</div><div id="dip-reply-row-closed-letter" style="display:flex;gap:.3rem;margin-top:.3rem"><input id="dip-reply-closed-letter" type="text" placeholder="Reply…" maxlength="1000" style="flex:1;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .4rem;font-size:.75rem;font-family:var(--mono)"><button onclick="dipReply('closed-letter')" style="padding:.2rem .5rem;border:1px solid var(--border);background:var(--sandstone);font-size:.7rem;cursor:pointer">Reply</button></div></div></div><div id="dip-msg-legacy-letter" class="dip-msg-row dip-msg-row-in"><div class="dip-bubble dip-bubble-in"><div class="dip-bubble-meta">← Unknown origin · </div><div class="dip-msg-text">Legacy without deadline</div><div id="dip-reply-row-legacy-letter" style="display:flex;gap:.3rem;margin-top:.3rem"><input id="dip-reply-legacy-letter" type="text" placeholder="Reply…" maxlength="1000" style="flex:1;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .4rem;font-size:.75rem;font-family:var(--mono)"><button onclick="dipReply('legacy-letter')" style="padding:.2rem .5rem;border:1px solid var(--border);background:var(--sandstone);font-size:.7rem;cursor:pointer">Reply</button></div></div></div></div></div>`
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: `<div class="dip-thread" id="dip-thread-Unknown_origin"><div class="dip-thread-header" onclick="dipToggleThread('dip-thread-Unknown_origin')"><span style="font-size:.82rem;font-weight:bold;color:var(--accent-diplomacy)">Unknown origin</span><span style="font-size:.68rem;color:var(--text-dim)"> <span class="dip-thread-expand-hint">▼</span></span></div><div class="dip-thread-preview" onclick="dipToggleThread('dip-thread-Unknown_origin')">"Legacy without deadline"</div><div class="dip-thread-body"><div id="dip-msg-closed-letter" class="dip-msg-row dip-msg-row-in"><div class="dip-bubble dip-bubble-in"><div class="dip-bubble-meta">← Unknown origin · </div><div class="dip-msg-text">Too late</div><div>Return post closed.</div><div id="dip-reply-row-closed-letter" style="display:flex;gap:.3rem;margin-top:.3rem"><input id="dip-reply-closed-letter" type="text" placeholder="Reply…" maxlength="1000" style="flex:1;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .4rem;font-size:.75rem;font-family:var(--mono)"><button onclick="dipReply('closed-letter')" style="padding:.2rem .5rem;border:1px solid var(--border);background:var(--sandstone);font-size:.7rem;cursor:pointer">Reply</button></div></div></div><div id="dip-msg-legacy-letter" class="dip-msg-row dip-msg-row-in"><div class="dip-bubble dip-bubble-in"><div class="dip-bubble-meta">← Unknown origin · </div><div class="dip-msg-text">Legacy without deadline</div><div id="dip-reply-row-legacy-letter" style="display:flex;gap:.3rem;margin-top:.3rem"><input id="dip-reply-legacy-letter" type="text" placeholder="Reply…" maxlength="1000" style="flex:1;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .4rem;font-size:.75rem;font-family:var(--mono)"><button onclick="dipReply('legacy-letter')" style="padding:.2rem .5rem;border:1px solid var(--border);background:var(--sandstone);font-size:.7rem;cursor:pointer">Reply</button></div></div></div></div></div>`
+  operator: 'doesNotMatch'
+  stack: |-
+    file:///home/tk/wt/codex-return-post/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:154:49
+    async rig (file:///home/tk/wt/codex-return-post/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:21:7)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 72.860676

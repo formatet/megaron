@@ -1,0 +1,30 @@
+# Return post — review package
+
+New free letters can be answered during their receipt tick and following tick, using the existing bearer. At the saved A+2 departure boundary, Reply and the queue close even when the stay worker is late. Actual delayed deliveries receive a fresh window from the delivery transaction's world-tick read, rather than an already-past scheduled arrival. Issued legacy48tick timers and trade-offer stays are preserved. Reply locks bearer and recipient authority, checks the saved timer, then dispatches through StartReturnLegTx in the same transaction; no new messenger or FOW permission is created.
+
+Branch `codex/return-post` depends on final K1 `447602a4`. Server `ba369b76`/`fe2dfee6`, clients `2af2cba9` plus inline409/copy follow-ups. Native source core `e37a8232`; final branch rebases those changes on the independently tested K1 insertion-clock correction. no merge/push/deploy by Codex. Web Queue, legacy Correspondence, ordinary Inbox/history, CLI Queue and Codex describe the same available reply. No online/presence tracking. Whether receiving a letter should cease revealing its origin city is a separate pending Timothy question; current contact policy is retained.
+
+DB HTTP proves A/A+1 succeed, A+2 rejects without mutations, same bearer/single return, concurrent replies have one winner, late stay retry preserves answer, previously issued148deadline remains148, and scheduled90/processed100 saves102. Original48tick baseline armed148instead102; first short-window experiment revealed late arrival saving92 and was corrected. Four physical server mutants fail by name, SHAexact restored. Client mutants cover ignored server cutoff, legacy thread/CLI reopening closed windows and silently ignored409.
+
+One fresh full206 Go command ran:25packages passed (world150.598s), one languageguard caught the new internal diagnostic's word 'tick'. Only that error literal and a boundary comment changed; final fresh affected API54.677s/messenger2.716s/tick.165s all pass, including languageguard. No second full command is claimed. See full-go.log and final-affected-go.log. Final JS/vet and runtime details are in CLIENTS.md. Chosen tick linearization is the authoritative world-tick read AFTER locking bearer/recipient, not a promise about a later commit wall-clock instant.
+
+Owned actual-worker browser/CLI proofs are under run1/ and run2/: normal register/join/found, explicitly labelled outbound fixtures, real worker delivers both scheduled100 and90 at100 and records102. Native desktop reply returns the same id with no extra messenger; mobile after actual world refresh shows closed return post; CLI carries saved local deadline/history. An early harness manually advanced current_tick without refreshing the browser anchor, so a correct Closed label sat beside an outdated time; raw attempt retained, corrected fresh proof reloads world bootstrap. No production error was inferred from that instrumentation mistake. Own runtimes removed; screenshots indexed with their actual build provenance.
+
+Known inherited boundary: legacy rows with no saved stay timer keep existing delivered-state reply permission and an explicit unknown-deadline message. K1 current-city-owner authority still applies until K2 historical person privacy. After a DB-process restart, old queue cursors are rejected; reopening the drawer starts from newest. Same-page Retry retries that old cursor. No transport-risk, offer-duration or historical event interpretation changed.
+
+## Slice contract
+
+Problem: free-letter bearers currently wait48ticks; Timothy asks a short arrival/next-tick return-post opportunity, independent of knowledge of the sender's city.
+Player truth: a newly delivered free letter can be answered through the same bearer in delivery tick A and A+1; at A+2 it is too late, even if departure worker is delayed. Reply travels physically home.
+Invariant: replying never creates a new messenger, never requires own contact/discovery of the origin, never executes trade, never beats a passed reply deadline, never gains the sender's city's location just through this action.
+Scope: plain-letter stay tuning, exact saved stay-end deadline exposed in Queue, atomic authorized Reply using existing StartReturnLegTx, Keryx/web/Codex deadline presentation.
+Non-scope: trade-offer response duration, incoming-contact FOW policy (separate question pending), existing issued stay timers, mail threads/presence.
+Acceptance: real Arrival arms A+2; native/HTTP replies work in A/A+1 with same id and physical return event; A+2 denies with no mutation even if stay worker delayed; queue actions match; no pending trade bypass; existing issued48tick stays keep saved deadline.
+Stop: removing incoming city discovery requires explicit Timothy answer; do not infer it from return-post authorization.
+Proof: baseline actual scheduled148instead102 + late reply, focused DB HTTP/messenger tests, source mutant2→48 + removed cutoff, fresh fullGo once/JS/vet, real clients on own fresh runtime.
+
+## Final rebase and clock separation
+
+Final parent is K1 `447602a4` (pause-adjusted game time must not bound DB-wall sent_at). Return-post rebased cleanly. The last native runtime is truthfully13c5256+returnpost/206 and does not claim to include that later insertion-clock SQL correction. Combined final-branch HTTP Queue/ReturnPost/tick guards and fresh DB checks are in final-combined.log; final-rebased-vet.log is green. No UI or return-trip logic changed in that rebase. Final753JS/0 is client-final-full-js.log.
+
+The final mode-aware proof records returning+awaiting_passage+nonnullport+matchingHTTPmode with zero terminal timers, which is correct until a ship is boarded; the earlier land proof has one return timer. An intermediate proof assumed all same-landmass returns must already have a terminal timer. Its cleanup occurred before DBmode/count capture, so its sea explanation remains an inference from response shape; it is not invented ground evidence. Raw attempt-return-mode-assumption is retained, and the corrected fresh run records ground before asserting. Neither branch permits multiple return timers or a new messenger.

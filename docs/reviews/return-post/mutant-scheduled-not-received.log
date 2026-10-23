@@ -1,0 +1,9 @@
+» färsk DB på migration 206 · commit 8bbb1f29+ändringar
+2026/10/23 21:09:36 INFO player registered id=d6e10c1d-1f84-4981-b55c-ac8df392364d username=reply-sender-de9646fb-6184-46b6-8ac7-0a47f5448849
+2026/10/23 21:09:36 INFO player registered id=95a49fdc-44ce-45c1-a3bd-7f1ac94568f4 username=reply-receiver-48c5fd2d-da50-461d-9ba9-59a00a2b8e9a
+2026/10/23 21:09:36 INFO messenger delivered id=96db86b3-4645-4639-b5e7-1ae06953c923 destination=1a252f19-b70a-4998-9f4a-bdb48bbc2693
+--- FAIL: TestReturnPostDelayedArrivalStartsWindowWhenReceived (0.11s)
+    messenger_reply_window_test.go:235: late delivery at100 gives deadline92 want102; no vanished reply opportunity
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.116s
+FAIL

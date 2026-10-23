@@ -1,0 +1,14 @@
+[
+  {
+    "id": "6f79ead0-6d72-4dbb-aa72-92160d49f3fd",
+    "status": "delivered",
+    "event_type": "MessengerStayEnd",
+    "due_tick": 102
+  },
+  {
+    "id": "1d7e6da0-871d-4640-9a01-4e6b62f7e493",
+    "status": "delivered",
+    "event_type": "MessengerStayEnd",
+    "due_tick": 102
+  }
+]

@@ -1,0 +1,9 @@
+BUILD_COMPLETE e37a823+returnpost
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-return-post/tools/return_post_live.py", line 116, in <module>
+    if __name__=='__main__':main()
+                            ~~~~^^
+  File "/home/tk/wt/codex-return-post/tools/return_post_live.py", line 96, in main
+    assert int(sql(f"SELECT count(*) FROM scheduled_events WHERE world_id='{world}' AND event_type='MessengerReturn' AND payload->>'messenger_id'='{ids['reply']}'"))==1
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

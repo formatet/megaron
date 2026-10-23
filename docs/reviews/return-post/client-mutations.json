@@ -1,0 +1,30 @@
+[
+  {
+    "mutation": "queue-reopens-closed",
+    "source": "web/static/js/megaron/ui/drawers/diplomacy_queue.js",
+    "sha256": "466fae79e55943bec0d7a492d2be5b6e2a4aa2170408a57d1cf6ee973a1d24dc",
+    "mutant": "RED",
+    "restored": "GREEN"
+  },
+  {
+    "mutation": "thread-reopens-closed",
+    "source": "web/static/js/megaron/ui/drawers/diplomacy.js",
+    "sha256": "7292d063937f59d294abed03d69fce7fb45d6a1ac9f761cdb6c2a05b845ce64f",
+    "mutant": "RED",
+    "restored": "GREEN"
+  },
+  {
+    "mutation": "cli-reopens-closed",
+    "source": "server/cmd/keryx/cmd_marches.go",
+    "sha256": "404289c7ac96f03943ab609a9bd8c128729a1e5da954699835cf2bd71c9e20a3",
+    "mutant": "RED",
+    "restored": "GREEN"
+  },
+  {
+    "mutation": "thread-swallows-cutoff-error",
+    "source": "web/static/js/megaron/ui/drawers/diplomacy.js",
+    "sha256": "7292d063937f59d294abed03d69fce7fb45d6a1ac9f761cdb6c2a05b845ce64f",
+    "mutant": "RED",
+    "restored": "GREEN"
+  }
+]

@@ -1,0 +1,43 @@
+{
+  "items": [
+    {
+      "reply_before": "2026-10-23T21:12:25.385062+02:00",
+      "reply_deadline_tick": 102,
+      "reply_window_closed": true,
+      "id": "6f79ead0-6d72-4dbb-aa72-92160d49f3fd",
+      "from_id": "249d3168-1e39-42ed-a89d-6a6b51bd89cb",
+      "from_name": "Return Kyme",
+      "to_id": "139f3157-b075-4a15-a0cf-c641d7aec090",
+      "to_name": "Return Nostos",
+      "message": "Return post closed fixture",
+      "status": "delivered",
+      "sent_at": "2026-10-23T21:12:08.156409+02:00",
+      "arrived_at": "2026-10-23T21:12:08.156409+02:00",
+      "read_at": null,
+      "queue_group": "completed",
+      "offer_state": "",
+      "actions": [
+        "read"
+      ]
+    },
+    {
+      "reply_before": "2026-10-23T21:12:25.385062+02:00",
+      "reply_deadline_tick": 102,
+      "reply_window_closed": true,
+      "id": "1d7e6da0-871d-4640-9a01-4e6b62f7e493",
+      "from_id": "249d3168-1e39-42ed-a89d-6a6b51bd89cb",
+      "from_name": "Return Kyme",
+      "to_id": "139f3157-b075-4a15-a0cf-c641d7aec090",
+      "to_name": "Return Nostos",
+      "message": "Return post reply fixture",
+      "status": "returning",
+      "reply_text": "Carry this answer home on your own road.",
+      "sent_at": "2026-10-23T21:12:08.156409+02:00",
+      "arrived_at": "2026-10-24T00:12:24.230868+02:00",
+      "read_at": "2026-10-23T21:12:24.081206+02:00",
+      "queue_group": "completed",
+      "offer_state": "",
+      "actions": []
+    }
+  ]
+}

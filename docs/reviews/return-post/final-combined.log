@@ -1,0 +1,4 @@
+» färsk DB på migration 206 · commit 9f225fff
+ok  	formatet/megaron/server/api/handlers	1.704s
+ok  	formatet/megaron/server/internal/messenger	0.044s
+ok  	formatet/megaron/server/internal/tick	0.164s

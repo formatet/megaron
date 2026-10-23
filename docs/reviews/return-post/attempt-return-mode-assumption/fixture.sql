@@ -1,0 +1,8 @@
+BEGIN;
+UPDATE worlds SET current_tick=100,last_tick_at=now() WHERE id='31b57a7d-b47c-48aa-9e49-1778a2ace554';
+UPDATE settlement_goods SET amount=10000,rate=0,calc_tick=100 WHERE settlement_id IN('95aca3e8-e488-4014-886c-71d7911b31c9','5ab9ca37-112d-4580-a181-569758fe4376') AND good_key='grain';
+INSERT INTO messengers(id,world_id,sender_id,origin_id,destination_id,message_text,status,hex_q,hex_r,sent_at,arrives_at) VALUES('62b6b6f0-d81f-4d06-9e8d-2a5517607774','31b57a7d-b47c-48aa-9e49-1778a2ace554','75f1ae11-b621-4980-9c82-701ddf74adad','5ab9ca37-112d-4580-a181-569758fe4376','95aca3e8-e488-4014-886c-71d7911b31c9','Return post reply fixture','outbound',12,41,now(),now());
+INSERT INTO scheduled_events(world_id,event_type,payload,process_after,due_tick,priority) VALUES('31b57a7d-b47c-48aa-9e49-1778a2ace554','MessengerArrival','{"messenger_id":"62b6b6f0-d81f-4d06-9e8d-2a5517607774"}',now(),100,0);
+INSERT INTO messengers(id,world_id,sender_id,origin_id,destination_id,message_text,status,hex_q,hex_r,sent_at,arrives_at) VALUES('fa459f2e-91ce-4519-88b0-a95349ef9c39','31b57a7d-b47c-48aa-9e49-1778a2ace554','75f1ae11-b621-4980-9c82-701ddf74adad','5ab9ca37-112d-4580-a181-569758fe4376','95aca3e8-e488-4014-886c-71d7911b31c9','Return post closed fixture','outbound',12,41,now(),now());
+INSERT INTO scheduled_events(world_id,event_type,payload,process_after,due_tick,priority) VALUES('31b57a7d-b47c-48aa-9e49-1778a2ace554','MessengerArrival','{"messenger_id":"fa459f2e-91ce-4519-88b0-a95349ef9c39"}',now(),90,0);
+COMMIT;

@@ -1,0 +1,28 @@
+TAP version 13
+# Subtest: legacy return-post refusal shows the real cutoff error beside the retained draft
+not ok 1 - legacy return-post refusal shows the real cutoff error beside the retained draft
+  ---
+  duration_ms: 17.943672
+  type: 'test'
+  location: '/home/tk/wt/codex-return-post/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:157:1'
+  failureType: 'testCodeFailure'
+  error: 'The "string" argument must be of type string. Received type undefined (undefined)'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'match'
+  stack: |-
+    file:///home/tk/wt/codex-return-post/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:160:38
+    async rig (file:///home/tk/wt/codex-return-post/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:21:7)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 73.282569

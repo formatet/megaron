@@ -1,0 +1,39 @@
+» färsk DB på migration 206 · commit fe2dfee6
+ok  	formatet/megaron/server/api/handlers	55.438s
+?   	formatet/megaron/server/cmd/create-world	[no test files]
+ok  	formatet/megaron/server/cmd/erase-player	0.041s
+ok  	formatet/megaron/server/cmd/keryx	0.380s
+?   	formatet/megaron/server/cmd/mapgen-debug	[no test files]
+?   	formatet/megaron/server/cmd/material-measure	[no test files]
+ok  	formatet/megaron/server/cmd/recompute-all	0.047s
+ok  	formatet/megaron/server/cmd/seed-incense	1.290s
+ok  	formatet/megaron/server/cmd/server	3.373s
+ok  	formatet/megaron/server/internal/agora	0.036s
+ok  	formatet/megaron/server/internal/ai	0.024s
+ok  	formatet/megaron/server/internal/auth	0.722s
+ok  	formatet/megaron/server/internal/capabilities	0.599s
+?   	formatet/megaron/server/internal/carrier	[no test files]
+?   	formatet/megaron/server/internal/chronicle	[no test files]
+?   	formatet/megaron/server/internal/clock	[no test files]
+ok  	formatet/megaron/server/internal/combat	14.258s
+ok  	formatet/megaron/server/internal/economy	5.619s
+ok  	formatet/megaron/server/internal/events	0.109s
+ok  	formatet/megaron/server/internal/gossip	0.236s
+ok  	formatet/megaron/server/internal/hexgrid	0.001s
+ok  	formatet/megaron/server/internal/kharis	15.300s
+ok  	formatet/megaron/server/internal/messenger	2.740s
+ok  	formatet/megaron/server/internal/movement	0.003s
+ok  	formatet/megaron/server/internal/notify	1.137s
+ok  	formatet/megaron/server/internal/province	0.398s
+ok  	formatet/megaron/server/internal/religion	0.041s
+ok  	formatet/megaron/server/internal/settlement	0.002s
+--- FAIL: TestDayPlayerLanguageGuard (0.16s)
+    day_guard_test.go:16: Day guard server: exit status 1
+        server/internal/messenger/handler.go:162: forbidden player time: load actual messenger receipt tick: %w
+FAIL
+FAIL	formatet/megaron/server/internal/tick	0.162s
+ok  	formatet/megaron/server/internal/transport	1.056s
+ok  	formatet/megaron/server/internal/unit	0.022s
+?   	formatet/megaron/server/internal/unit/shipnames	[no test files]
+ok  	formatet/megaron/server/internal/world	150.598s
+FAIL

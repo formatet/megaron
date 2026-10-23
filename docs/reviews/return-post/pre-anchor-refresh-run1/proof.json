@@ -1,0 +1,108 @@
+{
+  "health": {
+    "commit": "fe2dfee+returnpost",
+    "migration": 206,
+    "status": "ok"
+  },
+  "world": "5f74d124-277d-4bde-a6ac-5b0d927bfddd",
+  "ids": {
+    "reply": "0f14eb7a-366b-410e-b509-8d35cf9b25a4",
+    "closed": "df2695e7-50f9-46e7-a321-7a390b004378"
+  },
+  "saved_stays": [
+    {
+      "id": "df2695e7-50f9-46e7-a321-7a390b004378",
+      "status": "delivered",
+      "event_type": "MessengerStayEnd",
+      "due_tick": 102
+    },
+    {
+      "id": "0f14eb7a-366b-410e-b509-8d35cf9b25a4",
+      "status": "delivered",
+      "event_type": "MessengerStayEnd",
+      "due_tick": 102
+    }
+  ],
+  "reply_ground": {
+    "id": "0f14eb7a-366b-410e-b509-8d35cf9b25a4",
+    "status": "returning",
+    "reply_text": "Carry this answer home on your own road."
+  },
+  "posts": [
+    {
+      "method": "POST",
+      "path": "https://umami.formatet.se/api/send"
+    },
+    {
+      "method": "POST",
+      "path": "https://umami.formatet.se/api/send"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/5f74d124-277d-4bde-a6ac-5b0d927bfddd/messengers/0f14eb7a-366b-410e-b509-8d35cf9b25a4/read"
+    },
+    {
+      "method": "POST",
+      "path": "https://umami.formatet.se/api/send"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/5f74d124-277d-4bde-a6ac-5b0d927bfddd/messengers/0f14eb7a-366b-410e-b509-8d35cf9b25a4/reply"
+    },
+    {
+      "method": "POST",
+      "path": "https://umami.formatet.se/api/send"
+    }
+  ],
+  "errors": [],
+  "source_hashes": {
+    "server/api/handlers/messenger_reply_test.go": "e5b8e43311421432b727cad9ffb443705633ab6d02dfa885daea03925173f22d",
+    "server/api/handlers/marches_messengers_fow_test.go": "c6b5caf24a1a84b9b7c4795d85f48d701369c54846f1cef597c6ff8ee83f2d44",
+    "server/api/handlers/messenger_runners_test.go": "626d191f8994576d587cd090717df56c613902bf88c079810500c512c1c1e41c",
+    "server/api/handlers/messenger_inbox_insolvent_test.go": "67a66de244edcc619384fd8394938b6456979e03366e5e6980b5c51821881b41",
+    "server/api/handlers/messenger_expiry_visibility_test.go": "8a92d6a8b7a5731d86fbffef81cfe90b1606aa2fa810ed5dfc025b88f43665f0",
+    "server/api/handlers/messenger_passage.go": "c36bb55e8e6153b8584cf708e0967fb5cc7f1453c6cb65161dbfb990ec808c35",
+    "server/api/handlers/messenger_queue_test.go": "4214b2a51b176a89842fe9236b660227b769e6ef3ce90991b329603aeddd566f",
+    "server/api/handlers/messenger_origin_eye_test.go": "e38f8461099464b2c0dca632699000905ed4a7d8cf0183bea9753fbf028b50dc",
+    "server/api/handlers/messenger_carrier_deploy_test.go": "24cf1afe7112301bc20c3c9cd95db31b41223aece13c3e1e57f377b0802fccbe",
+    "server/api/handlers/messenger_carrier_fate_test.go": "5fbf09291e0ef704fb829927eca8be4afcd2f5fa94c833772746045f1320838a",
+    "server/api/handlers/messenger_passage_test.go": "e316e2a114872215a0822fd8af18f5dd471a1b61bbfc9cbba70ff409c31e6e8e",
+    "server/api/handlers/messenger_queue.go": "8fd2d7d96bbb1928ff973fe881b3a7d2721000456f7e2f2e48c5b8a924d69709",
+    "server/api/handlers/messenger_test.go": "0a439d64573a7768991572d7f40534d473f83410ca45d475f264fd3a48e07d44",
+    "server/api/handlers/messenger_offer_release_test.go": "fed8cc449768003c225fa437efc873431c21da8ba89dab0962fca136144e6b7d",
+    "server/api/handlers/messenger_reply_window_test.go": "3749f7a857b5a86df3f98e3c3347319e4263f45b38a8c6d5fe49033c72fbfb63",
+    "server/api/handlers/messenger_passage_leg_test.go": "095c8a03f79bf6b13ee6f0132138a156253ece855c5cc70c7fc2ecfae055f15c",
+    "server/api/handlers/messenger.go": "7bb334436ecb554f39a4b5fd18ecb2b279b998013e6c50927ab771594231f9d3",
+    "server/api/handlers/messenger_trade_naval_test.go": "dbd6ad73ff06827e8c49d8e7b26f44d82028548a65eeeeda09e3e7f027b4824d",
+    "server/api/handlers/messenger_passage_map_test.go": "2e88dbb2e4e5389e562c0fdcaed950f2de1d09e1d0b303700079c4a99e804bca",
+    "server/api/handlers/messenger_trade_offer_good_validation_test.go": "61931fce978def1003bc415465baba473c5aa8c34f42a7a36f65028b1e095c3c",
+    "server/api/handlers/messenger_passage_arrange_test.go": "35f8702120cdd61ae2eb52397cfb395926ea12fe9bebfdfd44c6bc7b3e3adf68",
+    "server/api/handlers/messenger_read.go": "a0b9f37519e762e7a6ffeeabb307405c63f17bb822e69cfa765c109ac1857155",
+    "server/api/handlers/messenger_callback_eye_test.go": "51d7d5e8927d0efb6f006e4a363aa84521ef80c0da6d0c1d9c40853dbb7bd341",
+    "server/api/handlers/messenger_runners.go": "3eba372bc017e9571acd2ba1573237452a181b17bea4d0a69d01e678ab764e2b",
+    "server/api/handlers/messenger_passage_eye_test.go": "456fa1d0632b030c4500d4c12ff6610e84870270087c8497d75fa896967f8b0b",
+    "server/api/handlers/building_effect_handler_test.go": "752827906ebfa2833595098e769d86a17541c8be82cc0ddbeda6f794881bc9da",
+    "server/api/handlers/messenger_read_test.go": "0f2338aa2725f2918cc36534705178cdee0fd93d0a92455480f18fee0ff26bbe",
+    "server/api/handlers/messenger_passage_texts_test.go": "281187e968b545dc779d7d0883ac9ccbd2f7d0326064fe818220b882f3dc80ac",
+    "server/api/handlers/messenger_reply_window.go": "43580c51b60b59747d08b39a9e981251fbe25ba974c4b4915c00ba7a9053c352",
+    "server/internal/messenger/handler.go": "ee1b054173923607d954e9514d1a54bfd33ea5260e52c8d9eb29436a312bbd5a",
+    "server/internal/messenger/handler_idempotent_test.go": "4d3757b038bfc7526dcb2810ff6335978cb60e8c5151a0018ceed6bca2d2220c",
+    "server/cmd/keryx/cmd_messenger.go": "5ddbe8b9bb675185559fb9e7d9a97b76a4d638e9a33bd1976ae339f52ed96d4a",
+    "server/cmd/keryx/cmd_correspondence_queue.go": "4ae076dc5fd60d44cf2c5e73ab5109df9a33e5c842146f939041b4eabc574588",
+    "server/cmd/keryx/cmd_correspondence_queue_test.go": "4cf4e4bb9d9d93890e4e0a312ab482bbfa783be156584cb5dd2fbf5029b85d7b",
+    "server/cmd/keryx/cmd_messenger_test.go": "81eb3d65f52c6ca52b10e8041768e19edf61945671540565ec8aff5d56555d19",
+    "server/cmd/keryx/cmd_diplomacy.go": "00f42b497363a5852d706bd2f953fae9bf88893b1b0f8d6bbda2a6ab7cc0fb75",
+    "server/cmd/keryx/cmd_messenger_split.go": "48ead9c20467c297dec63c69d5cb6e93a0c7e91913d2d2064ee2b489b3da4cb4",
+    "web/static/js/megaron/ui/drawers/diplomacy_queue.js": "466fae79e55943bec0d7a492d2be5b6e2a4aa2170408a57d1cf6ee973a1d24dc",
+    "web/static/js/megaron/ui/drawers/diplomacy_outbox.test.mjs": "a5c4d1fd1d8e90b9505a5e4fb81859152befe775220736dd0dd84daa02619105",
+    "web/static/js/megaron/ui/drawers/inline_handlers.test.mjs": "5d7f50aeb4522d018df7acebc94dd0481779e7e3727e7779d7cf2fe71299b974",
+    "web/static/js/megaron/ui/drawers/diplomacy.js": "19a7fc6039778802813a517202810bf19f3e6319f9e8e6891acf88e42816b871",
+    "web/static/js/megaron/ui/drawers/diplomacy_runners.js": "67cca6da8a513351397fda51ee9ab24341eb5b2b4c88a76977f612b1604fca4e",
+    "web/static/js/megaron/ui/drawers/diplomacy_queue.test.mjs": "04a3de197319f57eb9fca771e3511201106778abecd5b7a3c1b1723e6f3214d9",
+    "web/static/js/megaron/ui/drawers/diplomacy_goods_select.test.mjs": "4cb629123f3416b76571d30125aa0056c268c4d0d46307e98a62bdcdbc57095f",
+    "web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs": "a5ad4ce5848c4e16aabe7cca8d58ebab571e19207dc170b141d2d5a2bf032239",
+    "web/static/js/megaron/ui/drawers/diplomacy_runners.test.mjs": "8fe760d0bcddba7b572ff3e4813c272200f9dc35fdcbaede22501a565ce9588c"
+  },
+  "fixture": "normal register/join/found; 2 explicit outbound messengers+scheduled100/90 Arrival events; actual worker delivers at100 and saves102; tick102 advanced explicitly for cutoff view",
+  "result": "PASS"
+}

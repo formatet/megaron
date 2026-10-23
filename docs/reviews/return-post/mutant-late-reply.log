@@ -1,0 +1,16 @@
+» färsk DB på migration 206 · commit 45f504d0+ändringar
+2026/10/23 21:09:26 INFO player registered id=1cfdeea4-ceb2-4b1b-b9b0-e7dc2c59cc2a username=reply-sender-1640f73e-c3bc-407c-b1a4-8668c26726ea
+2026/10/23 21:09:26 INFO player registered id=7bb9a539-0f43-4af8-9b6c-232961b7a184 username=reply-receiver-4b1e271e-29e9-45d7-ba21-891ef34b42c6
+2026/10/23 21:09:26 INFO messenger delivered id=fd481a2d-f423-4531-a89b-17464b1b7d71 destination=e763e43c-fb44-4454-b3e8-47da0d524b69
+2026/10/23 21:09:26 INFO player registered id=2fcdbd79-1c28-411d-a330-108bbdac8356 username=reply-sender-dfec4167-b078-4961-bf30-c26de34cd721
+2026/10/23 21:09:26 INFO player registered id=4da2fdfa-3807-44de-b48a-9fccb5b2e3f9 username=reply-receiver-d75c19ad-69e0-4325-951e-a6e88343e3a3
+2026/10/23 21:09:26 INFO messenger delivered id=810dd044-09c4-4451-9c4a-d77f33b32634 destination=2b998b61-7e45-49e5-86e5-948ce9140599
+2026/10/23 21:09:26 INFO player registered id=d1542eb2-8191-4130-85af-0ba04c497586 username=reply-sender-b11cac0e-a5ae-476a-9864-15d4e4b50cc7
+2026/10/23 21:09:26 INFO player registered id=bd69d392-4070-4211-b5aa-60f7183fa27e username=reply-receiver-02cc7d00-e242-496e-8ba8-f9403b89831e
+2026/10/23 21:09:26 INFO messenger delivered id=df528722-1ee3-4c51-813d-1b942f268960 destination=5ef183f7-fd66-461f-b1e5-b86b192b24a8
+--- FAIL: TestReturnPostArrivalAndNextTickUseSameBearer (0.35s)
+    --- FAIL: TestReturnPostArrivalAndNextTickUseSameBearer/2 (0.12s)
+        messenger_reply_window_test.go:97: late reply 200 map[distance:3 returns_at:2026-10-23T21:09:26.318224962Z]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.357s
+FAIL

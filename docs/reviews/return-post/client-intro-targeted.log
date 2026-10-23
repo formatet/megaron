@@ -1,0 +1,184 @@
+TAP version 13
+# Subtest: M: actual drawer opens Queue and retains Correspondence, Known and Runners
+ok 1 - M: actual drawer opens Queue and retains Correspondence, Known and Runners
+  ---
+  duration_ms: 16.405598
+  type: 'test'
+  ...
+# Subtest: M: Known keeps ruler and city knowledge, gates rumours
+ok 2 - M: Known keeps ruler and city knowledge, gates rumours
+  ---
+  duration_ms: 10.23174
+  type: 'test'
+  ...
+# Subtest: M: first letter and both trade directions remain reachable without any prior letter
+ok 3 - M: first letter and both trade directions remain reachable without any prior letter
+  ---
+  duration_ms: 7.387079
+  type: 'test'
+  ...
+# Subtest: M: selecting rumour, own city or a removed contact creates no draft or dispatch
+ok 4 - M: selecting rumour, own city or a removed contact creates no draft or dispatch
+  ---
+  duration_ms: 0.302568
+  type: 'test'
+  ...
+# Subtest: M: host still reads both tabs but does not gain a settlement-only trade composer
+ok 5 - M: host still reads both tabs but does not gain a settlement-only trade composer
+  ---
+  duration_ms: 0.707387
+  type: 'test'
+  ...
+# Subtest: M: failed Known fetch offers retry without inventing an empty directory
+ok 6 - M: failed Known fetch offers retry without inventing an empty directory
+  ---
+  duration_ms: 1.468524
+  type: 'test'
+  ...
+# Subtest: M: Write clears a stale composer while the chosen conversation loads
+ok 7 - M: Write clears a stale composer while the chosen conversation loads
+  ---
+  duration_ms: 5.524285
+  type: 'test'
+  ...
+# Subtest: M: late unavailable-actions response preserves a typed first letter
+ok 8 - M: late unavailable-actions response preserves a typed first letter
+  ---
+  duration_ms: 1.302365
+  type: 'test'
+  ...
+# Subtest: received history stays in the actual drawer after departure without dead reply or offer controls
+ok 9 - received history stays in the actual drawer after departure without dead reply or offer controls
+  ---
+  duration_ms: 1.510195
+  type: 'test'
+  ...
+# Subtest: Queue mount does not fetch legacy history; actual Correspondence click loads once and tab changes preserve a written draft
+ok 10 - Queue mount does not fetch legacy history; actual Correspondence click loads once and tab changes preserve a written draft
+  ---
+  duration_ms: 1.152342
+  type: 'test'
+  ...
+# Subtest: a late lazy history request cannot replace a newer Write composer or typed draft
+ok 11 - a late lazy history request cannot replace a newer Write composer or typed draft
+  ---
+  duration_ms: 1.657852
+  type: 'test'
+  ...
+# Subtest: actual legacy Correspondence hides closed return post while preserving no-deadline delivered reply
+ok 12 - actual legacy Correspondence hides closed return post while preserving no-deadline delivered reply
+  ---
+  duration_ms: 0.72523
+  type: 'test'
+  ...
+# Subtest: legacy return-post refusal shows the real cutoff error beside the retained draft
+ok 13 - legacy return-post refusal shows the real cutoff error beside the retained draft
+  ---
+  duration_ms: 0.926249
+  type: 'test'
+  ...
+# Subtest: AK1: monthLabel appends the 1..12 ordinal for an ordinary month
+ok 14 - AK1: monthLabel appends the 1..12 ordinal for an ordinary month
+  ---
+  duration_ms: 0.768868
+  type: 'test'
+  ...
+# Subtest: AK2: monthLabel gives the intercalary Shadow Days no ordinal
+ok 15 - AK2: monthLabel gives the intercalary Shadow Days no ordinal
+  ---
+  duration_ms: 0.185855
+  type: 'test'
+  ...
+# Subtest: AK3 (regression): the notification drawer date header carries the ordinal for a normal month
+ok 16 - AK3 (regression): the notification drawer date header carries the ordinal for a normal month
+  ---
+  duration_ms: 0.095236
+  type: 'test'
+  ...
+# Subtest: MC1: nothing playing — a cue is allowed
+ok 17 - MC1: nothing playing — a cue is allowed
+  ---
+  duration_ms: 0.095768
+  type: 'test'
+  ...
+# Subtest: MC2: a higher-priority cue replaces a lower one (doom > war > victory)
+ok 18 - MC2: a higher-priority cue replaces a lower one (doom > war > victory)
+  ---
+  duration_ms: 0.128029
+  type: 'test'
+  ...
+# Subtest: MC3: a lower-or-equal-priority cue is dropped while one is already playing
+ok 19 - MC3: a lower-or-equal-priority cue is dropped while one is already playing
+  ---
+  duration_ms: 0.079492
+  type: 'test'
+  ...
+# Subtest: MC4: the same cue name within 10 minutes is dropped, and allowed again after
+ok 20 - MC4: the same cue name within 10 minutes is dropped, and allowed again after
+  ---
+  duration_ms: 0.120334
+  type: 'test'
+  ...
+# Subtest: MC5: muted, or not yet started (no user gesture), drops the cue
+ok 21 - MC5: muted, or not yet started (no user gesture), drops the cue
+  ---
+  duration_ms: 0.080074
+  type: 'test'
+  ...
+# Subtest: IH1: a valid, fresh handoff returns its pos
+ok 22 - IH1: a valid, fresh handoff returns its pos
+  ---
+  duration_ms: 0.649092
+  type: 'test'
+  ...
+# Subtest: IH2: missing or unparseable JSON returns null
+ok 23 - IH2: missing or unparseable JSON returns null
+  ---
+  duration_ms: 0.248107
+  type: 'test'
+  ...
+# Subtest: IH3: a negative or non-finite pos returns null
+ok 24 - IH3: a negative or non-finite pos returns null
+  ---
+  duration_ms: 0.123575
+  type: 'test'
+  ...
+# Subtest: IH4: an `at` older than 120s returns null, exactly-fresh does not
+ok 25 - IH4: an `at` older than 120s returns null, exactly-fresh does not
+  ---
+  duration_ms: 0.080279
+  type: 'test'
+  ...
+# Subtest: BR1: nextBedTrack never repeats the track that just ended
+ok 26 - BR1: nextBedTrack never repeats the track that just ended
+  ---
+  duration_ms: 0.209057
+  type: 'test'
+  ...
+# Subtest: BR2: nextBedTrack with one track returns it, and with no last picks from all
+ok 27 - BR2: nextBedTrack with one track returns it, and with no last picks from all
+  ---
+  duration_ms: 0.085284
+  type: 'test'
+  ...
+# Subtest: BR4: nextBedTrack never lets a piece follow itself in its other timbre
+ok 28 - BR4: nextBedTrack never lets a piece follow itself in its other timbre
+  ---
+  duration_ms: 0.126724
+  type: 'test'
+  ...
+# Subtest: BR3: bedGapMs stays within 30–90 s at both ends
+ok 29 - BR3: bedGapMs stays within 30–90 s at both ends
+  ---
+  duration_ms: 0.0701
+  type: 'test'
+  ...
+1..29
+# tests 29
+# suites 0
+# pass 29
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 102.185022

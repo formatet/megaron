@@ -1,0 +1,124 @@
+TAP version 13
+# Subtest: queue shows missed and unaffordable offers, escapes text, and uses only server response actions
+ok 1 - queue shows missed and unaffordable offers, escapes text, and uses only server response actions
+  ---
+  duration_ms: 12.10487
+  type: 'test'
+  ...
+# Subtest: a page held across expiry loses accept and decline without inventing server mutations
+ok 2 - a page held across expiry loses accept and decline without inventing server mutations
+  ---
+  duration_ms: 0.887743
+  type: 'test'
+  ...
+# Subtest: actual loader pages by encoded cursor, refreshes from newest, and listing never posts read receipts
+ok 3 - actual loader pages by encoded cursor, refreshes from newest, and listing never posts read receipts
+  ---
+  duration_ms: 14.777079
+  type: 'test'
+  ...
+# Subtest: actual loader ignores a late response after world change or drawer replacement
+ok 4 - actual loader ignores a late response after world change or drawer replacement
+  ---
+  duration_ms: 0.372048
+  type: 'test'
+  ...
+# Subtest: opening one actual letter acknowledges only that ID, and replying uses the same delivered messenger
+ok 5 - opening one actual letter acknowledges only that ID, and replying uses the same delivered messenger
+  ---
+  duration_ms: 1.996794
+  type: 'test'
+  ...
+# Subtest: a second queue mount supersedes an older fetch in the same drawer and world
+ok 6 - a second queue mount supersedes an older fetch in the same drawer and world
+  ---
+  duration_ms: 0.942525
+  type: 'test'
+  ...
+# Subtest: return-post actions obey server closure and display saved tick deadline without guessing from an elapsed ISO
+ok 7 - return-post actions obey server closure and display saved tick deadline without guessing from an elapsed ISO
+  ---
+  duration_ms: 0.955433
+  type: 'test'
+  ...
+# Subtest: M: actual drawer opens Queue and retains Correspondence, Known and Runners
+ok 8 - M: actual drawer opens Queue and retains Correspondence, Known and Runners
+  ---
+  duration_ms: 14.945342
+  type: 'test'
+  ...
+# Subtest: M: Known keeps ruler and city knowledge, gates rumours
+ok 9 - M: Known keeps ruler and city knowledge, gates rumours
+  ---
+  duration_ms: 9.437904
+  type: 'test'
+  ...
+# Subtest: M: first letter and both trade directions remain reachable without any prior letter
+ok 10 - M: first letter and both trade directions remain reachable without any prior letter
+  ---
+  duration_ms: 7.680817
+  type: 'test'
+  ...
+# Subtest: M: selecting rumour, own city or a removed contact creates no draft or dispatch
+ok 11 - M: selecting rumour, own city or a removed contact creates no draft or dispatch
+  ---
+  duration_ms: 0.335096
+  type: 'test'
+  ...
+# Subtest: M: host still reads both tabs but does not gain a settlement-only trade composer
+ok 12 - M: host still reads both tabs but does not gain a settlement-only trade composer
+  ---
+  duration_ms: 0.882822
+  type: 'test'
+  ...
+# Subtest: M: failed Known fetch offers retry without inventing an empty directory
+ok 13 - M: failed Known fetch offers retry without inventing an empty directory
+  ---
+  duration_ms: 1.615899
+  type: 'test'
+  ...
+# Subtest: M: Write clears a stale composer while the chosen conversation loads
+ok 14 - M: Write clears a stale composer while the chosen conversation loads
+  ---
+  duration_ms: 5.951933
+  type: 'test'
+  ...
+# Subtest: M: late unavailable-actions response preserves a typed first letter
+ok 15 - M: late unavailable-actions response preserves a typed first letter
+  ---
+  duration_ms: 1.341748
+  type: 'test'
+  ...
+# Subtest: received history stays in the actual drawer after departure without dead reply or offer controls
+ok 16 - received history stays in the actual drawer after departure without dead reply or offer controls
+  ---
+  duration_ms: 1.541894
+  type: 'test'
+  ...
+# Subtest: Queue mount does not fetch legacy history; actual Correspondence click loads once and tab changes preserve a written draft
+ok 17 - Queue mount does not fetch legacy history; actual Correspondence click loads once and tab changes preserve a written draft
+  ---
+  duration_ms: 1.206054
+  type: 'test'
+  ...
+# Subtest: a late lazy history request cannot replace a newer Write composer or typed draft
+ok 18 - a late lazy history request cannot replace a newer Write composer or typed draft
+  ---
+  duration_ms: 1.620646
+  type: 'test'
+  ...
+# Subtest: actual legacy Correspondence hides closed return post while preserving no-deadline delivered reply
+ok 19 - actual legacy Correspondence hides closed return post while preserving no-deadline delivered reply
+  ---
+  duration_ms: 0.671024
+  type: 'test'
+  ...
+1..19
+# tests 19
+# suites 0
+# pass 19
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 100.898025

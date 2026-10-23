@@ -1,0 +1,22 @@
+» färsk DB på migration 206 · commit ffd5bd51
+2026/10/23 21:01:13 INFO player registered id=3128a21a-421f-4a01-8e43-693bad0a6b85 username=reply-sender-8735a552-67e8-407c-8ad9-7cb3152a7629
+2026/10/23 21:01:13 INFO player registered id=4de0dec1-1dc1-4a0c-ae01-3aaaeace1bd8 username=reply-receiver-c9d4841e-0e91-485f-a9fa-5dfff8db5b57
+2026/10/23 21:01:13 INFO messenger delivered id=f0325268-7a83-4f62-ba52-9d8f52803589 destination=69909056-56bb-4930-8520-9336f51e5add
+2026/10/23 21:01:13 INFO player registered id=46f10153-23d4-48ab-bbcd-3fe75f71578f username=reply-sender-f80cacba-94dd-49d5-9832-498e18385599
+2026/10/23 21:01:13 INFO player registered id=0be09b03-4812-49ef-a9c2-eb1951524cb0 username=reply-receiver-1a9e064e-36df-46e9-99f0-5d188878b3a9
+2026/10/23 21:01:13 INFO messenger delivered id=52369cc0-a6f9-463d-93e9-ed3436099aaf destination=2231810b-2e93-427f-aa32-87c37c6ac995
+2026/10/23 21:01:13 INFO player registered id=581f910f-6198-41ef-b7a7-b886f0773ae6 username=reply-sender-4ef99e92-42e7-42ee-9dbb-c8b81ae1ce0d
+2026/10/23 21:01:13 INFO player registered id=87fc4da7-6c24-4d55-8f40-739cd82ee583 username=reply-receiver-31fa7b00-8031-43bc-8ebf-7fc95e5eeeac
+2026/10/23 21:01:13 INFO messenger delivered id=53f7041e-e93a-45d9-9ce5-200d019f7b1e destination=315f499a-0b79-4178-b771-01dccbd23e98
+--- FAIL: TestReturnPostArrivalAndNextTickUseSameBearer (0.35s)
+    --- FAIL: TestReturnPostArrivalAndNextTickUseSameBearer/0 (0.12s)
+        messenger_reply_window_test.go:47: return post departure=148 want102 (arrival and following tick)
+    --- FAIL: TestReturnPostArrivalAndNextTickUseSameBearer/1 (0.12s)
+        messenger_reply_window_test.go:47: return post departure=148 want102 (arrival and following tick)
+    --- FAIL: TestReturnPostArrivalAndNextTickUseSameBearer/2 (0.12s)
+        messenger_reply_window_test.go:47: return post departure=148 want102 (arrival and following tick)
+2026/10/23 21:01:13 INFO player registered id=31ff7451-5911-4f48-954b-edd37e71b177 username=reply-sender-39c11768-82c0-4d24-b54e-406409928e9a
+2026/10/23 21:01:13 INFO player registered id=d83a3a0e-e047-49e8-9937-6218d42ca411 username=reply-receiver-18c23217-04aa-458c-838e-a4414bda32ec
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.465s
+FAIL

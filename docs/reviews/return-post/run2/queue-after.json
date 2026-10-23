@@ -1,0 +1,43 @@
+{
+  "items": [
+    {
+      "reply_before": "2026-10-23T21:18:27.290414+02:00",
+      "reply_deadline_tick": 102,
+      "reply_window_closed": true,
+      "id": "c46391f0-89e0-46c6-b8a7-9f400dd27c79",
+      "from_id": "14737c54-38f1-46ca-9482-25a0af35a30b",
+      "from_name": "Return Kyme",
+      "to_id": "a7eca926-7e74-4a7b-9604-054addaec83b",
+      "to_name": "Return Nostos",
+      "message": "Return post closed fixture",
+      "status": "delivered",
+      "sent_at": "2026-10-23T21:18:14.84576+02:00",
+      "arrived_at": "2026-10-23T21:18:14.84576+02:00",
+      "read_at": null,
+      "queue_group": "completed",
+      "offer_state": "",
+      "actions": [
+        "read"
+      ]
+    },
+    {
+      "reply_before": "2026-10-23T21:18:27.290414+02:00",
+      "reply_deadline_tick": 102,
+      "reply_window_closed": true,
+      "id": "40bfa196-e55e-40a3-85a9-6dc368535d94",
+      "from_id": "14737c54-38f1-46ca-9482-25a0af35a30b",
+      "from_name": "Return Kyme",
+      "to_id": "a7eca926-7e74-4a7b-9604-054addaec83b",
+      "to_name": "Return Nostos",
+      "message": "Return post reply fixture",
+      "status": "returning",
+      "reply_text": "Carry this answer home on your own road.",
+      "sent_at": "2026-10-23T21:18:14.84576+02:00",
+      "arrived_at": "2026-10-23T21:18:26.15086+02:00",
+      "read_at": "2026-10-23T21:18:26.003429+02:00",
+      "queue_group": "completed",
+      "offer_state": "",
+      "actions": []
+    }
+  ]
+}

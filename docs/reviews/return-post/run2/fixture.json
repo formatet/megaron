@@ -1,0 +1,110 @@
+{
+  "world": "a74b9453-52a4-43ca-94cd-2b294dd15f14",
+  "map_seed": "1792783092740647300",
+  "ids": {
+    "reply": "40bfa196-e55e-40a3-85a9-6dc368535d94",
+    "closed": "c46391f0-89e0-46c6-b8a7-9f400dd27c79"
+  },
+  "sender": {
+    "host": {
+      "host_state": {
+        "at_milli": 0,
+        "q": 43,
+        "r": 9,
+        "status": "can_found_here",
+        "can_found_here": true
+      },
+      "can_cancel_training": false,
+      "id": "4ad2c68c-296c-466e-ae5c-ccd8b6abee7d",
+      "type": "nomadic_host",
+      "category": "land",
+      "size": 1,
+      "upkeep_food_per_tick": 0,
+      "upkeep_grain_per_tick": 0,
+      "upkeep_silver_per_tick": 0,
+      "upkeep_context": "none",
+      "status": "positioned",
+      "deployable": true,
+      "display_name": "Nomadic Host of Amnisia",
+      "shipyard_waiting": false,
+      "q": 43,
+      "r": 9,
+      "current_q": 43,
+      "current_r": 9,
+      "in_battle": false,
+      "can_lay_up": false,
+      "can_fit_out": false
+    },
+    "land": "8",
+    "pid": "d4ab9347-a219-4a46-bb1d-a7d4287cb5b4",
+    "sid": "14737c54-38f1-46ca-9482-25a0af35a30b",
+    "province": {
+      "id": "e9744352-75ef-4def-b620-764f185f9b2c",
+      "settlement_id": "14737c54-38f1-46ca-9482-25a0af35a30b",
+      "name": "Return Kyme",
+      "culture": "minoan",
+      "q": 43,
+      "r": 9,
+      "state": "active",
+      "walls": 0,
+      "size_tier": 1,
+      "owner": "Amnisia",
+      "own": true,
+      "is_capital": true,
+      "allied": false,
+      "visible": true,
+      "army_total": 200
+    }
+  },
+  "recipient": {
+    "host": {
+      "host_state": {
+        "at_milli": 0,
+        "q": 49,
+        "r": 6,
+        "status": "can_found_here",
+        "can_found_here": true
+      },
+      "can_cancel_training": false,
+      "id": "4b10cda2-6445-4e55-85e7-c584577a4633",
+      "type": "nomadic_host",
+      "category": "land",
+      "size": 1,
+      "upkeep_food_per_tick": 0,
+      "upkeep_grain_per_tick": 0,
+      "upkeep_silver_per_tick": 0,
+      "upkeep_context": "none",
+      "status": "positioned",
+      "deployable": true,
+      "display_name": "Nomadic Host of Eumedes",
+      "shipyard_waiting": false,
+      "q": 49,
+      "r": 6,
+      "current_q": 49,
+      "current_r": 6,
+      "in_battle": false,
+      "can_lay_up": false,
+      "can_fit_out": false
+    },
+    "land": "8",
+    "pid": "37e1395b-0619-46a3-9dc6-c7fa09bd4616",
+    "sid": "a7eca926-7e74-4a7b-9604-054addaec83b",
+    "province": {
+      "id": "a704d7cc-67d1-45ae-bfcc-c55777828336",
+      "settlement_id": "a7eca926-7e74-4a7b-9604-054addaec83b",
+      "name": "Return Nostos",
+      "culture": "minoan",
+      "q": 49,
+      "r": 6,
+      "state": "active",
+      "walls": 0,
+      "size_tier": 1,
+      "owner": "Eumedes",
+      "own": true,
+      "is_capital": true,
+      "allied": false,
+      "visible": true,
+      "army_total": 200
+    }
+  }
+}

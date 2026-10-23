@@ -1,0 +1,13 @@
+--- FAIL: TestReturnPostOrdinaryInboxHidesClosedReplyWithoutSuppressingLegacy (0.00s)
+    return_post_client_test.go:63: From: Kyme  ()
+          "Closed letter"
+            reply: keryx reply --id closed --text "..."
+        
+        From: Kyme  ()
+          "No timer"
+            reply: keryx reply --id legacy --text "..."
+        
+        
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.003s
+FAIL
