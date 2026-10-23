@@ -1,0 +1,36 @@
+TAP version 13
+# Subtest: ORDER29: empty temple slots above the ceiling do not invite staffing to raise kharis
+not ok 1 - ORDER29: empty temple slots above the ceiling do not invite staffing to raise kharis
+  ---
+  duration_ms: 1.28747
+  type: 'test'
+  location: '/home/tk/wt/codex-kharistext-fixar/web/static/js/megaron/ui/drawers/kult_kharis.test.mjs:89:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + '<p class="kult-warn">Temple workplaces remain unfilled — place citizens in your temples in City.</p>'
+    - ''
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: ''
+  actual: '<p class="kult-warn">Temple workplaces remain unfilled — place citizens in your temples in City.</p>'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-kharistext-fixar/web/static/js/megaron/ui/drawers/kult_kharis.test.mjs:91:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 40.630459

@@ -1,0 +1,43 @@
+Wanax Thersites · today 05:49
+
+1 citizen = 100 people
+Thersites 1 [minoan]  Pop: 1.0k people  Labor: 10 citizens  Walls: 0/3  Settlements: 1/5
+Walls hold 2.0k. The next wall needs a Granary of level 1 (yours: 0) — `keryx build --type silo`.
+Population 1000 — not growing: food net -5.0 per day (needs more than 0)
+
+Food for 620.0 days at current consumption (100 grain, 1000 fish, 1000 oil, 1000 wine)
+Herd 1000 / 50 — full: new animals are eaten, then lost. A pen raises the cap.
+
+Last today 05:49: 0 goods produced, 0 consumed  ·  keryx ticklog for details
+
+Resources
+  (per day; food and army balances are itemized below)
+  Silver     1.0k  —
+  Food     production 0.0 − people eat 5.0 = net -5.0 per day (before army)
+  Grain       100  production 0.0 per day  (5 citizens needed for people on best food slots · 0 on food)
+  Automatic food: 0.50 grain + 0.00 fish per day without placed citizens (nearby ground 0.50 grain; 0 people outside whole citizens: 0.00 grain + 0.00 fish, a fraction of the best food worker)
+  Army     eats 0 food per day → food net -5.0 per day after army
+  Silver   net +0.0 per day after army pay
+  Fish       1.0k  —
+  Timber      990  —
+  Stone      1.0k  —
+  Copper     1.0k  —
+  Tin        1.0k  —
+  Bronze     1.0k  —
+  ⚠ Timber production ~0 — timber gates harbour (16)/barracks (8)/foundry (8)/temple (8). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).
+  Kharis       12  (Suspicious) · ceiling 50 · net -0.2 per day (temple − decay)
+  Upkeep of the cult: 0.10 base + 1 city cost 0.00 + 1000 residents cost 0.10 = 0.20 kharis per day
+  Temple production: 0.00 kharis per day
+  One more fed temple worker gives at least +1.05 kharis per day, and more when the cult’s reference offering of grain is scarce in the world. Requires a free citizen, a temple workplace and its daily offering.
+  Everyday prayers work at a level-1 temple. Spontaneous blessings need 60 kharis and a maintained temple. Only a level-2 temple or higher lets kharis grow that far. Kharis retained above a lowered ceiling still counts.
+  Below 15 kharis: 3% chance of divine punishment per day, with or without a temple.
+  Protected from divine punishment until today 12:49.
+  → ceiling 50 is set by your level-1 temple; kharis is declining. Your temple has empty workplaces: assign a free citizen with `keryx staff temple +1` and supply its daily offering.
+  Temple of Potnia in Thersites 1: reference 0.25 grain per day — alternatives: 0.2677 fish or 0.2601 timber or 0.2575 silver — stock: 100 grain, 1000 fish, 990 timber, 1000 silver — next gift: 0.25 grain  ✓
+  → feed the temples with local grain, fish, timber or silver or cast a rite — see `keryx rite --list`.
+
+Army (garrison in Thersites 1)
+  Field units and other cities are shown in `keryx unit list`.
+
+Buildings
+  Temple of Potnia L1

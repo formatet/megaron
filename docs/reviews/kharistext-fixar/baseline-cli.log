@@ -1,0 +1,127 @@
+Error: The god potnia is angered: kharis −4 (5 → 1; floor 1). Realm ceiling 100 → 50. A lower ceiling stops growth; it does not cut existing kharis. Above the ceiling, ordinary daily upkeep continues and temple gains do not offset it. Temple demolition requires --yes for non-interactive use
+Usage:
+  demolish [city] [flags]
+
+Examples:
+  keryx demolish --hex 3,-1                 # the farm/mine/lumbermill/stonequarry standing on that hex
+  keryx demolish --type market               # a city building
+  keryx demolish --hex 5,2 --province <province-id>
+
+Flags:
+      --god string        which temple, when the city has one to several gods
+  -h, --help              help for demolish
+      --hex string        hex building to demolish, as "q,r"
+      --province string   city to demolish in (default: your capital)
+      --type string       city building to demolish (market, temple, harbour, ...)
+      --yes               confirm temple demolition (required for non-interactive use)
+
+Error: The god potnia is angered: kharis −4 (5 → 1; floor 1). Realm ceiling 100 → 50. A lower ceiling stops growth; it does not cut existing kharis. Above the ceiling, ordinary daily upkeep continues and temple gains do not offset it. Temple demolition requires --yes for non-interactive use
+Usage:
+  demolish [city] [flags]
+
+Examples:
+  keryx demolish --hex 3,-1                 # the farm/mine/lumbermill/stonequarry standing on that hex
+  keryx demolish --type market               # a city building
+  keryx demolish --hex 5,2 --province <province-id>
+
+Flags:
+      --god string        which temple, when the city has one to several gods
+  -h, --help              help for demolish
+      --hex string        hex building to demolish, as "q,r"
+      --province string   city to demolish in (default: your capital)
+      --type string       city building to demolish (market, temple, harbour, ...)
+      --yes               confirm temple demolition (required for non-interactive use)
+
+--- FAIL: TestDemolishTempleRequiresExplicitConfirmation (0.00s)
+    --- FAIL: TestDemolishTempleRequiresExplicitConfirmation/temple_guarded (0.00s)
+        cmd_demolish_kharis_test.go:57: missing confirmation error: The god potnia is angered: kharis −4 (5 → 1; floor 1). Realm ceiling 100 → 50. A lower ceiling stops growth; it does not cut existing kharis. Above the ceiling, ordinary daily upkeep continues and temple gains do not offset it. Temple demolition requires --yes for non-interactive use
+    --- FAIL: TestDemolishTempleRequiresExplicitConfirmation/json_guarded (0.00s)
+        cmd_demolish_kharis_test.go:57: missing confirmation error: The god potnia is angered: kharis −4 (5 → 1; floor 1). Realm ceiling 100 → 50. A lower ceiling stops growth; it does not cut existing kharis. Above the ceiling, ordinary daily upkeep continues and temple gains do not offset it. Temple demolition requires --yes for non-interactive use
+    --- FAIL: TestDemolishTempleRequiresExplicitConfirmation/temple_confirmed (0.00s)
+        cmd_demolish_kharis_test.go:72: missing "The lower ceiling takes no additional kharis": The god potnia is angered: kharis −4 (5 → 1; floor 1). Realm ceiling 100 → 50. A lower ceiling stops growth; it does not cut existing kharis. Above the ceiling, ordinary daily upkeep continues and temple gains do not offset it.
+            Demolished: temple (level 3) in the city — the place is free to build on. 2 citizen(s) lifted off their work and are idle now.
+            The god potnia is angered: kharis −4 (5 → 1; floor 1). Realm ceiling 100 → 50. A lower ceiling stops growth; it does not cut existing kharis. Above the ceiling, ordinary daily upkeep continues and temple gains do not offset it.
+--- FAIL: TestTempleDemolitionNotificationSummary (0.00s)
+    cmd_demolish_kharis_test.go:85: missing "The lower ceiling takes no additional kharis":       The god velchanos is angered: kharis −10 (80 → 70; floor 1). Realm ceiling 75 → 50. A lower ceiling stops growth; it does not cut existing kharis. Above the ceiling, ordinary daily upkeep continues and temple gains do not offset it.
+--- FAIL: TestStatusRealmKharisDecay (0.00s)
+    --- FAIL: TestStatusRealmKharisDecay/capital_without_temple (0.00s)
+        cmd_status_kharis_test.go:40: missing "ceiling 40": 1 citizen = 100 people
+            Mycenae []  Pop: 1.0k people  Labor: 10 citizens  Walls: 0/3
+            
+            Food stores not reported.
+            
+            Resources
+              (per day; food and army balances are itemized below)
+              ⚠ Timber production ~0 — timber gates harbour (16)/barracks (8)/foundry (8)/temple (8). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).
+              Kharis       40  (Indifferent) · cap 40 · net -0.3 per day (temple − decay)
+              Upkeep of the cult: 0.10 base + 1 city cost 0.00 + 2500 residents cost 0.25 = 0.35 kharis per day
+              Temple production: 2.10 kharis per day
+              One more fed temple worker gives +1.05 kharis per day before scarcity; requires a free citizen, a temple workplace and its daily offering.
+              Temples: none — kharis doesn't climb without a temple + offerings.
+            
+    --- FAIL: TestStatusRealmKharisDecay/five_cities (0.00s)
+        cmd_status_kharis_test.go:40: missing "ceiling 40": 1 citizen = 100 people
+            Mycenae []  Pop: 1.0k people  Labor: 10 citizens  Walls: 0/3
+            
+            Food stores not reported.
+            
+            Resources
+              (per day; food and army balances are itemized below)
+              ⚠ Timber production ~0 — timber gates harbour (16)/barracks (8)/foundry (8)/temple (8). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).
+              Kharis       40  (Indifferent) · cap 40 · net -1.4 per day (temple − decay)
+              Upkeep of the cult: 0.10 base + 5 cities cost 1.00 + 2500 residents cost 0.25 = 1.35 kharis per day
+              Temple production: 2.10 kharis per day
+              One more fed temple worker gives +1.05 kharis per day before scarcity; requires a free citizen, a temple workplace and its daily offering.
+              Temples: none — kharis doesn't climb without a temple + offerings.
+            
+    --- FAIL: TestStatusRealmKharisDecay/server_values_rather_than_client_formula (0.00s)
+        cmd_status_kharis_test.go:40: missing "ceiling 40": 1 citizen = 100 people
+            Mycenae []  Pop: 1.0k people  Labor: 10 citizens  Walls: 0/3
+            
+            Food stores not reported.
+            
+            Resources
+              (per day; food and army balances are itemized below)
+              ⚠ Timber production ~0 — timber gates harbour (16)/barracks (8)/foundry (8)/temple (8). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).
+              Kharis       40  (Indifferent) · cap 40 · net -9.6 per day (temple − decay)
+              Upkeep of the cult: 0.70 base + 5 cities cost 8.60 + 2500 residents cost 0.25 = 9.55 kharis per day
+              Temple production: 2.10 kharis per day
+              One more fed temple worker gives +1.05 kharis per day before scarcity; requires a free citizen, a temple workplace and its daily offering.
+              Temples: none — kharis doesn't climb without a temple + offerings.
+            
+--- FAIL: TestStatusDivineProtectionAndBlessingRequirement (0.00s)
+    cmd_status_kharis_test.go:77: missing "need 60 kharis": 1 citizen = 100 people
+        Pylos []  Pop: 1.0k people  Labor: 0 citizens  Walls: 0/3
+        
+        Food stores not reported.
+        
+        Resources
+          (per day; food and army balances are itemized below)
+          ⚠ Timber production ~0 — timber gates harbour (16)/barracks (8)/foundry (8)/temple (8). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).
+          Kharis        0  () · net not reported
+          Cult upkeep not reported
+          Everyday prayers work at a level-1 temple. Spontaneous blessings require at least 60 kharis with a maintained temple. A level-2 ceiling lets you build standing to that threshold; standing retained above a lowered ceiling still counts.
+          Below 15 kharis: 3% chance of divine punishment per day, with or without a temple.
+          Protected from divine punishment until today 20:30.
+        
+--- FAIL: TestStatusAboveCeilingIgnoresTempleGain (0.00s)
+    cmd_status_kharis_test.go:96: missing "until it is below the ceiling": 1 citizen = 100 people
+        Pylos []  Pop: 1.0k people  Labor: 0 citizens  Walls: 0/3
+        
+        Food stores not reported.
+        
+        Resources
+          (per day; food and army balances are itemized below)
+          ⚠ Timber production ~0 — timber gates harbour (16)/barracks (8)/foundry (8)/temple (8). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).
+          Kharis       80  () · cap 50 · net -0.2 per day (upkeep only above ceiling)
+          Cult upkeep not reported
+          Above your temple’s ceiling — standing drifts down; offerings do not raise it.
+        
+--- FAIL: TestKharisCapLineAtCapDoesNotClimb (0.00s)
+    kharis_cap_line_test.go:15: at cap: "  → your kharis is at the cap 50 (set by your level-1 temple) — build a higher temple to raise the cap further.\n"
+--- FAIL: TestAboveCeilingHintDoesNotRecommendMoreWorkers (0.00s)
+    kharis_cap_line_test.go:33:   → the cap 50 is set by your level-1 temple, but your kharis is falling toward the floor — staff the temple with `keryx staff temple +1` (if it has room) or build a higher temple.
+        
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.006s
+FAIL
