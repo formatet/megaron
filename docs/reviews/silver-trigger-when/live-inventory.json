@@ -1,0 +1,10 @@
+[
+  {
+    "migration": 202,
+    "observed_at": "2026-10-23T03:18:35.127068+00:00",
+    "when_expression": null,
+    "trigger_definition": "CREATE TRIGGER silver_mining_credit AFTER UPDATE OF amount, rate, cap, calc_tick ON public.settlement_goods FOR EACH ROW EXECUTE FUNCTION record_silver_mining_credit()",
+    "function_definition": "CREATE OR REPLACE FUNCTION public.record_silver_mining_credit()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nDECLARE credited DOUBLE PRECISION; wid UUID;\nBEGIN\n    IF OLD.good_key <> 'silver' OR OLD.rate <= 0 OR NEW.calc_tick <= OLD.calc_tick THEN\n        RETURN NEW;\n    END IF;\n    -- Realized production before this mutation, clipped at the OLD cap. Transfers\n    -- and payments in NEW.amount are not mining. A full warehouse produces zero.\n    credited := GREATEST(0,\n        LEAST(OLD.cap, GREATEST(0, OLD.amount + OLD.rate * (NEW.calc_tick - OLD.calc_tick)))\n        - LEAST(OLD.cap, GREATEST(0, OLD.amount)));\n    IF credited > 0 THEN\n        SELECT world_id INTO wid FROM settlements WHERE id = OLD.settlement_id;\n        INSERT INTO silver_mining_totals(settlement_id, world_id, credited_silver) VALUES(OLD.settlement_id, wid, credited)\n        ON CONFLICT (settlement_id) DO UPDATE SET\n            credited_silver = silver_mining_totals.credited_silver + EXCLUDED.credited_silver;\n    END IF;\n    RETURN NEW;\nEND\n$function$\n",
+    "transaction_read_only": "on"
+  }
+]
