@@ -1,0 +1,9 @@
+» färsk DB på migration 202 · commit bad61a32+ändringar
+=== RUN   TestFreightGaugePlayerScenario
+2026/10/23 01:33:37 INFO player registered id=1d587a69-c1ac-4e01-805a-9518393d1739 username=alpha-7f2d168d-277b-4a99-aa1e-cd090582bd3d
+    zz_order20_player_scenario_test.go:34: scenario1 {"run": 1, "actual_api": true, "actual_cli": true, "firefox_gauges": true, "tap_tabs": true, "page_errors": []}
+2026/10/23 01:33:39 INFO player registered id=762696b4-b896-4b5e-80b9-9ad34d77cf68 username=alpha-c6ad9a64-dee8-4db3-b73b-bd484cfd8126
+    zz_order20_player_scenario_test.go:34: scenario2 {"run": 2, "actual_api": true, "actual_cli": true, "firefox_gauges": true, "tap_tabs": true, "page_errors": []}
+--- PASS: TestFreightGaugePlayerScenario (4.54s)
+PASS
+ok  	formatet/megaron/server/api/handlers	4.547s

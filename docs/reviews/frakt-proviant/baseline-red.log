@@ -1,0 +1,126 @@
+TAP version 13
+# Subtest: P: garrison shows March and eligible Reinforce; stance and battle retreat are directly available
+ok 1 - P: garrison shows March and eligible Reinforce; stance and battle retreat are directly available
+  ---
+  duration_ms: 9.36513
+  type: 'test'
+  ...
+# Subtest: P: marching land has Recall, stance and typed redirect directly available
+ok 2 - P: marching land has Recall, stance and typed redirect directly available
+  ---
+  duration_ms: 0.219847
+  type: 'test'
+  ...
+# Subtest: P: positioned units remain orderable and fetch uses server-provided ships
+ok 3 - P: positioned units remain orderable and fetch uses server-provided ships
+  ---
+  duration_ms: 0.181094
+  type: 'test'
+  ...
+# Subtest: P: naval loading unloading and repair are directly available; at sea has no recall or redirect
+ok 4 - P: naval loading unloading and repair are directly available; at sea has no recall or redirect
+  ---
+  duration_ms: 0.333307
+  type: 'test'
+  ...
+# Subtest: P: laid-up hull has Fit out and zero upkeep; fitting-out hull has ETA and no orders
+ok 5 - P: laid-up hull has Fit out and zero upkeep; fitting-out hull has ETA and no orders
+  ---
+  duration_ms: 0.380144
+  type: 'test'
+  ...
+# Subtest: P: forming training embarked repairing and freight do not offer inapplicable orders
+ok 6 - P: forming training embarked repairing and freight do not offer inapplicable orders
+  ---
+  duration_ms: 0.272564
+  type: 'test'
+  ...
+# Subtest: P: every server lifecycle status has a player label; unknown status never leaks raw jargon
+ok 7 - P: every server lifecycle status has a player label; unknown status never leaks raw jargon
+  ---
+  duration_ms: 0.169025
+  type: 'test'
+  ...
+# Subtest: P: ships off the coast take no March while a city remains, but keep the R6 stranded exception
+ok 8 - P: ships off the coast take no March while a city remains, but keep the R6 stranded exception
+  ---
+  duration_ms: 0.124856
+  type: 'test'
+  ...
+# Subtest: P: numeric values and missing ETA guards survive the restoration
+ok 9 - P: numeric values and missing ETA guards survive the restoration
+  ---
+  duration_ms: 0.312144
+  type: 'test'
+  ...
+# Subtest: B: Army card shows server rations and explicit zero spearman silver without guessing
+ok 10 - B: Army card shows server rations and explicit zero spearman silver without guessing
+  ---
+  duration_ms: 0.573385
+  type: 'test'
+  ...
+# Subtest: B: upkeep billing context comes from server, not guessed from unit status
+ok 11 - B: upkeep billing context comes from server, not guessed from unit status
+  ---
+  duration_ms: 0.36401
+  type: 'test'
+  ...
+# Subtest: B: civilian Nomadic Host has no upkeep row when the server says none
+ok 12 - B: civilian Nomadic Host has no upkeep row when the server says none
+  ---
+  duration_ms: 0.087201
+  type: 'test'
+  ...
+# Subtest: Haiku 6: a ship at sea with part of a day aboard is not out of food
+ok 13 - Haiku 6: a ship at sea with part of a day aboard is not out of food
+  ---
+  duration_ms: 0.104698
+  type: 'test'
+  ...
+# Subtest: equal food: roster food alias wins and ship manifest preserves each good
+ok 14 - equal food: roster food alias wins and ship manifest preserves each good
+  ---
+  duration_ms: 0.503449
+  type: 'test'
+  ...
+# Subtest: B: Army pay preserves server home, field and surviving-crew amounts
+ok 15 - B: Army pay preserves server home, field and surviving-crew amounts
+  ---
+  duration_ms: 0.590724
+  type: 'test'
+  ...
+# Subtest: freighting ship shows real provisions, final ration and empty hold without new orders
+not ok 16 - freighting ship shows real provisions, final ration and empty hold without new orders
+  ---
+  duration_ms: 0.523851
+  type: 'test'
+  location: '/home/tk/wt/codex-frakt-proviant-matare/web/static/js/megaron/ui/war_cards.test.mjs:165:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /food for 7 days.*0.7 fish/. Input:
+    
+    '<div id="ucard-u" style="padding:.3rem .2rem;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap"><span style="font-size:.8rem;font-weight:bold">First Spearmen</span><span style="font-size:.6rem;color:var(--text-dim);margin-left:.3rem">crew 10</span><span style="font-size:.68rem;color:var(--text-dim);margin-left:auto">carrying goods</span></div><div style="font-size:.65rem;color:var(--text-dim)">Carrying goods — bound to a sea route</div><div id="uorder-u" style="font-size:.65rem;color:var(--text-dim);margin-top:.15rem"></div></div>'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: '<div id="ucard-u" style="padding:.3rem .2rem;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap"><span style="font-size:.8rem;font-weight:bold">First Spearmen</span><span style="font-size:.6rem;color:var(--text-dim);margin-left:.3rem">crew 10</span><span style="font-size:.68rem;color:var(--text-dim);margin-left:auto">carrying goods</span></div><div style="font-size:.65rem;color:var(--text-dim)">Carrying goods — bound to a sea route</div><div id="uorder-u" style="font-size:.65rem;color:var(--text-dim);margin-top:.15rem"></div></div>'
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-frakt-proviant-matare/web/static/js/megaron/ui/war_cards.test.mjs:168:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..16
+# tests 16
+# suites 0
+# pass 15
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 87.026629

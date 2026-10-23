@@ -1,0 +1,8 @@
+» färsk DB på migration 202 · commit bad61a32+ändringar
+2026/10/23 01:31:55 INFO player registered id=102f8193-1a8a-44f1-bbfb-ca7c68a42294 username=shipwright-5f84db77-f190-43f7-a39b-aebb7527328e
+--- FAIL: TestListFreightingProvisionsRetainsDaysLastRationAndEmpty (0.07s)
+    unit_provisions_aboard_test.go:162: unit {ID:27c82cc7-7bc7-4639-b3c0-b7597021379c Status:freighting Days:6 Aboard:true Goods:map[fish:0.7]} want {days:7 aboard:true stock:0.7}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.074s
+ok  	formatet/megaron/server/cmd/keryx	0.003s
+FAIL
