@@ -9,7 +9,7 @@ async function rig(run) {
   const saved={document:globalThis.document,fetch:globalThis.fetch,localStorage:globalThis.localStorage,setTimeout:globalThis.setTimeout};
   const nodes=new Map(),calls=[];
   const cls={add(){},remove(){},toggle(){}};
-  function node(id){if(!nodes.has(id))nodes.set(id,{id,_html:'',get innerHTML(){return this._html;},set innerHTML(html){this._html=html;for(const [,field] of html.matchAll(/<textarea id="([^"]+)"/g))node(field).value='';},insertAdjacentHTML(_position,html){this._html+=html;},style:{},dataset:{},classList:cls,value:'',querySelectorAll:()=>[],addEventListener(){},click(){this.listener?.call(this);}});return nodes.get(id);}
+  function node(id){if(!nodes.has(id))nodes.set(id,{id,_html:'',get innerHTML(){return this._html;},set innerHTML(html){this._html=html;for(const [,field] of html.matchAll(/<textarea id="([^"]+)"/g))node(field).value='';},insertAdjacentHTML(_position,html){this._html+=html;},style:{},dataset:{},classList:cls,value:'',querySelector:()=>null,querySelectorAll:()=>[],addEventListener(){},click(){this.listener?.call(this);}});return nodes.get(id);}
   const body=node('diplomacy-body');
   body.querySelectorAll=selector=>selector==='.dtab'?[...body.innerHTML.matchAll(/data-tab="([^"]+)"/g)].map(([,name])=>{const t=node('tab-'+name);t.dataset.tab=name;t.addEventListener=(_,fn)=>t.listener=fn;return t;}):selector==='.city-tab'?[...body.innerHTML.matchAll(/id="(dtab-[^"]+)"/g)].map(([,id])=>node(id)):[];
   globalThis.document={getElementById:id=>id==='net-status'?null:node(id),querySelector:()=>({value:'buy'})};
@@ -17,13 +17,13 @@ async function rig(run) {
   State.WORLD_ID='world';State.MY_SETTLEMENT_ID='origin';State.provinceData=[{id:'province',name:'Kyme',settlement_id:'contact',own:false,owner:'Alector'},{id:'own-province',settlement_id:'origin',name:'Nostos',own:true,is_capital:true},{settlement_id:'outpost',name:'Outpost',is_outpost:true},{settlement_id:'unnamed'}];
   const cities=[{name:'Kyme',owner:'Alector',owner_id:'ruler',settlement_id:'contact',knowledge:'known',q:3,r:4,copper_deposit:true},{name:'Rumour city',owner:'Alector',owner_id:'ruler',settlement_id:'rumour',knowledge:'rumour',bearing:'~15 hexes east of Nostos',industry_hint:'tin'}, {name:'Nostos',owner:'Me',own:true,settlement_id:'origin',knowledge:'known'}];
   const rulers=[{owner:'Alector',owner_id:'ruler',known_cities:1,rumour_cities:1}];
-  globalThis.fetch=async(url,opts={})=>{calls.push({url,opts});let data=[];if(url.endsWith('/cities'))data=cities;else if(url.endsWith('/diplomacy'))data=rulers;else if(url.endsWith('/goods'))data=[{key:'grain',name:'Grain'}];else if(opts.method==='POST')data={id:'letter',arrives_at:new Date(Date.now()+60000).toISOString()};return new Response(JSON.stringify(data),{status:opts.method==='POST'?201:200});};
+  globalThis.fetch=async(url,opts={})=>{calls.push({url,opts});let data=url.includes('/messengers/queue?')?{items:[]}:[];if(url.endsWith('/cities'))data=cities;else if(url.endsWith('/diplomacy'))data=rulers;else if(url.endsWith('/goods'))data=[{key:'grain',name:'Grain'}];else if(opts.method==='POST')data={id:'letter',arrives_at:new Date(Date.now()+60000).toISOString()};return new Response(JSON.stringify(data),{status:opts.method==='POST'?201:200});};
   try{await run({body,node,calls,cities,rulers});}finally{Object.assign(globalThis,saved);State.provinceData=[];State.MY_SETTLEMENT_ID=null;State.WORLD_ID=null;}
 }
 
-test('M: actual drawer offers exactly Correspondence, Known and Runners',()=>rig(async({body})=>{
+test('M: actual drawer opens Queue and retains Correspondence, Known and Runners',()=>rig(async({body})=>{
   await dip.loadDiplomacyDrawer();
-  assert.deepEqual([...body.innerHTML.matchAll(/data-tab="([^"]+)"/g)].map(m=>m[1]),['threads','known','runners']);
+  assert.deepEqual([...body.innerHTML.matchAll(/data-tab="([^"]+)"/g)].map(m=>m[1]),['queue','threads','known','runners']);
   assert.doesNotMatch(body.innerHTML,/Compose|Cities|Rulers/);
 }));
 

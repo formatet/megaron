@@ -1,4 +1,14 @@
-A **messenger** is a person who walks your letter to another Wanax's city — and walks the reply back. The **Diplomacy (✉)** drawer holds everything: tabs **Correspondence** and **Known**.
+A **messenger** is a person who walks your letter to another Wanax's city — and walks the reply back. The **Diplomacy (✉)** drawer holds everything: tabs **Queue**, **Correspondence**, **Known** and **Runners**.
+
+## Incoming queue
+
+**Diplomacy → Queue** opens first. **Waiting on you** shows received letters awaiting a reply and open trade offers, even when you cannot afford the requested goods or silver. **Past correspondence** retains received letters and resolved offers. **Expired without answer** means the deadline passed; it does not mean the other Wanax actively declined.
+
+The queue shows each letter separately. Groups apply to the displayed page, with newest letters first inside each group. **Older correspondence →** opens the next page; there may be older unanswered letters there. **Refresh from newest** starts again with current states. Letters sent after you began paging appear on refresh. Existing conversations and outgoing letters remain under **Correspondence**.
+
+A row shows its offer, payment blocker and local answer deadline before you open it. **Read letter** marks only that opened letter as read. Reading never accepts, declines or replies. The server supplies available responses; an unaffordable open offer can still be declined. Accepting rechecks payment and transport, so the server may explain why a listed offer cannot currently be dispatched.
+
+In Keryx, use `inbox --queue`, optionally `--limit 30` and `--cursor <next_cursor>`. `--json` returns the same page and opaque next cursor. Queue listing does not mark letters read. The ordinary `inbox` command still displays and marks its letters read; `inbox --history` keeps its existing history view.
 
 ## Writing
 

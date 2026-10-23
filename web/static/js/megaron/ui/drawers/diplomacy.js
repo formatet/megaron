@@ -10,6 +10,7 @@ import { fmtNum } from '../fmt_num.js';
 import { fmtTickTime } from '../fmt_clock.js';
 import { sentStatusHTML } from '../runner_status.js';
 import { loadDipRunners } from './diplomacy_runners.js';
+import { loadDipQueue } from './diplomacy_queue.js';
 
 // "expires <eta>" while a trade offer's window is still open, collapsing to a
 // bare "expired" once it's closed — a closed offer isn't an arrival, and
@@ -79,11 +80,13 @@ export async function loadDiplomacyDrawer() {
   const body = document.getElementById('diplomacy-body');
   body.innerHTML = `
     <div class="drawer-tabs">
-      <button class="dtab active" data-tab="threads">Correspondence</button>
+      <button class="dtab active" data-tab="queue">Queue</button>
+      <button class="dtab" data-tab="threads">Correspondence</button>
       <button class="dtab" data-tab="known">Known</button>
       <button class="dtab" data-tab="runners">Runners</button>
     </div>
-    <div id="dtab-threads" class="city-tab"><div class="loading" style="font-size:.8rem">Loading…</div></div>
+    <div id="dtab-queue" class="city-tab"></div>
+    <div id="dtab-threads" class="city-tab" hidden><div class="loading" style="font-size:.8rem">Loading…</div></div>
     <div id="dtab-known" class="city-tab" hidden></div>
     <div id="dtab-runners" class="city-tab" hidden></div>`;
 
@@ -94,12 +97,13 @@ export async function loadDiplomacyDrawer() {
       body.querySelectorAll('.city-tab').forEach(c => { c.hidden = true; c.style.display = 'none'; });
       const el = document.getElementById('dtab-' + this.dataset.tab);
       if (el) { el.hidden = false; el.style.display = ''; }
+      if (this.dataset.tab === 'queue' && !el?.dataset.loaded) return loadDipQueue();
       if (this.dataset.tab === 'known') return loadDipKnown();
       if (this.dataset.tab === 'runners') return loadDipRunners();
     });
   });
 
-  await loadDipThreads();
+  await Promise.all([loadDipQueue(), loadDipThreads()]);
 }
 
 async function loadDipKnown() {

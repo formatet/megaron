@@ -2109,3 +2109,14 @@ h4.cx-h { font-size: var(--fs-base); }
   .mobile-fullscreen .mctx-header { position: sticky; top: env(safe-area-inset-top); z-index: 1; }
   .mobile-fullscreen .search-input-row .si-input { min-width: 0; }
 }
+
+/* Incoming correspondence queue: status and payment survive closed letters. */
+.dip-queue-toolbar, .dip-queue-heading, .dip-queue-actions { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.dip-queue-heading { justify-content: space-between; }
+.dip-queue-item { padding: .75rem 0; border-bottom: 1px solid var(--border); overflow-wrap: anywhere; }
+.dip-queue-note { color: var(--text-dim); font-size: .75rem; }
+.dip-queue-payment { color: var(--accent); }
+.dip-queue-item details { margin: .5rem 0; }
+.dip-queue-message { white-space: pre-wrap; }
+.dip-queue-item textarea { display: block; box-sizing: border-box; width: 100%; min-height: 5rem; margin: .3rem 0; }
+.dip-queue-result { margin-top: .4rem; }
