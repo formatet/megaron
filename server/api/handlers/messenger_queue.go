@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"formatet/megaron/server/internal/auth"
+	"formatet/megaron/server/internal/tick"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -17,24 +18,27 @@ import (
 // The queue intentionally has the same current-recipient authority as Inbox.
 // Historical person/case ownership is K2, not inferred from current city owners.
 type correspondenceItem struct {
-	ID             uuid.UUID       `json:"id"`
-	FromID         uuid.UUID       `json:"from_id"`
-	FromName       string          `json:"from_name"`
-	ToID           uuid.UUID       `json:"to_id"`
-	ToName         string          `json:"to_name"`
-	Message        string          `json:"message"`
-	TradeOffer     json.RawMessage `json:"trade_offer,omitempty"`
-	Status         string          `json:"status"`
-	ReplyText      *string         `json:"reply_text,omitempty"`
-	SentAt         time.Time       `json:"sent_at"`
-	ArrivedAt      time.Time       `json:"arrived_at"`
-	ExpiresAt      *time.Time      `json:"expires_at,omitempty"`
-	ReadAt         *time.Time      `json:"read_at"`
-	Affordable     *bool           `json:"affordable,omitempty"`
-	Group          string          `json:"queue_group"`
-	OfferState     string          `json:"offer_state"`
-	Actions        []string        `json:"actions"`
-	MissingPayment string          `json:"missing_payment,omitempty"`
+	ReplyBefore       *time.Time      `json:"reply_before,omitempty"`
+	ReplyDeadlineTick *int            `json:"reply_deadline_tick,omitempty"`
+	ReplyWindowClosed bool            `json:"reply_window_closed"`
+	ID                uuid.UUID       `json:"id"`
+	FromID            uuid.UUID       `json:"from_id"`
+	FromName          string          `json:"from_name"`
+	ToID              uuid.UUID       `json:"to_id"`
+	ToName            string          `json:"to_name"`
+	Message           string          `json:"message"`
+	TradeOffer        json.RawMessage `json:"trade_offer,omitempty"`
+	Status            string          `json:"status"`
+	ReplyText         *string         `json:"reply_text,omitempty"`
+	SentAt            time.Time       `json:"sent_at"`
+	ArrivedAt         time.Time       `json:"arrived_at"`
+	ExpiresAt         *time.Time      `json:"expires_at,omitempty"`
+	ReadAt            *time.Time      `json:"read_at"`
+	Affordable        *bool           `json:"affordable,omitempty"`
+	Group             string          `json:"queue_group"`
+	OfferState        string          `json:"offer_state"`
+	Actions           []string        `json:"actions"`
+	MissingPayment    string          `json:"missing_payment,omitempty"`
 }
 
 type correspondenceCursor struct {
@@ -117,8 +121,9 @@ func (h *MessengerHandler) Queue(w http.ResponseWriter, r *http.Request) {
  CASE WHEN m.trade_offer IS NULL THEN NULL ELSE COALESCE((SELECT settled(sg.amount,sg.rate,sg.calc_tick)>=
  CASE WHEN COALESCE(m.trade_offer->>'kind','buy')='buy' THEN (m.trade_offer->>'want_qty')::float ELSE (m.trade_offer->>'want_silver')::float END
  FROM settlement_goods sg WHERE sg.settlement_id=m.destination_id AND sg.good_key=
- CASE WHEN COALESCE(m.trade_offer->>'kind','buy')='buy' THEN m.trade_offer->>'want_good' ELSE 'silver' END),false) END
+ CASE WHEN COALESCE(m.trade_offer->>'kind','buy')='buy' THEN m.trade_offer->>'want_good' ELSE 'silver' END),false) END, `+replyDeadlineSQL+`, qw.current_tick,qw.last_tick_at
  FROM messengers m
+ JOIN worlds qw ON qw.id=m.world_id
  JOIN settlements ds ON ds.id=m.destination_id
  LEFT JOIN settlements os ON os.id=m.origin_id
  WHERE m.world_id=$1 AND ds.owner_id=$2 AND NOT m.withdrawn AND `+receivedLetterSQL+`
@@ -134,11 +139,20 @@ func (h *MessengerHandler) Queue(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var m correspondenceItem
 		var offer []byte
-		if err := rows.Scan(&m.ID, &m.FromID, &m.FromName, &m.ToID, &m.ToName, &m.Message, &offer, &m.Status, &m.ReplyText, &m.SentAt, &m.ArrivedAt, &m.ExpiresAt, &m.ReadAt, &m.Affordable); err != nil {
+		var anchor tick.Anchor
+		if err := rows.Scan(&m.ID, &m.FromID, &m.FromName, &m.ToID, &m.ToName, &m.Message, &offer, &m.Status, &m.ReplyText, &m.SentAt, &m.ArrivedAt, &m.ExpiresAt, &m.ReadAt, &m.Affordable, &m.ReplyDeadlineTick, &anchor.Tick, &anchor.At); err != nil {
 			writeError(w, 500, "could not read correspondence queue")
 			return
 		}
 		m.TradeOffer = offer
+		if (len(offer) == 0 || string(offer) == "null") && m.ReplyDeadlineTick != nil {
+			deadline := anchor.WallAt(int64(*m.ReplyDeadlineTick) * 1000)
+			m.ReplyBefore = &deadline
+			m.ReplyWindowClosed = anchor.Tick >= *m.ReplyDeadlineTick
+		} else {
+			m.ReplyDeadlineTick = nil
+		}
+
 		if err := m.describe(now); err != nil {
 			writeError(w, 500, "could not read trade offer")
 			return
@@ -171,7 +185,7 @@ func (m *correspondenceItem) describe(now time.Time) error {
 		m.Actions = append(m.Actions, "read")
 	}
 	if len(m.TradeOffer) == 0 || string(m.TradeOffer) == "null" {
-		if m.Status == "delivered" {
+		if m.Status == "delivered" && !m.ReplyWindowClosed {
 			m.Group = "waiting_you"
 			m.Actions = append(m.Actions, "reply")
 		}

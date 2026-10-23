@@ -41,7 +41,7 @@ type ReturnPayload struct {
 // pending for 168, the offer spent 120 ticks visible to nobody and acceptable by
 // nobody, with the sender's escrow locked the whole time.
 const (
-	ReplyStayTicks   = 48  // 48 ticks
+	ReplyStayTicks   = 2   // delivery tick and the following tick; depart at A+2
 	OfferExpiryTicks = 168 // 168 ticks
 )
 

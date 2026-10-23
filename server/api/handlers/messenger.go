@@ -901,7 +901,8 @@ func (h *MessengerHandler) Inbox(w http.ResponseWriter, r *http.Request) {
 		                  AND settled(sg.amount, sg.rate, sg.calc_tick)
 		                      >= (m.trade_offer->>'want_silver')::float
 		            )
-		        END AS affordable
+		        END AS affordable,
+ CASE WHEN m.trade_offer IS NULL THEN COALESCE((SELECT current_tick FROM worlds WHERE id=m.world_id)>=`+replyDeadlineSQL+`,false) ELSE false END
 		 FROM messengers m
 		 -- LEFT: a host-sent messenger (mig 087) has no origin settlement; its
 		 -- sender shows as the host, and it must still land in the inbox.
@@ -910,7 +911,7 @@ func (h *MessengerHandler) Inbox(w http.ResponseWriter, r *http.Request) {
 		 WHERE m.world_id = $1
 		   AND ds.owner_id = $2
 		   AND (
-          (NOT $3 AND m.status='delivered' AND (m.trade_offer IS NULL OR
+          (NOT $3 AND m.status='delivered' AND ((m.trade_offer IS NULL AND (`+replyDeadlineSQL+` IS NULL OR (SELECT current_tick FROM worlds WHERE id=m.world_id)<`+replyDeadlineSQL+`)) OR
             (m.trade_offer->>'status'='pending' AND (m.expires_at IS NULL OR m.expires_at>now()))))
           OR ($3 AND NOT m.withdrawn AND `+receivedLetterSQL+`)
 
@@ -926,27 +927,28 @@ func (h *MessengerHandler) Inbox(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type item struct {
-		ID         uuid.UUID       `json:"id"`
-		FromID     uuid.UUID       `json:"from_id"`
-		FromName   string          `json:"from_name"`
-		ToID       uuid.UUID       `json:"to_id"`
-		ToName     string          `json:"to_name"`
-		Message    string          `json:"message"`
-		TradeOffer json.RawMessage `json:"trade_offer,omitempty"`
-		Status     string          `json:"status"`
-		ReplyText  *string         `json:"reply_text,omitempty"`
-		SentAt     time.Time       `json:"sent_at"`
-		ArrivedAt  time.Time       `json:"arrived_at"`
-		ExpiresAt  *time.Time      `json:"expires_at,omitempty"`
-		ReadAt     *time.Time      `json:"read_at"`
-		Affordable *bool           `json:"affordable,omitempty"`
+		ReplyWindowClosed bool            `json:"reply_window_closed"`
+		ID                uuid.UUID       `json:"id"`
+		FromID            uuid.UUID       `json:"from_id"`
+		FromName          string          `json:"from_name"`
+		ToID              uuid.UUID       `json:"to_id"`
+		ToName            string          `json:"to_name"`
+		Message           string          `json:"message"`
+		TradeOffer        json.RawMessage `json:"trade_offer,omitempty"`
+		Status            string          `json:"status"`
+		ReplyText         *string         `json:"reply_text,omitempty"`
+		SentAt            time.Time       `json:"sent_at"`
+		ArrivedAt         time.Time       `json:"arrived_at"`
+		ExpiresAt         *time.Time      `json:"expires_at,omitempty"`
+		ReadAt            *time.Time      `json:"read_at"`
+		Affordable        *bool           `json:"affordable,omitempty"`
 	}
 	var result []item
 	for rows.Next() {
 		var m item
 		var tradeOffer []byte
 		if err := rows.Scan(&m.ID, &m.FromID, &m.FromName, &m.ToID, &m.ToName,
-			&m.Message, &tradeOffer, &m.Status, &m.SentAt, &m.ArrivedAt, &m.ExpiresAt, &m.ReadAt, &m.ReplyText, &m.Affordable); err == nil {
+			&m.Message, &tradeOffer, &m.Status, &m.SentAt, &m.ArrivedAt, &m.ExpiresAt, &m.ReadAt, &m.ReplyText, &m.Affordable, &m.ReplyWindowClosed); err == nil {
 			if len(tradeOffer) > 0 {
 				m.TradeOffer = json.RawMessage(tradeOffer)
 			}
@@ -990,14 +992,22 @@ func (h *MessengerHandler) Reply(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Messenger must be delivered to one of the caller's settlements.
+	// Hold recipient ownership and the physical bearer through the reply TX.
+	tx, err := h.pool.Begin(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "transaction error")
+		return
+	}
+	defer tx.Rollback(r.Context())
 	var offerStatus *string
-	err = h.pool.QueryRow(r.Context(),
-		`SELECT m.trade_offer->>'status' FROM messengers m
+	var replyDeadline *int
+	err = tx.QueryRow(r.Context(),
+		`SELECT m.trade_offer->>'status', `+replyDeadlineSQL+` FROM messengers m
 		 JOIN settlements ds ON ds.id = m.destination_id
-		 WHERE m.id = $1 AND m.world_id = $2 AND ds.owner_id = $3 AND m.status = 'delivered'`,
+		 WHERE m.id = $1 AND m.world_id = $2 AND ds.owner_id = $3 AND m.status = 'delivered'
+		 AND NOT m.withdrawn FOR UPDATE OF m,ds`,
 		messengerID, worldID, playerID,
-	).Scan(&offerStatus)
+	).Scan(&offerStatus, &replyDeadline)
 	if err != nil {
 		writeError(w, http.StatusForbidden, "messenger not found, not yours, or not yet arrived")
 		return
@@ -1019,8 +1029,15 @@ func (h *MessengerHandler) Reply(w http.ResponseWriter, r *http.Request) {
 	// an unanswered stay's end uses (messenger.StartReturnLeg,
 	// megaron_plan_ordna_passage.md 3b-2 R2), just carrying the reply's words.
 	var replyCurrentTick int
-	_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&replyCurrentTick)
-	result, rErr := messenger.StartReturnLeg(r.Context(), h.pool, h.scheduler, worldID, messengerID,
+	if err := tx.QueryRow(r.Context(), `SELECT current_tick FROM worlds WHERE id=$1`, worldID).Scan(&replyCurrentTick); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load reply window")
+		return
+	}
+	if replyDeadline != nil && replyCurrentTick >= *replyDeadline {
+		writeError(w, http.StatusConflict, "the reply window has closed; the messenger is due to leave")
+		return
+	}
+	result, rErr := messenger.StartReturnLegTx(r.Context(), tx, h.scheduler, worldID, messengerID,
 		h.clk.Now(), replyCurrentTick, &req.Reply)
 	if rErr != nil {
 		writeError(w, http.StatusInternalServerError, "could not resolve return route")
@@ -1028,6 +1045,11 @@ func (h *MessengerHandler) Reply(w http.ResponseWriter, r *http.Request) {
 	}
 	if !result.Started {
 		writeError(w, http.StatusConflict, "messenger already started its way home")
+		return
+	}
+
+	if err := tx.Commit(r.Context()); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not dispatch reply")
 		return
 	}
 
