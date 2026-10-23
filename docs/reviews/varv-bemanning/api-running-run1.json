@@ -1,0 +1,62 @@
+{
+  "expedition_rules": {
+    "area_radius": 5,
+    "default_ticks": 10,
+    "max_ticks": 365,
+    "min_ticks": 4
+  },
+  "units": [
+    {
+      "can_cancel_training": false,
+      "id": "b8b9e616-c876-493f-b651-a8c058291841",
+      "type": "galley",
+      "category": "naval",
+      "size": 1,
+      "crew": 20,
+      "upkeep_food_per_tick": 0.1,
+      "upkeep_grain_per_tick": 0.1,
+      "upkeep_silver_per_tick": 0.1,
+      "upkeep_context": "active",
+      "hull": 2,
+      "status": "repairing",
+      "deployable": false,
+      "display_name": "Galley of Drydock",
+      "support_settlement_id": "97b723cc-a3cc-43ed-ab0b-3a9632273968",
+      "support_settlement_name": "Drydock",
+      "build_complete_at": "2026-10-23T09:32:20.724309+02:00",
+      "shipyard_waiting": false,
+      "shipyard_work_remaining": 3,
+      "settlement_id": "97b723cc-a3cc-43ed-ab0b-3a9632273968",
+      "in_battle": false,
+      "can_lay_up": false,
+      "can_fit_out": false
+    },
+    {
+      "can_cancel_training": true,
+      "id": "718ba4e3-31b7-4c7f-8a8e-97c2fef4b5ff",
+      "type": "galley",
+      "category": "naval",
+      "size": 1,
+      "crew": 20,
+      "upkeep_food_per_tick": 0.1,
+      "upkeep_grain_per_tick": 0.1,
+      "upkeep_silver_per_tick": 0.1,
+      "upkeep_context": "inactive",
+      "hull": 5,
+      "status": "forming",
+      "deployable": false,
+      "name": "Akrotiri Ash",
+      "display_name": "Akrotiri Ash, Galley of Drydock",
+      "ordinal": 1,
+      "support_settlement_id": "97b723cc-a3cc-43ed-ab0b-3a9632273968",
+      "support_settlement_name": "Drydock",
+      "build_complete_at": "2026-10-23T09:32:20.724309+02:00",
+      "shipyard_waiting": false,
+      "shipyard_work_remaining": 3,
+      "settlement_id": "97b723cc-a3cc-43ed-ab0b-3a9632273968",
+      "in_battle": false,
+      "can_lay_up": false,
+      "can_fit_out": false
+    }
+  ]
+}

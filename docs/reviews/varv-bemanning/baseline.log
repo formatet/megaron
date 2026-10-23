@@ -1,0 +1,7 @@
+» färsk DB på migration 203 · commit eb009264
+2026/10/23 06:17:52 INFO player registered id=74228abf-d252-4c68-ab77-2e0e61a3267c username=shiprepair-c0215d86-f188-48ab-bbfd-482fad89b77e
+--- FAIL: TestShipyardUnstaffedPaidRepairWaits (0.06s)
+    shipyard_work_baseline_test.go:7: unstaffed repair claims progress/ETA: {"amount":7.199999999999999,"complete_at":"2026-10-23T09:17:52.111464901+02:00","duration_ticks":3,"good":"timber","hull_before":2,"hull_target":5,"unit_id":"e7392f25-8c58-4e50-91e5-f29cf819db9b"}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.067s
+FAIL

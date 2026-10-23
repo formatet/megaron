@@ -1,0 +1,39 @@
+package handlers
+import (
+ "bytes"
+ "context"
+ "encoding/json"
+ "net/http"
+ "net/http/httptest"
+ "os/exec"
+ "path/filepath"
+ "testing"
+ "formatet/megaron/server/internal/auth"
+ "formatet/megaron/server/internal/events"
+ "github.com/go-chi/chi/v5"
+ "github.com/google/uuid"
+)
+func TestShipyardPlayerScenario(t *testing.T){
+ root,_:=filepath.Abs("../../..");cli:=filepath.Join(t.TempDir(),"keryx")
+ build:=exec.Command("go","build","-o",cli,"./cmd/keryx");build.Dir=filepath.Join(root,"server");if out,err:=build.CombinedOutput();err!=nil{t.Fatalf("build %v %s",err,out)}
+ for run:=1;run<=2;run++{
+ f:=newShipRepairFixture(t,true,map[string]float64{"timber":1000,"silver":1000,"grain":1000});ctx:=context.Background();var prov uuid.UUID
+ if err:=f.pool.QueryRow(ctx,`SELECT province_id FROM settlements WHERE id=$1`,f.settlementID).Scan(&prov);err!=nil{t.Fatal(err)}
+ scheduler:=events.NewScheduler(f.pool,f.uh.clk);ph:=NewProvinceHandler(f.pool,scheduler,f.uh.clk,events.NewStore(f.pool),nil)
+ r:=chi.NewRouter();r.Handle("/static/*",http.StripPrefix("/static/",http.FileServer(http.Dir(filepath.Join(root,"web/static")))))
+ r.Get("/fixture",func(w http.ResponseWriter,req *http.Request){http.ServeFile(w,req,filepath.Join(root,"web/static/map.html"))})
+ r.NotFound(func(w http.ResponseWriter,req *http.Request){w.Header().Set("Content-Type","application/json");w.Write([]byte("[]"))})
+ r.Group(func(r chi.Router){r.Use(auth.Middleware(auth.NewService(f.pool,"test-secret")))
+ r.Get("/api/v1/worlds/{worldID}/units",f.uh.ListUnits)
+ r.Post("/api/v1/worlds/{worldID}/units/{unitID}/repair",f.uh.Repair)
+ r.Get("/api/v1/worlds/{worldID}/provinces/{provinceID}",ph.Get)
+ r.Post("/api/v1/worlds/{worldID}/provinces/{provinceID}/recruit",ph.Recruit)
+ r.Get("/api/v1/worlds/{worldID}/provinces/{provinceID}/placement-options",ph.PlacementOptions)
+ r.Get("/api/v1/worlds/{worldID}/provinces/{provinceID}/placements",ph.Placements)
+ r.Post("/api/v1/worlds/{worldID}/provinces/{provinceID}/placements",ph.PlaceGubbe)
+ r.Delete("/api/v1/worlds/{worldID}/provinces/{provinceID}/placements/{ordinal}",ph.UnplaceGubbe)
+ })
+ server:=httptest.NewServer(r);input,_:=json.Marshal(map[string]any{"base":server.URL,"token":f.accessToken,"world":f.worldID,"player":f.playerID,"city":f.settlementID,"province":prov,"repair_ship":f.shipID,"cli":cli,"run":run})
+ cmd:=exec.Command("python3",filepath.Join(root,"docs/reviews/varv-bemanning/player_scenario.py"));cmd.Stdin=bytes.NewReader(input);out,err:=cmd.CombinedOutput();server.Close();if err!=nil{t.Fatalf("scenario%d %v %s",run,err,out)};t.Logf("scenario%d %s",run,out)
+ }
+}

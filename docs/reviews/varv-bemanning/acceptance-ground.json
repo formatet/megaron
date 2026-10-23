@@ -1,0 +1,29 @@
+{
+  "checked_at": "2026-10-23 06:33:50 +0200",
+  "read_only": true,
+  "schema": [
+    {
+      "dirty": false,
+      "version": 204
+    }
+  ],
+  "transition": [
+    {
+      "completed": true
+    }
+  ],
+  "jobs": [
+    {
+      "jobs": 0
+    }
+  ],
+  "role": [
+    {
+      "key": "shipbuilding",
+      "placed": 0,
+      "status": "parked",
+      "weight": 0,
+      "stock_rows": 0
+    }
+  ]
+}

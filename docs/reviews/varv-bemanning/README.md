@@ -6,6 +6,29 @@ Scope: verklig placement-service, sparat tickarbete, atomisk reglering vid alla 
 
 ---
 
+## Leverans och bevis
+
+Kod `88d6ea58` + notisparitet `04d1d8a8`, bas efter rebase `c37c2bea`. Fyra ytor: SQL/economy+combat och API; verklig placering i Keryx/webb; ny Codex-artikel `shipyard`. Migration **204 up/down**, plus atomisk uppstartsövergång före workers. Down vägrar kassera aktiva jobb.
+
+- Separat oförändrad master/fresh203: `TestShipyardUnstaffedPaidRepairWaits` **RÖD** (`baseline.log`). Slutliga riktade fresh204-tester **GRÖNA** (`final-targeted.log`).
+- Fysisk SQL-mutant gjorde naval-jobb oberoende av bemanning → samma endpointtest **RÖTT** (`mutation.log`). Byteexakt restore i `mutation-restore.sha256`; senare tillkom endast köindex i SQL-filen. Klientagentens separata mutant återinförde ETA på pausat kort och fångades av JS-testet.
+- Faktiska API/Keryx/Firefox-flöden, två nya oberoende fixtures, **GRÖNA** (`player-scenario.log`). Bygge+reparation beställs obemannade, bemannas genom både webbens +1/−1 och Keryx staff, pausas/återupptas. 390/1000 px, noll page errors. [Bilder](index.html), `api-*.json`, `cli-run*.txt`. Dessa körs separat från portabla sviten via `run_player_scenario.py`.
+- Fresh204-livscykel: lång paus utan arbete, återupptagning med kvarvarande arbete, gammal timer nekas, exakt ett färdigställande/audit, bevarad betalning; rivning, befolkningsförlust+pruning, ägar-/stadsbyte, kollaps; placement kapacitet/idle och ingen handel med rollen; tio pausade byggen räknas i samma cap och drivs alla av en arbetare; köfel rullar tillbaka reparationens betalning/status; deployövergång idempotent utan gratis personal; samma ETA trots skev läsklocka.
+- 737 JS **GRÖNA**, vet **GRÖN**. EN full fresh migration204, 26 Go-paket **GRÖNA**, world154.673s (`full-fresh.log`, kod88d6ea58). Efter den körningen rättades endast sluthanterarens notismetadata: reparationsnamnet och tidigare nivå3/4. Nya tester kör båda slagen två gånger och kräver exakt en notis med rätt identitet/nivå; riktad fresh204 API+cmd/server **GRÖN** (`notification-parity.log`), vet omkörd **GRÖN**. Ingen andra fullkörning gjordes.
+- Processkontroll: `provenance.txt` hämtad från **/healthz**, `acceptance-ground.json` från skrivskyddad DB-läsning: byggidentiteten i rå provenance, migration204 clean, övergång completed, inga gratis placeringar eller lager för tjänsterollen. Delad live har inte ändrats: separat read-only inventering fann **0** pågående varvsjobb (`live-transition-inventory.json`).
+
+### Livscykel och övergång
+
+SQL-ägaren `sync_shipyard_work` reglerar sparad gammal takt innan ny härleds, i samma transaktion som placering/byggnad/befolkning/ägare/status ändras. Det indexerade nya köslaget `ShipyardWorkComplete` har revisionsgrind, enhetslås och audit atomiskt. Gamla TrainComplete och ShipRepairComplete-handlers behåller sin semantik. Framtida gamla timers överförs till kvarvarande tickarbete utan debitering eller ny besättning. Friska gamla timers som redan förfallit lämnas till sin oförändrade sluthandler eftersom arbetet redan var utfört vid övergången. En gammal order utan deadline och utan timer stoppar uppstartsövergången uttryckligt, i stället för att hitta på framsteg.
+
+Varvsbyggnadens alla delete-vägar frigör arbetskraften; frivillig rivning lyfter först så kvittensen räknar rätt. Även rå SQL från plundringen kan därför inte lämna en arbetare på ett försvunnet varv. Reparationens betalning, kapacitetskontroll och schemaläggning ligger i samma transaktion. Tjänsterollen shipbuilding är endast ett parkerat FK-ankare, vikt0, ingen produktionsregel; grundningsvägar seedar inget lager för den.
+
+### Avgränsningar
+
+Befintlig TrainComplete-cap räknar fortfarande även landutbildning; bara representationen av de nya naval-jobben räknas till. Dagens separata bygg- och reparationsgränser består. Fitting_out och landutbildning ändras inte. Bilderna visar en syntetisk, oscoutad teststad, inte en komplett världskarta. Begriplighet är fortsatt TEXT hos spelare; den automatiska kontrollen och vår 1:1-granskning ersätter inte det. Tidiga misslyckade proof-försök gällde fel CLI-argument/strängskiftläge och att city-hexen behövde öppnas före arbetsplatsen; slutliga två körningar är rena.
+
+---
+
 # ORDER 28 — inventering och modellförslag
 
 2026-10-23. Bas: `7f0cdebe`, gren `codex/varv-bemanning`.
