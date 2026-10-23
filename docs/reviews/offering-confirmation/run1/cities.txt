@@ -1,0 +1,7 @@
+Name                   Owner            Terrain  Culture    Kingdom       Deposit  Settlement ID
+────────────────────────────────────────────────────────────────────────────────────
+★Incense Proof         Aigiwalos        plains   minoan                   incense  40ad9679-9d79-4818-a4e8-c4412e580bdd
+
+No other settlements within your vision — this directory is FOW-gated, not global.
+Trade needs a visible neighbour: send a unit outward (`march`) or colonise to
+expand your vision and discover Wanaxes you can trade with.

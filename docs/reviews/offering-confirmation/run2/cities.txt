@@ -1,0 +1,7 @@
+Name                   Owner            Terrain  Culture    Kingdom       Deposit  Settlement ID
+────────────────────────────────────────────────────────────────────────────────────
+★Incense Proof         Italaios         hills    minoan                   incense  e4be6e75-dbea-4e9b-b21d-8f59cba8991b
+
+No other settlements within your vision — this directory is FOW-gated, not global.
+Trade needs a visible neighbour: send a unit outward (`march`) or colonise to
+expand your vision and discover Wanaxes you can trade with.

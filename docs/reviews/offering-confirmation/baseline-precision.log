@@ -1,0 +1,5 @@
+--- FAIL: TestOfferingPreviewPreservesChosenDecimalAmounts (0.00s)
+    cmd_rite_test.go:81: preview changes the chosen gift: "incense×5 wine×0"
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL

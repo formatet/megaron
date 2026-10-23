@@ -73,3 +73,17 @@ func TestRiteReadinessCanPrepareAlternativeGift(t *testing.T) {
 		t.Fatalf("existing alternative gift hidden: %q/%q", ready, detail)
 	}
 }
+
+func TestOfferingPreviewPreservesChosenDecimalAmounts(t *testing.T) {
+	gift := map[string]float64{"incense": 5.25, "wine": 0.04}
+	got := formatOffering(gift)
+	if got != "incense×5.25 wine×0.04" {
+		t.Fatalf("preview changes the chosen gift: %q", got)
+	}
+	if gift["incense"] != 5.25 || gift["wine"] != 0.04 {
+		t.Fatal("preview mutated the gift")
+	}
+	if got := formatOffering(map[string]float64{"grain": 10, "silver": 3}); got != "grain×10 silver×3" {
+		t.Fatalf("traditional display changed: %s", got)
+	}
+}

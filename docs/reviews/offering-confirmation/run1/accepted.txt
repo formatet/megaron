@@ -1,0 +1,11 @@
+The gods are Favorable (kharis 90).
+Prayer: Potnia's Vision (Potnia)
+Effect: Marks an unseen source of copper, tin, silver or incense and the unknown ground within two hexes as memory; no live activity.
+Offer: incense×5.25
+Kharis is a requirement, not spent. When the requirements are met the god answers; more offering will not improve the answer.
+Cast? [y/N]: y
+Divine mood: Favorable
+Prayer: minoan_potnia_vision_v2
+Success: Potnia marks a source of incense at (22,30) and the unknown ground around it as memory — no living eyes are there.
+Effect: oracle_memory_v2
+Offering: worthy — meets the prayer's requirement; more will not improve the answer

@@ -55,7 +55,7 @@ func formatOffering(offering map[string]float64) string {
 	sort.Strings(keys)
 	var b strings.Builder
 	for _, g := range keys {
-		fmt.Fprintf(&b, "%s×%.0f ", g, offering[g])
+		fmt.Fprintf(&b, "%s×%s ", g, strconv.FormatFloat(offering[g], 'f', -1, 64))
 	}
 	if b.Len() == 0 {
 		return "—"
@@ -178,12 +178,22 @@ func riteCmd() *cobra.Command {
 				return fmt.Errorf("could not find own settlement — use --settlement <id>")
 			}
 
+			// Parse once: the confirmation and POST must describe the same gift.
+			var composed map[string]float64
+			if offer != "" {
+				parsed, parseErr := parseOffering(offer)
+				if parseErr != nil {
+					return parseErr
+				}
+				composed = parsed
+			}
+
 			// Pre-cast confirmation (A7 core): shows mood + offer + effect + the miss-note
 			// before the offering is spent. Skipped via --yes, --json, or when stdin isn't
 			// a terminal — an unanswered prompt would otherwise hang the agent harness.
 			autoConfirm := yes || jsonMode || !stdinIsTerminal()
 			if !autoConfirm {
-				confirmed, err := confirmRiteCast(c, markers, settlementID, prayerID, offerMultiplier)
+				confirmed, err := confirmRiteCast(c, markers, settlementID, prayerID, offerMultiplier, composed)
 				if err != nil {
 					return err
 				}
@@ -209,10 +219,6 @@ func riteCmd() *cobra.Command {
 			// god's taste, weighed against the same god's traditional recipe —
 			// so the old recipe still reads as exactly adequate.
 			if offer != "" {
-				composed, perr := parseOffering(offer)
-				if perr != nil {
-					return perr
-				}
 				body["offering"] = composed
 			}
 
@@ -277,7 +283,7 @@ func riteCmd() *cobra.Command {
 // is consumed even on a miss, and that has no other warning (A7). Returns false
 // (no error) if the player declines. Never shows a computed success percentage —
 // only the gods' mood (Timothy 2026-07-11 hard invariant).
-func confirmRiteCast(c *Client, markers []map[string]any, settlementID, prayerID string, offerMultiplier float64) (bool, error) {
+func confirmRiteCast(c *Client, markers []map[string]any, settlementID, prayerID string, offerMultiplier float64, composed map[string]float64) (bool, error) {
 	if markers == nil {
 		provs, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces", cfg.WorldID))
 		if err != nil {
@@ -332,8 +338,12 @@ func confirmRiteCast(c *Client, markers []map[string]any, settlementID, prayerID
 	fmt.Printf("The gods are %s (kharis %.0f).\n", p.Settlement.KharisMood, p.Settlement.Kharis)
 	fmt.Printf("Prayer: %s (%s)\n", chosen.Name, chosen.God)
 	fmt.Printf("Effect: %s\n", chosen.Effect)
-	fmt.Printf("Offer: %s\n", formatOffering(chosen.Offering))
-	if chosen.GodID == "" && offerMultiplier != 0 && offerMultiplier != 1 {
+	previewGift := chosen.Offering
+	if len(composed) > 0 {
+		previewGift = composed
+	}
+	fmt.Printf("Offer: %s\n", formatOffering(previewGift))
+	if len(composed) == 0 && chosen.GodID == "" && offerMultiplier != 0 && offerMultiplier != 1 {
 		fmt.Printf("Offer multiplier: %.2fx — changes the offering and the gods' response.\n", offerMultiplier)
 	}
 	fmt.Println(prayerPaymentText(*chosen))

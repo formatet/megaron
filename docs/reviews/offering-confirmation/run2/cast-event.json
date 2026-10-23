@@ -1,0 +1,76 @@
+{
+  "effect": {
+    "tier": "remembered",
+    "revealed_ore": {
+      "q": 0,
+      "r": 52,
+      "ore": "incense"
+    },
+    "revealed_tiles": [
+      {
+        "q": 0,
+        "r": 50
+      },
+      {
+        "q": 0,
+        "r": 51
+      },
+      {
+        "q": 0,
+        "r": 52
+      },
+      {
+        "q": 0,
+        "r": 53
+      },
+      {
+        "q": 0,
+        "r": 54
+      },
+      {
+        "q": 1,
+        "r": 50
+      },
+      {
+        "q": 1,
+        "r": 51
+      },
+      {
+        "q": 1,
+        "r": 52
+      },
+      {
+        "q": 1,
+        "r": 53
+      },
+      {
+        "q": 2,
+        "r": 50
+      },
+      {
+        "q": 2,
+        "r": 51
+      },
+      {
+        "q": 2,
+        "r": 52
+      }
+    ]
+  },
+  "god_id": "potnia",
+  "prayer": "minoan_potnia_vision_v2",
+  "success": true,
+  "offering": {
+    "incense": 5.25
+  },
+  "cast_tick": 0,
+  "offer_mod": 0,
+  "player_id": "059c7646-3d59-4346-8f48-5453b6999695",
+  "effect_type": "oracle_memory_v2",
+  "kharis_spent": 0,
+  "offering_work": 74.97,
+  "offer_multiplier": 1,
+  "valuation_version": 2,
+  "offering_value_unit": "worker_ticks",
+  "offering_work_baseline": 17.339999999999996
+}

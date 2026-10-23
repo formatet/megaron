@@ -1,0 +1,135 @@
+{
+  "health": {
+    "commit": "eba8355+confirmation",
+    "migration": 205,
+    "status": "ok"
+  },
+  "source_diff_sha256": "3f5b07d966511f239d467f2a3186cfa71ce644fdfdc7504b0b2b4b29c073b53d",
+  "world": "5d6a5d45-db12-4371-bf98-d332e847ec6a",
+  "target": {
+    "q": 22,
+    "r": 30
+  },
+  "before": {
+    "q": 22,
+    "r": 30,
+    "terrain": "fog",
+    "visible": false,
+    "tier": "fog"
+  },
+  "after": {
+    "q": 22,
+    "r": 30,
+    "terrain": "scrub_maquis",
+    "visible": true,
+    "tier": "remembered",
+    "fertility": 0.9410775007249084,
+    "mineral": 0.7990589703659361,
+    "incense_deposit": true
+  },
+  "result": {
+    "effect": {
+      "tier": "remembered",
+      "revealed_ore": {
+        "q": 22,
+        "r": 30,
+        "ore": "incense"
+      },
+      "revealed_tiles": [
+        {
+          "q": 20,
+          "r": 30
+        },
+        {
+          "q": 20,
+          "r": 31
+        },
+        {
+          "q": 20,
+          "r": 32
+        },
+        {
+          "q": 21,
+          "r": 29
+        },
+        {
+          "q": 21,
+          "r": 30
+        },
+        {
+          "q": 21,
+          "r": 31
+        },
+        {
+          "q": 21,
+          "r": 32
+        },
+        {
+          "q": 22,
+          "r": 28
+        },
+        {
+          "q": 22,
+          "r": 29
+        },
+        {
+          "q": 22,
+          "r": 30
+        },
+        {
+          "q": 22,
+          "r": 31
+        },
+        {
+          "q": 22,
+          "r": 32
+        },
+        {
+          "q": 23,
+          "r": 28
+        },
+        {
+          "q": 23,
+          "r": 29
+        },
+        {
+          "q": 23,
+          "r": 30
+        },
+        {
+          "q": 23,
+          "r": 31
+        },
+        {
+          "q": 24,
+          "r": 28
+        },
+        {
+          "q": 24,
+          "r": 29
+        },
+        {
+          "q": 24,
+          "r": 30
+        }
+      ]
+    },
+    "message": "The gods are Favorable (kharis 90).\r\nPrayer: Potnia's Vision (Potnia)\r\nEffect: Marks an unseen source of copper, tin, silver or incense and the unknown ground within two hexes as memory; no live activity.\r\nOffer: incense\u00d75.25\r\nKharis is a requirement, not spent. When the requirements are met the god answers; more offering will not improve the answer.\r\nCast? [y/N]: y\r\nDivine mood: Favorable\r\nPrayer: minoan_potnia_vision_v2\r\nSuccess: Potnia marks a source of incense at (22,30) and the unknown ground around it as memory \u2014 no living eyes are there.\r\nEffect: oracle_memory_v2\r\nOffering: worthy \u2014 meets the prayer's requirement; more will not improve the answer\r\n",
+    "source": "actual RiteCast outcome + terminal stdout"
+  },
+  "cast_via": "cli",
+  "captures": [
+    {
+      "mode": "desktop",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "mode": "mobile",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "errors": [],
+  "fixture": "normal player founding; own fresh DB temple/stock/sole-unseen-incense fixture before real actions; not natural exploration"
+}
