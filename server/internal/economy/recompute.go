@@ -101,7 +101,6 @@ var workplaceSlotTable = map[string][4]int{
 	"shipyard":    {0, 3, 6, 10},
 	"olive_press": {0, 1, 2, 4},
 	"winery":      {0, 1, 2, 4},
-	"market":      {0, 1, 2, 4},
 	"stable":      {0, 1, 2, 4},
 	"foundry":     {0, 1, 2, 4},
 }

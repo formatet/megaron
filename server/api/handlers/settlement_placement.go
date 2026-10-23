@@ -835,6 +835,10 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 		}
 
 	case "building":
+		if req.BuildingType == "market" {
+			writeError(w, http.StatusUnprocessableEntity, "markets have no workplaces; no workers are needed for trade")
+			return
+		}
 		if req.BuildingType == "" {
 			writeError(w, http.StatusBadRequest, "building placement requires building_type")
 			return

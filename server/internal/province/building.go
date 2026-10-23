@@ -26,7 +26,7 @@ var BuildingPurposes = map[BuildingType]string{
 	BuildingMine:        "Stands on an ore deposit and extracts what the hex holds",
 	BuildingLumbermill:  "Stands on a forest hex and works its stands",
 	BuildingStonequarry: "Stands on a land hex; its crew quarry the stone there — far more on hills and limestone",
-	BuildingMarket:      "Enables trade offers and updates market price snapshots",
+	BuildingMarket:      "Enables trade offers and updates market price snapshots; no workers needed",
 	BuildingWall:        "Adds a wall tier (Palisade → Stone Wall → Bronze Wall) for combat defence",
 	BuildingHarbour:     "Works the settlement's coastal waters and enables sea trade",
 	BuildingShipyard:    "Builds and repairs ships",
