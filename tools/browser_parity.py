@@ -7,7 +7,7 @@ Loggar in i acceptansvärlden (tools/acceptance.sh) som en riktig spelare, klick
 fram varje yta via sin riktiga knapp och MÄTER i stället för att jämföra bilder.
 En andra spelare UTAN stad (PANEL_HOST_USER, skapas med `tools/acceptance.sh player
 Nomad`) mäter Host-panelen — det första en ny Wanax möter — öppnad genom ett klick
-på hosten mitt på kartan, med Details stängd och öppen. Mätningen:
+på hostens serverägda fysiska plats, med Details stängd och öppen. Mätningen:
 
   - horisontell scroll på sidan
   - ytans ruta utanför viewporten
@@ -53,10 +53,10 @@ SURFACES = {
     "codex": ("#gt-codex-btn", "#codex-panel"),
     "account": ("#gt-wanax", "#account-window-overlay .dispatch-window"),
 }
-# Host-fasen: kartan öppnar centrerad på hosten, så ett klick mitt på kartan är
-# spelarens eget klick på sin host. Tredje fältet: knappen som MÅSTE gå att trycka på.
+# Host-fasen: centrera på hostens serverägda fysiska hex och klicka dess markör.
+# Kamerans mitt är inte en garanti för vilken hex som träffas. Tredje fältet: knappen som MÅSTE gå att trycka på.
 HOST_SURFACES = {
-    "host": ("#hex-canvas", "#inspect-panel", "#ip-settle-btn"),
+    "host": ("@host", "#inspect-panel", "#ip-settle-btn"),
     "host-details": ("#ip-host-details > summary", "#inspect-panel", "#ip-settle-btn"),
 }
 RICH_SURFACES = {
@@ -171,7 +171,24 @@ def run_engine(pw, engine, token, out, surfaces=SURFACES, close_drawers=True):
         page.wait_for_timeout(800)
         for name, (trigger, sel, *reach) in surfaces.items():
             before = 0 if name == next(iter(surfaces)) else len(errors)
-            if trigger in ("@river", "@river-map"):
+            if trigger == "@host":
+                # A camera clamp/remembered location can put the Host off centre.
+                # Click its authoritative physical hex, not the canvas midpoint.
+                host = page.evaluate("""async () => {
+                    const {physicalHostState} = await import('/static/js/megaron/ui/host_state.js');
+                    return physicalHostState(__parityState.founderPhase, __parityState.unitsData);
+                }""")
+                if not host:
+                    raise RuntimeError("no physical Host state for the Host audit account")
+                page.evaluate("t=>window.centreOn(t.q,t.r)", host)
+                page.wait_for_function("__parityMap.markrasterStats.pending===0", timeout=30000)
+                page.wait_for_timeout(400)
+                point = page.evaluate("t=>{const p=__parityMap.hexPx(t.q,t.r),s=__parityState;return {x:s.camera.x+p.x*__parityMap.SCALE*s.camera.zoom,y:s.camera.y+p.y*__parityMap.SCALE*s.camera.zoom}}", host)
+                el = page.locator('#hex-canvas')
+                el.tap(position=point) if mode == "mobile" else el.click(position=point)
+                page.locator('#ip-host-state').wait_for(state='visible', timeout=10000)
+                page.wait_for_timeout(900)
+            elif trigger in ("@river", "@river-map"):
                 river = page.evaluate("() => __parityState.tileData.find(t=>t.river_name && t.tier!=='fog' && t.terrain.startsWith('river'))")
                 if not river: raise RuntimeError("no known named river in this player's actual map")
                 page.evaluate("t=>window.centreOn(t.q,t.r)",river)
