@@ -1,0 +1,12 @@
+{
+  "health": {
+    "commit": "92d183c",
+    "migration": 205,
+    "status": "ok"
+  },
+  "assets": {
+    "js/megaron/ui/drawers/kult.js": "c57c14e05709aace191c486a93e9776df93699740f9dbf9a0c6be5d437f1cf23",
+    "js/megaron/ui/drawers/kult_offer.js": "3a1afbaf0c5f53e24d1b548cae354551ef40682c48224a9f2ef00d036250d8cc",
+    "codex/rites.md": "96eaafc16245577e3997048dd3bdc3962fe224e1ebf650472af5cd94c3dd9a5f"
+  }
+}
