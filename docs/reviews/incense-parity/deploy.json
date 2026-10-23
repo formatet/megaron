@@ -1,0 +1,12 @@
+{
+  "health": {
+    "commit": "6e690df",
+    "migration": 205,
+    "status": "ok"
+  },
+  "assets": {
+    "codex/incense.md": "70037f7a3ce96051c092c97792241a91c809b4aa617c8f8abb23fa44d8cd9e99",
+    "codex/rites.md": "c7b36871aa98205f584de6c1e92fcbbcdcd4160565cb8e48edcdf50fcc4d681e",
+    "js/megaron/ui/drawers/economy.js": "c550abd170e5d00cc68a3af67701c1a40883c8940fd3266121b3592fde49e87c"
+  }
+}
