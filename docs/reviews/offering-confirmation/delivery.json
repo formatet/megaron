@@ -1,0 +1,16 @@
+{
+  "checked_at": "2026-10-23T20:36:46.860121",
+  "cli_and_assets_commit": "8bb6c9e993b30e13c6bcc2c15dae1a21e0629396",
+  "cli_vcs_modified": false,
+  "health": {
+    "commit": "92d183c",
+    "migration": 205,
+    "status": "ok"
+  },
+  "served_codex_byte_identical": true,
+  "codex_sha256": "b145e61ab0dc6b37ceb57f110fdda4741ccf3ac948834564592778d2a00750ff",
+  "migration": "205|f",
+  "active_world": "2178e795-1303-4cc3-865a-6386847d68d1",
+  "journal_errors": [],
+  "server_restart_requested": false
+}

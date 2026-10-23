@@ -11,3 +11,7 @@ Nu parsas gåvan en gång före bekräftelsen; samma karta skickas till bekräft
 Run1 och run2 är två egna nya PG16/Redis-runtimes. Normal registrering/grundning, sedan explicit tempel/stock/fyndfixtur före handlingarna. Interaktiv Keryx körs i verklig PTY utan --yes eller --json. Första anropets n lämnar incense100/grain0/silver0 och0RiteCast. Andra anropets y visar incense×5.25 och eventets faktiska offering är exakt incense5.25; bara94.75incense återstår. Efteråt syns samma24dagars väntan i Firefox1280/390 och faktisk Keryx-lista. Ingen sidledsöverfyllnad eller pageerrors. Egna processer och containrar städade i finally. Resultatet i proof.json är uttryckligen faktisk RiteCast-effekt plus terminalens stdout, inte en konstruerad HTTP-kvittens.
 
 Riktade CLI-prov, 742 JS-prov och go vet är gröna. En full Go-svit på färsk migration 205 är grön (world 149.133 s). Processbuild eba8355+confirmation och käll-diffhash i respektive proof.json. Inga SQL-skrivningar under handlingarna, inga ingrepp i gemensam acceptansvärld eller produktionens data. Inga nya API-fält, händelser eller betalningsregler.
+
+## Leverans
+
+Kod 8bb6c9e9 är mergad och pushad. Lokal ~/go/bin/poleia är byggd från detta rena commit (vcs.modified=false). Publicerad Codex är byteidentisk med källan. Backendprocessen är fortsatt 92d183c, health ok, migration 205 dirty=false och samma aktiva värld; ingen serverändring eller restart behövdes. Ingen ERROR/fatal/panic i granskade fem minuter. Detaljer i delivery.json. Timothy bad att avsluta denna punkt och inte starta något nytt.
