@@ -1,0 +1,15 @@
+{
+  "world": "1312f0dd-e8aa-4f4c-a1ff-6fcf79847b99",
+  "player": "c7e0c72c-1e33-495c-a383-4b5c6d014929",
+  "unit": "72de21e8-231c-47c2-9d3a-96e6a69aa966",
+  "ford": {
+    "q": 7,
+    "r": 32
+  },
+  "health": {
+    "commit": "a05cddc+dirty",
+    "migration": 205,
+    "status": "ok"
+  },
+  "fixture": "normal register/join; one explicit positioned spearman at existing ford; layout/FOW proof, not natural travel"
+}

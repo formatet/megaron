@@ -445,6 +445,12 @@ produktionsfel och återställer varje fil byte-identiskt. API-fixturen skapas a
 `tools/gotest.sh ./api/handlers/ -run TestMapRiverNamesFOW -args -river-proof-dir=<absolut katalog>`.
 Kontrakt, bildlänkar och begränsningar: [flodnamnsrapporten](../docs/reviews/flodnamn/README.md).
 
+`python3 tools/river_view_proof.py` återger flodvyprovet i den isolerade acceptansvärlden:
+eget RiverProof23-konto, explicit SQL-sikt/anspråk vid ett befintligt vadställe, offentlig namngivning,
+riktig karta och Keryx samt 24 browserkontroller i tre motorer 1280/390. Verktyget vägrar skriva över
+ett befintligt anspråk och städar sin enhet/anspråk i finally. Det bevisar layout/FOW, inte naturlig
+upptäckt eller segling. Bevis: `docs/reviews/flod-verifiering/README.md`.
+
 ## Geographic naming proof (flod-doparratt)
 
 `tools/place_names_rig.py` builds the current branch's server with CGO=0 on the cached isolated

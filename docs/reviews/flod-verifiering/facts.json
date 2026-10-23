@@ -1,0 +1,16 @@
+{
+  "health": {
+    "commit": "a05cddc+dirty",
+    "migration": 205,
+    "status": "ok"
+  },
+  "world": "1312f0dd-e8aa-4f4c-a1ff-6fcf79847b99",
+  "player": "c7e0c72c-1e33-495c-a383-4b5c6d014929",
+  "river_anchor": [
+    3,
+    34
+  ],
+  "known_hexes": 5,
+  "fog_name_leak": false,
+  "fixture": "SQL-owned scout + first-reach claim; public naming API, real map API/CLI/browser; not natural progression"
+}

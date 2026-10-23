@@ -1,0 +1,1 @@
+river: Riverproof Thaleia [river 3,34] — known hexes: (5,33) (6,32) (7,32) (8,31) (9,31)
