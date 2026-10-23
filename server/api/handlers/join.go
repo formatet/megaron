@@ -22,11 +22,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// joinStartingPopulation is the population an ordinary join lands with (W1).
-// The Nomadic Host founds with its own carried civilians instead — see
-// metropolisParams.Population.
-const joinStartingPopulation = 5000
-
 // JoinHandler handles POST /worlds/:worldID/join.
 type JoinHandler struct {
 	pool       *pgxpool.Pool
