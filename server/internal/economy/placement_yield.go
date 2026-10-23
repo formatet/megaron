@@ -339,7 +339,8 @@ func placementYield(good string, rate float64, capL1 int, placeCap int, mult flo
 // wine: min(boost potential, refining capacity)) or a stock drain (bronze —
 // see the bronze stock-drain step). market/stable's goods are still parked.
 type BuildingOption struct {
-	StaffingOnly bool // real workplaces whose service produces no stock
+	ServiceRole  string // placement role for a non-inventory service
+	StaffingOnly bool   // real workplaces whose service produces no stock
 	BuildingType string
 	Level        int
 	// BuildingID/GodID name one temple; a city may hold one per god (ORDER 15).
@@ -465,9 +466,28 @@ func LoadBuildingProductionOptions(ctx context.Context, tx Tx, settlementID uuid
 		return nil, err
 	}
 	for _, t := range staff.Temples {
-		out = append(out, BuildingOption{BuildingType: "temple", Level: t.Level, BuildingID: t.BuildingID, GodID: t.GodID, StaffingOnly: true,
+		out = append(out, BuildingOption{BuildingType: "temple", Level: t.Level, BuildingID: t.BuildingID, GodID: t.GodID, StaffingOnly: true, ServiceRole: GoodCult,
 			RatePerGood: map[string]float64{GoodCult: 0}, CapPerGood: map[string]int{GoodCult: t.Capacity},
 			CapL1PerGood: map[string]int{GoodCult: t.Capacity}, PlaceCapPerGood: map[string]int{GoodCult: t.Capacity}, MultPerGood: map[string]float64{GoodCult: 1}})
+	}
+	shipRows, err := tx.Query(ctx, `SELECT level FROM buildings WHERE settlement_id=$1 AND building_type='shipyard'`, settlementID)
+	if err != nil {
+		return nil, err
+	}
+	for shipRows.Next() {
+		var level int
+		if err := shipRows.Scan(&level); err != nil {
+			shipRows.Close()
+			return nil, err
+		}
+		cap := WorkplaceSlots("shipyard", level)
+		out = append(out, BuildingOption{BuildingType: "shipyard", Level: level, StaffingOnly: true, ServiceRole: GoodShipbuilding,
+			RatePerGood: map[string]float64{GoodShipbuilding: 0}, CapPerGood: map[string]int{GoodShipbuilding: cap},
+			CapL1PerGood: map[string]int{GoodShipbuilding: cap}, PlaceCapPerGood: map[string]int{GoodShipbuilding: cap}, MultPerGood: map[string]float64{GoodShipbuilding: 1}})
+	}
+	shipRows.Close()
+	if err := shipRows.Err(); err != nil {
+		return nil, err
 	}
 	return out, nil
 }

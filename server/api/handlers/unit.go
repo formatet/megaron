@@ -2062,7 +2062,9 @@ func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {
 	// this call — never a guessed position.
 	var nowMilli int64
 	hasAnchor := false
+	var workAnchor tick.Anchor
 	if anchor, aErr := tick.LoadAnchor(r.Context(), h.pool, worldID); aErr == nil {
+		workAnchor = anchor
 		nowMilli = anchor.MilliAt(h.clk.Now())
 		hasAnchor = true
 	}
@@ -2072,7 +2074,7 @@ func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	summaries := unitSummaries(units, currentTick, h.clk,
-		settlementNames(r.Context(), h.pool, worldID, playerID), wanax, nowMilli, hasAnchor)
+		settlementNames(r.Context(), h.pool, worldID, playerID), wanax, nowMilli, hasAnchor, workAnchor)
 	if founderActive {
 		if err := attachHostState(r.Context(), h.pool, worldID, playerID, h.clk.Now(), summaries); err != nil {
 			writeError(w, http.StatusInternalServerError, "could not resolve the Host's position")
@@ -2287,13 +2289,15 @@ type unitSummary struct {
 	SupportSettlementName string     `json:"support_settlement_name,omitempty"`
 	// BuildCompleteAt is the ETA for naval construction, repair or fit-out
 	// and for trained land cohorts; cleared when the timed job completes.
-	BuildCompleteAt *time.Time `json:"build_complete_at,omitempty"`
-	Stance          *string    `json:"stance,omitempty"`
-	SettlementID    *uuid.UUID `json:"settlement_id,omitempty"`
-	Q               *int       `json:"q,omitempty"`
-	R               *int       `json:"r,omitempty"`
-	TargetQ         *int       `json:"target_q,omitempty"`
-	TargetR         *int       `json:"target_r,omitempty"`
+	BuildCompleteAt       *time.Time `json:"build_complete_at,omitempty"`
+	ShipyardWaiting       bool       `json:"shipyard_waiting"`
+	ShipyardWorkRemaining *int       `json:"shipyard_work_remaining,omitempty"`
+	Stance                *string    `json:"stance,omitempty"`
+	SettlementID          *uuid.UUID `json:"settlement_id,omitempty"`
+	Q                     *int       `json:"q,omitempty"`
+	R                     *int       `json:"r,omitempty"`
+	TargetQ               *int       `json:"target_q,omitempty"`
+	TargetR               *int       `json:"target_r,omitempty"`
 	// DepartsAt + ArrivesAt let the map interpolate a marching unit's position
 	// along its route (same as marches/messengers/trades); without departs_at a
 	// per-unit march could not be animated and stayed invisible on the canvas.
@@ -2763,7 +2767,7 @@ func eligiblePickupShips(ctx context.Context, db province.Queryer, worldID, owne
 
 // townNames är id → namn för de städer enheterna hänvisar till. Utan den kan
 // servern inte formatera namnstandarden, och då hamnar grammatiken i klienterna.
-func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames map[uuid.UUID]string, wanax string, nowMilli int64, hasAnchor bool) []unitSummary {
+func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames map[uuid.UUID]string, wanax string, nowMilli int64, hasAnchor bool, anchors ...tick.Anchor) []unitSummary {
 	// Reverse map: cargo unit id → the ship carrying it, so an embarked unit can
 	// name its carrier. A ship and its cargo are owned by the same Wanax, so both
 	// rows are in us — no extra query needed.
@@ -2896,6 +2900,23 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 		if u.Type == unit.TypeNomadicHost {
 			upkeepContext = "none" // civilian marker dissolves at founding
 		}
+		readyAt := u.BuildCompleteAt
+		var workRemaining *int
+		waiting := false
+		if u.ShipyardWorkRemaining != nil {
+			remaining := *u.ShipyardWorkRemaining
+			waiting = !u.ShipyardWorkRunning
+			readyAt = nil
+			if u.ShipyardWorkRunning && u.ShipyardWorkCalcTick != nil {
+				due := *u.ShipyardWorkCalcTick + remaining
+				remaining = max(0, due-currentTick)
+				if hasAnchor && len(anchors) > 0 {
+					at := anchors[0].WallAt(int64(due) * 1000)
+					readyAt = &at
+				}
+			}
+			workRemaining = &remaining
+		}
 		out = append(out, unitSummary{
 			ID:                  u.ID,
 			Type:                string(u.Type),
@@ -2917,28 +2938,28 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 			SupportSettlementID:   u.SupportSettlementID,
 			SupportSettlementName: town,
 			Name:                  u.Name,
-			BuildCompleteAt:       u.BuildCompleteAt,
-			Stance:                stance,
-			SettlementID:          u.SettlementID,
-			Q:                     u.Q,
-			R:                     u.R,
-			TargetQ:               u.TargetQ,
-			TargetR:               u.TargetR,
-			DepartsAt:             u.DepartsAt,
-			ArrivesAt:             u.ArrivesAt,
-			ArrivalTick:           arrivalTick,
-			DurationTicks:         durationTicks,
-			ArrivesAtUTC:          arrivesAtUTC,
-			CargoUnitID:           u.CargoUnitID,
-			CarrierShipID:         carrierShipID,
-			CarrierShipName:       carrierShipName,
-			MarchIntent:           u.MarchIntent,
-			ColonyName:            u.ColonyName,
-			OriginSettlementID:    u.OriginSettlementID,
-			Reinforcing:           u.Reinforcing,
-			CanReinforce:          canReinforce,
-			CurrentQ:              currentQ,
-			CurrentR:              currentR,
+			BuildCompleteAt:       readyAt, ShipyardWaiting: waiting, ShipyardWorkRemaining: workRemaining,
+			Stance:             stance,
+			SettlementID:       u.SettlementID,
+			Q:                  u.Q,
+			R:                  u.R,
+			TargetQ:            u.TargetQ,
+			TargetR:            u.TargetR,
+			DepartsAt:          u.DepartsAt,
+			ArrivesAt:          u.ArrivesAt,
+			ArrivalTick:        arrivalTick,
+			DurationTicks:      durationTicks,
+			ArrivesAtUTC:       arrivesAtUTC,
+			CargoUnitID:        u.CargoUnitID,
+			CarrierShipID:      carrierShipID,
+			CarrierShipName:    carrierShipName,
+			MarchIntent:        u.MarchIntent,
+			ColonyName:         u.ColonyName,
+			OriginSettlementID: u.OriginSettlementID,
+			Reinforcing:        u.Reinforcing,
+			CanReinforce:       canReinforce,
+			CurrentQ:           currentQ,
+			CurrentR:           currentR,
 		})
 	}
 	return out

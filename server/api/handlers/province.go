@@ -184,15 +184,17 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// forming land unit, which has no timer yet). Replaces the old per-batch
 		// training_queue + forming_units fields (the per-10 batch model is gone).
 		type trainingUnit struct {
-			Unit     string     `json:"unit"`
-			Size     int        `json:"size"`
-			Status   string     `json:"status"`
-			Category string     `json:"category"`
-			ReadyAt  *time.Time `json:"ready_at,omitempty"`
+			Unit                  string     `json:"unit"`
+			Size                  int        `json:"size"`
+			Status                string     `json:"status"`
+			Category              string     `json:"category"`
+			ReadyAt               *time.Time `json:"ready_at,omitempty"`
+			ShipyardWaiting       bool       `json:"shipyard_waiting"`
+			ShipyardWorkRemaining *int       `json:"shipyard_work_remaining,omitempty"`
 		}
 		var trainingUnits []trainingUnit
 		if trows, terr := h.pool.Query(r.Context(),
-			`SELECT type, size, status, category, build_complete_at
+			`SELECT id,type, size, status, category, build_complete_at
 			 FROM units
 			 WHERE settlement_id = $1 AND status IN ('forming', 'training')
 			 ORDER BY category, status DESC, created_at`,
@@ -200,7 +202,19 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		); terr == nil {
 			for trows.Next() {
 				var tu trainingUnit
-				if trows.Scan(&tu.Unit, &tu.Size, &tu.Status, &tu.Category, &tu.ReadyAt) == nil {
+				var id uuid.UUID
+				if trows.Scan(&id, &tu.Unit, &tu.Size, &tu.Status, &tu.Category, &tu.ReadyAt) == nil {
+					work, err := economy.LoadShipyardWork(r.Context(), h.pool, id)
+					if err != nil {
+						trows.Close()
+						writeError(w, http.StatusInternalServerError, "could not read shipyard work")
+						return
+					}
+					if work.Remaining != nil {
+						tu.ReadyAt = work.CompleteAt
+						tu.ShipyardWaiting = work.Waiting
+						tu.ShipyardWorkRemaining = work.Remaining
+					}
 					trainingUnits = append(trainingUnits, tu)
 				}
 			}
@@ -2227,7 +2241,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 	if cat == unit.CategoryNaval {
 		var pendingBuilds int
 		_ = h.pool.QueryRow(r.Context(),
-			`SELECT COUNT(*) FROM scheduled_events
+			`SELECT (SELECT COUNT(*) FROM units WHERE world_id=$1 AND settlement_id=$2 AND category='naval' AND status='forming' AND shipyard_work_remaining IS NOT NULL) + COUNT(*) FROM scheduled_events
 			 WHERE world_id = $1 AND event_type = 'TrainComplete'
 			   AND processed_at IS NULL AND failed_at IS NULL
 			   AND (payload->>'settlement_id')::uuid = $2`,
@@ -2406,7 +2420,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 	if cat == unit.CategoryNaval {
 		var pendingBuilds int
 		if err := tx.QueryRow(r.Context(),
-			`SELECT COUNT(*) FROM scheduled_events WHERE world_id = $1 AND event_type = 'TrainComplete'
+			`SELECT (SELECT COUNT(*) FROM units WHERE world_id=$1 AND settlement_id=$2 AND category='naval' AND status='forming' AND shipyard_work_remaining IS NOT NULL) + COUNT(*) FROM scheduled_events WHERE world_id = $1 AND event_type = 'TrainComplete'
 			 AND processed_at IS NULL AND failed_at IS NULL AND (payload->>'settlement_id')::uuid = $2`,
 			worldID, settlementID).Scan(&pendingBuilds); err != nil {
 			writeError(w, http.StatusInternalServerError, "could not check ship build queue")
@@ -2586,15 +2600,8 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 			unitNames = append(unitNames, chosenName)
 			finalSize = 1
 
-			if err := h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledTrainComplete,
-				combat.TrainCompletePayload{
-					SettlementID: settlementID,
-					UnitType:     req.UnitType,
-					Count:        1,
-					UnitID:       unitID,
-				}, dueTick,
-			); err != nil {
-				writeError(w, http.StatusInternalServerError, "could not schedule ship build")
+			if err := economy.StartShipyardWork(r.Context(), tx, unitID, batchTicks); err != nil {
+				writeError(w, http.StatusInternalServerError, "could not start shipyard work")
 				return
 			}
 
@@ -2811,6 +2818,17 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 	if upkeepWarning != "" {
 		resp["upkeep_warning"] = upkeepWarning
 	}
+	if cat == unit.CategoryNaval {
+		work, err := economy.LoadShipyardWork(r.Context(), h.pool, unitIDs[len(unitIDs)-1])
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "could not read shipyard work")
+			return
+		}
+		resp["complete_at"] = work.CompleteAt
+		resp["shipyard_waiting"] = work.Waiting
+		resp["shipyard_work_remaining"] = work.Remaining
+	}
+
 	writeJSON(w, http.StatusCreated, resp)
 }
 

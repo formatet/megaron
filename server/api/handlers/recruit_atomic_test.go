@@ -56,7 +56,7 @@ func snapshotRecruitState(t *testing.T, f *recruitShipFixture) recruitState {
 	}
 	if err := f.pool.QueryRow(ctx, `SELECT
  (SELECT count(*) FROM units WHERE settlement_id=$1),
- (SELECT count(*) FROM scheduled_events WHERE payload->>'settlement_id'=$1::text),
+ (SELECT count(*) FROM scheduled_events WHERE payload->>'settlement_id'=$1::text) + (SELECT count(*) FROM units WHERE settlement_id=$1 AND shipyard_work_remaining IS NOT NULL),
  (SELECT count(*) FROM events WHERE world_id=$2 AND event_type='UnitFormed'),
  (SELECT count(*) FROM unit_ordinals WHERE settlement_id=$1),
  (SELECT COALESCE(sum(next_ordinal),0) FROM unit_ordinals WHERE settlement_id=$1)`, f.settlementID, f.worldID).Scan(&s.Units, &s.Jobs, &s.Events, &s.Ordinals, &s.NextOrdinal); err != nil {
@@ -117,7 +117,7 @@ func TestRecruit_FailureRollsBackWholeAction(t *testing.T) {
 		{"naval_unit", "galley", "units", 1, func(f *recruitShipFixture) string { return fmt.Sprintf("NEW.settlement_id='%s'::uuid", f.settlementID) }},
 		{"land_unit", "spearman", "units", 1, func(f *recruitShipFixture) string { return fmt.Sprintf("NEW.settlement_id='%s'::uuid", f.settlementID) }},
 		{"naval_job", "galley", "scheduled_events", 1, func(f *recruitShipFixture) string {
-			return fmt.Sprintf("NEW.payload->>'settlement_id'='%s' AND NEW.event_type='TrainComplete'", f.settlementID)
+			return fmt.Sprintf("NEW.world_id='%s'::uuid AND NEW.event_type='ShipyardWorkComplete'", f.worldID)
 		}},
 		{"land_job", "spearman", "scheduled_events", 1, func(f *recruitShipFixture) string {
 			return fmt.Sprintf("NEW.payload->>'settlement_id'='%s' AND NEW.event_type='TrainComplete'", f.settlementID)
@@ -132,6 +132,11 @@ func TestRecruit_FailureRollsBackWholeAction(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			f := setupRecruitShipFixture(t)
+			if tc.name == "naval_job" {
+				if _, err := f.pool.Exec(context.Background(), `INSERT INTO settlement_placement(settlement_id,gubbe_ordinal,target_kind,building_type,good_key) VALUES($1,1,'building','shipyard','shipbuilding')`, f.settlementID); err != nil {
+					t.Fatal(err)
+				}
+			}
 			sink := observeRecruitEvents(t, f)
 			before := snapshotRecruitState(t, f)
 			rejectRecruitWrite(t, f, tc.table, tc.condition(f))

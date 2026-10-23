@@ -1,3 +1,11 @@
+# ORDER28 — implementation av godkänd binär modell
+
+**Aktuellt kontrakt (Claude 2026-10-23 06:03):** minst EN bemannad plats ger full befintlig takt åt ALLA parallella bygge-/reparationsjobb; noll pausar utan progress eller ETA. Betalda order och restarbete består. Dagens kapacitetsgränser kvar, inklusive att gamla TrainComplete-cap även räknar landutbildning. Det äldre förslaget nedan om halvfart är FÖRKASTAT.
+
+Scope: verklig placement-service, sparat tickarbete, atomisk reglering vid alla förändringar, deployövergång samt server/Keryx/webb/Codex. Invariant: ingen obemannad progress, inget dubbelt materialuttag eller färdigställande. Fitting_out/landutbildning ändras inte. Acceptans: noll/en, paus/återuppta, flera samtidiga, livscykel, övergång+replay. Stoppa vid kanonändring. Bevis: separat original-master/fresh203 endpointbaseline, fresh204 riktade tester, fysisk nollbemanningsmutant, fyra ytor i isolerad rigg, EN full fresh vid slutet+JS/vet.
+
+---
+
 # ORDER 28 — inventering och modellförslag
 
 2026-10-23. Bas: `7f0cdebe`, gren `codex/varv-bemanning`.

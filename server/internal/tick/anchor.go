@@ -67,3 +67,14 @@ func (a Anchor) WallAt(m int64) time.Time {
 	delta := m - int64(a.Tick)*1000
 	return a.At.Add(time.Duration(delta) * tickDur / 1000)
 }
+
+// TickAtOrAfter converts a saved deadline to the first tick at or after it.
+// The anchor owns this inverse too; deploy transitions do not invent a clock.
+func (a Anchor) TickAtOrAfter(at time.Time) int {
+	d := time.Duration(TickSeconds) * time.Second
+	delta := at.Sub(a.At)
+	if delta <= 0 {
+		return a.Tick
+	}
+	return a.Tick + int((delta+d-1)/d)
+}

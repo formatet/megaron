@@ -146,6 +146,10 @@ func TestRepair_StartsJobDeductsGoodsAndCompletesToFullHull(t *testing.T) {
 	f := newShipRepairFixture(t, true, map[string]float64{"timber": 1000, "cedar": 1000, "silver": 1000})
 	ctx := context.Background()
 
+	if _, err := f.pool.Exec(ctx, `INSERT INTO settlement_placement(settlement_id,gubbe_ordinal,target_kind,building_type,good_key) VALUES($1,1,'building','shipyard','shipbuilding')`, f.settlementID); err != nil {
+		t.Fatal(err)
+	}
+
 	rec := f.postRepair(t)
 	if rec.Code != http.StatusAccepted {
 		t.Fatalf("Repair() = %d %q, want 202", rec.Code, rec.Body.String())
@@ -191,8 +195,12 @@ func TestRepair_StartsJobDeductsGoodsAndCompletesToFullHull(t *testing.T) {
 	if hull != 2 {
 		t.Errorf("hull should be untouched at job START (only set on completion), got %d", hull)
 	}
-	if buildCompleteAt == nil {
-		t.Errorf("build_complete_at not set")
+	var response map[string]any
+	if err := json.Unmarshal(rec.Body.Bytes(), &response); err != nil {
+		t.Fatal(err)
+	}
+	if response["complete_at"] == nil || response["shipyard_waiting"] != false {
+		t.Fatal(rec.Body.String())
 	}
 	var timberLeft float64
 	if err := f.pool.QueryRow(ctx, `SELECT amount FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'timber'`,

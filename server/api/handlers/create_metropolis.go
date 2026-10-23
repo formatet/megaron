@@ -135,7 +135,7 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, p metropolisParams) (creat
 		                 -- at a low binding value (silver's real cap is set by the
 		                 -- carried purse below)
 		        current_world_tick()
-		 FROM goods g
+		 FROM goods g WHERE g.key <> 'shipbuilding'
 		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
 		out.SettlementID, economy.FoundingHerdLivestock, province.DefaultGoodStorageCap,
 	); err != nil {
