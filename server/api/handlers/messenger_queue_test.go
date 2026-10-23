@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -304,5 +305,38 @@ func TestCorrespondenceQueueMigrationBackfillsWithoutChangingLetters(t *testing.
 	}
 	if after != xid {
 		t.Fatal("read/status changed insertion identity")
+	}
+}
+
+func TestCorrespondenceQueueLogicalRestoreDoesNotHideHistoricalLetters(t *testing.T) {
+	f := setupReplyFixture(t)
+	ctx := context.Background()
+	now := time.Now().UTC()
+	h := NewMessengerHandler(f.pool, nil, clock.NewTestClock(now), nil)
+	f.router.Get("/worlds/{worldID}/messengers/queue", h.Queue)
+	var id uuid.UUID
+	if err := f.pool.QueryRow(ctx, `INSERT INTO messengers(world_id,sender_id,origin_id,destination_id,message_text,status,hex_q,hex_r,sent_at,arrives_at,correspondence_created_xid,correspondence_created_epoch) VALUES($1,$2,$3,$4,'restored letter','delivered',3,0,$5,$5,'999999999999'::xid8,pg_postmaster_start_time()-interval '1 day') RETURNING id`, f.worldID, f.senderID, f.originID, f.destID, now.Add(-time.Second)).Scan(&id); err != nil {
+		t.Fatal(err)
+	}
+	req := httptest.NewRequest("GET", "/worlds/"+f.worldID.String()+"/messengers/queue?limit=1", nil)
+	req.Header.Set("Authorization", "Bearer "+f.recvToken)
+	rec := httptest.NewRecorder()
+	f.router.ServeHTTP(rec, req)
+	var p queueTestPage
+	if err := json.Unmarshal(rec.Body.Bytes(), &p); err != nil {
+		t.Fatal(err)
+	}
+	if rec.Code != 200 || len(p.Items) != 1 || p.Items[0].ID != id {
+		t.Fatalf("logical restore hid delivered history: %d %s", rec.Code, rec.Body)
+	}
+	// Restarted DB processes invalidate snapshots, not the restored letters.
+	cursor := correspondenceCursor{Version: 1, World: f.worldID, Player: f.receiverID, Upper: now, Before: now, ID: id, Snapshot: "1:2:", Epoch: now.Add(-24 * time.Hour)}
+	raw, _ := json.Marshal(cursor)
+	req = httptest.NewRequest("GET", "/worlds/"+f.worldID.String()+"/messengers/queue?cursor="+base64.RawURLEncoding.EncodeToString(raw), nil)
+	req.Header.Set("Authorization", "Bearer "+f.recvToken)
+	rec = httptest.NewRecorder()
+	f.router.ServeHTTP(rec, req)
+	if rec.Code != 400 {
+		t.Fatalf("old DB snapshot accepted: %d %s", rec.Code, rec.Body)
 	}
 }

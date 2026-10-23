@@ -2,4 +2,8 @@
 -- insertion identity because every UPDATE replaces it. Existing letters are
 -- backfilled in this transaction; subsequent inserts use their creating TX.
 ALTER TABLE messengers ADD COLUMN correspondence_created_xid xid8 NOT NULL DEFAULT pg_current_xact_id();
+-- Logical restores must not interpret another PostgreSQL process's xid values
+-- as this process's transaction history. A different epoch marks committed
+-- historical rows; current-epoch rows still obey the captured snapshot.
+ALTER TABLE messengers ADD COLUMN correspondence_created_epoch timestamptz NOT NULL DEFAULT pg_postmaster_start_time();
 CREATE INDEX idx_messengers_correspondence_page ON messengers(world_id, sent_at DESC, id DESC);
