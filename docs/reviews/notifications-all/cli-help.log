@@ -1,0 +1,23 @@
+Show your notification feed (arrivals, completions, trade events, ...)
+
+Usage:
+  keryx notifications [flags]
+
+Examples:
+  keryx notifications
+  keryx notifications --unread
+  keryx notifications --all
+  keryx notifications --kind UnitArrived
+  keryx notifications --exclude BuildComplete
+  keryx notifications --mark-read
+
+Flags:
+      --all              include every notification kind without grouping (latest 100)
+      --exclude string   hide these notification kinds (comma-separated)
+  -h, --help             help for notifications
+      --kind string      only show these notification kinds (comma-separated, e.g. UnitArrived)
+      --mark-read        mark all notifications as read and exit
+      --unread           show only unread notifications
+
+Global Flags:
+  -j, --json   output as JSON (for scripts and MCP)

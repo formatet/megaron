@@ -1,0 +1,8 @@
+--- FAIL: TestNotificationsAllIncludesEveryKindWithoutGrouping (0.00s)
+    --- FAIL: TestNotificationsAllIncludesEveryKindWithoutGrouping/false (0.00s)
+        notifications_all_test.go:23: all still filters kinds: /api/v1/worlds/test-world/notifications?exclude=SitosGranaryRelease%2CSitosIntervention%2CSitosFundLow
+    --- FAIL: TestNotificationsAllIncludesEveryKindWithoutGrouping/true (0.00s)
+        notifications_all_test.go:23: all still filters kinds: /api/v1/worlds/test-world/notifications?exclude=SitosGranaryRelease%2CSitosIntervention%2CSitosFundLow&unread=true
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.003s
+FAIL
