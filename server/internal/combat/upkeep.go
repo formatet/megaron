@@ -40,7 +40,10 @@ func ProvisionDaysLeft(provisions, ration float64) int {
 	if provisions <= 0 {
 		return 0
 	}
-	return int(provisions / ration)
+	// Decimal rations can divide to one representable step below an integer
+	// (0.7 / 0.1 = 6.999999999999999). Correct only that final float step,
+	// not a fixed food allowance: material shortages must still round down.
+	return int(math.Nextafter(provisions/ration, math.Inf(1)))
 }
 
 const (

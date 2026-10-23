@@ -1,6 +1,9 @@
 package combat
 
-import "testing"
+import (
+	"math"
+	"testing"
+)
 
 // Ransonen måste räknas ur SAMMA källa som dragningen (UnitUpkeep), annars
 // provianterar man för ett tal och debiterar ett annat — och skillnaden syns
@@ -174,5 +177,29 @@ func TestAtHomePort_OnlyDockedStatusesMayFallBackToTheTown(t *testing.T) {
 			t.Errorf("status %q räknas som i hamn — då kan ett skepp till sjöss äta ur "+
 				"stadens magasin igen, vilket är exakt felet mekaniken tar bort", s)
 		}
+	}
+}
+
+// Decimal stock and ration can divide to one float step below a whole tick.
+// A material shortage must still floor, including at a large stock scale.
+func TestProvisionDaysLeft_DecimalWholeTickBoundary(t *testing.T) {
+	for _, tc := range []struct {
+		name          string
+		stock, ration float64
+		want          int
+	}{
+		{"seven decimal rations", .7, .1, 7},
+		{"three decimal rations", .3, .1, 3},
+		{"seven small rations", .07, .01, 7},
+		{"real shortage", .699999999, .1, 6},
+		{"two float steps short", math.Nextafter(.7, 0), .1, 6},
+		{"fraction of final ration", .05, .1, 0},
+		{"large real shortage", 999999.99, .1, 9999999},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := ProvisionDaysLeft(tc.stock, tc.ration); got != tc.want {
+				t.Fatalf("stock %.17g / ration %.17g = %d ticks, want %d", tc.stock, tc.ration, got, tc.want)
+			}
+		})
 	}
 }

@@ -1,0 +1,4 @@
+» färsk DB på migration 205 · commit 67d0b155+ändringar
+ok  	formatet/megaron/server/internal/combat	0.055s
+ok  	formatet/megaron/server/api/handlers	0.139s
+ok  	formatet/megaron/server/internal/transport	0.134s
