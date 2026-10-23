@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -78,7 +79,7 @@ func (h *ShipyardWorkCompleteHandler) Handle(ctx context.Context, e events.Sched
 	if h.store != nil {
 		streamType := events.StreamProvince
 		if status == "repairing" {
-			streamType = events.StreamType("unit")
+			streamType = events.StreamType(unit.StreamUnit)
 		}
 		if _, err = h.store.AppendTx(ctx, tx, stream, streamType, kind, body, e.WorldID, nil); err != nil {
 			return err
@@ -91,7 +92,12 @@ func (h *ShipyardWorkCompleteHandler) Handle(ctx context.Context, e events.Sched
 		slog.Warn("shipyard completion production", "err", err)
 	}
 	if h.hub != nil {
-		if err = h.hub.NotifyPlayer(ctx, e.WorldID, owner, kind, 3, body); err != nil {
+		level := 4
+		if status == "repairing" {
+			level = 3
+			body["name"] = unit.LoadDisplayName(ctx, h.pool, p.UnitID)
+		}
+		if err = h.hub.NotifyPlayer(ctx, e.WorldID, owner, kind, level, body); err != nil {
 			slog.Warn("shipyard completion notify", "err", err)
 		}
 	}

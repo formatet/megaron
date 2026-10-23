@@ -300,3 +300,59 @@ func TestShipyardReadSurfacesUseSameWorldAnchorDespiteClockSkew(t *testing.T) {
 		t.Fatal(repair, list, res.Body.String())
 	}
 }
+
+type shipyardNoticeRecorder struct {
+	count, level int
+	name         string
+}
+
+func (r *shipyardNoticeRecorder) BroadcastEvent(uuid.UUID, string, any) {}
+func (r *shipyardNoticeRecorder) NotifyPlayer(_ context.Context, _, _ uuid.UUID, _ string, level int, body any) error {
+	r.count++
+	r.level = level
+	r.name, _ = body.(map[string]any)["name"].(string)
+	return nil
+}
+func TestShipyardCompletionPreservesNotificationIdentityAndSeverity(t *testing.T) {
+	for _, status := range []string{"forming", "repairing"} {
+		t.Run(status, func(t *testing.T) {
+			f := newShipRepairFixture(t, true, map[string]float64{"timber": 1000})
+			ctx := context.Background()
+			for _, q := range []string{`INSERT INTO settlement_placement(settlement_id,gubbe_ordinal,target_kind,building_type,good_key) VALUES($1,1,'building','shipyard','shipbuilding')`} {
+				if _, err := f.pool.Exec(ctx, q, f.settlementID); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if _, err := f.pool.Exec(ctx, `UPDATE units SET status=$2,name='Asterion' WHERE id=$1`, f.shipID, status); err != nil {
+				t.Fatal(err)
+			}
+			if err := economy.StartShipyardWork(ctx, f.pool, f.shipID, 1); err != nil {
+				t.Fatal(err)
+			}
+			var payload json.RawMessage
+			if err := f.pool.QueryRow(ctx, `SELECT payload FROM scheduled_events WHERE event_type='ShipyardWorkComplete' AND processed_at IS NULL AND payload->>'unit_id'=$1`, f.shipID.String()).Scan(&payload); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := f.pool.Exec(ctx, `UPDATE worlds SET current_tick=current_tick+1 WHERE id=$1`, f.worldID); err != nil {
+				t.Fatal(err)
+			}
+			recorder := &shipyardNoticeRecorder{}
+			h := combat.NewShipyardWorkCompleteHandler(f.pool, events.NewStore(f.pool), recorder)
+			for i := 0; i < 2; i++ {
+				if err := h.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, Payload: payload}); err != nil {
+					t.Fatal(err)
+				}
+			}
+			want := 4
+			if status == "repairing" {
+				want = 3
+				if !strings.Contains(recorder.name, "Asterion") {
+					t.Fatal(recorder.name)
+				}
+			}
+			if recorder.count != 1 || recorder.level != want {
+				t.Fatal(recorder)
+			}
+		})
+	}
+}
