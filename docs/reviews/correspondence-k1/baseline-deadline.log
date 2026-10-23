@@ -1,0 +1,21 @@
+» färsk DB på migration 206 · commit 57173d91+ändringar
+2026/10/23 20:58:22 INFO player registered id=10821819-7d68-49cf-b636-33a45b191437 username=reply-sender-5282908e-8f53-4781-9d3b-e2da7146401c
+2026/10/23 20:58:22 INFO player registered id=de02ec80-329d-4ac5-8223-632da3c5eef4 username=reply-receiver-e50e567d-05e7-45d7-981d-b0436eb35ecd
+2026/10/23 20:58:22 INFO player registered id=9a231e57-98a3-4d62-bfaa-add74f9e3475 username=reply-sender-c6dae24b-0a00-450c-9df7-215d5d8ebc89
+2026/10/23 20:58:22 INFO player registered id=53665970-7de7-4f74-a106-ef6f00b077d6 username=reply-receiver-022f2d8d-d2b0-4804-b6c4-efb331882dd5
+2026/10/23 20:58:22 INFO player registered id=543a8d60-1ee4-4bf4-b21d-3ff8344dba1e username=reply-sender-4482ff8b-3192-4a6c-9437-8cc4876383ab
+2026/10/23 20:58:22 INFO player registered id=58bac16b-f3b5-4b3d-bdb0-63cd4f6219d4 username=reply-receiver-ece33cb5-46d1-4aa9-a5c4-599aab396c77
+2026/10/23 20:58:22 INFO player registered id=3c325354-32ce-4886-8a2b-41fa2fe51585 username=reply-sender-d4b7b4c8-f8a9-4907-a70b-a04dae8a241e
+2026/10/23 20:58:22 INFO player registered id=ecbc5f9f-d5e1-42e4-ac23-ba8ad8d4328a username=reply-receiver-2fcd391f-eb28-41c0-8d01-608048bb7172
+--- FAIL: TestCorrespondenceQueueDeadlineBlocksLateAcceptAndDeclineBeforeWorker (0.46s)
+    --- FAIL: TestCorrespondenceQueueDeadlineBlocksLateAcceptAndDeclineBeforeWorker/trade-accept/buy (0.12s)
+        messenger_queue_test.go:247: deadline passed but buy trade-accept returned 200: map[arrival_tick:5 category:land departure_tick:0 distance:3 good_key:grain goods_arrival_tick:10 goods_arrives_at:2026-10-24T04:58:22.187092Z kind:buy quantity:1 return_travel_ticks:5 silver_arrival_tick:5 silver_arrives_at:2026-10-23T23:58:22.187092Z silver_paid:1 transport_id:5e3465f9-ce1a-44d4-9bfb-28029731c52b travel_ticks:5]
+    --- FAIL: TestCorrespondenceQueueDeadlineBlocksLateAcceptAndDeclineBeforeWorker/trade-accept/sell (0.12s)
+        messenger_queue_test.go:247: deadline passed but sell trade-accept returned 200: map[arrival_tick:5 category:land departure_tick:0 distance:3 good_key:grain goods_arrival_tick:5 goods_arrives_at:2026-10-23T23:58:22.304183Z kind:sell quantity:1 return_travel_ticks:5 silver_arrival_tick:10 silver_arrives_at:2026-10-24T04:58:22.304183Z silver_paid:1 transport_id:709a06f0-0eab-4ba8-9c88-aa2de1c87250 travel_ticks:5]
+    --- FAIL: TestCorrespondenceQueueDeadlineBlocksLateAcceptAndDeclineBeforeWorker/trade-decline/buy (0.11s)
+        messenger_queue_test.go:247: deadline passed but buy trade-decline returned 200: map[status:declined]
+    --- FAIL: TestCorrespondenceQueueDeadlineBlocksLateAcceptAndDeclineBeforeWorker/trade-decline/sell (0.11s)
+        messenger_queue_test.go:247: deadline passed but sell trade-decline returned 200: map[status:declined]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.464s
+FAIL

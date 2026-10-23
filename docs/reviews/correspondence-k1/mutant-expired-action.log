@@ -1,0 +1,8 @@
+» färsk DB på migration 206 · commit 57173d91+ändringar
+2026/10/23 20:58:27 INFO player registered id=b82d36e7-918f-42a8-9a61-7a5943c56d70 username=reply-sender-c9250389-ecf5-40dc-aff4-265e8dc38d95
+2026/10/23 20:58:27 INFO player registered id=b65a4852-c3f1-4bd7-bbb4-98d1450df7ae username=reply-receiver-32cfad1c-0594-46b3-8592-69a8f7ca3cdb
+--- FAIL: TestCorrespondenceQueueKeepsExpiredAndInsolventWithLiveActions (0.11s)
+    messenger_queue_test.go:94: expired offer still actionable: {ID:f31d5dbd-8977-45a5-a96d-9dc6113fac14 Group:waiting_you State:pending Actions:[read trade_decline] Affordable:0x1dd71f61cb35 Missing:Requires 1 grain at Reply-Dest-e8f40bfa-047d-44d8-917e-6be624b96605; insufficient stock ReadAt:<nil>}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.116s
+FAIL

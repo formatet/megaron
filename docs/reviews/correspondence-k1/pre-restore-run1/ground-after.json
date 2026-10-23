@@ -1,0 +1,35 @@
+[
+  {
+    "id": "4639d0ab-cce9-4dcc-a7cf-5884442a20f8",
+    "status": "returning",
+    "reply_text": null,
+    "read_at": null,
+    "trade_offer": {
+      "kind": "sell",
+      "status": "declined",
+      "offer_qty": 2,
+      "offer_good": "copper",
+      "want_silver": 5
+    }
+  },
+  {
+    "id": "6a06d70a-40d3-41db-8639-ee8d9b9261d5",
+    "status": "returning",
+    "reply_text": "Return this answer on your own road.",
+    "read_at": "2026-10-23T18:54:41.297701+00:00",
+    "trade_offer": null
+  },
+  {
+    "id": "f012c5ba-75ed-44b6-b379-bd368305d192",
+    "status": "delivered",
+    "reply_text": null,
+    "read_at": null,
+    "trade_offer": {
+      "kind": "sell",
+      "status": "pending",
+      "offer_qty": 2,
+      "offer_good": "copper",
+      "want_silver": 5
+    }
+  }
+]

@@ -1,0 +1,23 @@
+[
+  {
+    "mutation": "cli-wrong-queue-path",
+    "source": "server/cmd/keryx/cmd_correspondence_queue.go",
+    "restore_sha256": "22415576e5225c72fa82155fa41980e29907e02c45e3a22fc55f5e37c96a9df4",
+    "mutant": "RED",
+    "restored": "GREEN"
+  },
+  {
+    "mutation": "web-eager-hidden-history",
+    "source": "web/static/js/megaron/ui/drawers/diplomacy.js",
+    "restore_sha256": "3937585b34a05907bc1aff07220ed8c4ef2833de35e5bc463960f7a26eae38bf",
+    "mutant": "RED",
+    "restored": "GREEN"
+  },
+  {
+    "mutation": "web-invents-accept",
+    "source": "web/static/js/megaron/ui/drawers/diplomacy_queue.js",
+    "restore_sha256": "1080c456c6586ed9a053be130d78e26046cdadf78a572f817da17148db6096ae",
+    "mutant": "RED",
+    "restored": "GREEN"
+  }
+]

@@ -1,0 +1,111 @@
+{
+  "captures": [
+    {
+      "view": "desktop",
+      "width": 1280,
+      "height": 900,
+      "first_page": [
+        "4a699067-1688-47b5-9b90-8493278b4d8e",
+        "f4fd8bd2-aa62-47c0-9895-51f787e1b540",
+        "b342b23a-fc53-44ef-aa87-86c85c53ac7e",
+        "04ffb7b2-4c44-4138-a860-7e03834c30b2",
+        "8cdb248f-2ee9-4360-9d2a-861d0d6c823f",
+        "7160a636-c71f-4980-803b-b9aa199d92ce",
+        "0e353285-701c-43bf-8d42-a4a625c57240",
+        "600546c8-30c9-456c-ae05-7ffd3238a773",
+        "602a7008-cb1c-4e49-b377-c911ff25945d",
+        "45ec4e00-3fa8-4590-ae37-cf33651f7233",
+        "80ad392f-39a6-4182-b390-c98c5633b490",
+        "ef4d4771-6f8c-44a7-bc22-43af18430a12",
+        "62c46baf-315f-4d97-88d6-bde8507e4bff",
+        "4e40126b-745c-465b-804a-a1a81bb60b15",
+        "aba5d531-1cb5-49eb-8a78-c3b605409a2c",
+        "709c26c4-3422-44dd-8cac-b0d8d1a2f5b1",
+        "476604fa-9dba-4167-adb5-e9605753eece",
+        "d167d5da-0b0f-4a06-8fce-6d79d50a4578",
+        "33b975b6-3300-4daa-ae25-7c0ab0655b04",
+        "26c03ee3-6bd4-446d-b7ed-4d7451bfc6e6",
+        "78a61907-3871-4dc5-94bc-78b9833cd030",
+        "ba5d9da0-971e-4ca4-a851-7e12e7ceeea7",
+        "ec19ea26-66f4-49f7-9462-55f54f696ea5",
+        "8d682c3e-5e30-43ec-a163-292377d0b397",
+        "b12fd202-ecc5-42e2-81ca-c9675a6b325e",
+        "49a4a5ba-bd5a-472e-9675-2298b1c9d933",
+        "46c3c31d-02d2-41a5-9070-e8a350afbd0c",
+        "31acae62-b22a-4f67-9584-1de479be0556",
+        "9fa9367c-029f-4820-8512-8dba5c838d07",
+        "981e7379-551f-4a35-be5c-f1fcc4e0f5d3"
+      ],
+      "next_page": [
+        "1206ed4d-0066-4272-afce-cbad47238cbe",
+        "7d84af4c-aad0-43cf-842a-24d79021b57f",
+        "cc886055-3dfb-44a2-9942-ba6ae3195e78",
+        "181cc74d-1b7d-4529-b100-727b2e94b93b",
+        "5200d9dc-425b-498c-89ed-272d9c58a6ba"
+      ]
+    },
+    {
+      "view": "mobile",
+      "width": 390,
+      "height": 844,
+      "first_page": [
+        "b342b23a-fc53-44ef-aa87-86c85c53ac7e",
+        "04ffb7b2-4c44-4138-a860-7e03834c30b2",
+        "8cdb248f-2ee9-4360-9d2a-861d0d6c823f",
+        "7160a636-c71f-4980-803b-b9aa199d92ce",
+        "0e353285-701c-43bf-8d42-a4a625c57240",
+        "600546c8-30c9-456c-ae05-7ffd3238a773",
+        "602a7008-cb1c-4e49-b377-c911ff25945d",
+        "45ec4e00-3fa8-4590-ae37-cf33651f7233",
+        "80ad392f-39a6-4182-b390-c98c5633b490",
+        "ef4d4771-6f8c-44a7-bc22-43af18430a12",
+        "62c46baf-315f-4d97-88d6-bde8507e4bff",
+        "4e40126b-745c-465b-804a-a1a81bb60b15",
+        "aba5d531-1cb5-49eb-8a78-c3b605409a2c",
+        "709c26c4-3422-44dd-8cac-b0d8d1a2f5b1",
+        "476604fa-9dba-4167-adb5-e9605753eece",
+        "d167d5da-0b0f-4a06-8fce-6d79d50a4578",
+        "33b975b6-3300-4daa-ae25-7c0ab0655b04",
+        "26c03ee3-6bd4-446d-b7ed-4d7451bfc6e6",
+        "78a61907-3871-4dc5-94bc-78b9833cd030",
+        "ba5d9da0-971e-4ca4-a851-7e12e7ceeea7",
+        "ec19ea26-66f4-49f7-9462-55f54f696ea5",
+        "8d682c3e-5e30-43ec-a163-292377d0b397",
+        "b12fd202-ecc5-42e2-81ca-c9675a6b325e",
+        "49a4a5ba-bd5a-472e-9675-2298b1c9d933",
+        "46c3c31d-02d2-41a5-9070-e8a350afbd0c",
+        "31acae62-b22a-4f67-9584-1de479be0556",
+        "9fa9367c-029f-4820-8512-8dba5c838d07",
+        "4a699067-1688-47b5-9b90-8493278b4d8e",
+        "f4fd8bd2-aa62-47c0-9895-51f787e1b540",
+        "981e7379-551f-4a35-be5c-f1fcc4e0f5d3"
+      ],
+      "next_page": [
+        "1206ed4d-0066-4272-afce-cbad47238cbe",
+        "7d84af4c-aad0-43cf-842a-24d79021b57f",
+        "cc886055-3dfb-44a2-9942-ba6ae3195e78",
+        "181cc74d-1b7d-4529-b100-727b2e94b93b",
+        "5200d9dc-425b-498c-89ed-272d9c58a6ba"
+      ]
+    }
+  ],
+  "errors": [],
+  "posts": [
+    "https://umami.formatet.se/api/send",
+    "https://umami.formatet.se/api/send",
+    "/api/v1/worlds/6e2c8a4c-99a6-4137-9029-53648ad78e4a/messengers/4a699067-1688-47b5-9b90-8493278b4d8e/read",
+    "https://umami.formatet.se/api/send",
+    "/api/v1/worlds/6e2c8a4c-99a6-4137-9029-53648ad78e4a/messengers/4a699067-1688-47b5-9b90-8493278b4d8e/reply",
+    "https://umami.formatet.se/api/send",
+    "/api/v1/worlds/6e2c8a4c-99a6-4137-9029-53648ad78e4a/messengers/f4fd8bd2-aa62-47c0-9895-51f787e1b540/trade-decline",
+    "https://umami.formatet.se/api/send",
+    "https://umami.formatet.se/api/send",
+    "https://umami.formatet.se/api/send"
+  ],
+  "history_reads": [
+    "/api/v1/worlds/6e2c8a4c-99a6-4137-9029-53648ad78e4a/messengers/inbox?history=true",
+    "/api/v1/worlds/6e2c8a4c-99a6-4137-9029-53648ad78e4a/messengers/inbox?history=true",
+    "/api/v1/worlds/6e2c8a4c-99a6-4137-9029-53648ad78e4a/messengers/inbox?history=true",
+    "/api/v1/worlds/6e2c8a4c-99a6-4137-9029-53648ad78e4a/messengers/inbox?history=true"
+  ]
+}

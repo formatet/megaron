@@ -1,0 +1,190 @@
+TAP version 13
+# Subtest: read receipts clear only displayed letters, preserve arrivals and pending offers, and survive failures honestly
+ok 1 - read receipts clear only displayed letters, preserve arrivals and pending offers, and survive failures honestly
+  ---
+  duration_ms: 20.263369
+  type: 'test'
+  ...
+# Subtest: AK1: goodsOptionsHTML renders one <option> per good, value = key
+ok 2 - AK1: goodsOptionsHTML renders one <option> per good, value = key
+  ---
+  duration_ms: 0.659128
+  type: 'test'
+  ...
+# Subtest: AK1b: goodsOptionsHTML leads with an empty "choose" option — no good is silently pre-selected
+ok 3 - AK1b: goodsOptionsHTML leads with an empty "choose" option — no good is silently pre-selected
+  ---
+  duration_ms: 0.157192
+  type: 'test'
+  ...
+# Subtest: AK2 (falsifiable): an empty catalogue ([]) reads "no tradeable goods", not a blank list
+ok 4 - AK2 (falsifiable): an empty catalogue ([]) reads "no tradeable goods", not a blank list
+  ---
+  duration_ms: 0.12161
+  type: 'test'
+  ...
+# Subtest: AK3 (honest empty state): a failed fetch (null) reads "Could not load goods" — never silently falls back to free text
+ok 5 - AK3 (honest empty state): a failed fetch (null) reads "Could not load goods" — never silently falls back to free text
+  ---
+  duration_ms: 0.083367
+  type: 'test'
+  ...
+# Subtest: AK3b: goodsSelectDisabledAttr disables the control exactly when the catalogue failed to load (null), never otherwise
+ok 6 - AK3b: goodsSelectDisabledAttr disables the control exactly when the catalogue failed to load (null), never otherwise
+  ---
+  duration_ms: 0.113044
+  type: 'test'
+  ...
+# Subtest: AK4: goodsOptionsHTML escapes a hostile good name so it cannot inject markup
+ok 7 - AK4: goodsOptionsHTML escapes a hostile good name so it cannot inject markup
+  ---
+  duration_ms: 0.091633
+  type: 'test'
+  ...
+# Subtest: AK5: goodsOptionsHTML falls back to the raw key as the label when name is missing
+ok 8 - AK5: goodsOptionsHTML falls back to the raw key as the label when name is missing
+  ---
+  duration_ms: 0.50749
+  type: 'test'
+  ...
+# Subtest: Correspondence reads host and city outboxes and renders their letters
+ok 9 - Correspondence reads host and city outboxes and renders their letters
+  ---
+  duration_ms: 29.290944
+  type: 'test'
+  ...
+# Subtest: queue shows missed and unaffordable offers, escapes text, and uses only server response actions
+ok 10 - queue shows missed and unaffordable offers, escapes text, and uses only server response actions
+  ---
+  duration_ms: 13.683603
+  type: 'test'
+  ...
+# Subtest: a page held across expiry loses accept and decline without inventing server mutations
+ok 11 - a page held across expiry loses accept and decline without inventing server mutations
+  ---
+  duration_ms: 0.97978
+  type: 'test'
+  ...
+# Subtest: actual loader pages by encoded cursor, refreshes from newest, and listing never posts read receipts
+ok 12 - actual loader pages by encoded cursor, refreshes from newest, and listing never posts read receipts
+  ---
+  duration_ms: 15.977433
+  type: 'test'
+  ...
+# Subtest: actual loader ignores a late response after world change or drawer replacement
+ok 13 - actual loader ignores a late response after world change or drawer replacement
+  ---
+  duration_ms: 0.405181
+  type: 'test'
+  ...
+# Subtest: opening one actual letter acknowledges only that ID, and replying uses the same delivered messenger
+ok 14 - opening one actual letter acknowledges only that ID, and replying uses the same delivered messenger
+  ---
+  duration_ms: 2.374973
+  type: 'test'
+  ...
+# Subtest: Runners tab: every group, server explanation, buttons only where the server allows
+ok 15 - Runners tab: every group, server explanation, buttons only where the server allows
+  ---
+  duration_ms: 13.512446
+  type: 'test'
+  ...
+# Subtest: Runners tab: names are escaped; empty state
+ok 16 - Runners tab: names are escaped; empty state
+  ---
+  duration_ms: 0.149437
+  type: 'test'
+  ...
+# Subtest: the real drawer has a Runners tab that fetches /runners
+ok 17 - the real drawer has a Runners tab that fetches /runners
+  ---
+  duration_ms: 16.706594
+  type: 'test'
+  ...
+# Subtest: M: actual drawer opens Queue and retains Correspondence, Known and Runners
+ok 18 - M: actual drawer opens Queue and retains Correspondence, Known and Runners
+  ---
+  duration_ms: 18.680317
+  type: 'test'
+  ...
+# Subtest: M: Known keeps ruler and city knowledge, gates rumours
+ok 19 - M: Known keeps ruler and city knowledge, gates rumours
+  ---
+  duration_ms: 11.186569
+  type: 'test'
+  ...
+# Subtest: M: first letter and both trade directions remain reachable without any prior letter
+ok 20 - M: first letter and both trade directions remain reachable without any prior letter
+  ---
+  duration_ms: 7.524705
+  type: 'test'
+  ...
+# Subtest: M: selecting rumour, own city or a removed contact creates no draft or dispatch
+ok 21 - M: selecting rumour, own city or a removed contact creates no draft or dispatch
+  ---
+  duration_ms: 0.714555
+  type: 'test'
+  ...
+# Subtest: M: host still reads both tabs but does not gain a settlement-only trade composer
+ok 22 - M: host still reads both tabs but does not gain a settlement-only trade composer
+  ---
+  duration_ms: 1.019828
+  type: 'test'
+  ...
+# Subtest: M: failed Known fetch offers retry without inventing an empty directory
+ok 23 - M: failed Known fetch offers retry without inventing an empty directory
+  ---
+  duration_ms: 1.793792
+  type: 'test'
+  ...
+# Subtest: M: Write clears a stale composer while the chosen conversation loads
+ok 24 - M: Write clears a stale composer while the chosen conversation loads
+  ---
+  duration_ms: 5.750637
+  type: 'test'
+  ...
+# Subtest: M: late unavailable-actions response preserves a typed first letter
+ok 25 - M: late unavailable-actions response preserves a typed first letter
+  ---
+  duration_ms: 1.402569
+  type: 'test'
+  ...
+# Subtest: received history stays in the actual drawer after departure without dead reply or offer controls
+ok 26 - received history stays in the actual drawer after departure without dead reply or offer controls
+  ---
+  duration_ms: 1.619905
+  type: 'test'
+  ...
+# Subtest: gift notices preserve exact credited and lost quantities and changed owner
+ok 27 - gift notices preserve exact credited and lost quantities and changed owner
+  ---
+  duration_ms: 1.884107
+  type: 'test'
+  ...
+# Subtest: actual Diplomacy drawer places gift among letters with escaped text and no offer controls
+ok 28 - actual Diplomacy drawer places gift among letters with escaped text and no offer controls
+  ---
+  duration_ms: 25.8006
+  type: 'test'
+  ...
+# Subtest: actual Transfer destination loader shows foreign owner and protects replacement form from late response
+ok 29 - actual Transfer destination loader shows foreign owner and protects replacement form from late response
+  ---
+  duration_ms: 0.795779
+  type: 'test'
+  ...
+# Subtest: gift formatter reads returned_quantity from a real PostgreSQL/scan/arrival payload
+ok 30 - gift formatter reads returned_quantity from a real PostgreSQL/scan/arrival payload
+  ---
+  duration_ms: 0.30919
+  type: 'test'
+  ...
+1..30
+# tests 30
+# suites 0
+# pass 30
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 115.578371

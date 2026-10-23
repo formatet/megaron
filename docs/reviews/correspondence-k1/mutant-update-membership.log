@@ -1,0 +1,8 @@
+» färsk DB på migration 206 · commit 57173d91+ändringar
+2026/10/23 20:58:32 INFO player registered id=844207f7-3bfa-4ff5-bc04-3ed37719df7c username=reply-sender-abfa47a4-48f9-46da-841e-dda676c39943
+2026/10/23 20:58:32 INFO player registered id=e0432a4c-414e-4f9f-8cd9-db3dca2931b8 username=reply-receiver-3ed070d5-d387-48f8-b4f7-cc9eb42f2cbf
+--- FAIL: TestCorrespondenceQueueKeysetSurvivesEqualTimesNewMailAndResolution (0.14s)
+    messenger_queue_test.go:178: page 1 has 0 rows
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.140s
+FAIL

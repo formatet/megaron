@@ -1,0 +1,11 @@
+BUILD_COMPLETE ffd5bd5+k1
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-korrespondens-k1/tools/correspondence_live.py", line 260, in <module>
+    main()
+    ~~~~^^
+  File "/home/tk/wt/codex-korrespondens-k1/tools/correspondence_live.py", line 234, in main
+    browser = browser_queue(base, world, recipient['token'], out, expected)
+  File "/home/tk/wt/codex-korrespondens-k1/tools/correspondence_live.py", line 54, in browser_queue
+    assert len(history_reads) == history_before, 'Default Queue fetched hidden legacy history'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Default Queue fetched hidden legacy history

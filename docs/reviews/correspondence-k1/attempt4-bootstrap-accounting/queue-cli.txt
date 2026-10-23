@@ -1,0 +1,101 @@
+Incoming correspondence, newest first. Groups apply to this page; older unanswered letters may be on the next page.
+
+Waiting on you
+From: K1 Kyme → K1 Nostos · Awaiting your reply
+  K1 delivered fixture 1
+  reply: keryx reply --id 0922cc59-1c54-4e9e-9167-c33e9006dcb6 --text "..."
+From: K1 Kyme → K1 Nostos · Awaiting your answer
+  K1 delivered fixture 2
+  Buy 2 copper · pay 5 silver
+  Answer deadline: today 22:00
+  Requires 5 silver at K1 Nostos; insufficient stock. You can still decline.
+  decline: keryx trade-decline --id 194eb6f7-ee9f-40fc-9bd7-e2cf59ea43ae
+From: K1 Kyme → K1 Nostos · Awaiting your reply
+  K1 delivered fixture 4
+  reply: keryx reply --id 19f70b2f-af02-40e1-b98d-0a2e14e103a1 --text "..."
+From: K1 Kyme → K1 Nostos · Awaiting your reply
+  K1 delivered fixture 5
+  reply: keryx reply --id f5e0e9f9-3db2-4fb0-bf45-1eae7b2a149b --text "..."
+From: K1 Kyme → K1 Nostos · Awaiting your reply
+  K1 delivered fixture 6
+  reply: keryx reply --id 34c0a315-1edd-405c-83dc-095d020b4bd4 --text "..."
+From: K1 Kyme → K1 Nostos · Awaiting your reply
+  K1 delivered fixture 7
+  reply: keryx reply --id 47ff3a50-e6d2-41c5-ab43-377e87fdf06b --text "..."
+From: K1 Kyme → K1 Nostos · Awaiting your reply
+  K1 delivered fixture 8
+  reply: keryx reply --id a2d7ab83-13be-424d-8cf2-9410f3f0018b --text "..."
+From: K1 Kyme → K1 Nostos · Awaiting your reply
+  K1 delivered fixture 9
+  reply: keryx reply --id 6bf0260e-1d0c-4d9c-a8b4-235b34cfb6fc --text "..."
+From: K1 Kyme → K1 Nostos · Awaiting your reply
+  K1 delivered fixture 10
+  reply: keryx reply --id b05fc7fa-5da0-48cb-b5bd-bf8a2969a532 --text "..."
+From: K1 Kyme → K1 Nostos · Awaiting your reply
+  K1 delivered fixture 11
+  reply: keryx reply --id 476803ae-aa49-4ca0-a66d-7b089dcdadf1 --text "..."
+From: K1 Kyme → K1 Nostos · Awaiting your reply
+  K1 delivered fixture 12
+  reply: keryx reply --id 10a3bd4f-061d-4536-be16-7eb8f853a14b --text "..."
+From: K1 Kyme → K1 Nostos · Awaiting your reply
+  K1 delivered fixture 13
+  reply: keryx reply --id a0d07b74-01ff-43cd-b10e-dbd782acd4a0 --text "..."
+From: K1 Kyme → K1 Nostos · Awaiting your reply
+  K1 delivered fixture 14
+  reply: keryx reply --id b5fcd6a0-e389-43c8-9825-d6e9fef83ac6 --text "..."
+From: K1 Kyme → K1 Nostos · Awaiting your reply
+  K1 delivered fixture 15
+  reply: keryx reply --id 57fed2c0-1cd6-4655-b37d-26f7ff1778d8 --text "..."
+From: K1 Kyme → K1 Nostos · Awaiting your reply
+  K1 delivered fixture 16
+  reply: keryx reply --id 4f1727da-2ad7-4774-b9f3-bfb7093fa1be --text "..."
+From: K1 Kyme → K1 Nostos · Awaiting your reply
+  K1 delivered fixture 17
+  reply: keryx reply --id c7a0d3ed-0e5d-4068-91c4-056cfb1229ce --text "..."
+From: K1 Kyme → K1 Nostos · Awaiting your reply
+  K1 delivered fixture 18
+  reply: keryx reply --id 2663cc30-385a-417d-9064-1a3a37ac7069 --text "..."
+From: K1 Kyme → K1 Nostos · Awaiting your reply
+  K1 delivered fixture 19
+  reply: keryx reply --id bae812d9-2c45-4e46-ba44-b96f6bf6c4ad --text "..."
+From: K1 Kyme → K1 Nostos · Awaiting your reply
+  K1 delivered fixture 20
+  reply: keryx reply --id 2ab5e562-ae95-4354-9116-31280a44f778 --text "..."
+From: K1 Kyme → K1 Nostos · Awaiting your reply
+  K1 delivered fixture 21
+  reply: keryx reply --id 4f6b2532-2404-4cd9-a0dc-14f65ea0593d --text "..."
+From: K1 Kyme → K1 Nostos · Awaiting your reply
+  K1 delivered fixture 22
+  reply: keryx reply --id 09b8baac-67f9-4121-8903-393b7d76ab9d --text "..."
+From: K1 Kyme → K1 Nostos · Awaiting your reply
+  K1 delivered fixture 23
+  reply: keryx reply --id 7100da28-257c-4aa4-89cf-c1eff876b5a2 --text "..."
+From: K1 Kyme → K1 Nostos · Awaiting your reply
+  K1 delivered fixture 24
+  reply: keryx reply --id 0c0503f8-6f25-46b0-bc43-408cf4097f92 --text "..."
+From: K1 Kyme → K1 Nostos · Awaiting your reply
+  K1 delivered fixture 25
+  reply: keryx reply --id 3635d00a-64e1-485a-a536-87ae67de0ee3 --text "..."
+From: K1 Kyme → K1 Nostos · Awaiting your reply
+  K1 delivered fixture 26
+  reply: keryx reply --id 6820e3ff-ff1d-4fbb-abb0-40df9e7d7da9 --text "..."
+From: K1 Kyme → K1 Nostos · Awaiting your reply
+  K1 delivered fixture 27
+  reply: keryx reply --id 79e716c5-0b59-46cb-99c7-1625e2737198 --text "..."
+From: K1 Kyme → K1 Nostos · Awaiting your reply
+  K1 delivered fixture 28
+  reply: keryx reply --id a3fbb416-1ca5-4b86-a869-06b15b70f519 --text "..."
+From: K1 Kyme → K1 Nostos · Awaiting your reply
+  K1 delivered fixture 29
+  reply: keryx reply --id ae151a81-473c-4c13-b13f-2aa821513d6a --text "..."
+From: K1 Kyme → K1 Nostos · Awaiting your reply
+  K1 delivered fixture 30
+  reply: keryx reply --id f72ee53e-91d0-47f5-9703-de32599e7b20 --text "..."
+
+Past correspondence
+From: K1 Kyme → K1 Nostos · Expired without answer
+  K1 delivered fixture 3
+  Buy 2 copper · pay 5 silver
+  Answer deadline: today 20:59
+
+Older correspondence: keryx inbox --queue --limit 30 --cursor "eyJlIjoiMjAyNi0xMC0yM1QyMTowMDoyNC40MTYwNDUrMDI6MDAiLCJzIjoiMzY1NjozNjU2OiIsInYiOjEsInciOiJkYjdiM2Q3Yy1kOWFlLTQyNTItYmYyNC05YTZjYWZjOTFlNjAiLCJwIjoiNmRjMDRiZDEtOTc5OC00MTc4LWE0MDAtNTcwNjcxYWFkNTZkIiwidSI6IjIwMjYtMTAtMjNUMjE6MDA6MjguMzk0MDEwNzg4KzAyOjAwIiwiYiI6IjIwMjYtMTAtMjNUMjA6NTk6NTguMzI3NDE3KzAyOjAwIiwiaSI6ImY3MmVlNTNlLTkxZDAtNDdmNS05NzAzLWRlMzI1OTllN2IyMCJ9"

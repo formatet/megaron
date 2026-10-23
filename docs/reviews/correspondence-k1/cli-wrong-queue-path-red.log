@@ -1,0 +1,8 @@
+--- FAIL: TestInboxQueueUsesServerActionsAndPreservesMissedOffersWithoutReading (0.00s)
+    --- FAIL: TestInboxQueueUsesServerActionsAndPreservesMissedOffersWithoutReading/false (0.00s)
+        cmd_correspondence_queue_test.go:23: unexpected GET /api/v1/worlds/w/messengers/inbox?cursor=old%2B%2F%3D&limit=2
+    --- FAIL: TestInboxQueueUsesServerActionsAndPreservesMissedOffersWithoutReading/true (0.00s)
+        cmd_correspondence_queue_test.go:23: unexpected GET /api/v1/worlds/w/messengers/inbox?cursor=old%2B%2F%3D&limit=2
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.003s
+FAIL

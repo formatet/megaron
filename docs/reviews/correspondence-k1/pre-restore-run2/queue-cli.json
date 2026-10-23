@@ -1,0 +1,563 @@
+{
+  "items": [
+    {
+      "actions": [
+        "read",
+        "reply"
+      ],
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "64aed27f-8819-4e70-86ac-8df908984396",
+      "message": "K1 delivered fixture 1",
+      "offer_state": "",
+      "queue_group": "waiting_you",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:39.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos"
+    },
+    {
+      "actions": [
+        "read",
+        "trade_decline"
+      ],
+      "affordable": false,
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "expires_at": "2026-10-23T21:54:40.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "306fa2a6-188d-4f40-a36c-a7677d60da95",
+      "message": "K1 delivered fixture 2",
+      "missing_payment": "Requires 5 silver at K1 Nostos; insufficient stock",
+      "offer_state": "pending",
+      "queue_group": "waiting_you",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:38.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos",
+      "trade_offer": {
+        "kind": "sell",
+        "offer_good": "copper",
+        "offer_qty": 2,
+        "status": "pending",
+        "want_silver": 5
+      }
+    },
+    {
+      "actions": [
+        "read"
+      ],
+      "affordable": false,
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "expires_at": "2026-10-23T20:53:40.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "ea62f761-e00e-42df-b996-03756dbbe5de",
+      "message": "K1 delivered fixture 3",
+      "offer_state": "expired",
+      "queue_group": "completed",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:37.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos",
+      "trade_offer": {
+        "kind": "sell",
+        "offer_good": "copper",
+        "offer_qty": 2,
+        "status": "pending",
+        "want_silver": 5
+      }
+    },
+    {
+      "actions": [
+        "read",
+        "reply"
+      ],
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "03411cb7-e761-4bc2-94b5-2efff788d9db",
+      "message": "K1 delivered fixture 4",
+      "offer_state": "",
+      "queue_group": "waiting_you",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:36.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos"
+    },
+    {
+      "actions": [
+        "read",
+        "reply"
+      ],
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "9286362e-7377-4b05-8dbc-c303250dcf0d",
+      "message": "K1 delivered fixture 5",
+      "offer_state": "",
+      "queue_group": "waiting_you",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:35.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos"
+    },
+    {
+      "actions": [
+        "read",
+        "reply"
+      ],
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "f5ea5030-cf31-4915-9777-4c5af4dd7790",
+      "message": "K1 delivered fixture 6",
+      "offer_state": "",
+      "queue_group": "waiting_you",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:34.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos"
+    },
+    {
+      "actions": [
+        "read",
+        "reply"
+      ],
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "b58666ca-f9f6-4af8-9c0d-1979ce035ba8",
+      "message": "K1 delivered fixture 7",
+      "offer_state": "",
+      "queue_group": "waiting_you",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:33.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos"
+    },
+    {
+      "actions": [
+        "read",
+        "reply"
+      ],
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "ad2440e0-4e35-44af-88e2-0a85ee22513b",
+      "message": "K1 delivered fixture 8",
+      "offer_state": "",
+      "queue_group": "waiting_you",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:32.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos"
+    },
+    {
+      "actions": [
+        "read",
+        "reply"
+      ],
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "1120e01b-e4c9-4bdb-8931-0e1291c98afa",
+      "message": "K1 delivered fixture 9",
+      "offer_state": "",
+      "queue_group": "waiting_you",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:31.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos"
+    },
+    {
+      "actions": [
+        "read",
+        "reply"
+      ],
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "cc946654-3028-4c9e-8294-f430f402eb9b",
+      "message": "K1 delivered fixture 10",
+      "offer_state": "",
+      "queue_group": "waiting_you",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:30.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos"
+    },
+    {
+      "actions": [
+        "read",
+        "reply"
+      ],
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "ad3caa37-b310-489b-9aec-1cc7e098d86b",
+      "message": "K1 delivered fixture 11",
+      "offer_state": "",
+      "queue_group": "waiting_you",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:29.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos"
+    },
+    {
+      "actions": [
+        "read",
+        "reply"
+      ],
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "d8628b43-2ab2-45a2-9923-1c1b850df602",
+      "message": "K1 delivered fixture 12",
+      "offer_state": "",
+      "queue_group": "waiting_you",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:28.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos"
+    },
+    {
+      "actions": [
+        "read",
+        "reply"
+      ],
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "a19d19f2-ed09-41c9-a3dc-2f08511f68d8",
+      "message": "K1 delivered fixture 13",
+      "offer_state": "",
+      "queue_group": "waiting_you",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:27.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos"
+    },
+    {
+      "actions": [
+        "read",
+        "reply"
+      ],
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "dcca44c6-2792-4aab-88fb-7b6093341e9f",
+      "message": "K1 delivered fixture 14",
+      "offer_state": "",
+      "queue_group": "waiting_you",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:26.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos"
+    },
+    {
+      "actions": [
+        "read",
+        "reply"
+      ],
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "e15685bc-f368-4276-9141-a5f53f401da3",
+      "message": "K1 delivered fixture 15",
+      "offer_state": "",
+      "queue_group": "waiting_you",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:25.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos"
+    },
+    {
+      "actions": [
+        "read",
+        "reply"
+      ],
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "472fa9df-69c8-4e08-b3db-22b6659247e5",
+      "message": "K1 delivered fixture 16",
+      "offer_state": "",
+      "queue_group": "waiting_you",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:24.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos"
+    },
+    {
+      "actions": [
+        "read",
+        "reply"
+      ],
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "5166ddce-8d55-4deb-8737-3cfa8d89642c",
+      "message": "K1 delivered fixture 17",
+      "offer_state": "",
+      "queue_group": "waiting_you",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:23.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos"
+    },
+    {
+      "actions": [
+        "read",
+        "reply"
+      ],
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "b052533c-8232-4b08-9749-2cfc5a2dcf72",
+      "message": "K1 delivered fixture 18",
+      "offer_state": "",
+      "queue_group": "waiting_you",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:22.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos"
+    },
+    {
+      "actions": [
+        "read",
+        "reply"
+      ],
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "fc4ede06-46f1-432f-827e-ef81c45d0f39",
+      "message": "K1 delivered fixture 19",
+      "offer_state": "",
+      "queue_group": "waiting_you",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:21.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos"
+    },
+    {
+      "actions": [
+        "read",
+        "reply"
+      ],
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "783d3b56-95e0-49e1-8dc4-fff66dd13d78",
+      "message": "K1 delivered fixture 20",
+      "offer_state": "",
+      "queue_group": "waiting_you",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:20.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos"
+    },
+    {
+      "actions": [
+        "read",
+        "reply"
+      ],
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "0ab854bf-0ba8-40a6-8eae-3330520377f6",
+      "message": "K1 delivered fixture 21",
+      "offer_state": "",
+      "queue_group": "waiting_you",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:19.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos"
+    },
+    {
+      "actions": [
+        "read",
+        "reply"
+      ],
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "f7acfbd6-48bc-4f91-9611-5e38e0009917",
+      "message": "K1 delivered fixture 22",
+      "offer_state": "",
+      "queue_group": "waiting_you",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:18.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos"
+    },
+    {
+      "actions": [
+        "read",
+        "reply"
+      ],
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "b029d010-bea5-4077-b2dc-0ab9904bacee",
+      "message": "K1 delivered fixture 23",
+      "offer_state": "",
+      "queue_group": "waiting_you",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:17.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos"
+    },
+    {
+      "actions": [
+        "read",
+        "reply"
+      ],
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "6f56733d-ec90-4359-8098-678f8d72ab43",
+      "message": "K1 delivered fixture 24",
+      "offer_state": "",
+      "queue_group": "waiting_you",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:16.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos"
+    },
+    {
+      "actions": [
+        "read",
+        "reply"
+      ],
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "8feae3c5-3396-4dfe-b8d6-229d210e5f5c",
+      "message": "K1 delivered fixture 25",
+      "offer_state": "",
+      "queue_group": "waiting_you",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:15.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos"
+    },
+    {
+      "actions": [
+        "read",
+        "reply"
+      ],
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "b516c067-904a-4bf3-9d98-04227eb6203e",
+      "message": "K1 delivered fixture 26",
+      "offer_state": "",
+      "queue_group": "waiting_you",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:14.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos"
+    },
+    {
+      "actions": [
+        "read",
+        "reply"
+      ],
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "270a2fea-d29e-4f1f-9d71-c68dce450654",
+      "message": "K1 delivered fixture 27",
+      "offer_state": "",
+      "queue_group": "waiting_you",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:13.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos"
+    },
+    {
+      "actions": [
+        "read",
+        "reply"
+      ],
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "1e640a7a-a0e2-47fc-9647-deba9e1c2957",
+      "message": "K1 delivered fixture 28",
+      "offer_state": "",
+      "queue_group": "waiting_you",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:12.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos"
+    },
+    {
+      "actions": [
+        "read",
+        "reply"
+      ],
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "fc83c65e-9513-403b-a804-ff4c7eb06929",
+      "message": "K1 delivered fixture 29",
+      "offer_state": "",
+      "queue_group": "waiting_you",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:11.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos"
+    },
+    {
+      "actions": [
+        "read",
+        "reply"
+      ],
+      "arrived_at": "2026-10-23T20:54:39.178347+02:00",
+      "from_id": "6def8a35-a2b4-4914-b53d-04c5f57f0cc5",
+      "from_name": "K1 Kyme",
+      "id": "1a9a0c25-9a5e-4ca0-a664-55b6076c5c80",
+      "message": "K1 delivered fixture 30",
+      "offer_state": "",
+      "queue_group": "waiting_you",
+      "read_at": null,
+      "sent_at": "2026-10-23T20:54:10.178347+02:00",
+      "status": "delivered",
+      "to_id": "aa538dd5-fa2f-4ec1-a32e-5a8a0251a076",
+      "to_name": "K1 Nostos"
+    }
+  ],
+  "next_cursor": "eyJzIjoiMzY0NTozNjQ1OiIsInYiOjEsInciOiI4ODI3ZTYxNS05YjVjLTRlYmYtODA0NC03NzYwMWU1YWUxNTYiLCJwIjoiOGFkNTRlODgtZjgxNC00ZWVlLTgzNDAtN2U1MmI5N2UwMTExIiwidSI6IjIwMjYtMTAtMjNUMjA6NTQ6NDAuMjU1ODA0MDY5KzAyOjAwIiwiYiI6IjIwMjYtMTAtMjNUMjA6NTQ6MTAuMTc4MzQ3KzAyOjAwIiwiaSI6IjFhOWEwYzI1LTlhNWUtNGNhMC1hNjY0LTU1YjYwNzZjNWM4MCJ9"
+}

@@ -1,0 +1,8 @@
+» färsk DB på migration 206 · commit 57173d91+ändringar
+2026/10/23 20:58:37 INFO player registered id=8e826f55-9492-48ed-b56f-7706a04e804d username=reply-sender-54e4d853-68be-4fd5-bb89-f0da2e8b7b3d
+2026/10/23 20:58:37 INFO player registered id=2db03585-78c6-470a-a34c-479c6de4c2c7 username=reply-receiver-63613ca0-9b6d-4940-a1fe-8af622d22049
+--- FAIL: TestCorrespondenceQueueLogicalRestoreDoesNotHideHistoricalLetters (0.11s)
+    messenger_queue_test.go:330: logical restore hid delivered history: 200 {"items":[]}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.111s
+FAIL
