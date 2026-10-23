@@ -91,7 +91,7 @@ func TestStatusAboveCeilingIgnoresTempleGain(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{"until it is below the ceiling", "upkeep only above ceiling", "net -0.2"} {
+	for _, want := range []string{"Once below, temples can raise it again", "upkeep only above ceiling", "net -0.2"} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("missing %q: %s", want, out)
 		}

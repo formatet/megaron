@@ -78,7 +78,7 @@ test('R3/R5: everyday prayers work at L1, blessings need standing 60, temple doe
 
 test('above ceiling explains ignored gains and does not promise a worker can increase standing', () => {
  const view = kharisNetView({kharis:80,kharis_cap:50,kharis_net_known:true,kharis_net_per_tick:-.2,kharis_per_temple_worker:1.05});
- assert.match(view.netHtml,/until it is below the ceiling/);
+ assert.match(view.netHtml,/Once below, temples can raise it again/);
  assert.match(view.netHtml,/-0.2 kharis per day/);
  assert.doesNotMatch(view.netHtml,/One more fed temple worker/);
  const normal=kharisNetView({kharis:50,kharis_cap:50,kharis_per_temple_worker:1.05});
@@ -89,6 +89,6 @@ test('above ceiling explains ignored gains and does not promise a worker can inc
 test('ORDER29: empty temple slots above the ceiling do not invite staffing to raise kharis', () => {
  const view = kharisNetView({kharis:80,kharis_cap:50,kharis_devotion_idle:true,kharis_per_temple_worker:1.05});
  assert.equal(view.idleHtml,'');
- assert.match(view.netHtml,/below the ceiling 50/);
+ assert.match(view.netHtml,/above the ceiling 50/);
  assert.doesNotMatch(view.netHtml,/One more|place citizens/);
 });
