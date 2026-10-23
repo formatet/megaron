@@ -62,3 +62,14 @@ func TestRiteReadinessConcreteBlockerPrecedesWait(t *testing.T) {
 		}
 	}
 }
+
+func TestRiteReadinessCanPrepareAlternativeGift(t *testing.T) {
+	var p riteAvailablePrayer
+	if err := json.Unmarshal([]byte(`{"affordable":false,"can_prepare_offering":true,"unavailable_reason":"insufficient offering"}`), &p); err != nil {
+		t.Fatal(err)
+	}
+	ready, detail := prayerReadiness(p)
+	if ready != "compose" || detail != "traditional gift unavailable; use --offer" {
+		t.Fatalf("existing alternative gift hidden: %q/%q", ready, detail)
+	}
+}

@@ -1,0 +1,30 @@
+{
+  "can_prepare_offering": true,
+  "god_id": "potnia",
+  "id": "minoan_potnia_vision_v2",
+  "name": "Potnia's Vision",
+  "god": "Potnia",
+  "temple": "Temple of Potnia",
+  "effect_type": "oracle_memory_v2",
+  "effect": "Marks an unseen source of copper, tin, silver or incense and the unknown ground within two hexes as memory; no live activity.",
+  "min_kharis": 5,
+  "offering": {
+    "grain": 10,
+    "silver": 3
+  },
+  "unavailable_reason": "insufficient offering",
+  "affordable": false,
+  "is_default": false,
+  "favours": {
+    "bronze": 1.3,
+    "fish": 2.2,
+    "grain": 0.6,
+    "incense": 2.1,
+    "oil": 1.5,
+    "pottery": 1.1,
+    "purple": 2,
+    "silver": 1.4,
+    "stone": 0.4
+  },
+  "offering_baseline": 17.339999999999996
+}

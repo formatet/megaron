@@ -51,3 +51,9 @@ test('a city holding incense gets an incense field and the god is said to love i
   assert.match(html, /Potnia loves incense and wine\./);
   assert.doesNotMatch(html, /worth|odds|%/i);
 });
+
+test('alternative preparation starts at zero instead of silently offering missing recipe goods',()=>{
+ const p={...prayer,affordable:false,can_prepare_offering:true};
+ const fields=offerFields(p,stock);assert.ok(fields.length>0);assert.ok(fields.every(f=>f.amount===0));
+ const html=offerRowHTML(p,stock);assert.match(html,/Choose goods for your offering/);
+});

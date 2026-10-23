@@ -14,6 +14,7 @@ import (
 )
 
 type waitReasonPrayer struct {
+	CanPrepare bool   `json:"can_prepare_offering"`
 	ID         string `json:"id"`
 	Reason     string `json:"unavailable_reason"`
 	Wait       int    `json:"cooldown_remaining_game_days"`

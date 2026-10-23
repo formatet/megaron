@@ -1,0 +1,134 @@
+{
+  "health": {
+    "commit": "124815f+compose",
+    "migration": 205,
+    "status": "ok"
+  },
+  "source_diff_sha256": "61e69044005d1f53d3364746ea2263abd4ff95c4802d40125222a643ed090a8c",
+  "world": "e1674d20-17cd-496f-8066-041fa59535fd",
+  "target": {
+    "q": 1,
+    "r": 29
+  },
+  "before": {
+    "q": 1,
+    "r": 29,
+    "terrain": "fog",
+    "visible": false,
+    "tier": "fog"
+  },
+  "after": {
+    "q": 1,
+    "r": 29,
+    "terrain": "scrub_maquis",
+    "visible": true,
+    "tier": "remembered",
+    "fertility": 0.5335879489481321,
+    "mineral": 0.5453839137826593,
+    "incense_deposit": true
+  },
+  "result": {
+    "effect": {
+      "revealed_ore": {
+        "ore": "incense",
+        "q": 1,
+        "r": 29
+      },
+      "revealed_tiles": [
+        {
+          "q": 0,
+          "r": 28
+        },
+        {
+          "q": 0,
+          "r": 29
+        },
+        {
+          "q": 0,
+          "r": 30
+        },
+        {
+          "q": 0,
+          "r": 31
+        },
+        {
+          "q": 1,
+          "r": 27
+        },
+        {
+          "q": 1,
+          "r": 28
+        },
+        {
+          "q": 1,
+          "r": 29
+        },
+        {
+          "q": 1,
+          "r": 30
+        },
+        {
+          "q": 1,
+          "r": 31
+        },
+        {
+          "q": 2,
+          "r": 27
+        },
+        {
+          "q": 2,
+          "r": 28
+        },
+        {
+          "q": 2,
+          "r": 29
+        },
+        {
+          "q": 2,
+          "r": 30
+        },
+        {
+          "q": 3,
+          "r": 27
+        },
+        {
+          "q": 3,
+          "r": 28
+        },
+        {
+          "q": 3,
+          "r": 29
+        }
+      ],
+      "tier": "remembered"
+    },
+    "effect_type": "oracle_memory_v2",
+    "kharis_spent": 0,
+    "message": "Potnia marks a source of incense at (1,29) and the unknown ground around it as memory \u2014 no living eyes are there.",
+    "mood": "Favorable",
+    "offer_multiplier": 1,
+    "offering_expected": 17.339999999999996,
+    "offering_value_unit": "worker_ticks",
+    "offering_verdict": "worthy \u2014 meets the prayer's requirement; more will not improve the answer",
+    "offering_work": 71.4,
+    "offering_worth": 71.4,
+    "prayer": "minoan_potnia_vision_v2",
+    "success": true,
+    "valuation_version": 2
+  },
+  "cast_via": "cli",
+  "captures": [
+    {
+      "mode": "desktop",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "mode": "mobile",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "errors": [],
+  "fixture": "normal player founding; own fresh DB temple/stock/sole-unseen-incense fixture before real actions; not natural exploration"
+}

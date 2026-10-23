@@ -1,0 +1,30 @@
+The gods are Favorable (kharis 90.0).
+
+Offering values — per unit, before each god's preferences; not trade prices:
+  bronze       18.7
+  cedar        1.7
+  copper       1.7
+  fish         1.7
+  grain        1.7
+  incense      6.8
+  livestock    1.7
+  oil          1.7
+  silver       1.7
+  stone        3.4
+  timber       1.7
+  tin          1.7
+  wine         1.7
+
+Prayer ID                     Name                  MinKhar   Offering                Effect                                         Ready         Cooldown
+minoan_potnia_vision_v2       Potnia's Vision       5         grain×10 silver×3       Marks an unseen source of copper, tin, silver or incense and the unknown ground within two hexes as memory; no live activity.  cooldown      24 days remaining
+    Potnia favours fish ×2.2, incense ×2.1, purple ×2.0, oil ×1.5  ·  expects an offering worth ~17 (--offer good=amount)
+minoan_potnia_walls           Mistress of the Walls  5         grain×8 timber×4        Your own garrison defending this city fights a quarter stronger for 6 days.  cooldown      24 days remaining
+    Potnia favours livestock ×2.0, wine ×1.7, horses ×1.6, bronze ×1.5  ·  expects an offering worth ~20 (--offer good=amount)
+minoan_velchanos_green_shoots  Green Shoots          30        grain×15 silver×2       Grain, livestock, oil and wine yield a quarter more for 25 days; fish is unchanged.  no: no Temple of Velchanos  —
+    Velchanos favours incense ×2.0, wine ×2.0, oil ×1.6, grain ×1.3  ·  expects an offering worth ~37 (--offer good=amount)
+minoan_asterion_thread        The Thread Shows a Path  5         silver×3 timber×4       Your next land caravan or Runner from this city travels faster; the caravan is harder to intercept.  no: no Temple of Asterion  —
+    Asterion
+minoan_stillness_passage      Favourable Passage    5         fish×6 silver×3         The next ship leaving this port sails faster and takes no storm damage on its outward leg.  no: no Temple of the Sea Daimons of Stillness  —
+    The Sea Daimons of Stillness
+
+Kharis is a requirement, never spent. Everyday prayers answer when their requirements are met; legacy prayers may remain silent. An accepted offering is spent either way.

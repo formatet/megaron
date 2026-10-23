@@ -1,0 +1,7 @@
+Name                   Owner            Terrain  Culture    Kingdom       Deposit  Settlement ID
+────────────────────────────────────────────────────────────────────────────────────
+★Incense Proof         Areios           plains   minoan                   incense  22952902-2640-40af-a572-ced2391bbe1a
+
+No other settlements within your vision — this directory is FOW-gated, not global.
+Trade needs a visible neighbour: send a unit outward (`march`) or colonise to
+expand your vision and discover Wanaxes you can trade with.

@@ -1,0 +1,7 @@
+Name                   Owner            Terrain  Culture    Kingdom       Deposit  Settlement ID
+────────────────────────────────────────────────────────────────────────────────────
+★Incense Proof         Philona          forest_cedar minoan                   cedar, incense  a937dc39-dd87-41a7-8209-1b780b980c2f
+
+No other settlements within your vision — this directory is FOW-gated, not global.
+Trade needs a visible neighbour: send a unit outward (`march`) or colonise to
+expand your vision and discover Wanaxes you can trade with.

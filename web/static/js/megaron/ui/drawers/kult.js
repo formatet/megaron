@@ -163,6 +163,10 @@ export async function bringOffering(prayerID) {
   const prayer = prayerCatalog.find(p => p.id === prayerID);
   const host = document.getElementById('offer-row-' + prayerID);
   const inputs = host ? Array.from(host.querySelectorAll('.offer-input')) : [];
+  if (prayer?.can_prepare_offering && !prayer.affordable && !inputs.some(i => Number.isFinite(Number(i.value)) && Number(i.value) > 0)) {
+    showInlineResult(host, 'Choose goods for your offering.', true);
+    return;
+  }
   const offering = offeringFromEntries(inputs.map(i => ({ good: i.dataset.good, value: i.value })), prayer && prayer.offering);
   return castRite(prayerID, offering, host);
 }
@@ -186,6 +190,9 @@ async function castRite(prayerID, offering, host) {
 // Server-owned waiting/active state gates the same Offer button the drawer uses.
 export function prayerStatusHTML(p, frenzyActive = false, frenzyUntil = null) {
   const waitDays = p.cooldown_remaining_game_days || 0;
+  if (p.can_prepare_offering && !p.affordable) {
+    return `<button class="obj-cta btn-small" onclick="okRite('${p.id}')">Compose offering</button> <span class="empty-state">The traditional gift is unavailable; choose another offering.</span>`;
+  }
   if (p.unavailable_reason) return `<span class="empty-state">${esc(p.unavailable_reason)}</span>`;
   if (p.departure_pending) {
     const waiting = waitDays > 0 ? `; god waits ${esc(fmtDays(waitDays))}` : '';

@@ -1,7 +1,8 @@
 import { esc } from '../format.js';
 
 // The Offer row under a prayer: one number field per good, pre-filled with the
-// prayer's recipe. Mirrors `keryx rite --offer`. Odds are never shown.
+// prayer's recipe, or empty when composing an alternative. Mirrors
+// `keryx rite --offer`. Odds are never shown.
 const EDIBLE = ['grain', 'fish', 'oil', 'wine'];
 
 // Goods worth a field: the recipe's, plus held goods that are edible or that
@@ -14,7 +15,7 @@ export function offerFields(prayer, stock) {
   for (const [g, n] of Object.entries(held)) {
     if (n >= 1 && (EDIBLE.includes(g) || favours[g] > 1)) goods.add(g);
   }
-  return [...goods].sort().map(g => ({ good: g, amount: recipe[g] || 0, stock: held[g] || 0 }));
+  return [...goods].sort().map(g => ({ good: g, amount: prayer.can_prepare_offering && !prayer.affordable ? 0 : recipe[g] || 0, stock: held[g] || 0 }));
 }
 
 // Words, not weights (Timothy 2026-10-19: "lite väl mkt siffror"): the god's
@@ -43,7 +44,9 @@ export function offerRowHTML(prayer, stock) {
     ' <span class="offer-stock">/ ' + esc(String(Math.floor(f.stock))) + '</span></label>').join('');
   const note = esc(favouredText(prayer.god, prayer.favours));
   const id = esc(prayer.id);
+  const preparationNote = prayer.can_prepare_offering && !prayer.affordable ? '<p class="offer-note">Choose goods for your offering; the traditional gift is unavailable.</p>' : '';
   return '<div class="offer-fields">' + fields + '</div>' +
+    preparationNote +
     (note ? '<p class="offer-note">' + note + '</p>' : '') +
     '<button class="obj-cta btn-small" onclick="bringOffering(\'' + id + '\')">Bring the offering</button> ' +
     '<button class="btn-small btn-secondary" onclick="cancelOffering(\'' + id + '\')">Cancel</button>';

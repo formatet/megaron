@@ -1,0 +1,5 @@
+--- FAIL: TestRiteReadinessCanPrepareAlternativeGift (0.00s)
+    cmd_rite_test.go:73: existing alternative gift hidden: "no: insufficient offering"/"—"
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL

@@ -157,3 +157,9 @@ test('concrete temple and kharis blockers stay visible during a god wait',()=>{
   assert.ok(html.includes(reason));assert.doesNotMatch(html,/on cooldown|okRite/);
  }
 });
+
+test('preparation is reachable without the traditional recipe, not a promise that payment will succeed',()=>{
+ const html=prayerStatusHTML({id:'minoan_potnia_vision_v2',affordable:false,can_prepare_offering:true,unavailable_reason:'insufficient offering'});
+ assert.match(html,/okRite\('minoan_potnia_vision_v2'\).*Compose offering/);
+ assert.match(html,/traditional gift is unavailable/);
+});

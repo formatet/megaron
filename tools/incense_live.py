@@ -7,6 +7,8 @@ from playwright.sync_api import sync_playwright
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 OUT=ROOT/'docs/reviews'/os.environ.get('INCENSE_PROOF_REPORT','incense-parity')/os.environ.get('INCENSE_PROOF_RUN','run1')
 WAIT_PROOF=os.environ.get('PRAYER_WAIT_PROOF')=='1'
+COMPOSE_PROOF=os.environ.get('PRAYER_COMPOSE_PROOF')=='1'
+COMPOSE_CLI=os.environ.get('PRAYER_COMPOSE_CLI')=='1'
 OUT.mkdir(parents=True,exist_ok=True)
 containers=[];proc=None
 prefix='megaron-incense-'+secrets.token_hex(4)
@@ -20,7 +22,7 @@ def main():
  global proc
  with tempfile.TemporaryDirectory(prefix='incense-live-') as tmp:
   tmp=pathlib.Path(tmp);clean={k:os.environ[k] for k in ('HOME','PATH')};clean['CGO_ENABLED']='0'
-  commit=run('git','-C',str(ROOT),'rev-parse','--short=7','HEAD')+('+prayerwait' if WAIT_PROOF else '+incense')
+  commit=run('git','-C',str(ROOT),'rev-parse','--short=7','HEAD')+('+compose' if COMPOSE_PROOF else '+prayerwait' if WAIT_PROOF else '+incense')
   diffhash=hashlib.sha256(subprocess.check_output(['git','-C',str(ROOT),'diff','HEAD','--','server','web'])).hexdigest()
   run('go','build','-ldflags','-X main.buildCommit='+commit,'-o',str(tmp/'temenos'),'./cmd/server',cwd=ROOT/'server',env=clean)
   run('go','build','-o',str(tmp/'keryx'),'./cmd/keryx',cwd=ROOT/'server',env=clean)
@@ -64,6 +66,8 @@ def main():
   INSERT INTO buildings(settlement_id,building_type,level,god_id) SELECT '{sid}','temple',1,'potnia' WHERE NOT EXISTS(SELECT1 FROM buildings WHERE settlement_id='{sid}' AND building_type='temple' AND god_id='potnia');
   UPDATE settlement_goods SET amount=1000,rate=0 WHERE settlement_id='{sid}' AND good_key IN('grain','silver');
   UPDATE player_world_records SET kharis_amount=90,kharis_rate=0,kharis_calc_tick=current_world_tick() WHERE world_id='{world}' AND player_id='{pid}';""".replace('SELECT1','SELECT 1')
+  if COMPOSE_PROOF:
+   fixture+=f"UPDATE settlement_goods SET amount=CASE WHEN good_key='incense' THEN 100 ELSE 0 END,rate=0,calc_tick=current_world_tick() WHERE settlement_id='{sid}';"
   sql(fixture);(OUT/'fixture.sql').write_text(fixture)
   before=next(t for t in api(wp+'/map',token=token) if (t['q'],t['r'])==(target['q'],target['r']));assert before['tier']=='fog'
   config=tmp/'config.json'
@@ -71,6 +75,13 @@ def main():
   def cli(*args):return run(str(tmp/'keryx'),*args,env={**clean,'POLEIA_CONFIG':str(config)})
   cities=cli('cities');assert 'incense' in cities,cities;(OUT/'cities.txt').write_text(cities)
   prayers=cli('rite','--list');assert 'incense' in prayers,prayers;(OUT/'prayers.txt').write_text(prayers)
+  if COMPOSE_PROOF:
+   initial=api(wp+'/provinces/'+province,token=token)['settlement']['available_prayers']
+   initial=next(p for p in initial if p['id']=='minoan_potnia_vision_v2')
+   assert initial['can_prepare_offering'] and not initial['affordable'],initial
+   assert 'compose' in next(l for l in prayers.splitlines() if 'minoan_potnia_vision_v2' in l)
+   (OUT/'prayer-before.json').write_text(json.dumps(initial,indent=2))
+
   errors=[];captures=[];result=None
   with sync_playwright() as pw:
    browser=pw.firefox.launch()
@@ -83,12 +94,33 @@ def main():
     for brief in page.locator('.lb-dismiss').all():
      if brief.is_visible():brief.click()
     if label=='desktop':
-     page.locator("button[onclick=\"okRite('minoan_potnia_vision_v2')\"]").click()
-     with page.expect_response(lambda r:r.request.method=='POST' and r.url.endswith('/rite')) as reply:
-      page.locator("button[onclick=\"bringOffering('minoan_potnia_vision_v2')\"]").click()
-     assert reply.value.status==200;result=reply.value.json();ore=result['effect']['revealed_ore']
+     open_button=page.locator("button[onclick=\"okRite('minoan_potnia_vision_v2')\"]")
+     if COMPOSE_PROOF:assert open_button.inner_text().lower()=='compose offering',open_button.inner_text()
+     open_button.click()
+     bring=page.locator("button[onclick=\"bringOffering('minoan_potnia_vision_v2')\"]")
+     if COMPOSE_PROOF:
+      posts=[]
+      page.on('request',lambda req:posts.append(req.url) if req.method=='POST' and req.url.endswith('/rite') else None)
+      assert all(i.input_value()=='0' for i in page.locator('.offer-input').all())
+      bring.click();page.get_by_text('Choose goods for your offering.',exact=True).wait_for()
+      assert not posts,'empty composition dispatched an implicit traditional gift'
+      page.locator('.offer-input[data-good="incense"]').fill('5')
+      page.screenshot(path=str(OUT/'composition.png'))
+     if COMPOSE_CLI:
+      raw=cli('rite','--prayer','minoan_potnia_vision_v2','--offer','incense=5','--yes','--json')
+      (OUT/'cast-cli.json').write_text(raw);result=json.loads(raw)
+      page.locator('#trig-kult').click();page.locator('#trig-kult').click()
+     else:
+      with page.expect_response(lambda r:r.request.method=='POST' and r.url.endswith('/rite')) as reply:bring.click()
+      assert reply.value.status==200;result=reply.value.json()
+     ore=result['effect']['revealed_ore']
      assert ore and ore['ore']=='incense' and (ore['q'],ore['r'])==(target['q'],target['r']),result
      assert 'source of incense' in result['message'],result
+     if COMPOSE_PROOF:
+      goods=api(wp+'/provinces/'+province+'/goods',token=token)
+      amounts={g['key']:g['amount'] for g in goods}
+      assert amounts['incense']==95 and amounts['grain']==0 and amounts['silver']==0,amounts
+      (OUT/'stocks-after.json').write_text(json.dumps(amounts,indent=2))
     if WAIT_PROOF:
      page.locator('#kult-body').get_by_text('on cooldown — 24 days',exact=True).first.wait_for()
      assert 'insufficient offering or a waiting time applies' not in page.locator('#kult-body').inner_text()
@@ -109,7 +141,7 @@ def main():
    assert 'cooldown' in line and '24 days remaining' in line,line
    (OUT/'prayers-after.txt').write_text(after_cli)
   assert not errors,errors
-  (OUT/'proof.json').write_text(json.dumps(dict(health=health,source_diff_sha256=diffhash,world=world,target=target,before=before,after=after,result=result,captures=captures,errors=errors,fixture='normal player founding; own fresh DB temple/stock/sole-unseen-incense fixture before real actions; not natural exploration'),indent=2))
+  (OUT/'proof.json').write_text(json.dumps(dict(health=health,source_diff_sha256=diffhash,world=world,target=target,before=before,after=after,result=result,cast_via="cli" if COMPOSE_CLI else "web",captures=captures,errors=errors,fixture='normal player founding; own fresh DB temple/stock/sole-unseen-incense fixture before real actions; not natural exploration'),indent=2))
   print('PASS:',health,'native Potnia incense reveal, memory only, actual CLI, Firefox1280/390')
 try:main()
 finally:

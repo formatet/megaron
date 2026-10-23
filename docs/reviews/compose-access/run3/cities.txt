@@ -1,0 +1,7 @@
+Name                   Owner            Terrain  Culture    Kingdom       Deposit  Settlement ID
+────────────────────────────────────────────────────────────────────────────────────
+★Incense Proof         Komawes          forest_olive_grove minoan                   incense  f3f57931-eb12-496d-bed4-028ee9de565d
+
+No other settlements within your vision — this directory is FOW-gated, not global.
+Trade needs a visible neighbour: send a unit outward (`march`) or colonise to
+expand your vision and discover Wanaxes you can trade with.

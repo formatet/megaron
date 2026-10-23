@@ -1,0 +1,172 @@
+TAP version 13
+# Subtest: AK1: vredgad (Wrathful mood) renders an English label, not the raw Swedish string
+ok 1 - AK1: vredgad (Wrathful mood) renders an English label, not the raw Swedish string
+  ---
+  duration_ms: 0.654511
+  type: 'test'
+  ...
+# Subtest: AK1b: tveksam (Suspicious mood) renders an English label, not the raw Swedish string
+ok 2 - AK1b: tveksam (Suspicious mood) renders an English label, not the raw Swedish string
+  ---
+  duration_ms: 0.111001
+  type: 'test'
+  ...
+# Subtest: AK2: vardig and overdadig — already-correct-looking values — still translate correctly
+ok 3 - AK2: vardig and overdadig — already-correct-looking values — still translate correctly
+  ---
+  duration_ms: 0.069837
+  type: 'test'
+  ...
+# Subtest: AK3: enkel (pre-first-tick fallback) gets an honest label, not a fake tier name
+ok 4 - AK3: enkel (pre-first-tick fallback) gets an honest label, not a fake tier name
+  ---
+  duration_ms: 0.069744
+  type: 'test'
+  ...
+# Subtest: AK4: a value the server never sends still falls back to itself, not a fabricated label
+ok 5 - AK4: a value the server never sends still falls back to itself, not a fabricated label
+  ---
+  duration_ms: 0.06818
+  type: 'test'
+  ...
+# Subtest: Alpha: realm god waiting time uses game days and blocks Offer
+ok 6 - Alpha: realm god waiting time uses game days and blocks Offer
+  ---
+  duration_ms: 8.567948
+  type: 'test'
+  ...
+# Subtest: Alpha: active gift shows its remaining days and cannot be offered again
+ok 7 - Alpha: active gift shows its remaining days and cannot be offered again
+  ---
+  duration_ms: 0.197174
+  type: 'test'
+  ...
+# Subtest: Alpha: affordable available prayer still exposes the real cast action
+ok 8 - Alpha: affordable available prayer still exposes the real cast action
+  ---
+  duration_ms: 0.102684
+  type: 'test'
+  ...
+# Subtest: Alpha B: unused departure gift remains pending after god wait expires
+ok 9 - Alpha B: unused departure gift remains pending after god wait expires
+  ---
+  duration_ms: 0.230409
+  type: 'test'
+  ...
+# Subtest: Alpha B: pending ship gift shows god wait separately without a gift duration
+ok 10 - Alpha B: pending ship gift shows god wait separately without a gift duration
+  ---
+  duration_ms: 0.331894
+  type: 'test'
+  ...
+# Subtest: Alpha B: consumed departure gift waits for the god before another Offer
+ok 11 - Alpha B: consumed departure gift waits for the god before another Offer
+  ---
+  duration_ms: 0.221596
+  type: 'test'
+  ...
+# Subtest: temple rows render the server reference and mixed next gift without repricing
+ok 12 - temple rows render the server reference and mixed next gift without repricing
+  ---
+  duration_ms: 0.226208
+  type: 'test'
+  ...
+# Subtest: quarter-grain reference and smaller silver debit remain visible
+ok 13 - quarter-grain reference and smaller silver debit remain visible
+  ---
+  duration_ms: 0.121456
+  type: 'test'
+  ...
+# Subtest: unfunded temple shows all-or-nothing outcome and escapes the city name
+ok 14 - unfunded temple shows all-or-nothing outcome and escapes the city name
+  ---
+  duration_ms: 0.091296
+  type: 'test'
+  ...
+# Subtest: realm without temples explains the missing gain
+ok 15 - realm without temples explains the missing gain
+  ---
+  duration_ms: 0.04929
+  type: 'test'
+  ...
+# Subtest: Kult controller renders the realm breakdown and templeless net from the province API
+ok 16 - Kult controller renders the realm breakdown and templeless net from the province API
+  ---
+  duration_ms: 14.110504
+  type: 'test'
+  ...
+# Subtest: ORDER15: each temple names its own offering row; prayer shows the temple it needs
+ok 17 - ORDER15: each temple names its own offering row; prayer shows the temple it needs
+  ---
+  duration_ms: 0.133976
+  type: 'test'
+  ...
+# Subtest: everyday result has no synthetic silent answer; legacy and recorded history retain theirs
+ok 18 - everyday result has no synthetic silent answer; legacy and recorded history retain theirs
+  ---
+  duration_ms: 0.084882
+  type: 'test'
+  ...
+# Subtest: concrete temple and kharis blockers stay visible during a god wait
+ok 19 - concrete temple and kharis blockers stay visible during a god wait
+  ---
+  duration_ms: 0.109672
+  type: 'test'
+  ...
+# Subtest: preparation is reachable without the traditional recipe, not a promise that payment will succeed
+ok 20 - preparation is reachable without the traditional recipe, not a promise that payment will succeed
+  ---
+  duration_ms: 0.087996
+  type: 'test'
+  ...
+# Subtest: offer row is pre-filled with the recipe, even for goods at 0 stock
+ok 21 - offer row is pre-filled with the recipe, even for goods at 0 stock
+  ---
+  duration_ms: 0.593403
+  type: 'test'
+  ...
+# Subtest: offer row adds edible and favoured held goods at 0, skips the rest
+ok 22 - offer row adds edible and favoured held goods at 0, skips the rest
+  ---
+  duration_ms: 0.183388
+  type: 'test'
+  ...
+# Subtest: offer row shows the keryx taste line and no odds
+ok 23 - offer row shows the keryx taste line and no odds
+  ---
+  duration_ms: 0.388943
+  type: 'test'
+  ...
+# Subtest: unchanged recipe sends no offering
+ok 24 - unchanged recipe sends no offering
+  ---
+  duration_ms: 0.151669
+  type: 'test'
+  ...
+# Subtest: changed fields send exactly the positive numbers; zero fields are left out
+ok 25 - changed fields send exactly the positive numbers; zero fields are left out
+  ---
+  duration_ms: 0.430636
+  type: 'test'
+  ...
+# Subtest: a city holding incense gets an incense field and the god is said to love it
+ok 26 - a city holding incense gets an incense field and the god is said to love it
+  ---
+  duration_ms: 0.156791
+  type: 'test'
+  ...
+# Subtest: alternative preparation starts at zero instead of silently offering missing recipe goods
+ok 27 - alternative preparation starts at zero instead of silently offering missing recipe goods
+  ---
+  duration_ms: 0.155134
+  type: 'test'
+  ...
+1..27
+# tests 27
+# suites 0
+# pass 27
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 78.261604

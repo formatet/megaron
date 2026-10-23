@@ -1,0 +1,89 @@
+{
+  "effect": {
+    "revealed_ore": {
+      "ore": "incense",
+      "q": 1,
+      "r": 29
+    },
+    "revealed_tiles": [
+      {
+        "q": 0,
+        "r": 28
+      },
+      {
+        "q": 0,
+        "r": 29
+      },
+      {
+        "q": 0,
+        "r": 30
+      },
+      {
+        "q": 0,
+        "r": 31
+      },
+      {
+        "q": 1,
+        "r": 27
+      },
+      {
+        "q": 1,
+        "r": 28
+      },
+      {
+        "q": 1,
+        "r": 29
+      },
+      {
+        "q": 1,
+        "r": 30
+      },
+      {
+        "q": 1,
+        "r": 31
+      },
+      {
+        "q": 2,
+        "r": 27
+      },
+      {
+        "q": 2,
+        "r": 28
+      },
+      {
+        "q": 2,
+        "r": 29
+      },
+      {
+        "q": 2,
+        "r": 30
+      },
+      {
+        "q": 3,
+        "r": 27
+      },
+      {
+        "q": 3,
+        "r": 28
+      },
+      {
+        "q": 3,
+        "r": 29
+      }
+    ],
+    "tier": "remembered"
+  },
+  "effect_type": "oracle_memory_v2",
+  "kharis_spent": 0,
+  "message": "Potnia marks a source of incense at (1,29) and the unknown ground around it as memory — no living eyes are there.",
+  "mood": "Favorable",
+  "offer_multiplier": 1,
+  "offering_expected": 17.339999999999996,
+  "offering_value_unit": "worker_ticks",
+  "offering_verdict": "worthy — meets the prayer's requirement; more will not improve the answer",
+  "offering_work": 71.4,
+  "offering_worth": 71.4,
+  "prayer": "minoan_potnia_vision_v2",
+  "success": true,
+  "valuation_version": 2
+}

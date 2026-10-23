@@ -17,6 +17,7 @@ import (
 // prayerRow struct in api/handlers/province.go). Shared by --list and the
 // pre-cast confirmation so both read the exact same fields.
 type riteAvailablePrayer struct {
+	CanPrepareOffering    bool               `json:"can_prepare_offering"`
 	GodID                 string             `json:"god_id"`
 	DeparturePending      bool               `json:"departure_pending"`
 	Default               bool               `json:"is_default"`
@@ -410,6 +411,9 @@ func gameDaysRemaining(days int) string { return formatDays(days) + " remaining"
 
 // prayerReadiness keeps a pending one-use gift distinct from a timed effect.
 func prayerReadiness(pr riteAvailablePrayer) (string, string) {
+	if pr.CanPrepareOffering && !pr.Affordable {
+		return "compose", "traditional gift unavailable; use --offer"
+	}
 	if pr.UnavailableReason != "" {
 		return "no: " + pr.UnavailableReason, "—"
 	}

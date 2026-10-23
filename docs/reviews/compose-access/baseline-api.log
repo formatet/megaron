@@ -1,0 +1,16 @@
+» färsk DB på migration 205 · commit 124815fd+ändringar
+2026/10/23 17:48:29 INFO player registered id=0be3b7f8-9d34-433e-9243-29fffdd3ecc7 username=alpha-2c37ee0b-8818-4425-87c1-bb1b84d91d9c
+--- FAIL: TestPrayerCanPrepareWithoutTraditionalGoods (0.11s)
+    prayer_compose_access_test.go:28: preparation hidden although a composed gift succeeds: {CanPrepare:false ID:minoan_potnia_vision_v2 Reason:insufficient offering Wait:0 Active:0 Pending:false Affordable:false}
+2026/10/23 17:48:29 INFO player registered id=8151248c-2d91-4945-8c47-903fd56dc54d username=alpha-4c53a736-466c-4b9d-ab25-75ecad808429
+2026/10/23 17:48:29 INFO player registered id=d3d85b7f-fa91-4519-b8a8-278826817664 username=alpha-aa468c41-bca6-4067-9b3b-a78e909841f9
+2026/10/23 17:48:29 INFO player registered id=445478e2-6cbc-4f81-9fba-1b05335219a5 username=alpha-91f2f3a5-9dc6-4521-83d4-030bfb1d991b
+2026/10/23 17:48:29 INFO player registered id=8fccaa9f-bd86-43ff-907e-cb5c3c613d75 username=alpha-a7556e44-52d0-4058-954e-270550c67391
+2026/10/23 17:48:30 INFO player registered id=bb9af3b0-1a30-4daf-967c-2700744b16a6 username=alpha-3a5a6951-f29e-4e13-864d-f5c2d45e2b22
+2026/10/23 17:48:30 INFO player registered id=b5d3fcba-deae-413d-9e71-3705e13bcea6 username=alpha-d98ea412-bf9c-4c15-bee1-0f38b6e99c57
+--- FAIL: TestPrayerPreparationRespectsNonMaterialRequirements (0.53s)
+    --- FAIL: TestPrayerPreparationRespectsNonMaterialRequirements/ready (0.08s)
+        prayer_compose_access_test.go:63: preparation gate wrong forready: {CanPrepare:false ID:minoan_potnia_vision_v2 Reason: Wait:0 Active:0 Pending:false Affordable:true}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.646s
+FAIL

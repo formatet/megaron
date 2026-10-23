@@ -508,6 +508,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// gods are not machines. Gynnsamhet is read via the settlement's kharis_mood
 		// sibling field (kharisToMood, web.go), not a computed percentage.
 		type prayerRow struct {
+			CanPrepareOffering  bool               `json:"can_prepare_offering"`
 			GodID               string             `json:"god_id,omitempty"`
 			ID                  string             `json:"id"`
 			Name                string             `json:"name"`
@@ -556,6 +557,8 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		for _, pid := range religion.CulturePrayers[string(sett.CultureID)] {
 			spec := religion.PrayerSpecs[pid]
 			afford := hasTempleFor(spec.GodID) && kharisNow >= spec.MinKharis
+			// Opening the offering form does not require the traditional recipe.
+			canPrepareOffering := afford
 			if afford {
 				for g, need := range spec.Offering {
 					if !province.GoodsAffordable(goodsStock[g], need) {
@@ -585,6 +588,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 					if remaining > 0 {
 						cooldownRemainingDays = tick.GameDaysLeft(remaining)
 						afford = false
+						canPrepareOffering = false
 					}
 				}
 			}
@@ -603,6 +607,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				}
 				if cooldownRemainingDays > 0 || activeRemainingDays > 0 {
 					afford = false
+					canPrepareOffering = false
 				}
 			}
 			departurePending := activeRemainingDays > 0 && (spec.EffectType == religion.EffectNextLandDeparture || spec.EffectType == religion.EffectNextShipDeparture)
@@ -626,7 +631,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				// A generic reason would hide them in the prayer list.
 				reason = "insufficient offering"
 			}
-			prayers = append(prayers, prayerRow{DeparturePending: departurePending,
+			prayers = append(prayers, prayerRow{DeparturePending: departurePending, CanPrepareOffering: canPrepareOffering,
 				GodID: spec.GodID, ID: spec.ID, Name: spec.Name, God: spec.God, Temple: temple, EffectType: spec.EffectType,
 				Default: spec.ID == religion.DefaultBattleFrenzyFor(string(sett.CultureID)), ActiveRemainingDays: activeRemainingDays,
 				Effect:    spec.Description,

@@ -1,0 +1,6 @@
+UPDATE map_tiles SET copper_deposit=false,tin_deposit=false,silver_deposit=false,incense_deposit=false WHERE world_id='e1674d20-17cd-496f-8066-041fa59535fd';
+  UPDATE map_tiles SET incense_deposit=true WHERE world_id='e1674d20-17cd-496f-8066-041fa59535fd' AND ((q=1 AND r=29) OR(q=48 AND r=29));
+  UPDATE provinces SET incense_deposit=true WHERE id='77cf62f5-416e-48eb-9194-50bb95d299c3';
+  INSERT INTO buildings(settlement_id,building_type,level,god_id) SELECT 'f3f57931-eb12-496d-bed4-028ee9de565d','temple',1,'potnia' WHERE NOT EXISTS(SELECT 1 FROM buildings WHERE settlement_id='f3f57931-eb12-496d-bed4-028ee9de565d' AND building_type='temple' AND god_id='potnia');
+  UPDATE settlement_goods SET amount=1000,rate=0 WHERE settlement_id='f3f57931-eb12-496d-bed4-028ee9de565d' AND good_key IN('grain','silver');
+  UPDATE player_world_records SET kharis_amount=90,kharis_rate=0,kharis_calc_tick=current_world_tick() WHERE world_id='e1674d20-17cd-496f-8066-041fa59535fd' AND player_id='73a0b2e9-d27e-47f7-977f-1c86efd2ce22';UPDATE settlement_goods SET amount=CASE WHEN good_key='incense' THEN 100 ELSE 0 END,rate=0,calc_tick=current_world_tick() WHERE settlement_id='f3f57931-eb12-496d-bed4-028ee9de565d';

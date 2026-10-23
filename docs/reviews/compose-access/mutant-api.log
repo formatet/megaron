@@ -1,0 +1,7 @@
+2026/10/23 17:56:02 INFO player registered id=b995b71b-0114-44e9-b7ad-be4fed7165ff username=alpha-e91c76f4-f50c-4382-890a-ede249cb29b9
+--- FAIL: TestPrayerCanPrepareWithoutTraditionalGoods (0.10s)
+    prayer_compose_access_test.go:28: preparation hidden although a composed gift succeeds: {CanPrepare:false ID:minoan_potnia_vision_v2 Reason:insufficient offering Wait:0 Active:0 Pending:false Affordable:false}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.107s
+FAIL
+» färsk DB på migration 205 · commit 124815fd+ändringar
