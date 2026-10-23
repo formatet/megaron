@@ -7,14 +7,21 @@ def check(label,red=False):
  r=subprocess.run([str(ROOT/'tools/gotest.sh'),'./api/handlers','-run',PATTERN],cwd=ROOT,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
  (OUT/(label+'.log')).write_bytes(r.stdout)
  assert (r.returncode!=0 and ('--- FAIL: '+PATTERN).encode() in r.stdout) if red else r.returncode==0,r.stdout.decode()
-def arm(path,label,old,new):
+def arm(path,label,old,new,pattern=None):
  b=path.read_bytes();digest=hashlib.sha256(b).hexdigest();assert old in b
- try:path.write_bytes(b.replace(old,new));check(label,True)
+ try:
+  path.write_bytes(b.replace(old,new));
+  if pattern is None:check(label,True)
+  else:
+   r=subprocess.run([str(ROOT/'tools/gotest.sh'),'./api/handlers','-run',pattern],cwd=ROOT,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+   (OUT/(label+'.log')).write_bytes(r.stdout)
+   assert r.returncode!=0 and ('--- FAIL: '+pattern).encode() in r.stdout,r.stdout.decode()
  finally:path.write_bytes(b)
  assert hashlib.sha256(path.read_bytes()).hexdigest()==digest
 check('before-mutation')
 arm(ROOT/'server/internal/messenger/handler.go','mutant-long-stay',b'ReplyStayTicks   = 2 ',b'ReplyStayTicks   = 48 ')
 arm(ROOT/'server/api/handlers/messenger.go','mutant-late-reply',b'if replyDeadline != nil && replyCurrentTick >= *replyDeadline',b'if false && replyDeadline != nil && replyCurrentTick >= *replyDeadline')
 arm(ROOT/'server/api/handlers/messenger_queue.go','mutant-closed-reply-action',b'if m.Status == "delivered" && !m.ReplyWindowClosed',b'if m.Status == "delivered"')
+arm(ROOT/'server/internal/messenger/handler.go','mutant-scheduled-not-received',b'if receivedTick > stayStartTick',b'if false && receivedTick > stayStartTick','TestReturnPostDelayedArrivalStartsWindowWhenReceived')
 check('restored')
-print('3 named physical return-post failures; byte-exact restore; fresh contracts GREEN')
+print('4 named physical return-post failures; byte-exact restore; fresh contracts GREEN')

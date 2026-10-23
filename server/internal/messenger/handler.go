@@ -152,8 +152,21 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 	// first; the other is then a no-op (status no longer 'delivered').
 	// An offer-bearing messenger stays as long as its offer lives — see stayTicks.
 	// This MUST commit atomically with the flip above — see the doc comment.
+	// Plain-letter return post starts when delivery is actually committed,
+	// not at a past scheduled arrival that a delayed worker has just caught up.
+	// Trade bearers retain their existing offer/expiry timing contract.
+	stayStartTick := e.DueTick
+	if !carriesOffer {
+		var receivedTick int
+		if err := tx.QueryRow(ctx, `SELECT current_tick FROM worlds WHERE id=$1`, e.WorldID).Scan(&receivedTick); err != nil {
+			return fmt.Errorf("load actual messenger receipt tick: %w", err)
+		}
+		if receivedTick > stayStartTick {
+			stayStartTick = receivedTick
+		}
+	}
 	if err := h.scheduler.EnqueueTickTx(ctx, tx, e.WorldID, events.ScheduledMessengerStayEnd,
-		StayEndPayload{MessengerID: payload.MessengerID}, e.DueTick+stayTicks(carriesOffer),
+		StayEndPayload{MessengerID: payload.MessengerID}, stayStartTick+stayTicks(carriesOffer),
 	); err != nil {
 		return fmt.Errorf("schedule messenger stay end: %w", err)
 	}

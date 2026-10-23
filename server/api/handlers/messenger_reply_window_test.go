@@ -210,3 +210,28 @@ func TestReturnPostConcurrentRepliesClaimSingleBearer(t *testing.T) {
 		t.Fatalf("return journeys=%d want1", n)
 	}
 }
+
+func TestReturnPostDelayedArrivalStartsWindowWhenReceived(t *testing.T) {
+	f := setupReplyFixture(t)
+	ctx := context.Background()
+	clk := clock.NewTestClock(time.Now())
+	sched := events.NewScheduler(f.pool, clk)
+	if _, err := f.pool.Exec(ctx, `UPDATE worlds SET current_tick=100 WHERE id=$1`, f.worldID); err != nil {
+		t.Fatal(err)
+	}
+	var id uuid.UUID
+	if err := f.pool.QueryRow(ctx, `INSERT INTO messengers(world_id,sender_id,origin_id,destination_id,message_text,status,hex_q,hex_r,arrives_at) VALUES($1,$2,$3,$4,'late delivery','outbound',3,0,now()) RETURNING id`, f.worldID, f.senderID, f.originID, f.destID).Scan(&id); err != nil {
+		t.Fatal(err)
+	}
+	payload, _ := json.Marshal(messenger.ArrivalPayload{MessengerID: id})
+	if err := messenger.NewArrivalHandler(f.pool, sched, events.NewStore(f.pool), nil).Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: 90, Payload: payload}); err != nil {
+		t.Fatal(err)
+	}
+	var due int
+	if err := f.pool.QueryRow(ctx, `SELECT due_tick FROM scheduled_events WHERE world_id=$1 AND event_type='MessengerStayEnd' AND payload->>'messenger_id'=$2`, f.worldID, id.String()).Scan(&due); err != nil {
+		t.Fatal(err)
+	}
+	if due != 102 {
+		t.Fatalf("late delivery at100 gives deadline%d want102; no vanished reply opportunity", due)
+	}
+}
