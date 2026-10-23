@@ -47,6 +47,9 @@ def browser_queue(base, world, token, out, expected):
             for brief in page.locator('.lb-dismiss').all():
                 if brief.is_visible():
                     brief.click()
+            # Bootstrap/WS have their own legacy unread-badge history fetch.
+            # Measure the drawer's incremental requests, not that preexisting path.
+            history_before = len(history_reads)
             page.locator('#trig-diplomacy').click()
             root = page.locator('#dtab-queue')
             root.locator('[data-letter]').first.wait_for()
