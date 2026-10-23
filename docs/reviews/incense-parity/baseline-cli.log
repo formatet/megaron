@@ -1,0 +1,24 @@
+--- FAIL: TestCitiesListsAllKnownDepositsIncludingIncense (0.00s)
+    cmd_cities_deposits_test.go:29: known city missingcedar: Name                   Owner            Terrain  Culture    Kingdom       Deposit  Settlement ID
+        ────────────────────────────────────────────────────────────────────────────────────
+         Known Source          —                                                  ⛏copper  known-id
+        
+        No other settlements within your vision — this directory is FOW-gated, not global.
+        Trade needs a visible neighbour: send a unit outward (`march`) or colonise to
+        expand your vision and discover Wanaxes you can trade with.
+        
+        RUMOUR-KNOWN (heard of, not yet contactable — explore to confirm):
+          Distant — east, rich in stone
+    cmd_cities_deposits_test.go:29: known city missingincense: Name                   Owner            Terrain  Culture    Kingdom       Deposit  Settlement ID
+        ────────────────────────────────────────────────────────────────────────────────────
+         Known Source          —                                                  ⛏copper  known-id
+        
+        No other settlements within your vision — this directory is FOW-gated, not global.
+        Trade needs a visible neighbour: send a unit outward (`march`) or colonise to
+        expand your vision and discover Wanaxes you can trade with.
+        
+        RUMOUR-KNOWN (heard of, not yet contactable — explore to confirm):
+          Distant — east, rich in stone
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.003s
+FAIL

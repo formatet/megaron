@@ -1,0 +1,8 @@
+2026/10/23 17:26:13 INFO player registered id=8b4cb801-708c-4e96-a40f-5089b29fa2d3 username=alpha-ecf384e1-21bb-445c-ab55-acb1dd9d34b9
+--- FAIL: TestPotniaVisionFindsUnknownIncenseAsMemory (0.09s)
+    --- FAIL: TestPotniaVisionFindsUnknownIncenseAsMemory/unknown_incense (0.09s)
+        oracle_incense_test.go:52: unknown incense not revealed as radius2 memory: {"effect":{"revealed_ore":null,"revealed_tiles":[]},"effect_type":"oracle_memory_v2","kharis_spent":0,"message":"Potnia finds no unseen source to mark on your map.","mood":"Favorable","offer_multiplier":1,"prayer":"minoan_potnia_vision_v2","success":true}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.097s
+FAIL
+» färsk DB på migration 205 · commit 58cebec8+ändringar

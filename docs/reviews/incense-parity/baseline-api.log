@@ -1,0 +1,11 @@
+» färsk DB på migration 205 · commit 58cebec8
+2026/10/23 17:22:02 INFO player registered id=13566a8d-e282-418a-961a-641ae0613bed username=alpha-132158c3-9c39-4166-ba2c-a3b9e857d659
+2026/10/23 17:22:02 INFO player registered id=f173e2d0-ad0c-4c80-969e-73c475669c6e username=alpha-489a865c-1a38-4b92-b260-b5684a38d4e6
+--- FAIL: TestPotniaVisionFindsUnknownIncenseAsMemory (0.17s)
+    --- FAIL: TestPotniaVisionFindsUnknownIncenseAsMemory/unknown_incense (0.09s)
+        oracle_incense_test.go:52: unknown incense not revealed as radius2 memory: {"effect":{"revealed_ore":null,"revealed_tiles":[]},"effect_type":"oracle_memory_v2","kharis_spent":0,"message":"Potnia finds no unseen vein of ore to mark on your map.","mood":"Favorable","offer_multiplier":1,"prayer":"minoan_potnia_vision_v2","success":true}
+    --- FAIL: TestPotniaVisionFindsUnknownIncenseAsMemory/already_known_incense (0.09s)
+        oracle_incense_test.go:59: current prayer description hides incense eligibility
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.177s
+FAIL

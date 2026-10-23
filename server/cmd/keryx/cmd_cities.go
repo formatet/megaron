@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -51,9 +52,6 @@ there (march/colonize) to turn a rumour into a real contact.`,
 				kingdom, _ := e["kingdom"].(string)
 				sid, _ := e["settlement_id"].(string)
 				own, _ := e["own"].(bool)
-				copper, _ := e["copper_deposit"].(bool)
-				tin, _ := e["tin_deposit"].(bool)
-				silver, _ := e["silver_deposit"].(bool)
 				marker := " "
 				if own {
 					marker = "★"
@@ -61,14 +59,20 @@ there (march/colonize) to turn a rumour into a real contact.`,
 				if owner == "" {
 					owner = "—"
 				}
-				deposit := "—"
-				if silver {
-					deposit = "⛏silver"
-				} else if copper {
-					deposit = "⛏copper"
-				} else if tin {
-					deposit = "⛏tin"
+				deposits := []string{}
+				for _, d := range []struct{ key, label string }{
+					{"copper_deposit", "⛏copper"}, {"tin_deposit", "⛏tin"}, {"silver_deposit", "⛏silver"},
+					{"cedar_deposit", "cedar"}, {"incense_deposit", "incense"},
+				} {
+					if present, _ := e[d.key].(bool); present {
+						deposits = append(deposits, d.label)
+					}
 				}
+				deposit := strings.Join(deposits, ", ")
+				if deposit == "" {
+					deposit = "—"
+				}
+
 				fmt.Printf("%s%-21s %-16s %-8s %-10s %-12s  %-7s  %s\n",
 					marker, name, owner, terrain, culture, kingdom, deposit, sid)
 			}
