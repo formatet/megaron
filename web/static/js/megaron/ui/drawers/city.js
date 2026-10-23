@@ -559,8 +559,9 @@ async function refreshCityBuildings(provinceID) {
         tu.map(u => {
           const name = unitTypeLabel(u.unit);
           // A trained unit is ready, not arrived.
-          let label, eta = u.ready_at ? arrivalHTML(u.ready_at, undefined, 'ready') : '';
-          if (u.category === 'naval') label = 'building';
+          let label, eta = !u.shipyard_waiting && u.ready_at ? arrivalHTML(u.ready_at, undefined, 'ready') : '';
+          if (u.shipyard_waiting) label = 'waiting for shipyard workers';
+          else if (u.category === 'naval') label = 'building';
           else if (u.status === 'training') label = `${u.size}/100 · training`;
           // Say what's missing, not just the raw count — recruiting more of
           // the same type into this settlement is what fills it (a

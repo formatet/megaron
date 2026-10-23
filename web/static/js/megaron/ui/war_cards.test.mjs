@@ -174,3 +174,11 @@ test('freighting ship shows real provisions, final ration and empty hold without
   assert.doesNotMatch(renderUnitCard(unit({category:'naval',type:'merchantman',status,provision_days:7,provisions_aboard:true})),/food for 7 days/);
  }
 });
+
+test('ORDER28: paused builds and repairs explain missing workers without a stale ETA',()=>{
+ for (const status of ['forming','repairing']) {
+  const html=renderUnitCard(unit({type:'ship',category:'naval',status,shipyard_waiting:true,build_complete_at:'2099-01-01T12:00:00Z'}));
+  assert.match(html,/waiting for shipyard workers/);
+  assert.doesNotMatch(html,/ready |2099/);
+ }
+});

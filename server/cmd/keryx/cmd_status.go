@@ -1106,6 +1106,8 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 						ready = " — ready " + arrivalETA(c, ra)
 					}
 					switch {
+					case m["shipyard_waiting"] == true:
+						fmt.Printf("  %-10s waiting for shipyard workers\n", name)
 					case cat == "naval":
 						fmt.Printf("  %-10s building%s\n", name, ready)
 					case status == "training":

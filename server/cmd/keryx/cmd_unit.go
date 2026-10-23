@@ -363,6 +363,7 @@ type unitRow struct {
 	Status              string             `json:"status"`
 	Name                *string            `json:"name"`
 	DisplayName         string             `json:"display_name"`
+	ShipyardWaiting     bool               `json:"shipyard_waiting"`
 	BuildCompleteAt     *time.Time         `json:"build_complete_at"`
 	Stance              *string            `json:"stance"`
 	SettlementID        *string            `json:"settlement_id"`
@@ -435,6 +436,9 @@ type pickupShipChoice struct {
 }
 
 func formatSize(c *Client, u unitRow) string {
+	if u.ShipyardWaiting {
+		return "waiting for shipyard workers"
+	}
 	// The host is a size-1 map token; the people it represents live in
 	// founder_phase.population, never in units.size — "1 men" would be a lie
 	// (4.5 displayfällan). The real numbers live in `keryx founding status`.
@@ -463,6 +467,11 @@ func formatSize(c *Client, u unitRow) string {
 			eta = gameETA(c, *u.BuildCompleteAt)
 		}
 		return fmt.Sprintf("100/100 (training — ready %s)", eta)
+	case "repairing":
+		if u.BuildCompleteAt != nil {
+			return "being repaired — ready " + gameETA(c, *u.BuildCompleteAt)
+		}
+		return "being repaired"
 	case "fitting_out":
 		eta := "unknown"
 		if u.BuildCompleteAt != nil {
@@ -1421,16 +1430,19 @@ repair completes and its hull returns to full.`,
 				return nil
 			}
 			var resp struct {
-				HullBefore    int     `json:"hull_before"`
-				HullTarget    int     `json:"hull_target"`
-				Good          string  `json:"good"`
-				Amount        float64 `json:"amount"`
-				DurationTicks int     `json:"duration_ticks"`
-				CompleteAt    string  `json:"complete_at"`
+				HullBefore      int     `json:"hull_before"`
+				HullTarget      int     `json:"hull_target"`
+				Good            string  `json:"good"`
+				Amount          float64 `json:"amount"`
+				DurationTicks   int     `json:"duration_ticks"`
+				CompleteAt      string  `json:"complete_at"`
+				ShipyardWaiting bool    `json:"shipyard_waiting"`
 			}
 			_ = json.Unmarshal(data, &resp)
 			fmt.Printf("Repair started on unit %s (hull %d→%d), costing %.1f %s over %s", unitID[:8], resp.HullBefore, resp.HullTarget, resp.Amount, resp.Good, formatDays(resp.DurationTicks, "%d"))
-			if t, err := time.Parse(time.RFC3339, resp.CompleteAt); err == nil {
+			if resp.ShipyardWaiting {
+				fmt.Print(" — waiting for shipyard workers")
+			} else if t, err := time.Parse(time.RFC3339, resp.CompleteAt); err == nil {
 				fmt.Printf(" — ready %s", gameETA(c, t))
 			}
 			fmt.Println(".")

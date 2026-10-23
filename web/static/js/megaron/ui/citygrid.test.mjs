@@ -244,3 +244,13 @@ test('ORDER15: staffing posts god and -1 removes a worker at that god\'s temple 
   assert.equal(out.changed, true);
   assert.equal(urls[1], 'u/9');
 });
+
+test('ORDER28: shipyard staffing shows binary pace and preserves temple labels',()=>{
+ const goods=placed=>[{good_key:'shipbuilding',staffing_only:true,cap:3,placed,placed_ordinals:placed?[1]:[]}];
+ const empty=cityBuildingsHTML([{building_type:'shipyard',level:1,goods:goods(0)}]);
+ assert.match(empty,/waiting for shipyard workers/);
+ assert.match(empty,/0 shipyard workers/);
+ assert.doesNotMatch(empty,/Devotion|temple workers|per day/);
+ const working=cityBuildingsHTML([{building_type:'shipyard',level:1,goods:goods(1)}]);
+ assert.match(working,/full working pace/);
+});
