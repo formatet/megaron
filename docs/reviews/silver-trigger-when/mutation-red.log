@@ -1,0 +1,9 @@
+» färsk DB på migration 203 · commit 58165dc0+ändringar
+--- FAIL: TestSilverTriggerWhenSkipsOtherGoodsBeforeFunction (0.02s)
+    silver_trigger_when_test.go:44: actual trigger calls silver=1 other=16 want1/0
+    silver_trigger_when_test.go:61: repeat/UPSERT trigger calls silver=2 other=33 want2/0
+--- FAIL: TestSilverTrigger203RoundTripPreservesMiningOutcomes (0.03s)
+    silver_trigger_when_test.go:113: up migration changed function/epoch/counter or wrong filter: true true 12.5 false
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.057s
+FAIL

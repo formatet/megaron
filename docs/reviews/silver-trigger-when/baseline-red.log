@@ -1,0 +1,7 @@
+» färsk DB på migration 202 · commit 58165dc0
+--- FAIL: TestSilverTriggerWhenSkipsOtherGoodsBeforeFunction (0.02s)
+    silver_trigger_when_test.go:43: actual trigger calls silver=1 other=16 want1/0
+    silver_trigger_when_test.go:60: repeat/UPSERT trigger calls silver=2 other=33 want2/0
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.021s
+FAIL

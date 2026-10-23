@@ -1,0 +1,25 @@
+server/internal/economy/food_basket.go:176:			tag, err := tx.Exec(ctx, `UPDATE settlement_goods SET amount=GREATEST(0,LEAST(cap,settled(amount,rate,calc_tick))-$3),calc_tick=current_world_tick() WHERE settlement_id=$1 AND good_key=$2`, sid, good, qty)
+server/internal/economy/food_tick.go:222:	if _, err := tx.Exec(ctx, `UPDATE settlement_goods SET amount=GREATEST(0,settled(amount,rate,calc_tick)+$3),calc_tick=current_world_tick() WHERE settlement_id=$1 AND good_key=$2`, sid, GoodLivestock, float64(born)); err != nil {
+server/internal/economy/food_tick.go:226:		if _, err := tx.Exec(ctx, `UPDATE settlement_goods SET amount=GREATEST(0,settled(amount,rate,calc_tick)-$3),calc_tick=current_world_tick() WHERE settlement_id=$1 AND good_key=$2`, sid, GoodGrain, float64(fed)); err != nil {
+server/internal/economy/recompute.go:696:			`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+server/internal/economy/recompute.go:784:					`UPDATE settlement_goods
+server/internal/economy/recompute.go:794:				`UPDATE settlement_goods
+server/internal/economy/recompute.go:819:		`UPDATE settlement_goods
+server/internal/province/goods_cost.go:24:	return tx.Exec(ctx, `UPDATE settlement_goods SET
+server/api/handlers/kingdom.go:1106:		`UPDATE settlement_goods
+server/internal/combat/upkeep.go:395:			`UPDATE settlement_goods
+server/api/handlers/helpers.go:256:			`UPDATE settlement_goods SET
+server/internal/combat/build.go:181:	// Update settlement_goods production rates via the central labor-allocation helper.
+server/internal/combat/road.go:232:		`UPDATE settlement_goods
+server/internal/kharis/temple_offering.go:222:		tag, err := tx.Exec(ctx, `UPDATE settlement_goods SET
+server/internal/kharis/tick.go:605:		 UPDATE settlement_goods sg SET
+server/internal/kharis/tick.go:1074:					`UPDATE settlement_goods SET
+server/internal/kharis/tick.go:1386:			     UPDATE settlement_goods sg SET
+server/internal/combat/march_start.go:963:				`UPDATE settlement_goods
+server/internal/combat/occupation.go:708:			`UPDATE settlement_goods SET
+server/internal/combat/silver_audit_v2.go:76:	if _, err := tx.Exec(ctx, `UPDATE settlement_goods g
+server/internal/combat/unit_arrival.go:1939:		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+server/internal/combat/unit_arrival.go:1980:	if _, err := tx.Exec(ctx, `UPDATE settlement_goods
+server/api/handlers/create_metropolis.go:117:		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+server/api/handlers/create_metropolis.go:148:	if _, err := tx.Exec(ctx, `UPDATE settlement_goods SET amount=$1,
+server/api/handlers/settlement.go:980:			`UPDATE settlement_goods SET
