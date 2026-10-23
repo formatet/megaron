@@ -332,7 +332,10 @@ type Unit struct {
 	// status='fitting_out' (ShipFitOutComplete ETA). Cleared on return to
 	// garrison. Land units also use it for timed training after gathering;
 	// their initial forming progress is size-based.
-	BuildCompleteAt *time.Time
+	ShipyardWorkRemaining *int
+	ShipyardWorkCalcTick  *int
+	ShipyardWorkRunning   bool
+	BuildCompleteAt       *time.Time
 
 	CargoUnitID *uuid.UUID // naval: land unit being transported
 
@@ -434,7 +437,7 @@ const selectCols = `
 	reaction_policy,
 	leader_role,
 	march_intent, colony_name,
-	name, build_complete_at,
+	name, build_complete_at, shipyard_work_remaining,shipyard_work_calc_tick,shipyard_work_running,
 	origin_settlement_id, reinforcing,
 	created_at, updated_at`
 
@@ -456,7 +459,7 @@ func scanUnit(row interface {
 		&reactionRaw,
 		&u.LeaderRole,
 		&u.MarchIntent, &u.ColonyName,
-		&u.Name, &u.BuildCompleteAt,
+		&u.Name, &u.BuildCompleteAt, &u.ShipyardWorkRemaining, &u.ShipyardWorkCalcTick, &u.ShipyardWorkRunning,
 		&u.OriginSettlementID, &u.Reinforcing,
 		&u.CreatedAt, &u.UpdatedAt,
 	); err != nil {

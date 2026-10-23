@@ -182,6 +182,9 @@ func (f *recruitShipFixture) post(t *testing.T, path string, body any) (*httptes
 func TestRecruitShip_NavalBuildsOneFormingVesselWithNameAndETA(t *testing.T) {
 	f := setupRecruitShipFixture(t)
 	ctx := context.Background()
+	if _, err := f.pool.Exec(ctx, `INSERT INTO settlement_placement(settlement_id,gubbe_ordinal,target_kind,building_type,good_key) VALUES($1,1,'building','shipyard','shipbuilding')`, f.settlementID); err != nil {
+		t.Fatal(err)
+	}
 
 	recruitPath := "/worlds/" + f.worldID.String() + "/provinces/" + f.provinceID.String() + "/recruit"
 	rec, resp := f.post(t, recruitPath, map[string]any{"unit_type": "galley"})
@@ -229,8 +232,9 @@ func TestRecruitShip_NavalBuildsOneFormingVesselWithNameAndETA(t *testing.T) {
 	if dbName == "" {
 		t.Error("name column empty — a suggested name should have been stored")
 	}
-	if buildCompleteAt == nil {
-		t.Fatal("build_complete_at is nil — a still-forming ship must carry a build ETA")
+	var work *int
+	if err := f.pool.QueryRow(ctx, `SELECT shipyard_work_remaining FROM units WHERE id=$1`, unitID).Scan(&work); err != nil || work == nil || *work != 3 {
+		t.Fatalf("saved shipyard work=%v err=%v", work, err)
 	}
 
 	// Deployable=false via the JSON summary while forming.

@@ -393,7 +393,12 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 	buildings := make([]buildingOut, 0, len(buildingOptions))
 	for _, opt := range buildingOptions {
 		if opt.StaffingOnly {
-			cap := opt.PlaceCapPerGood[economy.GoodCult]
+			cap := opt.PlaceCapPerGood[opt.ServiceRole]
+			if opt.BuildingType == "shipyard" {
+				ords := placedOrdinals.Building[opt.BuildingType][opt.ServiceRole]
+				buildings = append(buildings, buildingOut{BuildingType: opt.BuildingType, Level: opt.Level, Name: "Shipyard", Goods: []goodOut{{GoodKey: opt.ServiceRole, StaffingOnly: true, Cap: &cap, Placed: len(ords), PlacedOrdinals: ords}}})
+				continue
+			}
 			ords := placedOrdinals.Temple[opt.BuildingID]
 			id := opt.BuildingID
 			buildings = append(buildings, buildingOut{BuildingType: opt.BuildingType, Level: opt.Level,
@@ -870,7 +875,7 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-		if opt == nil || (!opt.StaffingOnly && opt.RatePerGood[req.GoodKey] <= 0) || (opt.StaffingOnly && req.GoodKey != economy.GoodCult) {
+		if opt == nil || (!opt.StaffingOnly && opt.RatePerGood[req.GoodKey] <= 0) || (opt.StaffingOnly && req.GoodKey != opt.ServiceRole) {
 			writeError(w, http.StatusUnprocessableEntity, "this building has no production option for that good")
 			return
 		}

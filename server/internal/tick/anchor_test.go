@@ -60,3 +60,15 @@ func TestAnchor_WallAt_Endpoints(t *testing.T) {
 		t.Errorf("WallAt((Tick+1)*1000) = %v, want %v", got, want)
 	}
 }
+
+func TestAnchorTickAtOrAfterSavedDeadline(t *testing.T) {
+	a := Anchor{Tick: 123, At: time.Date(2026, 10, 23, 0, 0, 0, 0, time.UTC)}
+	for _, tc := range []struct {
+		m    int64
+		want int
+	}{{122000, 123}, {123000, 123}, {123001, 124}, {124000, 124}, {124001, 125}, {130000, 130}} {
+		if got := a.TickAtOrAfter(a.WallAt(tc.m)); got != tc.want {
+			t.Fatalf("%d → %d want %d", tc.m, got, tc.want)
+		}
+	}
+}

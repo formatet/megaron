@@ -110,6 +110,7 @@ func recruitCmd() *cobra.Command {
 			}
 			if isNaval {
 				var resp struct {
+					ShipyardWaiting  bool      `json:"shipyard_waiting"`
 					Names            []string  `json:"names"`
 					CompleteAt       time.Time `json:"complete_at"`
 					PopDrawn         int       `json:"pop_drawn"`
@@ -124,7 +125,9 @@ func recruitCmd() *cobra.Command {
 				} else {
 					fmt.Printf("Building 1 %s\n", unit)
 				}
-				if !resp.CompleteAt.IsZero() {
+				if resp.ShipyardWaiting {
+					fmt.Println("Waiting for shipyard workers — paid order; work resumes when the shipyard is staffed.")
+				} else if !resp.CompleteAt.IsZero() {
 					fmt.Printf("Ready %s — not deployable until then (`keryx unit list` shows the ETA).\n",
 						gameETA(c, resp.CompleteAt))
 				}

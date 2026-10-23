@@ -1,0 +1,8 @@
+» färsk DB på migration 204 · commit e78a8276+ändringar
+ok  	formatet/megaron/server/api/handlers	54.194s
+ok  	formatet/megaron/server/internal/economy	5.505s
+ok  	formatet/megaron/server/internal/combat	14.146s
+ok  	formatet/megaron/server/internal/unit	0.022s
+ok  	formatet/megaron/server/internal/events	0.110s
+ok  	formatet/megaron/server/internal/tick	0.161s
+ok  	formatet/megaron/server/cmd/server	5.207s

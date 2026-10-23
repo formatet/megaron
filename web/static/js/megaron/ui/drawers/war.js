@@ -343,8 +343,8 @@ async function warRecruit(provinceID, unitType, name = '') {
     accepted: async data => {
       const label = unitTypeLabel(unitType);
       const receipt = data.names?.length
-        ? 'Order received: building ' + data.names.join(', ') + ' — ' + readyWord(data.complete_at)
-        : 'Order received: ' + (data.pop_drawn || data.men || 100) + ' ' + label + ' — ' + readyWord(data.complete_at);
+        ? 'Order received: building ' + data.names.join(', ') + ' — ' + (data.shipyard_waiting ? 'waiting for shipyard workers' : readyWord(data.complete_at))
+        : 'Order received: ' + (data.pop_drawn || data.men || 100) + ' ' + label + ' — ' + (data.shipyard_waiting ? 'waiting for shipyard workers' : readyWord(data.complete_at));
       rememberRecruitmentReceipt(world, provinceID, receipt);
       status(receipt);
       await loadWarDrawer();
@@ -508,7 +508,11 @@ export function renderUnitCard(u) {
   const bar = (pct) => '<div style="margin:.2rem 0;background:var(--border);height:4px;border-radius:2px"><div style="background:var(--accent-war);height:4px;width:' + pct + '%"></div></div>';
   const dim = (txt) => '<span style="font-size:.65rem;color:var(--text-dim)">' + txt + '</span>';
   let progress = '';
-  if (isNaval && isForming) {
+  if (u.shipyard_waiting) {
+    progress = dim('waiting for shipyard workers');
+  } else if (u.status === 'repairing') {
+    progress = dim('being repaired — ' + readyWord(u.build_complete_at));
+  } else if (isNaval && isForming) {
     progress = dim('building — ' + readyWord(u.build_complete_at));
   } else if (isForming) {
     // men_to_deploy is server-computed (100 − size); recruiting more of the

@@ -1,0 +1,9 @@
+» färsk DB på migration 204 · commit 88d6ea58
+=== RUN   TestShipyardPlayerScenario
+2026/10/23 06:32:20 INFO player registered id=8f644a48-ef04-4f8e-a3bd-46bf68a7874d username=shiprepair-39af8d1b-f1c2-4df6-87f9-f99dda4abe09
+    zz_order28_player_scenario_test.go:37: scenario1 {"run": 1, "actual_http": true, "actual_cli": true, "firefox": [390, 1000], "jobs": 2, "pause_resume": true, "page_errors": []}
+2026/10/23 06:32:23 INFO player registered id=1e68edd9-addf-46a4-876b-e81c9d346774 username=shiprepair-6c9c4a75-56a6-42a5-b10f-46c0b9ffe6fc
+    zz_order28_player_scenario_test.go:37: scenario2 {"run": 2, "actual_http": true, "actual_cli": true, "firefox": [390, 1000], "jobs": 2, "pause_resume": true, "page_errors": []}
+--- PASS: TestShipyardPlayerScenario (6.51s)
+PASS
+ok  	formatet/megaron/server/api/handlers	6.512s

@@ -45,10 +45,11 @@ const MacroTickInterval = 1
 type ScheduledEventType string
 
 const (
-	ScheduledBuildComplete ScheduledEventType = "BuildComplete"
-	ScheduledTrainComplete ScheduledEventType = "TrainComplete"
-	ScheduledCollapseCheck ScheduledEventType = "CollapseCheck"
-	ScheduledDivineRoll    ScheduledEventType = "DivineRoll"
+	ScheduledBuildComplete        ScheduledEventType = "BuildComplete"
+	ScheduledTrainComplete        ScheduledEventType = "TrainComplete"
+	ScheduledShipyardWorkComplete ScheduledEventType = "ShipyardWorkComplete"
+	ScheduledCollapseCheck        ScheduledEventType = "CollapseCheck"
+	ScheduledDivineRoll           ScheduledEventType = "DivineRoll"
 	// Frozen legacy loyalty decay identifier, retired in migration 185.
 	ScheduledLoyaltyDecayTick ScheduledEventType = "LoyaltyDecayTick"
 	// Frozen legacy loyalty identifiers, retired in migration 185.

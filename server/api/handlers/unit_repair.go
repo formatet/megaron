@@ -11,8 +11,6 @@ import (
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/combat"
 	"formatet/megaron/server/internal/economy"
-	"formatet/megaron/server/internal/events"
-	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/unit"
 )
 
@@ -113,25 +111,45 @@ func (h *UnitHandler) Repair(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hullPoints := combat.HullMax - u.Hull
-	good, amount, costOK := combat.RepairCost(string(u.Type), hullPoints)
-	if !costOK {
-		writeError(w, http.StatusUnprocessableEntity, "unknown unit type")
-		return
-	}
-
-	var currentTick int
-	_ = h.pool.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
-	durationTicks := combat.RepairDurationTicks(hullPoints)
-	dueTick := currentTick + durationTicks
-	completeAt := tick.EtaAt(h.clk, dueTick, currentTick)
-
 	tx, err := h.pool.Begin(ctx)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not start repair")
 		return
 	}
 	defer tx.Rollback(ctx)
+
+	// Serialize repair capacity/payment with other city jobs; revalidate the
+	// mutable unit under that lock before charging or creating saved work.
+	var lockedCity uuid.UUID
+	if err := tx.QueryRow(ctx, `SELECT id FROM settlements WHERE id=$1 AND owner_id=$2 AND state='active' FOR UPDATE`, settlementID, playerID).Scan(&lockedCity); err != nil {
+		writeError(w, http.StatusConflict, "repair city changed")
+		return
+	}
+	var lockedStatus string
+	if err := tx.QueryRow(ctx, `SELECT status,hull FROM units WHERE id=$1 AND owner_id=$2 AND settlement_id=$3 FOR UPDATE`, unitID, playerID, settlementID).Scan(&lockedStatus, &u.Hull); err != nil || lockedStatus != "garrison" {
+		writeError(w, http.StatusConflict, "ship is no longer available for repair")
+		return
+	}
+	if err := tx.QueryRow(ctx, `SELECT count(*) FROM units WHERE settlement_id=$1 AND status='repairing'`, settlementID).Scan(&activeRepairs); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not check shipyard capacity")
+		return
+	}
+	if activeRepairs >= slots {
+		writeError(w, http.StatusUnprocessableEntity, "shipyard full")
+		return
+	}
+
+	hullPoints := combat.HullMax - u.Hull
+	if hullPoints <= 0 {
+		writeError(w, http.StatusUnprocessableEntity, "hull is already at full strength")
+		return
+	}
+	good, amount, costOK := combat.RepairCost(string(u.Type), hullPoints)
+	if !costOK {
+		writeError(w, http.StatusUnprocessableEntity, "unknown unit type")
+		return
+	}
+	durationTicks := combat.RepairDurationTicks(hullPoints)
 
 	if err := deductGoods(ctx, tx, settlementID, map[string]float64{good: amount}); err != nil {
 		var insErr *insufficientGoodsError
@@ -143,33 +161,35 @@ func (h *UnitHandler) Repair(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if _, err := tx.Exec(ctx,
-		`UPDATE units SET status = 'repairing', build_complete_at = $2, updated_at = now() WHERE id = $1`,
-		unitID, completeAt,
+		`UPDATE units SET status = 'repairing', build_complete_at = NULL, updated_at = now() WHERE id = $1`,
+		unitID,
 	); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not start repair")
+		return
+	}
+	if err := economy.StartShipyardWork(ctx, tx, unitID, durationTicks); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not save repair work")
 		return
 	}
 	if err := tx.Commit(ctx); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not start repair")
 		return
 	}
-
-	if err := h.scheduler.EnqueueTick(ctx, worldID, events.ScheduledShipRepairComplete,
-		combat.ShipRepairCompletePayload{
-			UnitID: unitID, SettlementID: settlementID, WorldID: worldID, UnitType: string(u.Type),
-		}, dueTick,
-	); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not schedule repair completion")
+	work, err := economy.LoadShipyardWork(ctx, h.pool, unitID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not read repair work")
 		return
 	}
 
 	writeJSON(w, http.StatusAccepted, map[string]any{
-		"unit_id":        unitID,
-		"hull_before":    u.Hull,
-		"hull_target":    combat.HullMax,
-		"good":           good,
-		"amount":         amount,
-		"duration_ticks": durationTicks,
-		"complete_at":    completeAt,
+		"unit_id":                 unitID,
+		"hull_before":             u.Hull,
+		"hull_target":             combat.HullMax,
+		"good":                    good,
+		"amount":                  amount,
+		"duration_ticks":          durationTicks,
+		"complete_at":             work.CompleteAt,
+		"shipyard_waiting":        work.Waiting,
+		"shipyard_work_remaining": work.Remaining,
 	})
 }

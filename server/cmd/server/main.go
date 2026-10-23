@@ -85,6 +85,10 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err := economy.CompleteShipyardWorkTransition(ctx, pool); err != nil {
+		slog.Error("complete shipyard work transition", "err", err)
+		os.Exit(1)
+	}
 	redisURL := mustEnv("REDIS_URL")
 	rdb := redis.NewClient(&redis.Options{Addr: redisURL})
 	if err := rdb.Ping(ctx).Err(); err != nil {
@@ -172,6 +176,7 @@ func main() {
 	passageScanH := messenger.NewPassageScanHandler(pool, scheduler, hub, gameClock, unitArrivalH)
 	placeReachH := combat.NewPlaceReachScanHandler(pool, scheduler, eventStore, hub)
 	worker.Register(events.ScheduledBuildComplete, buildH.Handle)
+	worker.Register(events.ScheduledShipyardWorkComplete, combat.NewShipyardWorkCompleteHandler(pool, eventStore, hub).Handle)
 	worker.Register(events.ScheduledTrainComplete, trainH.Handle)
 	worker.Register(events.ScheduledShipRepairComplete, shipRepairH.Handle)
 	worker.Register(events.ScheduledShipFitOutComplete, shipFitOutH.Handle)
