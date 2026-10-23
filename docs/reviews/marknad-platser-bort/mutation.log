@@ -1,0 +1,7 @@
+» färsk DB på migration 205 · commit 8b8aafb3+ändringar
+2026/10/23 06:46:45 INFO player registered id=8cbb62dd-00f9-418d-90c4-65e9e79b85dc username=placement-f45b2924-3d96-46db-a6af-a28272bb5ed9
+--- FAIL: TestMarketWorkplacesMigrationFreesWorkersWithoutLosingPeople (0.08s)
+    market_workplaces_test.go:53: 500 500 1 1 0 1
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.083s
+FAIL

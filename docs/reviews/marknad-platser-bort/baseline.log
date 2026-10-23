@@ -1,0 +1,5 @@
+--- FAIL: TestMarketHasNoWorkplacesAtAnyLevel (0.00s)
+    market_workplaces_test.go:8: market L1 still employs 1 workers
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.002s
+FAIL

@@ -1,0 +1,40 @@
+{
+  "healthz": {
+    "commit": "49fd59e",
+    "migration": 204,
+    "status": "ok"
+  },
+  "cases": [
+    {
+      "name": "MarketProof301",
+      "city": "f52b76f1-4709-4a9b-90b4-fe8cf3fcfe90",
+      "province": "71e52ab4-3cfd-43c8-85bc-79fb706c6b69",
+      "world": "1312f0dd-e8aa-4f4c-a1ff-6fcf79847b99",
+      "config": "/home/tk/.config/megaron-market-proof30/MarketProof301.json",
+      "before": {
+        "idle": 4,
+        "silver": 1000,
+        "markets": 1,
+        "population": 600,
+        "food_workers": 1,
+        "market_workers": 1
+      }
+    },
+    {
+      "name": "MarketProof302",
+      "city": "6f626243-cf3c-4559-b2d9-5a15fb68858d",
+      "province": "6cf7951e-65ad-4fca-b94b-caeb3dfe036f",
+      "world": "1312f0dd-e8aa-4f4c-a1ff-6fcf79847b99",
+      "config": "/home/tk/.config/megaron-market-proof30/MarketProof302.json",
+      "before": {
+        "idle": 4,
+        "silver": 1000,
+        "markets": 1,
+        "population": 600,
+        "food_workers": 1,
+        "market_workers": 1
+      }
+    }
+  ],
+  "replay": "After the initial204\u2192205 startup crossed a food tick, supply food and replay exact205 down/up SQL atomically in the205 acceptance rig; schema_migrations is never edited."
+}

@@ -1,0 +1,53 @@
+{
+  "healthz": {
+    "commit": "0f32a5f",
+    "migration": 205,
+    "status": "ok"
+  },
+  "cases": [
+    {
+      "name": "MarketProof301",
+      "before": {
+        "idle": 4,
+        "silver": 1000,
+        "markets": 1,
+        "population": 600,
+        "food_workers": 1,
+        "market_workers": 1
+      },
+      "after": {
+        "idle": 5,
+        "silver": 1000,
+        "markets": 1,
+        "population": 600,
+        "food_workers": 1,
+        "market_workers": 0
+      },
+      "cli": "The market has no workplaces and needs no workers.",
+      "api_refused": 422,
+      "web_market_workplace": false
+    },
+    {
+      "name": "MarketProof302",
+      "before": {
+        "idle": 4,
+        "silver": 1000,
+        "markets": 1,
+        "population": 600,
+        "food_workers": 1,
+        "market_workers": 1
+      },
+      "after": {
+        "idle": 5,
+        "silver": 1000,
+        "markets": 1,
+        "population": 600,
+        "food_workers": 1,
+        "market_workers": 0
+      },
+      "cli": "The market has no workplaces and needs no workers.",
+      "api_refused": 422,
+      "web_market_workplace": false
+    }
+  ]
+}

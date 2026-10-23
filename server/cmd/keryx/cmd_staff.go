@@ -23,7 +23,7 @@ func staffCmd() *cobra.Command {
 		Short: "Show a named building workplace, or place/remove citizens with +n/-n",
 		Long: `<building> is a city workplace (e.g. olive_press). Hex buildings use place. +n places n more idle
 citizens there; -n returns n citizens to the idle pool. The building name is required. Omit the delta to just
-see current occupancy. An unstaffed shipyard stands still; one worker keeps it working. A city may hold one temple per god: with more than one, name it with --god.`,
+see current occupancy. A market has no workplaces and needs no workers. An unstaffed shipyard stands still; one worker keeps it working. A city may hold one temple per god: with more than one, name it with --god.`,
 		Example: `  keryx staff shipyard +1
   keryx staff temple +1 --god potnia
   keryx staff olive_press
@@ -37,6 +37,18 @@ see current occupancy. An unstaffed shipyard stands still; one worker keeps it w
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			buildingType := args[0]
+			if buildingType == "market" {
+				const reason = "The market has no workplaces and needs no workers."
+				if len(args) > 1 {
+					return fmt.Errorf("%s", reason)
+				}
+				if jsonMode {
+					printJSON(map[string]any{"building_type": "market", "workplaces": 0, "reason": reason})
+				} else {
+					fmt.Println(reason)
+				}
+				return nil
+			}
 			c := newClient(cfg)
 			prov := cfg.ProvinceID
 			if provinceID != "" {

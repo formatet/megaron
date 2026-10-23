@@ -1,0 +1,49 @@
+{
+  "at": "2026-10-23 06:43:26 +0200",
+  "read_only": true,
+  "placements": [
+    {
+      "cities": 0,
+      "placements": 0
+    }
+  ],
+  "rules": [
+    {
+      "id": 39,
+      "status": "parked",
+      "good_key": "pottery",
+      "terrain_type": null,
+      "building_type": "market",
+      "rate_per_tick": 0.9999999999999999,
+      "requires_coastal": false,
+      "requires_deposit": null
+    }
+  ],
+  "markets": [
+    {
+      "count": 4,
+      "level": 1
+    },
+    {
+      "count": 4,
+      "level": 2
+    },
+    {
+      "count": 2,
+      "level": 3
+    }
+  ],
+  "schema": [
+    {
+      "dirty": false,
+      "version": 204
+    }
+  ],
+  "stock_rates": [
+    {
+      "rows": 14,
+      "good_key": "pottery",
+      "nonzero_rates": 0
+    }
+  ]
+}

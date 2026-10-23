@@ -337,7 +337,7 @@ func placementYield(good string, rate float64, capL1 int, placeCap int, mult flo
 // winery and foundry each carry one terrain-free row; RecomputeProduction
 // combines it with the matching HexOption via the weakest-link formula (oil/
 // wine: min(boost potential, refining capacity)) or a stock drain (bronze —
-// see the bronze stock-drain step). market/stable's goods are still parked.
+// see the bronze stock-drain step). stable's goods are still parked; markets have no workplaces.
 type BuildingOption struct {
 	ServiceRole  string // placement role for a non-inventory service
 	StaffingOnly bool   // real workplaces whose service produces no stock
@@ -397,7 +397,7 @@ func LoadBuildingProductionOptions(ctx context.Context, tx Tx, settlementID uuid
 		 FROM buildings b
 		 JOIN production_rules pr ON pr.building_type = b.building_type AND pr.terrain_type IS NULL
 		 JOIN goods g ON g.key = pr.good_key AND g.status = 'active'
-		 WHERE b.settlement_id = $1 AND b.level >= 1`,
+		 WHERE b.settlement_id = $1 AND b.level >= 1 AND b.building_type <> 'market'`,
 		settlementID,
 	)
 	if err != nil {
