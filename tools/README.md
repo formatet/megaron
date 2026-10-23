@@ -624,3 +624,5 @@ Ingen av dessa historikläsare styr eller skriver dagens matlager.
 ## Rökelsens paritet
 
 `INCENSE_PROOF_RUN=run1 python3 tools/incense_live.py` bygger aktuell server/Keryx i ren miljö, startar egen färsk PG16/Redis och verifierar processhärkomst/migration. Normal registrering/grundning följs av en explicit egen-DB-fixtur med tempel, offerlager och en enda okänd rökelsekälla. Ett riktigt Firefox Offer-klick, kartans minnesstatus och faktisk Keryx cities/rite --list provas vid1280/390. Det bevisar effekt och informationsgräns, inte naturlig råvaruupptäckt. Alla egna processer/containrar städas i finally. Bevis: `docs/reviews/incense-parity/README.md`.
+
+Bönens väntetext kan provas med samma isolerade flöde: `PRAYER_WAIT_PROOF=1 INCENSE_PROOF_REPORT=prayer-wait-reason INCENSE_PROOF_RUN=run1 python3 tools/incense_live.py`. Efter verklig bön kontrolleras provinsens strukturerade väntedata, Firefox-text/knapp och Keryx-lista; bevis i `docs/reviews/prayer-wait-reason/`.

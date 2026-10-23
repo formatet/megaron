@@ -1,0 +1,5 @@
+--- FAIL: TestRiteReadinessConcreteBlockerPrecedesWait (0.00s)
+    cmd_rite_test.go:61: known blocker hidden by waiting: "cooldown"
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL

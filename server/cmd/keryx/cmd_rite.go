@@ -410,6 +410,9 @@ func gameDaysRemaining(days int) string { return formatDays(days) + " remaining"
 
 // prayerReadiness keeps a pending one-use gift distinct from a timed effect.
 func prayerReadiness(pr riteAvailablePrayer) (string, string) {
+	if pr.UnavailableReason != "" {
+		return "no: " + pr.UnavailableReason, "—"
+	}
 	if pr.DeparturePending {
 		status := "awaiting next departure"
 		if pr.CooldownRemainingDays > 0 {
@@ -428,9 +431,6 @@ func prayerReadiness(pr riteAvailablePrayer) (string, string) {
 		return "cooldown", gameDaysRemaining(pr.CooldownRemainingDays)
 	}
 	if !pr.Affordable {
-		if pr.UnavailableReason != "" {
-			return "no: " + pr.UnavailableReason, "—"
-		}
 		return "no: check temple, kharis and offering", "—"
 	}
 	return "yes", "—"

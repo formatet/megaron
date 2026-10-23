@@ -150,3 +150,10 @@ test('everyday result has no synthetic silent answer; legacy and recorded histor
  assert.equal(prayerResultText({success: false}, {}), 'The gods are silent.');
  assert.equal(prayerResultText({message:'The gods were silent.'}, {god_id:'potnia'}), 'The gods were silent.');
 });
+
+test('concrete temple and kharis blockers stay visible during a god wait',()=>{
+ for(const reason of ['no Temple of Potnia','insufficient kharis']) {
+  const html=prayerStatusHTML({id:'minoan_potnia_vision_v2',affordable:false,cooldown_remaining_game_days:24,unavailable_reason:reason});
+  assert.ok(html.includes(reason));assert.doesNotMatch(html,/on cooldown|okRite/);
+ }
+});

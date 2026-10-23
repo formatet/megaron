@@ -621,8 +621,10 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				}
 			} else if kharisNow < spec.MinKharis {
 				reason = "insufficient kharis"
-			} else if !afford {
-				reason = "insufficient offering or a waiting time applies"
+			} else if !afford && cooldownRemainingDays == 0 && activeRemainingDays == 0 && !departurePending {
+				// Timed/pending states already have precise structured fields.
+				// A generic reason would hide them in the prayer list.
+				reason = "insufficient offering"
 			}
 			prayers = append(prayers, prayerRow{DeparturePending: departurePending,
 				GodID: spec.GodID, ID: spec.ID, Name: spec.Name, God: spec.God, Temple: temple, EffectType: spec.EffectType,

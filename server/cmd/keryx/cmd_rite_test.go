@@ -53,3 +53,12 @@ func TestPrayerPaymentDistinguishesEverydayFromLegacy(t *testing.T) {
 		t.Fatal(legacy)
 	}
 }
+
+func TestRiteReadinessConcreteBlockerPrecedesWait(t *testing.T) {
+	for _, reason := range []string{"no Temple of Potnia", "insufficient kharis"} {
+		status, _ := prayerReadiness(riteAvailablePrayer{UnavailableReason: reason, CooldownRemainingDays: 24})
+		if status != "no: "+reason {
+			t.Fatalf("known blocker hidden by waiting: %q", status)
+		}
+	}
+}

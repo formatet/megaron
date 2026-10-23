@@ -1,0 +1,20 @@
+» färsk DB på migration 205 · commit 8155c3f3+ändringar
+2026/10/23 17:36:48 INFO player registered id=d69bc3c8-e3a2-4221-b14e-51a6607efd0d username=alpha-0c747912-475f-47f3-94e6-7c21345b8b59
+2026/10/23 17:36:48 INFO player registered id=f3fcc18e-8bce-4777-89d4-c40bd0f97a10 username=alpha-c13a9637-3ac2-4c0d-8ff9-092e82caa9de
+2026/10/23 17:36:48 INFO player registered id=0f1578bb-ef64-480e-9dad-145fe112ba0c username=alpha-bb42337c-be1b-4e68-bd37-a515380dd312
+--- FAIL: TestPrayerStatusKeepsStructuredWaitAndActiveState (0.29s)
+    --- FAIL: TestPrayerStatusKeepsStructuredWaitAndActiveState/minoan_potnia_vision_v2 (0.10s)
+        prayer_wait_reason_test.go:68: generic reason hides structured waiting/active state: {ID:minoan_potnia_vision_v2 Reason:insufficient offering or a waiting time applies Wait:24 Active:0 Pending:false Affordable:false}
+    --- FAIL: TestPrayerStatusKeepsStructuredWaitAndActiveState/minoan_velchanos_green_shoots (0.10s)
+        prayer_wait_reason_test.go:68: generic reason hides structured waiting/active state: {ID:minoan_velchanos_green_shoots Reason:insufficient offering or a waiting time applies Wait:25 Active:25 Pending:false Affordable:false}
+    --- FAIL: TestPrayerStatusKeepsStructuredWaitAndActiveState/minoan_asterion_thread (0.09s)
+        prayer_wait_reason_test.go:68: generic reason hides structured waiting/active state: {ID:minoan_asterion_thread Reason:insufficient offering or a waiting time applies Wait:12 Active:0 Pending:true Affordable:false}
+2026/10/23 17:36:48 INFO player registered id=fdbb14fc-191d-458a-93ec-05f2fbea95e4 username=alpha-dd24d2c8-742b-49c6-934e-27151d670659
+2026/10/23 17:36:48 INFO player registered id=3061cdc3-8405-4ee1-b870-0a3bb575b84e username=alpha-d6ae4b17-642a-4cfa-aa8c-ce6b625f4858
+2026/10/23 17:36:48 INFO player registered id=0efb34af-cc40-4d56-b4f7-b45132c574b8 username=alpha-f66d66b8-8661-47b4-b898-50652270978a
+--- FAIL: TestPrayerStatusKeepsConcreteBlockersDuringWait (0.28s)
+    --- FAIL: TestPrayerStatusKeepsConcreteBlockersDuringWait/offering (0.08s)
+        prayer_wait_reason_test.go:113: concrete blocker lost or ambiguous: got{ID:minoan_potnia_vision_v2 Reason:insufficient offering or a waiting time applies Wait:0 Active:0 Pending:false Affordable:false} want"insufficient offering"
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.571s
+FAIL

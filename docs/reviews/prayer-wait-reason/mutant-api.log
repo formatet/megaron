@@ -1,0 +1,14 @@
+2026/10/23 17:38:47 INFO player registered id=ede99865-0b92-4023-92ba-18f03a553eea username=alpha-1dad9d4a-0718-4c95-ae92-f22391c947eb
+2026/10/23 17:38:48 INFO player registered id=5e5595ed-ef4f-4ae0-ab62-229f661c7414 username=alpha-d07839a9-333b-4abe-8d13-bb6b69661e5a
+2026/10/23 17:38:48 INFO player registered id=1d3e4d85-e661-42e0-a320-205e4e552b66 username=alpha-4e527b31-f05f-4d18-8d9d-b49380cead13
+--- FAIL: TestPrayerStatusKeepsStructuredWaitAndActiveState (0.29s)
+    --- FAIL: TestPrayerStatusKeepsStructuredWaitAndActiveState/minoan_potnia_vision_v2 (0.11s)
+        prayer_wait_reason_test.go:68: generic reason hides structured waiting/active state: {ID:minoan_potnia_vision_v2 Reason:insufficient offering Wait:24 Active:0 Pending:false Affordable:false}
+    --- FAIL: TestPrayerStatusKeepsStructuredWaitAndActiveState/minoan_velchanos_green_shoots (0.09s)
+        prayer_wait_reason_test.go:68: generic reason hides structured waiting/active state: {ID:minoan_velchanos_green_shoots Reason:insufficient offering Wait:25 Active:25 Pending:false Affordable:false}
+    --- FAIL: TestPrayerStatusKeepsStructuredWaitAndActiveState/minoan_asterion_thread (0.09s)
+        prayer_wait_reason_test.go:68: generic reason hides structured waiting/active state: {ID:minoan_asterion_thread Reason:insufficient offering Wait:12 Active:0 Pending:true Affordable:false}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.295s
+FAIL
+» färsk DB på migration 205 · commit 8155c3f3+ändringar

@@ -10,7 +10,7 @@ Each prayer names its god, the minimum standing it needs, and its traditional of
 
 Bring the traditional recipe or a composed offering worth at least as much to that god. A smaller gift is refused without taking goods. Bringing more does not improve the answer. For these prayers, `--offer-multiplier` is ignored; omitting a composed offering always brings the traditional recipe.
 
-An answered prayer starts that god's waiting time across all your cities. Potnia's two prayers share her 24-day wait. An active gift cannot be renewed before it ends. A gift awaiting departure cannot be renewed before it is used.
+An answered prayer starts that god's waiting time across all your cities. **Kult** and `keryx rite --list` show the remaining wait, an active gift or a gift awaiting departure. Missing temples and insufficient kharis are named as separate requirements. Potnia's two prayers share her 24-day wait. An active gift cannot be renewed before it ends. A gift awaiting departure cannot be renewed before it is used.
 
 Older prayers outside the current Minoan catalogue retain their uncertain answer and offering multiplier. Their offering is spent even on a silent answer, but kharis is never spent. Old recorded outcomes remain as they happened.
 

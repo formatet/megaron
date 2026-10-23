@@ -5,7 +5,8 @@ then native Potnia Offer, memory read and real CLI. No shared-world writes.
 import hashlib,json,os,pathlib,secrets,socket,subprocess,tempfile,time,urllib.request
 from playwright.sync_api import sync_playwright
 ROOT=pathlib.Path(__file__).resolve().parents[1]
-OUT=ROOT/'docs/reviews/incense-parity'/os.environ.get('INCENSE_PROOF_RUN','run1')
+OUT=ROOT/'docs/reviews'/os.environ.get('INCENSE_PROOF_REPORT','incense-parity')/os.environ.get('INCENSE_PROOF_RUN','run1')
+WAIT_PROOF=os.environ.get('PRAYER_WAIT_PROOF')=='1'
 OUT.mkdir(parents=True,exist_ok=True)
 containers=[];proc=None
 prefix='megaron-incense-'+secrets.token_hex(4)
@@ -19,7 +20,7 @@ def main():
  global proc
  with tempfile.TemporaryDirectory(prefix='incense-live-') as tmp:
   tmp=pathlib.Path(tmp);clean={k:os.environ[k] for k in ('HOME','PATH')};clean['CGO_ENABLED']='0'
-  commit=run('git','-C',str(ROOT),'rev-parse','--short=7','HEAD')+'+incense'
+  commit=run('git','-C',str(ROOT),'rev-parse','--short=7','HEAD')+('+prayerwait' if WAIT_PROOF else '+incense')
   diffhash=hashlib.sha256(subprocess.check_output(['git','-C',str(ROOT),'diff','HEAD','--','server','web'])).hexdigest()
   run('go','build','-ldflags','-X main.buildCommit='+commit,'-o',str(tmp/'temenos'),'./cmd/server',cwd=ROOT/'server',env=clean)
   run('go','build','-o',str(tmp/'keryx'),'./cmd/keryx',cwd=ROOT/'server',env=clean)
@@ -88,6 +89,10 @@ def main():
      assert reply.value.status==200;result=reply.value.json();ore=result['effect']['revealed_ore']
      assert ore and ore['ore']=='incense' and (ore['q'],ore['r'])==(target['q'],target['r']),result
      assert 'source of incense' in result['message'],result
+    if WAIT_PROOF:
+     page.locator('#kult-body').get_by_text('on cooldown — 24 days',exact=True).first.wait_for()
+     assert 'insufficient offering or a waiting time applies' not in page.locator('#kult-body').inner_text()
+     assert page.locator("button[onclick=\"okRite('minoan_potnia_vision_v2')\"]").count()==0
     page.locator('#kult-body').get_by_text('Marks an unseen source of copper, tin, silver or incense',exact=False).scroll_into_view_if_needed()
     page.screenshot(path=str(OUT/(label+'.png')))
     assert page.locator('#kult-body').evaluate('(el)=>el.scrollWidth<=el.clientWidth'),'horizontal overflow'
@@ -95,6 +100,14 @@ def main():
    browser.close()
   after=next(t for t in api(wp+'/map',token=token) if (t['q'],t['r'])==(target['q'],target['r']))
   assert after['tier']=='remembered' and after['incense_deposit'] is True,after
+  if WAIT_PROOF:
+   status=api(wp+'/provinces/'+province,token=token)
+   prayer=next(p for p in status['settlement']['available_prayers'] if p['id']=='minoan_potnia_vision_v2')
+   assert not prayer.get('unavailable_reason') and prayer['cooldown_remaining_game_days']==24 and not prayer['affordable'],prayer
+   (OUT/'prayer-status.json').write_text(json.dumps(prayer,indent=2))
+   after_cli=cli('rite','--list');line=next(l for l in after_cli.splitlines() if 'minoan_potnia_vision_v2' in l)
+   assert 'cooldown' in line and '24 days remaining' in line,line
+   (OUT/'prayers-after.txt').write_text(after_cli)
   assert not errors,errors
   (OUT/'proof.json').write_text(json.dumps(dict(health=health,source_diff_sha256=diffhash,world=world,target=target,before=before,after=after,result=result,captures=captures,errors=errors,fixture='normal player founding; own fresh DB temple/stock/sole-unseen-incense fixture before real actions; not natural exploration'),indent=2))
   print('PASS:',health,'native Potnia incense reveal, memory only, actual CLI, Firefox1280/390')

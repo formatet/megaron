@@ -1,0 +1,145 @@
+{
+  "health": {
+    "commit": "8155c3f+prayerwait",
+    "migration": 205,
+    "status": "ok"
+  },
+  "source_diff_sha256": "74c21720795af24113fe038d0346d9f77e7d5a0cc01883be270b0cc10d7a8b79",
+  "world": "a3e50666-827c-455b-b32b-e1d686b0ba2d",
+  "target": {
+    "q": 7,
+    "r": 37
+  },
+  "before": {
+    "q": 7,
+    "r": 37,
+    "terrain": "fog",
+    "visible": false,
+    "tier": "fog"
+  },
+  "after": {
+    "q": 7,
+    "r": 37,
+    "terrain": "scrub_maquis",
+    "visible": true,
+    "tier": "remembered",
+    "fertility": 0.3133965776956411,
+    "mineral": 0.31374530566024306,
+    "incense_deposit": true
+  },
+  "result": {
+    "effect": {
+      "revealed_ore": {
+        "ore": "incense",
+        "q": 7,
+        "r": 37
+      },
+      "revealed_tiles": [
+        {
+          "q": 5,
+          "r": 37
+        },
+        {
+          "q": 5,
+          "r": 38
+        },
+        {
+          "q": 5,
+          "r": 39
+        },
+        {
+          "q": 6,
+          "r": 36
+        },
+        {
+          "q": 6,
+          "r": 37
+        },
+        {
+          "q": 6,
+          "r": 38
+        },
+        {
+          "q": 6,
+          "r": 39
+        },
+        {
+          "q": 7,
+          "r": 35
+        },
+        {
+          "q": 7,
+          "r": 36
+        },
+        {
+          "q": 7,
+          "r": 37
+        },
+        {
+          "q": 7,
+          "r": 38
+        },
+        {
+          "q": 7,
+          "r": 39
+        },
+        {
+          "q": 8,
+          "r": 35
+        },
+        {
+          "q": 8,
+          "r": 36
+        },
+        {
+          "q": 8,
+          "r": 37
+        },
+        {
+          "q": 8,
+          "r": 38
+        },
+        {
+          "q": 9,
+          "r": 35
+        },
+        {
+          "q": 9,
+          "r": 36
+        },
+        {
+          "q": 9,
+          "r": 37
+        }
+      ],
+      "tier": "remembered"
+    },
+    "effect_type": "oracle_memory_v2",
+    "kharis_spent": 0,
+    "message": "Potnia marks a source of incense at (7,37) and the unknown ground around it as memory \u2014 no living eyes are there.",
+    "mood": "Favorable",
+    "offer_multiplier": 1,
+    "offering_expected": 17.339999999999996,
+    "offering_value_unit": "worker_ticks",
+    "offering_verdict": "worthy \u2014 meets the prayer's requirement; more will not improve the answer",
+    "offering_work": 17.339999999999996,
+    "offering_worth": 17.339999999999996,
+    "prayer": "minoan_potnia_vision_v2",
+    "success": true,
+    "valuation_version": 2
+  },
+  "captures": [
+    {
+      "mode": "desktop",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "mode": "mobile",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "errors": [],
+  "fixture": "normal player founding; own fresh DB temple/stock/sole-unseen-incense fixture before real actions; not natural exploration"
+}
