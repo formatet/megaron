@@ -1,0 +1,8 @@
+» färsk DB på migration 206 · commit e041ab6e+ändringar
+2026/10/23 21:20:14 INFO player registered id=378e133b-de7b-4adb-9c1d-0d1b467a8dcf username=reply-sender-b9254185-0ea3-47d4-bb89-e001a8927030
+2026/10/23 21:20:14 INFO player registered id=69dd243c-aa07-43d3-ba25-1d10b0b98e91 username=reply-receiver-99de9b03-42d8-4d8a-963d-9f337bd73ff7
+--- FAIL: TestCorrespondenceQueueInsertionClockIsIndependentOfPausedGameClock (0.11s)
+    messenger_queue_test.go:364: game-clock pause hid delivered mail: 200 {"items":[]}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.112s
+FAIL

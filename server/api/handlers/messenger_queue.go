@@ -82,7 +82,7 @@ func (h *MessengerHandler) Queue(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 	now := h.clk.Now()
-	cursor := correspondenceCursor{Version: 1, World: world, Player: player, Upper: now}
+	cursor := correspondenceCursor{Version: 1, World: world, Player: player}
 	var before any
 	var beforeID any
 	if raw := r.URL.Query().Get("cursor"); raw != "" {
@@ -94,10 +94,12 @@ func (h *MessengerHandler) Queue(w http.ResponseWriter, r *http.Request) {
 		before = cursor.Before
 		beforeID = cursor.ID
 	}
+	// sent_at uses DB wall time; capture its boundary in that same clock,
+	// independently of the pause-adjusted game clock used for offer state.
 	// Freeze membership as well as the ordering boundary. A later insert with
 	// an equal/backdated sent_at must not sneak into subsequent pages.
 	if cursor.Snapshot == "" {
-		if err := tx.QueryRow(r.Context(), `SELECT pg_current_snapshot()::text,pg_postmaster_start_time()`).Scan(&cursor.Snapshot, &cursor.Epoch); err != nil {
+		if err := tx.QueryRow(r.Context(), `SELECT pg_current_snapshot()::text,pg_postmaster_start_time(),clock_timestamp()`).Scan(&cursor.Snapshot, &cursor.Epoch, &cursor.Upper); err != nil {
 			writeError(w, 500, "could not capture correspondence queue")
 			return
 		}

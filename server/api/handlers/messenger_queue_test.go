@@ -340,3 +340,27 @@ func TestCorrespondenceQueueLogicalRestoreDoesNotHideHistoricalLetters(t *testin
 		t.Fatalf("old DB snapshot accepted: %d %s", rec.Code, rec.Body)
 	}
 }
+
+func TestCorrespondenceQueueInsertionClockIsIndependentOfPausedGameClock(t *testing.T) {
+	f := setupReplyFixture(t)
+	ctx := context.Background()
+	var id uuid.UUID
+	// sent_at is database wall-time bookkeeping. The game's pause-adjusted
+	// clock can be far behind it after downtime without hiding delivered mail.
+	if err := f.pool.QueryRow(ctx, `INSERT INTO messengers(world_id,sender_id,origin_id,destination_id,message_text,status,hex_q,hex_r,arrives_at) VALUES($1,$2,$3,$4,'delivered after pause','delivered',3,0,now()) RETURNING id`, f.worldID, f.senderID, f.originID, f.destID).Scan(&id); err != nil {
+		t.Fatal(err)
+	}
+	h := NewMessengerHandler(f.pool, nil, clock.NewTestClock(time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)), nil)
+	f.router.Get("/worlds/{worldID}/messengers/queue", h.Queue)
+	req := httptest.NewRequest("GET", "/worlds/"+f.worldID.String()+"/messengers/queue", nil)
+	req.Header.Set("Authorization", "Bearer "+f.recvToken)
+	rec := httptest.NewRecorder()
+	f.router.ServeHTTP(rec, req)
+	var page queueTestPage
+	if err := json.Unmarshal(rec.Body.Bytes(), &page); err != nil {
+		t.Fatal(err)
+	}
+	if rec.Code != 200 || len(page.Items) != 1 || page.Items[0].ID != id {
+		t.Fatalf("game-clock pause hid delivered mail: %d %s", rec.Code, rec.Body)
+	}
+}
