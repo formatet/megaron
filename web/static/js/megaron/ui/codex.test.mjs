@@ -183,5 +183,5 @@ test('historical food-reserve notifications open the current food article', () =
 test('temple demolition notice opens the loss and lowered-ceiling rules', () => {
   assert.equal(articleForKind('TempleDemolitionWrath', index), 'temple-demolition');
   const text = bodies['temple-demolition'].replaceAll('**', '');
-  for (const pattern of [/10 kharis per temple level/, /floor of 1/, /does not cut existing kharis/, /plundering/, /no demolition debt/]) assert.match(text, pattern);
+  for (const pattern of [/10 kharis per temple level/, /floor of 1/, /lower ceiling takes no additional kharis/, /plundering/, /no demolition debt/]) assert.match(text, pattern);
 });

@@ -19,7 +19,7 @@ test('temple demolition notice reports committed standing and ceiling', () => {
   const body = {god_id:'asterion', kharis_loss:20, kharis_before:90, kharis_after:70, cap_before:100, cap_after:50};
   const text = notifText('TempleDemolitionWrath', body);
   assert.match(text, /asterion is angered/);
-  assert.match(text, /−20 \(90 → 70/);
+  assert.match(text, /−20 kharis now \(90 → 70/);
   assert.match(text, /100 → 50/);
   assert.equal(notifDomain('TempleDemolitionWrath'), 'kult');
 });

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""ORDER27 fixture builder. Only megaron-acc / localhost:8097. No game-code edits."""
+"""ORDER29 replay of ORDER27 fixtures. Only megaron-acc / localhost:8097. No game-code edits."""
 import json,os,subprocess,sys,time,urllib.request,urllib.error,uuid
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
@@ -127,6 +127,6 @@ def main():
  manifest={'healthz':health,'world':wid,'tick_seconds':cadence,'real_kharis_event':event,'thersites_source':'consistent notice-state/notification fixture (allowed fallback), not a sampled punishment','players':players,'snapshots':snapshots}
  (OUT/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
  provenance=subprocess.check_output([str(ROOT/'tools/acceptance.sh'),'provenance'],text=True,cwd=ROOT).strip()
- (OUT/'SCENARIOS.md').write_text('# Kharis TEXT-test — ORDER29\n\n'+provenance+'\n\nKeryx: `'+str(BIN)+'`. Configs: `'+str(CFG)+'/<namn>.json` (mode0600).\n\nPhoinix: faktisk worker-hanterad KharisTick, id '+str(event)+'. Thersites: tillåten konsistent state/notis-fixtur. Syntetiska acceptansstäder; inga speltexter eller spelregler ändrade. Riggen lämnas igång.\n\n'+'\n'.join(transcript))
+ (OUT/'SCENARIOS.md').write_text('# Kharis TEXT-test — ORDER29\n\n'+provenance+'\n\nKeryx: `'+str(BIN)+'`. Configs: `'+str(CFG)+'/<namn>.json` (mode0600).\n\nPhoinix: faktisk worker-hanterad KharisTick, id '+str(event)+'. Thersites: tillåten konsistent state/notis-fixtur. Syntetiska acceptansstäder; ORDER29-klienten har nya texter, serverreglerna är oförändrade. Riggen lämnas igång.\n\n'+'\n'.join(transcript))
  print('Ready: five configs, five transcripts, real KharisTick '+str(event)+'. Rig remains running at '+BASE)
 if __name__=='__main__':main()

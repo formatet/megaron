@@ -977,9 +977,6 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 					fmt.Printf("  Temple production: %.2f kharis per day\n", production)
 				}
 			}
-			if kcap > 0 && kv > kcap {
-				fmt.Printf("  Above your temple’s ceiling: kharis declines through daily cult upkeep until it is below the ceiling %.0f; temple workers and offerings do not raise it there.\n", kcap)
-			}
 			if worker, ok := sett["kharis_per_temple_worker"].(float64); ok && !(kcap > 0 && kv > kcap) {
 				fmt.Printf("  One more fed temple worker gives at least +%.2f kharis per day, and more when the cult’s reference offering of grain is scarce in the world. Requires a free citizen, a temple workplace and its daily offering.\n", worker)
 			}
@@ -1341,12 +1338,13 @@ func kharisCapLine(sett map[string]any) string {
 	mtl, _ := sett["max_temple_level"].(float64)
 	knet, _ := sett["kharis_net_per_tick"].(float64)
 	netKnown, _ := sett["kharis_net_known"].(bool)
+	if kcap > 0 && kv > kcap {
+		return fmt.Sprintf("  → kharis declines through daily cult upkeep until it is below the ceiling %.0f; temple workers and offerings do not raise it there.\n", kcap)
+	}
 	if mtl < 1 || kcap >= 100 {
 		return ""
 	}
 	switch {
-	case kv > kcap:
-		return fmt.Sprintf("  → kharis declines through daily cult upkeep until it is below the ceiling %.0f; temple workers and offerings do not raise it there.\n", kcap)
 	case netKnown && knet > 0.05 && kv >= kcap-0.05:
 		return fmt.Sprintf("  → your kharis is at the ceiling %.0f (set by your level-%.0f temple) — build a higher temple to raise the ceiling further.\n", kcap, mtl)
 	case netKnown && knet > 0.05:
