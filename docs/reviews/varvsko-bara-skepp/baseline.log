@@ -1,0 +1,27 @@
+» färsk DB på migration 205 · commit 611da45a
+=== RUN   TestRecruitShipQueueIgnoresTenLandTrainingJobs
+2026/10/23 07:04:25 INFO player registered id=1782d7b5-51fe-4c77-8deb-d4a37f78cae0 username=shipwright-5af7c359-b1f5-42c9-89e2-325e886eaa73
+    recruit_naval_queue_test.go:32: ship after ten land jobs: 422 {"error":"build queue would overflow: 10 pending + 1 new \u003e 10"}
+        ; want201
+--- FAIL: TestRecruitShipQueueIgnoresTenLandTrainingJobs (0.10s)
+=== RUN   TestRecruitShipQueueCapsTenNavalJobs
+=== RUN   TestRecruitShipQueueCapsTenNavalJobs/shipyard_work
+2026/10/23 07:04:25 INFO player registered id=507a6a42-05e9-468f-87e0-00036819b2d7 username=shipwright-623f3a97-20ef-4b07-b256-6e2099761b28
+=== RUN   TestRecruitShipQueueCapsTenNavalJobs/legacy_TrainComplete
+2026/10/23 07:04:25 INFO player registered id=2a01df18-5e07-42a7-8574-08c4d1ed903a username=shipwright-06f2ac44-893a-4c68-bec1-fdfc220255d5
+--- PASS: TestRecruitShipQueueCapsTenNavalJobs (0.18s)
+    --- PASS: TestRecruitShipQueueCapsTenNavalJobs/shipyard_work (0.08s)
+    --- PASS: TestRecruitShipQueueCapsTenNavalJobs/legacy_TrainComplete (0.09s)
+=== RUN   TestRecruitShipQueueDoesNotDoubleCountConvertedNavalTimers
+2026/10/23 07:04:25 INFO player registered id=6606f5f3-d881-4fdf-a9f1-b03ea425090b username=shipwright-8f1565fa-66a3-469f-8267-e5c988690046
+    recruit_naval_queue_test.go:77: tenth with stale timers: 422 {"error":"build queue would overflow: 18 pending + 1 new \u003e 10"}
+        ; want201
+--- FAIL: TestRecruitShipQueueDoesNotDoubleCountConvertedNavalTimers (0.09s)
+=== RUN   TestRecruitShipQueueIgnoresInactiveLegacyTimers
+2026/10/23 07:04:25 INFO player registered id=3745bdb5-6486-49d2-8fe3-9238269958de username=shipwright-3656e5de-931f-4a65-956b-cad2c8e4163e
+    recruit_naval_queue_test.go:110: ten ships with orphan timers: 422 {"error":"build queue would overflow: 10 pending + 10 new \u003e 10"}
+        ; want201
+--- FAIL: TestRecruitShipQueueIgnoresInactiveLegacyTimers (0.06s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.434s
+FAIL

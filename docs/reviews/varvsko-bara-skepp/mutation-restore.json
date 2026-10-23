@@ -1,0 +1,5 @@
+{
+  "sha256": "6ee16a7f07fffa6247be49cca2d9f5af9bcdf33e990c411840f7c495b648748b",
+  "byte_exact_restore": true,
+  "mutation": "Remove shipyard_work_remaining witness: new ship jobs cease to count"
+}
