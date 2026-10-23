@@ -1,0 +1,80 @@
+Error: unknown flag: --all
+Usage:
+  notifications [flags]
+
+Examples:
+  keryx notifications
+  keryx notifications --unread
+  keryx notifications --kind UnitArrived
+  keryx notifications --exclude BuildComplete
+  keryx notifications --mark-read
+
+Flags:
+      --exclude string   hide these notification kinds (comma-separated)
+  -h, --help             help for notifications
+      --kind string      only show these notification kinds (comma-separated, e.g. UnitArrived)
+      --mark-read        mark all notifications as read and exit
+      --unread           show only unread notifications
+
+Error: unknown flag: --all
+Usage:
+  notifications [flags]
+
+Examples:
+  keryx notifications
+  keryx notifications --unread
+  keryx notifications --kind UnitArrived
+  keryx notifications --exclude BuildComplete
+  keryx notifications --mark-read
+
+Flags:
+      --exclude string   hide these notification kinds (comma-separated)
+  -h, --help             help for notifications
+      --kind string      only show these notification kinds (comma-separated, e.g. UnitArrived)
+      --mark-read        mark all notifications as read and exit
+      --unread           show only unread notifications
+
+--- FAIL: TestNotificationsAllIncludesEveryKindWithoutGrouping (0.00s)
+    --- FAIL: TestNotificationsAllIncludesEveryKindWithoutGrouping/false (0.00s)
+        notifications_all_test.go:41: unknown flag: --all
+    --- FAIL: TestNotificationsAllIncludesEveryKindWithoutGrouping/true (0.00s)
+        notifications_all_test.go:41: unknown flag: --all
+Error: unknown flag: --all
+Usage:
+  notifications [flags]
+
+Examples:
+  keryx notifications
+  keryx notifications --unread
+  keryx notifications --kind UnitArrived
+  keryx notifications --exclude BuildComplete
+  keryx notifications --mark-read
+
+Flags:
+      --exclude string   hide these notification kinds (comma-separated)
+  -h, --help             help for notifications
+      --kind string      only show these notification kinds (comma-separated, e.g. UnitArrived)
+      --mark-read        mark all notifications as read and exit
+      --unread           show only unread notifications
+
+Error: unknown flag: --all
+Usage:
+  notifications [flags]
+
+Examples:
+  keryx notifications
+  keryx notifications --unread
+  keryx notifications --kind UnitArrived
+  keryx notifications --exclude BuildComplete
+  keryx notifications --mark-read
+
+Flags:
+      --exclude string   hide these notification kinds (comma-separated)
+  -h, --help             help for notifications
+      --kind string      only show these notification kinds (comma-separated, e.g. UnitArrived)
+      --mark-read        mark all notifications as read and exit
+      --unread           show only unread notifications
+
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL

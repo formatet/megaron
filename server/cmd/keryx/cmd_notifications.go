@@ -871,13 +871,14 @@ func printColonyFoundedGrainLine(n notificationItem) {
 // UnitArrived, ...). Default now excludes noisyNotificationKinds and prints
 // a one-line pointer to them; --kind/--exclude give explicit control.
 func notificationsCmd() *cobra.Command {
-	var unreadOnly, markRead bool
+	var unreadOnly, markRead, allKinds bool
 	var kindFilter, excludeFilter string
 	cmd := &cobra.Command{
 		Use:   "notifications",
 		Short: "Show your notification feed (arrivals, completions, trade events, ...)",
 		Example: `  keryx notifications
   keryx notifications --unread
+  keryx notifications --all
   keryx notifications --kind UnitArrived
   keryx notifications --exclude BuildComplete
   keryx notifications --mark-read`,
@@ -899,7 +900,7 @@ func notificationsCmd() *cobra.Command {
 			// Default (no --kind/--exclude given): hide the noisy kinds so
 			// they don't crowd real signal out of the server's LIMIT 100
 			// window. Explicit --kind/--exclude always win outright.
-			usingDefaultNoiseFilter := kindFilter == "" && excludeFilter == ""
+			usingDefaultNoiseFilter := !allKinds && kindFilter == "" && excludeFilter == ""
 
 			params := url.Values{}
 			if unreadOnly {
@@ -910,7 +911,7 @@ func notificationsCmd() *cobra.Command {
 				params.Set("kind", kindFilter)
 			case excludeFilter != "":
 				params.Set("exclude", excludeFilter)
-			default:
+			case !allKinds:
 				params.Set("exclude", strings.Join(noisyNotificationKinds, ","))
 			}
 
@@ -978,7 +979,7 @@ func notificationsCmd() *cobra.Command {
 			// Non-noisy notifications shown in full, at the top, unabridged.
 			grouped := map[string][]notificationItem{}
 			for i, n := range resp.Notifications {
-				if isNoisyNotificationKind(n.Kind) {
+				if !allKinds && isNoisyNotificationKind(n.Kind) {
 					grouped[n.Kind] = append(grouped[n.Kind], n)
 					continue
 				}
@@ -1017,10 +1018,14 @@ func notificationsCmd() *cobra.Command {
 			return nil
 		},
 	}
+	cmd.Flags().BoolVar(&allKinds, "all", false, "include every notification kind without grouping (latest 100)")
 	cmd.Flags().BoolVar(&unreadOnly, "unread", false, "show only unread notifications")
 	cmd.Flags().BoolVar(&markRead, "mark-read", false, "mark all notifications as read and exit")
 	cmd.Flags().StringVar(&kindFilter, "kind", "", "only show these notification kinds (comma-separated, e.g. UnitArrived)")
 	cmd.Flags().StringVar(&excludeFilter, "exclude", "", "hide these notification kinds (comma-separated)")
+	cmd.MarkFlagsMutuallyExclusive("all", "kind")
+	cmd.MarkFlagsMutuallyExclusive("all", "exclude")
+	cmd.MarkFlagsMutuallyExclusive("all", "mark-read")
 	return cmd
 }
 

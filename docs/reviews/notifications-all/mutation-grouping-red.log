@@ -1,0 +1,14 @@
+--- FAIL: TestNotificationsAllIncludesEveryKindWithoutGrouping (0.00s)
+    --- FAIL: TestNotificationsAllIncludesEveryKindWithoutGrouping/false (0.00s)
+        notifications_all_test.go:49: all grouped or hid archive rows: 2 notification(s), 2 unread
+            ────────────────────────────────────────────────────────────
+            *[time unavailable]  SitosIntervention  ×2 (latest)
+                  Food support was given to the city
+    --- FAIL: TestNotificationsAllIncludesEveryKindWithoutGrouping/true (0.00s)
+        notifications_all_test.go:49: all grouped or hid archive rows: 2 notification(s), 2 unread
+            ────────────────────────────────────────────────────────────
+            *[time unavailable]  SitosIntervention  ×2 (latest)
+                  Food support was given to the city
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.005s
+FAIL
