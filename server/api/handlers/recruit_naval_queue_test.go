@@ -86,7 +86,15 @@ func addLegacyNavalTimer(t *testing.T, f *recruitShipFixture, id string, clearWo
 	t.Helper()
 	ctx := context.Background()
 	if clearWork {
-		if _, err := f.pool.Exec(ctx, `UPDATE units SET shipyard_work_remaining=NULL WHERE id=$1`, id); err != nil {
+		// A real pre-conversion ship had a saved deadline. Retire this
+		// synthetic legacy state afterward so deploy-transition tests do not
+		// inherit jobs belonging to a different test's historical scenario.
+		t.Cleanup(func() {
+			if _, err := f.pool.Exec(ctx, `UPDATE units SET status='garrison',build_complete_at=NULL WHERE id=$1`, id); err != nil {
+				t.Error(err)
+			}
+		})
+		if _, err := f.pool.Exec(ctx, `UPDATE units SET shipyard_work_remaining=NULL,build_complete_at=now()+interval '1 day' WHERE id=$1`, id); err != nil {
 			t.Fatal(err)
 		}
 	}
