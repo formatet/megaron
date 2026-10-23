@@ -14,7 +14,7 @@ Open **City → Buildings**. The tab shows what is **built** (and its level), th
 | **Olive Press** | Refines a press-worker's oil from the settlement's groves. Works inside the city. |
 | **Winery** | Refines a vintner's wine from the settlement's vines. Works inside the city. |
 | **Pen** | Raises the herd cap by 100 per level (50 without one). Animals above the cap are eaten, then lost ([[food]]). Works inside the city. |
-| **Market** | Enables trade offers and updates market price snapshots. |
+| **Market** | Enables trade offers and updates market price snapshots. Has no workplaces and needs no workers. |
 | **Temple** | Dedicated to one god: opens that god's prayers, and its workers keep your kharis. A city can hold one temple per god. More important than it looks — see [[temples]]. |
 | **Granary** | A city stores 2 000 of each food — grain, fish, oil and wine, not the herd. Granary level 1 to 3 raises that to 4 000, 10 000 and 20 000. A wall of level N needs a Granary of level N. Works inside the city. |
 | **Wall** | Palisade, then Stone Wall, then Bronze Wall. Absorbs damage in [[battle]], and **the walls set how many people the city holds** (see below). |
@@ -43,7 +43,7 @@ A temple is built for a god: Construct lists one row per god (`keryx build --typ
 
 A building costs what it is made of: **timber** for the Farm, Market, Stable, Harbour, Shipyard and Palisade; **stone** for the Stone Quarry, Mine, Barracks, Temple and Stone Wall. The prices are shown live in Construct. If you are short of timber, your **cedar** pays the difference one for one — in buildings, ships and chariots alike.
 
-A building produces nothing without people in it. Staff it from the centre **City** hex of the placement grid ([[citizens]]).
+Production workplaces need people assigned to them. The market has no workplaces and needs no workers; former market workers are free to assign elsewhere, with no population lost. Staff a workplace from the centre **City** hex of the placement grid ([[citizens]]).
 
 
 If cancelling a queued build is refused, the reason appears in the Buildings tab.

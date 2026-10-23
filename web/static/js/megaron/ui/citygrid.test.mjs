@@ -254,3 +254,22 @@ test('ORDER28: shipyard staffing shows binary pace and preserves temple labels',
  const working=cityBuildingsHTML([{building_type:'shipyard',level:1,goods:goods(1)}]);
  assert.match(working,/full working pace/);
 });
+
+test('ORDER30: server workplace options without market render only assignable workplaces', () => {
+  // The server omits market from placement-options. Keep the renderer generic:
+  // a market remains a building, but is not a staffing destination.
+  const options = { buildings: [
+    { building_type: 'shipyard', level: 1, goods: [
+      { good_key: 'shipbuilding', staffing_only: true, cap: 3, placed: 1, placed_ordinals: [7] },
+    ] },
+    { building_type: 'foundry', level: 1, goods: [
+      { good_key: 'bronze', cap: 3, placed: 0, placed_ordinals: [], marginal_yield: 1, rate_per_tick: 0 },
+    ] },
+  ] };
+  const html = cityBuildingsHTML(options.buildings);
+  assert.doesNotMatch(html, /market|&quot;good_key&quot;:&quot;silver&quot;/);
+  assert.match(html, /&quot;building_type&quot;:&quot;shipyard&quot;/);
+  assert.match(html, /&quot;building_type&quot;:&quot;foundry&quot;/);
+  assert.match(html, /data-good="bronze"/);
+  assert.equal((html.match(/data-verb="place1"/g) || []).length, 2);
+});
