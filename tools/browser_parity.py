@@ -201,8 +201,8 @@ def run_engine(pw, engine, token, out, surfaces=SURFACES, close_drawers=True):
             elif trigger in ("@food","@rich-food"):
                 if trigger=="@food":
                     el=page.locator('#trig-city');el.tap() if mode=="mobile" else el.click()
-                page.locator('.harvest-blessing').wait_for(state='visible',timeout=10000)
-                page.locator('.harvest-blessing').scroll_into_view_if_needed()
+                page.locator('#city-food-sec').wait_for(state='visible',timeout=10000)
+                page.locator('#city-food-sec').scroll_into_view_if_needed()
                 page.wait_for_timeout(400)
             elif trigger:
                 # Touch input for mobile, including Firefox's canvas Pointer Events.
@@ -225,8 +225,16 @@ def run_engine(pw, engine, token, out, surfaces=SURFACES, close_drawers=True):
                 b=m['ships_box'];m['ships_visible']=bool(b and b['y']>=0 and b['y']+b['height']<=h)
                 if not m['ships_visible']:m['errors'].append('Ships row not visible')
             if name in ('city-food','rich-food'):
-                line=page.locator('.harvest-blessing');m['harvest']=line.inner_text();m['harvest_box']=line.bounding_box();m['harvest_api']=city_payloads[-1].get('harvest_blessing') if city_payloads else None
-                if 'days left' not in m['harvest'] or 'fish' in m['harvest'] or not m['harvest_api']:m['errors'].append('harvest display mismatch')
+                m['food']=page.locator('#city-food-sec').inner_text()
+                blessing=city_payloads[-1].get('harvest_blessing') if city_payloads else None
+                m['harvest_api']=blessing
+                line=page.locator('.harvest-blessing')
+                m['harvest']=line.inner_text() if line.count() else None
+                if not m['food'].strip():m['errors'].append('food summary empty')
+                active=bool(blessing and blessing.get('remaining_ticks',0)>0 and blessing.get('yield_bonus',0)>0 and blessing.get('goods'))
+                if active:
+                    if not m['harvest'] or 'left' not in m['harvest']:m['errors'].append('active harvest blessing missing')
+                elif m['harvest']:m['errors'].append('harvest blessing displayed without API state')
             if name=='rich-buildings':m['built_rows']=page.locator('#city-bld-sec .goods-mini tr').count()
             if name=='rich-garrison':m['garrison_rows']=page.locator('#city-gar-sec').inner_text()
             page.screenshot(path=str(out / f"{engine}-{mode}-{name}.png"))

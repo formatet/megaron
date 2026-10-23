@@ -419,6 +419,8 @@ ett musklick, så kartan ser inget klick. Det är en artefakt i riggen och ingen
 Kvällsytor kan väljas med `--surfaces map map-river city city-food river`; `--rich-user NAMN`
 lägger till samma stadsflöde i en stad med mycket innehåll (Production/Food/Buildings/Garrison).
 Flodkortet öppnas från spelarens faktiska kända flod och Host mäter också den alltid synliga Ships-raden.
+Matkontrollen fungerar även utan skördevälsignelse och jämför eventuell aktiv välsignelse med API-svaret.
+Matpanel + Host/Details: 18 mätningar/0 fynd i tre motorer 1280/390 (2026-10-23), `docs/reviews/matpanel-paritet/`.
 Kontroller som är scrollade utanför sin förälders klippruta räknas inte som täckta; kalibrera med
 `python3 tools/browser_parity_probe.py` (äkta täckning och huvudknapp ska fortfarande upptäckas).
 `tools/parity_fixture.py` skapar den namngivna innehållsfixturen för 2026-10-11 i acceptansriggen:
