@@ -1,0 +1,14 @@
+» färsk DB på migration 205 · commit 67d0b155+ändringar
+--- FAIL: TestProvisionDaysLeft_DecimalWholeTickBoundary (0.00s)
+    --- FAIL: TestProvisionDaysLeft_DecimalWholeTickBoundary/seven_decimal_rations (0.00s)
+        voyage_provisions_test.go:201: stock 0.69999999999999996 / ration 0.10000000000000001 = 6 ticks, want 7
+    --- FAIL: TestProvisionDaysLeft_DecimalWholeTickBoundary/three_decimal_rations (0.00s)
+        voyage_provisions_test.go:201: stock 0.29999999999999999 / ration 0.10000000000000001 = 2 ticks, want 3
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.004s
+2026/10/23 15:08:04 INFO player registered id=90832c44-3132-43c6-8e1e-0fad3bb709d2 username=shipwright-187d777b-912f-4db0-89d6-5676c4f01975
+--- FAIL: TestListFreightingProvisionsRetainsDaysLastRationAndEmpty (0.07s)
+    unit_provisions_aboard_test.go:162: unit {ID:e5a0a979-cbf0-4af7-99dd-e15a37bd7610 Status:freighting Days:6 Aboard:true Goods:map[fish:0.7]} want {days:7 aboard:true stock:0.7}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.077s
+FAIL

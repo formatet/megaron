@@ -127,7 +127,7 @@ func TestListFreightingProvisionsRetainsDaysLastRationAndEmpty(t *testing.T) {
 		days   int
 		aboard bool
 		stock  float64
-	}{{7, true, .75}, {0, true, .05}, {0, false, 0}} {
+	}{{7, true, .7}, {6, true, .699999999}, {0, true, .05}, {0, false, 0}} {
 		var id uuid.UUID
 		if err := f.pool.QueryRow(ctx, `INSERT INTO units(world_id,owner_id,type,category,size,crew,status,settlement_id,provisions,provision_goods) VALUES($1,$2,'merchantman','naval',1,10,'freighting',$3,$4,jsonb_build_object('fish',$4::float8)) RETURNING id`, f.worldID, f.playerID, f.settlementID, tc.stock).Scan(&id); err != nil {
 			t.Fatal(err)
@@ -153,7 +153,7 @@ func TestListFreightingProvisionsRetainsDaysLastRationAndEmpty(t *testing.T) {
 	if err := json.Unmarshal(rec.Body.Bytes(), &data); err != nil {
 		t.Fatal(err)
 	}
-	if len(data.Units) != 3 {
+	if len(data.Units) != len(ids) {
 		t.Fatal("units", len(data.Units))
 	}
 	for _, u := range data.Units {

@@ -1,0 +1,14 @@
+--- FAIL: TestProvisionDaysLeft_DecimalWholeTickBoundary (0.00s)
+    --- FAIL: TestProvisionDaysLeft_DecimalWholeTickBoundary/seven_small_rations (0.00s)
+        voyage_provisions_test.go:201: stock 0.070000000000000007 / ration 0.01 = 8 ticks, want 7
+    --- FAIL: TestProvisionDaysLeft_DecimalWholeTickBoundary/real_shortage (0.00s)
+        voyage_provisions_test.go:201: stock 0.69999999899999998 / ration 0.10000000000000001 = 7 ticks, want 6
+    --- FAIL: TestProvisionDaysLeft_DecimalWholeTickBoundary/two_float_steps_short (0.00s)
+        voyage_provisions_test.go:201: stock 0.69999999999999984 / ration 0.10000000000000001 = 7 ticks, want 6
+    --- FAIL: TestProvisionDaysLeft_DecimalWholeTickBoundary/fraction_of_final_ration (0.00s)
+        voyage_provisions_test.go:201: stock 0.050000000000000003 / ration 0.10000000000000001 = 1 ticks, want 0
+    --- FAIL: TestProvisionDaysLeft_DecimalWholeTickBoundary/large_real_shortage (0.00s)
+        voyage_provisions_test.go:201: stock 999999.98999999999 / ration 0.10000000000000001 = 10000000 ticks, want 9999999
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.002s
+FAIL
