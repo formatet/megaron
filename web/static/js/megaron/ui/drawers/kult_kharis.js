@@ -41,10 +41,10 @@ export function kharisNetView(pd) {
   }
 
   const aboveCap = Number.isFinite(pd.kharis) && Number.isFinite(pd.kharis_cap) && pd.kharis > pd.kharis_cap;
-  if (aboveCap) out.netHtml += '<p class="empty-state">Above your temple’s ceiling: kharis declines through daily cult upkeep until it is below the ceiling ' + pd.kharis_cap + '; temple workers and offerings do not raise it there.</p>';
+  if (aboveCap) out.netHtml += '<p class="empty-state">Above your temple’s ceiling: kharis declines through daily cult upkeep; temple workers and offerings do not raise it while it is above the ceiling ' + pd.kharis_cap + '. Once below, temples can raise it again, up to the ceiling.</p>';
   if (!aboveCap && Number.isFinite(pd.kharis_per_temple_worker)) {
     out.netHtml += '<p class="empty-state">One more fed temple worker gives at least +' + pd.kharis_per_temple_worker.toFixed(2) +
-      ' kharis per day, and more when the cult’s reference offering of grain is scarce in the world. Requires a free citizen, a temple workplace and its daily offering.</p>';
+      ' kharis per day before cult upkeep, and more when the cult’s reference offering of grain is scarce in the world. Requires a free citizen, a temple workplace and its daily offering.</p>';
   }
   return out;
 }

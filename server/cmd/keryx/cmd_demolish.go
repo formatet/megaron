@@ -116,6 +116,7 @@ func demolishCmd() *cobra.Command {
 						return err
 					}
 					if !ok {
+						fmt.Println("Not demolished.")
 						return nil
 					}
 				}

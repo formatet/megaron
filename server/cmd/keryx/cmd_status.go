@@ -978,7 +978,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				}
 			}
 			if worker, ok := sett["kharis_per_temple_worker"].(float64); ok && !(kcap > 0 && kv > kcap) {
-				fmt.Printf("  One more fed temple worker gives at least +%.2f kharis per day, and more when the cult’s reference offering of grain is scarce in the world. Requires a free citizen, a temple workplace and its daily offering.\n", worker)
+				fmt.Printf("  One more fed temple worker gives at least +%.2f kharis per day before cult upkeep, and more when the cult’s reference offering of grain is scarce in the world. Requires a free citizen, a temple workplace and its daily offering.\n", worker)
 			}
 			if threshold, ok := sett["kharis_blessing_threshold"].(float64); ok {
 				fmt.Printf("  Everyday prayers work at a level-1 temple. Spontaneous blessings need %.0f kharis and a maintained temple. Only a level-2 temple or higher lets kharis grow that far. Kharis retained above a lowered ceiling still counts.\n", threshold)
@@ -990,7 +990,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				if remaining, _ := wrath["protection_remaining_days"].(float64); remaining > 0 {
 					if iso, ok := wrath["protection_until"].(string); ok {
 						if at, err := time.Parse(time.RFC3339Nano, iso); err == nil {
-							fmt.Printf("  Protected from divine punishment until %s.\n", clockTime(at))
+							fmt.Printf("  Protected from divine punishment until %s. After that the daily risk returns while kharis is below %.0f.\n", clockTime(at), threshold)
 						}
 					}
 				}
@@ -1339,7 +1339,7 @@ func kharisCapLine(sett map[string]any) string {
 	knet, _ := sett["kharis_net_per_tick"].(float64)
 	netKnown, _ := sett["kharis_net_known"].(bool)
 	if kcap > 0 && kv > kcap {
-		return fmt.Sprintf("  → kharis declines through daily cult upkeep until it is below the ceiling %.0f; temple workers and offerings do not raise it there.\n", kcap)
+		return fmt.Sprintf("  → kharis declines through daily cult upkeep; temple workers and offerings do not raise it while it is above the ceiling %.0f. Once below, temples can raise it again, up to the ceiling.\n", kcap)
 	}
 	if mtl < 1 || kcap >= 100 {
 		return ""
