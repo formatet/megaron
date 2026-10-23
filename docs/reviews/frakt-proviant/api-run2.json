@@ -1,0 +1,85 @@
+{
+  "expedition_rules": {
+    "area_radius": 5,
+    "default_ticks": 10,
+    "max_ticks": 365,
+    "min_ticks": 4
+  },
+  "units": [
+    {
+      "can_cancel_training": false,
+      "id": "520cd2e1-9035-4362-86aa-c3af366ef7b5",
+      "type": "merchantman",
+      "category": "naval",
+      "size": 1,
+      "crew": 10,
+      "upkeep_food_per_tick": 0.1,
+      "provisions_by_good": {
+        "fish": 0.75
+      },
+      "upkeep_grain_per_tick": 0.1,
+      "upkeep_silver_per_tick": 0.1,
+      "upkeep_context": "active",
+      "hull": 5,
+      "provision_days": 7,
+      "provisions_aboard": true,
+      "status": "freighting",
+      "deployable": false,
+      "name": "Full freight",
+      "display_name": "Full freight, Emporos",
+      "settlement_id": "7662f093-55c1-4eab-9459-dd67640a82ea",
+      "in_battle": false,
+      "can_lay_up": false,
+      "can_fit_out": false
+    },
+    {
+      "can_cancel_training": false,
+      "id": "a31b7e9a-c2c7-47d0-97fe-1991c08577b1",
+      "type": "merchantman",
+      "category": "naval",
+      "size": 1,
+      "crew": 10,
+      "upkeep_food_per_tick": 0.1,
+      "provisions_by_good": {
+        "fish": 0.05
+      },
+      "upkeep_grain_per_tick": 0.1,
+      "upkeep_silver_per_tick": 0.1,
+      "upkeep_context": "active",
+      "hull": 5,
+      "provisions_aboard": true,
+      "status": "freighting",
+      "deployable": false,
+      "name": "Last ration freight",
+      "display_name": "Last ration freight, Emporos",
+      "settlement_id": "7662f093-55c1-4eab-9459-dd67640a82ea",
+      "in_battle": false,
+      "can_lay_up": false,
+      "can_fit_out": false
+    },
+    {
+      "can_cancel_training": false,
+      "id": "8ef40865-1a3b-4e01-88e0-b6cddaedd104",
+      "type": "merchantman",
+      "category": "naval",
+      "size": 1,
+      "crew": 10,
+      "upkeep_food_per_tick": 0.1,
+      "provisions_by_good": {
+        "fish": 0
+      },
+      "upkeep_grain_per_tick": 0.1,
+      "upkeep_silver_per_tick": 0.1,
+      "upkeep_context": "active",
+      "hull": 5,
+      "status": "freighting",
+      "deployable": false,
+      "name": "Empty freight",
+      "display_name": "Empty freight, Emporos",
+      "settlement_id": "7662f093-55c1-4eab-9459-dd67640a82ea",
+      "in_battle": false,
+      "can_lay_up": false,
+      "can_fit_out": false
+    }
+  ]
+}

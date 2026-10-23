@@ -1,0 +1,8 @@
+ID                                    Name                                            Size      Status      Stance     Location / ETA
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+520cd2e1-9035-4362-86aa-c3af366ef7b5  Full freight, Emporos                           1 vessel (crew 10, food for 7 days (0.75 fish))  freighting    —          freighting
+  Upkeep: 0.1 food, 0.1 silver per day
+a31b7e9a-c2c7-47d0-97fe-1991c08577b1  Last ration freight, Emporos                    1 vessel (crew 10, food for less than a day LOW (0.05 fish))  freighting    —          freighting
+  Upkeep: 0.1 food, 0.1 silver per day
+8ef40865-1a3b-4e01-88e0-b6cddaedd104  Empty freight, Emporos                          1 vessel (crew 10, OUT OF FOOD (0 fish))  freighting    —          freighting
+  Upkeep: 0.1 food, 0.1 silver per day

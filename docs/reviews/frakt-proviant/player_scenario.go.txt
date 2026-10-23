@@ -1,0 +1,37 @@
+package handlers
+import (
+ "context"
+ "bytes"
+ "encoding/json"
+ "net/http"
+ "net/http/httptest"
+ "os/exec"
+ "path/filepath"
+ "testing"
+ "formatet/megaron/server/internal/auth"
+ "formatet/megaron/server/internal/events"
+ "github.com/go-chi/chi/v5"
+ "github.com/google/uuid"
+)
+func TestFreightGaugePlayerScenario(t *testing.T){
+ root,err:=filepath.Abs("../../..");if err!=nil {t.Fatal(err)};cli:=filepath.Join(t.TempDir(),"keryx")
+ build:=exec.Command("go","build","-o",cli,"./cmd/keryx");build.Dir=filepath.Join(root,"server");if out,err:=build.CombinedOutput();err!=nil {t.Fatalf("build %v %s",err,out)}
+ for run:=1;run<=2;run++ {
+  f:=newAlphaFixture(t);ctx:=context.Background();var prov uuid.UUID
+  if err:=f.pool.QueryRow(ctx,`SELECT province_id FROM settlements WHERE id=$1`,f.cities[0]).Scan(&prov);err!=nil {t.Fatal(err)}
+  for _,tc:=range []struct{name string;stock float64}{{"Full freight",.75},{"Last ration freight",.05},{"Empty freight",0}} {
+   if _,err:=f.pool.Exec(ctx,`INSERT INTO units(world_id,owner_id,type,category,size,crew,status,settlement_id,name,provisions,provision_goods) VALUES($1,$2,'merchantman','naval',1,10,'freighting',$3,$4,$5,jsonb_build_object('fish',$5::float8))`,f.world,f.player,f.cities[0],tc.name,tc.stock);err!=nil {t.Fatal(err)}
+  }
+  r:=chi.NewRouter();r.Handle("/static/*",http.StripPrefix("/static/",http.FileServer(http.Dir(filepath.Join(root,"web/static")))))
+  r.Get("/fixture",func(w http.ResponseWriter,req *http.Request){http.ServeFile(w,req,filepath.Join(root,"web/static/map.html"))})
+  r.NotFound(func(w http.ResponseWriter,req *http.Request){w.Header().Set("Content-Type","application/json");w.Write([]byte("[]"))})
+  uh:=NewUnitHandler(f.pool,events.NewScheduler(f.pool,f.h.clk),events.NewStore(f.pool),f.h.clk);ph:=NewProvinceHandler(f.pool,nil,f.h.clk,nil,nil)
+  r.Group(func(r chi.Router){r.Use(auth.Middleware(auth.NewService(f.pool,"alpha-secret")))
+   r.Get("/api/v1/worlds/{worldID}/units",uh.ListUnits)
+   r.Get("/api/v1/worlds/{worldID}/provinces/{provinceID}",ph.Get)
+  })
+  server:=httptest.NewServer(r);input,_:=json.Marshal(map[string]any{"base":server.URL,"token":f.token,"world":f.world,"player":f.player,"city":f.cities[0],"province":prov,"cli":cli,"run":run})
+  cmd:=exec.Command("python3",filepath.Join(root,"docs/reviews/frakt-proviant/player_scenario.py"));cmd.Stdin=bytes.NewReader(input);out,err:=cmd.CombinedOutput();server.Close();if err!=nil {t.Fatalf("scenario%d %v %s",run,err,out)};t.Logf("scenario%d %s",run,out)
+  var total float64;if err:=f.pool.QueryRow(ctx,`SELECT sum(provisions) FROM units WHERE world_id=$1`,f.world).Scan(&total);err!=nil {t.Fatal(err)};if total!=.8 {t.Fatal("read-only UI changed stores",total)}
+ }
+}

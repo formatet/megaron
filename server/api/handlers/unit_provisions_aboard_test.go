@@ -111,3 +111,55 @@ func TestListUnitsUsesActualRowersForFoodAndVoyageDays(t *testing.T) {
 		}
 	}
 }
+
+func TestListFreightingProvisionsRetainsDaysLastRationAndEmpty(t *testing.T) {
+	f := setupRecruitShipFixture(t)
+	ctx := context.Background()
+	clk := clock.NewTestClock(time.Now())
+	uh := NewUnitHandler(f.pool, events.NewScheduler(f.pool, clk), events.NewStore(f.pool), clk)
+	f.router.Get("/worlds/{worldID}/units", uh.ListUnits)
+	ids := map[uuid.UUID]struct {
+		days   int
+		aboard bool
+		stock  float64
+	}{}
+	for _, tc := range []struct {
+		days   int
+		aboard bool
+		stock  float64
+	}{{7, true, .75}, {0, true, .05}, {0, false, 0}} {
+		var id uuid.UUID
+		if err := f.pool.QueryRow(ctx, `INSERT INTO units(world_id,owner_id,type,category,size,crew,status,settlement_id,provisions,provision_goods) VALUES($1,$2,'merchantman','naval',1,10,'freighting',$3,$4,jsonb_build_object('fish',$4::float8)) RETURNING id`, f.worldID, f.playerID, f.settlementID, tc.stock).Scan(&id); err != nil {
+			t.Fatal(err)
+		}
+		ids[id] = tc
+	}
+	req := httptest.NewRequest(http.MethodGet, "/worlds/"+f.worldID.String()+"/units", nil)
+	req.Header.Set("Authorization", "Bearer "+f.accessToken)
+	rec := httptest.NewRecorder()
+	f.router.ServeHTTP(rec, req)
+	if rec.Code != 200 {
+		t.Fatal(rec.Code, rec.Body.String())
+	}
+	var data struct {
+		Units []struct {
+			ID     uuid.UUID
+			Status string
+			Days   int                `json:"provision_days"`
+			Aboard bool               `json:"provisions_aboard"`
+			Goods  map[string]float64 `json:"provisions_by_good"`
+		}
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &data); err != nil {
+		t.Fatal(err)
+	}
+	if len(data.Units) != 3 {
+		t.Fatal("units", len(data.Units))
+	}
+	for _, u := range data.Units {
+		tc := ids[u.ID]
+		if u.Status != "freighting" || u.Days != tc.days || u.Aboard != tc.aboard || u.Goods["fish"] != tc.stock {
+			t.Fatalf("unit %+v want %+v", u, tc)
+		}
+	}
+}

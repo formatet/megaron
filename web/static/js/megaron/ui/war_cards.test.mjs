@@ -161,3 +161,16 @@ test('B: Army pay preserves server home, field and surviving-crew amounts',()=>{
   assert.ok(html.includes(pay+' silver per day'), JSON.stringify(state));
  }
 });
+
+test('freighting ship shows real provisions, final ration and empty hold without new orders',()=>{
+ const ship=extra=>renderUnitCard(unit({category:'naval',type:'merchantman',status:'freighting',deployable:false,crew:10,hull:5,...extra}));
+ const fed=ship({provision_days:7,provisions_aboard:true,provisions_by_good:{fish:0.7}});
+ assert.match(fed,/food for 7 days.*0.7 fish/);
+ assert.match(ship({provision_days:0,provisions_aboard:true}),/food for less than a day/);
+ assert.doesNotMatch(ship({provision_days:0,provisions_aboard:true}),/out of food/);
+ assert.match(ship({provision_days:0,provisions_aboard:false}),/out of food/);
+ assert.doesNotMatch(fed,/>Mission<|>Load<|>Repair<|>Recall<|>Redirect</,'freight binding still blocks orders');
+ for(const status of ['garrison','laid_up','fitting_out']){
+  assert.doesNotMatch(renderUnitCard(unit({category:'naval',type:'merchantman',status,provision_days:7,provisions_aboard:true})),/food for 7 days/);
+ }
+});
