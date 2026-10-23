@@ -39,8 +39,9 @@ export function queuePageHTML(page) {
         const deadline = m.expires_at ? `<div>Answer deadline: <time datetime="${esc(m.expires_at)}" title="${esc(new Date(m.expires_at).toLocaleString())}">${esc(fmtTickTime(undefined, m.expires_at))}</time></div>` : '';
         return `<article class="dip-queue-item" data-letter="${esc(m.id)}"><div class="dip-queue-heading"><strong>${esc(m.from_name || 'Unknown origin')}</strong><span>${esc(queueState(m))}</span></div>
           <div class="dip-queue-note">To ${esc(m.to_name || 'your city')}${m.read_at ? ' · Read' : ' · Unread'}</div>
+          ${m.message ? `<p class="dip-queue-preview">${esc(m.message.slice(0, 100))}${m.message.length > 100 ? '…' : ''}</p>` : ''}
           ${m.trade_offer ? `<div>${offerText(m.trade_offer)}</div>` : ''}${deadline}
-          ${m.missing_payment ? `<p class="dip-queue-payment">${esc(m.missing_payment)}. You can still decline.</p>` : ''}
+          ${m.missing_payment ? `<p class="dip-queue-payment">${esc(m.missing_payment)}.${actions.includes('trade_decline') ? ' You can still decline.' : ''}</p>` : ''}
           <details data-open-letter="${esc(m.id)}"><summary>Read letter</summary><p class="dip-queue-message">${esc(m.message || '(No letter text)')}</p>${m.reply_text ? `<p class="dip-queue-message">Your reply: ${esc(m.reply_text)}</p>` : ''}
           ${actions.includes('reply') ? `<label>Reply<textarea maxlength="1000" data-queue-reply aria-label="Reply to ${esc(m.from_name || 'letter')}"></textarea></label><button class="btn-small" data-queue-action="reply">Dispatch reply</button>` : ''}</details>
           <div class="dip-queue-actions">${actions.includes('trade_accept') ? '<button class="btn-small" data-queue-action="trade_accept">Accept</button>' : ''}${actions.includes('trade_decline') ? '<button class="btn-small" data-queue-action="trade_decline">Decline</button>' : ''}</div>
@@ -49,15 +50,19 @@ export function queuePageHTML(page) {
     }).join('') + (items.length ? '' : '<p class="empty-state">No received correspondence on this page.</p>');
 }
 
+const mountedQueues = new WeakMap();
+
 // Each mounted drawer owns its page and request generation. Reopening the
 // drawer or switching worlds makes late fetch responses harmless.
 export async function loadDipQueue(root = document.getElementById('dtab-queue')) {
   if (!root) return;
   const world = State.WORLD_ID;
+  const mount = Symbol('queue mount');
+  mountedQueues.set(root, mount);
   let cursor = '';
   let generation = 0;
   let current = null;
-  const alive = () => State.WORLD_ID === world && document.getElementById('dtab-queue') === root;
+  const alive = () => State.WORLD_ID === world && document.getElementById('dtab-queue') === root && mountedQueues.get(root) === mount;
   async function load(next = '') {
     const request = ++generation;
     root.innerHTML = '<div class="loading">Loading correspondence…</div>';
@@ -112,6 +117,9 @@ export async function loadDipQueue(root = document.getElementById('dtab-queue'))
       // obtain live groups rather than overwriting another draft in this page.
       article.querySelector('.dip-queue-actions').innerHTML = '';
       article.querySelectorAll('[data-queue-action], [data-queue-reply]').forEach(c => { c.disabled = true; });
+      const heading = article.querySelector('.dip-queue-heading span');
+      if (heading) heading.textContent = action === 'reply' ? 'Reply dispatched' : action === 'trade_accept' ? 'Accepted' : 'Declined';
+      item.actions = item.actions.filter(a => a === 'read');
       result.textContent = action === 'reply' ? 'Reply dispatched.' : action === 'trade_accept' ? 'Offer accepted.' : 'Offer declined.';
     } catch (error) {
       if (!alive() || request !== generation) return;

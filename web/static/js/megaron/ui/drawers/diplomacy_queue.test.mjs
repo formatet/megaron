@@ -9,13 +9,13 @@ test('queue shows missed and unaffordable offers, escapes text, and uses only se
  const html=queuePageHTML({items:[offer,{...offer,id:'old',queue_group:'completed',offer_state:'expired',actions:['read']}]});
  assert.match(html,/Waiting on you/);assert.match(html,/Past correspondence/);assert.match(html,/Expired without answer/);assert.match(html,/Need 5 silver/);assert.match(html,/&lt;Kyme&gt;/);assert.match(html,/&lt;A letter&gt;/);assert.match(html,/Buy 2 copper/);assert.match(html,/Answer deadline/);
  assert.equal((html.match(/data-queue-action="trade_decline"/g)||[]).length,1);assert.doesNotMatch(html,/data-queue-action="trade_accept"/);
- assert.match(html,/Groups apply to this page/);
+ assert.match(html,/Groups apply to this page/);assert.match(html,/<p class="dip-queue-preview">&lt;A letter&gt;<\/p>/);
 });
 
 test('a page held across expiry loses accept and decline without inventing server mutations',()=>{
  const stale={...offer,expires_at:'2000-01-01T00:00:00Z',actions:['read','trade_accept','trade_decline']};
  assert.deepEqual(queueActions(stale),['read']);
- const html=queuePageHTML({items:[stale]});assert.match(html,/Expired without answer/);assert.doesNotMatch(html,/data-queue-action=/);
+ const html=queuePageHTML({items:[stale]});assert.match(html,/Expired without answer/);assert.doesNotMatch(html,/data-queue-action=/);assert.doesNotMatch(html,/You can still decline/);
  // A completed accepted transaction never becomes expired merely because its old deadline passed.
  assert.match(queuePageHTML({items:[{...stale,queue_group:'completed',offer_state:'accepted',actions:['read']}]}),/>Accepted</);
 });
@@ -52,4 +52,10 @@ test('opening one actual letter acknowledges only that ID, and replying uses the
  assert.match(note.textContent,/Read$/);assert.equal(calls.length,2);
  await button.listeners.click();assert.equal(calls[2].url,'/api/v1/worlds/world/messengers/delivered-unknown-origin/reply');assert.deepEqual(JSON.parse(calls[2].opts.body),{reply:'Carry this answer home'});assert.equal(status.textContent,'Reply dispatched.');
  assert.ok(calls.every(c=>!c.url.includes('/settlements/')),'return post does not create a new normal-send route');
+}));
+
+test('a second queue mount supersedes an older fetch in the same drawer and world',()=>rig(async({root})=>{
+ let release;globalThis.fetch=()=>new Promise(resolve=>{release=resolve});const older=loadDipQueue(root);
+ globalThis.fetch=async()=>new Response(JSON.stringify({items:[{...offer,from_name:'Newer response'}]}));await loadDipQueue(root);assert.match(root.innerHTML,/Newer response/);
+ release(new Response(JSON.stringify({items:[{...offer,from_name:'Stale response'}]})));await older;assert.match(root.innerHTML,/Newer response/);assert.doesNotMatch(root.innerHTML,/Stale response/);
 }));

@@ -1,0 +1,13 @@
+# K1 client and browser proof
+
+Implemented web default Queue and `keryx inbox --queue`, retaining existing conversations, outbox, known directory and runners. Queue pages use server groups/actions/state; a closed row shows a preview, offer, local deadline and payment blocker. Exact letter opening records its read acknowledgement. Reply uses that same messenger's `/reply`; no new normal-send route to an unknown origin is created. Successful actions stay visibly acknowledged until refresh so another reply draft is not replaced.
+
+Final checks: 748 JavaScript tests pass (0 failed/skipped), CLI queue/read/history targeted pass. Physical CLI wrong endpoint and web invented accept-action mutants fail named tests; original bytes restored and targeted green. Reproduction: `python3 tools/correspondence_client_mutations.py`; raw SHA/proofs in `client-mutations.json` and adjacent logs.
+
+Two independent fresh PG16/Redis7 runtimes, both actual process `90112d7+k1` / migration206, pass (`run1`, `run2`). Each uses ordinary register/join/found for two actual Wanaxes on connected land; the 35 delivered letters, arrival witnesses and insolvent recipient inventory are explicit SQL fixtures, not naturally travelled correspondence. Real Keryx text/JSON traverses30+5 without marking read. Native Firefox1280/390 traverses30+5 and refreshes; one exact letter is opened/read, replied via its same runner, and the unaffordable offer declined. DB verifies one read, exact reply/status, one2copper refund, and overdue pending offer untouched by GET. Both runtimes clean up their own containers/processes. No shared services changed.
+
+Final images were inspected at native1:1: queue fits desktop/mobile, four tabs accessible, preview differentiates same-origin letters, missed-offer row remains visible, no horizontal overflow or page errors. `index.html` links only final run pictures.
+
+Early harness issues are preserved: `attempt1-instrumentation` counted desktop's earlier read in the mobile listing assertion; `attempt2-startup` queried PostgreSQL's temporary initialization socket before TCP startup. Corrected per-context read deltas and TCP readiness, then ran two fresh passes. Earlier successful pre-preview proofs are retained as `pre-preview-run1/2`; preview was added after inspecting otherwise indistinguishable closed rows.
+
+Read-only server review: deadline guards recheck after locks and before pending→resolved flips inside the transaction; failed late accept rolls back prior payment work. Created-XID snapshot avoids xmin's status/read update problem. Restore portability concern was reported to parent: xid8 values are tied to database transaction history and require explicit handling on logical dump/restore. No independent server edits made.

@@ -30,6 +30,7 @@ def browser_queue(base, world, token, out, expected):
     with sync_playwright() as pw:
         browser = pw.firefox.launch()
         for label, width, height in [('desktop', 1280, 900), ('mobile', 390, 844)]:
+            reads_before = len([p for p in posts if p.endswith('/read')])
             ctx = browser.new_context(viewport={'width': width, 'height': height}, has_touch=label == 'mobile')
             ctx.add_cookies([{'name': 'poleia_token', 'value': token, 'url': base}])
             ctx.add_init_script('localStorage.setItem("poleia_token",' + json.dumps(token) + ')')
@@ -45,7 +46,7 @@ def browser_queue(base, world, token, out, expected):
             root.locator('[data-letter]').first.wait_for()
             assert root.is_visible(), 'Queue must open by default'
             assert 'Groups apply to this page' in root.inner_text()
-            assert not [p for p in posts if p.endswith('/read')], 'Listing acknowledged letters'
+            assert len([p for p in posts if p.endswith('/read')]) == reads_before, 'Listing acknowledged letters'
             poor = root.locator('[data-letter="' + expected['poor'] + '"]')
             expired = root.locator('[data-letter="' + expected['expired'] + '"]')
             assert poor.count() == expired.count() == 1
@@ -121,10 +122,11 @@ def main():
                       for p in (ROOT / directory).glob('*') if p.is_file() and ('messenger' in p.name or 'correspondence' in p.name or 'diplomacy' in p.name)}
             run('go', 'build', '-ldflags', '-X main.buildCommit=' + commit, '-o', str(tmp / 'temenos'), './cmd/server', cwd=ROOT / 'server', env=clean)
             run('go', 'build', '-o', str(tmp / 'keryx'), './cmd/keryx', cwd=ROOT / 'server', env=clean)
+            print('BUILD_COMPLETE', commit, flush=True)
             pg = launch('pg', 'postgres:16-alpine', ['-e', 'POSTGRES_PASSWORD=k1-proof', '-e', 'POSTGRES_DB=k1_proof'])
             redis = launch('redis', 'redis:7-alpine', [])
             for _ in range(80):
-                if subprocess.run(['docker', 'exec', containers[0], 'pg_isready', '-U', 'postgres', '-q'], capture_output=True).returncode == 0:
+                if subprocess.run(['docker', 'exec', containers[0], 'pg_isready', '-h', '127.0.0.1', '-U', 'postgres', '-q'], capture_output=True).returncode == 0:
                     break
                 time.sleep(.25)
             with socket.socket() as sock:

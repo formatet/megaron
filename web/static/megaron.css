@@ -2120,3 +2120,5 @@ h4.cx-h { font-size: var(--fs-base); }
 .dip-queue-message { white-space: pre-wrap; }
 .dip-queue-item textarea { display: block; box-sizing: border-box; width: 100%; min-height: 5rem; margin: .3rem 0; }
 .dip-queue-result { margin-top: .4rem; }
+
+.dip-queue-preview { margin: .4rem 0; color: var(--text-dim); }
