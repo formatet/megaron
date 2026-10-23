@@ -8,17 +8,20 @@ import (
 )
 
 type correspondenceItem struct {
-	ID             string     `json:"id"`
-	FromName       string     `json:"from_name"`
-	ToName         string     `json:"to_name"`
-	Message        string     `json:"message"`
-	ReplyText      *string    `json:"reply_text"`
-	Group          string     `json:"queue_group"`
-	OfferState     string     `json:"offer_state"`
-	Actions        []string   `json:"actions"`
-	MissingPayment string     `json:"missing_payment"`
-	ExpiresAt      *time.Time `json:"expires_at"`
-	TradeOffer     *struct {
+	ID                string     `json:"id"`
+	FromName          string     `json:"from_name"`
+	ToName            string     `json:"to_name"`
+	Message           string     `json:"message"`
+	ReplyText         *string    `json:"reply_text"`
+	Group             string     `json:"queue_group"`
+	OfferState        string     `json:"offer_state"`
+	Actions           []string   `json:"actions"`
+	MissingPayment    string     `json:"missing_payment"`
+	ReplyBefore       *time.Time `json:"reply_before"`
+	ReplyDeadlineTick *int       `json:"reply_deadline_tick"`
+	ReplyWindowClosed bool       `json:"reply_window_closed"`
+	ExpiresAt         *time.Time `json:"expires_at"`
+	TradeOffer        *struct {
 		Kind        string  `json:"kind"`
 		OfferGood   string  `json:"offer_good"`
 		OfferQty    float64 `json:"offer_qty"`
@@ -34,7 +37,8 @@ func showCorrespondenceQueue(limit int, cursor string) error {
 	if cursor != "" {
 		q.Set("cursor", cursor)
 	}
-	data, err := newClient(cfg).get(fmt.Sprintf("/api/v1/worlds/%s/messengers/queue?%s", cfg.WorldID, q.Encode()))
+	c := newClient(cfg)
+	data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/messengers/queue?%s", cfg.WorldID, q.Encode()))
 	if err != nil {
 		return err
 	}
@@ -68,6 +72,11 @@ func showCorrespondenceQueue(limit int, cursor string) error {
 					state = "No reply pending"
 				}
 			}
+			if m.TradeOffer == nil && m.ReplyText != nil && *m.ReplyText != "" {
+				state = "Reply dispatched"
+			} else if m.ReplyWindowClosed {
+				state = "Return post closed"
+			}
 			fmt.Printf("From: %s → %s · %s\n  %s\n", m.FromName, m.ToName, state, m.Message)
 			if o := m.TradeOffer; o != nil {
 				if o.Kind == "sell" {
@@ -79,6 +88,11 @@ func showCorrespondenceQueue(limit int, cursor string) error {
 			if m.ExpiresAt != nil {
 				fmt.Printf("  Answer deadline: %s\n", clockTime(*m.ExpiresAt))
 			}
+			if m.ReplyDeadlineTick != nil {
+				fmt.Printf("  Return post before %s\n", formatWorldTime(c, *m.ReplyDeadlineTick))
+			} else if m.ReplyBefore != nil {
+				fmt.Printf("  Return post before %s\n", clockTime(*m.ReplyBefore))
+			}
 			if m.MissingPayment != "" {
 				fmt.Printf("  %s. You can still decline.\n", m.MissingPayment)
 			}
@@ -88,6 +102,12 @@ func showCorrespondenceQueue(limit int, cursor string) error {
 			for _, action := range m.Actions {
 				switch action {
 				case "reply":
+					if m.ReplyWindowClosed {
+						continue
+					}
+					if m.ReplyDeadlineTick == nil && m.ReplyBefore == nil {
+						fmt.Println("  Return post deadline unavailable")
+					}
 					fmt.Printf("  reply: keryx reply --id %s --text \"...\"\n", m.ID)
 				case "trade_accept":
 					fmt.Printf("  accept: keryx trade-accept --id %s\n", m.ID)

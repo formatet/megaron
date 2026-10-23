@@ -20,6 +20,10 @@ In Keryx, use `inbox --queue`, optionally `--limit 30` and `--cursor <next_curso
 
 A letter to a distant city takes days, and the reply takes as long again. You are told when your messenger arrives, and again when he is home with the answer. Plan diplomacy the way you plan a march.
 
+A reply uses the **same bearer** who brought the letter. You can return a letter even if you have not discovered the sender's city; answering does not create a new messenger or reveal that city's location.
+
+A newly delivered plain letter can be answered on its arrival day and the following day. The bearer leaves at the start of the next day. **Queue** shows **Return post before** with the local departure time. Once the return-post window closes, you cannot reply through that bearer, even while his departure is still being processed. Reading does not extend his stay. A previously issued longer stay keeps its saved deadline. If an older letter has no saved deadline, the client says the deadline is unavailable and the server still decides whether its bearer can answer. Trade offers keep their own answer deadline.
+
 If nobody replies, your messenger does not wait forever in that city's court. After a while he gives up and turns around on his own, walking home just as he would with an answer in hand — the same road, taking the same time. You are still told the moment he is back, only without a reply riding along.
 
 ## Messengers are sacred

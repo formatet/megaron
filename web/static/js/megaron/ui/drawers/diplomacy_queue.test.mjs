@@ -59,3 +59,16 @@ test('a second queue mount supersedes an older fetch in the same drawer and worl
  globalThis.fetch=async()=>new Response(JSON.stringify({items:[{...offer,from_name:'Newer response'}]}));await loadDipQueue(root);assert.match(root.innerHTML,/Newer response/);
  release(new Response(JSON.stringify({items:[{...offer,from_name:'Stale response'}]})));await older;assert.match(root.innerHTML,/Newer response/);assert.doesNotMatch(root.innerHTML,/Stale response/);
 }));
+
+test('return-post actions obey server closure and display saved tick deadline without guessing from an elapsed ISO',()=>{
+ const original={CURRENT_TICK:State.CURRENT_TICK,TICK_SECONDS:State.TICK_SECONDS,TICK_ANCHOR_MS:State.TICK_ANCHOR_MS};
+ Object.assign(State,{CURRENT_TICK:100,TICK_SECONDS:3600,TICK_ANCHOR_MS:Date.now()});
+ try{
+  const letter={...offer,trade_offer:null,offer_state:'',actions:['read','reply'],reply_before:'2000-01-01T00:00:00Z',reply_deadline_tick:102,reply_window_closed:false};
+  const open=queuePageHTML({items:[letter]});assert.match(open,/Return post before/);assert.doesNotMatch(open,/2000/);assert.match(open,/data-queue-action="reply"/);
+  assert.deepEqual(queueActions({...letter,reply_window_closed:true}),['read']);
+  const closed=queuePageHTML({items:[{...letter,queue_group:'completed',reply_window_closed:true}]});assert.match(closed,/Return post closed/);assert.doesNotMatch(closed,/data-queue-action="reply"/);
+  const answered=queuePageHTML({items:[{...letter,queue_group:'completed',reply_window_closed:true,reply_text:'I already answered',actions:['read']}]});assert.match(answered,/Reply dispatched/);assert.doesNotMatch(answered,/Return post closed/);
+  const legacy=queuePageHTML({items:[{...letter,reply_before:null,reply_deadline_tick:null}]});assert.match(legacy,/Return post deadline unavailable/);assert.match(legacy,/data-queue-action="reply"/);
+ }finally{Object.assign(State,original);}
+});

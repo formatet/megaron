@@ -7,7 +7,8 @@ import { fmtNum } from '../fmt_num.js';
 import { readDiplomacyLetters } from '../diplomacy_reads.js';
 
 export function queueActions(item) {
-  const actions = Array.isArray(item.actions) ? item.actions : [];
+  const supplied = Array.isArray(item.actions) ? item.actions : [];
+  const actions = item.reply_window_closed ? supplied.filter(a => a !== 'reply') : supplied;
   // A page may stay open across its deadline. Never offer a late response;
   // the server rechecks the same deadline atomically when an action is sent.
   const elapsed = item.offer_state === 'pending' && item.expires_at && Date.parse(item.expires_at) <= serverNow();
@@ -15,6 +16,8 @@ export function queueActions(item) {
 }
 
 export function queueState(item) {
+  if (!item.trade_offer && item.reply_text) return 'Reply dispatched';
+  if (item.reply_window_closed) return 'Return post closed';
   if (item.offer_state === 'expired' || (item.offer_state === 'pending' && item.expires_at && Date.parse(item.expires_at) <= serverNow())) return 'Expired without answer';
   const states = { pending: 'Awaiting your answer', accepted: 'Accepted', declined: 'Declined', cancelled: 'Cancelled' };
   return states[item.offer_state] || (item.queue_group === 'waiting_you' ? 'Awaiting your reply' : 'No reply pending');
@@ -36,11 +39,14 @@ export function queuePageHTML(page) {
       if (!rows.length) return '';
       return `<section><h3 class="dsec-title">${title}</h3>` + rows.map(m => {
         const actions = queueActions(m);
+        const replyDeadline = m.reply_before || Number.isInteger(m.reply_deadline_tick)
+          ? `<div>Return post before ${esc(fmtTickTime(m.reply_deadline_tick, m.reply_before))}</div>`
+          : actions.includes('reply') ? '<div>Return post deadline unavailable</div>' : '';
         const deadline = m.expires_at ? `<div>Answer deadline: <time datetime="${esc(m.expires_at)}" title="${esc(new Date(m.expires_at).toLocaleString())}">${esc(fmtTickTime(undefined, m.expires_at))}</time></div>` : '';
         return `<article class="dip-queue-item" data-letter="${esc(m.id)}"><div class="dip-queue-heading"><strong>${esc(m.from_name || 'Unknown origin')}</strong><span>${esc(queueState(m))}</span></div>
           <div class="dip-queue-note">To ${esc(m.to_name || 'your city')}${m.read_at ? ' · Read' : ' · Unread'}</div>
           ${m.message ? `<p class="dip-queue-preview">${esc(m.message.slice(0, 100))}${m.message.length > 100 ? '…' : ''}</p>` : ''}
-          ${m.trade_offer ? `<div>${offerText(m.trade_offer)}</div>` : ''}${deadline}
+          ${m.trade_offer ? `<div>${offerText(m.trade_offer)}</div>` : ''}${deadline}${replyDeadline}
           ${m.missing_payment ? `<p class="dip-queue-payment">${esc(m.missing_payment)}.${actions.includes('trade_decline') ? ' You can still decline.' : ''}</p>` : ''}
           <details data-open-letter="${esc(m.id)}"><summary>Read letter</summary><p class="dip-queue-message">${esc(m.message || '(No letter text)')}</p>${m.reply_text ? `<p class="dip-queue-message">Your reply: ${esc(m.reply_text)}</p>` : ''}
           ${actions.includes('reply') ? `<label>Reply<textarea maxlength="1000" data-queue-reply aria-label="Reply to ${esc(m.from_name || 'letter')}"></textarea></label><button class="btn-small" data-queue-action="reply">Dispatch reply</button>` : ''}</details>

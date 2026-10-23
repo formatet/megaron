@@ -368,7 +368,7 @@ async function loadDipThreads() {
           } else if (offer) {
             tradeHtml = '<div style="font-size:.72rem;color:var(--text-dim);font-style:italic;margin:.2rem 0">Trade: ' + esc(offer.status) + esc(tradeScheduleText(offer)) + '</div>';
           }
-          const replyRow = !offer && m.status === 'delivered'
+          const replyRow = !offer && m.status === 'delivered' && !m.reply_window_closed
             ? '<div id="dip-reply-row-' + m.id + '" style="display:flex;gap:.3rem;margin-top:.3rem">'
               + '<input id="dip-reply-' + m.id + '" type="text" placeholder="Reply…" maxlength="1000" style="flex:1;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .4rem;font-size:.75rem;font-family:var(--mono)">'
               + '<button onclick="dipReply(\'' + m.id + '\')" style="padding:.2rem .5rem;border:1px solid var(--border);background:var(--sandstone);font-size:.7rem;cursor:pointer">Reply</button>'
@@ -379,6 +379,7 @@ async function loadDipThreads() {
             + '<div class="dip-bubble-meta">← ' + esc(m.from_name || 'Unknown') + ' · ' + fmtAgo(m.arrived_at) + '</div>'
             + (m.message ? '<div class="dip-msg-text">' + esc(m.message) + '</div>' : '')
             + (m.reply_text ? '<div class="dip-msg-text">Your reply: ' + esc(m.reply_text) + '</div>' : '')
+            + (!offer && m.reply_window_closed && !m.reply_text ? '<div>Return post closed.</div>' : '')
             + tradeHtml + replyRow
             + '</div></div>';
         } else {

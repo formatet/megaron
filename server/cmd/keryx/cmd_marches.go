@@ -124,6 +124,10 @@ func inboxCmd() *cobra.Command {
 					fmt.Println()
 					continue
 				}
+				if m["reply_window_closed"] == true {
+					fmt.Printf("From: %s  (%s)\n  %s\n  Return post closed.\n\n", from, when, text)
+					continue
+				}
 				fmt.Printf("From: %s  (%s)\n  \"%s\"\n    reply: keryx reply --id %s --text \"...\"\n\n", from, when, text, id)
 			}
 			return acknowledge()

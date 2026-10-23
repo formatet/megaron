@@ -143,3 +143,13 @@ test('a late lazy history request cannot replace a newer Write composer or typed
  await dip.dipWrite('contact');const text=node('dip-thread-Kyme-compose-text');text.value='My current draft';
  release();await older;assert.equal(text.value,'My current draft');assert.match(node('dtab-threads').innerHTML,/dip-thread-Kyme/);assert.doesNotMatch(node('dtab-threads').innerHTML,/Stale response/);
 }));
+
+test('actual legacy Correspondence hides closed return post while preserving no-deadline delivered reply',()=>rig(async({node})=>{
+ const real=globalThis.fetch;
+ globalThis.fetch=async(url,opts)=>url.endsWith('/inbox?history=true')?new Response(JSON.stringify([
+  {id:'closed-letter',from_name:'Unknown origin',status:'delivered',message:'Too late',reply_window_closed:true,read_at:'read'},
+  {id:'legacy-letter',from_name:'Unknown origin',status:'delivered',message:'Legacy without deadline',reply_window_closed:false,read_at:'read'}
+ ])):real(url,opts);
+ await dip.loadDiplomacyDrawer();await dip.switchDiplomacyTab('threads');const html=node('dtab-threads').innerHTML;
+ assert.match(html,/Return post closed/);assert.doesNotMatch(html,/dip-reply-row-closed-letter/);assert.match(html,/dip-reply-row-legacy-letter/);
+}));

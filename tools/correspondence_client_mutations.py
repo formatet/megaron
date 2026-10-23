@@ -16,8 +16,8 @@ for name, path, old, new, command, cwd in [
      ['go', 'test', './cmd/keryx', '-run', 'TestInboxQueueUsesServerActions', '-count=1'], ROOT / 'server'),
     ('web-eager-hidden-history', 'web/static/js/megaron/ui/drawers/diplomacy.js', '  await loadDipQueue();', '  await Promise.all([loadDipQueue(), loadDipThreads()]);',
      ['node', '--experimental-default-type=module', '--test', '--test-name-pattern', 'Queue mount does not fetch legacy history', 'web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs'], ROOT),
-    ('web-invents-accept', 'web/static/js/megaron/ui/drawers/diplomacy_queue.js', 'const actions = Array.isArray(item.actions) ? item.actions : [];',
-     "const actions = ['read', 'reply', 'trade_accept', 'trade_decline'];",
+    ('web-invents-accept', 'web/static/js/megaron/ui/drawers/diplomacy_queue.js', 'const supplied = Array.isArray(item.actions) ? item.actions : [];',
+     "const supplied = ['read', 'reply', 'trade_accept', 'trade_decline'];",
      ['node', '--experimental-default-type=module', '--test', 'web/static/js/megaron/ui/drawers/diplomacy_queue.test.mjs'], ROOT),
 ]:
     source = ROOT / path
