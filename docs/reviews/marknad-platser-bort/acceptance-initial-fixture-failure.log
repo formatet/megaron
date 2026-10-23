@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-marknad-platser-bort/docs/reviews/marknad-platser-bort/acceptance_case.py", line 48, in <module>
+    assert after=={'population':600,'market_workers':0,'food_workers':1,'idle':5,'markets':1,'silver':1000},after
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'idle': 4, 'silver': 1000, 'markets': 1, 'population': 597, 'food_workers': 1, 'market_workers': 0}

@@ -1,0 +1,2 @@
+Error: The market has no workplaces and needs no workers.
+See keryx staff --help

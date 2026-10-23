@@ -1,0 +1,94 @@
+→ bygger och startar acceptansvärlden (projekt megaron-acc)
+time="2026-10-23T06:49:54+02:00" level=warning msg="buildx Docker CLI plugin not found: falling back to the classic builder. BuildKit-only build features (multi-arch, secrets, ssh, additional contexts, ...) will not be available"
+ Image megaron-acc-server Building 
+ Image megaron-acc-server Building 
+Sending build context to Docker daemon  524.4kBSending build context to Docker daemon  10.63MBSending build context to Docker daemon  26.06MBSending build context to Docker daemon  34.05MBSending build context to Docker daemon  44.22MBSending build context to Docker daemon  53.28MBSending build context to Docker daemon   61.8MBSending build context to Docker daemon  70.31MBSending build context to Docker daemon  76.15MBSending build context to Docker daemon  90.96MBSending build context to Docker daemon  103.3MBSending build context to Docker daemon    116MBSending build context to Docker daemon  128.4MBSending build context to Docker daemon    138MBSending build context to Docker daemon    146MBSending build context to Docker daemon  151.9MBSending build context to Docker daemon    162MBSending build context to Docker daemon  170.5MBSending build context to Docker daemon  175.2MBSending build context to Docker daemon    181MBSending build context to Docker daemon  184.2MBSending build context to Docker daemon  189.9MBSending build context to Docker daemon  196.3MBSending build context to Docker daemon  200.5MBSending build context to Docker daemon  205.2MBSending build context to Docker daemon    212MBSending build context to Docker daemon  223.2MB
+Step 1/20 : FROM golang:1.25-alpine AS builder
+ ---> 523c3effe300
+Step 2/20 : LABEL com.megaron.build-stage=builder
+ ---> Using cache
+ ---> b98a543889b5
+Step 3/20 : WORKDIR /build
+ ---> Using cache
+ ---> 99ec2f8951cd
+Step 4/20 : RUN apk add --no-cache gcc musl-dev
+ ---> Using cache
+ ---> 58a973081cfe
+Step 5/20 : COPY server/go.mod server/go.sum ./
+ ---> Using cache
+ ---> 32379049559f
+Step 6/20 : RUN go mod download
+ ---> Using cache
+ ---> 45f33c554752
+Step 7/20 : COPY server/ .
+ ---> 05423cf78db2
+Step 8/20 : ARG BUILD_COMMIT=unknown
+ ---> Running in 58a6a3bd84d4
+ ---> Removed intermediate container 58a6a3bd84d4
+ ---> af160493d345
+Step 9/20 : RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w -X main.buildCommit=${BUILD_COMMIT}" -o temenos ./cmd/server
+ ---> Running in 072427a0dedb
+ ---> Removed intermediate container 072427a0dedb
+ ---> cfa037315b98
+Step 10/20 : FROM alpine:3.20
+ ---> d9e853e87e55
+Step 11/20 : WORKDIR /app
+ ---> Using cache
+ ---> 29db503f4b90
+Step 12/20 : RUN apk add --no-cache ca-certificates tzdata
+ ---> Using cache
+ ---> b2f84ca64f6d
+Step 13/20 : COPY --from=builder /build/temenos ./temenos
+ ---> 3daade6ddcd7
+Step 14/20 : COPY --from=builder /build/db ./db
+ ---> 9a43ae040e2a
+Step 15/20 : COPY web/ ./web/
+ ---> 1cd8d2ed359e
+Step 16/20 : ENV STATIC_DIR=/app/web/static
+ ---> Running in 478b9f736e81
+ ---> Removed intermediate container 478b9f736e81
+ ---> dcbe869abe18
+Step 17/20 : ENV TEMPLATE_DIR=/app/web/templates
+ ---> Running in 9a6443888234
+ ---> Removed intermediate container 9a6443888234
+ ---> 15a7b7d8e51a
+Step 18/20 : EXPOSE 8080
+ ---> Running in 7a240cb0dff0
+ ---> Removed intermediate container 7a240cb0dff0
+ ---> 2787143abf88
+Step 19/20 : ENTRYPOINT ["./temenos"]
+ ---> Running in fdf9753190d9
+ ---> Removed intermediate container fdf9753190d9
+ ---> 1a690b2622f7
+Step 20/20 : LABEL com.docker.compose.image.builder=classic
+ ---> Running in 4e58d6e0dca4
+ ---> Removed intermediate container 4e58d6e0dca4
+ ---> 3663103ca71f
+Successfully built 3663103ca71f
+Successfully tagged megaron-acc-server:latest
+ Image megaron-acc-server Built 
+ Image megaron-acc-server Built 
+ Container megaron-acc-redis-1 Running 
+ Container megaron-acc-postgres-1 Running 
+ Container megaron-acc-server-1 Recreate 
+ Container megaron-acc-server-1 Recreated 
+ Container megaron-acc-redis-1 Waiting 
+ Container megaron-acc-postgres-1 Waiting 
+ Container megaron-acc-redis-1 Healthy 
+ Container megaron-acc-postgres-1 Healthy 
+ Container megaron-acc-server-1 Starting 
+ Container megaron-acc-server-1 Started 
+  städat: föregående slutimage (109MB)
+  städat: gammalt byggsteg (1.1GB)
+  städat: gammalt byggsteg (792MB)
+
+  acceptansvärlden kör
+  ────────────────────────────────────────────────
+  webb      http://localhost:8097
+  API       http://localhost:8097/api/v1
+  värld     1312f0dd-e8aa-4f4c-a1ff-6fcf79847b99
+  commit    0f32a5f (codex/marknad-platser-bort) — ur /healthz
+  migration 205/205
+  tick      3600 s     karta 50x50
+
+  nästa:    tools/acceptance.sh player Wanax1
