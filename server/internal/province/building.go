@@ -32,7 +32,7 @@ var BuildingPurposes = map[BuildingType]string{
 	BuildingShipyard:    "Builds and repairs ships",
 	BuildingFoundry:     "Smelts copper and tin into bronze",
 	BuildingStable:      "Enables war chariots",
-	BuildingTemple:      "Enables rites, produces cult, and unlocks oracle prayers",
+	BuildingTemple:      "Dedicated to one god: opens that god's prayers, and its workers keep your kharis",
 	BuildingOlivePress:  "Refines a press-worker's oil from the settlement's groves",
 	BuildingWinery:      "Refines a vintner's wine from the settlement's vines",
 	BuildingPen:         "Holds a bigger herd; animals the pen cannot hold are eaten, then lost",
