@@ -409,8 +409,10 @@ canvas som inte följer sin behållare, klippta/utstickande element, knappar som
 innehållshöjd per motor (>15 % från medianen flaggas). Exit 1 vid fynd; bilderna hamnar i `DIR`.
 Första körningen (2026-10-09) fann att WebKit ritade kartan som en remsa på 182 px (9 av 10 laddningar).
 En andra spelare UTAN stad (`PANEL_HOST_USER`, förval `Nomad`; skapa med `tools/acceptance.sh player Nomad`)
-mäter Host-panelen, det första en ny Wanax ser. Den öppnas med ett klick/tryck på hosten mitt på kartan,
-med Details stängd och öppen, och "Found the metropolis here" måste ligga i bild och vara träffbar.
+mäter Host-panelen, det första en ny Wanax ser. Verktyget läser `physicalHostState`, centrerar på
+serverpositionen och klickar/trycker på markörens faktiska hex — canvasmitten kan träffa dimma.
+Details mäts stängd och öppen, och "Found the metropolis here" måste ligga i bild och vara träffbar.
+Återkörning 2026-10-23: 72 mätningar/0 fynd i alla tre motorer; `docs/reviews/browser-parity-host/`.
 Vid 390 px trycker verktyget (`tap`): Playwrights Firefox med pekskärm skickar inga pointer-händelser för
 ett musklick, så kartan ser inget klick. Det är en artefakt i riggen och ingen bugg i spelet.
 
