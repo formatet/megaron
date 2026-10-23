@@ -23,3 +23,7 @@ Run4 och run5: två helt nya oberoende PG16/Redis-världar, normala register/joi
 Processernas `/healthz`: `cdf3df6+routes`, migration205, ok. Detta är en avsiktligt namngiven kandidatbuild före slutcommit, med arbetskopians aktuella webbassets; serverkoden är oförändrad. `run4/proof.json` och `run5/proof.json` sparar processhärkomst, verkliga resor, POSTs och kvitton utan token. Varje värld revs i finally efter provet. Gemensam acceptansrigg och livevärld orörda.
 
 Run5:s extra före-bilder använder oförändrad economy.js ur cdf3df62 mot samma skapade rutt i en separat autentiserad browsersida. Den nya CSS-klassen saknar konsument i basen. Före-bilden visar saknade varuinställningar; efterbilden visar dem. Bilder vid faktisk skala på index.html A1–A4. Desktopviewport1280, lådan420px; mobil390. Desktop och mobil inspekterade i1:1.
+
+## Levererat
+
+Produktionsändring bf5e9257 mergad/pushad och webbassets ute. Alla fyra levererade JS/CSS/Codex-filer byte-identiska med committen; SHA i deploy.json. Samma aktiva värld2178e795, migration205 dirty=false. Backendkoden är oförändrad och processen kör fortsatt fc259bc; ingen omstart behövdes för statiska filer/CLI. Journalens senaste tio minuter utan ERROR/fatal/panic. Installerad ~/go/bin/poleia anger vcs.revision bf5e92573ed9f9a2ce6d84d0bf36658306a0b38d och vcs.modified=false. BILD för mänsklig efterbedömning: index.html A1–A4.

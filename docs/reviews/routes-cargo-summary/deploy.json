@@ -1,0 +1,16 @@
+{
+  "health": {
+    "commit": "fc259bc",
+    "migration": 205,
+    "status": "ok"
+  },
+  "assets_commit": "bf5e9257",
+  "assets": {
+    "js/megaron/ui/drawers/economy.js": "c550abd170e5d00cc68a3af67701c1a40883c8940fd3266121b3592fde49e87c",
+    "megaron.css": "f2e2401c264714926e6e4d7dccb7bffd827853df7c3bcf20e2131710c8729a50",
+    "codex/routes.md": "66591968ef3c292cb910e0c15e6454dfa1099ac93e8bda68ce22d1adb3e6efa3",
+    "codex/rough-edges.md": "72da576dfa292597935af7294f8463c2e3ff576e5c58381afdc30c9a96156c8b"
+  },
+  "ground": "205 dirty=false; same active world2178e795; read-only psql",
+  "backend": "unchanged; no restart required for static assets/CLI"
+}
