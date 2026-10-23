@@ -1,0 +1,7 @@
+2026/10/23 16:47:31 INFO player registered id=ff9489fa-bc49-4ea8-9161-6532bedadbe4 username=sailor-ddb21204-f98d-490b-a0f8-9594258adcff
+--- FAIL: TestTrade_RiverFordRoundTrip (0.06s)
+    province_trade_river_test.go:32: river/ford trade HTTP=422, want201: map[error:no passable route for this caravan]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.066s
+FAIL
+» färsk DB på migration 205 · commit 1da7c868+ändringar
