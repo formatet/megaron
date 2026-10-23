@@ -1,0 +1,10 @@
+--- FAIL: TestRoutesListsConfiguredStocksAndReturnFloors (0.00s)
+    cmd_routes_goods_test.go:30: routes missing "Bring home above: silver 0, stone 20": route  Source → Colony  [active]
+          Keep at destination: grain 200, fish 50.5
+          Return cargo: none
+        empty  Source → Other  [paused]
+          Keep at destination: grain 0
+          Return cargo: none
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL

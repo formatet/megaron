@@ -1,0 +1,49 @@
+TAP version 13
+# Subtest: standing route list shows configured stock targets and return floors, including zero and decimals
+not ok 1 - standing route list shows configured stock targets and return floors, including zero and decimals
+  ---
+  duration_ms: 10.081387
+  type: 'test'
+  location: '/home/tk/wt/codex-routes-cargo-summary/web/static/js/megaron/ui/drawers/economy.test.mjs:241:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /Bring home above: silver 0, stone 20/. Input:
+    
+    '<table class="goods-mini"><tr style="color:var(--text-dim);font-size:.7rem"><td>Route</td><td>Status</td><td></td></tr><tr>\n' +
+      '        <td>Source → Colony<div class="standing-order-config">Keep at destination: grain 200, fish 50.5</div><div class="standing-order-config">Bring home above: silver 1, stone 21</div></td>\n' +
+      '        <td>active</td>\n' +
+      '        <td style="text-align:right;white-space:nowrap">\n' +
+      `          <button class="btn-small" onclick="pauseStandingOrder('route')">Pause</button>\n` +
+      `          <button class="btn-small" onclick="deleteStandingOrder('route')">Delete</button>\n` +
+      '        </td>\n' +
+      '      </tr></table>'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: |-
+    <table class="goods-mini"><tr style="color:var(--text-dim);font-size:.7rem"><td>Route</td><td>Status</td><td></td></tr><tr>
+            <td>Source → Colony<div class="standing-order-config">Keep at destination: grain 200, fish 50.5</div><div class="standing-order-config">Bring home above: silver 1, stone 21</div></td>
+            <td>active</td>
+            <td style="text-align:right;white-space:nowrap">
+              <button class="btn-small" onclick="pauseStandingOrder('route')">Pause</button>
+              <button class="btn-small" onclick="deleteStandingOrder('route')">Delete</button>
+            </td>
+          </tr></table>
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-routes-cargo-summary/web/static/js/megaron/ui/drawers/economy.test.mjs:244:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 57.966233

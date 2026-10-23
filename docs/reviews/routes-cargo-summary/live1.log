@@ -1,0 +1,39 @@
+leg 0 {'target_q': 43, 'target_r': 8} {'arrival_tick': 2, 'arrives_at': '2026-10-23T16:56:53.222221677+02:00', 'arrives_at_utc': '2026-10-23T14:56:53.222221677Z', 'carried_silver': 0, 'departs_at': '2026-10-23T16:56:41.222221677+02:00', 'duration_ticks': 2, 'expedition': None, 'origin_q': 43, 'origin_r': 7, 'purse_shortfall': 0, 'target_q': 43, 'target_r': 8, 'unit_id': 'fa1ae235-a087-4c82-9571-18677d2b96e0'}
+leg 1 {'target_q': 43, 'target_r': 9} {'courier_arrives_at': '2026-10-23T16:57:11.552218924+02:00', 'courier_due_tick': 4, 'messenger_id': '9026f83c-a376-4a48-a470-c5bc2b623cf5', 'status': 'order_dispatched', 'superseded_messenger_ids': None, 'target_q': 43, 'target_r': 9, 'unit_id': 'fa1ae235-a087-4c82-9571-18677d2b96e0', 'verb': 'march'}
+leg 2 {'target_q': 43, 'target_r': 10} {'courier_arrives_at': '2026-10-23T16:57:47.858320786+02:00', 'courier_due_tick': 10, 'messenger_id': '411097f2-badf-4a86-9a0c-6816f55c5480', 'status': 'order_dispatched', 'superseded_messenger_ids': None, 'target_q': 43, 'target_r': 10, 'unit_id': 'fa1ae235-a087-4c82-9571-18677d2b96e0', 'verb': 'march'}
+leg 3 {'target_q': 44, 'target_r': 10} {'courier_arrives_at': '2026-10-23T16:58:29.151022746+02:00', 'courier_due_tick': 17, 'messenger_id': 'beb1ea0c-0a7a-4b53-b3d4-2ef99dcf72fd', 'status': 'order_dispatched', 'superseded_messenger_ids': None, 'target_q': 44, 'target_r': 10, 'unit_id': 'fa1ae235-a087-4c82-9571-18677d2b96e0', 'verb': 'march'}
+leg 4 {'target_q': 44, 'target_r': 11, 'intent': 'colonize', 'name': 'Kyme'} {'courier_arrives_at': '2026-10-23T16:59:23.37721917+02:00', 'courier_due_tick': 26, 'messenger_id': '8b8990df-e33e-4c6f-b4b7-e69a26bc550e', 'status': 'order_dispatched', 'superseded_messenger_ids': None, 'target_q': 44, 'target_r': 11, 'unit_id': 'fa1ae235-a087-4c82-9571-18677d2b96e0', 'verb': 'march'}
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-routes-cargo-summary/tools/economy_goods_live.py", line 214, in <module>
+    cli=Path(tmp)/'keryx';subprocess.run(['go','build','-o',str(cli),'./cmd/keryx'],cwd=ROOT/'server',check=True)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/sync_api/_generated.py", line 15631, in click
+    self._sync(
+    ~~~~~~~~~~^
+        self._impl_obj.click(
+        ^^^^^^^^^^^^^^^^^^^^^
+    ...<10 lines>...
+        )
+        ^
+    )
+    ^
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/_impl/_sync_base.py", line 115, in _sync
+    return task.result()
+           ~~~~~~~~~~~^^
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/_impl/_locator.py", line 162, in click
+    return await self._frame._click(self._selector, strict=True, **params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/_impl/_frame.py", line 566, in _click
+    await self._channel.send("click", self._timeout, locals_to_params(locals()))
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/_impl/_connection.py", line 69, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/_impl/_connection.py", line 559, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.TimeoutError: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for get_by_role("button", name="Transfer →", exact=True)
+

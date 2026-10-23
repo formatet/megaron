@@ -1,0 +1,237 @@
+{
+  "health": {
+    "commit": "cdf3df6+routes",
+    "migration": 205,
+    "status": "ok"
+  },
+  "mode": "after",
+  "city": {
+    "id": "95826ccd-e6c6-4cb5-a873-ff43369cfc57",
+    "settlement_id": "f9646199-4450-4eb6-8898-1797ecb66d62",
+    "name": "Nostos",
+    "culture": "minoan",
+    "q": 45,
+    "r": 35,
+    "state": "active",
+    "walls": 0,
+    "size_tier": 1,
+    "owner": "Plouteus",
+    "own": true,
+    "is_capital": true,
+    "allied": false,
+    "visible": true,
+    "army_total": 201
+  },
+  "colony": {
+    "id": "4fdfde8b-1d92-4c70-a626-de7b6f3f36ca",
+    "settlement_id": "c3c494ba-1528-441e-9f40-bff4d1713a34",
+    "name": "Kyme",
+    "culture": "minoan",
+    "q": 47,
+    "r": 30,
+    "state": "active",
+    "walls": 0,
+    "size_tier": 0,
+    "owner": "Plouteus",
+    "own": true,
+    "is_capital": false,
+    "allied": false,
+    "visible": true
+  },
+  "journeys": [
+    {
+      "body": {
+        "target_q": 44,
+        "target_r": 35
+      },
+      "receipt": {
+        "arrival_tick": 2,
+        "arrives_at": "2026-10-23T17:02:48.053993935+02:00",
+        "arrives_at_utc": "2026-10-23T15:02:48.053993935Z",
+        "carried_silver": 0,
+        "departs_at": "2026-10-23T17:02:36.053993935+02:00",
+        "duration_ticks": 2,
+        "expedition": null,
+        "origin_q": 45,
+        "origin_r": 35,
+        "purse_shortfall": 0,
+        "target_q": 44,
+        "target_r": 35,
+        "unit_id": "bcf6f41a-7276-4a66-a837-255b7fbae9bc"
+      }
+    },
+    {
+      "body": {
+        "target_q": 44,
+        "target_r": 34
+      },
+      "receipt": {
+        "courier_arrives_at": "2026-10-23T17:03:06.277370414+02:00",
+        "courier_due_tick": 4,
+        "messenger_id": "1bbfcd19-81be-4b9f-bd42-19f6ff461d11",
+        "status": "order_dispatched",
+        "superseded_messenger_ids": null,
+        "target_q": 44,
+        "target_r": 34,
+        "unit_id": "bcf6f41a-7276-4a66-a837-255b7fbae9bc",
+        "verb": "march"
+      }
+    },
+    {
+      "body": {
+        "target_q": 44,
+        "target_r": 33
+      },
+      "receipt": {
+        "courier_arrives_at": "2026-10-23T17:03:42.612832611+02:00",
+        "courier_due_tick": 10,
+        "messenger_id": "f21222fe-3bf3-4ae0-8e2b-971461e1880e",
+        "status": "order_dispatched",
+        "superseded_messenger_ids": null,
+        "target_q": 44,
+        "target_r": 33,
+        "unit_id": "bcf6f41a-7276-4a66-a837-255b7fbae9bc",
+        "verb": "march"
+      }
+    },
+    {
+      "body": {
+        "target_q": 45,
+        "target_r": 32
+      },
+      "receipt": {
+        "courier_arrives_at": "2026-10-23T17:04:23.963437238+02:00",
+        "courier_due_tick": 17,
+        "messenger_id": "1e6e848b-0fcd-480b-b7b1-6319e7dc1c0a",
+        "status": "order_dispatched",
+        "superseded_messenger_ids": null,
+        "target_q": 45,
+        "target_r": 32,
+        "unit_id": "bcf6f41a-7276-4a66-a837-255b7fbae9bc",
+        "verb": "march"
+      }
+    },
+    {
+      "body": {
+        "target_q": 46,
+        "target_r": 31
+      },
+      "receipt": {
+        "courier_arrives_at": "2026-10-23T17:05:06.363489588+02:00",
+        "courier_due_tick": 24,
+        "messenger_id": "c3fef9e9-7c2e-402b-894b-9027df3505a6",
+        "status": "order_dispatched",
+        "superseded_messenger_ids": null,
+        "target_q": 46,
+        "target_r": 31,
+        "unit_id": "bcf6f41a-7276-4a66-a837-255b7fbae9bc",
+        "verb": "march"
+      }
+    },
+    {
+      "body": {
+        "target_q": 47,
+        "target_r": 30,
+        "intent": "colonize",
+        "name": "Kyme"
+      },
+      "receipt": {
+        "courier_arrives_at": "2026-10-23T17:05:47.773581801+02:00",
+        "courier_due_tick": 31,
+        "messenger_id": "83dbde69-0273-422f-91e6-1bbacea521d0",
+        "status": "order_dispatched",
+        "superseded_messenger_ids": null,
+        "target_q": 47,
+        "target_r": 30,
+        "unit_id": "bcf6f41a-7276-4a66-a837-255b7fbae9bc",
+        "verb": "march"
+      }
+    }
+  ],
+  "spawn_attempts": [
+    {
+      "known_land": 14
+    }
+  ],
+  "posts": [
+    {
+      "url": "/standing-orders",
+      "body": {
+        "from_settlement_id": "f9646199-4450-4eb6-8898-1797ecb66d62",
+        "to_settlement_id": "c3c494ba-1528-441e-9f40-bff4d1713a34",
+        "crewed_by_settlement_id": "c3c494ba-1528-441e-9f40-bff4d1713a34",
+        "outbound": [
+          {
+            "good_key": "grain",
+            "threshold": 200
+          },
+          {
+            "good_key": "fish",
+            "threshold": 50
+          }
+        ],
+        "return": [
+          {
+            "good_key": "silver",
+            "floor": 0
+          },
+          {
+            "good_key": "stone",
+            "floor": 20
+          }
+        ]
+      }
+    },
+    {
+      "url": "/provinces/95826ccd-e6c6-4cb5-a873-ff43369cfc57/trade",
+      "body": {
+        "destination_id": "c3c494ba-1528-441e-9f40-bff4d1713a34",
+        "good_key": "grain",
+        "quantity": 1
+      }
+    }
+  ],
+  "standing_receipt": {
+    "id": "9fb45d92-0a30-4e06-80c8-7ce0cf4e59df",
+    "status": "active"
+  },
+  "transfer_receipt": {
+    "arrival_tick": 49,
+    "arrives_at": "2026-10-23T17:07:40.663990462+02:00",
+    "category": "naval",
+    "delivered_qty": 1,
+    "departure_tick": 35,
+    "distance": 34,
+    "kind": "transfer",
+    "route_id": "3b412bc0-dc98-4a79-8d44-257eab50b18a",
+    "ship_id": "aae8350a-ad19-4cf6-ba4f-af27d8c26c40",
+    "ship_name": "Sea Crown, Galley of Nostos",
+    "transport_id": "f5f4a0ba-4d32-4d68-97de-dcec48c9be35",
+    "travel_min": 840,
+    "travel_ticks": 14
+  },
+  "browser_errors": [],
+  "palette": [
+    {
+      "color": "rgb(28, 28, 28)",
+      "background": "rgb(253, 254, 254)",
+      "expected": "#1C1C1C"
+    },
+    {
+      "color": "rgb(28, 28, 28)",
+      "background": "rgb(253, 254, 254)",
+      "expected": "#1C1C1C"
+    },
+    {
+      "color": "rgb(28, 28, 28)",
+      "background": "rgb(253, 254, 254)",
+      "expected": "#1C1C1C"
+    },
+    {
+      "color": "rgb(28, 28, 28)",
+      "background": "rgb(253, 254, 254)",
+      "expected": "#1C1C1C"
+    }
+  ],
+  "sql_mutations": false
+}

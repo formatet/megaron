@@ -524,8 +524,14 @@ export function renderStandingOrdersHTML(orders) {
       // Sjöhandel kräver skepp (megaron_plan_sjohandel_kraver_skepp.md R4): a
       // naval route locks a real ship for its whole lifetime — name it.
       const shipNote = o.ship_name ? ` <span style="color:var(--text-dim)">⛵ ${esc(o.ship_name)}</span>` : '';
+      const stockAmount = value => Number.isFinite(Number(value))
+        ? Number(value).toLocaleString('en-US', { maximumFractionDigits: 20 }) : 'unknown';
+      const outbound = (o.outbound || []).map(g => `${esc(g.good_key)} ${stockAmount(g.threshold)}`).join(', ');
+      const returning = (o.return || []).map(g => `${esc(g.good_key)} ${stockAmount(g.floor)}`).join(', ');
+      const settings = `<div class="standing-order-config">Keep at destination: ${outbound || 'not available'}</div>`
+        + `<div class="standing-order-config">${returning ? 'Bring home above: ' + returning : 'Return cargo: none'}</div>`;
       return `<tr>
-        <td>${esc(o.from_name)} → ${esc(o.to_name)}${shipNote}</td>
+        <td>${esc(o.from_name)} → ${esc(o.to_name)}${shipNote}${settings}</td>
         <td>${esc(statusText)}</td>
         <td style="text-align:right;white-space:nowrap">
           <button class="btn-small" onclick="${toggleFn}('${o.id}')">${toggleLabel}</button>

@@ -150,6 +150,25 @@ func routeCreateCmd() *cobra.Command {
 	return cmd
 }
 
+// Stock targets and return floors are configuration, not a shipment manifest.
+func standingRouteGoods(value any, amountKey string) string {
+	rows, _ := value.([]any)
+	parts := make([]string, 0, len(rows))
+	for _, raw := range rows {
+		row, ok := raw.(map[string]any)
+		if !ok {
+			continue
+		}
+		key, _ := row["good_key"].(string)
+		amount, ok := row[amountKey].(float64)
+		if key == "" || !ok {
+			continue
+		}
+		parts = append(parts, key+" "+strconv.FormatFloat(amount, 'f', -1, 64))
+	}
+	return strings.Join(parts, ", ")
+}
+
 func routesCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "routes",
@@ -187,6 +206,17 @@ func routesCmd() *cobra.Command {
 					line += " — " + reason
 				}
 				fmt.Println(line)
+				outbound := standingRouteGoods(o["outbound"], "threshold")
+				if outbound == "" {
+					outbound = "not available"
+				}
+				fmt.Println("  Keep at destination: " + outbound)
+				returning := standingRouteGoods(o["return"], "floor")
+				if returning == "" {
+					fmt.Println("  Return cargo: none")
+				} else {
+					fmt.Println("  Bring home above: " + returning)
+				}
 			}
 			return nil
 		},

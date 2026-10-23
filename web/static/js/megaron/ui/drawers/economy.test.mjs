@@ -237,3 +237,15 @@ test('food status separates declining stock from hunger and never invents missin
     assert.match(renderSettlementsOverviewHTML([row]), /not reported/);
   }
 });
+
+test('standing route list shows configured stock targets and return floors, including zero and decimals',()=>{
+ const html=renderStandingOrdersHTML([{id:'route',from_name:'Source',to_name:'Colony',status:'active',outbound:[{good_key:'grain',threshold:200},{good_key:'fish',threshold:50.5}],return:[{good_key:'silver',floor:0},{good_key:'stone',floor:20}]}]);
+ assert.match(html,/Keep at destination: grain 200, fish 50\.5/);
+ assert.match(html,/Bring home above: silver 0, stone 20/);
+ const empty=renderStandingOrdersHTML([{id:'empty',from_name:'Source',to_name:'Other',status:'paused',outbound:[{good_key:'grain',threshold:0}],return:[]}]);
+ assert.match(empty,/Keep at destination: grain 0/);assert.match(empty,/Return cargo: none/);
+ const small=renderStandingOrdersHTML([{id:'small',from_name:'Source',to_name:'Other',status:'active',outbound:[{good_key:'fish',threshold:0.04}],return:[{good_key:'silver',floor:0.125}]}]);
+ assert.match(small,/fish 0\.04/);assert.match(small,/silver 0\.125/);
+ const escaped=renderStandingOrdersHTML([{id:'escape',from_name:'Source',to_name:'Other',status:'active',outbound:[{good_key:'<script>',threshold:2}]}]);
+ assert.ok(!escaped.includes('<script>'));assert.match(escaped,/&lt;script&gt;/);
+});

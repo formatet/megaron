@@ -1,0 +1,7 @@
+leg 0 {'target_q': 49, 'target_r': 41} {'arrival_tick': 2, 'arrives_at': '2026-10-23T17:01:33.666919522+02:00', 'arrives_at_utc': '2026-10-23T15:01:33.666919522Z', 'carried_silver': 0, 'departs_at': '2026-10-23T17:01:21.666919522+02:00', 'duration_ticks': 2, 'expedition': None, 'origin_q': 48, 'origin_r': 41, 'purse_shortfall': 0, 'target_q': 49, 'target_r': 41, 'unit_id': '0f82893d-893b-48ab-b11e-ec11decb05d5'}
+leg 1 {'target_q': 50, 'target_r': 41} {'courier_arrives_at': '2026-10-23T17:01:51.805472256+02:00', 'courier_due_tick': 4, 'messenger_id': 'dfdc13c2-4ab2-457c-a529-1f90558d3360', 'status': 'order_dispatched', 'superseded_messenger_ids': None, 'target_q': 50, 'target_r': 41, 'unit_id': '0f82893d-893b-48ab-b11e-ec11decb05d5', 'verb': 'march'}
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-routes-cargo-summary/tools/economy_goods_live.py", line 143, in <module>
+    time.sleep(1);colony=next((p for p in provinces() if p.get('own') and p.get('name')=='Kyme'),None)
+    ~~~~~~~~~~^^^
+KeyboardInterrupt

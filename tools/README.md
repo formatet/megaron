@@ -337,12 +337,12 @@ handels-/svarskonsumenter och server/Inspect/Gossip/CSS. Bevis/avgränsningar:
 
 `python3 tools/economy_goods_live.py OUT BUILD_COMMIT baseline|after [WEB_DIR]`
 kräver OUT/temenos byggd i ren miljö med angiven `main.buildCommit`. Varje arm
-startar egen ny PG16/Redis, migrerar och verifierar `/healthz` (commit/160/ok).
+startar egen ny PG16/Redis, migrerar och verifierar `/healthz` mot angiven commit och arbetskopians senaste migration.
 Registrering, grundning och kolonisering använder vanliga spelar-API:er och
 FOW-känd terräng; inga SQL-skrivningar eller injicerad klientkunskap. Riktig
 webb skapar flervaruorder och vanlig Transfer, sparar POST-body/kvittot och
 BILD desktop/mobil. Efterarmen prövar Add/Remove och fältens läsbara palett.
-Använd arkiverad bas-web för baseline. Egna processer/containrar rivs i finally.
+Använd arkiverad bas-web för baseline. Efterarmen verifierar också den sparade ruttens mål-/returlager i webben och faktisk `keryx routes`; `ROUTE_SETTINGS_BASELINE=/absolut/economy.js` ger före-/efterbilder med samma API-data. Egna processer/containrar rivs i finally.
 
 `python3 tools/economy_goods_mutation.py` gör fyra fysiska källmutationer,
 kräver namngivet actual-handler-prov rött och restaurerad svit grön, och

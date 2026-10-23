@@ -5,7 +5,7 @@ Under **New standing order**, set *From*, *To*, and which end supplies the carav
 - **Keep at destination** — choose a good and the stock to keep there, for example two hundred grain and fifty fish. Use **Add a good** for another row and **Remove** to drop a row. The caravan keeps those goods topped up to that level at the destination.
 - **Bring home** — choose a good and the stock to leave at the destination, for example twenty stone. Zero means bring home everything available. Leave the rows empty for no return cargo. On the way back it brings home anything above that floor.
 
-Press **Create route**. Existing routes are listed below with **Pause**, **Resume** and **Delete**. A route pauses itself when it cannot run — when there is no surplus to send, or no spare citizen to crew the caravan — and the list says why. You are told each time a route sends a caravan, and when it pauses.
+Press **Create route**. Existing routes are listed below with **Pause**, **Resume** and **Delete**. Each route shows **Keep at destination** (the target stock) and **Bring home above** (the stock left there before loading return cargo), including a zero floor. **Return cargo: none** means no goods are configured for the homeward leg. These are route settings; the cargo in each trip depends on available surplus and capacity. `keryx routes` shows the same settings. A route pauses itself when it cannot run — when there is no surplus to send, or no spare citizen to crew the caravan — and the list says why. You are told each time a route sends a caravan, and when it pauses.
 
 ## What to use it for
 

@@ -1,0 +1,3 @@
+9fb45d92-0a30-4e06-80c8-7ce0cf4e59df  Nostos → Kyme  [active]
+  Keep at destination: grain 200, fish 50
+  Bring home above: silver 0, stone 20

@@ -81,7 +81,8 @@ try:
             time.sleep(.5)
     else:
         raise RuntimeError('server timeout')
-    assert health['commit'] == EXPECTED and health['migration'] == 160, health
+    latest=max(int(p.name.split('_')[0]) for p in (ROOT/'server/db/migrations').glob('*.up.sql'))
+    assert health['commit'] == EXPECTED and health['migration'] == latest, health
     worlds = api('/api/v1/worlds')
     world = (worlds if isinstance(worlds, list) else worlds['worlds'])[0]['id']
     worldpath = '/api/v1/worlds/' + world
@@ -155,7 +156,7 @@ try:
     page.context.add_cookies([{'name':'poleia_token','value':token,'url':base}]);page.goto(base+'/play',wait_until='networkidle');page.wait_for_function('window.openDrawer !== undefined')
     posts=[]
     page.on('request',lambda r:posts.append({'url':r.url.split(worldpath)[-1],'body':r.post_data_json}) if r.method=='POST' and (r.url.endswith('/standing-orders') or r.url.endswith('/trade')) else None)
-    page.evaluate("window.openDrawer('economy')");page.locator('#economy-body [data-tab=automation]').click();page.wait_for_selector('#ec-so-from')
+    page.locator('#trig-economy').click();page.locator('#economy-body [data-tab=automation]').click();page.wait_for_selector('#ec-so-from')
     page.locator('#ec-so-from').select_option(city['settlement_id']);page.locator('#ec-so-to').select_option(colony['settlement_id']);page.locator('#ec-so-crew').select_option('to')
     if MODE=='baseline':
         page.locator('#ec-so-out').fill('grain:200,fish:50');page.locator('#ec-so-home').fill('silver:0,stone:20')
@@ -189,10 +190,44 @@ try:
     receipt=response.value;assert receipt.status==201,(receipt.status,receipt.text());order=receipt.json()
     expected={'from_settlement_id':city['settlement_id'],'to_settlement_id':colony['settlement_id'],'crewed_by_settlement_id':colony['settlement_id'],'outbound':[{'good_key':'grain','threshold':200},{'good_key':'fish','threshold':50}],'return':[{'good_key':'silver','floor':0},{'good_key':'stone','floor':20}]}
     assert posts[-1]['body']==expected,(posts[-1],expected)
+    if MODE=='after':
+        baseline_path=os.environ.get('ROUTE_SETTINGS_BASELINE')
+        if baseline_path:
+            before_page=browser.new_page(viewport={'width':1280,'height':900})
+            before_page.context.add_cookies([{'name':'poleia_token','value':token,'url':base}])
+            before_page.add_init_script('localStorage.setItem("poleia_token",'+json.dumps(token)+')')
+            before_page.route('**/static/js/megaron/ui/drawers/economy.js',lambda route:route.fulfill(status=200,content_type='application/javascript',body=Path(baseline_path).read_text()))
+            before_page.goto(base+'/play',wait_until='networkidle')
+            before_page.locator('#trig-economy').click()
+            before_page.locator('#economy-body [data-tab=automation]').click()
+            before_page.locator('#ec-so-list .goods-mini').wait_for()
+            assert 'Keep at destination:' not in before_page.locator('#ec-so-list').inner_text()
+            for label,w,h in [('desktop',1280,900),('mobile',390,844)]:
+                before_page.set_viewport_size({'width':w,'height':h})
+                before_page.locator('#ec-so-list').scroll_into_view_if_needed()
+                before_page.locator('#drawer-economy').screenshot(path=str(OUT/('route-settings-before-'+label+'.png')))
+            before_page.close()
+        page.locator('#ec-so-list').get_by_text('Keep at destination: grain 200, fish 50',exact=True).wait_for()
+        page.locator('#ec-so-list').get_by_text('Bring home above: silver 0, stone 20',exact=True).wait_for()
+        page.locator('#ec-so-list').scroll_into_view_if_needed()
+        pictures('route-settings')
+        import tempfile
+        with tempfile.TemporaryDirectory(prefix='route-settings-cli-') as tmp:
+            cli=Path(tmp)/'keryx';subprocess.run(['go','build','-o',str(cli),'./cmd/keryx'],cwd=ROOT/'server',check=True)
+            config=Path(tmp)/'config.json'
+            with os.fdopen(os.open(config,os.O_WRONLY|os.O_CREAT,0o600),'w') as f:
+                json.dump({'server':base,'token':token,'world_id':world},f)
+            cli_env={'HOME':os.environ['HOME'],'PATH':os.environ['PATH'],'POLEIA_CONFIG':str(config)}
+            result=subprocess.run([str(cli),'routes'],env=cli_env,text=True,capture_output=True)
+            (OUT/'routes.txt').write_text(result.stdout+result.stderr)
+            assert result.returncode==0,result.stderr
+            assert 'Keep at destination: grain 200, fish 50' in result.stdout,result.stdout
+            assert 'Bring home above: silver 0, stone 20' in result.stdout,result.stdout
+
     page.locator('#economy-body [data-tab=transfer]').click();page.wait_for_selector('#ec-tr-good option[value=grain]',state='attached')
     page.locator('#ec-tr-from').select_option(city['id']);page.locator('#ec-tr-to').select_option(colony['settlement_id']);page.locator('#ec-tr-good').select_option('grain');page.locator('#ec-tr-qty').fill('1')
     with page.expect_response(lambda r:r.request.method=='POST' and r.url.endswith('/trade')) as response:
-        page.get_by_role('button',name='Transfer →',exact=True).click()
+        page.locator('button[onclick="startTransfer()"]').click()
     transfer=response.value;assert transfer.status in (200,201),(transfer.status,transfer.text())
     assert posts[-1]['body']=={'destination_id':colony['settlement_id'],'good_key':'grain','quantity':1}
     pictures('transfer');assert not errors,errors

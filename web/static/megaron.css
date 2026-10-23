@@ -1430,6 +1430,7 @@ body:has(.auth-page) main {
 .goods-mini td { padding: 0.18rem 0.3rem; border-bottom: 1px solid var(--bg-raised); color: var(--text); }
 .goods-mini td:last-child { text-align: right; font-family: var(--mono); color: var(--accent); }
 .goods-mini tr:last-child td { border-bottom: none; }
+.standing-order-config { margin-top: 0.2rem; font-size: var(--fs-xs); color: var(--text-dim); overflow-wrap: anywhere; }
 
 /* Good at its storage ceiling: production past the cap is discarded, so the
    labor-table rate cell reads "full · +0/day" instead of a positive number —
