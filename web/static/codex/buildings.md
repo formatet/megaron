@@ -15,7 +15,7 @@ Open **City → Buildings**. The tab shows what is **built** (and its level), th
 | **Winery** | Refines a vintner's wine from the settlement's vines. Works inside the city. |
 | **Pen** | Raises the herd cap by 100 per level (50 without one). Animals above the cap are eaten, then lost ([[food]]). Works inside the city. |
 | **Market** | Enables trade offers and updates market price snapshots. |
-| **Temple** | Enables rites, produces cult, and unlocks oracle prayers. Built for one god; a city can hold one temple per god. More important than it looks — see [[temples]]. |
+| **Temple** | Dedicated to one god: opens that god's prayers, and its workers keep your kharis. A city can hold one temple per god. More important than it looks — see [[temples]]. |
 | **Granary** | A city stores 2 000 of each food — grain, fish, oil and wine, not the herd. Granary level 1 to 3 raises that to 4 000, 10 000 and 20 000. A wall of level N needs a Granary of level N. Works inside the city. |
 | **Wall** | Palisade, then Stone Wall, then Bronze Wall. Absorbs damage in [[battle]], and **the walls set how many people the city holds** (see below). |
 
