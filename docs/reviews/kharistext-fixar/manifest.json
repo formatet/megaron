@@ -1,0 +1,124 @@
+{
+  "healthz": {
+    "commit": "7f0cdeb",
+    "migration": 203,
+    "status": "ok"
+  },
+  "world": "1312f0dd-e8aa-4f4c-a1ff-6fcf79847b99",
+  "tick_seconds": 3600,
+  "real_kharis_event": 678114,
+  "thersites_source": "consistent notice-state/notification fixture (allowed fallback), not a sampled punishment",
+  "players": {
+    "Eumelos": {
+      "id": "96b26d18-d519-4783-931f-e2cc033ac2c1",
+      "cities": [
+        {
+          "id": "22751e13-4cc3-4ae4-9220-3266c14bb250",
+          "province": "4ab25380-29c1-43fb-8942-ae06e2013fa1"
+        }
+      ],
+      "temple": "22bfb178-f72b-4709-8e80-4f039999d413",
+      "config": "/home/tk/.config/poleia-texttest/eumelos.json",
+      "command": "rite --list"
+    },
+    "Phoinix": {
+      "id": "aac9bddb-f374-41e1-88b1-74824a89494f",
+      "cities": [
+        {
+          "id": "5a1e1f63-ae8c-400b-a7f7-132b36e9338f",
+          "province": "54fb52c8-69e3-4466-b3d4-7121c83ceba1"
+        },
+        {
+          "id": "35a62eca-cfa8-4103-ad6f-79ba13476771",
+          "province": "e4ae90db-e74b-4099-884c-a2b37ebf5860"
+        }
+      ],
+      "temple": "fb4c1014-267d-4068-9cfd-d1e67481752d",
+      "config": "/home/tk/.config/poleia-texttest/phoinix.json",
+      "command": "notifications --kind KharisDeclining"
+    },
+    "Thersites": {
+      "id": "70ec8707-fdae-482b-aac0-85cbd9311962",
+      "cities": [
+        {
+          "id": "506f3c85-3199-432d-85e9-8a6b52b6d5ca",
+          "province": "c90225e2-ec32-4517-847c-467e1a353f89"
+        }
+      ],
+      "temple": "0d18a8e9-b8b8-4666-b043-0008ef39024e",
+      "config": "/home/tk/.config/poleia-texttest/thersites.json",
+      "command": "status"
+    },
+    "Laertes": {
+      "id": "dd16bb2d-0b3b-42b3-b03c-76717f3dad78",
+      "cities": [
+        {
+          "id": "56c3b7a8-53b9-4b40-8b58-861a93321b84",
+          "province": "3627223b-05e3-4d9c-89c2-85e72a61ab0a"
+        }
+      ],
+      "temple": "d0e78058-9417-44e6-bbec-c2ef34cc6ab7",
+      "config": "/home/tk/.config/poleia-texttest/laertes.json",
+      "command": "status"
+    },
+    "Antilochos": {
+      "id": "c0480e7d-8bdc-41f5-9ba1-bc7a3b646143",
+      "cities": [
+        {
+          "id": "d45b5fd6-7090-40c7-bf29-24927a8036fc",
+          "province": "749a3adc-fd92-405d-b57b-71aa4915488d"
+        }
+      ],
+      "temple": "26d2c6be-497e-494d-a444-5ef1f2b1681c",
+      "config": "/home/tk/.config/poleia-texttest/antilochos.json",
+      "command": "demolish --type temple --god potnia"
+    }
+  },
+  "snapshots": [
+    {
+      "city_id": "d45b5fd6-7090-40c7-bf29-24927a8036fc",
+      "staffed": 0,
+      "username": "Antilochos",
+      "kharis_cap": 100,
+      "population": 1000,
+      "temple_level": 2,
+      "kharis_amount": 45
+    },
+    {
+      "city_id": "22751e13-4cc3-4ae4-9220-3266c14bb250",
+      "staffed": 1,
+      "username": "Eumelos",
+      "kharis_cap": 100,
+      "population": 1000,
+      "temple_level": 1,
+      "kharis_amount": 40
+    },
+    {
+      "city_id": "56c3b7a8-53b9-4b40-8b58-861a93321b84",
+      "staffed": 0,
+      "username": "Laertes",
+      "kharis_cap": 100,
+      "population": 1000,
+      "temple_level": 1,
+      "kharis_amount": 80
+    },
+    {
+      "city_id": "5a1e1f63-ae8c-400b-a7f7-132b36e9338f",
+      "staffed": 0,
+      "username": "Phoinix",
+      "kharis_cap": 100,
+      "population": 11000,
+      "temple_level": 1,
+      "kharis_amount": 29.5
+    },
+    {
+      "city_id": "506f3c85-3199-432d-85e9-8a6b52b6d5ca",
+      "staffed": 0,
+      "username": "Thersites",
+      "kharis_cap": 100,
+      "population": 1000,
+      "temple_level": 1,
+      "kharis_amount": 12
+    }
+  ]
+}

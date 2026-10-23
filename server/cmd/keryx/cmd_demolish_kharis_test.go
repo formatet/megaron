@@ -53,7 +53,7 @@ func TestDemolishTempleRequiresExplicitConfirmation(t *testing.T) {
 				t.Fatalf("deleted=%v want %v; err=%v", deleted, tc.wantDelete, err)
 			}
 			if !tc.wantDelete {
-				if err == nil || !strings.Contains(err.Error(), "--yes") {
+				if err != nil || !strings.Contains(out, "Not demolished. Run again with --yes to confirm.") {
 					t.Fatalf("missing confirmation error: %v", err)
 				}
 				return
@@ -67,7 +67,7 @@ func TestDemolishTempleRequiresExplicitConfirmation(t *testing.T) {
 					t.Fatalf("polluted machine output: %s", out)
 				}
 			} else if tc.kind == "temple" {
-				for _, s := range []string{"potnia is angered", "−4 (5 → 1; floor 1)", "100 → 50", "does not cut existing kharis"} {
+				for _, s := range []string{"potnia is angered", "−4 kharis now (5 → 1; floor 1)", "100 → 50", "The lower ceiling takes no additional kharis"} {
 					if !strings.Contains(out, s) {
 						t.Fatalf("missing %q: %s", s, out)
 					}
@@ -80,7 +80,7 @@ func TestTempleDemolitionNotificationSummary(t *testing.T) {
 	out := capturePrint(t, func() {
 		printNotificationSummary(nil, notificationItem{Kind: "TempleDemolitionWrath", Body: json.RawMessage(`{"god_id":"velchanos","kharis_loss":10,"kharis_before":80,"kharis_after":70,"cap_before":75,"cap_after":50}`)})
 	})
-	for _, s := range []string{"velchanos is angered", "80 → 70", "75 → 50", "does not cut existing kharis"} {
+	for _, s := range []string{"velchanos is angered", "80 → 70", "75 → 50", "The lower ceiling takes no additional kharis"} {
 		if !strings.Contains(out, s) {
 			t.Fatalf("missing %q: %s", s, out)
 		}

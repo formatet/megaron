@@ -1,0 +1,12 @@
+{
+  "mutation": "removed above-ceiling guard on idle advice; ORDER29 test fails",
+  "restored_sha256": "15cbadfbaabc085a65707850049633c075a0881fb9c4f3d937556101c66c32b7",
+  "snapshot_sha256": "15cbadfbaabc085a65707850049633c075a0881fb9c4f3d937556101c66c32b7",
+  "replays": 3,
+  "final_cli": "final-cli.log",
+  "server_provenance": {
+    "commit": "7f0cdeb",
+    "migration": 203,
+    "status": "ok"
+  }
+}

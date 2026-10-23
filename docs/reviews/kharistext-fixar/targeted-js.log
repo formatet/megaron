@@ -1,0 +1,118 @@
+TAP version 13
+# Subtest: label names the hex for hex buildings only
+ok 1 - label names the hex for hex buildings only
+  ---
+  duration_ms: 0.522312
+  type: 'test'
+  ...
+# Subtest: prompt says no refund and that it cannot be undone
+ok 2 - prompt says no refund and that it cannot be undone
+  ---
+  duration_ms: 0.143164
+  type: 'test'
+  ...
+# Subtest: result line pluralises the idle citizens
+ok 3 - result line pluralises the idle citizens
+  ---
+  duration_ms: 0.103884
+  type: 'test'
+  ...
+# Subtest: temple confirmation and result use actual server loss and ceiling, including floor
+ok 4 - temple confirmation and result use actual server loss and ceiling, including floor
+  ---
+  duration_ms: 0.139558
+  type: 'test'
+  ...
+# Subtest: temple consequence uses the god display name rather than its technical key
+ok 5 - temple consequence uses the god display name rather than its technical key
+  ---
+  duration_ms: 0.151098
+  type: 'test'
+  ...
+# Subtest: AK1: kharis_net_known true draws a Net row, distinct from Passive, signed with one decimal
+ok 6 - AK1: kharis_net_known true draws a Net row, distinct from Passive, signed with one decimal
+  ---
+  duration_ms: 0.80231
+  type: 'test'
+  ...
+# Subtest: AK1b: a negative net is signed with a minus, not a double sign
+ok 7 - AK1b: a negative net is signed with a minus, not a double sign
+  ---
+  duration_ms: 0.14732
+  type: 'test'
+  ...
+# Subtest: AK2: kharis_net_known false draws no net row at all — not even "0.0"
+ok 8 - AK2: kharis_net_known false draws no net row at all — not even "0.0"
+  ---
+  duration_ms: 0.082371
+  type: 'test'
+  ...
+# Subtest: AK2b: kharis_net_known missing entirely (not strictly true) also draws nothing
+ok 9 - AK2b: kharis_net_known missing entirely (not strictly true) also draws nothing
+  ---
+  duration_ms: 0.079876
+  type: 'test'
+  ...
+# Subtest: AK3: kharis_devotion_idle true draws the idle-capacity warning
+ok 10 - AK3: kharis_devotion_idle true draws the idle-capacity warning
+  ---
+  duration_ms: 0.118191
+  type: 'test'
+  ...
+# Subtest: AK3b: kharis_devotion_idle false (or absent) draws no warning
+ok 11 - AK3b: kharis_devotion_idle false (or absent) draws no warning
+  ---
+  duration_ms: 0.099733
+  type: 'test'
+  ...
+# Subtest: a null/undefined payload draws nothing, crashes nothing
+ok 12 - a null/undefined payload draws nothing, crashes nothing
+  ---
+  duration_ms: 0.536063
+  type: 'test'
+  ...
+# Subtest: realm decay breakdown uses authoritative base, city cost and total, including templeless realms
+ok 13 - realm decay breakdown uses authoritative base, city cost and total, including templeless realms
+  ---
+  duration_ms: 0.276713
+  type: 'test'
+  ...
+# Subtest: missing or partial realm decay never claims zero cost
+ok 14 - missing or partial realm decay never claims zero cost
+  ---
+  duration_ms: 0.283061
+  type: 'test'
+  ...
+# Subtest: production and extra worker yield are server-owned; yield is conditional, not a staffing recommendation
+ok 15 - production and extra worker yield are server-owned; yield is conditional, not a staffing recommendation
+  ---
+  duration_ms: 0.281591
+  type: 'test'
+  ...
+# Subtest: R3/R5: everyday prayers work at L1, blessings need standing 60, temple does not grant protection
+ok 16 - R3/R5: everyday prayers work at L1, blessings need standing 60, temple does not grant protection
+  ---
+  duration_ms: 9.047322
+  type: 'test'
+  ...
+# Subtest: above ceiling explains ignored gains and does not promise a worker can increase standing
+ok 17 - above ceiling explains ignored gains and does not promise a worker can increase standing
+  ---
+  duration_ms: 0.133782
+  type: 'test'
+  ...
+# Subtest: ORDER29: empty temple slots above the ceiling do not invite staffing to raise kharis
+ok 18 - ORDER29: empty temple slots above the ceiling do not invite staffing to raise kharis
+  ---
+  duration_ms: 0.095215
+  type: 'test'
+  ...
+1..18
+# tests 18
+# suites 0
+# pass 18
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 58.481469

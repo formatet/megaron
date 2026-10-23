@@ -1,0 +1,2 @@
+The god Potnia is angered: demolition costs −20 kharis now (45 → 25; floor 1). Ceiling 75 → 40. The lower ceiling takes no additional kharis. Above it, kharis declines only through daily cult upkeep; temple workers and offerings do not raise it.
+Not demolished. Run again with --yes to confirm.

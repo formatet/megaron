@@ -17,7 +17,7 @@ Daily upkeep is **0.1 base + 0.2 per city beyond the first + 0.1 per 1,000 resid
 
 For **three cities with 2,500 residents altogether**, upkeep is **0.1 + 0.4 + 0.25 = 0.75 kharis per day**. A realm without a city has the base cost only.
 
-**Kult → Upkeep of the cult** and `keryx status` show the base, cities and residents separately, alongside projected temple production and net. One more fed temple worker gives **+1.05 kharis per day before scarcity**. This describes the extra worker's yield: employing one also requires a free citizen, an available temple workplace and that temple's daily offering. A temple earns favour; it does not remove its city's cost.
+**Kult → Upkeep of the cult** and `keryx status` show the base, cities and residents separately, alongside projected temple production and net. One more fed temple worker gives **at least +1.05 kharis per day**, and more when the cult’s reference offering of grain is scarce in the world. This describes the extra worker's yield: employing one also requires a free citizen, an available temple workplace and that temple's daily offering. A temple earns favour; it does not remove its city's cost.
 
 Below **15 Kharis**, there is a 3% chance of punishment each day **with or without a temple**. An actual punishment gives **seven days of protection**, whose end date appears in Kult and `keryx status`. Nothing taken means no new protection. See [[divine-wrath]]. A punishment chooses a random eligible city of yours with something it can take; it need not strike the capital.
 
@@ -31,7 +31,7 @@ Three things must be true, every day:
 
 In a small realm, a fully staffed, fed level-1 temple can earn more favour than the realm loses each day. Compare the projected net; a larger realm may need more temples or higher levels. Larger temples can employ more devotion and raise kharis faster when staffed and fed.
 
-**Your best temple sets your ceiling:** no temple **40**, level 1 **50**, level 2 **75**, level 3 **100**. Everyday prayers work at a level-1 temple. Spontaneous blessings require at least **60 kharis** with a maintained temple. A level-2 ceiling lets you build standing to 60; standing retained above a lowered ceiling still counts.
+**Your best temple sets your ceiling:** no temple **40**, level 1 **50**, level 2 **75**, level 3 **100**. Everyday prayers work at a level-1 temple. Spontaneous blessings need **60 kharis** and a maintained temple. Only a level-2 temple or higher lets kharis grow that far. Kharis retained above a lowered ceiling still counts.
 
 Kharis decays every day regardless. Additional cities and residents increase cult upkeep even when every city has a temple ([[colonies]]).
 
@@ -45,4 +45,4 @@ The temple shows how much each good counts with the gods, before a particular go
 
 A notification marks each change between **Favorable**, **Indifferent**, **Suspicious** and **Wrathful**, with the new Kharis value and recorded day. Check **Kult** for decay and temple support; staff and feed your [[temples]].
 
-Demolishing a temple voluntarily costs **10 kharis per level**, with a floor of **1**; plundering causes no such debt. A lowered ceiling stops growth without cutting existing standing; ordinary daily upkeep continues above it and temple gains do not offset that decline. The confirmation shows the loss and any ceiling change. See [[temple-demolition]].
+Demolishing a temple voluntarily costs **10 kharis per level**, with a floor of **1**; plundering causes no such debt. The demolition loss is immediate. A lower ceiling takes no additional kharis; above it, daily cult upkeep lowers kharis and temple workers and offerings do not raise it. The confirmation shows the loss and any ceiling change. See [[temple-demolition]].

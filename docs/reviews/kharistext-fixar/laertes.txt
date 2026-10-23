@@ -1,0 +1,41 @@
+Wanax Laertes · today 05:49
+
+1 citizen = 100 people
+Laertes 1 [minoan]  Pop: 1.0k people  Labor: 10 citizens  Walls: 0/3  Settlements: 1/5
+Walls hold 2.0k. The next wall needs a Granary of level 1 (yours: 0) — `keryx build --type silo`.
+Population 1000 — not growing: food net -4.4 per day (needs more than 0)
+
+Blessed harvest: +25% grain, oil, wine, livestock yield · 25 days left
+Food for 798.0 days at current consumption (989.7525 grain, 1000 fish, 1000 oil, 1000 wine)
+Herd 1000 / 50 — full: new animals are eaten, then lost. A pen raises the cap.
+
+Last today 05:49: 1 goods produced, 0 consumed  ·  keryx ticklog for details
+
+Resources
+  (per day; food and army balances are itemized below)
+  Silver     1.0k  —
+  Food     production 0.6 − people eat 5.0 = net -4.4 per day (before army)
+  Grain       990  production 0.6 per day  (5 citizens needed for people on best food slots · 0 on food)
+  Automatic food: 0.50 grain + 0.00 fish per day without placed citizens (nearby ground 0.50 grain; 0 people outside whole citizens: 0.00 grain + 0.00 fish, a fraction of the best food worker)
+  Army     eats 0 food per day → food net -4.4 per day after army
+  Silver   net +0.0 per day after army pay
+  Fish       1.0k  —
+  Timber      990  —
+  Stone      1.0k  —
+  Copper     1.0k  —
+  Tin        1.0k  —
+  Bronze     1.0k  —
+  ⚠ Timber production ~0 — timber gates harbour (16)/barracks (8)/foundry (8)/temple (8). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).
+  Kharis       80  (Favorable) · ceiling 50 · net -0.2 per day (upkeep only above ceiling)
+  Upkeep of the cult: 0.10 base + 1 city cost 0.00 + 1000 residents cost 0.10 = 0.20 kharis per day
+  Temple production: 0.00 kharis per day
+  Everyday prayers work at a level-1 temple. Spontaneous blessings need 60 kharis and a maintained temple. Only a level-2 temple or higher lets kharis grow that far. Kharis retained above a lowered ceiling still counts.
+  Below 15 kharis: 3% chance of divine punishment per day, with or without a temple.
+  → kharis declines through daily cult upkeep until it is below the ceiling 50; temple workers and offerings do not raise it there.
+  Temple of Potnia in Laertes 1: reference 0.25 grain per day — alternatives: 0.2677 fish or 0.2601 timber or 0.2575 silver — stock: 989.8 grain, 1000 fish, 990 timber, 1000 silver — next gift: 0.25 grain  ✓
+
+Army (garrison in Laertes 1)
+  Field units and other cities are shown in `keryx unit list`.
+
+Buildings
+  Temple of Potnia L1

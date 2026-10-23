@@ -5,25 +5,32 @@ import (
 	"testing"
 )
 
-// Haiku-8: "Kharis 50 · cap 50 · net +2.2" was followed by "climbing toward the cap 50".
+// Haiku-8: "Kharis 50 · cap 50 · net +2.2" was followed by "climbing toward the ceiling 50".
 func TestKharisCapLineAtCapDoesNotClimb(t *testing.T) {
 	sett := func(kv float64) map[string]any {
 		return map[string]any{"kharis": kv, "kharis_cap": 50.0, "max_temple_level": 1.0,
 			"kharis_net_per_tick": 2.2, "kharis_net_known": true}
 	}
-	if got := kharisCapLine(sett(50)); !strings.Contains(got, "is at the cap 50") || strings.Contains(got, "climbing") {
+	if got := kharisCapLine(sett(50)); !strings.Contains(got, "is at the ceiling 50") || strings.Contains(got, "climbing") {
 		t.Fatalf("at cap: %q", got)
 	}
-	if got := kharisCapLine(sett(30)); !strings.Contains(got, "climbing toward the cap 50") {
+	if got := kharisCapLine(sett(30)); !strings.Contains(got, "climbing toward the ceiling 50") {
 		t.Fatalf("below cap: %q", got)
 	}
 }
 
 func TestKharisStalledHintNamesPhysicalTempleStaffing(t *testing.T) {
 	for _, net := range []float64{0, -.1} {
-		out := kharisCapLine(map[string]any{"kharis": 40.0, "kharis_cap": 50.0, "max_temple_level": 1.0, "kharis_net_known": true, "kharis_net_per_tick": net})
+		out := kharisCapLine(map[string]any{"kharis": 40.0, "kharis_cap": 50.0, "max_temple_level": 1.0, "kharis_net_known": true, "kharis_net_per_tick": net, "kharis_devotion_idle": true})
 		if strings.Contains(out, "allocate") || !strings.Contains(out, "keryx staff temple +1") {
 			t.Fatal(out)
 		}
+	}
+}
+
+func TestAboveCeilingHintDoesNotRecommendMoreWorkers(t *testing.T) {
+	out := kharisCapLine(map[string]any{"kharis": 80.0, "kharis_cap": 50.0, "max_temple_level": 1.0, "kharis_net_known": true, "kharis_net_per_tick": -.2, "kharis_devotion_idle": true})
+	if !strings.Contains(out, "until it is below the ceiling 50") || strings.Contains(out, "staff temple") || strings.Contains(out, "floor") {
+		t.Fatal(out)
 	}
 }

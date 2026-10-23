@@ -36,15 +36,15 @@ export function kharisNetView(pd) {
   if (Number.isInteger(pd.temple_staffed) && Number.isInteger(pd.temple_capacity)) {
     out.netHtml += '<div class="stat-row"><span class="sr-label">Temple workers here</span><span class="sr-val">' + pd.temple_staffed + '/' + pd.temple_capacity + '</span></div>';
   }
-  if (pd.kharis_devotion_idle === true) {
+  if (pd.kharis_devotion_idle === true && !(pd.kharis > pd.kharis_cap)) {
     out.idleHtml = '<p class="kult-warn">Temple workplaces remain unfilled — place citizens in your temples in City.</p>';
   }
 
   const aboveCap = Number.isFinite(pd.kharis) && Number.isFinite(pd.kharis_cap) && pd.kharis > pd.kharis_cap;
-  if (aboveCap) out.netHtml += '<p class="empty-state">Above your temple’s ceiling — standing drifts down; offerings do not raise it.</p>';
+  if (aboveCap) out.netHtml += '<p class="empty-state">Above your temple’s ceiling: kharis declines through daily cult upkeep until it is below the ceiling ' + pd.kharis_cap + '; temple workers and offerings do not raise it there.</p>';
   if (!aboveCap && Number.isFinite(pd.kharis_per_temple_worker)) {
-    out.netHtml += '<p class="empty-state">One more fed temple worker gives +' + pd.kharis_per_temple_worker.toFixed(2) +
-      ' kharis per day before scarcity. Requires a free citizen, a temple workplace and its daily offering.</p>';
+    out.netHtml += '<p class="empty-state">One more fed temple worker gives at least +' + pd.kharis_per_temple_worker.toFixed(2) +
+      ' kharis per day, and more when the cult’s reference offering of grain is scarce in the world. Requires a free citizen, a temple workplace and its daily offering.</p>';
   }
   return out;
 }
@@ -52,7 +52,7 @@ export function kharisNetView(pd) {
 export function kharisRulesHTML(pd) {
  const threshold=pd?.kharis_blessing_threshold;
  if (!Number.isFinite(threshold)) return '';
- let html='<p class="empty-state">Everyday prayers work at a level-1 temple. Spontaneous blessings require at least ' + threshold + ' kharis with a maintained temple. A level-2 ceiling lets you build standing to that threshold; standing retained above a lowered ceiling still counts.</p>';
+ let html='<p class="empty-state">Everyday prayers work at a level-1 temple. Spontaneous blessings need ' + threshold + ' kharis and a maintained temple. Only a level-2 temple or higher lets kharis grow that far. Kharis retained above a lowered ceiling still counts.</p>';
  const wrath=pd?.kharis_wrath;
  if (wrath && Number.isFinite(wrath.threshold) && Number.isFinite(wrath.daily_probability)) {
   html+='<p class="empty-state">Below ' + wrath.threshold + ' kharis, there is a ' + Math.round(wrath.daily_probability*100) + '% chance of divine punishment each day, with or without a temple.</p>';

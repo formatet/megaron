@@ -35,7 +35,7 @@ func TestStatusRealmKharisDecay(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			for _, want := range []string{tc.want, "net -", "cap 40", "Temples: none", "Temple production: 2.10", "worker gives +1.05", "before scarcity"} {
+			for _, want := range []string{tc.want, "net -", "ceiling 40", "Temples: none", "Temple production: 2.10", "worker gives at least +1.05", "grain is scarce in the world"} {
 				if !strings.Contains(out, want) {
 					t.Fatalf("missing %q: %s", want, out)
 				}
@@ -72,7 +72,7 @@ func TestStatusDivineProtectionAndBlessingRequirement(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{"Everyday prayers work at a level-1 temple", "at least 60 kharis", "level-2 ceiling lets you build standing", "standing retained above a lowered ceiling still counts", "with or without a temple", "Protected from divine punishment until"} {
+	for _, want := range []string{"Everyday prayers work at a level-1 temple", "need 60 kharis", "Only a level-2 temple or higher", "Kharis retained above a lowered ceiling still counts", "with or without a temple", "Protected from divine punishment until"} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("missing %q: %s", want, out)
 		}
@@ -91,7 +91,7 @@ func TestStatusAboveCeilingIgnoresTempleGain(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{"standing drifts down; offerings do not raise it", "upkeep only above ceiling", "net -0.2"} {
+	for _, want := range []string{"until it is below the ceiling", "upkeep only above ceiling", "net -0.2"} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("missing %q: %s", want, out)
 		}
