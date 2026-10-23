@@ -1,1 +1,1 @@
-rigg: commit 88d6ea5 · migration 204/204 · värld 1312f0dd · tick 5282 · TICK_SECONDS=3600 · 2026-10-23 06:33
+rigg: commit 49fd59e · migration 204/204 · värld 1312f0dd · tick 5282 · TICK_SECONDS=3600 · 2026-10-23 06:40
