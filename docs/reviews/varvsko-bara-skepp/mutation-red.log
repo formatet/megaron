@@ -1,0 +1,32 @@
+» färsk DB på migration 205 · commit 611da45a+ändringar
+=== RUN   TestRecruitShipQueueIgnoresTenLandTrainingJobs
+2026/10/23 07:05:39 INFO player registered id=2e13b9b2-d3c1-478d-a8d1-5574353074af username=shipwright-d6c966b9-131c-474c-953c-b9160aaef9d7
+--- PASS: TestRecruitShipQueueIgnoresTenLandTrainingJobs (0.11s)
+=== RUN   TestRecruitShipQueueCapsTenNavalJobs
+=== RUN   TestRecruitShipQueueCapsTenNavalJobs/shipyard_work
+2026/10/23 07:05:39 INFO player registered id=d5b2ab63-b025-4273-a136-3ae865814338 username=shipwright-9ad4bac1-5480-4292-9b51-d24c896dbd29
+    recruit_naval_queue_test.go:56: eleventh: 201 {"complete_at":null,"count":1,"forming_size":1,"men":20,"names":["Warden of Crete"],"pop_drawn":20,"population_after":4780,"population_before":4800,"shipyard_waiting":true,"shipyard_work_remaining":3,"unit_id":"5142597a-4e4a-47b4-89a4-5d067df68abb","unit_ids":["5142597a-4e4a-47b4-89a4-5d067df68abb"],"unit_type":"galley","upkeep_warning":"warning: once this unit garrisons it needs 0.1 grain + 0.1 silver per day upkeep — this settlement's current net after its existing army's upkeep is -23.9 grain per day, +0.0 silver per day; it may starve/desert without more production or fewer units (`keryx status`)"}
+=== RUN   TestRecruitShipQueueCapsTenNavalJobs/legacy_TrainComplete
+2026/10/23 07:05:39 INFO player registered id=7d4b52f7-cc36-497b-9464-62fb03218a9a username=shipwright-1b2a617d-04c6-4b3c-9dfe-406b859e5dc3
+--- FAIL: TestRecruitShipQueueCapsTenNavalJobs (0.18s)
+    --- FAIL: TestRecruitShipQueueCapsTenNavalJobs/shipyard_work (0.09s)
+    --- PASS: TestRecruitShipQueueCapsTenNavalJobs/legacy_TrainComplete (0.09s)
+=== RUN   TestRecruitShipQueueDoesNotDoubleCountConvertedNavalTimers
+2026/10/23 07:05:39 INFO player registered id=92e83dde-0b59-47dd-aa90-ce3a97165b7f username=shipwright-5452f33f-fd40-4def-b29f-9ace2117ec00
+    recruit_naval_queue_test.go:81: eleventh with stale timers: 201 {"complete_at":null,"count":1,"forming_size":1,"men":20,"names":["Deep Blue Bull"],"pop_drawn":20,"population_after":4780,"population_before":4800,"shipyard_waiting":true,"shipyard_work_remaining":3,"unit_id":"69ff2934-f20a-48e9-a77d-2837f2ceea89","unit_ids":["69ff2934-f20a-48e9-a77d-2837f2ceea89"],"unit_type":"galley","upkeep_warning":"warning: once this unit garrisons it needs 0.1 grain + 0.1 silver per day upkeep — this settlement's current net after its existing army's upkeep is -23.9 grain per day, +0.0 silver per day; it may starve/desert without more production or fewer units (`keryx status`)"}
+        ; want422
+--- FAIL: TestRecruitShipQueueDoesNotDoubleCountConvertedNavalTimers (0.10s)
+=== RUN   TestRecruitShipQueueIgnoresInactiveLegacyTimers
+=== RUN   TestRecruitShipQueueIgnoresInactiveLegacyTimers/orphan
+2026/10/23 07:05:39 INFO player registered id=e44d313e-16eb-4bbc-9097-fd0e017cbd31 username=shipwright-617d1214-6ab1-45fe-b193-276d12728b60
+=== RUN   TestRecruitShipQueueIgnoresInactiveLegacyTimers/processed
+2026/10/23 07:05:39 INFO player registered id=75fd8e57-7ba9-4c28-9d42-f2b53b5b3a52 username=shipwright-d3ef2027-e1ca-4f38-bbb6-35181c32dfc6
+=== RUN   TestRecruitShipQueueIgnoresInactiveLegacyTimers/failed
+2026/10/23 07:05:39 INFO player registered id=bcc3b1cd-150d-4dbd-bd87-04fc94608dab username=shipwright-fe35f80e-8351-455b-9822-69c98473ba74
+--- PASS: TestRecruitShipQueueIgnoresInactiveLegacyTimers (0.30s)
+    --- PASS: TestRecruitShipQueueIgnoresInactiveLegacyTimers/orphan (0.09s)
+    --- PASS: TestRecruitShipQueueIgnoresInactiveLegacyTimers/processed (0.10s)
+    --- PASS: TestRecruitShipQueueIgnoresInactiveLegacyTimers/failed (0.11s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.697s
+FAIL

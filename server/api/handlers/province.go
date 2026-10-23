@@ -2234,17 +2234,13 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Naval build-queue cap: at most 10 vessels building per settlement (one
-	// TrainComplete per vessel = its build time). Land no longer schedules
-	// per-10-men batches — a unit trains as a single job when it reaches 100
-	// (see the create-loop below) — so this cap is naval-only now.
+	// Naval build-queue cap: at most ten vessels building per settlement.
+	// Land TrainComplete jobs do not occupy the shipyard; legacy naval timers
+	// and saved shipyard work count each vessel only once.
 	if cat == unit.CategoryNaval {
 		var pendingBuilds int
 		_ = h.pool.QueryRow(r.Context(),
-			`SELECT (SELECT COUNT(*) FROM units WHERE world_id=$1 AND settlement_id=$2 AND category='naval' AND status='forming' AND shipyard_work_remaining IS NOT NULL) + COUNT(*) FROM scheduled_events
-			 WHERE world_id = $1 AND event_type = 'TrainComplete'
-			   AND processed_at IS NULL AND failed_at IS NULL
-			   AND (payload->>'settlement_id')::uuid = $2`,
+			navalBuildQueueCountSQL,
 			worldID, settlementID,
 		).Scan(&pendingBuilds)
 		if pendingBuilds+effectiveCount > 10 {
@@ -2420,8 +2416,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 	if cat == unit.CategoryNaval {
 		var pendingBuilds int
 		if err := tx.QueryRow(r.Context(),
-			`SELECT (SELECT COUNT(*) FROM units WHERE world_id=$1 AND settlement_id=$2 AND category='naval' AND status='forming' AND shipyard_work_remaining IS NOT NULL) + COUNT(*) FROM scheduled_events WHERE world_id = $1 AND event_type = 'TrainComplete'
-			 AND processed_at IS NULL AND failed_at IS NULL AND (payload->>'settlement_id')::uuid = $2`,
+			navalBuildQueueCountSQL,
 			worldID, settlementID).Scan(&pendingBuilds); err != nil {
 			writeError(w, http.StatusInternalServerError, "could not check ship build queue")
 			return

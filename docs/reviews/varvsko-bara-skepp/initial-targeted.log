@@ -1,0 +1,69 @@
+» färsk DB på migration 205 · commit 611da45a+ändringar
+=== RUN   TestRecruit_ConcurrentRequestsRecheckShipQueue
+2026/10/23 07:04:56 INFO player registered id=c213733d-f136-4aa0-a58f-44b50dd60336 username=shipwright-46c591cc-7d75-48fb-a064-edca214e8002
+--- PASS: TestRecruit_ConcurrentRequestsRecheckShipQueue (0.09s)
+=== RUN   TestRecruitShipQueueIgnoresTenLandTrainingJobs
+2026/10/23 07:04:56 INFO player registered id=88e842eb-bf17-450a-a727-d621989ab2bc username=shipwright-ee5dcfa7-5db6-4bfa-89cc-02347fa2b7ec
+--- PASS: TestRecruitShipQueueIgnoresTenLandTrainingJobs (0.11s)
+=== RUN   TestRecruitShipQueueCapsTenNavalJobs
+=== RUN   TestRecruitShipQueueCapsTenNavalJobs/shipyard_work
+2026/10/23 07:04:56 INFO player registered id=513153e0-5f9c-4132-8f15-8761cced1170 username=shipwright-f70704f0-a48e-4469-a519-7c0678356c64
+=== RUN   TestRecruitShipQueueCapsTenNavalJobs/legacy_TrainComplete
+2026/10/23 07:04:56 INFO player registered id=44cbac2b-81bf-4bcd-9cdc-bba73891ef9b username=shipwright-98ae600c-f679-492a-9e16-2bf3b9020fda
+--- PASS: TestRecruitShipQueueCapsTenNavalJobs (0.18s)
+    --- PASS: TestRecruitShipQueueCapsTenNavalJobs/shipyard_work (0.09s)
+    --- PASS: TestRecruitShipQueueCapsTenNavalJobs/legacy_TrainComplete (0.09s)
+=== RUN   TestRecruitShipQueueDoesNotDoubleCountConvertedNavalTimers
+2026/10/23 07:04:57 INFO player registered id=9e330c75-fd14-45d7-8ae2-7364291cbb6c username=shipwright-2272b381-3d66-4cea-be20-eb75fcd0b979
+--- PASS: TestRecruitShipQueueDoesNotDoubleCountConvertedNavalTimers (0.09s)
+=== RUN   TestRecruitShipQueueIgnoresInactiveLegacyTimers
+2026/10/23 07:04:57 INFO player registered id=51e7dc53-8b15-47b9-a94f-e31173a387f9 username=shipwright-89566aa6-f245-4772-a183-c9449f5730cc
+--- PASS: TestRecruitShipQueueIgnoresInactiveLegacyTimers (0.09s)
+=== RUN   TestShipyardUnstaffedPaidRepairWaits
+2026/10/23 07:04:57 INFO player registered id=10e159d1-f419-4bcc-8764-e4c18d3888ad username=shiprepair-264d3d0a-c5b5-453c-ac6a-2fe92d3f8b76
+--- PASS: TestShipyardUnstaffedPaidRepairWaits (0.06s)
+=== RUN   TestShipyardPauseResumePreservesPaidProgressAndRejectsStaleTimer
+2026/10/23 07:04:57 INFO player registered id=8aeb657f-0da3-438b-aa3e-d191c75b590b username=shiprepair-a550e318-1fa7-4c84-ac50-5fe83ab492ec
+--- PASS: TestShipyardPauseResumePreservesPaidProgressAndRejectsStaleTimer (0.08s)
+=== RUN   TestShipyardLifecycleChangesStopWorkAtomically
+=== RUN   TestShipyardLifecycleChangesStopWorkAtomically/demolition
+2026/10/23 07:04:57 INFO player registered id=dd65053c-7218-4765-9321-cff60b9b5889 username=shiprepair-dfe96da9-b4b9-4933-af40-c1f11756afb8
+=== RUN   TestShipyardLifecycleChangesStopWorkAtomically/population
+2026/10/23 07:04:57 INFO player registered id=56303754-28d3-41ca-b257-9a655d824472 username=shiprepair-3f5c186d-c32d-4a34-9e1b-4116d76eefe1
+=== RUN   TestShipyardLifecycleChangesStopWorkAtomically/owner
+2026/10/23 07:04:57 INFO player registered id=c51e607d-da36-4070-8a61-8e92e26a26ae username=shiprepair-8fc33491-8d90-4841-9c7a-d1dfe10d947e
+=== RUN   TestShipyardLifecycleChangesStopWorkAtomically/unit-owner
+2026/10/23 07:04:57 INFO player registered id=5fab3879-3457-48d7-a015-d3c62aacff19 username=shiprepair-9d3b19b2-8c49-4df9-bf19-c71fdcb0c1ba
+=== RUN   TestShipyardLifecycleChangesStopWorkAtomically/collapsed
+2026/10/23 07:04:57 INFO player registered id=f186d89c-c502-4675-9aac-130c3736919a username=shiprepair-ad22770c-4c00-4450-a109-b7dd33ef3aa4
+--- PASS: TestShipyardLifecycleChangesStopWorkAtomically (0.34s)
+    --- PASS: TestShipyardLifecycleChangesStopWorkAtomically/demolition (0.07s)
+    --- PASS: TestShipyardLifecycleChangesStopWorkAtomically/population (0.07s)
+    --- PASS: TestShipyardLifecycleChangesStopWorkAtomically/owner (0.07s)
+    --- PASS: TestShipyardLifecycleChangesStopWorkAtomically/unit-owner (0.07s)
+    --- PASS: TestShipyardLifecycleChangesStopWorkAtomically/collapsed (0.07s)
+=== RUN   TestShipyardDeployTransitionPreservesDeadlineWithoutFreeStaff
+2026/10/23 07:04:57 INFO player registered id=ba2c50e2-0433-44ed-8bd8-dc0794a28db8 username=shiprepair-43180098-4729-49dd-b662-07eeef13156a
+--- PASS: TestShipyardDeployTransitionPreservesDeadlineWithoutFreeStaff (0.07s)
+=== RUN   TestShipyardPlacementIsServiceWithCapacityAndIdleLifecycle
+2026/10/23 07:04:57 INFO player registered id=398c9598-a7ae-49ae-8e99-66df8a4b1c7a username=placement-d51835d9-c8ef-4d49-abcb-0a46dad99276
+--- PASS: TestShipyardPlacementIsServiceWithCapacityAndIdleLifecycle (0.11s)
+=== RUN   TestShipyardPaidBuildsShareOneWorkerAndPausedOrdersStillCount
+2026/10/23 07:04:57 INFO player registered id=46360e35-8a1b-4e78-b83a-d066ec5ebe86 username=shipwright-72029ba5-c898-4315-91c6-7f83444d7005
+--- PASS: TestShipyardPaidBuildsShareOneWorkerAndPausedOrdersStillCount (0.09s)
+=== RUN   TestShipyardRepairSchedulingFailureRollsBackPaymentAndStatus
+2026/10/23 07:04:58 INFO player registered id=812deb5d-a2de-4065-be89-75530e1f73a8 username=shiprepair-4f4c1e22-f05c-4df3-8055-92c7535490d0
+--- PASS: TestShipyardRepairSchedulingFailureRollsBackPaymentAndStatus (0.07s)
+=== RUN   TestShipyardReadSurfacesUseSameWorldAnchorDespiteClockSkew
+2026/10/23 07:04:58 INFO player registered id=03cf2497-7cd7-4454-ac1b-cf0b9258651d username=shiprepair-3b4b6f96-0ae0-4d3b-a7d6-8a73745aef42
+--- PASS: TestShipyardReadSurfacesUseSameWorldAnchorDespiteClockSkew (0.07s)
+=== RUN   TestShipyardCompletionPreservesNotificationIdentityAndSeverity
+=== RUN   TestShipyardCompletionPreservesNotificationIdentityAndSeverity/forming
+2026/10/23 07:04:58 INFO player registered id=16a5dda8-8604-49ad-a854-5a47de1a34d2 username=shiprepair-3c9df38b-fa03-47c6-b744-3511dd8a6b88
+=== RUN   TestShipyardCompletionPreservesNotificationIdentityAndSeverity/repairing
+2026/10/23 07:04:58 INFO player registered id=b3136a5d-4371-458a-a05a-46308a7b8239 username=shiprepair-c3fc0b86-299e-421a-a2e0-4f8ccd630bba
+--- PASS: TestShipyardCompletionPreservesNotificationIdentityAndSeverity (0.14s)
+    --- PASS: TestShipyardCompletionPreservesNotificationIdentityAndSeverity/forming (0.07s)
+    --- PASS: TestShipyardCompletionPreservesNotificationIdentityAndSeverity/repairing (0.07s)
+PASS
+ok  	formatet/megaron/server/api/handlers	1.602s
