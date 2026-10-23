@@ -1,6 +1,44 @@
 # Läsbara textfärger — slice 23
 
-## Kontrakt före kod
+## ORDER31 — återverifiering efter rebase, 2026-10-23
+
+Angiven checkpoint `0a6af00c` var redan integrerad i master (merge `ff1ba813`).
+Återskapad gren `codex/palett-text` rebasades därför konfliktfritt direkt till
+`611da45a`. Ingen spelkod, färg eller textkonsument ändras i ORDER31.
+Alla fyra ytor har inventerats: detta är enbart webbtypografi och bevisdokumentation;
+server, Keryx och Codex får inga konstgjorda ändringar.
+
+Palettbesluten i `4506c09e` är **redan införda**: danger är blood-red `#922B21`,
+diplomacy förblir lila (`--accent-diplomacy: #7A4AA5`), sekundärtext är varmgrå
+`#615D56`. Historiska förslaget `#67635C` nedan är inte dagens godkända färg.
+De fem mörka textvarianterna finns kvar. Gamla proposal-/förebilder bevaras som arkiv.
+
+Nya bilder i `current-a/` och `current-b/` tas av `current.py`: två oberoende,
+nygenererade lokala världar, riktig register → Keryx login/join/found/status/city →
+Firefox City/Economy/Kult/War, DPR1, **390 och 1000 px**. Endast dagens CSS:
+inga färg-overrides eller fångade API-svar. Healthz anger exakt commit/migration.
+Färska Kult/War-paneler bevisar öppning och textåtergivning, inte sena kult-/krigstillstånd.
+BILD är granskningsunderlag och blockerar inte merge enligt aktuell instruktion.
+
+738 JS-test och vet är gröna (`order31-js.log`, `order31-vet.log`). Ny fysisk
+mutation bytte safe-text till ljusgult: namngivet kontrasttest rött; byteexakt
+återställning → fyra palettester gröna (`order31-mutation*.log`, JSON med SHA256).
+Ingen mutation kvar i arbetskopian. Bilderna visar läsbar positiv produktion i Economy,
+Citys befolkning/arbetsplatser samt Kult/War som faktiskt öppnade paneler.
+Samtliga 16 panel/bredd-observationer saknar horisontellt overflow; inga pageerrors.
+Kontrollerad naturlig bildstorlek och samtliga gallerilänkar. Två nya världars
+healthz bekräftar `611da45a`, migration205. Konton/nycklar finns bara i /tmp;
+endast offentliga proof-/CLI-utdata och PNG följer med. Testservrarna är avslutade.
+
+EN full fresh på nyskapad Postgres, migration205, `-count=1 -p 1`: samtliga
+26 Go-paket med tester gröna (`order31-full-fresh.log`). Inga omkörningar av fullsviten.
+Produktionsfiler i server/web är byteoförändrade mot `611da45a`; detta commit innehåller
+bara dokumentation, bildbevis och körskript. Ingen merge/push/production-deploy av Codex.
+
+Följande avsnitt beskriver det ursprungliga arbetet på migration189 och är
+historiska körresultat.
+
+## Ursprungligt kontrakt före kod
 
 Problem: positiva värden på papyrus är svåra att läsa. Spelarsanning: produktion,
 framgång och status ska kunna läsas med normal textstorlek.
@@ -57,7 +95,7 @@ Bara offentliga proof-/CLI-utdata och bilder har kopierats, inga kontokonfigar e
 Kontrastkravet här gäller bg-panel; det är inte en revision av alla befintliga färger,
 storlekar, ikonkontraster eller alla andra bakgrunder.
 
-## BESLUT till Timothy — inte implementerat
+## Historiskt beslutsunderlag — senare ersatt av 4506c09e
 
 Full inventering av faktiska konsumenter: [uses.md](uses.md). danger används i
 fel-/förlust-/kollapsstatus, destruktiva knappar, hungersignaler och markeringar.

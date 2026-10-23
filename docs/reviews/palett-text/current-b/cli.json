@@ -1,0 +1,50 @@
+[
+  {
+    "args": [
+      "login",
+      "--server",
+      "http://127.0.0.1:47783",
+      "--username",
+      "timber-ee8371fa"
+    ],
+    "exit_code": 0,
+    "stdout": "Logged in to http://127.0.0.1:47783\nActive world:   43857219-e396-48d5-8cd8-c0e06728ae88\nYour province:  \n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "join"
+    ],
+    "exit_code": 0,
+    "stdout": "Joined! A Nomadic Host of 1000 people sets out at (55,47).\n  Run: keryx founding status\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "founding",
+      "settle",
+      "--name",
+      "Myrsine",
+      "--yes"
+    ],
+    "exit_code": 0,
+    "stdout": "Founding (55,47) \u2014 metropolis of 1000 people \u2014 catchment forecast (19/19 hexes known, 0 unknown):\n  Inland: a city here can never build a harbour or ships \u2014 to reach the sea you will need a coastal colony.\n  Food: grain ~5.6 + fish ~0.0 per day \u2212 consumption ~5.0 per day = net +0.6 per day\n  Starting stock 1200 grain \u2014 production covers food demand.\n  Other: tin-deposit \u2713, silver-deposit \u2713, oil ~11 per day, stone ~28 per day, timber ~4 per day, tin ~2 per day, wine ~17 per day\n  Gift: Demeter's farm \u2014 an inland site whose catchment bears grain, so the city is founded with a farm already standing\n\u2692 Metropolis founded at (55,47)! The host is dissolved \u2014 the people have a home.\n  Carried in by the host: 1200 grain, 480 silver. The city now holds 1200 grain, 480 silver (founding adds no extra grain or silver).\n  Run: keryx status\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "city"
+    ],
+    "exit_code": 0,
+    "stdout": "1 citizen = 100 people\nCitizens: 3/10 placed, 7 idle\n\nFood for 240.0 days at current consumption (1200 grain, 0 fish, 0 oil, 0 wine)\nFood: 3 citizens needed for people on best food slots, 3 on food\nAutomatic food: 0.50 grain + 0.00 fish per day without placed citizens (nearby ground 0.50 grain; 0 people outside whole citizens: 0.00 grain + 0.00 fish, a fraction of the best food worker)\n\nCatchment:\n  #1   (53,47) plains         stone      0/1    (next +0.5 per day)  [farm L1 @ (53,47) plains]\n                      grain      3/8    (next +1.7 per day)\n                      oil        0/2    (next +0.7 per day)\n                      wine       0/2    (next +0.5 per day)\n  #2   (53,48) hills          oil        0/2    (next +0.5 per day)\n                      wine       0/2    (next +1.0 per day)\n                      stone      0/2    (next +1.0 per day)\n                      grain      0/1    (next +0.5 per day)\n                      timber     0/1    (next +0.3 per day)\n  #4   (54,46) hills          stone      0/2    (next +1.0 per day)\n                      grain      0/1    (next +0.5 per day)\n                      timber     0/1    (next +0.3 per day)\n                      oil        0/2    (next +0.5 per day)\n                      wine       0/2    (next +1.0 per day)\n  #5   (54,47) hills          grain      0/1    (next +0.5 per day)\n                      timber     0/1    (next +0.3 per day)\n                      oil        0/2    (next +0.5 per day)\n                      wine       0/2    (next +1.0 per day)\n                      stone      0/2    (next +1.0 per day)\n  #8   (55,45) hills          stone      0/2    (next +1.0 per day)\n                      grain      0/1    (next +0.5 per day)\n                      timber     0/1    (next +0.3 per day)\n                      oil        0/2    (next +0.5 per day)\n                      wine       0/2    (next +1.0 per day)\n  #9   (55,46) hills          oil        0/2    (next +0.5 per day)\n                      wine       0/2    (next +1.0 per day)\n                      stone      0/2    (next +1.0 per day)\n                      grain      0/1    (next +0.5 per day)\n                      timber     0/1    (next +0.3 per day)\n  #12  (56,45) hills          oil        0/2    (next +0.5 per day)\n                      wine       0/2    (next +1.0 per day)\n                      stone      0/2    (next +1.0 per day)\n                      grain      0/1    (next +0.5 per day)\n                      timber     0/1    (next +0.3 per day)\n  #13  (56,46) hills          stone      0/2    (next +1.0 per day)\n                      grain      0/1    (next +0.5 per day)\n                      timber     0/1    (next +0.3 per day)\n                      oil        0/2    (next +0.5 per day)\n                      wine       0/2    (next +1.0 per day)\n  #16  (57,45) hills          oil        0/2    (next +0.5 per day)\n                      wine       0/2    (next +1.0 per day)\n                      stone      0/2    (next +1.0 per day)\n                      grain      0/1    (next +0.5 per day)\n                      timber     0/1    (next +0.3 per day)\n  #17  (57,46) forest_olive_grove oil        0/2    (next +1.0 per day)\n                      timber     0/1    (next +1.0 per day)\n                      stone      0/1    (next +0.5 per day)\n  #14  (56,47) mountain_limestone tin        0/1    (next +1.0 per day)\n                      stone      0/2    (next +2.0 per day)\n  #18  (57,47) mountain_limestone stone      0/2    (next +2.0 per day)\n                      tin        0/1    (next +1.0 per day)\n  #3   (53,49) mountain_red   stone      0/1    (next +0.5 per day)\n  #6   (54,48) mountain_red   stone      0/1    (next +0.5 per day)\n  #7   (54,49) mountain_red   stone      0/1    (next +0.5 per day)\n  #10  (55,48) mountain_red   stone      0/1    (next +0.5 per day)\n  #11  (55,49) mountain_red   stone      0/1    (next +0.5 per day)\n  #15  (56,48) mountain_red   stone      0/1    (next +0.5 per day)\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "status"
+    ],
+    "exit_code": 0,
+    "stdout": "Wanax Philona \u00b7 today 07:00\n\n1 citizen = 100 people\nMyrsine [minoan]  Pop: 1.0k people  Labor: 10 citizens  Walls: 0/3  Settlements: 1/5\nWalls hold 2.0k. The next wall needs a Granary of level 1 (yours: 0) \u2014 `keryx build --type silo`.\nPopulation 1000 \u2014 growing: food net +0.6 per day\n\nNo trade contacts yet \u2014 trade needs a foreign settlement within your vision. Run `keryx cities` to see known/rumoured neighbours (march outward or colonise to reach one), then `keryx message --to <name>` or `keryx trade-offer` once one is visible.\n\nFood for 240.0 days at current consumption (1200 grain, 0 fish, 0 oil, 0 wine)\nHerd 50 / 50 \u2014 full: new animals are eaten, then lost. A pen raises the cap.\n\nLast today 07:00: 1 goods produced, 0 consumed  \u00b7  keryx ticklog for details\n\nResources\n  (per day; food and army balances are itemized below)\n  Silver      480  \u2014\n  Food     production 5.6 \u2212 people eat 5.0 = net +0.6 per day (before army)\n  Grain      1.2k  production 5.6 per day  (3 citizens needed for people on best food slots \u00b7 3 on food)\n  Automatic food: 0.50 grain + 0.00 fish per day without placed citizens (nearby ground 0.50 grain; 0 people outside whole citizens: 0.00 grain + 0.00 fish, a fraction of the best food worker)\n  Army     eats 1 food per day \u2192 food net -0.4 per day after army\n  Silver   net +0.0 per day after army pay\n  \u26a0 Timber production ~0 \u2014 timber gates harbour (16)/barracks (8)/foundry (8)/temple (8). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).\n  \u26a0 Unmined deposit in the catchment: tin, silver \u2014 build a mine on its hex to extract it (a hex holds one building; if another stands there, demolish it first with `keryx demolish`)\n  Kharis       40  (Indifferent) \u00b7 ceiling 40 \u00b7 net -0.2 per day (temple \u2212 decay)\n  Upkeep of the cult: 0.10 base + 1 city cost 0.00 + 1000 residents cost 0.10 = 0.20 kharis per day\n  Temple production: 0.00 kharis per day\n  One more fed temple worker gives at least +1.05 kharis per day before cult upkeep, and more when the cult\u2019s reference offering of grain is scarce in the world. Requires a free citizen, a temple workplace and its daily offering.\n  Everyday prayers work at a level-1 temple. Spontaneous blessings need 60 kharis and a maintained temple. Only a level-2 temple or higher lets kharis grow that far. Kharis retained above a lowered ceiling still counts.\n  Below 15 kharis: 3% chance of divine punishment per day, with or without a temple.\n  Temples: none \u2014 kharis doesn't climb without a temple + offerings.\n\nArmy (garrison in Myrsine)\n  Spearmen    200\n      21fc2667-7203-46a0-b3b6-714f2f74e01c  100\n      71fd10b7-79b0-40f5-a720-b719d6593324  100\n  Upkeep     1 food, 0 silver per day  (everything the city pays \u2014 including field units)\n  Field units and other cities are shown in `keryx unit list`.\n\nBuildings\n  farm         L1\n",
+    "stderr": ""
+  }
+]
