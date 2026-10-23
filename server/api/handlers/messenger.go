@@ -1073,6 +1073,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 	var destID, originID uuid.UUID
 	var kind, wantGood, offerGood, offerStatus string
 	var wantQty, offerSilver, offerQty, wantSilver float64
+	var offerExpiresAt *time.Time
 	err = tx.QueryRow(r.Context(),
 		`SELECT m.destination_id, m.origin_id,
 		        COALESCE(m.trade_offer->>'kind', 'buy'),
@@ -1082,13 +1083,13 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		        COALESCE(m.trade_offer->>'offer_good', ''),
 		        COALESCE((m.trade_offer->>'offer_qty')::float, 0),
 		        COALESCE((m.trade_offer->>'want_silver')::float, 0),
-		        m.trade_offer->>'status'
+		        m.trade_offer->>'status', m.expires_at
 		 FROM messengers m
 		 JOIN settlements ds ON ds.id = m.destination_id
 		 WHERE m.id = $1 AND m.world_id = $2 AND ds.owner_id = $3
 		   AND m.status = 'delivered' AND m.trade_offer IS NOT NULL FOR UPDATE OF m, ds`,
 		messengerID, worldID, playerID,
-	).Scan(&destID, &originID, &kind, &wantGood, &wantQty, &offerSilver, &offerGood, &offerQty, &wantSilver, &offerStatus)
+	).Scan(&destID, &originID, &kind, &wantGood, &wantQty, &offerSilver, &offerGood, &offerQty, &wantSilver, &offerStatus, &offerExpiresAt)
 	if err != nil {
 		if ended := endedOfferStatus(r.Context(), tx, messengerID, worldID, playerID); ended != "" {
 			writeError(w, http.StatusConflict, "trade offer already "+ended)
@@ -1099,6 +1100,10 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 	}
 	if offerStatus != "pending" {
 		writeError(w, http.StatusConflict, "trade offer already "+offerStatus)
+		return
+	}
+	if offerExpiresAt != nil && !offerExpiresAt.After(h.clk.Now()) {
+		writeError(w, http.StatusConflict, "trade offer expired without an answer")
 		return
 	}
 
@@ -1257,8 +1262,8 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			     'goods_arrives_at', $2::timestamptz,
 			     'silver_arrives_at', $3::timestamptz,
 			     'ship_name', $4::text, 'goods_arrival_tick', $5::int, 'silver_arrival_tick', $6::int)
-			  WHERE id=$1 AND trade_offer->>'status'='pending'`,
-			messengerID, goodsArrivesAt, silverArrivesAt, shipName, tradeAcceptDueTick, returnDueTick,
+			  WHERE id=$1 AND trade_offer->>'status'='pending' AND (expires_at IS NULL OR expires_at>$7)`,
+			messengerID, goodsArrivesAt, silverArrivesAt, shipName, tradeAcceptDueTick, returnDueTick, h.clk.Now(),
 		)
 		if err != nil {
 			writeError(w, http.StatusInternalServerError, "could not update offer status")
@@ -1391,8 +1396,8 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			     'goods_arrives_at', $2::timestamptz,
 			     'silver_arrives_at', $3::timestamptz,
 			     'ship_name', $4::text, 'goods_arrival_tick', $5::int, 'silver_arrival_tick', $6::int)
-			  WHERE id=$1 AND trade_offer->>'status'='pending'`,
-			messengerID, goodsArrivesAt, silverArrivesAt, shipName, returnDueTick, tradeAcceptDueTick,
+			  WHERE id=$1 AND trade_offer->>'status'='pending' AND (expires_at IS NULL OR expires_at>$7)`,
+			messengerID, goodsArrivesAt, silverArrivesAt, shipName, returnDueTick, tradeAcceptDueTick, h.clk.Now(),
 		)
 		if err != nil {
 			writeError(w, http.StatusInternalServerError, "could not update offer status")
@@ -1584,13 +1589,22 @@ func (h *MessengerHandler) TradeDecline(w http.ResponseWriter, r *http.Request) 
 	}
 	defer tx.Rollback(r.Context())
 
+	var stillOwned bool
+	if err := tx.QueryRow(r.Context(), `SELECT true FROM messengers m
+ JOIN settlements ds ON ds.id=m.destination_id
+ WHERE m.id=$1 AND m.world_id=$2 AND ds.owner_id=$3 AND m.status='delivered'
+ FOR UPDATE OF m,ds`, messengerID, worldID, playerID).Scan(&stillOwned); err != nil {
+		writeError(w, http.StatusConflict, "trade offer no longer available to you")
+		return
+	}
+
 	// Flip to declined first, guarded on status='pending'. If a concurrent expiry
 	// already resolved+refunded the offer, RowsAffected is 0 and we abort without
 	// refunding a second time (which would not preserve mass).
 	tag, err := tx.Exec(r.Context(),
 		`UPDATE messengers SET trade_offer = trade_offer || '{"status":"declined"}'
-		  WHERE id=$1 AND trade_offer->>'status'='pending'`,
-		messengerID,
+		  WHERE id=$1 AND trade_offer->>'status'='pending' AND (expires_at IS NULL OR expires_at>$2)`,
+		messengerID, h.clk.Now(),
 	)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not update offer")
