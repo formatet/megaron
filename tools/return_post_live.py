@@ -88,7 +88,7 @@ def main():
      ctx=browser.new_context(viewport={'width':width,'height':height},has_touch=width==390);ctx.add_cookies([{'name':'poleia_token','value':recipient['token'],'url':base}]);ctx.add_init_script('localStorage.setItem("poleia_token",'+json.dumps(recipient['token'])+')');return ctx
     desktop=context(1280,900);page=desktop.new_page();page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda r:posts.append({'method':r.method,'path':r.url.split(base)[-1]}) if r.method=='POST' else None)
     page.goto(base+'/world/'+world+'/map',wait_until='networkidle');page.locator('#trig-diplomacy').click();root=page.locator('#dtab-queue');letter=root.locator('[data-letter="'+ids['reply']+'"]');letter.wait_for();assert 'Return post before' in letter.inner_text()
-    letter.locator('summary').click();letter.locator('[data-queue-reply]').fill('Carry this answer home on your own road.');page.screenshot(path=str(out/'desktop-window.png'))
+    letter.locator('summary').click();letter.locator('[data-queue-reply]').fill('Carry this answer home on your own road.');letter.locator('[data-queue-action="reply"]').scroll_into_view_if_needed();page.screenshot(path=str(out/'desktop-window.png'))
     with page.expect_response(lambda r:r.request.method=='POST' and r.url.endswith('/'+ids['reply']+'/reply')) as response:letter.locator('[data-queue-action="reply"]').click()
     assert response.value.status==200,response.value.text();letter.get_by_text('Reply dispatched.',exact=True).wait_for();page.screenshot(path=str(out/'desktop-replied.png'))
     assert int(sql(f"SELECT count(*) FROM messengers WHERE world_id='{world}'"))==2,'reply created a new messenger'
@@ -97,7 +97,9 @@ def main():
     assert not [p for p in posts if p['path'].endswith('/messengers')],posts
     mobile=context(390,844);phone=mobile.new_page();phone.on('pageerror',lambda e:errors.append(str(e)));phone.goto(base+'/world/'+world+'/map',wait_until='networkidle');phone.locator('#trig-diplomacy').click();mroot=phone.locator('#dtab-queue');pending=mroot.locator('[data-letter="'+ids['closed']+'"]');pending.wait_for();assert 'Return post before' in pending.inner_text();phone.screenshot(path=str(out/'mobile-window.png'))
     sql(f"UPDATE worlds SET current_tick=102,last_tick_at=now() WHERE id='{world}';")
-    mroot.locator('[data-queue-refresh]').click();phone.wait_for_function("document.querySelector('#dtab-queue')?.textContent.includes('Return post closed')");closed=mroot.locator('[data-letter="'+ids['closed']+'"]');assert closed.locator('[data-queue-action="reply"]').count()==0;closed.scroll_into_view_if_needed();phone.screenshot(path=str(out/'mobile-closed.png'))
+    # Manual tick fixtures do not emit a world-anchor WebSocket update.
+    # Reload the real bootstrap so the local deadline projection uses102 too.
+    phone.reload(wait_until='networkidle');phone.locator('#trig-diplomacy').click();mroot=phone.locator('#dtab-queue');phone.wait_for_function("document.querySelector('#dtab-queue')?.textContent.includes('Return post closed')");closed=mroot.locator('[data-letter="'+ids['closed']+'"]');assert closed.locator('[data-queue-action="reply"]').count()==0;closed.scroll_into_view_if_needed();phone.screenshot(path=str(out/'mobile-closed.png'))
     assert mroot.evaluate('(el)=>el.scrollWidth<=el.clientWidth')
     phone.locator('[data-tab="threads"]').click();phone.locator('#dtab-threads .dip-thread').first.wait_for();assert phone.locator('#dip-reply-row-'+ids['closed']).count()==0
     mobile.close();desktop.close();browser.close()
