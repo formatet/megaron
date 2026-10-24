@@ -7,12 +7,8 @@
 // Trade handler in api/handlers, the standing-order sweep in internal/combat)
 // binds a real ship through: find one, bind it, release it later.
 //
-// R1: allowed carrier types are galley and merchantman ONLY — never war_galley
-// (it may never carry cargo). Capacity is expressed in the same weight units
-// economy.IsShippableGood already prices goods in (quantity × weight); callers
-// compute a manifest's total weight themselves (transport may not import
-// economy — see intercept.go's own note on the same G1 boundary) and compare
-// it against the capacity this file reports.
+// Allowed carriers are galley and merchantman only. Capacity counts goods:
+// every unit of any shippable good occupies one cargo place.
 package transport
 
 import (
@@ -26,13 +22,11 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// Ship carrying capacity, in weight units (strawman — Timothy 2026-09-26,
-// "okalibrerat, justeras med prissättningen"). merchantman is the everyday
-// trade hull (crew 10) and carries more than a galley (crew 20, dual-purpose
-// combat/transport) — the plan's own numbers, not derived from crew size.
+// Cargo places per hull (Timothy 2026-10-24). Catalogue weights determine
+// shippability only; every good occupies one place per quantity unit.
 const (
-	ShipCapacityGalley      = 60.0
-	ShipCapacityMerchantman = 200.0
+	ShipCapacityGalley      = 20.0
+	ShipCapacityMerchantman = 120.0
 )
 
 // ShipCapacityFor returns the carrying capacity for an allowed carrier type.

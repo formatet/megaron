@@ -14,6 +14,10 @@ func TestGiftTransferResolvesContactedForeignCity(t *testing.T) {
 		if testWorldTimeResponse(w, r) {
 			return
 		}
+		if strings.HasSuffix(r.URL.Path, "/trade/preview") {
+			json.NewEncoder(w).Encode(map[string]any{"category": "land"})
+			return
+		}
 		calls++
 		if r.Header.Get("Authorization") != "Bearer token" {
 			t.Error("missing auth")
@@ -27,7 +31,7 @@ func TestGiftTransferResolvesContactedForeignCity(t *testing.T) {
 		case "POST":
 			var req map[string]any
 			json.NewDecoder(r.Body).Decode(&req)
-			if req["destination_id"] != "dest" || req["good_key"] != "silver" {
+			if req["destination_id"] != "dest" || req["items"].([]any)[0].(map[string]any)["good_key"] != "silver" {
 				t.Errorf("wrong payload %v", req)
 			}
 			json.NewEncoder(w).Encode(map[string]any{"kind": "gift", "arrival_tick": 42, "travel_ticks": 7})

@@ -290,7 +290,7 @@ func TestTrade_NoFreeShipAndNoLandRejects(t *testing.T) {
 }
 
 // TestTrade_ManifestOverShipCapacityRejected proves R1's capacity gate: a
-// galley (capacity 60) cannot carry a shipment heavier than that.
+// galley (capacity 20 goods) cannot carry a twenty-first good.
 func TestTrade_ManifestOverShipCapacityRejected(t *testing.T) {
 	f := setupTradeNavalFixture(t)
 
@@ -301,14 +301,7 @@ func TestTrade_ManifestOverShipCapacityRejected(t *testing.T) {
 	}
 	f.ship(t, originID, "galley")
 
-	var grainWeight float64
-	if err := f.pool.QueryRow(context.Background(), `SELECT weight FROM goods WHERE key = 'grain'`).Scan(&grainWeight); err != nil {
-		t.Fatalf("look up grain weight: %v", err)
-	}
-	if grainWeight <= 0 {
-		grainWeight = 1
-	}
-	overCapacityQty := 61.0 / grainWeight // galley capacity is 60
+	const overCapacityQty = 21.0
 
 	code, resp := f.post(t, "/worlds/"+f.worldID.String()+"/provinces/"+originProvince.String()+"/trade",
 		map[string]any{"destination_id": destID.String(), "good_key": "grain", "quantity": overCapacityQty})

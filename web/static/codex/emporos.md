@@ -8,7 +8,7 @@ The **Emporos** is the merchant hull: broad, slow, cedar-built, made to carry.
 | **Build time** | 4 game days |
 | **Food** | 0.05 per game day in port, 0.1 at sea |
 | **Pay** | none |
-| **Cargo** | 200 weight — e.g. 100 grain or 133 fish ([[transfers]]) |
+| **Cargo** | 120 goods of any kind ([[transfers]]) |
 | **Troops** | one land unit at a time |
 | **Speed** | slowest ship — 1.4 times a galley's travel time |
 | **Hull** | 5; repaired with cedar |

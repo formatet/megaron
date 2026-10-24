@@ -48,7 +48,7 @@ import {
   unitRoadToggle, unitBuildRoad,
 } from './ui/drawers/war.js';
 import {
-  loadEconomyDrawer, loadTransferGoods, loadTransferDestinations, startTransfer,
+  loadEconomyDrawer, loadTransferGoods, loadTransferDestinations, loadTransferPreview, updateTransferCargo, addTransferGood, startTransfer,
   createStandingOrder, pauseStandingOrder, resumeStandingOrder, deleteStandingOrder,
   sortEconomySettlements, openCitySettlement,
 } from './ui/drawers/economy.js';
@@ -204,6 +204,9 @@ Object.assign(window, {
   loadTicklog,
   loadTransferGoods,
   loadTransferDestinations,
+  loadTransferPreview,
+  updateTransferCargo,
+  addTransferGood,
   loadWarDrawer,
   notifShowKind,
   okRite,

@@ -249,10 +249,11 @@ async function loadEconomyTransfer(mySettlements) {
       <div class="dsec-title">Transfer or gift</div>
       <div style="display:flex;flex-direction:column;gap:.35rem;font-size:.78rem">
         <label>From <select id="ec-tr-from" onchange="loadTransferGoods(this.value);loadTransferDestinations(this.value)" style="${inputStyle}">${fromOpts}</select></label>
-        <label>To <select id="ec-tr-to" style="${inputStyle}">${toOpts}</select></label>
-        <label>Good <select id="ec-tr-good" style="${inputStyle}"><option value="">Loading…</option></select></label>
-        <label>Quantity <input type="number" id="ec-tr-qty" min="1" style="${inputStyle}"></label>
-        <button class="btn-primary btn-small" onclick="startTransfer()">Send →</button>
+        <label>To <select id="ec-tr-to" onchange="loadTransferPreview()" style="${inputStyle}">${toOpts}</select></label>
+        <div id="ec-tr-items">Loading goods…</div>
+        <button id="ec-tr-add" class="btn-small" onclick="addTransferGood()" type="button">+ Add good</button>
+        <div id="ec-tr-capacity" class="transfer-capacity" role="status" aria-live="polite">Checking cargo route…</div>
+        <button id="ec-tr-send" class="btn-primary btn-small" onclick="startTransfer()">Send →</button>
         <div id="ec-tr-result" class="action-result"></div>
       </div>
     </div>
@@ -272,7 +273,7 @@ async function loadEconomyTransfer(mySettlements) {
 // checked output out, no stubbing required. Each `trade` is one row of
 // GET /trades already filtered to the caller's own by the caller.
 export function formatCargoRows(trades, nowMs) {
-  return trades.map(t => {
+  return trades.flatMap(t => (t.items?.length ? t.items.map(item => ({...t,...item,items:null})) : [t])).map(t => {
     const etaMs = new Date(t.arrives_at).getTime() - nowMs;
     let eta;
     if (Number.isInteger(t.arrival_tick)) eta = `${fmtTickTime(t.arrival_tick)}`;
@@ -343,44 +344,96 @@ export async function loadTransferDestinations(fromProvId) {
     if (seq !== transferDestinationsSeq || State.WORLD_ID !== world || document.getElementById('ec-tr-to') !== sel) return;
     sel.innerHTML = rows.length ? rows.map(d => `<option value="${esc(d.settlement_id)}">${esc(d.name)} — ${d.own ? 'your city' : esc(d.owner_name) + ' (gift)'}</option>`).join('')
       : '<option value="">No contacted destination</option>';
+    loadTransferPreview();
   } catch {
     if (seq === transferDestinationsSeq && document.getElementById('ec-tr-to') === sel) sel.innerHTML = '<option value="">Could not load destinations</option>';
   }
 }
 
-// Populate the Good dropdown with the From settlement's goods in stock, so the
-// player picks a real good and sees how much is available (no more free-text).
-// Only the newest From selection may fill the good list; an older, slower
-// reply must not replace the good the player has since picked.
-let transferGoodsSeq = 0;
+// The route preview uses the same server choice as dispatch. A preview does not
+// reserve a hull: dispatch still validates its availability atomically.
+let transferPreview = null, transferPreviewSeq = 0;
+export function transferItems(inputs) {
+  return Array.from(inputs).map(input => ({good_key: input.dataset.good, quantity: Number(input.value)}))
+    .filter(item => Number.isFinite(item.quantity) && item.quantity > 0);
+}
+export function cargoStatus(items, preview) {
+  const quantity = items.reduce((sum, item) => sum + item.quantity, 0);
+  if (!preview) return {quantity, overloaded:false, text:'Checking cargo route…'};
+  if (preview.category === 'land') return {quantity, overloaded:false, text:`Land caravan · Cargo ${fmtNum(quantity)} — no cargo limit`};
+  const capacity = preview.cargo_capacity;
+  const overloaded = quantity > capacity;
+  const hull = preview.ship_name || (preview.ship_type === 'merchantman' ? 'Emporos' : 'Galley');
+  return {quantity, overloaded, text:`${hull} · Cargo ${fmtNum(quantity)} / ${fmtNum(capacity)}`
+    + (overloaded ? ` — remove ${fmtNum(quantity-capacity)} goods` : '')};
+}
+export function updateTransferCargo() {
+  const status = cargoStatus(transferItems(document.querySelectorAll?.('#ec-tr-items input[data-good]') || []), transferPreview);
+  const el = document.getElementById('ec-tr-capacity');
+  if (el) { el.textContent = status.text; el.classList.toggle('overloaded',status.overloaded); }
+  const send = document.getElementById('ec-tr-send');
+  if (send) send.disabled = !transferPreview || status.overloaded;
+}
+export async function loadTransferPreview() {
+  const from = document.getElementById('ec-tr-from')?.value;
+  const to = document.getElementById('ec-tr-to')?.value;
+  const el = document.getElementById('ec-tr-capacity');
+  const seq = ++transferPreviewSeq, world = State.WORLD_ID;
+  transferPreview = null;
+  updateTransferCargo();
+  if (!from || !to || !el) return;
+  try {
+    const r = await fetchAuth(`/api/v1/worlds/${world}/provinces/${from}/trade/preview?destination_id=${encodeURIComponent(to)}`);
+    const data = await r.json();
+    if (seq !== transferPreviewSeq || world !== State.WORLD_ID || document.getElementById('ec-tr-capacity') !== el) return;
+    if (!r.ok) { el.textContent = data.error || 'Could not check cargo route.'; return; }
+    transferPreview = data;
+    updateTransferCargo();
+  } catch {
+    if (seq === transferPreviewSeq && document.getElementById('ec-tr-capacity') === el) el.textContent = 'Could not check cargo route.';
+  }
+}
+let transferGoodsSeq = 0, transferGoods = [];
+export function addTransferGood() {
+  const el = document.getElementById('ec-tr-items');
+  if (!el || !transferGoods.length) return;
+  const used = new Set(Array.from(el.querySelectorAll('input[data-good]')).map(i=>i.dataset.good));
+  const selected = transferGoods.find(g=>!used.has(g.key)) || transferGoods[0];
+  const row = document.createElement('div');
+  row.className = 'transfer-good';
+  row.innerHTML = `<select aria-label="Good" onchange="this.nextElementSibling.dataset.good=this.value;updateTransferCargo()">${transferGoods.map(g=>`<option value="${esc(g.key)}"${g.key===selected.key?' selected':''}>${esc(g.name || g.key)} — ${fmtNum(Math.floor(g.amount))} in stock</option>`).join('')}</select><input aria-label="Quantity" type="number" min="0" step="any" data-good="${esc(selected.key)}" placeholder="0" oninput="updateTransferCargo()"><button type="button" class="btn-small" aria-label="Remove good" onclick="this.parentElement.remove();updateTransferCargo()">×</button>`;
+  el.appendChild(row);
+  updateTransferCargo();
+}
 export async function loadTransferGoods(fromProvId) {
-  const sel = document.getElementById('ec-tr-good');
-  if (!sel || !fromProvId) return;
-  const seq = ++transferGoodsSeq;
-  sel.innerHTML = '<option value="">Loading…</option>';
-  const r = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${fromProvId}/goods`);
-  if (seq !== transferGoodsSeq) return;
-  if (!r.ok) { sel.innerHTML = '<option value="">Could not load goods</option>'; return; }
-  const goods = ((await r.json()) || []).filter(g => (g.amount || 0) > 0);
-  if (seq !== transferGoodsSeq) return;
-  sel.innerHTML = goods.length
-    ? goods.map(g => `<option value="${g.key}">${esc(g.name || g.key)} — ${fmtNum(Math.floor(g.amount || 0))} in stock</option>`).join('')
-    : '<option value="">No goods in stock</option>';
+  const el = document.getElementById('ec-tr-items');
+  if (!el || !fromProvId) return;
+  const seq = ++transferGoodsSeq, world = State.WORLD_ID;
+  el.textContent = 'Loading goods…';
+  try {
+    const r = await fetchAuth(`/api/v1/worlds/${world}/provinces/${fromProvId}/goods`);
+    const goods = r.ok ? ((await r.json()) || []).filter(g => (g.amount || 0) > 0 && g.shippable === true) : [];
+    if (seq !== transferGoodsSeq || world !== State.WORLD_ID || document.getElementById('ec-tr-items') !== el) return;
+    transferGoods = goods;
+    el.textContent = goods.length ? '' : 'No goods in stock';
+    if (goods.length) addTransferGood();
+    updateTransferCargo();
+  } catch { if (seq === transferGoodsSeq && document.getElementById('ec-tr-items') === el) el.textContent = 'Could not load goods.'; }
 }
 
 export async function startTransfer() {
   const from = document.getElementById('ec-tr-from')?.value;
   const to = document.getElementById('ec-tr-to')?.value;
-  const good = document.getElementById('ec-tr-good')?.value.trim();
-  const qty = parseFloat(document.getElementById('ec-tr-qty')?.value || '0');
+  const items = transferItems(document.querySelectorAll?.('#ec-tr-items input[data-good]') || []);
+  const cargo = items.map(item => `${fmtNum(item.quantity)} ${item.good_key}`).join(', ');
   const resultEl = document.getElementById('ec-tr-result');
   if (!resultEl) return;
   if (!from || !to || from === to) { resultEl.style.color = 'var(--accent)'; resultEl.textContent = 'Pick two different settlements.'; return; }
-  if (!good || qty <= 0) { resultEl.style.color = 'var(--accent)'; resultEl.textContent = 'Good and quantity required.'; return; }
+  if (!items.length) { resultEl.style.color = 'var(--accent)'; resultEl.textContent = 'Good and quantity required.'; return; }
   resultEl.textContent = '';
   const r = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${from}/trade`, {
     method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ destination_id: to, good_key: good, quantity: qty }),
+    body: JSON.stringify({ destination_id: to, items }),
   });
   const d = await r.json().catch(() => ({}));
   if (document.getElementById('ec-tr-result') !== resultEl) return;
@@ -390,13 +443,14 @@ export async function startTransfer() {
     // the ship on a naval transfer — it's now bound to this round trip and
     // isn't free again until it sails home empty afterward.
     resultEl.textContent = d.ship_name
-      ? `${fmtNum(qty)} ${good} sent aboard ${d.ship_name} — carried, can be intercepted en route, and sails home empty afterward.`
-      : `${fmtNum(qty)} ${good} sent — physical cargo, can be intercepted en route.`;
+      ? `${cargo} sent aboard ${d.ship_name} — carried, can be intercepted en route, and sails home empty afterward.`
+      : `${cargo} sent — physical cargo, can be intercepted en route.`;
     if (d.kind === 'gift') resultEl.textContent = 'Gift: ' + resultEl.textContent;
     if (Number.isInteger(d.arrival_tick)) {
       resultEl.textContent += ` Arrives ${fmtTickTime(d.arrival_tick)} (journey: ${fmtDays(d.travel_ticks)}).`;
     }
     refreshCargoInTransit();
+    loadTransferPreview();
   } else {
     resultEl.style.color = 'var(--accent)';
     resultEl.textContent = d.error || 'Transfer failed.';

@@ -196,3 +196,12 @@ func TestFindFreeShip_DoubleBindingImpossible(t *testing.T) {
 		t.Error("tx2 found a free ship while tx1 held it uncommitted — double-binding is possible")
 	}
 }
+
+func TestShipCapacity_CountsGoods(t *testing.T) {
+	for kind, want := range map[string]float64{"galley": 20, "merchantman": 120} {
+		got, ok := ShipCapacityFor(kind)
+		if !ok || got != want {
+			t.Errorf("%s capacity = %v,%v; want %v goods", kind, got, ok, want)
+		}
+	}
+}

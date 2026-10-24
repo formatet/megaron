@@ -1,6 +1,6 @@
 A **transfer** moves goods between two of your *own* settlements. No consent, no negotiation — simpler than [[trade]] with a stranger.
 
-Open **Economy → Transfer**, choose *From*, *To*, the good and the quantity, and press **Send →**. Below, **Your cargo in transit** lists everything on the road — which city it left, which city it is bound for, and the game day it arrives. A notification tells you when it is delivered.
+Open **Economy → Transfer**, choose *From*, *To*, the goods and their quantities, and press **Send →**. Below, **Your cargo in transit** lists everything on the road — which city it left, which city it is bound for, and its arrival time. A notification tells you when it is delivered.
 
 ## Cargo is physical
 
@@ -14,12 +14,12 @@ To move goods regularly without being there, use a [[routes|standing order]].
 
 When both ends are coastal or harboured and a sea lane connects them, a transfer sails instead of walking — **if you have a free Galley or Emporos waiting in the sending port** ([[sea]]). No free hull there, and no land road either, and the transfer is refused with the reason why; build one at a Shipyard, or wait for one to come home.
 
-The ship is bound to the round trip: it cannot be given any other order until it has sailed back and unloaded, empty, at its own port. What it can carry is limited by the hull's own capacity — a heavier shipment than a Galley or Emporos can hold is refused, with the capacity and the weight both named, so you know to split it or send a bigger hull.
+The ship is bound to the round trip: it cannot be given any other order until it has sailed back and unloaded, empty, at its own port. What it can carry is limited by the hull's own capacity — a shipment above the limit is refused before any goods leave your stock. **One good takes one cargo place**, whether grain, stone or silver: **Galley 20, Emporos 120 goods of any kind**. The form shows the ready hull and a live **Cargo used / capacity** meter; an overload tells you how much to remove. Land caravans have no cargo limit.
 
 A laden ship caught at sea does not always lose the same way a caravan does. One of three things happens, and you are told which:
 
 - **Captured** — the raider takes the cargo *and* the ship. It sails off under a new flag.
-- **Damaged** — half the cargo is lost overboard in the fight; the ship limps home with the rest.
+- **Damaged** — half of every good is lost overboard in the fight; the ship limps home with the rest.
 - **Sunk** — the cargo and the ship are both gone.
 
 Sending to another Wanax is a [[gifts|gift or tribute]], with nothing requested in return.
@@ -30,11 +30,11 @@ Cargo follows a real route around impassable ground. Its path and the terrain co
 are fixed when each leg departs. Caravan time is **1.5 times the march time on that
 same path**, rounded once to the nearest whole game day, with at least one game day per leg.
 The return leg is priced separately because it enters different terrain. Cargo
-weight limits a ship's hold; it does not change journey speed.
+quantity limits a ship's hold; it does not change journey speed.
 
 Without a traversable road or an eligible ship on a sea lane, a shipment is refused
 before goods are taken. A standing route pauses and explains the obstacle. The
-arrival game day shown in your cargo list is the scheduled delivery; delays or
+arrival time shown in your cargo list is the scheduled delivery; delays or
 interception can prevent that delivery.
 
 
@@ -45,3 +45,8 @@ The sending city cannot also be the destination. A rejected self-transfer sends
 nothing; use `--from` to choose the other city you meant to send from.
 
 A coastal city can load or receive through any adjacent navigable water hex. The sea route compares those approaches and chooses the fastest reachable one; it does not fix the port to an arbitrary side of the city. Journeys already at sea keep their saved route.
+
+Choose several goods in the same form to send them together in **one shipment**:
+one caravan or one ship, one arrival, one shared fate if intercepted or sunk.
+Keryx accepts paired flags: `keryx transfer --dest Mallia --good grain --qty 12 --good timber --qty 8`.
+Keryx shows the same cargo total and hull capacity before dispatch.

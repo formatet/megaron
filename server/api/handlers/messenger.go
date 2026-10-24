@@ -13,7 +13,6 @@ import (
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/capabilities"
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/messenger"
 	"formatet/megaron/server/internal/notify"
@@ -84,28 +83,13 @@ func (h *MessengerHandler) tradeableGood(ctx context.Context, key string) (strin
 	return fmt.Sprintf("unknown good %q — valid goods are: %s", key, strings.Join(valid, ", ")), false
 }
 
-// heaviestTradeLeg returns the weight (Σ quantity × good weight) of whichever
-// of a trade offer's two legs is heavier — the leg a sea-going ship actually
-// has to carry (R2/R3, megaron_plan_sjohandel_mellan_spelare.md): both legs
-// share the same hull on its round trip, so only the bigger of the two can
-// ever be the binding capacity constraint.
+// heaviestTradeLeg returns the larger cargo count of the trade's two legs.
+// Both legs share one hull; one quantity unit of any good uses one cargo place.
 func heaviestTradeLeg(ctx context.Context, pool *pgxpool.Pool, kind, offerGood string, offerQty, offerSilver float64, wantGood string, wantQty, wantSilver float64) (float64, error) {
-	silverWeight, _, err := economy.IsShippableGood(ctx, pool, "silver")
-	if err != nil {
-		return 0, err
-	}
 	if kind == "sell" {
-		goodWeight, _, err := economy.IsShippableGood(ctx, pool, offerGood)
-		if err != nil {
-			return 0, err
-		}
-		return math.Max(goodWeight*offerQty, silverWeight*wantSilver), nil
+		return math.Max(offerQty, wantSilver), nil
 	}
-	goodWeight, _, err := economy.IsShippableGood(ctx, pool, wantGood)
-	if err != nil {
-		return 0, err
-	}
-	return math.Max(silverWeight*offerSilver, goodWeight*wantQty), nil
+	return math.Max(offerSilver, wantQty), nil
 }
 
 // Send handles POST /worlds/:worldID/settlements/:settlementID/messengers.
@@ -346,7 +330,7 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 				req.TradeOffer.OfferGood, req.TradeOffer.OfferQty, req.TradeOffer.OfferSilver,
 				req.TradeOffer.WantGood, req.TradeOffer.WantQty, req.TradeOffer.WantSilver)
 			if wErr != nil {
-				writeError(w, http.StatusInternalServerError, "could not weigh trade manifest")
+				writeError(w, http.StatusInternalServerError, "could not count trade cargo")
 				return
 			}
 
@@ -378,8 +362,8 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 				}
 			} else if heaviest > ship.Capacity {
 				writeError(w, http.StatusUnprocessableEntity, fmt.Sprintf(
-					"%s's cargo capacity is %.0f, this trade's heaviest leg weighs %.0f — offer a smaller quantity",
-					unit.DisplayName(ship.Type), ship.Capacity, heaviest))
+					"%s's cargo capacity is %.0f, this trade’s largest leg carries %.0f goods — remove at least %g goods from that leg",
+					unit.DisplayName(ship.Type), ship.Capacity, heaviest, heaviest-ship.Capacity))
 				return
 			}
 		}
@@ -1219,7 +1203,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 	if category == "naval" {
 		heaviest, wErr := heaviestTradeLeg(r.Context(), h.pool, kind, offerGood, offerQty, offerSilver, wantGood, wantQty, wantSilver)
 		if wErr != nil {
-			writeError(w, http.StatusInternalServerError, "could not weigh trade manifest")
+			writeError(w, http.StatusInternalServerError, "could not count trade cargo")
 			return
 		}
 		ship, found, ferr := transport.FindFreeShip(r.Context(), tx, worldID, originOwner, originID)
@@ -1240,8 +1224,8 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			}
 		} else if heaviest > ship.Capacity {
 			writeError(w, http.StatusUnprocessableEntity, fmt.Sprintf(
-				"%s's cargo capacity is %.0f, this trade's heaviest leg weighs %.0f — the offer cannot be carried as-is",
-				unit.DisplayName(ship.Type), ship.Capacity, heaviest))
+				"%s's cargo capacity is %.0f, this trade’s largest leg carries %.0f goods — remove at least %g goods from that leg",
+				unit.DisplayName(ship.Type), ship.Capacity, heaviest, heaviest-ship.Capacity))
 			return
 		} else {
 			if err := transport.BindShip(r.Context(), tx, ship.ID); err != nil {

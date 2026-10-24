@@ -11,6 +11,11 @@ import (
 // current producers and the Codex client's archive kinds are checked together.
 func printNotificationSummary(c *Client, n notificationItem) {
 	defer printLetterReplyHint(n)
+	switch n.Kind {
+	case "GiftDispatchedV2", "GiftDeliveredV2", "GiftLostV2", "TransferDeliveredV2", "TransferLostV2":
+		printManifestOutcome(n)
+		return
+	}
 	if n.Kind == "BattleBegun" {
 		var b struct {
 			Opponent string `json:"opponent_name"`

@@ -15,6 +15,10 @@ func TestTransferDisplaysServerTicksAndShip(t *testing.T) {
 		if testWorldTimeResponse(w, r) {
 			return
 		}
+		if strings.HasSuffix(r.URL.Path, "/trade/preview") {
+			json.NewEncoder(w).Encode(map[string]any{"category": "naval", "ship_name": "Naia", "cargo_capacity": 120})
+			return
+		}
 		calls++
 		if r.Method != "POST" || r.URL.Path != "/api/v1/worlds/world/provinces/source/trade" || r.Header.Get("Authorization") != "Bearer token" {
 			t.Errorf("unexpected request %s %s", r.Method, r.URL.Path)

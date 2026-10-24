@@ -606,3 +606,98 @@ func TestGiftNavalShortageRefusesWithoutDebiting(t *testing.T) {
 		t.Fatalf("refusal mutated silver=%v fish=%v provisions=%v state=%s movers=%d", silver, fish, provisions, state, movers)
 	}
 }
+
+func TestGiftHistoryV2PrivateUntilArrivalAndCompleteCorrespondence(t *testing.T) {
+	f := giftFixture(t, false)
+	ctx := context.Background()
+	service := auth.NewService(f.pool, "test-secret")
+	recipientToken, _, err := service.Register(ctx, "history-"+uuid.NewString(), "x")
+	if err != nil {
+		t.Fatal(err)
+	}
+	claims, err := service.ValidateAccessToken(recipientToken)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.pool.Exec(ctx, `UPDATE settlements SET owner_id=$2 WHERE id=$1`, f.destID, claims.PlayerID); err != nil {
+		t.Fatal(err)
+	}
+	stranger, _, err := service.Register(ctx, "outsider-"+uuid.NewString(), "x")
+	if err != nil {
+		t.Fatal(err)
+	}
+	ph := NewProvinceHandler(f.pool, f.scheduler, f.clk, nil, nil)
+	f.router.Get("/worlds/{worldID}/gifts", ph.GiftHistory)
+	history := func(token string) []map[string]any {
+		t.Helper()
+		req := httptest.NewRequest("GET", "/worlds/"+f.worldID.String()+"/gifts", nil)
+		req.Header.Set("Authorization", "Bearer "+token)
+		rec := httptest.NewRecorder()
+		f.router.ServeHTTP(rec, req)
+		if rec.Code != 200 {
+			t.Fatalf("history %d: %s", rec.Code, rec.Body.String())
+		}
+		var rows []map[string]any
+		if err := json.Unmarshal(rec.Body.Bytes(), &rows); err != nil {
+			t.Fatal(err)
+		}
+		return rows
+	}
+	code, body := f.post(t, "/worlds/"+f.worldID.String()+"/provinces/"+f.originProvince.String()+"/trade", map[string]any{"destination_id": f.destID, "items": []map[string]any{{"good_key": "silver", "quantity": 50}, {"good_key": "fish", "quantity": 20}}})
+	if code != 201 {
+		t.Fatalf("gift %d %v", code, body)
+	}
+	if rows := history(f.token); len(rows) != 1 || rows[0]["kind"] != "GiftDispatchedV2" {
+		t.Fatalf("sender departure: %v", rows)
+	}
+	if len(history(recipientToken)) != 0 || len(history(stranger)) != 0 {
+		t.Fatal("dispatch leaked before cargo arrival")
+	}
+	checkCorrespondence := func(player uuid.UUID, count int, silver, fish float64) {
+		t.Helper()
+		tx, err := f.pool.Begin(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer tx.Rollback(ctx)
+		rows, err := personGifts(ctx, tx, f.worldID, player)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(rows) != count {
+			t.Fatalf("gift correspondence for %s: %+v want%d", player, rows, count)
+		}
+		if count > 0 && (rows[0].Goods["silver"] != silver || rows[0].Goods["fish"] != fish || len(rows[0].Goods) != 2) {
+			t.Fatalf("correspondence manifest=%v want silver%v fish%v", rows[0].Goods, silver, fish)
+		}
+	}
+	checkCorrespondence(f.playerID, 1, 50, 20)
+	checkCorrespondence(claims.PlayerID, 0, 0, 0)
+	var e events.ScheduledEvent
+	e.WorldID = f.worldID
+	if err := f.pool.QueryRow(ctx, `SELECT id,payload FROM scheduled_events WHERE world_id=$1 AND event_type='ShipmentDeliveryV2'`, f.worldID).Scan(&e.ID, &e.Payload); err != nil {
+		t.Fatal(err)
+	}
+	h := economy.NewDeliveryHandler(f.pool, events.NewStore(f.pool), nil, f.scheduler)
+	if err := h.HandleShipmentV2(ctx, e); err != nil {
+		t.Fatal(err)
+	}
+	for _, token := range []string{f.token, recipientToken} {
+		if rows := history(token); len(rows) != 1 || rows[0]["kind"] != "GiftDeliveredV2" {
+			t.Fatalf("outcome not visible once: %v", rows)
+		}
+	}
+	checkCorrespondence(f.playerID, 1, 50, 20)
+	checkCorrespondence(claims.PlayerID, 1, 50, 20)
+	incoming := history(recipientToken)[0]["body"].(map[string]any)
+	if incoming["origin_name"] != nil || incoming["origin_id"] != nil {
+		t.Fatalf("gift reveals sender city: %v", incoming)
+	}
+	outgoing := history(f.token)[0]["body"].(map[string]any)
+	if outgoing["origin_name"] == nil || outgoing["origin_id"] == nil {
+		t.Fatalf("sender lost own origin: %v", outgoing)
+	}
+	if len(history(stranger)) != 0 {
+		t.Fatal("outsider can read gift history")
+	}
+}

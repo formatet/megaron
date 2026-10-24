@@ -1279,7 +1279,8 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		        t.origin_q, t.origin_r, COALESCE(op.terrain_type, ''),
 		        t.dest_q, t.dest_r, COALESCE(dp.terrain_type, ''),
 		        t.departs_at, t.arrives_at, t.category, COALESCE(pl.wanax_name, pl.username, ''), t.journey, t.departed_tick, t.due_tick,
-		        COALESCE(os.name, ''), COALESCE(ds.name, ''),t.ship_unit_id,t.kind
+		        COALESCE(os.name, ''), COALESCE(ds.name, ''),t.ship_unit_id,t.kind,
+                COALESCE((SELECT jsonb_agg(jsonb_build_object('good_key',g.good_key,'quantity',g.quantity) ORDER BY g.good_key) FROM transport_goods g WHERE g.transport_id=t.id),'[]'::jsonb)
 		 FROM transports t
 		 LEFT JOIN players pl ON pl.id = t.owner_id
 		 LEFT JOIN settlements os ON os.id = t.origin_id
@@ -1300,28 +1301,29 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type tradeMarker struct {
-		Kind          string     `json:"kind"`
-		RouteKnown    bool       `json:"route_known"`
-		Path          [][2]int   `json:"path,omitempty"`
-		StepCosts     []int64    `json:"step_costs,omitempty"`
-		Category      string     `json:"category"`
-		Heading       string     `json:"heading,omitempty"`
-		ShipUnitID    *uuid.UUID `json:"ship_unit_id,omitempty"`
-		ID            uuid.UUID  `json:"id"`
-		GoodKey       string     `json:"good_key"`
-		Quantity      float64    `json:"quantity"`
-		OriginQ       int        `json:"origin_q"`
-		OriginR       int        `json:"origin_r"`
-		DestQ         int        `json:"dest_q"`
-		DestR         int        `json:"dest_r"`
-		DepartsAt     time.Time  `json:"departs_at"`
-		ArrivesAt     time.Time  `json:"arrives_at"`
-		Mine          bool       `json:"mine"`
-		ArrivalTick   *int       `json:"arrival_tick,omitempty"`
-		DepartureTick *int       `json:"departure_tick,omitempty"`
-		TravelTicks   *int       `json:"travel_ticks,omitempty"`
-		CurrentQ      *int       `json:"current_q,omitempty"`
-		CurrentR      *int       `json:"current_r,omitempty"`
+		Items         []economy.CargoItem `json:"items"`
+		Kind          string              `json:"kind"`
+		RouteKnown    bool                `json:"route_known"`
+		Path          [][2]int            `json:"path,omitempty"`
+		StepCosts     []int64             `json:"step_costs,omitempty"`
+		Category      string              `json:"category"`
+		Heading       string              `json:"heading,omitempty"`
+		ShipUnitID    *uuid.UUID          `json:"ship_unit_id,omitempty"`
+		ID            uuid.UUID           `json:"id"`
+		GoodKey       string              `json:"good_key"`
+		Quantity      float64             `json:"quantity"`
+		OriginQ       int                 `json:"origin_q"`
+		OriginR       int                 `json:"origin_r"`
+		DestQ         int                 `json:"dest_q"`
+		DestR         int                 `json:"dest_r"`
+		DepartsAt     time.Time           `json:"departs_at"`
+		ArrivesAt     time.Time           `json:"arrives_at"`
+		Mine          bool                `json:"mine"`
+		ArrivalTick   *int                `json:"arrival_tick,omitempty"`
+		DepartureTick *int                `json:"departure_tick,omitempty"`
+		TravelTicks   *int                `json:"travel_ticks,omitempty"`
+		CurrentQ      *int                `json:"current_q,omitempty"`
+		CurrentR      *int                `json:"current_r,omitempty"`
 		// Owner is the dispatching Wanax's name — whose caravan it is, which the
 		// map tooltip says for every caravan in sight. Never what it carries.
 		Owner string `json:"owner"`
@@ -1352,13 +1354,17 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		var ownerID uuid.UUID
 		var destOwnerID *uuid.UUID
 		var originTerrain, destTerrain, category string
-		var savedJourney []byte
+		var savedJourney, rawItems []byte
 		var departedTick *int
 		var dueTick int
 		if err := rows.Scan(&m.ID, &ownerID, &destOwnerID, &m.GoodKey, &m.Quantity, &m.OriginQ, &m.OriginR, &originTerrain,
 			&m.DestQ, &m.DestR, &destTerrain, &m.DepartsAt, &m.ArrivesAt, &category, &m.Owner, &savedJourney, &departedTick, &dueTick,
-			&m.OriginName, &m.DestName, &m.ShipUnitID, &m.Kind); err != nil {
+			&m.OriginName, &m.DestName, &m.ShipUnitID, &m.Kind, &rawItems); err != nil {
 			continue
+		}
+		if err := json.Unmarshal(rawItems, &m.Items); err != nil {
+			writeError(w, 500, "could not decode cargo manifest")
+			return
 		}
 		m.Category = category
 		var journey *province.TradeJourney
@@ -1444,6 +1450,7 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		// road, never what it carries. Only sender and recipient learn it.
 		if m.Role == "" {
 			m.GoodKey, m.Quantity = "", 0
+			m.Items = nil
 			m.OriginName, m.DestName = "", ""
 			m.ArrivalTick, m.DepartureTick, m.TravelTicks = nil, nil, nil
 		}

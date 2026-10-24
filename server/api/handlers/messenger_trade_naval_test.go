@@ -19,6 +19,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"math"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -531,7 +532,7 @@ func TestMessengerTrade_AcceptShipTakenMeanwhile_Returns422AndStaysPending(t *te
 }
 
 // TestMessengerTrade_SendCapacityCheckRejectsOverloadedManifest is R2's
-// capacity gate: a galley (capacity 60) cannot carry a sell offer whose
+// capacity gate: a galley (capacity 20) cannot carry a sell offer whose
 // heaviest leg exceeds that, even though nothing is bound yet.
 func TestMessengerTrade_SendCapacityCheckRejectsOverloadedManifest(t *testing.T) {
 	f := setupNavalPlayerFixture(t)
@@ -545,8 +546,7 @@ func TestMessengerTrade_SendCapacityCheckRejectsOverloadedManifest(t *testing.T)
 	f.good(t, sellerID, "copper", 1000)
 	f.good(t, buyerID, "silver", 5000)
 
-	// Silver weighs 2 (migration 025) — 40 silver = 80 weight, already over a
-	// galley's capacity of 60, regardless of copper's own weight.
+	// Forty silver occupies forty places, over a galley’s twenty places.
 	code, resp := f.post(t, f.initiatorToken,
 		"/worlds/"+f.worldID.String()+"/settlements/"+sellerID.String()+"/messengers",
 		map[string]any{
@@ -562,5 +562,22 @@ func TestMessengerTrade_SendCapacityCheckRejectsOverloadedManifest(t *testing.T)
 	errMsg, _ := resp["error"].(string)
 	if !strings.Contains(errMsg, "capacity") {
 		t.Errorf("error = %q, want it to mention capacity", errMsg)
+	}
+}
+
+// Catalogue weights must never shrink either leg of a trade's cargo hold.
+func TestMessengerTrade_LegCapacityCountsGoods(t *testing.T) {
+	f := setupNavalPlayerFixture(t)
+	for _, tc := range []struct {
+		kind               string
+		goodQty, silverQty float64
+	}{
+		{"sell", 20, 19}, {"buy", 19, 20}, {"sell", 120, 1},
+	} {
+		got, err := heaviestTradeLeg(context.Background(), f.pool, tc.kind, "copper", tc.goodQty, tc.silverQty, "timber", tc.goodQty, tc.silverQty)
+		want := math.Max(tc.goodQty, tc.silverQty)
+		if err != nil || got != want {
+			t.Errorf("%s goods/silver %v/%v: got %v,%v want %v", tc.kind, tc.goodQty, tc.silverQty, got, err, want)
+		}
 	}
 }

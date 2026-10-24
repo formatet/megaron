@@ -5,7 +5,7 @@ import { demolitionKharisText } from './demolish.js';
 // directly regardless of layer (config/state ← api/ws ← render ← ui ← main).
 // (clock.js sits on the same low layer, so importing it keeps that promise.)
 import { unitTypeLabel } from './actornames.js';
-import { giftText } from './gifts.js';
+import { giftText, manifestOutcomeText } from './gifts.js';
 import { fmtNum, fmtDays } from './fmt_num.js';
 import { fmtTickTime } from './fmt_clock.js';
 import { fmtClock } from './fmt_clock.js';
@@ -158,7 +158,7 @@ export function notifDomain(kind) {
     SitosGranaryRelease: 'city', SitosIntervention: 'city', SitosFundLow: 'city',
     HexBlockaded: 'city', HexUnblockaded: 'city', HexTaken: 'city',
     // Trade — goods on the move, and the offers that set them moving.
-    GiftDelivered: 'trade', GiftLost: 'trade', TradeDelivery: 'trade', TradeReturn: 'trade', TradeLost: 'trade',
+    GiftDispatchedV2:'trade', GiftDeliveredV2:'trade', GiftLostV2:'trade', TransferDeliveredV2:'trade', TransferLostV2:'trade', GiftDelivered: 'trade', GiftLost: 'trade', TradeDelivery: 'trade', TradeReturn: 'trade', TradeLost: 'trade',
     TradeCaravanArrival: 'trade', TransferDelivered: 'trade',
     CaravanSeized: 'trade', CaravanRaided: 'trade',
     StandingOrderDispatched: 'trade', StandingOrderPaused: 'trade',
@@ -184,6 +184,7 @@ export function notifIcon(kind) {
     OutpostEstablished: '⛺',
     OutpostCaptured:    '⚔',
     TradeDelivery:      '🐂',
+    GiftDispatchedV2:'🎁', GiftDeliveredV2:'🎁', GiftLostV2:'🌊', TransferDeliveredV2:'🐂', TransferLostV2:'🌊',
     GiftDelivered:     '🎁',
     GiftLost:          '🌊',
     TradeLost:          '🌊',
@@ -324,6 +325,8 @@ function storageReason(reason) {
 
 export function notifText(kind, body) {
   switch (kind) {
+    case 'GiftDispatchedV2': case 'GiftDeliveredV2': case 'GiftLostV2':
+    case 'TransferDeliveredV2': case 'TransferLostV2': return manifestOutcomeText(kind,body);
     case 'StorageCapacityWarning':
       return `${esc(body.name || 'Your city')}: ${esc(body.good_key || 'goods')} storage ${Number.isFinite(body.full_in_ticks) ? 'full in ' + fmtDays(body.full_in_ticks) : 'forecast unavailable'} (capacity ${fmtNum(body.cap)}). Send goods away or trade.`;
     case 'StorageOverflow':

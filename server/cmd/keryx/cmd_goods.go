@@ -3,6 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math"
+	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -163,8 +166,7 @@ func capFootnote(notes []capNote) string {
 }
 
 func transferCmd() *cobra.Command {
-	var good string
-	var qty float64
+	var goods, quantities []string
 	var destName string
 	var provinceID string
 
@@ -172,11 +174,16 @@ func transferCmd() *cobra.Command {
 		Use:   "transfer",
 		Short: "Send physical goods to your own city or a contacted foreign city as a gift, with nothing requested in return",
 		Example: `  keryx transfer --good grain --qty 50 --dest Korinth
+  keryx transfer --good grain --qty 12 --good timber --qty 8 --dest Korinth
   keryx transfer --from <colony> --good grain --qty 50 --dest Korinth   # pull a colony's surplus home`,
 		// --good, --qty and --dest are all required — no single one is the
 		// obvious guess for a stray positional.
 		Args: noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			items, err := parseTransferItems(goods, quantities)
+			if err != nil {
+				return err
+			}
 			c := newClient(cfg)
 			// Default source is the selected city; --from/--province lets you pull a
 			// colony's surplus home instead, mirroring `goods`/`build --province`.
@@ -193,11 +200,19 @@ func transferCmd() *cobra.Command {
 				return fmt.Errorf("resolve destination %q: %w", destName, err)
 			}
 			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/trade", cfg.WorldID, src)
-			data, err := c.post(path, map[string]any{
-				"good_key":       good,
-				"quantity":       qty,
-				"destination_id": destID,
-			})
+			previewData, err := c.get(path + "/preview?destination_id=" + url.QueryEscape(destID))
+			if err != nil {
+				return err
+			}
+			var preview cargoPreview
+			if err := json.Unmarshal(previewData, &preview); err != nil {
+				return err
+			}
+			if !jsonMode {
+				fmt.Println(transferCargoLine(items, preview))
+			}
+			payload := map[string]any{"destination_id": destID, "items": items}
+			data, err := c.post(path, payload)
 			if err != nil {
 				return err
 			}
@@ -213,7 +228,7 @@ func transferCmd() *cobra.Command {
 			if resp["kind"] == "gift" {
 				label = "Gift"
 			}
-			line := fmt.Sprintf("%s dispatched: %g %s → %s · %s", label, qty, good, destName, transferArrival(resp, c))
+			line := fmt.Sprintf("%s dispatched: %s → %s · %s", label, transferItemText(items), destName, transferArrival(resp, c))
 			// Sjöhandel kräver skepp (megaron_plan_sjohandel_kraver_skepp.md
 			// R3): a naval transfer names the ship carrying it and warns it
 			// won't be free again until it's sailed home too.
@@ -225,8 +240,8 @@ func transferCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&good, "good", "g", "", "good key (e.g. grain, timber, silver)")
-	cmd.Flags().Float64VarP(&qty, "qty", "q", 0, "quantity to send")
+	cmd.Flags().StringArrayVarP(&goods, "good", "g", nil, "good key; repeat with matching --qty for each item")
+	cmd.Flags().StringArrayVarP(&quantities, "qty", "q", nil, "quantity to send; repeat once for each --good")
 	cmd.Flags().StringVarP(&destName, "dest", "d", "", "destination settlement name")
 	cmd.Flags().StringVar(&provinceID, "province", "", "source province/settlement (default: your selected city; see status)")
 	cmd.Flags().StringVar(&provinceID, "from", "", "alias for --province")
@@ -234,6 +249,64 @@ func transferCmd() *cobra.Command {
 	_ = cmd.MarkFlagRequired("qty")
 	_ = cmd.MarkFlagRequired("dest")
 	return cmd
+}
+
+type transferItem struct {
+	GoodKey  string  `json:"good_key"`
+	Quantity float64 `json:"quantity"`
+}
+type cargoPreview struct {
+	Category string   `json:"category"`
+	ShipName string   `json:"ship_name"`
+	ShipType string   `json:"ship_type"`
+	Capacity *float64 `json:"cargo_capacity"`
+}
+
+func parseTransferItems(goods, quantities []string) ([]transferItem, error) {
+	if len(goods) == 0 || len(goods) != len(quantities) {
+		return nil, fmt.Errorf("give one --qty for each --good")
+	}
+	items := make([]transferItem, 0, len(goods))
+	for i, good := range goods {
+		qty, err := strconv.ParseFloat(quantities[i], 64)
+		if err != nil || math.IsNaN(qty) || math.IsInf(qty, 0) || qty <= 0 || strings.TrimSpace(good) == "" {
+			return nil, fmt.Errorf("each good needs a positive finite quantity")
+		}
+		items = append(items, transferItem{good, qty})
+	}
+	return items, nil
+}
+func transferItemText(items []transferItem) string {
+	parts := make([]string, 0, len(items))
+	for _, item := range items {
+		parts = append(parts, fmt.Sprintf("%g %s", item.Quantity, item.GoodKey))
+	}
+	return strings.Join(parts, ", ")
+}
+func transferCargoLine(items []transferItem, preview cargoPreview) string {
+	total := 0.0
+	for _, item := range items {
+		total += item.Quantity
+	}
+	if preview.Category == "land" {
+		return fmt.Sprintf("Land caravan · Cargo %g — no cargo limit", total)
+	}
+	hull := preview.ShipName
+	if hull == "" {
+		if preview.ShipType == "merchantman" {
+			hull = "Emporos"
+		} else {
+			hull = "Galley"
+		}
+	}
+	if preview.Capacity == nil {
+		return "Cargo capacity unavailable"
+	}
+	line := fmt.Sprintf("%s · Cargo %g / %g", hull, total, *preview.Capacity)
+	if total > *preview.Capacity {
+		line += fmt.Sprintf(" — remove %g goods", total-*preview.Capacity)
+	}
+	return line
 }
 
 // cargoCmd is "last i rörelse" for keryx (web/last-i-rorelse, 2026-08): before
@@ -281,7 +354,27 @@ func cargoCmd() *cobra.Command {
 			}
 			fmt.Printf("%-10s  %9s  %12s  %12s  %10s  %s\n", "Good", "Qty", "From", "To", "ETA", "Direction")
 			fmt.Println("─────────────────────────────────────────────────────────────────────────────")
+			var cargoRows []map[string]any
 			for _, m := range mine {
+				if items, ok := m["items"].([]any); ok && len(items) > 0 {
+					for _, raw := range items {
+						item, ok := raw.(map[string]any)
+						if !ok {
+							continue
+						}
+						row := make(map[string]any, len(m))
+						for key, value := range m {
+							row[key] = value
+						}
+						row["good_key"] = item["good_key"]
+						row["quantity"] = item["quantity"]
+						cargoRows = append(cargoRows, row)
+					}
+				} else {
+					cargoRows = append(cargoRows, m)
+				}
+			}
+			for _, m := range cargoRows {
 				good, _ := m["good_key"].(string)
 				qty, _ := m["quantity"].(float64)
 				oq, _ := m["origin_q"].(float64)
