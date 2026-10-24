@@ -23,7 +23,7 @@ async function rig(run) {
 
 test('M: actual drawer opens Queue and retains Correspondence, Known and Runners',()=>rig(async({body})=>{
   await dip.loadDiplomacyDrawer();
-  assert.deepEqual([...body.innerHTML.matchAll(/data-tab="([^"]+)"/g)].map(m=>m[1]),['queue','threads','known','runners']);
+  assert.deepEqual([...body.innerHTML.matchAll(/data-tab="([^"]+)"/g)].map(m=>m[1]),['queue','threads','archive','known','runners']);
   assert.doesNotMatch(body.innerHTML,/Compose|Cities|Rulers/);
 }));
 

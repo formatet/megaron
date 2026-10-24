@@ -11,6 +11,7 @@ import { fmtTickTime } from '../fmt_clock.js';
 import { sentStatusHTML } from '../runner_status.js';
 import { loadDipRunners } from './diplomacy_runners.js';
 import { loadDipQueue } from './diplomacy_queue.js';
+import { loadDipArchive } from './diplomacy_archive.js';
 
 // "expires <eta>" while a trade offer's window is still open, collapsing to a
 // bare "expired" once it's closed — a closed offer isn't an arrival, and
@@ -82,11 +83,13 @@ export async function loadDiplomacyDrawer() {
     <div class="drawer-tabs">
       <button class="dtab active" data-tab="queue">Queue</button>
       <button class="dtab" data-tab="threads">Correspondence</button>
+      <button class="dtab" data-tab="archive">Personal archive</button>
       <button class="dtab" data-tab="known">Known</button>
       <button class="dtab" data-tab="runners">Runners</button>
     </div>
     <div id="dtab-queue" class="city-tab"></div>
     <div id="dtab-threads" class="city-tab" hidden><div class="loading" style="font-size:.8rem">Loading…</div></div>
+    <div id="dtab-archive" class="city-tab" hidden></div>
     <div id="dtab-known" class="city-tab" hidden></div>
     <div id="dtab-runners" class="city-tab" hidden></div>`;
 
@@ -109,6 +112,7 @@ export async function switchDiplomacyTab(name) {
   });
   if (name === 'queue' && !el.dataset.loaded) return loadDipQueue();
   if (name === 'threads' && !el.dataset.loaded) return loadDipThreads();
+  if (name === 'archive' && !el.dataset.loaded) return loadDipArchive();
   if (name === 'known') return loadDipKnown();
   if (name === 'runners') return loadDipRunners();
 }
@@ -447,6 +451,7 @@ async function loadDipThreads() {
       if (thread.settlement_id && State.MY_SETTLEMENT_ID) {
         const cid = threadId + '-compose';
         html += '<div class="dip-inline-compose" id="' + cid + '">'
+          + '<label>New case subject <input id="' + cid + '-subject" maxlength="120" placeholder="Correspondence"></label>'
           + '<textarea id="' + cid + '-text" maxlength="1000" placeholder="Send a message to ' + safeName + '…"></textarea>'
           + '<details><summary style="cursor:pointer;color:var(--accent);font-size:.75rem;user-select:none">+ Attach trade offer</summary>'
           + '<div class="dip-inline-trade" style="margin-top:.3rem">'
@@ -540,6 +545,8 @@ export async function dipSendInThread(cid, destId) {
   if (!destId) { showStatus('no destination', false); return; }
   if (!State.MY_SETTLEMENT_ID) { showStatus('no settlement', false); return; }
   const body = { destination_id: destId, message: text };
+  const subject = document.getElementById(cid + '-subject')?.value.trim();
+  if (subject) body.subject = subject;
   const kind = document.querySelector('input[name="' + cid + '-kind"]:checked')?.value || 'buy';
   if (kind === 'sell') {
     const offerGood = document.getElementById(cid + '-offer-good')?.value.trim();

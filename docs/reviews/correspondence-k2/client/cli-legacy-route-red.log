@@ -1,0 +1,45 @@
+--- FAIL: TestPersonalCorrespondenceUsesCasesAndPreservesJSONWithoutRead (0.00s)
+    --- FAIL: TestPersonalCorrespondenceUsesCasesAndPreservesJSONWithoutRead/detail=false/json=false (0.00s)
+        cmd_correspondence_cases_test.go:28: unexpected GET /api/v1/worlds/w/messengers/inbox?cursor=old%2B%2F%3D&limit=2&q=Old+Kyme+%26+copper
+    --- FAIL: TestPersonalCorrespondenceUsesCasesAndPreservesJSONWithoutRead/detail=false/json=true (0.00s)
+        cmd_correspondence_cases_test.go:28: unexpected GET /api/v1/worlds/w/messengers/inbox?cursor=old%2B%2F%3D&limit=2&q=Old+Kyme+%26+copper
+    --- FAIL: TestPersonalCorrespondenceUsesCasesAndPreservesJSONWithoutRead/detail=true/json=false (0.00s)
+        cmd_correspondence_cases_test.go:28: unexpected GET /api/v1/worlds/w/messengers/inbox/case-id?cursor=old%2B%2F%3D&limit=2
+    --- FAIL: TestPersonalCorrespondenceUsesCasesAndPreservesJSONWithoutRead/detail=true/json=true (0.00s)
+        cmd_correspondence_cases_test.go:28: unexpected GET /api/v1/worlds/w/messengers/inbox/case-id?cursor=old%2B%2F%3D&limit=2
+Error: --limit must be between 1 and 100
+Usage:
+  correspondence [flags]
+
+Flags:
+      --case string     open a stable case ID
+      --cursor string   opaque next-page cursor
+  -h, --help            help for correspondence
+      --limit int       page size (1–100) (default 30)
+      --search string   find person, city, subject or good
+
+Error: --limit must be between 1 and 100
+Usage:
+  correspondence [flags]
+
+Flags:
+      --case string     open a stable case ID
+      --cursor string   opaque next-page cursor
+  -h, --help            help for correspondence
+      --limit int       page size (1–100) (default 30)
+      --search string   find person, city, subject or good
+
+Error: --case and --search cannot be combined
+Usage:
+  correspondence [flags]
+
+Flags:
+      --case string     open a stable case ID
+      --cursor string   opaque next-page cursor
+  -h, --help            help for correspondence
+      --limit int       page size (1–100) (default 30)
+      --search string   find person, city, subject or good
+
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.003s
+FAIL

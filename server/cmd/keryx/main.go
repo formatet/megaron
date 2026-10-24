@@ -112,6 +112,7 @@ func newRootCommand() *cobra.Command {
 		routeDeleteCmd(),
 		cargoCmd(),
 		inboxCmd(),
+		correspondenceCmd(),
 		outboxCmd(),
 		runnersCmd(),
 		replyCmd(),

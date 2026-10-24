@@ -1,0 +1,53 @@
+TAP version 13
+# Subtest: personal cases retain stable IDs and historical names and escape prose
+ok 1 - personal cases retain stable IDs and historical names and escape prose
+  ---
+  duration_ms: 10.015889
+  type: 'test'
+  ...
+# Subtest: actual archive encodes cursors and search and never reads letters
+ok 2 - actual archive encodes cursors and search and never reads letters
+  ---
+  duration_ms: 14.418071
+  type: 'test'
+  ...
+# Subtest: archive ignores a late response after world change
+not ok 3 - archive ignores a late response after world change
+  ---
+  duration_ms: 0.963509
+  type: 'test'
+  location: '/home/tk/wt/codex-korrespondens-k2/web/static/js/megaron/ui/drawers/diplomacy_archive.test.mjs:20:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + '<div class="dip-queue-toolbar"><form class="dip-archive-search" data-archive-search><label>Find person, city, subject or good <input name="q" maxlength="120" value=""></label><button class="btn-small">Search</button></form><button class="btn-small" data-archive-refresh>Refresh</button></div><p class="dip-queue-note">Personal archive of newly sent correspondence. Older letters have no proven historical recipient and remain in the legacy correspondence view.</p><article class="dip-queue-item" data-case="case-id"><button class="btn-small" data-case-open="case-id">Copper &lt;terms&gt;</button><div><strong>&lt;Wanax&gt;</strong> · Old Kyme</div><p class="dip-queue-preview">&lt;hello&gt;</p><div class="dip-queue-note">2 letters · 10/24/2026, 8:00:00 AM</div></article>'
+    - 'new world'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'new world'
+  actual: '<div class="dip-queue-toolbar"><form class="dip-archive-search" data-archive-search><label>Find person, city, subject or good <input name="q" maxlength="120" value=""></label><button class="btn-small">Search</button></form><button class="btn-small" data-archive-refresh>Refresh</button></div><p class="dip-queue-note">Personal archive of newly sent correspondence. Older letters have no proven historical recipient and remain in the legacy correspondence view.</p><article class="dip-queue-item" data-case="case-id"><button class="btn-small" data-case-open="case-id">Copper &lt;terms&gt;</button><div><strong>&lt;Wanax&gt;</strong> · Old Kyme</div><p class="dip-queue-preview">&lt;hello&gt;</p><div class="dip-queue-note">2 letters · 10/24/2026, 8:00:00 AM</div></article>'
+  operator: 'strictEqual'
+  stack: |-
+    file:///home/tk/wt/codex-korrespondens-k2/web/static/js/megaron/ui/drawers/diplomacy_archive.test.mjs:21:239
+    async rig (file:///home/tk/wt/codex-korrespondens-k2/web/static/js/megaron/ui/drawers/diplomacy_archive.test.mjs:13:390)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: case continuation uses exact case and only current contacted historical cities
+ok 4 - case continuation uses exact case and only current contacted historical cities
+  ---
+  duration_ms: 2.056985
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 3
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 74.92535

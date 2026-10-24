@@ -1,0 +1,52 @@
+TAP version 13
+# Subtest: personal cases retain stable IDs and historical names and escape prose
+not ok 1 - personal cases retain stable IDs and historical names and escape prose
+  ---
+  duration_ms: 10.07312
+  type: 'test'
+  location: '/home/tk/wt/codex-korrespondens-k2/web/static/js/megaron/ui/drawers/diplomacy_archive.test.mjs:6:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /data-case-open="case-id"/. Input:
+    
+    '<article class="dip-queue-item" data-case="case-id"><button class="btn-small" data-case-open="&lt;Wanax&gt;">Copper &lt;terms&gt;</button><div><strong>&lt;Wanax&gt;</strong> · Old Kyme</div><p class="dip-queue-preview">&lt;hello&gt;</p><div class="dip-queue-note">2 letters · 10/24/2026, 8:00:00 AM</div></article><article class="dip-queue-item" data-case="another-case"><button class="btn-small" data-case-open="&lt;Wanax&gt;">Second matter</button><div><strong>&lt;Wanax&gt;</strong> · Old Kyme</div><p class="dip-queue-preview">&lt;hello&gt;</p><div class="dip-queue-note">2 letters · 10/24/2026, 8:00:00 AM</div></article>'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: '<article class="dip-queue-item" data-case="case-id"><button class="btn-small" data-case-open="&lt;Wanax&gt;">Copper &lt;terms&gt;</button><div><strong>&lt;Wanax&gt;</strong> · Old Kyme</div><p class="dip-queue-preview">&lt;hello&gt;</p><div class="dip-queue-note">2 letters · 10/24/2026, 8:00:00 AM</div></article><article class="dip-queue-item" data-case="another-case"><button class="btn-small" data-case-open="&lt;Wanax&gt;">Second matter</button><div><strong>&lt;Wanax&gt;</strong> · Old Kyme</div><p class="dip-queue-preview">&lt;hello&gt;</p><div class="dip-queue-note">2 letters · 10/24/2026, 8:00:00 AM</div></article>'
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-korrespondens-k2/web/static/js/megaron/ui/drawers/diplomacy_archive.test.mjs:8:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: actual archive encodes cursors and search and never reads letters
+ok 2 - actual archive encodes cursors and search and never reads letters
+  ---
+  duration_ms: 14.561118
+  type: 'test'
+  ...
+# Subtest: archive ignores a late response after world change
+ok 3 - archive ignores a late response after world change
+  ---
+  duration_ms: 0.432869
+  type: 'test'
+  ...
+# Subtest: case continuation uses exact case and only current contacted historical cities
+ok 4 - case continuation uses exact case and only current contacted historical cities
+  ---
+  duration_ms: 2.279245
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 3
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 78.512722

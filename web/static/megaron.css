@@ -2122,3 +2122,14 @@ h4.cx-h { font-size: var(--fs-base); }
 .dip-queue-result { margin-top: .4rem; }
 
 .dip-queue-preview { margin: .4rem 0; color: var(--text-dim); }
+
+.dip-archive-heading { color: var(--text); font-size: 1rem; }
+.dip-case-compose, .dip-archive-search { display: grid; gap: .5rem; width: 100%; margin: .5rem 0; }
+.dip-case-compose label, .dip-archive-search label { display: grid; gap: .3rem; }
+.dip-case-compose textarea, .dip-case-compose select, .dip-archive-search input {
+  box-sizing: border-box; width: 100%; max-width: 100%; padding: .4rem;
+  background: var(--warm-white); color: var(--text); border: 1px solid var(--border);
+  font: inherit;
+}
+.dip-case-compose textarea { min-height: 6rem; resize: vertical; }
+.dip-case-compose button, .dip-archive-search button { justify-self: start; }

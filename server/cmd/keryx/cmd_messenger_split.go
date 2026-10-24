@@ -11,7 +11,7 @@ import (
 // No goods — pure diplomatic communication. FOW-gated on the server.
 // This is SB8 verb #1: distinct from trade-offer and transfer.
 func messageCmd() *cobra.Command {
-	var destName, text, fromName string
+	var destName, text, fromName, caseID, subject string
 	var fromHost bool
 	cmd := &cobra.Command{
 		Use:   "message",
@@ -52,6 +52,8 @@ func messageCmd() *cobra.Command {
 				data, err := c.post(path, map[string]any{
 					"destination_id": destID,
 					"message":        text,
+					"case_id":        caseID,
+					"subject":        subject,
 				})
 				if err != nil {
 					return err
@@ -77,6 +79,8 @@ func messageCmd() *cobra.Command {
 			data, err := c.post(path, map[string]any{
 				"destination_id": destID,
 				"message":        text,
+				"case_id":        caseID,
+				"subject":        subject,
 				// No trade_offer — pure message
 			})
 			if err != nil {
@@ -96,6 +100,8 @@ func messageCmd() *cobra.Command {
 	}
 	cmd.Flags().StringVarP(&destName, "to", "t", "", "destination settlement name (required)")
 	cmd.Flags().StringVarP(&text, "text", "x", "", "message text (required)")
+	cmd.Flags().StringVar(&caseID, "case", "", "continue an existing personal case ID")
+	cmd.Flags().StringVar(&subject, "subject", "", "subject for a new case (up to 120 characters)")
 	cmd.Flags().StringVar(&fromName, "from", "", "your city to send from (default: capital)")
 	cmd.Flags().BoolVar(&fromHost, "from-host", false, "send from your wandering Nomadic Host (founder phase) instead of a city")
 	_ = cmd.MarkFlagRequired("to")

@@ -39,3 +39,13 @@ The first letter you send to a city also opens [[contact]] with it for good.
 A messenger cannot swim any more than a Runner can. When a letter's road crosses open water it waits in your own port for a ship instead — see [[sea]] for how the crossing actually works.
 
 If an order Runner is waiting for a ship, open its dispatch to see the sealed order's unit, destination and mission. Your Notifications history keeps those details readable after the Runner moves. Only your own order is shown; another Wanax's Runner does not reveal its envelope.
+
+## Personal case archive
+
+**Diplomacy → Personal archive** keeps newly sent correspondence by person and case. Set **New case subject** when writing a new letter. Different matters with the same Wanax remain separate. Open a case to see its letters; older letters are folded beneath the newest. Opening the archive does not mark letters read or send a reply.
+
+Names are preserved as recorded at departure. Renaming or losing a city does not rewrite the letters, and a city's new owner does not inherit another Wanax's personal archive. A recipient sees a new letter only after delivery to that recipient. Replies become visible to the original sender when the bearer returns. Historical letters without a proven recipient remain in the older **Correspondence** view and are not assigned to today's owner in the personal archive.
+
+Search the archive by person, city, subject or traded good. **Older →** pages through cases in creation order, or letters within an opened case in send order. A new letter can continue an existing case using one of its cities that remains in your current contacts; the server checks the person and contact again at dispatch. Same-bearer replies remain in **Queue**.
+
+Keryx: `correspondence`, `correspondence --search copper`, or `correspondence --case <case-id>`. Use `--limit`, `--cursor` and `--json` for the same paginated archive. `message --subject "Winter copper"` starts a case; `message --case <case-id>` continues it. Both city and wandering-host messages support these fields. A personal case never grants a new contact or reveals a map position.

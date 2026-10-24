@@ -1,0 +1,23 @@
+[
+  {
+    "name": "case-key-is-name",
+    "source": "web/static/js/megaron/ui/drawers/diplomacy_archive.js",
+    "red": true,
+    "restored": true,
+    "sha256": "2d9bb100bf9ec6644845ae519f291bc45b0989a4cf47b4a85204657107d18245"
+  },
+  {
+    "name": "late-world-response",
+    "source": "web/static/js/megaron/ui/drawers/diplomacy_archive.js",
+    "red": true,
+    "restored": true,
+    "sha256": "2d9bb100bf9ec6644845ae519f291bc45b0989a4cf47b4a85204657107d18245"
+  },
+  {
+    "name": "cli-legacy-route",
+    "source": "server/cmd/keryx/cmd_correspondence_cases.go",
+    "red": true,
+    "restored": true,
+    "sha256": "e5d626ee11d8dd8b9dc7e11e30a8fa2825b15d821d999712f3afe1a277c6d80a"
+  }
+]
