@@ -187,7 +187,7 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 	var u unitRow
 	var curQ, curR *int
 	if err := tx.QueryRow(ctx,
-		`SELECT id, owner_id, type, category, size, crew, cargo_unit_id,
+		`SELECT id, owner_id, type, category, size, crew, (SELECT cargo.id FROM units cargo WHERE cargo.carried_by_ship_id=units.id ORDER BY cargo.created_at,cargo.id LIMIT 1),
 		        status, q, r, target_q, target_r, stance, march_intent, colony_name, home_settlement_id, capture_mode,
 		        carried_silver, provisions, land_target_q, land_target_r, land_cargo_intent, passage_messenger_id,
 		        pickup_unit_id, pickup_wait_ticks
@@ -528,24 +528,9 @@ func (h *UnitArrivalHandler) arriveGarrison(
 		}
 	}
 
-	// C6: if this ship carried a land unit, move the cargo to the ship's new position.
-	// The cargo stays 'embarked' — the Wanax must explicitly /unload to deploy it.
-	if u.cargoUnitID != nil {
-		if _, err := tx.Exec(ctx,
-			`UPDATE units SET
-			   q             = $2,
-			   r             = $3,
-			   settlement_id = $4,
-			   updated_at    = now()
-			 WHERE id = $1 AND status = 'embarked'`,
-			*u.cargoUnitID, destQ, destR, settlementID,
-		); err != nil {
-			// Non-fatal: log and continue (cargo ghost is bad but arrival must not fail).
-			slog.Warn("C6: could not update cargo unit position on ship arrival",
-				"ship", u.id, "cargo", *u.cargoUnitID, "err", err)
-		} else {
-			slog.Info("C6: cargo unit position updated with ship", "ship", u.id, "cargo", *u.cargoUnitID, "q", destQ, "r", destR)
-		}
+	// Every embarked cohort follows the physical ship until a landing.
+	if _, err := tx.Exec(ctx, `UPDATE units SET q=$2,r=$3,settlement_id=$4,updated_at=now() WHERE carried_by_ship_id=$1 AND status='embarked'`, u.id, destQ, destR, settlementID); err != nil {
+		return fmt.Errorf("move embarked cohorts: %w", err)
 	}
 
 	_, _ = h.eventStore.Append(ctx, u.id, events.StreamType(unit.StreamUnit), unit.EventUnitArrived,
@@ -621,7 +606,14 @@ func (h *UnitArrivalHandler) landArrived(
 		return h.arriveGarrison(ctx, tx, u, destQ, destR, nil, worldID)
 	}
 	landQ, landR := *u.landTargetQ, *u.landTargetR
-	cargoID := *u.cargoUnitID
+	cargoIDs, err := unit.CargoIDs(ctx, tx, u.id)
+	if err != nil {
+		return err
+	}
+	if len(cargoIDs) == 0 {
+		return fmt.Errorf("land arrival: no passengers")
+	}
+	cargoID := cargoIDs[0]
 
 	// Re-resolve the landing hex authoritatively — the world can change
 	// mid-transit. Still free → land exactly where chosen. Taken by now → the
@@ -658,16 +650,18 @@ func (h *UnitArrivalHandler) landArrived(
 	// same outcome the retired Unload fall (b) used to produce.
 	if _, err := tx.Exec(ctx,
 		`UPDATE units SET status = 'positioned', settlement_id = NULL, q = $2, r = $3, updated_at = now()
-		 WHERE id = $1`,
-		cargoID, landQ, landR,
+		 WHERE carried_by_ship_id = $1`,
+		u.id, landQ, landR,
 	); err != nil {
 		return fmt.Errorf("land arrival: disembark cargo: %w", err)
 	}
-	if _, err := tx.Exec(ctx, `UPDATE units SET cargo_unit_id = NULL WHERE id = $1`, u.id); err != nil {
+	if _, err := tx.Exec(ctx, `UPDATE units SET carried_by_ship_id=NULL WHERE carried_by_ship_id=$1`, u.id); err != nil {
 		return fmt.Errorf("land arrival: clear ship cargo: %w", err)
 	}
-	_, _ = h.eventStore.Append(ctx, u.id, events.StreamType(unit.StreamUnit), unit.EventShipUnloaded,
-		unit.ShipUnloadedPayload{ShipUnitID: u.id, CargoUnitID: cargoID, Q: landQ, R: landR}, worldID, nil)
+	for _, landedID := range cargoIDs {
+		_, _ = h.eventStore.Append(ctx, u.id, events.StreamType(unit.StreamUnit), unit.EventShipUnloaded,
+			unit.ShipUnloadedPayload{ShipUnitID: u.id, CargoUnitID: landedID, Q: landQ, R: landR}, worldID, nil)
+	}
 
 	// Grounding order: found a colony right there, no further order needed.
 	// Re-runs the SAME authoritative checks the plain-colonize arrival branch
@@ -833,7 +827,7 @@ func (h *UnitArrivalHandler) ReleasePassageWaitShip(ctx context.Context, tx pgx.
 	var u unitRow
 	var curQ, curR *int
 	if err := tx.QueryRow(ctx,
-		`SELECT id, owner_id, type, category, size, crew, cargo_unit_id,
+		`SELECT id, owner_id, type, category, size, crew, (SELECT cargo.id FROM units cargo WHERE cargo.carried_by_ship_id=units.id ORDER BY cargo.created_at,cargo.id LIMIT 1),
 		        status, q, r, target_q, target_r, stance, march_intent, colony_name, home_settlement_id, capture_mode,
 		        carried_silver, provisions, land_target_q, land_target_r, land_cargo_intent, passage_messenger_id
 		 FROM units WHERE id = $1 AND status = 'positioned' AND march_intent = 'passage_wait' FOR UPDATE`,
@@ -983,14 +977,8 @@ func (h *UnitArrivalHandler) boardPickupUnit(
 		return false, nil
 	}
 
-	var shipCargo *uuid.UUID
-	if err := tx.QueryRow(ctx,
-		`SELECT cargo_unit_id FROM units WHERE id = $1 FOR UPDATE`, shipID,
-	).Scan(&shipCargo); err != nil {
-		return false, fmt.Errorf("board pickup unit: load ship: %w", err)
-	}
-	if shipCargo != nil {
-		return false, nil // ship already carries something — defensive, should not happen
+	if err := unit.BindCargoTx(ctx, tx, shipID, pickupUnitID); err != nil {
+		return false, err
 	}
 
 	if _, err := tx.Exec(ctx,
@@ -999,13 +987,6 @@ func (h *UnitArrivalHandler) boardPickupUnit(
 	); err != nil {
 		return false, fmt.Errorf("board pickup unit: embark: %w", err)
 	}
-	if _, err := tx.Exec(ctx,
-		`UPDATE units SET cargo_unit_id = $2, updated_at = now() WHERE id = $1`,
-		shipID, pickupUnitID,
-	); err != nil {
-		return false, fmt.Errorf("board pickup unit: load ship: %w", err)
-	}
-
 	_, _ = h.eventStore.Append(ctx, shipID, events.StreamType(unit.StreamUnit), unit.EventShipLoaded,
 		unit.ShipLoadedPayload{ShipUnitID: shipID, CargoUnitID: pickupUnitID, Q: shipQ, R: shipR}, worldID, nil)
 
@@ -1034,7 +1015,7 @@ func (h *UnitArrivalHandler) pickupWaitingShipFor(
 ) (unitRow, bool, error) {
 	var u unitRow
 	err := tx.QueryRow(ctx,
-		`SELECT id, owner_id, type, category, size, crew, cargo_unit_id,
+		`SELECT id, owner_id, type, category, size, crew, (SELECT cargo.id FROM units cargo WHERE cargo.carried_by_ship_id=units.id ORDER BY cargo.created_at,cargo.id LIMIT 1),
 		        status, q, r, target_q, target_r, stance, march_intent, colony_name, home_settlement_id, capture_mode,
 		        carried_silver, provisions
 		   FROM units
@@ -1080,7 +1061,7 @@ func (h *UnitArrivalHandler) HandlePickupTimeout(ctx context.Context, e events.S
 	// reason (unit_arrival.go's resolve() doc comment on scanning q/r).
 	var qPtr, rPtr *int
 	if err := tx.QueryRow(ctx,
-		`SELECT id, owner_id, type, category, size, crew, cargo_unit_id,
+		`SELECT id, owner_id, type, category, size, crew, (SELECT cargo.id FROM units cargo WHERE cargo.carried_by_ship_id=units.id ORDER BY cargo.created_at,cargo.id LIMIT 1),
 		        status, q, r, target_q, target_r, stance, march_intent, colony_name, home_settlement_id, capture_mode,
 		        carried_silver, provisions, pickup_unit_id
 		 FROM units WHERE id = $1 FOR UPDATE`,
@@ -1177,31 +1158,36 @@ func (h *UnitArrivalHandler) pickupReturned(
 		})
 	}
 
-	if u.cargoUnitID != nil {
-		cargoID := *u.cargoUnitID
-		if _, err := tx.Exec(ctx,
-			`UPDATE units SET status = 'garrison', settlement_id = $2, q = $3, r = $4, updated_at = now()
+	cargoIDs, err := unit.CargoIDs(ctx, tx, u.id)
+	if err != nil {
+		return err
+	}
+	if len(cargoIDs) > 0 {
+		for _, cargoID := range cargoIDs {
+			if _, err := tx.Exec(ctx,
+				`UPDATE units SET status = 'garrison', settlement_id = $2, q = $3, r = $4, updated_at = now()
 			 WHERE id = $1`,
-			cargoID, *u.homeSettlementID, destQ, destR,
-		); err != nil {
-			return fmt.Errorf("pickupReturned: disembark fetched unit: %w", err)
-		}
-		if _, err := tx.Exec(ctx, `UPDATE units SET cargo_unit_id = NULL WHERE id = $1`, u.id); err != nil {
-			return fmt.Errorf("pickupReturned: clear ship cargo: %w", err)
-		}
-		_, _ = h.eventStore.Append(ctx, u.id, events.StreamType(unit.StreamUnit), unit.EventShipUnloaded,
-			unit.ShipUnloadedPayload{ShipUnitID: u.id, CargoUnitID: cargoID, Q: destQ, R: destR}, worldID, nil)
+				cargoID, *u.homeSettlementID, destQ, destR,
+			); err != nil {
+				return fmt.Errorf("pickupReturned: disembark fetched unit: %w", err)
+			}
+			if _, err := tx.Exec(ctx, `UPDATE units SET carried_by_ship_id = NULL WHERE id = $1`, cargoID); err != nil {
+				return fmt.Errorf("pickupReturned: clear ship cargo: %w", err)
+			}
+			_, _ = h.eventStore.Append(ctx, u.id, events.StreamType(unit.StreamUnit), unit.EventShipUnloaded,
+				unit.ShipUnloadedPayload{ShipUnitID: u.id, CargoUnitID: cargoID, Q: destQ, R: destR}, worldID, nil)
 
-		if h.hub != nil {
-			_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "UnitArrived", 4, map[string]any{
-				"unit_id": cargoID,
-				"name":    unit.LoadDisplayName(ctx, tx, cargoID),
-				"q":       destQ,
-				"r":       destR,
-				"status":  "garrison",
-			})
+			if h.hub != nil {
+				_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "UnitArrived", 4, map[string]any{
+					"unit_id": cargoID,
+					"name":    unit.LoadDisplayName(ctx, tx, cargoID),
+					"q":       destQ,
+					"r":       destR,
+					"status":  "garrison",
+				})
+			}
+			slog.Info("pickup: ship returned home with fetched unit", "unit", u.id, "settlement", *u.homeSettlementID, "cargo", cargoID)
 		}
-		slog.Info("pickup: ship returned home with fetched unit", "unit", u.id, "settlement", *u.homeSettlementID, "cargo", cargoID)
 		return nil
 	}
 
@@ -1829,7 +1815,7 @@ func (h *UnitArrivalHandler) HandleSentryReturn(ctx context.Context, e events.Sc
 
 	var u unitRow
 	if err := tx.QueryRow(ctx,
-		`SELECT id, owner_id, type, category, size, crew, cargo_unit_id,
+		`SELECT id, owner_id, type, category, size, crew, (SELECT cargo.id FROM units cargo WHERE cargo.carried_by_ship_id=units.id ORDER BY cargo.created_at,cargo.id LIMIT 1),
 		        status, q, r, target_q, target_r, stance, march_intent, colony_name, home_settlement_id, capture_mode,
 		        carried_silver, provisions
 		 FROM units WHERE id = $1 FOR UPDATE`,
@@ -2235,68 +2221,73 @@ func (h *UnitArrivalHandler) resolveAmphibiousAssault(
 	}
 
 	// Load the cargo land unit — it is the real attacker.
-	cargoID := *u.cargoUnitID
-	var cargoType string
-	var cargoSize int
-	if err := tx.QueryRow(ctx,
-		`SELECT type, size FROM units WHERE id = $1`, cargoID,
-	).Scan(&cargoType, &cargoSize); err != nil {
-		return fmt.Errorf("amphibious assault: load cargo: %w", err)
-	}
-
-	arriving := battleParticipant{unitID: cargoID, ownerID: u.ownerID, utype: cargoType, side: "attacker", currentSize: cargoSize, stance: u.stance}
-
-	garrisonRows, err := tx.Query(ctx,
-		`SELECT id, owner_id, type, size FROM units
-		 WHERE settlement_id = $1 AND status = 'garrison' AND status != 'disbanded'`,
-		*dest.settlementID,
-	)
+	cargoIDs, err := unit.CargoIDs(ctx, tx, u.id)
 	if err != nil {
-		return fmt.Errorf("amphibious assault: load garrison: %w", err)
+		return err
 	}
-	var defenders []battleParticipant
-	for garrisonRows.Next() {
-		var d battleParticipant
-		d.side = "defender"
-		if scanErr := garrisonRows.Scan(&d.unitID, &d.ownerID, &d.utype, &d.currentSize); scanErr != nil {
-			garrisonRows.Close()
-			return fmt.Errorf("amphibious assault: scan garrison: %w", scanErr)
+	for _, cargoID := range cargoIDs {
+		var cargoType string
+		var cargoSize int
+		if err := tx.QueryRow(ctx,
+			`SELECT type, size FROM units WHERE id = $1`, cargoID,
+		).Scan(&cargoType, &cargoSize); err != nil {
+			return fmt.Errorf("amphibious assault: load cargo: %w", err)
 		}
-		defenders = append(defenders, d)
-	}
-	garrisonRows.Close()
-	if err := garrisonRows.Err(); err != nil {
-		return fmt.Errorf("amphibious assault: garrison rows: %w", err)
-	}
 
-	if err := h.initiateOrJoinBattle(ctx, tx, worldID, settleQ, settleR, arriving, defenders); err != nil {
-		return fmt.Errorf("amphibious assault: initiate/join battle: %w", err)
-	}
+		arriving := battleParticipant{unitID: cargoID, ownerID: u.ownerID, utype: cargoType, side: "attacker", currentSize: cargoSize, stance: u.stance}
 
-	slog.Info("amphibious assault: battle initiated/joined", "ship", u.id, "cargo", cargoID, "settlement", *dest.settlementID, "defenders", len(defenders))
+		garrisonRows, err := tx.Query(ctx,
+			`SELECT id, owner_id, type, size FROM units
+		 WHERE settlement_id = $1 AND status = 'garrison' AND status != 'disbanded'`,
+			*dest.settlementID,
+		)
+		if err != nil {
+			return fmt.Errorf("amphibious assault: load garrison: %w", err)
+		}
+		var defenders []battleParticipant
+		for garrisonRows.Next() {
+			var d battleParticipant
+			d.side = "defender"
+			if scanErr := garrisonRows.Scan(&d.unitID, &d.ownerID, &d.utype, &d.currentSize); scanErr != nil {
+				garrisonRows.Close()
+				return fmt.Errorf("amphibious assault: scan garrison: %w", scanErr)
+			}
+			defenders = append(defenders, d)
+		}
+		garrisonRows.Close()
+		if err := garrisonRows.Err(); err != nil {
+			return fmt.Errorf("amphibious assault: garrison rows: %w", err)
+		}
 
-	// The cargo storms ashore and holds the settlement's hex while the battle
-	// resolves over subsequent battle-ticks — no immediate win/lose branch
-	// here anymore.
-	if _, err := tx.Exec(ctx,
-		`UPDATE units SET
+		if err := h.initiateOrJoinBattle(ctx, tx, worldID, settleQ, settleR, arriving, defenders); err != nil {
+			return fmt.Errorf("amphibious assault: initiate/join battle: %w", err)
+		}
+
+		slog.Info("amphibious assault: battle initiated/joined", "ship", u.id, "cargo", cargoID, "settlement", *dest.settlementID, "defenders", len(defenders))
+
+		// The cargo storms ashore and holds the settlement's hex while the battle
+		// resolves over subsequent battle-ticks — no immediate win/lose branch
+		// here anymore.
+		if _, err := tx.Exec(ctx,
+			`UPDATE units SET
 		   status = 'positioned', settlement_id = NULL,
 		   q = $2, r = $3, target_q = NULL, target_r = NULL,
 		   departs_at = NULL, arrives_at = NULL, depart_tick = NULL, arrive_tick = NULL, updated_at = now()
 		 WHERE id = $1`,
-		cargoID, settleQ, settleR,
-	); err != nil {
-		return fmt.Errorf("amphibious assault: position landed cargo: %w", err)
-	}
+			cargoID, settleQ, settleR,
+		); err != nil {
+			return fmt.Errorf("amphibious assault: position landed cargo: %w", err)
+		}
 
+	}
 	// The galley's part is done the instant its cargo lands — it empties and
 	// sails home on its own (R5, megaron_plan_skeppsuppdrag_landsatt.md)
 	// regardless of how the fight ashore eventually goes (ship/cargo landing
 	// handling kept from the old model; only the "sits at the beach forever"
 	// outcome is gone).
 	if _, err := tx.Exec(ctx,
-		`UPDATE units SET cargo_unit_id = NULL, q = $2, r = $3, updated_at = now() WHERE id = $1`,
-		u.id, seaQ, seaR,
+		`UPDATE units SET carried_by_ship_id=NULL,updated_at=now() WHERE carried_by_ship_id=$1`,
+		u.id,
 	); err != nil {
 		return fmt.Errorf("amphibious assault: empty galley: %w", err)
 	}

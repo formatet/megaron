@@ -184,7 +184,7 @@ func collapseSettlement(
 	// so it is not in this result set.
 	// Naval units with cargo: disband cargo units too.
 	garrisonRows, err := tx.Query(ctx,
-		`SELECT id, cargo_unit_id FROM units
+		`SELECT id, (SELECT cargo.id FROM units cargo WHERE cargo.carried_by_ship_id=units.id ORDER BY cargo.created_at,cargo.id LIMIT 1) FROM units
 		 WHERE settlement_id = $1 AND status = 'garrison'`,
 		settlementID,
 	)

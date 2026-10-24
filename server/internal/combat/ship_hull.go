@@ -292,7 +292,7 @@ func marchShipToNearestOwnPort(
 	var fromQ, fromR, crew int
 	var cargoUnitID *uuid.UUID
 	if err := tx.QueryRow(ctx,
-		`SELECT q, r, crew, cargo_unit_id FROM units WHERE id = $1`, unitID,
+		`SELECT q, r, crew, (SELECT cargo.id FROM units cargo WHERE cargo.carried_by_ship_id=units.id ORDER BY cargo.created_at,cargo.id LIMIT 1) FROM units WHERE id = $1`, unitID,
 	).Scan(&fromQ, &fromR, &crew, &cargoUnitID); err != nil {
 		return fmt.Errorf("march ship to nearest own port: load position: %w", err)
 	}

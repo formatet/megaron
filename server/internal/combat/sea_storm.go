@@ -148,7 +148,7 @@ func (h *SeaStormScanHandler) Handle(ctx context.Context, e events.ScheduledEven
 func (h *SeaStormScanHandler) loadVoyages(ctx context.Context, worldID uuid.UUID) ([]seaVoyage, error) {
 	var out []seaVoyage
 	rows, err := h.pool.Query(ctx,
-		`SELECT id, owner_id, type, cargo_unit_id, march_route, status, depart_tick, arrive_tick
+		`SELECT id, owner_id, type, (SELECT cargo.id FROM units cargo WHERE cargo.carried_by_ship_id=units.id ORDER BY cargo.created_at,cargo.id LIMIT 1), march_route, status, depart_tick, arrive_tick
 		 FROM units
 		 WHERE world_id = $1 AND category = 'naval' AND status = 'marching' AND march_route IS NOT NULL`,
 		worldID)

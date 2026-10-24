@@ -111,7 +111,7 @@ func sweepOneShip(ctx context.Context, pool *pgxpool.Pool, h *UnitArrivalHandler
 	var curQ, curR *int
 	var worldID uuid.UUID
 	if err := tx.QueryRow(ctx,
-		`SELECT id, world_id, owner_id, type, category, size, crew, cargo_unit_id,
+		`SELECT id, world_id, owner_id, type, category, size, crew, (SELECT cargo.id FROM units cargo WHERE cargo.carried_by_ship_id=units.id ORDER BY cargo.created_at,cargo.id LIMIT 1),
 		        status, q, r, target_q, target_r, stance, march_intent, colony_name, home_settlement_id, capture_mode,
 		        carried_silver, provisions, land_target_q, land_target_r, land_cargo_intent
 		 FROM units WHERE id = $1 AND status = 'positioned' AND category = 'naval'

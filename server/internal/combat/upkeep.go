@@ -186,7 +186,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 	// own field wages throughout the physical freight assignment.
 	rows, err := h.pool.Query(ctx,
 		`SELECT u.id, u.owner_id, u.type, u.category, u.size, u.crew, u.settlement_id,
-		        u.unpaid_periods, u.cargo_unit_id,
+		        u.unpaid_periods, (SELECT cargo.id FROM units cargo WHERE cargo.carried_by_ship_id=u.id ORDER BY cargo.created_at,cargo.id LIMIT 1),
 		        (SELECT c.id FROM units c
 		          WHERE c.cargo_unit_id = u.id AND c.world_id = u.world_id),
 		        (SELECT s.id FROM settlements s

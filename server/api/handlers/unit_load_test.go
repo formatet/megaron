@@ -156,3 +156,130 @@ func TestUnitLoad_RouteParamNameMatchesRouter(t *testing.T) {
 		t.Errorf("cargo unit status = %q, want embarked", cargoStatus)
 	}
 }
+
+func TestUnitLoad_EmporosThreeAndFourthRejected(t *testing.T) {
+	pool := unitLoadTestPool(t)
+	ctx := context.Background()
+
+	// See internal/combat/unit_arrival_colonize_test.go for why leftover
+	// active test worlds must be archived first (one_active_world partial
+	// unique index).
+	if _, err := pool.Exec(ctx,
+		`UPDATE worlds SET status = 'archived' WHERE status = 'active'`,
+	); err != nil {
+		t.Fatalf("archive leftover active test worlds: %v", err)
+	}
+	var worldID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO worlds (name, status) VALUES ($1, 'active') RETURNING id`,
+		"test-world-"+uuid.New().String(),
+	).Scan(&worldID); err != nil {
+		t.Fatalf("create test world: %v", err)
+	}
+	t.Cleanup(func() {
+		_, _ = pool.Exec(ctx, `UPDATE worlds SET status = 'archived' WHERE id = $1`, worldID)
+	})
+
+	authSvc := auth.NewService(pool, "test-secret")
+	username := "loader-" + uuid.New().String()
+	accessToken, _, err := authSvc.Register(ctx, username, "x")
+	if err != nil {
+		t.Fatalf("register test player: %v", err)
+	}
+	claims, err := authSvc.ValidateAccessToken(accessToken)
+	if err != nil {
+		t.Fatalf("validate minted token: %v", err)
+	}
+	playerID := claims.PlayerID
+
+	var provinceID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type, coastal) VALUES ($1, 0, 0, 'plains', true) RETURNING id`,
+		worldID,
+	).Scan(&provinceID); err != nil {
+		t.Fatalf("create province: %v", err)
+	}
+	var settlementID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital)
+		 VALUES ($1, $2, 'Loadport', 'achaean', $3, 'capital', true) RETURNING id`,
+		worldID, provinceID, playerID,
+	).Scan(&settlementID); err != nil {
+		t.Fatalf("create settlement: %v", err)
+	}
+
+	var shipID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO units (world_id, owner_id, type, category, size, status, settlement_id)
+		 VALUES ($1, $2, 'merchantman', 'naval', 1, 'garrison', $3) RETURNING id`,
+		worldID, playerID, settlementID,
+	).Scan(&shipID); err != nil {
+		t.Fatalf("create ship unit: %v", err)
+	}
+	var cargoID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO units (world_id, owner_id, type, category, size, status, settlement_id)
+		 VALUES ($1, $2, 'spearman', 'land', 100, 'garrison', $3) RETURNING id`,
+		worldID, playerID, settlementID,
+	).Scan(&cargoID); err != nil {
+		t.Fatalf("create cargo unit: %v", err)
+	}
+
+	clk := clock.NewTestClock(time.Now())
+	uh := NewUnitHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), clk)
+
+	r := chi.NewRouter()
+	r.Use(auth.Middleware(authSvc))
+	r.Get("/worlds/{worldID}/units", uh.ListUnits)
+	r.Post("/worlds/{worldID}/units/{unitID}/march", uh.March)
+	r.Post("/worlds/{worldID}/units/{unitID}/recall", uh.Recall)
+	r.Post("/worlds/{worldID}/units/{unitID}/stance", uh.SetStance)
+	r.Post("/worlds/{worldID}/units/{unitID}/load", uh.Load)
+	r.Post("/worlds/{worldID}/units/{unitID}/unload", uh.Unload)
+
+	body, _ := json.Marshal(map[string]string{"unit_id": cargoID.String()})
+	req := httptest.NewRequest(http.MethodPost,
+		"/worlds/"+worldID.String()+"/units/"+shipID.String()+"/load", bytes.NewReader(body))
+	req.Header.Set("Authorization", "Bearer "+accessToken)
+	rec := httptest.NewRecorder()
+	r.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("Load(valid garrisoned ship) = %d %q, want 200 (route param name must resolve the real ship ID, not \"\")",
+			rec.Code, rec.Body.String())
+	}
+
+	var shipCargo uuid.UUID
+	if err := pool.QueryRow(ctx, `SELECT cargo_unit_id FROM units WHERE id = $1`, shipID).Scan(&shipCargo); err != nil {
+		t.Fatalf("load ship after Load: %v", err)
+	}
+	if shipCargo != cargoID {
+		t.Errorf("ship.cargo_unit_id = %s, want %s", shipCargo, cargoID)
+	}
+	var cargoStatus string
+	if err := pool.QueryRow(ctx, `SELECT status FROM units WHERE id = $1`, cargoID).Scan(&cargoStatus); err != nil {
+		t.Fatalf("load cargo unit after Load: %v", err)
+	}
+	if cargoStatus != "embarked" {
+		t.Errorf("cargo unit status = %q, want embarked", cargoStatus)
+	}
+	for passenger := 2; passenger <= 4; passenger++ {
+		var next uuid.UUID
+		if err := pool.QueryRow(ctx, `INSERT INTO units(world_id,owner_id,type,category,size,status,settlement_id) VALUES($1,$2,'spearman','land',100,'garrison',$3) RETURNING id`, worldID, playerID, settlementID).Scan(&next); err != nil {
+			t.Fatal(err)
+		}
+		raw, _ := json.Marshal(map[string]string{"unit_id": next.String()})
+		req := httptest.NewRequest("POST", "/worlds/"+worldID.String()+"/units/"+shipID.String()+"/load", bytes.NewReader(raw))
+		req.Header.Set("Authorization", "Bearer "+accessToken)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+		want := 200
+		if passenger == 4 {
+			want = 409
+		}
+		if rec.Code != want {
+			t.Fatalf("passenger%d returned%d %s want%d", passenger, rec.Code, rec.Body.String(), want)
+		}
+	}
+
+}

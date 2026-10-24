@@ -34,7 +34,7 @@ func (h *UpkeepHandler) returnForFood(ctx context.Context, outer upkeepUnitRow, 
 	var landQ, landR *int
 	u.id = outer.id
 	u.category = "naval"
-	err = tx.QueryRow(ctx, `SELECT owner_id,type,size,crew,status,q,r,target_q,target_r,departs_at,arrives_at,depart_tick,arrive_tick,march_route,home_settlement_id,cargo_unit_id,provisions,march_intent,land_target_q,land_target_r FROM units WHERE id=$1 AND world_id=$2 FOR UPDATE`, u.id, world).Scan(&u.ownerID, &u.utype, &u.size, &u.crew, &position.Status, &q, &r, &position.TargetQ, &position.TargetR, &position.DepartsAt, &position.ArrivesAt, &position.DepartTick, &position.ArriveTick, &position.Route, &u.homeSettlementID, &u.cargoUnitID, &u.provisions, &intent, &landQ, &landR)
+	err = tx.QueryRow(ctx, `SELECT owner_id,type,size,crew,status,q,r,target_q,target_r,departs_at,arrives_at,depart_tick,arrive_tick,march_route,home_settlement_id,(SELECT cargo.id FROM units cargo WHERE cargo.carried_by_ship_id=units.id ORDER BY cargo.created_at,cargo.id LIMIT 1),provisions,march_intent,land_target_q,land_target_r FROM units WHERE id=$1 AND world_id=$2 FOR UPDATE`, u.id, world).Scan(&u.ownerID, &u.utype, &u.size, &u.crew, &position.Status, &q, &r, &position.TargetQ, &position.TargetR, &position.DepartsAt, &position.ArrivesAt, &position.DepartTick, &position.ArriveTick, &position.Route, &u.homeSettlementID, &u.cargoUnitID, &u.provisions, &intent, &landQ, &landR)
 	if err != nil {
 		return err
 	}

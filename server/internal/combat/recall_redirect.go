@@ -86,7 +86,7 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 	var departTick, arriveTick *int
 	var storedRouteRaw []byte
 	if err := tx.QueryRow(ctx,
-		`SELECT owner_id, type, category, status, q, r, crew, target_q, target_r, departs_at, arrives_at, march_intent, colony_name, cargo_unit_id, depart_tick, arrive_tick, march_route, home_settlement_id
+		`SELECT owner_id, type, category, status, q, r, crew, target_q, target_r, departs_at, arrives_at, march_intent, colony_name, (SELECT cargo.id FROM units cargo WHERE cargo.carried_by_ship_id=units.id ORDER BY cargo.created_at,cargo.id LIMIT 1), depart_tick, arrive_tick, march_route, home_settlement_id
 		 FROM units WHERE id = $1 FOR UPDATE`,
 		o.UnitID,
 	).Scan(&ownerID, &utype, &category, &status, &q, &r, &crew, &targetQ, &targetR, &departsAt, &arrivesAt, &marchIntent, &colonyName, &cargoUnitID, &departTick, &arriveTick, &storedRouteRaw, &homeSettlementID); err != nil {

@@ -41,7 +41,7 @@ func (StorageForecaster) StorageForecast(ctx context.Context, tx pgx.Tx, sid uui
 	// Use the same billing set, payer and field ration as UpkeepHandler. Units
 	// consuming ship provisions do not draw food from a distant home store.
 	units, err := tx.Query(ctx, `SELECT u.id,u.type,u.category,u.size,u.status,u.crew,u.settlement_id,
- (SELECT c.id FROM units c WHERE c.cargo_unit_id=u.id AND c.world_id=u.world_id)
+ u.carried_by_ship_id
  FROM units u JOIN settlements s ON s.id=u.support_settlement_id AND s.owner_id=u.owner_id
  WHERE s.id=$1 AND u.status IN('garrison','marching','positioned','embarked','repairing','freighting','fitting_out')
  AND NOT EXISTS(SELECT 1 FROM founder_phase f WHERE f.world_id=u.world_id AND f.owner_id=u.owner_id AND f.active)`, sid)
