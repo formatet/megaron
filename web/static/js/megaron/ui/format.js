@@ -613,7 +613,7 @@ export function notifText(kind, body) {
       if (kind === 'ShipStormDamaged') return `${subject} was battered by ${storm} ${at} — hull ${body.hull ?? '?'}/${body.hull_max ?? 5}${first}`;
       const lost = [];
       for (const c of body.cargo || []) lost.push(`${fmtNum(c.quantity)} ${c.good_key}`);
-      if (body.troops) lost.push(`${body.troops.size} ${body.troops.unit_type}`);
+      for (const t of [body.troops, ...(body.more_troops || [])]) if (t) lost.push(`${t.size} ${t.unit_type}`);
       return `${subject} foundered in ${storm} ${at}` + (lost.length ? ` — lost with her: ${lost.join(', ')}` : '') + first;
     }
     case 'ShipRepaired': {

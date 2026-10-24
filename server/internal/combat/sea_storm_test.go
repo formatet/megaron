@@ -117,9 +117,12 @@ func mkStormFleet(t *testing.T, pool *pgxpool.Pool, worldID, owner uuid.UUID, ro
 	}
 	raw, _ := json.Marshal(route)
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, q, r, target_q, target_r,
-		                    depart_tick, arrive_tick, march_route, cargo_unit_id)
-		 VALUES ($1, $2, 'galley', 'naval', 1, 20, 'marching', 0, 0, 10, 0, 0, 10, $3, $4) RETURNING id`,
+		`WITH ship AS (
+		   INSERT INTO units (world_id, owner_id, type, category, size, crew, status, q, r, target_q, target_r,
+		                      depart_tick, arrive_tick, march_route)
+		   VALUES ($1, $2, 'galley', 'naval', 1, 20, 'marching', 0, 0, 10, 0, 0, 10, $3) RETURNING id
+		 ), link AS (UPDATE units SET carried_by_ship_id = (SELECT id FROM ship) WHERE id = $4)
+		 SELECT id FROM ship`,
 		worldID, owner, raw, troops,
 	).Scan(&ship); err != nil {
 		t.Fatal(err)
@@ -194,6 +197,22 @@ func countShipEvents(t *testing.T, pool *pgxpool.Pool, id uuid.UUID, kind string
 func TestSeaStorm_OneBlowPerStormThenFounders(t *testing.T) {
 	pool, worldID, owner, route := seaStormWorld(t)
 	ship, troops := mkStormFleet(t, pool, worldID, owner, route)
+	// Two more cohorts aboard (an Emporos carries three): all of them drown.
+	if _, err := pool.Exec(context.Background(),
+		`UPDATE units SET type = 'merchantman', crew = 10 WHERE id = $1`, ship); err != nil {
+		t.Fatal(err)
+	}
+	var more []uuid.UUID
+	for _, size := range []int{80, 60} {
+		var id uuid.UUID
+		if err := pool.QueryRow(context.Background(),
+			`INSERT INTO units (world_id, owner_id, type, category, size, status, carried_by_ship_id)
+			 VALUES ($1, $2, 'spearman', 'land', $3, 'embarked', $4) RETURNING id`,
+			worldID, owner, size, ship).Scan(&id); err != nil {
+			t.Fatal(err)
+		}
+		more = append(more, id)
+	}
 	stormsOverHexes(t, pool, worldID, 1, 2, 4, 5, 7)
 	h := NewSeaStormScanHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), nil)
 	h.Dice = newStormDice(1)
@@ -230,6 +249,14 @@ func TestSeaStorm_OneBlowPerStormThenFounders(t *testing.T) {
 	_ = json.Unmarshal(raw, &p)
 	if p.OwnerID != owner || p.Hull != 0 || p.HullBefore != 1 || p.Damage != 1 || p.Q != 7 || p.Troops == nil || p.Troops.Size != 100 {
 		t.Fatalf("founder payload = %+v, want owner, hull 1→0 (damage 1), at (7,0), 100 drowned troops", p)
+	}
+	if len(p.MoreTroops) != 2 || p.MoreTroops[0].Size+p.MoreTroops[1].Size != 140 {
+		t.Fatalf("founder more_troops = %+v, want the two other cohorts (80 + 60)", p.MoreTroops)
+	}
+	for _, id := range more {
+		if status, _ := shipState(t, pool, id); status != "disbanded" {
+			t.Fatalf("second/third cohort status=%s, want disbanded (drowned with the ship)", status)
+		}
 	}
 	runStormDay(t, h, worldID, 7)
 	if n := countShipEvents(t, pool, ship, EventShipFoundered); n != 1 {

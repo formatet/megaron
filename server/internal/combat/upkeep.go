@@ -11,6 +11,7 @@ import (
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -187,8 +188,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 	rows, err := h.pool.Query(ctx,
 		`SELECT u.id, u.owner_id, u.type, u.category, u.size, u.crew, u.settlement_id,
 		        u.unpaid_periods, (SELECT cargo.id FROM units cargo WHERE cargo.carried_by_ship_id=u.id ORDER BY cargo.created_at,cargo.id LIMIT 1),
-		        (SELECT c.id FROM units c
-		          WHERE c.cargo_unit_id = u.id AND c.world_id = u.world_id),
+		        u.carried_by_ship_id,
 		        (SELECT s.id FROM settlements s
 		          WHERE s.id = u.support_settlement_id AND s.owner_id = u.owner_id),
 		        u.status, u.q, u.r, u.home_settlement_id
@@ -886,4 +886,26 @@ func (h *UpkeepHandler) recordUnpaid(ctx context.Context, u upkeepUnitRow, world
 		)
 		h.notifyUpkeepUnpaid(ctx, u, worldID, sid, np, periodsUntilDesertion, silverNeed)
 	}
+}
+
+// passengersRation is what every land unit aboard shipID eats per tick from
+// the ship's stores — one Emporos can carry three, a galley one.
+func passengersRation(ctx context.Context, db interface {
+	Query(context.Context, string, ...any) (pgx.Rows, error)
+}, shipID uuid.UUID) (float64, error) {
+	rows, err := db.Query(ctx, `SELECT type, size FROM units WHERE carried_by_ship_id = $1 AND status = 'embarked'`, shipID)
+	if err != nil {
+		return 0, err
+	}
+	defer rows.Close()
+	total := 0.0
+	for rows.Next() {
+		var kind string
+		var size int
+		if err := rows.Scan(&kind, &size); err != nil {
+			return 0, err
+		}
+		total += VoyageRation("", 0, kind, size, 0)
+	}
+	return total, rows.Err()
 }

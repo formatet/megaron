@@ -376,16 +376,22 @@ type unitRow struct {
 	// route — never a client-side guess. nil when no gällande route exists
 	// (pre-153 march, or the straight-line fallback); locationStr then falls
 	// back to showing only origin→target, exactly as before this slice.
-	CurrentQ        *int       `json:"current_q"`
-	CurrentR        *int       `json:"current_r"`
-	ArrivesAt       *time.Time `json:"arrives_at"`
-	CargoUnitID     *string    `json:"cargo_unit_id"`
-	CarrierShipID   *string    `json:"carrier_ship_id"`
-	CarrierShipName *string    `json:"carrier_ship_name"`
-	MarchIntent     *string    `json:"march_intent"`
-	ColonyName      *string    `json:"colony_name"`
-	Reinforcing     bool       `json:"reinforcing"`
-	CanReinforce    bool       `json:"can_reinforce"`
+	CurrentQ    *int       `json:"current_q"`
+	CurrentR    *int       `json:"current_r"`
+	ArrivesAt   *time.Time `json:"arrives_at"`
+	CargoUnitID *string    `json:"cargo_unit_id"`
+	CargoUnits  []struct {
+		DisplayName string `json:"display_name"`
+		Type        string `json:"type"`
+		Size        int    `json:"size"`
+	} `json:"cargo_units"`
+	TroopCapacity   int     `json:"troop_capacity"`
+	CarrierShipID   *string `json:"carrier_ship_id"`
+	CarrierShipName *string `json:"carrier_ship_name"`
+	MarchIntent     *string `json:"march_intent"`
+	ColonyName      *string `json:"colony_name"`
+	Reinforcing     bool    `json:"reinforcing"`
+	CanReinforce    bool    `json:"can_reinforce"`
 	// OriginSettlementID is the cohort's permanent home city (mig 126). Used
 	// here to measure how far a forward post stands from home — a naval unit
 	// or a pre-mig-126 unit may have it nil, in which case the distance is
@@ -513,7 +519,19 @@ func formatSize(c *Client, u unitRow) string {
 		if u.Status == "laid_up" {
 			return fmt.Sprintf("1 vessel (crew ashore %d%s)", u.Crew, hull)
 		}
-		return fmt.Sprintf("1 vessel (crew %d%s%s)", u.Crew, hull, food)
+		passengers := ""
+		if len(u.CargoUnits) > 0 {
+			names := make([]string, 0, len(u.CargoUnits))
+			for _, p := range u.CargoUnits {
+				name := p.DisplayName
+				if name == "" {
+					name = p.Type
+				}
+				names = append(names, fmt.Sprintf("%s (%d)", name, p.Size))
+			}
+			passengers = fmt.Sprintf(", passengers %d/%d: %s", len(u.CargoUnits), max(u.TroopCapacity, len(u.CargoUnits)), strings.Join(names, ", "))
+		}
+		return fmt.Sprintf("1 vessel (crew %d%s%s%s)", u.Crew, hull, food, passengers)
 	}
 	// A thinned cohort is only legible if the row says how to fix it — the
 	// server already computes can_reinforce (home city, garrison, size<100).
@@ -1800,7 +1818,15 @@ func unitUnloadCmd() *cobra.Command {
 				printRawJSON(data)
 				return nil
 			}
-			fmt.Printf("Cargo unit disembarked from ship %s\n", shipID[:8])
+			var resp struct {
+				CargoUnitIDs []string `json:"cargo_unit_ids"`
+			}
+			_ = json.Unmarshal(data, &resp)
+			if n := len(resp.CargoUnitIDs); n > 1 {
+				fmt.Printf("%d land units disembarked from ship %s\n", n, shipID[:8])
+			} else {
+				fmt.Printf("Cargo unit disembarked from ship %s\n", shipID[:8])
+			}
 			return nil
 		},
 	}

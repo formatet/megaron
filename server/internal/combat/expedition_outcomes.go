@@ -102,7 +102,7 @@ func (h *UnitArrivalHandler) stopExpedition(ctx context.Context, tx pgx.Tx, u un
 		return err
 	}
 	if u.cargoUnitID != nil {
-		if _, err := tx.Exec(ctx, `UPDATE units SET q=$2,r=$3,settlement_id=NULL,updated_at=now() WHERE id=$1 AND status='embarked'`, *u.cargoUnitID, q, r); err != nil {
+		if _, err := tx.Exec(ctx, `UPDATE units SET q=$2,r=$3,settlement_id=NULL,updated_at=now() WHERE carried_by_ship_id=$1 AND status='embarked'`, u.id, q, r); err != nil {
 			return err
 		}
 	}

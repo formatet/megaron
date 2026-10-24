@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -91,4 +92,24 @@ func BindCargoTx(ctx context.Context, tx pgx.Tx, ship, cargo uuid.UUID) error {
 	}
 	_, err = tx.Exec(ctx, `UPDATE units SET carried_by_ship_id=$2,updated_at=now() WHERE id=$1`, cargo, ship)
 	return err
+}
+
+// NoCargoSQL is true when nothing rides the ship row named alias.
+func NoCargoSQL(alias string) string {
+	return `NOT EXISTS(SELECT 1 FROM units passenger WHERE passenger.carried_by_ship_id=` + trustedAlias(alias) + `.id)`
+}
+
+// CargoRoomSQL is true when the ship row named alias can take one more land
+// unit; the per-type numbers come from CargoCapacity, never a second copy.
+func CargoRoomSQL(alias string) string {
+	a := trustedAlias(alias)
+	return `(SELECT count(*) FROM units passenger WHERE passenger.carried_by_ship_id=` + a + `.id) < CASE ` + a + `.type WHEN '` +
+		string(TypeMerchantman) + `' THEN ` + strconv.Itoa(CargoCapacity(TypeMerchantman)) + ` ELSE ` + strconv.Itoa(CargoCapacity(TypeGalley)) + ` END`
+}
+
+func trustedAlias(alias string) string {
+	if !regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*$`).MatchString(alias) {
+		panic("invalid trusted unit alias")
+	}
+	return alias
 }

@@ -94,14 +94,11 @@ func (h *UpkeepHandler) returnForFood(ctx context.Context, outer upkeepUnitRow, 
 }
 
 func shipRationTx(ctx context.Context, tx pgx.Tx, u unitRow) (float64, error) {
-	cargoKind := ""
-	cargoSize := 0
-	if u.cargoUnitID != nil {
-		if err := tx.QueryRow(ctx, `SELECT type,size FROM units WHERE id=$1 AND status='embarked'`, *u.cargoUnitID).Scan(&cargoKind, &cargoSize); err != nil && err != pgx.ErrNoRows {
-			return 0, err
-		}
+	cargo, err := passengersRation(ctx, tx, u.id)
+	if err != nil {
+		return 0, err
 	}
-	return VoyageRation(u.utype, u.size, cargoKind, cargoSize, u.crew), nil
+	return VoyageRation(u.utype, u.size, "", 0, u.crew) + cargo, nil
 }
 
 // foodReturned reports only physical arrival home. A captured/removed home is

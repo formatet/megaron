@@ -86,6 +86,9 @@ type SeaStormPayload struct {
 	TransportID *uuid.UUID      `json:"transport_id,omitempty"`
 	Cargo       []SeaStormCargo `json:"cargo,omitempty"`
 	Troops      *SeaStormTroops `json:"troops,omitempty"`
+	// MoreTroops are the passengers after the first (an Emporos carries up to
+	// three); Troops keeps meaning the first, as it always has.
+	MoreTroops []SeaStormTroops `json:"more_troops,omitempty"`
 }
 
 // SeaStormScanHandler processes the recurring ScheduledSeaStormScan.
@@ -383,17 +386,28 @@ func (h *SeaStormScanHandler) founder(ctx context.Context, tx pgx.Tx, v seaVoyag
 		return err
 	}
 	if v.cargoUnitID != nil {
-		var t SeaStormTroops
-		err := tx.QueryRow(ctx,
-			`UPDATE units u SET status = 'disbanded', size = 0, updated_at = now()
-			 FROM (SELECT id, type, size FROM units WHERE id = $1 AND status = 'embarked' FOR UPDATE) old
-			 WHERE u.id = old.id RETURNING old.id, old.type, old.size`, *v.cargoUnitID,
-		).Scan(&t.UnitID, &t.UnitType, &t.Size)
-		if err != nil && err != pgx.ErrNoRows {
+		cargoIDs, err := unit.CargoIDs(ctx, tx, v.shipID)
+		if err != nil {
 			return err
 		}
-		if err == nil {
-			s.Troops = &t
+		for _, cargoID := range cargoIDs {
+			var t SeaStormTroops
+			err := tx.QueryRow(ctx,
+				`UPDATE units u SET status = 'disbanded', size = 0, carried_by_ship_id = NULL, updated_at = now()
+				 FROM (SELECT id, type, size FROM units WHERE id = $1 AND status = 'embarked' FOR UPDATE) old
+				 WHERE u.id = old.id RETURNING old.id, old.type, old.size`, cargoID,
+			).Scan(&t.UnitID, &t.UnitType, &t.Size)
+			if err == pgx.ErrNoRows {
+				continue
+			}
+			if err != nil {
+				return err
+			}
+			if s.Troops == nil {
+				s.Troops = &t
+			} else {
+				s.MoreTroops = append(s.MoreTroops, t)
+			}
 		}
 	}
 	if v.transportID != nil {

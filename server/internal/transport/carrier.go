@@ -69,7 +69,8 @@ func FindFreeShip(ctx context.Context, tx pgx.Tx, worldID, ownerID, settlementID
 	err := tx.QueryRow(ctx,
 		`SELECT id, type, name FROM units
 		 WHERE world_id = $1 AND owner_id = $2 AND settlement_id = $3
-		   AND status = 'garrison' AND cargo_unit_id IS NULL
+		   AND status = 'garrison'
+		   AND NOT EXISTS (SELECT 1 FROM units passenger WHERE passenger.carried_by_ship_id = units.id)
 		   AND type IN ('galley', 'merchantman')
 		 ORDER BY CASE type WHEN 'merchantman' THEN 0 ELSE 1 END, created_at, id
 		 LIMIT 1

@@ -2,6 +2,7 @@ package capabilities
 
 import (
 	"context"
+	"formatet/megaron/server/internal/unit"
 
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/province"
@@ -163,7 +164,7 @@ func (cc checkContext) idleNavalUnits() int {
 	_ = cc.pool.QueryRow(cc.ctx,
 		`SELECT count(*) FROM units
 		 WHERE settlement_id = $1 AND owner_id = $2
-		   AND category = 'naval' AND status = 'garrison' AND cargo_unit_id IS NULL`,
+		   AND category = 'naval' AND status = 'garrison' AND `+unit.CargoRoomSQL("units")+``,
 		cc.settlementID, cc.playerID,
 	).Scan(&n)
 	return n
@@ -179,7 +180,7 @@ func (cc checkContext) ladenNavalUnits() int {
 	_ = cc.pool.QueryRow(cc.ctx,
 		`SELECT count(*) FROM units
 		 WHERE settlement_id = $1 AND owner_id = $2
-		   AND category = 'naval' AND status = 'garrison' AND cargo_unit_id IS NOT NULL`,
+		   AND category = 'naval' AND status = 'garrison' AND NOT `+unit.NoCargoSQL("units")+``,
 		cc.settlementID, cc.playerID,
 	).Scan(&n)
 	return n

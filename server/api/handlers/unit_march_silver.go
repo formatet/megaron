@@ -27,10 +27,10 @@ func (h *UnitHandler) marchSilverForecast(ctx context.Context, worldID, ownerID,
 		typ, category, status  string
 		size                   int
 		crew                   int
-		location, payer, cargo *uuid.UUID
+		location, payer, carrier *uuid.UUID
 	}
 	rows, err := h.pool.Query(ctx, `SELECT u.id,u.type,u.category,u.status,u.size,u.crew,u.settlement_id,
-	 (SELECT s.id FROM settlements s WHERE s.id=u.support_settlement_id AND s.owner_id=u.owner_id AND s.world_id=u.world_id),u.cargo_unit_id
+	 (SELECT s.id FROM settlements s WHERE s.id=u.support_settlement_id AND s.owner_id=u.owner_id AND s.world_id=u.world_id),u.carried_by_ship_id
 	 FROM units u WHERE u.world_id=$1 AND u.owner_id=$2`, worldID, ownerID)
 	if err != nil {
 		return nil, err
@@ -38,7 +38,7 @@ func (h *UnitHandler) marchSilverForecast(ctx context.Context, worldID, ownerID,
 	all := map[uuid.UUID]row{}
 	for rows.Next() {
 		var u row
-		if err := rows.Scan(&u.id, &u.typ, &u.category, &u.status, &u.size, &u.crew, &u.location, &u.payer, &u.cargo); err != nil {
+		if err := rows.Scan(&u.id, &u.typ, &u.category, &u.status, &u.size, &u.crew, &u.location, &u.payer, &u.carrier); err != nil {
 			rows.Close()
 			return nil, err
 		}
@@ -56,11 +56,9 @@ func (h *UnitHandler) marchSilverForecast(ctx context.Context, worldID, ownerID,
 	}
 	// A loaded ship takes its embarked unit with it. Include the cargo exactly
 	// once even when the caller also selected it explicitly.
-	for id := range selected {
-		if cargo := all[id].cargo; cargo != nil {
-			if _, ok := all[*cargo]; ok {
-				selected[*cargo] = true
-			}
+	for id, u := range all {
+		if u.carrier != nil && selected[*u.carrier] {
+			selected[id] = true
 		}
 	}
 	result := map[string]any{"upkeep_silver_home": float64(0), "upkeep_silver_field": float64(0), "silver_runway_ticks": nil, "silver_payer_count": 0}

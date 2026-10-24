@@ -106,8 +106,10 @@ func TestForeignUnits_CargoSurfacesEmbarkedCohort(t *testing.T) {
 		t.Fatalf("create embarked cohort: %v", err)
 	}
 	if _, err := pool.Exec(ctx,
-		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, q, r, cargo_unit_id)
-		 VALUES ($1, $2, 'merchantman', 'naval', 1, 12, 'positioned', 2, 0, $3)`,
+		`WITH ship AS (
+		   INSERT INTO units (world_id, owner_id, type, category, size, crew, status, q, r)
+		   VALUES ($1, $2, 'merchantman', 'naval', 1, 12, 'positioned', 2, 0) RETURNING id
+		 ) UPDATE units SET carried_by_ship_id = (SELECT id FROM ship) WHERE id = $3`,
 		worldID, enemyOwnerID, cargoID,
 	); err != nil {
 		t.Fatalf("create visible enemy ship: %v", err)
@@ -125,8 +127,10 @@ func TestForeignUnits_CargoSurfacesEmbarkedCohort(t *testing.T) {
 		t.Fatalf("create hidden embarked cohort: %v", err)
 	}
 	if _, err := pool.Exec(ctx,
-		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, q, r, cargo_unit_id)
-		 VALUES ($1, $2, 'merchantman', 'naval', 1, 12, 'positioned', 5, 0, $3)`,
+		`WITH ship AS (
+		   INSERT INTO units (world_id, owner_id, type, category, size, crew, status, q, r)
+		   VALUES ($1, $2, 'merchantman', 'naval', 1, 12, 'positioned', 5, 0) RETURNING id
+		 ) UPDATE units SET carried_by_ship_id = (SELECT id FROM ship) WHERE id = $3`,
 		worldID, enemyOwnerID, hiddenCargoID,
 	); err != nil {
 		t.Fatalf("create hidden enemy ship: %v", err)

@@ -24,6 +24,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -142,7 +143,7 @@ func TestUnitLoad_RouteParamNameMatchesRouter(t *testing.T) {
 	}
 
 	var shipCargo uuid.UUID
-	if err := pool.QueryRow(ctx, `SELECT cargo_unit_id FROM units WHERE id = $1`, shipID).Scan(&shipCargo); err != nil {
+	if err := pool.QueryRow(ctx, `SELECT (SELECT p.id FROM units p WHERE p.carried_by_ship_id=units.id ORDER BY p.created_at,p.id LIMIT 1) FROM units WHERE id = $1`, shipID).Scan(&shipCargo); err != nil {
 		t.Fatalf("load ship after Load: %v", err)
 	}
 	if shipCargo != cargoID {
@@ -250,7 +251,7 @@ func TestUnitLoad_EmporosThreeAndFourthRejected(t *testing.T) {
 	}
 
 	var shipCargo uuid.UUID
-	if err := pool.QueryRow(ctx, `SELECT cargo_unit_id FROM units WHERE id = $1`, shipID).Scan(&shipCargo); err != nil {
+	if err := pool.QueryRow(ctx, `SELECT (SELECT p.id FROM units p WHERE p.carried_by_ship_id=units.id ORDER BY p.created_at,p.id LIMIT 1) FROM units WHERE id = $1`, shipID).Scan(&shipCargo); err != nil {
 		t.Fatalf("load ship after Load: %v", err)
 	}
 	if shipCargo != cargoID {
@@ -280,6 +281,58 @@ func TestUnitLoad_EmporosThreeAndFourthRejected(t *testing.T) {
 		if rec.Code != want {
 			t.Fatalf("passenger%d returned%d %s want%d", passenger, rec.Code, rec.Body.String(), want)
 		}
+		if passenger == 4 && !strings.Contains(rec.Body.String(), "at most 3 land units") {
+			t.Fatalf("fourth passenger refusal = %s, want it to name the limit", rec.Body.String())
+		}
 	}
 
+	// The roster names all three aboard and the hull's capacity.
+	listReq := httptest.NewRequest("GET", "/worlds/"+worldID.String()+"/units", nil)
+	listReq.Header.Set("Authorization", "Bearer "+accessToken)
+	listRec := httptest.NewRecorder()
+	r.ServeHTTP(listRec, listReq)
+	var rosterBody struct {
+		Units []struct {
+			ID            uuid.UUID `json:"id"`
+			TroopCapacity int       `json:"troop_capacity"`
+			CargoUnits    []struct {
+				Size int `json:"size"`
+			} `json:"cargo_units"`
+		} `json:"units"`
+	}
+	if err := json.Unmarshal(listRec.Body.Bytes(), &rosterBody); err != nil {
+		t.Fatalf("decode roster: %v (%s)", err, listRec.Body.String())
+	}
+	foundShip := false
+	for _, u := range rosterBody.Units {
+		if u.ID == shipID {
+			foundShip = true
+			if u.TroopCapacity != 3 || len(u.CargoUnits) != 3 {
+				t.Fatalf("Emporos roster row = capacity %d, %d aboard; want 3 and 3", u.TroopCapacity, len(u.CargoUnits))
+			}
+		}
+	}
+	if !foundShip {
+		t.Fatalf("Emporos missing from roster: %s", listRec.Body.String())
+	}
+
+	// Unload puts every passenger ashore, not only the first.
+	unloadReq := httptest.NewRequest("POST", "/worlds/"+worldID.String()+"/units/"+shipID.String()+"/unload", nil)
+	unloadReq.Header.Set("Authorization", "Bearer "+accessToken)
+	unloadRec := httptest.NewRecorder()
+	r.ServeHTTP(unloadRec, unloadReq)
+	if unloadRec.Code != 200 {
+		t.Fatalf("Unload = %d %s, want 200", unloadRec.Code, unloadRec.Body.String())
+	}
+	var stillAboard, ashore int
+	if err := pool.QueryRow(ctx,
+		`SELECT count(*) FILTER (WHERE carried_by_ship_id IS NOT NULL),
+		        count(*) FILTER (WHERE carried_by_ship_id IS NULL AND status = 'garrison' AND settlement_id = $2)
+		   FROM units WHERE world_id = $1 AND category = 'land'`, worldID, settlementID,
+	).Scan(&stillAboard, &ashore); err != nil {
+		t.Fatal(err)
+	}
+	if stillAboard != 0 || ashore != 4 {
+		t.Fatalf("after unload: %d still aboard, %d in garrison; want 0 and 4 (three unloaded + the refused fourth)", stillAboard, ashore)
+	}
 }

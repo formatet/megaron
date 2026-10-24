@@ -142,7 +142,7 @@ func erasePlayer(ctx context.Context, pool *pgxpool.Pool, username string, apply
 	for _, c := range cities {
 		if _, err := tx.Exec(ctx,
 			`UPDATE units SET status = 'disbanded', updated_at = now()
-			 WHERE id IN (SELECT cargo_unit_id FROM units WHERE settlement_id = $1 AND status = 'garrison' AND cargo_unit_id IS NOT NULL)
+			 WHERE carried_by_ship_id IN (SELECT id FROM units WHERE settlement_id = $1 AND status = 'garrison')
 			   AND status = 'embarked'`, c.id); err != nil {
 			return rep, fmt.Errorf("disband cargo of %s: %w", c.name, err)
 		}

@@ -73,7 +73,7 @@ func (h *UnitHandler) shipPortAction(w http.ResponseWriter, r *http.Request, fit
 	var category, status string
 	var crew int
 	var cargo *uuid.UUID
-	err = tx.QueryRow(ctx, `SELECT owner_id,settlement_id,category,status,crew,cargo_unit_id FROM units
+	err = tx.QueryRow(ctx, `SELECT owner_id,settlement_id,category,status,crew,(SELECT passenger.id FROM units passenger WHERE passenger.carried_by_ship_id=units.id LIMIT 1) FROM units
 		WHERE id=$1 AND world_id=$2 FOR UPDATE`, unitID, worldID).Scan(&shipOwner, &lockedSID, &category, &status, &crew, &cargo)
 	if err == pgx.ErrNoRows || shipOwner != owner {
 		writeError(w, http.StatusNotFound, "unit not found")

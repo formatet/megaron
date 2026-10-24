@@ -83,7 +83,7 @@ func TestUnitUnload_FieldPositionedShipRejected(t *testing.T) {
 		t.Fatalf("create embarked cargo unit: %v", err)
 	}
 	if _, err := pool.Exec(ctx,
-		`UPDATE units SET cargo_unit_id = $2 WHERE id = $1`, shipID, cargoID,
+		`UPDATE units SET carried_by_ship_id = $1 WHERE id = $2`, shipID, cargoID,
 	); err != nil {
 		t.Fatalf("load cargo onto ship: %v", err)
 	}
@@ -115,7 +115,7 @@ func TestUnitUnload_FieldPositionedShipRejected(t *testing.T) {
 		t.Errorf("cargo unit status = %q, want still \"embarked\" — the rejected order must not have moved it", cargoStatus)
 	}
 	var shipCargo *uuid.UUID
-	if err := pool.QueryRow(ctx, `SELECT cargo_unit_id FROM units WHERE id = $1`, shipID).Scan(&shipCargo); err != nil {
+	if err := pool.QueryRow(ctx, `SELECT (SELECT p.id FROM units p WHERE p.carried_by_ship_id=units.id ORDER BY p.created_at,p.id LIMIT 1) FROM units WHERE id = $1`, shipID).Scan(&shipCargo); err != nil {
 		t.Fatalf("read ship after rejected unload: %v", err)
 	}
 	if shipCargo == nil || *shipCargo != cargoID {
@@ -198,7 +198,7 @@ func TestUnitUnload_InPort_ReturnsCarriedPurse(t *testing.T) {
 	).Scan(&cargoID); err != nil {
 		t.Fatalf("create cargo: %v", err)
 	}
-	if _, err := pool.Exec(ctx, `UPDATE units SET cargo_unit_id = $2 WHERE id = $1`, shipID, cargoID); err != nil {
+	if _, err := pool.Exec(ctx, `UPDATE units SET carried_by_ship_id = $1 WHERE id = $2`, shipID, cargoID); err != nil {
 		t.Fatalf("load cargo: %v", err)
 	}
 

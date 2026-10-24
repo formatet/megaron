@@ -60,7 +60,7 @@ func TestMarchSilverForecastMatchesActualTick(t *testing.T) {
 	spear := mkUnit(c, "spearman", "land", "garrison", 100, &c)
 	ship := mkUnit(a, "galley", "naval", "garrison", 1, &a)
 	cargo := mkUnit(a, "elite_infantry", "land", "embarked", 50, nil)
-	_, err = pool.Exec(ctx, `UPDATE units SET cargo_unit_id=$1 WHERE id=$2`, cargo, ship)
+	_, err = pool.Exec(ctx, `UPDATE units SET carried_by_ship_id = $2 WHERE id = $1`, cargo, ship)
 	if err != nil {
 		t.Fatal(err)
 	}

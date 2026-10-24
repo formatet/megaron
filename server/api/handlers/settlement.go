@@ -1419,7 +1419,7 @@ func (h *SettlementHandler) Abandon(w http.ResponseWriter, r *http.Request) {
 
 	// Disband garrison units (and any embarked cargo) so no orphan rows remain.
 	garrisonRows, err := tx.Query(r.Context(),
-		`SELECT id, cargo_unit_id FROM units WHERE settlement_id = $1 AND status = 'garrison'`,
+		`SELECT ship.id, passenger.id FROM units ship LEFT JOIN units passenger ON passenger.carried_by_ship_id = ship.id WHERE ship.settlement_id = $1 AND ship.status = 'garrison'`,
 		settlementID,
 	)
 	if err != nil {
