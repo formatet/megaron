@@ -108,8 +108,15 @@ func (h *DeliveryHandler) HandleShipmentV2(ctx context.Context, e events.Schedul
 		return nil
 	}
 	var resolved bool
-	if err := tx.QueryRow(ctx, `SELECT resolved FROM trade_routes WHERE id=$1 FOR UPDATE`, p.RouteID).Scan(&resolved); err != nil && err != pgx.ErrNoRows {
-		return err
+	if err := tx.QueryRow(ctx, `SELECT resolved FROM trade_routes WHERE id=$1 FOR UPDATE`, p.RouteID).Scan(&resolved); err != nil {
+		// Legacy internal delivery stops when its route has disappeared (for
+		// example, when the destination was deleted and the FK cascaded).
+		if err == pgx.ErrNoRows && p.Kind == "transfer" {
+			return nil
+		}
+		if err != pgx.ErrNoRows {
+			return err
+		}
 	}
 	if resolved {
 		return tx.Commit(ctx)
@@ -130,10 +137,11 @@ func (h *DeliveryHandler) HandleShipmentV2(ctx context.Context, e events.Schedul
 	}
 	out.OwnerChanged = out.ActualRecipientID != nil && *out.ActualRecipientID != p.RecipientID
 	deliver := status == "in_transit" && err == nil && state == "active" && out.ActualRecipientID != nil
-	// Internal logistics must not turn into an involuntary gift after conquest.
-	if p.Kind == "transfer" && out.OwnerChanged {
-		deliver = false
-		out.Reason = "ownership_changed"
+	// Internal delivery preserves the legacy route contract: credit the
+	// destination that still exists, regardless of its current owner/state.
+	// Gifts deliberately keep their separate active-recipient rules.
+	if p.Kind == "transfer" {
+		deliver = status == "in_transit" && err == nil
 	}
 	returned := map[string]float64{}
 	switch {

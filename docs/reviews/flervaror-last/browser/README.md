@@ -15,8 +15,8 @@ The form is opened through the real drawer. No mocked network or DOM replacement
 The selected run proves both widths and zero pageerrors. All eight images inspected
 at native resolution. `proof.json` reports health commit **8b87b297**, migration211, and **935**
 production source hashes (including CSS and Codex index). They match after capture
-and the final sources. Both viewport runs have zero pageerrors. The server was
-built from this checkpoint; the later docs commit is not a new server build.
+and the sources before the later ownership review correction. Both viewport runs have zero pageerrors. The server was
+built from this checkpoint; later test/docs commits are not new server builds. The later review correction changes only shipment_v2.go among these 935 production files; the captured client surfaces remain byte-identical.
 After sending, the meter previews the *next* shipment: the now-busy hull is no
 longer available, so this fixture correctly offers the remaining land route.
 

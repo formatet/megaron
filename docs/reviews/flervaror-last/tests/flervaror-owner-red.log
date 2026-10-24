@@ -1,0 +1,24 @@
+» färsk DB på migration 211 · commit 6111d5c6+ändringar
+2026/10/24 23:45:46 INFO player registered id=cb8394ac-974c-4e3f-8b37-ef83119c854e username=sailor-c98b2378-5e4f-410f-b65c-574b205831db
+2026/10/24 23:45:46 INFO trade delivery destination=6510f1a6-8b74-451c-99d2-e0ba99e8fdc2 good=grain qty=10
+2026/10/24 23:45:46 INFO player registered id=83ec9110-7eef-44f6-9ee7-455f6c3a4d80 username=sailor-e9ad378b-5ac9-49f3-b4b5-f056f3de9def
+2026/10/24 23:45:46 INFO player registered id=5ec2ee81-86b7-441c-a235-fcfa802fe9af username=sailor-59db00a9-896c-4fd9-864e-6e3f74c909da
+2026/10/24 23:45:47 INFO trade delivery destination=6552c688-7270-436a-8528-6bd7565a7f40 good=grain qty=10
+2026/10/24 23:45:47 INFO player registered id=7a422d41-a111-43f9-be38-4dcc3396d6f8 username=sailor-e713c7a4-e43b-4ef8-ace9-0f08ff9b94bc
+2026/10/24 23:45:47 INFO player registered id=119ed6b1-3ec5-43b6-8b27-12f96d418bc9 username=sailor-69e97db3-767e-4121-840f-a97f0b4c8706
+2026/10/24 23:45:47 INFO trade delivery destination=f319bba0-f439-4d64-b9ae-173caa9e2f51 good=grain qty=10
+2026/10/24 23:45:47 INFO player registered id=193f1107-ed68-4327-ba0b-3d7b89f50755 username=sailor-0c2aa6f3-4915-4d32-912d-eb01223e65f8
+2026/10/24 23:45:47 INFO player registered id=51c938f5-3e6b-4c60-b6df-aa6416eb3bf1 username=sailor-16e757ba-1fbf-45db-8f24-42fcf19a4dd9
+2026/10/24 23:45:47 INFO player registered id=93a41130-22fc-432f-b3bb-a0f08c78045c username=sailor-81c0ccaf-deb7-48cd-a2f6-ee650da0b303
+--- FAIL: TestTransferV2MatchesLegacyDestinationChanges (0.91s)
+    --- FAIL: TestTransferV2MatchesLegacyDestinationChanges/new_owner (0.19s)
+        province_manifest_test.go:370: legacy {amount:10 status:delivered routes:1} V2 {amount:0 status:lost routes:1}
+    --- FAIL: TestTransferV2MatchesLegacyDestinationChanges/collapsed_city (0.17s)
+        province_manifest_test.go:370: legacy {amount:10 status:delivered routes:1} V2 {amount:0 status:lost routes:1}
+    --- FAIL: TestTransferV2MatchesLegacyDestinationChanges/ownerless_city (0.25s)
+        province_manifest_test.go:370: legacy {amount:10 status:delivered routes:1} V2 {amount:0 status:lost routes:1}
+    --- FAIL: TestTransferV2MatchesLegacyDestinationChanges/deleted_city (0.29s)
+        province_manifest_test.go:370: legacy {amount:0 status:in_transit routes:0} V2 {amount:0 status:lost routes:1}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.916s
+FAIL

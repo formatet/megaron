@@ -294,3 +294,84 @@ func TestManifestLossReportsEveryGoodAndProtectsRecipientOrigin(t *testing.T) {
 		})
 	}
 }
+
+// Internal shipments preserve the legacy destination semantics independently of
+// who holds the city when they arrive. Gifts retain their separate contract.
+func TestTransferV2MatchesLegacyDestinationChanges(t *testing.T) {
+	for _, change := range []string{"new owner", "collapsed city", "ownerless city", "deleted city"} {
+		t.Run(change, func(t *testing.T) {
+			type outcome struct {
+				amount float64
+				status string
+				routes int
+			}
+			var outcomes []outcome
+			for _, list := range []bool{false, true} {
+				f := setupTradeNavalFixture(t)
+				ctx := context.Background()
+				origin, prov := f.settlement(t, "Byblos", 0, true, true)
+				dest, _ := f.settlement(t, "Ugarit", 5, true, false)
+				for q := 1; q < 5; q++ {
+					f.mapTile(t, q, 0, "coastal_sea")
+				}
+				f.ship(t, origin, "merchantman")
+				_, err := f.pool.Exec(ctx, `UPDATE settlement_goods SET amount=0 WHERE settlement_id=$1`, dest)
+				if err != nil {
+					t.Fatal(err)
+				}
+				body := map[string]any{"destination_id": dest, "good_key": "grain", "quantity": 10}
+				timer := "TradeDelivery"
+				if list {
+					body = map[string]any{"destination_id": dest, "items": []map[string]any{{"good_key": "grain", "quantity": 10}}}
+					timer = "ShipmentDeliveryV2"
+				}
+				code, resp := f.post(t, fmt.Sprintf("/worlds/%s/provinces/%s/trade", f.worldID, prov), body)
+				if code != 201 {
+					t.Fatalf("%d %v", code, resp)
+				}
+				var e events.ScheduledEvent
+				e.WorldID = f.worldID
+				if err := f.pool.QueryRow(ctx, `SELECT id,payload FROM scheduled_events WHERE world_id=$1 AND event_type=$2`, f.worldID, timer).Scan(&e.ID, &e.Payload); err != nil {
+					t.Fatal(err)
+				}
+				switch change {
+				case "new owner":
+					var other uuid.UUID
+					if err := f.pool.QueryRow(ctx, `INSERT INTO players(username,password_hash) VALUES($1,'x') RETURNING id`, "new-holder-"+uuid.NewString()).Scan(&other); err != nil {
+						t.Fatal(err)
+					}
+					_, err = f.pool.Exec(ctx, `UPDATE settlements SET owner_id=$2 WHERE id=$1`, dest, other)
+				case "collapsed city":
+					_, err = f.pool.Exec(ctx, `UPDATE settlements SET state='collapsed' WHERE id=$1`, dest)
+				case "ownerless city":
+					_, err = f.pool.Exec(ctx, `UPDATE settlements SET owner_id=NULL WHERE id=$1`, dest)
+				case "deleted city":
+					_, err = f.pool.Exec(ctx, `DELETE FROM settlements WHERE id=$1`, dest)
+				}
+				if err != nil {
+					t.Fatal(err)
+				}
+				h := economy.NewDeliveryHandler(f.pool, events.NewStore(f.pool), nil, f.scheduler)
+				if list {
+					err = h.HandleShipmentV2(ctx, e)
+				} else {
+					err = h.Handle(ctx, e)
+				}
+				if err != nil {
+					t.Fatal(err)
+				}
+				var got outcome
+				if err := f.pool.QueryRow(ctx, `SELECT COALESCE((SELECT amount FROM settlement_goods WHERE settlement_id=$1 AND good_key='grain'),0),(SELECT status FROM transports WHERE id=$2),(SELECT count(*) FROM transports WHERE world_id=$3 AND kind='ship_return')`, dest, resp["transport_id"], f.worldID).Scan(&got.amount, &got.status, &got.routes); err != nil {
+					t.Fatal(err)
+				}
+				outcomes = append(outcomes, got)
+			}
+			if outcomes[0] != outcomes[1] {
+				t.Fatalf("legacy %+v V2 %+v", outcomes[0], outcomes[1])
+			}
+			if change != "deleted city" && (outcomes[1].amount != 10 || outcomes[1].status != "delivered" || outcomes[1].routes != 1) {
+				t.Fatalf("delivery changed %+v", outcomes)
+			}
+		})
+	}
+}

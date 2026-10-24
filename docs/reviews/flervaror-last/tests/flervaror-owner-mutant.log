@@ -1,0 +1,18 @@
+» färsk DB på migration 211 · commit 6111d5c6+ändringar
+2026/10/24 23:46:48 INFO player registered id=002cec7d-2389-48e8-9918-4bb0798be44b username=sailor-fc3bc82a-0623-4aeb-9b11-c52d048d30b9
+2026/10/24 23:46:48 INFO trade delivery destination=ae9d51c8-3ac7-479c-a492-e3edf981d37a good=grain qty=10
+2026/10/24 23:46:48 INFO player registered id=4566e971-1869-4c51-8525-00076276fb70 username=sailor-9fff746d-2439-4797-bac3-6d3cadbdd50b
+2026/10/24 23:46:49 INFO player registered id=b2228f4a-1985-4c36-8f98-26d3fc36d89a username=sailor-62dd672f-045c-475f-8ad5-9076e71cff4e
+2026/10/24 23:46:49 INFO trade delivery destination=7daa64eb-6304-40b7-be0b-ee2444e0ac1a good=grain qty=10
+2026/10/24 23:46:49 INFO player registered id=891665de-4a64-484e-adcc-07675070f07d username=sailor-e8036bbf-3bbe-4bed-aebc-3f8c776f7b1a
+2026/10/24 23:46:49 INFO player registered id=542571be-7633-4a7d-b9dd-2568c75280d6 username=sailor-7379e969-1275-468b-8dd2-7b9894141e8d
+2026/10/24 23:46:49 INFO trade delivery destination=072bd92d-2321-4ada-8c7d-d5833681e1ba good=grain qty=10
+2026/10/24 23:46:49 INFO player registered id=591ba377-2571-449d-b303-6c52b5d8b52b username=sailor-ce7fd1fc-cbc4-4e0f-8fba-da37f5f39333
+2026/10/24 23:46:49 INFO player registered id=074698d8-2d68-4e1e-a3b2-3b59805b1faa username=sailor-ac53476b-15ee-47f1-93a4-32bb0a93054f
+2026/10/24 23:46:49 INFO player registered id=a6a8558b-ea48-4b9f-af7f-bfb3f1c78cb0 username=sailor-eee3a446-5f8b-48f9-ad49-211665280fd2
+--- FAIL: TestTransferV2MatchesLegacyDestinationChanges (0.71s)
+    --- FAIL: TestTransferV2MatchesLegacyDestinationChanges/new_owner (0.18s)
+        province_manifest_test.go:370: legacy {amount:10 status:delivered routes:1} V2 {amount:0 status:lost routes:1}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.713s
+FAIL
