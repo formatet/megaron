@@ -65,3 +65,19 @@ kompilationsfel; endast separata rena baselinekörningen ovan är baslinjebevis.
 
 Fullsvitens övriga 25 testpaket var gröna, inklusive world 148,867 s.
 Det enda röda paketet var API enligt fixturfelet ovan; slutligt separat API-omprov grönt.
+
+## Granskningsrättning efter 6111d5c6
+
+Claude påpekade att listtransfer hade fått ett nytt förlustfall vid ägarbyte.
+Det är borttaget. `TestTransferV2MatchesLegacyDestinationChanges` kör gamla och
+nya leveransvägen på samma fyra typer av ändrade destinationer: ny ägare,
+kollapsad stad, ägarlös stad och raderad stad. Alla fyra var RÖDA före ändringen,
+och är nu GRÖNA. Legacy krediterar även en befintlig kollapsad/ägarlös stad;
+när destinationen raderats försvinner rutten och leveranshandlingen gör ingenting.
+V2 följer detta exakt. Gåvans separata regler ändras inte.
+
+Egen fysisk ägarbytesmutation RÖD; exakt restore och färska manifest-/gåvo-/
+förlust-/legacyparitetsprov GRÖNA (1,683 s). Hela sviten körs inte om för denna
+avgränsade rättning. Bildriggen byggdes från 8b87b297; efter denna rättning skiljer
+sig en av dess 935 produktionshashar (`shipment_v2.go`). Webb/Keryx/Codex är
+byte-identiska med bildriggen. Ingen ny slutserverbuild påstås.
