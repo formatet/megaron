@@ -2,6 +2,7 @@ import { State } from '../../state.js';
 import { fetchAuth } from '../../api.js';
 import { esc, formatApiError } from '../format.js';
 import { fmtNum } from '../fmt_num.js';
+import { mountCasePrivate } from './diplomacy_private.js';
 
 export function caseListHTML(page) {
   return (page.items || []).map(c => `<article class="dip-queue-item" data-case="${esc(c.id)}"><button class="btn-small" data-case-open="${esc(c.id)}">${esc(c.subject || 'Correspondence')}</button><div><strong>${esc(c.counterpart_name)}</strong> · ${esc(c.city_name)}</div><p class="dip-queue-preview">${esc(c.preview || '')}</p><div class="dip-queue-note">${esc(String(c.letter_count))} letters · ${esc(new Date(c.latest_at).toLocaleString())}</div></article>`).join('') || '<p class="empty-state">No personal cases on this page.</p>';
@@ -51,12 +52,15 @@ export async function loadDipArchive(root = document.getElementById('dtab-archiv
       if (!alive(n)) return;
       if (!Array.isArray(data.items)) throw new Error('Invalid archive response.');
       selected = caseID; cursor = next; root.dataset.loaded = '1';
-      root.innerHTML = '<div class="dip-queue-toolbar">' + (caseID ? '<button class="btn-small" data-archive-back>Back to cases</button>' : '<form class="dip-archive-search" data-archive-search><label>Find person, city, subject or good <input name="q" maxlength="120" value="' + esc(query) + '"></label><button class="btn-small">Search</button></form>') + '<button class="btn-small" data-archive-refresh>Refresh</button></div><p class="dip-queue-note">Personal archive of newly sent correspondence. Older letters have no proven historical recipient and remain in the legacy correspondence view.</p>' + (caseID ? caseDetailHTML(data) + caseComposeHTML(data) : caseListHTML(data)) + (data.next_cursor ? '<button class="btn-small" data-archive-next>Older →</button>' : '');
+      root.innerHTML = '<div class="dip-queue-toolbar">' + (caseID ? '<button class="btn-small" data-archive-back>Back to cases</button>' : '<form class="dip-archive-search" data-archive-search><label>Find person, city, subject or good <input name="q" maxlength="120" value="' + esc(query) + '"></label><button class="btn-small">Search</button></form>') + '<button class="btn-small" data-archive-refresh>Refresh</button></div><p class="dip-queue-note">Personal archive of newly sent correspondence. Older letters have no proven historical recipient and remain in the legacy correspondence view.</p>' + (caseID ? caseDetailHTML(data) + caseComposeHTML(data) + '<section class="dip-private" data-case-private></section>' : caseListHTML(data)) + (data.next_cursor ? '<button class="btn-small" data-archive-next>Older →</button>' : '');
       root.querySelector('[data-archive-search]')?.addEventListener('submit', e => { e.preventDefault(); query = e.currentTarget.elements.q.value.trim(); return load(); });
       root.querySelector('[data-archive-back]')?.addEventListener('click', () => load());
       root.querySelector('[data-archive-refresh]')?.addEventListener('click', () => load(caseID));
       root.querySelector('[data-archive-next]')?.addEventListener('click', () => load(caseID, data.next_cursor));
       root.querySelectorAll('[data-case-open]').forEach(button => button.addEventListener('click', () => load(button.dataset.caseOpen)));
+      const privateRoot = root.querySelector('[data-case-private]');
+      const privateEditor = caseID && privateRoot ? await mountCasePrivate(privateRoot, world, caseID, () => alive(n), root.querySelector('[data-case-compose] textarea')) : null;
+      if (!alive(n)) return;
       root.querySelector('[data-case-compose]')?.addEventListener('submit', async e => {
         e.preventDefault();
         if (!alive(n)) return;
@@ -71,8 +75,11 @@ export async function loadDipArchive(root = document.getElementById('dtab-archiv
           const result = await response.json().catch(() => ({}));
           if (!alive(n)) return;
           if (!response.ok) throw new Error(formatApiError(result,'Could not dispatch letter.'));
-          form.elements.message.value = '';
           status.textContent = 'Letter dispatched in this case. Refresh to see it in the archive.';
+          if (privateEditor) {
+            const cleared = await privateEditor.afterDispatch(text);
+            if (alive(n) && !cleared) status.textContent += ' Saved draft was not cleared; check the private draft below.';
+          } else if (form.elements.message.value.trim() === text) form.elements.message.value = '';
         } catch (error) { if (alive(n)) status.textContent = error.message; }
         finally { if (alive(n)) button.disabled = false; }
       });

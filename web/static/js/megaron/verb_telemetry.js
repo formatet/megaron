@@ -4,6 +4,7 @@
 import { track } from './telemetry.js';
 
 export const VERB_EVENTS = [
+  {"verb":"save private correspondence","method":"PUT","route":"/api/v1/worlds/:world/correspondence/cases/:case/private","event":"correspondence_private_saved"},
   {"verb": "name_place", "method": "POST", "route": "/api/v1/worlds/:world/places/:kind/:place/name", "event": "place_named"},
   {"verb": "build", "method": "POST", "route": "/api/v1/worlds/:world/provinces/:province/build", "event": "build_started"},
   {"verb": "cancel-build", "method": "DELETE", "route": "/api/v1/worlds/:world/provinces/:province/build-queue/:queue", "event": "build_cancelled"},

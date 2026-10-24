@@ -49,3 +49,11 @@ Names are preserved as recorded at departure. Renaming or losing a city does not
 Search the archive by person, city, subject or traded good. **Older →** pages through cases in creation order, or letters within an opened case in send order. A new letter can continue an existing case using one of its cities that remains in your current contacts; the server checks the person and contact again at dispatch. Same-bearer replies remain in **Queue**.
 
 Keryx: `correspondence`, `correspondence --search copper`, or `correspondence --case <case-id>`. Use `--limit`, `--cursor` and `--json` for the same paginated archive. `message --subject "Winter copper"` starts a case; `message --case <case-id>` continues it. Both city and wandering-host messages support these fields. A personal case never grants a new contact or reveals a map position.
+
+## Private draft and note
+
+Open a personal case to restore your saved letter draft and private note. **Save draft and note** keeps both on the server for your next visit or another device. **Dispatch new letter** uses that draft in this exact case and clears the saved draft after a successful send. A draft is private; saving it never sends a letter or tells the other person that you are writing.
+
+If another tab or device saved newer text, your save is refused and your local text stays in the editor. Copy the text you want to keep before choosing **Load saved copy**. Leaving a case discards unsaved edits; save first. Notes and drafts stay with your person when a city changes hands.
+
+Keryx: `correspondence-private --case <id>` reads your own draft, note and saved version. To save, supply all three: `--draft "..." --note "..." --version <last-read-version>`. Empty text clears that field. A stale version fails instead of overwriting newer text. `--json` returns the same private document as the web editor.

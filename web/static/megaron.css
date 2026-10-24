@@ -2133,3 +2133,7 @@ h4.cx-h { font-size: var(--fs-base); }
 }
 .dip-case-compose textarea { min-height: 6rem; resize: vertical; }
 .dip-case-compose button, .dip-archive-search button { justify-self: start; }
+
+.dip-private { border-top: 1px solid var(--border); margin-top: 1rem; padding-top: .5rem; }
+.dip-private label { display: grid; gap: .3rem; margin: .5rem 0; }
+.dip-private textarea { box-sizing: border-box; width: 100%; min-height: 6rem; padding: .4rem; font: inherit; background: var(--warm-white); color: var(--text); border: 1px solid var(--border); }

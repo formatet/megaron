@@ -1,0 +1,19 @@
+Error: newer saved text; reload (HTTP 409)
+Usage:
+  correspondence-private [flags]
+
+Flags:
+      --case string    case ID
+      --draft string   complete draft text to save (empty clears it)
+  -h, --help           help for correspondence-private
+      --note string    complete private note to save (empty clears it)
+      --version int    saved version returned by the last read
+
+--- FAIL: TestCorrespondencePrivateReadSaveAndConflict (0.00s)
+    --- FAIL: TestCorrespondencePrivateReadSaveAndConflict/save (0.00s)
+        cmd_correspondence_private_test.go:34: map[draft:My letter expected_version:0 note:My secret]
+    --- FAIL: TestCorrespondencePrivateReadSaveAndConflict/conflict (0.00s)
+        cmd_correspondence_private_test.go:34: map[draft:My letter expected_version:0 note:My secret]
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.003s
+FAIL

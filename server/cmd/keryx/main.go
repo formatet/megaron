@@ -113,6 +113,7 @@ func newRootCommand() *cobra.Command {
 		cargoCmd(),
 		inboxCmd(),
 		correspondenceCmd(),
+		correspondencePrivateCmd(),
 		outboxCmd(),
 		runnersCmd(),
 		replyCmd(),

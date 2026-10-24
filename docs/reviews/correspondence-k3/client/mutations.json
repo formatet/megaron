@@ -1,0 +1,30 @@
+[
+  {
+    "name": "private-stale-adopts-version",
+    "source": "web/static/js/megaron/ui/drawers/diplomacy_private.js",
+    "red": true,
+    "restored": true,
+    "sha256": "b0f73dcd8282674946e0719f32de2634b05417698fee09f0f2fc714125d1da05"
+  },
+  {
+    "name": "private-late-case",
+    "source": "web/static/js/megaron/ui/drawers/diplomacy_private.js",
+    "red": true,
+    "restored": true,
+    "sha256": "b0f73dcd8282674946e0719f32de2634b05417698fee09f0f2fc714125d1da05"
+  },
+  {
+    "name": "clear-newer-draft",
+    "source": "web/static/js/megaron/ui/drawers/diplomacy_private.js",
+    "red": true,
+    "restored": true,
+    "sha256": "b0f73dcd8282674946e0719f32de2634b05417698fee09f0f2fc714125d1da05"
+  },
+  {
+    "name": "cli-wrong-version",
+    "source": "server/cmd/keryx/cmd_correspondence_private.go",
+    "red": true,
+    "restored": true,
+    "sha256": "c755cc78bf407332bf7b50567c694fe3273359367495e4682ae968e1966616fe"
+  }
+]

@@ -1,0 +1,53 @@
+TAP version 13
+# Subtest: private editor restores caller document and saves exact version without publishing text
+ok 1 - private editor restores caller document and saves exact version without publishing text
+  ---
+  duration_ms: 15.872255
+  type: 'test'
+  ...
+# Subtest: private editor keeps local text and old version on stale-save409
+ok 2 - private editor keeps local text and old version on stale-save409
+  ---
+  duration_ms: 1.805866
+  type: 'test'
+  ...
+# Subtest: private editor ignores late documents after a case switch
+ok 3 - private editor ignores late documents after a case switch
+  ---
+  duration_ms: 0.381661
+  type: 'test'
+  ...
+# Subtest: successful dispatch clears only the consumed draft with a version guard and preserves in-flight newer typing
+not ok 4 - successful dispatch clears only the consumed draft with a version guard and preserves in-flight newer typing
+  ---
+  duration_ms: 1.225479
+  type: 'test'
+  location: '/home/tk/wt/codex-korrespondens-k3/web/static/js/megaron/ui/drawers/diplomacy_private.test.mjs:15:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + ''
+    - 'My next letter'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'My next letter'
+  actual: ''
+  operator: 'strictEqual'
+  stack: |-
+    file:///home/tk/wt/codex-korrespondens-k3/web/static/js/megaron/ui/drawers/diplomacy_private.test.mjs:16:573
+    async rig (file:///home/tk/wt/codex-korrespondens-k3/web/static/js/megaron/ui/drawers/diplomacy_private.test.mjs:5:585)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 3
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 69.876659
