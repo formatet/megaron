@@ -1,3 +1,4 @@
+import { acceptMapTiles } from '../map_data.js';
 // The server grants a place's naming right to its first physical arrival.
 import { State } from '../state.js';
 import { fetchAuth } from '../api.js';
@@ -37,7 +38,7 @@ export async function namePlace(kind, placeID) {
     // Refresh the authoritative FOW map before reopening: known hexes acquire
     // the name and spent right together, while unseen hexes stay hidden.
     const map = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/map`);
-    if (map.ok) { State.tileData = await map.json(); State.dirty = true; }
+    if (map.ok) acceptMapTiles(await map.json());
     // Opening a drawer clears selectedHex. An owned-city naming form therefore
     // refreshes its current drawer rather than attempting to reopen a hex.
     if (State.activeDrawer === 'city' && window.openDrawer) window.openDrawer('city');

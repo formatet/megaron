@@ -16,7 +16,8 @@ import { canonicalUnitType, actorName } from '../ui/actornames.js';
 import { drawActor, spriteRuns, FOREIGN_ACCENT, FOREIGN_OUTLINE } from './actorsprites.js';
 import { eyeSees } from './sight.js';
 import { drawRemembered } from './memory.js';
-import { omenOverlay, drawOmen } from './omen.js';
+import { omenOverlay, drawOmen, beginOmen, omenMap } from './omen.js';
+import { acceptMapTiles } from '../map_data.js';
 import { drawFire, FIRE_FRAMES } from './doomfire.js';
 import { drawCityMass, citySprite, cityTop, cityFoot } from './citysprites.js';
 import { cityIcon, drawCityIcon, drawStamp, ACTIVITY_ICONS, CITY_ICON_PALETTE } from './cityicons.js';
@@ -2584,6 +2585,10 @@ export function render() {
   if (fireChanged) State.lastFireTick = fireTick;
 
   // An omen reveal animates by itself until it is over.
+  if (State.omen) {
+    const next = omenMap(State.omen, State.omen.latest, performance.now());
+    if (next !== State.tileData) { State.tileData = next; State.dirty = true; }
+  }
   const omen = State.omen ? omenOverlay(State.omen, performance.now()) : null;
   if (State.omen) { if (!omen) State.omen = null; State.dirty = true; }
 
@@ -3176,7 +3181,7 @@ export async function loadMap() {
   ]);
 
   if (tilesRes.ok) {
-    State.tileData = await tilesRes.json();
+    acceptMapTiles(await tilesRes.json());
   }
   if (provRes.ok) {
     // Must land before centreCamera() below — homePosition() reads the
@@ -3257,24 +3262,28 @@ function centreCamera() {
 // otherwise the canvas keeps the fog it had at page load and exploration looks
 // like it did nothing.
 export function refreshTiles() {
-  fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/map`).then(r => r.ok && r.json().then(d => { State.tileData = d; State.dirty = true; }));
+  const world = State.WORLD_ID;
+  return fetchAuth(`/api/v1/worlds/${world}/map`).then(r => r.ok && r.json()).then(d => {
+    if (d && State.WORLD_ID === world) acceptMapTiles(d);
+  });
 }
 
-// startOmen plays an answered prayer's reveal (byggplan D.2): fetch the map
-// the prayer changed, go to the find, then lift the revealed hexes one at a
-// time (render/omen.js).
+// Reserve the pre-prayer fog before requesting its revealed map. Polls share
+// this mask, so a response can never expose the whole find ahead of its turn.
 export function startOmen(tiles, find) {
   if (!Array.isArray(tiles) || !tiles.length) return;
-  fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/map`).then(r => r.ok && r.json()).then(d => {
-    if (d) State.tileData = d;
+  const world = State.WORLD_ID;
+  const reveal = beginOmen(State.tileData, tiles, find, Infinity);
+  State.omen = reveal;
+  return fetchAuth(`/api/v1/worlds/${world}/map`).then(r => r.ok && r.json()).then(d => {
+    if (State.WORLD_ID !== world || State.omen !== reveal) return;
+    if (!d) { State.omen = null; return; }
+    reveal.start = performance.now();
+    acceptMapTiles(d);
+    if (!reveal.tiles.length) { State.omen = null; return; }
     if (State.camera.zoom < 1) zoom(1 / State.camera.zoom);
     if (find && Number.isInteger(find.q) && Number.isInteger(find.r)) window.centreOn(find.q, find.r);
-    // From the find outward, so the reveal begins where the god points.
-    const dist = t => find ? (Math.abs(t.q - find.q) + Math.abs(t.q + t.r - find.q - find.r) + Math.abs(t.r - find.r)) / 2 : 0;
-    const order = tiles.map(t => ({ q: t.q, r: t.r })).sort((a, b) => dist(a) - dist(b));
-    State.omen = { tiles: order, start: performance.now() };
-    State.dirty = true;
-  }).catch(() => {});
+  }).catch(() => { if (State.omen === reveal) { State.omen = null; State.dirty = true; } });
 }
 
 // ── Zoom helpers ──────────────────────────────────────────────────────────

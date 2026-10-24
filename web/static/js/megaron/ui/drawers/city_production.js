@@ -61,7 +61,7 @@ export function harvestBlessingHTML(pd) {
 export function stormFishingHTML(pd) {
   const n = Number(pd?.storm_no_fishing) || 0;
   if (n <= 0) return '';
-  return `<p class="stat-warn">Storm over ${fmtNum(n)} ${n === 1 ? 'fishing ground' : 'fishing grounds'} — no fishing there while it stands.</p>`;
+  return `<p class="stat-warn">Storm over ${fmtNum(n)} ${n === 1 ? 'fishing ground' : 'fishing grounds'} — its fishers stay but catch nothing while it stands.</p>`;
 }
 
 // Coverage is the server's shared food stock at current consumption, not a

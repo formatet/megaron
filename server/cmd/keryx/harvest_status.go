@@ -41,5 +41,5 @@ func stormFishingLine(sett map[string]any) string {
 	if n == 1 {
 		grounds = "fishing ground"
 	}
-	return fmt.Sprintf("Storm over %g %s — no fishing there while it stands.", n, grounds)
+	return fmt.Sprintf("Storm over %g %s — its fishers stay but catch nothing while it stands.", n, grounds)
 }

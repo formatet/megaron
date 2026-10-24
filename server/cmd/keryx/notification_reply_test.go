@@ -59,7 +59,7 @@ func TestHiketeiaHintNamesConfirm(t *testing.T) {
 }
 
 func TestStormFishingLine(t *testing.T) {
-	if got := stormFishingLine(map[string]any{"storm_no_fishing": 1.0}); got != "Storm over 1 fishing ground — no fishing there while it stands." {
+	if got := stormFishingLine(map[string]any{"storm_no_fishing": 1.0}); got != "Storm over 1 fishing ground — its fishers stay but catch nothing while it stands." {
 		t.Fatalf("%q", got)
 	}
 	if stormFishingLine(map[string]any{"storm_no_fishing": 0.0}) != "" {

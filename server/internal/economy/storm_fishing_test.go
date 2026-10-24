@@ -2,6 +2,7 @@ package economy
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 )
 
@@ -22,6 +23,32 @@ func TestRecompute_StormOnTheHexStopsItsFishing(t *testing.T) {
 	if calm <= 0 {
 		t.Fatalf("calm fish rate %v, want > 0", calm)
 	}
+
+	placements := func() string {
+		t.Helper()
+		rows, err := pool.Query(ctx, `SELECT gubbe_ordinal,target_kind,hex_q,hex_r,good_key FROM settlement_placement WHERE settlement_id=$1 ORDER BY gubbe_ordinal`, settlementID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer rows.Close()
+		var result [][]any
+		for rows.Next() {
+			v, err := rows.Values()
+			if err != nil {
+				t.Fatal(err)
+			}
+			result = append(result, v)
+		}
+		if err := rows.Err(); err != nil {
+			t.Fatal(err)
+		}
+		raw, err := json.Marshal(result)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return string(raw)
+	}
+	before := placements()
 	var storm string
 	if err := pool.QueryRow(ctx, `INSERT INTO sea_storms(world_id,heading,created_tick) SELECT world_id,0,$2 FROM settlements WHERE id=$1 RETURNING id`, settlementID, tick).Scan(&storm); err != nil {
 		t.Fatal(err)
@@ -32,6 +59,9 @@ func TestRecompute_StormOnTheHexStopsItsFishing(t *testing.T) {
 	}
 	if err := RecomputeProduction(ctx, pool, settlementID); err != nil {
 		t.Fatal(err)
+	}
+	if got := placements(); got != before {
+		t.Fatalf("storm removed or changed fisher placements: %s != %s", got, before)
 	}
 	_, stormy := readGood(t, settlementID, "fish")
 	if stormy <= 0 || stormy >= calm {
@@ -46,6 +76,12 @@ func TestRecompute_StormOnTheHexStopsItsFishing(t *testing.T) {
 	}
 	if err := RecomputeProduction(ctx, pool, settlementID); err != nil {
 		t.Fatal(err)
+	}
+	if got := placements(); got != before {
+		t.Fatalf("storm departure changed fisher placements: %s != %s", got, before)
+	}
+	if got := StormNoFishingHexes(ctx, pool, settlementID); len(got) != 0 {
+		t.Fatalf("storm left but fishing grounds still covered: %v", got)
 	}
 	if _, again := readGood(t, settlementID, "fish"); again != calm {
 		t.Fatalf("after the storm: rate %v, want calm %v", again, calm)

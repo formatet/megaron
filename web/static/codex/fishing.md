@@ -12,4 +12,4 @@ Deep-water fishing requires the city’s [[harbour]]. The harbour supplies deep-
 
 A harbour creates places, not workers. Put citizens on the deep-water hexes to use them. Higher harbour levels open more places there, while each fisher still catches 1 fish per game day.
 
-**A storm stops the fishing.** While a [[storms|storm]] stands on a fishing hex, the citizens placed there catch nothing. They fish again the game day it has moved on. **City** shows *Storm over N fishing grounds*, and `keryx city` and `keryx status` print the same line.
+**A storm stops the fishing.** While a [[storms|storm]] stands on a fishing hex, the fishers stay placed there but catch nothing. They fish again the game day it has moved on. **City** shows *Storm over N fishing grounds*, and `keryx city` and `keryx status` print the same line: *its fishers stay but catch nothing while it stands*.

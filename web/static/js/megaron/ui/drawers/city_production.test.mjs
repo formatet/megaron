@@ -153,7 +153,7 @@ test('Walls hold is counted in citizens, like the Citizens row beside it', () =>
 });
 
 test('storm over a fishing ground is named in the food section (D.1)', () => {
-  assert.match(stormFishingHTML({ storm_no_fishing: 2 }), /Storm over 2 fishing grounds — no fishing there while it stands\./);
+  assert.match(stormFishingHTML({ storm_no_fishing: 2 }), /Storm over 2 fishing grounds — its fishers stay but catch nothing while it stands\./);
   assert.equal(stormFishingHTML({ storm_no_fishing: 0 }), '');
   assert.equal(stormFishingHTML({}), '');
 });
