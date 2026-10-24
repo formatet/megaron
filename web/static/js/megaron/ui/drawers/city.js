@@ -395,23 +395,32 @@ function templeOptionsHTML(entry, ctx) {
   }).join('');
 }
 
+// Rows are sorted by the name the player reads (Timothy 2026-10-24): the server
+// sorts by type key, so silo → "Granary" and stonequarry → "Stone Quarry" sat
+// out of place.
+const optionText = html => html.replace(/<[^>]*>/g, '');
 export function buildingOptionsHTML(catalogue, ctx) {
-  return (catalogue || []).map(entry => {
-    if (entry.type === 'wall') return wallOptionHTML(entry, ctx);
-    if (entry.type === 'temple') return templeOptionsHTML(entry, ctx);
-    const label = _BLD_LBL[entry.type] || entry.type;
-    if (entry.hex_bound && ctx?.buildQuotes) return `<option value="${entry.type}">${label} — choose a hex for its level and price</option>`;
-    const hasQuotes = ctx && Object.hasOwn(ctx, 'buildQuotes');
-    const quote = (ctx?.buildQuotes || []).find(q => q.type === entry.type && !q.new_site && q.hex_q == null);
-    if (hasQuotes && !quote) return `<option value="${entry.type}" disabled>${label} — price unavailable</option>`;
-    if (quote?.at_max_level) return `<option value="${entry.type}" disabled>${label} L${quote.current_level} — maximum level</option>`;
-    const costStr = fmtBuildCost(quote || entry);
-    const level = quote ? ` L${quote.current_level} → L${quote.next_level}` : '';
-    // Name and price only (Timothy 2026-09-30: the purpose/requires tail made
-    // the list too long). Gates still hold: the hex picker only offers valid
-    // hexes and the server's refusal names the missing condition.
-    return `<option value="${entry.type}">${label}${level} — ${costStr}</option>`;
-  }).join('');
+  return (catalogue || []).flatMap(entry => {
+    const html = buildingOptionHTML(entry, ctx);
+    return html.match(/<option[\s\S]*?<\/option>/g) || [];
+  }).sort((a, b) => optionText(a).localeCompare(optionText(b), 'en')).join('');
+}
+
+function buildingOptionHTML(entry, ctx) {
+  if (entry.type === 'wall') return wallOptionHTML(entry, ctx);
+  if (entry.type === 'temple') return templeOptionsHTML(entry, ctx);
+  const label = _BLD_LBL[entry.type] || entry.type;
+  if (entry.hex_bound && ctx?.buildQuotes) return `<option value="${entry.type}">${label} — choose a hex for its level and price</option>`;
+  const hasQuotes = ctx && Object.hasOwn(ctx, 'buildQuotes');
+  const quote = (ctx?.buildQuotes || []).find(q => q.type === entry.type && !q.new_site && q.hex_q == null);
+  if (hasQuotes && !quote) return `<option value="${entry.type}" disabled>${label} — price unavailable</option>`;
+  if (quote?.at_max_level) return `<option value="${entry.type}" disabled>${label} L${quote.current_level} — maximum level</option>`;
+  const costStr = fmtBuildCost(quote || entry);
+  const level = quote ? ` L${quote.current_level} → L${quote.next_level}` : '';
+  // Name and price only (Timothy 2026-09-30: the purpose/requires tail made
+  // the list too long). Gates still hold: the hex picker only offers valid
+  // hexes and the server's refusal names the missing condition.
+  return `<option value="${entry.type}">${label}${level} — ${costStr}</option>`;
 }
 
 // hexBuildOptionsHTML: the Construct flow's hex picker for a hex-bound type

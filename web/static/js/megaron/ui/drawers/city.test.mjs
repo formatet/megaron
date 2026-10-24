@@ -174,3 +174,16 @@ test('ORDER15: startBuild POST body carries god for a temple and not for others'
  assert.deepEqual(bodies[0],{building_type:'temple',god:'velchanos'});
  assert.deepEqual(bodies[1],{building_type:'farm'});
 });
+
+test('Construct list is alphabetical by the name the player reads, not the type key', () => {
+  const html = buildingOptionsHTML([
+    { type: 'silo', costs: { timber: 1 } },
+    { type: 'farm', costs: { timber: 1 } },
+    { type: 'temple', costs: { timber: 1 } },
+    { type: 'stonequarry', costs: { timber: 1 } },
+    { type: 'barracks', costs: { timber: 1 } },
+  ]);
+  const names = [...html.matchAll(/<option[^>]*>([^—<]+)/g)].map(m => m[1].trim());
+  assert.deepEqual(names, [...names].sort((a, b) => a.localeCompare(b, 'en')));
+  assert.deepEqual(names.slice(0, 3), ['Barracks', 'Farm', 'Granary']);
+});
