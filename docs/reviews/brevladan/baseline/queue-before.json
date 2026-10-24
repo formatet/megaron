@@ -1,0 +1,75 @@
+{
+  "items": [
+    {
+      "reply_before": "2026-10-24T14:10:58.684999+02:00",
+      "reply_deadline_tick": 102,
+      "reply_window_closed": false,
+      "id": "27b0c7ed-01f9-4bfc-bbde-d416a39f29b4",
+      "from_id": "3ad8c392-0773-469e-b94a-785dc2c6725c",
+      "from_name": "Pylos",
+      "to_id": "59446fb0-aa38-4cc3-b796-1d097c05c59f",
+      "to_name": "Nostos",
+      "message": "Our envoys have returned safely.",
+      "status": "delivered",
+      "sent_at": "2026-10-24T12:10:58.716195+02:00",
+      "arrived_at": "2026-10-24T23:10:58.71411+02:00",
+      "read_at": null,
+      "queue_group": "waiting_you",
+      "offer_state": "",
+      "actions": [
+        "read",
+        "reply"
+      ]
+    },
+    {
+      "reply_window_closed": false,
+      "id": "2ee1322c-41c6-4f19-a122-ed939250580d",
+      "from_id": "e6d785d8-1fa7-4746-8446-2f6659fb80af",
+      "from_name": "Kyme",
+      "to_id": "59446fb0-aa38-4cc3-b796-1d097c05c59f",
+      "to_name": "Nostos",
+      "message": "Two copper for five silver.",
+      "trade_offer": {
+        "kind": "sell",
+        "status": "pending",
+        "offer_qty": 2,
+        "offer_good": "copper",
+        "want_silver": 5
+      },
+      "status": "delivered",
+      "sent_at": "2026-10-24T12:10:58.709133+02:00",
+      "arrived_at": "2026-10-24T19:10:58.70722+02:00",
+      "expires_at": "2026-10-31T18:10:58.70722+01:00",
+      "read_at": null,
+      "affordable": true,
+      "queue_group": "waiting_you",
+      "offer_state": "pending",
+      "actions": [
+        "read",
+        "trade_decline",
+        "trade_accept"
+      ]
+    },
+    {
+      "reply_before": "2026-10-24T14:10:58.684999+02:00",
+      "reply_deadline_tick": 102,
+      "reply_window_closed": false,
+      "id": "0bad56a4-3e1e-48a0-a121-1ea799a8838a",
+      "from_id": "e6d785d8-1fa7-4746-8446-2f6659fb80af",
+      "from_name": "Kyme",
+      "to_id": "59446fb0-aa38-4cc3-b796-1d097c05c59f",
+      "to_name": "Nostos",
+      "message": "The winter crossing is clear.\nWill you join us at the harbour?",
+      "status": "delivered",
+      "sent_at": "2026-10-24T12:10:58.696967+02:00",
+      "arrived_at": "2026-10-24T19:10:58.694619+02:00",
+      "read_at": null,
+      "queue_group": "waiting_you",
+      "offer_state": "",
+      "actions": [
+        "read",
+        "reply"
+      ]
+    }
+  ]
+}

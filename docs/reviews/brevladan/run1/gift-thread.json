@@ -1,0 +1,67 @@
+{
+  "counterpart_id": "e2e14a4d-8529-45e3-9e29-5245bae8b036",
+  "counterpart_name": "Myrine",
+  "items": [
+    {
+      "id": "e08fc602-4bfe-402c-a465-225e9426bbe2",
+      "sender_id": "e2e14a4d-8529-45e3-9e29-5245bae8b036",
+      "sender_name": "Myrine",
+      "direction": "incoming",
+      "message": "The winter crossing is clear.\nWill you join us at the harbour?",
+      "reply_text": "We shall meet you at the harbour.",
+      "sent_at": "2026-10-24T12:15:29.866343+02:00",
+      "status": "returning",
+      "actions": [
+        "read"
+      ],
+      "reply_before": "2026-10-24T14:15:29.85338+02:00",
+      "reply_window_closed": false,
+      "kind": "letter"
+    },
+    {
+      "id": "e2263e97-b892-419e-8b95-97e62b152ae3",
+      "sender_id": "e2e14a4d-8529-45e3-9e29-5245bae8b036",
+      "sender_name": "Myrine",
+      "direction": "incoming",
+      "message": "Two copper for five silver.",
+      "sent_at": "2026-10-24T12:15:29.87885+02:00",
+      "status": "returning",
+      "trade_offer": {
+        "kind": "sell",
+        "status": "accepted",
+        "offer_qty": 2,
+        "ship_name": "",
+        "offer_good": "copper",
+        "want_silver": 5,
+        "goods_arrives_at": "2026-10-25T01:15:42.918904+00:00",
+        "silver_arrives_at": "2026-10-25T15:15:42.918904+00:00",
+        "goods_arrival_tick": 115,
+        "silver_arrival_tick": 129
+      },
+      "offer_state": "accepted",
+      "actions": [],
+      "expires_at": "2026-10-31T16:15:29.876598+01:00",
+      "affordable": true,
+      "read_at": "2026-10-24T12:15:40.277426+02:00",
+      "reply_window_closed": false,
+      "kind": "letter"
+    },
+    {
+      "id": "fa02260b-d5bd-4cac-936d-074bd2c7d101",
+      "sender_id": "e2e14a4d-8529-45e3-9e29-5245bae8b036",
+      "sender_name": "Myrine",
+      "direction": "incoming",
+      "message": "Gift received",
+      "sent_at": "2026-10-24T12:15:43.304246+02:00",
+      "status": "GiftDelivered",
+      "actions": [],
+      "reply_window_closed": false,
+      "kind": "gift",
+      "goods": {
+        "copper": 1.5
+      }
+    }
+  ],
+  "reply_before": null,
+  "state": "done"
+}

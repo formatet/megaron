@@ -1,0 +1,5 @@
+--- FAIL: TestLettersWaitingYouFirstNearestDeadlineAndState (0.00s)
+    letters_test.go:124: waiting-on-you first, deadline ascending: [{CounterpartID:cc0a81a5-965b-4f6f-adef-65973053f734 CounterpartName:Cedar Preview:newest State:waiting_them ReplyBefore:<nil> LatestAt:2026-10-24 12:14:08.320815322 +0200 CEST m=+120.000939516 LetterCount:1} {CounterpartID:39002be6-8f95-4182-8d93-70e251d3ef4a CounterpartName:Berenice Preview:soon State:waiting_them ReplyBefore:2026-10-24 13:12:08.320815322 +0200 CEST m=+3600.000939516 LatestAt:2026-10-24 12:13:08.320815322 +0200 CEST m=+60.000939516 LetterCount:1} {CounterpartID:d84f5466-7f45-481a-ac25-2dafa1e53e5f CounterpartName:Alder Preview:old State:waiting_them ReplyBefore:2026-10-24 14:12:08.320815322 +0200 CEST m=+7200.000939516 LatestAt:2026-10-24 12:12:08.320815322 +0200 CEST m=+0.000939516 LetterCount:1}]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.003s
+FAIL

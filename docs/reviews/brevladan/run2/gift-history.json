@@ -1,0 +1,19 @@
+[
+  {
+    "kind": "GiftDelivered",
+    "body": {
+      "credited_quantity": 1.5,
+      "destination_id": "10390dd8-2f64-4177-899f-d4efe8908cce",
+      "destination_name": "Nostos",
+      "good_key": "copper",
+      "lost_quantity": 0,
+      "quantity": 1.5,
+      "recipient_id": "2c2c76f3-d465-4f82-83c4-4f6477a2ce04",
+      "recipient_name": "Leandros",
+      "sender_id": "befbcc44-e50f-44ec-a77e-e33dc85ee272",
+      "sender_name": "Myrine",
+      "transport_id": "bebfbd0c-abe4-4c78-a7be-87e0296d8f73"
+    },
+    "created_at": "2026-10-24T12:16:08.32347+02:00"
+  }
+]
