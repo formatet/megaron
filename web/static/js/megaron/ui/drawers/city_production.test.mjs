@@ -3,7 +3,7 @@ import { fmtTickTime as testTickTime } from './../fmt_clock.js';
 timeTestState.CURRENT_TICK=0; timeTestState.TICK_SECONDS=60; timeTestState.TICK_ANCHOR_MS=Date.now();
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { productionSectionsHTML, populationHTML, foodSummaryHTML, foodDetailsHTML } from './city_production.js';
+import { productionSectionsHTML, populationHTML, foodSummaryHTML, foodDetailsHTML, stormFishingHTML } from './city_production.js';
 const pd=(extra={})=>({population:1000,grain_prod_rate:4.5,grain_consum_rate:3.2,food:{coverage_ticks:4.2,food_net_per_tick:-2},...extra});
 test('J: only three primary sections, all secondary abilities remain under closed More',()=>{
  const html=productionSectionsHTML({is_capital:false}),[primary,more]=html.split('<details');
@@ -150,4 +150,10 @@ test('Walls hold is counted in citizens, like the Citizens row beside it', () =>
   const html = populationHTML(pd({ population: 11165, population_cap: 2000 }), 4700, 0, 'p');
   assert.match(html, /Walls hold<\/span><span class="sr-val">20</);
   assert.match(html, /Citizens<\/span><span class="sr-val">111</);
+});
+
+test('storm over a fishing ground is named in the food section (D.1)', () => {
+  assert.match(stormFishingHTML({ storm_no_fishing: 2 }), /Storm over 2 fishing grounds — no fishing there while it stands\./);
+  assert.equal(stormFishingHTML({ storm_no_fishing: 0 }), '');
+  assert.equal(stormFishingHTML({}), '');
 });

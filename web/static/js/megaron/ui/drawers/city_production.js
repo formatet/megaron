@@ -56,10 +56,18 @@ export function harvestBlessingHTML(pd) {
   return `<p class="harvest-blessing">Blessed harvest: +${percent}% ${esc(b.goods.join(', '))} yield · ${fmtNum(b.remaining_ticks)} ${b.remaining_ticks === 1 ? 'day' : 'days'} left</p>`;
 }
 
+// A storm standing on the city's staffed fishing hexes stops their fishing
+// (Timothy 2026-10-24); the server counts them (storm_no_fishing).
+export function stormFishingHTML(pd) {
+  const n = Number(pd?.storm_no_fishing) || 0;
+  if (n <= 0) return '';
+  return `<p class="stat-warn">Storm over ${fmtNum(n)} ${n === 1 ? 'fishing ground' : 'fishing grounds'} — no fishing there while it stands.</p>`;
+}
+
 // Coverage is the server's shared food stock at current consumption, not a
 // depletion forecast including future production.
 export function foodSummaryHTML(pd) {
-  const blessing = harvestBlessingHTML(pd);
+  const blessing = harvestBlessingHTML(pd) + stormFishingHTML(pd);
   const s = pd?.food;
   if (!s || s.coverage_ticks == null || !Number.isFinite(Number(s.coverage_ticks))) return blessing + '<p class="empty-state">Food stores not reported.</p>';
   const growing = Number(pd.food_net_per_tick_after_upkeep ?? s.food_net_per_tick) > 0;

@@ -163,7 +163,7 @@ func fetchFoodStatus(c *Client, worldID, provinceID string) (*foodStatus, error)
 	}
 	placed, _ := sett["food_gubbar_placed"].(float64)
 	suff, _ := sett["food_self_sufficient"].(bool)
-	return &foodStatus{Summary: cityFoodLine(sett), Required: int(req), Placed: int(placed), SelfSufficient: suff, HarvestBlessing: harvestBlessingLine(sett), Automatic: automaticFoodLine(sett)}, nil
+	return &foodStatus{Summary: cityFoodLine(sett), Required: int(req), Placed: int(placed), SelfSufficient: suff, HarvestBlessing: strings.TrimSpace(harvestBlessingLine(sett) + "\n" + stormFishingLine(sett)), Automatic: automaticFoodLine(sett)}, nil
 }
 
 // isFoodGood reports whether good_key is one of the two goods
