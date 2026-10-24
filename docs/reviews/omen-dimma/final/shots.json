@@ -1,0 +1,98 @@
+[
+  {
+    "code": "D1-1280",
+    "caption": "Fishers stay placed and catch nothing while the storm covers their fishing ground",
+    "file": "D1-1280.png",
+    "width": 1280
+  },
+  {
+    "code": "D2-before-1280",
+    "caption": "Before the actual prayer: ordinary striped fog, with one remembered tile already known",
+    "file": "D2-before-1280.png",
+    "width": 1280
+  },
+  {
+    "code": "D2-zero-1280",
+    "caption": "Actual WS, before the first 300ms step: canvas is byte-identical to before the prayer",
+    "file": "D2-zero-1280.png",
+    "width": 1280
+  },
+  {
+    "code": "D2-300-1280",
+    "caption": "Actual animation at target 0.3s; pre-screenshot 0.328s",
+    "file": "D2-300-1280.png",
+    "width": 1280
+  },
+  {
+    "code": "D2-1000-1280",
+    "caption": "Actual animation at target 1s; pre-screenshot 1.014s",
+    "file": "D2-1000-1280.png",
+    "width": 1280
+  },
+  {
+    "code": "D2-2000-1280",
+    "caption": "Actual animation at target 2s; pre-screenshot 2.013s",
+    "file": "D2-2000-1280.png",
+    "width": 1280
+  },
+  {
+    "code": "D2-4000-1280",
+    "caption": "Actual animation at target 4s; pre-screenshot 4.013s",
+    "file": "D2-4000-1280.png",
+    "width": 1280
+  },
+  {
+    "code": "D2-memory-1280",
+    "caption": "Finished: ordinary remembered terrain, no replacement fog",
+    "file": "D2-memory-1280.png",
+    "width": 1280
+  },
+  {
+    "code": "D1-390",
+    "caption": "Fishers stay placed and catch nothing while the storm covers their fishing ground",
+    "file": "D1-390.png",
+    "width": 390
+  },
+  {
+    "code": "D2-before-390",
+    "caption": "Before the actual prayer: ordinary striped fog, with one remembered tile already known",
+    "file": "D2-before-390.png",
+    "width": 390
+  },
+  {
+    "code": "D2-zero-390",
+    "caption": "Actual WS, before the first 300ms step: canvas is byte-identical to before the prayer",
+    "file": "D2-zero-390.png",
+    "width": 390
+  },
+  {
+    "code": "D2-300-390",
+    "caption": "Actual animation at target 0.3s; pre-screenshot 0.335s",
+    "file": "D2-300-390.png",
+    "width": 390
+  },
+  {
+    "code": "D2-1000-390",
+    "caption": "Actual animation at target 1s; pre-screenshot 1.021s",
+    "file": "D2-1000-390.png",
+    "width": 390
+  },
+  {
+    "code": "D2-2000-390",
+    "caption": "Actual animation at target 2s; pre-screenshot 2.023s",
+    "file": "D2-2000-390.png",
+    "width": 390
+  },
+  {
+    "code": "D2-4000-390",
+    "caption": "Actual animation at target 4s; pre-screenshot 4.002s",
+    "file": "D2-4000-390.png",
+    "width": 390
+  },
+  {
+    "code": "D2-memory-390",
+    "caption": "Finished: ordinary remembered terrain, no replacement fog",
+    "file": "D2-memory-390.png",
+    "width": 390
+  }
+]

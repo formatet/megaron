@@ -1,0 +1,42 @@
+TAP version 13
+# Subtest: each revealed hex waits its turn, shows live, fades in steps, then is memory
+ok 1 - each revealed hex waits its turn, shows live, fades in steps, then is memory
+  ---
+  duration_ms: 0.628317
+  type: 'test'
+  ...
+# Subtest: overlay never paints hidden hexes or a replacement fog
+ok 2 - overlay never paints hidden hexes or a replacement fog
+  ---
+  duration_ms: 0.458579
+  type: 'test'
+  ...
+# Subtest: ordinary map fog survives until its turn; known tiles never animate; polls cannot reveal pending tiles
+ok 3 - ordinary map fog survives until its turn; known tiles never animate; polls cannot reveal pending tiles
+  ---
+  duration_ms: 1.012187
+  type: 'test'
+  ...
+# Subtest: an already known prayer patch keeps normal map refreshes and has no reveal
+ok 4 - an already known prayer patch keeps normal map refreshes and has no reveal
+  ---
+  duration_ms: 0.152438
+  type: 'test'
+  ...
+# Subtest: green follows warped pixel ownership and cannot spill onto known neighbours
+ok 5 - green follows warped pixel ownership and cannot spill onto known neighbours
+  ---
+  duration_ms: 0.609338
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 45.21896
+» färsk DB på migration 210 · commit 52051c12+ändringar
+ok  	formatet/megaron/server/internal/economy	0.059s

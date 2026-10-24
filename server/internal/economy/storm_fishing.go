@@ -8,7 +8,8 @@ import (
 )
 
 // Storm stops the fishing (Timothy 2026-10-24): while a storm stands on a sea
-// hex, that hex's fishing places give nothing. The storm track
+// hex, that hex's fishing places give nothing; fishers remain placed and
+// resume when it leaves. The storm track
 // (sea_storm_track, written by combat's weather step) is read as data here;
 // economy does not import combat. Every recompute reads the current tick, and
 // the weather step recomputes the cities whose fishing it covers or leaves

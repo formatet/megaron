@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/tmp/megaron-codex-omen-dimma-20261024/tools/omen_dimma_bild_20261024.py", line 123, in <module>
+    assert beforeCanvas==zeroCanvas,'zero-phase canvas differs from the map before prayer'
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: zero-phase canvas differs from the map before prayer

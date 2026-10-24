@@ -1,0 +1,130 @@
+TAP version 13
+# Subtest: each revealed hex waits its turn, shows live, fades in steps, then is memory
+ok 1 - each revealed hex waits its turn, shows live, fades in steps, then is memory
+  ---
+  duration_ms: 0.582588
+  type: 'test'
+  ...
+# Subtest: overlay never paints hidden hexes or a replacement fog
+ok 2 - overlay never paints hidden hexes or a replacement fog
+  ---
+  duration_ms: 0.50476
+  type: 'test'
+  ...
+# Subtest: ordinary map fog survives until its turn; known tiles never animate; polls cannot reveal pending tiles
+ok 3 - ordinary map fog survives until its turn; known tiles never animate; polls cannot reveal pending tiles
+  ---
+  duration_ms: 0.939293
+  type: 'test'
+  ...
+# Subtest: J: only three primary sections, all secondary abilities remain under closed More
+ok 4 - J: only three primary sections, all secondary abilities remain under closed More
+  ---
+  duration_ms: 0.921774
+  type: 'test'
+  ...
+# Subtest: J: food game days come from authoritative mixed-food coverage, from the single city stock
+ok 5 - J: food game days come from authoritative mixed-food coverage, from the single city stock
+  ---
+  duration_ms: 9.39192
+  type: 'test'
+  ...
+# Subtest: pen: herd line shows count / cap and warns when full
+ok 6 - pen: herd line shows count / cap and warns when full
+  ---
+  duration_ms: 0.64019
+  type: 'test'
+  ...
+# Subtest: J: growing low stocks never say starving; food-worker warning survives
+ok 7 - J: growing low stocks never say starving; food-worker warning survives
+  ---
+  duration_ms: 0.266598
+  type: 'test'
+  ...
+# Subtest: J: missing/invalid coverage is honestly unavailable, never zero or NaN game days
+ok 8 - J: missing/invalid coverage is honestly unavailable, never zero or NaN game days
+  ---
+  duration_ms: 0.158017
+  type: 'test'
+  ...
+# Subtest: J: population keeps input-free player words; no slaughter button
+ok 9 - J: population keeps input-free player words; no slaughter button
+  ---
+  duration_ms: 0.538629
+  type: 'test'
+  ...
+# Subtest: growth line: one sentence per state, from the server growth_state
+ok 10 - growth line: one sentence per state, from the server growth_state
+  ---
+  duration_ms: 0.493401
+  type: 'test'
+  ...
+# Subtest: blessed harvest: food section shows authoritative bonus and goods, hides at end tick
+ok 11 - blessed harvest: food section shows authoritative bonus and goods, hides at end tick
+  ---
+  duration_ms: 0.468617
+  type: 'test'
+  ...
+# Subtest: owned city centre offers the authoritative place naming form inside Catchment, other tiles never do
+ok 12 - owned city centre offers the authoritative place naming form inside Catchment, other tiles never do
+  ---
+  duration_ms: 1.196533
+  type: 'test'
+  ...
+# Subtest: owned-city naming success refreshes authoritative map and rerenders City despite cleared selectedHex
+ok 13 - owned-city naming success refreshes authoritative map and rerenders City despite cleared selectedHex
+  ---
+  duration_ms: 14.791174
+  type: 'test'
+  ...
+# Subtest: growth food balance does not print a signed rounded zero
+ok 14 - growth food balance does not print a signed rounded zero
+  ---
+  duration_ms: 0.209498
+  type: 'test'
+  ...
+# Subtest: AIRound3: population food and army food use different explicit balances
+ok 15 - AIRound3: population food and army food use different explicit balances
+  ---
+  duration_ms: 0.352633
+  type: 'test'
+  ...
+# Subtest: AIRound4: Scheria remainder fish is separate from nearby grain
+ok 16 - AIRound4: Scheria remainder fish is separate from nearby grain
+  ---
+  duration_ms: 0.281746
+  type: 'test'
+  ...
+# Subtest: equal food: four stocks and actual meal use server totals, never grain-only estimates
+ok 17 - equal food: four stocks and actual meal use server totals, never grain-only estimates
+  ---
+  duration_ms: 3.627212
+  type: 'test'
+  ...
+# Subtest: population only offers whole citizen groups, never remainder people
+ok 18 - population only offers whole citizen groups, never remainder people
+  ---
+  duration_ms: 0.437117
+  type: 'test'
+  ...
+# Subtest: Walls hold is counted in citizens, like the Citizens row beside it
+ok 19 - Walls hold is counted in citizens, like the Citizens row beside it
+  ---
+  duration_ms: 0.171638
+  type: 'test'
+  ...
+# Subtest: storm over a fishing ground is named in the food section (D.1)
+ok 20 - storm over a fishing ground is named in the food section (D.1)
+  ---
+  duration_ms: 0.110046
+  type: 'test'
+  ...
+1..20
+# tests 20
+# suites 0
+# pass 20
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 85.366875
