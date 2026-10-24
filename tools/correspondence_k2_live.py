@@ -99,12 +99,22 @@ def main():
                 return {'token': token, 'host': host, 'landmass': land, 'pid': api('/api/v1/auth/me', token=token)['id']}
 
             recipient = actor()
+            # Landmass IDs do not prove a courier-land route: rivers and
+            # mountains may split one landmass. Select a dry connected pair.
+            tiles=json.loads(sql(f"SELECT json_agg(t) FROM (SELECT q,r,terrain FROM map_tiles WHERE world_id='{world}')t"))
+            dry={(t['q'],t['r']) for t in tiles if t['terrain'] not in ('coastal_sea','deep_sea','river','mountain_limestone','mountain_red')}
+            origin=(recipient['host']['q'],recipient['host']['r']);connected={origin};pending=[origin]
+            while pending:
+                q,r=pending.pop()
+                for dq,dr in ((1,0),(1,-1),(0,-1),(-1,0),(-1,1),(0,1)):
+                    point=(q+dq,r+dr)
+                    if point in dry and point not in connected:connected.add(point);pending.append(point)
             for _ in range(40):
                 sender = actor()
-                if sender['landmass'] == recipient['landmass']:
+                if (sender['host']['q'],sender['host']['r']) in connected:
                     break
             else:
-                raise AssertionError('No ordinary pair on same connected landmass')
+                raise AssertionError('No ordinary pair with a dry courier route')
             for who, name in [(recipient, 'K2 Nostos'), (sender, 'K2 Kyme')]:
                 who['sid'] = api(wp + '/founding/settle', 'POST', {'name': name}, who['token'])['settlement_id']
                 who['province'] = next(p for p in api(wp + '/provinces', token=who['token']) if p.get('settlement_id') == who['sid'])

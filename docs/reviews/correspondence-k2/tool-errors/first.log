@@ -1,0 +1,25 @@
+BUILD_COMPLETE fa83fc9+k2
+ERROR:  column "stay_deadline_tick" of relation "messengers" does not exist
+LINE 1: ...='delivered',arrives_at=now()-interval '1 second',stay_deadl...
+                                                             ^
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-korrespondens-k2/tools/correspondence_k2_live.py", line 188, in <module>
+    if __name__=='__main__':main()
+                            ~~~~^^
+  File "/home/tk/wt/codex-korrespondens-k2/tools/correspondence_k2_live.py", line 122, in main
+    sql(f"UPDATE messengers SET status='delivered',arrives_at=now()-interval '1 second',stay_deadline_tick=(SELECT current_tick+2 FROM worlds WHERE id='{world}') WHERE id='{letter['id']}'; INSERT INTO events(stream_id,stream_type,event_type,payload,world_id) VALUES('{recipient['sid']}','province','MessengerArrived','{{\"messenger_id\":\"{letter['id']}\"}}','{world}');")
+    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tk/wt/codex-korrespondens-k2/tools/correspondence_k2_live.py", line 92, in sql
+    return run('docker', 'exec', containers[0], 'psql', '-U', 'postgres', '-d', 'k1_proof', '-At', '-v', 'ON_ERROR_STOP=1', '-c', q)
+  File "/home/tk/wt/codex-korrespondens-k2/tools/correspondence_k2_live.py", line 32, in run
+    return subprocess.check_output(args, text=True, **kw).strip()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 473, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+               **kwargs).stdout
+               ^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '('docker', 'exec', 'megaron-k2-fbdeb926-pg', 'psql', '-U', 'postgres', '-d', 'k1_proof', '-At', '-v', 'ON_ERROR_STOP=1', '-c', 'UPDATE messengers SET status=\'delivered\',arrives_at=now()-interval \'1 second\',stay_deadline_tick=(SELECT current_tick+2 FROM worlds WHERE id=\'1ccc9102-4453-4655-a127-110baa6e2c8e\') WHERE id=\'5862ab78-9eda-4da5-84a9-70884edd21ea\'; INSERT INTO events(stream_id,stream_type,event_type,payload,world_id) VALUES(\'05658450-7847-4783-b44f-2eeb9b22ed83\',\'province\',\'MessengerArrived\',\'{"messenger_id":"5862ab78-9eda-4da5-84a9-70884edd21ea"}\',\'1ccc9102-4453-4655-a127-110baa6e2c8e\');')' returned non-zero exit status 1.

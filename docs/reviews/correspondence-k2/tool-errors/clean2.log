@@ -1,0 +1,24 @@
+BUILD_COMPLETE fa83fc9+k2
+ERROR:  update or delete on table "settlements" violates foreign key constraint "provinces_controller_id_fkey" on table "provinces"
+DETAIL:  Key (id)=(e5dc50a5-0e11-4f82-b7bc-cff71593e157) is still referenced from table "provinces".
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-korrespondens-k2/tools/correspondence_k2_live.py", line 191, in <module>
+    if __name__=='__main__':main()
+                            ~~~~^^
+  File "/home/tk/wt/codex-korrespondens-k2/tools/correspondence_k2_live.py", line 180, in main
+    sql(f"DELETE FROM settlements WHERE id='{sender['sid']}';")
+    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tk/wt/codex-korrespondens-k2/tools/correspondence_k2_live.py", line 92, in sql
+    return run('docker', 'exec', containers[0], 'psql', '-U', 'postgres', '-d', 'k1_proof', '-At', '-v', 'ON_ERROR_STOP=1', '-c', q)
+  File "/home/tk/wt/codex-korrespondens-k2/tools/correspondence_k2_live.py", line 32, in run
+    return subprocess.check_output(args, text=True, **kw).strip()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 473, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+               **kwargs).stdout
+               ^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '('docker', 'exec', 'megaron-k2-87e3ff0f-pg', 'psql', '-U', 'postgres', '-d', 'k1_proof', '-At', '-v', 'ON_ERROR_STOP=1', '-c', "DELETE FROM settlements WHERE id='e5dc50a5-0e11-4f82-b7bc-cff71593e157';")' returned non-zero exit status 1.

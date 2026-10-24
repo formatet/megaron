@@ -1,0 +1,10 @@
+BUILD_COMPLETE 171fd9e+k2
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-korrespondens-k2/tools/correspondence_k2_live.py", line 191, in <module>
+    if __name__=='__main__':main()
+                            ~~~~^^
+  File "/home/tk/wt/codex-korrespondens-k2/tools/correspondence_k2_live.py", line 158, in main
+    assert dispatched.value.status==201,dispatched.value.text()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {"error":"your runner cannot cross the sea: you hold no coastal or harboured city to take ship from. Send it from a coastal city, or build a Harbour"}
+

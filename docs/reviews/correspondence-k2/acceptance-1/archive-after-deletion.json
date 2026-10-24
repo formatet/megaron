@@ -1,0 +1,50 @@
+{
+  "counterpart_id": "74538072-1348-4300-8e33-b8c8511a2dd4",
+  "id": "f10ba9d0-cb31-4cf7-b3b2-67545d1974c0",
+  "items": [
+    {
+      "id": "78e400c0-63b3-4cad-8940-5e694c14b826",
+      "sender_id": "f7c98287-bc60-4df6-ab94-7e93fdf8d9c7",
+      "recipient_id": "74538072-1348-4300-8e33-b8c8511a2dd4",
+      "sender_name": "Alkeus",
+      "recipient_name": "Sarpedas",
+      "origin_id": "4630be49-ba40-4389-8121-3a05ef18ac2e",
+      "destination_id": "ca5d7bbc-1981-4db8-bd31-f9b3d7e5b472",
+      "origin_name": "K2 Nostos",
+      "destination_name": "K2 Kyme",
+      "message_text": "Keryx keeps the case identity",
+      "sent_at": "2026-10-24T06:41:24.423148+02:00",
+      "status": "outbound"
+    },
+    {
+      "id": "43c1b388-2f9b-47ba-b708-0bf9fb4d6756",
+      "sender_id": "f7c98287-bc60-4df6-ab94-7e93fdf8d9c7",
+      "recipient_id": "74538072-1348-4300-8e33-b8c8511a2dd4",
+      "sender_name": "Alkeus",
+      "recipient_name": "Sarpedas",
+      "origin_id": "4630be49-ba40-4389-8121-3a05ef18ac2e",
+      "destination_id": "ca5d7bbc-1981-4db8-bd31-f9b3d7e5b472",
+      "origin_name": "K2 Nostos",
+      "destination_name": "K2 Kyme",
+      "message_text": "Keep this in the copper matter",
+      "sent_at": "2026-10-24T06:41:22.630837+02:00",
+      "status": "outbound"
+    },
+    {
+      "id": "7877a911-18b0-41f0-be11-ca540e226316",
+      "sender_id": "74538072-1348-4300-8e33-b8c8511a2dd4",
+      "recipient_id": "f7c98287-bc60-4df6-ab94-7e93fdf8d9c7",
+      "sender_name": "Sarpedas",
+      "recipient_name": "Alkeus",
+      "origin_id": "ca5d7bbc-1981-4db8-bd31-f9b3d7e5b472",
+      "destination_id": "4630be49-ba40-4389-8121-3a05ef18ac2e",
+      "origin_name": "K2 Kyme",
+      "destination_name": "K2 Nostos",
+      "message_text": "Copper for the winter voyage",
+      "sent_at": "2026-10-24T06:41:19.943156+02:00",
+      "status": "delivered"
+    }
+  ],
+  "next_cursor": "",
+  "subject": "Winter copper"
+}

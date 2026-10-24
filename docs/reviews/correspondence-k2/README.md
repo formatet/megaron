@@ -1,0 +1,13 @@
+# K2 — personal correspondence cases
+
+**Result:** new letters have stable person/case identity and a private archive that survives city renaming, ownership changes and deletion. Server code `171fd9eb`; web/Keryx `f487f57c`; migration207. Built above unmerged K1 and return-post; **not merged or deployed**. [Server contract and lifecycle inventory](SERVER.md).
+
+**Proof:** real old-code HTTP Send fails its named persistent-case test; four server source mutants and three client source mutants fail named assertions, then restore byte-exact and pass. Fresh207 pagination covers equal timestamps, late/backdated inserts, replies/appends and foreign cursors. Recipient sees nothing before actual delivery to that person; original sender sees a reply/remote trade result only after return. New city owners inherit no new private letters. Legacy recipient identity stays explicitly unavailable.
+
+Native proof process: `{"commit":"f487f57+k2","migration":207,"status":"ok"}`. Source hashes are in [acceptance-1/proof.json](acceptance-1/proof.json); the build label explicitly denotes modified acceptance tooling, not a claimed clean build. Fresh PG/Redis, ordinary register/join/found, **explicit contact and delivered-state/event fixtures**, real HTTP sends, native Firefox1280/390 case selection/continued send, actual Keryx list/detail/send. Rename/owner/delete are explicit final DB fixtures. Archive opens produced zero read mutations. No natural voyage/conquest is claimed. Second clean acceptance and final Go outcome follow before handover.
+
+Validation: 757 JS tests green; `go vet ./...` green. Full Go suite against fresh207 running. [Pictures](index.html).
+
+Tool corrections, with failed logs retained in `tool-errors/`: nonexistent stay-deadline column; CSS uppercase heading expectation; strict locator after a second letter; folded older-letter expectation; deletion fixture needed province/controller/world-record/building cleanup and referenced retired temples; same landmass does not prove a dry courier route (the final tool selects connected dry tiles). One earlier run overlapped a server migration source mutant and was discarded. No failed run is counted as acceptance. The server mutation's first survivor exposed a missing arrival-event fixture, which was repaired before all four named mutants failed.
+
+Limits: archive sorting is immutable case-creation/send order, not K7 urgency ordering. Private drafts/notes are K3; promise/citation memory is K4. Presence, receipts and atomic counteroffers remain unimplemented. Old correspondence retains its legacy authority; unknown historical recipients are never invented. Incoming-map knowledge is unchanged and remains an open decision.

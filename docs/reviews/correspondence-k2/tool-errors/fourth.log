@@ -1,0 +1,37 @@
+BUILD_COMPLETE fa83fc9+k2
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-korrespondens-k2/tools/correspondence_k2_live.py", line 189, in <module>
+    if __name__=='__main__':main()
+                            ~~~~^^
+  File "/home/tk/wt/codex-korrespondens-k2/tools/correspondence_k2_live.py", line 148, in main
+    root.locator('[data-case-open="'+case+'"]').click();root.locator('[data-archive-letter]').wait_for()
+                                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/sync_api/_generated.py", line 18074, in wait_for
+    self._sync(self._impl_obj.wait_for(timeout=timeout, state=state))
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/_impl/_sync_base.py", line 115, in _sync
+    return task.result()
+           ~~~~~~~~~~~^^
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/_impl/_locator.py", line 710, in wait_for
+    await self._frame.wait_for_selector(
+        self._selector, strict=True, timeout=timeout, state=state
+    )
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/_impl/_frame.py", line 369, in wait_for_selector
+    await self._channel.send(
+        "waitForSelector", self._timeout, locals_to_params(locals())
+    )
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/_impl/_connection.py", line 69, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/_impl/_connection.py", line 559, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: Locator.wait_for: Error: strict mode violation: locator("#dtab-archive").locator("[data-archive-letter]") resolved to 2 elements:
+    1) <article class="dip-queue-item" data-archive-letter="25a0d46d-86bb-47af-8777-6a018a2502a8">…</article> aka get_by_text("Wedaneus · K2 Nostos → Aukewas · K2 Kyme24/10/2026, 06:35:56LetterKeep this in")
+    2) <article class="dip-queue-item" data-archive-letter="5b4f74e0-0212-4b9f-b6d8-678731a262e7">…</article> aka get_by_text("Aukewas · K2 Kyme → Wedaneus · K2 Nostos24/10/2026, 06:35:53LetterCopper for")
+
+Call log:
+  - waiting for locator("#dtab-archive").locator("[data-archive-letter]") to be visible
+

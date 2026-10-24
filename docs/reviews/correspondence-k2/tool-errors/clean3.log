@@ -1,0 +1,25 @@
+BUILD_COMPLETE fa83fc9+k2
+ERROR:  relation "temples" does not exist
+LINE 1: ...77fde29-762b-41d4-9023-bcd31a01cb9e'; DELETE FROM temples WH...
+                                                             ^
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-korrespondens-k2/tools/correspondence_k2_live.py", line 191, in <module>
+    if __name__=='__main__':main()
+                            ~~~~^^
+  File "/home/tk/wt/codex-korrespondens-k2/tools/correspondence_k2_live.py", line 180, in main
+    sql(f"BEGIN; UPDATE provinces SET controller_id=NULL WHERE controller_id='{sender['sid']}'; UPDATE player_world_records SET settlement_id=NULL WHERE settlement_id='{sender['sid']}'; DELETE FROM buildings WHERE settlement_id='{sender['sid']}'; DELETE FROM build_queue WHERE settlement_id='{sender['sid']}'; DELETE FROM temples WHERE settlement_id='{sender['sid']}'; DELETE FROM settlements WHERE id='{sender['sid']}'; COMMIT;")
+    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tk/wt/codex-korrespondens-k2/tools/correspondence_k2_live.py", line 92, in sql
+    return run('docker', 'exec', containers[0], 'psql', '-U', 'postgres', '-d', 'k1_proof', '-At', '-v', 'ON_ERROR_STOP=1', '-c', q)
+  File "/home/tk/wt/codex-korrespondens-k2/tools/correspondence_k2_live.py", line 32, in run
+    return subprocess.check_output(args, text=True, **kw).strip()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 473, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+               **kwargs).stdout
+               ^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '('docker', 'exec', 'megaron-k2-91c8b4c4-pg', 'psql', '-U', 'postgres', '-d', 'k1_proof', '-At', '-v', 'ON_ERROR_STOP=1', '-c', "BEGIN; UPDATE provinces SET controller_id=NULL WHERE controller_id='b77fde29-762b-41d4-9023-bcd31a01cb9e'; UPDATE player_world_records SET settlement_id=NULL WHERE settlement_id='b77fde29-762b-41d4-9023-bcd31a01cb9e'; DELETE FROM buildings WHERE settlement_id='b77fde29-762b-41d4-9023-bcd31a01cb9e'; DELETE FROM build_queue WHERE settlement_id='b77fde29-762b-41d4-9023-bcd31a01cb9e'; DELETE FROM temples WHERE settlement_id='b77fde29-762b-41d4-9023-bcd31a01cb9e'; DELETE FROM settlements WHERE id='b77fde29-762b-41d4-9023-bcd31a01cb9e'; COMMIT;")' returned non-zero exit status 1.
