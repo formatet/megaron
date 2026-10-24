@@ -19,7 +19,7 @@ func TestStorageNotificationsNameTheLoss(t *testing.T) {
 	raw, _ = json.Marshal(map[string]any{"name": "MalliaWest", "good_key": "silver", "cap": 960, "full_in_ticks": 3})
 	out = capturePrint(t, func() { printStorageNotification(notificationItem{Kind: "StorageCapacityWarning", Body: raw}) })
 	if !strings.Contains(out, "silver storage full in 3") {
-		t.Fatalf("warning line %q lacks the days left", strings.TrimSpace(out))
+		t.Fatalf("warning line %q lacks the game days left", strings.TrimSpace(out))
 	}
 	lines := storageWarningLines(map[string]any{"storage": []any{
 		map[string]any{"good_key": "silver", "amount": 900.0, "cap": 960.0, "warning": true, "full_in_ticks": 2.0},

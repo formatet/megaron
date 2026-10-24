@@ -154,7 +154,7 @@ func TestUpkeep_NavalStarvationReturn_TriggersAtHalfCrew(t *testing.T) {
 	// before its crew starves — not at half crew as before. With nothing aboard it
 	// turns on the first day and loses only that day's ration of men.
 	if crew < 18 {
-		t.Errorf("crew at turn = %d, want >= 18 (turned on the first starved day)", crew)
+		t.Errorf("crew at turn = %d, want >= 18 (turned on the first starved game day)", crew)
 	}
 	if status != "marching" {
 		t.Fatalf("ship status = %q after crew reached %d, want marching (turned for home)", status, crew)

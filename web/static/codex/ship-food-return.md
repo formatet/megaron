@@ -1,4 +1,4 @@
-A ship at sea **turns home early** when its food is only enough for the voyage home, with one day in reserve. It uses its actual crew and any carried soldiers to work out the ration. A ship heading to a city it can still reach with its food may continue there for provisions instead.
+A ship at sea **turns home early** when its food is only enough for the voyage home, with one game day in reserve. It uses its actual crew and any carried soldiers to work out the ration. A ship heading to a city it can still reach with its food may continue there for provisions instead.
 
 **You hear the reason when the ship reaches home**, not while it is far away: “Nike came home early — food for the way back only.” The report names the ship and its surviving crew. It does not mean that the crew starved to half strength.
 

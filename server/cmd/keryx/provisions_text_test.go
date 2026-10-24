@@ -11,8 +11,8 @@ func TestFormatSize_ShipWithLessThanADayIsNotOutOfFood(t *testing.T) {
 	ship := unitRow{Category: "naval", Status: "marching", Crew: 20, Hull: 5}
 
 	ship.ProvisionsAboard = true
-	if got := formatSize(nil, ship); !strings.Contains(got, "food for less than a day LOW") || strings.Contains(got, "OUT OF FOOD") {
-		t.Errorf("part of a day aboard: %q", got)
+	if got := formatSize(nil, ship); !strings.Contains(got, "food for less than a game day LOW") || strings.Contains(got, "OUT OF FOOD") {
+		t.Errorf("part of a game day aboard: %q", got)
 	}
 	ship.ProvisionsAboard = false
 	if got := formatSize(nil, ship); !strings.Contains(got, "OUT OF FOOD") {
@@ -25,7 +25,7 @@ func TestFormatSizeFreightingProvisionsParity(t *testing.T) {
 		days   int
 		aboard bool
 		want   string
-	}{{7, true, "food for 7 days"}, {0, true, "food for less than a day LOW"}, {0, false, "OUT OF FOOD"}} {
+	}{{7, true, "food for 7 game days"}, {0, true, "food for less than a game day LOW"}, {0, false, "OUT OF FOOD"}} {
 		u := unitRow{Category: "naval", Type: "merchantman", Status: "freighting", Crew: 10, Hull: 5, ProvisionDays: tc.days, ProvisionsAboard: tc.aboard}
 		if got := formatSize(nil, u); !strings.Contains(got, tc.want) {
 			t.Errorf("%+v got%q want%q", tc, got, tc.want)

@@ -58,7 +58,7 @@ func goodsCmd() *cobra.Command {
 				fmt.Printf("Labor pool: %s  ·  Idle: %s\n\n", citizenCount(int(lp)/100), citizenCount(int(idle)/100))
 			}
 			fmt.Printf("%-10s  %9s  %8s  %6s  %10s  %8s\n",
-				"Good", "Stock", "Per day", "Lvl", "Citizens", "Marg/g")
+				"Good", "Stock", "Per game day", "Lvl", "Citizens", "Marg/g")
 			fmt.Println("──────────────────────────────────────────────────────────────────────────")
 			for _, g := range goods {
 				key, _ := g["key"].(string)

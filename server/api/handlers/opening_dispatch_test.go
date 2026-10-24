@@ -105,7 +105,7 @@ func TestOpeningDispatchJoinConcurrentRetryRiseAndPrivacy(t *testing.T) {
 		t.Fatal(rec.Body.String())
 	}
 	active := read(otherToken)
-	if len(active) != 1 || strings.Contains(strings.Join(active[0].Paragraphs, " "), "Days begin after") {
+	if len(active) != 1 || strings.Contains(strings.Join(active[0].Paragraphs, " "), "game days begin after") {
 		t.Fatalf("active-world join still waits: %+v", active)
 	}
 	if rec := request("POST", "/join", token); rec.Code != 200 {
@@ -156,7 +156,7 @@ func TestOpeningDispatchFactsFromActiveRules(t *testing.T) {
 		tick.TickSeconds = tc.seconds
 		body := h.openingDispatch(uuid.New(), newcomerHost, true)
 		text := strings.Join(body.Paragraphs, "\n")
-		for _, want := range []string{tc.label, "3 Wanaxes", fmt.Sprintf("%g grain", float64(nomadicHostDowryGrain)), fmt.Sprintf("%g silver", nomadicHostStartingSilver), fmt.Sprintf("starts at %g Kharis", kharis.StartingKharis), fmt.Sprintf("temple takes %d days", province.BuildingSpecs[province.BuildingTemple].DurationTicks), fmt.Sprintf("below %d people", economy.CollapseBelowPopulation), fmt.Sprintf("olive woodland in %g", province.TerrainMoveTicks("forest_olive_grove")), "reserves do not drain"} {
+		for _, want := range []string{tc.label, "3 Wanaxes", fmt.Sprintf("%g grain", float64(nomadicHostDowryGrain)), fmt.Sprintf("%g silver", nomadicHostStartingSilver), fmt.Sprintf("starts at %g Kharis", kharis.StartingKharis), fmt.Sprintf("temple takes %d game days", province.BuildingSpecs[province.BuildingTemple].DurationTicks), fmt.Sprintf("below %d people", economy.CollapseBelowPopulation), fmt.Sprintf("olive woodland in %g", province.TerrainMoveTicks("forest_olive_grove")), "reserves do not drain"} {
 			if !strings.Contains(text, want) {
 				t.Fatalf("opening missing%q: %s", want, text)
 			}
@@ -213,7 +213,7 @@ func TestOpeningDispatch_ActiveWorldDoesNotWaitForJoiners(t *testing.T) {
 	h := &JoinHandler{startWanaxes: 4}
 	body := h.openingDispatch(uuid.New(), newcomerHost, false)
 	text := strings.Join(body.Paragraphs, " ")
-	if strings.Contains(text, "Days begin after") || !strings.Contains(text, "Place citizens") || !strings.Contains(text, "stone") {
+	if strings.Contains(text, "game days begin after") || !strings.Contains(text, "Place citizens") || !strings.Contains(text, "stone") {
 		t.Fatal(text)
 	}
 }

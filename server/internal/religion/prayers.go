@@ -118,7 +118,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: MoodIndifferent, Offering: map[string]float64{"wine": 15, "oil": 10},
 		CooldownTicks: 12, TargetKind: "",
 		God: "Demeter", Name: "Demeter's Bounty",
-		Description: "Blesses the harvest — grain, oil and wine yield a quarter more for 25 days.",
+		Description: "Blesses the harvest — grain, oil and wine yield a quarter more for 25 game days.",
 	},
 	"akhaier_battle_frenzy": {
 		ID: "akhaier_battle_frenzy", EffectType: EffectBattleFrenzy,
@@ -141,7 +141,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: MoodIndifferent, Offering: map[string]float64{"grain": 20, "oil": 10},
 		CooldownTicks: 12, TargetKind: "",
 		God: "Osiris", Name: "Osiris' Flood",
-		Description: "Blesses the harvest — grain, oil and wine yield a quarter more for 25 days.",
+		Description: "Blesses the harvest — grain, oil and wine yield a quarter more for 25 game days.",
 	},
 	"khemetiu_battle_frenzy": {
 		ID: "khemetiu_battle_frenzy", EffectType: EffectBattleFrenzy,
@@ -164,7 +164,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: MoodIndifferent, Offering: map[string]float64{"wine": 15, "oil": 10},
 		CooldownTicks: 12, TargetKind: "",
 		God: "Baal", Name: "Baal's Rain",
-		Description: "Blesses the harvest — grain, oil and wine yield a quarter more for 25 days.",
+		Description: "Blesses the harvest — grain, oil and wine yield a quarter more for 25 game days.",
 	},
 	"knaani_battle_frenzy": {
 		ID: "knaani_battle_frenzy", EffectType: EffectBattleFrenzy,
@@ -187,7 +187,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: MoodIndifferent, Offering: map[string]float64{"wine": 20, "oil": 10},
 		CooldownTicks: 12, TargetKind: "",
 		God: "Bendis", Name: "Bendis' Harvest",
-		Description: "Blesses the harvest — grain, oil and wine yield a quarter more for 25 days.",
+		Description: "Blesses the harvest — grain, oil and wine yield a quarter more for 25 game days.",
 	},
 	"thrakes_battle_frenzy": {
 		ID: "thrakes_battle_frenzy", EffectType: EffectBattleFrenzy,
@@ -211,7 +211,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: MoodIndifferent, Offering: map[string]float64{"wine": 15, "oil": 10},
 		CooldownTicks: 12, TargetKind: "",
 		God: "Britomartis", Name: "Britomartis' Gift",
-		Description: "Blesses the harvest — grain, oil and wine yield a quarter more for 25 days.",
+		Description: "Blesses the harvest — grain, oil and wine yield a quarter more for 25 game days.",
 	},
 	"minoan_battle_frenzy": {
 		ID: "minoan_battle_frenzy", EffectType: EffectBattleFrenzy,
@@ -235,7 +235,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: MoodIndifferent, Offering: map[string]float64{"wine": 15, "oil": 10},
 		CooldownTicks: 12, TargetKind: "",
 		God: "Telipinu", Name: "Telipinu's Return",
-		Description: "Blesses the harvest — grain, oil and wine yield a quarter more for 25 days.",
+		Description: "Blesses the harvest — grain, oil and wine yield a quarter more for 25 game days.",
 	},
 	"hatti_battle_frenzy": {
 		ID: "hatti_battle_frenzy", EffectType: EffectBattleFrenzy,
@@ -261,8 +261,8 @@ const (
 
 func init() {
 	PrayerSpecs[PrayerPotniaVision] = PrayerSpec{ID: PrayerPotniaVision, GodID: "potnia", EffectType: EffectOracleMemory, MinKharis: MoodSuspicious, Offering: map[string]float64{"grain": 10, "silver": 3}, CooldownTicks: 24, God: "Potnia", Name: "Potnia's Vision", Description: "Marks an unseen source of copper, tin, silver or incense and the unknown ground within two hexes as memory; no live activity.", Favours: potniaTheronOracleFavours}
-	PrayerSpecs[PrayerPotniaWalls] = PrayerSpec{ID: PrayerPotniaWalls, GodID: "potnia", EffectType: EffectGarrisonDefense, MinKharis: MoodSuspicious, Offering: map[string]float64{"grain": 8, "timber": 4}, CooldownTicks: 24, God: "Potnia", Name: "Mistress of the Walls", Description: "Your own garrison defending this city fights a quarter stronger for 6 days.", Favours: favoursByEffect[EffectBattleFrenzy]}
-	PrayerSpecs[PrayerGreenShoots] = PrayerSpec{ID: PrayerGreenShoots, GodID: "velchanos", EffectType: EffectHarvestBlessing, MinKharis: MoodIndifferent, Offering: map[string]float64{"grain": 15, "silver": 2}, CooldownTicks: 25, God: "Velchanos", Name: "Green Shoots", Description: "Grain, oil and wine yield a quarter more for 25 days; fish and the herd are unchanged."}
+	PrayerSpecs[PrayerPotniaWalls] = PrayerSpec{ID: PrayerPotniaWalls, GodID: "potnia", EffectType: EffectGarrisonDefense, MinKharis: MoodSuspicious, Offering: map[string]float64{"grain": 8, "timber": 4}, CooldownTicks: 24, God: "Potnia", Name: "Mistress of the Walls", Description: "Your own garrison defending this city fights a quarter stronger for 6 game days.", Favours: favoursByEffect[EffectBattleFrenzy]}
+	PrayerSpecs[PrayerGreenShoots] = PrayerSpec{ID: PrayerGreenShoots, GodID: "velchanos", EffectType: EffectHarvestBlessing, MinKharis: MoodIndifferent, Offering: map[string]float64{"grain": 15, "silver": 2}, CooldownTicks: 25, God: "Velchanos", Name: "Green Shoots", Description: "Grain, oil and wine yield a quarter more for 25 game days; fish and the herd are unchanged."}
 	PrayerSpecs[PrayerAsterionThread] = PrayerSpec{ID: PrayerAsterionThread, GodID: "asterion", EffectType: EffectNextLandDeparture, MinKharis: MoodSuspicious, Offering: map[string]float64{"timber": 4, "silver": 3}, CooldownTicks: 12, God: "Asterion", Name: "The Thread Shows a Path", Description: "Your next land caravan or Runner from this city travels faster; the caravan is harder to intercept."}
 	PrayerSpecs[PrayerStillnessPassage] = PrayerSpec{ID: PrayerStillnessPassage, GodID: "sea_daimons_stillness", EffectType: EffectNextShipDeparture, MinKharis: MoodSuspicious, Offering: map[string]float64{"fish": 6, "silver": 3}, CooldownTicks: 12, God: "The Sea Daimons of Stillness", Name: "Favourable Passage", Description: "The next ship leaving this port sails faster and takes no storm damage on its outward leg."}
 }

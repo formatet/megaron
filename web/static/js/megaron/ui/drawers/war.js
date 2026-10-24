@@ -543,7 +543,7 @@ export function renderUnitCard(u) {
   const upkeep = u.upkeep_context !== 'none' && Number.isFinite(foodRate) && Number.isFinite(u.upkeep_silver_per_tick)
     ? '<div class="unit-upkeep" style="font-size:.65rem;color:var(--text-dim)">' + upkeepLabel + ': '
       + foodRate.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' ' + foodLabel + ', '
-      + u.upkeep_silver_per_tick.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' silver per day</div>'
+      + u.upkeep_silver_per_tick.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' silver per game day</div>'
     : '';
 
   // Pending order (Fas 5): a Runner is en route to this unit — the order
@@ -584,7 +584,7 @@ export function renderUnitCard(u) {
   const foodBadge = atSea
     ? '<span style="font-size:.6rem;margin-left:.3rem;color:' +
       (days <= 0 ? 'var(--accent-war)' : days < 3 ? 'var(--accent-war)' : 'var(--text-dim)') + '">' +
-      (days > 0 ? 'food for ' + fmtDays(days) : u.provisions_aboard ? 'food for less than a day' : 'out of food') + (foodDetail ? ' (' + foodDetail + ')' : '') + '</span>'
+      (days > 0 ? 'food for ' + fmtDays(days) : u.provisions_aboard ? 'food for less than a game day' : 'out of food') + (foodDetail ? ' (' + foodDetail + ')' : '') + '</span>'
     : '';
 
   // Cargo badge
@@ -1059,7 +1059,7 @@ export async function unitPickup(unitID) {
   if (res.ok) {
     if (resEl) {
       resEl.style.color = 'var(--safe-text)';
-      resEl.textContent = 'Ship sails to (' + data.shore_q + ',' + data.shore_r + ') — arrives day ' + fmtNum(data.arrival_tick) +
+      resEl.textContent = 'Ship sails to (' + data.shore_q + ',' + data.shore_r + ') — arrives ' + fmtTickTime(data.arrival_tick, data.arrives_at) +
         (data.messenger_id ? ', a messenger rides along' : '') + '.';
     }
     loadWarDrawer();

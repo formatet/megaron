@@ -1,0 +1,31 @@
+server/api/handlers/unit_march_preview.go:119: forbidden player time: could not read expedition day
+server/api/handlers/settlement.go:799: forbidden player time: temple is still finishing here — it becomes usable within a day of completion; retry shortly
+server/api/handlers/settlement.go:1026: forbidden player time: Potnia shelters your walls — your own garrison defends this city a quarter stronger for 6 days.
+server/api/handlers/settlement.go:1156: forbidden player time: %s smiles upon your fields — grain, oil and wine yield a quarter more for %d days.
+server/api/handlers/province.go:2348: forbidden player time: foundry is still finishing here — it becomes usable within a day of completion; retry shortly
+server/api/handlers/province.go:2485: forbidden player time: could not read recruitment day
+server/api/handlers/province.go:2500: forbidden player time: could not read recruitment day
+server/api/handlers/province.go:2778: forbidden player time: warning: once this unit garrisons it needs %.1f grain + %.1f silver per day upkeep — 
+server/api/handlers/province.go:2779: forbidden player time: this settlement's current net after its existing army's upkeep is %+.1f grain per day, %+.1f silver per day; 
+server/api/handlers/province.go:3492: forbidden player time: could not read current day
+server/api/handlers/opening_dispatch.go:46: forbidden player time: Time. A day passes every %s.
+server/api/handlers/opening_dispatch.go:48: forbidden player time:  Days begin after %d Wanaxes join.
+server/api/handlers/opening_dispatch.go:52: forbidden player time: Foot soldiers cross a plains hex in %g day, olive woodland in %g, hills or cedar forest in %g, desert in %g. War chariots cross plains in %g day but need %g in olive woodland and %g in hills, cedar forest or desert. A full-crewed galley crosses %g coastal or %g open-sea hexes a day.
+server/api/handlers/opening_dispatch.go:55: forbidden player time: The gods. A new Wanax starts at %g Kharis. It fades slowly from the start; each additional city increases the daily cost, even with a temple. A temple takes %d days to build: staff and feed it to earn favour. Low standing risks punishment.
+server/api/handlers/opening_dispatch.go:62: forbidden player time: The gods. Your standing is kept and fades from the start. Each additional city increases the daily cost, even with a temple. A temple takes %d days to build: staff and feed it to earn favour. Low standing risks punishment.
+server/api/handlers/messenger.go:1274: forbidden player time: could not read current day
+server/api/handlers/kingdom.go:1099: forbidden player time: could not read current day
+server/internal/tick/eta.go:60: forbidden player time: 1 day
+server/internal/tick/eta.go:62: forbidden player time:  days
+server/internal/tick/eta.go:65: forbidden player time: day 
+server/internal/religion/prayers.go:121: forbidden player time: Blesses the harvest — grain, oil and wine yield a quarter more for 25 days.
+server/internal/religion/prayers.go:144: forbidden player time: Blesses the harvest — grain, oil and wine yield a quarter more for 25 days.
+server/internal/religion/prayers.go:167: forbidden player time: Blesses the harvest — grain, oil and wine yield a quarter more for 25 days.
+server/internal/religion/prayers.go:190: forbidden player time: Blesses the harvest — grain, oil and wine yield a quarter more for 25 days.
+server/internal/religion/prayers.go:214: forbidden player time: Blesses the harvest — grain, oil and wine yield a quarter more for 25 days.
+server/internal/religion/prayers.go:238: forbidden player time: Blesses the harvest — grain, oil and wine yield a quarter more for 25 days.
+server/internal/religion/prayers.go:264: forbidden player time: Your own garrison defending this city fights a quarter stronger for 6 days.
+server/internal/religion/prayers.go:265: forbidden player time: Grain, oil and wine yield a quarter more for 25 days; fish and the herd are unchanged.
+server/internal/gossip/gossip.go:47: forbidden player time: 3 days
+server/internal/combat/march_start.go:782: forbidden player time: march route: could not read current day
+server/internal/combat/march_start.go:1385: forbidden player time: the voyage needs %.0f (%.1f per day for %s out, on station and home again)

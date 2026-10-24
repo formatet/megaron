@@ -831,9 +831,9 @@ func printColonyFoundedGrainLine(n notificationItem) {
 			net = 0
 		}
 		if net >= 0 {
-			fmt.Printf("      %s food production covers consumption (net %+.1f per day).\n", name, net)
+			fmt.Printf("      %s food production covers consumption (net %+.1f per game day).\n", name, net)
 		} else {
-			fmt.Printf("      %s food production falls short by %.1f per day. Stored food feeds people until it runs out.\n", name, -net)
+			fmt.Printf("      %s food production falls short by %.1f per game day. Stored food feeds people until it runs out.\n", name, -net)
 		}
 		if body.LoyaltyWarning != "" {
 			fmt.Printf("      %s\n", body.LoyaltyWarning)
@@ -853,10 +853,10 @@ func printColonyFoundedGrainLine(n notificationItem) {
 		if grainTicks != nil {
 			ticks = fmt.Sprintf(" — grain lasts ~%s", formatDays(*grainTicks, "%.0f"))
 		}
-		fmt.Printf("      %s grain production falls short by %.1f per day%s. Build a farm if the catchment supports it, otherwise send grain: keryx transfer --good grain --qty <n> --dest %s\n",
+		fmt.Printf("      %s grain production falls short by %.1f per game day%s. Build a farm if the catchment supports it, otherwise send grain: keryx transfer --good grain --qty <n> --dest %s\n",
 			name, -perTick, ticks, name)
 	} else {
-		fmt.Printf("      %s production covers grain consumption (net ~%+.1f grain per day).\n", name, perTick)
+		fmt.Printf("      %s production covers grain consumption (net ~%+.1f grain per game day).\n", name, perTick)
 	}
 	if body.LoyaltyWarning != "" {
 		fmt.Printf("      %s\n", body.LoyaltyWarning)
@@ -1121,7 +1121,7 @@ func printDivineBlessingLine(n notificationItem) {
 		line = fmt.Sprintf("The gods fill the granaries%s — +%s grain.", where, resource(amount))
 	case "bountiful_harvest":
 		// amount = days the yield bonus lasts (2026-10-10).
-		line = fmt.Sprintf("The gods bless the fields%s — grain, oil and wine yield a quarter more for %.0f days.", where, amount)
+		line = fmt.Sprintf("The gods bless the fields%s — grain, oil and wine yield a quarter more for %.0f game days.", where, amount)
 	case "divine_recruits":
 		line = fmt.Sprintf("Warriors answer a divine calling%s — +%.0f men.", where, amount)
 	case "sea_blessing":

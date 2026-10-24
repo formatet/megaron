@@ -57,12 +57,10 @@ func GameDaysLeft(d time.Duration) int {
 // (rad K, cli-sanning), and a plural on 1 reads as a bug to the player.
 func FormatDays(days int) string {
 	if days == 1 {
-		return "1 day"
+		return "1 game day"
 	}
-	return strconv.Itoa(days) + " days"
+	return strconv.Itoa(days) + " game days"
 }
-
-func FormatDay(day int) string { return "day " + strconv.Itoa(day) }
 
 // EtaAt returns the wall-clock instant dueTick is expected to fire, given the
 // world's currentTick and clk as the time source. This is the ETA-display

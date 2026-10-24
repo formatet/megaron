@@ -136,6 +136,25 @@ func buildCmd() *cobra.Command {
 			} else {
 				fmt.Printf("Construction queued: %s\n", buildingType)
 			}
+			var receipt struct {
+				Duration     *float64 `json:"duration_game_days"`
+				CompleteAt   string   `json:"complete_at"`
+				CompleteTick *int     `json:"complete_tick"`
+			}
+			if json.Unmarshal(data, &receipt) == nil {
+				if receipt.Duration != nil {
+					fmt.Printf("  %s", formatDuration(c, *receipt.Duration, "%g"))
+				}
+				if receipt.CompleteTick != nil {
+					fmt.Printf(" · ready %s", formatWorldTime(c, *receipt.CompleteTick))
+				} else if receipt.CompleteAt != "" {
+					fmt.Printf(" · ready %s", arrivalETA(c, receipt.CompleteAt))
+				}
+				if receipt.Duration != nil || receipt.CompleteAt != "" || receipt.CompleteTick != nil {
+					fmt.Println()
+				}
+			}
+
 			return nil
 		},
 	}

@@ -41,7 +41,7 @@ func printNotificationSummary(c *Client, n notificationItem) {
 			Threshold float64 `json:"wrath_threshold"`
 		}
 		if json.Unmarshal(n.Body, &b) == nil {
-			fmt.Printf("      Kharis is falling (%.1f, net %+.2f per day). At this rate it reaches %.0f in %s. Below that the gods may punish you, with or without a temple. Staff and feed your temples.\n", b.Kharis, b.Net, b.Threshold, formatDays(b.Days))
+			fmt.Printf("      Kharis is falling (%.1f, net %+.2f per game day). At this rate it reaches %.0f in %s. Below that the gods may punish you, with or without a temple. Staff and feed your temples.\n", b.Kharis, b.Net, b.Threshold, formatDays(b.Days))
 			return
 		}
 	}
@@ -324,7 +324,7 @@ func printNotificationSummary(c *Client, n notificationItem) {
 		if released == "" {
 			released = notificationAmount(b.FoodReleased) + " food"
 		}
-		line = fmt.Sprintf("Granary released %s (%.1f days of coverage)", released, b.CoverageDays)
+		line = fmt.Sprintf("Granary released %s (%.1f game days of coverage)", released, b.CoverageDays)
 		if b.GranaryEmpty {
 			line += " — granary now empty"
 		}
@@ -338,11 +338,11 @@ func printNotificationSummary(c *Client, n notificationItem) {
 			left = *b.TicksLeft
 		}
 		if b.Tier == "critical" {
-			line = fmt.Sprintf("%s is STARVING — %s lost. Grain net %.0f per day.", city, citizenCount(b.PopLoss), net)
+			line = fmt.Sprintf("%s is STARVING — %s lost. Grain net %.0f per game day.", city, citizenCount(b.PopLoss), net)
 		} else {
-			line = fmt.Sprintf("%s: grain net %+.0f per day", city, net)
+			line = fmt.Sprintf("%s: grain net %+.0f per game day", city, net)
 			if left > 0 {
-				line += fmt.Sprintf(" — grain lasts ~%.0f days", left)
+				line += fmt.Sprintf(" — grain lasts ~%.0f game days", left)
 			}
 		}
 	case "HexBlockaded":

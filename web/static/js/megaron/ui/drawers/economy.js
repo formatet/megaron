@@ -23,12 +23,12 @@ export function atStorageCeiling(amount, cap) {
 export function goodsRateCell(g) {
   const rate = g.rate_per_tick || 0;
   if (atStorageCeiling(g.amount || 0, g.cap || 0)) {
-    const lost = rate > 0 ? ` · +${fmtNum(Number(rate.toFixed(1)))} lost per day` : '';
+    const lost = rate > 0 ? ` · +${fmtNum(Number(rate.toFixed(1)))} lost per game day` : '';
     const title = `Storage full (${fmtNum(Math.floor(g.amount || 0))} of ${fmtNum(Math.floor(g.cap || 0))}). `
       + 'Everything produced past the cap is discarded — move this labour or trade it away.';
     return `<td class="goods-atcap" title="${esc(title)}">full${lost}</td>`;
   }
-  return rate > 0 ? `<td style="color:var(--safe-text)">+${fmtNum(Number(rate.toFixed(1)))} per day</td>` : '<td></td>';
+  return rate > 0 ? `<td style="color:var(--safe-text)">+${fmtNum(Number(rate.toFixed(1)))} per game day</td>` : '<td></td>';
 }
 
 // Compare the single city food stocks and authoritative food net, including army
@@ -110,7 +110,7 @@ export function renderSettlementsOverviewHTML(rows, sortKey, sortDir) {
       return `<tr onclick="openCitySettlement('${r.id}')" style="cursor:pointer">
         <td>${esc(r.name)}${r.isCapital ? ' ★' : ''}</td>
         <td style="text-align:right">${fmtNum(Math.floor(r.population))}</td>
-        <td style="text-align:right;color:${rateColor}">${r.grainRate == null ? 'not reported' : rateSign + fmtNum(Number(r.grainRate.toFixed(1))) + ' per day'}</td>
+        <td style="text-align:right;color:${rateColor}">${r.grainRate == null ? 'not reported' : rateSign + fmtNum(Number(r.grainRate.toFixed(1))) + ' per game day'}</td>
         <td style="text-align:right">${r.coverage == null ? 'not reported' : fmtDays(Number(r.coverage.toFixed(1)))}</td>
         <td><span class="food-state-${r.severity}">${esc(r.label)}</span></td>
       </tr>`;
@@ -217,7 +217,7 @@ async function loadEconomyGoods(mySettlements) {
             <div class="sb-label">Silver</div>
             <div class="sb-val">${fmtNum(Math.floor(silver.amount))}</div>
           </div>
-          ${silver.rate_per_tick ? `<div class="sb-rate">+${fmtNum(Number(silver.rate_per_tick.toFixed(1)))} per day</div>` : ''}
+          ${silver.rate_per_tick ? `<div class="sb-rate">+${fmtNum(Number(silver.rate_per_tick.toFixed(1)))} per game day</div>` : ''}
         </div>`;
       }
       if (others.length) {

@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/tmp/megaron-codex-game-days-20261024/tools/game_days_acceptance.py", line 92, in <module>
+    text=page.locator('#city-build-result').inner_text();assert 'game days' in text and 'about ' in text and 'ready ' in text,text
+                                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

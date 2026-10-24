@@ -90,7 +90,7 @@ func unitLayUpCmd() *cobra.Command {
 	return shipPortCmd("lay-up", "Lay up an empty ship in your active harbour; its crew returns to the city")
 }
 func unitFitOutCmd() *cobra.Command {
-	return shipPortCmd("fit-out", "Draft a laid-up ship's crew and ready it after three days")
+	return shipPortCmd("fit-out", "Draft a laid-up ship's crew and ready it after three game days")
 }
 
 // ---- unit patrol -------------------------------------------------------------
@@ -343,7 +343,7 @@ func unitUpkeepLine(u unitRow) string {
 	case "subsistence":
 		label = "Upkeep after settling"
 	}
-	return fmt.Sprintf("%s: %g %s, %g silver per day", label, *food, category, *u.UpkeepSilverPerTick)
+	return fmt.Sprintf("%s: %g %s, %g silver per game day", label, *food, category, *u.UpkeepSilverPerTick)
 }
 
 type unitRow struct {
@@ -493,7 +493,7 @@ func formatSize(c *Client, u unitRow) string {
 		case u.Status == "garrison" || u.Status == "laid_up" || u.Status == "fitting_out":
 			// I hamn äter skeppet ur staden; ett lager ombord säger ingenting.
 		case u.ProvisionDays <= 0 && u.ProvisionsAboard:
-			food = ", food for less than a day LOW"
+			food = ", food for less than a game day LOW"
 		case u.ProvisionDays <= 0:
 			food = ", OUT OF FOOD"
 		case u.ProvisionDays < provisionsLowDays:
@@ -772,7 +772,7 @@ Run 'keryx map' to see the frontier coordinates. Fog on the map does not
 guarantee a route for this unit. If the chosen hex cannot be reached,
 the order is refused; try another hex or a unit departing from elsewhere.
 
---intent explore goes first to the chosen hex, then explores around it for --ticks days.
+--intent explore goes first to the chosen hex, then explores around it for --ticks game days.
 It turns home by half the duration and reports what it saw on return. It needs
 a reachable city of yours to return to. A land unit in the field receives the
 order by Runner; a ship must be commanded in port. Works for land or naval
@@ -806,7 +806,7 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
   keryx unit march --unit <id> --intent colonize --name Thapsos --yes
   # Any march reveals fog along its route toward a frontier coordinate:
   keryx unit march --unit <id> --q 12 --r -8
-  # Explore an area for 12 days, then automatically return home
+  # Explore an area for 12 game days, then automatically return home
   keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12
   # Land troops from a laden ship in port, then sail home on its own:
   keryx unit march --unit <ship-id> --q 20 --r -5 --intent land
@@ -1003,7 +1003,7 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 		},
 	}
 
-	cmd.Flags().IntVar(&expeditionTicks, "ticks", 0, "explore duration in days (omit for server default)")
+	cmd.Flags().IntVar(&expeditionTicks, "ticks", 0, "explore duration in game days (omit for server default)")
 	cmd.Flags().BoolVar(&previewOnly, "preview", false, "estimate arrival without sending an order")
 	cmd.Flags().StringVar(&unitID, "unit", "", "unit UUID (required)")
 	cmd.Flags().IntVar(&targetQ, "q", 0, "target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)")
@@ -1147,7 +1147,7 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 	if p.Grain.FoodNetPerTick != nil {
 		netPerTick = *p.Grain.FoodNetPerTick
 	}
-	fmt.Printf("  Food: grain ~%.1f + fish ~%.1f per day − consumption ~%.1f per day = net %s per day\n", prodPerTick, p.Grain.FishPerTick, consPerTick, formatNetPerTick(netPerTick))
+	fmt.Printf("  Food: grain ~%.1f + fish ~%.1f per game day − consumption ~%.1f per game day = net %s per game day\n", prodPerTick, p.Grain.FishPerTick, consPerTick, formatNetPerTick(netPerTick))
 
 	// Tre lägen, inte två (megaron_plan_grundningsprognosen.md §4): ett netto på
 	// t.ex. +0,4/tick är en stad en missad hex från svält, inte "självförsörjande".
@@ -1169,10 +1169,10 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 		if p.Grain.TicksUntilEmpty != nil && netPerTick < -1e-9 {
 			reach = fmt.Sprintf(" → lasts ~%s", formatDays(*p.Grain.TicksUntilEmpty, "%.0f"))
 		}
-		fmt.Printf("  Starting stock %.0f grain%s — production falls short; food runs out when the stock is spent. With a farm: net ~%s per day%s\n",
+		fmt.Printf("  Starting stock %.0f grain%s — production falls short; food runs out when the stock is spent. With a farm: net ~%s per game day%s\n",
 			p.Grain.Seed, reach, formatNetPerTick(farmNetPerTick), farmNote)
 	case netPerTick < marginalCeiling:
-		fmt.Printf("  Starting stock %.0f grain — marginal (net %s per day). A farm gives net ~%s per day.%s\n",
+		fmt.Printf("  Starting stock %.0f grain — marginal (net %s per game day). A farm gives net ~%s per game day.%s\n",
 			p.Grain.Seed, formatNetPerTick(netPerTick), formatNetPerTick(farmNetPerTick), farmNote)
 	default:
 		fmt.Printf("  Starting stock %.0f grain — production covers food demand.\n", p.Grain.Seed)
@@ -1217,7 +1217,7 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 			continue
 		}
 		if rate := p.Goods[g]; rate > 0 {
-			extras = append(extras, fmt.Sprintf("%s ~%.0f per day", g, rate))
+			extras = append(extras, fmt.Sprintf("%s ~%.0f per game day", g, rate))
 		}
 	}
 	if len(extras) > 0 {
@@ -1522,7 +1522,7 @@ func unitReinforceCmd() *cobra.Command {
 		Use:   "reinforce",
 		Short: "Refill a thinned land cohort from its home city's growth",
 		Long: `Mark a decimated cohort as awaiting reinforcement. No men arrive at once:
-the city trickles them in out of its own growth over the following days, and it
+the city trickles them in out of its own growth over the following game days, and it
 never shrinks to do so.
 
 The cohort must be garrisoned in the city that raised it — march it home first.`,
@@ -1548,7 +1548,7 @@ The cohort must be garrisoned in the city that raised it — march it home first
 				Size int `json:"size"`
 			}
 			_ = json.Unmarshal(data, &resp)
-			fmt.Printf("Cohort %s (%d/100) is refilling from its home city's growth over the coming days.\n",
+			fmt.Printf("Cohort %s (%d/100) is refilling from its home city's growth over the coming game days.\n",
 				unitID, resp.Size)
 			return nil
 		},
@@ -1880,7 +1880,7 @@ func unitPickupCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&shipID, "ship", "", "ship UUID to send (required; galley or merchantman if a runner is needed)")
-	cmd.Flags().IntVar(&waitTicks, "wait", 0, "days to wait off the shore before turning home regardless (default: server default)")
+	cmd.Flags().IntVar(&waitTicks, "wait", 0, "game days to wait off the shore before turning home regardless (default: server default)")
 	_ = cmd.MarkFlagRequired("ship")
 	return cmd
 }

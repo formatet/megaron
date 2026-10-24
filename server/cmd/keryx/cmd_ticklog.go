@@ -65,7 +65,7 @@ func ticklogCmd() *cobra.Command {
 				return err
 			}
 			if len(resp.Ticks) == 0 {
-				fmt.Println("No days to show.")
+				fmt.Println("No game days to show.")
 				return nil
 			}
 			for _, t := range resp.Ticks {
@@ -85,7 +85,7 @@ func ticklogCmd() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVar(&provinceID, "province", "", "city name or province ID (default: your capital)")
-	cmd.Flags().IntVar(&last, "last", 10, "number of most-recent days to show")
+	cmd.Flags().IntVar(&last, "last", 10, "number of most-recent game days to show")
 	cmd.Flags().BoolVar(&asc, "asc", false, "chronological order (oldest first)")
 	return cmd
 }

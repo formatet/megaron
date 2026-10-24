@@ -377,7 +377,7 @@ func TestCarrierFate_PendingRescueCanLandBeforeProjectionAndReportOnlyAtHome(t *
 		HomeTick int `json:"home_tick"`
 	}
 	if err := json.Unmarshal(report, &homeReport); err != nil || homeReport.HomeTick != returning.DueTick {
-		t.Fatalf("freeze actual physical home day: %s %v", report, err)
+		t.Fatalf("freeze actual physical home game day: %s %v", report, err)
 	}
 	if path := *carrierFixtureDir; path != "" {
 		if err := os.WriteFile(path+"/messenger_rescued_at_sea.json", report, 0644); err != nil {

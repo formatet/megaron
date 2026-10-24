@@ -37,7 +37,7 @@ func TestAIRound3_StatusArmyAndSingleFoodAdvice(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{"net +0.5 per day (before army)", "eats 2 grain per day → food net -1.5 per day after army", "2 citizens needed for people on best food slots", "1 citizen = 100 people", "Labor: 10 citizens"} {
+	for _, want := range []string{"net +0.5 per game day (before army)", "eats 2 grain per game day → food net -1.5 per game day after army", "2 citizens needed for people on best food slots", "1 citizen = 100 people", "Labor: 10 citizens"} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("missing %q: %s", want, out)
 		}

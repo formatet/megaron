@@ -48,7 +48,7 @@ func TestShipyardWaitingSuppressesETA(t *testing.T) {
 		if placed == 0 {
 			want = "waiting for shipyard workers"
 		}
-		if !strings.Contains(out, want) || strings.Contains(out, "temple") || strings.Contains(out, "per day") {
+		if !strings.Contains(out, want) || strings.Contains(out, "temple") || strings.Contains(out, "per game day") {
 			t.Fatal(out)
 		}
 	}

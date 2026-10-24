@@ -1514,8 +1514,10 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusCreated, map[string]any{
-		"queue_id":    queueID,
-		"complete_at": completeAt,
+		"queue_id":           queueID,
+		"complete_at":        completeAt,
+		"complete_tick":      buildDueTick,
+		"duration_game_days": spec.DurationTicks,
 	})
 }
 
@@ -2345,7 +2347,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 			).Scan(&queued)
 			if queued {
 				writeError(w, http.StatusUnprocessableEntity,
-					"foundry is still finishing here — it becomes usable within a day of completion; retry shortly")
+					"foundry is still finishing here — it becomes usable within a game day of completion; retry shortly")
 			} else {
 				writeError(w, http.StatusUnprocessableEntity,
 					// Do NOT reintroduce "bronze is smelted at a foundry" here: war_galley
@@ -2482,7 +2484,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 	if popAfter < economy.CollapseBelowPopulation {
 		var collapseCurrentTick int
 		if err := tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&collapseCurrentTick); err != nil {
-			writeError(w, http.StatusInternalServerError, "could not read recruitment day")
+			writeError(w, http.StatusInternalServerError, "could not read recruitment game day")
 			return
 		}
 		if err := h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledCollapseSettlement,
@@ -2497,7 +2499,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 	batchTicks := recruitBatchTicks(req.UnitType)
 	var trainCurrentTick int
 	if err := tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&trainCurrentTick); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not read recruitment day")
+		writeError(w, http.StatusInternalServerError, "could not read recruitment game day")
 		return
 	}
 
@@ -2775,8 +2777,8 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		newUnitUp := combat.UnitUpkeep(req.UnitType, string(cat), fullSize, "garrison", unit.CrewFor(unit.Type(req.UnitType)))
 		if (netGrainPerDay-newUnitUp.Grain) < 0 || (netSilverPerDay-newUnitUp.Silver) < 0 {
 			upkeepWarning = fmt.Sprintf(
-				"warning: once this unit garrisons it needs %.1f grain + %.1f silver per day upkeep — "+
-					"this settlement's current net after its existing army's upkeep is %+.1f grain per day, %+.1f silver per day; "+
+				"warning: once this unit garrisons it needs %.1f grain + %.1f silver per game day upkeep — "+
+					"this settlement's current net after its existing army's upkeep is %+.1f grain per game day, %+.1f silver per game day; "+
 					"it may starve/desert without more production or fewer units (`keryx status`)",
 				newUnitUp.Grain, newUnitUp.Silver, netGrainPerDay, netSilverPerDay)
 		}
@@ -3489,7 +3491,7 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	}
 	var tradeCurrentTick int
 	if err := tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&tradeCurrentTick); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not read current day")
+		writeError(w, http.StatusInternalServerError, "could not read current game day")
 		return
 	}
 	if err := transport.BlessDeparture(r.Context(), tx, worldID, playerID, originID, &journey, true); err != nil {

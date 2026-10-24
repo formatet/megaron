@@ -3,7 +3,8 @@ import { showInlineResult, confirmInline } from '../inline_result.js';
 import { demolishLabel, demolishPrompt, demolishResultLine } from '../demolish.js';
 import { State, activeCitySettlement } from '../../state.js';
 import { fetchAuth } from '../../api.js';
-import { arrivalHTML } from '../time.js';
+import { arrivalHTML, fmtArrival } from '../time.js';
+import { serverNow } from '../../clock.js';
 import { fmtTickTime } from '../fmt_clock.js';
 import { renderLockedActions } from '../misc.js';
 import { esc, formatApiError } from '../format.js';
@@ -11,7 +12,7 @@ import { unitTypeLabel } from '../actornames.js';
 import { startCityAnim } from '../../render/city.js';
 import { renderGubbeGrid, terrainLabel } from '../citygrid.js';
 import { productionSectionsHTML, populationHTML, foodSummaryHTML, foodDetailsHTML, storageWarningsHTML } from './city_production.js';
-import { fmtNum, fmtDays } from '../fmt_num.js';
+import { fmtNum, fmtDays, fmtDuration } from '../fmt_num.js';
 
 // The settlement the City drawer currently shows: cycle via the drawer's
 // prev/next arrows. Defaults to the capital (activeCitySettlement, state.js).
@@ -190,6 +191,7 @@ export function splitBuildValue(value) {
 export function templeName(god) { return `Temple of ${TEMPLE_GODS[god] || god}`; }
 
 export async function startBuild() {
+  const world = State.WORLD_ID;
   const capital = activeCitySettlement();
   if (!capital) return;
   const sel = document.getElementById('city-build-select');
@@ -218,9 +220,15 @@ export async function startBuild() {
   const d = await r.json().catch(() => ({}));
   if (r.ok) {
     resultEl.style.color = 'var(--safe-text)';
-    resultEl.textContent = `${btype === 'temple' ? templeName(god) : (_BLD_LBL[btype]||btype)} queued${hexLabel}.`;
+    const receipt = `${btype === 'temple' ? templeName(god) : (_BLD_LBL[btype]||btype)} queued${hexLabel}${d.duration_game_days != null ? ' · ' + fmtDuration(d.duration_game_days) : ''}${d.complete_at ? ' · ready ' + fmtArrival(d.complete_at, d.complete_tick, 'ready') : ''}.`;
+    resultEl.textContent = receipt;
     // Refresh only the buildings section — avoids resetting the active tab
     await refreshCityBuildings(capital.id);
+    // Refresh replaces this section, including its receipt node.
+    if (State.WORLD_ID === world && activeCitySettlement()?.id === capital.id) {
+      const currentResult = document.getElementById('city-build-result');
+      if (currentResult) { currentResult.style.color = 'var(--safe-text)'; currentResult.textContent = receipt; }
+    }
   } else {
     resultEl.style.color = 'var(--accent)';
     resultEl.textContent = formatApiError(d, 'Build failed.');
@@ -242,7 +250,7 @@ export function buildQuoteHTML(quote) {
  if(!quote)return '<p class="empty-state">Build price unavailable.</p>';
  const name=esc(quote.name||_BLD_LBL[quote.type]||quote.type);
  if(quote.at_max_level)return `<p class="empty-state">${name} L${quote.current_level} — maximum level.</p>`;
- return `<p class="empty-state">${name}: L${quote.current_level} → L${quote.next_level}<br>${esc(fmtBuildCost(quote))} · ${fmtDays(quote.duration_game_days)}</p>`;
+ return `<p class="empty-state">${name}: L${quote.current_level} → L${quote.next_level}<br>${esc(fmtBuildCost(quote))} · ${fmtDuration(quote.duration_game_days)}${State.TICK_SECONDS > 0 && Number.isFinite(quote.duration_game_days) ? ' · if started now, ready ' + fmtArrival(new Date(serverNow() + quote.duration_game_days * State.TICK_SECONDS * 1000).toISOString(), undefined, 'ready') : ''}</p>`;
 }
 
 
@@ -598,7 +606,7 @@ async function refreshCityBuildings(provinceID) {
         h2 += `
           <div class="dsec-title" style="margin-top:.8rem">Foundry — ${outputName}</div>
           <div style="font-size:.72rem;color:var(--text-dim);margin-bottom:.3rem">${ingredientsStr} → ${foundryRecipe.output_qty} ${foundryRecipe.output_key} · stock: ${stockStr}</div>
-          <p class="empty-state" style="font-size:.72rem">Smelted on its own every day — put a worker in the foundry and keep the ingredients in store.</p>`;
+          <p class="empty-state" style="font-size:.72rem">Smelted on its own every game day — put a worker in the foundry and keep the ingredients in store.</p>`;
       } else {
         // Degrade honestly: no fabricated ratio.
         h2 += `

@@ -146,7 +146,7 @@ func TestHarvestBlessing_RaisesYieldForItsSpan(t *testing.T) {
 	if until, _ := effect["until_tick"].(int); until != now+economy.HarvestBlessingTicks {
 		t.Errorf("until_tick = %v, want %d", effect["until_tick"], now+economy.HarvestBlessingTicks)
 	}
-	if !strings.Contains(msg, "25 days") {
+	if !strings.Contains(msg, "25 game days") {
 		t.Errorf("message %q does not say how long", msg)
 	}
 

@@ -271,15 +271,15 @@ func TestSiegeAcceptance_StarvationClockDrivesCapitulationEndToEnd(t *testing.T)
 
 		got := readSiegeAcceptanceStarvationTicks(t, pool, f.defSettlement)
 		if got != day {
-			t.Fatalf("day %d: siege_starvation_ticks = %d, want %d (one step per tick)", day, got, day)
+			t.Fatalf("game day %d: siege_starvation_ticks = %d, want %d (one step per tick)", day, got, day)
 		}
 		snap := readSiegeAcceptanceSettlement(t, pool, f.defSettlement)
 		if snap.state != "active" || snap.occupantID != nil {
-			t.Fatalf("day %d: settlement already changed (state=%q occupant=%v) — capitulation must not fire before threshold %d",
+			t.Fatalf("game day %d: settlement already changed (state=%q occupant=%v) — capitulation must not fire before threshold %d",
 				day, snap.state, snap.occupantID, threshold)
 		}
 		if n := countSiegeAcceptanceScheduledCapitulations(t, pool, f.worldID, f.defSettlement); n != 0 {
-			t.Fatalf("day %d: %d SiegeCapitulation event(s) already scheduled, want 0 before threshold %d", day, n, threshold)
+			t.Fatalf("game day %d: %d SiegeCapitulation event(s) already scheduled, want 0 before threshold %d", day, n, threshold)
 		}
 	}
 
@@ -288,10 +288,10 @@ func TestSiegeAcceptance_StarvationClockDrivesCapitulationEndToEnd(t *testing.T)
 	driveOneDay(t, h, pool, f.worldID, eventID)
 
 	if got := readSiegeAcceptanceStarvationTicks(t, pool, f.defSettlement); got != 0 {
-		t.Errorf("at threshold day: siege_starvation_ticks = %d, want reset to 0 the instant it crosses", got)
+		t.Errorf("at threshold game day: siege_starvation_ticks = %d, want reset to 0 the instant it crosses", got)
 	}
 	if n := countSiegeAcceptanceScheduledCapitulations(t, pool, f.worldID, f.defSettlement); n != 1 {
-		t.Fatalf("at threshold day: %d SiegeCapitulation event(s) scheduled, want exactly 1", n)
+		t.Fatalf("at threshold game day: %d SiegeCapitulation event(s) scheduled, want exactly 1", n)
 	}
 
 	// Punkt 3: den RIKTIGA ockupationshandlern processar den riktiga
@@ -350,7 +350,7 @@ func TestSiegeAcceptance_StarvationClockIsConsecutiveNotCumulative(t *testing.T)
 		driveOneDay(t, h, pool, f.worldID, eventID)
 	}
 	if got := readSiegeAcceptanceStarvationTicks(t, pool, f.defSettlement); got != partial {
-		t.Fatalf("after %d starving days: siege_starvation_ticks = %d, want %d", partial, got, partial)
+		t.Fatalf("after %d starving game days: siege_starvation_ticks = %d, want %d", partial, got, partial)
 	}
 
 	// Maten kommer tillbaka EN dag — svälten bryts.
@@ -362,7 +362,7 @@ func TestSiegeAcceptance_StarvationClockIsConsecutiveNotCumulative(t *testing.T)
 	eventID++
 	driveOneDay(t, h, pool, f.worldID, eventID)
 	if got := readSiegeAcceptanceStarvationTicks(t, pool, f.defSettlement); got != 0 {
-		t.Fatalf("after food covered one day: siege_starvation_ticks = %d, want reset to 0 (consecutive, not paused)", got)
+		t.Fatalf("after food covered one game day: siege_starvation_ticks = %d, want reset to 0 (consecutive, not paused)", got)
 	}
 
 	// Svälten återupptas — måste nu gå HELA tröskeln (threshold-1 dagar
@@ -371,30 +371,30 @@ func TestSiegeAcceptance_StarvationClockIsConsecutiveNotCumulative(t *testing.T)
 		if _, err := pool.Exec(ctx,
 			`UPDATE settlements SET food_unmet_amount = 5 WHERE id = $1`, f.defSettlement,
 		); err != nil {
-			t.Fatalf("resume starving day %d: %v", day, err)
+			t.Fatalf("resume starving game day %d: %v", day, err)
 		}
 		eventID++
 		driveOneDay(t, h, pool, f.worldID, eventID)
 
 		got := readSiegeAcceptanceStarvationTicks(t, pool, f.defSettlement)
 		if got != day {
-			t.Fatalf("resumed day %d: siege_starvation_ticks = %d, want %d — a paused (non-consecutive) clock would already have capitulated by now if it kept the old %d-day head start",
+			t.Fatalf("resumed game day %d: siege_starvation_ticks = %d, want %d — a paused (non-consecutive) clock would already have capitulated by now if it kept the old %d-game day head start",
 				day, got, day, partial)
 		}
 	}
 	if n := countSiegeAcceptanceScheduledCapitulations(t, pool, f.worldID, f.defSettlement); n != 0 {
-		t.Fatalf("after resuming for threshold-1 fresh days: %d SiegeCapitulation event(s) scheduled, want 0 — the earlier %d-day head start must not have carried over", n, partial)
+		t.Fatalf("after resuming for threshold-1 fresh game days: %d SiegeCapitulation event(s) scheduled, want 0 — the earlier %d-game day head start must not have carried over", n, partial)
 	}
 
 	// Den fräscha tröskel-dagen korsar nu, för första gången.
 	if _, err := pool.Exec(ctx,
 		`UPDATE settlements SET food_unmet_amount = 5 WHERE id = $1`, f.defSettlement,
 	); err != nil {
-		t.Fatalf("final starving day: %v", err)
+		t.Fatalf("final starving game day: %v", err)
 	}
 	eventID++
 	driveOneDay(t, h, pool, f.worldID, eventID)
 	if n := countSiegeAcceptanceScheduledCapitulations(t, pool, f.worldID, f.defSettlement); n != 1 {
-		t.Errorf("after the fresh threshold day: %d SiegeCapitulation event(s) scheduled, want exactly 1", n)
+		t.Errorf("after the fresh threshold game day: %d SiegeCapitulation event(s) scheduled, want exactly 1", n)
 	}
 }

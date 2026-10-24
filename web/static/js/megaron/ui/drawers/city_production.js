@@ -1,7 +1,7 @@
 import { fmtTickTime } from '../fmt_clock.js';
 import { foodGoodsText } from '../food.js';
 import { esc } from '../format.js';
-import { fmtNum, fmtDays } from '../fmt_num.js';
+import { fmtNum, fmtDays, fmtDuration } from '../fmt_num.js';
 import { State } from '../../state.js';
 import { placePanelHTML } from '../placename.js';
 const n = value => fmtNum(Math.round(Number(value) * 100) / 100);
@@ -18,8 +18,8 @@ export function productionSectionsHTML(city) {
     <details id="city-more" class="dsec"><summary class="dsec-title">More</summary>
       <div class="dsec-title">People at work</div><div id="city-people-details"></div>
       <div class="dsec-title">Food details</div><div id="city-food-details-sec"></div>
-      <div class="dsec-title">Last day</div><div id="city-lasttick-sec"></div>
-      <div class="dsec-title">Daily history <button class="btn-small" onclick="loadTicklog()">Show recent days</button></div><div id="city-ticklog-sec"></div>
+      <div class="dsec-title">Last game day</div><div id="city-lasttick-sec"></div>
+      <div class="dsec-title">Daily history <button class="btn-small" onclick="loadTicklog()">Show recent game days</button></div><div id="city-ticklog-sec"></div>
     </details>`;
 }
 
@@ -31,8 +31,8 @@ export function growthLineText(pd, includePopulation = true) {
   const prefix = includePopulation ? `Population ${n(pd.population)} — ` : '';
   const net = Number(s.food_net_per_tick) || 0;
   const signed = net !== 0 && Math.abs(net)<0.05 ? 'about even' : (net >= 0 ? '+' : '-') + Math.abs(net).toFixed(1);
-  if (s.growth_state === 'growing') return `${prefix}growing: food net ${signed} per day`;
-  if (s.growth_state === 'holding') return `${prefix}not growing: food net ${signed} per day (needs more than 0)`;
+  if (s.growth_state === 'growing') return `${prefix}growing: food net ${signed} per game day`;
+  if (s.growth_state === 'holding') return `${prefix}not growing: food net ${signed} per game day (needs more than 0)`;
   if (s.growth_state === 'capped') return `${prefix}not growing: the walls are full`;
   if (s.growth_state === 'shrinking') return `${prefix}shrinking: hunger`;
   return '';
@@ -53,7 +53,7 @@ export function harvestBlessingHTML(pd) {
   const b = pd?.harvest_blessing;
   if (!b || !(b.remaining_ticks > 0) || !(b.yield_bonus > 0) || !b.goods?.length) return '';
   const percent = Number((b.yield_bonus * 100).toFixed(6));
-  return `<p class="harvest-blessing">Blessed harvest: +${percent}% ${esc(b.goods.join(', '))} yield · ${fmtNum(b.remaining_ticks)} ${b.remaining_ticks === 1 ? 'day' : 'days'} left</p>`;
+  return `<p class="harvest-blessing">Blessed harvest: +${percent}% ${esc(b.goods.join(', '))} yield · ${fmtNum(b.remaining_ticks)} ${b.remaining_ticks === 1 ? 'game day' : 'game days'} left</p>`;
 }
 
 // A storm standing on the city's staffed fishing hexes stops their fishing
@@ -79,7 +79,7 @@ export function foodSummaryHTML(pd) {
 function calvesText(h) {
   const born = Number(h.births_next), inDays = Number(h.births_in);
   if (!(born > 0) || !Number.isFinite(inDays)) return '';
-  return ` — ${fmtNum(born)} ${born === 1 ? 'calf' : 'calves'} in ${fmtNum(inDays)} ${inDays === 1 ? 'day' : 'days'} (${fmtNum(Number(h.births_grain) || 0)} grain)`;
+  return ` — ${fmtNum(born)} ${born === 1 ? 'calf' : 'calves'} in ${fmtNum(inDays)} ${inDays === 1 ? 'game day' : 'game days'} (${fmtNum(Number(h.births_grain) || 0)} grain)`;
 }
 
 // The herd and its pen: count / cap. A full pen eats, then loses, new animals.
@@ -94,13 +94,13 @@ export function foodDetailsHTML(pd) {
   const peopleNet = s?.food_net_per_tick;
   const shared = Number.isFinite(s?.production_per_tick) && Number.isFinite(s?.consumption_per_tick);
   const grain = shared ? row('Food for people', `production ${n(s.production_per_tick)} − people eat ${n(s.consumption_per_tick)} = ${n(peopleNet)} net before army`) : pd?.grain_prod_rate != null ? row('Food for people', `grain ${n(pd.grain_prod_rate)} + fish ${n(pd.resources?.fish?.rate || 0)} − people eat ${n(pd.grain_consum_rate || 0)}${peopleNet != null ? ` = ${n(peopleNet)} net before army` : ''}`) : '';
-  const army = pd?.food_net_per_tick_after_upkeep == null ? '' : row('Army food', `eats ${n(pd.army_upkeep?.food ?? pd.army_upkeep?.grain ?? 0)} ${pd.army_upkeep?.food != null ? 'food' : 'grain'} per day → food net ${n(pd.food_net_per_tick_after_upkeep)} after army`);
+  const army = pd?.food_net_per_tick_after_upkeep == null ? '' : row('Army food', `eats ${n(pd.army_upkeep?.food ?? pd.army_upkeep?.grain ?? 0)} ${pd.army_upkeep?.food != null ? 'food' : 'grain'} per game day → food net ${n(pd.food_net_per_tick_after_upkeep)} after army`);
   if (!s) return grain + army + '<p class="empty-state">Food details not reported.</p>';
   const note = pd.food_gubbar_required == null ? '' : row('Food citizens', `${n(pd.food_gubbar_required)} needed · ${n(pd.food_gubbar_placed || 0)} placed`) + '<p class="empty-state">1 citizen = 100 people. Estimate uses the best food slots for people; the army shares the food stocks and is itemized separately.</p>';
   const a = pd.automatic_food;
-  const automatic = a ? `<p class="empty-state">Automatic food: ${Number(a.nearjord_grain_per_tick + a.remainder_grain_per_tick).toFixed(2)} grain + ${Number(a.remainder_fish_per_tick || 0).toFixed(2)} fish per day without placed citizens (nearby ground ${Number(a.nearjord_grain_per_tick).toFixed(2)} grain; ${a.remainder_people} people outside whole citizens: ${Number(a.remainder_grain_per_tick).toFixed(2)} grain + ${Number(a.remainder_fish_per_tick || 0).toFixed(2)} fish, a fraction of the best food worker).</p>` : '';
+  const automatic = a ? `<p class="empty-state">Automatic food: ${Number(a.nearjord_grain_per_tick + a.remainder_grain_per_tick).toFixed(2)} grain + ${Number(a.remainder_fish_per_tick || 0).toFixed(2)} fish per game day without placed citizens (nearby ground ${Number(a.nearjord_grain_per_tick).toFixed(2)} grain; ${a.remainder_people} people outside whole citizens: ${Number(a.remainder_grain_per_tick).toFixed(2)} grain + ${Number(a.remainder_fish_per_tick || 0).toFixed(2)} fish, a fraction of the best food worker).</p>` : '';
   const coverage = s.coverage_ticks != null && Number.isFinite(Number(s.coverage_ticks))
-    ? row('City stocks', `${fmtDays(s.coverage_ticks)} at current consumption · ${s.goods ? foodGoodsText(s.goods) : 'grain + fish'}`)
+    ? row('City stocks', `${fmtDuration(s.coverage_ticks)} at current consumption · ${s.goods ? foodGoodsText(s.goods) : 'grain + fish'}`)
     : '<p class="empty-state">Food stores not reported.</p>';
   const eaten = s.consumed_tick != null && s.consumed ? row('Last meal', `${foodGoodsText(s.consumed) || 'none'} · ${fmtTickTime(s.consumed_tick)}`) : '';
   return grain + army + note + automatic + coverage + eaten;

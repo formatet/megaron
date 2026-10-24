@@ -2,13 +2,13 @@ A **storm** is three connected hexes of dark cloud on the Thalassa. There is abo
 
 ## How they move
 
-Each day a storm takes **two steps**. In each step, one of its three hexes moves to a neighbouring sea hex, and the storm stays in one piece. So a storm crawls: slowly, and a little more each day in the direction it has been drifting, now and then turning. It never crosses land.
+Each game day a storm takes **two steps**. In each step, one of its three hexes moves to a neighbouring sea hex, and the storm stays in one piece. So a storm crawls: slowly, and a little more each game day in the direction it has been drifting, now and then turning. It never crosses land.
 
 ## What they do
 
-A ship that **sails into a storm** takes two points of hull damage (of five) — once per storm, however many days it spends inside it; three storms sink a ship from full hull. At hull 0 she founders with everything aboard ([[sea]]). A ship beside a storm is safe. Ships follow the route they were given and cannot steer round a storm once they sail ([[sea]]), so look before you send them.
+A ship that **sails into a storm** takes two points of hull damage (of five) — once per storm, however many game days it spends inside it; three storms sink a ship from full hull. At hull 0 she founders with everything aboard ([[sea]]). A ship beside a storm is safe. Ships follow the route they were given and cannot steer round a storm once they sail ([[sea]]), so look before you send them.
 
-Every sea hex a ship crosses is checked, even when it crosses several in one day. Two different storms crossed that day each strike; staying inside the same storm gives no extra blow. A storm can also drift onto a slow ship. [[rites|Favourable Passage]] still protects the ship on its outward leg.
+Every sea hex a ship crosses is checked, even when it crosses several in one game day. Two different storms crossed that game day each strike; staying inside the same storm gives no extra blow. A storm can also drift onto a slow ship. [[rites|Favourable Passage]] still protects the ship on its outward leg.
 
 A storm standing on a city's fishing hex stops the fishing there until it moves on ([[fishing]]).
 
@@ -16,7 +16,7 @@ A storm standing on a city's fishing hex stops the fishing there until it moves 
 
 You see a storm **only inside your own sight** ([[sight]]) — from your cities, your ships and your soldiers. There it is drawn as dark cloud, and hovering tells you which way it is drifting.
 
-Once you have seen a storm, the map remembers it **where you last saw it**, as a faded cloud, and hovering says on which day. That is not where it is now. If you look at the place and it is gone, it has moved on and the memory is dropped.
+Once you have seen a storm, the map remembers it **where you last saw it**, as a faded cloud, and hovering says on which game day. That is not where it is now. If you look at the place and it is gone, it has moved on and the memory is dropped.
 
 ## Naming a storm
 

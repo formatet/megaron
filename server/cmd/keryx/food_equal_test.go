@@ -12,7 +12,7 @@ func TestEqualFoodCityUsesServerTotalsAndGoods(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, text := range []string{"Food for 12.5 days", "100 grain, 900 fish, 40 oil, 60 wine"} {
+	for _, text := range []string{"Food for 12.5 game days", "100 grain, 900 fish, 40 oil, 60 wine"} {
 		if !strings.Contains(cityFoodLine(sett), text) {
 			t.Fatal(cityFoodLine(sett))
 		}
@@ -38,11 +38,11 @@ func TestEqualFoodRosterPrefersAuthoritativeFoodAndKeepsManifest(t *testing.T) {
 	if err := json.Unmarshal([]byte(`{"category":"naval","status":"marching","crew":40,"upkeep_food_per_tick":0.5,"upkeep_grain_per_tick":999,"upkeep_silver_per_tick":0,"provision_days":7,"provisions_aboard":true,"provisions_by_good":{"grain":1,"fish":9,"oil":2,"wine":3}}`), &u); err != nil {
 		t.Fatal(err)
 	}
-	if got := unitUpkeepLine(u); got != "Upkeep: 0.5 food, 0 silver per day" {
+	if got := unitUpkeepLine(u); got != "Upkeep: 0.5 food, 0 silver per game day" {
 		t.Fatal(got)
 	}
 	got := formatSize(nil, u)
-	for _, want := range []string{"food for 7 days", "1 grain, 9 fish, 2 oil, 3 wine"} {
+	for _, want := range []string{"food for 7 game days", "1 grain, 9 fish, 2 oil, 3 wine"} {
 		if !strings.Contains(got, want) {
 			t.Fatal(got)
 		}

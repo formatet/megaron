@@ -1271,7 +1271,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 	dist := journey.Distance
 	var tradeAcceptCurrentTick int
 	if err := tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&tradeAcceptCurrentTick); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not read current day")
+		writeError(w, http.StatusInternalServerError, "could not read current game day")
 		return
 	}
 	if err := transport.BlessDeparture(r.Context(), tx, worldID, originOwner, originID, &journey, true); err != nil {

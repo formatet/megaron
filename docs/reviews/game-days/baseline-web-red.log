@@ -1,0 +1,54 @@
+web/static/js/megaron/ui/misc.js:9: forbidden player time: Bronze arms await your command, Wanax. March the army to distant lands — to raid, reinforce, or colonize. An order to recall or redirect a marching host travels by messenger, not by will alone; it takes time to arrive. In battle, numbers count, but walls and elite agema often decide the day.
+web/static/js/megaron/ui/marchctx.js:214: forbidden player time:  per day = 
+web/static/js/megaron/ui/marchctx.js:215: forbidden player time:  per day</b></div>
+web/static/js/megaron/ui/marchctx.js:220: forbidden player time:  per day
+web/static/js/megaron/ui/marchctx.js:239: forbidden player time:  per day
+web/static/js/megaron/ui/march_preview.js:27: forbidden player time:  silver per day in the field · 
+web/static/js/megaron/ui/format.js:335: forbidden player time:  per day). At this rate it reaches 
+web/static/js/megaron/ui/format.js:509: forbidden player time:  per day.
+web/static/js/megaron/ui/format.js:512: forbidden player time:  per day
+web/static/js/megaron/ui/format.js:852: forbidden player time:  days
+web/static/js/megaron/ui/format.js:937: forbidden player time:  per day).
+web/static/js/megaron/ui/format.js:938: forbidden player time:  per day. Stored food feeds people until it runs out.
+web/static/js/megaron/ui/format.js:949: forbidden player time:  per day
+web/static/js/megaron/ui/format.js:952: forbidden player time:  per day). 
+web/static/js/megaron/ui/fmt_num.js:14: forbidden player time: day
+web/static/js/megaron/ui/fmt_num.js:14: forbidden player time: days
+web/static/js/megaron/ui/citygrid.js:80: forbidden player time:  per day next
+web/static/js/megaron/ui/citygrid.js:86: forbidden player time:  per day total
+web/static/js/megaron/ui/drawers/war.js:546: forbidden player time:  silver per day</div>
+web/static/js/megaron/ui/drawers/war.js:587: forbidden player time: food for less than a day
+web/static/js/megaron/ui/drawers/war.js:1062: forbidden player time: ) — arrives day 
+web/static/js/megaron/ui/drawers/kult_offer.js:77: forbidden player time:  eats in a day (
+web/static/js/megaron/ui/drawers/kult_kharis.js:18: forbidden player time:  kharis per day</span></div>
+web/static/js/megaron/ui/drawers/kult_kharis.js:32: forbidden player time:  kharis per day</span></div>
+web/static/js/megaron/ui/drawers/kult_kharis.js:33: forbidden player time:  kharis per day</span></div>
+web/static/js/megaron/ui/drawers/kult_kharis.js:47: forbidden player time:  kharis per day before cult upkeep, and more when the cult’s reference offering of grain is scarce in the world. Requires a free citizen, a temple workplace and its daily offering.</p>
+web/static/js/megaron/ui/drawers/kult_kharis.js:58: forbidden player time: % chance of divine punishment each day, with or without a temple.</p>
+web/static/js/megaron/ui/drawers/kult.js:116: forbidden player time:  per day<br>
+web/static/js/megaron/ui/drawers/economy.js:26: forbidden player time:  lost per day
+web/static/js/megaron/ui/drawers/economy.js:31: forbidden player time:  per day</td>
+web/static/js/megaron/ui/drawers/economy.js:113: forbidden player time:  per day
+web/static/js/megaron/ui/drawers/economy.js:220: forbidden player time:  per day</div>
+web/static/js/megaron/ui/drawers/city_production.js:16: forbidden player time: <div id="city-prod-sec"></div></div>
+    <div class="dsec"><div class="dsec-title">Food</div><div id="city-food-sec"></div></div>
+    <details id="city-more" class="dsec"><summary class="dsec-title">More</summary>
+      <div class="dsec-title">People at work</div><div id="city-people-details"></div>
+      <div class="dsec-title">Food details</div><div id="city-food-details-sec"></div>
+      <div class="dsec-title">Last day</div><div id="city-lasttick-sec"></div>
+      <div class="dsec-title">Daily history <button class="btn-small" onclick="loadTicklog()">Show recent days</button></div><div id="city-ticklog-sec"></div>
+    </details>
+web/static/js/megaron/ui/drawers/city_production.js:34: forbidden player time:  per day
+web/static/js/megaron/ui/drawers/city_production.js:35: forbidden player time:  per day (needs more than 0)
+web/static/js/megaron/ui/drawers/city_production.js:56: forbidden player time: day
+web/static/js/megaron/ui/drawers/city_production.js:56: forbidden player time: days
+web/static/js/megaron/ui/drawers/city_production.js:82: forbidden player time: day
+web/static/js/megaron/ui/drawers/city_production.js:82: forbidden player time: days
+web/static/js/megaron/ui/drawers/city_production.js:97: forbidden player time:  per day → food net 
+web/static/js/megaron/ui/drawers/city_production.js:101: forbidden player time:  fish per day without placed citizens (nearby ground 
+web/static/js/megaron/ui/drawers/city.js:600: forbidden player time: </div>
+          <p class="empty-state" style="font-size:.72rem">Smelted on its own every day — put a worker in the foundry and keep the ingredients in store.</p>
+web/static/map.html:199: forbidden player time:         your position and the current day are attached automatically.
+web/static/map.html:294: forbidden player time:     <label>Expedition duration <input id="mctx-ticks" type="number" step="1" style="width:52px;font:inherit;background:var(--warm-white);color:var(--text);border:1px solid var(--border)"> days</label>
+web/templates/alfatestinfo.html:32: forbidden player time:       <p>You don't need to be online at set times. Orders take days in the game to carry out, and news travels with people, so nothing happens instantly. A visit can be short; a plan can take many days.</p>
+web/templates/alfatestinfo.html:42: forbidden player time:         <li><strong>Time.</strong> A day in the game passes every half hour. The alpha world runs for several weeks; if it is reset, that is announced in the chat first.</li>

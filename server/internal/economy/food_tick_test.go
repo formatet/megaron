@@ -167,7 +167,7 @@ func TestFoodTick_DrawsStocksProportionally(t *testing.T) {
 		t.Errorf("fish=%g want%g", fishAfter, want)
 	}
 	if unmet != 0 {
-		t.Errorf("food_unmet_amount = %.1f, want 0 — grain stock covered the whole day's demand", unmet)
+		t.Errorf("food_unmet_amount = %.1f, want 0 — grain stock covered the whole game day's demand", unmet)
 	}
 }
 

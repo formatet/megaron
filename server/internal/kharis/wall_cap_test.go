@@ -102,7 +102,7 @@ func TestMurtak_CityOverCapLosesNoOne(t *testing.T) {
 	h := newTestTickHandler(pool)
 	for i := 0; i < 3; i++ {
 		if got := decayOnce(t, pool, h, world, sid); got != 19000 {
-			t.Fatalf("day %d: city over its cap went 19000 -> %d, want 19000", i+1, got)
+			t.Fatalf("game day %d: city over its cap went 19000 -> %d, want 19000", i+1, got)
 		}
 	}
 }

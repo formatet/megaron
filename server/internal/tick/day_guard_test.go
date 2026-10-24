@@ -13,6 +13,6 @@ func TestDayPlayerLanguageGuard(t *testing.T) {
 	}
 	out, err := exec.Command("python3", script, "server").CombinedOutput()
 	if err != nil {
-		t.Fatalf("Day guard server: %v\n%s", err, out)
+		t.Fatalf("game day guard server: %v\n%s", err, out)
 	}
 }

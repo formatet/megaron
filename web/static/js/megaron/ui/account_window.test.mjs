@@ -129,7 +129,7 @@ test('ReadyRenderedLinkUsesConfiguredHomeserver', async t => {
 });
 
 const profile = { wanax_name: 'Nestor', founded_tick: 0, cities: 2, population: 320, kharis: 4.5 };
-test('account loads five own-world profile rows, including a real day zero', async t => {
+test('account loads five own-world profile rows, including a real game day zero', async t => {
   const h = harness(t, url => response(url.endsWith('/me') ? profile : { enabled: false }));
   State.WORLD_ID = 'my-world'; openAccountWindow(); await settle();
   const html = h.nodes.get('acc-profile').innerHTML;

@@ -6,7 +6,7 @@ Find it (the map centres on you) and **left-click the hex it stands on**. The in
 
 - **A thousand people**, and they are the city you will found — its starting population, not soldiers. <!-- src: api/handlers/nomadic_host.go nomadicHostPopulation -->
 - **Two cohorts of spearmen escort you.** They live on grain and draw no silver pay, just like settled spearmen.
-- **The Host itself eats nothing.** A people on the move carries its own bread. The grain in the store is a dowry that goes into your city's stores the day you found.
+- **The Host itself eats nothing.** A people on the move carries its own bread. The grain in the store is a dowry that goes into your city's stores the game day you found.
 - **The Host cannot fight.** The escort can.
 - **It sees two hexes** (further across open water or towards mountains) — exactly the ground a settlement would work. Wherever the Host stands, it can see the whole [[catchment]] it would get by stopping there.
 

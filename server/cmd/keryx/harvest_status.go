@@ -23,9 +23,9 @@ func harvestBlessingLine(sett map[string]any) string {
 	if len(goods) == 0 {
 		return ""
 	}
-	day := "days"
+	day := "game days"
 	if remaining == 1 {
-		day = "day"
+		day = "game day"
 	}
 	return fmt.Sprintf("Blessed harvest: +%g%% %s yield · %g %s left", bonus*100, strings.Join(goods, ", "), remaining, day)
 }

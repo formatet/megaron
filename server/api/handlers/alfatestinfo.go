@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"formatet/megaron/server/internal/tick"
 	"html/template"
 	"log/slog"
 	"net/http"
@@ -17,7 +18,7 @@ func (h *WebHandler) AlfatestInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := page.Execute(w, nil); err != nil {
+	if err := page.Execute(w, map[string]any{"GameDayLength": openingDayLength(tick.TickSeconds)}); err != nil {
 		slog.Error("alpha invitation render", "err", err)
 	}
 }

@@ -377,7 +377,7 @@ func TestNotificationHumanFeedGroupingAndJSON(t *testing.T) {
 		return out
 	}
 	human := run(false)
-	for _, part := range []string{"Bronze Guard arrived at (6, 7)", "STARVING", "×2 (latest)", "Food support was given", "per day"} {
+	for _, part := range []string{"Bronze Guard arrived at (6, 7)", "STARVING", "×2 (latest)", "Food support was given", "per game day"} {
 		if !strings.Contains(human, part) {
 			t.Errorf("missing %q: %s", part, human)
 		}
@@ -414,10 +414,10 @@ func TestNotificationWordsAndArchiveSemantics(t *testing.T) {
 		want       []string
 		avoid      []string
 	}{
-		{"SubsistenceWarning", `{"name":"Tiryns","net_per_tick":-3,"net_per_day":999,"ticks_left":12,"days_left":999}`, []string{"-3 per day", "12 days"}, []string{"999", "tick"}},
-		{"SubsistenceWarning", `{"name":"Tiryns","net_per_day":-3,"days_left":12}`, []string{"-3 per day", "12 days"}, []string{"tick"}},
+		{"SubsistenceWarning", `{"name":"Tiryns","net_per_tick":-3,"net_per_day":999,"ticks_left":12,"days_left":999}`, []string{"-3 per game day", "12 game days"}, []string{"999", "tick"}},
+		{"SubsistenceWarning", `{"name":"Tiryns","net_per_day":-3,"days_left":12}`, []string{"-3 per game day", "12 game days"}, []string{"tick"}},
 		// Historical only: frozen archive payloads.
-		{"SitosGranaryRelease", `{"food_released":50,"coverage_days":12,"per_good":{"grain":30,"fish":20},"granary_empty":true}`, []string{"20 fish, 30 grain", "12.0 days", "granary now empty"}, []string{"50 grain"}},
+		{"SitosGranaryRelease", `{"food_released":50,"coverage_days":12,"per_good":{"grain":30,"fish":20},"granary_empty":true}`, []string{"20 fish, 30 grain", "12.0 game days", "granary now empty"}, []string{"50 grain"}},
 		// Historical only: frozen archive payloads.
 		{"SitosGranaryRelease", `{"food_released":0.3,"coverage_days":12,"per_good":{"grain":0.3}}`, []string{"0.3 grain"}, []string{"released 0 grain"}},
 		{"OfferDeclined", `{"kind":"buy","quantity":0,"silver":15}`, []string{"15 silver", "back in your stores"}, nil},

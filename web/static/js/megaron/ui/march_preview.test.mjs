@@ -50,7 +50,7 @@ test('each selected unit keeps its own arrival; names and API errors are escaped
   controller.update('w', [{id:'fast',name:'<fast>'},{id:'slow',name:'Slow'},{id:'bad',name:'Bad'}], { target_q: 1 });
   await pause();
   const html = output.at(-1);
-  assert.match(html, /2 days/); assert.match(html, /8 days/);
+  assert.match(html, /2 game days/); assert.match(html, /8 game days/);
   assert.match(html, /&lt;fast&gt;/); assert.doesNotMatch(html, /<img|<fast>/);
   assert.match(html, /Forecast unavailable/);
 });
@@ -76,10 +76,10 @@ test('changing destination discards old response even during debounce; close can
 
 
 test('sold uses authoritative rates, includes explicit zero and avoids infinite runway',()=>{
- assert.equal(marchSilverLine({upkeep_silver_home:0,upkeep_silver_field:0,silver_runway_ticks:null}), 'Pay: 0 → 0 silver per day in the field · no silver drain');
- assert.equal(marchSilverLine({upkeep_silver_home:0.6,upkeep_silver_field:2,silver_runway_ticks:25}), 'Pay: 0.6 → 2 silver per day in the field · treasury lasts 25 days');
- assert.equal(marchSilverLine({upkeep_silver_home:0.6,upkeep_silver_field:2,silver_runway_ticks:0}), 'Pay: 0.6 → 2 silver per day in the field · treasury lasts 0 days');
- assert.equal(marchSilverLine({upkeep_silver_home:0.45,upkeep_silver_field:1.5,silver_runway_ticks:1}), 'Pay: 0.45 → 1.5 silver per day in the field · treasury lasts 1 day');
+ assert.equal(marchSilverLine({upkeep_silver_home:0,upkeep_silver_field:0,silver_runway_ticks:null}), 'Pay: 0 → 0 silver per game day in the field · no silver drain');
+ assert.equal(marchSilverLine({upkeep_silver_home:0.6,upkeep_silver_field:2,silver_runway_ticks:25}), 'Pay: 0.6 → 2 silver per game day in the field · treasury lasts 25 game days');
+ assert.equal(marchSilverLine({upkeep_silver_home:0.6,upkeep_silver_field:2,silver_runway_ticks:0}), 'Pay: 0.6 → 2 silver per game day in the field · treasury lasts 0 game days');
+ assert.equal(marchSilverLine({upkeep_silver_home:0.45,upkeep_silver_field:1.5,silver_runway_ticks:1}), 'Pay: 0.45 → 1.5 silver per game day in the field · treasury lasts 1 game day');
  assert.equal(marchSilverLine({available:true}), '');
 });
 
@@ -87,7 +87,7 @@ test('sold remains visible when courier or unexplored terrain prevents arrival e
  for(const reason of ['courier_required','unknown_terrain']) {
   const html=marchPreviewHTML({available:false,reason,upkeep_silver_home:0.6,upkeep_silver_field:2,silver_runway_ticks:25});
   assert.match(html,/class="march-sold"/);
-  assert.match(html,/Pay: 0.6 → 2 silver per day in the field · treasury lasts 25 days/);
+  assert.match(html,/Pay: 0.6 → 2 silver per game day in the field · treasury lasts 25 game days/);
   assert.doesNotMatch(html,/Estimated arrival|Infinity|NaN/);
  }
  assert.doesNotMatch(marchPreviewHTML({available:false,reason:'unknown_terrain'}), /march-sold/);
@@ -105,7 +105,7 @@ test('plural selection sends all IDs to every GET and shows one combined sold li
  for(const url of urls) assert.equal(url.searchParams.get('unit_ids'),'a,b');
  const html=output.at(-1);
  assert.equal((html.match(/class="march-sold"/g)||[]).length,1);
- assert.match(html,/Pay: 1.2 → 4 silver per day in the field · shortest treasury lasts 12.5 days/);
+ assert.match(html,/Pay: 1.2 → 4 silver per game day in the field · shortest treasury lasts 12.5 game days/);
  assert.ok(html.indexOf('Beta:') < html.indexOf('Pay:'));
  assert.equal((html.match(/messenger must deliver/g)||[]).length,2);
 });
@@ -117,7 +117,7 @@ test('one zero-drain batch row is rendered when all treasuries have no silver dr
  await pause();
  const html=output.at(-1);
  assert.equal((html.match(/class="march-sold"/g)||[]).length,1);
- assert.match(html,/Pay: 0 → 0 silver per day in the field · no silver drain/);
+ assert.match(html,/Pay: 0 → 0 silver per game day in the field · no silver drain/);
  assert.doesNotMatch(html,/NaN|Infinity|shortest treasury lasts/);
 });
 
@@ -135,7 +135,7 @@ test('redirect-only selection keeps messenger arrival warning and one authoritat
  const html=output.at(-1);
  assert.equal((html.match(/class="march-sold"/g)||[]).length,1);
  assert.equal((html.match(/messenger must deliver/g)||[]).length,2);
- assert.match(html,/Pay: 4 → 4 silver per day in the field · treasury lasts 10 days/);
+ assert.match(html,/Pay: 4 → 4 silver per game day in the field · treasury lasts 10 game days/);
  assert.doesNotMatch(html,/Estimated arrival/);
 });
 
@@ -158,7 +158,7 @@ test('ford preview preserves separate land and naval mission options', async () 
 
 test('expedition plan is a known budget, conditional on departure, not a hidden first-leg ETA', () => {
   const html = marchPreviewHTML({available:false,reason:'unknown_terrain',planned_expedition_ticks:12,planned_home_by_tick_if_departing_now:17});
-  assert.match(html,/Planned expedition: 12 days/);
+  assert.match(html,/Planned expedition: 12 game days/);
   assert.match(html,new RegExp('with immediate departure, home by '+testTickTime(17)));
   assert.match(html,/First-leg arrival remains unknown/);
   assert.doesNotMatch(html,/Estimated arrival:/);
@@ -171,6 +171,6 @@ test('expedition preview names exact first target without disclosing its ETA',()
 });
 
 test('pay forecast preserves authoritative half-home and full-field figures',()=>{
- assert.match(marchSilverLine({upkeep_silver_home:0.75,upkeep_silver_field:1.5,silver_runway_ticks:12}), /0.75 → 1.5 silver per day/);
- assert.match(marchSilverLine({upkeep_silver_home:0.1,upkeep_silver_field:0.2,silver_runway_ticks:12}), /0.1 → 0.2 silver per day/);
+ assert.match(marchSilverLine({upkeep_silver_home:0.75,upkeep_silver_field:1.5,silver_runway_ticks:12}), /0.75 → 1.5 silver per game day/);
+ assert.match(marchSilverLine({upkeep_silver_home:0.1,upkeep_silver_field:0.2,silver_runway_ticks:12}), /0.1 → 0.2 silver per game day/);
 });

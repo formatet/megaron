@@ -4,7 +4,7 @@
     {"id": "welcome",      "title": "Welcome, Wanax",               "category": "Start here", "kinds": ["OpeningDispatch"], "related": ["time", "runners", "coming-back"]},
     {"id": "account", "title": "Your account and realm", "category": "Start here", "related": ["community-chat", "keryx", "horde"]},
     {"id": "getting-in",   "title": "Getting in",                   "category": "Start here", "related": ["time", "horde"]},
-    {"id": "time",         "title": "Days and the clock",           "category": "Start here", "related": ["welcome", "coming-back"]},
+    {"id": "time",         "title": "game days and the clock",           "category": "Start here", "related": ["welcome", "coming-back"]},
     {"id": "screen",       "title": "The screen",                   "category": "Start here", "related": ["coming-back", "report"]},
     {"id": "runners",      "title": "Orders and Runners",           "category": "Start here", "kinds": ["OrderFailed", "UnitRecalled", "UnitRedirected"], "related": ["marching", "defence"]},
     {"id": "coming-back",  "title": "Coming back after time away",  "category": "Start here", "drawer": "notif", "related": ["time", "routes", "defence"]},

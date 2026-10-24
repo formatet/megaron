@@ -19,8 +19,8 @@ func TestGameDaysLeft_RoundsUp(t *testing.T) {
 		d    time.Duration
 		want int
 	}{
-		{"a whole tick is one day", time.Hour, 1},
-		{"one second left still costs a whole day", time.Second, 1},
+		{"a whole tick is one game day", time.Hour, 1},
+		{"one second left still costs a whole game day", time.Second, 1},
 		{"just under two ticks rounds up to two", 2*time.Hour - time.Second, 2},
 		{"exactly two ticks is two", 2 * time.Hour, 2},
 		{"a full 24-tick cooldown", 24 * time.Hour, 24},
@@ -36,7 +36,7 @@ func TestGameDaysLeft_RoundsUp(t *testing.T) {
 
 // TestGameDaysLeft_HonoursTickCadence proves the helper reads the world's real
 // cadence rather than assuming one. The acceptance rig runs TICK_SECONDS=6; a
-// helper hard-coded to an hour would report 1 day for a 24-tick cooldown
+// helper hard-coded to an hour would report 1 game day for a 24-tick cooldown
 // there and quietly mis-inform every dev-world reading.
 func TestGameDaysLeft_HonoursTickCadence(t *testing.T) {
 	old := TickSeconds
@@ -52,10 +52,10 @@ func TestGameDaysLeft_HonoursTickCadence(t *testing.T) {
 	}
 }
 
-// TestFormatDays_Singular — keryx shipped "arrives in 1 days" until
+// TestFormatDays_Singular — keryx shipped "arrives in 1 game days" until
 // rad K caught it. A plural on 1 reads as a bug to the player.
 func TestFormatDays_Singular(t *testing.T) {
-	cases := map[int]string{0: "0 days", 1: "1 day", 2: "2 days", 24: "24 days"}
+	cases := map[int]string{0: "0 game days", 1: "1 game day", 2: "2 game days", 24: "24 game days"}
 	for in, want := range cases {
 		if got := FormatDays(in); got != want {
 			t.Errorf("FormatDays(%d) = %q, want %q", in, got, want)

@@ -60,7 +60,7 @@ func TestExploreTicksOrderAndPreview(t *testing.T) {
 				if !strings.Contains(out, "first to (5,-3), then explores around it") {
 					t.Fatalf("missing selected destination: %s", out)
 				}
-				if !preview && (!strings.Contains(out, "12 days") || !strings.Contains(out, "home by "+testTickTime(112))) {
+				if !preview && (!strings.Contains(out, "12 game days") || !strings.Contains(out, "home by "+testTickTime(112))) {
 					t.Fatalf("missing mission: %s", out)
 				}
 			})
@@ -85,7 +85,7 @@ func TestExpeditionMissionLifecycleText(t *testing.T) {
 	if strings.Contains(text, "first to") {
 		t.Fatal("old saved mission falsely claims selected first leg")
 	}
-	for _, want := range []string{"(9,2)", "12 days", "returning home", "area explored", "home by " + testTickTime(14)} {
+	for _, want := range []string{"(9,2)", "12 game days", "returning home", "area explored", "home by " + testTickTime(14)} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %s: %s", want, text)
 		}

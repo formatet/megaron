@@ -27,7 +27,7 @@ func unitBuildRoadCmd() *cobra.Command {
 neighbouring hex the road reaches. The stone (8 per plains edge, more in rougher
 ground) leaves your nearest city NOW and travels as a caravan to the --from hex;
 the order travels by Runner to the army. Building begins when BOTH are at --from
-and takes about a day per hundred men on plains. Roads are free for everyone to
+and takes about a game day per hundred men on plains. Roads are free for everyone to
 use. A road never crosses water or mountains and ends at a river ford. If the
 caravan is intercepted the road is not finished and the stone is lost; see
 'keryx roads' for roads still waiting. A new order to the army cancels its

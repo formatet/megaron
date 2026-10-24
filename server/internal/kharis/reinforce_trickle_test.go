@@ -141,18 +141,18 @@ func TestApplyReinforcement_TrickleCappedAndPopulationNeverShrinks(t *testing.T)
 		popAfter, _ := snapshot(t, pool, settlementID)
 
 		if popAfter < popBefore {
-			t.Fatalf("day %d: population shrank %d -> %d — a refill must never reduce standing population",
+			t.Fatalf("game day %d: population shrank %d -> %d — a refill must never reduce standing population",
 				day, popBefore, popAfter)
 		}
 
 		wantSize += 4 // economy.ReinforceMenPerTick
 		size, reinforcing := loadUnitState(t, pool, unitID)
 		if size != wantSize {
-			t.Errorf("day %d: size = %d, want %d (ReinforceMenPerTick=4/day, uncapped by growth or resources here)",
+			t.Errorf("game day %d: size = %d, want %d (ReinforceMenPerTick=4/game day, uncapped by growth or resources here)",
 				day, size, wantSize)
 		}
 		if !reinforcing {
-			t.Errorf("day %d: reinforcing = false, want true (still under 100)", day)
+			t.Errorf("game day %d: reinforcing = false, want true (still under 100)", day)
 		}
 	}
 }
@@ -183,10 +183,10 @@ func TestApplyReinforcement_StopsAndClearsFlagAtFullStrength(t *testing.T) {
 	advanceOneDay(t, h, pool, worldID)
 	size2, reinforcing2 := loadUnitState(t, pool, unitID)
 	if size2 != 100 {
-		t.Errorf("size after a further day = %d, want still 100 (no over-fill)", size2)
+		t.Errorf("size after a further game day = %d, want still 100 (no over-fill)", size2)
 	}
 	if reinforcing2 {
-		t.Error("reinforcing = true after a further day, want still false")
+		t.Error("reinforcing = true after a further game day, want still false")
 	}
 }
 
@@ -261,7 +261,7 @@ func TestApplyReinforcement_LeavingOriginGarrisonStopsRefillAndHoldsSize(t *test
 	advanceOneDay(t, h, pool, worldID)
 	sizeAfterDay1, reinforcingAfterDay1 := loadUnitState(t, pool, unitID)
 	if sizeAfterDay1 != 66 || !reinforcingAfterDay1 {
-		t.Fatalf("precondition: after day 1 want (66, true), got (%d, %v)", sizeAfterDay1, reinforcingAfterDay1)
+		t.Fatalf("precondition: after game day 1 want (66, true), got (%d, %v)", sizeAfterDay1, reinforcingAfterDay1)
 	}
 
 	ctx := context.Background()

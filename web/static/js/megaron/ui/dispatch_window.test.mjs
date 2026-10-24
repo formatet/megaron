@@ -115,7 +115,7 @@ test('PS1: PassageStalled resolves "take me there" via the port q/r the server s
 
 
 test('opening dispatch preserves all archived paragraphs and escapes text', () => {
-  const paragraphs = ['Time: 7 minutes.', 'Plains: 3 days.', 'Host: 987 grain.', 'Collapse below 321.', 'The gods: standing fades from the start.', 'Orders travel.', 'Bronze needs others.', '<script>not markup</script> & Report'];
+  const paragraphs = ['Time: 7 minutes.', 'Plains: 3 game days.', 'Host: 987 grain.', 'Collapse below 321.', 'The gods: standing fades from the start.', 'Orders travel.', 'Bronze needs others.', '<script>not markup</script> & Report'];
   const html = openingDispatchHTML({ paragraphs, returning: true, host_id: 'hidden-host-id' });
   assert.equal((html.match(/<p class="dw-text">/g) || []).length, 8);
   for (const text of paragraphs.slice(0, 7)) assert.ok(html.includes(text), text);

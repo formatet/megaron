@@ -5,13 +5,13 @@ import { kharisNetView, kharisDecayHTML } from './kult_kharis.js';
 test('AK1: kharis_net_known true draws a Net row, distinct from Passive, signed with one decimal', () => {
   const view = kharisNetView({ kharis_net_per_tick: 2.34, kharis_net_known: true, kharis_devotion_idle: false });
   assert.match(view.netHtml, /sr-label">Net</, 'label must not be "Passive" — a distinct row');
-  assert.match(view.netHtml, /\+2\.3 kharis per day/, 'signed, one decimal, same unit as the passive row');
+  assert.match(view.netHtml, /\+2\.3 kharis per game day/, 'signed, one decimal, same unit as the passive row');
   assert.equal(view.idleHtml, '', 'idle not flagged — no warning');
 });
 
 test('AK1b: a negative net is signed with a minus, not a double sign', () => {
   const view = kharisNetView({ kharis_net_per_tick: -1.5, kharis_net_known: true });
-  assert.match(view.netHtml, /-1\.5 kharis per day/);
+  assert.match(view.netHtml, /-1\.5 kharis per game day/);
   assert.doesNotMatch(view.netHtml, /\+-/);
 });
 
@@ -45,10 +45,10 @@ test('a null/undefined payload draws nothing, crashes nothing', () => {
 test('realm decay breakdown uses authoritative base, city cost and total, including templeless realms', () => {
   const pd = {kharis_city_count: 5, kharis_base_decay: 0.1, kharis_city_decay: 1, kharis_daily_decay: 1.1, kharis_population:2500, kharis_population_decay:.25,
     kharis_net_known: true, kharis_net_per_tick: -1.1, temple_offers: []};
-  assert.match(kharisDecayHTML(pd), /0.10 base \+ 5 cities cost 1.00 \+ 2500 residents cost 0.25 = 1.10 kharis per day/);
-  assert.match(kharisNetView(pd).netHtml, /-1.1 kharis per day/);
+  assert.match(kharisDecayHTML(pd), /0.10 base \+ 5 cities cost 1.00 \+ 2500 residents cost 0.25 = 1.10 kharis per game day/);
+  assert.match(kharisNetView(pd).netHtml, /-1.1 kharis per game day/);
   // Deliberately unlike today's rule: display values, never recalculate the formula.
-  assert.match(kharisDecayHTML({...pd, kharis_base_decay: 0.7, kharis_city_decay: 8.6, kharis_daily_decay: 9.3}), /0.70 base \+ 5 cities cost 8.60 \+ 2500 residents cost 0.25 = 9.30 kharis per day/);
+  assert.match(kharisDecayHTML({...pd, kharis_base_decay: 0.7, kharis_city_decay: 8.6, kharis_daily_decay: 9.3}), /0.70 base \+ 5 cities cost 8.60 \+ 2500 residents cost 0.25 = 9.30 kharis per game day/);
   assert.match(kharisDecayHTML({...pd, kharis_city_count: 1, kharis_city_decay: 0, kharis_daily_decay: 0.1}), /1 city cost 0.00/);
 });
 
@@ -61,8 +61,8 @@ test('missing or partial realm decay never claims zero cost', () => {
 
 test('production and extra worker yield are server-owned; yield is conditional, not a staffing recommendation', () => {
  const view=kharisNetView({kharis_net_known:true,kharis_net_per_tick:1.35,kharis_production_per_tick:2.1,kharis_per_temple_worker:1.05});
- assert.match(view.netHtml,/Temple production/);assert.match(view.netHtml,/2.10 kharis per day/);
- assert.match(view.netHtml,/worker gives at least \+1.05 kharis per day/);
+ assert.match(view.netHtml,/Temple production/);assert.match(view.netHtml,/2.10 kharis per game day/);
+ assert.match(view.netHtml,/worker gives at least \+1.05 kharis per game day/);
  assert.match(view.netHtml,/Requires a free citizen, a temple workplace and its daily offering/);
 });
 
@@ -73,13 +73,13 @@ test('R3/R5: everyday prayers work at L1, blessings need standing 60, temple doe
  assert.match(html,/with or without a temple/);assert.match(html,/Protected from divine punishment/);
  assert.match(html,/Only a level-2 temple or higher/);
  assert.match(html,/Kharis retained above a lowered ceiling still counts/);
- assert.doesNotMatch(html,/Invalid|NaN|day 123/);
+ assert.doesNotMatch(html,/Invalid|NaN|game day 123/);
 });
 
 test('above ceiling explains ignored gains and does not promise a worker can increase standing', () => {
  const view = kharisNetView({kharis:80,kharis_cap:50,kharis_net_known:true,kharis_net_per_tick:-.2,kharis_per_temple_worker:1.05});
  assert.match(view.netHtml,/Once below, temples can raise it again/);
- assert.match(view.netHtml,/-0.2 kharis per day/);
+ assert.match(view.netHtml,/-0.2 kharis per game day/);
  assert.doesNotMatch(view.netHtml,/One more fed temple worker/);
  const normal=kharisNetView({kharis:50,kharis_cap:50,kharis_per_temple_worker:1.05});
  assert.doesNotMatch(normal.netHtml,/standing drifts down/);

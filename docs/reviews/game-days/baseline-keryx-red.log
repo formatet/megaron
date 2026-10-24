@@ -1,0 +1,166 @@
+server/cmd/keryx/output.go:51: forbidden player time: %+.1f per day
+server/cmd/keryx/output.go:66: forbidden player time: day
+server/cmd/keryx/output.go:68: forbidden player time: days
+server/cmd/keryx/notification_text.go:44: forbidden player time:       Kharis is falling (%.1f, net %+.2f per day). At this rate it reaches %.0f in %s. Below that the gods may punish you, with or without a temple. Staff and feed your temples.\n
+server/cmd/keryx/notification_text.go:327: forbidden player time: Granary released %s (%.1f days of coverage)
+server/cmd/keryx/notification_text.go:341: forbidden player time: %s is STARVING — %s lost. Grain net %.0f per day.
+server/cmd/keryx/notification_text.go:343: forbidden player time: %s: grain net %+.0f per day
+server/cmd/keryx/notification_text.go:345: forbidden player time:  — grain lasts ~%.0f days
+server/cmd/keryx/harvest_status.go:26: forbidden player time: days
+server/cmd/keryx/harvest_status.go:28: forbidden player time: day
+server/cmd/keryx/food_format.go:47: forbidden player time:   Food     production %.1f − people eat %.1f = net %s per day (before army)
+server/cmd/keryx/food_format.go:74: forbidden player time: days
+server/cmd/keryx/food_format.go:79: forbidden player time: day
+server/cmd/keryx/cmd_unit_road.go:26: forbidden player time: Order an army to build ONE road edge: --from is the hex it builds from, --to the
+neighbouring hex the road reaches. The stone (8 per plains edge, more in rougher
+ground) leaves your nearest city NOW and travels as a caravan to the --from hex;
+the order travels by Runner to the army. Building begins when BOTH are at --from
+and takes about a day per hundred men on plains. Roads are free for everyone to
+use. A road never crosses water or mountains and ends at a river ford. If the
+caravan is intercepted the road is not finished and the stone is lost; see
+'keryx roads' for roads still waiting. A new order to the army cancels its
+unfinished road. --from defaults to the army's field position.
+server/cmd/keryx/cmd_unit.go:93: forbidden player time: Draft a laid-up ship's crew and ready it after three days
+server/cmd/keryx/cmd_unit.go:346: forbidden player time: %s: %g %s, %g silver per day
+server/cmd/keryx/cmd_unit.go:496: forbidden player time: , food for less than a day LOW
+server/cmd/keryx/cmd_unit.go:746: forbidden player time: Order a unit to march to a target hex (q,r coordinates).
+
+Use --preview to estimate arrival without sending an order. The estimate uses
+the current state; courier orders and unknown routes cannot promise an arrival.
+
+Terrain passability:
+  Impassable (all units):  mountain_limestone, mountain_red
+  Land units only:         plains, hills, forest_olive_grove, forest_cedar,
+                           scrub_maquis, semi_desert, river_valley, river_delta
+  Naval units only:        coastal_sea, deep_sea, river
+  Both land AND naval:     river_ford (the river's port — steep move cost for
+                           either, but the one hex where a land unit can
+                           cross and a ship can still sail through)
+  (Land units cannot enter sea or river; naval units cannot enter land.
+  river is impassable to land units — it is a wall, not a crossing. Every
+  ~10 hexes of a river's length carries one river_ford instead.)
+
+A newly recruited land cohort must finish gathering men and training before
+it can march. Once ready, a cohort can still march after losing men; it does
+not need to recover to 100 first.
+A unit in fortify stance must be cleared (stance none) before marching.
+
+Exploring: an explore order first travels to the exact selected hex, even
+if it is already seen, then explores unseen reachable ground around it.
+It records what the unit sees along its route.
+Run 'keryx map' to see the frontier coordinates. Fog on the map does not
+guarantee a route for this unit. If the chosen hex cannot be reached,
+the order is refused; try another hex or a unit departing from elsewhere.
+
+--intent explore goes first to the chosen hex, then explores around it for --ticks days.
+It turns home by half the duration and reports what it saw on return. It needs
+a reachable city of yours to return to. A land unit in the field receives the
+order by Runner; a ship must be commanded in port. Works for land or naval
+units. Omit --ticks for the server default; the server validates the range.
+
+--intent land puts a laden ship's cargo ashore (megaron_plan_
+skeppsuppdrag_landsatt.md R1): the ship must be a naval unit, in its own
+port, carrying a land unit (keryx unit load first). --q/--r is the chosen
+LAND hex, not a sea hex — the ship sails to the sea hex next to it,
+lands the cargo there, and always sails home on its own afterwards. Add
+--colonize to found a colony on arrival with no further order (--name to
+name it). A ship at sea takes no orders at all (march/recall/stance) —
+give every sea mission from port.
+
+Ore on mountain terrain (copper, tin, silver):
+  Mountains are impassable — you cannot colonize the mountain hex itself.
+  Instead, colonize an ADJACENT passable hex: the ore deposit will fall in
+  the new colony's catchment and can be mined from there.
+  Use 'keryx map' to see which adjacent hexes are passable.
+
+Conquest choice (--mode, only matters when the target is an enemy settlement):
+  sack (default) — loot goods (silver + a share of the rest, weighted by
+    portability) and raze the settlement; the loot is carried home as a
+    physical, interceptable caravan. annex — keep today's behaviour: take
+    the settlement outright (a captured capital becomes an ordinary colony).
+server/cmd/keryx/cmd_unit.go:801: forbidden player time:   keryx unit march --unit <id> --q 5 --r -3
+  keryx unit march --unit <id> --target 5,-3
+  keryx unit march --unit <id> --q 5 --r -3 --stance fortify
+  keryx unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos --yes
+  # Colonize the hex the unit already stands on (no coords needed):
+  keryx unit march --unit <id> --intent colonize --name Thapsos --yes
+  # Any march reveals fog along its route toward a frontier coordinate:
+  keryx unit march --unit <id> --q 12 --r -8
+  # Explore an area for 12 days, then automatically return home
+  keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12
+  # Land troops from a laden ship in port, then sail home on its own:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land
+  # ...and found a colony there with no further order:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land --colonize --name Thapsos
+  # Attack an enemy settlement and annex it instead of the sack default:
+  keryx unit march --unit <id> --q 5 --r -3 --mode annex
+server/cmd/keryx/cmd_unit.go:1006: forbidden player time: explore duration in days (omit for server default)
+server/cmd/keryx/cmd_unit.go:1150: forbidden player time:   Food: grain ~%.1f + fish ~%.1f per day − consumption ~%.1f per day = net %s per day\n
+server/cmd/keryx/cmd_unit.go:1172: forbidden player time:   Starting stock %.0f grain%s — production falls short; food runs out when the stock is spent. With a farm: net ~%s per day%s\n
+server/cmd/keryx/cmd_unit.go:1175: forbidden player time:   Starting stock %.0f grain — marginal (net %s per day). A farm gives net ~%s per day.%s\n
+server/cmd/keryx/cmd_unit.go:1220: forbidden player time: %s ~%.0f per day
+server/cmd/keryx/cmd_unit.go:1524: forbidden player time: Mark a decimated cohort as awaiting reinforcement. No men arrive at once:
+the city trickles them in out of its own growth over the following days, and it
+never shrinks to do so.
+
+The cohort must be garrisoned in the city that raised it — march it home first.
+server/cmd/keryx/cmd_unit.go:1551: forbidden player time: Cohort %s (%d/100) is refilling from its home city's growth over the coming days.\n
+server/cmd/keryx/cmd_unit.go:1883: forbidden player time: days to wait off the shore before turning home regardless (default: server default)
+server/cmd/keryx/cmd_ticklog.go:68: forbidden player time: No days to show.
+server/cmd/keryx/cmd_ticklog.go:88: forbidden player time: number of most-recent days to show
+server/cmd/keryx/cmd_status.go:191: forbidden player time:   %s in %s: reference %s per day — alternatives: %s — stock: %s — next gift: %s  %s
+server/cmd/keryx/cmd_status.go:504: forbidden player time: Population %.0f — growing: food net %s per day
+server/cmd/keryx/cmd_status.go:506: forbidden player time: Population %.0f — not growing: food net %s per day (needs more than 0)
+server/cmd/keryx/cmd_status.go:546: forbidden player time: --json returns the server's raw province payload unmodified. Per-good stock,
+rate and cap live NESTED under settlement.resources, not at the settlement
+top level:
+
+  settlement.resources.<good>.amount   current stock (e.g. .grain.amount, .silver.amount)
+  settlement.resources.<good>.rate     stored production rate per day; meals and army upkeep are separate
+  settlement.resources.<good>.cap      storage cap
+
+There is no top-level settlement.grain / settlement.silver / settlement.storage_cap
+field — looking one up there returns nothing, not a real null from the server.
+Some derived figures DO live at the settlement top level: grain_prod_rate,
+grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_upkeep.
+server/cmd/keryx/cmd_status.go:710: forbidden player time:   (per day; food and army balances are itemized below)
+server/cmd/keryx/cmd_status.go:728: forbidden player time:   ⚠ runs out within one day
+server/cmd/keryx/cmd_status.go:776: forbidden player time:   Food     grain %.1f + fish %.1f − people eat %.1f = net %s per day (before army)\n
+server/cmd/keryx/cmd_status.go:778: forbidden player time:   %-8s %6s  production %.1f per day
+server/cmd/keryx/cmd_status.go:832: forbidden player time:   Silver   net %+.1f per day after army pay\n
+server/cmd/keryx/cmd_status.go:965: forbidden player time: net %+.1f per day (temple − decay)
+server/cmd/keryx/cmd_status.go:967: forbidden player time: net %+.1f per day (upkeep only above ceiling)
+server/cmd/keryx/cmd_status.go:980: forbidden player time:   Temple production: %.2f kharis per day\n
+server/cmd/keryx/cmd_status.go:984: forbidden player time:   One more fed temple worker gives at least +%.2f kharis per day before cult upkeep, and more when the cult’s reference offering of grain is scarce in the world. Requires a free citizen, a temple workplace and its daily offering.\n
+server/cmd/keryx/cmd_status.go:1064: forbidden player time:   %-10s %s %s, %s silver per day  (everything the city pays — including field units)\n
+server/cmd/keryx/cmd_status.go:1313: forbidden player time:   Army     eats %s %s per day → food net %s per day after army
+server/cmd/keryx/cmd_status.go:1332: forbidden player time: Upkeep of the cult: %.2f base + %.0f %s cost %.2f + %.0f residents cost %.2f = %.2f kharis per day
+server/cmd/keryx/cmd_rite.go:74: forbidden player time:  That leaves %.0f food, less than %s eats in a day (%s).
+server/cmd/keryx/cmd_recruit.go:282: forbidden player time: Days
+server/cmd/keryx/cmd_recruit.go:282: forbidden player time: Upkeep per day (once garrisoned)
+server/cmd/keryx/cmd_recruit.go:384: forbidden player time: upkeep exceeds this city: needs %.4g more grain per day and %.4g more silver per day%s%s
+server/cmd/keryx/cmd_recruit.go:387: forbidden player time: silver upkeep: net is %+.4g silver per day, needs %.4g more per day%s
+server/cmd/keryx/cmd_recruit.go:390: forbidden player time: grain upkeep: net is %+.4g grain per day, needs %.4g more per day%s
+server/cmd/keryx/cmd_occupation.go:33: forbidden player time: A city your army holds under occupation stays with its original owner until
+you choose otherwise. Doing nothing leaves it occupied (the default —
+reversible, least destructive). This command sends a Runner to carry your
+choice; it executes only when the Runner arrives, not instantly.
+
+  sack  — loot the city (silver plus a share of its other goods, weighted by
+          portability) and weaken it: population -⅓, its strongest production
+          building drops one level. The city stays with its original owner.
+  burn  — sack, then raze the city outright. It becomes ownerless and its hex
+          cannot be recolonized until the karens (a fixed number of days)
+          has passed.
+  annex — take the city for good. Only possible once the occupation has gone
+          unchallenged long enough (see the CityAnnexReady notification) —
+          any attack on the occupied city resets that clock.
+server/cmd/keryx/cmd_notifications.go:834: forbidden player time:       %s food production covers consumption (net %+.1f per day).\n
+server/cmd/keryx/cmd_notifications.go:836: forbidden player time:       %s food production falls short by %.1f per day. Stored food feeds people until it runs out.\n
+server/cmd/keryx/cmd_notifications.go:856: forbidden player time:       %s grain production falls short by %.1f per day%s. Build a farm if the catchment supports it, otherwise send grain: keryx transfer --good grain --qty <n> --dest %s\n
+server/cmd/keryx/cmd_notifications.go:859: forbidden player time:       %s production covers grain consumption (net ~%+.1f grain per day).\n
+server/cmd/keryx/cmd_notifications.go:1124: forbidden player time: The gods bless the fields%s — grain, oil and wine yield a quarter more for %.0f days.
+server/cmd/keryx/cmd_march_preview.go:92: forbidden player time: Pay: %s → %s silver per day in the field · %s
+server/cmd/keryx/cmd_gubbe.go:238: forbidden player time: Automatic food: %.2f grain + %.2f fish per day without placed citizens (nearby ground %.2f grain; %.0f people outside whole citizens: %.2f grain + %.2f fish, a fraction of the best food worker)
+server/cmd/keryx/cmd_goods.go:61: forbidden player time: Per day
+server/cmd/keryx/cmd_build_list.go:66: forbidden player time: Days

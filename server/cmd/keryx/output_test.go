@@ -11,7 +11,7 @@ func TestArrivalClockUsesDatesRegardlessOfCadence(t *testing.T) {
 		for _, delta := range []time.Duration{-time.Hour, 0, 2 * time.Hour, 13 * time.Hour, 72 * time.Hour} {
 			at := time.Now().Add(delta).Truncate(time.Second)
 			got := arrivalETA(c, at.Format(time.RFC3339))
-			if got != wallClock(at) || strings.Contains(got, "days") {
+			if got != wallClock(at) || strings.Contains(got, "game days") {
 				t.Fatalf("got %q, want %q", got, wallClock(at))
 			}
 		}
@@ -28,13 +28,13 @@ func TestDayFormattingPreservesDisplayedNumberAndPlural(t *testing.T) {
 		value           float64
 		precision, want string
 	}{
-		{1, "%.0f", "1 day"}, {3, "%.0f", "3 days"}, {1.04, "%.1f", "1.0 day"}, {2.5, "%.1f", "2.5 days"},
+		{1, "%.0f", "1 game day"}, {3, "%.0f", "3 game days"}, {1.04, "%.1f", "1.0 game day"}, {2.5, "%.1f", "2.5 game days"},
 	} {
 		if got := formatDays(tc.value, tc.precision); got != tc.want {
 			t.Fatalf("%v: %q, want %q", tc.value, got, tc.want)
 		}
 	}
-	if got := formatDays(1, "%d", "uncontested"); got != "1 uncontested day" {
+	if got := formatDays(1, "%d", "uncontested"); got != "1 uncontested game day" {
 		t.Fatal(got)
 	}
 }

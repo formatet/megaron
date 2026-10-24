@@ -32,7 +32,7 @@ func TestTransferDisplaysServerTicksAndShip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{"arrives " + testTickTime(42) + " (journey: 7 days)", "Naia", "sails home empty"} {
+	for _, want := range []string{"arrives " + testTickTime(42) + " (journey: 7 game days · about 7 minutes)", "Naia", "sails home empty"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("missing %q in %s", want, out)
 		}

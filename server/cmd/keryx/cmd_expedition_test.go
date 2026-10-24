@@ -24,7 +24,7 @@ func TestExpeditionTexts(t *testing.T) {
 			{Kind: "city", Q: 8, Name: "Mycenae", Owner: "Atreus"},
 		},
 	})
-	want := "Spearmen I is home after 9 days, 7 hexes out at the furthest — saw 40 hexes around (5, 0): " +
+	want := "Spearmen I is home after 9 game days, 7 hexes out at the furthest — saw 40 hexes around (5, 0): " +
 		"copper at (6, -1), (7, 2); cities: Mycenae (Atreus) at (8, 0)"
 	if got != want {
 		t.Errorf("report:\n got %q\nwant %q", got, want)
@@ -53,7 +53,7 @@ func TestExpeditionClockETAUsesWorldAnchor(t *testing.T) {
 	text := capturePrint(t, func() {
 		printExpeditionLine(c, notificationItem{Kind: "ExpeditionTurnedHome", Body: []byte(`{"name":"Ship","arrive_tick":252}`)})
 	})
-	if !strings.Contains(text, "23:12") || strings.Contains(text, "day 252") {
+	if !strings.Contains(text, "23:12") || strings.Contains(text, "game day 252") {
 		t.Fatal(text)
 	}
 	if text := expeditionTurnedText(expeditionBody{ArriveTick: &tick}); !strings.Contains(text, "Return time unavailable") {

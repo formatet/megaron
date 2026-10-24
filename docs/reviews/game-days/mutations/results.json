@@ -1,0 +1,30 @@
+[
+  {
+    "surface": "web",
+    "mutation": "silver per day in the field",
+    "red": true,
+    "restored_sha256": "43eb2e5670e873a05ae5a688a406be023c991d42edb866766343149a01d50f44",
+    "restored_green": true
+  },
+  {
+    "surface": "keryx",
+    "mutation": "%+.1f per day",
+    "red": true,
+    "restored_sha256": "4dc2af64f2df92555c89649bfb9c3a50140fefa464ac2c5ee93794e767105a36",
+    "restored_green": true
+  },
+  {
+    "surface": "codex",
+    "mutation": "food for 12 days",
+    "red": true,
+    "restored_sha256": "711c1dc350a8d02a212842f43eeba9ab6cc8bdfaa40737312acd2aed4558910c",
+    "restored_green": true
+  },
+  {
+    "surface": "server",
+    "mutation": "Time. A day passes",
+    "red": true,
+    "restored_sha256": "d893471d02fafd5d7bbd65b566a08ed7a76a0bf22a2064e0ec84307a75695cde",
+    "restored_green": true
+  }
+]

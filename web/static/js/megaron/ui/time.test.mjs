@@ -33,7 +33,7 @@ test('I: valid ISO fallback still has arrival and completed wording', () => {
   assert.match(arrivalHTML(new Date(Date.now()+86400000).toISOString()), /<span title=/);
   assert.equal(arrivalHTML('2000-01-01T00:00:00Z'), 'arrived');
 });
-test('wall-clock estimate after several real dates stays clock/date, not days or d',()=>{
+test('wall-clock estimate after several real dates stays clock/date, not game days or d',()=>{
  State.TICK_ANCHOR_MS=null;
  const at=new Date(Date.now()+3*86400000).toISOString();
  for(const text of [fmtEta(at),fmtArrival(at)]) {

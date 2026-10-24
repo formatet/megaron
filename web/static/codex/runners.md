@@ -2,7 +2,7 @@
 
 When you tell a unit in the field to turn around, change course or change stance, you do not reach the unit — you send a **Runner**, a real person who must walk to it. The game answers with something like *"Recall order sent by Runner — reaches the unit today 22:40."* Until then the unit keeps doing what it was last told.
 
-While the Runner is still on the road, the order shows under the unit in **War → Army** and in `keryx army`, with the day he is expected — it disappears once he has delivered it.
+While the Runner is still on the road, the order shows under the unit in **War → Army** and in `keryx army`, with the game day he is expected — it disappears once he has delivered it.
 
 The one exception is your [[horde|Nomadic Host]]: you travel with it in person, so it obeys at once.
 
@@ -28,7 +28,7 @@ A Runner whose road to your unit crosses open water cannot swim it — it waits 
 
 ## The Runners tab
 
-**Diplomacy → Runners** (or `keryx runners`) shows every runner of yours that is still out, in groups: **waiting for a ship**, **on the way**, **aboard a ship**, **waiting for an answer**, and **on the way home**. A waiting runner says where it stands, since when, and why — and offers **Arrange passage** (one of your own free ships) or **Call back** (only when it waits in your own port). A runner **waiting for an answer** has reached the other Wanax's city and stands there until they answer — the tab says since when, and when it heads home if nobody does. An order's runner names the order it carries. Times are the clock time something happens — "today 18:34" — never a day count.
+**Diplomacy → Runners** (or `keryx runners`) shows every runner of yours that is still out, in groups: **waiting for a ship**, **on the way**, **aboard a ship**, **waiting for an answer**, and **on the way home**. A waiting runner says where it stands, since when, and why — and offers **Arrange passage** (one of your own free ships) or **Call back** (only when it waits in your own port). A runner **waiting for an answer** has reached the other Wanax's city and stands there until they answer — the tab says since when, and when it heads home if nobody does. An order's runner names the order it carries. Times are the clock time something happens — "today 18:34" — never a game day count.
 
 The tab also lists other Wanaxes' runners, but only where you can know they are there: standing in one of your cities or ports, or aboard one of your ships. You see whose runner it is and where — never what it carries, and never the road it came by. Runners are sacred; a ship's captain does not read the letters. See [[messengers]] and [[sea]].
 

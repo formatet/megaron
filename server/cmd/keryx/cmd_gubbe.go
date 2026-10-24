@@ -235,7 +235,7 @@ func automaticFoodLine(sett map[string]any) string {
 	people, _ := a["remainder_people"].(float64)
 	grain, _ := a["remainder_grain_per_tick"].(float64)
 	fish, _ := a["remainder_fish_per_tick"].(float64)
-	return fmt.Sprintf("Automatic food: %.2f grain + %.2f fish per day without placed citizens (nearby ground %.2f grain; %.0f people outside whole citizens: %.2f grain + %.2f fish, a fraction of the best food worker)", base+grain, fish, base, people, grain, fish)
+	return fmt.Sprintf("Automatic food: %.2f grain + %.2f fish per game day without placed citizens (nearby ground %.2f grain; %.0f people outside whole citizens: %.2f grain + %.2f fish, a fraction of the best food worker)", base+grain, fish, base, people, grain, fish)
 }
 
 func hexOrdinal(s string) (int, error) {

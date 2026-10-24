@@ -38,7 +38,7 @@ func TestNotificationDayBelongsToRecordedWorldAndNeverDrifts(t *testing.T) {
 	}
 	var recorded int
 	if err := f.pool.QueryRow(ctx, `SELECT world_tick FROM notifications WHERE world_id=$1`, other).Scan(&recorded); err != nil || recorded != 123 {
-		t.Fatalf("foreign world's captured day=%d err=%v", recorded, err)
+		t.Fatalf("foreign world's captured game day=%d err=%v", recorded, err)
 	}
 }
 
@@ -99,7 +99,7 @@ func TestNotificationDayMigrationKeepsUnknownHistoryUnknown(t *testing.T) {
 			}
 		default:
 			if tick != nil {
-				t.Fatalf("invented historical day for%s: %d", bodies[i], *tick)
+				t.Fatalf("invented historical game day for%s: %d", bodies[i], *tick)
 			}
 		}
 	}

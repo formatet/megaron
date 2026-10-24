@@ -27,7 +27,7 @@ test('AK1: monthLabel appends the 1..12 ordinal for an ordinary month', () => {
   assert.equal(monthLabel(cal), 'the Olive (3)');
 });
 
-test('AK2: monthLabel gives the intercalary Shadow Days no ordinal', () => {
+test('AK2: monthLabel gives the intercalary Shadow game days no ordinal', () => {
   setTick(362); // dayOfYear 362 -> month 0 (Shadow Days), day 3
   const cal = currentCalendarDate();
   assert.equal(cal.month, 0);

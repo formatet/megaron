@@ -50,7 +50,7 @@ for (const file of ['messenger_lost_trade.json', 'messenger_lost_order.json']) {
   });
 }
 
-test('T2: missing legacy departure day is explicit, never UTC or a guessed day', () => {
+test('T2: missing legacy departure game day is explicit, never UTC or a guessed game day', () => {
   const body = { envelope: { ...loss.envelope, sent_tick: null } };
   assert.match(messengerEnvelopeText(body), /Sent time unavailable/);
   assert.ok(!messengerEnvelopeText(body).includes(body.envelope.sent_at));

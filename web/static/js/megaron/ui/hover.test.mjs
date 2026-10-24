@@ -69,7 +69,7 @@ test('runners: your own shows its route, a stranger\'s only whose it is', () => 
   assert.deepEqual(lines, ['Your Runner — from Knossos to Phaistos', 'Runner of Minos']);
 });
 
-test('storms: a live one says where it drifts, a remembered one the day it was last seen', async () => {
+test('storms: a live one says where it drifts, a remembered one the game day it was last seen', async () => {
   const { unitHoverLines } = await import('./hover.js');
   const lines = unitHoverLines({
     storms: [{ tier: 'live', heading: 'NE' }, { tier: 'remembered', seen_tick: 3 }],

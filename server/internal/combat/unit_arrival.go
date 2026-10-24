@@ -937,7 +937,7 @@ func (h *UnitArrivalHandler) pickupArrived(
 			"q":                  destQ,
 			"r":                  destR,
 			"waiting_until_tick": dueTick,
-			"note":               fmt.Sprintf("%s waits off (%d,%d) for %s until %s", shipName, destQ, destR, pickupName, tick.FormatDay(dueTick)),
+			"note":               fmt.Sprintf("%s waits off (%d,%d) for %s until %s", shipName, destQ, destR, pickupName, tick.EtaAt(h.clk, dueTick, currentTick).Format("Mon 15:04 MST")),
 		})
 	}
 	slog.Info("pickup: ship waiting off shore for fetched unit", "unit", u.id, "pickup_unit", pickupID, "until_tick", dueTick)

@@ -48,7 +48,7 @@ func rate(v float64) string {
 	}
 	// %+.1f supplies its own sign (was "+%.1f", which mangled negative rates
 	// into "+-5.3/tick" — DEL C grain-netto-märkning surfaced this).
-	return fmt.Sprintf("%+.1f per day", v)
+	return fmt.Sprintf("%+.1f per game day", v)
 }
 
 // Duration formatting uses days of the world.
@@ -63,9 +63,40 @@ func formatDays(value any, precision ...string) string {
 	}
 	n, _ := strconv.ParseFloat(number, 64)
 	if n == 1 {
-		return number + " " + qualifier + "day"
+		return number + " " + qualifier + "game day"
 	}
-	return number + " " + qualifier + "days"
+	return number + " " + qualifier + "game days"
+}
+
+// formatDuration adds real-time guidance from this world's runtime cadence.
+// No world reply means no invented wall duration.
+func formatDuration(c *Client, value any, precision ...string) string {
+	label := formatDays(value, precision...)
+	if c == nil {
+		return label
+	}
+	cadence, ok := c.TickSeconds()
+	if !ok || math.IsNaN(cadence) || math.IsInf(cadence, 0) {
+		return label
+	}
+	n, err := strconv.ParseFloat(fmt.Sprint(value), 64)
+	if err != nil || math.IsNaN(n) || math.IsInf(n, 0) || n < 0 {
+		return label
+	}
+	hours := n * cadence / 3600
+	quantity, unit := hours, "hour"
+	if hours < 1 {
+		quantity, unit = hours*60, "minute"
+	}
+	rounded := math.Round(quantity*100) / 100
+	number := strconv.FormatFloat(rounded, 'f', -1, 64)
+	if rounded == 0 && quantity > 0 {
+		number = "less than 0.01"
+	}
+	if rounded != 1 {
+		unit += "s"
+	}
+	return label + " · about " + number + " " + unit
 }
 
 // formatWorldTime projects absolute ticks through this invocation's world anchor.
@@ -178,7 +209,7 @@ func transferArrival(resp map[string]any, clients ...*Client) string {
 	c := firstTimeClient(clients)
 	if arrival, ok := resp["arrival_tick"].(float64); ok {
 		if duration, ok := resp["travel_ticks"].(float64); ok {
-			return fmt.Sprintf("arrives %s (journey: %s)", formatWorldTime(c, arrival), formatDays(duration, "%.0f"))
+			return fmt.Sprintf("arrives %s (journey: %s)", formatWorldTime(c, arrival), formatDuration(c, duration, "%.0f"))
 		}
 		return fmt.Sprintf("arrives %s", formatWorldTime(c, arrival))
 	}

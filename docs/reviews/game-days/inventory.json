@@ -1,0 +1,1386 @@
+{
+  "web": {
+    "raw_literals_or_lines": 49,
+    "files": 16,
+    "rows": [
+      [
+        "web/static/js/megaron/ui/misc.js",
+        9,
+        "Bronze arms await your command, Wanax. March the army to distant lands \u2014 to raid, reinforce, or colonize. An order to recall or redirect a marching host travels by messenger, not by will alone; it takes time to arrive. In battle, numbers count, but walls and elite agema often decide the day."
+      ],
+      [
+        "web/static/js/megaron/ui/misc.js",
+        430,
+        "the Shadow Days of the Goddess"
+      ],
+      [
+        "web/static/js/megaron/ui/marchctx.js",
+        214,
+        " per day = "
+      ],
+      [
+        "web/static/js/megaron/ui/marchctx.js",
+        215,
+        " per day</b></div>"
+      ],
+      [
+        "web/static/js/megaron/ui/marchctx.js",
+        220,
+        " per day"
+      ],
+      [
+        "web/static/js/megaron/ui/marchctx.js",
+        239,
+        " per day"
+      ],
+      [
+        "web/static/js/megaron/ui/march_preview.js",
+        27,
+        " silver per day in the field \u00b7 "
+      ],
+      [
+        "web/static/js/megaron/ui/format.js",
+        335,
+        " per day). At this rate it reaches "
+      ],
+      [
+        "web/static/js/megaron/ui/format.js",
+        509,
+        " per day."
+      ],
+      [
+        "web/static/js/megaron/ui/format.js",
+        512,
+        " per day"
+      ],
+      [
+        "web/static/js/megaron/ui/format.js",
+        852,
+        " days"
+      ],
+      [
+        "web/static/js/megaron/ui/format.js",
+        937,
+        " per day)."
+      ],
+      [
+        "web/static/js/megaron/ui/format.js",
+        938,
+        " per day. Stored food feeds people until it runs out."
+      ],
+      [
+        "web/static/js/megaron/ui/format.js",
+        949,
+        " per day"
+      ],
+      [
+        "web/static/js/megaron/ui/format.js",
+        952,
+        " per day). "
+      ],
+      [
+        "web/static/js/megaron/ui/fmt_num.js",
+        14,
+        "day"
+      ],
+      [
+        "web/static/js/megaron/ui/fmt_num.js",
+        14,
+        "days"
+      ],
+      [
+        "web/static/js/megaron/ui/citygrid.js",
+        80,
+        " per day next"
+      ],
+      [
+        "web/static/js/megaron/ui/citygrid.js",
+        86,
+        " per day total"
+      ],
+      [
+        "web/static/js/megaron/ui/drawers/war.js",
+        546,
+        " silver per day</div>"
+      ],
+      [
+        "web/static/js/megaron/ui/drawers/war.js",
+        587,
+        "food for less than a day"
+      ],
+      [
+        "web/static/js/megaron/ui/drawers/war.js",
+        1062,
+        ") \u2014 arrives day "
+      ],
+      [
+        "web/static/js/megaron/ui/drawers/notif.js",
+        34,
+        "<div class=\"notif-date-header\">Day "
+      ],
+      [
+        "web/static/js/megaron/ui/drawers/kult_offer.js",
+        77,
+        " eats in a day ("
+      ],
+      [
+        "web/static/js/megaron/ui/drawers/kult_kharis.js",
+        18,
+        " kharis per day</span></div>"
+      ],
+      [
+        "web/static/js/megaron/ui/drawers/kult_kharis.js",
+        32,
+        " kharis per day</span></div>"
+      ],
+      [
+        "web/static/js/megaron/ui/drawers/kult_kharis.js",
+        33,
+        " kharis per day</span></div>"
+      ],
+      [
+        "web/static/js/megaron/ui/drawers/kult_kharis.js",
+        47,
+        " kharis per day before cult upkeep, and more when the cult\u2019s reference offering of grain is scarce in the world. Requires a free citizen, a temple workplace and its daily offering.</p>"
+      ],
+      [
+        "web/static/js/megaron/ui/drawers/kult_kharis.js",
+        58,
+        "% chance of divine punishment each day, with or without a temple.</p>"
+      ],
+      [
+        "web/static/js/megaron/ui/drawers/kult.js",
+        116,
+        " per day<br>"
+      ],
+      [
+        "web/static/js/megaron/ui/drawers/economy.js",
+        26,
+        " lost per day"
+      ],
+      [
+        "web/static/js/megaron/ui/drawers/economy.js",
+        31,
+        " per day</td>"
+      ],
+      [
+        "web/static/js/megaron/ui/drawers/economy.js",
+        113,
+        " per day"
+      ],
+      [
+        "web/static/js/megaron/ui/drawers/economy.js",
+        220,
+        " per day</div>"
+      ],
+      [
+        "web/static/js/megaron/ui/drawers/city_production.js",
+        16,
+        "<div id=\"city-prod-sec\"></div></div>\n    <div class=\"dsec\"><div class=\"dsec-title\">Food</div><div id=\"city-food-sec\"></div></div>\n    <details id=\"city-more\" class=\"dsec\"><summary class=\"dsec-title\">More</summary>\n      <div class=\"dsec-title\">People at work</div><div id=\"city-people-details\"></div>\n      <div class=\"dsec-title\">Food details</div><div id=\"city-food-details-sec\"></div>\n      <div class=\"dsec-title\">Last day</div><div id=\"city-lasttick-sec\"></div>\n      <div class=\"dsec-title\">Daily history <button class=\"btn-small\" onclick=\"loadTicklog()\">Show recent days</button></div><div id=\"city-ticklog-sec\"></div>\n    </details>"
+      ],
+      [
+        "web/static/js/megaron/ui/drawers/city_production.js",
+        34,
+        " per day"
+      ],
+      [
+        "web/static/js/megaron/ui/drawers/city_production.js",
+        35,
+        " per day (needs more than 0)"
+      ],
+      [
+        "web/static/js/megaron/ui/drawers/city_production.js",
+        56,
+        "day"
+      ],
+      [
+        "web/static/js/megaron/ui/drawers/city_production.js",
+        56,
+        "days"
+      ],
+      [
+        "web/static/js/megaron/ui/drawers/city_production.js",
+        82,
+        "day"
+      ],
+      [
+        "web/static/js/megaron/ui/drawers/city_production.js",
+        82,
+        "days"
+      ],
+      [
+        "web/static/js/megaron/ui/drawers/city_production.js",
+        97,
+        " per day \u2192 food net "
+      ],
+      [
+        "web/static/js/megaron/ui/drawers/city_production.js",
+        101,
+        " fish per day without placed citizens (nearby ground "
+      ],
+      [
+        "web/static/js/megaron/ui/drawers/city.js",
+        482,
+        "<table class=\"goods-mini\">\n      <tr style=\"color:var(--text-dim);font-size:.7rem\"><td>Day</td><td>Production</td><td>Consumption</td><td>Events</td></tr>\n      "
+      ],
+      [
+        "web/static/js/megaron/ui/drawers/city.js",
+        600,
+        "</div>\n          <p class=\"empty-state\" style=\"font-size:.72rem\">Smelted on its own every day \u2014 put a worker in the foundry and keep the ingredients in store.</p>"
+      ],
+      [
+        "web/static/map.html",
+        199,
+        "        your position and the current day are attached automatically."
+      ],
+      [
+        "web/static/map.html",
+        294,
+        "    <label>Expedition duration <input id=\"mctx-ticks\" type=\"number\" step=\"1\" style=\"width:52px;font:inherit;background:var(--warm-white);color:var(--text);border:1px solid var(--border)\"> days</label>"
+      ],
+      [
+        "web/templates/alfatestinfo.html",
+        32,
+        "      <p>You don't need to be online at set times. Orders take days in the game to carry out, and news travels with people, so nothing happens instantly. A visit can be short; a plan can take many days.</p>"
+      ],
+      [
+        "web/templates/alfatestinfo.html",
+        42,
+        "        <li><strong>Time.</strong> A day in the game passes every half hour. The alpha world runs for several weeks; if it is reset, that is announced in the chat first.</li>"
+      ]
+    ]
+  },
+  "keryx": {
+    "raw_literals_or_lines": 62,
+    "files": 16,
+    "rows": [
+      [
+        "server/cmd/keryx/output.go",
+        51,
+        "%+.1f per day"
+      ],
+      [
+        "server/cmd/keryx/output.go",
+        66,
+        "day"
+      ],
+      [
+        "server/cmd/keryx/output.go",
+        68,
+        "days"
+      ],
+      [
+        "server/cmd/keryx/notification_text.go",
+        44,
+        "      Kharis is falling (%.1f, net %+.2f per day). At this rate it reaches %.0f in %s. Below that the gods may punish you, with or without a temple. Staff and feed your temples.\\n"
+      ],
+      [
+        "server/cmd/keryx/notification_text.go",
+        327,
+        "Granary released %s (%.1f days of coverage)"
+      ],
+      [
+        "server/cmd/keryx/notification_text.go",
+        341,
+        "%s is STARVING \u2014 %s lost. Grain net %.0f per day."
+      ],
+      [
+        "server/cmd/keryx/notification_text.go",
+        343,
+        "%s: grain net %+.0f per day"
+      ],
+      [
+        "server/cmd/keryx/notification_text.go",
+        345,
+        " \u2014 grain lasts ~%.0f days"
+      ],
+      [
+        "server/cmd/keryx/harvest_status.go",
+        26,
+        "days"
+      ],
+      [
+        "server/cmd/keryx/harvest_status.go",
+        28,
+        "day"
+      ],
+      [
+        "server/cmd/keryx/food_format.go",
+        47,
+        "  Food     production %.1f \u2212 people eat %.1f = net %s per day (before army)"
+      ],
+      [
+        "server/cmd/keryx/food_format.go",
+        74,
+        "days"
+      ],
+      [
+        "server/cmd/keryx/food_format.go",
+        79,
+        "day"
+      ],
+      [
+        "server/cmd/keryx/cmd_unit_road.go",
+        26,
+        "Order an army to build ONE road edge: --from is the hex it builds from, --to the\nneighbouring hex the road reaches. The stone (8 per plains edge, more in rougher\nground) leaves your nearest city NOW and travels as a caravan to the --from hex;\nthe order travels by Runner to the army. Building begins when BOTH are at --from\nand takes about a day per hundred men on plains. Roads are free for everyone to\nuse. A road never crosses water or mountains and ends at a river ford. If the\ncaravan is intercepted the road is not finished and the stone is lost; see\n'keryx roads' for roads still waiting. A new order to the army cancels its\nunfinished road. --from defaults to the army's field position."
+      ],
+      [
+        "server/cmd/keryx/cmd_unit.go",
+        93,
+        "Draft a laid-up ship's crew and ready it after three days"
+      ],
+      [
+        "server/cmd/keryx/cmd_unit.go",
+        346,
+        "%s: %g %s, %g silver per day"
+      ],
+      [
+        "server/cmd/keryx/cmd_unit.go",
+        496,
+        ", food for less than a day LOW"
+      ],
+      [
+        "server/cmd/keryx/cmd_unit.go",
+        746,
+        "Order a unit to march to a target hex (q,r coordinates).\n\nUse --preview to estimate arrival without sending an order. The estimate uses\nthe current state; courier orders and unknown routes cannot promise an arrival.\n\nTerrain passability:\n  Impassable (all units):  mountain_limestone, mountain_red\n  Land units only:         plains, hills, forest_olive_grove, forest_cedar,\n                           scrub_maquis, semi_desert, river_valley, river_delta\n  Naval units only:        coastal_sea, deep_sea, river\n  Both land AND naval:     river_ford (the river's port \u2014 steep move cost for\n                           either, but the one hex where a land unit can\n                           cross and a ship can still sail through)\n  (Land units cannot enter sea or river; naval units cannot enter land.\n  river is impassable to land units \u2014 it is a wall, not a crossing. Every\n  ~10 hexes of a river's length carries one river_ford instead.)\n\nA newly recruited land cohort must finish gathering men and training before\nit can march. Once ready, a cohort can still march after losing men; it does\nnot need to recover to 100 first.\nA unit in fortify stance must be cleared (stance none) before marching.\n\nExploring: an explore order first travels to the exact selected hex, even\nif it is already seen, then explores unseen reachable ground around it.\nIt records what the unit sees along its route.\nRun 'keryx map' to see the frontier coordinates. Fog on the map does not\nguarantee a route for this unit. If the chosen hex cannot be reached,\nthe order is refused; try another hex or a unit departing from elsewhere.\n\n--intent explore goes first to the chosen hex, then explores around it for --ticks days.\nIt turns home by half the duration and reports what it saw on return. It needs\na reachable city of yours to return to. A land unit in the field receives the\norder by Runner; a ship must be commanded in port. Works for land or naval\nunits. Omit --ticks for the server default; the server validates the range.\n\n--intent land puts a laden ship's cargo ashore (megaron_plan_\nskeppsuppdrag_landsatt.md R1): the ship must be a naval unit, in its own\nport, carrying a land unit (keryx unit load first). --q/--r is the chosen\nLAND hex, not a sea hex \u2014 the ship sails to the sea hex next to it,\nlands the cargo there, and always sails home on its own afterwards. Add\n--colonize to found a colony on arrival with no further order (--name to\nname it). A ship at sea takes no orders at all (march/recall/stance) \u2014\ngive every sea mission from port.\n\nOre on mountain terrain (copper, tin, silver):\n  Mountains are impassable \u2014 you cannot colonize the mountain hex itself.\n  Instead, colonize an ADJACENT passable hex: the ore deposit will fall in\n  the new colony's catchment and can be mined from there.\n  Use 'keryx map' to see which adjacent hexes are passable.\n\nConquest choice (--mode, only matters when the target is an enemy settlement):\n  sack (default) \u2014 loot goods (silver + a share of the rest, weighted by\n    portability) and raze the settlement; the loot is carried home as a\n    physical, interceptable caravan. annex \u2014 keep today's behaviour: take\n    the settlement outright (a captured capital becomes an ordinary colony)."
+      ],
+      [
+        "server/cmd/keryx/cmd_unit.go",
+        801,
+        "  keryx unit march --unit <id> --q 5 --r -3\n  keryx unit march --unit <id> --target 5,-3\n  keryx unit march --unit <id> --q 5 --r -3 --stance fortify\n  keryx unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos --yes\n  # Colonize the hex the unit already stands on (no coords needed):\n  keryx unit march --unit <id> --intent colonize --name Thapsos --yes\n  # Any march reveals fog along its route toward a frontier coordinate:\n  keryx unit march --unit <id> --q 12 --r -8\n  # Explore an area for 12 days, then automatically return home\n  keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12\n  # Land troops from a laden ship in port, then sail home on its own:\n  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land\n  # ...and found a colony there with no further order:\n  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land --colonize --name Thapsos\n  # Attack an enemy settlement and annex it instead of the sack default:\n  keryx unit march --unit <id> --q 5 --r -3 --mode annex"
+      ],
+      [
+        "server/cmd/keryx/cmd_unit.go",
+        1006,
+        "explore duration in days (omit for server default)"
+      ],
+      [
+        "server/cmd/keryx/cmd_unit.go",
+        1150,
+        "  Food: grain ~%.1f + fish ~%.1f per day \u2212 consumption ~%.1f per day = net %s per day\\n"
+      ],
+      [
+        "server/cmd/keryx/cmd_unit.go",
+        1172,
+        "  Starting stock %.0f grain%s \u2014 production falls short; food runs out when the stock is spent. With a farm: net ~%s per day%s\\n"
+      ],
+      [
+        "server/cmd/keryx/cmd_unit.go",
+        1175,
+        "  Starting stock %.0f grain \u2014 marginal (net %s per day). A farm gives net ~%s per day.%s\\n"
+      ],
+      [
+        "server/cmd/keryx/cmd_unit.go",
+        1220,
+        "%s ~%.0f per day"
+      ],
+      [
+        "server/cmd/keryx/cmd_unit.go",
+        1524,
+        "Mark a decimated cohort as awaiting reinforcement. No men arrive at once:\nthe city trickles them in out of its own growth over the following days, and it\nnever shrinks to do so.\n\nThe cohort must be garrisoned in the city that raised it \u2014 march it home first."
+      ],
+      [
+        "server/cmd/keryx/cmd_unit.go",
+        1551,
+        "Cohort %s (%d/100) is refilling from its home city's growth over the coming days.\\n"
+      ],
+      [
+        "server/cmd/keryx/cmd_unit.go",
+        1883,
+        "days to wait off the shore before turning home regardless (default: server default)"
+      ],
+      [
+        "server/cmd/keryx/cmd_ticklog.go",
+        68,
+        "No days to show."
+      ],
+      [
+        "server/cmd/keryx/cmd_ticklog.go",
+        88,
+        "number of most-recent days to show"
+      ],
+      [
+        "server/cmd/keryx/cmd_status.go",
+        191,
+        "  %s in %s: reference %s per day \u2014 alternatives: %s \u2014 stock: %s \u2014 next gift: %s  %s"
+      ],
+      [
+        "server/cmd/keryx/cmd_status.go",
+        504,
+        "Population %.0f \u2014 growing: food net %s per day"
+      ],
+      [
+        "server/cmd/keryx/cmd_status.go",
+        506,
+        "Population %.0f \u2014 not growing: food net %s per day (needs more than 0)"
+      ],
+      [
+        "server/cmd/keryx/cmd_status.go",
+        546,
+        "--json returns the server's raw province payload unmodified. Per-good stock,\nrate and cap live NESTED under settlement.resources, not at the settlement\ntop level:\n\n  settlement.resources.<good>.amount   current stock (e.g. .grain.amount, .silver.amount)\n  settlement.resources.<good>.rate     stored production rate per day; meals and army upkeep are separate\n  settlement.resources.<good>.cap      storage cap\n\nThere is no top-level settlement.grain / settlement.silver / settlement.storage_cap\nfield \u2014 looking one up there returns nothing, not a real null from the server.\nSome derived figures DO live at the settlement top level: grain_prod_rate,\ngrain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_upkeep."
+      ],
+      [
+        "server/cmd/keryx/cmd_status.go",
+        710,
+        "  (per day; food and army balances are itemized below)"
+      ],
+      [
+        "server/cmd/keryx/cmd_status.go",
+        728,
+        "  \u26a0 runs out within one day"
+      ],
+      [
+        "server/cmd/keryx/cmd_status.go",
+        776,
+        "  Food     grain %.1f + fish %.1f \u2212 people eat %.1f = net %s per day (before army)\\n"
+      ],
+      [
+        "server/cmd/keryx/cmd_status.go",
+        778,
+        "  %-8s %6s  production %.1f per day"
+      ],
+      [
+        "server/cmd/keryx/cmd_status.go",
+        832,
+        "  Silver   net %+.1f per day after army pay\\n"
+      ],
+      [
+        "server/cmd/keryx/cmd_status.go",
+        965,
+        "net %+.1f per day (temple \u2212 decay)"
+      ],
+      [
+        "server/cmd/keryx/cmd_status.go",
+        967,
+        "net %+.1f per day (upkeep only above ceiling)"
+      ],
+      [
+        "server/cmd/keryx/cmd_status.go",
+        980,
+        "  Temple production: %.2f kharis per day\\n"
+      ],
+      [
+        "server/cmd/keryx/cmd_status.go",
+        984,
+        "  One more fed temple worker gives at least +%.2f kharis per day before cult upkeep, and more when the cult\u2019s reference offering of grain is scarce in the world. Requires a free citizen, a temple workplace and its daily offering.\\n"
+      ],
+      [
+        "server/cmd/keryx/cmd_status.go",
+        992,
+        "  Below %.0f kharis: %.0f%% chance of divine punishment per game day, with or without a temple.\\n"
+      ],
+      [
+        "server/cmd/keryx/cmd_status.go",
+        1064,
+        "  %-10s %s %s, %s silver per day  (everything the city pays \u2014 including field units)\\n"
+      ],
+      [
+        "server/cmd/keryx/cmd_status.go",
+        1313,
+        "  Army     eats %s %s per day \u2192 food net %s per day after army"
+      ],
+      [
+        "server/cmd/keryx/cmd_status.go",
+        1332,
+        "Upkeep of the cult: %.2f base + %.0f %s cost %.2f + %.0f residents cost %.2f = %.2f kharis per day"
+      ],
+      [
+        "server/cmd/keryx/cmd_rite.go",
+        74,
+        " That leaves %.0f food, less than %s eats in a day (%s)."
+      ],
+      [
+        "server/cmd/keryx/cmd_recruit.go",
+        282,
+        "Days"
+      ],
+      [
+        "server/cmd/keryx/cmd_recruit.go",
+        282,
+        "Upkeep per day (once garrisoned)"
+      ],
+      [
+        "server/cmd/keryx/cmd_recruit.go",
+        384,
+        "upkeep exceeds this city: needs %.4g more grain per day and %.4g more silver per day%s%s"
+      ],
+      [
+        "server/cmd/keryx/cmd_recruit.go",
+        387,
+        "silver upkeep: net is %+.4g silver per day, needs %.4g more per day%s"
+      ],
+      [
+        "server/cmd/keryx/cmd_recruit.go",
+        390,
+        "grain upkeep: net is %+.4g grain per day, needs %.4g more per day%s"
+      ],
+      [
+        "server/cmd/keryx/cmd_occupation.go",
+        33,
+        "A city your army holds under occupation stays with its original owner until\nyou choose otherwise. Doing nothing leaves it occupied (the default \u2014\nreversible, least destructive). This command sends a Runner to carry your\nchoice; it executes only when the Runner arrives, not instantly.\n\n  sack  \u2014 loot the city (silver plus a share of its other goods, weighted by\n          portability) and weaken it: population -\u2153, its strongest production\n          building drops one level. The city stays with its original owner.\n  burn  \u2014 sack, then raze the city outright. It becomes ownerless and its hex\n          cannot be recolonized until the karens (a fixed number of days)\n          has passed.\n  annex \u2014 take the city for good. Only possible once the occupation has gone\n          unchallenged long enough (see the CityAnnexReady notification) \u2014\n          any attack on the occupied city resets that clock."
+      ],
+      [
+        "server/cmd/keryx/cmd_notifications.go",
+        834,
+        "      %s food production covers consumption (net %+.1f per day).\\n"
+      ],
+      [
+        "server/cmd/keryx/cmd_notifications.go",
+        836,
+        "      %s food production falls short by %.1f per day. Stored food feeds people until it runs out.\\n"
+      ],
+      [
+        "server/cmd/keryx/cmd_notifications.go",
+        856,
+        "      %s grain production falls short by %.1f per day%s. Build a farm if the catchment supports it, otherwise send grain: keryx transfer --good grain --qty <n> --dest %s\\n"
+      ],
+      [
+        "server/cmd/keryx/cmd_notifications.go",
+        859,
+        "      %s production covers grain consumption (net ~%+.1f grain per day).\\n"
+      ],
+      [
+        "server/cmd/keryx/cmd_notifications.go",
+        1124,
+        "The gods bless the fields%s \u2014 grain, oil and wine yield a quarter more for %.0f days."
+      ],
+      [
+        "server/cmd/keryx/cmd_march_preview.go",
+        92,
+        "Pay: %s \u2192 %s silver per day in the field \u00b7 %s"
+      ],
+      [
+        "server/cmd/keryx/cmd_gubbe.go",
+        238,
+        "Automatic food: %.2f grain + %.2f fish per day without placed citizens (nearby ground %.2f grain; %.0f people outside whole citizens: %.2f grain + %.2f fish, a fraction of the best food worker)"
+      ],
+      [
+        "server/cmd/keryx/cmd_goods.go",
+        61,
+        "Per day"
+      ],
+      [
+        "server/cmd/keryx/cmd_build_list.go",
+        66,
+        "Days"
+      ]
+    ]
+  },
+  "codex": {
+    "raw_literals_or_lines": 129,
+    "files": 40,
+    "rows": [
+      [
+        "web/static/codex/welcome.md",
+        9,
+        "It explains the world's day length, movement, your Host's reserves, food, the gods, travelling orders and the path to bronze. Its amounts come from the rules when that Host begins. Your Host lives on subsistence before founding, so its reserves do not drain while you search for a home. When you begin again, your standing with the gods is kept."
+      ],
+      [
+        "web/static/codex/welcome.md",
+        15,
+        "**Days belong to the world.** The world advances one day at a time, and every duration the game shows you counts in days. See [[time]]."
+      ],
+      [
+        "web/static/codex/upkeep.md",
+        1,
+        "Soldiers eat **food: grain, fish, oil and wine**, shared in proportion to the stocks available. Professionals also need **silver pay** every day."
+      ],
+      [
+        "web/static/codex/upkeep.md",
+        5,
+        "**Field pay starts at 1 silver per 100 people per day**, the wage of a worker. Spearmen draw **0 silver**. A full hundred-man elite infantry cohort draws **1.5 silver in the field and 0.75 at home**; a full chariot cohort draws **4 in the field and 2 at home**. Remaining men determine the bill, so a half-strength cohort draws half the pay."
+      ],
+      [
+        "web/static/codex/upkeep.md",
+        13,
+        "An empty ship **Laid up** in its own Harbour costs **0 silver and 0 ship food**. Its crew has returned to the city\u2019s population and eats as civilians. **Fit out** drafts that crew back immediately; home-rate ship food and, for a War Galley, half field pay resume while the ship spends three days preparing. See [[sea]]."
+      ],
+      [
+        "web/static/codex/upkeep.md",
+        17,
+        "Soldiers use the same four [[food|food goods]] as the people. Livestock remains emergency food for civilians, not an army ration. A full spearman cohort uses **0.5 food per day in garrison**, or **1 food in the field**. A unit in garrison eats from its city. **A unit in the field eats double**, and there is nothing to forage \u2014 so a long march, a siege line or a posted watch is a real cost ([[stances]]). "
+      ],
+      [
+        "web/static/codex/upkeep.md",
+        19,
+        "**Rowers eat like soldiers.** A ship feeds its actual surviving crew: each rower uses the same food as a spearman. A full Galley (20 rowers) uses **0.10 food per day in port** or **0.20 on a mission**; a War Galley (50) uses **0.25 / 0.50**, and an Emporos (10) **0.05 / 0.10**. Fewer surviving rowers eat less. Garrisoned ships, repairs and fitting out use the port ration. Marching, posted and freighting ships use the field ration, including a freight route's wait between legs. A laid-up hull has no ship ration because its crew has returned to the city. Ship pay follows the home and field rates above."
+      ],
+      [
+        "web/static/codex/upkeep.md",
+        21,
+        "A unit that runs out of food **starves**: it loses men each day, and can starve to nothing. A ship turns home when its remaining food is only enough for the way back, unless it can reach a city for provisions. Its owner hears the reason when it reaches home, not from far away; see [[ship-food-return]]."
+      ],
+      [
+        "web/static/codex/units.md",
+        22,
+        "A cohort is drafted out of your city's population and stays out of it until disbanded. Soldiers still eat. **Spearmen, Galleys and Emporoi draw 0 silver per day**. Elite infantry, chariots and War Galleys draw pay in [[silver]]. Home service costs half field pay: a full elite cohort draws 0.75 / 1.5 silver per day at home / in the field, and a full chariot cohort 2 / 4. A full War Galley draws 0.25 / 0.5 ([[upkeep]]). An army bigger than your city can feed and pay is not a strong army; it is a famine with spears."
+      ],
+      [
+        "web/static/codex/units.md",
+        28,
+        "An empty ship in your own active Harbour can be **Laid up** from its Army card. Its crew returns to the port's population and can work there; the hull draws no food or silver and remains in port. The card says **Laid up** and offers **Fit out**. Fitting out takes the ship's full crew from that city's current population and prepares it for **three days**. It cannot sail or be cancelled during that time, and its crew draws home-rate food and, for a War Galley, half field pay from the start. If the city is annexed, its laid-up and fitting-out ships go with the city. Disbanding a laid-up ship removes the hull without returning the same crew twice; choose the particular hull to disband by its name. Keryx: `unit lay-up --unit ID` and `unit fit-out --unit ID`."
+      ],
+      [
+        "web/static/codex/units.md",
+        32,
+        "Every unit you own, with its state and current grain and silver upkeep per day in plain words. **March** is shown while it can move; a damaged land cohort garrisoned in its **original home city** can also **Reinforce** \u2014 another city you own does not qualify. A land unit on the march shows **Recall**. The card also shows stance and **Set**, battle retreat, **Redirect**, **Fetch by ship**, **Load** / **Unload** or **Repair**, whenever that unit can use them. Choose **Destination city** in a march or redirect form to target a known city quickly; map clicks remain available. Keryx accepts `--to \"City name\"` on march, post and redirect. See [[marching]], [[stances]] and [[sea]]."
+      ],
+      [
+        "web/static/codex/transfers.md",
+        3,
+        "Open **Economy \u2192 Transfer**, choose *From*, *To*, the good and the quantity, and press **Send \u2192**. Below, **Your cargo in transit** lists everything on the road \u2014 which city it left, which city it is bound for, and the day it arrives. A notification tells you when it is delivered."
+      ],
+      [
+        "web/static/codex/transfers.md",
+        31,
+        "same path**, rounded once to the nearest whole day, with at least one day per leg."
+      ],
+      [
+        "web/static/codex/transfers.md",
+        37,
+        "arrival day shown in your cargo list is the scheduled delivery; delays or"
+      ],
+      [
+        "web/static/codex/trade.md",
+        12,
+        "Then **Dispatch \u2192**. The offer walks with the [[messengers|messenger]], so it takes days to arrive."
+      ],
+      [
+        "web/static/codex/trade.md",
+        18,
+        "The runner who carried your offer waits at the other city only while the offer is open: once it is accepted, declined or cancelled, the runner turns for home that same day. **You learn the answer when the runner is home** \u2014 the news travels with the runner, never ahead of it. A declined offer's escrow travels with the runner too: your goods or silver are back in your stores the day the runner is home. If the runner is lost at sea on the way, the escrow comes back at once. If nobody answers, you are told when the offer expires."
+      ],
+      [
+        "web/static/codex/trade.md",
+        42,
+        "same path**, rounded once to the nearest whole day, with at least one day per leg."
+      ],
+      [
+        "web/static/codex/trade.md",
+        48,
+        "arrival day shown in your cargo list is the scheduled delivery; delays or"
+      ],
+      [
+        "web/static/codex/time.md",
+        1,
+        "## Days and the clock"
+      ],
+      [
+        "web/static/codex/time.md",
+        3,
+        "The world advances one **day** at a time. Wherever the game tells you how long something takes \u2014 a march, a building, a letter \u2014 it counts in days, because that is the unit your decisions are made in."
+      ],
+      [
+        "web/static/codex/time.md",
+        5,
+        "How much real time a day takes is set per world. A test world can run faster than normal. The **date in the top bar** is the world's own calendar; the sun and moon beside it show the time of day. **When something happens** uses your clock and date: **today 18:34**, **tomorrow 09:10**, or **Thu 09:00**; further away, a date is shown. **How long something lasts** stays in days of the world: **food for 12 days**, or **a 30-day expedition**. Arrival estimates follow the world's current pace; they can change when the world pauses or its pace changes."
+      ],
+      [
+        "web/static/codex/temples.md",
+        13,
+        "Each placed temple worker earns **1.05 kharis per day** before the offering factor, scarcity and realm decay. A fully staffed level-1 temple earns **2.1** before these adjustments. Kult shows local staffing and the projected realm net. "
+      ],
+      [
+        "web/static/codex/temples.md",
+        17,
+        "Each temple has its own daily reference gift of **0.25 grain**, taken only from its own city's stock. When a city holds several temples, they are planned in god-ID order \u2014 Asterion, Potnia, the Sea Daimons of Stillness, Velchanos \u2014 each against what the earlier ones left in the store. A temple's workers earn kharis only on days that temple was fed. Kharis stays one pool for the whole realm. Fish, timber and silver can replace grain at the same divine value; a gift may combine goods. The amount of a substitute can change with the world's divine values. "
+      ],
+      [
+        "web/static/codex/temples.md",
+        21,
+        "**Kult \u2192 Temple offerings** and `keryx status` show one row per temple with the reference, equivalent alternatives, the stock it would find after earlier temples, and the planned next gift, with a \u2713 or \u2717. If the city cannot fund the whole gift, nothing is taken and that temple earns no offering gain for the day. Devotion and the daily decay still determine your net kharis change."
+      ],
+      [
+        "web/static/codex/storms.md",
+        5,
+        "Each day a storm takes **two steps**. In each step, one of its three hexes moves to a neighbouring sea hex, and the storm stays in one piece. So a storm crawls: slowly, and a little more each day in the direction it has been drifting, now and then turning. It never crosses land."
+      ],
+      [
+        "web/static/codex/storms.md",
+        9,
+        "A ship that **sails into a storm** takes two points of hull damage (of five) \u2014 once per storm, however many days it spends inside it; three storms sink a ship from full hull. At hull 0 she founders with everything aboard ([[sea]]). A ship beside a storm is safe. Ships follow the route they were given and cannot steer round a storm once they sail ([[sea]]), so look before you send them."
+      ],
+      [
+        "web/static/codex/storms.md",
+        11,
+        "Every sea hex a ship crosses is checked, even when it crosses several in one day. Two different storms crossed that day each strike; staying inside the same storm gives no extra blow. A storm can also drift onto a slow ship. [[rites|Favourable Passage]] still protects the ship on its outward leg."
+      ],
+      [
+        "web/static/codex/storms.md",
+        19,
+        "Once you have seen a storm, the map remembers it **where you last saw it**, as a faded cloud, and hovering says on which day. That is not where it is now. If you look at the place and it is gone, it has moved on and the memory is dropped."
+      ],
+      [
+        "web/static/codex/silver.md",
+        3,
+        "Professionals draw pay every day. A Wanax who runs dry risks their desertion \u2014 see [[upkeep]]."
+      ],
+      [
+        "web/static/codex/sight.md",
+        32,
+        "You cannot **march** an army into land none of your people has ever seen \u2014 but you can **explore** it. Right-click a hex, seen or unseen, land or sea, and choose **Explore**: the unit sets out as an **expedition** to the land within 5 hexes of that place, for as many days as you give it (4 to 365; 10 if you do not say)."
+      ],
+      [
+        "web/static/codex/sight.md",
+        35,
+        "- **The order reserves time for the journey home.** It turns back no later than halfway through its days, so it is home by the end of them. It turns sooner if nothing in the area is left unseen, or if what is left cannot be reached. You are told when it turns, and why. If its home is lost during the expedition, it seeks another reachable city of yours; its mission line then shows the actual return day. Without a reachable home it stops where it is."
+      ],
+      [
+        "web/static/codex/sight.md",
+        39,
+        "- Out in the field it eats double, from home, like any unit away from its city ([[upkeep]]). A ship takes on food for every day of the expedition before it sails ([[sea]])."
+      ],
+      [
+        "web/static/codex/ship-food-return.md",
+        1,
+        "A ship at sea **turns home early** when its food is only enough for the voyage home, with one day in reserve. It uses its actual crew and any carried soldiers to work out the ration. A ship heading to a city it can still reach with its food may continue there for provisions instead."
+      ],
+      [
+        "web/static/codex/sea.md",
+        13,
+        "**Lay up** an idle, empty ship in your own active Harbour from War \u2192 Army when you do not need it. The crew joins the port's population, so the ship costs no food or silver and cannot sail, carry goods or take a passenger. **Fit out** drafts its crew again and takes three days before the ship is ready. The crew draws home-rate food and, for War Galleys, half field pay while fitting out. A laid-up hull follows its port if the city is annexed. See [[units]] and [[upkeep]]."
+      ],
+      [
+        "web/static/codex/sea.md",
+        17,
+        "- **A ship is given its whole mission in port, then sails alone.** From **War \u2192 Army**, **Load** a land unit onto a ship standing with it, then send it on a **mission**: **Land** puts the cargo ashore on open ground and sails home again on its own \u2014 select \"\u2026and found a colony\" to settle right there, no further order needed. The port pays the colonists' silver the moment the ship sails, as it would for a column on foot ([[colonies]]); if the colony cannot be founded, or you unload them at home, the silver comes back with them. **Patrol** and **Explore** return home by themselves. For **Explore**, choose an area and duration in days: the port loads provisions for the whole expedition, and the ship turns home by half the duration ([[sight]]). **Passage** is a fourth mission, empty of cargo, given to carry a [[messengers|letter]] or [[runners|order]] \u2014 see \"Arrange passage\" below."
+      ],
+      [
+        "web/static/codex/sea.md",
+        20,
+        "- **Crew pay.** Each surviving rower draws the worker\u2019s wage: 1 silver per hundred rowers per day in the field, half at home. Full crews cost Galley **0.2 / 0.1**, War Galley **0.5 / 0.25**, Emporos **0.1 / 0.05** silver per day in the field / at home. Repairs and fitting out count as home; marching, posted and freight missions count as field service, including waits between freight legs. A laid-up ship draws no pay. Carried soldiers draw their own field pay ([[upkeep]])."
+      ],
+      [
+        "web/static/codex/sea.md",
+        21,
+        "- **Supplies.** Rowers eat the same per-person ration as spearmen, doubled while marching, posted or freighting ([[upkeep]]). The actual surviving crew determines the ration, and any carried soldiers need their own field rations too. A crew eats grain, fish, oil and wine, with the same proportional sharing as the city. The port loads food for the voyage from these four goods; livestock is not ship provision. War \u2192 Army shows food for N days and the goods aboard, including ships carrying goods on a freight route and waiting between its legs. Keryx `unit list` shows the same supply. Unused provisions come home as the goods that were loaded, so fish does not turn into grain. A ship turns home before its food runs too low for the voyage back, unless it can reach a city for provisions. You hear why when it reaches home; see [[ship-food-return]]. Ports feed visiting ships as guests; see [[xenia]]. At sea it eats only what was loaded aboard, never from a city's granary. The food gauge counts whole days; \"less than a day\" means the last ration is being eaten, \"out of food\" means nothing is left."
+      ],
+      [
+        "web/static/codex/sea.md",
+        25,
+        "The open sea is never quite safe, but **you can see its storms** \u2014 see [[storms]]. A storm is three sea hexes of dark cloud that drift slowly across the Thalassa; a ship that crosses any of them takes the damage, even between the day's start and end, whatever the ship is doing \u2014 a fleet, a ship carrying an army, an expedition, a galley carrying a trade, a transfer or a gift. A storm can also drift onto a slow ship. Whose ship it is and why it sails never change that. Rivers and land have no storms. "
+      ],
+      [
+        "web/static/codex/sea.md",
+        27,
+        "- **Each storm costs the ship two points of hull** (of five), once, however many days it spends inside that storm. Three storms sink a ship that began with full hull. You are told where it struck and how much hull is left."
+      ],
+      [
+        "web/static/codex/sea.md",
+        88,
+        "- **The ship waits, but not forever.** You choose how many days it holds off the shore. If the unit reaches the shore in time, it boards at once and the ship sails home with it. If the wait runs out first, the ship sails home empty \u2014 you are told either way."
+      ],
+      [
+        "web/static/codex/sea.md",
+        96,
+        "day**. Rivers allow **2 hexes per day**; a ford takes **1 day** for a ship."
+      ],
+      [
+        "web/static/codex/runners.md",
+        5,
+        "While the Runner is still on the road, the order shows under the unit in **War \u2192 Army** and in `keryx army`, with the day he is expected \u2014 it disappears once he has delivered it."
+      ],
+      [
+        "web/static/codex/runners.md",
+        31,
+        "**Diplomacy \u2192 Runners** (or `keryx runners`) shows every runner of yours that is still out, in groups: **waiting for a ship**, **on the way**, **aboard a ship**, **waiting for an answer**, and **on the way home**. A waiting runner says where it stands, since when, and why \u2014 and offers **Arrange passage** (one of your own free ships) or **Call back** (only when it waits in your own port). A runner **waiting for an answer** has reached the other Wanax's city and stands there until they answer \u2014 the tab says since when, and when it heads home if nobody does. An order's runner names the order it carries. Times are the clock time something happens \u2014 \"today 18:34\" \u2014 never a day count."
+      ],
+      [
+        "web/static/codex/runner-lost-at-sea.md",
+        13,
+        "An older sealed record may have no preserved departure day; it says \"Sent on an unknown day\" rather than guessing."
+      ],
+      [
+        "web/static/codex/routes.md",
+        28,
+        "same path**, rounded once to the nearest whole day, with at least one day per leg."
+      ],
+      [
+        "web/static/codex/routes.md",
+        34,
+        "arrival day shown in your cargo list is the scheduled delivery; delays or"
+      ],
+      [
+        "web/static/codex/roads.md",
+        10,
+        "| Foot soldiers | 0.75 day |"
+      ],
+      [
+        "web/static/codex/roads.md",
+        11,
+        "| Runners and messengers | 0.35 day |"
+      ],
+      [
+        "web/static/codex/roads.md",
+        12,
+        "| Caravans | 0.6 day |"
+      ],
+      [
+        "web/static/codex/roads.md",
+        13,
+        "| War chariots | 0.4 day |"
+      ],
+      [
+        "web/static/codex/roads.md",
+        16,
+        "(Off the road a foot soldier needs 1 day on plains, 2 on hills and 3 in semi-desert, so a road helps most where the ground is hardest.)"
+      ],
+      [
+        "web/static/codex/roads.md",
+        33,
+        "Three plains edges cost 24 stone. A hundred men build a plains edge in **1 day** and a hill edge in **2**; fewer men take longer. When the edge is finished you get a **RoadEdgeBuilt** notice."
+      ],
+      [
+        "web/static/codex/rites.md",
+        13,
+        "An answered prayer starts that god's waiting time across all your cities. **Kult** and `keryx rite --list` show the remaining wait, an active gift or a gift awaiting departure. Missing temples and insufficient kharis are named as separate requirements. Potnia's two prayers share her 24-day wait. An active gift cannot be renewed before it ends. A gift awaiting departure cannot be renewed before it is used."
+      ],
+      [
+        "web/static/codex/rites.md",
+        24,
+        "`keryx status` and `keryx city`, with its yield bonus, affected goods and days left."
+      ],
+      [
+        "web/static/codex/rites.md",
+        29,
+        "- **Potnia's Vision** \u2014 offer 10 grain + 3 silver. Potnia marks one source of copper, tin, silver or incense you neither see nor remember, and unknown ground within two hexes, as grey memory. It creates no living eyes and shows no moving activity. Potnia waits 24 days after answering."
+      ],
+      [
+        "web/static/codex/rites.md",
+        30,
+        "- **Mistress of the Walls** \u2014 offer 8 grain + 4 timber. Potnia strengthens your own garrison defending this city by a quarter for 6 days. It helps neither an attacking army nor soldiers away from that city. It shares Vision's wait."
+      ],
+      [
+        "web/static/codex/rites.md",
+        31,
+        "- **Green Shoots** \u2014 offer 15 grain + 2 silver. Velchanos raises grain, oil and wine yield by a quarter for 25 days. Fish and the herd are unchanged. He waits 25 days after answering."
+      ],
+      [
+        "web/static/codex/rites.md",
+        33,
+        "- **The Thread Shows a Path** \u2014 offer 4 timber + 3 silver to Asterion. The next land caravan or Runner leaving this city takes a quarter less time on its outward leg. A land caravan can be intercepted only within one hex of an enemy army, instead of two. Runners remain sacred. Asterion waits 12 days after answering."
+      ],
+      [
+        "web/static/codex/rites.md",
+        34,
+        "- **Favourable Passage** \u2014 offer 6 fish + 3 silver to The Sea Daimons of Stillness. The next ship leaving this city takes a quarter less time and suffers no storm damage on its outward leg. A Runner aboard travels at that ship's actual speed. The Sea Daimons wait 12 days after answering."
+      ],
+      [
+        "web/static/codex/rites.md",
+        38,
+        "A departure gift stays in the city where you offered until an eligible journey physically leaves. It is used once. It cannot follow the city to a new owner, change a journey already underway, or bless a return leg. **Awaiting next departure** appears beside the prayer while the gift is unused; the god's waiting time is shown separately. Other ongoing gifts show their remaining days."
+      ],
+      [
+        "web/static/codex/rites.md",
+        40,
+        "In Keryx, `rite --list` shows your prayers, their effects, offerings, active days, pending departure gifts and waiting time. `rite --prayer <id>` chooses one. Omitting the ID uses the prayer marked as the culture's default \u2014 Mistress of the Walls for Minoans."
+      ],
+      [
+        "web/static/codex/report.md",
+        9,
+        "Write what happened and press **Send**. Your position on the map, the current day and what you were looking at are attached automatically, so you do not need to describe them."
+      ],
+      [
+        "web/static/codex/occupation.md",
+        11,
+        "  on the map for the rest of that day, for anyone who has eyes on it, and stands as a ruin after;"
+      ],
+      [
+        "web/static/codex/messengers.md",
+        15,
+        "A letter to a distant city takes days, and the reply takes as long again. You are told when your messenger arrives, and again when he is home with the answer. Plan diplomacy the way you plan a march."
+      ],
+      [
+        "web/static/codex/messengers.md",
+        19,
+        "A newly delivered plain letter can be answered on its arrival day and the following day. The bearer leaves at the start of the next day. **Letters** shows the departure time with the local departure time. Once the return-post window closes, you cannot reply through that bearer, even while his departure is still being processed. Reading does not extend his stay. A previously issued longer stay keeps its saved deadline. Trade offers keep their own answer deadline."
+      ],
+      [
+        "web/static/codex/marching.md",
+        45,
+        "Choose **Explore** in the map menu; the default expedition duration is ready to use. Open **More** to change the duration in **days**. The chosen hex is the centre of an area, even in fog. The order summary shows its extent and duration before sending; **War \u2192 Army \u2192 March** offers the same controls."
+      ],
+      [
+        "web/static/codex/marching.md",
+        47,
+        "It travels first to the exact hex you chose, even if that hex is already seen, then chooses nearby unexplored ground on its own. It turns home by half the duration. It can turn earlier if the area is already explored or nothing further is reachable. **War \u2192 Army** and `keryx unit list` show the area, duration, latest turn and home day, and why it has turned. A Runner-delivered order begins when received, so those days become known when it starts. On return, Dispatches carries the report ([[sight]])."
+      ],
+      [
+        "web/static/codex/marching.md",
+        55,
+        "For foot soldiers, each plain, river valley or delta takes **1 day**; olive groves"
+      ],
+      [
+        "web/static/codex/marching.md",
+        56,
+        "and maquis **1.5 days**; hills and cedar forest **2 days**; semi-desert **3 days**."
+      ],
+      [
+        "web/static/codex/marching.md",
+        57,
+        "A ford takes **2.5 days** on foot. Mountains cannot be crossed."
+      ],
+      [
+        "web/static/codex/marching.md",
+        58,
+        "War chariots are fast on the flat and slow everywhere else: **0.67 days** on a"
+      ],
+      [
+        "web/static/codex/marching.md",
+        59,
+        "plain, river valley or delta, **2 days** in olive groves and maquis, and"
+      ],
+      [
+        "web/static/codex/marching.md",
+        60,
+        "**3 days** in hills, cedar forest and semi-desert. A ford takes them 2.5 days"
+      ],
+      [
+        "web/static/codex/marching.md",
+        64,
+        "A fully crewed Galley sails **3 coastal hexes per day** or **5 deep-sea hexes per"
+      ],
+      [
+        "web/static/codex/marching.md",
+        65,
+        "day**, **2 river hexes per day**, and takes **1 day** through a ford. A War Galley"
+      ],
+      [
+        "web/static/codex/marching.md",
+        71,
+        "These are base costs before rounding the whole journey to at least one day."
+      ],
+      [
+        "web/static/codex/marching.md",
+        73,
+        "its recorded costs and arrival day when the movement rules change. A finished"
+      ],
+      [
+        "web/static/codex/kharis.md",
+        5,
+        "| **Favorable** | The gods may bless you: a blessed harvest (a quarter more food for 25 days, fish excepted) or unexpected recruits. |"
+      ],
+      [
+        "web/static/codex/kharis.md",
+        7,
+        "| **Suspicious** (5 to below 30) | Below 15, a 3% chance of punishment each day, with or without a temple; recent punishment gives seven game days of protection. |"
+      ],
+      [
+        "web/static/codex/kharis.md",
+        18,
+        "For **three cities with 2,500 residents altogether**, upkeep is **0.1 + 0.4 + 0.25 = 0.75 kharis per day**. A realm without a city has the base cost only."
+      ],
+      [
+        "web/static/codex/kharis.md",
+        20,
+        "**Kult \u2192 Upkeep of the cult** and `keryx status` show the base, cities and residents separately, alongside projected temple production and net. One more fed temple worker gives **at least +1.05 kharis per day**, and more when the cult\u2019s reference offering of grain is scarce in the world. This describes the extra worker's yield: employing one also requires a free citizen, an available temple workplace and that temple's daily offering. A temple earns favour; it does not remove its city's cost."
+      ],
+      [
+        "web/static/codex/kharis.md",
+        22,
+        "Below **15 Kharis**, there is a 3% chance of punishment each day **with or without a temple**. An actual punishment gives **seven game days of protection**. A game day follows this world's pace; Kult and `keryx status` show the protection's end in your local clock. Nothing taken means no new protection. See [[divine-wrath]]. A punishment chooses a random eligible city of yours with something it can take; it need not strike the capital."
+      ],
+      [
+        "web/static/codex/kharis.md",
+        26,
+        "Three things must be true, every day:"
+      ],
+      [
+        "web/static/codex/kharis.md",
+        29,
+        "2. **People serve in it** \u2014 placed temple workers, 2 workplaces per level in each temple. Each earns 1.05 kharis per day before the offering factor, scarcity and decay. See [[temples]]."
+      ],
+      [
+        "web/static/codex/kharis.md",
+        32,
+        "In a small realm, a fully staffed, fed level-1 temple can earn more favour than the realm loses each day. Compare the projected net; a larger realm may need more temples or higher levels. Larger temples can employ more devotion and raise kharis faster when staffed and fed."
+      ],
+      [
+        "web/static/codex/kharis.md",
+        36,
+        "Kharis decays every day regardless. Additional cities and residents increase cult upkeep even when every city has a temple ([[colonies]])."
+      ],
+      [
+        "web/static/codex/kharis.md",
+        41,
+        "`keryx status` and `keryx city`, with its yield bonus, affected goods and days left."
+      ],
+      [
+        "web/static/codex/kharis.md",
+        46,
+        "A notification marks each change between **Favorable**, **Indifferent**, **Suspicious** and **Wrathful**, with the new Kharis value and recorded day. Check **Kult** for decay and temple support; staff and feed your [[temples]]."
+      ],
+      [
+        "web/static/codex/keryx.md",
+        35,
+        "Orders given through Keryx obey the same rules as in the browser: they travel by [[runners|Runner]] and take days ([[time]])."
+      ],
+      [
+        "web/static/codex/keryx.md",
+        41,
+        "Use a city name or province ID either positionally or with `--province` in `city`, `placements`, `status` and `build`. For placement: `keryx place Knossos fish 13 -1` or `keryx place --province Knossos fish 13 -1`. Put flags before the good when using a negative delta. If no citizens work that good on the chosen hex, the result lists where they do work it. `founding settle --yes` skips the question. Travel estimates use days; if an arrival cannot be calculated it is reported as unavailable."
+      ],
+      [
+        "web/static/codex/horde.md",
+        9,
+        "- **The Host itself eats nothing.** A people on the move carries its own bread. The grain in the store is a dowry that goes into your city's stores the day you found."
+      ],
+      [
+        "web/static/codex/harbour.md",
+        10,
+        "Each deep-water fisher catches **1 fish per day**, at every harbour level. The harbour has no fishing multiplier and adds no coastal places. Coastal water always has two places producing 1 fish per fisher per day; a bay has two places producing 2 each. See [[fishing]] for the bay rule. Rivers and fords receive no harbour bonus."
+      ],
+      [
+        "web/static/codex/growth.md",
+        1,
+        "A city grows when it has a **surplus of food** \u2014 when it produces more food each day than its people eat. Growing costs no food: the surplus stays in the same city grain, fish, oil and wine stocks that feed your people."
+      ],
+      [
+        "web/static/codex/growth.md",
+        5,
+        "- **Variety.** Any one of the four food goods feeds people. Growth gains 10% per extra kind that forms a real share of the food eaten that day, up to the existing variety ceiling: two substantial kinds give a 1.1 multiplier and four give 1.3. Livestock counts only if eaten as a real share of emergency food. A good merely sitting in store, or eaten only in crumbs, gives no variety bonus."
+      ],
+      [
+        "web/static/codex/growth.md",
+        8,
+        "In short: a city grows only while it makes more food than it eats; it holds steady when it does not; and it shrinks when it goes hungry. The city screen and `keryx status` say which of the three it is, and the food net behind it, for example \"not growing: food net -1.7 per day (needs more than 0)\"."
+      ],
+      [
+        "web/static/codex/goods.md",
+        16,
+        "- **Goods** \u2014 stock, production and use of each good, city by city. The settlements table compares people, food produced minus food eaten, food days and shortage status; select a city to close Economy and open its City drawer. Goods piling up with nothing using them are marked \u2014 see [[surplus]]."
+      ],
+      [
+        "web/static/codex/goods.md",
+        26,
+        "Production per day is output before meals and other uses. Food net combines grain, fish, oil and wine production minus population demand. The city has one stock of each good; food coverage counts these four goods together. Shortfall waiting estimates assume current production continues, before other use."
+      ],
+      [
+        "web/static/codex/goods.md",
+        33,
+        "Each good has its own storage capacity in each city. A city stores **2 000 of each food** \u2014 grain, fish, oil and wine \u2014 and a [[buildings|Granary]] raises that to 4 000, 10 000 and 20 000. The herd has its own pens. A city that already held more food when this ceiling came in keeps it and can eat it, but it never fills back above the ceiling. **StorageCapacityWarning** is an advance dispatch when the server forecasts a stock nearing its cap. Keryx status and the City drawer show the good, stored amount, capacity and **full in N days**. The estimate uses the current net rate and deliveries on the way; it is a forecast, so changing production or orders can change it."
+      ],
+      [
+        "web/static/codex/goods.md",
+        39,
+        "A **StorageOverflow** notification means goods have already been lost because storage was full. It records the city, good, quantity lost and the source, such as production, a delivery, returned provisions or a refund. It does not mean the entire shipment was lost: only the reported excess failed to fit. Production into a store that stays full is lost every day; you are told when it starts, not every day it goes on. If the forecast clears and the city later approaches capacity again, a new warning can be sent."
+      ],
+      [
+        "web/static/codex/glossary.md",
+        27,
+        "**Day** \u2014 the world\u2019s unit of time; the calendar names its date. See [[time]]."
+      ],
+      [
+        "web/static/codex/getting-in.md",
+        10,
+        "A new world stands still until enough Wanaxes have entered it. Until then no day passes: nothing is produced, eaten or delivered \u2014 and no orders are taken. You can look around, read this Codex and file reports, but every order is refused with *\"The world has not begun \u2014 1 of 4 Wanaxes have arrived\"* (the numbers are the world's own) until the last of them enters. This is deliberate, so that whoever arrives first does not grow on everyone else's waiting time."
+      ],
+      [
+        "web/static/codex/founding.md",
+        11,
+        "- **It does not feed itself** \u2014 you are told how many days your carried grain buys, and whether a Farm would fix it. If it says a farm will not help, there is no farmable ground in reach at all."
+      ],
+      [
+        "web/static/codex/founding.md",
+        15,
+        "In **Details**, below the grain line, look for **deposits**: copper, tin, silver, cedar. A site with metal under it is worth walking extra days for. A site with none is not a mistake \u2014 you can buy metal ([[trade]]) \u2014 but you will be buying it from someone who walked those days. Read [[bronze]] before you decide."
+      ],
+      [
+        "web/static/codex/founding.md",
+        40,
+        "Place citizens on olive groves, maquis, hills or river valleys for timber, or on cedar forest for cedar to cover timber costs, and on stone-bearing ground for stone; idle citizens produce nothing. Maquis, hills and river valleys each have one timber place before a Lumbermill is built, yielding 0.33 timber per worker per day ([[catchment]]). The forecast says when Demeter\u2019s farm is already included; another farm is not an extra founding gift."
+      ],
+      [
+        "web/static/codex/founding.md",
+        42,
+        "On grain-bearing hills, a Farm at level 1 makes 0.85 grain per worker per day, with room for five workers. Plain hills give 0.5 per worker. With another grain-bearing hill in reach, six food workers can feed a new city of 1,000 people; leave the rest for timber and stone. Check the forecast for your actual site."
+      ],
+      [
+        "web/static/codex/food.md",
+        1,
+        "Your people eat **grain, fish, oil and wine** every day. One unit of each supplies one unit of food. The meal is shared in proportion to what is available, including the day\u2019s production: a city with 100 grain and 900 fish takes one tenth of its meal as grain and nine tenths as fish. No food good is used up first. If these four cannot feed the people, livestock remains their emergency food: each animal supplies 3 food. Armies, ships and caravans use the four food goods, not livestock."
+      ],
+      [
+        "web/static/codex/food.md",
+        5,
+        "If the available food and emergency livestock run out and the day's need is still unmet:"
+      ],
+      [
+        "web/static/codex/food.md",
+        7,
+        "- the settlement **loses part of its population that day**, and keeps losing while the shortfall lasts;"
+      ],
+      [
+        "web/static/codex/food.md",
+        11,
+        "You get an urgent **CivilianStarvationStarted** notification when hunger is first observed. It records the day, city and how much of that day's meal was missing, in food. The latest start stays above ordinary history in Notifications until that city's food supply has recovered steadily. You get **CivilianStarvationEnded** after a run of fully fed days; the old start then returns to ordinary history. Hunger returning during that recovery window belongs to the same warning. A new spell after recovery starts a new pair of notices, rather than repeating the warning every day."
+      ],
+      [
+        "web/static/codex/food.md",
+        19,
+        "The herd breeds itself \u2014 no herder is needed. Every ten animals give one calf every **5 days** when the city has grain to feed it (**1 grain per calf**), and every **20 days** on pasture alone. If the grain does not reach every calf, the fed ones come on the 5-day beat and the rest wait for the 20-day beat. A city can only keep so many animals: the **herd cap** is 50, and every level of a **Pen** ([[buildings]]) adds 100. **Status** and **City \u2192 Food** show it as *Herd 50 / 50*, with the next calves (\"4 calves in 3 days (4 grain)\"). Each animal is worth **3 food**. Animals **above** the cap are eaten **first** at the day's meal \u2014 fresh meat does not keep \u2014 and the four goods share whatever hunger is left. If animals are still above the cap after the meal, the pen cannot hold them and they are **lost**. A bigger Pen keeps more of them. Animals under the cap stay in the herd and are eaten only if the people would otherwise starve."
+      ],
+      [
+        "web/static/codex/food.md",
+        29,
+        "Your city has food stocks: the grain, fish, oil and wine in its [[goods|stores]]. **Food for N days** shows those stocks at current consumption, without counting future production. **City \u2192 More \u2192 Food details** shows production, the last meal by good and army food separately. Different goods forming a real share of the meal improve [[growth|population growth]]; merely storing another food does not. Stored food buys time during a shortfall. A city under [[sieges|siege]] starves because its fields are cut off, not because it produces too little."
+      ],
+      [
+        "web/static/codex/fishing.md",
+        3,
+        "| Water | Fishing places | Fish per fisher per day |"
+      ],
+      [
+        "web/static/codex/fishing.md",
+        13,
+        "A harbour creates places, not workers. Put citizens on the deep-water hexes to use them. Higher harbour levels open more places there, while each fisher still catches 1 fish per day."
+      ],
+      [
+        "web/static/codex/fishing.md",
+        15,
+        "**A storm stops the fishing.** While a [[storms|storm]] stands on a fishing hex, the citizens placed there catch nothing. They fish again the day it has moved on. **City** shows *Storm over N fishing grounds*, and `keryx city` and `keryx status` print the same line."
+      ],
+      [
+        "web/static/codex/divine-wrath.md",
+        1,
+        "The gods may punish a realm **below 15 kharis**, with or without a [[temples|temple]]. Each day brings a **3% chance**. At exactly 15 there is no risk. A punishment chooses one of your active cities that has something it can take."
+      ],
+      [
+        "web/static/codex/divine-wrath.md",
+        5,
+        "When your standing crosses **30 downward** and the projected net is negative, a warning tells you your kharis, net per day and how many days it would take to reach 15 at that rate. It is sent once per downward crossing. A positive or zero net gives no warning. Further decline below 30 does not repeat it; recovery above 30 allows a new downward crossing to warn again."
+      ],
+      [
+        "web/static/codex/divine-wrath.md",
+        9,
+        "## Seven game days after punishment"
+      ],
+      [
+        "web/static/codex/divine-wrath.md",
+        11,
+        "An actual loss gives your whole realm **seven game days of protection from further divine punishment**. A game day follows this world's pace; **Kult**, `keryx status` and the punishment notice show the protection's end in your local clock. Repeated processing does not extend it. At the end, the ordinary risk resumes if kharis is still below 15. The protection follows the Wanax, across their cities and temples."
+      ],
+      [
+        "web/static/codex/coming-back.md",
+        17,
+        "1. **Food** \u2014 a [[food|shortfall]] kills people every day it lasts."
+      ],
+      [
+        "web/static/codex/coming-back.md",
+        22,
+        "A [[kharis|Kharis]] notice marks each change between Favorable, Indifferent, Suspicious and Wrathful. Check **Kult** for Kharis and the upkeep of the cult. It fades from the start; every active city and its residents count toward the cost. A warning marks a fall below 30 with negative net; below 15 punishment can fall, with or without a temple. An actual punishment protects you for seven days; Kult shows when this protection ends. Staff and feed temples, then check the projected net."
+      ],
+      [
+        "web/static/codex/city.md",
+        11,
+        "- **Food** \u2014 how many days the city\u2019s current grain, fish, oil and wine stocks last at current consumption, whether stocks are growing, and whether the fields can feed everyone. See [[food]]."
+      ],
+      [
+        "web/static/codex/city.md",
+        13,
+        "Open **More** for people in service and the labour pool, **Devotion** ([[temples]]), **Food details** ([[food]]), **Last day**, and **Daily history \u2192 Show recent days**. These details and controls remain available while the main view stays short."
+      ],
+      [
+        "web/static/codex/catchment.md",
+        5,
+        "**Maquis, hills and river valleys also give timber:** each hex has room for one timber worker, producing **0.33 timber per day**. A [[buildings|Lumbermill]] adds four places, making room for five timber workers, and multiplies each worker's output by \u00d71.7 at level 1, \u00d72.4 at level 2 or \u00d73.1 at level 3. Olive groves remain a richer source of timber; cedar forest produces cedar, which can cover timber costs."
+      ],
+      [
+        "web/static/codex/buildings.md",
+        32,
+        "Every other building, including **Harbour**, stands in the city itself. Harbour is the one exception worth naming: though it stands in the city (and needs the city's own hex to border the sea), its fishing effect reaches every deep-sea hex in your catchment at once. Harbour levels 1, 2 and 3 open 1, 2 and 4 places per deep-water hex; each fisher catches 1 fish per day. It gives no fishing multiplier or extra coastal places. See [[fishing]] and [[harbour]]."
+      ],
+      [
+        "web/static/codex/battle.md",
+        5,
+        "A battle is not one roll. It runs over several days, and it always resolves the same way from the moment it begins. What decides it:"
+      ],
+      [
+        "web/static/codex/battle.md",
+        9,
+        "- **Walls**, if a city is involved. A wall absorbs a fixed amount of damage each day \u2014 a shield, not a sword. **storm** halves it, at a price."
+      ],
+      [
+        "web/static/codex/battle.md",
+        18,
+        "**Mistress of the Walls** ([[rites]]) strengthens only the casting Wanax's own garrison defending the blessed city, for 6 days. It gives no bonus to an attacker, a field army or a new owner of the city."
+      ],
+      [
+        "web/static/codex/account.md",
+        1,
+        "Click your Wanax name at the top left to open **Account**. Its realm summary has five rows for your selected world: your Wanax name, founding day, owned active cities, their total population, and your realm's Kharis."
+      ],
+      [
+        "web/static/codex/index.json",
+        7,
+        "Days and the clock"
+      ]
+    ]
+  },
+  "server": {
+    "raw_literals_or_lines": 32,
+    "files": 10,
+    "rows": [
+      [
+        "server/api/handlers/unit_march_preview.go",
+        119,
+        "could not read expedition day"
+      ],
+      [
+        "server/api/handlers/settlement.go",
+        799,
+        "temple is still finishing here \u2014 it becomes usable within a day of completion; retry shortly"
+      ],
+      [
+        "server/api/handlers/settlement.go",
+        1026,
+        "Potnia shelters your walls \u2014 your own garrison defends this city a quarter stronger for 6 days."
+      ],
+      [
+        "server/api/handlers/settlement.go",
+        1156,
+        "%s smiles upon your fields \u2014 grain, oil and wine yield a quarter more for %d days."
+      ],
+      [
+        "server/api/handlers/settlement.go",
+        1161,
+        "days"
+      ],
+      [
+        "server/api/handlers/province.go",
+        2348,
+        "foundry is still finishing here \u2014 it becomes usable within a day of completion; retry shortly"
+      ],
+      [
+        "server/api/handlers/province.go",
+        2485,
+        "could not read recruitment day"
+      ],
+      [
+        "server/api/handlers/province.go",
+        2500,
+        "could not read recruitment day"
+      ],
+      [
+        "server/api/handlers/province.go",
+        2778,
+        "warning: once this unit garrisons it needs %.1f grain + %.1f silver per day upkeep \u2014 "
+      ],
+      [
+        "server/api/handlers/province.go",
+        2779,
+        "this settlement's current net after its existing army's upkeep is %+.1f grain per day, %+.1f silver per day; "
+      ],
+      [
+        "server/api/handlers/province.go",
+        3492,
+        "could not read current day"
+      ],
+      [
+        "server/api/handlers/opening_dispatch.go",
+        46,
+        "Time. A day passes every %s."
+      ],
+      [
+        "server/api/handlers/opening_dispatch.go",
+        48,
+        " Days begin after %d Wanaxes join."
+      ],
+      [
+        "server/api/handlers/opening_dispatch.go",
+        52,
+        "Foot soldiers cross a plains hex in %g day, olive woodland in %g, hills or cedar forest in %g, desert in %g. War chariots cross plains in %g day but need %g in olive woodland and %g in hills, cedar forest or desert. A full-crewed galley crosses %g coastal or %g open-sea hexes a day."
+      ],
+      [
+        "server/api/handlers/opening_dispatch.go",
+        55,
+        "The gods. A new Wanax starts at %g Kharis. It fades slowly from the start; each additional city increases the daily cost, even with a temple. A temple takes %d days to build: staff and feed it to earn favour. Low standing risks punishment."
+      ],
+      [
+        "server/api/handlers/opening_dispatch.go",
+        62,
+        "The gods. Your standing is kept and fades from the start. Each additional city increases the daily cost, even with a temple. A temple takes %d days to build: staff and feed it to earn favour. Low standing risks punishment."
+      ],
+      [
+        "server/api/handlers/messenger.go",
+        1274,
+        "could not read current day"
+      ],
+      [
+        "server/api/handlers/kingdom.go",
+        1099,
+        "could not read current day"
+      ],
+      [
+        "server/internal/tick/eta.go",
+        60,
+        "1 day"
+      ],
+      [
+        "server/internal/tick/eta.go",
+        62,
+        " days"
+      ],
+      [
+        "server/internal/tick/eta.go",
+        65,
+        "day "
+      ],
+      [
+        "server/internal/religion/prayers.go",
+        121,
+        "Blesses the harvest \u2014 grain, oil and wine yield a quarter more for 25 days."
+      ],
+      [
+        "server/internal/religion/prayers.go",
+        144,
+        "Blesses the harvest \u2014 grain, oil and wine yield a quarter more for 25 days."
+      ],
+      [
+        "server/internal/religion/prayers.go",
+        167,
+        "Blesses the harvest \u2014 grain, oil and wine yield a quarter more for 25 days."
+      ],
+      [
+        "server/internal/religion/prayers.go",
+        190,
+        "Blesses the harvest \u2014 grain, oil and wine yield a quarter more for 25 days."
+      ],
+      [
+        "server/internal/religion/prayers.go",
+        214,
+        "Blesses the harvest \u2014 grain, oil and wine yield a quarter more for 25 days."
+      ],
+      [
+        "server/internal/religion/prayers.go",
+        238,
+        "Blesses the harvest \u2014 grain, oil and wine yield a quarter more for 25 days."
+      ],
+      [
+        "server/internal/religion/prayers.go",
+        264,
+        "Your own garrison defending this city fights a quarter stronger for 6 days."
+      ],
+      [
+        "server/internal/religion/prayers.go",
+        265,
+        "Grain, oil and wine yield a quarter more for 25 days; fish and the herd are unchanged."
+      ],
+      [
+        "server/internal/gossip/gossip.go",
+        47,
+        "3 days"
+      ],
+      [
+        "server/internal/combat/march_start.go",
+        782,
+        "march route: could not read current day"
+      ],
+      [
+        "server/internal/combat/march_start.go",
+        1385,
+        "the voyage needs %.0f (%.1f per day for %s out, on station and home again)"
+      ]
+    ]
+  }
+}

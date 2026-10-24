@@ -55,7 +55,7 @@ func TestArrangePassage_RefusalsNameShipAndWait(t *testing.T) {
 			t.Fatal(err)
 		}
 		msg := refusal(t, ship)
-		for _, want := range []string{"Silent Galley", "still being built", "day", "Arrange passage once"} {
+		for _, want := range []string{"Silent Galley", "still being built", "game day", "Arrange passage once"} {
 			if !strings.Contains(msg, want) {
 				t.Errorf("refusal %q lacks %q", msg, want)
 			}

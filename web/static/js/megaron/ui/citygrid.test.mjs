@@ -208,7 +208,7 @@ test('CG fishing: zero places disables adding; coast, bay and harbour capacities
   for (const [cap, rate] of [[2, 1], [2, 2], [1, 1], [4, 1]]) {
     const html = row(cap, rate);
     assert.equal((html.match(/class="gubbe-pip empty"/g) || []).length, cap);
-    assert.match(html, new RegExp('\\+' + rate.toString().replace('.', '\\.') + ' per day next'));
+    assert.match(html, new RegExp('\\+' + rate.toString().replace('.', '\\.') + ' per game day next'));
     assert.doesNotMatch(html, /data-verb="place1" disabled/);
   }
 });
@@ -250,7 +250,7 @@ test('ORDER28: shipyard staffing shows binary pace and preserves temple labels',
  const empty=cityBuildingsHTML([{building_type:'shipyard',level:1,goods:goods(0)}]);
  assert.match(empty,/waiting for shipyard workers/);
  assert.match(empty,/0 shipyard workers/);
- assert.doesNotMatch(empty,/Devotion|temple workers|per day/);
+ assert.doesNotMatch(empty,/Devotion|temple workers|per game day/);
  const working=cityBuildingsHTML([{building_type:'shipyard',level:1,goods:goods(1)}]);
  assert.match(working,/full working pace/);
 });

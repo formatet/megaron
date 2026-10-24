@@ -197,7 +197,7 @@ func TestArmyUpkeepWarning(t *testing.T) {
 			name: "already empty and falling is critical, not silently dropped (old runway() bug)",
 			netG: 100, netS: weakNegRate, grainStock: 5000, silverStock: 0,
 			wantWarn:     true,
-			wantContains: []string{"stock 0 lasts ~0 days"},
+			wantContains: []string{"stock 0 lasts ~0 game days"},
 		},
 		{
 			name: "just above the threshold stays silent",
@@ -508,8 +508,8 @@ func TestGrowthLine(t *testing.T) {
 		net   float64
 		want  string
 	}{
-		{"holding", -1.67, "Population 1000 — not growing: food net -1.7 per day (needs more than 0)"},
-		{"growing", 30.8, "Population 1000 — growing: food net +30.8 per day"},
+		{"holding", -1.67, "Population 1000 — not growing: food net -1.7 per game day (needs more than 0)"},
+		{"growing", 30.8, "Population 1000 — growing: food net +30.8 per game day"},
 		{"shrinking", -5, "Population 1000 — shrinking: hunger"},
 		{"", 3, ""},
 	}
@@ -537,7 +537,7 @@ func TestPrintWanaxGreeting_SaysTheDay(t *testing.T) {
 
 	out, _ := captureStdout(t, func() error { printWanaxGreeting(c, cfg.WorldID); return nil })
 	if !strings.Contains(out, "Wanax Idomeneus · "+testTickTime(0)) {
-		t.Errorf("status header does not say the day:\n%s", out)
+		t.Errorf("status header does not say the game day:\n%s", out)
 	}
 }
 

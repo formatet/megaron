@@ -77,13 +77,13 @@ export function goodRowHTML(target, good, take) {
         `<span class="gubbe-pip${i < good.placed ? '' : ' empty'}"></span>`).join('')
     : `<span style="color:var(--text-dim)">${fmtNum(good.placed)} placed, uncapped</span>`;
   const shipyard = good.staffing_only && target.building_type === 'shipyard';
-  const nextLabel = shipyard ? (good.placed > 0 ? 'full working pace' : 'waiting for shipyard workers') : good.staffing_only ? (full ? 'full' : 'serves the temple') : full ? 'full' : `+${fmtNum(Number(good.marginal_yield.toFixed(1)))} per day next`;
+  const nextLabel = shipyard ? (good.placed > 0 ? 'full working pace' : 'waiting for shipyard workers') : good.staffing_only ? (full ? 'full' : 'serves the temple') : full ? 'full' : `+${fmtNum(Number(good.marginal_yield.toFixed(1)))} per game day next`;
   const targetAttr = JSON.stringify(target).replace(/"/g, '&quot;');
   return `
     <div class="gubbe-good-row" data-good="${good.good_key}" data-cap="${good.cap ?? ''}" data-target="${targetAttr}">
       <div>
         <b>${shipyard ? 'Shipbuilding and repairs' : good.staffing_only ? 'Devotion' : good.good_key}</b>
-        <span style="color:var(--text-dim)"> ${good.staffing_only ? fmtNum(good.placed) + (shipyard ? ' shipyard workers' : ' temple workers') : fmtNum(Number(good.rate_per_tick.toFixed(1))) + ' per day total'} · ${nextLabel}</span>
+        <span style="color:var(--text-dim)"> ${good.staffing_only ? fmtNum(good.placed) + (shipyard ? ' shipyard workers' : ' temple workers') : fmtNum(Number(good.rate_per_tick.toFixed(1))) + ' per game day total'} · ${nextLabel}</span>
         <div>${pipsHTML}</div>
       </div>
       <div style="display:flex;gap:.3rem">

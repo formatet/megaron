@@ -645,3 +645,7 @@ Integration: `python3 tools/correspondence_integration_upgrade.py OUTPUT_JSON` t
 
 - `python3 tools/silver_flow_mutations.py`: silverflödets elva fysiska beslutmutationer; kräver namngivet rött och återställer exakta källbytes i `finally`.
 - `python3 tools/silver_flow_acceptance.py OUTPUT`: egen färsk PG/Redis/server; normal join/grundning, uttrycklig lokal rekryteringsfixtur, Firefox 1280/390 och faktisk Keryx. Rör ingen delad rigg.
+
+- `python3 tools/day_guard_test.py`: språkspärrens game-day-, kalender- och nakna dagsuttryck samt nästlade JS-litteraler.
+- `python3 tools/game_days_mutations.py`: fyra fysiska språkmutationer, en per spelaryta; kräver röd spärr och byteexakt återställning till grönt.
+- `python3 tools/game_days_acceptance.py OUTPUT [TICK_SECONDS]`: färsk egen PG/Redis/server, vanlig join/grundning, uttrycklig byggfixtur, Firefox1280/390 och verklig Keryx; jämför game-day-längd mot världens faktiska tempo.

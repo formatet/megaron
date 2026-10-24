@@ -40,7 +40,7 @@ func TestCodexRoadsArticleMatchesCode(t *testing.T) {
 	}
 	for _, f := range factors {
 		rt, _ := RoadTicks(f.category)
-		want := fmt.Sprintf("| %s | %g day", f.label, rt)
+		want := fmt.Sprintf("| %s | %g game day", f.label, rt)
 		if !strings.Contains(md, want) {
 			t.Errorf("roads.md lacks %q (code applies %g ticks per hex)", want, rt)
 		}

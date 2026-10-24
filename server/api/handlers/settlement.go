@@ -796,7 +796,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		).Scan(&queued)
 		if queued {
 			writeError(w, http.StatusBadRequest,
-				"temple is still finishing here — it becomes usable within a day of completion; retry shortly")
+				"temple is still finishing here — it becomes usable within a game day of completion; retry shortly")
 		} else if spec.GodID != "" {
 			writeError(w, http.StatusBadRequest,
 				fmt.Sprintf("%s is prayed at the %s — build it here first (`keryx build --type temple --god %s`)",
@@ -1023,7 +1023,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 			until := nowTick + combat.GarrisonDefenseTicks
 			_, err = tx.Exec(r.Context(), `UPDATE settlements SET garrison_defense_until_tick=$2,garrison_defense_owner_id=$3 WHERE id=$1`, settlementID, until, playerID)
 			effectPayload = map[string]any{"until_tick": until, "strength_factor": combat.GarrisonDefenseFactor}
-			message = "Potnia shelters your walls — your own garrison defends this city a quarter stronger for 6 days."
+			message = "Potnia shelters your walls — your own garrison defends this city a quarter stronger for 6 game days."
 		case religion.EffectBattleFrenzy:
 			effectPayload, message, err = h.applyBattleFrenzy(r.Context(), tx, settlementID)
 		case religion.EffectOracleRevealDeposits:
@@ -1153,7 +1153,7 @@ func (h *SettlementHandler) applyHarvestBlessing(ctx context.Context, tx pgx.Tx,
 	if err != nil {
 		return nil, "", err
 	}
-	msg := fmt.Sprintf("%s smiles upon your fields — grain, oil and wine yield a quarter more for %d days.",
+	msg := fmt.Sprintf("%s smiles upon your fields — grain, oil and wine yield a quarter more for %d game days.",
 		spec.God, economy.HarvestBlessingTicks)
 	return map[string]any{
 		"goods":       economy.HarvestBlessedGoods(),

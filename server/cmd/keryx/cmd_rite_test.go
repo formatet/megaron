@@ -12,7 +12,7 @@ func TestRiteDeparturePendingStatus(t *testing.T) {
 		wait int
 		want string
 	}{
-		{"god still waiting", 12, "awaiting next departure; 12 days remaining wait"},
+		{"god still waiting", 12, "awaiting next departure; 12 game days remaining wait"},
 		{"god ready but gift unused", 0, "awaiting next departure"},
 	} {
 		t.Run(test.name, func(t *testing.T) {
@@ -34,7 +34,7 @@ func TestRiteDeparturePendingStatus(t *testing.T) {
 
 func TestRiteReadinessAfterDeparture(t *testing.T) {
 	ready, detail := prayerReadiness(riteAvailablePrayer{CooldownRemainingDays: 7})
-	if ready != "cooldown" || detail != "7 days remaining" {
+	if ready != "cooldown" || detail != "7 game days remaining" {
 		t.Fatalf("consumed gift waiting for god: got %q/%q", ready, detail)
 	}
 	ready, detail = prayerReadiness(riteAvailablePrayer{Affordable: true})
