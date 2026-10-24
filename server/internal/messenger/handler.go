@@ -435,4 +435,72 @@ func (h *ReturnHandler) notifyReturned(ctx context.Context, worldID, messengerID
 		level = 2
 	}
 	_ = h.hub.NotifyPlayer(ctx, worldID, senderID, "MessengerReturned", level, body)
+	h.notifyOfferAnswer(ctx, worldID, messengerID)
+}
+
+// notifyOfferAnswer delivers a trade offer's answer when the runner that
+// carried it is home — never when the other side clicks (Timothy 2026-10-24,
+// temenos_settlement "Svar och kartkunskap"): the answer travels with the
+// bearer. Until then the TradeAccept/TradeDecline handlers sent
+// OfferAccepted/OfferDeclined at once. Same kinds and payload shape as
+// before, only the moment moved. It goes to whoever holds the origin city
+// when the runner arrives. Expired and cancelled offers say nothing here:
+// expiry has its own notice and a cancel is the sender's own act.
+func (h *ReturnHandler) notifyOfferAnswer(ctx context.Context, worldID, messengerID uuid.UUID) {
+	var status, kind, offerGood, wantGood string
+	var originID, destID, originOwner uuid.UUID
+	var offerSilver, offerQty, wantQty, wantSilver float64
+	var goodsAt, silverAt *string
+	err := h.pool.QueryRow(ctx,
+		`SELECT m.trade_offer->>'status', m.origin_id, m.destination_id, os.owner_id,
+		        COALESCE(m.trade_offer->>'kind', 'buy'),
+		        COALESCE((m.trade_offer->>'offer_silver')::float, 0),
+		        COALESCE(m.trade_offer->>'offer_good', ''),
+		        COALESCE((m.trade_offer->>'offer_qty')::float, 0),
+		        COALESCE(m.trade_offer->>'want_good', ''),
+		        COALESCE((m.trade_offer->>'want_qty')::float, 0),
+		        COALESCE((m.trade_offer->>'want_silver')::float, 0),
+		        m.trade_offer->>'goods_arrives_at', m.trade_offer->>'silver_arrives_at'
+		   FROM messengers m
+		   JOIN settlements os ON os.id = m.origin_id
+		  WHERE m.id = $1 AND m.trade_offer IS NOT NULL AND os.owner_id IS NOT NULL`,
+		messengerID,
+	).Scan(&status, &originID, &destID, &originOwner, &kind, &offerSilver, &offerGood, &offerQty,
+		&wantGood, &wantQty, &wantSilver, &goodsAt, &silverAt)
+	if err != nil {
+		return // no offer, or no one holds the origin city any more
+	}
+	// trade_offer is kind-dependent: buy = want_* goods for offer_silver,
+	// sell = offer_* goods for want_silver.
+	good, qty, silver := wantGood, wantQty, offerSilver
+	if kind == "sell" {
+		good, qty, silver = offerGood, offerQty, wantSilver
+	}
+	body := map[string]any{
+		"messenger_id":    messengerID,
+		"settlement_id":   originID,
+		"counterparty_id": destID,
+		"kind":            kind,
+		"good_key":        good,
+		"quantity":        qty,
+		"silver":          silver,
+	}
+	var noticeKind string
+	switch status {
+	case "accepted", "returned": // returned = the goods leg already landed
+		noticeKind = "OfferAccepted"
+		body["resolution"] = "accepted"
+		if goodsAt != nil {
+			body["goods_arrives_at"] = *goodsAt
+		}
+		if silverAt != nil {
+			body["silver_arrives_at"] = *silverAt
+		}
+	case "declined":
+		noticeKind = "OfferDeclined"
+		body["resolution"] = "declined"
+	default:
+		return
+	}
+	_ = h.hub.NotifyPlayer(ctx, worldID, originOwner, noticeKind, 3, body)
 }

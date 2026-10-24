@@ -39,7 +39,7 @@ type MessengerHandler struct {
 	pool      *pgxpool.Pool
 	scheduler *events.Scheduler
 	clk       clock.Clock
-	hub       *notify.Hub // nil-guarded; carries OfferAccepted/OfferDeclined to the offer's originator
+	hub       *notify.Hub // nil-guarded; OfferAccepted/OfferDeclined now go out on the runner's return (messenger.ReturnHandler)
 }
 
 // NewMessengerHandler creates a MessengerHandler.
@@ -1376,24 +1376,6 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// OfferAccepted — the offer's originator (here: the seller, who has been
-		// silently waiting since Send) gets an immediate decision notice instead of
-		// only learning via the delayed TradeDelivery/TradeReturn on physical arrival.
-		if h.hub != nil {
-			_ = h.hub.NotifyPlayer(r.Context(), worldID, originOwner, "OfferAccepted", 3, map[string]any{
-				"messenger_id":      messengerID,
-				"settlement_id":     originID,
-				"counterparty_id":   destID,
-				"kind":              kind,
-				"good_key":          offerGood,
-				"quantity":          offerQty,
-				"silver":            wantSilver,
-				"resolution":        "accepted",
-				"goods_arrives_at":  goodsArrivesAt,
-				"silver_arrives_at": silverArrivesAt,
-			})
-		}
-
 		sellResp := map[string]any{
 			"good_key":          offerGood,
 			"quantity":          offerQty,
@@ -1507,23 +1489,6 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		if err = tx.Commit(r.Context()); err != nil {
 			writeError(w, http.StatusInternalServerError, "commit failed")
 			return
-		}
-
-		// OfferAccepted — the offer's originator (here: the buyer) gets an immediate
-		// decision notice instead of only learning via the delayed TradeReturn.
-		if h.hub != nil {
-			_ = h.hub.NotifyPlayer(r.Context(), worldID, originOwner, "OfferAccepted", 3, map[string]any{
-				"messenger_id":      messengerID,
-				"settlement_id":     originID,
-				"counterparty_id":   destID,
-				"kind":              kind,
-				"good_key":          wantGood,
-				"quantity":          wantQty,
-				"silver":            offerSilver,
-				"resolution":        "accepted",
-				"goods_arrives_at":  goodsArrivesAt,
-				"silver_arrives_at": silverArrivesAt,
-			})
 		}
 
 		buyResp := map[string]any{
@@ -1695,27 +1660,6 @@ func (h *MessengerHandler) TradeDecline(w http.ResponseWriter, r *http.Request) 
 	if err = tx.Commit(r.Context()); err != nil {
 		writeError(w, http.StatusInternalServerError, "commit failed")
 		return
-	}
-
-	// OfferDeclined — the offer's originator gets an immediate decision notice
-	// instead of only learning via the delayed TradeReturn on escrow arrival.
-	// trade_offer fields are kind-dependent (buy: want_*/offer_silver · sell:
-	// offer_*/want_silver) — pick per kind, mirroring OfferAccepted.
-	if h.hub != nil {
-		notifGood, notifQty, notifSilver := wantGood, wantQty, offerSilver
-		if kind == "sell" {
-			notifGood, notifQty, notifSilver = offerGood, offerQty, wantSilver
-		}
-		_ = h.hub.NotifyPlayer(r.Context(), worldID, originOwner, "OfferDeclined", 3, map[string]any{
-			"messenger_id":    messengerID,
-			"settlement_id":   originID,
-			"counterparty_id": destID,
-			"kind":            kind,
-			"good_key":        notifGood,
-			"quantity":        notifQty,
-			"silver":          notifSilver,
-			"resolution":      "declined",
-		})
 	}
 
 	writeJSON(w, http.StatusOK, map[string]any{"status": "declined"})

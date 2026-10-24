@@ -510,7 +510,7 @@ export function notifText(kind, body) {
       return `${name}: grain net ${(netPerTick || 0) >= 0 ? '+' : ''}${(netPerTick || 0).toFixed(0)} per day${ticks}`;
     }
     case 'OfferAccepted': {
-      // Payload per TradeAccept (messenger.go): good_key/quantity/silver are
+      // Sent when the runner is home (messenger.ReturnHandler): good_key/quantity/silver are
       // already kind-branched correctly on the server, unlike Declined/Expired
       // below. Direction-aware ETA tail: for 'sell' the originator is the
       // seller waiting on the silver leg; for 'buy' the originator is the
@@ -537,7 +537,7 @@ export function notifText(kind, body) {
       const refund = body.kind === 'buy'
         ? `${body.silver || 0} silver`
         : `${Math.floor(body.quantity || 0)} ${body.good_key || ''}`;
-      return `Offer ${verb}: ${refund} — escrow refunded immediately`;
+      return `Offer ${verb}: ${refund} — escrow back in your stores`;
     }
     case 'ScoutReport': {
       // Payload per UnitScoutReportPayload: q/r/terrain + four deposit bools.

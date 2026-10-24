@@ -218,7 +218,7 @@ func printNotificationSummary(c *Client, n notificationItem) {
 		if b.Kind == "buy" {
 			refund = notificationAmount(b.Silver) + " silver"
 		}
-		line = fmt.Sprintf("Offer %s — %s escrow refunded immediately", verb, strings.TrimSpace(refund))
+		line = fmt.Sprintf("Offer %s — %s escrow back in your stores", verb, strings.TrimSpace(refund))
 	case "UnitAttrition":
 		line = fmt.Sprintf("%s starving — lost %d to hunger", subject, b.Lost)
 		if b.Disbanded {

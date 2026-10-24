@@ -420,8 +420,8 @@ func TestNotificationWordsAndArchiveSemantics(t *testing.T) {
 		{"SitosGranaryRelease", `{"food_released":50,"coverage_days":12,"per_good":{"grain":30,"fish":20},"granary_empty":true}`, []string{"20 fish, 30 grain", "12.0 days", "granary now empty"}, []string{"50 grain"}},
 		// Historical only: frozen archive payloads.
 		{"SitosGranaryRelease", `{"food_released":0.3,"coverage_days":12,"per_good":{"grain":0.3}}`, []string{"0.3 grain"}, []string{"released 0 grain"}},
-		{"OfferDeclined", `{"kind":"buy","quantity":0,"silver":15}`, []string{"15 silver", "refunded immediately"}, nil},
-		{"OfferExpired", `{"kind":"sell","quantity":12,"good_key":"tin"}`, []string{"12 tin", "refunded immediately"}, nil},
+		{"OfferDeclined", `{"kind":"buy","quantity":0,"silver":15}`, []string{"15 silver", "back in your stores"}, nil},
+		{"OfferExpired", `{"kind":"sell","quantity":12,"good_key":"tin"}`, []string{"12 tin", "back in your stores"}, nil},
 		{"OfferAccepted", `{"kind":"sell","quantity":12,"good_key":"tin","silver":15,"silver_arrival_tick":130}`, []string{"12 tin", "15 silver", "silver arrives " + testTickTime(130)}, []string{"tick"}},
 		{"UnitAttrition", `{"name":"Bronze Guard","lost":7,"disbanded":true}`, []string{"Bronze Guard starved to nothing"}, nil},
 		{"UnitDeserted", `{"name":"Bronze Guard","lost":7}`, []string{"Bronze Guard", "7 left unpaid"}, nil},

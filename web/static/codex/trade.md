@@ -15,7 +15,7 @@ Then **Dispatch →**. The offer walks with the [[messengers|messenger]], so it 
 
 An incoming offer appears in the conversation, for example *"Wants 40 tin · Offers 200 silver"*, with **Accept ✓** and **Decline ✗**. Your own pending offers carry **Cancel offer ✗** — withdraw it and your escrow comes back. If nobody answers before it expires, the escrow comes back too. Nothing is ever lost to silence.
 
-You are notified when an offer is accepted, declined or expires. The runner who carried it waits at the other city only while the offer is open: once it is accepted, declined or cancelled, the runner turns for home that same day.
+The runner who carried your offer waits at the other city only while the offer is open: once it is accepted, declined or cancelled, the runner turns for home that same day. **You learn the answer when the runner is home** — the news travels with the runner, never ahead of it. If nobody answers, you are told when the offer expires.
 
 ## Delivery
 
