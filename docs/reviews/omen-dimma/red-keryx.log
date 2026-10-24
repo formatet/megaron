@@ -1,0 +1,6 @@
+» färsk DB på migration 210 · commit a5daca39+ändringar
+--- FAIL: TestStormFishingLine (0.00s)
+    notification_reply_test.go:63: "Storm over 1 fishing ground — no fishing there while it stands."
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.004s
+FAIL

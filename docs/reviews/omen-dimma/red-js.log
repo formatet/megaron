@@ -1,0 +1,207 @@
+TAP version 13
+# Subtest: each revealed hex waits its turn, shows live, fades in steps, then is memory
+not ok 1 - each revealed hex waits its turn, shows live, fades in steps, then is memory
+  ---
+  duration_ms: 0.973319
+  type: 'test'
+  location: '/tmp/megaron-codex-omen-dimma-20261024/web/static/js/megaron/render/omen.test.mjs:8:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    'live' !== 'hidden'
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'hidden'
+  actual: 'live'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-omen-dimma-20261024/web/static/js/megaron/render/omen.test.mjs:10:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: overlay never paints hidden hexes or a replacement fog
+not ok 2 - overlay never paints hidden hexes or a replacement fog
+  ---
+  duration_ms: 0.900848
+  type: 'test'
+  location: '/tmp/megaron-codex-omen-dimma-20261024/web/static/js/megaron/render/omen.test.mjs:20:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+
+    + [
+    +   {
+    +     alpha: 0.6,
+    +     fill: '#7FB54A',
+    +     q: 1,
+    +     r: 0
+    +   },
+    +   {
+    +     alpha: 1,
+    +     fill: '#1C1C1C',
+    +     q: 2,
+    +     r: 0
+    +   }
+    + ]
+    - []
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+    0:
+      q: 1
+      r: 0
+      fill: '#7FB54A'
+      alpha: 0.6
+    1:
+      q: 2
+      r: 0
+      fill: '#1C1C1C'
+      alpha: 1
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-omen-dimma-20261024/web/static/js/megaron/render/omen.test.mjs:22:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: J: only three primary sections, all secondary abilities remain under closed More
+ok 3 - J: only three primary sections, all secondary abilities remain under closed More
+  ---
+  duration_ms: 0.910286
+  type: 'test'
+  ...
+# Subtest: J: food game days come from authoritative mixed-food coverage, from the single city stock
+ok 4 - J: food game days come from authoritative mixed-food coverage, from the single city stock
+  ---
+  duration_ms: 9.222873
+  type: 'test'
+  ...
+# Subtest: pen: herd line shows count / cap and warns when full
+ok 5 - pen: herd line shows count / cap and warns when full
+  ---
+  duration_ms: 0.548267
+  type: 'test'
+  ...
+# Subtest: J: growing low stocks never say starving; food-worker warning survives
+ok 6 - J: growing low stocks never say starving; food-worker warning survives
+  ---
+  duration_ms: 0.274241
+  type: 'test'
+  ...
+# Subtest: J: missing/invalid coverage is honestly unavailable, never zero or NaN game days
+ok 7 - J: missing/invalid coverage is honestly unavailable, never zero or NaN game days
+  ---
+  duration_ms: 0.151677
+  type: 'test'
+  ...
+# Subtest: J: population keeps input-free player words; no slaughter button
+ok 8 - J: population keeps input-free player words; no slaughter button
+  ---
+  duration_ms: 0.422183
+  type: 'test'
+  ...
+# Subtest: growth line: one sentence per state, from the server growth_state
+ok 9 - growth line: one sentence per state, from the server growth_state
+  ---
+  duration_ms: 0.482594
+  type: 'test'
+  ...
+# Subtest: blessed harvest: food section shows authoritative bonus and goods, hides at end tick
+ok 10 - blessed harvest: food section shows authoritative bonus and goods, hides at end tick
+  ---
+  duration_ms: 0.461161
+  type: 'test'
+  ...
+# Subtest: owned city centre offers the authoritative place naming form inside Catchment, other tiles never do
+ok 11 - owned city centre offers the authoritative place naming form inside Catchment, other tiles never do
+  ---
+  duration_ms: 1.159511
+  type: 'test'
+  ...
+# Subtest: owned-city naming success refreshes authoritative map and rerenders City despite cleared selectedHex
+ok 12 - owned-city naming success refreshes authoritative map and rerenders City despite cleared selectedHex
+  ---
+  duration_ms: 13.414385
+  type: 'test'
+  ...
+# Subtest: growth food balance does not print a signed rounded zero
+ok 13 - growth food balance does not print a signed rounded zero
+  ---
+  duration_ms: 0.226508
+  type: 'test'
+  ...
+# Subtest: AIRound3: population food and army food use different explicit balances
+ok 14 - AIRound3: population food and army food use different explicit balances
+  ---
+  duration_ms: 0.93218
+  type: 'test'
+  ...
+# Subtest: AIRound4: Scheria remainder fish is separate from nearby grain
+ok 15 - AIRound4: Scheria remainder fish is separate from nearby grain
+  ---
+  duration_ms: 0.338136
+  type: 'test'
+  ...
+# Subtest: equal food: four stocks and actual meal use server totals, never grain-only estimates
+ok 16 - equal food: four stocks and actual meal use server totals, never grain-only estimates
+  ---
+  duration_ms: 3.663292
+  type: 'test'
+  ...
+# Subtest: population only offers whole citizen groups, never remainder people
+ok 17 - population only offers whole citizen groups, never remainder people
+  ---
+  duration_ms: 0.452941
+  type: 'test'
+  ...
+# Subtest: Walls hold is counted in citizens, like the Citizens row beside it
+ok 18 - Walls hold is counted in citizens, like the Citizens row beside it
+  ---
+  duration_ms: 0.16357
+  type: 'test'
+  ...
+# Subtest: storm over a fishing ground is named in the food section (D.1)
+not ok 19 - storm over a fishing ground is named in the food section (D.1)
+  ---
+  duration_ms: 0.446605
+  type: 'test'
+  location: '/tmp/megaron-codex-omen-dimma-20261024/web/static/js/megaron/ui/drawers/city_production.test.mjs:155:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /Storm over 2 fishing grounds — its fishers stay but catch nothing while it stands\./. Input:
+
+    '<p class="stat-warn">Storm over 2 fishing grounds — no fishing there while it stands.</p>'
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: '<p class="stat-warn">Storm over 2 fishing grounds — no fishing there while it stands.</p>'
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-omen-dimma-20261024/web/static/js/megaron/ui/drawers/city_production.test.mjs:156:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..19
+# tests 19
+# suites 0
+# pass 16
+# fail 3
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 86.222875

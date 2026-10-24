@@ -1,0 +1,6 @@
+» färsk DB på migration 210 · commit 52051c12+ändringar
+--- FAIL: TestRecompute_StormOnTheHexStopsItsFishing (0.04s)
+    storm_fishing_test.go:64: storm removed or changed fisher placements: [[2,"hex",-1,0,"fish"]] != [[1,"hex",1,0,"fish"],[2,"hex",-1,0,"fish"]]
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.045s
+FAIL

@@ -1,0 +1,194 @@
+[
+  {
+    "development_run": "bild",
+    "health": {
+      "commit": "a5daca39",
+      "migration": 210,
+      "status": "ok"
+    },
+    "observations": [
+      {
+        "width": 1280,
+        "zero_canvas_byte_equal": true,
+        "zero_elapsed_ms": 16,
+        "errors": []
+      },
+      {
+        "width": 390,
+        "zero_canvas_byte_equal": true,
+        "zero_elapsed_ms": 11,
+        "errors": []
+      }
+    ]
+  },
+  {
+    "development_run": "bild-final",
+    "health": {
+      "commit": "a5daca39",
+      "migration": 210,
+      "status": "ok"
+    },
+    "observations": [
+      {
+        "width": 1280,
+        "zero_canvas_byte_equal": true,
+        "zero_elapsed_ms": 18,
+        "errors": []
+      },
+      {
+        "width": 390,
+        "zero_canvas_byte_equal": true,
+        "zero_elapsed_ms": 10,
+        "errors": []
+      }
+    ]
+  },
+  {
+    "development_run": "integrated",
+    "health": {
+      "commit": "52051c12",
+      "migration": 210,
+      "status": "ok"
+    },
+    "observations": [
+      {
+        "width": 1280,
+        "frozen_renderer_repeats": [
+          {
+            "phase_ms": 0,
+            "repeat_canvas_byte_equal": true
+          },
+          {
+            "phase_ms": 300,
+            "repeat_canvas_byte_equal": true
+          },
+          {
+            "phase_ms": 1000,
+            "repeat_canvas_byte_equal": true
+          },
+          {
+            "phase_ms": 2000,
+            "repeat_canvas_byte_equal": true
+          },
+          {
+            "phase_ms": 4000,
+            "repeat_canvas_byte_equal": true
+          },
+          {
+            "phase_ms": 9000,
+            "repeat_canvas_byte_equal": true
+          }
+        ],
+        "zero_canvas_byte_equal": true,
+        "zero_elapsed_ms": 11,
+        "errors": []
+      },
+      {
+        "width": 390,
+        "frozen_renderer_repeats": [
+          {
+            "phase_ms": 0,
+            "repeat_canvas_byte_equal": true
+          },
+          {
+            "phase_ms": 300,
+            "repeat_canvas_byte_equal": true
+          },
+          {
+            "phase_ms": 1000,
+            "repeat_canvas_byte_equal": true
+          },
+          {
+            "phase_ms": 2000,
+            "repeat_canvas_byte_equal": true
+          },
+          {
+            "phase_ms": 4000,
+            "repeat_canvas_byte_equal": true
+          },
+          {
+            "phase_ms": 9000,
+            "repeat_canvas_byte_equal": true
+          }
+        ],
+        "zero_canvas_byte_equal": true,
+        "zero_elapsed_ms": 15,
+        "errors": []
+      }
+    ]
+  },
+  {
+    "development_run": "selected",
+    "health": {
+      "commit": "52051c12",
+      "migration": 210,
+      "status": "ok"
+    },
+    "observations": [
+      {
+        "width": 1280,
+        "frozen_renderer_repeats": [
+          {
+            "phase_ms": 0,
+            "repeat_canvas_byte_equal": true
+          },
+          {
+            "phase_ms": 300,
+            "repeat_canvas_byte_equal": true
+          },
+          {
+            "phase_ms": 1000,
+            "repeat_canvas_byte_equal": true
+          },
+          {
+            "phase_ms": 2000,
+            "repeat_canvas_byte_equal": true
+          },
+          {
+            "phase_ms": 4000,
+            "repeat_canvas_byte_equal": true
+          },
+          {
+            "phase_ms": 9000,
+            "repeat_canvas_byte_equal": true
+          }
+        ],
+        "zero_canvas_byte_equal": true,
+        "zero_elapsed_ms": 18,
+        "errors": []
+      },
+      {
+        "width": 390,
+        "frozen_renderer_repeats": [
+          {
+            "phase_ms": 0,
+            "repeat_canvas_byte_equal": true
+          },
+          {
+            "phase_ms": 300,
+            "repeat_canvas_byte_equal": true
+          },
+          {
+            "phase_ms": 1000,
+            "repeat_canvas_byte_equal": true
+          },
+          {
+            "phase_ms": 2000,
+            "repeat_canvas_byte_equal": true
+          },
+          {
+            "phase_ms": 4000,
+            "repeat_canvas_byte_equal": true
+          },
+          {
+            "phase_ms": 9000,
+            "repeat_canvas_byte_equal": true
+          }
+        ],
+        "zero_canvas_byte_equal": true,
+        "zero_elapsed_ms": 7,
+        "errors": []
+      }
+    ]
+  }
+]

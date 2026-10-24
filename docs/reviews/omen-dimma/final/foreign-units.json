@@ -1,0 +1,38 @@
+[
+  {
+    "id": "41111293-4ddb-4f36-a6c0-16339a2fa96d",
+    "name": "Nomadic Host of Dorian",
+    "owner": "Dorian",
+    "owner_id": "0e38a18a-f448-4034-bcfa-5b40075de68d",
+    "type": "nomadic_host",
+    "category": "land",
+    "size": 1,
+    "status": "positioned",
+    "q": 3,
+    "r": 47
+  },
+  {
+    "id": "9122c029-5357-4402-afdd-6901cb5f7ac0",
+    "name": "1st Spearmen of Dorian",
+    "owner": "Dorian",
+    "owner_id": "0e38a18a-f448-4034-bcfa-5b40075de68d",
+    "type": "spearman",
+    "category": "land",
+    "size": 100,
+    "status": "positioned",
+    "q": 0,
+    "r": 48
+  },
+  {
+    "id": "940968ab-00cd-4e4f-bf3c-7febc14a5468",
+    "name": "2nd Spearmen of Dorian",
+    "owner": "Dorian",
+    "owner_id": "0e38a18a-f448-4034-bcfa-5b40075de68d",
+    "type": "spearman",
+    "category": "land",
+    "size": 100,
+    "status": "positioned",
+    "q": 0,
+    "r": 48
+  }
+]

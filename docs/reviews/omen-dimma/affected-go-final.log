@@ -1,0 +1,5 @@
+» färsk DB på migration 210 · commit 52051c12+ändringar
+ok  	formatet/megaron/server/api/handlers	57.558s
+ok  	formatet/megaron/server/internal/economy	5.619s
+ok  	formatet/megaron/server/internal/combat	15.867s
+ok  	formatet/megaron/server/cmd/keryx	0.403s
