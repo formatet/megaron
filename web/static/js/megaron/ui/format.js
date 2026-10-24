@@ -849,7 +849,7 @@ export function notifText(kind, body) {
       const amount = body.amount || 0;
       switch (body.type) {
         case 'harvest_blessing': return `The gods fill your granaries${place} — +${Math.round(amount)} grain`;
-        case 'bountiful_harvest': return `The gods bless the fields${place} — grain, livestock, oil and wine yield a quarter more for ${amount} days`;
+        case 'bountiful_harvest': return `The gods bless the fields${place} — grain, oil and wine yield a quarter more for ${amount} days`;
         case 'divine_recruits':  return `Warriors answer a divine call${place} — +${amount} men`;
         case 'sea_blessing':     return `Poseidon guides a vessel to your harbour${place} — +${amount} galley`;
         default:                 return `${kind} — ${payloadSummary(body)}`;

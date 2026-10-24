@@ -28,7 +28,7 @@ The row disappears when the blessing ends; fish receives no harvest bonus.
 
 - **Potnia's Vision** — offer 10 grain + 3 silver. Potnia marks one source of copper, tin, silver or incense you neither see nor remember, and unknown ground within two hexes, as grey memory. It creates no living eyes and shows no moving activity. Potnia waits 24 days after answering.
 - **Mistress of the Walls** — offer 8 grain + 4 timber. Potnia strengthens your own garrison defending this city by a quarter for 6 days. It helps neither an attacking army nor soldiers away from that city. It shares Vision's wait.
-- **Green Shoots** — offer 15 grain + 2 silver. Velchanos raises grain, livestock, oil and wine yield by a quarter for 25 days. Fish is unchanged. He waits 25 days after answering.
+- **Green Shoots** — offer 15 grain + 2 silver. Velchanos raises grain, oil and wine yield by a quarter for 25 days. Fish and the herd are unchanged. He waits 25 days after answering.
 
 - **The Thread Shows a Path** — offer 4 timber + 3 silver to Asterion. The next land caravan or Runner leaving this city takes a quarter less time on its outward leg. A land caravan can be intercepted only within one hex of an enemy army, instead of two. Runners remain sacred. Asterion waits 12 days after answering.
 - **Favourable Passage** — offer 6 fish + 3 silver to The Sea Daimons of Stillness. The next ship leaving this city takes a quarter less time and suffers no storm damage on its outward leg. A Runner aboard travels at that ship's actual speed. The Sea Daimons wait 12 days after answering.

@@ -1153,7 +1153,7 @@ func (h *SettlementHandler) applyHarvestBlessing(ctx context.Context, tx pgx.Tx,
 	if err != nil {
 		return nil, "", err
 	}
-	msg := fmt.Sprintf("%s smiles upon your fields — grain, livestock, oil and wine yield a quarter more for %d days.",
+	msg := fmt.Sprintf("%s smiles upon your fields — grain, oil and wine yield a quarter more for %d days.",
 		spec.God, economy.HarvestBlessingTicks)
 	return map[string]any{
 		"goods":       economy.HarvestBlessedGoods(),

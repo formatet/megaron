@@ -270,7 +270,7 @@ test('DivineBlessing names the settlement and the right unit per type', () => {
   );
   assert.equal(
     notifText('DivineBlessing', { type: 'bountiful_harvest', amount: 25, name: 'Phaistos' }),
-    'The gods bless the fields at Phaistos — grain, livestock, oil and wine yield a quarter more for 25 days',
+    'The gods bless the fields at Phaistos — grain, oil and wine yield a quarter more for 25 days',
   );
   assert.equal(
     notifText('DivineBlessing', { type: 'divine_recruits', amount: 4, name: 'Phaistos' }),

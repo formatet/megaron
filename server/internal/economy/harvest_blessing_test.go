@@ -12,6 +12,11 @@ func TestHarvestBlessedGoods_EveryFoodButFish(t *testing.T) {
 	if got[GoodFish] {
 		t.Error("fish is blessed")
 	}
+	// The herd breeds by itself (herd_births.go); its rate is 0 since mig 192,
+	// so a livestock blessing promised nothing (Timothy 2026-10-24 "stryk det").
+	if got[GoodLivestock] {
+		t.Error("livestock is blessed")
+	}
 	for _, g := range FoodGoods {
 		if g != GoodFish && !got[g] {
 			t.Errorf("%s is food but not blessed", g)
