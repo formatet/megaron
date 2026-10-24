@@ -42,6 +42,15 @@ const COUNTERPARTY_KINDS = new Set(['OfferAccepted', 'OfferDeclined', 'OfferExpi
 // a counterparty city not currently FOW-visible to this player. Exported
 // (pure, no DOM) for direct unit testing — same convention as ui/search.js's
 // enterTargetIndex.
+// The Wanax whose letters thread "Reply" opens, or "" — letter and
+// trade-offer dispatches (byggplan A.1). Old rows without the id keep
+// "Take me there".
+const LETTER_KINDS = new Set(['MessengerArrival', 'MessengerReturned', 'OfferAccepted', 'OfferDeclined']);
+export function letterPersonFor(kind, payload) {
+  if (!LETTER_KINDS.has(kind) || !payload) return '';
+  return payload.sender_id || payload.counterpart_wanax_id || '';
+}
+
 export function resolveDestination(kind, payload) {
   if (!payload) return null;
   if (payload.q != null && payload.r != null) return { q: payload.q, r: payload.r };
@@ -283,6 +292,7 @@ export function openDispatchWindow(kind, payload, timeLabel) {
   const showOcc = occChoices.length > 0 && !!settlementID;
   const showChat = kind === 'agora_ready';
   const showPassageStalled = kind === 'PassageStalled' && !!payload.messenger_id;
+  const replyTo = letterPersonFor(kind, payload);
 
   body.innerHTML = `
     <div class="dw-row">
@@ -295,7 +305,7 @@ export function openDispatchWindow(kind, payload, timeLabel) {
     <div class="dw-time">${esc(timeLabel || notificationDay({payload}))}</div>
     ${showOcc ? occupationBlockHTML(occChoices) : ''}
     ${showPassageStalled ? passageStalledBlockHTML(payload) : ''}
-    <button class="dw-goto-btn" id="dw-goto-btn" ${dest || (kind === 'OrderFailed' && payload.unit_id) ? '' : 'disabled title="No known location for this dispatch"'}>${kind === 'OrderFailed' && payload.unit_id ? 'Review unit' : '⌖ Take me there'}</button>
+    ${replyTo ? '<button class="dw-goto-btn" id="dw-reply-btn">✉ Reply</button>' : `<button class="dw-goto-btn" id="dw-goto-btn" ${dest || (kind === 'OrderFailed' && payload.unit_id) ? '' : 'disabled title="No known location for this dispatch"'}>${kind === 'OrderFailed' && payload.unit_id ? 'Review unit' : '⌖ Take me there'}</button>`}
     ${showChat ? '<button class="dw-goto-btn" id="dw-account-btn">Open account — Community chat</button>' : ''}
     ${article ? '<button class="dw-goto-btn dw-codex-btn" id="dw-codex-btn">? Read about this</button>' : ''}
     <label class="dw-mute-row">
@@ -306,7 +316,11 @@ export function openDispatchWindow(kind, payload, timeLabel) {
   openMobilePanel(overlay, closeDispatchWindow);
   overlay.classList.add('open');
 
-  document.getElementById('dw-goto-btn').addEventListener('click', () => {
+  if (replyTo) document.getElementById('dw-reply-btn').addEventListener('click', () => {
+    closeDispatchWindow();
+    if (window.openLettersWith) window.openLettersWith(replyTo);
+  });
+  else document.getElementById('dw-goto-btn').addEventListener('click', () => {
     closeDispatchWindow();
     if (kind === 'OrderFailed' && payload.unit_id && window.warFocusUnit) window.warFocusUnit(payload.unit_id);
     else if (dest) window.centreOn(dest.q, dest.r);
