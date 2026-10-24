@@ -143,12 +143,15 @@ func TestAmphibiousAssault_InitiatesBattleAndResolvesToWipeout(t *testing.T) {
 	// (march_start.go's assaultLanding branch) — R5 needs it to sail home.
 	var galleyID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO units
-		   (world_id, owner_id, type, category, size, crew, status, q, r,
-		    target_q, target_r, departs_at, arrives_at, march_intent, cargo_unit_id, capture_mode, home_settlement_id)
-		 VALUES ($1, $2, 'galley', 'naval', 1, 20, 'marching', 1, 0,
-		         2, 0, now(), now(), 'assault', $3, 'annex', $4)
-		 RETURNING id`,
+		`WITH ship AS (
+		   INSERT INTO units
+		     (world_id, owner_id, type, category, size, crew, status, q, r,
+		      target_q, target_r, departs_at, arrives_at, march_intent, capture_mode, home_settlement_id)
+		   VALUES ($1, $2, 'galley', 'naval', 1, 20, 'marching', 1, 0,
+		           2, 0, now(), now(), 'assault', 'annex', $4)
+		   RETURNING id
+		 ), link AS (UPDATE units SET carried_by_ship_id = (SELECT id FROM ship) WHERE id = $3)
+		 SELECT id FROM ship`,
 		worldID, attacker, cargoID, attCapID,
 	).Scan(&galleyID); err != nil {
 		t.Fatalf("create galley: %v", err)
@@ -203,7 +206,7 @@ func TestAmphibiousAssault_InitiatesBattleAndResolvesToWipeout(t *testing.T) {
 	var galleyQ, galleyR int
 	var galleyMarchIntent *string
 	if err := pool.QueryRow(ctx,
-		`SELECT status, cargo_unit_id, q, r, march_intent FROM units WHERE id = $1`, galleyID,
+		`SELECT status, (SELECT p.id FROM units p WHERE p.carried_by_ship_id=units.id ORDER BY p.created_at,p.id LIMIT 1), q, r, march_intent FROM units WHERE id = $1`, galleyID,
 	).Scan(&galleyStatus, &galleyCargo, &galleyQ, &galleyR, &galleyMarchIntent); err != nil {
 		t.Fatalf("read galley after assault initiation: %v", err)
 	}

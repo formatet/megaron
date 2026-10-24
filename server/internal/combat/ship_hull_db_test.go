@@ -115,13 +115,13 @@ func TestNavalBattle_HullDrawnOnBothSides_RoutedLinksHome(t *testing.T) {
 
 	var cargoID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, cargo_unit_id)
-		 VALUES ($1, $2, 'spearman', 'land', 60, 0, 'embarked', NULL) RETURNING id`,
+		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status)
+		 VALUES ($1, $2, 'spearman', 'land', 60, 0, 'embarked') RETURNING id`,
 		f.worldID, f.attacker,
 	).Scan(&cargoID); err != nil {
 		t.Fatalf("create embarked cargo unit: %v", err)
 	}
-	if _, err := pool.Exec(ctx, `UPDATE units SET cargo_unit_id = $1 WHERE id = $2`, cargoID, att4); err != nil {
+	if _, err := pool.Exec(ctx, `UPDATE units SET carried_by_ship_id = $2 WHERE id = $1`, cargoID, att4); err != nil {
 		t.Fatalf("attach cargo to att4: %v", err)
 	}
 

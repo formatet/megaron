@@ -102,7 +102,7 @@ func setupLandMission(t *testing.T) (pool *pgxpool.Pool, worldID, ownerID, shipI
 	).Scan(&cargoID); err != nil {
 		t.Fatalf("create embarked cargo unit: %v", err)
 	}
-	if _, err := pool.Exec(ctx, `UPDATE units SET cargo_unit_id = $1 WHERE id = $2`, cargoID, shipID); err != nil {
+	if _, err := pool.Exec(ctx, `UPDATE units SET carried_by_ship_id = $2 WHERE id = $1`, cargoID, shipID); err != nil {
 		t.Fatalf("load cargo onto ship: %v", err)
 	}
 	return pool, worldID, ownerID, shipID, cargoID
@@ -174,7 +174,7 @@ func TestLandMission_WithoutGroundingOrder_CargoLandsShipReturnsHome(t *testing.
 	var shipCargo *uuid.UUID
 	var shipMarchIntent *string
 	if err := pool.QueryRow(ctx,
-		`SELECT status, cargo_unit_id, march_intent FROM units WHERE id = $1`, shipID,
+		`SELECT status, (SELECT p.id FROM units p WHERE p.carried_by_ship_id=units.id ORDER BY p.created_at,p.id LIMIT 1), march_intent FROM units WHERE id = $1`, shipID,
 	).Scan(&shipStatus, &shipCargo, &shipMarchIntent); err != nil {
 		t.Fatalf("load ship after landing: %v", err)
 	}

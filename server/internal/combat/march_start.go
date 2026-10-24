@@ -1356,15 +1356,12 @@ func nearestOwnedSettlement(ctx context.Context, pool province.Queryer, worldID,
 // Preview and dispatch share it.
 func voyageNeed(ctx context.Context, db interface {
 	QueryRow(context.Context, string, ...any) pgx.Row
+	Query(context.Context, string, ...any) (pgx.Rows, error)
 }, u *unit.Unit, intent string, plan *ExpeditionPlan, travelTicks int) (ration, provisions float64, stationTicks int) {
-	var cargoType string
-	var cargoSize int
+	// Kohorterna ombord äter ur skeppets lager — därför provianteras de med.
+	cargoRation := 0.0
 	if u.CargoUnitID != nil {
-		// Kohorten ombord äter ur skeppets lager — därför provianteras den
-		// med. En tom last ger nollvärden och VoyageRation hoppar över den.
-		_ = db.QueryRow(ctx,
-			`SELECT type, size FROM units WHERE id = $1`, *u.CargoUnitID,
-		).Scan(&cargoType, &cargoSize)
+		cargoRation, _ = passengersRation(ctx, db, u.ID)
 	}
 	if intent == "patrol" {
 		stationTicks = SentryPatrolTicks
@@ -1373,7 +1370,7 @@ func voyageNeed(ctx context.Context, db interface {
 		// Provisioned for the whole length: out, on and home again.
 		stationTicks = plan.LengthTicks - 2*travelTicks
 	}
-	ration = VoyageRation(string(u.Type), u.Size, cargoType, cargoSize, u.Crew)
+	ration = VoyageRation(string(u.Type), u.Size, "", 0, u.Crew) + cargoRation
 	return ration, VoyageProvisions(ration, travelTicks, stationTicks), stationTicks
 }
 

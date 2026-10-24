@@ -1163,8 +1163,8 @@ func (h *UnitHandler) Load(w http.ResponseWriter, r *http.Request) {
 			fmt.Sprintf("ship must be garrisoned to load (status: %s)", string(ship.Status)))
 		return
 	}
-	if ship.CargoUnitID != nil {
-		writeError(w, http.StatusConflict, "ship already carries a unit — unload first")
+	if n, max := len(ship.CargoUnitIDs), unit.CargoCapacity(ship.Type); n >= max {
+		writeError(w, http.StatusConflict, fmt.Sprintf("%s carries at most %d land %s — unload first", unit.DisplayName(string(ship.Type)), max, map[bool]string{true: "unit", false: "units"}[max == 1]))
 		return
 	}
 	if ship.SettlementID == nil {
@@ -1239,21 +1239,17 @@ func (h *UnitHandler) Load(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(ctx)
 
-	// Re-read ship FOR UPDATE (idempotency guard).
+	// Re-read ship FOR UPDATE (idempotency guard). BindCargoTx below takes the
+	// same lock first, then counts passengers, so two loads cannot both fit.
 	var shipStatus string
-	var shipCargo *uuid.UUID
 	if err := tx.QueryRow(ctx,
-		`SELECT status, cargo_unit_id FROM units WHERE id = $1 FOR UPDATE`, shipID,
-	).Scan(&shipStatus, &shipCargo); err != nil {
+		`SELECT status FROM units WHERE id = $1 FOR UPDATE`, shipID,
+	).Scan(&shipStatus); err != nil {
 		writeError(w, http.StatusNotFound, "ship not found in transaction")
 		return
 	}
 	if unit.Status(shipStatus) != unit.StatusGarrison {
 		writeError(w, http.StatusConflict, "ship status changed; load not applied")
-		return
-	}
-	if shipCargo != nil {
-		writeError(w, http.StatusConflict, "ship already has cargo (concurrent request)")
 		return
 	}
 
@@ -1270,12 +1266,13 @@ func (h *UnitHandler) Load(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Set cargo_unit_id on ship.
-	if _, err := tx.Exec(ctx,
-		`UPDATE units SET cargo_unit_id = $2, updated_at = now() WHERE id = $1`,
-		shipID, cargoID,
-	); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not update ship")
+	// Bind the passenger to the ship (the passenger row owns the link).
+	if err := unit.BindCargoTx(ctx, tx, shipID, cargoID); err != nil {
+		if errors.Is(err, unit.ErrCargoFull) {
+			writeError(w, http.StatusConflict, err.Error())
+			return
+		}
+		writeError(w, http.StatusUnprocessableEntity, err.Error())
 		return
 	}
 
@@ -1429,15 +1426,6 @@ func (h *UnitHandler) Unload(w http.ResponseWriter, r *http.Request) {
 		destR = *ship.R
 	}
 
-	cargoID := *ship.CargoUnitID
-
-	// Load cargo to get its current position for the event.
-	cargo, err := h.store.Get(ctx, cargoID)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not load cargo unit")
-		return
-	}
-
 	tx, err := h.pool.Begin(ctx)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not begin transaction")
@@ -1445,12 +1433,11 @@ func (h *UnitHandler) Unload(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(ctx)
 
-	// Re-read ship FOR UPDATE (idempotency guard).
+	// Re-read ship FOR UPDATE (idempotency guard), then every passenger aboard.
 	var shipStatus string
-	var shipCargo *uuid.UUID
 	if err := tx.QueryRow(ctx,
-		`SELECT status, cargo_unit_id FROM units WHERE id = $1 FOR UPDATE`, shipID,
-	).Scan(&shipStatus, &shipCargo); err != nil {
+		`SELECT status FROM units WHERE id = $1 FOR UPDATE`, shipID,
+	).Scan(&shipStatus); err != nil {
 		writeError(w, http.StatusNotFound, "ship not found in transaction")
 		return
 	}
@@ -1458,58 +1445,57 @@ func (h *UnitHandler) Unload(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusConflict, "ship status changed; unload not applied")
 		return
 	}
-	if shipCargo == nil {
+	cargoIDs, err := unit.CargoIDs(ctx, tx, shipID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not read passengers")
+		return
+	}
+	if len(cargoIDs) == 0 {
 		writeError(w, http.StatusConflict, "ship has no cargo (concurrent request)")
 		return
 	}
 
-	// Clear cargo from ship.
-	if _, err := tx.Exec(ctx,
-		`UPDATE units SET cargo_unit_id = NULL, updated_at = now() WHERE id = $1`,
-		shipID,
-	); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not update ship")
-		return
-	}
-
-	// Place the cargo unit at its resolved destination: garrisoned at the
+	// Place every passenger at the resolved destination: garrisoned at the
 	// ship's settlement (a), or field-positioned on the bare land hex (b) —
 	// mirrors arriveGarrison's own "positioned when settlementID is nil" rule
 	// (unit_arrival.go), so the same `march --intent colonize` path that
-	// handles any other field-positioned unit picks this one up too.
+	// handles any other field-positioned unit picks them up too.
 	newStatus := "garrison"
 	if destSettlementID == nil {
 		newStatus = "positioned"
 	}
-	if _, err := tx.Exec(ctx,
-		`UPDATE units SET
-		   status        = $2,
-		   settlement_id = $3,
-		   q             = $4,
-		   r             = $5,
-		   updated_at    = now()
-		 WHERE id = $1`,
-		cargoID, newStatus, destSettlementID, destQ, destR,
-	); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not disembark unit")
-		return
-	}
-
-	// Cargo that sailed with a colonist purse (land mission, cargo_intent=
-	// colonize) and came home unspent — the ship was recalled — hands it to
-	// the city it disembarks into, the same rule as arriveGarrison's.
-	if destSettlementID != nil {
+	for _, cargoID := range cargoIDs {
 		if _, err := tx.Exec(ctx,
-			`WITH p AS (
-			   SELECT carried_silver FROM units WHERE id = $1 AND carried_silver > 0
-			 ), credit AS (
-			   SELECT credit_settlement_good($2,'silver',carried_silver,'returned_purse') FROM p
-			 )
-			 UPDATE units SET carried_silver = 0 WHERE id = $1 AND carried_silver > 0 AND (SELECT count(*) FROM credit)>0`,
-			cargoID, *destSettlementID,
+			`UPDATE units SET
+			   status             = $2,
+			   settlement_id      = $3,
+			   q                  = $4,
+			   r                  = $5,
+			   carried_by_ship_id = NULL,
+			   updated_at         = now()
+			 WHERE id = $1`,
+			cargoID, newStatus, destSettlementID, destQ, destR,
 		); err != nil {
-			writeError(w, http.StatusInternalServerError, "could not return the colonist purse")
+			writeError(w, http.StatusInternalServerError, "could not disembark unit")
 			return
+		}
+
+		// Cargo that sailed with a colonist purse (land mission, cargo_intent=
+		// colonize) and came home unspent — the ship was recalled — hands it to
+		// the city it disembarks into, the same rule as arriveGarrison's.
+		if destSettlementID != nil {
+			if _, err := tx.Exec(ctx,
+				`WITH p AS (
+				   SELECT carried_silver FROM units WHERE id = $1 AND carried_silver > 0
+				 ), credit AS (
+				   SELECT credit_settlement_good($2,'silver',carried_silver,'returned_purse') FROM p
+				 )
+				 UPDATE units SET carried_silver = 0 WHERE id = $1 AND carried_silver > 0 AND (SELECT count(*) FROM credit)>0`,
+				cargoID, *destSettlementID,
+			); err != nil {
+				writeError(w, http.StatusInternalServerError, "could not return the colonist purse")
+				return
+			}
 		}
 	}
 
@@ -1518,24 +1504,26 @@ func (h *UnitHandler) Unload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_ = cargo // silence unused warning; used above for loading
-	_, _ = h.eventStore.Append(ctx, shipID, events.StreamType(unit.StreamUnit), unit.EventShipUnloaded,
-		unit.ShipUnloadedPayload{
-			ShipUnitID:  shipID,
-			CargoUnitID: cargoID,
-			Q:           destQ,
-			R:           destR,
-		}, worldID, nil,
-	)
+	for _, cargoID := range cargoIDs {
+		_, _ = h.eventStore.Append(ctx, shipID, events.StreamType(unit.StreamUnit), unit.EventShipUnloaded,
+			unit.ShipUnloadedPayload{
+				ShipUnitID:  shipID,
+				CargoUnitID: cargoID,
+				Q:           destQ,
+				R:           destR,
+			}, worldID, nil,
+		)
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(map[string]any{
-		"ship_id":       shipID,
-		"cargo_unit_id": cargoID,
-		"q":             destQ,
-		"r":             destR,
-		"status":        newStatus,
+		"ship_id":        shipID,
+		"cargo_unit_id":  cargoIDs[0],
+		"cargo_unit_ids": cargoIDs,
+		"q":              destQ,
+		"r":              destR,
+		"status":         newStatus,
 	})
 }
 
@@ -2356,6 +2344,11 @@ type unitSummary struct {
 	CurrentQ    *int       `json:"current_q,omitempty"`
 	CurrentR    *int       `json:"current_r,omitempty"`
 	CargoUnitID *uuid.UUID `json:"cargo_unit_id,omitempty"`
+	// CargoUnitIDs lists every land unit aboard (an Emporos carries up to three).
+	CargoUnitIDs []uuid.UUID `json:"cargo_unit_ids,omitempty"`
+	// CargoUnits names them; TroopCapacity is how many land units the hull takes.
+	CargoUnits    []cargoUnitSummary `json:"cargo_units,omitempty"`
+	TroopCapacity int                `json:"troop_capacity,omitempty"`
 	// CarrierShipID/Name identify the ship an embarked land unit is aboard (the
 	// ship whose cargo_unit_id points back at this unit). Without them a `unit
 	// list` row for embarked cargo could not say which vessel carried it, so a
@@ -2434,7 +2427,7 @@ func attachShipPortActions(ctx context.Context, db province.Queryer, worldID, ow
 	for i := range summaries {
 		index[summaries[i].ID] = i
 	}
-	rows, err := db.Query(ctx, `SELECT u.id,u.status,u.crew,s.population,u.cargo_unit_id IS NULL,
+	rows, err := db.Query(ctx, `SELECT u.id,u.status,u.crew,s.population,`+unit.NoCargoSQL("u")+`,
 		NOT EXISTS(SELECT 1 FROM messengers m WHERE m.carrier_unit_id=u.id AND m.passage_status='aboard')
 		FROM units u JOIN settlements s ON s.id=u.settlement_id
 		WHERE u.world_id=$1 AND u.owner_id=$2 AND u.category='naval' AND s.owner_id=$2
@@ -2765,7 +2758,7 @@ func eligiblePickupShips(ctx context.Context, db province.Queryer, worldID, owne
 		`SELECT u.id, u.name, u.type, u.settlement_id, s.name
 		   FROM units u JOIN settlements s ON s.id = u.settlement_id
 		  WHERE u.world_id = $1 AND u.owner_id = $2 AND u.status = 'garrison'
-		    AND u.category = 'naval' AND u.cargo_unit_id IS NULL`,
+		    AND u.category = 'naval' AND `+unit.NoCargoSQL("u")+``,
 		worldID, ownerID,
 	)
 	if err != nil {
@@ -2805,8 +2798,8 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 	unitByID := make(map[uuid.UUID]*unit.Unit, len(us))
 	for _, u := range us {
 		unitByID[u.ID] = u
-		if u.CargoUnitID != nil {
-			carrierByCargo[*u.CargoUnitID] = u
+		for _, cargoID := range u.CargoUnitIDs {
+			carrierByCargo[cargoID] = u
 		}
 	}
 	out := make([]unitSummary, 0, len(us))
@@ -2897,14 +2890,13 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 			// mer, så samma proviant räcker färre dygn. Räknas ur combat, samma
 			// funktion som provianteringen och dragningen använder, annars
 			// visar mätaren ett annat tal än det som faktiskt äts.
-			cargoType, cargoSize := "", 0
-			if u.CargoUnitID != nil {
-				if c, ok := unitByID[*u.CargoUnitID]; ok {
-					cargoType, cargoSize = string(c.Type), c.Size
+			ration := combat.VoyageRation(string(u.Type), u.Size, "", 0, u.Crew)
+			for _, cargoID := range u.CargoUnitIDs {
+				if c, ok := unitByID[cargoID]; ok {
+					ration += combat.VoyageRation("", 0, string(c.Type), c.Size, 0)
 				}
 			}
-			provisionDays = combat.ProvisionDaysLeft(u.Provisions,
-				combat.VoyageRation(string(u.Type), u.Size, cargoType, cargoSize, u.Crew))
+			provisionDays = combat.ProvisionDaysLeft(u.Provisions, ration)
 			provisionsAboard = u.Provisions > 0
 		}
 		// movement 2a, R7: current_q/r is read through the saved route — never
@@ -2979,6 +2971,7 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 			DurationTicks:      durationTicks,
 			ArrivesAtUTC:       arrivesAtUTC,
 			CargoUnitID:        u.CargoUnitID,
+			CargoUnitIDs:       u.CargoUnitIDs,
 			CarrierShipID:      carrierShipID,
 			CarrierShipName:    carrierShipName,
 			MarchIntent:        u.MarchIntent,
@@ -2988,7 +2981,28 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 			CanReinforce:       canReinforce,
 			CurrentQ:           currentQ,
 			CurrentR:           currentR,
+			TroopCapacity:      unit.CargoCapacity(u.Type),
 		})
 	}
+	// Passengers by name, from rows already built above (same owner's list).
+	index := make(map[uuid.UUID]int, len(out))
+	for i := range out {
+		index[out[i].ID] = i
+	}
+	for i := range out {
+		for _, cargoID := range out[i].CargoUnitIDs {
+			if j, ok := index[cargoID]; ok {
+				out[i].CargoUnits = append(out[i].CargoUnits, cargoUnitSummary{ID: cargoID, DisplayName: out[j].DisplayName, Type: out[j].Type, Size: out[j].Size})
+			}
+		}
+	}
 	return out
+}
+
+// cargoUnitSummary names one land unit aboard a ship.
+type cargoUnitSummary struct {
+	ID          uuid.UUID `json:"id"`
+	DisplayName string    `json:"display_name"`
+	Type        string    `json:"type"`
+	Size        int       `json:"size"`
 }

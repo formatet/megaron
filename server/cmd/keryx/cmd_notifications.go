@@ -602,6 +602,10 @@ func printSeaStormLine(n notificationItem) {
 			UnitType string `json:"unit_type"`
 			Size     int    `json:"size"`
 		} `json:"troops"`
+		MoreTroops []struct {
+			UnitType string `json:"unit_type"`
+			Size     int    `json:"size"`
+		} `json:"more_troops"`
 	}
 	if err := json.Unmarshal(n.Body, &body); err != nil {
 		return
@@ -620,6 +624,9 @@ func printSeaStormLine(n notificationItem) {
 	}
 	if body.Troops != nil {
 		lost = append(lost, fmt.Sprintf("%d %s", body.Troops.Size, body.Troops.UnitType))
+		for _, t := range body.MoreTroops {
+			lost = append(lost, fmt.Sprintf("%d %s", t.Size, t.UnitType))
+		}
 	}
 	fmt.Printf("      Your %s foundered in a storm at (%d,%d).", name, body.Q, body.R)
 	if len(lost) > 0 {

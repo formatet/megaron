@@ -200,13 +200,13 @@ func TestLayUpRejectsCargoPassengersAndUnharbouredShip(t *testing.T) {
 	if err := f.pool.QueryRow(ctx, `INSERT INTO units (world_id,owner_id,type,category,size,status,settlement_id) VALUES ($1,$2,'spearman','land',100,'embarked',$3) RETURNING id`, f.worldID, f.playerID, f.settlementID).Scan(&cargo); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := f.pool.Exec(ctx, `UPDATE units SET cargo_unit_id=$2 WHERE id=$1`, f.shipID, cargo); err != nil {
+	if _, err := f.pool.Exec(ctx, `UPDATE units SET carried_by_ship_id = $1 WHERE id = $2`, f.shipID, cargo); err != nil {
 		t.Fatal(err)
 	}
 	if got := f.shipAction(t, "lay-up"); got.Code != http.StatusUnprocessableEntity {
 		t.Fatalf("cargo accepted: %d", got.Code)
 	}
-	_, _ = f.pool.Exec(ctx, `UPDATE units SET cargo_unit_id=NULL WHERE id=$1`, f.shipID)
+	_, _ = f.pool.Exec(ctx, `UPDATE units SET carried_by_ship_id=NULL WHERE carried_by_ship_id=$1`, f.shipID)
 	var messengerID uuid.UUID
 	if err := f.pool.QueryRow(ctx, `INSERT INTO messengers (world_id,sender_id,origin_id,destination_id,message_text,status,hex_q,hex_r,arrives_at,passage_status,carrier_unit_id)
 		VALUES ($1,$2,$3,$3,'passenger','outbound',0,0,now(),'aboard',$4) RETURNING id`, f.worldID, f.playerID, f.settlementID, f.shipID).Scan(&messengerID); err != nil {

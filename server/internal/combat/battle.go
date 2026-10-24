@@ -443,7 +443,7 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 		return false, err
 	}
 	rows, err := tx.Query(ctx,
-		`SELECT bp.unit_id, bp.owner_id, bp.side, bp.current_size, bp.initial_size, bp.standing_orders, u.type, u.hull, u.cargo_unit_id,
+		`SELECT bp.unit_id, bp.owner_id, bp.side, bp.current_size, bp.initial_size, bp.standing_orders, u.type, u.hull, (SELECT cargo.id FROM units cargo WHERE cargo.carried_by_ship_id=u.id ORDER BY cargo.created_at,cargo.id LIMIT 1),
  COALESCE((SELECT s.garrison_defense_until_tick > $2 AND s.garrison_defense_owner_id=u.owner_id AND s.owner_id=u.owner_id
  FROM settlements s JOIN provinces sp ON sp.id=s.province_id
  WHERE s.id=u.settlement_id AND s.state='active' AND bp.side='defender' AND sp.world_id=$3 AND sp.map_q=$4 AND sp.map_r=$5),false)

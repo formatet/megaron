@@ -87,9 +87,12 @@ func TestUpkeepDesertion_CascadesEmbarkedCargo(t *testing.T) {
 	// from the threshold it's meant to sit one below.
 	var shipID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status,
-		                    settlement_id, support_settlement_id, unpaid_periods, cargo_unit_id)
-		 VALUES ($1, $2, 'war_galley', 'naval', 1, 1, 'garrison', $3, $3, $5, $4) RETURNING id`,
+		`WITH ship AS (
+		   INSERT INTO units (world_id, owner_id, type, category, size, crew, status,
+		                      settlement_id, support_settlement_id, unpaid_periods)
+		   VALUES ($1, $2, 'war_galley', 'naval', 1, 1, 'garrison', $3, $3, $5) RETURNING id
+		 ), link AS (UPDATE units SET carried_by_ship_id = (SELECT id FROM ship) WHERE id = $4)
+		 SELECT id FROM ship`,
 		worldID, owner, sid, cargoID, upkeepDesertionTicks-1,
 	).Scan(&shipID); err != nil {
 		t.Fatalf("create ship: %v", err)

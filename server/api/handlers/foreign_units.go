@@ -76,6 +76,9 @@ type foreignToward struct {
 type foreignCargo struct {
 	Type string `json:"type"`
 	Size int    `json:"size"`
+	// Units is how many land units ride the ship (an Emporos carries up to
+	// three); Type is the oldest one's and Size their total.
+	Units int `json:"units"`
 }
 
 // ForeignUnits handles GET /worlds/{worldID}/foreign-units — every unit NOT owned
@@ -129,10 +132,15 @@ func (h *WorldHandler) ForeignUnits(w http.ResponseWriter, r *http.Request) {
 		`SELECT u.id, u.owner_id, COALESCE(pl.wanax_name, pl.username, ''), u.type, u.category, u.size, u.crew,
 		        u.status, u.stance, u.q, u.r,
 		        u.target_q, u.target_r, u.departs_at, u.arrives_at, u.depart_tick, u.arrive_tick,
-		        cu.type, cu.size
+		        cu.type, cu.size, cu.units
 		 FROM units u
 		 LEFT JOIN players pl ON pl.id = u.owner_id
-		 LEFT JOIN units cu ON cu.id = u.cargo_unit_id
+		 LEFT JOIN LATERAL (
+		     SELECT (array_agg(p.type ORDER BY p.created_at, p.id))[1] AS type,
+		            SUM(p.size)::int AS size, count(*)::int AS units
+		       FROM units p WHERE p.carried_by_ship_id = u.id
+		     HAVING count(*) > 0
+		 ) cu ON true
 		 WHERE u.world_id = $1 AND u.owner_id IS DISTINCT FROM $2
 		   AND u.status IN ('positioned','marching')
 		   AND u.q IS NOT NULL AND u.r IS NOT NULL`,
@@ -152,18 +160,18 @@ func (h *WorldHandler) ForeignUnits(w http.ResponseWriter, r *http.Request) {
 		var targetQ, targetR, departTick, arriveTick *int
 		var departsAt, arrivesAt *time.Time
 		var cargoType *string
-		var cargoSize *int
+		var cargoSize, cargoUnits *int
 		if err := rows.Scan(&fu.ID, &fu.OwnerID, &fu.Owner, &fu.Type, &fu.Category, &fu.Size, &fu.Crew,
 			&fu.Status, &stance, &storedQ, &storedR,
 			&targetQ, &targetR, &departsAt, &arrivesAt, &departTick, &arriveTick,
-			&cargoType, &cargoSize); err != nil {
+			&cargoType, &cargoSize, &cargoUnits); err != nil {
 			continue
 		}
 		if stance != nil {
 			fu.Stance = *stance
 		}
 		if cargoType != nil && cargoSize != nil {
-			fu.Cargo = &foreignCargo{Type: *cargoType, Size: *cargoSize}
+			fu.Cargo = &foreignCargo{Type: *cargoType, Size: *cargoSize, Units: *cargoUnits}
 		}
 
 		// Current position: interpolate a marching unit exactly like loadLiveEyes

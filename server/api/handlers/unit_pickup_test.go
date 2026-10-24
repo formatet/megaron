@@ -82,7 +82,7 @@ func (f *navalPlayerFixture) unitRow(t *testing.T, id uuid.UUID) pickupUnitRow {
 	t.Helper()
 	var row pickupUnitRow
 	if err := f.pool.QueryRow(context.Background(),
-		`SELECT status, march_intent, settlement_id, q, r, cargo_unit_id FROM units WHERE id = $1`, id,
+		`SELECT status, march_intent, settlement_id, q, r, (SELECT p.id FROM units p WHERE p.carried_by_ship_id=units.id ORDER BY p.created_at,p.id LIMIT 1) FROM units WHERE id = $1`, id,
 	).Scan(&row.status, &row.marchIntent, &row.settlementID, &row.q, &row.r, &row.cargoUnitID); err != nil {
 		t.Fatalf("load unit %s: %v", id, err)
 	}
@@ -447,7 +447,7 @@ func TestPickup_Rejections(t *testing.T) {
 		cargoShip := f.ship(t, homeID, f.initiatorID, "merchantman")
 		otherLand := f.landUnit(t, 6, 0, f.initiatorID)
 		if _, err := f.pool.Exec(context.Background(),
-			`UPDATE units SET cargo_unit_id = $2 WHERE id = $1`, cargoShip, otherLand,
+			`UPDATE units SET carried_by_ship_id = $1 WHERE id = $2`, cargoShip, otherLand,
 		); err != nil {
 			t.Fatalf("force cargo: %v", err)
 		}

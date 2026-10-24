@@ -34,7 +34,7 @@ func (h *UpkeepHandler) returnForFood(ctx context.Context, outer upkeepUnitRow, 
 	var landQ, landR *int
 	u.id = outer.id
 	u.category = "naval"
-	err = tx.QueryRow(ctx, `SELECT owner_id,type,size,crew,status,q,r,target_q,target_r,departs_at,arrives_at,depart_tick,arrive_tick,march_route,home_settlement_id,cargo_unit_id,provisions,march_intent,land_target_q,land_target_r FROM units WHERE id=$1 AND world_id=$2 FOR UPDATE`, u.id, world).Scan(&u.ownerID, &u.utype, &u.size, &u.crew, &position.Status, &q, &r, &position.TargetQ, &position.TargetR, &position.DepartsAt, &position.ArrivesAt, &position.DepartTick, &position.ArriveTick, &position.Route, &u.homeSettlementID, &u.cargoUnitID, &u.provisions, &intent, &landQ, &landR)
+	err = tx.QueryRow(ctx, `SELECT owner_id,type,size,crew,status,q,r,target_q,target_r,departs_at,arrives_at,depart_tick,arrive_tick,march_route,home_settlement_id,(SELECT cargo.id FROM units cargo WHERE cargo.carried_by_ship_id=units.id ORDER BY cargo.created_at,cargo.id LIMIT 1),provisions,march_intent,land_target_q,land_target_r FROM units WHERE id=$1 AND world_id=$2 FOR UPDATE`, u.id, world).Scan(&u.ownerID, &u.utype, &u.size, &u.crew, &position.Status, &q, &r, &position.TargetQ, &position.TargetR, &position.DepartsAt, &position.ArrivesAt, &position.DepartTick, &position.ArriveTick, &position.Route, &u.homeSettlementID, &u.cargoUnitID, &u.provisions, &intent, &landQ, &landR)
 	if err != nil {
 		return err
 	}
@@ -94,14 +94,11 @@ func (h *UpkeepHandler) returnForFood(ctx context.Context, outer upkeepUnitRow, 
 }
 
 func shipRationTx(ctx context.Context, tx pgx.Tx, u unitRow) (float64, error) {
-	cargoKind := ""
-	cargoSize := 0
-	if u.cargoUnitID != nil {
-		if err := tx.QueryRow(ctx, `SELECT type,size FROM units WHERE id=$1 AND status='embarked'`, *u.cargoUnitID).Scan(&cargoKind, &cargoSize); err != nil && err != pgx.ErrNoRows {
-			return 0, err
-		}
+	cargo, err := passengersRation(ctx, tx, u.id)
+	if err != nil {
+		return 0, err
 	}
-	return VoyageRation(u.utype, u.size, cargoKind, cargoSize, u.crew), nil
+	return VoyageRation(u.utype, u.size, "", 0, u.crew) + cargo, nil
 }
 
 // foodReturned reports only physical arrival home. A captured/removed home is

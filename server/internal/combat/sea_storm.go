@@ -86,6 +86,9 @@ type SeaStormPayload struct {
 	TransportID *uuid.UUID      `json:"transport_id,omitempty"`
 	Cargo       []SeaStormCargo `json:"cargo,omitempty"`
 	Troops      *SeaStormTroops `json:"troops,omitempty"`
+	// MoreTroops are the passengers after the first (an Emporos carries up to
+	// three); Troops keeps meaning the first, as it always has.
+	MoreTroops []SeaStormTroops `json:"more_troops,omitempty"`
 }
 
 // SeaStormScanHandler processes the recurring ScheduledSeaStormScan.
@@ -148,7 +151,7 @@ func (h *SeaStormScanHandler) Handle(ctx context.Context, e events.ScheduledEven
 func (h *SeaStormScanHandler) loadVoyages(ctx context.Context, worldID uuid.UUID) ([]seaVoyage, error) {
 	var out []seaVoyage
 	rows, err := h.pool.Query(ctx,
-		`SELECT id, owner_id, type, cargo_unit_id, march_route, status, depart_tick, arrive_tick
+		`SELECT id, owner_id, type, (SELECT cargo.id FROM units cargo WHERE cargo.carried_by_ship_id=units.id ORDER BY cargo.created_at,cargo.id LIMIT 1), march_route, status, depart_tick, arrive_tick
 		 FROM units
 		 WHERE world_id = $1 AND category = 'naval' AND status = 'marching' AND march_route IS NOT NULL`,
 		worldID)
@@ -383,17 +386,28 @@ func (h *SeaStormScanHandler) founder(ctx context.Context, tx pgx.Tx, v seaVoyag
 		return err
 	}
 	if v.cargoUnitID != nil {
-		var t SeaStormTroops
-		err := tx.QueryRow(ctx,
-			`UPDATE units u SET status = 'disbanded', size = 0, updated_at = now()
-			 FROM (SELECT id, type, size FROM units WHERE id = $1 AND status = 'embarked' FOR UPDATE) old
-			 WHERE u.id = old.id RETURNING old.id, old.type, old.size`, *v.cargoUnitID,
-		).Scan(&t.UnitID, &t.UnitType, &t.Size)
-		if err != nil && err != pgx.ErrNoRows {
+		cargoIDs, err := unit.CargoIDs(ctx, tx, v.shipID)
+		if err != nil {
 			return err
 		}
-		if err == nil {
-			s.Troops = &t
+		for _, cargoID := range cargoIDs {
+			var t SeaStormTroops
+			err := tx.QueryRow(ctx,
+				`UPDATE units u SET status = 'disbanded', size = 0, carried_by_ship_id = NULL, updated_at = now()
+				 FROM (SELECT id, type, size FROM units WHERE id = $1 AND status = 'embarked' FOR UPDATE) old
+				 WHERE u.id = old.id RETURNING old.id, old.type, old.size`, cargoID,
+			).Scan(&t.UnitID, &t.UnitType, &t.Size)
+			if err == pgx.ErrNoRows {
+				continue
+			}
+			if err != nil {
+				return err
+			}
+			if s.Troops == nil {
+				s.Troops = &t
+			} else {
+				s.MoreTroops = append(s.MoreTroops, t)
+			}
 		}
 	}
 	if v.transportID != nil {

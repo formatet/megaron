@@ -588,8 +588,13 @@ export function renderUnitCard(u) {
     : '';
 
   // Cargo badge
-  const cargoBadge = u.cargo_unit_id
-    ? '<span style="font-size:.6rem;color:var(--accent-city-text);margin-left:.3rem">carrying unit</span>'
+  // Passengers: the server lists every land unit aboard (an Emporos carries
+  // up to three) and the hull's troop capacity; the client never re-derives it.
+  const aboard = u.cargo_units || (u.cargo_unit_id ? [{ id: u.cargo_unit_id }] : []);
+  const troopCap = Number(u.troop_capacity) || 1;
+  const cargoBadge = aboard.length
+    ? '<span style="font-size:.6rem;color:var(--accent-city-text);margin-left:.3rem">Passengers ' + aboard.length + ' / ' + (troopCap || aboard.length) + ': '
+      + aboard.map(p => esc(p.display_name || p.type || 'unit') + (p.size ? ' (' + fmtNum(p.size) + ')' : '')).join(', ') + '</span>'
     : '';
 
   // Action buttons
@@ -651,13 +656,13 @@ export function renderUnitCard(u) {
   }
 
   // Load button: naval garrison without cargo — pick from co-located garrison land units
-  if (isNaval && isGarrison && !u.cargo_unit_id && u.settlement_id) {
+  if (isNaval && isGarrison && aboard.length < troopCap && u.settlement_id) {
     actions += '<button onclick="unitLoadPrompt(\'' + u.id + '\',\'' + (u.settlement_id||'') + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Load</button> ';
   }
 
   // Unload button: naval garrison with cargo
-  if (isNaval && isGarrison && u.cargo_unit_id) {
-    actions += '<button onclick="unitUnload(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Unload</button> ';
+  if (isNaval && isGarrison && aboard.length) {
+    actions += '<button onclick="unitUnload(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">' + (aboard.length > 1 ? 'Unload all' : 'Unload') + '</button> ';
   }
 
   // Fetch by ship (R1, megaron_plan_hamta_hem.md, slice 2b): a field-

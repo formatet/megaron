@@ -337,7 +337,8 @@ type Unit struct {
 	ShipyardWorkRunning   bool
 	BuildCompleteAt       *time.Time
 
-	CargoUnitID *uuid.UUID // naval: land unit being transported
+	CargoUnitID  *uuid.UUID  // naval: first (oldest) land unit aboard; nil when empty
+	CargoUnitIDs []uuid.UUID // naval: every land unit aboard, oldest first (carried_by_ship_id)
 
 	Status Status
 	Stance *Stance // nil when not in a named stance
@@ -427,7 +428,8 @@ func NewStore(pool *pgxpool.Pool) *Store {
 
 const selectCols = `
 	id, world_id, owner_id,
-	type, category, size, crew, hull, provisions, provision_goods, cargo_unit_id,
+	type, category, size, crew, hull, provisions, provision_goods,
+	ARRAY(SELECT passenger.id FROM units passenger WHERE passenger.carried_by_ship_id = units.id ORDER BY passenger.created_at, passenger.id),
 	status, stance,
 	settlement_id, support_settlement_id, ordinal,
 	q, r,
@@ -449,7 +451,7 @@ func scanUnit(row interface {
 	var reactionRaw []byte
 	if err := row.Scan(
 		&u.ID, &u.WorldID, &u.OwnerID,
-		&u.Type, &u.Category, &u.Size, &u.Crew, &u.Hull, &u.Provisions, &u.ProvisionGoods, &u.CargoUnitID,
+		&u.Type, &u.Category, &u.Size, &u.Crew, &u.Hull, &u.Provisions, &u.ProvisionGoods, &u.CargoUnitIDs,
 		&u.Status, &stance,
 		&u.SettlementID, &u.SupportSettlementID, &u.Ordinal,
 		&u.Q, &u.R,
@@ -464,6 +466,10 @@ func scanUnit(row interface {
 		&u.CreatedAt, &u.UpdatedAt,
 	); err != nil {
 		return nil, err
+	}
+	if len(u.CargoUnitIDs) > 0 {
+		first := u.CargoUnitIDs[0]
+		u.CargoUnitID = &first
 	}
 	if stance != nil {
 		s := Stance(*stance)
