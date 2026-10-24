@@ -42,7 +42,38 @@ type riteProvinceStatus struct {
 		Kharis           float64               `json:"kharis"`
 		KharisMood       string                `json:"kharis_mood"`
 		AvailablePrayers []riteAvailablePrayer `json:"available_prayers"`
+		Name             string                `json:"name"`
+		Food             struct {
+			Goods              map[string]float64 `json:"goods"`
+			ConsumptionPerTick float64            `json:"consumption_per_tick"`
+		} `json:"food"`
 	} `json:"settlement"`
+}
+
+// offerFoodText says what a gift takes from the city's food and whether a
+// day's eating is left after it — same line as the web's offering row
+// (byggplan A.3: Lato gave 28 of 29 grain and starved six days).
+func offerFoodText(offering, food map[string]float64, eat float64, city string) string {
+	if city == "" {
+		city = "the city"
+	}
+	var parts []string
+	var taken, total float64
+	for _, g := range []string{"grain", "fish", "oil", "wine"} {
+		total += food[g]
+		if n := offering[g]; n > 0 {
+			taken += n
+			parts = append(parts, fmt.Sprintf("takes %.0f of %s's %.0f %s", n, city, math.Floor(food[g]), g))
+		}
+	}
+	if len(parts) == 0 {
+		return ""
+	}
+	text := "The offering " + strings.Join(parts, ", ") + "."
+	if left := math.Max(0, total-taken); eat > 0 && left < eat {
+		text += fmt.Sprintf(" That leaves %.0f food, less than %s eats in a day (%s).", math.Floor(left), city, strconv.FormatFloat(math.Round(eat*10)/10, 'f', -1, 64))
+	}
+	return text
 }
 
 // formatOffering renders a material offering as "grain×25 oil×15", sorted for
@@ -343,6 +374,9 @@ func confirmRiteCast(c *Client, markers []map[string]any, settlementID, prayerID
 		previewGift = composed
 	}
 	fmt.Printf("Offer: %s\n", formatOffering(previewGift))
+	if line := offerFoodText(previewGift, p.Settlement.Food.Goods, p.Settlement.Food.ConsumptionPerTick, p.Settlement.Name); line != "" {
+		fmt.Println(line)
+	}
 	if len(composed) == 0 && chosen.GodID == "" && offerMultiplier != 0 && offerMultiplier != 1 {
 		fmt.Printf("Offer multiplier: %.2fx — changes the offering and the gods' response.\n", offerMultiplier)
 	}

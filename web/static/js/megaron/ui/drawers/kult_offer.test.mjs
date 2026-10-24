@@ -57,3 +57,17 @@ test('alternative preparation starts at zero instead of silently offering missin
  const fields=offerFields(p,stock);assert.ok(fields.length>0);assert.ok(fields.every(f=>f.amount===0));
  const html=offerRowHTML(p,stock);assert.match(html,/Choose goods for your offering/);
 });
+
+// Lato, tick 5053: 28 grain offered out of 29, net +0.5 — the city starved
+// six days. The row says what the gift takes from the city's food (A.3).
+test('offer row names the food the gift takes and warns when a day is not left', async () => {
+  const { offerFoodText } = await import('./kult_offer.js');
+  const food = { consumption_per_tick: 55.8 };
+  const text = offerFoodText({ grain: 28, silver: 3 }, { grain: 29.6, fish: 4, silver: 9 }, food, 'Lato');
+  assert.match(text, /takes 28 of Lato's 29 grain/);
+  assert.match(text, /leaves 5 food, less than Lato eats in a day \(55\.8\)/);
+  assert.equal(offerFoodText({ silver: 3 }, { grain: 29 }, food, 'Lato'), '');
+  const plenty = offerFoodText({ grain: 10 }, { grain: 900 }, food, 'Lato');
+  assert.match(plenty, /takes 10 of Lato's 900 grain/);
+  assert.doesNotMatch(plenty, /less than/);
+});
