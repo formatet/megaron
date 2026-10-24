@@ -343,6 +343,9 @@ func (h *ReturnHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 	); err != nil {
 		return fmt.Errorf("mark messenger arrived: %w", err)
 	}
+	if err := returnDeclinedReservationTx(ctx, tx, payload.MessengerID); err != nil {
+		return fmt.Errorf("return declined offer reservation: %w", err)
+	}
 	reportID, reportSender, reportBody, err := persistRescueReport(ctx, tx, e.WorldID, payload.MessengerID)
 	if err != nil {
 		return err

@@ -95,6 +95,9 @@ func (h *PassageScanHandler) applyCarrierWitness(ctx context.Context, world uuid
 			if _, err := tx.Exec(ctx, `UPDATE messengers SET status='lost',passage_status=NULL,passage_port_id=NULL,passage_since_tick=NULL,passage_lost_until_tick=NULL,carrier_transport_id=NULL,carrier_unit_id=NULL,carrier_name=NULL,disembark_q=NULL,disembark_r=NULL,boarded_at=NULL,disembark_at=NULL,passage_generation=passage_generation+1 WHERE id=$1`, w.MessengerID); err != nil {
 				return err
 			}
+			if err := returnDeclinedReservationTx(ctx, tx, w.MessengerID); err != nil {
+				return err
+			}
 			lossNotice = LossNotice{w.MessengerID, w.SenderID, w.Reason, w.Tick, w.Envelope}
 			raw, err := json.Marshal(lossNotice)
 			if err != nil {
