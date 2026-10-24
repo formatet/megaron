@@ -132,6 +132,7 @@ func fetchPlacementOptions(c *Client, worldID, provinceID string) (*placementOpt
 // server code (megaron_plan_omfordelningsmatningen.md: "add zero server
 // code" was the instruction, and both fields already exist).
 type foodStatus struct {
+	NextCitizen     string
 	Summary         string
 	Automatic       string
 	HarvestBlessing string
@@ -163,7 +164,7 @@ func fetchFoodStatus(c *Client, worldID, provinceID string) (*foodStatus, error)
 	}
 	placed, _ := sett["food_gubbar_placed"].(float64)
 	suff, _ := sett["food_self_sufficient"].(bool)
-	return &foodStatus{Summary: cityFoodLine(sett), Required: int(req), Placed: int(placed), SelfSufficient: suff, HarvestBlessing: strings.TrimSpace(harvestBlessingLine(sett) + "\n" + stormFishingLine(sett)), Automatic: automaticFoodLine(sett)}, nil
+	return &foodStatus{NextCitizen: nextCitizenLine(c, sett), Summary: cityFoodLine(sett), Required: int(req), Placed: int(placed), SelfSufficient: suff, HarvestBlessing: strings.TrimSpace(harvestBlessingLine(sett) + "\n" + stormFishingLine(sett)), Automatic: automaticFoodLine(sett)}, nil
 }
 
 // isFoodGood reports whether good_key is one of the two goods

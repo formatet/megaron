@@ -38,6 +38,28 @@ export function growthLineText(pd, includePopulation = true) {
   return '';
 }
 
+// Progress and forecast are server-owned; the client only formats their scale.
+export function nextCitizenText(pd) {
+  const progress = pd?.next_citizen_progress;
+  if (!Number.isFinite(progress)) return '';
+  const state = pd?.food?.growth_state;
+  let ending = ({holding:'not growing',capped:'the walls are full',shrinking:'shrinking'})[state];
+  const ticks = pd.next_citizen_in_ticks;
+  if (!ending && Number.isFinite(ticks) && ticks > 0) {
+    const [days, wall] = fmtDuration(ticks).split(' · ');
+    ending = (ticks <= 1 ? 'next game day' : `in about ${days}`) + (wall ? ` (${wall})` : '');
+  }
+  return `${fmtNum(progress)} / 100 · ${ending || 'estimate unavailable'}`;
+}
+export function nextCitizenHTML(pd) {
+  const text = nextCitizenText(pd);
+  if (!text) return '';
+  const progress = pd.next_citizen_progress;
+  const filled = Math.floor(Math.max(0,Math.min(100,progress))/10);
+  const steps = Array.from({length:10},(_,i)=>`<span class="citizen-step${i<filled?' filled':''}"></span>`).join('');
+  return `<div class="next-citizen"><span>Next citizen</span><span class="citizen-progress" role="progressbar" aria-label="Progress toward next citizen" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress}">${steps}</span><span class="citizen-progress-text">${esc(text)}</span></div>`;
+}
+
 export function populationHTML(pd, idle, livestock, provinceID) {
   const growth = growthLineText(pd, false);
   const g = growth ? growth.charAt(0).toUpperCase() + growth.slice(1) : '';
@@ -45,7 +67,7 @@ export function populationHTML(pd, idle, livestock, provinceID) {
   // server sent no cap. Counted in citizens like the rows under it (Timothy 2026-10-24: "Walls hold
   // 2,000" beside "Citizens 111" read as two different scales).
   const cap = Number(pd?.population_cap);
-  return (g ? `<p class="growth-line">${g}</p>` : '') + (cap > 0 ? row('Walls hold', n(Math.floor(cap / 100))) : '') + row('Citizens', n(Math.floor(pd.population / 100))) + row('Free to work', n(Math.floor(idle / 100))) +
+  return (g ? `<p class="growth-line">${g}</p>` : '') + (cap > 0 ? row('Walls hold', n(Math.floor(cap / 100))) : '') + row('Citizens', n(Math.floor(pd.population / 100))) + nextCitizenHTML(pd) + row('Free to work', n(Math.floor(idle / 100))) +
     row('Livestock', n(Math.floor(livestock)));
 }
 

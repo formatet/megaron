@@ -654,6 +654,9 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 					fmt.Println(line)
 				}
 			}
+			if line := nextCitizenLine(c, sett); line != "" {
+				fmt.Println(line)
+			}
 			if besieged, _ := sett["besieged"].(bool); besieged {
 				fmt.Println("  ⚔ BESIEGED — an enemy holds an access road, catchment production is choked")
 			}

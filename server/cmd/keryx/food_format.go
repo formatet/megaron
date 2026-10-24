@@ -82,3 +82,31 @@ func herdLine(sett map[string]any) string {
 	}
 	return line
 }
+
+// The server owns progress and the growth forecast. Share this row between
+// status and city rather than estimating population growth in either client.
+func nextCitizenLine(c *Client, sett map[string]any) string {
+	progress, ok := sett["next_citizen_progress"].(float64)
+	if !ok {
+		return ""
+	}
+	food, _ := sett["food"].(map[string]any)
+	state, _ := food["growth_state"].(string)
+	ending := map[string]string{"holding": "not growing", "capped": "the walls are full", "shrinking": "shrinking"}[state]
+	ticks, hasETA := sett["next_citizen_in_ticks"].(float64)
+	if ending == "" && hasETA && ticks > 0 {
+		duration := strings.SplitN(formatDuration(c, ticks, "%g"), " · ", 2)
+		if ticks <= 1 {
+			ending = "next game day"
+		} else {
+			ending = "in about " + duration[0]
+		}
+		if len(duration) > 1 {
+			ending += " (" + duration[1] + ")"
+		}
+	}
+	if ending == "" {
+		ending = "estimate unavailable"
+	}
+	return fmt.Sprintf("Next citizen %g / 100 · %s", progress, ending)
+}

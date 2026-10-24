@@ -53,8 +53,12 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 			fs, _ := fetchFoodStatus(c, cfg.WorldID, prov)
 
 			fmt.Println(citizenScaleNote)
-			fmt.Printf("Citizens: %d/%d placed, %d idle\n\n", opts.TotalGubbar-opts.PoolSize, opts.TotalGubbar, opts.PoolSize)
+			fmt.Printf("Citizens: %d/%d placed, %d idle\n", opts.TotalGubbar-opts.PoolSize, opts.TotalGubbar, opts.PoolSize)
 
+			if fs != nil && fs.NextCitizen != "" {
+				fmt.Println(fs.NextCitizen)
+			}
+			fmt.Println()
 			if fs != nil {
 				fmt.Println(fs.Summary)
 				if fs.HarvestBlessing != "" {

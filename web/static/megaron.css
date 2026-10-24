@@ -2121,3 +2121,10 @@ h4.cx-h { font-size: var(--fs-base); }
 .letter-entry summary { cursor:pointer; font-size:.78rem; }
 .letter-entry p { font-size:.8rem; overflow-wrap:anywhere; }
 @media(max-width:480px) { .letter-person { grid-template-columns:1fr; } .letter-person-state { grid-column:1; } }
+
+/* A citizen is completed at the next hundred people: ten whole progress steps. */
+.next-citizen { display:grid; grid-template-columns:auto 1fr; align-items:center; gap:.3rem .6rem; font-size:.75rem; padding:.35rem 0 .5rem; }
+.citizen-progress { display:flex; gap:3px; justify-self:end; }
+.citizen-step { display:block; width:10px; height:8px; border:1px solid var(--text-dim); background:var(--warm-white); }
+.citizen-step.filled { border-color:var(--text); background:var(--text); }
+.citizen-progress-text { grid-column:1 / -1; color:var(--text-dim); }

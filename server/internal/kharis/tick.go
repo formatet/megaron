@@ -84,7 +84,7 @@ const Floor = kharisFloor
 // grain-priced model (grainPerCitizen 2,0 + growthGrainReserve 6,94, 2026-08-19
 // "surplus → growth, not storage"), under which growth spent every grain above
 // the reserve and the stores never filled.
-const growthRatePerTick = 0.005
+const growthRatePerTick = economy.PopulationGrowthRatePerTick
 
 // starvationPopLossRatePerTick is the fraction of population a starving city
 // loses per tick (−0.5%/tick). Single source of truth for BOTH sides:
@@ -651,40 +651,16 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 		     -- second growth. A later day's tick carries a different
 		     -- event_id and claims fresh.
 		     INSERT INTO processed_tick_claims (event_id, scope_id)
-		     SELECT $5::bigint, s.id FROM settlements s
+		     SELECT $2::bigint, s.id FROM settlements s
 		     WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state NOT IN ('sunk', 'collapsed')
 		     ON CONFLICT DO NOTHING
 		     RETURNING scope_id
 		 ),
 		 growth_calc AS (
-		     SELECT
-		         s.id,
-		         s.population AS pop,
-		         -- Utfodringsordningen D4 (megaron_plan_utfodringsordningen.md,
-		         -- 2026-08-26): whether the population actually ate today, written
-		         -- by FoodTick (priority 55, runs before this at 60).
-		         s.food_unmet_amount AS unmet,
-		         -- economy.FoodNet: food produced per tick minus what the
-		         -- population eats per tick.
-		         (SELECT COALESCE(SUM(sg.rate), 0) FROM settlement_goods sg
-		          WHERE sg.settlement_id = s.id AND sg.good_key = ANY($6))
-		           - s.population * $2::float AS food_net,
-		         -- Actual FoodTick outcome, not stores left after the meal.
-		         (1.0 + 0.1 * LEAST(4,GREATEST(0, (
-		             SELECT COUNT(*) FROM jsonb_each_text(s.food_consumed) AS meal(good,qty)
-		             WHERE (meal.good=ANY($4) OR meal.good='livestock') AND meal.qty::numeric>0
-		               AND meal.qty::numeric >= $8::numeric * (
-		                   SELECT SUM(part.qty::numeric) FROM jsonb_each_text(s.food_consumed) AS part(good,qty)
-		                   WHERE (part.good=ANY($4) OR part.good='livestock') AND part.qty::numeric>0
-		               )
-		               AND s.food_consumed_tick=current_world_tick()
-		         ) - 1))) AS variety,
-		         -- economy.PopulationCap: the wall is the ceiling. The table is bound as
-		         -- $9 so the SQL has no second copy of the numbers.
-		         ($9::int[])[LEAST(GREATEST(s.wall_level, 0), 3) + 1] AS pop_cap
-		     FROM settlements s
-		     JOIN claim c ON c.scope_id = s.id
-		 ),
+             SELECT s.id,growth.* FROM settlements s
+             JOIN claim c ON c.scope_id=s.id
+             CROSS JOIN LATERAL (`+economy.PopulationGrowthSQL()+`) growth
+         ),
 		 final AS (
 		     SELECT
 		         id, pop AS old_pop,
@@ -703,8 +679,7 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 		                 -- is raised. The growth is clamped to the room left, so a city
 		                 -- never overshoots, and nothing else clamps pop downward.
 		                 WHEN food_net > 0 AND pop < pop_cap THEN
-		                     pop + LEAST(pop_cap - pop,
-		                                 GREATEST(1, ROUND(pop * $7::float8 * variety)))
+		                     pop + growth_per_tick
 		                 ELSE pop
 		             END
 		         ) AS new_pop
@@ -719,8 +694,7 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 		     RETURNING s.id, f.old_pop, f.new_pop
 		 )
 		 SELECT id, old_pop, new_pop FROM pop_upd`,
-		worldID, economy.GrainConsumptionPerCitizenPerTick, starvationPopLossRatePerTick, economy.FoodGoods, eventID,
-		economy.FoodGoods, growthRatePerTick, economy.VarietyMinShare, economy.PopulationCaps(),
+		worldID, eventID, starvationPopLossRatePerTick,
 	)
 	if err != nil {
 		slog.Error("daily decay failed", "world", worldID, "err", err)
