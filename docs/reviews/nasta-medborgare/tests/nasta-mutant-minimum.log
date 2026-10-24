@@ -1,0 +1,8 @@
+» färsk DB på migration 210 · commit d9053b8f+ändringar
+2026/10/24 23:45:41 INFO player registered id=b7767b84-bee6-489c-ab17-c809389d2fd2 username=sailor-2cf5e429-5e04-4916-87df-3decca46bf3a
+--- FAIL: TestNextCitizenStatusMatchesActualGrowthTick (0.08s)
+    --- FAIL: TestNextCitizenStatusMatchesActualGrowthTick/minimum_one (0.08s)
+        next_citizen_test.go:62: surface growth=0 want1
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.088s
+FAIL
