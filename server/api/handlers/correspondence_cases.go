@@ -226,6 +226,19 @@ func nullableArchiveID(id uuid.UUID) any {
 }
 
 func (h *MessengerHandler) Case(w http.ResponseWriter, r *http.Request) {
+	var exactID any
+	if raw := chi.URLParam(r, "letterID"); raw != "" {
+		parsed, err := uuid.Parse(raw)
+		if err != nil || parsed == uuid.Nil {
+			writeError(w, 400, "invalid letter ID")
+			return
+		}
+		if _, exists := r.URL.Query()["cursor"]; exists {
+			writeError(w, 400, "exact source letter does not accept a cursor")
+			return
+		}
+		exactID = parsed
+	}
 	tx, c, limit, ok := h.archiveRequest(w, r)
 	if !ok {
 		return
@@ -245,7 +258,7 @@ func (h *MessengerHandler) Case(w http.ResponseWriter, r *http.Request) {
  CASE WHEN sender_id=$2 AND NOT returned AND trade_offer IS NOT NULL AND trade_offer->>'status'<>'cancelled' THEN jsonb_set(trade_offer,'{status}','"pending"') ELSE trade_offer END
  FROM correspondence_letters WHERE case_id=$1 AND (sender_id=$2 OR delivered)
  AND (created_epoch<>$4 OR pg_visible_in_snapshot(created_xid,$3::pg_snapshot))
- AND ($5::timestamptz IS NULL OR (sent_at,id)<($5,$6::uuid)) ORDER BY sent_at DESC,id DESC LIMIT $7`, c.Case, c.Player, c.Snapshot, c.Epoch, nullableArchiveTime(c.Before), nullableArchiveID(c.ID), limit+1)
+ AND ($5::timestamptz IS NULL OR (sent_at,id)<($5,$6::uuid)) AND ($8::uuid IS NULL OR id=$8) ORDER BY sent_at DESC,id DESC LIMIT $7`, c.Case, c.Player, c.Snapshot, c.Epoch, nullableArchiveTime(c.Before), nullableArchiveID(c.ID), limit+1, exactID)
 	if err != nil {
 		writeError(w, 500, "could not load letters")
 		return
@@ -264,6 +277,10 @@ func (h *MessengerHandler) Case(w http.ResponseWriter, r *http.Request) {
 	}
 	if rows.Err() != nil {
 		writeError(w, 500, "could not read letters")
+		return
+	}
+	if exactID != nil && len(items) == 0 {
+		writeError(w, 404, "visible source letter not found in this case")
 		return
 	}
 	next := ""
