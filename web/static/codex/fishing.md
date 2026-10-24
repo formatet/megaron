@@ -11,3 +11,5 @@ A **bay** is coastal water with land on at least four of its six sides. Rivers a
 Deep-water fishing requires the city’s [[harbour]]. The harbour supplies deep-water places without multiplying the catch. It adds no places or production to coastal water or bays. Rivers and fords keep their own fishing places and production.
 
 A harbour creates places, not workers. Put citizens on the deep-water hexes to use them. Higher harbour levels open more places there, while each fisher still catches 1 fish per day.
+
+**A storm stops the fishing.** While a [[storms|storm]] stands on a fishing hex, the citizens placed there catch nothing. They fish again the day it has moved on. **City** shows *Storm over N fishing grounds*, and `keryx city` and `keryx status` print the same line.

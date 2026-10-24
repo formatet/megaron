@@ -815,6 +815,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"food_gubbar_placed":         foodGubbarPlaced,
 			"food_self_sufficient":       foodSelfSufficient,
 			"harvest_blessing":           harvestBlessingStatus(harvestBlessingUntil, currentTick),
+			"storm_no_fishing":           len(economy.StormNoFishingHexes(r.Context(), h.pool, sett.ID)),
 			"army":                       sett.Army,
 			"army_upkeep":                armyUp,
 			// Del C: the sold a garrison spends back into the town it holds. Without
@@ -863,7 +864,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// visitor has never seen. Cult upkeep is private, like local altar stocks.
 		if !ownCult {
 			private := resp["settlement"].(map[string]any)
-			for _, key := range []string{"kharis_wrath", "kharis_city_count", "kharis_base_decay", "kharis_city_decay", "kharis_daily_decay", "kharis_population", "kharis_population_decay", "kharis_production_per_tick", "kharis_net_per_tick", "kharis_devotion_idle"} {
+			for _, key := range []string{"storm_no_fishing", "kharis_wrath", "kharis_city_count", "kharis_base_decay", "kharis_city_decay", "kharis_daily_decay", "kharis_population", "kharis_population_decay", "kharis_production_per_tick", "kharis_net_per_tick", "kharis_devotion_idle"} {
 				delete(private, key)
 			}
 		}

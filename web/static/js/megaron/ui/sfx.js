@@ -156,7 +156,7 @@ export function playBattleClash() {
 
 // Kinds that already carry their own sound in ws.js (horn, clash) — the chime
 // must not stack on top of them.
-const OWN_SOUND_KINDS = new Set(['BattleWon', 'BattleLost', 'UnitRecalled', 'UnitRedirected']);
+const OWN_SOUND_KINDS = new Set(['BattleWon', 'BattleLost', 'UnitRecalled', 'UnitRedirected', 'RiteAnswered']);
 const ARRIVAL_KINDS = new Set(['UnitArrived', 'UnitExploreReturned', 'ArmyArrival', 'MessengerReturned']);
 
 // soundForKind is the whole routing decision, pure for testing:
@@ -189,6 +189,18 @@ export function playDispatchChime() {
   if (!ac) return;
   tone(ac, { type: 'triangle', from: 659.3, to: 659.3, peak: 0.07, attack: 0.01, duration: 0.55 });
   tone(ac, { type: 'sine', from: 988.0, to: 988.0, peak: 0.035, attack: 0.01, duration: 0.40, delay: 0.02 });
+}
+
+// An answered prayer (byggplan D.2): a low drone under the Minoan neighbour
+// figure D–E♭–D, about two and a half seconds — the gods, not a fanfare.
+export function playOmen() {
+  if (!shouldPlay('omen')) return;
+  const ac = audioCtx();
+  if (!ac) return;
+  tone(ac, { type: 'sine', from: 146.8, to: 146.8, peak: 0.10, attack: 0.25, duration: 2.5 });
+  tone(ac, { type: 'triangle', from: 587.3, to: 587.3, peak: 0.07, attack: 0.02, duration: 0.9 });
+  tone(ac, { type: 'triangle', from: 622.3, to: 622.3, peak: 0.06, attack: 0.02, duration: 0.8, delay: 0.55 });
+  tone(ac, { type: 'triangle', from: 587.3, to: 587.3, peak: 0.07, attack: 0.02, duration: 1.4, delay: 1.05 });
 }
 
 // playForKind — the one call ws.js makes for every live dispatch.

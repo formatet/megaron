@@ -672,6 +672,9 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			if line := harvestBlessingLine(sett); line != "" {
 				fmt.Println(line)
 			}
+			if line := stormFishingLine(sett); line != "" {
+				fmt.Println(line)
+			}
 
 			fmt.Println(cityFoodLine(sett))
 			if line := herdLine(sett); line != "" {

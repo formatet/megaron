@@ -10,6 +10,8 @@ A ship that **sails into a storm** takes two points of hull damage (of five) —
 
 Every sea hex a ship crosses is checked, even when it crosses several in one day. Two different storms crossed that day each strike; staying inside the same storm gives no extra blow. A storm can also drift onto a slow ship. [[rites|Favourable Passage]] still protects the ship on its outward leg.
 
+A storm standing on a city's fishing hex stops the fishing there until it moves on ([[fishing]]).
+
 ## What you see
 
 You see a storm **only inside your own sight** ([[sight]]) — from your cities, your ships and your soldiers. There it is drawn as dark cloud, and hovering tells you which way it is drifting.

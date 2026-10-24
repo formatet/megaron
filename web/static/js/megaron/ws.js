@@ -7,7 +7,7 @@ import { fetchAuth } from './api.js';
 import { track } from './telemetry.js';
 // sfx.js imports nothing, so pulling it in here cannot create the cycle the
 // window.* indirection below exists to avoid.
-import { playWarHorn, playBattleClash, playForKind, musicCueFor } from './ui/sfx.js';
+import { playWarHorn, playBattleClash, playForKind, playOmen, musicCueFor } from './ui/sfx.js';
 
 // ── WebSocket — real-time province updates ────────────────────────────────
 // This module no longer formats anything: a dispatch's text, icon and colour
@@ -188,6 +188,15 @@ export function initWS() {
           fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/roads`).then(r => r.ok && r.json().then(d => { State.roadEdges = d.edges || []; State.dirty = true; }));
           fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/road-sites`).then(r => r.ok && r.json().then(d => { State.roadSites = d.sites || []; State.dirty = true; }));
         });
+      }
+      if (msg.kind === 'RiteAnswered') {
+        // An answered prayer that marks a place: a short sound, the map goes
+        // there and the revealed hexes lift one at a time (byggplan D.2).
+        const p = msg.payload || {};
+        if (Array.isArray(p.revealed_tiles) && p.revealed_tiles.length) {
+          playOmen();
+          window.startOmen(p.revealed_tiles, { q: p.q, r: p.r });
+        }
       }
       if (msg.kind === 'PlaceFirstReached') {
         // This can happen mid-route, before UnitArrived. Expose the new naming

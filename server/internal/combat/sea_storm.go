@@ -474,7 +474,45 @@ func (h *SeaStormScanHandler) stepWeather(ctx context.Context, worldID uuid.UUID
 	if err := advanceStorms(ctx, tx, worldID, dueTick, graph, h.Dice); err != nil {
 		return err
 	}
+	if err := recomputeStormFishing(ctx, tx, worldID, dueTick); err != nil {
+		return err
+	}
 	return tx.Commit(ctx)
+}
+
+// recomputeStormFishing recomputes every city with fishers on a hex a storm
+// stood on last tick or stands on now, so its stored fish rate follows the
+// storm in and out (economy/storm_fishing.go).
+func recomputeStormFishing(ctx context.Context, tx pgx.Tx, worldID uuid.UUID, dueTick int) error {
+	rows, err := tx.Query(ctx,
+		`SELECT DISTINCT p.settlement_id FROM settlement_placement p
+		   JOIN settlements s ON s.id = p.settlement_id AND s.world_id = $1
+		  WHERE p.target_kind = 'hex' AND p.good_key = 'fish' AND EXISTS (
+		        SELECT 1 FROM sea_storm_track t JOIN sea_storms ss ON ss.id = t.storm_id
+		         WHERE ss.world_id = $1 AND t.tick IN ($2 - 1, $2) AND t.q = p.hex_q AND t.r = p.hex_r)`,
+		worldID, dueTick)
+	if err != nil {
+		return fmt.Errorf("sea storm: fishing cities: %w", err)
+	}
+	var ids []uuid.UUID
+	for rows.Next() {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			rows.Close()
+			return err
+		}
+		ids = append(ids, id)
+	}
+	rows.Close()
+	if err := rows.Err(); err != nil {
+		return err
+	}
+	for _, id := range ids {
+		if err := economy.RecomputeProduction(ctx, tx, id); err != nil {
+			return fmt.Errorf("sea storm: recompute %s: %w", id, err)
+		}
+	}
+	return nil
 }
 
 // claimStorm gives the owner of the first ship a storm ever strikes the right to name it

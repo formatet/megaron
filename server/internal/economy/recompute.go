@@ -559,12 +559,19 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		rawRates[good] = 0
 	}
 
+	stormy, err := stormHexesNow(ctx, tx, worldID)
+	if err != nil {
+		return fmt.Errorf("recompute: storms: %w", err)
+	}
 	for _, opt := range hexOptions {
 		placedHere := placements.Hex[opt.Coord]
 		for good, rate := range opt.RatePerGood {
 			placed := placedHere[good]
 			if placed <= 0 {
 				continue
+			}
+			if good == GoodFish && stormy[opt.Coord] {
+				continue // storm_fishing.go: no fishing under a storm
 			}
 			rawRates[good] += hexYield(rate, opt.PlaceCapPerGood[good], opt.MultPerGood[good], placed)
 		}
