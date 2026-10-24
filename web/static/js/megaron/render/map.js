@@ -16,6 +16,7 @@ import { canonicalUnitType, actorName } from '../ui/actornames.js';
 import { drawActor, spriteRuns, FOREIGN_ACCENT, FOREIGN_OUTLINE } from './actorsprites.js';
 import { eyeSees } from './sight.js';
 import { drawRemembered } from './memory.js';
+import { omenOverlay, drawOmen } from './omen.js';
 import { drawFire, FIRE_FRAMES } from './doomfire.js';
 import { drawCityMass, citySprite, cityTop, cityFoot } from './citysprites.js';
 import { cityIcon, drawCityIcon, drawStamp, ACTIVITY_ICONS, CITY_ICON_PALETTE } from './cityicons.js';
@@ -2582,6 +2583,10 @@ export function render() {
   const fireChanged = fireTick !== State.lastFireTick && State.provinceData.some(p => p.burning);
   if (fireChanged) State.lastFireTick = fireTick;
 
+  // An omen reveal animates by itself until it is over.
+  const omen = State.omen ? omenOverlay(State.omen, performance.now()) : null;
+  if (State.omen) { if (!omen) State.omen = null; State.dirty = true; }
+
   if (!State.dirty && !seaChanged && !blinkChanged && !stormChanged && !fireChanged && State.marchData.length === 0 && State.messengerData.length === 0 && State.tradeData.length === 0
       && !State.unitsData.some(u => u.status === 'marching')
       && !State.foreignUnitData.some(u => u.status === 'marching')) {
@@ -2855,6 +2860,7 @@ export function render() {
   // deposits and remembered buildings), before player UI and live actors.
   if (MARKRASTER) drawMarkMemory(ctx);
   else drawRemembered(ctx, vis, t => { const p = hexPx(t.q, t.r); return hexPts(p.x, p.y); });
+  if (omen) drawOmen(ctx, omen, t => { const p = hexPx(t.q, t.r); return hexPts(p.x, p.y); });
   pass('memory');
 
   // 3. Highlight selected hex
@@ -3252,6 +3258,23 @@ function centreCamera() {
 // like it did nothing.
 export function refreshTiles() {
   fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/map`).then(r => r.ok && r.json().then(d => { State.tileData = d; State.dirty = true; }));
+}
+
+// startOmen plays an answered prayer's reveal (byggplan D.2): fetch the map
+// the prayer changed, go to the find, then lift the revealed hexes one at a
+// time (render/omen.js).
+export function startOmen(tiles, find) {
+  if (!Array.isArray(tiles) || !tiles.length) return;
+  fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/map`).then(r => r.ok && r.json()).then(d => {
+    if (d) State.tileData = d;
+    if (State.camera.zoom < 1) zoom(1 / State.camera.zoom);
+    if (find && Number.isInteger(find.q) && Number.isInteger(find.r)) window.centreOn(find.q, find.r);
+    // From the find outward, so the reveal begins where the god points.
+    const dist = t => find ? (Math.abs(t.q - find.q) + Math.abs(t.q + t.r - find.q - find.r) + Math.abs(t.r - find.r)) / 2 : 0;
+    const order = tiles.map(t => ({ q: t.q, r: t.r })).sort((a, b) => dist(a) - dist(b));
+    State.omen = { tiles: order, start: performance.now() };
+    State.dirty = true;
+  }).catch(() => {});
 }
 
 // ── Zoom helpers ──────────────────────────────────────────────────────────

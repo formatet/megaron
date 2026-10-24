@@ -18,7 +18,7 @@ import { anchorWorldTime } from './world_time.js';
 import { track } from './telemetry.js';
 import { initWS, fullResync, checkWsLiveness } from './ws.js';
 import {
-  initMap, refreshTiles, loadMap, zoom, resetView, toggleActivityOverlay,
+  initMap, refreshTiles, startOmen, loadMap, zoom, resetView, toggleActivityOverlay,
   closeInspect, sendMessengerFromInspect, reopenSelectedHex,
 } from './render/map.js';
 import { stopCityAnim } from './render/city.js';
@@ -269,6 +269,7 @@ Object.assign(window, {
   openLettersWith,
   openMarchCtx,
   refreshTiles,
+  startOmen,
   reloadActiveDrawer,
   renderColonizePreviewHTML,
   updateNotifBadge,
