@@ -1,0 +1,43 @@
+1 citizen = 100 people
+Citizens: 3/19 placed, 16 idle
+Next citizen 64 / 100 · shrinking
+
+Food for 0.0 game days at current consumption (0 grain, 0 fish, 0 oil, 0 wine)
+Food: 7 citizens needed for people on best food slots, 3 on food
+Automatic food: 0.50 grain + 1.28 fish per game day without placed citizens (nearby ground 0.50 grain; 64 people outside whole citizens: 0.00 grain + 1.28 fish, a fraction of the best food worker)
+
+Catchment:
+  #10  (0,40) plains         oil        0/2    (next +0.7 per game day)
+                      wine       0/2    (next +0.5 per game day)
+                      stone      0/1    (next +0.5 per game day)
+                      grain      0/4    (next +1.0 per game day)
+  #14  (1,39) plains         wine       0/2    (next +0.5 per game day)
+                      stone      0/1    (next +0.5 per game day)
+                      grain      0/4    (next +1.0 per game day)
+                      oil        0/2    (next +0.7 per game day)
+  #16  (2,37) plains         oil        0/2    (next +0.7 per game day)
+                      wine       0/2    (next +0.5 per game day)
+                      stone      0/1    (next +0.5 per game day)
+                      grain      0/4    (next +1.0 per game day)
+  #15  (1,40) hills          oil        0/2    (next +0.5 per game day)
+                      wine       0/2    (next +1.0 per game day)
+                      stone      0/2    (next +1.0 per game day)
+                      grain      0/1    (next +0.5 per game day)
+                      timber     0/1    (next +0.3 per game day)
+  #17  (2,38) hills          oil        0/2    (next +0.5 per game day)
+                      wine       0/2    (next +1.0 per game day)
+                      stone      0/2    (next +1.0 per game day)
+                      grain      0/1    (next +0.5 per game day)
+                      timber     0/1    (next +0.3 per game day)
+  #18  (2,39) hills          grain      0/1    (next +0.5 per game day)
+                      timber     0/1    (next +0.3 per game day)
+                      oil        0/2    (next +0.5 per game day)
+                      wine       0/2    (next +1.0 per game day)
+                      stone      0/2    (next +1.0 per game day)
+  #11  (0,41) forest_olive_grove oil        0/2    (next +1.0 per game day)
+                      timber     0/1    (next +1.0 per game day)
+                      stone      0/1    (next +0.5 per game day)
+  #9   (0,38) coastal_sea    fish       1/2    (next +1.0 per game day)
+  #12  (1,37) coastal_sea    fish       0/2    (next +1.0 per game day)
+  #13  (1,38) coastal_sea    fish       2/2 FULL
+  #8   (0,37) deep_sea       fish       0/0 FULL

@@ -1,0 +1,32 @@
+» färsk DB på migration 210 · commit d9053b8f+ändringar
+2026/10/24 23:44:18 INFO player registered id=296b23c9-744f-48e9-8aa0-28f8c34220a0 username=sailor-bb14a876-5e77-4419-ba53-4ea020c2a8a0
+2026/10/24 23:44:18 INFO player registered id=f41a5b87-cb32-4a20-9c31-aa41ae2bd783 username=sailor-25577671-dbab-40c9-8310-3129f4adf8ab
+2026/10/24 23:44:18 INFO player registered id=a761c082-5a42-4390-921d-608113dc23a9 username=sailor-a88e1aa3-de7e-46bc-a39c-ea94a5567198
+2026/10/24 23:44:18 INFO player registered id=13b6a365-1f07-4957-87f6-40d416074365 username=sailor-53e2f22c-b938-494b-8f89-1819ababd0f6
+2026/10/24 23:44:18 INFO player registered id=11875a7a-429d-4a9d-9cee-cc61c4288c5c username=sailor-bba58f1b-622a-4739-91ce-dc6502b8248d
+2026/10/24 23:44:18 INFO player registered id=bba4644c-2639-4b36-a76a-8c35ee4510ec username=sailor-5dc7d325-215a-4ea8-b8c2-da765a9d034c
+2026/10/24 23:44:18 INFO player registered id=6e650bdb-02b3-4347-85f7-6b502215a286 username=sailor-55539f56-a7cd-4e70-b7fa-b786f02d2174
+2026/10/24 23:44:18 INFO player registered id=c7c7066d-7888-41c4-8a59-be11512a63d0 username=sailor-78e9c46c-ee6b-47fc-a597-c4f8ded31849
+2026/10/24 23:44:18 INFO player registered id=191e57c4-dbbf-4828-ad79-3a6fa48c91b6 username=sailor-4e7e9880-5266-43d4-8749-be333e243129
+--- FAIL: TestNextCitizenStatusMatchesActualGrowthTick (0.72s)
+    --- FAIL: TestNextCitizenStatusMatchesActualGrowthTick/variety (0.08s)
+        next_citizen_test.go:62: surface growth=<nil> want8
+    --- FAIL: TestNextCitizenStatusMatchesActualGrowthTick/minimum_one (0.08s)
+        next_citizen_test.go:62: surface growth=<nil> want1
+    --- FAIL: TestNextCitizenStatusMatchesActualGrowthTick/clamp (0.08s)
+        next_citizen_test.go:62: surface growth=<nil> want1
+    --- FAIL: TestNextCitizenStatusMatchesActualGrowthTick/at_cap (0.08s)
+        next_citizen_test.go:62: surface growth=<nil> want0
+    --- FAIL: TestNextCitizenStatusMatchesActualGrowthTick/over_cap (0.08s)
+        next_citizen_test.go:62: surface growth=<nil> want0
+    --- FAIL: TestNextCitizenStatusMatchesActualGrowthTick/no_food_surplus (0.08s)
+        next_citizen_test.go:62: surface growth=<nil> want0
+    --- FAIL: TestNextCitizenStatusMatchesActualGrowthTick/starving (0.08s)
+        next_citizen_test.go:62: surface growth=<nil> want0
+    --- FAIL: TestNextCitizenStatusMatchesActualGrowthTick/stale_meal (0.08s)
+        next_citizen_test.go:62: surface growth=<nil> want6
+    --- FAIL: TestNextCitizenStatusMatchesActualGrowthTick/tiny_wine_does_not_count (0.08s)
+        next_citizen_test.go:62: surface growth=<nil> want6
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.720s
+FAIL

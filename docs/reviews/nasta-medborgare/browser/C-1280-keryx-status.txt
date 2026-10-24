@@ -1,0 +1,47 @@
+Wanax Leandros · today 23:47
+
+1 citizen = 100 people
+Lato [minoan]  Pop: 2.0k people  Labor: 20 citizens  Walls: 0/3  Settlements: 1/5  [coastal — ships need a harbour and a shipyard]
+Walls hold 2.0k. The next wall needs a Granary of level 1 (yours: 0) — `keryx build --type silo`.
+Population 2000 — not growing: the walls are full
+Next citizen 0 / 100 · the walls are full
+
+No trade contacts yet — trade needs a foreign settlement within your vision. Run `keryx cities` to see known/rumoured neighbours (march outward or colonise to reach one), then `keryx message --to <name>` or `keryx trade-offer` once one is visible.
+
+Food for 80.0 game days at current consumption (500 grain, 100 fish, 100 oil, 100 wine)
+Herd 10 / 50 — 1 calf in 5 game days (1 grain)
+Storage: grain 500/2.0k — full in 16.19870410367171 game days. Send goods away or trade.
+
+Last today 23:47: 1 goods produced, 1 consumed  ·  keryx ticklog for details
+
+Resources
+  (per game day; food and army balances are itemized below)
+  Silver      100  —
+  Food     production 100.0 − people eat 10.0 = net +90 per game day (before army)
+  Last meal: 10 grain · today 23:47
+  Grain       500  production 100.0 per game day  (8 citizens needed for people on best food slots · 3 on food)
+  Automatic food: 0.50 grain + 0.00 fish per game day without placed citizens (nearby ground 0.50 grain; 0 people outside whole citizens: 0.00 grain + 0.00 fish, a fraction of the best food worker)
+  Army     eats 1.1 food per game day → food net +89 per game day after army
+  Silver   net +0.0 per game day after army pay
+  Fish        100  —
+  Timber      100  —
+  Stone       100  —
+  Copper      100  —
+  Tin         100  —
+  Bronze      100  —
+  ⚠ Timber production ~0 — timber gates harbour (16)/barracks (8)/foundry (8)/temple (8). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).
+  Kharis       40  (Indifferent) · ceiling 40 · net -0.3 per game day (upkeep only above ceiling)
+  Upkeep of the cult: 0.10 base + 1 city cost 0.00 + 2000 residents cost 0.20 = 0.30 kharis per game day
+  Temple production: 0.00 kharis per game day
+  Everyday prayers work at a level-1 temple. Spontaneous blessings need 60 kharis and a maintained temple. Only a level-2 temple or higher lets kharis grow that far. Kharis retained above a lowered ceiling still counts.
+  Below 15 kharis: 3% chance of divine punishment per game day, with or without a temple.
+  → kharis declines through daily cult upkeep; temple workers and offerings do not raise it while it is above the ceiling 40. Once below, temples can raise it again, up to the ceiling.
+  Temples: none — kharis doesn't climb without a temple + offerings.
+
+Army (garrison in Lato)
+  Spearmen    200
+      a851fdaf-6d72-4671-b24d-51eca23a7513  100
+      b3f9e2f5-d03a-4d51-8fcd-b64c1e09e1bd  100
+  Galley        1
+  Upkeep     1.1 food, 0 silver per game day  (everything the city pays — including field units)
+  Field units and other cities are shown in `keryx unit list`.
