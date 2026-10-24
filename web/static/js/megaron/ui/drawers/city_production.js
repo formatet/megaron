@@ -38,18 +38,14 @@ export function growthLineText(pd, includePopulation = true) {
   return '';
 }
 
-// What the walls hold — the ceiling only, never "room for N more". Same words as
-// keryx `status` (wallsHoldLine in cmd_status.go). '' if the server sent no cap.
-export function wallsHoldText(pd) {
-  const cap = Number(pd?.population_cap);
-  return cap > 0 ? `Walls hold ${fmtNum(cap)}` : '';
-}
-
 export function populationHTML(pd, idle, livestock, provinceID) {
   const growth = growthLineText(pd, false);
   const g = growth ? growth.charAt(0).toUpperCase() + growth.slice(1) : '';
-  const walls = wallsHoldText(pd);
-  return (g ? `<p class="growth-line">${g}</p>` : '') + (walls ? row('Walls hold', walls.replace('Walls hold ', '')) : '') + row('Citizens', n(Math.floor(pd.population / 100))) + row('Free to work', n(Math.floor(idle / 100))) +
+  // What the walls hold — the ceiling only, never "room for N more"; none if the
+  // server sent no cap. Counted in citizens like the rows under it (Timothy 2026-10-24: "Walls hold
+  // 2,000" beside "Citizens 111" read as two different scales).
+  const cap = Number(pd?.population_cap);
+  return (g ? `<p class="growth-line">${g}</p>` : '') + (cap > 0 ? row('Walls hold', n(Math.floor(cap / 100))) : '') + row('Citizens', n(Math.floor(pd.population / 100))) + row('Free to work', n(Math.floor(idle / 100))) +
     row('Livestock', n(Math.floor(livestock)));
 }
 

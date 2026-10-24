@@ -145,3 +145,9 @@ test('population only offers whole citizen groups, never remainder people',()=>{
   assert.doesNotMatch(html,/Population [0-9]|1,005|1,099|1,100|1,205/);
  }
 });
+
+test('Walls hold is counted in citizens, like the Citizens row beside it', () => {
+  const html = populationHTML(pd({ population: 11165, population_cap: 2000 }), 4700, 0, 'p');
+  assert.match(html, /Walls hold<\/span><span class="sr-val">20</);
+  assert.match(html, /Citizens<\/span><span class="sr-val">111</);
+});
