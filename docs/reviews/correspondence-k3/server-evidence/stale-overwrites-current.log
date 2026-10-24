@@ -1,0 +1,8 @@
+» färsk DB på migration 208 · commit f487f57c+ändringar
+2026/10/24 06:44:49 INFO player registered id=e091f8d9-0270-4d9a-bf64-bb660aefc618 username=reply-sender-cbe8bf1d-f242-4315-9b0e-946331c2b972
+2026/10/24 06:44:49 INFO player registered id=789a05ee-a7db-4a14-9ebd-367eb3bee840 username=reply-receiver-1c0d0f34-a849-4910-8160-1f5d5d83a0ce
+--- FAIL: TestCorrespondencePrivateStaleSaveAndConcurrentFirstSave (0.12s)
+    correspondence_private_test.go:128: concurrent first-save statuses: success=2 conflict=0
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.125s
+FAIL

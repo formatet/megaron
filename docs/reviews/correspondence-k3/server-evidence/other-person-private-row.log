@@ -1,0 +1,8 @@
+» färsk DB på migration 208 · commit f487f57c+ändringar
+2026/10/24 06:44:43 INFO player registered id=a3d537d6-370c-44a2-9855-7bf681be5a82 username=reply-sender-58f6e2d0-08b7-460c-82a2-bd5e6f6f9f1e
+2026/10/24 06:44:44 INFO player registered id=6d52b356-ed2b-4cdc-9282-596f075ff1c2 username=reply-receiver-90e04ff2-058f-44d7-91e6-da397b7865f7
+--- FAIL: TestCorrespondencePrivatePersistsOnlyForOriginalPerson (0.12s)
+    correspondence_private_test.go:66: counterpart inherited private data: 200 map[draft:DRAFT-ONLY-SENDER note:NOTE-ONLY-SENDER version:1]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.121s
+FAIL

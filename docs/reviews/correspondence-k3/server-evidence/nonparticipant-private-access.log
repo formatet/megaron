@@ -1,0 +1,9 @@
+» färsk DB på migration 208 · commit f487f57c+ändringar
+2026/10/24 06:44:54 INFO player registered id=3afac675-5581-4a56-a6bf-2f2321a066f5 username=reply-sender-1871720b-8338-4f62-be32-b8e8ec71aeb9
+2026/10/24 06:44:54 INFO player registered id=f74ad8c7-b141-422d-90fd-6f1393a142b3 username=reply-receiver-72e96a68-df55-4393-89ca-07b9c3177084
+2026/10/24 06:44:54 INFO player registered id=64921cbf-d70b-421b-8712-480480d32cf8 username=k3-stranger-bd4696ec-9b16-49dc-9da5-f86fdd678c7a
+--- FAIL: TestCorrespondencePrivateRejectsStrangerWrongWorldAndInvisibleCase (0.16s)
+    correspondence_private_test.go:165: unauthorized private read: 200 map[draft: note: version:0]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.167s
+FAIL

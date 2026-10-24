@@ -1,0 +1,8 @@
+» färsk DB på migration 208 · commit f487f57c+ändringar
+2026/10/24 06:44:59 INFO player registered id=3caf2095-114d-4306-944f-1ff75c548cd5 username=reply-sender-bc78f977-b6dc-4612-aaf0-e762d835b05e
+2026/10/24 06:44:59 INFO player registered id=adc52ed0-d99a-441f-9b10-49e972fef0b6 username=reply-receiver-cca40fbc-5ec4-4e46-a44a-ad6fe7b8bf33
+--- FAIL: TestCorrespondencePrivatePersistsOnlyForOriginalPerson (0.12s)
+    correspondence_private_test.go:55: pre-delivery recipient read: 200
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.119s
+FAIL

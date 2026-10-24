@@ -538,6 +538,8 @@ func main() {
 			r.Get("/worlds/{worldID}/messengers/queue", mh.Queue)
 			r.Get("/worlds/{worldID}/correspondence/cases", mh.Cases)
 			r.Get("/worlds/{worldID}/correspondence/cases/{caseID}", mh.Case)
+			r.Get("/worlds/{worldID}/correspondence/cases/{caseID}/private", mh.CasePrivate)
+			r.Put("/worlds/{worldID}/correspondence/cases/{caseID}/private", mh.SaveCasePrivate)
 			r.Get("/worlds/{worldID}/runners", mh.Runners)
 			r.Post("/worlds/{worldID}/messengers/{messengerID}/read", mh.Read)
 			r.Post("/worlds/{worldID}/messengers/{messengerID}/reply", mh.Reply)

@@ -1,0 +1,8 @@
+» färsk DB på migration 207 · commit f487f57c
+2026/10/24 06:43:52 INFO player registered id=e222e17d-bb55-4ce3-9953-309fe984e387 username=reply-sender-19119aee-669a-403d-8fba-c7359ab4d351
+2026/10/24 06:43:52 INFO player registered id=7c155713-14d2-49f6-8e36-e8c952e6d8d4 username=reply-receiver-1984dc8b-da32-4300-a131-19ab99c5a9ec
+--- FAIL: TestCorrespondencePrivateHTTPRouteContract (0.11s)
+    correspondence_private_route_test.go:27: private draft endpoint status=404, want200 with initial version0: map[]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.117s
+FAIL
