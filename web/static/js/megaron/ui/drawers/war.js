@@ -590,11 +590,11 @@ export function renderUnitCard(u) {
   // Cargo badge
   // Passengers: the server lists every land unit aboard (an Emporos carries
   // up to three) and the hull's troop capacity; the client never re-derives it.
-  const aboard = u.cargo_units || [];
-  const troopCap = Number(u.troop_capacity) || 0;
+  const aboard = u.cargo_units || (u.cargo_unit_id ? [{ id: u.cargo_unit_id }] : []);
+  const troopCap = Number(u.troop_capacity) || 1;
   const cargoBadge = aboard.length
     ? '<span style="font-size:.6rem;color:var(--accent-city-text);margin-left:.3rem">Passengers ' + aboard.length + ' / ' + (troopCap || aboard.length) + ': '
-      + aboard.map(p => esc(p.display_name || p.type) + ' (' + fmtNum(p.size) + ')').join(', ') + '</span>'
+      + aboard.map(p => esc(p.display_name || p.type || 'unit') + (p.size ? ' (' + fmtNum(p.size) + ')' : '')).join(', ') + '</span>'
     : '';
 
   // Action buttons

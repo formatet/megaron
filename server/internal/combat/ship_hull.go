@@ -153,7 +153,7 @@ func (h *BattleTickHandler) drawShipHull(
 	if p.cargoUnitID != nil {
 		cargoIDs, err := unit.CargoIDs(ctx, tx, p.unitID)
 		if err != nil {
-			slog.Warn("battle tick: load embarked cargo failed", "unit", p.unitID, "err", err)
+			slog.Warn("battle: load embarked cargo failed", "unit", p.unitID, "err", err)
 		}
 		for _, cargoID := range cargoIDs {
 			h.applyCargoLoss(ctx, tx, cargoID, hullLoss, sunk)
