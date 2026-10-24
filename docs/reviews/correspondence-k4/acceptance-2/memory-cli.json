@@ -1,0 +1,45 @@
+{
+  "citations": [
+    {
+      "author_id": "68b44d95-e246-41a0-899a-a3c60a3a0370",
+      "author_name": "Deukalas",
+      "case_id": "9fadff05-f598-45ab-90bc-6d870635f608",
+      "city_name": "K2 Kyme",
+      "created_at": "2026-10-24T07:02:36.060045+02:00",
+      "id": "32a2a14e-464a-4c04-9cc9-c9b96c176c45",
+      "letter_id": "aecf3ef5-6527-4b77-9eea-e3ebf261b63d",
+      "quote": "winter voyage",
+      "source": "message"
+    }
+  ],
+  "counterpart_id": "68b44d95-e246-41a0-899a-a3c60a3a0370",
+  "next_cursor": "",
+  "transactions": [
+    {
+      "accepted_at": "2026-10-24T07:02:30.705878+02:00",
+      "case_id": "6c7e0117-fb99-4efa-8480-6c9b834686c5",
+      "destination_name": "K2 Nostos",
+      "id": "3fa29021-b16b-489a-a7a3-1d039e963a4c",
+      "origin_name": "K2 Kyme",
+      "outcome": "unavailable",
+      "recipient_id": "7cef179b-5ec3-4772-a70f-79e831c9f395",
+      "recipient_name": "Wedaneus",
+      "sender_id": "68b44d95-e246-41a0-899a-a3c60a3a0370",
+      "sender_name": "Deukalas",
+      "sent_at": "2026-10-24T07:02:30.567775+02:00",
+      "subject": "Accepted copper",
+      "terms": {
+        "goods_arrival_tick": 22,
+        "goods_arrives_at": "2026-10-25T03:02:30.70488+00:00",
+        "kind": "sell",
+        "offer_good": "copper",
+        "offer_qty": 2,
+        "ship_name": "",
+        "silver_arrival_tick": 45,
+        "silver_arrives_at": "2026-10-26T02:02:30.70488+00:00",
+        "status": "accepted",
+        "want_silver": 5
+      }
+    }
+  ]
+}

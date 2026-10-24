@@ -1,0 +1,45 @@
+{
+  "citations": [
+    {
+      "author_id": "920490cf-5146-48a0-95de-7812f13ccc1e",
+      "author_name": "Okunawos",
+      "case_id": "8dccbaf2-9abc-4876-90aa-3fcb0bf49f44",
+      "city_name": "K2 Kyme",
+      "created_at": "2026-10-24T07:01:15.417943+02:00",
+      "id": "3f977000-3f30-4311-a2bf-d8c9f9008b47",
+      "letter_id": "63eeba48-b516-4319-a43c-f06e315d7060",
+      "quote": "winter voyage",
+      "source": "message"
+    }
+  ],
+  "counterpart_id": "920490cf-5146-48a0-95de-7812f13ccc1e",
+  "next_cursor": "",
+  "transactions": [
+    {
+      "accepted_at": "2026-10-24T07:01:10.227394+02:00",
+      "case_id": "f3533774-8092-46ee-85fe-5b0ea194c71a",
+      "destination_name": "K2 Nostos",
+      "id": "3a986b8a-ab34-40c2-b58a-34aa769ff807",
+      "origin_name": "K2 Kyme",
+      "outcome": "unavailable",
+      "recipient_id": "20f34456-941b-4d8d-ab27-9909d327f753",
+      "recipient_name": "Anokwotas",
+      "sender_id": "920490cf-5146-48a0-95de-7812f13ccc1e",
+      "sender_name": "Okunawos",
+      "sent_at": "2026-10-24T07:01:10.092283+02:00",
+      "subject": "Accepted copper",
+      "terms": {
+        "goods_arrival_tick": 12,
+        "goods_arrives_at": "2026-10-24T17:01:10.226313+00:00",
+        "kind": "sell",
+        "offer_good": "copper",
+        "offer_qty": 2,
+        "ship_name": "",
+        "silver_arrival_tick": 24,
+        "silver_arrives_at": "2026-10-25T05:01:10.226313+00:00",
+        "status": "accepted",
+        "want_silver": 5
+      }
+    }
+  ]
+}

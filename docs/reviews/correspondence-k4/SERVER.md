@@ -24,3 +24,6 @@ Private citations reference retained archive cases/letters, not live cities. Nam
 ## Handover limits
 
 Server projection tests explicitly fixture accepted trade outcomes; parent's native scenario performs the actual HTTP offer/accept flow and browser/Keryx actions. Parent owns the combined full Go/JS/vet and native proof. No full-suite/native-success claim is made by this server report. No merge, push or deploy.
+
+
+Scope clarification: return-gating proves only the new archive/memory reads. Existing immediate OfferAccepted/OfferDeclined notifications in messenger.go remain unchanged and use current originOwner. No global blackout of pre-return acceptance knowledge is claimed; notification/ownership timing is a separate recorded contract/reproduction issue.

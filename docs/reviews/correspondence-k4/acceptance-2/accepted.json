@@ -1,0 +1,17 @@
+{
+  "arrival_tick": 22,
+  "category": "land",
+  "departure_tick": 0,
+  "distance": 12,
+  "good_key": "copper",
+  "goods_arrival_tick": 22,
+  "goods_arrives_at": "2026-10-25T04:02:30.704880236+01:00",
+  "kind": "sell",
+  "quantity": 2,
+  "return_travel_ticks": 23,
+  "silver_arrival_tick": 45,
+  "silver_arrives_at": "2026-10-26T03:02:30.704880236+01:00",
+  "silver_paid": 5,
+  "transport_id": "16b64722-3bee-4ba2-82ad-fb3d26258d45",
+  "travel_ticks": 22
+}
