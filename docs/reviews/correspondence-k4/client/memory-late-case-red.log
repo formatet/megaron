@@ -1,0 +1,53 @@
+TAP version 13
+# Subtest: memory separates accepted engine terms and escaped personal quotes without inventing fulfillment
+ok 1 - memory separates accepted engine terms and escaped personal quotes without inventing fulfillment
+  ---
+  duration_ms: 9.180822
+  type: 'test'
+  ...
+# Subtest: memory loader uses same case and stable cursor and ignores late case response
+not ok 2 - memory loader uses same case and stable cursor and ignores late case response
+  ---
+  duration_ms: 15.529598
+  type: 'test'
+  location: '/home/tk/wt/codex-korrespondens-k4/web/static/js/megaron/ui/drawers/diplomacy_memory.test.mjs:11:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + '<div class="dip-queue-toolbar"><button class="btn-small" data-memory-refresh>Refresh memory</button></div><h3 class="dip-archive-heading">Memory with this Wanax</h3><p class="dip-queue-note">Across your cases with this person. Your notes are private; an accepted agreement is separate from delivery.</p><h4 class="dip-memory-heading">Accepted agreements</h4><article class="dip-queue-item"><strong>Copper</strong><div>&lt;Sender&gt; · Kyme → Recipient · Nostos</div><p>2 copper for 5 silver · Accepted</p><p class="dip-queue-note">Acceptance time unavailable. Delivery outcome unavailable in this record.</p><button class="btn-small" data-memory-case="source-case" data-memory-letter="trade">Open source letter</button></article><h4 class="dip-memory-heading">My notes from letters</h4><article class="dip-queue-item"><p class="dip-queue-note">My note · letter</p><blockquote class="dip-queue-message">&lt;An untrue promise&gt;</blockquote><div class="dip-queue-actions"><button class="btn-small" data-memory-case="source-case" data-memory-letter="">Open source letter</button><button class="btn-small" data-citation-delete="cite">Remove my note</button></div></article><button class="btn-small" data-memory-next>Older memory →</button><p role="status"></p>'
+    - 'new case'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'new case'
+  actual: '<div class="dip-queue-toolbar"><button class="btn-small" data-memory-refresh>Refresh memory</button></div><h3 class="dip-archive-heading">Memory with this Wanax</h3><p class="dip-queue-note">Across your cases with this person. Your notes are private; an accepted agreement is separate from delivery.</p><h4 class="dip-memory-heading">Accepted agreements</h4><article class="dip-queue-item"><strong>Copper</strong><div>&lt;Sender&gt; · Kyme → Recipient · Nostos</div><p>2 copper for 5 silver · Accepted</p><p class="dip-queue-note">Acceptance time unavailable. Delivery outcome unavailable in this record.</p><button class="btn-small" data-memory-case="source-case" data-memory-letter="trade">Open source letter</button></article><h4 class="dip-memory-heading">My notes from letters</h4><article class="dip-queue-item"><p class="dip-queue-note">My note · letter</p><blockquote class="dip-queue-message">&lt;An untrue promise&gt;</blockquote><div class="dip-queue-actions"><button class="btn-small" data-memory-case="source-case" data-memory-letter="">Open source letter</button><button class="btn-small" data-citation-delete="cite">Remove my note</button></div></article><button class="btn-small" data-memory-next>Older memory →</button><p role="status"></p>'
+  operator: 'strictEqual'
+  stack: |-
+    file:///home/tk/wt/codex-korrespondens-k4/web/static/js/megaron/ui/drawers/diplomacy_memory.test.mjs:13:244
+    async rig (file:///home/tk/wt/codex-korrespondens-k4/web/static/js/megaron/ui/drawers/diplomacy_memory.test.mjs:10:551)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: keeping a private passage sends only selected exact source and failure retains local quote
+ok 3 - keeping a private passage sends only selected exact source and failure retains local quote
+  ---
+  duration_ms: 1.951459
+  type: 'test'
+  ...
+# Subtest: memory source link carries exact stable letter identity across cases
+ok 4 - memory source link carries exact stable letter identity across cases
+  ---
+  duration_ms: 0.455834
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 3
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 75.178425

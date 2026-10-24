@@ -57,3 +57,11 @@ Open a personal case to restore your saved letter draft and private note. **Save
 If another tab or device saved newer text, your save is refused and your local text stays in the editor. Copy the text you want to keep before choosing **Load saved copy**. Leaving a case discards unsaved edits; save first. Notes and drafts stay with your person when a city changes hands.
 
 Keryx: `correspondence-private --case <id>` reads your own draft, note and saved version. To save, supply all three: `--draft "..." --note "..." --version <last-read-version>`. Empty text clears that field. A stale version fails instead of overwriting newer text. `--json` returns the same private document as the web editor.
+
+## Memory with a Wanax
+
+Each personal case includes **Memory with this Wanax**, covering your cases with the same person. **Accepted agreements** records the exact accepted trade terms. Acceptance and physical delivery are separate: this archive says when the delivery outcome is unavailable rather than interpreting a loss as betrayal. An original sender learns a remote acceptance only when its bearer returns.
+
+Inside an archived letter, open **Keep a private passage**, choose the letter or its visible reply, and keep an exact passage as **My note**. You may shorten the passage, but it must match its source exactly. A private note never creates a shared promise, debt or reputation score. **Open source letter** opens the exact preserved letter, including older letters beyond the first page; **Remove my note** deletes your bookmark. Your counterpart never sees it.
+
+Keryx: `correspondence-memory --case <id>` reads the same memory (`--limit`, `--cursor`, `--json`). `correspondence-cite --case <id> --letter <id> --source message --quote "exact passage"` keeps a private passage; use `--source reply` for a visible reply. `correspondence-cite-remove --case <id> --id <citation-id>` removes it. Repeated saves of the same passage do not make duplicate notes. `correspondence --case <case-id> --letter <letter-id>` opens an exact old source letter without paging through newer ones.

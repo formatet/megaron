@@ -8,7 +8,7 @@ import (
 )
 
 func correspondenceCmd() *cobra.Command {
-	var caseID, query, cursor string
+	var caseID, query, cursor, letterID string
 	var limit int
 	cmd := &cobra.Command{Use: "correspondence", Short: "Read your personal case archive", Args: noPositionalArgs(), RunE: func(cmd *cobra.Command, _ []string) error {
 		if limit < 1 || limit > 100 {
@@ -16,6 +16,9 @@ func correspondenceCmd() *cobra.Command {
 		}
 		if caseID != "" && query != "" {
 			return fmt.Errorf("--case and --search cannot be combined")
+		}
+		if letterID != "" && (caseID == "" || cursor != "" || query != "") {
+			return fmt.Errorf("--letter requires --case and cannot be combined with --cursor or --search")
 		}
 		params := url.Values{"limit": {fmt.Sprint(limit)}}
 		if query != "" {
@@ -27,6 +30,9 @@ func correspondenceCmd() *cobra.Command {
 		path := fmt.Sprintf("/api/v1/worlds/%s/correspondence/cases", cfg.WorldID)
 		if caseID != "" {
 			path += "/" + url.PathEscape(caseID)
+			if letterID != "" {
+				path += "/letters/" + url.PathEscape(letterID)
+			}
 		}
 		data, err := newClient(cfg).get(path + "?" + params.Encode())
 		if err != nil {
@@ -93,6 +99,7 @@ func correspondenceCmd() *cobra.Command {
 		return nil
 	}}
 	cmd.Flags().StringVar(&caseID, "case", "", "open a stable case ID")
+	cmd.Flags().StringVar(&letterID, "letter", "", "open an exact archived source letter inside --case")
 	cmd.Flags().StringVar(&query, "search", "", "find person, city, subject or good")
 	cmd.Flags().StringVar(&cursor, "cursor", "", "opaque next-page cursor")
 	cmd.Flags().IntVar(&limit, "limit", 30, "page size (1–100)")

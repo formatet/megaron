@@ -1,0 +1,6 @@
+--- FAIL: TestCorrespondenceMemoryAndCitationCommands (0.00s)
+    --- FAIL: TestCorrespondenceMemoryAndCitationCommands/memory (0.00s)
+        cmd_correspondence_memory_test.go:24: GET /api/v1/worlds/w/correspondence/cases/c/inbox?cursor=opaque%2B%2F%3D&limit=30
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.003s
+FAIL

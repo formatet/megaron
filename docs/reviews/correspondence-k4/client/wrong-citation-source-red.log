@@ -1,0 +1,63 @@
+TAP version 13
+# Subtest: memory separates accepted engine terms and escaped personal quotes without inventing fulfillment
+ok 1 - memory separates accepted engine terms and escaped personal quotes without inventing fulfillment
+  ---
+  duration_ms: 9.352872
+  type: 'test'
+  ...
+# Subtest: memory loader uses same case and stable cursor and ignores late case response
+ok 2 - memory loader uses same case and stable cursor and ignores late case response
+  ---
+  duration_ms: 16.61968
+  type: 'test'
+  ...
+# Subtest: keeping a private passage sends only selected exact source and failure retains local quote
+not ok 3 - keeping a private passage sends only selected exact source and failure retains local quote
+  ---
+  duration_ms: 2.749424
+  type: 'test'
+  location: '/home/tk/wt/codex-korrespondens-k4/web/static/js/megaron/ui/drawers/diplomacy_memory.test.mjs:15:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+      {
+        letter_id: 'letter',
+        quote: 'Exact reply',
+    +   source: 'message'
+    -   source: 'reply'
+      }
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    letter_id: 'letter'
+    source: 'reply'
+    quote: 'Exact reply'
+  actual:
+    letter_id: 'letter'
+    source: 'message'
+    quote: 'Exact reply'
+  operator: 'deepStrictEqual'
+  stack: |-
+    file:///home/tk/wt/codex-korrespondens-k4/web/static/js/megaron/ui/drawers/diplomacy_memory.test.mjs:19:59
+    async rig (file:///home/tk/wt/codex-korrespondens-k4/web/static/js/megaron/ui/drawers/diplomacy_memory.test.mjs:10:551)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: memory source link carries exact stable letter identity across cases
+ok 4 - memory source link carries exact stable letter identity across cases
+  ---
+  duration_ms: 0.626659
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 3
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 79.936378

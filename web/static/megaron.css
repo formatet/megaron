@@ -2137,3 +2137,9 @@ h4.cx-h { font-size: var(--fs-base); }
 .dip-private { border-top: 1px solid var(--border); margin-top: 1rem; padding-top: .5rem; }
 .dip-private label { display: grid; gap: .3rem; margin: .5rem 0; }
 .dip-private textarea { box-sizing: border-box; width: 100%; min-height: 6rem; padding: .4rem; font: inherit; background: var(--warm-white); color: var(--text); border: 1px solid var(--border); }
+
+#dtab-archive [data-citation-letter] { display: grid; gap: .4rem; }
+#dtab-archive [data-citation-letter] label { display: grid; gap: .3rem; }
+#dtab-archive [data-citation-letter] textarea { box-sizing: border-box; width: 100%; min-height: 5rem; font: inherit; }
+#dtab-archive blockquote { margin: .5rem 0; padding-left: .6rem; border-left: 2px solid var(--border); }
+.dip-memory-heading { color: var(--text); font-size: .9rem; margin: .75rem 0 .4rem; }

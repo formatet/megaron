@@ -1,0 +1,34 @@
+TAP version 13
+# Subtest: memory separates accepted engine terms and escaped personal quotes without inventing fulfillment
+ok 1 - memory separates accepted engine terms and escaped personal quotes without inventing fulfillment
+  ---
+  duration_ms: 9.688537
+  type: 'test'
+  ...
+# Subtest: memory loader uses same case and stable cursor and ignores late case response
+ok 2 - memory loader uses same case and stable cursor and ignores late case response
+  ---
+  duration_ms: 14.845478
+  type: 'test'
+  ...
+# Subtest: keeping a private passage sends only selected exact source and failure retains local quote
+ok 3 - keeping a private passage sends only selected exact source and failure retains local quote
+  ---
+  duration_ms: 1.947968
+  type: 'test'
+  ...
+# Subtest: memory source link carries exact stable letter identity across cases
+ok 4 - memory source link carries exact stable letter identity across cases
+  ---
+  duration_ms: 0.539696
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 73.841603

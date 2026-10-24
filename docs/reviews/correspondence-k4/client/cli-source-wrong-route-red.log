@@ -1,0 +1,29 @@
+Error: --letter requires --case and cannot be combined with --cursor or --search
+Usage:
+  correspondence [flags]
+
+Flags:
+      --case string     open a stable case ID
+      --cursor string   opaque next-page cursor
+  -h, --help            help for correspondence
+      --letter string   open an exact archived source letter inside --case
+      --limit int       page size (1–100) (default 30)
+      --search string   find person, city, subject or good
+
+Error: --letter requires --case and cannot be combined with --cursor or --search
+Usage:
+  correspondence [flags]
+
+Flags:
+      --case string     open a stable case ID
+      --cursor string   opaque next-page cursor
+  -h, --help            help for correspondence
+      --letter string   open an exact archived source letter inside --case
+      --limit int       page size (1–100) (default 30)
+      --search string   find person, city, subject or good
+
+--- FAIL: TestCorrespondenceExactSourceLetterCommand (0.00s)
+    cmd_correspondence_memory_test.go:84: GET /api/v1/worlds/w/correspondence/cases/source-case/wrong/old-letter?limit=30
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.003s
+FAIL

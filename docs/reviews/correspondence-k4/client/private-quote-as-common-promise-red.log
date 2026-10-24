@@ -1,0 +1,52 @@
+TAP version 13
+# Subtest: memory separates accepted engine terms and escaped personal quotes without inventing fulfillment
+not ok 1 - memory separates accepted engine terms and escaped personal quotes without inventing fulfillment
+  ---
+  duration_ms: 10.084131
+  type: 'test'
+  location: '/home/tk/wt/codex-korrespondens-k4/web/static/js/megaron/ui/drawers/diplomacy_memory.test.mjs:5:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /<p class="dip-queue-note">My note · letter<\/p>/. Input:
+    
+    '<h3 class="dip-archive-heading">Memory with this Wanax</h3><p class="dip-queue-note">Across your cases with this person. Your notes are private; an accepted agreement is separate from delivery.</p><h4 class="dip-memory-heading">Accepted agreements</h4><article class="dip-queue-item"><strong>Copper</strong><div>&lt;Sender&gt; · Kyme → Recipient · Nostos</div><p>2 copper for 5 silver · Accepted</p><p class="dip-queue-note">Acceptance time unavailable. Delivery outcome unavailable in this record.</p><button class="btn-small" data-memory-case="source-case" data-memory-letter="trade">Open source letter</button></article><h4 class="dip-memory-heading">My notes from letters</h4><article class="dip-queue-item"><p class="dip-queue-note">Shared promise · letter</p><blockquote class="dip-queue-message">&lt;An untrue promise&gt;</blockquote><div class="dip-queue-actions"><button class="btn-small" data-memory-case="source-case" data-memory-letter="">Open source letter</button><button class="btn-small" data-citation-delete="cite">Remove my note</button></div></article>'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: '<h3 class="dip-archive-heading">Memory with this Wanax</h3><p class="dip-queue-note">Across your cases with this person. Your notes are private; an accepted agreement is separate from delivery.</p><h4 class="dip-memory-heading">Accepted agreements</h4><article class="dip-queue-item"><strong>Copper</strong><div>&lt;Sender&gt; · Kyme → Recipient · Nostos</div><p>2 copper for 5 silver · Accepted</p><p class="dip-queue-note">Acceptance time unavailable. Delivery outcome unavailable in this record.</p><button class="btn-small" data-memory-case="source-case" data-memory-letter="trade">Open source letter</button></article><h4 class="dip-memory-heading">My notes from letters</h4><article class="dip-queue-item"><p class="dip-queue-note">Shared promise · letter</p><blockquote class="dip-queue-message">&lt;An untrue promise&gt;</blockquote><div class="dip-queue-actions"><button class="btn-small" data-memory-case="source-case" data-memory-letter="">Open source letter</button><button class="btn-small" data-citation-delete="cite">Remove my note</button></div></article>'
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-korrespondens-k4/web/static/js/megaron/ui/drawers/diplomacy_memory.test.mjs:6:265)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: memory loader uses same case and stable cursor and ignores late case response
+ok 2 - memory loader uses same case and stable cursor and ignores late case response
+  ---
+  duration_ms: 15.454424
+  type: 'test'
+  ...
+# Subtest: keeping a private passage sends only selected exact source and failure retains local quote
+ok 3 - keeping a private passage sends only selected exact source and failure retains local quote
+  ---
+  duration_ms: 2.425702
+  type: 'test'
+  ...
+# Subtest: memory source link carries exact stable letter identity across cases
+ok 4 - memory source link carries exact stable letter identity across cases
+  ---
+  duration_ms: 0.61123
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 3
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 77.450421

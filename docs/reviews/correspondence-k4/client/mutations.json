@@ -1,0 +1,44 @@
+[
+  {
+    "name": "private-quote-as-common-promise",
+    "source": "web/static/js/megaron/ui/drawers/diplomacy_memory.js",
+    "red": true,
+    "restored": true,
+    "sha256": "3afda13794e6bad1a70ead113f3fd30a9aed4c5cfa2c6aea564fb94ece8258c4"
+  },
+  {
+    "name": "wrong-citation-source",
+    "source": "web/static/js/megaron/ui/drawers/diplomacy_memory.js",
+    "red": true,
+    "restored": true,
+    "sha256": "3afda13794e6bad1a70ead113f3fd30a9aed4c5cfa2c6aea564fb94ece8258c4"
+  },
+  {
+    "name": "memory-late-case",
+    "source": "web/static/js/megaron/ui/drawers/diplomacy_memory.js",
+    "red": true,
+    "restored": true,
+    "sha256": "3afda13794e6bad1a70ead113f3fd30a9aed4c5cfa2c6aea564fb94ece8258c4"
+  },
+  {
+    "name": "source-link-drops-letter",
+    "source": "web/static/js/megaron/ui/drawers/diplomacy_memory.js",
+    "red": true,
+    "restored": true,
+    "sha256": "3afda13794e6bad1a70ead113f3fd30a9aed4c5cfa2c6aea564fb94ece8258c4"
+  },
+  {
+    "name": "cli-source-wrong-route",
+    "source": "server/cmd/keryx/cmd_correspondence_cases.go",
+    "red": true,
+    "restored": true,
+    "sha256": "48544496f614646ed9403e9771888bb10d4d7ac4cea99c3a39b5b50880efe502"
+  },
+  {
+    "name": "cli-memory-wrong-route",
+    "source": "server/cmd/keryx/cmd_correspondence_memory.go",
+    "red": true,
+    "restored": true,
+    "sha256": "3df470b29eefd4ce24026b8e5937022da05df0ff63465bcd77711a8bd7fb3495"
+  }
+]
