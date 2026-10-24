@@ -44,6 +44,12 @@
     {"id": "storms",       "title": "Storms",                       "category": "The wider world", "related": ["sea", "sight", "keryx"]},
 
     {"id": "units",        "title": "Soldiers and ships",           "category": "War", "drawer": "war", "kinds": ["TrainComplete"], "related": ["marching", "upkeep", "battle", "shipyard"]},
+    {"id": "galley", "title": "Galley", "category": "War", "related": ["units"]},
+    {"id": "war-galley", "title": "War Galley", "category": "War", "related": ["units"]},
+    {"id": "emporos", "title": "Emporos", "category": "War", "related": ["units"]},
+    {"id": "spearmen", "title": "Spearmen", "category": "War", "related": ["units"]},
+    {"id": "elite-infantry", "title": "Elite Infantry", "category": "War", "related": ["units"]},
+    {"id": "war-chariot", "title": "War Chariot", "category": "War", "related": ["units"]},
     {"id": "marching",     "title": "Marching",                     "category": "War", "kinds": ["UnitArrived", "ArmyArrival", "MarchStalled"], "related": ["runners", "stances", "sight", "roads"]},
     {"id": "roads",        "title": "Roads",                        "category": "War", "kinds": ["RoadEdgeBuilt"], "related": ["marching", "transfers", "runners"]},
     {"id": "stances",      "title": "Stances and watches",          "category": "War", "kinds": ["SentryAlerted"], "related": ["sieges", "defence", "battle"]},

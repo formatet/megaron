@@ -6,12 +6,12 @@ The **War (⚔)** drawer has three tabs: **Army**, **Recruit** and **Movements**
 
 | Unit | Needs | Notes |
 |---|---|---|
-| **Spearman** | Barracks | The levy. 12 grain per hundred men; no silver. |
-| **Elite Infantry** | Barracks + Foundry | Costs [[bronze]]. Far harder per man. |
-| **War Chariot** | Stable | Costs bronze. The hardest hitter on the field. |
-| **Galley** | Shipyard | 30 timber; no silver. Transport and sight at sea ([[sea]]). |
-| **War Galley** | Shipyard + Foundry | Costs cedar. The warship. |
-| **Emporos** | Shipyard | 16 cedar; no timber or silver. Trade hull. Does not fight. |
+| **[[spearmen|Spearman]]** | Barracks | The levy. 12 grain per hundred men; no silver. |
+| **[[elite-infantry|Elite Infantry]]** | Barracks + Foundry | Costs [[bronze]]. Far harder per man. |
+| **[[war-chariot|War Chariot]]** | Stable | Costs bronze. The hardest hitter on the field. |
+| **[[galley|Galley]]** | Shipyard | 30 timber; no silver. Transport and sight at sea ([[sea]]). |
+| **[[war-galley|War Galley]]** | Shipyard + Foundry | Costs cedar. The warship. |
+| **[[emporos|Emporos]]** | Shipyard | 16 cedar; no timber or silver. Trade hull; carries the most, no warship. |
 
 Land units train as a whole hundred-man cohort (**Train 100**). Ships are built one at a time and can be named. Their cost and population draft cover the ship's crew, rather than a hundred-man cohort. Rowers eat like spearmen: the actual surviving crew draws a port ration at home and double on a mission ([[upkeep]]). Rejected recruitment consumes no people or goods. You are notified when training finishes. A cohort still gathering men or training cannot march. Once ready, it can still march after losing men; it does not have to refill to 100 first.
 
