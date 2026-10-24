@@ -649,3 +649,6 @@ Integration: `python3 tools/correspondence_integration_upgrade.py OUTPUT_JSON` t
 - `python3 tools/day_guard_test.py`: språkspärrens game-day-, kalender- och nakna dagsuttryck samt nästlade JS-litteraler.
 - `python3 tools/game_days_mutations.py`: fyra fysiska språkmutationer, en per spelaryta; kräver röd spärr och byteexakt återställning till grönt.
 - `python3 tools/game_days_acceptance.py OUTPUT [TICK_SECONDS]`: färsk egen PG/Redis/server, vanlig join/grundning, uttrycklig byggfixtur, Firefox1280/390 och verklig Keryx; jämför game-day-längd mot världens faktiska tempo.
+
+- `python3 tools/byggplan_bild_20261024.py OUTPUT`: egen färsk BILD-rigg för byggplanen A/C/D och G1; riktig Firefox1280/390, HTTP/worker/WS, scenfixtur och transparent WebAudio-observatör. Inga produktionsändringar eller delad rigg.
+- `python3 tools/byggplan_bild_gallery_20261024.py`: bygger bildkodad granskningssida från nativefilerna och kontrollerar produktionshasharna; ändrar inga bilder.

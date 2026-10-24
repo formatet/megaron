@@ -1,0 +1,14 @@
+[
+  {
+    "id": "1e68cf24-aeaf-48a6-91de-24ede7fb2dd0",
+    "name": "Nomadic Host of Dorian",
+    "owner": "Dorian",
+    "owner_id": "f663cebd-8736-4948-987e-372ab2a352f1",
+    "type": "nomadic_host",
+    "category": "land",
+    "size": 1,
+    "status": "positioned",
+    "q": 3,
+    "r": 36
+  }
+]

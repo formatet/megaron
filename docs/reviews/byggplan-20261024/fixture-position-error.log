@@ -1,0 +1,21 @@
+ERROR:  column "q" of relation "founder_phase" does not exist
+LINE 1: ...4309-aaa0-54735c4398f9'; UPDATE founder_phase SET q=1,r=30 W...
+                                                             ^
+Traceback (most recent call last):
+  File "/tmp/megaron-codex-bild-byggplan-20261024/tools/byggplan_bild_20261024.py", line 66, in <module>
+    sql(f"UPDATE units SET q={x},r={r},status='positioned' WHERE id='{who['host']}'; UPDATE founder_phase SET q={x},r={r} WHERE host_unit_id='{who['host']}';",True)
+    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/megaron-codex-bild-byggplan-20261024/tools/byggplan_bild_20261024.py", line 53, in sql
+    return run('docker','exec',containers[0],'psql','-U','postgres','-d','bildplan','-At','-v','ON_ERROR_STOP=1','-c',q)
+  File "/tmp/megaron-codex-bild-byggplan-20261024/tools/byggplan_bild_20261024.py", line 13, in run
+    def run(*args,**kw):return subprocess.check_output(args,text=True,**kw).strip()
+                               ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 473, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+               **kwargs).stdout
+               ^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '('docker', 'exec', 'megaron-bildplan-ae48c609-pg', 'psql', '-U', 'postgres', '-d', 'bildplan', '-At', '-v', 'ON_ERROR_STOP=1', '-c', "UPDATE units SET q=1,r=30,status='positioned' WHERE id='aa0c03c6-73fb-4309-aaa0-54735c4398f9'; UPDATE founder_phase SET q=1,r=30 WHERE host_unit_id='aa0c03c6-73fb-4309-aaa0-54735c4398f9';")' returned non-zero exit status 1.
