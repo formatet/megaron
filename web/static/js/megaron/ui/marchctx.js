@@ -398,6 +398,7 @@ export async function openMarchCtx(dest, screenX, screenY) {
   document.getElementById('mctx-send').disabled = false;
   State.marchCtxDest  = dest;
   State.marchCtxUnits = [];
+  hiketeiaConfirmed = false;
   document.getElementById('mctx-err').textContent = '';
   document.getElementById('mctx-name').textContent = dest.name;
 
@@ -573,6 +574,14 @@ export function renderMarchUnitList() {
   stanceRow.style.display = (landingSelected() || State.marchCtxDest?.isSea || State.marchCtxUnits.every(u => u.category === 'naval')) ? 'none' : 'block';
 }
 
+// Hiketeia (Timothy 2026-10-24): the server refuses an order against a risen
+// host you can see until it is confirmed; "March anyway" sends it again.
+let hiketeiaConfirmed = false;
+export function hiketeiaRefusalHTML(failed) {
+  const r = failed.find(f => f.data && f.data.hiketeia);
+  return r ? esc(r.data.error) + ' <button class="btn-small" id="mctx-hiketeia-go">March anyway</button>' : '';
+}
+
 export async function sendMarch() {
   const destination=State.marchCtxDest;
   if (!destination) return;
@@ -639,6 +648,7 @@ export async function sendMarch() {
     const body = { target_q: destination.q, target_r: destination.r };
     Object.assign(body, p.order);
     if (p.order.intent === 'explore' && ticks !== undefined) body.ticks = ticks;
+    if (hiketeiaConfirmed) body.confirm_hiketeia = true;
     return fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units/${p.id}/march`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
     }).then(async res => {
@@ -710,7 +720,12 @@ export async function sendMarch() {
   // A redirect that went out but whose stance order was refused is sent, not
   // failed — the refusal still has to be read.
   const stanceRefused = results.filter(r => r.ok && r.err);
-  if (failed.length) {
+  const hiketeia = hiketeiaConfirmed ? '' : hiketeiaRefusalHTML(failed);
+  if (hiketeia) {
+    const errEl = document.getElementById('mctx-err');
+    errEl.innerHTML = hiketeia;
+    document.getElementById('mctx-hiketeia-go').addEventListener('click', () => { hiketeiaConfirmed = true; sendMarch(); });
+  } else if (failed.length) {
     const okCount = results.length - failed.length;
     document.getElementById('mctx-err').textContent = (okCount ? fmtNum(okCount) + ' sent · ' : '') + failed[0].err;
   } else if (stanceRefused.length) {

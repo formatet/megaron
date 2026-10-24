@@ -68,7 +68,7 @@ func templeTierMultiplier(level int) float64 {
 // floor. Design text: "kharis_amount ∈ [0, 100] ... aldrig exakt 0 — gudarna
 // lyssnar alltid ibland." No exact number is given in the design docs; 1.0 is a
 // strawman pick, easy to retune — temenos_balans_spakar.md §9.
-const kharisFloor = 1.0
+const kharisFloor = religion.RealmKharisFloor
 
 // Floor is the minimum realm Kharis, including a Host before founding.
 const Floor = kharisFloor

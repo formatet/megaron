@@ -735,7 +735,7 @@ func unitMarchCmd() *cobra.Command {
 	var stance string
 	var intent, name string
 	var mode string
-	var yes bool
+	var yes, confirmHiketeia bool
 	var landColonize bool
 	var previewOnly bool
 	var expeditionTicks int
@@ -922,9 +922,12 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 				}
 			}
 
+			if confirmHiketeia {
+				body["confirm_hiketeia"] = true
+			}
 			data, err := c.post(path, body)
 			if err != nil {
-				return err
+				return hiketeiaHint(err)
 			}
 			if jsonMode {
 				printRawJSON(data)
@@ -1011,6 +1014,7 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 	cmd.Flags().StringVar(&name, "name", "", "colony name (with --intent colonize, or --intent land --colonize)")
 	cmd.Flags().StringVar(&mode, "mode", "", "conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)")
 	cmd.Flags().BoolVar(&yes, "yes", false, "skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)")
+	cmd.Flags().BoolVar(&confirmHiketeia, "confirm", false, "send the order after the hiketeia warning (attacking a fallen Wanax's risen host)")
 	cmd.Flags().BoolVar(&landColonize, "colonize", false, "with --intent land: found a colony on arrival with no further order (use --name to name it)")
 	cmd.Flags().StringVar(&cityTo, "to", "", "known city name as destination — alternative to --q/--r or --target")
 	_ = cmd.MarkFlagRequired("unit")
@@ -1886,3 +1890,11 @@ func unitPickupCmd() *cobra.Command {
 // hinner ge en order och få den utförd. Detta matvarningsfönster är separat
 // från grundningens straffnådefrist. Strawman: kalibrera mot en soak, inte mot smak.
 const provisionsLowDays = 3
+
+// hiketeiaHint adds the way forward to the server's hiketeia refusal.
+func hiketeiaHint(err error) error {
+	if strings.Contains(err.Error(), "breaks hiketeia") {
+		return fmt.Errorf("%w\nNothing sent — add --confirm to march anyway", err)
+	}
+	return err
+}

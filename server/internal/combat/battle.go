@@ -295,6 +295,9 @@ func (h *UnitArrivalHandler) startBattle(
 		slog.Warn("start battle: append BattleStarted failed", "battle", battleID, "err", err)
 	}
 
+	if err := h.breakHiketeiaTx(ctx, tx, worldID, battleID, arriving); err != nil {
+		return err
+	}
 	if err := h.scheduler.EnqueueTickTx(ctx, tx, worldID, events.ScheduledBattleTick,
 		battleTickPayload{BattleID: battleID}, currentTick,
 	); err != nil {
@@ -317,6 +320,9 @@ func (h *UnitArrivalHandler) joinBattle(
 	}
 	if tag.RowsAffected() == 0 {
 		return nil // already a participant (idempotent re-run)
+	}
+	if err := h.breakHiketeiaTx(ctx, tx, worldID, battleID, arriving); err != nil {
+		return err
 	}
 
 	if _, err := h.eventStore.Append(ctx, battleID, events.StreamCombat, EventUnitJoinedBattle,
