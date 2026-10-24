@@ -55,3 +55,18 @@ test('an already known prayer patch keeps normal map refreshes and has no reveal
   assert.deepEqual(omen.tiles, []);
   assert.equal(omenMap(omen, refreshed, 1000), refreshed);
 });
+
+test('green follows warped pixel ownership and cannot spill onto known neighbours', async () => {
+  const { regionSpans, drawOmen } = await import('./omen.js');
+  assert.deepEqual(regionSpans([-3,-3,6,3],5,2,(x,y)=> x<y+1),[[0,0,1],[0,1,2]]);
+  const calls=[];let lookups=0;
+  const ctx={canvas:{width:5,height:3},getTransform:()=>({a:1,b:0,c:0,d:1,e:0,f:0}),save(){},restore(){},resetTransform(){},beginPath(){},rect(...args){calls.push(args)},fill(){}};
+  const owner=(x,y)=>{lookups++;return x<y+1?[1,0]:[2,0]};
+  const poly=()=>[[0,0],[5,0],[5,3],[0,3]],cache=new Map();
+  drawOmen(ctx,[{q:1,r:0,alpha:.6,fill:'green'}],poly,owner,0,cache);
+  const first=calls.slice();const n=lookups;
+  assert.deepEqual(first,[[0,0,1,1],[0,1,2,1],[0,2,3,1]],'only this regions pixels; no regular-hex spill');
+  calls.length=0;
+  drawOmen(ctx,[{q:1,r:0,alpha:.3,fill:'green'}],poly,owner,0,cache);
+  assert.deepEqual(calls,first);assert.equal(lookups,n,'fade reuses mask; no per-frame region recomputation');
+});

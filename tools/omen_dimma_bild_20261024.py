@@ -112,6 +112,9 @@ try:
     line=page.locator('#city-food-sec p').filter(has_text='Storm over 1 fishing ground').first;line.evaluate("el=>el.scrollIntoView({block:'center'})");page.wait_for_timeout(300);line.scroll_into_view_if_needed();capture(page,f'D1-{width}','Fishers stay placed and catch nothing while the storm covers their fishing ground')
     page.evaluate("window.toggleDrawer('city')");page.wait_for_timeout(350)
     page.evaluate("a=>{const s=window.__proofState,m=window.__proofMap;if(s.camera.zoom!==1)m.zoom(1/s.camera.zoom);window.centreOn(a.q,a.r)}",{'q':oq,'r':orr})
+    # Freeze only ambient drawing phase, not performance.now()/omen time.
+    # Otherwise a known sea tile can animate between the two zero comparisons.
+    page.evaluate("()=>{const s=window.__proofState;Object.defineProperty(s,'animFrame',{configurable:true,get:()=>320,set(){}});s.dirty=true}")
     page.wait_for_timeout(700);page.wait_for_function('window.__proofMap.markrasterStats.pending===0')
     beforeCanvas=page.locator('#hex-canvas').evaluate('el=>el.toDataURL()');capture(page,f'D2-before-{width}','Before the actual prayer: ordinary striped fog, with one remembered tile already known')
     beforeTiles=page.evaluate('JSON.parse(JSON.stringify(window.__proofState.tileData))')
@@ -128,17 +131,42 @@ try:
     assert {'q':oq+1,'r':orr} not in initial,initial
     timeline=[]
     for ms in (300,1000,2000,4000):
-     page.wait_for_function('(a)=>performance.now()-a.start>=a.ms',arg={'start':onset,'ms':ms})
+     page.wait_for_function('(a)=>performance.now()-a.start>=a.ms && window.__proofState.omen?.count>=Math.floor(a.ms/300)',arg={'start':onset,'ms':ms})
      actual=page.evaluate('performance.now()')-onset;capture(page,f'D2-{ms}-{width}',f'Actual animation at target {ms/1000:g}s; pre-screenshot {actual/1000:.3f}s')
      timeline.append({'target_ms':ms,'before_screenshot_ms':actual,'after_screenshot_ms':page.evaluate('performance.now()')-onset})
     page.wait_for_function('!window.__proofState.omen');page.wait_for_function('window.__proofMap.markrasterStats.pending===0');capture(page,f'D2-memory-{width}','Finished: ordinary remembered terrain, no replacement fog')
+    # A separate, explicitly frozen visual fixture repeats the actual map
+    # renderer at the same phases. This is not passed off as live elapsed time.
+    fixed = page.evaluate("""async a=>{
+      const {beginOmen}=await import('/static/js/megaron/render/omen.js');
+      window.__fixedOmen={before:a.before,tiles:a.tiles,find:a.find,after:window.__proofState.tileData};
+      window.__realNow=performance.now.bind(performance);
+      Object.defineProperty(performance,'now',{configurable:true,value:()=>window.__fixedTime});
+    }""",{'before':beforeTiles,'tiles':frames[-1]['payload']['revealed_tiles'],'find':{'q':oq,'r':orr}})
+    comparisons=[]
+    for phase in (0,300,1000,2000,4000,9000):
+     copies=[]
+     for repeat in (1,2):
+      page.evaluate("""async a=>{
+       const {beginOmen}=await import('/static/js/megaron/render/omen.js');
+       const f=window.__fixedOmen,s=window.__proofState;
+       window.__fixedTime=a; s.tileData=f.before;
+       s.omen=beginOmen(f.before,f.tiles,f.find,0);s.omen.latest=f.after;
+       s.animFrame=320;s.dirty=true;
+      }""",phase)
+      page.wait_for_timeout(100);page.wait_for_function('window.__proofMap.markrasterStats.pending===0')
+      page.evaluate('window.__proofState.animFrame=320;window.__proofState.dirty=true');page.wait_for_timeout(40)
+      copies.append(page.locator('#hex-canvas').evaluate('el=>el.toDataURL()'))
+     assert copies[0]==copies[1],('non-deterministic canvas',width,phase)
+     comparisons.append({'phase_ms':phase,'repeat_canvas_byte_equal':True})
+    page.evaluate("""()=>{Object.defineProperty(performance,'now',{configurable:true,value:window.__realNow});window.__proofState.omen=null;window.__proofState.tileData=window.__fixedOmen.after;window.__proofState.dirty=true}""")
     assert frames and frames[-1]['payload'].get('revealed_tiles'),frames
     assert not errors,errors
-    observations.append({'width':width,'zero_canvas_byte_equal':beforeCanvas==zeroCanvas,'zero_elapsed_ms':zeroElapsed,'eligible_tiles':initial,'server_revealed_count':len(frames[-1]['payload']['revealed_tiles']),'before_tiles':beforeTiles,'timeline':timeline,'rite_answered_frames':frames,'response':response,'errors':errors})
+    observations.append({'width':width,'frozen_renderer_repeats':comparisons,'zero_canvas_byte_equal':beforeCanvas==zeroCanvas,'zero_elapsed_ms':zeroElapsed,'eligible_tiles':initial,'server_revealed_count':len(frames[-1]['payload']['revealed_tiles']),'before_tiles':beforeTiles,'timeline':timeline,'rite_answered_frames':frames,'response':response,'errors':errors})
     ctx.close()
    browser.close()
   assert before==hashes(),'production sources changed during capture'
-  (OUT/'proof.json').write_text(json.dumps({'health':health,'world':world,'tick_seconds':1800,'source_sha256':before,'site':site,'ore':target,'observations':observations,'shots':shots},indent=2))
+  (OUT/'proof.json').write_text(json.dumps({'health':health,'world':world,'tick_seconds':1800,'ambient_frame_frozen':320,'source_sha256':before,'site':site,'ore':target,'observations':observations,'shots':shots},indent=2))
   print('PASS: D1 fishers stay; actual prayer WS; original fog; before/zero canvas byte equal; only unknown tiles; Firefox1280/390',flush=True)
 finally:
  if proc is not None:proc.terminate();proc.wait(timeout=15)

@@ -43,7 +43,7 @@ export function omenOverlay(omen, now) {
 }
 
 // drawOmen paints the overlay with whole device pixels, like the memory tint.
-export function drawOmen(ctx, overlay, polygon) {
+export function drawOmen(ctx, overlay, polygon, regionAt = null, pad = 0, cache = new Map()) {
   const m = ctx.getTransform();
   ctx.save();
   try {
@@ -53,7 +53,24 @@ export function drawOmen(ctx, overlay, polygon) {
       ctx.fillStyle = o.fill;
       ctx.beginPath();
       const points = polygon(o).map(([x, y]) => [m.a * x + m.c * y + m.e, m.b * x + m.d * y + m.f]);
-      for (const [x, y, w] of pixelSpans(points, ctx.canvas.width, ctx.canvas.height)) ctx.rect(x, y, w, 1);
+      let spans;
+      if (regionAt) {
+        const id = `${o.q},${o.r}:${m.a},${m.b},${m.c},${m.d},${m.e},${m.f}:${ctx.canvas.width},${ctx.canvas.height}`;
+        spans = cache.get(id);
+        if (!spans) {
+          const extra = pad * Math.max(Math.abs(m.a)+Math.abs(m.c), Math.abs(m.b)+Math.abs(m.d));
+          const bounds = [Math.min(...points.map(p=>p[0]))-extra, Math.min(...points.map(p=>p[1]))-extra,
+            Math.max(...points.map(p=>p[0]))+extra, Math.max(...points.map(p=>p[1]))+extra];
+          const det = m.a*m.d-m.b*m.c;
+          spans = regionSpans(bounds,ctx.canvas.width,ctx.canvas.height,(x,y)=>{
+            const dx=x-m.e,dy=y-m.f;
+            const [q,r]=regionAt((m.d*dx-m.c*dy)/det,(-m.b*dx+m.a*dy)/det);
+            return q===o.q && r===o.r;
+          });
+          cache.set(id,spans);
+        }
+      } else spans = pixelSpans(points, ctx.canvas.width, ctx.canvas.height);
+      for (const [x, y, w] of spans) ctx.rect(x, y, w, 1);
       ctx.fill();
     }
   } finally {
@@ -88,4 +105,21 @@ export function omenMap(omen, latest, now) {
   const pending = new Set(omen.tiles.slice(count).map(key));
   omen.cached = latest.flatMap(t => pending.has(key(t)) ? (omen.old.has(key(t)) ? [omen.old.get(key(t))] : []) : [t]);
   return omen.cached;
+}
+
+
+// Whole device pixels owned by this warped region. The result is cached by
+// hex/camera for the short omen; green cannot spill onto a known neighbour.
+export function regionSpans([left,top,right,bottom], width, height, owns) {
+  const spans=[];
+  for (let y=Math.max(0,Math.floor(top));y<Math.min(height,Math.ceil(bottom));y++) {
+    let x=Math.max(0,Math.floor(left));const end=Math.min(width,Math.ceil(right));
+    while(x<end) {
+      if(!owns(x+0.5,y+0.5)){x++;continue;}
+      const start=x++;
+      while(x<end && owns(x+0.5,y+0.5)) x++;
+      spans.push([start,y,x-start]);
+    }
+  }
+  return spans;
 }

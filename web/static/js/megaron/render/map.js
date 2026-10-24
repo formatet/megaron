@@ -2865,7 +2865,16 @@ export function render() {
   // deposits and remembered buildings), before player UI and live actors.
   if (MARKRASTER) drawMarkMemory(ctx);
   else drawRemembered(ctx, vis, t => { const p = hexPx(t.q, t.r); return hexPts(p.x, p.y); });
-  if (omen) drawOmen(ctx, omen, t => { const p = hexPx(t.q, t.r); return hexPts(p.x, p.y); });
+  if (omen) {
+    // Ownership can change at a reveal step when an absent tile gains terrain.
+    // Fade frames share the mask; a new tile array gets a fresh one.
+    if (State.omen.masksFor !== State.tileData) {
+      State.omen.masksFor = State.tileData;
+      State.omen.masks = new Map();
+    }
+    drawOmen(ctx, omen, t => { const p = hexPx(t.q, t.r); return hexPts(p.x, p.y); },
+      MARKRASTER ? markHexAt : null, WARP_PAD, State.omen.masks);
+  }
   pass('memory');
 
   // 3. Highlight selected hex
