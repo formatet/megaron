@@ -1479,17 +1479,14 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if err := tx.Commit(r.Context()); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not deduct resources")
-		return
-	}
-
+	// Paid, queued and scheduled in this one transaction: a failed queue
+	// row or schedule rolls the payment back with it.
 	var buildCurrentTick int
-	_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&buildCurrentTick)
+	_ = tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&buildCurrentTick)
 	buildDueTick := buildCurrentTick + spec.DurationTicks
 	completeAt := tick.EtaAt(h.clk, buildDueTick, buildCurrentTick)
 	var queueID uuid.UUID
-	err = h.pool.QueryRow(r.Context(),
+	err = tx.QueryRow(r.Context(),
 		`INSERT INTO build_queue (settlement_id, world_id, building_type, complete_at, hex_q, hex_r, god_id)
 		 VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
 		settlementID, worldID, req.BuildingType, completeAt, req.HexQ, req.HexR, godArg,
@@ -1499,7 +1496,7 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.scheduler.EnqueueTick(r.Context(), worldID, events.ScheduledBuildComplete,
+	if err := h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledBuildComplete,
 		combat.BuildCompletePayload{
 			SettlementID: settlementID,
 			BuildQueueID: queueID,
@@ -1509,6 +1506,10 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		}, buildDueTick,
 	); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not schedule build")
+		return
+	}
+	if err := tx.Commit(r.Context()); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not queue build")
 		return
 	}
 

@@ -1614,11 +1614,11 @@ func (h *MessengerHandler) TradeDecline(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Flip to declined first, guarded on status='pending'. If a concurrent expiry
-	// already resolved+refunded the offer, RowsAffected is 0 and we abort without
-	// refunding a second time (which would not preserve mass).
+	// Flip to declined, guarded on status='pending'. If a concurrent expiry
+	// already resolved+refunded the offer, RowsAffected is 0 and we abort, so
+	// the escrow is not marked to come home a second time.
 	tag, err := tx.Exec(r.Context(),
-		`UPDATE messengers SET trade_offer = trade_offer || '{"status":"declined"}'
+		`UPDATE messengers SET trade_offer = trade_offer || '{"status":"declined","refund_on_return":true}'
 		  WHERE id=$1 AND trade_offer->>'status'='pending' AND (expires_at IS NULL OR expires_at>$2)`,
 		messengerID, h.clk.Now(),
 	)
@@ -1631,27 +1631,8 @@ func (h *MessengerHandler) TradeDecline(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Refund escrowed value to origin:
-	//   buy  → silver to buyer (origin)
-	//   sell → goods to seller (origin)
-	if kind == "sell" {
-		if _, err = tx.Exec(r.Context(),
-			`SELECT credit_settlement_good($2,$3,$1,'escrow_refund')`,
-			offerQty, originID, offerGood,
-		); err != nil {
-			writeError(w, http.StatusInternalServerError, "could not refund goods to seller")
-			return
-		}
-	} else {
-		if _, err = tx.Exec(r.Context(),
-			`SELECT credit_settlement_good($2,'silver',$1,'escrow_refund')`,
-			offerSilver, originID,
-		); err != nil {
-			writeError(w, http.StatusInternalServerError, "could not refund silver to buyer")
-			return
-		}
-	}
-
+	// The held goods or silver stay with the runner and go home with it
+	// (messenger.returnDeclinedReservationTx, at homecoming or loss).
 	if err = h.releaseOfferBearer(r.Context(), tx, worldID, messengerID); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not send the runner home")
 		return
