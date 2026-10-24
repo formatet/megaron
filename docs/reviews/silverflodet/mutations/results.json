@@ -1,0 +1,68 @@
+[
+  {
+    "mutation": "spearman_recruit",
+    "test": "TestSilverFlowRecruitCosts/spearman",
+    "red": true,
+    "restored_sha256": "f4cd7dc240d317a62b08dcebada8d702e4681c347c86cfdbc7fcc7bde9335c33"
+  },
+  {
+    "mutation": "galley_recruit",
+    "test": "TestSilverFlowRecruitCosts/galley",
+    "red": true,
+    "restored_sha256": "f4cd7dc240d317a62b08dcebada8d702e4681c347c86cfdbc7fcc7bde9335c33"
+  },
+  {
+    "mutation": "emporos_silver",
+    "test": "TestSilverFlowRecruitCosts/merchantman",
+    "red": true,
+    "restored_sha256": "f4cd7dc240d317a62b08dcebada8d702e4681c347c86cfdbc7fcc7bde9335c33"
+  },
+  {
+    "mutation": "emporos_wood",
+    "test": "TestSilverFlowRecruitCosts/merchantman",
+    "red": true,
+    "restored_sha256": "f4cd7dc240d317a62b08dcebada8d702e4681c347c86cfdbc7fcc7bde9335c33"
+  },
+  {
+    "mutation": "galley_pay",
+    "test": "TestSoldierWagesUseActualMenAndHomeHalf",
+    "red": true,
+    "restored_sha256": "25d8ddecaceefbf52e8beb15ef4f91da0f6c39cc796cf4c4c23a5622a44bf4cc"
+  },
+  {
+    "mutation": "emporos_pay",
+    "test": "TestSoldierWagesUseActualMenAndHomeHalf",
+    "red": true,
+    "restored_sha256": "25d8ddecaceefbf52e8beb15ef4f91da0f6c39cc796cf4c4c23a5622a44bf4cc"
+  },
+  {
+    "mutation": "chariot_pay",
+    "test": "TestSoldierWagesUseActualMenAndHomeHalf",
+    "red": true,
+    "restored_sha256": "25d8ddecaceefbf52e8beb15ef4f91da0f6c39cc796cf4c4c23a5622a44bf4cc"
+  },
+  {
+    "mutation": "spearman_dice",
+    "test": "TestSilverFlowRoundDice/spearman",
+    "red": true,
+    "restored_sha256": "e53408c4177202e8de468d53ba405e2a1d1b4c72801836ebd336fd8037b35a28"
+  },
+  {
+    "mutation": "war_galley_dice",
+    "test": "TestSilverFlowRoundDice/war_galley",
+    "red": true,
+    "restored_sha256": "e53408c4177202e8de468d53ba405e2a1d1b4c72801836ebd336fd8037b35a28"
+  },
+  {
+    "mutation": "host_purse",
+    "test": "TestSeedNomadicHost_SilverAmountIs120",
+    "red": true,
+    "restored_sha256": "cf06b8b8f61a9625659b3e4e53e13a5c77205107d2693f8292242c1a926ebc2a"
+  },
+  {
+    "mutation": "temple_tithe",
+    "test": "TestSilverFlowReligiousTradePaysFullSilver",
+    "red": true,
+    "restored_sha256": "c842e6095b587bbab3dc3da4d7e5d4af5d2566981159b85d1509f889024f30cf"
+  }
+]

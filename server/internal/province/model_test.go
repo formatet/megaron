@@ -140,15 +140,15 @@ func TestShipTaxonomy_WarGalleyCedarFoundry(t *testing.T) {
 	}
 }
 
-// TestShipTaxonomy_MerchantmanTimberNoFoundry verifies merchantman byggs med timber, inget gjuteri.
-func TestShipTaxonomy_MerchantmanTimberNoFoundry(t *testing.T) {
+// TestShipTaxonomy_MerchantmanCedarNoFoundry verifies merchantman byggs med ceder, inget gjuteri.
+func TestShipTaxonomy_MerchantmanCedarNoFoundry(t *testing.T) {
 	spec, ok := UnitSpecs["merchantman"]
 	if !ok {
 		t.Fatal("merchantman must exist in UnitSpecs")
 	}
-	timber, ok := spec.Costs["timber"]
-	if !ok || timber <= 0 {
-		t.Errorf("merchantman must cost timber > 0, got %.1f", timber)
+	cedar, ok := spec.Costs["cedar"]
+	if !ok || cedar <= 0 {
+		t.Errorf("merchantman must cost cedar > 0, got %.1f", cedar)
 	}
 	if spec.RequiresFoundry {
 		t.Error("merchantman should not require foundry")

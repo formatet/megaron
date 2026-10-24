@@ -1,0 +1,8 @@
+» färsk DB på migration 210 · commit 2e2cbcb3+ändringar
+# formatet/megaron/server/api/handlers [formatet/megaron/server/api/handlers.test]
+api/handlers/province.go:17:2: "formatet/megaron/server/internal/capabilities" imported and not used
+FAIL	formatet/megaron/server/api/handlers [build failed]
+ok  	formatet/megaron/server/internal/economy	0.030s
+ok  	formatet/megaron/server/internal/province	0.003s
+ok  	formatet/megaron/server/internal/combat	0.004s
+FAIL

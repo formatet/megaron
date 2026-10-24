@@ -2,15 +2,15 @@ Soldiers eat **food: grain, fish, oil and wine**, shared in proportion to the st
 
 ## Pay — silver
 
-**Field pay starts at 1 silver per 100 people per day**, the wage of a worker. Spearmen draw **0 silver**. A full hundred-man elite infantry cohort draws **1.5 silver in the field and 0.75 at home**; a full chariot cohort draws **2 in the field and 1 at home**. Remaining men determine the bill, so a half-strength cohort draws half the pay.
+**Field pay starts at 1 silver per 100 people per day**, the wage of a worker. Spearmen draw **0 silver**. A full hundred-man elite infantry cohort draws **1.5 silver in the field and 0.75 at home**; a full chariot cohort draws **4 in the field and 2 at home**. Remaining men determine the bill, so a half-strength cohort draws half the pay.
 
 **Home pay is always half field pay.** Garrison, repairs and fitting out count as home. Marching, posted troops, freight missions and soldiers embarked aboard a ship count as field service. Soldiers’ pay does not flow back into the city: the stated silver bill is what the city loses.
 
-**Rowers are paid per surviving crew member**, at 1 silver per hundred in the field and half at home. A full Galley (20 rowers) draws **0.2 silver in the field / 0.1 at home**; a War Galley (50) **0.5 / 0.25**; an Emporos (10) **0.1 / 0.05**. Carried soldiers draw their own field pay in addition to their ship’s crew.
+**Only War Galley rowers draw silver pay**, per surviving crew member at 1 silver per hundred in the field and half at home. A full War Galley (50 rowers) draws **0.5 silver in the field / 0.25 at home**. Galleys and Emporoi draw **0 silver**, in port and at sea, and cannot desert for lack of silver. Carried soldiers draw their own field pay in addition to their ship’s crew.
 
-If you cannot pay, you are warned first; if it goes on, **men desert**, and a unit that loses everyone is gone. Recruit professionals only when you can keep paying them. A spearman cohort still costs 12 grain, 20 silver and 100 people to recruit.
+If you cannot pay, you are warned first; if it goes on, **men desert**, and a unit that loses everyone is gone. Recruit professionals only when you can keep paying them. A spearman cohort costs 12 grain and 100 people to recruit, with no silver.
 
-An empty ship **Laid up** in its own Harbour costs **0 silver and 0 ship food**. Its crew has returned to the city’s population and eats as civilians. **Fit out** drafts that crew back immediately; home-rate ship food and half field pay resume while the ship spends three days preparing. See [[sea]].
+An empty ship **Laid up** in its own Harbour costs **0 silver and 0 ship food**. Its crew has returned to the city’s population and eats as civilians. **Fit out** drafts that crew back immediately; home-rate ship food and, for a War Galley, half field pay resume while the ship spends three days preparing. See [[sea]].
 
 ## Food
 

@@ -92,3 +92,16 @@ func TestRecruitPayKeepsSmallCrewWagesAndShortfalls(t *testing.T) {
 		t.Fatal(got)
 	}
 }
+
+func TestSilverFlowRecruitPayPresentation(t *testing.T) {
+	for _, tc := range []struct {
+		grain, silver float64
+		want          string
+	}{
+		{.2, 0, "0.2 grain, 0 silver"}, {.1, 0, "0.1 grain, 0 silver"}, {.5, .5, "0.5 grain, 0.5 silver"}, {1.6, 4, "1.6 grain, 4 silver"},
+	} {
+		if got := recruitUpkeepLine(tc.grain, tc.silver); got != tc.want {
+			t.Fatalf("%s want%s", got, tc.want)
+		}
+	}
+}

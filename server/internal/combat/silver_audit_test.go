@@ -163,10 +163,10 @@ func TestUpkeepSilverBookkeeping(t *testing.T) {
 	// Both units pay in full → no circulation (no soldShare), no unpaid, empty map.
 	// grain 50→0.5, 80→0.8 (mig 136, UpkeepSpecs grain ÷100); silver untouched.
 	wantSettled("Argyros", readSettled(sA), settled{paid: 1, unpaid: 0, grain: 0.3, gross: .375, circ: 0, destroyed: .375, unpaidSilver: 0, circulatedTo: "{}"})
-	wantSettled("Bare", readSettled(sB), settled{paid: 1, unpaid: 0, grain: 0.8, gross: 1, circ: 0, destroyed: 1, unpaidSilver: 0, circulatedTo: "{}"})
+	wantSettled("Bare", readSettled(sB), settled{paid: 1, unpaid: 0, grain: 0.8, gross: 2, circ: 0, destroyed: 2, unpaidSilver: 0, circulatedTo: "{}"})
 
 	// ── SilverAudit stocks (first audit ⇒ no prev, mined 0, delta 0). ──
-	// A: 10000 − 1 = 9999; B: 10000 − 3 = 9997 → liquid 19998.625 (SLICE B halved
+	// A: 10000 − 1 = 9999; B: 10000 − 3 = 9997 → liquid 19997.625 (SLICE B halved
 	// silver, 2026-08-05 — grain is untouched by the audit). fund_total is 0
 	// from migration 106 on: the Sitos fund is gone, the granary holds food and
 	// never silver (B3). The field stays in the payload because event semantics
@@ -188,8 +188,8 @@ func TestUpkeepSilverBookkeeping(t *testing.T) {
 	}
 	approx := func(got, want float64) bool { return math.Abs(got-want) < 1e-6 }
 	a1 := readAudit()
-	if !approx(a1.liquid, 19998.625) || !approx(a1.fund, 0) || !approx(a1.escrow, 250) {
-		t.Errorf("audit1 stocks = liquid %.2f fund %.2f escrow %.2f, want 19998.625/0/250", a1.liquid, a1.fund, a1.escrow)
+	if !approx(a1.liquid, 19997.625) || !approx(a1.fund, 0) || !approx(a1.escrow, 250) {
+		t.Errorf("audit1 stocks = liquid %.2f fund %.2f escrow %.2f, want 19997.625/0/250", a1.liquid, a1.fund, a1.escrow)
 	}
 	if !approx(a1.mined, 0) || !approx(a1.delta, 0) {
 		t.Errorf("audit1 mined/delta = %.4f/%.4f, want 0/0 (first audit)", a1.mined, a1.delta)

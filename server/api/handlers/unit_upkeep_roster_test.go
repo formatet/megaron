@@ -21,7 +21,7 @@ func TestUnitRosterRationsAndExplicitZeroSalary(t *testing.T) {
 		{"spearman", "marching", 100, 1, 0, "active"},
 		{"spearman", "forming", 40, .2, 0, "inactive"},
 		{"elite_infantry", "garrison", 100, .6, .75, "active"},
-		{"galley", "freighting", 1, .20, .2, "active"},
+		{"galley", "freighting", 1, .20, 0, "active"},
 		{"nomadic_host", "positioned", 1, 0, 0, "none"},
 	} {
 		t.Run(tc.typ+"/"+tc.status, func(t *testing.T) {

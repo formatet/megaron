@@ -28,7 +28,7 @@ func TestRepairCost(t *testing.T) {
 		// A full 5-point repair costs 5×8% = 40% of that.
 		{"war_galley, full repair", "war_galley", hullMax, "cedar", 100.0 * repairCostFractionPerHullPoint * float64(hullMax)},
 		// merchantman: Costs{timber:1.6} per crew, CrewFor=10 → 16 timmer full build.
-		{"merchantman, three hull points", "merchantman", 3, "timber", 16.0 * repairCostFractionPerHullPoint * 3},
+		{"merchantman, three hull points", "merchantman", 3, "cedar", 16.0 * repairCostFractionPerHullPoint * 3},
 		{"zero hull points costs nothing", "galley", 0, "timber", 0},
 		{"unknown unit type", "spearman", 2, "", 0},
 	}

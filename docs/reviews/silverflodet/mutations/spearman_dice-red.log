@@ -1,0 +1,8 @@
+--- FAIL: TestSilverFlowRoundDice (0.00s)
+    --- FAIL: TestSilverFlowRoundDice/spearman100 (0.00s)
+        silver_flow_test.go:25: active=100 dice=100 want=50
+    --- FAIL: TestSilverFlowRoundDice/spearman3 (0.00s)
+        silver_flow_test.go:25: active=3 dice=3 want=2
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.002s
+FAIL

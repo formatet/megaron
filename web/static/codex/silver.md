@@ -1,4 +1,4 @@
-**Silver is the currency and pays your professional forces.** Elite infantry, chariots and ships need it; spearmen live on grain and draw no silver pay.
+**Silver is the currency and pays your professional forces.** Elite infantry, chariots and War Galleys need it; spearmen, Galleys and Emporoi need no silver to recruit or maintain.
 
 Professionals draw pay every day. A Wanax who runs dry risks their desertion — see [[upkeep]].
 
@@ -9,4 +9,4 @@ Professionals draw pay every day. A Wanax who runs dry risks their desertion —
 
 Silver is kept with your other goods — the **Economy → Goods** tab shows your balance ([[goods]]).
 
-Founding moves only the silver your Host still carries into the city: a new Host begins with **480 silver**, inland or coastal. Founding adds no extra silver. A Host rising after losing every city carries its remaining refugee purse. A colony carries existing silver from its mother city, rather than receiving new currency.
+Founding moves only the silver your Host still carries into the city: a new Host begins with **120 silver**, inland or coastal. Founding adds no extra silver. A Host rising after losing every city carries its remaining refugee purse. A colony carries existing silver from its mother city, rather than receiving new currency.

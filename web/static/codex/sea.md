@@ -4,13 +4,13 @@ The sea is **the Thalassa**. It carries your ships, your traders and your ambiti
 
 Every ship needs a **Harbour** and a **Shipyard** ([[buildings]]). There are three kinds ([[units]]):
 
-- **Galley** — transport and sight at sea. Can carry goods.
+- **Galley** — 30 timber, no silver to build or maintain. Transport and sight at sea. Can carry goods.
 - **War Galley** — the warship. Needs cedar and a Foundry. Never carries cargo.
-- **Emporos** — a trade hull. It does not fight, but carries more than a Galley.
+- **Emporos** — a trade hull built with 16 cedar, no timber or silver. It draws no silver pay. It does not fight, but carries more than a Galley.
 
 A [[transfers|transfer]] or [[routes|standing order]] that goes by sea needs a free Galley or Emporos waiting in the sending port — the War Galley is never chosen. No free hull there, and the shipment goes by land instead if a road exists, or is refused.
 
-**Lay up** an idle, empty ship in your own active Harbour from War → Army when you do not need it. The crew joins the port's population, so the ship costs no food or silver and cannot sail, carry goods or take a passenger. **Fit out** drafts its crew again and takes three days before the ship is ready. The crew draws home-rate food and half field pay while fitting out. A laid-up hull follows its port if the city is annexed. See [[units]] and [[upkeep]].
+**Lay up** an idle, empty ship in your own active Harbour from War → Army when you do not need it. The crew joins the port's population, so the ship costs no food or silver and cannot sail, carry goods or take a passenger. **Fit out** drafts its crew again and takes three days before the ship is ready. The crew draws home-rate food and, for War Galleys, half field pay while fitting out. A laid-up hull follows its port if the city is annexed. See [[units]] and [[upkeep]].
 
 ## At sea
 

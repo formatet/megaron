@@ -81,15 +81,14 @@ const MaxSettlementsPerWanax = 5
 // för ett skepp. Måltotaler för HELA enheten, i dagsverken (en gubbe på
 // standardterräng producerar 1 enhet/tick sedan mig 136):
 //
-//	spjutkohort ...... 12      handelsskepp ..... 16
+//	spjutkohort ...... 12      handelsskepp ..... 16 ceder
 //	elitinfanteri .... 40 (varav 16 brons)      galär ............ 30  ← ankaret
 //	stridsvagnar ..... 76 (varav 20 brons)      krigsgalär ....... 100
 //
 // Galären är Timothys ankare: "en galley kostar 30 timmer, vilket ska motsvara
 // 30 arbetstick för en gubbe på optimal produktionsyta" (2026-08-27). 30 / 20
-// besättningsmän = 1,5 timmer per man. Ett tick är en väggklockstimme, så
-// galären är en natts arbete för tre-fyra huggare — en investering, inte ett
-// klick, vilket den var på 0,83 dagsverken före denna kalibrering.
+// besättningsmän = 1,5 timmer per man. Emporos kostar 16 ceder.
+// Spjutmän, galär och Emporos betalar inget silver vid rekrytering.
 //
 // ⚠️ BRONS ÄR EN KEDJA, INTE EN VARA. Receptet är 9 koppar + 1 tenn + ett
 // gjuteritick, alltså 11 dagsverken per bronsenhet. Elitinfanteriets 12 brons
@@ -105,10 +104,10 @@ const MaxSettlementsPerWanax = 5
 // ⚠️ Silver rörs inte (mig 136 skalar inte valutan). Samtliga tal är KANDIDATER
 // för soak-testet, inte lås.
 var UnitSpecs = map[string]UnitSpec{
-	"spearman":       {Costs: map[string]float64{"grain": 0.12, "silver": 0.2}, PopCost: 5, DurationTicks: 1, RequiresBarracks: true},
+	"spearman":       {Costs: map[string]float64{"grain": 0.12}, PopCost: 5, DurationTicks: 1, RequiresBarracks: true},
 	"war_chariot":    {Costs: map[string]float64{"grain": 0.40, "timber": 0.08, "cedar": 0.08, "bronze": 0.20, "silver": 0.5}, PopCost: 8, DurationTicks: 3, RequiresStable: true},
-	"galley":         {Costs: map[string]float64{"timber": 1.5, "silver": 0.3}, PopCost: 10, DurationTicks: 3, RequiresShipyard: true},
+	"galley":         {Costs: map[string]float64{"timber": 1.5}, PopCost: 10, DurationTicks: 3, RequiresShipyard: true},
 	"elite_infantry": {Costs: map[string]float64{"grain": 0.24, "bronze": 0.16, "silver": 0.4}, PopCost: 10, DurationTicks: 4, RequiresBarracks: true, RequiresFoundry: true},
 	"war_galley":     {Costs: map[string]float64{"cedar": 2.0, "silver": 0.6}, PopCost: 12, DurationTicks: 5, RequiresShipyard: true, RequiresFoundry: true},
-	"merchantman":    {Costs: map[string]float64{"timber": 1.6, "silver": 0.2}, PopCost: 8, DurationTicks: 4, RequiresShipyard: true},
+	"merchantman":    {Costs: map[string]float64{"cedar": 1.6}, PopCost: 8, DurationTicks: 4, RequiresShipyard: true},
 }

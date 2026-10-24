@@ -1,0 +1,7 @@
+» färsk DB på migration 210 · commit 2e2cbcb3+ändringar
+ok  	formatet/megaron/server/api/handlers	1.805s
+ok  	formatet/megaron/server/internal/combat	1.568s
+# formatet/megaron/server/internal/province [formatet/megaron/server/internal/province.test]
+internal/province/model_test.go:109:53: undefined: timber
+FAIL	formatet/megaron/server/internal/province [build failed]
+FAIL

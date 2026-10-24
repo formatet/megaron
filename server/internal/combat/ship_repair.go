@@ -51,8 +51,8 @@ const (
 // (per crew member) — see training.go's own doc comment — so the whole-ship
 // figure is Costs[good] × unit.CrewFor(type), the same multiplication
 // api/handlers/province.go's Recruit performs for its totalCosts. War
-// galleys are cedar-hulled (their recipe carries no timber at all, see
-// training.go); every other naval type repairs with timber. ok is false for
+// galleys and Emporoi are cedar-hulled (their recipes carry no timber, see
+// training.go); ordinary galleys repair with timber. ok is false for
 // anything this system does not know how to cost (i.e. not a known naval
 // type — land units never reach this).
 func repairMaterial(unitType string) (good string, shipCost float64, ok bool) {

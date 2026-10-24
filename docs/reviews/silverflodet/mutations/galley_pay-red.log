@@ -1,0 +1,11 @@
+--- FAIL: TestSoldierWagesUseActualMenAndHomeHalf (0.00s)
+    pay_test.go:30: galley size1 crew20 garrison pay=0.1 want0
+    pay_test.go:30: galley size1 crew20 repairing pay=0.1 want0
+    pay_test.go:30: galley size1 crew20 fitting_out pay=0.1 want0
+    pay_test.go:30: galley size1 crew20 marching pay=0.2 want0
+    pay_test.go:30: galley size1 crew20 positioned pay=0.2 want0
+    pay_test.go:30: galley size1 crew20 freighting pay=0.2 want0
+    pay_test.go:30: galley size1 crew20 forming pay=0.1 want0
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.002s
+FAIL

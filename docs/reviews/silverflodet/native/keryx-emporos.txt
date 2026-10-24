@@ -1,0 +1,4 @@
+Building 1 merchantman — "Kharis's Blessing"
+Waiting for shipyard workers — paid order; work resumes when the shipyard is staffed.
+Drafted 10 people as crew — population 800 → 790.
+warning: once this unit garrisons it needs 0.1 grain + 0.0 silver per day upkeep — this settlement's current net after its existing army's upkeep is -5.0 grain per day, +0.0 silver per day; it may starve/desert without more production or fewer units (`keryx status`)

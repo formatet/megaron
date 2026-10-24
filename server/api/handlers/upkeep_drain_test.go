@@ -133,16 +133,16 @@ func TestSettlementUpkeepDrain_PayerAndWages(t *testing.T) {
 	if math.Abs(gross.Grain-2.1) > eps {
 		t.Errorf("Mykene gross grain = %v, want 2.1 (0.5 garrison + 1.6 marching chariot)", gross.Grain)
 	}
-	if math.Abs(gross.Silver-2) > eps {
-		t.Errorf("Mykene gross silver = %v, want3 (spear0 + marching chariot3)", gross.Silver)
+	if math.Abs(gross.Silver-4) > eps {
+		t.Errorf("Mykene gross silver = %v, want4 (spear0 + marching chariot4)", gross.Silver)
 	}
 	// Only the unit standing in the town that pays it circulates: 0.7 × 1.
 	// The marching chariot's 3 does not — that is the whole point of Del C.
 	if math.Abs(circulated) > eps {
 		t.Errorf("Mykene circulated silver = %v, want0 (home spear has no salary)", circulated)
 	}
-	if net := gross.Silver - circulated; math.Abs(net-2) > eps {
-		t.Errorf("Mykene net silver drain = %v, want3", net)
+	if net := gross.Silver - circulated; math.Abs(net-4) > eps {
+		t.Errorf("Mykene net silver drain = %v, want4", net)
 	}
 
 	// The colony pays only for its own garrison, and all of it comes back.

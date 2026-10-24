@@ -121,12 +121,13 @@ const (
 )
 
 // battleDiceMultiplier is how many T12 each ACTIVE combatant of utype rolls
-// per round: elite 3/man, war_chariot ("vagn") 5/vagn, everyone else 1.
+// per round: elite 3/man, chariot 5/vagn, war galley 5/ship.
+// Spearmen use ceil(active/2) in rollSide; other types use 1.
 func battleDiceMultiplier(utype string) int {
 	switch utype {
 	case "elite_infantry":
 		return 3
-	case "war_chariot":
+	case "war_chariot", "war_galley":
 		return 5
 	default:
 		return 1
@@ -1077,6 +1078,9 @@ func rollSide(participants []battleParticipant, sizes []int, idx []int, part flo
 		}
 		activeCombatants += active
 		diceCount := active * battleDiceMultiplier(participants[i].utype)
+		if participants[i].utype == "spearman" {
+			diceCount = (active + 1) / 2
+		}
 		if participants[i].defenseBoost {
 			diceCount = int(math.Round(float64(diceCount) * GarrisonDefenseFactor))
 		}

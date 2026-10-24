@@ -1,0 +1,2 @@
+usage: day_guard.py [-h] {web,keryx,codex,server}
+day_guard.py: error: the following arguments are required: surface

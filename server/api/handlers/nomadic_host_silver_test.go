@@ -12,7 +12,7 @@ import (
 	"formatet/megaron/server/internal/events"
 )
 
-func TestSeedNomadicHost_SilverAmountIs480(t *testing.T) {
+func TestSeedNomadicHost_SilverAmountIs120(t *testing.T) {
 	pool := escortTestPool(t)
 	ctx := context.Background()
 	worldID, playerID := seedEscortWorld(t, pool)
@@ -37,8 +37,8 @@ func TestSeedNomadicHost_SilverAmountIs480(t *testing.T) {
 	}
 
 	const eps = 1e-9
-	if math.Abs(silverAmount-480) > eps {
-		t.Errorf("founder reserve=%v, want fixed480 independent of salary", silverAmount)
+	if math.Abs(silverAmount-120) > eps {
+		t.Errorf("founder reserve=%v, want fixed120 independent of salary", silverAmount)
 	}
 	// Foot soldiers have no salary drain; the reserve survives indefinitely.
 	wantRate := 0.0
@@ -47,15 +47,18 @@ func TestSeedNomadicHost_SilverAmountIs480(t *testing.T) {
 	}
 }
 
-// The unchanged reserve now supports only the professional fleet's pay.
-func TestNomadicReserveSupportsProfessionalFleet(t *testing.T) {
-	const startSilver = 480.0
-	spearmanSilver := combat.UnitUpkeep("spearman", "land", 100, "garrison", 0).Silver
-	galleySilver := combat.UnitUpkeep("galley", "naval", 1, "garrison", 20).Silver
-
-	perTickDrain := 2*spearmanSilver + 2*galleySilver
-	ticks := startSilver / perTickDrain
-	if math.Abs(ticks-2400) > 1e-9 {
-		t.Errorf("480 silver / (2 spearmen + 2 galleys) = %v ticks, want 2400 (only the two galleys draw silver)", ticks)
+// Basic ships and escort do not drain the new host's reserve.
+func TestNomadicReserveSupportsBasicFleet(t *testing.T) {
+	for _, kind := range []string{"spearman", "galley", "merchantman"} {
+		category := "naval"
+		if kind == "spearman" {
+			category = "land"
+		}
+		if got := combat.UnitUpkeep(kind, category, 100, "marching", 20).Silver; got != 0 {
+			t.Errorf("%s pay=%g want0", kind, got)
+		}
+	}
+	if risenHostStartingSilver != 60 {
+		t.Fatalf("rest host silver=%g want60", risenHostStartingSilver)
 	}
 }

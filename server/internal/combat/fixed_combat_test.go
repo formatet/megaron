@@ -46,8 +46,8 @@ func TestBattleParticipationFixedAcrossCityAndKharis(t *testing.T) {
 			if err := json.Unmarshal(raw, &result); err != nil {
 				t.Fatal(err)
 			}
-			if result.ActiveCombatants != 90 || result.DiceRolled != 90 {
-				t.Errorf("first round kharis%d result=%+v want90 active and dice", balance, result)
+			if result.ActiveCombatants != 90 || result.DiceRolled != 45 {
+				t.Errorf("first round kharis%d result=%+v want90 active and45 dice", balance, result)
 			}
 		}
 		rows, err := pool.Query(ctx, `SELECT side,last_participation FROM battle_participants WHERE battle_id=$1`, battle)
