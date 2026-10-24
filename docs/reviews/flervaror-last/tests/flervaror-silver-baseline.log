@@ -1,0 +1,10 @@
+» färsk DB på migration 210 · commit 38cb103b
+2026/10/24 23:38:03 INFO player registered id=283b5a0a-e1e2-48a8-bd40-6d6419fe6133 username=shipwright-9084f786-e431-4cc8-9d48-ce4c9cfe65b3
+2026/10/24 23:38:03 INFO player registered id=6f765a4d-b40e-47bc-876f-ec094a004383 username=shipwright-de3ce285-41a2-48eb-960f-87d612b9e8c9
+2026/10/24 23:38:04 INFO player registered id=ad35eb5b-4cbd-4919-80b9-2e3ab3722700 username=shipwright-510e67e0-e712-449e-b473-a2873cffa5c1
+--- FAIL: TestSilverFlowRecruitHTTP (0.22s)
+    --- FAIL: TestSilverFlowRecruitHTTP/merchantman (0.07s)
+        silver_flow_test.go:43: recruit: 422 {"error":"insufficient_goods","missing":[{"good":"cedar","need":90,"have":16}]}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.221s
+FAIL

@@ -1,0 +1,27 @@
+{
+  "arrival_tick": 102,
+  "arrives_at": "2026-10-25T00:37:11.302434427+02:00",
+  "cargo_capacity": 20,
+  "cargo_quantity": 20,
+  "category": "naval",
+  "departure_tick": 100,
+  "distance": 6,
+  "items": [
+    {
+      "good_key": "grain",
+      "quantity": 12
+    },
+    {
+      "good_key": "timber",
+      "quantity": 8
+    }
+  ],
+  "kind": "transfer",
+  "route_id": "e39d0f9b-ecd9-4a1c-bd1c-0e7ebc7c894f",
+  "ship_id": "9cbcb0b5-f664-4002-acbd-d8098171f955",
+  "ship_name": "Blue Heron, Galley of Lato",
+  "ship_type": "galley",
+  "transport_id": "9a6d5192-fda8-4297-af55-c06f88e61b49",
+  "travel_min": 120,
+  "travel_ticks": 2
+}

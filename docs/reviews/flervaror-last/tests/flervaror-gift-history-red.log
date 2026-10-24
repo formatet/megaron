@@ -1,0 +1,9 @@
+» färsk DB på migration 211 · commit 25f35068+ändringar
+2026/10/24 23:35:07 INFO player registered id=8efbddeb-1bb7-48b9-b135-e62d97696e22 username=trader-d07ec610-b984-44a5-8bc3-3e4469932095
+2026/10/24 23:35:08 INFO player registered id=734215ba-21d4-49cc-8444-04e579465fe9 username=history-7a980b2e-053a-4144-8b6b-89dd569ca4b0
+2026/10/24 23:35:08 INFO player registered id=2a8ac6b2-3aa7-4e38-b8c8-ceb1b37d31bc username=outsider-91211dfb-739f-4fba-b5bb-4c3391e25aec
+--- FAIL: TestGiftHistoryV2PrivateUntilArrivalAndCompleteCorrespondence (0.17s)
+    province_gift_test.go:651: sender departure: []
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.174s
+FAIL

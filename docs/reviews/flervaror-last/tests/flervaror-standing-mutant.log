@@ -1,0 +1,6 @@
+» färsk DB på migration 210 · commit 25f35068+ändringar
+--- FAIL: TestStandingOrder_OutboundCountsMixedGoodsTogether (0.04s)
+    standing_orders_naval_test.go:485: mixed outbound cargo 140 goods/2 kinds; want120/2
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.041s
+FAIL
