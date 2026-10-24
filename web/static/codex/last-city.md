@@ -17,4 +17,4 @@ You leave this world for good and cannot rise in it again. **Your account remain
 
 In [[keryx|Keryx]] the same two choices are `keryx rise` and `keryx leave`.
 
-See also: [[occupation]] and [[sieges]], for how a city is lost.
+See also: [[occupation]] and [[sieges]], for how a city is lost, and [[xenia]] for the gods' order among the Wanaxes.
