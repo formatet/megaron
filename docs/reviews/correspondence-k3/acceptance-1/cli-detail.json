@@ -1,0 +1,22 @@
+{
+  "counterpart_id": "bdb548e5-6879-4f36-b08e-39937b47f89d",
+  "id": "77499dc9-223a-46d1-b573-fc5c444e420c",
+  "items": [
+    {
+      "destination_id": "5ddd5260-93ce-424a-828e-3345feff5bf2",
+      "destination_name": "K2 Nostos",
+      "id": "338ae3be-9a47-49e3-b67d-acd04c1aaa78",
+      "message_text": "Copper for the winter voyage",
+      "origin_id": "601f0d26-97ab-41c4-8ee4-1c7c505a3b71",
+      "origin_name": "K2 Kyme",
+      "recipient_id": "de2671df-847f-41aa-b656-b41f57f0aff0",
+      "recipient_name": "Rhadamas",
+      "sender_id": "bdb548e5-6879-4f36-b08e-39937b47f89d",
+      "sender_name": "Mikharios",
+      "sent_at": "2026-10-24T06:46:06.670152+02:00",
+      "status": "delivered"
+    }
+  ],
+  "next_cursor": "",
+  "subject": "Winter copper"
+}
