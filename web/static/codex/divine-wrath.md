@@ -6,9 +6,9 @@ When your standing crosses **30 downward** and the projected net is negative, a 
 
 The estimate assumes that net continues. Staff and feed your temples, then check **Kult** or `keryx status`. A mood change still has its own notice.
 
-## Seven days after punishment
+## Seven game days after punishment
 
-An actual loss gives your whole realm **seven days of protection from further divine punishment**. **Kult**, `keryx status` and the punishment notice show its end date. Repeated processing does not extend it. At the end, the ordinary risk resumes if kharis is still below 15. The protection follows the Wanax, across their cities and temples.
+An actual loss gives your whole realm **seven game days of protection from further divine punishment**. A game day follows this world's pace; **Kult**, `keryx status` and the punishment notice show the protection's end in your local clock. Repeated processing does not extend it. At the end, the ordinary risk resumes if kharis is still below 15. The protection follows the Wanax, across their cities and temples.
 
 If there is nothing to take, there is no punishment and no new protection. Protection does not stop cult upkeep or prevent losses from hunger, battle or weather.
 

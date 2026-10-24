@@ -4,6 +4,7 @@ import { demolishLabel, demolishPrompt, demolishResultLine } from '../demolish.j
 import { State, activeCitySettlement } from '../../state.js';
 import { fetchAuth } from '../../api.js';
 import { arrivalHTML } from '../time.js';
+import { fmtTickTime } from '../fmt_clock.js';
 import { renderLockedActions } from '../misc.js';
 import { esc, formatApiError } from '../format.js';
 import { unitTypeLabel } from '../actornames.js';
@@ -136,7 +137,7 @@ export async function loadCityDrawer() {
       const prodRows = Object.entries(lt.production || {}).map(([k,v]) => `<tr><td>${k}</td><td style="color:var(--safe-text)">+${fmtNum(Number(v.toFixed(2)))}</td></tr>`).join('');
       const consRows = Object.entries(lt.consumption || {}).map(([k,v]) => `<tr><td>${k}</td><td style="color:var(--accent)">−${fmtNum(Number(v.toFixed(2)))}</td></tr>`).join('');
       document.getElementById('city-lasttick-sec').innerHTML = `
-        <div class="stat-row"><span class="sr-label">Day</span><span class="sr-val">#${fmtNum(lt.tick)}</span></div>
+        <div class="stat-row"><span class="sr-label">Counted</span><span class="sr-val">${esc(fmtTickTime(lt.tick))}</span></div>
         ${(prodRows||consRows) ? `<table class="goods-mini" style="margin-top:.3rem">${prodRows}${consRows}</table>` : ''}`;
     } else {
       document.getElementById('city-lasttick-sec').innerHTML = '<p class="empty-state">—</p>';

@@ -4,7 +4,7 @@
 |---|---|
 | **Favorable** | The gods may bless you: a blessed harvest (a quarter more food for 25 days, fish excepted) or unexpected recruits. |
 | **Indifferent** | They have noticed you and do nothing. |
-| **Suspicious** (5 to below 30) | Below 15, a 3% chance of punishment each day, with or without a temple; recent punishment gives seven days of protection. |
+| **Suspicious** (5 to below 30) | Below 15, a 3% chance of punishment each day, with or without a temple; recent punishment gives seven game days of protection. |
 | **Wrathful** (below 5) | The same risk below 15, except during protection: chariots break, ships are lost, food rots or plague takes a garrison. |
 
 Blessings and punishments arrive as notifications.
@@ -19,7 +19,7 @@ For **three cities with 2,500 residents altogether**, upkeep is **0.1 + 0.4 + 0.
 
 **Kult → Upkeep of the cult** and `keryx status` show the base, cities and residents separately, alongside projected temple production and net. One more fed temple worker gives **at least +1.05 kharis per day**, and more when the cult’s reference offering of grain is scarce in the world. This describes the extra worker's yield: employing one also requires a free citizen, an available temple workplace and that temple's daily offering. A temple earns favour; it does not remove its city's cost.
 
-Below **15 Kharis**, there is a 3% chance of punishment each day **with or without a temple**. An actual punishment gives **seven days of protection**, whose end date appears in Kult and `keryx status`. Nothing taken means no new protection. See [[divine-wrath]]. A punishment chooses a random eligible city of yours with something it can take; it need not strike the capital.
+Below **15 Kharis**, there is a 3% chance of punishment each day **with or without a temple**. An actual punishment gives **seven game days of protection**. A game day follows this world's pace; Kult and `keryx status` show the protection's end in your local clock. Nothing taken means no new protection. See [[divine-wrath]]. A punishment chooses a random eligible city of yours with something it can take; it need not strike the capital.
 
 ## How to raise it
 
