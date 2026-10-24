@@ -9,7 +9,7 @@ The **Emporos** is the merchant hull: broad, slow, cedar-built, made to carry.
 | **Food** | 0.05 per game day in port, 0.1 at sea |
 | **Pay** | none |
 | **Cargo** | 120 goods of any kind ([[transfers]]) |
-| **Troops** | one land unit at a time |
+| **Troops** | up to three land units at once — passengers, not fighters: they roll no dice at sea and drown if she founders |
 | **Speed** | slowest ship — 1.4 times a galley's travel time |
 | **Hull** | 5; repaired with cedar |
 | **In battle** | 1 die per round, like a [[galley]] — it is no warship |
