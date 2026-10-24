@@ -51,7 +51,7 @@ def main():
             run('go', 'build', '-ldflags', '-X main.buildCommit=' + commit, '-o', str(tmp / 'temenos'), './cmd/server', cwd=ROOT / 'server', env=clean)
             run('go', 'build', '-o', str(tmp / 'keryx'), './cmd/keryx', cwd=ROOT / 'server', env=clean)
             print('BUILD_COMPLETE', commit, flush=True)
-            pg = launch('pg', 'postgres:16-alpine', ['-e', 'POSTGRES_PASSWORD=k1-proof', '-e', 'POSTGRES_DB=k1_proof'])
+            pg = launch('pg', os.environ.get('CORRESPONDENCE_PG_IMAGE', 'postgres:16-alpine'), ['-e', 'POSTGRES_PASSWORD=k1-proof', '-e', 'POSTGRES_DB=k1_proof'])
             redis = launch('redis', 'redis:7-alpine', [])
             for _ in range(80):
                 if subprocess.run(['docker', 'exec', containers[0], 'pg_isready', '-h', '127.0.0.1', '-U', 'postgres', '-q'], capture_output=True).returncode == 0:
@@ -217,6 +217,9 @@ def main():
             source_cli=json.loads(cli('correspondence','--case',case,'--letter',first['id'],'--json'))
             assert len(source_cli['items'])==1 and source_cli['items'][0]['id']==first['id']
             (out/'source-cli.json').write_text(json.dumps(source_cli,indent=2))
+            removed_cli=json.loads(cli('correspondence-cite-remove','--case',case,'--id',kept_cli['id'],'--json'))
+            assert removed_cli=={},'DELETE204 CLI output must remain JSON'
+            kept_cli=json.loads(cli('correspondence-cite','--case',case,'--letter',first['id'],'--quote','winter voyage','--json'))
             memory_cli=json.loads(cli('correspondence-memory','--case',case,'--json'))
             assert len(memory_cli['transactions'])==1 and len(memory_cli['citations'])==1
             assert api(wp+'/correspondence/cases/'+case+'/memory',token=sender['token'])['citations']==[], 'Private passage leaked to counterpart'

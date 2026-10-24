@@ -134,10 +134,12 @@ func (h *MessengerHandler) CaseMemory(w http.ResponseWriter, r *http.Request) {
 	transactions := make([]memoryTransaction, 0)
 	citations := make([]memoryCitation, 0)
 	if !c.Transactions.Done {
+		// Acceptance is historical: the trade engine later changes its live status
+		// to returned. The immutable marker retains that accepted agreement.
 		rows, e := tx.Query(r.Context(), `SELECT l.id,l.case_id,c.subject,l.sender_id,l.recipient_id,l.sender_name,l.recipient_name,l.origin_name,l.destination_name,l.sent_at,l.accepted_at,l.trade_offer
  FROM correspondence_letters l JOIN correspondence_cases c ON c.id=l.case_id
  WHERE c.world_id=$1 AND ((c.first_player_id=$2 AND c.second_player_id=$3) OR (c.first_player_id=$3 AND c.second_player_id=$2))
- AND l.trade_offer->>'status'='accepted' AND l.accepted_xid IS NOT NULL
+ AND l.accepted_xid IS NOT NULL
  AND ((l.recipient_id=$2 AND l.delivered) OR (l.sender_id=$2 AND l.returned AND (l.returned_epoch<>$5 OR pg_visible_in_snapshot(l.returned_xid,$4::pg_snapshot))))
  AND (l.accepted_epoch<>$5 OR pg_visible_in_snapshot(l.accepted_xid,$4::pg_snapshot))
  AND ($6::timestamptz IS NULL OR (l.sent_at,l.id)<($6,$7::uuid))

@@ -102,3 +102,29 @@ func TestCorrespondenceExactSourceLetterCommand(t *testing.T) {
 		}
 	}
 }
+
+func TestCorrespondenceCitationRemovalHonorsJSONMode(t *testing.T) {
+	saved, savedJSON := cfg, jsonMode
+	defer func() { cfg, jsonMode = saved, savedJSON }()
+	calls := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		if r.Method != "DELETE" || r.URL.Path != "/api/v1/worlds/w/correspondence/cases/c/citations/id" {
+			t.Error(r.Method, r.URL)
+		}
+		w.WriteHeader(204)
+	}))
+	defer srv.Close()
+	cfg = &Config{Server: srv.URL, WorldID: "w"}
+	jsonMode = true
+	cmd := correspondenceCiteRemoveCmd()
+	cmd.SetArgs([]string{"--case", "c", "--id", "id"})
+	out, err := captureStdout(t, cmd.Execute)
+	if err != nil || calls != 1 {
+		t.Fatalf("calls=%d err=%v", calls, err)
+	}
+	var payload map[string]any
+	if json.Unmarshal([]byte(out), &payload) != nil || len(payload) != 0 {
+		t.Fatalf("204 removal did not return empty JSON object in JSON mode: %q", out)
+	}
+}

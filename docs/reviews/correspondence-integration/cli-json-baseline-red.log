@@ -1,0 +1,5 @@
+--- FAIL: TestCorrespondenceCitationRemovalHonorsJSONMode (0.00s)
+    cmd_correspondence_memory_test.go:128: 204 removal did not return empty JSON object in JSON mode: "Private note removed.\n"
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.003s
+FAIL

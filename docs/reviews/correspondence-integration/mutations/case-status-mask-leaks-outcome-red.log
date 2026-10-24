@@ -1,0 +1,15 @@
+» färsk DB på migration 209 · commit a252c6d6+ändringar
+2026/10/24 07:18:29 INFO player registered id=3594f84e-4b6f-41c4-bf37-f0089beaa6f1 username=reply-sender-280fdbc2-5ab6-4109-a230-8da9de6ce6a6
+2026/10/24 07:18:29 INFO player registered id=6d365cab-3f2b-4646-aa9a-94910200ebec username=reply-receiver-f5f5cbdc-c5db-4b25-a9d3-734e6fbba29d
+2026/10/24 07:18:30 INFO messenger delivered id=5aac21f4-8dea-401b-8631-e43d97e9671b destination=2b1b16d1-6520-4a97-a6ad-b4831e7801c9
+2026/10/24 07:18:30 INFO player registered id=88c5c696-a5e0-4727-aa75-c968db03a2c9 username=reply-sender-d6c03a15-e3d1-41c1-9737-60f0259e9511
+2026/10/24 07:18:30 INFO player registered id=f108ec38-8256-41d9-a505-71c3aee85445 username=reply-receiver-f75a6706-4387-43c1-8c56-7eff91d6b89a
+2026/10/24 07:18:30 INFO messenger delivered id=c3ae65be-7ae8-4eb7-927b-fa5346369786 destination=4afbb374-d8dc-4bc2-93dd-599ccd43671f
+--- FAIL: TestCorrespondencePreReturnOfferContainsOnlyOriginalTerms (0.28s)
+    --- FAIL: TestCorrespondencePreReturnOfferContainsOnlyOriginalTerms/sell (0.14s)
+        correspondence_integration_lifecycle_test.go:96: pre-return archive leaked resolution fields: got=map[future_resolution_detail:map[private:true] goods_arrival_tick:7 goods_arrives_at:2026-10-24T10:18:29.995529+00:00 kind:sell offer_good:copper offer_qty:2 ship_name: silver_arrival_tick:12 silver_arrives_at:2026-10-24T15:18:29.995529+00:00 status:pending want_silver:5] original=map[kind:sell offer_good:copper offer_qty:2 status:pending want_silver:5]
+    --- FAIL: TestCorrespondencePreReturnOfferContainsOnlyOriginalTerms/buy (0.14s)
+        correspondence_integration_lifecycle_test.go:96: pre-return archive leaked resolution fields: got=map[future_resolution_detail:map[private:true] goods_arrival_tick:12 goods_arrives_at:2026-10-24T15:18:30.135335+00:00 kind:buy offer_silver:5 ship_name: silver_arrival_tick:7 silver_arrives_at:2026-10-24T10:18:30.135335+00:00 status:pending want_good:copper want_qty:2] original=map[kind:buy offer_silver:5 status:pending want_good:copper want_qty:2]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.285s
+FAIL

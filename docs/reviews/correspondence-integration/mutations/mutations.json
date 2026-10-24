@@ -1,0 +1,26 @@
+[
+  {
+    "name": "case-status-mask-leaks-outcome",
+    "source": "server/api/handlers/correspondence_cases.go",
+    "sha256": "aa96a2ca5f197b7590ca21fa3a7cb92804b6f1e3cfa0a7c8a73643de2e191253",
+    "started": "2026-10-24T07:18:27.109241+02:00",
+    "restored": "2026-10-24T07:18:30.321315+02:00",
+    "result": "named RED / byte-exact restored"
+  },
+  {
+    "name": "completed-trade-disappears",
+    "source": "server/api/handlers/correspondence_memory.go",
+    "sha256": "40d81499caadf84271517e8aecd55cc8b33776e56ffed62c87dc846204f4b47e",
+    "started": "2026-10-24T07:18:30.321390+02:00",
+    "restored": "2026-10-24T07:18:33.406522+02:00",
+    "result": "named RED / byte-exact restored"
+  },
+  {
+    "name": "historical-completed-acceptance-lost",
+    "source": "server/db/migrations/209_correspondence_memory.up.sql",
+    "sha256": "7ecb586e3df9330806ab832138dffe8a3a595bb16507da7924882d08f436e3e0",
+    "started": "2026-10-24T07:18:33.406586+02:00",
+    "restored": "2026-10-24T07:18:36.451501+02:00",
+    "result": "named RED / byte-exact restored"
+  }
+]

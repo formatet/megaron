@@ -1,0 +1,23 @@
+» färsk DB på migration 209 · commit a252c6d6
+2026/10/24 07:15:20 INFO player registered id=e58ff23a-eeca-4c0a-a585-dc0b482218a1 username=reply-sender-74c7662d-b9c9-4081-94a8-33c200a326c5
+2026/10/24 07:15:20 INFO player registered id=f63f1bac-8b9d-4d68-bab0-5173ecf9b659 username=reply-receiver-fd1636c4-a4d1-43ef-82fa-6104213a6608
+2026/10/24 07:15:20 INFO messenger delivered id=541243b8-2e7f-4e97-afc5-7862b3fb7fb4 destination=f238308a-84bf-4249-9288-e28d68c4957f
+2026/10/24 07:15:20 INFO player registered id=4cfc62d3-cbea-436d-be1c-fa35d768b8aa username=reply-sender-49448c14-a6f2-4104-94c0-926128d80b33
+2026/10/24 07:15:20 INFO player registered id=5eb62351-8a7f-419d-b171-9be544c8f82e username=reply-receiver-f89678fd-287b-479b-b1f7-a07056293a36
+2026/10/24 07:15:20 INFO messenger delivered id=efebf217-e63f-48d2-8be0-556de8ce365a destination=46bc1d8c-5931-4f5a-829c-fb55492df9cf
+--- FAIL: TestCorrespondencePreReturnOfferContainsOnlyOriginalTerms (0.27s)
+    --- FAIL: TestCorrespondencePreReturnOfferContainsOnlyOriginalTerms/sell (0.14s)
+        correspondence_integration_lifecycle_test.go:98: pre-return archive leaked resolution fields: got=map[future_resolution_detail:map[private:true] goods_arrival_tick:7 goods_arrives_at:2026-10-24T10:15:20.16203+00:00 kind:sell offer_good:copper offer_qty:2 ship_name: silver_arrival_tick:12 silver_arrives_at:2026-10-24T15:15:20.16203+00:00 status:pending want_silver:5] original=map[kind:sell offer_good:copper offer_qty:2 status:pending want_silver:5]
+    --- FAIL: TestCorrespondencePreReturnOfferContainsOnlyOriginalTerms/buy (0.13s)
+        correspondence_integration_lifecycle_test.go:98: pre-return archive leaked resolution fields: got=map[future_resolution_detail:map[private:true] goods_arrival_tick:12 goods_arrives_at:2026-10-24T15:15:20.295959+00:00 kind:buy offer_silver:5 ship_name: silver_arrival_tick:7 silver_arrives_at:2026-10-24T10:15:20.295959+00:00 status:pending want_good:copper want_qty:2] original=map[kind:buy offer_silver:5 status:pending want_good:copper want_qty:2]
+2026/10/24 07:15:20 INFO player registered id=9ab4202b-ab3a-42d8-8692-28f0e4241354 username=reply-sender-a5d8b8e7-ad0e-41dc-8710-0c36371565ad
+2026/10/24 07:15:20 INFO player registered id=8cc75bce-2f7f-4128-b18d-439eb7e65b2a username=reply-receiver-7810e0fb-f2f7-4f20-b265-b15565d1fdfe
+2026/10/24 07:15:20 INFO messenger delivered id=842732c4-2b65-49e0-8514-1b8b2caf5b21 destination=7a482109-41c5-4058-b35b-c346464d2340
+2026/10/24 07:15:20 INFO messenger returned home id=842732c4-2b65-49e0-8514-1b8b2caf5b21
+2026/10/24 07:15:20 INFO trade delivery destination=7a482109-41c5-4058-b35b-c346464d2340 good=copper qty=2
+2026/10/24 07:15:20 INFO trade return delivered buyer=5a8d0796-2049-4716-9311-b16b182aef95 good=silver qty=5
+--- FAIL: TestCorrespondenceAcceptedMemorySurvivesActualCompletedTrade (0.14s)
+    correspondence_integration_lifecycle_test.go:142: completed accepted agreement disappeared: status=200 memory=map[citations:[] counterpart_id:8cc75bce-2f7f-4128-b18d-439eb7e65b2a next_cursor: transactions:[]]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.414s
+FAIL

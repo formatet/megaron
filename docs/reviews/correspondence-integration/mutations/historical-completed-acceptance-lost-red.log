@@ -1,0 +1,8 @@
+» färsk DB på migration 209 · commit a252c6d6+ändringar
+2026/10/24 07:18:36 INFO player registered id=e5114d49-dc20-4e9f-b182-febae1ce0ab4 username=reply-sender-12728991-a0b2-4df4-a267-051a26f24b2f
+2026/10/24 07:18:36 INFO player registered id=4765e9e7-7496-4d2b-afa8-9012ec004150 username=reply-receiver-03e62519-6cfc-4da6-85cd-cc2d51651bc6
+--- FAIL: TestCorrespondenceUpgradeRetainsCompletedAcceptanceWithoutInventingTime (0.15s)
+    correspondence_upgrade_test.go:46: historical returned: acceptance=false unknown_time=true
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.149s
+FAIL

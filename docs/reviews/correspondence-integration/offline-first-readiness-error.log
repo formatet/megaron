@@ -1,0 +1,10 @@
+BACKUP_START
+pg_restore: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  the database system is shutting down
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-correspondence-integration/tools/correspondence_integration_upgrade.py", line 29, in <module>
+    subprocess.run(['docker','exec','-i',name,'pg_restore','-U','postgres','-d','correspondence_upgrade','--no-owner','--no-privileges'],stdin=source,check=True,stdout=subprocess.DEVNULL)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['docker', 'exec', '-i', 'megaron-correspondence-upgrade-a1db5ead', 'pg_restore', '-U', 'postgres', '-d', 'correspondence_upgrade', '--no-owner', '--no-privileges']' returned non-zero exit status 1.

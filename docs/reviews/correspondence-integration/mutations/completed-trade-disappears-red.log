@@ -1,0 +1,12 @@
+» färsk DB på migration 209 · commit a252c6d6+ändringar
+2026/10/24 07:18:33 INFO player registered id=29645d85-717c-428e-99aa-8fcea60748dc username=reply-sender-da2ad630-107c-49b9-8e95-fc13a7a22dda
+2026/10/24 07:18:33 INFO player registered id=7005bd98-89de-491a-812d-07fa8958aa34 username=reply-receiver-546682b0-296f-482e-8e71-05f93b064477
+2026/10/24 07:18:33 INFO messenger delivered id=ab7b6ca0-8855-4270-9d08-c8171d60fd21 destination=f18b7e3f-6516-4752-9934-9697e269a13d
+2026/10/24 07:18:33 INFO messenger returned home id=ab7b6ca0-8855-4270-9d08-c8171d60fd21
+2026/10/24 07:18:33 INFO trade delivery destination=f18b7e3f-6516-4752-9934-9697e269a13d good=copper qty=2
+2026/10/24 07:18:33 INFO trade return delivered buyer=c95364e1-d1f9-4ffe-9cbc-d0dc5e8d3eac good=silver qty=5
+--- FAIL: TestCorrespondenceAcceptedMemorySurvivesActualCompletedTrade (0.15s)
+    correspondence_integration_lifecycle_test.go:140: completed accepted agreement disappeared: status=200 memory=map[citations:[] counterpart_id:7005bd98-89de-491a-812d-07fa8958aa34 next_cursor: transactions:[]]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.156s
+FAIL

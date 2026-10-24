@@ -1,0 +1,58 @@
+{
+  "result": "PASS",
+  "postgres": "15.19",
+  "backup_remote": "/root/megaron-backups/before-correspondence-20261024-071702.dump",
+  "backup_local": "/home/tk/megaron-arkiv/correspondence-integration-20261024-071702/before.dump",
+  "dump_bytes": 11472448,
+  "dump_sha256": "11b7082c69a6c276b524161b695c43b89372b57d99eb71b42071457f7204d6aa",
+  "baseline": {
+    "worlds": {
+      "count": 1,
+      "hash": "c2fdcf7a4cd589b040b440c9e6561754"
+    },
+    "settlements": {
+      "count": 14,
+      "hash": "a8fda653509ce372ba181fe333d7e4ad"
+    },
+    "settlement_goods": {
+      "count": 238,
+      "hash": "9fc63066e5a8e043e06ceb24ee24c971"
+    },
+    "units": {
+      "count": 150,
+      "hash": "29ae586776a70889b8bd0532ea0c238d"
+    },
+    "messengers": {
+      "count": 464,
+      "hash": "8d45b01c0fae52456c55bb5269fbc9aa"
+    }
+  },
+  "after": {
+    "worlds": {
+      "count": 1,
+      "hash": "c2fdcf7a4cd589b040b440c9e6561754"
+    },
+    "settlements": {
+      "count": 14,
+      "hash": "a8fda653509ce372ba181fe333d7e4ad"
+    },
+    "settlement_goods": {
+      "count": 238,
+      "hash": "9fc63066e5a8e043e06ceb24ee24c971"
+    },
+    "units": {
+      "count": 150,
+      "hash": "29ae586776a70889b8bd0532ea0c238d"
+    },
+    "messengers": {
+      "count": 464,
+      "hash": "8d45b01c0fae52456c55bb5269fbc9aa"
+    }
+  },
+  "migration": "209|false",
+  "legacy_cases": 0,
+  "roundtrip": "205->209->205->209; all five table counts and data hashes identical",
+  "upgrade_log": "206/u correspondence_membership (6.913261ms)\n207/u correspondence_cases (20.401732ms)\n208/u correspondence_private (27.135205ms)\n209/u correspondence_memory (37.675372ms)\n",
+  "downgrade_log": "209/d correspondence_memory (8.750518ms)\n208/d correspondence_private (14.485255ms)\n207/d correspondence_cases (24.06906ms)\n206/d correspondence_membership (28.451231ms)\n",
+  "reupgrade_log": "206/u correspondence_membership (6.420877ms)\n207/u correspondence_cases (20.31773ms)\n208/u correspondence_private (27.021549ms)\n209/u correspondence_memory (37.303077ms)\n"
+}

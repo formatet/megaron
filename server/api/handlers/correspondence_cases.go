@@ -252,10 +252,18 @@ func (h *MessengerHandler) Case(w http.ResponseWriter, r *http.Request) {
 		writeError(w, 404, "case not found")
 		return
 	}
+	// Before physical return, only departure terms and caller-known cancellation
+	// are visible. Replacing status alone would still leak remote acceptance ETAs,
+	// carrier names and any future outcome field added by the trade engine.
 	rows, err := tx.Query(r.Context(), `SELECT id,sender_id,recipient_id,sender_name,recipient_name,origin_id,destination_id,origin_name,destination_name,message_text,
  CASE WHEN recipient_id=$2 OR returned THEN reply_text ELSE NULL END,sent_at,
  CASE WHEN sender_id=$2 AND NOT returned AND status<>'lost' THEN 'outbound' ELSE status END,
- CASE WHEN sender_id=$2 AND NOT returned AND trade_offer IS NOT NULL AND trade_offer->>'status'<>'cancelled' THEN jsonb_set(trade_offer,'{status}','"pending"') ELSE trade_offer END
+ CASE WHEN sender_id=$2 AND NOT returned AND trade_offer IS NOT NULL THEN
+ (SELECT COALESCE(jsonb_object_agg(field.key,field.value),'{}'::jsonb)
+  FROM jsonb_each(trade_offer) field
+  WHERE field.key IN ('kind','want_good','want_qty','offer_silver','offer_good','offer_qty','want_silver'))
+ || jsonb_build_object('status',CASE WHEN trade_offer->>'status'='cancelled' THEN 'cancelled' ELSE 'pending' END)
+ ELSE trade_offer END
  FROM correspondence_letters WHERE case_id=$1 AND (sender_id=$2 OR delivered)
  AND (created_epoch<>$4 OR pg_visible_in_snapshot(created_xid,$3::pg_snapshot))
  AND ($5::timestamptz IS NULL OR (sent_at,id)<($5,$6::uuid)) AND ($8::uuid IS NULL OR id=$8) ORDER BY sent_at DESC,id DESC LIMIT $7`, c.Case, c.Player, c.Snapshot, c.Epoch, nullableArchiveTime(c.Before), nullableArchiveID(c.ID), limit+1, exactID)

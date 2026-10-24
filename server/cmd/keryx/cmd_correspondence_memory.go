@@ -101,7 +101,11 @@ func correspondenceCiteRemoveCmd() *cobra.Command {
 		if err != nil {
 			return err
 		}
-		fmt.Println("Private note removed.")
+		if jsonMode {
+			printRawJSON([]byte("{}"))
+		} else {
+			fmt.Println("Private note removed.")
+		}
 		return nil
 	}}
 	cmd.Flags().StringVar(&caseID, "case", "", "case ID identifying the counterpart")

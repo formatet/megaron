@@ -1,5 +1,5 @@
 -- Persist when an acceptance became observable in this archive, independently
--- of mutable list order. Existing accepted rows prove acceptance but not its
+-- of mutable list order. Existing accepted/completed rows prove acceptance but not its
 -- original timestamp: accepted_at deliberately stays NULL during backfill.
 ALTER TABLE correspondence_letters ADD COLUMN accepted_at timestamptz;
 ALTER TABLE correspondence_letters ADD COLUMN accepted_xid xid8;
@@ -7,7 +7,7 @@ ALTER TABLE correspondence_letters ADD COLUMN accepted_epoch timestamptz;
 ALTER TABLE correspondence_letters ADD COLUMN returned_xid xid8;
 ALTER TABLE correspondence_letters ADD COLUMN returned_epoch timestamptz;
 UPDATE correspondence_letters SET accepted_xid=pg_current_xact_id(),accepted_epoch=pg_postmaster_start_time()
- WHERE trade_offer->>'status'='accepted';
+ WHERE trade_offer->>'status' IN ('accepted','returned');
 UPDATE correspondence_letters SET returned_xid=pg_current_xact_id(),returned_epoch=pg_postmaster_start_time() WHERE returned;
 
 CREATE OR REPLACE FUNCTION update_correspondence_letter() RETURNS trigger LANGUAGE plpgsql AS $$

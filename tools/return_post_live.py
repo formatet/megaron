@@ -25,7 +25,7 @@ def main():
    run('go','build','-ldflags','-X main.buildCommit='+commit,'-o',str(tmp/'temenos'),'./cmd/server',cwd=ROOT/'server',env=clean)
    run('go','build','-o',str(tmp/'keryx'),'./cmd/keryx',cwd=ROOT/'server',env=clean)
    print('BUILD_COMPLETE',commit,flush=True)
-   pg=launch('pg','postgres:16-alpine',['-e','POSTGRES_PASSWORD=returnpost','-e','POSTGRES_DB=return_post'])
+   pg=launch('pg',os.environ.get('CORRESPONDENCE_PG_IMAGE','postgres:16-alpine'),['-e','POSTGRES_PASSWORD=returnpost','-e','POSTGRES_DB=return_post'])
    redis=launch('redis','redis:7-alpine',[])
    for _ in range(100):
     if subprocess.run(['docker','exec',containers[0],'pg_isready','-h','127.0.0.1','-U','postgres','-q'],capture_output=True).returncode==0:break
