@@ -280,7 +280,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
     const cls = ['gubbe-hex', water ? 'water' : '', full ? 'full' : '', h.held_by ? (h.takeable ? 'takeable' : 'held') : ''].filter(Boolean).join(' ');
     return `<g class="gubbe-hex-g" data-target="hex" data-ordinal="${h.hex_ordinal}">
       <polygon class="${cls}" points="${hexCorners(p.x, p.y, HEX_SIZE)}"></polygon>
-      <text x="${p.x}" y="${p.y - 4}" class="gubbe-hex-label">#${h.hex_ordinal}</text>
+      <text x="${p.x}" y="${p.y - 4}" class="gubbe-hex-label">${h.hex_q},${h.hex_r}</text>
       <text x="${p.x}" y="${p.y + 9}" class="gubbe-hex-sub">${fmtNum((h.goods || []).length)} good${(h.goods || []).length === 1 ? '' : 's'}</text>
     </g>`;
   }).join('');
@@ -372,7 +372,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
       const hex = hexes.find(h => h.hex_ordinal === ordinal);
       if (!hex) return;
       detail.innerHTML = `
-        <div class="dsec-title">#${hex.hex_ordinal} — ${terrainLabel(hex.terrain)}</div>
+        <div class="dsec-title">(${hex.hex_q},${hex.hex_r}) — ${terrainLabel(hex.terrain)}</div>
         ${hex.held_by ? `<p class="gubbe-held-note">Held by ${esc(hex.held_by)} — already worked by another city${hex.takeable ? '' : ' — stand a unit there in fortify or sentry to take it'}</p>` : ''}
         ${(hex.goods || []).length
           ? hex.goods.map(good => goodRowHTML({ target_kind: 'hex', hex_ordinal: hex.hex_ordinal }, good, takeLabel(hex))).join('')
