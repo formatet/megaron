@@ -11,8 +11,8 @@ func TestSoldierWagesUseActualMenAndHomeHalf(t *testing.T) {
 		size, crew    int
 		field         float64
 	}{
-		{"spearman", "land", 100, 0, 0}, {"elite_infantry", "land", 100, 0, 1.5}, {"war_chariot", "land", 50, 0, 1},
-		{"galley", "naval", 1, 20, .2}, {"war_galley", "naval", 1, 7, .07}, {"merchantman", "naval", 1, 0, 0},
+		{"spearman", "land", 100, 0, 0}, {"elite_infantry", "land", 100, 0, 1.5}, {"war_chariot", "land", 50, 0, 2},
+		{"galley", "naval", 1, 20, 0}, {"war_galley", "naval", 1, 7, .07}, {"merchantman", "naval", 1, 10, 0},
 	} {
 		for _, status := range []string{"garrison", "repairing", "fitting_out", "marching", "positioned", "freighting", "embarked", "forming", "laid_up"} {
 			if tc.category == "naval" && status == "embarked" || tc.category == "land" && status == "freighting" {

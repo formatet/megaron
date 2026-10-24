@@ -229,47 +229,8 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 		}
 	}
 
-	// Temple tithe (Timothy 2026-07-22, vägval c): when the silver leg of a sale
-	// of a RELIGIOUSLY CODED good lands, the temple takes its tenth before the
-	// seller sees it. Only where a temple stands — no temple, no collection.
-	// The counterpart good rides in ThenReturn (this is the silver leg; the goods
-	// travel back separately), so the pair is known here without another lookup.
-	var titheEvent *events.Event
+	// The seller receives the full silver leg; no temple share is deducted.
 	credited := delivered
-	if p.GoodKey == "silver" && len(p.ThenReturn) > 0 {
-		var counterpart struct {
-			GoodKey string `json:"good_key"`
-		}
-		if json.Unmarshal(p.ThenReturn, &counterpart) == nil && counterpart.GoodKey != "" {
-			var religious, hasTemple bool
-			if err := tx.QueryRow(ctx,
-				`SELECT COALESCE((SELECT g.religious FROM goods g WHERE g.key = $1), false),
-				        EXISTS (SELECT 1 FROM buildings b
-				                WHERE b.settlement_id = $2 AND b.building_type = 'temple')`,
-				counterpart.GoodKey, p.DestinationID,
-			).Scan(&religious, &hasTemple); err != nil {
-				return fmt.Errorf("read tithe: %w", err)
-			}
-
-			if toTemple, toSeller := Tithe(delivered, religious, hasTemple); toTemple > 0 {
-				credited = toSeller
-				slog.Info("temple tithe", "settlement", p.DestinationID, "good", counterpart.GoodKey,
-					"silver", delivered, "tithe", toTemple)
-				if h.eventStore != nil {
-					titheEvent, err = h.eventStore.AppendTx(ctx, tx, p.DestinationID, events.StreamProvince, "TempleTithe",
-						map[string]any{
-							"good_key":     counterpart.GoodKey,
-							"trade_silver": delivered,
-							"tithe":        toTemple,
-							"to_seller":    toSeller,
-						}, e.WorldID, nil)
-					if err != nil {
-						return fmt.Errorf("record tithe: %w", err)
-					}
-				}
-			}
-		}
-	}
 
 	// Credit goods to destination — silver is now a normal good in settlement_goods.
 	// cap 1_000_000 for a brand-new row matches economy.goodCap (post-00d0722; never
@@ -483,7 +444,7 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 	if err := tx.Commit(ctx); err != nil {
 		return fmt.Errorf("commit delivery: %w", err)
 	}
-	for _, record := range append(passengerEvents, titheEvent, deliveredEvent) {
+	for _, record := range append(passengerEvents, deliveredEvent) {
 		if record != nil {
 			if h.eventStore != nil {
 				h.eventStore.RecordCommitted(ctx, record)

@@ -1,0 +1,20 @@
+» färsk DB på migration 210 · commit 2e2cbcb3+ändringar
+2026/10/24 17:45:07 INFO player registered id=bde94b84-8272-4db0-a21b-3a210557f5d6 username=shipwright-221da4b1-3ed2-4b15-a20b-8981f0d00ac8
+2026/10/24 17:45:07 INFO player registered id=62228341-ace0-4a08-a12d-b6bc7cd65b2d username=shipwright-0c0ccbd9-f94e-4501-9e87-ac119fd14c8b
+2026/10/24 17:45:07 INFO player registered id=6c91e4b3-68b4-4ad1-87cc-e793ad043e83 username=shipwright-26bc49d7-12c8-4103-9ce9-3f75fc8d6055
+--- FAIL: TestSilverFlowRecruitHTTP (0.20s)
+    --- FAIL: TestSilverFlowRecruitHTTP/spearman (0.07s)
+        silver_flow_test.go:17: recruit: 422 {"error":"build the required building (barracks/stable/harbour/shipyard/foundry) and stock the per-man goods cost"}
+    --- FAIL: TestSilverFlowRecruitHTTP/galley (0.07s)
+        silver_flow_test.go:17: recruit: 422 {"error":"build the required building (barracks/stable/harbour/shipyard/foundry) and stock the per-man goods cost"}
+    --- FAIL: TestSilverFlowRecruitHTTP/merchantman (0.07s)
+        silver_flow_test.go:10: missing cedar: 422 {"error":"build the required building (barracks/stable/harbour/shipyard/foundry) and stock the per-man goods cost"}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.200s
+2026/10/24 17:45:08 INFO temple tithe settlement=c97aba4d-5e36-417d-9fbb-6c080f4613df good=wine silver=100 tithe=10
+2026/10/24 17:45:08 INFO trade delivery destination=c97aba4d-5e36-417d-9fbb-6c080f4613df good=silver qty=100
+--- FAIL: TestSilverFlowReligiousTradePaysFullSilver (0.03s)
+    silver_flow_test.go:32: silver credit 90 <nil>
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.029s
+FAIL

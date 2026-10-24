@@ -75,7 +75,7 @@ func TestRecruit_GalleyAtActualCrewCost(t *testing.T) {
 	if _, err := f.pool.Exec(ctx, `DELETE FROM buildings WHERE settlement_id=$1 AND building_type='barracks'`, f.settlementID); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := f.pool.Exec(ctx, `UPDATE settlement_goods SET amount=CASE good_key WHEN 'timber' THEN 30 WHEN 'silver' THEN 6 ELSE 0 END,rate=0 WHERE settlement_id=$1`, f.settlementID); err != nil {
+	if _, err := f.pool.Exec(ctx, `UPDATE settlement_goods SET amount=CASE good_key WHEN 'timber' THEN 30 WHEN 'silver' THEN 0 ELSE 0 END,rate=0 WHERE settlement_id=$1`, f.settlementID); err != nil {
 		t.Fatal(err)
 	}
 	rec, _ := f.post(t, recruitPath(f), map[string]any{"unit_type": "galley"})
@@ -168,7 +168,7 @@ func TestRecruit_ConcurrentRequestsRecheckPopulation(t *testing.T) {
 	}
 
 	s := snapshotRecruitState(t, f)
-	if s.Population != 50 || s.Units != 1 || s.Goods["grain"] != 988 || s.Goods["silver"] != 980 {
+	if s.Population != 50 || s.Units != 1 || s.Goods["grain"] != 988 || s.Goods["silver"] != 1000 {
 		t.Fatalf("concurrent recruit state: %+v", s)
 	}
 }
@@ -230,7 +230,7 @@ func TestRecruit_ConcurrentRequestsRecheckShipQueue(t *testing.T) {
 		t.Fatalf("codes=%v; want one201 and one422", counts)
 	}
 	s := snapshotRecruitState(t, f)
-	if s.Units != 6 || s.Jobs != 6 || s.Events != 6 || s.Population != 4880 || s.Goods["timber"] != 820 || s.Goods["silver"] != 964 {
+	if s.Units != 6 || s.Jobs != 6 || s.Events != 6 || s.Population != 4880 || s.Goods["timber"] != 820 || s.Goods["silver"] != 1000 {
 		t.Fatalf("queue capacity/payment state: %+v", s)
 	}
 }

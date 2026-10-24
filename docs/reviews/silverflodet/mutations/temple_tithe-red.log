@@ -1,0 +1,8 @@
+2026/10/24 17:48:25 INFO temple tithe settlement=9fa6cc0e-d2ff-41a3-8aa4-63bce438aaef good=wine silver=100 tithe=10
+2026/10/24 17:48:25 INFO trade delivery destination=9fa6cc0e-d2ff-41a3-8aa4-63bce438aaef good=silver qty=100
+--- FAIL: TestSilverFlowReligiousTradePaysFullSilver (0.03s)
+    silver_flow_test.go:43: silver credit 90 <nil>
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.028s
+FAIL
+» färsk DB på migration 210 · commit 2e2cbcb3+ändringar

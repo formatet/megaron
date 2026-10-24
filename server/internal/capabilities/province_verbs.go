@@ -43,8 +43,8 @@ func canAllocate(cc checkContext) Verb {
 		"Set the share of population working each producible good.", nil)
 }
 
-// CanRecruit exposes canRecruit to api/handlers.ProvinceHandler.Recruit,
-// which calls it as its own precondition check (Fas 3 anti-drift).
+// CanRecruit exposes the aggregate recruit affordance to action listings.
+// Recruit validates its requested type concretely to name missing goods.
 func CanRecruit(cc checkContext) Verb { return canRecruit(cc) }
 
 // PopulationRequirement exposes populationRequirement to api/handlers'
@@ -73,8 +73,8 @@ func (cc checkContext) populationRequirement() Requirement {
 const recruitCohortMen = 100
 
 // canRecruit lists types whose building and goods gates permit one unit:
-// a full 100-man land cohort or one vessel's canonical crew. Recruit uses
-// this aggregate gate before checking the concrete requested type/count.
+// a full 100-man land cohort or one vessel's canonical crew. The concrete
+// Recruit endpoint validates the selected type/count independently.
 func canRecruit(cc checkContext) Verb {
 	reqs := []Requirement{cc.populationRequirement()}
 

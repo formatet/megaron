@@ -64,9 +64,9 @@ func TestRecipes_BasicWorkplacesCostNoBronze(t *testing.T) {
 	}
 }
 
-// 6. The plain ships and the spearman cost no bronze and no cedar.
+// 6. The galley and spearman cost no bronze and no cedar.
 func TestRecipes_PlainUnitsCostNoBronzeOrCedar(t *testing.T) {
-	for _, u := range []string{"galley", "merchantman", "spearman"} {
+	for _, u := range []string{"galley", "spearman"} {
 		c := UnitSpecs[u].Costs
 		if c["bronze"] != 0 || c["cedar"] != 0 {
 			t.Errorf("%s costs bronze/cedar: %v", u, c)

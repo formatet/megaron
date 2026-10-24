@@ -20,10 +20,10 @@ func TestUnitUpkeep_HomeWages(t *testing.T) {
 		{"spearman garrison", "spearman", "land", 100, "garrison", 0},
 		{"spearman marching — status never changes silver", "spearman", "land", 100, "marching", 0},
 		{"elite_infantry garrison", "elite_infantry", "land", 100, "garrison", 0.75},
-		{"war_chariot garrison", "war_chariot", "land", 100, "garrison", 1},
-		{"galley garrison", "galley", "naval", 1, "garrison", 0.1},
+		{"war_chariot garrison", "war_chariot", "land", 100, "garrison", 2},
+		{"galley garrison", "galley", "naval", 1, "garrison", 0},
 		{"war_galley garrison", "war_galley", "naval", 1, "garrison", 0.25},
-		{"merchantman garrison", "merchantman", "naval", 1, "garrison", 0.05},
+		{"merchantman garrison", "merchantman", "naval", 1, "garrison", 0},
 	}
 	const eps = 1e-9
 	for _, tc := range cases {

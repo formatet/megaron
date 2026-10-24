@@ -490,7 +490,7 @@ func TestBattleTick_HoldToLastManDisablesRout(t *testing.T) {
 	f := newBattleFixture(t, pool)
 
 	defenderUnitID := mkFieldDefender(t, pool, f, 60)
-	attackerUnitID := mkFieldAttacker(t, pool, f, 62)
+	attackerUnitID := mkFieldAttacker(t, pool, f, 620)
 
 	h := newArrivalHandler(pool, &sequenceDice{ints: []int{424243, 909091}})
 	runFieldArrival(t, pool, h, f.worldID, attackerUnitID)

@@ -1,0 +1,6 @@
+--- FAIL: TestSilverFlowRoundDice (0.00s)
+    --- FAIL: TestSilverFlowRoundDice/war_galley1 (0.00s)
+        silver_flow_test.go:25: active=1 dice=1 want=5
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.002s
+FAIL

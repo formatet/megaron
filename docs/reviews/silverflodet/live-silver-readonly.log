@@ -1,0 +1,46 @@
+       event_type       | world_tick |                                                                                                                                                                                 payload                                                                                                                                                                                  
+------------------------+------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ TradeDelivery          |        492 | {"good_key": "fish", "quantity": 80, "route_id": "5cd4e6d0-a748-4957-8f0e-184e2a7eb1da"}
+ TradeDelivery          |        537 | {"good_key": "fish", "quantity": 60, "route_id": "8f91f9ec-5279-4d7d-885b-2979101b1b47"}
+ TradeDelivery          |        552 | {"good_key": "fish", "quantity": 30, "route_id": "cd4f934f-5e5c-4a61-b7f6-6a1144ee9631"}
+ TradeDelivery          |        555 | {"good_key": "fish", "quantity": 20, "route_id": "c8ed0b12-7f07-4154-b270-2dbbe3c2c74f"}
+ TradeDelivery          |        610 | {"good_key": "fish", "quantity": 30, "route_id": "2552e82f-ddb5-4525-ba12-088e11c64cb1"}
+ TradeDelivery          |        627 | {"good_key": "fish", "quantity": 120, "route_id": "8a87cb93-45fc-498b-aca9-c178e1c78886"}
+ TradeDelivery          |        630 | {"good_key": "grain", "quantity": 50, "route_id": "c96e2a72-2bec-4cfd-a652-5a2f2b6854a6"}
+ TradeDelivery          |        745 | {"good_key": "grain", "quantity": 100, "route_id": "caf34674-a7fa-4188-83fe-465f3ceb47b1"}
+ TradeDelivery          |        760 | {"good_key": "grain", "quantity": 50, "route_id": "5fa4d718-9bca-4252-99f1-97c96818bf52"}
+ TradeDelivery          |        800 | {"good_key": "grain", "quantity": 40, "route_id": "800c7ead-5841-4129-98af-7303749602dc"}
+ TradeDelivery          |        833 | {"good_key": "grain", "quantity": 60, "route_id": "3eea8359-0f2a-4d29-9713-53cc2bf2a05b"}
+ StorageCapacityWarning |       1754 | {"cap": 960, "name": "Gournia", "amount": 666, "good_key": "silver", "incoming": 0, "player_id": "b60bbf65-6a3b-4645-adb5-17dfa4bf2264", "world_tick": 1754, "province_id": "996d42f7-d750-4e75-baf9-5efc6d5950b7", "clear_streak": 0, "net_per_tick": 12.499999999999998, "full_in_ticks": 23.520000000000003, "settlement_id": "25bafcae-9ab5-4139-ba59-2ecb466e0c2d"}
+(12 rows)
+
+  event_type   | world_tick |                                                                                                                                  payload                                                                                                                                  
+---------------+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ UpkeepSettled |          2 | {"food_total": 1, "units_paid": 0, "grain_total": 1, "food_by_good": {"grain": 1}, "silver_gross": 0, "units_unpaid": 0, "circulated_to": {}, "settlement_id": "c9627aa1-9084-4723-b589-54285de581ed", "silver_unpaid": 0, "silver_destroyed": 0, "silver_circulated": 0}
+(1 row)
+
+  name   | credited_silver 
+---------+-----------------
+ Kydonia |            2139
+ Gournia |            2564
+(2 rows)
+
+  name   |       event_type       | world_tick |                                                                                                                                                                                 payload                                                                                                                                                                                  
+---------+------------------------+------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Gournia | StorageCapacityWarning |       1754 | {"cap": 960, "name": "Gournia", "amount": 666, "good_key": "silver", "incoming": 0, "player_id": "b60bbf65-6a3b-4645-adb5-17dfa4bf2264", "world_tick": 1754, "province_id": "996d42f7-d750-4e75-baf9-5efc6d5950b7", "clear_streak": 0, "net_per_tick": 12.499999999999998, "full_in_ticks": 23.520000000000003, "settlement_id": "25bafcae-9ab5-4139-ba59-2ecb466e0c2d"}
+ Gournia | StorageOverflow        |       1778 | {"cap": 960, "name": "Gournia", "reason": "production", "good_key": "silver", "player_id": "b60bbf65-6a3b-4645-adb5-17dfa4bf2264", "world_tick": 1778, "province_id": "996d42f7-d750-4e75-baf9-5efc6d5950b7", "lost_quantity": 6, "settlement_id": "25bafcae-9ab5-4139-ba59-2ecb466e0c2d"}
+ Gournia | StorageOverflow        |       1779 | {"cap": 960, "name": "Gournia", "reason": "production", "good_key": "silver", "player_id": "b60bbf65-6a3b-4645-adb5-17dfa4bf2264", "world_tick": 1779, "province_id": "996d42f7-d750-4e75-baf9-5efc6d5950b7", "lost_quantity": 12.5, "settlement_id": "25bafcae-9ab5-4139-ba59-2ecb466e0c2d"}
+ Gournia | StorageOverflow        |       1780 | {"cap": 960, "name": "Gournia", "reason": "production", "good_key": "silver", "player_id": "b60bbf65-6a3b-4645-adb5-17dfa4bf2264", "world_tick": 1780, "province_id": "996d42f7-d750-4e75-baf9-5efc6d5950b7", "lost_quantity": 12.5, "settlement_id": "25bafcae-9ab5-4139-ba59-2ecb466e0c2d"}
+ Gournia | StorageOverflow        |       1781 | {"cap": 960, "name": "Gournia", "reason": "production", "good_key": "silver", "player_id": "b60bbf65-6a3b-4645-adb5-17dfa4bf2264", "world_tick": 1781, "province_id": "996d42f7-d750-4e75-baf9-5efc6d5950b7", "lost_quantity": 12.5, "settlement_id": "25bafcae-9ab5-4139-ba59-2ecb466e0c2d"}
+ Gournia | StorageOverflow        |       1782 | {"cap": 960, "name": "Gournia", "reason": "production", "good_key": "silver", "player_id": "b60bbf65-6a3b-4645-adb5-17dfa4bf2264", "world_tick": 1782, "province_id": "996d42f7-d750-4e75-baf9-5efc6d5950b7", "lost_quantity": 12.5, "settlement_id": "25bafcae-9ab5-4139-ba59-2ecb466e0c2d"}
+ Gournia | StorageOverflow        |       1783 | {"cap": 960, "name": "Gournia", "reason": "production", "good_key": "silver", "player_id": "b60bbf65-6a3b-4645-adb5-17dfa4bf2264", "world_tick": 1783, "province_id": "996d42f7-d750-4e75-baf9-5efc6d5950b7", "lost_quantity": 12.5, "settlement_id": "25bafcae-9ab5-4139-ba59-2ecb466e0c2d"}
+ Gournia | StorageOverflow        |       1784 | {"cap": 960, "name": "Gournia", "reason": "production", "good_key": "silver", "player_id": "b60bbf65-6a3b-4645-adb5-17dfa4bf2264", "world_tick": 1784, "province_id": "996d42f7-d750-4e75-baf9-5efc6d5950b7", "lost_quantity": 12.5, "settlement_id": "25bafcae-9ab5-4139-ba59-2ecb466e0c2d"}
+(8 rows)
+
+  name   |       event_type       | world_tick |                                                                                                                                                                  payload                                                                                                                                                                  
+---------+------------------------+------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Kydonia | StorageCapacityWarning |       2326 | {"cap": 960, "name": "Kydonia", "amount": 841, "good_key": "silver", "incoming": 0, "player_id": "9e1d4859-f37a-4fbb-957e-0d46f20a8d65", "world_tick": 2326, "province_id": "fdd9095d-abd5-4583-8a29-9cf6c04a18cd", "clear_streak": 0, "net_per_tick": 5, "full_in_ticks": 23.8, "settlement_id": "c9627aa1-9084-4723-b589-54285de581ed"}
+ Kydonia | StorageOverflow        |       2350 | {"cap": 960, "name": "Kydonia", "reason": "production", "good_key": "silver", "player_id": "9e1d4859-f37a-4fbb-957e-0d46f20a8d65", "world_tick": 2350, "province_id": "fdd9095d-abd5-4583-8a29-9cf6c04a18cd", "lost_quantity": 1, "settlement_id": "c9627aa1-9084-4723-b589-54285de581ed"}
+ Kydonia | StorageOverflow        |       2351 | {"cap": 960, "name": "Kydonia", "reason": "production", "good_key": "silver", "player_id": "9e1d4859-f37a-4fbb-957e-0d46f20a8d65", "world_tick": 2351, "province_id": "fdd9095d-abd5-4583-8a29-9cf6c04a18cd", "lost_quantity": 5, "settlement_id": "c9627aa1-9084-4723-b589-54285de581ed"}
+(3 rows)
+

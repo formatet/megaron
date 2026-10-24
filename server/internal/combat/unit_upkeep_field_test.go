@@ -29,12 +29,12 @@ func TestUnitUpkeep_Status(t *testing.T) {
 		{"garrison spearman full size", "spearman", "land", 100, "garrison", 0.5, 0},
 		{"marching spearman full size — silver unchanged", "spearman", "land", 100, "marching", 1.0, 0},
 		{"positioned spearman half size", "spearman", "land", 50, "positioned", 0.5, 0},
-		{"garrison galley — home crew ration", "galley", "naval", 1, "garrison", 0.10, 0.1},
-		{"marching galley — field crew ration", "galley", "naval", 1, "marching", 0.20, 0.2},
+		{"garrison galley — home crew ration", "galley", "naval", 1, "garrison", 0.10, 0},
+		{"marching galley — field crew ration", "galley", "naval", 1, "marching", 0.20, 0},
 		{"garrison elite_infantry full size", "elite_infantry", "land", 100, "garrison", 0.6, 0.75},
 		{"marching elite_infantry full size", "elite_infantry", "land", 100, "marching", 1.2, 1.5},
-		{"garrison war_chariot full size", "war_chariot", "land", 100, "garrison", 0.8, 1},
-		{"marching war_chariot full size", "war_chariot", "land", 100, "marching", 1.6, 2},
+		{"garrison war_chariot full size", "war_chariot", "land", 100, "garrison", 0.8, 2},
+		{"marching war_chariot full size", "war_chariot", "land", 100, "marching", 1.6, 4},
 		{"unknown type costs nothing regardless of status", "slinger", "land", 100, "marching", 0, 0},
 	}
 	const eps = 1e-9

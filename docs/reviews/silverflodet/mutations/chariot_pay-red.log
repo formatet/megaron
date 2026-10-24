@@ -1,0 +1,11 @@
+--- FAIL: TestSoldierWagesUseActualMenAndHomeHalf (0.00s)
+    pay_test.go:30: war_chariot size50 crew0 garrison pay=0.5 want1
+    pay_test.go:30: war_chariot size50 crew0 repairing pay=0.5 want1
+    pay_test.go:30: war_chariot size50 crew0 fitting_out pay=0.5 want1
+    pay_test.go:30: war_chariot size50 crew0 marching pay=1 want2
+    pay_test.go:30: war_chariot size50 crew0 positioned pay=1 want2
+    pay_test.go:30: war_chariot size50 crew0 embarked pay=1 want2
+    pay_test.go:30: war_chariot size50 crew0 forming pay=0.5 want1
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.002s
+FAIL

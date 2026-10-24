@@ -186,8 +186,8 @@ func TestCanRecruit_NavalCrewAffordability(t *testing.T) {
 		amount, silver float64
 		foundry        bool
 	}{
-		{"galley", "timber", 30, 6, false},
-		{"merchantman", "timber", 16, 2, false},
+		{"galley", "timber", 30, 0, false},
+		{"merchantman", "cedar", 16, 0, false},
 		{"war_galley", "cedar", 100, 30, true},
 	} {
 		t.Run(ship.typ, func(t *testing.T) {
@@ -214,9 +214,12 @@ func TestCanRecruit_NavalCrewAffordability(t *testing.T) {
 			f.exec(t, `UPDATE settlement_goods SET amount = $3 WHERE settlement_id = $1 AND good_key = $2`, f.settlementID, ship.material, ship.amount-0.01)
 			check(false)
 			f.exec(t, `UPDATE settlement_goods SET amount = $3 WHERE settlement_id = $1 AND good_key = $2`, f.settlementID, ship.material, ship.amount)
-			f.exec(t, `UPDATE settlement_goods SET amount = $2 WHERE settlement_id = $1 AND good_key = 'silver'`, f.settlementID, ship.silver-0.01)
-			check(false)
-			f.exec(t, `UPDATE settlement_goods SET amount = $2 WHERE settlement_id = $1 AND good_key = 'silver'`, f.settlementID, ship.silver)
+			if ship.silver > 0 {
+				f.exec(t, `UPDATE settlement_goods SET amount = $2 WHERE settlement_id = $1 AND good_key = 'silver'`, f.settlementID, ship.silver-0.01)
+				check(false)
+				f.exec(t, `UPDATE settlement_goods SET amount = $2 WHERE settlement_id = $1 AND good_key = 'silver'`, f.settlementID, ship.silver)
+			}
+
 			f.exec(t, `DELETE FROM buildings WHERE settlement_id = $1 AND building_type = 'shipyard'`, f.settlementID)
 			check(false)
 			if ship.foundry {
@@ -237,7 +240,7 @@ func TestCanRecruit_LandRequiresFullCohortGoods(t *testing.T) {
 	for _, stock := range []struct {
 		grain, silver float64
 		available     bool
-	}{{12, 20, true}, {11.99, 20, false}, {12, 19.99, false}} {
+	}{{12, 20, true}, {11.99, 20, false}, {12, 0, true}} {
 		f.exec(t, `UPDATE settlement_goods SET amount = CASE good_key WHEN 'grain' THEN $2::double precision ELSE $3::double precision END WHERE settlement_id = $1`, f.settlementID, stock.grain, stock.silver)
 		if v := CanRecruit(cc); v.Available != stock.available {
 			t.Fatalf("grain=%v silver=%v: available=%v, want %v: %+v", stock.grain, stock.silver, v.Available, stock.available, v.Requirements)

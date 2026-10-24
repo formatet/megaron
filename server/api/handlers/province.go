@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"formatet/megaron/server/internal/auth"
-	"formatet/megaron/server/internal/capabilities"
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/combat"
 	"formatet/megaron/server/internal/economy"
@@ -2268,14 +2267,8 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		settlementID,
 	).Scan(&population)
 
-	// Fast aggregate affordance shared with keryx actions: a full land
-	// cohort or a naval crew. Concrete type/count and mutable state are
-	// revalidated below, inside the transaction that creates the unit.
-	cc := capabilities.NewContext(r.Context(), h.pool, h.clk, worldID, provinceID, playerID, settlementID)
-	if v := capabilities.CanRecruit(cc); !v.Available {
-		writeError(w, http.StatusUnprocessableEntity, capabilities.FirstUnsatisfied(v))
-		return
-	}
+	// Validate the requested type below so a missing good is named, rather
+	// than rejecting through the aggregate availability of any recruit.
 	// totalMen is the actual head-count drafted from population — for naval
 	// this is crew (fixed per type), never req.Men.
 	totalMen := req.Men * effectiveCount

@@ -88,7 +88,7 @@ func TestMarchSilverForecastMatchesActualTick(t *testing.T) {
 	near(single["upkeep_silver_home"], .75)
 	near(single["upkeep_silver_field"], 1.5)
 	// Remaining home galley .45, embarked elite 1, repair .75, freight 1.
-	near(single["silver_runway_ticks"], 110/2.7)
+	near(single["silver_runway_ticks"], 110/2.5)
 	free := forecast(spear, "")
 	near(free["upkeep_silver_home"], 0)
 	near(free["upkeep_silver_field"], 0)
@@ -100,18 +100,18 @@ func TestMarchSilverForecastMatchesActualTick(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	near(forecast(spear, "")["silver_runway_ticks"], 110/1.95)
+	near(forecast(spear, "")["silver_runway_ticks"], 110/1.75)
 	all := elite.String() + "," + ship.String() + "," + cargo.String() + "," + elite.String()
 	batch := forecast(elite, all)
-	near(batch["upkeep_silver_home"], 1.6)
-	near(batch["upkeep_silver_field"], 2.45)
-	near(batch["silver_runway_ticks"], 110/2.8)
+	near(batch["upkeep_silver_home"], 1.5)
+	near(batch["upkeep_silver_field"], 2.25)
+	near(batch["silver_runway_ticks"], 110/2.5)
 	auto := forecast(elite, elite.String()+","+ship.String())
-	near(auto["upkeep_silver_field"], 2.45)
-	near(auto["silver_runway_ticks"], 110/2.8)
+	near(auto["upkeep_silver_field"], 2.25)
+	near(auto["silver_runway_ticks"], 110/2.5)
 	multi := forecast(elite, all+","+other.String())
-	near(multi["upkeep_silver_home"], 2.35)
-	near(multi["upkeep_silver_field"], 3.95)
+	near(multi["upkeep_silver_home"], 2.25)
+	near(multi["upkeep_silver_field"], 3.75)
 	near(multi["silver_runway_ticks"], 8)
 	if multi["silver_payer_count"] != 2 {
 		t.Fatal(multi)
@@ -141,7 +141,7 @@ func TestMarchSilverForecastMatchesActualTick(t *testing.T) {
 	if err := upkeep.Handle(ctx, events.ScheduledEvent{WorldID: world, DueTick: 10}); err != nil {
 		t.Fatal(err)
 	}
-	near(beforeA-read(a), 2.8)
+	near(beforeA-read(a), 2.5)
 	near(beforeB-read(b), 1.5)
 	near(multi["silver_runway_ticks"], beforeB/(beforeB-read(b)))
 	var grain float64

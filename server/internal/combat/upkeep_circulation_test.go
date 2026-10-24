@@ -23,11 +23,11 @@ func TestWagesChargeActualPeopleWithoutCirculation(t *testing.T) {
 		{"elite_infantry", "land", "garrison", 100, 0, 10, .75, false},
 		{"elite_infantry", "land", "garrison", 50, 0, 10, .375, true},
 		{"elite_infantry", "land", "marching", 50, 0, 10, .75, true},
-		{"war_chariot", "land", "positioned", 25, 0, 10, .5, true},
+		{"war_chariot", "land", "positioned", 25, 0, 10, 1, true},
 		{"war_galley", "naval", "garrison", 1, 7, 10, .035, false},
 		{"war_galley", "naval", "freighting", 1, 7, 10, .07, true},
-		{"galley", "naval", "repairing", 1, 2, 10, .01, false},
-		{"merchantman", "naval", "fitting_out", 1, 2, 10, .01, false},
+		{"galley", "naval", "repairing", 1, 2, 10, 0, false},
+		{"merchantman", "naval", "fitting_out", 1, 2, 10, 0, false},
 		{"elite_infantry", "land", "garrison", 100, 0, .74, .75, false},
 	}
 	for i, c := range cases {
@@ -59,6 +59,13 @@ func TestWagesChargeActualPeopleWithoutCirculation(t *testing.T) {
 			}
 			if got := settledAmount(t, pool, f.capitalID, "silver"); math.Abs(got-wantStock) > 1e-9 {
 				t.Fatalf("paid=%v debit gives%v want%v", paid, got, wantStock)
+			}
+			if c.want == 0 {
+				var n int
+				if err := pool.QueryRow(ctx, `SELECT count(*) FROM events WHERE world_id=$1 AND event_type='UpkeepSettled' AND (payload->>'silver_gross')::float>0`, f.worldID).Scan(&n); err != nil || n != 0 {
+					t.Fatalf("zero pay audit: %d %v", n, err)
+				}
+				return
 			}
 			var gross, circ, destroyed, unpaid float64
 			var circMap string

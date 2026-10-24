@@ -49,8 +49,8 @@ var UpkeepSpecs = map[string]UpkeepSpec{
 const FieldPayPerHundred = 1.0
 
 var payFactors = map[string]float64{
-	"spearman": 0, "elite_infantry": 1.5, "war_chariot": 2,
-	"galley": 1, "war_galley": 1, "merchantman": 1,
+	"spearman": 0, "elite_infantry": 1.5, "war_chariot": 4,
+	"galley": 0, "war_galley": 1, "merchantman": 0,
 }
 
 // fieldUpkeep keeps food and wages on the same operational status map.

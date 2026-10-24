@@ -1,0 +1,35 @@
+Traceback (most recent call last):
+  File "/tmp/megaron-codex-silverflodet-20261024/tools/silver_flow_acceptance.py", line 71, in <module>
+    assert '16 cedar' in text and '30 timber' in text,text
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: WAR
+?
+✕
+⊛ LAWAGETAS
+Bronze arms await your command, Wanax. March the army to distant lands — to raid, reinforce, or colonize. An order to recall or redirect a marching host travels by messenger, not by will alone; it takes time to arrive. In battle, numbers count, but walls and elite agema often decide the day. ?
+✕
+ARMY
+RECRUIT
+MOVEMENTS
+TRAIN UNITS
+Land units train as a full 100-man cohort. Once ready, a cohort can still march after losing men. Reinforce refills it over time only in its original home city — garrison it there and use Reinforce (Army tab). Ships are built one at a time.
+Spearmen
+0.12 grain/man · needs 5+ pop
+Train 100
+War Chariot
+requires stable
+Train 100
+Galley
+1.5 timber/man · needs 10+ pop (crew 20)
+Build 1 Ship
+War Galley
+requires foundry
+Build 1 Ship
+Emporos
+1.6 cedar/man · needs 8+ pop (crew 10)
+Build 1 Ship
+Elite Infantry
+requires foundry
+Train 100
+
+Unavailable: recall, build road, redirect, load, unload, land ?

@@ -1,0 +1,6 @@
+--- FAIL: TestSeedNomadicHost_SilverAmountIs120 (0.02s)
+    nomadic_host_silver_test.go:41: founder reserve=480, want fixed120 independent of salary
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.023s
+FAIL
+» färsk DB på migration 210 · commit 2e2cbcb3+ändringar

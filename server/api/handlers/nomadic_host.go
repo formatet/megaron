@@ -41,7 +41,7 @@ const (
 
 	// Fixed opening reserve (Timothy 2026-10-13): no starting amount changes
 	// when ordinary spearmen stop drawing silver. Not population or payroll.
-	nomadicHostStartingSilver = 480.0
+	nomadicHostStartingSilver = 120.0
 
 	// nomadicHostDowryGrain is the grain the horde carries into the metropolis
 	// at founding — a BALANCE FIGURE, not a derivation. It was originally

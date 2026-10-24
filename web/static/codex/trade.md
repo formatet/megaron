@@ -47,3 +47,5 @@ Without a traversable road or an eligible ship on a sea lane, a shipment is refu
 before goods are taken. A standing route pauses and explains the obstacle. The
 arrival day shown in your cargo list is the scheduled delivery; delays or
 interception can prevent that delivery.
+
+The seller receives the full agreed silver payment when it arrives. Temples take no share of religious-goods sales.

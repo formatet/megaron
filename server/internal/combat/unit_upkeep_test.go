@@ -24,8 +24,8 @@ func TestUnitUpkeep(t *testing.T) {
 		{"land spearman full size", "spearman", "land", 100, 0.50, 0},
 		{"land spearman 141 scales up", "spearman", "land", 141, 0.705, 0},
 		{"land elite half size", "elite_infantry", "land", 50, 0.30, 0.375},
-		{"naval galley crew ration independent of hull size at size 1", "galley", "naval", 1, 0.10, 0.1},
-		{"naval galley crew ration independent of hull size even if size>1", "galley", "naval", 5, 0.10, 0.1},
+		{"naval galley crew ration independent of hull size at size 1", "galley", "naval", 1, 0.10, 0},
+		{"naval galley crew ration independent of hull size even if size>1", "galley", "naval", 5, 0.10, 0},
 		{"naval war_galley crew ration", "war_galley", "naval", 3, 0.25, 0.25},
 		{"unknown type costs nothing", "slinger", "land", 100, 0, 0},
 	}

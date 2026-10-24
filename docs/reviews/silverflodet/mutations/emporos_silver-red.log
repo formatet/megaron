@@ -1,0 +1,6 @@
+--- FAIL: TestSilverFlowRecruitCosts (0.00s)
+    --- FAIL: TestSilverFlowRecruitCosts/merchantman (0.00s)
+        silver_flow_test.go:28: cost=map[cedar:16 silver:2] want=map[cedar:16]
+FAIL
+FAIL	formatet/megaron/server/internal/province	0.002s
+FAIL

@@ -1,0 +1,51 @@
+» färsk DB på migration 210 · commit 2e2cbcb3+ändringar
+--- FAIL: TestSilverFlowRecruitCosts (0.00s)
+    --- FAIL: TestSilverFlowRecruitCosts/spearman (0.00s)
+        silver_flow_test.go:18: cost=map[grain:12 silver:20] want=map[grain:12]
+    --- FAIL: TestSilverFlowRecruitCosts/galley (0.00s)
+        silver_flow_test.go:18: cost=map[silver:6 timber:30] want=map[timber:30]
+    --- FAIL: TestSilverFlowRecruitCosts/merchantman (0.00s)
+        silver_flow_test.go:18: cost=map[silver:2 timber:16] want=map[cedar:16]
+FAIL
+FAIL	formatet/megaron/server/internal/province	0.003s
+--- FAIL: TestSoldierWagesUseActualMenAndHomeHalf (0.00s)
+    pay_test.go:30: war_chariot size50 crew0 garrison pay=0.5 want1
+    pay_test.go:30: war_chariot size50 crew0 repairing pay=0.5 want1
+    pay_test.go:30: war_chariot size50 crew0 fitting_out pay=0.5 want1
+    pay_test.go:30: war_chariot size50 crew0 marching pay=1 want2
+    pay_test.go:30: war_chariot size50 crew0 positioned pay=1 want2
+    pay_test.go:30: war_chariot size50 crew0 embarked pay=1 want2
+    pay_test.go:30: war_chariot size50 crew0 forming pay=0.5 want1
+    pay_test.go:30: galley size1 crew20 garrison pay=0.1 want0
+    pay_test.go:30: galley size1 crew20 repairing pay=0.1 want0
+    pay_test.go:30: galley size1 crew20 fitting_out pay=0.1 want0
+    pay_test.go:30: galley size1 crew20 marching pay=0.2 want0
+    pay_test.go:30: galley size1 crew20 positioned pay=0.2 want0
+    pay_test.go:30: galley size1 crew20 freighting pay=0.2 want0
+    pay_test.go:30: galley size1 crew20 forming pay=0.1 want0
+    pay_test.go:30: merchantman size1 crew10 garrison pay=0.05 want0
+    pay_test.go:30: merchantman size1 crew10 repairing pay=0.05 want0
+    pay_test.go:30: merchantman size1 crew10 fitting_out pay=0.05 want0
+    pay_test.go:30: merchantman size1 crew10 marching pay=0.1 want0
+    pay_test.go:30: merchantman size1 crew10 positioned pay=0.1 want0
+    pay_test.go:30: merchantman size1 crew10 freighting pay=0.1 want0
+    pay_test.go:30: merchantman size1 crew10 forming pay=0.05 want0
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.004s
+--- FAIL: TestSilverFlowRoundDice (0.00s)
+    --- FAIL: TestSilverFlowRoundDice/spearmand (0.00s)
+        silver_flow_test.go:12: active=100 dice=100 want=50
+    --- FAIL: TestSilverFlowRoundDice/spearman\x03 (0.00s)
+        silver_flow_test.go:12: active=3 dice=3 want=2
+    --- FAIL: TestSilverFlowRoundDice/war_galley\x01 (0.00s)
+        silver_flow_test.go:12: active=1 dice=1 want=5
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.004s
+--- FAIL: TestSeedNomadicHost_SilverAmountIs120 (0.02s)
+    nomadic_host_silver_test.go:41: founder reserve=480, want fixed120 independent of salary
+--- FAIL: TestNomadicReserveSupportsBasicFleet (0.00s)
+    nomadic_host_silver_test.go:54: galley pay=0.2 want0
+    nomadic_host_silver_test.go:54: merchantman pay=0.2 want0
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.027s
+FAIL

@@ -89,7 +89,7 @@ func TestUpkeepDesertion_CascadesEmbarkedCargo(t *testing.T) {
 	if err := pool.QueryRow(ctx,
 		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status,
 		                    settlement_id, support_settlement_id, unpaid_periods, cargo_unit_id)
-		 VALUES ($1, $2, 'galley', 'naval', 1, 1, 'garrison', $3, $3, $5, $4) RETURNING id`,
+		 VALUES ($1, $2, 'war_galley', 'naval', 1, 1, 'garrison', $3, $3, $5, $4) RETURNING id`,
 		worldID, owner, sid, cargoID, upkeepDesertionTicks-1,
 	).Scan(&shipID); err != nil {
 		t.Fatalf("create ship: %v", err)

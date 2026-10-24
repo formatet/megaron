@@ -182,3 +182,10 @@ test('ORDER28: paused builds and repairs explain missing workers without a stale
   assert.doesNotMatch(html,/ready |2099/);
  }
 });
+
+test('silver flow: basic ships show zero API pay and chariots show doubled pay',()=>{
+ for(const [type,category,pay] of [['galley','naval',0],['merchantman','naval',0],['war_galley','naval',0.5],['war_chariot','land',4]]){
+  const html=renderUnitCard(unit({type,category,status:'positioned',upkeep_context:'active',upkeep_grain_per_tick:1,upkeep_silver_per_tick:pay}));
+  assert.ok(html.includes(`${pay} silver per day`),`${type} must show server pay ${pay}`);
+ }
+});
