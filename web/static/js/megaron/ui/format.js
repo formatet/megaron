@@ -166,7 +166,7 @@ export function notifDomain(kind) {
     // Diplomacy — the messenger channel.
     MessengerLostAtSea: 'diplomacy', MessengerRescuedAtSea: 'diplomacy', MessengerArrival: 'diplomacy', MessengerReturned: 'diplomacy', PassageStalled: 'diplomacy',
     // Kult — the gods answering.
-    TempleDemolitionWrath: 'kult', KharisDeclining: 'kult', KharisBandChanged: 'kult', DivinePunishment: 'kult', DivineBlessing: 'kult', KharisEvent: 'kult',
+    RiteAnswered: 'kult', TempleDemolitionWrath: 'kult', KharisDeclining: 'kult', KharisBandChanged: 'kult', DivinePunishment: 'kult', DivineBlessing: 'kult', KharisEvent: 'kult',
   };
   return domains[kind] || 'system';
 }
@@ -219,6 +219,7 @@ export function notifIcon(kind) {
     ShipStranded:       '⚠',
     DivinePunishment:   '⚡',
     DivineBlessing:     '✨',
+    RiteAnswered:       '🕯',
     CivilianStarvationStarted: '🍽', CivilianStarvationEnded: '🍽',
     StorageCapacityWarning: '📦', StorageOverflow: '📦',
     FoodShortfall:      '🍽',
@@ -836,12 +837,19 @@ export function notifText(kind, body) {
         default:                return `${kind} — ${payloadSummary(body)}`;
       }
     }
+    case 'RiteAnswered': {
+      // The answer to your own prayer (byggplan A.2); the server's message
+      // already says what the god did.
+      const who = body.prayer_name || 'Your prayer';
+      const place = body.name ? ` at ${body.name}` : '';
+      return esc(`${who}${place}: ${body.message || (body.success ? 'the gods answer' : 'the gods are silent')}`);
+    }
     case 'DivineBlessing': {
       const place = body.name ? ` at ${body.name}` : '';
       const amount = body.amount || 0;
       switch (body.type) {
         case 'harvest_blessing': return `The gods fill your granaries${place} — +${Math.round(amount)} grain`;
-        case 'bountiful_harvest': return `The gods bless the fields${place} — grain, livestock, oil and wine yield a quarter more for ${amount} days`;
+        case 'bountiful_harvest': return `The gods bless the fields${place} — grain, oil and wine yield a quarter more for ${amount} days`;
         case 'divine_recruits':  return `Warriors answer a divine call${place} — +${amount} men`;
         case 'sea_blessing':     return `Poseidon guides a vessel to your harbour${place} — +${amount} galley`;
         default:                 return `${kind} — ${payloadSummary(body)}`;

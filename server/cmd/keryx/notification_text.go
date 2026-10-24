@@ -10,10 +10,26 @@ import (
 // The archive also contains retired kinds. Keep their summaries readable;
 // current producers and the Codex client's archive kinds are checked together.
 func printNotificationSummary(c *Client, n notificationItem) {
+	defer printLetterReplyHint(n)
 	if n.Kind == "TempleDemolitionWrath" {
 		var b demolitionKharis
 		if json.Unmarshal(n.Body, &b) == nil {
 			fmt.Printf("      %s\n", demolitionKharisText(b))
+			return
+		}
+	}
+	if n.Kind == "RiteAnswered" {
+		var b struct {
+			PrayerName string `json:"prayer_name"`
+			Name       string `json:"name"`
+			Message    string `json:"message"`
+		}
+		if json.Unmarshal(n.Body, &b) == nil {
+			place := ""
+			if b.Name != "" {
+				place = " at " + b.Name
+			}
+			fmt.Printf("      %s%s: %s\n", b.PrayerName, place, b.Message)
 			return
 		}
 	}
@@ -406,4 +422,28 @@ func notificationAmount(n float64) string {
 		return fmt.Sprintf("%.3g", n)
 	}
 	return resource(n)
+}
+
+// Letter and trade-offer notices name the Wanax to answer (byggplan A.1).
+// Rows written before the id existed print nothing extra.
+func printLetterReplyHint(n notificationItem) {
+	switch n.Kind {
+	case "MessengerArrival", "MessengerReturned", "OfferAccepted", "OfferDeclined":
+	default:
+		return
+	}
+	var b struct {
+		Sender      string `json:"sender_id"`
+		Counterpart string `json:"counterpart_wanax_id"`
+	}
+	if json.Unmarshal(n.Body, &b) != nil {
+		return
+	}
+	id := b.Sender
+	if id == "" {
+		id = b.Counterpart
+	}
+	if id != "" {
+		fmt.Printf("      Read and reply: keryx letters %s\n", id)
+	}
 }

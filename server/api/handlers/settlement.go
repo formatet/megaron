@@ -35,7 +35,8 @@ type SettlementHandler struct {
 	scheduler  *events.Scheduler
 	clk        clock.Clock
 
-	RiteDice economy.Dice // injectable outcome seam; nil uses the production roll
+	RiteDice economy.Dice       // injectable outcome seam; nil uses the production roll
+	Hub      combat.Broadcaster // RiteAnswered notices; nil sends none
 }
 
 // NewSettlementHandler creates a SettlementHandler.
@@ -1082,6 +1083,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.eventStore.RecordCommitted(r.Context(), riteEvent)
+	h.notifyRiteAnswered(r.Context(), worldID, playerID, settlementID, spec, success, message, effectPayload)
 
 	resp := map[string]any{
 		"success":          success,
@@ -1151,7 +1153,7 @@ func (h *SettlementHandler) applyHarvestBlessing(ctx context.Context, tx pgx.Tx,
 	if err != nil {
 		return nil, "", err
 	}
-	msg := fmt.Sprintf("%s smiles upon your fields — grain, livestock, oil and wine yield a quarter more for %d days.",
+	msg := fmt.Sprintf("%s smiles upon your fields — grain, oil and wine yield a quarter more for %d days.",
 		spec.God, economy.HarvestBlessingTicks)
 	return map[string]any{
 		"goods":       economy.HarvestBlessedGoods(),
@@ -1322,6 +1324,36 @@ func (h *SettlementHandler) applyOracleRevealDeposits(
 		"revealed_ore":   map[string]any{"q": oreQ, "r": oreR, "ore": ore},
 		"revealed_tiles": revealedTiles,
 	}, msg, nil
+}
+
+// notifyRiteAnswered tells the one who prayed what the god answered
+// (byggplan A.2). It is their own act and the omen exception covers a find
+// (Timothy 2026-10-12), so it goes at once. q/r is the find when there is one;
+// otherwise the dispatch resolves to the city. revealed_tiles lets the client
+// show the reveal. Best-effort after commit, like the other notices.
+func (h *SettlementHandler) notifyRiteAnswered(ctx context.Context, worldID, playerID, settlementID uuid.UUID,
+	spec religion.PrayerSpec, success bool, message string, effect map[string]any) {
+	if h.Hub == nil {
+		return
+	}
+	body := map[string]any{
+		"settlement_id": settlementID,
+		"god_id":        spec.GodID,
+		"god":           spec.God,
+		"prayer":        spec.ID,
+		"prayer_name":   spec.Name,
+		"success":       success,
+		"message":       message,
+	}
+	var name string
+	if err := h.pool.QueryRow(ctx, `SELECT name FROM settlements WHERE id=$1`, settlementID).Scan(&name); err == nil {
+		body["name"] = name
+	}
+	if ore, ok := effect["revealed_ore"].(map[string]any); ok {
+		body["q"], body["r"], body["ore"] = ore["q"], ore["r"], ore["ore"]
+		body["revealed_tiles"] = effect["revealed_tiles"]
+	}
+	_ = h.Hub.NotifyPlayer(ctx, worldID, playerID, "RiteAnswered", 3, body)
 }
 
 // Abandon handles POST /worlds/:worldID/settlements/:settlementID/abandon.

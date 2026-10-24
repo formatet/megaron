@@ -33,6 +33,7 @@
     {"id": "trade",        "title": "Trade offers",                 "category": "Goods and trade", "kinds": ["OfferAccepted", "OfferDeclined", "OfferExpired", "TradeDelivery", "TradeLost", "TradeReturn"], "related": ["messengers", "contact", "silver"]},
 
     {"id": "sight",        "title": "Sight and memory",             "category": "The wider world", "kinds": ["ScoutReport", "UnitExploreReturned", "ExpeditionTurnedHome", "ExpeditionReport"], "related": ["contact", "defence", "horde", "naming-the-land"]},
+    {"id": "xenia",        "title": "Xenia and the sacred",         "category": "The wider world", "related": ["messengers", "runners", "ship-food-return", "last-city"]},
     {"id": "contact",      "title": "Contact",                      "category": "The wider world", "related": ["messengers", "trade", "gossip"]},
     {"id": "runner-lost-at-sea", "title": "A runner lost at sea", "category": "The wider world", "kinds": ["MessengerLostAtSea"], "related": ["messengers", "sea", "runner-rescued-at-sea"]},
     {"id": "runner-rescued-at-sea", "title": "A runner rescued at sea", "category": "The wider world", "kinds": ["MessengerRescuedAtSea"], "related": ["messengers", "sea", "runner-lost-at-sea"]},
@@ -57,7 +58,7 @@
     {"id":"divine-wrath","title":"Divine wrath","category":"The gods","drawer":"kult","kinds":["KharisDeclining"],"related":["kharis","temples","rites"]},
     {"id": "kharis",       "title": "Kharis",                       "category": "The gods", "drawer": "kult", "kinds": ["KharisBandChanged", "DivineBlessing", "DivinePunishment"], "related": ["temples", "rites"]},
     {"id": "temples",      "title": "Temples and devotion",         "category": "The gods", "related": ["kharis", "buildings"]},
-    {"id": "rites",        "title": "Rites and prayers",            "category": "The gods", "related": ["kharis", "bronze"]},
+    {"id": "rites",        "title": "Rites and prayers",            "category": "The gods", "kinds": ["RiteAnswered"], "related": ["kharis", "bronze"]},
 
     {"id": "colonies",     "title": "Colonies",                     "category": "Growing", "kinds": ["ColonyFounded", "OutpostEstablished"], "related": ["routes", "founding"]},
     {"id": "bronze",       "title": "The bronze problem",           "category": "Growing", "related": ["goods", "sea", "rites"]},

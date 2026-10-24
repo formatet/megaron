@@ -238,6 +238,7 @@ func (h *ArrivalHandler) notifyDelivered(ctx context.Context, worldID, messenger
 		"q":            q,        // "⌖ Take me there" goes to that city
 		"r":            r,
 		"from":         senderName,
+		"sender_id":    senderID, // "Reply" opens the letters thread with the writer
 		"message":      messageText,
 	}
 	// No from_settlement: a received letter names its writer, not the city it
@@ -386,15 +387,18 @@ func (h *ReturnHandler) notifyReturned(ctx context.Context, worldID, messengerID
 	var q, r *int
 	var withdrawn bool
 	var kind string
+	var counterpart *uuid.UUID
 	if err := h.pool.QueryRow(ctx,
-		`SELECT m.sender_id, m.reply_text, o.name, d.name, opr.map_q, opr.map_r, m.withdrawn, m.kind
+		`SELECT m.sender_id, m.reply_text, o.name, d.name, opr.map_q, opr.map_r, m.withdrawn, m.kind,
+		        COALESCE(a.recipient_id, d.owner_id)
 		   FROM messengers m
 		   LEFT JOIN settlements o   ON o.id   = m.origin_id
 		   LEFT JOIN provinces   opr ON opr.id = o.province_id
 		   LEFT JOIN settlements d   ON d.id   = m.destination_id
+		   LEFT JOIN correspondence_letters a ON a.id = m.id
 		  WHERE m.id = $1`,
 		messengerID,
-	).Scan(&senderID, &reply, &originName, &destName, &q, &r, &withdrawn, &kind); err != nil {
+	).Scan(&senderID, &reply, &originName, &destName, &q, &r, &withdrawn, &kind, &counterpart); err != nil {
 		slog.Warn("messenger return notice lookup", "messenger", messengerID, "err", err)
 		return
 	}
@@ -416,6 +420,10 @@ func (h *ReturnHandler) notifyReturned(ctx context.Context, worldID, messengerID
 	// method forbids.
 	if q != nil && r != nil {
 		body["q"], body["r"] = *q, *r
+	}
+	// "Reply" opens the letters thread with the Wanax the letter went to.
+	if kind == "diplomatic" && counterpart != nil && *counterpart != senderID {
+		body["counterpart_wanax_id"] = *counterpart
 	}
 	// withdrawn (3b-4 R5, "kalla tillbaka"): a called-back runner never
 	// reached its target — additive field, not a reinterpretation of
@@ -451,6 +459,7 @@ func (h *ReturnHandler) notifyOfferAnswer(ctx context.Context, worldID, messenge
 	var originID, destID, originOwner uuid.UUID
 	var offerSilver, offerQty, wantQty, wantSilver float64
 	var goodsAt, silverAt *string
+	var counterpart *uuid.UUID
 	err := h.pool.QueryRow(ctx,
 		`SELECT m.trade_offer->>'status', m.origin_id, m.destination_id, os.owner_id,
 		        COALESCE(m.trade_offer->>'kind', 'buy'),
@@ -460,13 +469,15 @@ func (h *ReturnHandler) notifyOfferAnswer(ctx context.Context, worldID, messenge
 		        COALESCE(m.trade_offer->>'want_good', ''),
 		        COALESCE((m.trade_offer->>'want_qty')::float, 0),
 		        COALESCE((m.trade_offer->>'want_silver')::float, 0),
-		        m.trade_offer->>'goods_arrives_at', m.trade_offer->>'silver_arrives_at'
+		        m.trade_offer->>'goods_arrives_at', m.trade_offer->>'silver_arrives_at',
+		        COALESCE((SELECT a.recipient_id FROM correspondence_letters a WHERE a.id = m.id),
+		                 (SELECT ds.owner_id FROM settlements ds WHERE ds.id = m.destination_id))
 		   FROM messengers m
 		   JOIN settlements os ON os.id = m.origin_id
 		  WHERE m.id = $1 AND m.trade_offer IS NOT NULL AND os.owner_id IS NOT NULL`,
 		messengerID,
 	).Scan(&status, &originID, &destID, &originOwner, &kind, &offerSilver, &offerGood, &offerQty,
-		&wantGood, &wantQty, &wantSilver, &goodsAt, &silverAt)
+		&wantGood, &wantQty, &wantSilver, &goodsAt, &silverAt, &counterpart)
 	if err != nil {
 		return // no offer, or no one holds the origin city any more
 	}
@@ -484,6 +495,9 @@ func (h *ReturnHandler) notifyOfferAnswer(ctx context.Context, worldID, messenge
 		"good_key":        good,
 		"quantity":        qty,
 		"silver":          silver,
+	}
+	if counterpart != nil {
+		body["counterpart_wanax_id"] = *counterpart
 	}
 	var noticeKind string
 	switch status {

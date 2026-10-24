@@ -92,8 +92,14 @@ function bindToolbar(el) {
   el.querySelector('[data-write-list]')?.addEventListener('click',showWriteList);
   el.querySelector('[data-letters-back]')?.addEventListener('click',()=>{rememberDraft();currentPerson=null;draftDestination=null;return loadDipThreads();});
 }
+// A dispatch's "Reply" opens the drawer on the thread with that Wanax.
+let pendingPerson = null;
+export function openLettersWith(person) {
+  pendingPerson = person;
+  if (window.openDrawer) window.openDrawer('diplomacy');
+}
 export async function loadDiplomacyDrawer() {
-  rememberDraft();currentPerson=null;draftDestination=null;
+  rememberDraft();currentPerson=pendingPerson;pendingPerson=null;draftDestination=null;
   const body=document.getElementById('diplomacy-body');
   body.innerHTML='<div class="drawer-tabs"><button class="dtab active" data-tab="letters">Letters</button><button class="dtab" data-tab="runners">Runners</button></div><div id="dtab-letters" class="city-tab"></div><div id="dtab-runners" class="city-tab" hidden></div>';
   body.querySelectorAll('.dtab').forEach(tab=>tab.addEventListener('click',()=>switchDiplomacyTab(tab.dataset.tab)));

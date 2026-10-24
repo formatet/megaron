@@ -7,7 +7,7 @@ import { fmtDays } from '../fmt_num.js';
 import { serverNow } from '../../clock.js';
 import { renderLockedActions } from '../misc.js';
 import { divineValuesHTML } from './kult_values.js';
-import { offerRowHTML, offeringFromEntries } from './kult_offer.js';
+import { offerRowHTML, offeringFromEntries, offerFoodText } from './kult_offer.js';
 import { kharisNetView, kharisDecayHTML, kharisRulesHTML } from './kult_kharis.js';
 
 // ── Kult drawer ───────────────────────────────────────────────────────────
@@ -38,6 +38,7 @@ export async function loadKultDrawer() {
     const pd = pr.ok ? (await pr.json()).settlement : null;
     const prayers = (pd && pd.available_prayers) || [];
     prayerCatalog = prayers;
+    cityFood = (pd && pd.food) || null;
     const MOOD_LABELS = { Favorable:'Favorable', Indifferent:'Indifferent', Suspicious:'Suspicious', Wrathful:'Wrathful' };
     const MOOD_COLORS = { Favorable:'var(--safe-text)', Indifferent:'var(--text-dim)', Suspicious:'var(--border)', Wrathful:'var(--danger)' };
 
@@ -140,6 +141,7 @@ export function cultLevelLabel(cultLevel) {
 }
 
 let prayerCatalog = [];
+let cityFood = null;
 
 // Offer opens the offering row under the prayer; nothing is sent yet.
 export async function okRite(prayerID) {
@@ -152,6 +154,15 @@ export async function okRite(prayerID) {
     if (r.ok) (await r.json()).forEach(g => { stock[g.key] = g.amount; });
   } catch (_) { /* fields still show the recipe */ }
   host.innerHTML = offerRowHTML(prayer, stock);
+  // The food line follows the fields as the gift is changed.
+  const foodLine = host.querySelector('[data-offer-food]');
+  const inputs = Array.from(host.querySelectorAll('.offer-input'));
+  const update = () => {
+    const offering = Object.fromEntries(inputs.map(i => [i.dataset.good, Number(i.value) || 0]));
+    if (foodLine) foodLine.textContent = offerFoodText(offering, stock, cityFood, ownCapital().name);
+  };
+  inputs.forEach(i => i.addEventListener('input', update));
+  update();
 }
 
 export function cancelOffering(prayerID) {

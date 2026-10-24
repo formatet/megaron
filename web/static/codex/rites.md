@@ -18,7 +18,7 @@ Older prayers outside the current Minoan catalogue retain their uncertain answer
 
 The current Minoan prayers are **Potnia's Vision**, **Mistress of the Walls**, **Green Shoots**, **The Thread Shows a Path** and **Favourable Passage**, described below. `keryx rite --list` or **Kult → Prayers** shows the prayers your culture can offer and why one is unavailable. Current kharis is shown with a decimal; eligibility uses the exact pool value.
 
-The answer or a refusal appears in the Kult drawer after you offer; it stays beside the prayers.
+The answer or a refusal appears in the Kult drawer after you offer; it stays beside the prayers. An answer also arrives as a dispatch naming the god, the prayer and what was granted. When the god marks a place, **⌖ Take me there** goes to it. In Keryx it is listed by `keryx notifications`.
 
 An ongoing **blessed harvest** appears beside Food in the city drawer and in
 `keryx status` and `keryx city`, with its yield bonus, affected goods and days left.
@@ -28,7 +28,7 @@ The row disappears when the blessing ends; fish receives no harvest bonus.
 
 - **Potnia's Vision** — offer 10 grain + 3 silver. Potnia marks one source of copper, tin, silver or incense you neither see nor remember, and unknown ground within two hexes, as grey memory. It creates no living eyes and shows no moving activity. Potnia waits 24 days after answering.
 - **Mistress of the Walls** — offer 8 grain + 4 timber. Potnia strengthens your own garrison defending this city by a quarter for 6 days. It helps neither an attacking army nor soldiers away from that city. It shares Vision's wait.
-- **Green Shoots** — offer 15 grain + 2 silver. Velchanos raises grain, livestock, oil and wine yield by a quarter for 25 days. Fish is unchanged. He waits 25 days after answering.
+- **Green Shoots** — offer 15 grain + 2 silver. Velchanos raises grain, oil and wine yield by a quarter for 25 days. Fish and the herd are unchanged. He waits 25 days after answering.
 
 - **The Thread Shows a Path** — offer 4 timber + 3 silver to Asterion. The next land caravan or Runner leaving this city takes a quarter less time on its outward leg. A land caravan can be intercepted only within one hex of an enemy army, instead of two. Runners remain sacred. Asterion waits 12 days after answering.
 - **Favourable Passage** — offer 6 fish + 3 silver to The Sea Daimons of Stillness. The next ship leaving this city takes a quarter less time and suffers no storm damage on its outward leg. A Runner aboard travels at that ship's actual speed. The Sea Daimons wait 12 days after answering.

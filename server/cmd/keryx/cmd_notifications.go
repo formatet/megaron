@@ -1121,7 +1121,7 @@ func printDivineBlessingLine(n notificationItem) {
 		line = fmt.Sprintf("The gods fill the granaries%s — +%s grain.", where, resource(amount))
 	case "bountiful_harvest":
 		// amount = days the yield bonus lasts (2026-10-10).
-		line = fmt.Sprintf("The gods bless the fields%s — grain, livestock, oil and wine yield a quarter more for %.0f days.", where, amount)
+		line = fmt.Sprintf("The gods bless the fields%s — grain, oil and wine yield a quarter more for %.0f days.", where, amount)
 	case "divine_recruits":
 		line = fmt.Sprintf("Warriors answer a divine calling%s — +%.0f men.", where, amount)
 	case "sea_blessing":

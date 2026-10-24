@@ -177,6 +177,10 @@ func TestMessengerArrivalNotifiesRecipientByName(t *testing.T) {
 	if p["message"] != "Will you trade tin?" {
 		t.Errorf("message = %v, want the text carried", p["message"])
 	}
+	// "Reply" opens the letters thread with this Wanax (byggplan A.1).
+	if p["sender_id"] != sc.senderID {
+		t.Errorf("sender_id = %v, want %v — Reply needs the writer's id", p["sender_id"], sc.senderID)
+	}
 }
 
 // TestMessengerArrivalCarriesOfferTermsAtUrgentLevel: an offer can only be
@@ -283,6 +287,9 @@ func TestMessengerReturnNotifiesSenderWithReply(t *testing.T) {
 	}
 	if hub.levels[0] != 2 {
 		t.Errorf("level = %d, want 2 when an answer came back", hub.levels[0])
+	}
+	if p["counterpart_wanax_id"] != sc.receiverID {
+		t.Errorf("counterpart_wanax_id = %v, want %v — Reply needs the other Wanax", p["counterpart_wanax_id"], sc.receiverID)
 	}
 }
 

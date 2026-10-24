@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 // see the file's own header comment on why centreOn is reached via
 // window.centreOn instead of a direct ui/search.js import), so this file
 // needs no globalThis stubbing before import, unlike its DOM-heavy siblings.
-import { resolveDestination, passageStalledBlockHTML, occupationChoicesFor, buildOccupationOrderBody, openingDispatchHTML } from './dispatch_window.js';
+import { resolveDestination, letterPersonFor, passageStalledBlockHTML, occupationChoicesFor, buildOccupationOrderBody, openingDispatchHTML } from './dispatch_window.js';
 import { State } from '../state.js';
 
 test('AK1: a direct q/r on the payload wins outright, no lookup needed', () => {
@@ -143,4 +143,15 @@ test('PassageStalled prints the server explanation, one source for web and keryx
     explanation: "Your runner is waiting in Amnissos: no ship has sailed from there toward Kydonia. Any ship that does — yours or another Wanax's — takes it aboard by itself." });
   assert.ok(html.includes('Amnissos') && html.includes('takes it aboard by itself'), html);
   assert.ok(!html.includes('No eligible ship of yours'), 'the old client-side line must not contradict the explanation');
+});
+
+test('A.1: letter and trade-offer dispatches name the Wanax that Reply opens (Timothy 2026-10-23)', () => {
+  assert.equal(letterPersonFor('MessengerArrival', { sender_id: 'p-writer', q: 1, r: 1 }), 'p-writer');
+  assert.equal(letterPersonFor('MessengerReturned', { counterpart_wanax_id: 'p-them' }), 'p-them');
+  assert.equal(letterPersonFor('OfferAccepted', { counterpart_wanax_id: 'p-them' }), 'p-them');
+  assert.equal(letterPersonFor('OfferDeclined', { counterpart_wanax_id: 'p-them' }), 'p-them');
+  // Old archive rows carry no id: they keep Take me there.
+  assert.equal(letterPersonFor('MessengerArrival', { q: 1, r: 1 }), '');
+  // Other kinds never become Reply, even with a stray id.
+  assert.equal(letterPersonFor('UnitArrived', { sender_id: 'p-x' }), '');
 });

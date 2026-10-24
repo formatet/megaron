@@ -46,10 +46,37 @@ export function offerRowHTML(prayer, stock) {
   const id = esc(prayer.id);
   const preparationNote = prayer.can_prepare_offering && !prayer.affordable ? '<p class="offer-note">Choose goods for your offering; the traditional gift is unavailable.</p>' : '';
   return '<div class="offer-fields">' + fields + '</div>' +
+    '<p class="offer-note" data-offer-food></p>' +
     preparationNote +
     (note ? '<p class="offer-note">' + note + '</p>' : '') +
     '<button class="obj-cta btn-small" onclick="bringOffering(\'' + id + '\')">Bring the offering</button> ' +
     '<button class="btn-small btn-secondary" onclick="cancelOffering(\'' + id + '\')">Cancel</button>';
+}
+
+// What the gift takes from the city's food, and whether a day's eating is
+// left after it (byggplan A.3: Lato gave 28 of 29 grain and starved six days).
+// food is the province's settlement.food (consumption_per_tick).
+export function offerFoodText(offering, stock, food, city) {
+  const name = city || 'the city';
+  const held = stock || {};
+  const parts = [];
+  let taken = 0, total = 0;
+  for (const g of EDIBLE) {
+    total += held[g] || 0;
+    const n = Number((offering || {})[g]) || 0;
+    if (n > 0) {
+      taken += n;
+      parts.push(`takes ${Math.round(n)} of ${name}'s ${Math.floor(held[g] || 0)} ${g}`);
+    }
+  }
+  if (!parts.length) return '';
+  let text = 'The offering ' + parts.join(', ') + '.';
+  const eat = (food && food.consumption_per_tick) || 0;
+  const left = Math.max(0, total - taken);
+  if (eat > 0 && left < eat) {
+    text += ` That leaves ${Math.floor(left)} food, less than ${name} eats in a day (${Number(eat.toFixed(1))}).`;
+  }
+  return text;
 }
 
 // entries: [{good, value}] from the fields. Returns the offering to send, or
