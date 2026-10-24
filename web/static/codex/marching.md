@@ -66,7 +66,7 @@ game day**, **2 river hexes per game day**, and takes **1 game day** through a f
 needs 60% of the Galley's time; an Emporos needs 140%. A short crew or a carried
 land unit slows a marching ship. Runners aboard follow their carrier's journey.
 Cargo journeys use the separate [[routes|caravan rule]]: 1.5 times the base route
-time, including at sea; cargo weight does not change their speed.
+time, including at sea; cargo does not change their speed.
 
 These are base costs before rounding the whole journey to at least one game day.
 The route and its costs are fixed at departure. A journey already underway keeps
