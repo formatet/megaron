@@ -45,6 +45,7 @@ import (
 // SetStance (stance can be set to 'sentry', sentry_q/r is persisted), but no
 // scan goroutine is started yet.
 type UnitArrivalHandler struct {
+	battleOutcomes     *battleBegunOutcomes
 	carrierOutcomes    *[]*events.Event
 	expeditionOutcomes *[]expeditionOutcome
 	pool               *pgxpool.Pool
@@ -100,6 +101,8 @@ func (h *UnitArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent
 	// Per-invocation buffer: workers may call the shared handler concurrently.
 	var outcomes []expeditionOutcome
 	local := *h
+	var battleOutcomes battleBegunOutcomes
+	local.battleOutcomes = &battleOutcomes
 	local.expeditionOutcomes = &outcomes
 	var passengerEvents []*events.Event
 	local.carrierOutcomes = &passengerEvents
@@ -109,6 +112,7 @@ func (h *UnitArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent
 	if err := tx.Commit(ctx); err != nil {
 		return err
 	}
+	local.deliverBattleBegun(ctx, payload.WorldID)
 	for _, w := range passengerEvents {
 		h.eventStore.RecordCommitted(ctx, w)
 	}

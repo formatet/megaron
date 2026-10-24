@@ -1,0 +1,46 @@
+{
+  "notifications": [
+    {
+      "id": "36733897-c30d-4a3d-839f-fee5145aad29",
+      "kind": "BattleBegun",
+      "level": 2,
+      "body": {
+        "q": 0,
+        "r": 59,
+        "role": "defender",
+        "joined": false,
+        "battle_id": "8eaaaa92-f239-4987-827f-4c1ec65ba6a0",
+        "occurred_at": "2026-10-24T17:25:00.37583946Z",
+        "opponent_name": "Idomeneus"
+      },
+      "created_at": "2026-10-24T19:25:00.367326+02:00",
+      "read_at": "2026-10-24T19:25:00.835709+02:00",
+      "world_tick": 100
+    },
+    {
+      "id": "f42f5c78-6d8b-4dfd-9a97-6eec6f67e78e",
+      "kind": "OpeningDispatch",
+      "level": 4,
+      "body": {
+        "title": "Your people await you",
+        "host_id": "151ad043-77ba-49ef-9b78-b0f93cd8ab6f",
+        "returning": false,
+        "paragraphs": [
+          "Time. A game day passes every 30 minutes. Game days begin after 1 Wanaxes join.",
+          "Foot soldiers cross a plains hex in 1 game day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. War chariots cross plains in 0.67 game day but need 2 in olive woodland and 3 in hills, cedar forest or desert. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a game day.",
+          "Your Host carries 1200 grain and 120 silver. It lives on subsistence until founding; these reserves do not drain. Find your place \u2014 founding is final.",
+          "Food first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.",
+          "The gods. A new Wanax starts at 40 Kharis. It fades slowly from the start; each additional city increases the daily cost, even with a temple. A temple takes 16 game days to build: staff and feed it to earn favour. Low standing risks punishment.",
+          "Place citizens on olive woodland or cedar forest for timber, and on stone-bearing ground for stone; idle citizens produce nothing.",
+          "Orders travel. A Runner must reach a unit in the field before it follows your new order.",
+          "Bronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.",
+          "Rules: ? (Codex). Problems: Report. Community chat: Account."
+        ]
+      },
+      "created_at": "2026-10-24T19:24:50.82613+02:00",
+      "read_at": null,
+      "world_tick": 0
+    }
+  ],
+  "unread": 1
+}

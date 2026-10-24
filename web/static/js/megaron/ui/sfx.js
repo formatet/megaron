@@ -156,7 +156,7 @@ export function playBattleClash() {
 
 // Kinds that already carry their own sound in ws.js (horn, clash) — the chime
 // must not stack on top of them.
-const OWN_SOUND_KINDS = new Set(['BattleWon', 'BattleLost', 'UnitRecalled', 'UnitRedirected', 'RiteAnswered']);
+const OWN_SOUND_KINDS = new Set(['BattleBegun', 'BattleWon', 'BattleLost', 'UnitRecalled', 'UnitRedirected', 'RiteAnswered']);
 const ARRIVAL_KINDS = new Set(['UnitArrived', 'UnitExploreReturned', 'ArmyArrival', 'MessengerReturned']);
 
 // soundForKind is the whole routing decision, pure for testing:

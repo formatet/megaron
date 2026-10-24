@@ -757,3 +757,10 @@ test('saved sighting dispatches use the canonical ship type without inventing a 
   assert.equal(body.unit_type, 'merchantman', 'stored outcome remains unchanged');
  }
 });
+
+test('BattleBegun puts the Wanax before the place and carries a clock time', () => {
+  const text = notifText('BattleBegun', { opponent_name: 'Idomeneus', place: 'Petras', q: 1, r: 0, occurred_at: '2026-10-24T18:45:00Z' });
+  assert.ok(text.startsWith('Idomeneus — battle has begun at Petras · '));
+  assert.match(text, /\d\d:\d\d/);
+  assert.equal(notifText('BattleBegun', { opponent_name: 'Nestor', q: 1, r: 0, joined: true }), 'Nestor — your forces joined the battle at (1, 0)');
+});

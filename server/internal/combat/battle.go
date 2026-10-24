@@ -285,15 +285,19 @@ func (h *UnitArrivalHandler) startBattle(
 		}
 	}
 
-	if _, err := h.eventStore.Append(ctx, battleID, events.StreamCombat, EventBattleStarted,
+	event, err := h.eventStore.AppendTx(ctx, tx, battleID, events.StreamCombat, EventBattleStarted,
 		BattleStartedPayload{
 			BattleID: battleID, WorldID: worldID, Q: q, R: r,
 			StartedTick: currentTick, Seed: seed,
 			WallLevel: wallLevel, Storm: storm,
 			Attackers: attackerRefs, Defenders: defenderRefs,
 		}, worldID, nil,
-	); err != nil {
-		slog.Warn("start battle: append BattleStarted failed", "battle", battleID, "err", err)
+	)
+	if err != nil {
+		return fmt.Errorf("start battle: append BattleStarted: %w", err)
+	}
+	if h.battleOutcomes != nil {
+		h.battleOutcomes.events = append(h.battleOutcomes.events, event)
 	}
 
 	if err := h.breakHiketeiaTx(ctx, tx, worldID, battleID, arriving); err != nil {
@@ -304,7 +308,7 @@ func (h *UnitArrivalHandler) startBattle(
 	); err != nil {
 		return fmt.Errorf("start battle: enqueue first tick: %w", err)
 	}
-	return nil
+	return h.persistBattleBegun(ctx, tx, worldID, battleID, q, r, false)
 }
 
 func (h *UnitArrivalHandler) joinBattle(
@@ -326,13 +330,24 @@ func (h *UnitArrivalHandler) joinBattle(
 		return err
 	}
 
-	if _, err := h.eventStore.Append(ctx, battleID, events.StreamCombat, EventUnitJoinedBattle,
+	event, err := h.eventStore.AppendTx(ctx, tx, battleID, events.StreamCombat, EventUnitJoinedBattle,
 		UnitJoinedBattlePayload{
 			BattleID: battleID, UnitID: arriving.unitID, OwnerID: arriving.ownerID,
 			UnitType: arriving.utype, Side: arriving.side, Size: arriving.currentSize, JoinedTick: currentTick,
 		}, worldID, nil,
-	); err != nil {
-		slog.Warn("join battle: append UnitJoinedBattle failed", "battle", battleID, "err", err)
+	)
+	if err != nil {
+		return fmt.Errorf("join battle: append event: %w", err)
+	}
+	if h.battleOutcomes != nil {
+		h.battleOutcomes.events = append(h.battleOutcomes.events, event)
+	}
+	if arriving.side == "defender" {
+		var q, r int
+		if err := tx.QueryRow(ctx, `SELECT q,r FROM battles WHERE id=$1`, battleID).Scan(&q, &r); err != nil {
+			return err
+		}
+		return h.persistBattleBegun(ctx, tx, worldID, battleID, q, r, true)
 	}
 	return nil
 }

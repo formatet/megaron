@@ -133,7 +133,7 @@ function fmtSoon(iso) {
 export function notifDomain(kind) {
   const domains = {
     // War — units, battles, sieges, orders in the field, who holds what.
-    ArmyArrival: 'war', BattleWon: 'war', BattleLost: 'war', TrainComplete: 'war',
+    ArmyArrival: 'war', BattleBegun: 'war', BattleWon: 'war', BattleLost: 'war', TrainComplete: 'war',
     ForeignMarchSighted: 'war', ForeignMarchSightedV2: 'war', SentryAlerted: 'war', ScoutReport: 'war',
     UnitArrived: 'war', RoadEdgeBuilt: 'war', UnitExploreReturned: 'war', UnitReturnedStarving: 'war', ShipCameHomeForFood: 'war', ShipSweptFromSea: 'war',
     ExpeditionTurnedHome: 'war', ExpeditionReport: 'war',
@@ -206,6 +206,7 @@ export function notifIcon(kind) {
     ScoutReport:        '🔭',
     ExpeditionTurnedHome: '🔭',
     ExpeditionReport:   '🔭',
+    BattleBegun:        '⚔',
     BattleWon:          '⚔',
     BattleLost:         '⚔',
     ShipCameHomeForFood: '⛵',
@@ -553,6 +554,12 @@ export function notifText(kind, body) {
       if (body.incense_deposit) deposits.push('incense');
       const found = deposits.length ? deposits.join(', ') : 'no ore deposits, cedar or foreign cities recorded';
       return `Explored (${body.q}, ${body.r}) — ${body.terrain || 'unknown terrain'}, ${found}`;
+    }
+    case 'BattleBegun': {
+      const who = body.opponent_name || 'an enemy';
+      const place = body.place || `(${body.q}, ${body.r})`;
+      const when = body.occurred_at ? ` · ${fmtClock(body.occurred_at)}` : '';
+      return `${who} — ${body.joined ? 'your forces joined the battle' : 'battle has begun'} at ${place}${when}`;
     }
     case 'BattleWon':
     case 'BattleLost': {

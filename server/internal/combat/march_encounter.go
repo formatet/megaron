@@ -337,7 +337,8 @@ func (h *MarchEncounterHandler) resolveHex(ctx context.Context, e events.Schedul
 	// exactly as unit_intercept_scan.go's intercept() does — Dice
 	// are the only fields that differ from this zero-value build and neither
 	// is read by initiateOrJoinBattle/startBattle/joinBattle.
-	uah := &UnitArrivalHandler{pool: h.pool, eventStore: h.eventStore, scheduler: h.scheduler, hub: h.hub, clk: h.clk}
+	var battleOutcomes battleBegunOutcomes
+	uah := &UnitArrivalHandler{battleOutcomes: &battleOutcomes, pool: h.pool, eventStore: h.eventStore, scheduler: h.scheduler, hub: h.hub, clk: h.clk}
 
 	// Call once per participant: the FIRST call (no battle yet at this hex)
 	// seeds the battle with every OTHER participant already tagged in
@@ -385,6 +386,7 @@ func (h *MarchEncounterHandler) resolveHex(ctx context.Context, e events.Schedul
 		return fmt.Errorf("commit: %w", err)
 	}
 
+	uah.deliverBattleBegun(ctx, e.WorldID)
 	slog.Info("march encounter: crossing armies collided — battle initiated/joined",
 		"q", q, "r", r, "units", len(participants))
 	return nil
