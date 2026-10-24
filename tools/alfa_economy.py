@@ -105,7 +105,7 @@ def main(argv=None):
 
     cities = q("""
         SELECT s.id, s.name, s.owner_id, p.username, s.population, s.is_capital, s.control_type,
-          (SELECT sum(g.rate) FROM settlement_goods g WHERE g.settlement_id = s.id AND g.good_key IN ('grain','fish')) AS food_rate,
+          (SELECT sum(g.rate) FROM settlement_goods g WHERE g.settlement_id = s.id AND g.good_key IN ('grain','fish','oil','wine')) AS food_rate,
           (SELECT g.amount + g.rate * greatest(0, {T} - g.calc_tick) FROM settlement_goods g WHERE g.settlement_id = s.id AND g.good_key = 'grain') AS grain,
           (SELECT g.amount + g.rate * greatest(0, {T} - g.calc_tick) FROM settlement_goods g WHERE g.settlement_id = s.id AND g.good_key = 'fish') AS fish,
           (SELECT g.amount + g.rate * greatest(0, {T} - g.calc_tick) FROM settlement_goods g WHERE g.settlement_id = s.id AND g.good_key = 'silver') AS silver,
