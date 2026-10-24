@@ -104,6 +104,14 @@ func (h *ProvinceHandler) GiftHistory(w http.ResponseWriter, r *http.Request) {
 			writeError(w, 500, "could not read gift")
 			return
 		}
+		// The sender names themselves in a gift. Receiving goods does not
+		// reveal their city's identity or coordinates.
+		var body map[string]any
+		if json.Unmarshal(g.Body, &body) == nil && body["sender_id"] != player.String() {
+			delete(body, "origin_id")
+			delete(body, "origin_name")
+			g.Body, _ = json.Marshal(body)
+		}
 		list = append(list, g)
 	}
 	if rows.Err() != nil {

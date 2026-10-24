@@ -7,7 +7,7 @@ import (
 )
 
 func TestCorrespondenceUpgradeRetainsCompletedAcceptanceWithoutInventingTime(t *testing.T) {
-	f := memoryFixture(t)
+	f := caseFixture(t)
 	ctx := context.Background()
 	ids := map[string]string{}
 	for _, status := range []string{"accepted", "returned", "declined", "expired", "cancelled"} {
@@ -30,7 +30,14 @@ func TestCorrespondenceUpgradeRetainsCompletedAcceptanceWithoutInventingTime(t *
 		t.Fatal(err)
 	}
 	defer tx.Rollback(ctx)
-	// Rehearse the real208->209 transition within a rollback-only transaction.
+	// Recreate retired private tables before rehearsing the historical 208->209 transition.
+	retired, err := os.ReadFile("../../db/migrations/210_brevladan.down.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = tx.Exec(ctx, string(retired)); err != nil {
+		t.Fatal(err)
+	}
 	if _, err = tx.Exec(ctx, string(down)); err != nil {
 		t.Fatal(err)
 	}

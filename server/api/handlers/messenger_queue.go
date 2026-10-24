@@ -116,7 +116,7 @@ func (h *MessengerHandler) Queue(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	rows, err := tx.Query(r.Context(), `
- SELECT m.id,COALESCE(m.origin_id,m.origin_unit_id),COALESCE(os.name,'Nomadic Host'),m.destination_id,ds.name,
+ SELECT m.id,m.sender_id,COALESCE(NULLIF(sp.wanax_name,''),sp.username),m.destination_id,ds.name,
  m.message_text,m.trade_offer,m.status,m.reply_text,m.sent_at,m.arrives_at,m.expires_at,m.read_at,
  CASE WHEN m.trade_offer IS NULL THEN NULL ELSE COALESCE((SELECT settled(sg.amount,sg.rate,sg.calc_tick)>=
  CASE WHEN COALESCE(m.trade_offer->>'kind','buy')='buy' THEN (m.trade_offer->>'want_qty')::float ELSE (m.trade_offer->>'want_silver')::float END
@@ -125,7 +125,7 @@ func (h *MessengerHandler) Queue(w http.ResponseWriter, r *http.Request) {
  FROM messengers m
  JOIN worlds qw ON qw.id=m.world_id
  JOIN settlements ds ON ds.id=m.destination_id
- LEFT JOIN settlements os ON os.id=m.origin_id
+ JOIN players sp ON sp.id=m.sender_id
  WHERE m.world_id=$1 AND ds.owner_id=$2 AND correspondence_recipient(m.id,$2) AND NOT m.withdrawn AND `+receivedLetterSQL+`
  AND (m.correspondence_created_epoch<>$8 OR pg_visible_in_snapshot(m.correspondence_created_xid,$7::pg_snapshot))
  AND m.sent_at<=$3 AND ($4::timestamptz IS NULL OR (m.sent_at,m.id)<($4::timestamptz,$5::uuid))

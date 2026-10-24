@@ -58,21 +58,20 @@ func resolveTransferDestination(c *Client, world, source, name string) (string, 
 
 func printGiftOutcome(n notificationItem) {
 	var b struct {
-		OriginName      string  `json:"origin_name"`
-		DestinationName string  `json:"destination_name"`
-		Good            string  `json:"good_key"`
-		Credited        float64 `json:"credited_quantity"`
-		Returned        float64 `json:"returned_quantity"`
-		Lost            float64 `json:"lost_quantity"`
-		Reason          string  `json:"reason"`
-		Changed         bool    `json:"owner_changed"`
-		Actual          string  `json:"actual_recipient_name"`
-		Intended        string  `json:"recipient_name"`
+		SenderName string  `json:"sender_name"`
+		Good       string  `json:"good_key"`
+		Credited   float64 `json:"credited_quantity"`
+		Returned   float64 `json:"returned_quantity"`
+		Lost       float64 `json:"lost_quantity"`
+		Reason     string  `json:"reason"`
+		Changed    bool    `json:"owner_changed"`
+		Actual     string  `json:"actual_recipient_name"`
+		Intended   string  `json:"recipient_name"`
 	}
 	if json.Unmarshal(n.Body, &b) != nil {
 		return
 	}
-	fmt.Printf("    Gift: %s → %s · %g %s received; %g lost", b.OriginName, b.DestinationName, b.Credited, b.Good, b.Lost)
+	fmt.Printf("    Gift: %s → %s · %g %s received; %g lost", giftWanax(b.SenderName), giftWanax(b.Intended), b.Credited, b.Good, b.Lost)
 	if b.Returned > 0 {
 		fmt.Printf(" · %g sent home aboard the damaged ship (return can still be intercepted)", b.Returned)
 	}
@@ -83,4 +82,11 @@ func printGiftOutcome(n notificationItem) {
 		fmt.Printf(" · now held by %s, intended for %s", b.Actual, b.Intended)
 	}
 	fmt.Println()
+}
+
+func giftWanax(name string) string {
+	if name == "" {
+		return "a Wanax"
+	}
+	return name
 }

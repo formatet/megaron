@@ -18,7 +18,7 @@ import (
 // accepted/returned JSON transitions.
 func integrationTradeFixture(t *testing.T) (*replyFixture, *events.Scheduler, *events.Store) {
 	t.Helper()
-	f := memoryFixture(t)
+	f := caseFixture(t)
 	clk := clock.NewTestClock(time.Now())
 	sched := events.NewScheduler(f.pool, clk)
 	store := events.NewStore(f.pool)
@@ -70,7 +70,11 @@ func integrationAccept(t *testing.T, f *replyFixture, letter string) {
 }
 func integrationArchiveOffer(t *testing.T, f *replyFixture, token, id string) map[string]any {
 	t.Helper()
-	code, v := caseGet(t, f, token, "/worlds/"+f.worldID.String()+"/correspondence/cases/"+id)
+	other := f.senderID
+	if token == f.senderToken {
+		other = f.receiverID
+	}
+	code, v := caseGet(t, f, token, "/worlds/"+f.worldID.String()+"/letters/"+other.String())
 	if code != 200 {
 		t.Fatalf("archive: %d %v", code, v)
 	}
@@ -134,25 +138,9 @@ func TestCorrespondenceAcceptedMemorySurvivesActualCompletedTrade(t *testing.T) 
 		t.Fatalf("trade did not complete: %s %v", status, err)
 	}
 	for _, token := range []string{f.senderToken, f.recvToken} {
-		code, v := caseGet(t, f, token, memoryPath(f, id))
-		rows := memoryRows(t, v, "transactions")
-		if code != 200 || len(rows) != 1 || rows[0].(map[string]any)["id"] != letter {
-			t.Fatalf("completed accepted agreement disappeared: status=%d memory=%v", code, v)
-		}
-	}
-	// Neither a free-text claim nor an actual declined offer is an acceptance.
-	plain, _ := sendCase(t, f, "I claim you accepted everything", id)
-	memoryDeliver(t, f, plain)
-	declined, _, _ := integrationSendOffer(t, f, store, sched, "sell", "Declined agreement")
-	code, v := f.post(t, f.recvToken, "/worlds/"+f.worldID.String()+"/messengers/"+declined+"/trade-decline", map[string]any{})
-	if code != 200 {
-		t.Fatalf("actual decline: %d %v", code, v)
-	}
-	for _, token := range []string{f.senderToken, f.recvToken} {
-		code, v = caseGet(t, f, token, memoryPath(f, id))
-		rows := memoryRows(t, v, "transactions")
-		if code != 200 || len(rows) != 1 || rows[0].(map[string]any)["id"] != letter {
-			t.Fatalf("prose or decline became accepted agreement: %d %v", code, v)
+		offer := integrationArchiveOffer(t, f, token, id)
+		if offer["status"] != "returned" {
+			t.Fatalf("completed agreement disappeared: %v", offer)
 		}
 	}
 	// The stored trade return event is an actual saved engine outcome payload.

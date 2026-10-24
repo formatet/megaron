@@ -2110,36 +2110,14 @@ h4.cx-h { font-size: var(--fs-base); }
   .mobile-fullscreen .search-input-row .si-input { min-width: 0; }
 }
 
-/* Incoming correspondence queue: status and payment survive closed letters. */
-.dip-queue-toolbar, .dip-queue-heading, .dip-queue-actions { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
-.dip-queue-heading { justify-content: space-between; }
-.dip-queue-item { padding: .75rem 0; border-bottom: 1px solid var(--border); overflow-wrap: anywhere; }
-.dip-queue-note { color: var(--text-dim); font-size: .75rem; }
-.dip-queue-payment { color: var(--accent); }
-.dip-queue-item details { margin: .5rem 0; }
-.dip-queue-message { white-space: pre-wrap; }
-.dip-queue-item textarea { display: block; box-sizing: border-box; width: 100%; min-height: 5rem; margin: .3rem 0; }
-.dip-queue-result { margin-top: .4rem; }
-
-.dip-queue-preview { margin: .4rem 0; color: var(--text-dim); }
-
-.dip-archive-heading { color: var(--text); font-size: 1rem; }
-.dip-case-compose, .dip-archive-search { display: grid; gap: .5rem; width: 100%; margin: .5rem 0; }
-.dip-case-compose label, .dip-archive-search label { display: grid; gap: .3rem; }
-.dip-case-compose textarea, .dip-case-compose select, .dip-archive-search input {
-  box-sizing: border-box; width: 100%; max-width: 100%; padding: .4rem;
-  background: var(--warm-white); color: var(--text); border: 1px solid var(--border);
-  font: inherit;
-}
-.dip-case-compose textarea { min-height: 6rem; resize: vertical; }
-.dip-case-compose button, .dip-archive-search button { justify-self: start; }
-
-.dip-private { border-top: 1px solid var(--border); margin-top: 1rem; padding-top: .5rem; }
-.dip-private label { display: grid; gap: .3rem; margin: .5rem 0; }
-.dip-private textarea { box-sizing: border-box; width: 100%; min-height: 6rem; padding: .4rem; font: inherit; background: var(--warm-white); color: var(--text); border: 1px solid var(--border); }
-
-#dtab-archive [data-citation-letter] { display: grid; gap: .4rem; }
-#dtab-archive [data-citation-letter] label { display: grid; gap: .3rem; }
-#dtab-archive [data-citation-letter] textarea { box-sizing: border-box; width: 100%; min-height: 5rem; font: inherit; }
-#dtab-archive blockquote { margin: .5rem 0; padding-left: .6rem; border-left: 2px solid var(--border); }
-.dip-memory-heading { color: var(--text); font-size: .9rem; margin: .75rem 0 .4rem; }
+/* One correspondence row per Wanax, with the exchange beneath it. */
+.letters-toolbar { display:flex; align-items:center; gap:.5rem; margin-bottom:.6rem; }
+.letters-toolbar strong { flex:1; }
+.letter-person { display:grid; grid-template-columns:1fr auto; width:100%; text-align:left; padding:.65rem .4rem; gap:.3rem .5rem; color:var(--text); background:var(--warm-white); border:0; border-bottom:1px solid var(--border); cursor:pointer; font:inherit; }
+.letter-person strong { color:var(--accent-diplomacy); }
+.letter-person-state { font-size:.72rem; color:var(--text-dim); }
+.letter-person-preview { grid-column:1/-1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:.78rem; }
+.letter-entry { border-bottom:1px solid var(--border); padding:.5rem 0; }
+.letter-entry summary { cursor:pointer; font-size:.78rem; }
+.letter-entry p { font-size:.8rem; overflow-wrap:anywhere; }
+@media(max-width:480px) { .letter-person { grid-template-columns:1fr; } .letter-person-state { grid-column:1; } }
