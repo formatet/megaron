@@ -1,0 +1,14 @@
+» färsk DB på migration 210 · commit 38cb103b
+2026/10/24 23:31:07 INFO player registered id=2c1a5f53-2426-4507-9ec3-586b931fc3bb username=sailor-c9358d90-f06d-4f09-b3b0-2cc588b9f2a5
+2026/10/24 23:31:07 INFO player registered id=56fb8f2e-91dd-4779-b2b0-476841463b70 username=sailor-0b4edf14-0d29-4981-9a23-65e445b394a6
+2026/10/24 23:31:07 INFO player registered id=888c1c57-d18c-471f-a3d9-cbdcc4df14b2 username=sailor-6ad88c32-f7d7-4361-ae38-bfa4387e5359
+--- FAIL: TestTransferManifestAtomicDelivery (0.20s)
+    --- FAIL: TestTransferManifestAtomicDelivery/two_goods_one_hull (0.07s)
+        province_manifest_test.go:21: status 400 want 201: map[error:quantity must be positive]
+    --- FAIL: TestTransferManifestAtomicDelivery/total_exceeds_hull (0.06s)
+        province_manifest_test.go:21: status 400 want 422: map[error:quantity must be positive]
+    --- FAIL: TestTransferManifestAtomicDelivery/exact_hull_ignores_old_weight (0.07s)
+        province_manifest_test.go:21: status 400 want 201: map[error:quantity must be positive]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.199s
+FAIL

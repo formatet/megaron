@@ -1,0 +1,12 @@
+» färsk DB på migration 211 · commit ceead828+ändringar
+2026/10/24 23:40:05 INFO player registered id=c8afb11f-4a0a-42c0-bc71-3476ecc9c408 username=sailor-880a5892-1846-4914-a6b2-b9bee42d728d
+2026/10/24 23:40:05 INFO player registered id=d0583787-4da2-4102-9734-5a2bfdde7468 username=sailor-e207b322-e877-4941-a770-40c166aefc6b
+2026/10/24 23:40:05 INFO player registered id=b5743479-db35-42f8-a7f0-fadea19a439e username=sailor-0dcfc8b7-b6d0-4888-b2ce-953e7dbc81a3
+--- FAIL: TestTransferManifestAtomicDelivery (0.26s)
+    --- FAIL: TestTransferManifestAtomicDelivery/two_goods_one_hull (0.10s)
+        province_manifest_test.go:88: no rows in result set
+    --- FAIL: TestTransferManifestAtomicDelivery/exact_hull_ignores_old_weight (0.09s)
+        province_manifest_test.go:88: no rows in result set
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.263s
+FAIL

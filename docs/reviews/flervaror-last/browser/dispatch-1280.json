@@ -1,0 +1,27 @@
+{
+  "arrival_tick": 102,
+  "arrives_at": "2026-10-25T00:37:09.383490196+02:00",
+  "cargo_capacity": 20,
+  "cargo_quantity": 20,
+  "category": "naval",
+  "departure_tick": 100,
+  "distance": 6,
+  "items": [
+    {
+      "good_key": "grain",
+      "quantity": 12
+    },
+    {
+      "good_key": "timber",
+      "quantity": 8
+    }
+  ],
+  "kind": "transfer",
+  "route_id": "021dc028-f4fc-4b45-9357-cee92a531f6d",
+  "ship_id": "839fdd50-5fc6-44bf-b4e0-a337a139019f",
+  "ship_name": "White Dolphin, Galley of Lato",
+  "ship_type": "galley",
+  "transport_id": "47a02fd4-5749-4d41-b61f-5dcffb8e5cee",
+  "travel_min": 120,
+  "travel_ticks": 2
+}

@@ -1,0 +1,8 @@
+» färsk DB på migration 211 · commit 25f35068+ändringar
+2026/10/24 23:36:01 INFO player registered id=1e072477-4fdf-4a86-b5ac-53014feba9ef username=wanax-a-83046c4e-a352-4bae-b073-ade870a25402
+2026/10/24 23:36:01 INFO player registered id=5cd9eb52-1840-4069-9ea4-a384d0fb4381 username=wanax-b-a1368954-4925-4fad-a98b-6bc168db912f
+--- FAIL: TestMapTrades_CompleteManifestPrivateToParties (0.12s)
+    map_trades_mine_test.go:421: own complete manifest=<nil> want two goods
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.124s
+FAIL

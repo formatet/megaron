@@ -1,0 +1,12 @@
+» färsk DB på migration 211 · commit ceead828+ändringar
+2026/10/24 23:39:52 INFO player registered id=58fdbe2a-857c-4ffd-9489-322b7f9652bf username=sailor-8c0e7d28-b28f-4b53-8b30-1ae7eb5f9afc
+2026/10/24 23:39:53 INFO player registered id=b2d1f90e-e659-499e-ac8e-ce6c7462c69f username=sailor-0f36f897-79f7-44b1-93c4-6012f28a09c6
+2026/10/24 23:39:53 INFO player registered id=0531ec16-db8f-483e-a676-e3a7a86dcd29 username=sailor-a4e3a606-fcc5-4ca7-9a8c-401b66ee4e90
+--- FAIL: TestTransferManifestAtomicDelivery (0.21s)
+    --- FAIL: TestTransferManifestAtomicDelivery/two_goods_one_hull (0.07s)
+        province_manifest_test.go:37: status 422 want 201: map[error:Emporos cargo 110 / 120 capacity — remove -10 goods]
+    --- FAIL: TestTransferManifestAtomicDelivery/exact_hull_ignores_old_weight (0.07s)
+        province_manifest_test.go:37: status 422 want 201: map[error:Emporos cargo 120 / 120 capacity — remove 0 goods]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.216s
+FAIL

@@ -1,4 +1,7 @@
-# Flervaror-last: inventering och STOPP
+# Flervaror-last: historisk inventering och STOPP
+
+STOPP hävdes av Claude med START A. Aktuellt resultat finns i [README](README.md);
+nedan bevaras inventeringen som låg till grund för uppdelningen A/B.
 
 Bas: 38cb103b. Hela ordern inklusive båda tilläggen läst. Slutliga beslut:
 en vara = en lastplats; Galley 20, Emporos 120; Emporos upp till tre landenheter.

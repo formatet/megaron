@@ -1,0 +1,10 @@
+» färsk DB på migration 211 · commit ceead828+ändringar
+2026/10/24 23:39:47 INFO player registered id=dc19c01b-c262-4472-9ff3-4fa418b8f5e4 username=sailor-e08e9a6e-c9f5-48d2-ba54-9b2bef8d7659
+2026/10/24 23:39:47 INFO player registered id=a95aa7e4-ccf0-4b62-82c0-a5af4278d828 username=sailor-1a1d622c-d634-497d-95b8-544342902ab3
+2026/10/24 23:39:47 INFO player registered id=e117c66c-4e32-44c2-9ee0-7ff80fe8b59c username=sailor-e0b81620-58f5-4294-81d5-3b41cbd30b23
+--- FAIL: TestTransferManifestAtomicDelivery (0.27s)
+    --- FAIL: TestTransferManifestAtomicDelivery/total_exceeds_hull (0.08s)
+        province_manifest_test.go:37: status 201 want 422: map[arrival_tick:1 arrives_at:2026-10-25T00:39:47.334636815+02:00 cargo_capacity:120 cargo_quantity:130 category:naval departure_tick:0 distance:3 items:[map[good_key:grain quantity:70] map[good_key:silver quantity:60]] kind:transfer route_id:2d638665-27c6-47ad-944d-73c60d6eb0cb ship_id:c7141ad4-0f4d-4968-a6d4-1bd306ac72a4 ship_name:Emporos of Byblos ship_type:merchantman transport_id:5c3bd3dc-2f11-4c09-9a15-71d67e4f2d52 travel_min:60 travel_ticks:1]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.273s
+FAIL
