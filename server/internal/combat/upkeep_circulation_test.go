@@ -47,7 +47,7 @@ func TestWagesChargeActualPeopleWithoutCirculation(t *testing.T) {
 			if err := pool.QueryRow(ctx, `INSERT INTO units(world_id,owner_id,type,category,status,size,crew,settlement_id,support_settlement_id,provisions,provision_goods) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,100,'{"grain":100}') RETURNING id`, f.worldID, f.owner, c.typ, c.category, c.status, c.size, c.crew, location, f.capitalID).Scan(&uid); err != nil {
 				t.Fatal(err)
 			}
-			h := NewUpkeepHandler(pool, events.NewScheduler(pool, clock.NewTestClock(time.Now())), events.NewStore(pool), nil, nil)
+			h := NewUpkeepHandler(pool, events.NewScheduler(pool, clock.NewTestClock(time.Now())), events.NewStore(pool), nil, nil, events.NewScheduler(pool, clock.NewTestClock(time.Now())).Clock())
 			e := events.ScheduledEvent{ID: int64(876000 + i), WorldID: f.worldID, DueTick: f.tick}
 			if err := h.Handle(ctx, e); err != nil {
 				t.Fatal(err)

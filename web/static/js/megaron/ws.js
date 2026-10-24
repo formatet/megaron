@@ -69,7 +69,7 @@ const DATA_KINDS = new Set([
   'GarrisonStarvationStarted','GarrisonStarvationEnded','CivilianStarvationStarted','CivilianStarvationEnded','KharisBandChanged','KharisDeclining','TempleDemolitionWrath',
   'ArmyArrival','BuildComplete','GoodsCrafted','TrainComplete','MessengerArrival',
   'GiftDelivered','GiftLost','TradeCaravanArrival','UnitAttrition','UnitDeserted','UnitArrived','UnitExploreReturned',
-  'RoadEdgeBuilt','UnitReturnedStarving','ExpeditionTurnedHome','ExpeditionReport',
+  'RoadEdgeBuilt','UnitReturnedStarving','ShipCameHomeForFood','ExpeditionTurnedHome','ExpeditionReport',
 ]);
 
 // fullResync refetches exactly what a fresh page load would — provinces, units,
@@ -194,7 +194,7 @@ export function initWS() {
         // right on the authoritative FOW map as soon as the notice arrives.
         window.refreshTiles();
       }
-      if (['UnitArrived','UnitExploreReturned','UnitReturnedStarving','ArmyArrival','ExpeditionTurnedHome','ExpeditionReport'].includes(msg.kind)) {
+      if (['UnitArrived','UnitExploreReturned','UnitReturnedStarving','ShipCameHomeForFood','ArmyArrival','ExpeditionTurnedHome','ExpeditionReport'].includes(msg.kind)) {
         // A unit reached or left a hex: its route may have revealed fog and its
         // position changed. Refresh the fog map and the unit layer immediately
         // rather than waiting for the 30 s poll.

@@ -1,0 +1,7 @@
+» färsk DB på migration 210 · commit f76eba5e+ändringar
+2026/10/24 12:56:21 ERROR upkeep: provision draw failed unit=d0cb7fd2-0f93-45ee-8de0-c186edf96e07 err="provision ledger mismatch for d0cb7fd2-0f93-45ee-8de0-c186edf96e07"
+--- FAIL: TestReturnFoodLeavesBeforeCrewStarves (0.04s)
+    return_food_test.go:24: home reserve should turn full crew home before starvation: status=positioned crew=20
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.044s
+FAIL

@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"math"
 
+	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/unit"
@@ -129,6 +130,7 @@ type upkeepUnitRow struct {
 // UpkeepHandler applies grain + silver upkeep to all active units each tick.
 // Grain-brist → attrition; silver-brist → desertering after upkeepDesertionTicks.
 type UpkeepHandler struct {
+	clk       clock.Clock
 	pool      *pgxpool.Pool
 	scheduler *events.Scheduler
 	store     *events.Store
@@ -148,8 +150,8 @@ type UpkeepHandler struct {
 // Wages are resolved by economy.UnitUpkeep for both tick and read consumers.
 // arrivals may be nil (see the field doc) — main.go passes the *UnitArrivalHandler
 // it already constructs (it must be built first; main.go does this).
-func NewUpkeepHandler(pool *pgxpool.Pool, sched *events.Scheduler, store *events.Store, hub Broadcaster, arrivals *UnitArrivalHandler) *UpkeepHandler {
-	return &UpkeepHandler{pool: pool, scheduler: sched, store: store, hub: hub, arrivals: arrivals}
+func NewUpkeepHandler(pool *pgxpool.Pool, sched *events.Scheduler, store *events.Store, hub Broadcaster, arrivals *UnitArrivalHandler, clk clock.Clock) *UpkeepHandler {
+	return &UpkeepHandler{pool: pool, scheduler: sched, store: store, hub: hub, arrivals: arrivals, clk: clk}
 }
 
 // Handle processes a ScheduledUpkeepTick event.
@@ -293,6 +295,9 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 				continue
 			}
 			u.freightPort = port
+		}
+		if err := h.returnForFood(ctx, u, e.WorldID); err != nil {
+			slog.Error("upkeep: food return decision failed", "unit", u.id, "err", err)
 		}
 		grainNeed := up.Grain
 		silverNeed := up.Silver

@@ -126,6 +126,9 @@ func (h *TradeReturnHandler) Handle(ctx context.Context, e events.ScheduledEvent
 			if store == nil {
 				store = events.NewStore(h.pool)
 			}
+			if err = HospitalityAtTransportPort(ctx, tx, p.TransportID, p.DestinationID); err != nil {
+				return err
+			}
 			passengerEvents, err = carrier.PortTx(ctx, tx, store, e.WorldID, *shipUnitID, p.DestinationID, e.DueTick)
 			if err != nil {
 				return err

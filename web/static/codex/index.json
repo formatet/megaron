@@ -50,6 +50,7 @@
     {"id": "battle",       "title": "Battle",                       "category": "War", "kinds": ["BattleWon", "BattleLost", "SettlementDefended"], "related": ["units", "stances"]},
     {"id": "sieges",       "title": "Sieges and blockades",         "category": "War", "kinds": ["SiegeStarted", "SiegeLifted", "HexBlockaded", "HexUnblockaded", "HexTaken"], "related": ["occupation", "stances", "catchment"]},
     {"id": "occupation",   "title": "Occupation and captured cities", "category": "War", "kinds": ["CityOccupied", "CityAnnexReady", "OccupationDefended", "SettlementCaptured", "SettlementSacked", "SettlementLooted", "SettlementBurned", "OutpostCaptured"], "related": ["sieges", "battle", "rough-edges"]},
+    {"id": "ship-food-return", "title": "Home with food for the way back", "category": "War", "kinds": ["ShipCameHomeForFood"], "related": ["sea", "food", "upkeep"]},
     {"id": "upkeep",       "title": "Upkeep: pay and bread",        "category": "War", "kinds": ["GarrisonStarvationStarted", "GarrisonStarvationEnded", "UpkeepUnpaid", "UnitDeserted", "UnitAttrition", "UnitReturnedStarving"], "related": ["silver", "food", "units"]},
 
     {"id":"temple-demolition","title":"Demolishing a temple","category":"The gods","drawer":"kult","kinds":["TempleDemolitionWrath"],"related":["kharis","temples","buildings","divine-wrath"]},

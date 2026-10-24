@@ -75,7 +75,7 @@ func TestUpkeepHandler_ReplayIsIdempotent(t *testing.T) {
 	}
 
 	h := NewUpkeepHandler(pool, events.NewScheduler(pool, clock.NewTestClock(time.Now())),
-		events.NewStore(pool), &fakeBroadcaster{}, nil)
+		events.NewStore(pool), &fakeBroadcaster{}, nil, events.NewScheduler(pool, clock.NewTestClock(time.Now())).Clock())
 	// soldShare=0 (Del C circulation off) keeps the silver arithmetic in this
 	// test a plain debit, decoupled from a feature this test isn't about.
 

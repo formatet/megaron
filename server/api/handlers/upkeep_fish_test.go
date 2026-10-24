@@ -89,7 +89,7 @@ func TestUpkeep_EmptyGrainLargeFish_FeedsGarrison(t *testing.T) {
 	sizeBefore := 100
 
 	h := combat.NewUpkeepHandler(pool, events.NewScheduler(pool, clock.NewTestClock(time.Now())),
-		events.NewStore(pool), nil, nil)
+		events.NewStore(pool), nil, nil, events.NewScheduler(pool, clock.NewTestClock(time.Now())).Clock())
 	if err := h.Handle(ctx, events.ScheduledEvent{WorldID: worldID, DueTick: tick}); err != nil {
 		t.Fatalf("upkeep Handle: %v", err)
 	}

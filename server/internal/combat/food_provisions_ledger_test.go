@@ -50,7 +50,7 @@ func TestStoredProvisionsMismatchRefusesWithoutSilentConversion(t *testing.T) {
 	if err := pool.QueryRow(ctx, `INSERT INTO units(world_id,owner_id,type,category,size,crew,status,settlement_id,provisions,provision_goods) VALUES($1,$2,'galley','naval',1,20,'garrison',$3,10,'{"fish":9}') RETURNING id`, f.worldID, f.owner, f.capitalID).Scan(&id); err != nil {
 		t.Fatal(err)
 	}
-	h := NewUpkeepHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), nil, nil)
+	h := NewUpkeepHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), nil, nil, events.NewScheduler(pool, nil).Clock())
 	if fed, err := h.eatProvisions(ctx, id, 1); fed || err == nil {
 		t.Fatalf("fed=%v err=%v", fed, err)
 	}

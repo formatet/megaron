@@ -38,7 +38,7 @@ func TestStarvationSignal_ActualLossEvenLastGarrison(t *testing.T) {
 			if events.TickPriority(events.ScheduledUpkeepTick) >= events.TickPriority(events.ScheduledKharisTick) {
 				t.Fatal("upkeep must precede kharis")
 			}
-			if err := NewUpkeepHandler(pool, sched, store, nil, nil).Handle(ctx, events.ScheduledEvent{ID: 13009901, WorldID: f.worldID, DueTick: f.tick}); err != nil {
+			if err := NewUpkeepHandler(pool, sched, store, nil, nil, sched.Clock()).Handle(ctx, events.ScheduledEvent{ID: 13009901, WorldID: f.worldID, DueTick: f.tick}); err != nil {
 				t.Fatal(err)
 			}
 			var recorded string
@@ -95,7 +95,7 @@ func TestStarvationSignal_ActualLossEvenLastGarrison(t *testing.T) {
 			if _, err := pool.Exec(ctx, `UPDATE settlement_goods SET amount=10000,rate=0,calc_tick=$2 WHERE settlement_id=$1 AND good_key IN ('grain','silver')`, f.capitalID, f.tick+1); err != nil {
 				t.Fatal(err)
 			}
-			if err := NewUpkeepHandler(pool, sched, store, nil, nil).Handle(ctx, events.ScheduledEvent{ID: 13009903, WorldID: f.worldID, DueTick: f.tick + 1}); err != nil {
+			if err := NewUpkeepHandler(pool, sched, store, nil, nil, sched.Clock()).Handle(ctx, events.ScheduledEvent{ID: 13009903, WorldID: f.worldID, DueTick: f.tick + 1}); err != nil {
 				t.Fatal(err)
 			}
 			for retry := 0; retry < 2; retry++ {

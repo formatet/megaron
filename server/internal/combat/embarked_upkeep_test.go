@@ -87,7 +87,7 @@ func TestUpkeepHandle_EmbarkedCohortIsBilledFieldRation(t *testing.T) {
 		t.Fatalf("create embarked cohort: %v", err)
 	}
 
-	h := NewUpkeepHandler(pool, events.NewScheduler(pool, clock.NewTestClock(time.Now())), events.NewStore(pool), nil, nil)
+	h := NewUpkeepHandler(pool, events.NewScheduler(pool, clock.NewTestClock(time.Now())), events.NewStore(pool), nil, nil, events.NewScheduler(pool, clock.NewTestClock(time.Now())).Clock())
 
 	if err := h.Handle(ctx, events.ScheduledEvent{WorldID: worldID, DueTick: tick}); err != nil {
 		t.Fatalf("upkeep Handle: %v", err)

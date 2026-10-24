@@ -76,7 +76,7 @@ func TestSilverAuditV2AllBucketsAndDeferredHandoff(t *testing.T) {
 		t.Fatal(err)
 	}
 	exec(`INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap) VALUES($1,'silver',8,0,100)`, neutral)
-	h := NewUpkeepHandler(pool, sched, store, nil, nil)
+	h := NewUpkeepHandler(pool, sched, store, nil, nil, sched.Clock())
 	audit := func() SilverAuditV2Payload {
 		t.Helper()
 		var id int64
@@ -179,7 +179,7 @@ func TestSilverAuditV2AppendFailureCanRetry(t *testing.T) {
 		_, _ = pool.Exec(ctx, `ALTER TABLE events DROP CONSTRAINT IF EXISTS silver_audit_v2_test_reject`)
 	})
 	clk := clock.NewTestClock(time.Now())
-	h := NewUpkeepHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), nil, nil)
+	h := NewUpkeepHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), nil, nil, events.NewScheduler(pool, clk).Clock())
 	var eventID int64
 	if err := pool.QueryRow(ctx, `SELECT nextval('scheduled_events_id_seq')`).Scan(&eventID); err != nil {
 		t.Fatal(err)

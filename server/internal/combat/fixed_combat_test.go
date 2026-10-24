@@ -124,7 +124,7 @@ func TestUnpaidUpkeepHasFixedDesertionStep(t *testing.T) {
 		}
 	}
 	clk := clock.NewTestClock(time.Now())
-	h := NewUpkeepHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), &fakeBroadcaster{}, nil)
+	h := NewUpkeepHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), &fakeBroadcaster{}, nil, events.NewScheduler(pool, clk).Clock())
 
 	if err := h.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.tick}); err != nil {
 		t.Fatal(err)

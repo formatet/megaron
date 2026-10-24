@@ -43,7 +43,7 @@ func TestSilverAuditV2Conservation(t *testing.T) {
 	clk := clock.NewTestClock(time.Now())
 	store := events.NewStore(pool)
 	sched := events.NewScheduler(pool, clk)
-	h := NewUpkeepHandler(pool, sched, store, nil, nil)
+	h := NewUpkeepHandler(pool, sched, store, nil, nil, sched.Clock())
 
 	legacy, err := store.Append(ctx, world, events.StreamWorld, "SilverAudit", SilverAuditPayload{LiquidTotal: 999, FundTotal: 123, EscrowTotal: 7}, world, nil)
 	if err != nil {

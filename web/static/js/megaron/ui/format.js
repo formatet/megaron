@@ -135,7 +135,7 @@ export function notifDomain(kind) {
     // War — units, battles, sieges, orders in the field, who holds what.
     ArmyArrival: 'war', BattleWon: 'war', BattleLost: 'war', TrainComplete: 'war',
     ForeignMarchSighted: 'war', ForeignMarchSightedV2: 'war', SentryAlerted: 'war', ScoutReport: 'war',
-    UnitArrived: 'war', RoadEdgeBuilt: 'war', UnitExploreReturned: 'war', UnitReturnedStarving: 'war', ShipSweptFromSea: 'war',
+    UnitArrived: 'war', RoadEdgeBuilt: 'war', UnitExploreReturned: 'war', UnitReturnedStarving: 'war', ShipCameHomeForFood: 'war', ShipSweptFromSea: 'war',
     ExpeditionTurnedHome: 'war', ExpeditionReport: 'war',
     PickupWaiting: 'war', UnitFetched: 'war', PickupTimedOut: 'war',
     UnitAttrition: 'war', UnitDeserted: 'war', UnitLostAtSea: 'war',
@@ -208,6 +208,7 @@ export function notifIcon(kind) {
     ExpeditionReport:   '🔭',
     BattleWon:          '⚔',
     BattleLost:         '⚔',
+    ShipCameHomeForFood: '⛵',
     ShipDamaged:        '⛵',
     PlaceFirstReached: '🌊',
     ShipStormDamaged:   '🌊',
@@ -740,6 +741,11 @@ export function notifText(kind, body) {
       return `Mission complete — ${subject} is returning home.${home}`;
     }
     case 'ExpeditionReport': return expeditionReportText(body);
+    case 'ShipCameHomeForFood': {
+      const subject = esc(body.name || 'A ship');
+      const crew = body.crew_after != null ? ` (${body.crew_after} crew home)` : '';
+      return `${subject} came home early — food for the way back only${crew}`;
+    }
     case 'UnitReturnedStarving': {
       // Payload per dispatchReturnHome's returnReasonStarvation branch
       // (megaron_plan_svaltretur_till_sjoss.md) — a ship at sea receives no

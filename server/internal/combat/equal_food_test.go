@@ -85,7 +85,7 @@ func TestFishOnlyVoyagePreviewDispatchEatAndReturnSameGood(t *testing.T) {
 	if total <= 0 || goods[economy.GoodFish] != total || goods[economy.GoodGrain] != 0 {
 		t.Fatalf("loaded=%g/%v", total, goods)
 	}
-	h := NewUpkeepHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), nil, nil)
+	h := NewUpkeepHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), nil, nil, events.NewScheduler(pool, clk).Clock())
 	if fed, err := h.eatProvisions(ctx, ship, 1); err != nil || !fed {
 		t.Fatalf("fed=%v err=%v", fed, err)
 	}

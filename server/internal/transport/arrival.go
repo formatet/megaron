@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"formatet/megaron/server/internal/carrier"
+	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
 	"github.com/google/uuid"
@@ -219,6 +220,9 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 
 	var passengerEvents []*events.Event
 	if shipUnitID != nil {
+		if err = economy.HospitalityAtTransportPort(ctx, tx, p.TransportID, *destID); err != nil {
+			return err
+		}
 		passengerEvents, err = carrier.PortTx(ctx, tx, h.eventStore, e.WorldID, *shipUnitID, *destID, e.DueTick)
 		if err != nil {
 			return err

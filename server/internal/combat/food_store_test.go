@@ -45,7 +45,7 @@ func TestFoodStore_MigratedGrainFeedsGarrison(t *testing.T) {
 	if err := pool.QueryRow(ctx, `INSERT INTO units(world_id,owner_id,settlement_id,support_settlement_id,home_settlement_id,type,category,size,status) VALUES($1,$2,$3,$3,$3,'spearman','land',100,'garrison') RETURNING id`, f.worldID, f.owner, f.capitalID).Scan(&uid); err != nil {
 		t.Fatal(err)
 	}
-	h := NewUpkeepHandler(pool, events.NewScheduler(pool, clock.NewTestClock(time.Unix(0, 0))), events.NewStore(pool), nil, nil)
+	h := NewUpkeepHandler(pool, events.NewScheduler(pool, clock.NewTestClock(time.Unix(0, 0))), events.NewStore(pool), nil, nil, events.NewScheduler(pool, clock.NewTestClock(time.Unix(0, 0))).Clock())
 	event := events.ScheduledEvent{ID: 1840091, WorldID: f.worldID, DueTick: f.tick}
 	for i := 0; i < 2; i++ {
 		if err := h.Handle(ctx, event); err != nil {

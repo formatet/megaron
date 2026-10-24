@@ -52,8 +52,7 @@ func TestFoodOrdering_GarrisonFedInFullBeforePopulationTakesShortfall(t *testing
 	}
 
 	upkeepH := NewUpkeepHandler(pool, events.NewScheduler(pool, clock.NewTestClock(time.Now())),
-		events.NewStore(pool), &fakeBroadcaster{}, nil)
-
+		events.NewStore(pool), &fakeBroadcaster{}, nil, events.NewScheduler(pool, clock.NewTestClock(time.Now())).Clock())
 
 	// Plikt (50) first — the day's order this test exists to pin.
 	if err := upkeepH.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.tick}); err != nil {

@@ -1,0 +1,5 @@
+--- FAIL: TestShipFoodReturnNamesHomecomingRatherThanRemoteDeparture (0.00s)
+    ship_food_return_test.go:19: missing "Nike came home early" in ""
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL

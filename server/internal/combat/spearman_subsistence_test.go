@@ -20,7 +20,7 @@ func TestSpearmanZeroSilverStillEatsAndNeverDeserts(t *testing.T) {
 	 VALUES($1,$2,'spearman','land',100,'garrison',$3,$3,71) RETURNING id`, f.worldID, f.owner, f.capitalID).Scan(&id); err != nil {
 		t.Fatal(err)
 	}
-	h := NewUpkeepHandler(pool, events.NewScheduler(pool, clock.NewTestClock(time.Unix(0, 0))), events.NewStore(pool), &fakeBroadcaster{}, nil)
+	h := NewUpkeepHandler(pool, events.NewScheduler(pool, clock.NewTestClock(time.Unix(0, 0))), events.NewStore(pool), &fakeBroadcaster{}, nil, events.NewScheduler(pool, clock.NewTestClock(time.Unix(0, 0))).Clock())
 	for i := 0; i < 80; i++ {
 		if err := h.Handle(ctx, events.ScheduledEvent{ID: int64(970000 + i), WorldID: f.worldID, DueTick: f.tick + i}); err != nil {
 			t.Fatal(err)

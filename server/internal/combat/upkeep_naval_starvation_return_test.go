@@ -117,7 +117,7 @@ func mkStarvingShip(t *testing.T, pool *pgxpool.Pool, worldID, ownerID, supportS
 func newStarvationUpkeepHandler(pool *pgxpool.Pool, hub Broadcaster) *UpkeepHandler {
 	clk := clock.NewTestClock(time.Now())
 	arrivals := NewUnitArrivalHandler(pool, events.NewStore(pool), hub, events.NewScheduler(pool, clk), clk)
-	return NewUpkeepHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), hub, arrivals)
+	return NewUpkeepHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), hub, arrivals, events.NewScheduler(pool, clk).Clock())
 }
 
 // 1. Trigger: crew 20 → 18 → 16 → 14 → 12 → 10 over five grain-starved ticks

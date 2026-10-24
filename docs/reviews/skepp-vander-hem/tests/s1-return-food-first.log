@@ -1,0 +1,5 @@
+» färsk DB på migration 210 · commit f76eba5e+ändringar
+# formatet/megaron/server/internal/transport
+internal/transport/arrival.go:222:12: undefined: economy
+FAIL	formatet/megaron/server/internal/combat [build failed]
+FAIL

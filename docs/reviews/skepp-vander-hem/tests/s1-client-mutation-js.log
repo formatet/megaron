@@ -1,0 +1,42 @@
+TAP version 13
+# Subtest: ShipCameHomeForFood names the homecoming and preserves historical starving notice
+not ok 1 - ShipCameHomeForFood names the homecoming and preserves historical starving notice
+  ---
+  duration_ms: 1.93516
+  type: 'test'
+  location: '/tmp/megaron-codex-skepp-vander-hem-20261024/web/static/js/megaron/ui/ship_food_return.test.mjs:7:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'Nike is turning home early — food for the way back only (20 crew home)'
+    - 'Nike came home early — food for the way back only (20 crew home)'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'Nike came home early — food for the way back only (20 crew home)'
+  actual: 'Nike is turning home early — food for the way back only (20 crew home)'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-skepp-vander-hem-20261024/web/static/js/megaron/ui/ship_food_return.test.mjs:9:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: food homecoming uses the home hex or the returned ship for navigation
+ok 2 - food homecoming uses the home hex or the returned ship for navigation
+  ---
+  duration_ms: 0.920658
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 1
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 55.784376

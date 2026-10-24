@@ -57,7 +57,7 @@ func TestUpkeepAttrition_NavalUnitSurvivesOneMissedGrainTick(t *testing.T) {
 	}
 
 	broadcaster := &fakeBroadcaster{}
-	h := NewUpkeepHandler(pool, events.NewScheduler(pool, clock.NewTestClock(time.Now())), events.NewStore(pool), broadcaster, nil)
+	h := NewUpkeepHandler(pool, events.NewScheduler(pool, clock.NewTestClock(time.Now())), events.NewStore(pool), broadcaster, nil, events.NewScheduler(pool, clock.NewTestClock(time.Now())).Clock())
 	if err := h.Handle(ctx, events.ScheduledEvent{ID: 90001, WorldID: f.worldID, DueTick: f.tick}); err != nil {
 		t.Fatalf("upkeep Handle: %v", err)
 	}
@@ -103,7 +103,7 @@ func TestUpkeepAttrition_NavalUnitEventuallyDisbandsFromSustainedStarvation(t *t
 
 	shipID := mkNavalUnit(t, pool, f.worldID, f.owner, f.townID, "galley", 20)
 
-	h := NewUpkeepHandler(pool, events.NewScheduler(pool, clock.NewTestClock(time.Now())), events.NewStore(pool), &fakeBroadcaster{}, nil)
+	h := NewUpkeepHandler(pool, events.NewScheduler(pool, clock.NewTestClock(time.Now())), events.NewStore(pool), &fakeBroadcaster{}, nil, events.NewScheduler(pool, clock.NewTestClock(time.Now())).Clock())
 
 	var status string
 	ticks := 0
@@ -149,7 +149,7 @@ func TestUpkeepAttrition_LandCohortLossIsProportionalNotFlat(t *testing.T) {
 	full := mkCohort(100)
 	thin := mkCohort(12)
 
-	h := NewUpkeepHandler(pool, events.NewScheduler(pool, clock.NewTestClock(time.Now())), events.NewStore(pool), &fakeBroadcaster{}, nil)
+	h := NewUpkeepHandler(pool, events.NewScheduler(pool, clock.NewTestClock(time.Now())), events.NewStore(pool), &fakeBroadcaster{}, nil, events.NewScheduler(pool, clock.NewTestClock(time.Now())).Clock())
 	if err := h.Handle(ctx, events.ScheduledEvent{ID: 92001, WorldID: f.worldID, DueTick: f.tick}); err != nil {
 		t.Fatalf("upkeep Handle: %v", err)
 	}

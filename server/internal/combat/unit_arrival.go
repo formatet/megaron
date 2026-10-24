@@ -210,6 +210,11 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 	}
 
 	destQ, destR := *u.targetQ, *u.targetR
+	if u.category == "naval" && u.landTargetQ != nil && u.landTargetR != nil && u.marchIntent != nil && (*u.marchIntent == "passage" || *u.marchIntent == "land" || *u.marchIntent == "pickup") {
+		if err := hospitalityAtTarget(ctx, tx, u, *u.landTargetQ, *u.landTargetR, worldID); err != nil {
+			return err
+		}
+	}
 	// A port visit is physical evidence, independent of how quickly the ship
 	// starts its next leg. Never synthesize it from an ETA or open-sea waypoint.
 	defer func() {
@@ -297,6 +302,9 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 	// bypassing the normal hex→settlement lookup below, which fails for a
 	// naval unit resting at the sea hex adjacent to a coastal settlement (that
 	// hex has no settlement row of its own).
+	if u.marchIntent != nil && *u.marchIntent == "food_return" {
+		return h.foodReturned(ctx, tx, u, destQ, destR, worldID)
+	}
 	if u.marchIntent != nil && *u.marchIntent == "explore_return" {
 		return h.exploreReturned(ctx, tx, u, destQ, destR, worldID)
 	}
@@ -1318,6 +1326,7 @@ const (
 	// navalStarvationReturnCrewFraction of its full crew (upkeep.go
 	// applyAttrition) and it turns for home on its own.
 	returnReasonStarvation
+	returnReasonFood
 	// returnReasonSweptFromSea: R6's one-time deploy transition
 	// (main.go's sweepShipsAtSeaOnDeploy) turns a ship for home because it was
 	// left 'positioned' at sea under the pre-R3 rules — R3 means it can never
@@ -1401,6 +1410,9 @@ func (h *UnitArrivalHandler) dispatchReturnHome(
 	// unit can be unloaded straight into garrison on arrival — an empty
 	// pickup return (timed out, or nothing was ever boarded) is otherwise
 	// indistinguishable from a plain explore return and reuses that path.
+	if reason == returnReasonFood || reason == returnReasonStarvation {
+		returnIntent = "food_return"
+	}
 	if reason == returnReasonPickup && u.cargoUnitID != nil {
 		returnIntent = "pickup_return"
 	}
@@ -1425,19 +1437,12 @@ func (h *UnitArrivalHandler) dispatchReturnHome(
 				CrewAfter:        u.crew,
 			}, worldID, nil)
 
-		if h.hub != nil {
-			_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "UnitReturnedStarving", 3, map[string]any{
-				"unit_id":    u.id,
-				"name":       name,
-				"q":          fromQ,
-				"r":          fromR,
-				"arrives_at": arrivesAt,
-				"crew_after": u.crew,
-			})
-		}
 		slog.Info("field unit turning for home (starving)", "unit", u.id, "from_q", fromQ, "from_r", fromR, "home_q", homeQ, "home_r", homeR, "crew_after", u.crew)
 		return nil
 	}
+	if reason == returnReasonFood {
+		return nil
+	} // local decision: owner hears at home only
 	if reason == returnReasonSweptFromSea {
 		_, _ = h.eventStore.Append(ctx, u.id, events.StreamType(unit.StreamUnit), unit.EventUnitSweptFromSea,
 			unit.UnitSweptFromSeaPayload{

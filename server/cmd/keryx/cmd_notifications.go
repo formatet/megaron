@@ -147,6 +147,9 @@ func printNotificationDetail(c *Client, n notificationItem) {
 	if n.Kind == "ExpeditionTurnedHome" || n.Kind == "ExpeditionReport" {
 		printExpeditionLine(c, n)
 	}
+	if n.Kind == "ShipCameHomeForFood" {
+		printShipFoodReturnLine(n)
+	}
 	if n.Kind == "UnitReturnedStarving" {
 		printStarvingReturnLine(c, n)
 	}
@@ -1207,4 +1210,20 @@ func printHexTakenLine(n notificationItem) {
 		line += fmt.Sprintf(", its %s is now %s's", body.Building, taker)
 	}
 	fmt.Printf("      %s\n", line)
+}
+
+// A homecoming report, rather than an immediate message from the distant ship.
+func printShipFoodReturnLine(n notificationItem) {
+	var body struct {
+		Name      string `json:"name"`
+		CrewAfter *int   `json:"crew_after"`
+	}
+	if json.Unmarshal(n.Body, &body) != nil {
+		return
+	}
+	fmt.Printf("      %s came home early — food for the way back only", firstNotificationText(body.Name, "A ship"))
+	if body.CrewAfter != nil {
+		fmt.Printf(" (%d crew home)", *body.CrewAfter)
+	}
+	fmt.Println()
 }

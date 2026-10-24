@@ -129,7 +129,7 @@ func TestFamine_GarrisonSurvivesWhilePopulationStarves(t *testing.T) {
 	clk := clock.NewTestClock(time.Now())
 	sched := events.NewScheduler(pool, clk)
 	store := events.NewStore(pool)
-	upkeepH := combat.NewUpkeepHandler(pool, sched, store, nil, nil)
+	upkeepH := combat.NewUpkeepHandler(pool, sched, store, nil, nil, sched.Clock())
 	foodH := economy.NewFoodTickHandler(pool, sched, store, nil)
 	kharisH := kharis.NewTickHandler(pool, sched, store, nil)
 

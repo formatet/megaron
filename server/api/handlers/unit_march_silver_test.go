@@ -137,7 +137,7 @@ func TestMarchSilverForecastMatchesActualTick(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	upkeep := combat.NewUpkeepHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), nil, nil)
+	upkeep := combat.NewUpkeepHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), nil, nil, events.NewScheduler(pool, clk).Clock())
 	if err := upkeep.Handle(ctx, events.ScheduledEvent{WorldID: world, DueTick: 10}); err != nil {
 		t.Fatal(err)
 	}

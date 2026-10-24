@@ -245,7 +245,7 @@ func main() {
 	worker.Register(events.ScheduledNavalSeizureOutcome, navalSeizureH.Handle)
 	collapseH := combat.NewCollapseSettlementHandler(pool, eventStore, scheduler, hub)
 	worker.Register(events.ScheduledCollapseSettlement, collapseH.Handle)
-	upkeepH := combat.NewUpkeepHandler(pool, scheduler, eventStore, hub, unitArrivalH)
+	upkeepH := combat.NewUpkeepHandler(pool, scheduler, eventStore, hub, unitArrivalH, scheduler.Clock())
 	worker.Register(events.ScheduledUpkeepTick, upkeepH.Handle)
 	standingOrderH := combat.NewStandingOrderTickHandler(pool, scheduler, gameClock, hub)
 	worker.Register(events.ScheduledStandingOrderTick, standingOrderH.Handle)
