@@ -1,0 +1,33 @@
+{"time":"2026-10-24T18:22:03.534896487+02:00","level":"INFO","msg":"migrations applied"}
+{"time":"2026-10-24T18:22:03.554967207+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"795eac3f-3fe4-4082-b592-0d69d4cdaddc","seed":1792858923545939493,"width":56,"height":40,"err":"invalid map: productive copper = 1 (want >= 2); forest fraction = 0.326 (want 0.22..0.30)"}
+{"time":"2026-10-24T18:22:03.563418655+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"795eac3f-3fe4-4082-b592-0d69d4cdaddc","seed":1792858923545939494,"width":56,"height":40,"err":"invalid map: productive tin = 0 (want >= 2); no buildable east tile (q > maxQ/2) has tin in its 6-hex catchment"}
+{"time":"2026-10-24T18:22:03.571643832+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"795eac3f-3fe4-4082-b592-0d69d4cdaddc","seed":1792858923545939495,"width":56,"height":40,"err":"invalid map: productive tin = 0 (want >= 2); no buildable east tile (q > maxQ/2) has tin in its 6-hex catchment"}
+{"time":"2026-10-24T18:22:04.265131349+02:00","level":"INFO","msg":"world created","name":"Lato visual proof","id":"795eac3f-3fe4-4082-b592-0d69d4cdaddc","seed":1792858923545939496}
+{"time":"2026-10-24T18:22:04.271158367+02:00","level":"INFO","msg":"world ready","id":"795eac3f-3fe4-4082-b592-0d69d4cdaddc"}
+{"time":"2026-10-24T18:22:04.271383277+02:00","level":"INFO","msg":"chronicle opened","world":"Lato visual proof","dir":"/tmp/bildplan-proof-vgx0t2l0/chronicles"}
+{"time":"2026-10-24T18:22:04.271991971+02:00","level":"INFO","msg":"tick worker started","tick_seconds":1800}
+{"time":"2026-10-24T18:22:04.271936034+02:00","level":"INFO","msg":"scheduled event worker started","poll":10000000000}
+{"time":"2026-10-24T18:22:04.27225214+02:00","level":"INFO","msg":"build","commit":"3c984c18"}
+{"time":"2026-10-24T18:22:04.272641875+02:00","level":"INFO","msg":"keryx server starting","addr":":41261"}
+{"time":"2026-10-24T18:22:04.277459298+02:00","level":"INFO","msg":"daily ticks seeded","worlds":1}
+2026/10/24 18:22:04 [tki9/szfhGaTt5c-000001] "GET http://127.0.0.1:41261/healthz HTTP/1.1" from 127.0.0.1:33838 - 200 52B in 752.689µs
+2026/10/24 18:22:04 [tki9/szfhGaTt5c-000002] "GET http://127.0.0.1:41261/api/v1/worlds HTTP/1.1" from 127.0.0.1:33844 - 200 156B in 317.67µs
+{"time":"2026-10-24T18:22:04.464778864+02:00","level":"INFO","msg":"player registered","id":"bb6c8916-735b-42f8-b7a4-d34e4550d75a","username":"Leandros-70af90"}
+2026/10/24 18:22:04 [tki9/szfhGaTt5c-000003] "POST http://127.0.0.1:41261/api/v1/auth/register HTTP/1.1" from 127.0.0.1:33860 - 201 390B in 48.077867ms
+{"time":"2026-10-24T18:22:04.48299323+02:00","level":"INFO","msg":"world started","world":"795eac3f-3fe4-4082-b592-0d69d4cdaddc","wanaxes":1}
+2026/10/24 18:22:04 [tki9/szfhGaTt5c-000004] "POST http://127.0.0.1:41261/api/v1/worlds/795eac3f-3fe4-4082-b592-0d69d4cdaddc/join HTTP/1.1" from 127.0.0.1:33870 - 201 327B in 17.290911ms
+2026/10/24 18:22:04 [tki9/szfhGaTt5c-000005] "GET http://127.0.0.1:41261/api/v1/auth/me HTTP/1.1" from 127.0.0.1:33880 - 200 160B in 275.996µs
+2026/10/24 18:22:04 [tki9/szfhGaTt5c-000006] "GET http://127.0.0.1:41261/api/v1/worlds/795eac3f-3fe4-4082-b592-0d69d4cdaddc/units HTTP/1.1" from 127.0.0.1:33886 - 200 1458B in 5.871334ms
+{"time":"2026-10-24T18:22:04.571044355+02:00","level":"INFO","msg":"player registered","id":"bcd12b7f-347f-4be7-85b1-31e2cea5aee3","username":"Myrine-ef22fb"}
+2026/10/24 18:22:04 [tki9/szfhGaTt5c-000007] "POST http://127.0.0.1:41261/api/v1/auth/register HTTP/1.1" from 127.0.0.1:33894 - 201 387B in 46.298751ms
+2026/10/24 18:22:04 [tki9/szfhGaTt5c-000008] "POST http://127.0.0.1:41261/api/v1/worlds/795eac3f-3fe4-4082-b592-0d69d4cdaddc/join HTTP/1.1" from 127.0.0.1:33910 - 201 327B in 9.48046ms
+2026/10/24 18:22:04 [tki9/szfhGaTt5c-000009] "GET http://127.0.0.1:41261/api/v1/auth/me HTTP/1.1" from 127.0.0.1:33922 - 200 160B in 184.152µs
+2026/10/24 18:22:04 [tki9/szfhGaTt5c-000010] "GET http://127.0.0.1:41261/api/v1/worlds/795eac3f-3fe4-4082-b592-0d69d4cdaddc/units HTTP/1.1" from 127.0.0.1:33936 - 200 1464B in 2.648212ms
+{"time":"2026-10-24T18:22:04.6655959+02:00","level":"INFO","msg":"player registered","id":"a3217b58-3227-4a59-8b23-59ea795c88d0","username":"Dorian-69668c"}
+2026/10/24 18:22:04 [tki9/szfhGaTt5c-000011] "POST http://127.0.0.1:41261/api/v1/auth/register HTTP/1.1" from 127.0.0.1:33946 - 201 387B in 46.323996ms
+2026/10/24 18:22:04 [tki9/szfhGaTt5c-000012] "POST http://127.0.0.1:41261/api/v1/worlds/795eac3f-3fe4-4082-b592-0d69d4cdaddc/join HTTP/1.1" from 127.0.0.1:33954 - 201 327B in 11.311484ms
+2026/10/24 18:22:04 [tki9/szfhGaTt5c-000013] "GET http://127.0.0.1:41261/api/v1/auth/me HTTP/1.1" from 127.0.0.1:33966 - 200 160B in 201.704µs
+2026/10/24 18:22:04 [tki9/szfhGaTt5c-000014] "GET http://127.0.0.1:41261/api/v1/worlds/795eac3f-3fe4-4082-b592-0d69d4cdaddc/units HTTP/1.1" from 127.0.0.1:33972 - 200 1464B in 2.755534ms
+{"time":"2026-10-24T18:22:04.817977748+02:00","level":"INFO","msg":"tick worker stopped"}
+{"time":"2026-10-24T18:22:04.818000628+02:00","level":"INFO","msg":"shutting down"}
+{"time":"2026-10-24T18:22:04.818023142+02:00","level":"INFO","msg":"scheduled event worker stopped"}

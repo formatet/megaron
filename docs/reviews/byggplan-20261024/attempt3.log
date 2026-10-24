@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/tmp/megaron-codex-bild-byggplan-20261024/tools/byggplan_bild_20261024.py", line 127, in <module>
+    page.locator('#trig-city').click();food=page.locator('#city-food-sec');assert 'Storm over 1 fishing ground' in food.inner_text(),food.inner_text();food.scroll_into_view_if_needed();capture(page,'D1m' if mobile else 'D1','Actual storm track over one staffed fishing hex: no fishing while the storm stands')
+                                                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
