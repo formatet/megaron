@@ -210,21 +210,19 @@ func (h *ArrivalHandler) notifyDelivered(ctx context.Context, worldID, messenger
 	}
 	var recipientID, senderID uuid.UUID
 	var destName, senderName, messageText string
-	var originName *string
 	var q, r int
 	var offer []byte
 	if err := h.pool.QueryRow(ctx,
 		`SELECT s.owner_id, m.sender_id, s.name, pr.map_q, pr.map_r,
 		        COALESCE(pl.wanax_name, pl.username), m.message_text,
-		        o.name, m.trade_offer
+		        m.trade_offer
 		   FROM messengers m
 		   JOIN settlements s  ON s.id  = m.destination_id
 		   JOIN provinces   pr ON pr.id = s.province_id
 		   JOIN players     pl ON pl.id = m.sender_id
-		   LEFT JOIN settlements o ON o.id = m.origin_id
 		  WHERE m.id = $1 AND correspondence_recipient(m.id,s.owner_id)`,
 		messengerID,
-	).Scan(&recipientID, &senderID, &destName, &q, &r, &senderName, &messageText, &originName, &offer); err != nil {
+	).Scan(&recipientID, &senderID, &destName, &q, &r, &senderName, &messageText, &offer); err != nil {
 		slog.Warn("messenger arrival notice lookup", "messenger", messengerID, "err", err)
 		return
 	}
@@ -242,9 +240,8 @@ func (h *ArrivalHandler) notifyDelivered(ctx context.Context, worldID, messenger
 		"from":         senderName,
 		"message":      messageText,
 	}
-	if originName != nil {
-		body["from_settlement"] = *originName
-	}
+	// No from_settlement: a received letter names its writer, not the city it
+	// came from (Timothy 2026-10-24). Nothing read it either.
 	// An offer-bearing messenger is a decision with a clock on it: the offer can
 	// only be accepted while its bearer stands there (stayTicks). Level 2, and
 	// the terms ride along so the notice states the actual bargain rather than

@@ -7,12 +7,20 @@ import (
 	"testing"
 )
 
-func TestIncomingContactRemembersOnlyOriginAfterPhysicalDelivery(t *testing.T) {
+// A received letter names its writer, never where they live (Timothy
+// 2026-10-24, temenos_settlement "Svar och kartkunskap"). The recipient's map
+// memory and write list learn nothing from it at any stage; the sender still
+// knows the city their own runner physically reached.
+func TestIncomingLetterRevealsNoOriginCity(t *testing.T) {
 	f := setupPlacementFixture(t, nil)
 	pool := p10TestPool(t)
 	ctx := context.Background()
 	var viewer, other, prov, city, letter uuid.UUID
 	if err := pool.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id=$1`, f.settlementID).Scan(&viewer); err != nil {
+		t.Fatal(err)
+	}
+	var dest province.MapPosition
+	if err := pool.QueryRow(ctx, `SELECT p.map_q,p.map_r FROM settlements s JOIN provinces p ON p.id=s.province_id WHERE s.id=$1`, f.settlementID).Scan(&dest.Q, &dest.R); err != nil {
 		t.Fatal(err)
 	}
 	if err := pool.QueryRow(ctx, `INSERT INTO players(username,password_hash) VALUES($1,'x') RETURNING id`, "incoming-"+uuid.NewString()).Scan(&other); err != nil {
@@ -28,38 +36,36 @@ func TestIncomingContactRemembersOnlyOriginAfterPhysicalDelivery(t *testing.T) {
 		t.Fatal(err)
 	}
 	origin := province.MapPosition{Q: 20, R: 20}
+	has := func(ps []province.MapPosition, want province.MapPosition) bool {
+		for _, p := range ps {
+			if p == want {
+				return true
+			}
+		}
+		return false
+	}
 	for _, tc := range []struct {
-		status           string
-		withdrawn, known bool
+		status                     string
+		withdrawn, senderKnowsDest bool
 	}{{"outbound", false, false}, {"delivered", false, true}, {"returning", false, true}, {"arrived", false, true}, {"returning", true, false}, {"lost", false, false}} {
 		if _, err := pool.Exec(ctx, `UPDATE messengers SET status=$2,withdrawn=$3 WHERE id=$1`, letter, tc.status, tc.withdrawn); err != nil {
 			t.Fatal(err)
 		}
-		mem := loadRememberedTiles(ctx, pool, f.worldID, viewer)
-		if mem[[2]int{20, 20}] != tc.known {
-			t.Fatalf("%s withdrawn%v origin known=%v want%v", tc.status, tc.withdrawn, mem[[2]int{20, 20}], tc.known)
+		if loadRememberedTiles(ctx, pool, f.worldID, viewer)[[2]int{20, 20}] {
+			t.Fatalf("%s withdrawn=%v: the recipient's map remembers the sender's city", tc.status, tc.withdrawn)
 		}
-		for _, p := range [][2]int{{19, 20}, {20, 19}, {21, 20}, {20, 21}} {
-			if mem[p] {
-				t.Fatalf("contact leaked neighbouring tile%v", p)
-			}
+		if has(province.VisibleOrigins(ctx, pool, f.worldID, viewer), origin) {
+			t.Fatalf("%s withdrawn=%v: the recipient may write to the sender's city", tc.status, tc.withdrawn)
 		}
-		contactable := false
-		for _, p := range province.VisibleOrigins(ctx, pool, f.worldID, viewer) {
-			if p == origin {
-				contactable = true
-			}
-		}
-		if contactable != tc.known {
-			t.Fatalf("%s reachability=%v want%v", tc.status, contactable, tc.known)
+		if got := has(province.ContactedPositions(ctx, pool, f.worldID, other), dest); got != tc.senderKnowsDest {
+			t.Fatalf("%s withdrawn=%v: sender knows the destination=%v, want %v", tc.status, tc.withdrawn, got, tc.senderKnowsDest)
 		}
 		// Reading through one TX must not require another connection or poison it.
 		tx, err := pool.Begin(ctx)
 		if err != nil {
 			t.Fatal(err)
 		}
-		got := loadRememberedTiles(ctx, tx, f.worldID, viewer)
-		if got[[2]int{20, 20}] != tc.known {
+		if loadRememberedTiles(ctx, tx, f.worldID, viewer)[[2]int{20, 20}] {
 			t.Fatal("TX contact disagrees")
 		}
 		if err := tx.Rollback(ctx); err != nil {

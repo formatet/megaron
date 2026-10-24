@@ -62,17 +62,16 @@ func VisibleOrigins(ctx context.Context, db Queryer, worldID, playerID uuid.UUID
 	return append(origins, ContactedPositions(ctx, db, worldID, playerID)...)
 }
 
-// ContactedPositions is the shared exact-city contact memory. It deliberately
-// gives no live eye or halo, and never invents a settlement for a host origin.
+// ContactedPositions is the shared exact-city contact memory: the cities your
+// own messengers have physically reached. It deliberately gives no live eye or
+// halo. A letter you RECEIVE adds nothing here (Timothy 2026-10-24,
+// temenos_settlement "Svar och kartkunskap"): it tells you who wrote, not
+// where they live — you answer through the same bearer. From 2026-10-21
+// (88c8cdc9) to then, receipt also revealed the origin city.
 func ContactedPositions(ctx context.Context, db Queryer, worldID, playerID uuid.UUID) []MapPosition {
 	rows, err := db.Query(ctx, `SELECT DISTINCT p.map_q,p.map_r FROM messengers m
  JOIN settlements s ON s.id=m.destination_id JOIN provinces p ON p.id=s.province_id
- WHERE m.world_id=$1 AND m.sender_id=$2 AND NOT m.withdrawn AND m.status IN ('delivered','returning','arrived')
- UNION
- SELECT p.map_q,p.map_r FROM messengers m
- JOIN settlements dest ON dest.id=m.destination_id
- JOIN settlements origin ON origin.id=m.origin_id JOIN provinces p ON p.id=origin.province_id
- WHERE m.world_id=$1 AND dest.owner_id=$2 AND NOT m.withdrawn AND m.status IN ('delivered','returning','arrived')`, worldID, playerID)
+ WHERE m.world_id=$1 AND m.sender_id=$2 AND NOT m.withdrawn AND m.status IN ('delivered','returning','arrived')`, worldID, playerID)
 	if err != nil {
 		return nil
 	}

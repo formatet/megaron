@@ -170,6 +170,10 @@ func TestMessengerArrivalNotifiesRecipientByName(t *testing.T) {
 		t.Errorf("q,r = %v,%v want %d,%d — without them there is no destination to jump to",
 			p["q"], p["r"], sc.destQ, sc.destR)
 	}
+	// A received letter names its writer, not their city (Timothy 2026-10-24).
+	if _, leaked := p["from_settlement"]; leaked {
+		t.Errorf("notice carries from_settlement = %v — a received letter must not name the sender's city", p["from_settlement"])
+	}
 	if p["message"] != "Will you trade tin?" {
 		t.Errorf("message = %v, want the text carried", p["message"])
 	}
