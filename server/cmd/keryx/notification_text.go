@@ -18,6 +18,21 @@ func printNotificationSummary(c *Client, n notificationItem) {
 			return
 		}
 	}
+	if n.Kind == "RiteAnswered" {
+		var b struct {
+			PrayerName string `json:"prayer_name"`
+			Name       string `json:"name"`
+			Message    string `json:"message"`
+		}
+		if json.Unmarshal(n.Body, &b) == nil {
+			place := ""
+			if b.Name != "" {
+				place = " at " + b.Name
+			}
+			fmt.Printf("      %s%s: %s\n", b.PrayerName, place, b.Message)
+			return
+		}
+	}
 	if n.Kind == "KharisDeclining" {
 		var b struct {
 			Kharis    float64 `json:"kharis"`

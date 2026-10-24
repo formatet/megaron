@@ -57,7 +57,7 @@
     {"id":"divine-wrath","title":"Divine wrath","category":"The gods","drawer":"kult","kinds":["KharisDeclining"],"related":["kharis","temples","rites"]},
     {"id": "kharis",       "title": "Kharis",                       "category": "The gods", "drawer": "kult", "kinds": ["KharisBandChanged", "DivineBlessing", "DivinePunishment"], "related": ["temples", "rites"]},
     {"id": "temples",      "title": "Temples and devotion",         "category": "The gods", "related": ["kharis", "buildings"]},
-    {"id": "rites",        "title": "Rites and prayers",            "category": "The gods", "related": ["kharis", "bronze"]},
+    {"id": "rites",        "title": "Rites and prayers",            "category": "The gods", "kinds": ["RiteAnswered"], "related": ["kharis", "bronze"]},
 
     {"id": "colonies",     "title": "Colonies",                     "category": "Growing", "kinds": ["ColonyFounded", "OutpostEstablished"], "related": ["routes", "founding"]},
     {"id": "bronze",       "title": "The bronze problem",           "category": "Growing", "related": ["goods", "sea", "rites"]},

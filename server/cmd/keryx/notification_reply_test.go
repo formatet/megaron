@@ -27,3 +27,12 @@ func TestLetterNotificationsNameTheReplyCommand(t *testing.T) {
 		t.Errorf("UnitArrived offered a reply: %q", out)
 	}
 }
+
+func TestRiteAnsweredSummary(t *testing.T) {
+	out := capturePrint(t, func() {
+		printNotificationSummary(nil, notificationItem{Kind: "RiteAnswered", Body: json.RawMessage(`{"prayer_name":"Potnia's Vision","name":"Knossos","message":"Potnia marks copper at (9,0)"}`)})
+	})
+	if !strings.Contains(out, "Potnia's Vision at Knossos: Potnia marks copper at (9,0)") {
+		t.Fatalf("summary %q", out)
+	}
+}

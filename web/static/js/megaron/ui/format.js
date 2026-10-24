@@ -166,7 +166,7 @@ export function notifDomain(kind) {
     // Diplomacy — the messenger channel.
     MessengerLostAtSea: 'diplomacy', MessengerRescuedAtSea: 'diplomacy', MessengerArrival: 'diplomacy', MessengerReturned: 'diplomacy', PassageStalled: 'diplomacy',
     // Kult — the gods answering.
-    TempleDemolitionWrath: 'kult', KharisDeclining: 'kult', KharisBandChanged: 'kult', DivinePunishment: 'kult', DivineBlessing: 'kult', KharisEvent: 'kult',
+    RiteAnswered: 'kult', TempleDemolitionWrath: 'kult', KharisDeclining: 'kult', KharisBandChanged: 'kult', DivinePunishment: 'kult', DivineBlessing: 'kult', KharisEvent: 'kult',
   };
   return domains[kind] || 'system';
 }
@@ -219,6 +219,7 @@ export function notifIcon(kind) {
     ShipStranded:       '⚠',
     DivinePunishment:   '⚡',
     DivineBlessing:     '✨',
+    RiteAnswered:       '🕯',
     CivilianStarvationStarted: '🍽', CivilianStarvationEnded: '🍽',
     StorageCapacityWarning: '📦', StorageOverflow: '📦',
     FoodShortfall:      '🍽',
@@ -835,6 +836,13 @@ export function notifText(kind, body) {
         case 'garrison_plague': return `A pestilence swept the barracks${place} — ${amount} fell${protection}`;
         default:                return `${kind} — ${payloadSummary(body)}`;
       }
+    }
+    case 'RiteAnswered': {
+      // The answer to your own prayer (byggplan A.2); the server's message
+      // already says what the god did.
+      const who = body.prayer_name || 'Your prayer';
+      const place = body.name ? ` at ${body.name}` : '';
+      return esc(`${who}${place}: ${body.message || (body.success ? 'the gods answer' : 'the gods are silent')}`);
     }
     case 'DivineBlessing': {
       const place = body.name ? ` at ${body.name}` : '';

@@ -337,6 +337,7 @@ func main() {
 	soh := handlers.NewStandingOrderHandler(pool)
 	rdh := handlers.NewRetreatDefaultHandler(pool)
 	sh := handlers.NewSettlementHandler(pool, eventStore, scheduler, gameClock)
+	sh.Hub = hub
 	mh := handlers.NewMessengerHandler(pool, scheduler, gameClock, hub)
 	pah := handlers.NewPassageHandler(pool, scheduler, eventStore, gameClock)
 	jh := handlers.NewJoinHandler(pool, eventStore, gameClock, hub)
