@@ -1,0 +1,8 @@
+» färsk DB på migration 209 · commit c6d35631+ändringar
+2026/10/24 06:54:52 INFO player registered id=33da2b5e-723c-4fb8-952f-4cadcaabc262 username=reply-sender-6237f1ea-1def-4838-be95-6c4757629375
+2026/10/24 06:54:52 INFO player registered id=4ed88317-3e0e-497b-a2d1-328622407988 username=reply-receiver-1c3fb63c-14c8-4328-93ee-a9f1f3389d59
+--- FAIL: TestCorrespondenceMemoryRecipientPaginationFreezesAcceptance (0.14s)
+    correspondence_memory_test.go:428: later accepted offer slipped into recipient snapshot: map[accepted_at:2026-10-24T06:54:52.660273+02:00 case_id:e1196fa2-06d1-4a58-909b-3d39dfe0a012 destination_name:Reply-Dest-669de867-745b-426a-8bb2-68cffcc7fd2f id:e237ee70-d2ae-4c1b-ba95-191a249b0341 origin_name:Reply-Origin-bf98747e-8e41-44e6-9683-2804f651091f outcome:unavailable recipient_id:4ed88317-3e0e-497b-a2d1-328622407988 recipient_name:reply-receiver-1c3fb63c-14c8-4328-93ee-a9f1f3389d59 sender_id:33da2b5e-723c-4fb8-952f-4cadcaabc262 sender_name:reply-sender-6237f1ea-1def-4838-be95-6c4757629375 sent_at:2026-10-24T05:54:52+02:00 subject:Receipt snapshot terms:map[kind:buy offer_silver:7 status:accepted want_good:tin want_qty:12.5]]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.139s
+FAIL

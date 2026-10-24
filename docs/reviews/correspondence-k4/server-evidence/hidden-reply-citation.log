@@ -1,0 +1,8 @@
+» färsk DB på migration 209 · commit c6d35631+ändringar
+2026/10/24 06:54:41 INFO player registered id=96e348d4-740b-4872-9f69-6eaa2b1d196e username=reply-sender-37a1ebb6-70ce-4053-95cb-8f7e2d998b3f
+2026/10/24 06:54:41 INFO player registered id=2b9e21a5-4642-4ae4-afe0-ae31d42ad9fe username=reply-receiver-d9bc0711-5aa0-4214-83ba-6d715721a322
+--- FAIL: TestCorrespondenceMemoryCitationsAreExactPrivateAndHistoricallyAttributed (0.12s)
+    correspondence_memory_test.go:122: hidden reply citation allowed: 201 map[author_id:2b9e21a5-4642-4ae4-afe0-ae31d42ad9fe author_name:reply-receiver-d9bc0711-5aa0-4214-83ba-6d715721a322 case_id:a746a825-ab60-4faf-8039-31e84ef2dda5 city_name:Reply-Dest-5d81cd7a-f843-4f5c-9e3c-323bf2515ba5 created_at:2026-10-24T06:54:41.888071+02:00 id:2fcc1537-d17f-45f8-93fd-2767ae6731e4 letter_id:ddd8c8b7-9769-45bc-9d30-18ffc1c4ba14 quote:<reply> source:reply]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.127s
+FAIL

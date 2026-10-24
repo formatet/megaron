@@ -1,0 +1,8 @@
+» färsk DB på migration 208 · commit c6d35631
+2026/10/24 06:53:34 INFO player registered id=c960ceed-57f1-4911-aa6f-6fe7722a1a5d username=reply-sender-6825d444-431d-4806-ad2e-4335e64672fe
+2026/10/24 06:53:34 INFO player registered id=f51e0a2c-b046-4140-8a63-97d4e076688a username=reply-receiver-225d1c02-7112-4872-8179-e6f123a03eef
+--- FAIL: TestCorrespondenceMemoryHTTPRouteContract (0.11s)
+    correspondence_memory_route_test.go:25: memory endpoint status=404, want200 empty streams: map[]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.115s
+FAIL

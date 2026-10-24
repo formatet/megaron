@@ -1,0 +1,8 @@
+» färsk DB på migration 209 · commit c6d35631+ändringar
+2026/10/24 06:54:47 INFO player registered id=e5809506-80c3-4492-be23-3bd8975c8c3b username=reply-sender-850672e3-305e-4ee4-892b-09e445b44df0
+2026/10/24 06:54:47 INFO player registered id=949017a6-5eaa-400b-b9ab-59d893ad4dd7 username=reply-receiver-502bb011-ad03-4640-96e0-8dd6435fd802
+--- FAIL: TestCorrespondenceMemoryTransactionPaginationFreezesAcceptanceAndReturn (0.14s)
+    correspondence_memory_test.go:279: newly known acceptance/return slipped into snapshot: 861bedc7-951f-48cb-9924-4285779afc45
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.141s
+FAIL

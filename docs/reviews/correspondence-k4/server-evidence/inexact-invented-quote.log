@@ -1,0 +1,9 @@
+» färsk DB på migration 209 · commit c6d35631+ändringar
+2026/10/24 06:54:36 INFO player registered id=cad13b98-e2ca-4199-a488-62167ce4755e username=reply-sender-1b5c873c-99fb-4286-9ce3-bc190557f5a9
+2026/10/24 06:54:36 INFO player registered id=80479963-b302-43e8-a56f-95b35ff8b2a9 username=reply-receiver-37f43fc6-ded2-4bbd-a688-0db84046a821
+2026/10/24 06:54:36 INFO player registered id=b0e30c66-c24a-404a-a92d-d3c51957c110 username=k4-stranger-d1e4d6c4-3820-4bac-8fd7-060b66949f45
+--- FAIL: TestCorrespondenceMemoryRejectsUnauthorizedOrInexactCitation (0.17s)
+    correspondence_memory_test.go:201: inexact quote accepted: 201 map[author_id:cad13b98-e2ca-4199-a488-62167ce4755e author_name:reply-sender-1b5c873c-99fb-4286-9ce3-bc190557f5a9 case_id:4955e828-7621-4b86-99bb-97c00d2bd23d city_name:Reply-Origin-68d68bfa-a250-49cd-9f7e-4fdd2880b5fc created_at:2026-10-24T06:54:36.470923+02:00 id:82c5f327-5c1a-4a10-aff7-65bc50ef97ae letter_id:d1a5807d-1bab-47b8-a934-201c709b0757 quote:Invented promise source:message]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.169s
+FAIL

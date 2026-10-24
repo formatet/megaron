@@ -1,0 +1,8 @@
+» färsk DB på migration 209 · commit c6d35631+ändringar
+2026/10/24 06:54:30 INFO player registered id=4663c803-93f7-46ed-88b2-decdee155d45 username=reply-sender-60a9a352-c189-4dd9-9562-ccabb31e3936
+2026/10/24 06:54:30 INFO player registered id=e509ec9d-230d-4773-9304-6fcb7fa69800 username=reply-receiver-456f7674-96a3-4ada-9f02-df96bd5b1279
+--- FAIL: TestCorrespondenceMemoryCitationsAreExactPrivateAndHistoricallyAttributed (0.13s)
+    correspondence_memory_test.go:135: counterpart citation leaked: map[citations:[map[author_id:4663c803-93f7-46ed-88b2-decdee155d45 author_name:reply-sender-60a9a352-c189-4dd9-9562-ccabb31e3936 case_id:9622a8f3-5539-4539-bd0e-5a3016986706 city_name:Reply-Origin-28324edc-d503-46ca-8901-794abe15e891 created_at:2026-10-24T06:54:30.980478+02:00 id:2fb7ceff-0783-4e6c-be90-67fbeddda96e letter_id:68fdc007-0f8c-4cf3-8f0f-37f04b42d13b quote:winter terms source:message] map[author_id:e509ec9d-230d-4773-9304-6fcb7fa69800 author_name:reply-receiver-456f7674-96a3-4ada-9f02-df96bd5b1279 case_id:4c85aaeb-0a0a-4589-bb1d-b0710b25e2f5 city_name:Reply-Dest-b0c73d60-17e2-48f6-b27a-1c493dcea8ca created_at:2026-10-24T06:54:30.978345+02:00 id:081ca02b-030a-4c28-9760-25f0b82f3154 letter_id:922b64ba-895e-4c79-95c5-7bd9bfaf52e1 quote:Äkta <reply> & a promise source:reply]] counterpart_id:e509ec9d-230d-4773-9304-6fcb7fa69800 next_cursor: transactions:[]]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.135s
+FAIL
