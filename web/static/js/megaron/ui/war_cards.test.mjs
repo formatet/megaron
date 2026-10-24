@@ -103,10 +103,10 @@ test('P: ships off the coast take no March while a city remains, but keep the R6
 
 test('B: Army card shows server rations and explicit zero spearman silver without guessing',()=>{
  for(const [extra,want] of [
-  [{upkeep_context:'active',upkeep_grain_per_tick:0.5,upkeep_silver_per_tick:0},'0.5 grain, 0 silver per day'],
-  [{status:'marching',upkeep_grain_per_tick:1,upkeep_silver_per_tick:0},'1 grain, 0 silver per day'],
-  [{type:'elite_infantry',upkeep_grain_per_tick:0.6,upkeep_silver_per_tick:2},'0.6 grain, 2 silver per day'],
-  [{category:'naval',type:'galley',upkeep_grain_per_tick:0.02,upkeep_silver_per_tick:1.5},'0.02 grain, 1.5 silver per day'],
+  [{upkeep_context:'active',upkeep_grain_per_tick:0.5,upkeep_silver_per_tick:0},'0.5 grain, 0 silver per game day'],
+  [{status:'marching',upkeep_grain_per_tick:1,upkeep_silver_per_tick:0},'1 grain, 0 silver per game day'],
+  [{type:'elite_infantry',upkeep_grain_per_tick:0.6,upkeep_silver_per_tick:2},'0.6 grain, 2 silver per game day'],
+  [{category:'naval',type:'galley',upkeep_grain_per_tick:0.02,upkeep_silver_per_tick:1.5},'0.02 grain, 1.5 silver per game day'],
  ]) {
   const html=renderUnitCard(unit(extra));
   assert.ok(html.includes('Upkeep: '+want));
@@ -117,9 +117,9 @@ test('B: Army card shows server rations and explicit zero spearman silver withou
 
 
 test('B: upkeep billing context comes from server, not guessed from unit status',()=>{
- assert.match(renderUnitCard(unit({status:'garrison',upkeep_context:'inactive',upkeep_grain_per_tick:0.2,upkeep_silver_per_tick:0})), /Upkeep when active: 0.2 grain, 0 silver per day/);
- assert.match(renderUnitCard(unit({status:'garrison',upkeep_context:'subsistence',upkeep_grain_per_tick:1,upkeep_silver_per_tick:0})), /Upkeep after settling: 1 grain, 0 silver per day/);
- assert.match(renderUnitCard(unit({status:'forming',upkeep_context:'active',upkeep_grain_per_tick:0.5,upkeep_silver_per_tick:0})), />Upkeep: 0.5 grain, 0 silver per day/);
+ assert.match(renderUnitCard(unit({status:'garrison',upkeep_context:'inactive',upkeep_grain_per_tick:0.2,upkeep_silver_per_tick:0})), /Upkeep when active: 0.2 grain, 0 silver per game day/);
+ assert.match(renderUnitCard(unit({status:'garrison',upkeep_context:'subsistence',upkeep_grain_per_tick:1,upkeep_silver_per_tick:0})), /Upkeep after settling: 1 grain, 0 silver per game day/);
+ assert.match(renderUnitCard(unit({status:'forming',upkeep_context:'active',upkeep_grain_per_tick:0.5,upkeep_silver_per_tick:0})), />Upkeep: 0.5 grain, 0 silver per game day/);
 });
 
 
@@ -127,9 +127,9 @@ test('B: civilian Nomadic Host has no upkeep row when the server says none',()=>
  assert.doesNotMatch(renderUnitCard(unit({type:'nomadic_host',upkeep_context:'none',upkeep_grain_per_tick:0,upkeep_silver_per_tick:0})), /unit-upkeep|Upkeep:/);
 });
 
-test('Haiku 6: a ship at sea with part of a day aboard is not out of food',()=>{
+test('Haiku 6: a ship at sea with part of a game day aboard is not out of food',()=>{
  const ship=extra=>renderUnitCard(unit({category:'naval',type:'galley',status:'marching',provision_days:0,...extra}));
- assert.match(ship({provisions_aboard:true}),/food for less than a day/);
+ assert.match(ship({provisions_aboard:true}),/food for less than a game day/);
  assert.doesNotMatch(ship({provisions_aboard:true}),/out of food/);
  assert.match(ship({}),/out of food/);
 });
@@ -138,12 +138,12 @@ test('equal food: roster food alias wins and ship manifest preserves each good',
  const html=renderUnitCard(unit({category:'naval',type:'galley',status:'marching',crew:40,
   upkeep_context:'active',upkeep_food_per_tick:0.5,upkeep_grain_per_tick:999,upkeep_silver_per_tick:0,
   provision_days:7,provisions_aboard:true,provisions_by_good:{grain:1,fish:9,oil:2,wine:3}}));
- assert.match(html,/Upkeep: 0.5 food, 0 silver per day/);
- assert.match(html,/food for 7 days.*1 grain, 9 fish, 2 oil, 3 wine/);
+ assert.match(html,/Upkeep: 0.5 food, 0 silver per game day/);
+ assert.match(html,/food for 7 game days.*1 grain, 9 fish, 2 oil, 3 wine/);
  assert.doesNotMatch(html,/999/);
  const small=renderUnitCard(unit({category:'naval',type:'galley',status:'marching',crew:40,
   provision_days:0,provisions_aboard:true,provisions_by_good:{grain:0,fish:0.008,oil:0.0000001,wine:0.1}}));
- assert.match(small,/food for less than a day.*0 grain, under 0.1 fish, under 0.1 oil, 0.1 wine/);
+ assert.match(small,/food for less than a game day.*0 grain, under 0.1 fish, under 0.1 oil, 0.1 wine/);
  assert.doesNotMatch(small,/&lt;|<0.1|0 fish/,'small positives remain safe plain text, distinct from zero');
 });
 
@@ -158,20 +158,20 @@ test('B: Army pay preserves server home, field and surviving-crew amounts',()=>{
   [{category:'naval',type:'emporos',status:'fitting_out',crew:10},0.05],
  ]) {
   const html=renderUnitCard(unit({...state,upkeep_context:'active',upkeep_food_per_tick:0.1,upkeep_silver_per_tick:pay}));
-  assert.ok(html.includes(pay+' silver per day'), JSON.stringify(state));
+  assert.ok(html.includes(pay+' silver per game day'), JSON.stringify(state));
  }
 });
 
 test('freighting ship shows real provisions, final ration and empty hold without new orders',()=>{
  const ship=extra=>renderUnitCard(unit({category:'naval',type:'merchantman',status:'freighting',deployable:false,crew:10,hull:5,...extra}));
  const fed=ship({provision_days:7,provisions_aboard:true,provisions_by_good:{fish:0.7}});
- assert.match(fed,/food for 7 days.*0.7 fish/);
- assert.match(ship({provision_days:0,provisions_aboard:true}),/food for less than a day/);
+ assert.match(fed,/food for 7 game days.*0.7 fish/);
+ assert.match(ship({provision_days:0,provisions_aboard:true}),/food for less than a game day/);
  assert.doesNotMatch(ship({provision_days:0,provisions_aboard:true}),/out of food/);
  assert.match(ship({provision_days:0,provisions_aboard:false}),/out of food/);
  assert.doesNotMatch(fed,/>Mission<|>Load<|>Repair<|>Recall<|>Redirect</,'freight binding still blocks orders');
  for(const status of ['garrison','laid_up','fitting_out']){
-  assert.doesNotMatch(renderUnitCard(unit({category:'naval',type:'merchantman',status,provision_days:7,provisions_aboard:true})),/food for 7 days/);
+  assert.doesNotMatch(renderUnitCard(unit({category:'naval',type:'merchantman',status,provision_days:7,provisions_aboard:true})),/food for 7 game days/);
  }
 });
 
@@ -186,6 +186,6 @@ test('ORDER28: paused builds and repairs explain missing workers without a stale
 test('silver flow: basic ships show zero API pay and chariots show doubled pay',()=>{
  for(const [type,category,pay] of [['galley','naval',0],['merchantman','naval',0],['war_galley','naval',0.5],['war_chariot','land',4]]){
   const html=renderUnitCard(unit({type,category,status:'positioned',upkeep_context:'active',upkeep_grain_per_tick:1,upkeep_silver_per_tick:pay}));
-  assert.ok(html.includes(`${pay} silver per day`),`${type} must show server pay ${pay}`);
+  assert.ok(html.includes(`${pay} silver per game day`),`${type} must show server pay ${pay}`);
  }
 });

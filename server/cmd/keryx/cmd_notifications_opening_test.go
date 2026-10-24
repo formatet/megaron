@@ -9,7 +9,7 @@ import (
 func openingNotice(t *testing.T, title string, returning bool) notificationItem {
 	t.Helper()
 	body, err := json.Marshal(map[string]any{"title": title, "returning": returning, "host_id": "private-host-id", "paragraphs": []string{
-		"Time. A day passes every 7 minutes.", "An army crosses a plains hex in 3 days.", "Your Host carries 987 grain and 654 silver.", "Food first. Below 321 people it falls.", "The gods. You are safe for 43 days.", "Orders travel with a Runner.", "Bronze needs copper and tin.", "Rules: ? (Codex). Problems: Report.",
+		"Time. A game day passes every 7 minutes.", "An army crosses a plains hex in 3 game days.", "Your Host carries 987 grain and 654 silver.", "Food first. Below 321 people it falls.", "The gods. You are safe for 43 game days.", "Orders travel with a Runner.", "Bronze needs copper and tin.", "Rules: ? (Codex). Problems: Report.",
 	}})
 	if err != nil {
 		t.Fatal(err)

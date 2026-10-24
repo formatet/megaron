@@ -39,11 +39,11 @@ test('AK4: a value the server never sends still falls back to itself, not a fabr
 
 test('Alpha: realm god waiting time uses game days and blocks Offer', () => {
  const html=prayerStatusHTML({id:'minoan_potnia_walls',affordable:false,cooldown_remaining_game_days:24});
- assert.match(html,/on cooldown.*24 days/);assert.doesNotMatch(html,/Offer|24m|not affordable/);
+ assert.match(html,/on cooldown.*24 game days/);assert.doesNotMatch(html,/Offer|24m|not affordable/);
 });
-test('Alpha: active gift shows its remaining days and cannot be offered again', () => {
+test('Alpha: active gift shows its remaining game days and cannot be offered again', () => {
  const html=prayerStatusHTML({id:'minoan_velchanos_green_shoots',affordable:false,active_remaining_game_days:25,cooldown_remaining_game_days:25});
- assert.match(html,/active.*25 days/);assert.doesNotMatch(html,/Offer|not affordable/);
+ assert.match(html,/active.*25 game days/);assert.doesNotMatch(html,/Offer|not affordable/);
 });
 test('Alpha: affordable available prayer still exposes the real cast action', () => {
  assert.match(prayerStatusHTML({id:'minoan_potnia_vision_v2',affordable:true}),/okRite\('minoan_potnia_vision_v2'\).*Offer/);
@@ -52,18 +52,18 @@ test('Alpha: affordable available prayer still exposes the real cast action', ()
 test('Alpha B: unused departure gift remains pending after god wait expires', () => {
   const html = prayerStatusHTML({ id: 'minoan_asterion_thread', departure_pending: true, affordable: false, cooldown_remaining_game_days: 0 });
   assert.match(html, /awaiting next departure/);
-  assert.doesNotMatch(html, /Offer|not affordable|active|days|expires/);
+  assert.doesNotMatch(html, /Offer|not affordable|active|game days|expires/);
 });
 
 test('Alpha B: pending ship gift shows god wait separately without a gift duration', () => {
   const html = prayerStatusHTML({ id: 'minoan_stillness_passage', departure_pending: true, affordable: false, cooldown_remaining_game_days: 12 });
-  assert.match(html, /awaiting next departure; god waits 12 days/);
+  assert.match(html, /awaiting next departure; god waits 12 game days/);
   assert.doesNotMatch(html, /Offer|not affordable|active|left|expires/);
 });
 
 test('Alpha B: consumed departure gift waits for the god before another Offer', () => {
   const html = prayerStatusHTML({ id: 'minoan_asterion_thread', departure_pending: false, affordable: false, cooldown_remaining_game_days: 7 });
-  assert.match(html, /on cooldown.*7 days/);
+  assert.match(html, /on cooldown.*7 game days/);
   assert.doesNotMatch(html, /Offer|awaiting next departure|not affordable/);
 });
 
@@ -78,7 +78,7 @@ const templeFixture = {
 test('temple rows render the server reference and mixed next gift without repricing', () => {
   const html = templeOfferingsHTML([templeFixture]);
   assert.match(html, /Phaistos: <\/span> <span/);
-  assert.match(html, /reference 0\.375 grain per day/);
+  assert.match(html, /reference 0\.375 grain per game day/);
   assert.match(html, /Alternatives: 0\.75 fish or 0\.125 timber or 0\.5 silver/);
   assert.match(html, /Stock: 0\.1 grain, 0\.55 fish, 0 timber, 3 silver/);
   assert.match(html, /Next gift: 0\.1 grain \+ 0\.55 fish/);
@@ -125,8 +125,8 @@ test('Kult controller renders the realm breakdown and templeless net from the pr
     assert.fail('Unexpected API request '+url);
   };
   await loadKultDrawer();
-  assert.match(body.innerHTML,/0.10 base \+ 5 cities cost 1.00 \+ 2500 residents cost 0.25 = 1.10 kharis per day/);
-  assert.match(body.innerHTML,/-1.1 kharis per day/);
+  assert.match(body.innerHTML,/0.10 base \+ 5 cities cost 1.00 \+ 2500 residents cost 0.25 = 1.10 kharis per game day/);
+  assert.match(body.innerHTML,/-1.1 kharis per game day/);
   assert.match(body.innerHTML,/No temples/);
   assert.doesNotMatch(body.innerHTML,/Passive|144|holds for/);
   assert.equal(calls.length,3);

@@ -37,7 +37,7 @@ func showMarchPreview(c *Client, path string, order map[string]any) error {
 		return err
 	}
 	if forecast.Available {
-		fmt.Printf("Arrives in %s (arrives %s), if dispatched now. Conditions may change.\n", formatDays(forecast.DurationTicks, "%d"), formatWorldTime(c, forecast.ArrivalTick))
+		fmt.Printf("Arrives in %s (arrives %s), if dispatched now. Conditions may change.\n", formatDuration(c, forecast.DurationTicks, "%d"), formatWorldTime(c, forecast.ArrivalTick))
 	} else {
 		switch forecast.Reason {
 		case "courier_required", "redirect":
@@ -49,7 +49,7 @@ func showMarchPreview(c *Client, path string, order map[string]any) error {
 		}
 	}
 	if forecast.PlannedExpeditionTicks != nil {
-		fmt.Printf("Planned expedition: %s", formatDays(*forecast.PlannedExpeditionTicks, "%d"))
+		fmt.Printf("Planned expedition: %s", formatDuration(c, *forecast.PlannedExpeditionTicks, "%d"))
 		if forecast.PlannedFirstTargetQ != nil && forecast.PlannedFirstTargetR != nil {
 			fmt.Printf("; first to (%d,%d), then explores around it", *forecast.PlannedFirstTargetQ, *forecast.PlannedFirstTargetR)
 		}
@@ -89,5 +89,5 @@ func marchSilverLine(f marchSilverForecast) string {
 	rate := func(value float64) string {
 		return strconv.FormatFloat(math.Round(value*10000)/10000, 'f', -1, 64)
 	}
-	return fmt.Sprintf("Pay: %s → %s silver per day in the field · %s", rate(*f.UpkeepSilverHome), rate(*f.UpkeepSilverField), runway)
+	return fmt.Sprintf("Pay: %s → %s silver per game day in the field · %s", rate(*f.UpkeepSilverHome), rate(*f.UpkeepSilverField), runway)
 }

@@ -109,7 +109,7 @@ func TestApplySiegeStarvationClock_IncrementsWhileBesiegedAndStarving(t *testing
 		h.applySiegeStarvationClock(context.Background(), worldID)
 		got := readSiegeStarvationTicks(t, worldID, settlementID)
 		if got != day {
-			t.Fatalf("day %d: siege_starvation_ticks = %d, want %d", day, got, day)
+			t.Fatalf("game day %d: siege_starvation_ticks = %d, want %d", day, got, day)
 		}
 	}
 	if n := countScheduledSiegeCapitulations(t, worldID, settlementID); n != 0 {
@@ -129,7 +129,7 @@ func TestApplySiegeStarvationClock_ResetsWhenFoodCovered(t *testing.T) {
 	h.applySiegeStarvationClock(context.Background(), worldID)
 	h.applySiegeStarvationClock(context.Background(), worldID)
 	if got := readSiegeStarvationTicks(t, worldID, settlementID); got != 2 {
-		t.Fatalf("after 2 starving days: siege_starvation_ticks = %d, want 2", got)
+		t.Fatalf("after 2 starving game days: siege_starvation_ticks = %d, want 2", got)
 	}
 
 	if _, err := pool.Exec(context.Background(),
@@ -155,7 +155,7 @@ func TestApplySiegeStarvationClock_ResetsWhenBlockadeLifted(t *testing.T) {
 	h.applySiegeStarvationClock(context.Background(), worldID)
 	h.applySiegeStarvationClock(context.Background(), worldID)
 	if got := readSiegeStarvationTicks(t, worldID, settlementID); got != 2 {
-		t.Fatalf("after 2 starving days: siege_starvation_ticks = %d, want 2", got)
+		t.Fatalf("after 2 starving game days: siege_starvation_ticks = %d, want 2", got)
 	}
 
 	if _, err := pool.Exec(context.Background(),
@@ -198,7 +198,7 @@ func TestApplySiegeStarvationClock_CapitulatesAtThreshold(t *testing.T) {
 	// reset, so it starts a fresh 30-day count, not a repeat firing.
 	h.applySiegeStarvationClock(context.Background(), worldID)
 	if n := countScheduledSiegeCapitulations(t, worldID, settlementID); n != 1 {
-		t.Errorf("scheduled SiegeCapitulation events after one more day = %d, want still 1", n)
+		t.Errorf("scheduled SiegeCapitulation events after one more game day = %d, want still 1", n)
 	}
 }
 

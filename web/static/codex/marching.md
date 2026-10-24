@@ -42,9 +42,9 @@ A marching army eats more than one in garrison and cannot forage ([[upkeep]]). I
 
 ## Exploring an area
 
-Choose **Explore** in the map menu; the default expedition duration is ready to use. Open **More** to change the duration in **days**. The chosen hex is the centre of an area, even in fog. The order summary shows its extent and duration before sending; **War → Army → March** offers the same controls.
+Choose **Explore** in the map menu; the default expedition duration is ready to use. Open **More** to change the duration in **game days**. The chosen hex is the centre of an area, even in fog. The order summary shows its extent and duration before sending; **War → Army → March** offers the same controls.
 
-It travels first to the exact hex you chose, even if that hex is already seen, then chooses nearby unexplored ground on its own. It turns home by half the duration. It can turn earlier if the area is already explored or nothing further is reachable. **War → Army** and `keryx unit list` show the area, duration, latest turn and home day, and why it has turned. A Runner-delivered order begins when received, so those days become known when it starts. On return, Dispatches carries the report ([[sight]]).
+It travels first to the exact hex you chose, even if that hex is already seen, then chooses nearby unexplored ground on its own. It turns home by half the duration. It can turn earlier if the area is already explored or nothing further is reachable. **War → Army** and `keryx unit list` show the area, duration, latest turn and home game day, and why it has turned. A Runner-delivered order begins when received, so those game days become known when it starts. On return, Dispatches carries the report ([[sight]]).
 
 The chosen hex is the first destination. If it cannot be reached from this unit's position, the order is refused without substituting another destination. Choose a reachable hex or use a unit departing from elsewhere. After reaching the chosen hex, a ship prefers unseen coastal water over open sea.
 
@@ -52,25 +52,25 @@ In Keryx: `unit march --unit <id> --target q,r --intent explore --ticks N`. Omit
 
 ## Terrain and journey time
 
-For foot soldiers, each plain, river valley or delta takes **1 day**; olive groves
-and maquis **1.5 days**; hills and cedar forest **2 days**; semi-desert **3 days**.
-A ford takes **2.5 days** on foot. Mountains cannot be crossed.
-War chariots are fast on the flat and slow everywhere else: **0.67 days** on a
-plain, river valley or delta, **2 days** in olive groves and maquis, and
-**3 days** in hills, cedar forest and semi-desert. A ford takes them 2.5 days
+For foot soldiers, each plain, river valley or delta takes **1 game day**; olive groves
+and maquis **1.5 game days**; hills and cedar forest **2 game days**; semi-desert **3 game days**.
+A ford takes **2.5 game days** on foot. Mountains cannot be crossed.
+War chariots are fast on the flat and slow everywhere else: **0.67 game days** on a
+plain, river valley or delta, **2 game days** in olive groves and maquis, and
+**3 game days** in hills, cedar forest and semi-desert. A ford takes them 2.5 game days
 too. The Nomadic Host
 needs twice the foot soldiers' time. A Runner takes half the foot time on land.
 
-A fully crewed Galley sails **3 coastal hexes per day** or **5 deep-sea hexes per
-day**, **2 river hexes per day**, and takes **1 day** through a ford. A War Galley
+A fully crewed Galley sails **3 coastal hexes per game day** or **5 deep-sea hexes per
+game day**, **2 river hexes per game day**, and takes **1 game day** through a ford. A War Galley
 needs 60% of the Galley's time; an Emporos needs 140%. A short crew or a carried
 land unit slows a marching ship. Runners aboard follow their carrier's journey.
 Cargo journeys use the separate [[routes|caravan rule]]: 1.5 times the base route
 time, including at sea; cargo weight does not change their speed.
 
-These are base costs before rounding the whole journey to at least one day.
+These are base costs before rounding the whole journey to at least one game day.
 The route and its costs are fixed at departure. A journey already underway keeps
-its recorded costs and arrival day when the movement rules change. A finished
+its recorded costs and arrival game day when the movement rules change. A finished
 [[roads|road]] shortens the hex it leads into for everyone who walks it.
 
 An expedition preview shows its planned length. For a unit in garrison it can also show the planned homecoming **if it departed immediately**. The order may still need physical delivery. The preview names the selected first destination; its route and arrival time remain undisclosed.

@@ -43,7 +43,7 @@ func TestApplyDecay_ReplayIsIdempotent(t *testing.T) {
 		advanceOneDay(t, h, pool, worldID)
 	}
 	warmPop, warmGrain := snapshot(t, pool, settlementID)
-	t.Logf("after %d warm-up days: pop=%d grain=%.2f", warmupDays, warmPop, warmGrain)
+	t.Logf("after %d warm-up game days: pop=%d grain=%.2f", warmupDays, warmPop, warmGrain)
 	// This is an explicit player placement in the fixture, not automatic
 	// growth behaviour. Keep the replay test on a food-positive growth path.
 	for ordinal := 51; ordinal <= warmPop/100; ordinal++ {
@@ -157,7 +157,7 @@ func TestApplyDecay_DistinctEventsBothApply(t *testing.T) {
 	if _, err := pool.Exec(ctx,
 		`UPDATE worlds SET current_tick = current_tick + 1 WHERE id = $1`, worldID,
 	); err != nil {
-		t.Fatalf("advance tick (day 1): %v", err)
+		t.Fatalf("advance tick (game day 1): %v", err)
 	}
 	h.applyDecay(ctx, worldID, 1001)
 	dayOnePop, _ := snapshot(t, pool, settlementID)
@@ -165,7 +165,7 @@ func TestApplyDecay_DistinctEventsBothApply(t *testing.T) {
 	if _, err := pool.Exec(ctx,
 		`UPDATE worlds SET current_tick = current_tick + 1 WHERE id = $1`, worldID,
 	); err != nil {
-		t.Fatalf("advance tick (day 2): %v", err)
+		t.Fatalf("advance tick (game day 2): %v", err)
 	}
 	h.applyDecay(ctx, worldID, 1002)
 	dayTwoPop, _ := snapshot(t, pool, settlementID)

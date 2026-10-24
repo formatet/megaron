@@ -10,7 +10,7 @@ Each prayer names its god, the minimum standing it needs, and its traditional of
 
 Bring the traditional recipe or a composed offering worth at least as much to that god. If you lack the traditional gift, **Compose offering** opens empty fields so you can choose other goods you hold. Choose some goods before bringing the gift. `keryx rite --list` marks this as **compose**; use `rite --offer good=amount` to choose the gift. In an interactive terminal, Keryx shows your chosen goods and exact amounts before asking **Cast?**; answering no leaves the gift untouched. A smaller gift is refused without taking goods. Bringing more does not improve the answer. For these prayers, `--offer-multiplier` is ignored; omitting a composed offering always brings the traditional recipe.
 
-An answered prayer starts that god's waiting time across all your cities. **Kult** and `keryx rite --list` show the remaining wait, an active gift or a gift awaiting departure. Missing temples and insufficient kharis are named as separate requirements. Potnia's two prayers share her 24-day wait. An active gift cannot be renewed before it ends. A gift awaiting departure cannot be renewed before it is used.
+An answered prayer starts that god's waiting time across all your cities. **Kult** and `keryx rite --list` show the remaining wait, an active gift or a gift awaiting departure. Missing temples and insufficient kharis are named as separate requirements. Potnia's two prayers share her 24-game day wait. An active gift cannot be renewed before it ends. A gift awaiting departure cannot be renewed before it is used.
 
 Older prayers outside the current Minoan catalogue retain their uncertain answer and offering multiplier. Their offering is spent even on a silent answer, but kharis is never spent. Old recorded outcomes remain as they happened.
 
@@ -21,23 +21,23 @@ The current Minoan prayers are **Potnia's Vision**, **Mistress of the Walls**, *
 The answer or a refusal appears in the Kult drawer after you offer; it stays beside the prayers. An answer also arrives as a dispatch naming the god, the prayer and what was granted. When the god marks a place, **⌖ Take me there** goes to it. In Keryx it is listed by `keryx notifications`.
 
 An ongoing **blessed harvest** appears beside Food in the city drawer and in
-`keryx status` and `keryx city`, with its yield bonus, affected goods and days left.
+`keryx status` and `keryx city`, with its yield bonus, affected goods and game days left.
 The row disappears when the blessing ends; fish receives no harvest bonus.
 
 ## The Minoan prayers
 
-- **Potnia's Vision** — offer 10 grain + 3 silver. Potnia marks one source of copper, tin, silver or incense you neither see nor remember, and unknown ground within two hexes, as grey memory. It creates no living eyes and shows no moving activity. Potnia waits 24 days after answering.
-- **Mistress of the Walls** — offer 8 grain + 4 timber. Potnia strengthens your own garrison defending this city by a quarter for 6 days. It helps neither an attacking army nor soldiers away from that city. It shares Vision's wait.
-- **Green Shoots** — offer 15 grain + 2 silver. Velchanos raises grain, oil and wine yield by a quarter for 25 days. Fish and the herd are unchanged. He waits 25 days after answering.
+- **Potnia's Vision** — offer 10 grain + 3 silver. Potnia marks one source of copper, tin, silver or incense you neither see nor remember, and unknown ground within two hexes, as grey memory. It creates no living eyes and shows no moving activity. Potnia waits 24 game days after answering.
+- **Mistress of the Walls** — offer 8 grain + 4 timber. Potnia strengthens your own garrison defending this city by a quarter for 6 game days. It helps neither an attacking army nor soldiers away from that city. It shares Vision's wait.
+- **Green Shoots** — offer 15 grain + 2 silver. Velchanos raises grain, oil and wine yield by a quarter for 25 game days. Fish and the herd are unchanged. He waits 25 game days after answering.
 
-- **The Thread Shows a Path** — offer 4 timber + 3 silver to Asterion. The next land caravan or Runner leaving this city takes a quarter less time on its outward leg. A land caravan can be intercepted only within one hex of an enemy army, instead of two. Runners remain sacred. Asterion waits 12 days after answering.
-- **Favourable Passage** — offer 6 fish + 3 silver to The Sea Daimons of Stillness. The next ship leaving this city takes a quarter less time and suffers no storm damage on its outward leg. A Runner aboard travels at that ship's actual speed. The Sea Daimons wait 12 days after answering.
+- **The Thread Shows a Path** — offer 4 timber + 3 silver to Asterion. The next land caravan or Runner leaving this city takes a quarter less time on its outward leg. A land caravan can be intercepted only within one hex of an enemy army, instead of two. Runners remain sacred. Asterion waits 12 game days after answering.
+- **Favourable Passage** — offer 6 fish + 3 silver to The Sea Daimons of Stillness. The next ship leaving this city takes a quarter less time and suffers no storm damage on its outward leg. A Runner aboard travels at that ship's actual speed. The Sea Daimons wait 12 game days after answering.
 
 Vision, Walls and the two departure prayers require at least 5 kharis; Green Shoots requires 30. The temple's ordinary daily offering is separate.
 
-A departure gift stays in the city where you offered until an eligible journey physically leaves. It is used once. It cannot follow the city to a new owner, change a journey already underway, or bless a return leg. **Awaiting next departure** appears beside the prayer while the gift is unused; the god's waiting time is shown separately. Other ongoing gifts show their remaining days.
+A departure gift stays in the city where you offered until an eligible journey physically leaves. It is used once. It cannot follow the city to a new owner, change a journey already underway, or bless a return leg. **Awaiting next departure** appears beside the prayer while the gift is unused; the god's waiting time is shown separately. Other ongoing gifts show their remaining game days.
 
-In Keryx, `rite --list` shows your prayers, their effects, offerings, active days, pending departure gifts and waiting time. `rite --prayer <id>` chooses one. Omitting the ID uses the prayer marked as the culture's default — Mistress of the Walls for Minoans.
+In Keryx, `rite --list` shows your prayers, their effects, offerings, active game days, pending departure gifts and waiting time. `rite --prayer <id>` chooses one. Omitting the ID uses the prayer marked as the culture's default — Mistress of the Walls for Minoans.
 
 ## What an offering means
 

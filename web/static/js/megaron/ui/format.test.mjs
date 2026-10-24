@@ -216,7 +216,7 @@ test('A7: the sixteen previously-uncased kinds get real text, not the default ar
   // Historical only: retain the frozen archive notification rendering.
   assert.equal(
     notifText('SitosGranaryRelease', { food_released: 450, coverage_days: 3, granary_empty: true }),
-    "Granary released 450 grain (3 days of coverage) — granary now empty",
+    "Granary released 450 grain (3 game days of coverage) — granary now empty",
   );
   assert.equal(
     notifText('TransferDelivered', { dest_name: 'PolisCm4', goods: [{ good_key: 'grain', quantity: 200 }] }),
@@ -270,7 +270,7 @@ test('DivineBlessing names the settlement and the right unit per type', () => {
   );
   assert.equal(
     notifText('DivineBlessing', { type: 'bountiful_harvest', amount: 25, name: 'Phaistos' }),
-    'The gods bless the fields at Phaistos — grain, oil and wine yield a quarter more for 25 days',
+    'The gods bless the fields at Phaistos — grain, oil and wine yield a quarter more for 25 game days',
   );
   assert.equal(
     notifText('DivineBlessing', { type: 'divine_recruits', amount: 4, name: 'Phaistos' }),
@@ -637,7 +637,7 @@ test('notifText: expedition return states completion and estimates wall time', a
     Object.assign(State,{CURRENT_TICK:10,TICK_SECONDS:60,TICK_ANCHOR_MS:serverNow()});
     const t=notifText('ExpeditionTurnedHome',{name:'Spearmen I',reason:'area_known',arrive_tick:11});
     assert.match(t,/^Mission complete — Spearmen I is returning home\. Expected home around (today|tomorrow) \d{2}:\d{2}\.$/);
-    assert.doesNotMatch(t,/day 11|no further unseen/);
+    assert.doesNotMatch(t,/game day 11|no further unseen/);
     State.TICK_ANCHOR_MS=null;
     assert.match(notifText('ExpeditionTurnedHome',{arrive_tick:11}),/Return time unavailable/);
   } finally { Object.assign(State,saved); }
@@ -651,7 +651,7 @@ test('notifText: ExpeditionReport groups finds and names cities', () => {
       { kind: 'city', q: 8, r: 0, name: 'Mycenae', owner: 'Atreus' },
     ],
   });
-  assert.equal(t, 'Spearmen I is home after 9 days, 7 hexes out at the furthest — saw 40 hexes around (5, 0): ' +
+  assert.equal(t, 'Spearmen I is home after 9 game days, 7 hexes out at the furthest — saw 40 hexes around (5, 0): ' +
     'copper at (6, -1), (7, 2); cities: Mycenae (Atreus) at (8, 0)');
 });
 
@@ -708,7 +708,7 @@ test('fish-fed colony uses additive full food balance rather than legacy grain d
 });
 
 test('AI shortage gives time only for positive authoritative production', () => {
- assert.match(formatApiError({error:'insufficient_goods',missing:[{good:'stone',need:4,have:2,rate_per_tick:2}]}),/≈1 day at current production/);
+ assert.match(formatApiError({error:'insufficient_goods',missing:[{good:'stone',need:4,have:2,rate_per_tick:2}]}),/≈1 game day at current production/);
  assert.doesNotMatch(formatApiError({error:'insufficient_goods',missing:[{good:'stone',need:4,have:2,rate_per_tick:0}]}),/production/);
 });
 
@@ -736,7 +736,7 @@ test('StorageOverflow names the city, the loss and the source', () => {
   assert.match(line, /lost 90 silver/);
   assert.match(line, /an internal transfer/);
 });
-test('StorageCapacityWarning names the good and the days left', () => {
+test('StorageCapacityWarning names the good and the game days left', () => {
   const line = notifText('StorageCapacityWarning', { name: 'MalliaWest', good_key: 'silver', cap: 960, full_in_ticks: 3 });
   assert.match(line, /silver storage full in 3/);
 });

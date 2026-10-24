@@ -59,7 +59,7 @@ func TestListUnits_ProvisionsAboardSeparatesLastRationFromEmpty(t *testing.T) {
 		case lastRation:
 			seen++
 			if u.ProvisionDays != 0 || !u.ProvisionsAboard {
-				t.Errorf("half a ration aboard: days=%d aboard=%v, want 0 and true", u.ProvisionDays, u.ProvisionsAboard)
+				t.Errorf("half a ration aboard: game days=%d aboard=%v, want 0 and true", u.ProvisionDays, u.ProvisionsAboard)
 			}
 		case empty:
 			seen++
@@ -107,7 +107,7 @@ func TestListUnitsUsesActualRowersForFoodAndVoyageDays(t *testing.T) {
 	}
 	for _, u := range data.Units {
 		if u.Crew != 2 || u.Food != 0.02 || u.Days != 2 {
-			t.Fatalf("two rowers, 0.05 aboard: %+v, want food0.02/day and2days", u)
+			t.Fatalf("two rowers, 0.05 aboard: %+v, want food0.02/game day and2days", u)
 		}
 	}
 }

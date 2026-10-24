@@ -7,7 +7,7 @@ from pathlib import Path
 import argparse,collections,json,re
 ROOT=Path(__file__).resolve().parents[1]
 TOKEN=re.compile(r'//[^\n]*|/\*[\s\S]*?\*/|"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|`(?:\\.|[^`\\])*`')
-FORBIDDEN=re.compile(r'game[ -]days?\b|(?<![\w-])ticks?\b|/tick|\bturns?\s+(?:\d|\$\{|%\d)|(?:\d+|%[-+.0-9]*[df])\s+turns?\b|/turns?\b|/ ?days?\b|^\s+each day\b|\bturns?\s+(?:remaining|left|to go)\b',re.I)
+FORBIDDEN=re.compile(r'(?<![\w-])ticks?\b|/tick|\bturns?\s+(?:\d|\$\{|%\d)|(?:\d+|%[-+.0-9]*[df])\s+turns?\b|/turns?\b|/ ?days?\b|^\s+each day\b|\bturns?\s+(?:remaining|left|to go)\b',re.I)
 WALL=re.compile(r'≈.*?\bdays?\b|(?:≈|~).*?\bdays?\b.*?real time|\bin ~.*?\bd(?:ays?)?\b|\bnine hours\b|%d[d]\b|\bd ago\b',re.I)
 
 def sources(surface):
@@ -81,11 +81,26 @@ def literals(path):
  for m in TOKEN.finditer(s):
   val=m[0]
   if val.startswith(('//','/*')):continue
+  if re.match(r'\s*:',s[m.end():]):continue
   # Interpolations hold identifiers, never the world-unit spelling.
   val=re.sub(r'\$\{[^}]*\}', '', val[1:-1])
   if re.search(r'\b(?:SELECT|INSERT|UPDATE|DELETE|CREATE|ALTER|DROP)\b|json:|formatet/megaron/|/api/|/ticklog|/static/',val):continue
   out.append((s.count('\n',0,m.start())+1,val))
  return out
+
+def bare_days(value):
+ # Calendar names and date-context words are grammar, not row exceptions.
+ value=re.sub(r'\bgame[ -]days?\b', '', value, flags=re.I)
+ value=re.sub(r'\bShadow Days of the Goddess\b', '', value)
+ value=re.sub(r'\bDay\s+\d+\s+of\s+(?:the\s+)?[A-Z][A-Za-z-]*(?:\s+[A-Z][A-Za-z-]*)*(?:,\s*Year\s+\d+)?', '', value)
+ value=re.sub(r'(<[^>]+>)Day(?=\s*$|</)', r'\1', value)
+ if value.strip() == 'Day': return False # calendar table heading
+ return bool(re.search(r'\bdays?\b', value, re.I))
+
+def forbidden_player_time(value):
+ # Approximation can describe game durations; it cannot disguise wall days.
+ without_game_unit=re.sub(r'\bgame[ -]days?\b','',value,flags=re.I)
+ return bool(FORBIDDEN.search(value) or WALL.search(without_game_unit) or bare_days(value))
 
 def violations(surface):
  path=ROOT/'tools/day_guard_exceptions.json'
@@ -95,7 +110,7 @@ def violations(surface):
   name=str(p.relative_to(ROOT))
   seen=collections.Counter()
   for line,val in literals(p):
-   if not (FORBIDDEN.search(val) or WALL.search(val)):continue
+   if not forbidden_player_time(val):continue
    seen[val]+=1
    if seen[val] <= exceptions.get(name,{}).get('counts',{}).get(val,0):continue
    bad.append((name,line,val))

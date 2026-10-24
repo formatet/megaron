@@ -1,5 +1,5 @@
 import { esc, formatApiError } from './format.js';
-import { fmtNum, fmtDays } from './fmt_num.js';
+import { fmtNum, fmtDays, fmtDuration } from './fmt_num.js';
 import { fmtTickTime } from './fmt_clock.js';
 import { arrivalHTML } from './time.js';
 
@@ -24,7 +24,7 @@ export function marchSilverLine(data) {
     : Number.isFinite(data.silver_runway_ticks) ? (data.silver_payer_count > 1 ? 'shortest treasury lasts ' : 'treasury lasts ') + fmtDays(data.silver_runway_ticks)
     : 'treasury duration unknown';
   return 'Pay: ' + rate(data.upkeep_silver_home) + ' → ' + rate(data.upkeep_silver_field)
-    + ' silver per day in the field · ' + runway;
+    + ' silver per game day in the field · ' + runway;
 }
 
 export function marchExpeditionPlanLine(data) {
@@ -33,7 +33,7 @@ export function marchExpeditionPlanLine(data) {
   ? ` — with immediate departure, home by ${fmtTickTime(data.planned_home_by_tick_if_departing_now)}` : '';
  const first = Number.isInteger(data.planned_first_target_q) && Number.isInteger(data.planned_first_target_r)
   ? `; first to (${data.planned_first_target_q},${data.planned_first_target_r}), then explores around it` : '';
- return `Planned expedition: ${fmtDays(data.planned_expedition_ticks)}${first}${home}. First-leg arrival remains unknown.`;
+ return `Planned expedition: ${fmtDuration(data.planned_expedition_ticks)}${first}${home}. First-leg arrival remains unknown.`;
 }
 function marchArrivalHTML(data) {
  const plan = marchExpeditionPlanLine(data);
@@ -41,7 +41,7 @@ function marchArrivalHTML(data) {
 }
 function marchFirstArrivalHTML(data) {
   if (data.available && Number.isInteger(data.arrival_tick)) {
-    return 'Arrives in ' + esc(fmtDays(data.duration_ticks)) + ' (arrives ' + esc(fmtTickTime(data.arrival_tick)) + '), if dispatched now.';
+    return 'Arrives in ' + esc(fmtDuration(data.duration_ticks)) + ' (arrives ' + esc(fmtTickTime(data.arrival_tick)) + '), if dispatched now.';
   }
   if (data.reason === 'courier_required' || data.reason === 'redirect') {
     return 'Arrival not yet known — a messenger must deliver the order first.';

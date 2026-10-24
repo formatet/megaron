@@ -68,7 +68,7 @@ func TestWrathDeclineNoticeOnceAndNoPositiveNetWarning(t *testing.T) {
 		t.Fatal(err)
 	}
 	if math.Abs(net+.2) > 1e-9 || days != 75 {
-		t.Fatalf("forecast net%g days%d", net, days)
+		t.Fatalf("forecast net%g game days%d", net, days)
 	}
 
 	if err := h.observeKharisBand(ctx, w, wid); err != nil {

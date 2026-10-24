@@ -21,7 +21,7 @@ test('absolute world clock: zero, history, midnight, cadence, missing anchor and
  State.TICK_SECONDS=3600;
  assert.equal(fmtTickTime(102),'tomorrow 01:50');
  const text=expeditionMissionText({area_q:16,area_r:29,length_ticks:30,turn_tick:102,home_by_tick:103});
- assert.equal(text,'Expedition around (16,29), 30 days; turns home by tomorrow 01:50; home by tomorrow 02:50.');
+ assert.equal(text,'Expedition around (16,29), 30 game days; turns home by tomorrow 01:50; home by tomorrow 02:50.');
  State.TICK_ANCHOR_MS=null;
  assert.equal(fmtTickTime(0),'time unavailable');
  assert.equal(fmtTickTime(null),'time unavailable');

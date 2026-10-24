@@ -11,12 +11,10 @@
   "server/cmd/keryx/cmd_status.go": {
     "reason": "Stable JSON/query keys or CLI option identifiers; contract explicitly retains them.",
     "literals": [
-      "tick",
-      "  Below %.0f kharis: %.0f%% chance of divine punishment per game day, with or without a temple.\\n"
+      "tick"
     ],
     "counts": {
-      "tick": 1,
-      "  Below %.0f kharis: %.0f%% chance of divine punishment per game day, with or without a temple.\\n": 1
+      "tick": 1
     }
   },
   "server/api/handlers/reports.go": {
@@ -276,26 +274,13 @@
       "read committed notification tick": 1
     }
   },
-  "web/static/codex/kharis.md": {
-    "reason": "Byggplan 2026-10-24 A.5 (Timothy): 'game days' where a length stands beside a local clock time.",
+  "server/internal/gossip/gossip.go": {
+    "reason": "PostgreSQL interval used by generated_at recency SQL, wall-clock infrastructure, not player prose.",
     "literals": [
-      "| **Suspicious** (5 to below 30) | Below 15, a 3% chance of punishment each day, with or without a temple; recent punishment gives seven game days of protection. |",
-      "Below **15 Kharis**, there is a 3% chance of punishment each day **with or without a temple**. An actual punishment gives **seven game days of protection**. A game day follows this world's pace; Kult and `keryx status` show the protection's end in your local clock. Nothing taken means no new protection. See [[divine-wrath]]. A punishment chooses a random eligible city of yours with something it can take; it need not strike the capital."
+      "3 days"
     ],
     "counts": {
-      "| **Suspicious** (5 to below 30) | Below 15, a 3% chance of punishment each day, with or without a temple; recent punishment gives seven game days of protection. |": 1,
-      "Below **15 Kharis**, there is a 3% chance of punishment each day **with or without a temple**. An actual punishment gives **seven game days of protection**. A game day follows this world's pace; Kult and `keryx status` show the protection's end in your local clock. Nothing taken means no new protection. See [[divine-wrath]]. A punishment chooses a random eligible city of yours with something it can take; it need not strike the capital.": 1
-    }
-  },
-  "web/static/codex/divine-wrath.md": {
-    "reason": "Byggplan 2026-10-24 A.5 (Timothy): 'game days' where a length stands beside a local clock time.",
-    "literals": [
-      "## Seven game days after punishment",
-      "An actual loss gives your whole realm **seven game days of protection from further divine punishment**. A game day follows this world's pace; **Kult**, `keryx status` and the punishment notice show the protection's end in your local clock. Repeated processing does not extend it. At the end, the ordinary risk resumes if kharis is still below 15. The protection follows the Wanax, across their cities and temples."
-    ],
-    "counts": {
-      "## Seven game days after punishment": 1,
-      "An actual loss gives your whole realm **seven game days of protection from further divine punishment**. A game day follows this world's pace; **Kult**, `keryx status` and the punishment notice show the protection's end in your local clock. Repeated processing does not extend it. At the end, the ordinary risk resumes if kharis is still below 15. The protection follows the Wanax, across their cities and temples.": 1
+      "3 days": 1
     }
   }
 }

@@ -11,7 +11,7 @@ test('duration follows changed server rules and refuses malformed or unavailable
  assert.equal(expeditionTicks(input),14);
  for(const value of ['',5,23,6.5,'bad']) {input.value=value;assert.throws(()=>expeditionTicks(input));}
  for(const value of [6,22]) {input.value=value;assert.equal(expeditionTicks(input),value);}
- assert.match(expeditionOrderText(9,-2,14,rules),/first to \(9,-2\), then explore around it, within 3 hexes, for 14 days/);
+ assert.match(expeditionOrderText(9,-2,14,rules),/first to \(9,-2\), then explore around it, within 3 hexes, for 14 game days/);
  configureExpedition(input,undefined);assert.throws(()=>expeditionTicks(input),/rules unavailable/);
 });
 test('mission shows authoritative ticks until turn, then its actual return reason',()=>{

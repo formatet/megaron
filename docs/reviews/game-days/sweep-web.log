@@ -1,0 +1,4 @@
+web/static/js/megaron/ui/format.js:852: forbidden player time:  days
+web/static/js/megaron/ui/fmt_num.js:14: forbidden player time: day
+web/static/js/megaron/ui/drawers/city_production.js:56: forbidden player time: day
+web/static/js/megaron/ui/drawers/city_production.js:82: forbidden player time: day

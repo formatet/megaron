@@ -13,7 +13,7 @@ func TestHerdLine(t *testing.T) {
 		t.Fatal(got)
 	}
 	calves := map[string]any{"food": map[string]any{"herd": map[string]any{"count": 40.0, "cap": 50.0, "births_next": 4.0, "births_in": 3.0, "births_grain": 4.0}}}
-	if got := herdLine(calves); got != "Herd 40 / 50 — 4 calves in 3 days (4 grain)" {
+	if got := herdLine(calves); got != "Herd 40 / 50 — 4 calves in 3 game days (4 grain)" {
 		t.Fatal(got)
 	}
 	if got := herdLine(map[string]any{}); got != "" {

@@ -79,7 +79,7 @@ func TestAbsoluteWorldClockUsesAnchorNotTicksOrDelivery(t *testing.T) {
 		t.Fatal("cadence ignored", got)
 	}
 	mission := expeditionMissionText(&expeditionMission{LengthTicks: 30, TurnTick: 115, HomeByTick: 130}, c)
-	if !strings.Contains(mission, "30 days") || !strings.Contains(mission, "turns home by "+clockTime(anchor.Add(15*time.Hour))) || !strings.Contains(mission, "home by "+clockTime(anchor.Add(30*time.Hour))) || strings.Contains(mission, "day 115") {
+	if !strings.Contains(mission, "30 game days") || !strings.Contains(mission, "turns home by "+clockTime(anchor.Add(15*time.Hour))) || !strings.Contains(mission, "home by "+clockTime(anchor.Add(30*time.Hour))) || strings.Contains(mission, "game day 115") {
 		t.Fatal(mission)
 	}
 }

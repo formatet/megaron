@@ -131,7 +131,7 @@ func TestAIRound4_NetThresholdAndSingular(t *testing.T) {
 			t.Fatalf("%.4f ->%q, want%q", tc.n, got, tc.want)
 		}
 	}
-	if got := armyFoodLine(map[string]any{"food_net_per_tick_after_upkeep": .1, "army_upkeep": map[string]any{"grain": 1.0}}); !strings.Contains(got, "net +0.1 per day after army") {
+	if got := armyFoodLine(map[string]any{"food_net_per_tick_after_upkeep": .1, "army_upkeep": map[string]any{"grain": 1.0}}); !strings.Contains(got, "net +0.1 per game day after army") {
 		t.Fatal(got)
 	}
 	for _, n := range []int{0, 1, 2} {

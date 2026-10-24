@@ -74,7 +74,7 @@ export function offerFoodText(offering, stock, food, city) {
   const eat = (food && food.consumption_per_tick) || 0;
   const left = Math.max(0, total - taken);
   if (eat > 0 && left < eat) {
-    text += ` That leaves ${Math.floor(left)} food, less than ${name} eats in a day (${Number(eat.toFixed(1))}).`;
+    text += ` That leaves ${Math.floor(left)} food, less than ${name} eats in a game day (${Number(eat.toFixed(1))}).`;
   }
   return text;
 }

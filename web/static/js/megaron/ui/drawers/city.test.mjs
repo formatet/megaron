@@ -143,7 +143,7 @@ test('ORDER17: each farm hex has its own next price and max does not offer L4',(
 
 test('ORDER17: selected build price is readable below the picker with server duration',()=>{
  const html=buildQuoteHTML({type:'shipyard',current_level:1,next_level:2,costs:{timber:48,stone:24,cedar:4},duration_game_days:24});
- assert.match(html,/L1 → L2/);assert.match(html,/4 cedar/);assert.match(html,/24 days/);assert.doesNotMatch(buildQuoteHTML({type:'farm',current_level:3,at_max_level:true}),/L4/);
+ assert.match(html,/L1 → L2/);assert.match(html,/4 cedar/);assert.match(html,/24 game days/);assert.doesNotMatch(buildQuoteHTML({type:'farm',current_level:3,at_max_level:true}),/L4/);
 });
 
 test('ORDER15: temple list has one row per god with its own quote, value carries the god',()=>{

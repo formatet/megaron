@@ -1,6 +1,6 @@
 Fish feeds your people just like grain ([[food]]). Place [[citizens]] on a fishing hex in **City**, or use `keryx place fish <hex> +1`. The available places and the next citizen’s output come from that city’s current production options.
 
-| Water | Fishing places | Fish per fisher per day |
+| Water | Fishing places | Fish per fisher per game day |
 |---|---|---|
 | Coastal water | 2 | 1 |
 | Bay | 2 | 2 |
@@ -10,6 +10,6 @@ A **bay** is coastal water with land on at least four of its six sides. Rivers a
 
 Deep-water fishing requires the city’s [[harbour]]. The harbour supplies deep-water places without multiplying the catch. It adds no places or production to coastal water or bays. Rivers and fords keep their own fishing places and production.
 
-A harbour creates places, not workers. Put citizens on the deep-water hexes to use them. Higher harbour levels open more places there, while each fisher still catches 1 fish per day.
+A harbour creates places, not workers. Put citizens on the deep-water hexes to use them. Higher harbour levels open more places there, while each fisher still catches 1 fish per game day.
 
-**A storm stops the fishing.** While a [[storms|storm]] stands on a fishing hex, the citizens placed there catch nothing. They fish again the day it has moved on. **City** shows *Storm over N fishing grounds*, and `keryx city` and `keryx status` print the same line.
+**A storm stops the fishing.** While a [[storms|storm]] stands on a fishing hex, the citizens placed there catch nothing. They fish again the game day it has moved on. **City** shows *Storm over N fishing grounds*, and `keryx city` and `keryx status` print the same line.

@@ -24,7 +24,7 @@ func TestTempleOfferingLineRendersServerReferenceAndMixedPlan(t *testing.T) {
 	sett := templeStatusFixture(t)
 	row := sett["temple_offers"].([]any)[0].(map[string]any)
 	line := templeOfferingLine(row)
-	for _, want := range []string{"Temple in Phaistos: reference 0.375 grain per day", "alternatives: 0.75 fish or 0.125 timber or 0.5 silver", "stock: 0.1 grain, 0.55 fish, 0 timber, 3 silver", "next gift: 0.1 grain + 0.55 fish", "✓"} {
+	for _, want := range []string{"Temple in Phaistos: reference 0.375 grain per game day", "alternatives: 0.75 fish or 0.125 timber or 0.5 silver", "stock: 0.1 grain, 0.55 fish, 0 timber, 3 silver", "next gift: 0.1 grain + 0.55 fish", "✓"} {
 		if !strings.Contains(line, want) {
 			t.Errorf("line %q missing %q", line, want)
 		}

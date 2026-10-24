@@ -27,7 +27,7 @@ func TestUnsustainableReason_NamesTheBindingResource(t *testing.T) {
 			unitGrain: 5, unitSilver: 2,
 			grainStock: 100000, silverStock: 36000,
 			// shortfall after this unit = 9/day; 36000/9 = 4000 ticks.
-			wantSubstrings:   []string{"silver", "-7", "9", "covers", "4000", "days"},
+			wantSubstrings:   []string{"silver", "-7", "9", "covers", "4000", "game days"},
 			wantNotSubstring: []string{"grain upkeep"},
 		},
 		{
@@ -36,7 +36,7 @@ func TestUnsustainableReason_NamesTheBindingResource(t *testing.T) {
 			unitGrain: 5, unitSilver: 2,
 			grainStock: 800, silverStock: 5000,
 			// shortfall after this unit = 8/day; 800/8 = 100 ticks.
-			wantSubstrings:   []string{"grain", "-3", "8", "covers", "100", "days"},
+			wantSubstrings:   []string{"grain", "-3", "8", "covers", "100", "game days"},
 			wantNotSubstring: []string{"silver"},
 		},
 		{

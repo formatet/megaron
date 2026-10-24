@@ -188,7 +188,7 @@ func templeOfferingLine(row map[string]any) string {
 	}
 	// Each temple has its own gift; a city's temples take from one store in turn,
 	// so "stock" is what the temples before this one left.
-	return fmt.Sprintf("  %s in %s: reference %s per day — alternatives: %s — stock: %s — next gift: %s  %s",
+	return fmt.Sprintf("  %s in %s: reference %s per game day — alternatives: %s — stock: %s — next gift: %s  %s",
 		temple, name, templeGoodsText(row["required_goods"], " + "), templeGoodsText(row["alternatives"], " or "),
 		templeGoodsText(row["stock"], ", "), next, mark)
 }
@@ -501,9 +501,9 @@ func growthLine(pop float64, state string, net float64) string {
 	}
 	switch state {
 	case "growing":
-		return fmt.Sprintf("Population %.0f — growing: food net %s per day", pop, display)
+		return fmt.Sprintf("Population %.0f — growing: food net %s per game day", pop, display)
 	case "holding":
-		return fmt.Sprintf("Population %.0f — not growing: food net %s per day (needs more than 0)", pop, display)
+		return fmt.Sprintf("Population %.0f — not growing: food net %s per game day (needs more than 0)", pop, display)
 	case "capped":
 		return fmt.Sprintf("Population %.0f — not growing: the walls are full", pop)
 	case "shrinking":
@@ -548,7 +548,7 @@ rate and cap live NESTED under settlement.resources, not at the settlement
 top level:
 
   settlement.resources.<good>.amount   current stock (e.g. .grain.amount, .silver.amount)
-  settlement.resources.<good>.rate     stored production rate per day; meals and army upkeep are separate
+  settlement.resources.<good>.rate     stored production rate per game day; meals and army upkeep are separate
   settlement.resources.<good>.cap      storage cap
 
 There is no top-level settlement.grain / settlement.silver / settlement.storage_cap
@@ -707,7 +707,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			// print when present so a colony's tin/copper output is visible here, not
 			// only via `goods`.
 			fmt.Println("Resources")
-			fmt.Println("  (per day; food and army balances are itemized below)")
+			fmt.Println("  (per game day; food and army balances are itemized below)")
 			if res, ok := sett["resources"].(map[string]any); ok {
 				printRes := func(label, key string, always bool) {
 					rd, ok := res[key].(map[string]any)
@@ -725,7 +725,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 							// balance a stock buffer absorbs, not an emergency (DEL C
 							// grain-netto-märkning: don't cry wolf).
 							if amt/-rt < 1 {
-								line += "  ⚠ runs out within one day"
+								line += "  ⚠ runs out within one game day"
 							}
 						}
 						fmt.Println(line)
@@ -773,9 +773,9 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 							}
 						}
 						if peopleFoodLine(sett) == "" {
-							fmt.Printf("  Food     grain %.1f + fish %.1f − people eat %.1f = net %s per day (before army)\n", prodTick, fish, consumTick, formatNetPerTick(netTick))
+							fmt.Printf("  Food     grain %.1f + fish %.1f − people eat %.1f = net %s per game day (before army)\n", prodTick, fish, consumTick, formatNetPerTick(netTick))
 						}
-						line := fmt.Sprintf("  %-8s %6s  production %.1f per day",
+						line := fmt.Sprintf("  %-8s %6s  production %.1f per game day",
 							"Grain", resource(gAmt), prodTick)
 						// food_gubbar_required/placed/self_sufficient (P4-arvet,
 						// megaron_plan_p4_arvet_i_province.md §2) replace the old
@@ -829,7 +829,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 						}
 					}
 					fmt.Println(armyFoodLine(sett))
-					fmt.Printf("  Silver   net %+.1f per day after army pay\n", netS)
+					fmt.Printf("  Silver   net %+.1f per game day after army pay\n", netS)
 					if warn != "" {
 						fmt.Println(warn)
 					}
@@ -962,9 +962,9 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			// "passiv +0.1/tick" (sondrunda 2026-07-24). Show the net when we have it.
 			netStr := "net not reported"
 			if netKnown {
-				netStr = fmt.Sprintf("net %+.1f per day (temple − decay)", knet)
+				netStr = fmt.Sprintf("net %+.1f per game day (temple − decay)", knet)
 				if kcap > 0 && kv > kcap {
-					netStr = fmt.Sprintf("net %+.1f per day (upkeep only above ceiling)", knet)
+					netStr = fmt.Sprintf("net %+.1f per game day (upkeep only above ceiling)", knet)
 				}
 			}
 			if kcap > 0 {
@@ -977,11 +977,11 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			}
 			if production, ok := sett["kharis_production_per_tick"].(float64); ok {
 				if netKnown {
-					fmt.Printf("  Temple production: %.2f kharis per day\n", production)
+					fmt.Printf("  Temple production: %.2f kharis per game day\n", production)
 				}
 			}
 			if worker, ok := sett["kharis_per_temple_worker"].(float64); ok && !(kcap > 0 && kv > kcap) {
-				fmt.Printf("  One more fed temple worker gives at least +%.2f kharis per day before cult upkeep, and more when the cult’s reference offering of grain is scarce in the world. Requires a free citizen, a temple workplace and its daily offering.\n", worker)
+				fmt.Printf("  One more fed temple worker gives at least +%.2f kharis per game day before cult upkeep, and more when the cult’s reference offering of grain is scarce in the world. Requires a free citizen, a temple workplace and its daily offering.\n", worker)
 			}
 			if threshold, ok := sett["kharis_blessing_threshold"].(float64); ok {
 				fmt.Printf("  Everyday prayers work at a level-1 temple. Spontaneous blessings need %.0f kharis and a maintained temple. Only a level-2 temple or higher lets kharis grow that far. Kharis retained above a lowered ceiling still counts.\n", threshold)
@@ -993,7 +993,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				if remaining, _ := wrath["protection_remaining_days"].(float64); remaining > 0 {
 					if iso, ok := wrath["protection_until"].(string); ok {
 						if at, err := time.Parse(time.RFC3339Nano, iso); err == nil {
-							fmt.Printf("  Protected from divine punishment until %s. After that the daily risk returns while kharis is below %.0f.\n", clockTime(at), threshold)
+							fmt.Printf("  Protected from divine punishment for %s · until %s. After that the daily risk returns while kharis is below %.0f.\n", formatDuration(c, remaining, "%g"), clockTime(at), threshold)
 						}
 					}
 				}
@@ -1061,7 +1061,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 						// everything this city supports — so a Wanax with half the army
 						// in the field reads "100 spearmen, upkeep for 200" and thinks
 						// the number is broken.
-						fmt.Printf("  %-10s %s %s, %s silver per day  (everything the city pays — including field units)\n", "Upkeep", trimFloat(g), label, trimFloat(s))
+						fmt.Printf("  %-10s %s %s, %s silver per game day  (everything the city pays — including field units)\n", "Upkeep", trimFloat(g), label, trimFloat(s))
 					}
 				}
 				// Legibilitet (2026-07-24): namnge att detta bara är garnisonen HÄR —
@@ -1310,7 +1310,7 @@ func armyFoodLine(sett map[string]any) string {
 		}
 		net = before - grain
 	}
-	return fmt.Sprintf("  Army     eats %s %s per day → food net %s per day after army", trimFloat(grain), label, formatNetPerTick(net))
+	return fmt.Sprintf("  Army     eats %s %s per game day → food net %s per game day after army", trimFloat(grain), label, formatNetPerTick(net))
 }
 
 // kharisDecayLine renders the server's realm projection without a client formula.
@@ -1329,7 +1329,7 @@ func kharisDecayLine(sett map[string]any) string {
 	if count == 1 {
 		cityWord = "city"
 	}
-	return fmt.Sprintf("Upkeep of the cult: %.2f base + %.0f %s cost %.2f + %.0f residents cost %.2f = %.2f kharis per day", base, count, cityWord, cities, population, residents, total)
+	return fmt.Sprintf("Upkeep of the cult: %.2f base + %.0f %s cost %.2f + %.0f residents cost %.2f = %.2f kharis per game day", base, count, cityWord, cities, population, residents, total)
 
 }
 

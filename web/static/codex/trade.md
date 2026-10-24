@@ -9,13 +9,13 @@ In a **Diplomacy → Correspondence** conversation (start one with **Known → W
 - **Buy** — the good you want, the quantity, and the silver you offer. Your silver is held in escrow.
 - **Sell** — the good you offer, the quantity, and the silver you want. Your goods are held in escrow.
 
-Then **Dispatch →**. The offer walks with the [[messengers|messenger]], so it takes days to arrive.
+Then **Dispatch →**. The offer walks with the [[messengers|messenger]], so it takes game days to arrive.
 
 ## Answering an offer
 
 An incoming offer appears in the conversation, for example *"Wants 40 tin · Offers 200 silver"*, with **Accept ✓** and **Decline ✗**. Your own pending offers carry **Cancel offer ✗** — withdraw it and your escrow comes back. If nobody answers before it expires, the escrow comes back too. Nothing is ever lost to silence.
 
-The runner who carried your offer waits at the other city only while the offer is open: once it is accepted, declined or cancelled, the runner turns for home that same day. **You learn the answer when the runner is home** — the news travels with the runner, never ahead of it. A declined offer's escrow travels with the runner too: your goods or silver are back in your stores the day the runner is home. If the runner is lost at sea on the way, the escrow comes back at once. If nobody answers, you are told when the offer expires.
+The runner who carried your offer waits at the other city only while the offer is open: once it is accepted, declined or cancelled, the runner turns for home that same game day. **You learn the answer when the runner is home** — the news travels with the runner, never ahead of it. A declined offer's escrow travels with the runner too: your goods or silver are back in your stores the game day the runner is home. If the runner is lost at sea on the way, the escrow comes back at once. If nobody answers, you are told when the offer expires.
 
 ## Delivery
 
@@ -39,13 +39,13 @@ What is most worth trading? [[silver]], and the half of [[bronze]] you do not ha
 
 Cargo follows a real route around impassable ground. Its path and the terrain costs
 are fixed when each leg departs. Caravan time is **1.5 times the march time on that
-same path**, rounded once to the nearest whole day, with at least one day per leg.
+same path**, rounded once to the nearest whole game day, with at least one game day per leg.
 The return leg is priced separately because it enters different terrain. Cargo
 weight limits a ship's hold; it does not change journey speed.
 
 Without a traversable road or an eligible ship on a sea lane, a shipment is refused
 before goods are taken. A standing route pauses and explains the obstacle. The
-arrival day shown in your cargo list is the scheduled delivery; delays or
+arrival game day shown in your cargo list is the scheduled delivery; delays or
 interception can prevent that delivery.
 
 The seller receives the full agreed silver payment when it arrives. Temples take no share of religious-goods sales.

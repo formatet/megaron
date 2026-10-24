@@ -67,6 +67,6 @@ func TestNotificationWorldTickSurvivesDelayedDelivery(t *testing.T) {
 	}
 	zero := readMsg(t, conn)
 	if zero.WorldTick == nil || *zero.WorldTick != 0 {
-		t.Fatalf("day zero dropped: %+v", zero)
+		t.Fatalf("game day zero dropped: %+v", zero)
 	}
 }

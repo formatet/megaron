@@ -219,12 +219,12 @@ test('H: landing preserves cargo-colonize/name and omits naval stance; explore a
   assert.deepEqual(menu.marchIntentOptions({known:true,isSea:false}, {stance:'sentry'}), {stance:'sentry'});
 });
 
- test('H: colony forecast keeps production and food duration in day words', () => {
+ test('H: colony forecast keeps production and food duration in game day words', () => {
   const html = menu.renderColonizePreviewHTML({catchment:[{known:true,terrain:'plains'}],grain:{base_per_tick:3,est_net_per_tick:-2,ticks_until_empty:4,seed:8,with_farm_per_tick:7},goods:{fish:2}});
-  assert.match(html, /lasts about 4 days/);
-  assert.match(html, /grain 3\.0 \+ fish 0\.0 − consumption 5\.0 per day/);
-  assert.match(html, /fish about 2 per day/);
-  assert.doesNotMatch(html, /\/day|\d+ ticks/);
+  assert.match(html, /lasts about 4 game days/);
+  assert.match(html, /grain 3\.0 \+ fish 0\.0 − consumption 5\.0 per game day/);
+  assert.match(html, /fish about 2 per game day/);
+  assert.doesNotMatch(html, /\/game day|\d+ ticks/);
 });
 
 test('forecast shows the server harbour note and nothing when absent', () => {

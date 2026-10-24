@@ -13,6 +13,6 @@ func TestDayPlayerLanguageGuard(t *testing.T) {
 	}
 	out, err := exec.Command("python3", script, "keryx").CombinedOutput()
 	if err != nil {
-		t.Fatalf("Day guard keryx: %v\n%s", err, out)
+		t.Fatalf("game day guard keryx: %v\n%s", err, out)
 	}
 }

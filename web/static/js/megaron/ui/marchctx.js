@@ -3,7 +3,7 @@ import { State } from '../state.js';
 import { fetchAuth } from '../api.js';
 import { esc, formatApiError, passageNote, supersededOrderNote, purseLine } from './format.js';
 import { unitTypeLabel } from './actornames.js';
-import { fmtNum, fmtDays } from './fmt_num.js';
+import { fmtNum, fmtDays, fmtDuration } from './fmt_num.js';
 import { arrivalHTML, fmtArrival } from './time.js';
 import { stanceSentLine } from './stance.js';
 import { MusicPlayer } from './misc.js';
@@ -92,7 +92,7 @@ function updateMarchPreview() {
   try { if (exploring) ticks = expeditionTicks(document.getElementById('mctx-ticks')); }
   catch (error) { document.getElementById('mctx-mission').textContent = error.message; marchPreview.update(State.WORLD_ID, [], {}); return; }
   document.getElementById('mctx-mission').textContent = exploring
-    ? 'Explore for ' + fmtDays(ticks) + ', then return home.'
+    ? 'Explore for ' + fmtDuration(ticks) + ', then return home.'
       + (picks.some(p => p.mode === 'redirect') ? ' Only units starting a new march take this expedition; marching units receive a redirect and end their expedition.' : '')
     : '';
   marchPreview.update(State.WORLD_ID, picks, {
@@ -211,13 +211,13 @@ export function renderColonizePreviewHTML(p) {
   let html = `<div style="color:var(--text-dim)">Catchment forecast — ${fmtNum(known)} of ${fmtNum(total)} hexes known</div>`;
   if (p.timber_warning) html += `<div>${esc(p.timber_warning)}</div>`;
   if (p.harbour_note) html += `<div>${esc(p.harbour_note)}</div>`;
-  html += `<div>Food: grain ${prodTick.toFixed(1)} + fish ${(g.fish_per_tick || 0).toFixed(1)} − consumption ${consTick.toFixed(1)} per day = ` +
-    `<b style="color:${netTick < 0 ? 'var(--accent)' : 'var(--safe-text)'}">net ${netLabel(netTick)} per day</b></div>`;
+  html += `<div>Food: grain ${prodTick.toFixed(1)} + fish ${(g.fish_per_tick || 0).toFixed(1)} − consumption ${consTick.toFixed(1)} per game day = ` +
+    `<b style="color:${netTick < 0 ? 'var(--accent)' : 'var(--safe-text)'}">net ${netLabel(netTick)} per game day</b></div>`;
   if (netTick < 0) {
     const reach = g.ticks_until_empty != null ? ` → lasts about ${fmtDays(Math.round(g.ticks_until_empty))}` : '';
     const farmNetTick = g.with_farm_food_net_per_tick ?? ((g.with_farm_per_tick || 0) - consTick);
     const farmNote = g.starter_farm_included ? " (Demeter's farm is already included in this forecast)" : g.farm_possible === false ? ' (no farmland in known catchment — a farm will not help here)' : '';
-    html += `<div>Seed ${fmtNum(Math.round(g.seed || 0))} grain${reach}. With farm: net ${netLabel(farmNetTick)} per day${farmNote}</div>`;
+    html += `<div>Seed ${fmtNum(Math.round(g.seed || 0))} grain${reach}. With farm: net ${netLabel(farmNetTick)} per game day${farmNote}</div>`;
     html += `<div style="color:var(--text-dim)">A colony does not feed itself — build a farm if the land bears it, or send grain by internal transfer.</div>`;
   } else {
     html += `<div>Seed ${fmtNum(Math.round(g.seed || 0))} grain — production covers food demand.</div>`;
@@ -236,7 +236,7 @@ export function renderColonizePreviewHTML(p) {
   Object.keys(p.goods || {}).sort().forEach(gk => {
     if (gk === 'grain') return;
     const rate = p.goods[gk] || 0;
-    if (rate > 0) extras.push(`${esc(gk)} about ${fmtNum(Math.round(rate))} per day`);
+    if (rate > 0) extras.push(`${esc(gk)} about ${fmtNum(Math.round(rate))} per game day`);
   });
   if (extras.length) html += `<div style="color:var(--text-dim)">Also: ${extras.join(', ')}</div>`;
 

@@ -95,7 +95,7 @@ func TestObligationsRunBeforeGrowth(t *testing.T) {
 	// "ALLT SOM STADEN FÖRSÖRJER ÄTER FÖRE BEFOLKNINGEN") and BEFORE growth,
 	// which must only ever see what both obligations left behind.
 	if !(upkeep < food && food < growth) {
-		t.Fatalf("the day's food order must be plikt → föda → tillväxt, got "+
+		t.Fatalf("the game day's food order must be plikt → föda → tillväxt, got "+
 			"Upkeep=%d Food=%d Kharis=%d", upkeep, food, growth)
 	}
 	if TickPriority(ScheduledUnitArrival) >= TickPriority(ScheduledMarchSightingScan) {

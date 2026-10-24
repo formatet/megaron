@@ -116,7 +116,7 @@ func (h *UnitHandler) MarchPreview(w http.ResponseWriter, r *http.Request) {
 		if u.Status == unit.StatusGarrison {
 			var currentTick int
 			if err := h.pool.QueryRow(ctx, `SELECT current_tick FROM worlds WHERE id=$1`, worldID).Scan(&currentTick); err != nil {
-				writeError(w, http.StatusInternalServerError, "could not read expedition day")
+				writeError(w, http.StatusInternalServerError, "could not read expedition game day")
 				return
 			}
 			finance["planned_home_by_tick_if_departing_now"] = currentTick + order.ExpeditionTicks

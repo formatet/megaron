@@ -80,7 +80,7 @@ func TestSmoothDivineValue_DriftsNotJumps(t *testing.T) {
 		v = SmoothDivineValue(v, 40)
 	}
 	if v < 25 {
-		t.Errorf("three days of pressure should close most of the gap, got %.1f", v)
+		t.Errorf("three game days of pressure should close most of the gap, got %.1f", v)
 	}
 }
 

@@ -28,14 +28,14 @@ func TestDevotionCalibration_ModestClimbsGrandClimbsFaster(t *testing.T) {
 
 	// Unfed, however well staffed: fades harder still.
 	if unfed := dayNet(l1, 0, 1.0, 0); unfed >= net {
-		t.Errorf("an unfed temple must lose more ground than a fed one, got %+.2f/day vs fed %+.2f/day", unfed, net)
+		t.Errorf("an unfed temple must lose more ground than a fed one, got %+.2f/game day vs fed %+.2f/game day", unfed, net)
 	}
 
 	// A larger temple employs more of the city and climbs faster: it must
 	// climb outright in ordinary times — the whole reason to raise one.
 	l2 := dayNet(float64(economy.TempleWorkplaces(2)), 1.0, 1.0, 0)
 	if l2 <= 0 {
-		t.Errorf("a level-2 temple must climb in ordinary times, got %+.2f/day", l2)
+		t.Errorf("a level-2 temple must climb in ordinary times, got %+.2f/game day", l2)
 	}
 	if l2 <= net {
 		t.Errorf("a level-2 temple must out-climb a level-1: %+.2f vs %+.2f", l2, net)
@@ -44,7 +44,7 @@ func TestDevotionCalibration_ModestClimbsGrandClimbsFaster(t *testing.T) {
 	// Several tended temples are the other way up: their devotion sums, so enough
 	// modest shrines also climb.
 	if many := dayNet(3*l1, 1.0, 1.0, 0); many <= 0 {
-		t.Errorf("three tended temples' devotion should sum past the decay and climb, got %+.2f/day", many)
+		t.Errorf("three tended temples' devotion should sum past the decay and climb, got %+.2f/game day", many)
 	}
 }
 
@@ -56,7 +56,7 @@ func TestDevotionCalibration_UnfedTempleEarnsNothing(t *testing.T) {
 		t.Fatalf("an unfed temple must earn nothing, got %.2f", gain)
 	}
 	if net := dayNet(5.0, 0, 1.0, 0); net >= 0 {
-		t.Errorf("unfed temples must lose ground to decay, got %+.2f/day", net)
+		t.Errorf("unfed temples must lose ground to decay, got %+.2f/game day", net)
 	}
 }
 

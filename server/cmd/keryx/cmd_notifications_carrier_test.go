@@ -54,7 +54,7 @@ func TestMessengerFate_DaysNeverExposeUTCOrInventLegacyDay(t *testing.T) {
 			return nil
 		})
 		if !strings.Contains(out, tc.want) || strings.Contains(out, "2026-10") || strings.Contains(out, "game day") || strings.Contains(out, "tick") {
-			t.Fatalf("day-only player wording: %s", out)
+			t.Fatalf("game day-only player wording: %s", out)
 		}
 	}
 }

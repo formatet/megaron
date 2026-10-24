@@ -44,7 +44,7 @@ func peopleFoodLine(sett map[string]any) string {
 	if !ok || !consOK || !netOK {
 		return ""
 	}
-	return fmt.Sprintf("  Food     production %.1f − people eat %.1f = net %s per day (before army)", production, consumption, formatNetPerTick(net))
+	return fmt.Sprintf("  Food     production %.1f − people eat %.1f = net %s per game day (before army)", production, consumption, formatNetPerTick(net))
 }
 
 func upkeepFood(up map[string]any) (float64, string) {
@@ -71,12 +71,12 @@ func herdLine(sett map[string]any) string {
 	if born, _ := herd["births_next"].(float64); born > 0 {
 		in, _ := herd["births_in"].(float64)
 		grain, _ := herd["births_grain"].(float64)
-		calves, days := "calves", "days"
+		calves, days := "calves", "game days"
 		if born == 1 {
 			calves = "calf"
 		}
 		if in == 1 {
-			days = "day"
+			days = "game day"
 		}
 		line += fmt.Sprintf(" — %.0f %s in %.0f %s (%.0f grain)", born, calves, in, days, grain)
 	}

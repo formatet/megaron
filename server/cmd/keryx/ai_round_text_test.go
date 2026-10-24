@@ -146,7 +146,7 @@ func TestAIRound_ColonizeConfirmationAndHost(t *testing.T) {
 }
 func TestAIRound_ShortfallProductionWait(t *testing.T) {
 	err := apiError([]byte(`{"error":"insufficient_goods","missing":[{"good":"stone","need":4,"have":2,"rate_per_tick":2}]}`), 422)
-	if !strings.Contains(err.Error(), "≈1 day at current production") {
+	if !strings.Contains(err.Error(), "≈1 game day at current production") {
 		t.Fatal(err)
 	}
 	no := apiError([]byte(`{"error":"insufficient_goods","missing":[{"good":"stone","need":4,"have":2,"rate_per_tick":0}]}`), 422)
@@ -177,7 +177,7 @@ func TestAIRound_StatusUsesSingleFoodStock(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if !strings.Contains(out, "grain 0.5 + fish 5.0") || !strings.Contains(out, "net "+formatNetPerTick(net)) || !strings.Contains(out, "Food for 2002.0 days") {
+			if !strings.Contains(out, "grain 0.5 + fish 5.0") || !strings.Contains(out, "net "+formatNetPerTick(net)) || !strings.Contains(out, "Food for 2002.0 game days") {
 				t.Fatal(out)
 			}
 			if !strings.Contains(out, growthLine(1000, "holding", net)) || !strings.Contains(out, "2 goods produced, 1 consumed") {

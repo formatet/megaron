@@ -34,7 +34,7 @@ func TestStaffTemplePostsPhysicalPlacement(t *testing.T) {
 	}
 	cap := 2
 	out := goodCell(placementGood{GoodKey: "cult", StaffingOnly: true, Cap: &cap, Placed: 1})
-	if !strings.Contains(out, "1/2 temple workers") || strings.Contains(out, "per day") {
+	if !strings.Contains(out, "1/2 temple workers") || strings.Contains(out, "per game day") {
 		t.Fatal(out)
 	}
 }

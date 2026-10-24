@@ -1,6 +1,6 @@
 A **transfer** moves goods between two of your *own* settlements. No consent, no negotiation — simpler than [[trade]] with a stranger.
 
-Open **Economy → Transfer**, choose *From*, *To*, the good and the quantity, and press **Send →**. Below, **Your cargo in transit** lists everything on the road — which city it left, which city it is bound for, and the day it arrives. A notification tells you when it is delivered.
+Open **Economy → Transfer**, choose *From*, *To*, the good and the quantity, and press **Send →**. Below, **Your cargo in transit** lists everything on the road — which city it left, which city it is bound for, and the game day it arrives. A notification tells you when it is delivered.
 
 ## Cargo is physical
 
@@ -28,13 +28,13 @@ Sending to another Wanax is a [[gifts|gift or tribute]], with nothing requested 
 
 Cargo follows a real route around impassable ground. Its path and the terrain costs
 are fixed when each leg departs. Caravan time is **1.5 times the march time on that
-same path**, rounded once to the nearest whole day, with at least one day per leg.
+same path**, rounded once to the nearest whole game day, with at least one game day per leg.
 The return leg is priced separately because it enters different terrain. Cargo
 weight limits a ship's hold; it does not change journey speed.
 
 Without a traversable road or an eligible ship on a sea lane, a shipment is refused
 before goods are taken. A standing route pauses and explains the obstacle. The
-arrival day shown in your cargo list is the scheduled delivery; delays or
+arrival game day shown in your cargo list is the scheduled delivery; delays or
 interception can prevent that delivery.
 
 

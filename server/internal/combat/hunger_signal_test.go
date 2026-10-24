@@ -87,7 +87,7 @@ func TestStarvationSignal_ActualLossEvenLastGarrison(t *testing.T) {
 				t.Fatal(err)
 			}
 			if starts != 1 || wrongCity != 0 || day != f.tick {
-				t.Fatalf("actual upkeep→kharis notices start%d wrongcity%d day%d", starts, wrongCity, day)
+				t.Fatalf("actual upkeep→kharis notices start%d wrongcity%d game day%d", starts, wrongCity, day)
 			}
 			if _, err := pool.Exec(ctx, `UPDATE worlds SET current_tick=$2 WHERE id=$1`, f.worldID, f.tick+1); err != nil {
 				t.Fatal(err)

@@ -779,7 +779,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	now := clk.Now()
 	var currentTick int
 	if err := pool.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick); err != nil {
-		slog.Error("march route: could not read current day", "unit", o.UnitID, "err", err)
+		slog.Error("march route: could not read current game day", "unit", o.UnitID, "err", err)
 		return nil, reject(http.StatusInternalServerError, "pathfinding error")
 	}
 	var tx pgx.Tx
@@ -1382,7 +1382,7 @@ func voyageNeed(ctx context.Context, db interface {
 // om hon ska vänta en dag eller bygga en åker.
 func provisionsShort(have, need, ration float64, days int) *OrderReject {
 	return reject(http.StatusUnprocessableEntity, "not enough food to provision the voyage — the home port holds %.0f, "+
-		"the voyage needs %.0f (%.1f per day for %s out, on station and home again)", have, need, ration, tick.FormatDays(days))
+		"the voyage needs %.0f (%.1f per game day for %s out, on station and home again)", have, need, ration, tick.FormatDays(days))
 }
 
 // CurrentUnitPosition shares the physical read used by a delivered course and

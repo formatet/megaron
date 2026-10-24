@@ -29,7 +29,7 @@ Open **City → Buildings**. The tab shows what is **built** (and its level), th
 
 **One building per hex.** A hex that already has one of these four — yours, or a neighbouring city's on a hex you share — cannot take another. Building the same kind again on its own hex raises its level.
 
-Every other building, including **Harbour**, stands in the city itself. Harbour is the one exception worth naming: though it stands in the city (and needs the city's own hex to border the sea), its fishing effect reaches every deep-sea hex in your catchment at once. Harbour levels 1, 2 and 3 open 1, 2 and 4 places per deep-water hex; each fisher catches 1 fish per day. It gives no fishing multiplier or extra coastal places. See [[fishing]] and [[harbour]].
+Every other building, including **Harbour**, stands in the city itself. Harbour is the one exception worth naming: though it stands in the city (and needs the city's own hex to border the sea), its fishing effect reaches every deep-sea hex in your catchment at once. Harbour levels 1, 2 and 3 open 1, 2 and 4 places per deep-water hex; each fisher catches 1 fish per game day. It gives no fishing multiplier or extra coastal places. See [[fishing]] and [[harbour]].
 
 ## The rule
 

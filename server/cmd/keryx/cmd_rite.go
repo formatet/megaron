@@ -71,7 +71,7 @@ func offerFoodText(offering, food map[string]float64, eat float64, city string) 
 	}
 	text := "The offering " + strings.Join(parts, ", ") + "."
 	if left := math.Max(0, total-taken); eat > 0 && left < eat {
-		text += fmt.Sprintf(" That leaves %.0f food, less than %s eats in a day (%s).", math.Floor(left), city, strconv.FormatFloat(math.Round(eat*10)/10, 'f', -1, 64))
+		text += fmt.Sprintf(" That leaves %.0f food, less than %s eats in a game day (%s).", math.Floor(left), city, strconv.FormatFloat(math.Round(eat*10)/10, 'f', -1, 64))
 	}
 	return text
 }

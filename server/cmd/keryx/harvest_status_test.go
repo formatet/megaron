@@ -39,7 +39,7 @@ func TestHarvestBlessingBothCityCommands(t *testing.T) {
 			}
 			for name, out := range map[string]string{"city": cityOut, "status": statusOut} {
 				if tc.active {
-					want := "Blessed harvest: +37% grain, wine yield · 12 days left"
+					want := "Blessed harvest: +37% grain, wine yield · 12 game days left"
 					if !strings.Contains(out, want) {
 						t.Errorf("%s missing authoritative harvest row: %s", name, out)
 					}

@@ -101,7 +101,7 @@ func TestFamine_GarrisonSurvivesWhilePopulationStarves(t *testing.T) {
 	grainRate := armyGrainNeed * 3
 	if popDemand < grainRate*10 {
 		t.Fatalf("fixture sanity: population demand %.4f is not far above garrison need %.4f (rate %.4f) — "+
-			"the scenario needs a population starved every day while the garrison is always fed; adjust startPop",
+			"the scenario needs a population starved every game day while the garrison is always fed; adjust startPop",
 			popDemand, armyGrainNeed, grainRate)
 	}
 	t.Logf("armyGrainNeed=%.4f popDemand=%.4f grainRate=%.4f", armyGrainNeed, popDemand, grainRate)
@@ -187,23 +187,23 @@ func TestFamine_GarrisonSurvivesWhilePopulationStarves(t *testing.T) {
 			`UPDATE worlds SET current_tick = current_tick + 1 WHERE id = $1 RETURNING current_tick`,
 			worldID,
 		).Scan(&tick); err != nil {
-			t.Fatalf("day %d: advance tick: %v", day, err)
+			t.Fatalf("game day %d: advance tick: %v", day, err)
 		}
 
 		for _, s := range steps {
 			nextEventID++
 			if err := s.run(ctx, tick, nextEventID); err != nil {
-				t.Fatalf("day %d: handler at priority %d failed: %v", day, s.priority, err)
+				t.Fatalf("game day %d: handler at priority %d failed: %v", day, s.priority, err)
 			}
 		}
 
 		size := garrisonSize()
 		pop := population()
 		unmet := foodUnmet()
-		t.Logf("day %d (tick %d): garrison=%d population=%d food_unmet=%.4f", day, tick, size, pop, unmet)
+		t.Logf("game day %d (tick %d): garrison=%d population=%d food_unmet=%.4f", day, tick, size, pop, unmet)
 
 		if size != 100 {
-			t.Fatalf("day %d: garrison size = %d, want 100 — the population's hunger must never reach back and cost the army men", day, size)
+			t.Fatalf("game day %d: garrison size = %d, want 100 — the population's hunger must never reach back and cost the army men", day, size)
 		}
 		if unmet > 0 {
 			sawUnmet = true
@@ -217,9 +217,9 @@ func TestFamine_GarrisonSurvivesWhilePopulationStarves(t *testing.T) {
 		t.Errorf("final food_unmet_amount = %.4f, want > 0", finalUnmet)
 	}
 	if finalPop := population(); finalPop >= startPop {
-		t.Errorf("population after %d days of famine = %d, want < %d (start) — starvation must actually shrink the city", days, finalPop, startPop)
+		t.Errorf("population after %d game days of famine = %d, want < %d (start) — starvation must actually shrink the city", days, finalPop, startPop)
 	}
 	if size := garrisonSize(); size != 100 {
-		t.Errorf("garrison size after %d days = %d, want 100 (intact) — kanon 2026-08-25: the garrison eats before the population and must never pay for its hunger", days, size)
+		t.Errorf("garrison size after %d game days = %d, want 100 (intact) — kanon 2026-08-25: the garrison eats before the population and must never pay for its hunger", days, size)
 	}
 }

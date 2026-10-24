@@ -138,7 +138,7 @@ func TestDivineBlessingLine_UnitFollowsType(t *testing.T) {
 		want []string
 	}{
 		{"harvest_blessing", []string{"grain"}},
-		{"bountiful_harvest", []string{"40 days", "a quarter more"}},
+		{"bountiful_harvest", []string{"40 game days", "a quarter more"}},
 		{"divine_recruits", []string{"men"}},
 		{"sea_blessing", []string{"ships"}},
 	}

@@ -166,7 +166,7 @@ func mkStormFreight(t *testing.T, pool *pgxpool.Pool, worldID, owner uuid.UUID, 
 func runStormDay(t *testing.T, h *SeaStormScanHandler, worldID uuid.UUID, day int) {
 	t.Helper()
 	if err := h.Handle(context.Background(), events.ScheduledEvent{ID: int64(day), WorldID: worldID, DueTick: day}); err != nil {
-		t.Fatalf("storm scan day %d: %v", day, err)
+		t.Fatalf("storm scan game day %d: %v", day, err)
 	}
 }
 
@@ -203,7 +203,7 @@ func TestSeaStorm_OneBlowPerStormThenFounders(t *testing.T) {
 	}
 	runStormDay(t, h, worldID, 3) // retry of the same day
 	if status, hull := shipState(t, pool, ship); status != "marching" || hull != 1 {
-		t.Fatalf("after day 3: status=%s hull=%d, want marching/1 (two storms, %d each; the retry nothing)", status, hull, StormDamage)
+		t.Fatalf("after game day 3: status=%s hull=%d, want marching/1 (two storms, %d each; the retry nothing)", status, hull, StormDamage)
 	}
 	if n := countShipEvents(t, pool, ship, EventShipStormDamaged); n != 2 {
 		t.Fatalf("ShipStormDamaged events = %d, want 2", n)
@@ -216,7 +216,7 @@ func TestSeaStorm_OneBlowPerStormThenFounders(t *testing.T) {
 
 	runStormDay(t, h, worldID, 6)
 	if status, hull := shipState(t, pool, ship); status != "disbanded" || hull != 0 {
-		t.Fatalf("after day 6: status=%s hull=%d, want disbanded/0 (third storm, hull clamps at 0)", status, hull)
+		t.Fatalf("after game day 6: status=%s hull=%d, want disbanded/0 (third storm, hull clamps at 0)", status, hull)
 	}
 	if status, _ := shipState(t, pool, troops); status != "disbanded" {
 		t.Fatalf("embarked troops status=%s, want disbanded (drowned with the ship)", status)
@@ -323,7 +323,7 @@ func TestSeaStorm_SameRiskForEveryErrandAndOwner(t *testing.T) {
 	_, fleetHull := shipState(t, pool, fleet)
 	_, freightHull := shipState(t, pool, freighter)
 	if fleetHull != 3 || freightHull != 3 {
-		t.Fatalf("hull after day 2 (first storm crossed): fleet=%d freighter=%d, want 3/3", fleetHull, freightHull)
+		t.Fatalf("hull after game day 2 (first storm crossed): fleet=%d freighter=%d, want 3/3", fleetHull, freightHull)
 	}
 	for day := 3; day <= 7; day++ {
 		runStormDay(t, h, worldID, day)

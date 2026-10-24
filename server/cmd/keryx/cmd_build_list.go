@@ -63,7 +63,7 @@ func listCityBuilds(c *Client, world, prov string) error {
 	fmt.Println("Build the same building again to raise its level. Hex rows refer to that exact site; a new hex starts at L1.")
 	fmt.Println("Build queue: `build --queue` shows remaining queue slots.")
 	fmt.Println("A temple is built for one god, one temple per god: `build --type temple --god <god>` (the Site column names the god).")
-	fmt.Printf("%-15s %-12s %-7s %-7s %-42s %-5s %s\n", "Type", "Site", "Current", "Next", "Costs (next level)", "Days", "Purpose / requires")
+	fmt.Printf("%-15s %-12s %-7s %-7s %-42s %-5s %s\n", "Type", "Site", "Current", "Next", "Costs (next level)", "game days", "Purpose / requires")
 	for _, b := range catalogue {
 		for _, q := range city.Settlement.Quotes {
 			if b["type"] != q.Type {

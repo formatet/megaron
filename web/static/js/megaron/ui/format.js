@@ -332,7 +332,7 @@ export function notifText(kind, body) {
       : `${esc(body.name || 'Your city')}: the garrison is losing men to hunger. Soldiers need grain even when the city has a food surplus. Place citizens on grain or transfer grain here.`;
     case 'GarrisonStarvationEnded': return `${esc(body.name || 'Your city')}: the garrison is no longer losing men to hunger.`;
     case 'TempleDemolitionWrath': return demolitionKharisText(body);
-    case 'KharisDeclining': return `Kharis is falling (${fmtNum(body.kharis || 0)}, net ${fmtNum(body.net_per_tick || 0)} per day). At this rate it reaches ${body.wrath_threshold || 15} in ${fmtDays(body.days_to_15 || 0)}. Below that, the gods may punish you, with or without a temple. Staff and feed your temples.`;
+    case 'KharisDeclining': return `Kharis is falling (${fmtNum(body.kharis || 0)}, net ${fmtNum(body.net_per_tick || 0)} per game day). At this rate it reaches ${body.wrath_threshold || 15} in ${fmtDays(body.days_to_15 || 0)}. Below that, the gods may punish you, with or without a temple. Staff and feed your temples.`;
     case 'KharisBandChanged': return `Kharis: ${esc(body.from_band || '?')} → ${esc(body.to_band || '?')} (${fmtNum(body.kharis || 0)}). Check Kult for decay and temple support; staff and feed your temples.`;
 
     case 'OpeningDispatch': return esc(body.title || 'Opening dispatch');
@@ -506,10 +506,10 @@ export function notifText(kind, body) {
       const netPerTick = body.net_per_tick ?? body.net_per_day;
       const ticksLeft = body.ticks_left ?? body.days_left;
       if (body.tier === 'critical') {
-        return `${name} is STARVING — ${body.pop_loss || 0} citizens lost. Grain net ${(netPerTick || 0).toFixed(0)} per day.`;
+        return `${name} is STARVING — ${body.pop_loss || 0} citizens lost. Grain net ${(netPerTick || 0).toFixed(0)} per game day.`;
       }
       const ticks = ticksLeft ? ` — grain lasts ~${fmtDays(Math.round(ticksLeft))}` : '';
-      return `${name}: grain net ${(netPerTick || 0) >= 0 ? '+' : ''}${(netPerTick || 0).toFixed(0)} per day${ticks}`;
+      return `${name}: grain net ${(netPerTick || 0) >= 0 ? '+' : ''}${(netPerTick || 0).toFixed(0)} per game day${ticks}`;
     }
     case 'OfferAccepted': {
       // Sent when the runner is home (messenger.ReturnHandler): good_key/quantity/silver are
@@ -849,7 +849,7 @@ export function notifText(kind, body) {
       const amount = body.amount || 0;
       switch (body.type) {
         case 'harvest_blessing': return `The gods fill your granaries${place} — +${Math.round(amount)} grain`;
-        case 'bountiful_harvest': return `The gods bless the fields${place} — grain, oil and wine yield a quarter more for ${amount} days`;
+        case 'bountiful_harvest': return `The gods bless the fields${place} — grain, oil and wine yield a quarter more for ${amount} game days`;
         case 'divine_recruits':  return `Warriors answer a divine call${place} — +${amount} men`;
         case 'sea_blessing':     return `Poseidon guides a vessel to your harbour${place} — +${amount} galley`;
         default:                 return `${kind} — ${payloadSummary(body)}`;
@@ -934,8 +934,8 @@ export function colonyFoundedGrainLine(body) {
     const name = body.name || 'The colony';
     const net = Math.abs(body.food_net_per_tick)<1e-9 ? 0 : body.food_net_per_tick;
     const line = net >= 0
-      ? `${name} food production covers consumption (net +${net.toFixed(1)} per day).`
-      : `${name} food production falls short by ${(-net).toFixed(1)} per day. Stored food feeds people until it runs out.`;
+      ? `${name} food production covers consumption (net +${net.toFixed(1)} per game day).`
+      : `${name} food production falls short by ${(-net).toFixed(1)} per game day. Stored food feeds people until it runs out.`;
     return `${line} ${body.loyalty_warning || ''}`.trim();
   }
   if (body.grain_net_per_tick == null) return '';
@@ -946,10 +946,10 @@ export function colonyFoundedGrainLine(body) {
   const ticksLeft = body.grain_ticks ?? body.grain_days;
   if (perTick < 0) {
     const ticks = ticksLeft != null ? ` — grain lasts ~${fmtDays(Math.round(ticksLeft))}` : '';
-    return `${name} grain production falls short by ${(-perTick).toFixed(1)} per day${ticks}. Build a farm if the land bears it, or send grain by internal transfer.`;
+    return `${name} grain production falls short by ${(-perTick).toFixed(1)} per game day${ticks}. Build a farm if the land bears it, or send grain by internal transfer.`;
   }
   const warning = body.loyalty_warning || '';
-  return `${name} produces enough grain (net ~+${perTick.toFixed(1)} per day). ${warning}`.trim();
+  return `${name} produces enough grain (net ~+${perTick.toFixed(1)} per game day). ${warning}`.trim();
 }
 
 // The loss dispatch owns a frozen sealed envelope; never fetch the mutable

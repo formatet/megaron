@@ -8,11 +8,11 @@ Under **Details**, the forecast gives the grain your fields would produce agains
 
 - **It feeds itself** — the fields cover the mouths with room to spare.
 - **Marginal** — positive but thin. Draft one cohort and you are eating into the food stock.
-- **It does not feed itself** — you are told how many days your carried grain buys, and whether a Farm would fix it. If it says a farm will not help, there is no farmable ground in reach at all.
+- **It does not feed itself** — you are told how many game days your carried grain buys, and whether a Farm would fix it. If it says a farm will not help, there is no farmable ground in reach at all.
 
 The gap between *marginal* and *does not feed itself* has killed more young cities than any war. See [[food]].
 
-In **Details**, below the grain line, look for **deposits**: copper, tin, silver, cedar. A site with metal under it is worth walking extra days for. A site with none is not a mistake — you can buy metal ([[trade]]) — but you will be buying it from someone who walked those days. Read [[bronze]] before you decide.
+In **Details**, below the grain line, look for **deposits**: copper, tin, silver, cedar. A site with metal under it is worth walking extra game days for. A site with none is not a mistake — you can buy metal ([[trade]]) — but you will be buying it from someone who walked those game days. Read [[bronze]] before you decide.
 
 ## Where you cannot found
 
@@ -37,6 +37,6 @@ The forecast lists grain and fish production separately from the population's fu
 
 If the known catchment has no timber or cedar to cover timber costs, the forecast warns before you found. Unknown ground may still hold wood; scout it or plan deliveries. A fully known catchment without wood needs imports for building.
 
-Place citizens on olive groves, maquis, hills or river valleys for timber, or on cedar forest for cedar to cover timber costs, and on stone-bearing ground for stone; idle citizens produce nothing. Maquis, hills and river valleys each have one timber place before a Lumbermill is built, yielding 0.33 timber per worker per day ([[catchment]]). The forecast says when Demeter’s farm is already included; another farm is not an extra founding gift.
+Place citizens on olive groves, maquis, hills or river valleys for timber, or on cedar forest for cedar to cover timber costs, and on stone-bearing ground for stone; idle citizens produce nothing. Maquis, hills and river valleys each have one timber place before a Lumbermill is built, yielding 0.33 timber per worker per game day ([[catchment]]). The forecast says when Demeter’s farm is already included; another farm is not an extra founding gift.
 
-On grain-bearing hills, a Farm at level 1 makes 0.85 grain per worker per day, with room for five workers. Plain hills give 0.5 per worker. With another grain-bearing hill in reach, six food workers can feed a new city of 1,000 people; leave the rest for timber and stone. Check the forecast for your actual site.
+On grain-bearing hills, a Farm at level 1 makes 0.85 grain per worker per game day, with room for five workers. Plain hills give 0.5 per worker. With another grain-bearing hill in reach, six food workers can feed a new city of 1,000 people; leave the rest for timber and stone. Check the forecast for your actual site.

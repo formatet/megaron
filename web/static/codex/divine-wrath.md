@@ -1,8 +1,8 @@
-The gods may punish a realm **below 15 kharis**, with or without a [[temples|temple]]. Each day brings a **3% chance**. At exactly 15 there is no risk. A punishment chooses one of your active cities that has something it can take.
+The gods may punish a realm **below 15 kharis**, with or without a [[temples|temple]]. Each game day brings a **3% chance**. At exactly 15 there is no risk. A punishment chooses one of your active cities that has something it can take.
 
 ## Warning before danger
 
-When your standing crosses **30 downward** and the projected net is negative, a warning tells you your kharis, net per day and how many days it would take to reach 15 at that rate. It is sent once per downward crossing. A positive or zero net gives no warning. Further decline below 30 does not repeat it; recovery above 30 allows a new downward crossing to warn again.
+When your standing crosses **30 downward** and the projected net is negative, a warning tells you your kharis, net per game day and how many game days it would take to reach 15 at that rate. It is sent once per downward crossing. A positive or zero net gives no warning. Further decline below 30 does not repeat it; recovery above 30 allows a new downward crossing to warn again.
 
 The estimate assumes that net continues. Staff and feed your temples, then check **Kult** or `keryx status`. A mood change still has its own notice.
 
