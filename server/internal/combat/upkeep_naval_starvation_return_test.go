@@ -150,8 +150,11 @@ func TestUpkeep_NavalStarvationReturn_TriggersAtHalfCrew(t *testing.T) {
 		}
 	}
 
-	if crew != 10 {
-		t.Errorf("crew at trigger = %d, want 10 (half of 20)", crew)
+	// Timothy 2026-10-24: a ship with food only for the way home turns at once,
+	// before its crew starves — not at half crew as before. With nothing aboard it
+	// turns on the first day and loses only that day's ration of men.
+	if crew < 18 {
+		t.Errorf("crew at turn = %d, want >= 18 (turned on the first starved day)", crew)
 	}
 	if status != "marching" {
 		t.Fatalf("ship status = %q after crew reached %d, want marching (turned for home)", status, crew)
@@ -164,8 +167,8 @@ func TestUpkeep_NavalStarvationReturn_TriggersAtHalfCrew(t *testing.T) {
 	).Scan(&marchIntent, &targetQ, &targetR); err != nil {
 		t.Fatalf("read ship route: %v", err)
 	}
-	if marchIntent != "explore_return" {
-		t.Errorf("march_intent = %q, want explore_return (shared return-leg routing)", marchIntent)
+	if marchIntent != "food_return" {
+		t.Errorf("march_intent = %q, want food_return (homecoming report, shared return routing)", marchIntent)
 	}
 	if targetQ != 1 || targetR != 0 {
 		t.Errorf("return target = (%d,%d), want (1,0) — the home harbour hex", targetQ, targetR)
@@ -195,24 +198,18 @@ func TestUpkeep_NavalStarvationReturn_TriggersAtHalfCrew(t *testing.T) {
 	).Scan(&exploreEvents); err != nil {
 		t.Fatalf("count UnitExploreReturned events: %v", err)
 	}
-	if starvingEvents != 1 {
-		t.Errorf("UnitReturnedStarving events = %d, want 1", starvingEvents)
+	if starvingEvents != 0 {
+		t.Errorf("UnitReturnedStarving events = %d, want 0 — the captain's own early turn is not a starvation return", starvingEvents)
 	}
 	if exploreEvents != 0 {
 		t.Errorf("UnitExploreReturned events = %d, want 0 — a starving return must never emit the explore event type", exploreEvents)
 	}
 
-	foundKind := false
+	// The owner hears when the ship is home, never from a distant sea (pillar).
 	for _, k := range broadcaster.notified {
-		if k == "UnitExploreReturned" {
-			t.Errorf("owner was notified with kind UnitExploreReturned for a starvation return — the notification must not lie about why the ship turned")
+		if k == "UnitExploreReturned" || k == "UnitReturnedStarving" {
+			t.Errorf("owner was notified %s while the ship was still at sea", k)
 		}
-		if k == "UnitReturnedStarving" {
-			foundKind = true
-		}
-	}
-	if !foundKind {
-		t.Errorf("owner was never notified with kind UnitReturnedStarving")
 	}
 }
 
@@ -258,9 +255,8 @@ func TestUpkeep_NavalStarvationReturn_GarrisonNotTouched(t *testing.T) {
 	}
 }
 
-// 3. Homeless ship: home_settlement_id IS NULL ⇒ no dispatch, no error, ship
-// just keeps starving in place until it either dies or (in a real game) an
-// owner does something about it another way.
+// 3. Homeless ship: home_settlement_id IS NULL ⇒ it makes for its owner's
+// nearest town (expeditionReturnDestination), as an explore return does.
 func TestUpkeep_NavalStarvationReturn_NoHomeSettlement(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
@@ -281,11 +277,9 @@ func TestUpkeep_NavalStarvationReturn_NoHomeSettlement(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT status, crew FROM units WHERE id = $1`, shipID).Scan(&status, &crew); err != nil {
 		t.Fatalf("read ship: %v", err)
 	}
-	if crew > 10 {
-		t.Fatalf("test setup: crew = %d after 5 starved ticks, want <=10", crew)
-	}
-	if status != "positioned" {
-		t.Errorf("homeless ship status = %q after crew fell to %d, want positioned unchanged — nowhere to send it", status, crew)
+	// Without a recorded home the ship makes for its owner's nearest town.
+	if status != "marching" {
+		t.Errorf("homeless ship status = %q (crew %d), want marching to the owner's nearest town", status, crew)
 	}
 }
 
@@ -307,21 +301,8 @@ func TestUpkeep_NavalStarvationReturn_Idempotent(t *testing.T) {
 	broadcaster := &fakeBroadcaster{}
 	h := newStarvationUpkeepHandler(pool, broadcaster)
 
-	// Four ticks to bring crew to 12 (still above the 10 threshold).
-	for i := int64(1); i <= 4; i++ {
-		if err := h.Handle(ctx, events.ScheduledEvent{ID: 98000 + i, WorldID: f.worldID}); err != nil {
-			t.Fatalf("upkeep Handle warm-up tick %d: %v", i, err)
-		}
-	}
 	var crew int
-	if err := pool.QueryRow(ctx, `SELECT crew FROM units WHERE id = $1`, shipID).Scan(&crew); err != nil {
-		t.Fatalf("read crew before trigger tick: %v", err)
-	}
-	if crew != 12 {
-		t.Fatalf("test setup: crew = %d before the trigger tick, want 12", crew)
-	}
-
-	// The FIFTH tick — same event, run twice — crosses the threshold.
+	// The first starved day — same event, run twice — turns the ship home.
 	triggerEvent := events.ScheduledEvent{ID: 98999, WorldID: f.worldID}
 	if err := h.Handle(ctx, triggerEvent); err != nil {
 		t.Fatalf("upkeep Handle trigger tick (1st): %v", err)
@@ -334,8 +315,8 @@ func TestUpkeep_NavalStarvationReturn_Idempotent(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT status, crew FROM units WHERE id = $1`, shipID).Scan(&status, &crew); err != nil {
 		t.Fatalf("read ship after replay: %v", err)
 	}
-	if crew != 10 {
-		t.Errorf("crew after replayed trigger tick = %d, want 10 — a replay must not deduct twice", crew)
+	if crew != 18 {
+		t.Errorf("crew after replayed trigger tick = %d, want 18 — a replay must not deduct twice", crew)
 	}
 	if status != "marching" {
 		t.Fatalf("status = %q, want marching", status)
@@ -359,18 +340,13 @@ func TestUpkeep_NavalStarvationReturn_Idempotent(t *testing.T) {
 	).Scan(&starvingEvents); err != nil {
 		t.Fatalf("count UnitReturnedStarving events: %v", err)
 	}
-	if starvingEvents != 1 {
-		t.Errorf("UnitReturnedStarving events = %d, want exactly 1 across both Handle calls", starvingEvents)
+	if starvingEvents != 0 {
+		t.Errorf("UnitReturnedStarving events = %d, want 0 for the early turn", starvingEvents)
 	}
-
-	notifiedCount := 0
 	for _, k := range broadcaster.notified {
-		if k == "UnitReturnedStarving" {
-			notifiedCount++
+		if k == "UnitReturnedStarving" || k == "ShipCameHomeForFood" {
+			t.Errorf("owner notified %s while the ship was at sea, want it only once the ship is home", k)
 		}
-	}
-	if notifiedCount != 1 {
-		t.Errorf("UnitReturnedStarving notifications = %d, want exactly 1", notifiedCount)
 	}
 }
 
@@ -467,8 +443,8 @@ func TestUpkeep_NavalStarvationReturn_AlreadyMarchingNotRedispatched(t *testing.
 	var shipID uuid.UUID
 	if err := pool.QueryRow(ctx,
 		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status,
-		                    q, r, support_settlement_id, home_settlement_id, provisions)
-		 VALUES ($1, $2, 'galley', 'naval', 1, 10, 'marching', 3, 0, $3, $4, 0)
+		                    q, r, support_settlement_id, home_settlement_id, provisions, march_intent)
+		 VALUES ($1, $2, 'galley', 'naval', 1, 10, 'marching', 3, 0, $3, $4, 0, 'explore_return')
 		 RETURNING id`,
 		f.worldID, f.ownerID, f.capitalID, f.capitalID,
 	).Scan(&shipID); err != nil {

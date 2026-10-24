@@ -3,6 +3,7 @@ package economy
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -62,6 +63,9 @@ func HospitalityAtTransportPort(ctx context.Context, tx pgx.Tx, transport, port 
 			return err
 		}
 		j, e := province.PlanTradeJourney(ctx, tx, world, from, home, "naval")
+		if errors.Is(e, province.ErrNoTradePath) {
+			return nil // no way home to provision for; the delivery itself stands
+		}
 		if e != nil {
 			return fmt.Errorf("hospitality home journey: %w", e)
 		}
