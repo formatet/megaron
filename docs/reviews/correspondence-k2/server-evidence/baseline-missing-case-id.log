@@ -1,0 +1,8 @@
+» färsk DB på migration 206 · commit fa83fc93
+2026/10/24 06:33:36 INFO player registered id=381b0849-1048-4e04-9e39-adde99ca0769 username=reply-sender-64084da5-2f3b-425c-a392-70b8593bcf77
+2026/10/24 06:33:36 INFO player registered id=00ee3025-f3cb-4d03-98e0-9f3464a8e015 username=reply-receiver-38cefab5-4f3d-4607-8951-6803df0d2e03
+--- FAIL: TestSendCreatesPersistentCaseIdentity (0.11s)
+    correspondence_send_identity_test.go:17: sent letter has no persistent case_id: map[arrives_at:2026-10-24T08:33:36.680920325+02:00 distance:3 id:b6ee8108-1d28-4df0-9f3d-bffd1c526eca]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.112s
+FAIL

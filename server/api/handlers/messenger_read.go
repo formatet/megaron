@@ -31,7 +31,7 @@ func (h *MessengerHandler) Read(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusUnauthorized, "not authenticated")
 		return
 	}
-	tag, err := h.pool.Exec(r.Context(), `UPDATE messengers m SET read_at=COALESCE(m.read_at,$4) FROM settlements s WHERE m.id=$1 AND m.world_id=$2 AND m.destination_id=s.id AND s.owner_id=$3 AND NOT m.withdrawn AND `+receivedLetterSQL, id, worldID, player, h.clk.Now())
+	tag, err := h.pool.Exec(r.Context(), `UPDATE messengers m SET read_at=COALESCE(m.read_at,$4) FROM settlements s WHERE m.id=$1 AND m.world_id=$2 AND m.destination_id=s.id AND s.owner_id=$3 AND correspondence_recipient(m.id,$3) AND NOT m.withdrawn AND `+receivedLetterSQL, id, worldID, player, h.clk.Now())
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not mark letter read")
 		return

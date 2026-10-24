@@ -1,0 +1,9 @@
+» färsk DB på migration 207 · commit fa83fc93+ändringar
+2026/10/24 06:36:57 INFO player registered id=abc3effa-59f7-4b9f-b354-038250b9cb3e username=reply-sender-49763f7a-a9d0-44bb-b8fd-5fa9c9fc2ae9
+2026/10/24 06:36:57 INFO player registered id=565668a2-6fb1-43d0-8471-98e1e9a66937 username=reply-receiver-7ee68432-18d4-4301-aa09-2cf2169bf05c
+2026/10/24 06:36:57 INFO player registered id=9976b554-5623-49b5-83a7-497df85c8d92 username=stranger-1afa2071-056c-421e-a2f0-f9af48e37af9
+--- FAIL: TestCorrespondenceCaseRejectsUnrelatedPersonAndWrongWorld (0.16s)
+    correspondence_cases_test.go:213: unrelated person read case: 200 map[counterpart_id:abc3effa-59f7-4b9f-b354-038250b9cb3e id:f3e23fea-0e84-4a32-8113-bd7ef9acfdeb items:[map[destination_id:3355daf1-a0c9-433e-8aed-243136197f25 destination_name:Reply-Dest-d5ca59ce-cdf2-43c2-bdfd-c03ca512ba3c id:04780c40-46ea-433a-b1b0-1d4cf848d048 message_text:Sealed winter terms origin_id:6f84ee44-2107-4f09-b4da-ae568bac347c origin_name:Reply-Origin-2213c230-d56d-4672-90d8-6f7e2a8d7619 recipient_id:565668a2-6fb1-43d0-8471-98e1e9a66937 recipient_name:reply-receiver-7ee68432-18d4-4301-aa09-2cf2169bf05c sender_id:abc3effa-59f7-4b9f-b354-038250b9cb3e sender_name:reply-sender-49763f7a-a9d0-44bb-b8fd-5fa9c9fc2ae9 sent_at:2026-10-24T06:36:57.563565+02:00 status:delivered]] next_cursor: subject:Private matter]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.166s
+FAIL

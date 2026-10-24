@@ -126,7 +126,7 @@ func (h *MessengerHandler) Queue(w http.ResponseWriter, r *http.Request) {
  JOIN worlds qw ON qw.id=m.world_id
  JOIN settlements ds ON ds.id=m.destination_id
  LEFT JOIN settlements os ON os.id=m.origin_id
- WHERE m.world_id=$1 AND ds.owner_id=$2 AND NOT m.withdrawn AND `+receivedLetterSQL+`
+ WHERE m.world_id=$1 AND ds.owner_id=$2 AND correspondence_recipient(m.id,$2) AND NOT m.withdrawn AND `+receivedLetterSQL+`
  AND (m.correspondence_created_epoch<>$8 OR pg_visible_in_snapshot(m.correspondence_created_xid,$7::pg_snapshot))
  AND m.sent_at<=$3 AND ($4::timestamptz IS NULL OR (m.sent_at,m.id)<($4::timestamptz,$5::uuid))
  ORDER BY m.sent_at DESC,m.id DESC LIMIT $6`, world, player, cursor.Upper, before, beforeID, limit+1, cursor.Snapshot, cursor.Epoch)

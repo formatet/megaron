@@ -222,7 +222,7 @@ func (h *ArrivalHandler) notifyDelivered(ctx context.Context, worldID, messenger
 		   JOIN provinces   pr ON pr.id = s.province_id
 		   JOIN players     pl ON pl.id = m.sender_id
 		   LEFT JOIN settlements o ON o.id = m.origin_id
-		  WHERE m.id = $1`,
+		  WHERE m.id = $1 AND correspondence_recipient(m.id,s.owner_id)`,
 		messengerID,
 	).Scan(&recipientID, &senderID, &destName, &q, &r, &senderName, &messageText, &originName, &offer); err != nil {
 		slog.Warn("messenger arrival notice lookup", "messenger", messengerID, "err", err)

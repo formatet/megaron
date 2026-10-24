@@ -1,0 +1,8 @@
+» färsk DB på migration 207 · commit fa83fc93+ändringar
+2026/10/24 06:36:52 INFO player registered id=892a0049-b66b-4165-8094-bf843ff827dd username=reply-sender-390a8558-09ab-4739-a9a6-955df0b1cae1
+2026/10/24 06:36:52 INFO player registered id=b077ae85-beb1-4a3b-84e2-82f2347a01ca username=reply-receiver-9d2f821a-822e-41af-a56a-968b38de0a13
+--- FAIL: TestCorrespondenceCasePrivacySnapshotsAndDeletion (0.12s)
+    correspondence_cases_test.go:85: reply read before physical return: map[counterpart_id:b077ae85-beb1-4a3b-84e2-82f2347a01ca id:cf075e69-df69-4b17-a6b7-6498206752d6 items:[map[destination_id:e438b471-67c2-4458-accb-4adfff8685d6 destination_name:Reply-Dest-6224912c-de14-4b7d-9e6c-075d625218b9 id:94c714e5-c9c1-494b-8e63-af1fbd764d12 message_text:Sealed winter terms origin_id:04a3747f-e62a-4b7b-bb16-887f1e8fb592 origin_name:Reply-Origin-70ecf0a3-9cd8-4049-9326-be020cd3ad15 recipient_id:b077ae85-beb1-4a3b-84e2-82f2347a01ca recipient_name:reply-receiver-9d2f821a-822e-41af-a56a-968b38de0a13 reply_text:A private reply sender_id:892a0049-b66b-4165-8094-bf843ff827dd sender_name:reply-sender-390a8558-09ab-4739-a9a6-955df0b1cae1 sent_at:2026-10-24T06:36:52.294207+02:00 status:outbound]] next_cursor: subject:Tin for winter]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.128s
+FAIL

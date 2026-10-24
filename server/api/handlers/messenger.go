@@ -128,6 +128,8 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req struct {
+		CaseID        string `json:"case_id,omitempty"`
+		Subject       string `json:"subject,omitempty"`
 		DestinationID string `json:"destination_id"`
 		Message       string `json:"message"`
 		TradeOffer    *struct {
@@ -550,6 +552,12 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	caseID, caseErr := attachCorrespondenceTx(r.Context(), tx, messengerID, worldID, playerID, req.CaseID, req.Subject)
+	if caseErr != nil {
+		writeError(w, http.StatusBadRequest, caseErr.Error())
+		return
+	}
+
 	if err = tx.Commit(r.Context()); err != nil {
 		writeError(w, 500, "could not commit Runner departure")
 		return
@@ -557,6 +565,7 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 
 	resp := map[string]any{
 		"id":         messengerID,
+		"case_id":    caseID,
 		"arrives_at": arrivesAt,
 		"distance":   dist,
 	}
@@ -587,6 +596,8 @@ func (h *MessengerHandler) SendFromHost(w http.ResponseWriter, r *http.Request) 
 	}
 
 	var req struct {
+		CaseID        string          `json:"case_id,omitempty"`
+		Subject       string          `json:"subject,omitempty"`
 		DestinationID string          `json:"destination_id"`
 		Message       string          `json:"message"`
 		TradeOffer    json.RawMessage `json:"trade_offer,omitempty"`
@@ -668,8 +679,14 @@ func (h *MessengerHandler) SendFromHost(w http.ResponseWriter, r *http.Request) 
 		passageSinceTickArg = &passageSinceTick
 	}
 
+	tx, err := h.pool.Begin(r.Context())
+	if err != nil {
+		writeError(w, 500, "transaction error")
+		return
+	}
+	defer tx.Rollback(r.Context())
 	var messengerID uuid.UUID
-	if err = h.pool.QueryRow(r.Context(),
+	if err = tx.QueryRow(r.Context(),
 		`INSERT INTO messengers (world_id, sender_id, origin_unit_id, origin_q, origin_r, destination_id, message_text, hex_q, hex_r, arrives_at, passage_status, passage_port_id, passage_since_tick)
 		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id`,
 		worldID, playerID, hostID, oQ, oR, destID, req.Message, dQ, dR, arrivesAt,
@@ -680,12 +697,24 @@ func (h *MessengerHandler) SendFromHost(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if passage == nil {
-		_ = h.scheduler.EnqueueTick(r.Context(), worldID, events.ScheduledMessengerArrival,
-			messenger.ArrivalPayload{MessengerID: messengerID}, dueTick)
+		if err = h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledMessengerArrival, messenger.ArrivalPayload{MessengerID: messengerID}, dueTick); err != nil {
+			writeError(w, 500, "could not schedule arrival")
+			return
+		}
 	}
 
+	caseID, caseErr := attachCorrespondenceTx(r.Context(), tx, messengerID, worldID, playerID, req.CaseID, req.Subject)
+	if caseErr != nil {
+		writeError(w, 400, caseErr.Error())
+		return
+	}
+	if err = tx.Commit(r.Context()); err != nil {
+		writeError(w, 500, "could not commit departure")
+		return
+	}
 	resp := map[string]any{
 		"id":         messengerID,
+		"case_id":    caseID,
 		"arrives_at": arrivesAt,
 		"distance":   dist,
 	}
@@ -712,7 +741,7 @@ func (h *MessengerHandler) ListFromHost(w http.ResponseWriter, r *http.Request) 
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT m.id, m.destination_id, COALESCE(s.name, ''), m.message_text, CASE WHEN secret.no_word THEN 'outbound' ELSE m.status END, CASE WHEN secret.no_word THEN NULL ELSE m.reply_text END, m.sent_at, m.arrives_at,
+		`SELECT m.id, m.destination_id, COALESCE(s.name, ''), m.message_text, CASE WHEN secret.no_word THEN 'outbound' ELSE m.status END, CASE WHEN secret.no_word OR (m.status<>'arrived' AND EXISTS(SELECT 1 FROM correspondence_letters a WHERE a.id=m.id)) THEN NULL ELSE m.reply_text END, m.sent_at, m.arrives_at,
 		        CASE WHEN secret.no_word THEN 'unknown' ELSE m.passage_status END, CASE WHEN secret.no_word THEN NULL ELSE pps.name END, CASE WHEN secret.no_word THEN NULL ELSE m.carrier_name END
 		 FROM messengers m
  CROSS JOIN LATERAL (SELECT m.status NOT IN ('arrived','lost') AND EXISTS(SELECT 1 FROM events e WHERE e.stream_id=m.id AND e.event_type='CarrierPassengerRescuedV1') AS no_word) secret
@@ -785,15 +814,15 @@ func (h *MessengerHandler) ListSent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT m.id, m.destination_id, s.name, m.message_text, CASE WHEN secret.no_word THEN 'outbound' ELSE m.status END, CASE WHEN secret.no_word THEN NULL ELSE m.reply_text END, m.sent_at, m.arrives_at, m.trade_offer, m.expires_at,
+		`SELECT m.id, m.destination_id, s.name, m.message_text, CASE WHEN secret.no_word THEN 'outbound' ELSE m.status END, CASE WHEN secret.no_word OR (m.status<>'arrived' AND EXISTS(SELECT 1 FROM correspondence_letters a WHERE a.id=m.id)) THEN NULL ELSE m.reply_text END, m.sent_at, m.arrives_at, m.trade_offer, m.expires_at,
 		        CASE WHEN secret.no_word THEN 'unknown' ELSE m.passage_status END, CASE WHEN secret.no_word THEN NULL ELSE pps.id END, CASE WHEN secret.no_word THEN NULL ELSE pps.name END, CASE WHEN secret.no_word THEN NULL ELSE pps.owner_id END, CASE WHEN secret.no_word THEN NULL ELSE m.carrier_name END
 		 FROM messengers m
  CROSS JOIN LATERAL (SELECT m.status NOT IN ('arrived','lost') AND EXISTS(SELECT 1 FROM events e WHERE e.stream_id=m.id AND e.event_type='CarrierPassengerRescuedV1') AS no_word) secret
 		 JOIN settlements s ON s.id = m.destination_id
 		 LEFT JOIN settlements pps ON pps.id = m.passage_port_id
-		 WHERE m.origin_id = $1
+		 WHERE m.origin_id = $1 AND (m.sender_id=$2 OR NOT EXISTS(SELECT 1 FROM correspondence_letters a WHERE a.id=m.id))
 		 ORDER BY m.sent_at DESC LIMIT 20`,
-		originID,
+		originID, playerID,
 	)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not load messengers")
@@ -909,7 +938,7 @@ func (h *MessengerHandler) Inbox(w http.ResponseWriter, r *http.Request) {
 		 LEFT JOIN settlements os ON os.id = m.origin_id
 		 JOIN settlements ds ON ds.id = m.destination_id
 		 WHERE m.world_id = $1
-		   AND ds.owner_id = $2
+		   AND ds.owner_id = $2 AND correspondence_recipient(m.id,$2)
 		   AND (
           (NOT $3 AND m.status='delivered' AND ((m.trade_offer IS NULL AND (`+replyDeadlineSQL+` IS NULL OR (SELECT current_tick FROM worlds WHERE id=m.world_id)<`+replyDeadlineSQL+`)) OR
             (m.trade_offer->>'status'='pending' AND (m.expires_at IS NULL OR m.expires_at>now()))))
@@ -1004,7 +1033,7 @@ func (h *MessengerHandler) Reply(w http.ResponseWriter, r *http.Request) {
 	err = tx.QueryRow(r.Context(),
 		`SELECT m.trade_offer->>'status', `+replyDeadlineSQL+` FROM messengers m
 		 JOIN settlements ds ON ds.id = m.destination_id
-		 WHERE m.id = $1 AND m.world_id = $2 AND ds.owner_id = $3 AND m.status = 'delivered'
+		 WHERE m.id = $1 AND m.world_id = $2 AND ds.owner_id = $3 AND correspondence_recipient(m.id,$3) AND m.status = 'delivered'
 		 AND NOT m.withdrawn FOR UPDATE OF m,ds`,
 		messengerID, worldID, playerID,
 	).Scan(&offerStatus, &replyDeadline)
@@ -1108,7 +1137,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		        m.trade_offer->>'status', m.expires_at
 		 FROM messengers m
 		 JOIN settlements ds ON ds.id = m.destination_id
-		 WHERE m.id = $1 AND m.world_id = $2 AND ds.owner_id = $3
+		 WHERE m.id = $1 AND m.world_id = $2 AND ds.owner_id = $3 AND correspondence_recipient(m.id,$3)
 		   AND m.status = 'delivered' AND m.trade_offer IS NOT NULL FOR UPDATE OF m, ds`,
 		messengerID, worldID, playerID,
 	).Scan(&destID, &originID, &kind, &wantGood, &wantQty, &offerSilver, &offerGood, &offerQty, &wantSilver, &offerStatus, &offerExpiresAt)
@@ -1531,7 +1560,7 @@ func endedOfferStatus(ctx context.Context, db interface {
 	var status string
 	if err := db.QueryRow(ctx,
 		`SELECT m.trade_offer->>'status' FROM messengers m JOIN settlements ds ON ds.id = m.destination_id
-		  WHERE m.id = $1 AND m.world_id = $2 AND ds.owner_id = $3 AND m.trade_offer->>'status' <> 'pending'`,
+		  WHERE m.id = $1 AND m.world_id = $2 AND ds.owner_id = $3 AND correspondence_recipient(m.id,$3) AND m.trade_offer->>'status' <> 'pending'`,
 		messengerID, worldID, playerID,
 	).Scan(&status); err != nil {
 		return ""
@@ -1586,7 +1615,7 @@ func (h *MessengerHandler) TradeDecline(w http.ResponseWriter, r *http.Request) 
 		 FROM messengers m
 		 JOIN settlements ds ON ds.id = m.destination_id
 		 JOIN settlements os ON os.id = m.origin_id
-		 WHERE m.id=$1 AND m.world_id=$2 AND ds.owner_id=$3
+		 WHERE m.id=$1 AND m.world_id=$2 AND ds.owner_id=$3 AND correspondence_recipient(m.id,$3)
 		   AND m.status='delivered' AND m.trade_offer IS NOT NULL`,
 		messengerID, worldID, playerID,
 	).Scan(&offerStatus, &originID, &destID, &originOwner, &kind, &offerSilver, &offerGood, &offerQty,
@@ -1614,7 +1643,7 @@ func (h *MessengerHandler) TradeDecline(w http.ResponseWriter, r *http.Request) 
 	var stillOwned bool
 	if err := tx.QueryRow(r.Context(), `SELECT true FROM messengers m
  JOIN settlements ds ON ds.id=m.destination_id
- WHERE m.id=$1 AND m.world_id=$2 AND ds.owner_id=$3 AND m.status='delivered'
+ WHERE m.id=$1 AND m.world_id=$2 AND ds.owner_id=$3 AND correspondence_recipient(m.id,$3) AND m.status='delivered'
  FOR UPDATE OF m,ds`, messengerID, worldID, playerID).Scan(&stillOwned); err != nil {
 		writeError(w, http.StatusConflict, "trade offer no longer available to you")
 		return
@@ -1728,7 +1757,7 @@ func (h *MessengerHandler) CancelOffer(w http.ResponseWriter, r *http.Request) {
 		        COALESCE((m.trade_offer->>'offer_qty')::float, 0)
 		 FROM messengers m
 		 JOIN settlements os ON os.id = m.origin_id
-		 WHERE m.id=$1 AND m.world_id=$2 AND os.owner_id=$3
+		 WHERE m.id=$1 AND m.world_id=$2 AND os.owner_id=$3 AND (m.sender_id=$3 OR NOT EXISTS(SELECT 1 FROM correspondence_letters a WHERE a.id=m.id))
 		   AND m.trade_offer IS NOT NULL`,
 		messengerID, worldID, playerID,
 	).Scan(&offerStatus, &originID, &kind, &offerSilver, &offerGood, &offerQty)

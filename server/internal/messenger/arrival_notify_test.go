@@ -318,3 +318,36 @@ func mustJSON(t *testing.T, v any) []byte {
 	}
 	return b
 }
+
+// New private correspondence must not become a notification to a city successor.
+// Legacy operational messages retain their old behavior; this is an explicitly
+// registered new letter with a proven intended recipient at departure.
+func TestCorrespondenceSuccessorNeverReceivesPrivateArrivalNotice(t *testing.T) {
+	sc := setupMessengerScene(t)
+	ctx := context.Background()
+	id := sc.sendMessenger(t, "SEALED PRIVATE TERMS", "")
+	var caseID uuid.UUID
+	if err := sc.pool.QueryRow(ctx, `INSERT INTO correspondence_cases(world_id,first_player_id,second_player_id,subject) VALUES($1,$2,$3,'Privacy') RETURNING id`, sc.worldID, sc.senderID, sc.receiverID).Scan(&caseID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := sc.pool.Exec(ctx, `INSERT INTO correspondence_letters(id,case_id,sender_id,recipient_id,sender_name,recipient_name,origin_id,destination_id,origin_name,destination_name,message_text,sent_at,status)
+ SELECT id,$2,sender_id,$3,'Sender','Recipient',origin_id,destination_id,'Origin','Destination',message_text,sent_at,status FROM messengers WHERE id=$1`, id, caseID, sc.receiverID); err != nil {
+		t.Fatal(err)
+	}
+	var successor uuid.UUID
+	if err := sc.pool.QueryRow(ctx, `INSERT INTO players(username,password_hash) VALUES($1,'x') RETURNING id`, "successor-"+uuid.NewString()).Scan(&successor); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := sc.pool.Exec(ctx, `UPDATE settlements SET owner_id=$2 WHERE id=$1`, sc.destID, successor); err != nil {
+		t.Fatal(err)
+	}
+	hub := &fakeArrivalBroadcaster{}
+	sc.deliver(t, sc.arrivalHandler(hub), id)
+	if len(hub.kinds) != 0 {
+		t.Fatalf("private letter leaked via notification: %v %v", hub.players, hub.payloads)
+	}
+	var delivered bool
+	if err := sc.pool.QueryRow(ctx, `SELECT delivered FROM correspondence_letters WHERE id=$1`, id).Scan(&delivered); err != nil || delivered {
+		t.Fatalf("unavailable recipient recorded as delivered: %v %v", delivered, err)
+	}
+}

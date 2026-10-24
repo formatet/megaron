@@ -1,0 +1,8 @@
+» färsk DB på migration 207 · commit fa83fc93+ändringar
+2026/10/24 06:36:47 INFO player registered id=a4ce255d-a211-4d1d-94ff-714f3dda4db7 username=reply-sender-5fde0385-0d5e-4514-87af-f2a8c0ee817a
+2026/10/24 06:36:47 INFO player registered id=0da6ee3f-ec93-46ef-9cc0-13f6f94284ff username=reply-receiver-95dd538f-0f92-4772-b795-5b23ebef94cd
+--- FAIL: TestCorrespondenceChangedOwnerBeforeDeliveryGetsNoPrivateLetter (0.12s)
+    correspondence_cases_test.go:131: former owner got remote receipt: 200
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.121s
+FAIL

@@ -1,0 +1,8 @@
+» färsk DB på migration 207 · commit fa83fc93+ändringar
+2026/10/24 06:36:43 INFO player registered id=196c1516-3f93-4b37-a76a-e0025709d76d username=reply-sender-94eb9695-57b5-4f60-bb34-47486326cd93
+2026/10/24 06:36:44 INFO player registered id=8a6bae51-e925-4e98-b001-433816c8ba5d username=reply-receiver-62643796-c06d-4634-a997-d08f76868ef8
+--- FAIL: TestCorrespondenceCasePrivacySnapshotsAndDeletion (0.12s)
+    correspondence_cases_test.go:97: successor inbox leaked: 200 [{"reply_window_closed":false,"id":"df898628-7de7-404a-bdb6-e2d2b7fcdb18","from_id":"c8658072-ed15-414f-b818-33c61f1e703c","from_name":"Reply-Origin-793db31a-e539-4d7b-ac90-72e6d3f9b2ce","to_id":"c90d59b3-71a2-4b7c-8d23-1efe07d43325","to_name":"Renamed","message":"Sealed winter terms","status":"returning","reply_text":"A private reply","sent_at":"2026-10-24T06:36:44.024942+02:00","arrived_at":"2026-10-24T08:36:44.018349+02:00","read_at":null}]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.126s
+FAIL
