@@ -27,7 +27,7 @@ globalThis.document ??= {
 globalThis.window ??= { addEventListener() {}, matchMedia: () => ({ matches: false, addEventListener() {} }) };
 globalThis.localStorage ??= { getItem: () => null, setItem() {}, removeItem() {} };
 
-const { groupMarchUnits, marchGroupLabelHTML, marchGroupNamesHTML, resolveMarchIntent, exploreRowVisible } =
+const { groupMarchUnits, marchGroupLabelHTML, marchGroupNamesHTML, resolveMarchIntent, exploreRowVisible, hiketeiaRefusalHTML } =
   await import('./marchctx.js');
 
 const spearman = (id, ordinal, q, r) => ({
@@ -314,4 +314,11 @@ test('AI forecast avoids dust horizons and identifies the farm already included'
  assert.doesNotMatch(html,/-0.0|1000000000000000000|lasts about/);assert.match(html,/about even/);
  const farm=menu.renderColonizePreviewHTML({grain:{base_per_tick:4.67,food_net_per_tick:-0.33,consumption_per_tick:5,with_farm_per_tick:4.67,with_farm_food_net_per_tick:-0.33,farm_possible:true,starter_farm_included:true}});
  assert.match(farm,/already included/);assert.doesNotMatch(farm,/no farmland/);assert.match(farm,/-0.3/);
+});
+
+test('hiketeia: a refused march shows the warning with March anyway; other refusals do not', () => {
+  const html = hiketeiaRefusalHTML([{ data: { hiketeia: true, error: 'These are the survivors of a fallen Wanax.' } }]);
+  assert.match(html, /survivors of a fallen Wanax/);
+  assert.match(html, /March anyway/);
+  assert.equal(hiketeiaRefusalHTML([{ data: { error: 'too far' } }]), '');
 });

@@ -24,6 +24,7 @@ import (
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/messenger"
 	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/unit"
 )
@@ -57,6 +58,24 @@ func NewUnitHandler(pool *pgxpool.Pool, scheduler *events.Scheduler, eventStore 
 //   - Forming/training units cannot march; completed land cohorts can march after losses
 //   - Naval: deployable (status='garrison')
 //   - Stance (if provided) is persisted on the unit for C5; no behaviour enforced here
+//
+// risenHostSeenAt reports whether the player's living eyes see a unit at
+// (q,r) belonging to another Wanax's risen host that has not founded yet.
+func (h *UnitHandler) risenHostSeenAt(ctx context.Context, worldID, playerID uuid.UUID, q, r int) bool {
+	var terrain string
+	var present bool
+	if err := h.pool.QueryRow(ctx,
+		`SELECT mt.terrain, EXISTS (SELECT 1 FROM units u
+		    JOIN founder_phase fp ON fp.world_id = u.world_id AND fp.owner_id = u.owner_id AND fp.active AND fp.is_refugee
+		   WHERE u.world_id = $1 AND u.q = $2 AND u.r = $3 AND u.status = 'positioned' AND u.owner_id <> $4)
+		   FROM map_tiles mt WHERE mt.world_id = $1 AND mt.q = $2 AND mt.r = $3`,
+		worldID, q, r, playerID).Scan(&terrain, &present); err != nil || !present {
+		return false
+	}
+	eyes := loadLiveEyes(ctx, h.pool, worldID, playerID, h.clk.Now())
+	return province.AnyEyeSees(eyes, province.MapPosition{Q: q, R: r}, terrain)
+}
+
 func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 	playerID, ok := auth.PlayerIDFromContext(r.Context())
 	if !ok {
@@ -88,9 +107,18 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		// Ticks is an explore order's length (megaron_plan_upptackarexpeditionen.md);
 		// 0 = the default. target_q/target_r then names the area.
 		Ticks int `json:"ticks"`
+		// ConfirmHiketeia sends the order after the hiketeia warning.
+		ConfirmHiketeia bool `json:"confirm_hiketeia"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
+		return
+	}
+	// Hiketeia (Timothy 2026-10-24): an order against a risen host you can
+	// see is warned before it leaves; the price is taken only if a battle
+	// actually starts (combat.breakHiketeiaTx).
+	if !req.ConfirmHiketeia && h.risenHostSeenAt(r.Context(), worldID, playerID, req.TargetQ, req.TargetR) {
+		writeJSON(w, http.StatusConflict, map[string]any{"error": religion.HiketeiaWarning, "hiketeia": true})
 		return
 	}
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -44,5 +45,15 @@ func TestOfferFoodTextMatchesTheWeb(t *testing.T) {
 	}
 	if offerFoodText(map[string]float64{"silver": 3}, map[string]float64{"grain": 29}, 55.8, "Lato") != "" {
 		t.Fatal("a gift without food must say nothing")
+	}
+}
+
+func TestHiketeiaHintNamesConfirm(t *testing.T) {
+	err := hiketeiaHint(fmt.Errorf("These are the survivors of a fallen Wanax, under the gods' protection until they found a city. Attacking them breaks hiketeia: your realm loses 70 kharis."))
+	if !strings.Contains(err.Error(), "add --confirm") {
+		t.Fatalf("%v", err)
+	}
+	if other := hiketeiaHint(fmt.Errorf("too far")); strings.Contains(other.Error(), "--confirm") {
+		t.Fatalf("%v", other)
 	}
 }
