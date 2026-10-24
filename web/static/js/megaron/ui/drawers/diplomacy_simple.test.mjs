@@ -3,160 +3,36 @@ import assert from 'node:assert/strict';
 import { State } from '../../state.js';
 import * as dip from './diplomacy.js';
 
-// Actual drawer/navigation/dispatch consumers. Only HTTP and minimal DOM are
-// faked; this never duplicates a directory builder or a trade request builder.
-async function rig(run) {
-  const saved={document:globalThis.document,fetch:globalThis.fetch,localStorage:globalThis.localStorage,setTimeout:globalThis.setTimeout};
-  const nodes=new Map(),calls=[];
-  const cls={add(){},remove(){},toggle(){}};
-  function node(id){if(!nodes.has(id))nodes.set(id,{id,_html:'',get innerHTML(){return this._html;},set innerHTML(html){this._html=html;for(const [,field] of html.matchAll(/<textarea id="([^"]+)"/g))node(field).value='';},insertAdjacentHTML(_position,html){this._html+=html;},style:{},dataset:{},classList:cls,value:'',querySelector:()=>null,querySelectorAll:()=>[],addEventListener(){},click(){this.listener?.call(this);}});return nodes.get(id);}
-  const body=node('diplomacy-body');
-  body.querySelectorAll=selector=>selector==='.dtab'?[...body.innerHTML.matchAll(/data-tab="([^"]+)"/g)].map(([,name])=>{const t=node('tab-'+name);t.dataset.tab=name;t.addEventListener=(_,fn)=>t.listener=fn;return t;}):selector==='.city-tab'?[...body.innerHTML.matchAll(/id="(dtab-[^"]+)"/g)].map(([,id])=>node(id)):[];
-  globalThis.document={getElementById:id=>id==='net-status'?null:node(id),querySelector:()=>({value:'buy'})};
-  globalThis.localStorage={getItem:()=>null};globalThis.setTimeout=()=>0;
-  State.WORLD_ID='world';State.MY_SETTLEMENT_ID='origin';State.provinceData=[{id:'province',name:'Kyme',settlement_id:'contact',own:false,owner:'Alector'},{id:'own-province',settlement_id:'origin',name:'Nostos',own:true,is_capital:true},{settlement_id:'outpost',name:'Outpost',is_outpost:true},{settlement_id:'unnamed'}];
-  const cities=[{name:'Kyme',owner:'Alector',owner_id:'ruler',settlement_id:'contact',knowledge:'known',q:3,r:4,copper_deposit:true},{name:'Rumour city',owner:'Alector',owner_id:'ruler',settlement_id:'rumour',knowledge:'rumour',bearing:'~15 hexes east of Nostos',industry_hint:'tin'}, {name:'Nostos',owner:'Me',own:true,settlement_id:'origin',knowledge:'known'}];
-  const rulers=[{owner:'Alector',owner_id:'ruler',known_cities:1,rumour_cities:1}];
-  globalThis.fetch=async(url,opts={})=>{calls.push({url,opts});let data=url.includes('/messengers/queue?')?{items:[]}:[];if(url.endsWith('/cities'))data=cities;else if(url.endsWith('/diplomacy'))data=rulers;else if(url.endsWith('/goods'))data=[{key:'grain',name:'Grain'}];else if(opts.method==='POST')data={id:'letter',arrives_at:new Date(Date.now()+60000).toISOString()};return new Response(JSON.stringify(data),{status:opts.method==='POST'?201:200});};
-  try{await run({body,node,calls,cities,rulers});}finally{Object.assign(globalThis,saved);State.provinceData=[];State.MY_SETTLEMENT_ID=null;State.WORLD_ID=null;}
+const person={counterpart_id:'myrine',counterpart_name:'Myrine',preview:'The last line',state:'waiting_you'};
+const letter={id:'incoming',sender_name:'Myrine',direction:'incoming',message:'A <letter>',sent_at:'2026-10-24T08:00:00Z',actions:['reply'],reply_before:'2099-10-24T23:18:00Z'};
+async function rig(run){
+ const saved={document:globalThis.document,fetch:globalThis.fetch,localStorage:globalThis.localStorage,setTimeout:globalThis.setTimeout};const nodes=new Map(),calls=[];
+ function node(id){if(!nodes.has(id))nodes.set(id,{id,_html:'',get innerHTML(){return this._html},set innerHTML(html){this._html=html;for(const [,field] of html.matchAll(/<textarea id="([^"]+)"/g))node(field).value=''},style:{},dataset:{},value:'',querySelector:()=>null,querySelectorAll:()=>[],addEventListener(){},classList:{toggle(){}}});return nodes.get(id)}
+ const body=node('diplomacy-body');globalThis.document={getElementById:id=>node(id),querySelector:()=>({value:'buy'})};globalThis.localStorage={getItem:()=>null};globalThis.setTimeout=()=>0;
+ State.WORLD_ID='world';State.MY_SETTLEMENT_ID='home';State.provinceData=[{settlement_id:'contact',name:'Kyme',owner:'Myrine',owner_id:'myrine'},{own:true,settlement_id:'home',name:'Nostos'},{is_outpost:true,settlement_id:'outpost',name:'Outpost'}];
+ globalThis.fetch=async(url,opts={})=>{calls.push({url,opts});let data={items:[person]};if(url.endsWith('/letters/myrine'))data={counterpart_name:'Myrine',items:[letter]};else if(url.endsWith('/goods'))data=[{key:'grain',name:'Grain'}];else if(opts.method==='POST')data={arrives_at:'2099-01-01T00:00:00Z'};return new Response(JSON.stringify(data),{status:200})};
+ try{await run({body,node,calls})}finally{Object.assign(globalThis,saved);State.provinceData=[];State.WORLD_ID=null;State.MY_SETTLEMENT_ID=null}
 }
+test('drawer has exactly Letters and Runners and one state per Wanax',()=>rig(async({body,node,calls})=>{await dip.loadDiplomacyDrawer();assert.deepEqual([...body.innerHTML.matchAll(/data-tab="([^"]+)"/g)].map(m=>m[1]),['letters','runners']);assert.match(node('dtab-letters').innerHTML,/Myrine/);assert.match(node('dtab-letters').innerHTML,/Waiting on you/);assert.match(node('dtab-letters').innerHTML,/The last line/);assert.ok(calls.some(c=>c.url.endsWith('/letters')));assert.doesNotMatch(node('dtab-letters').innerHTML,/Refresh|Search|case|archive/)}));
+test('person exchange opens newest letter and places same-runner reply below it',()=>rig(async({node,calls})=>{await dip.loadDiplomacyDrawer();await dip.dipToggleThread('dip-thread-myrine');const html=node('dtab-letters').innerHTML;assert.match(html,/A &lt;letter&gt;/);assert.match(html,/data-letter="incoming" open/);assert.match(html,/Send with their runner \(leaves/);assert.ok(html.indexOf('id="letter-compose"')>html.indexOf('A &lt;letter&gt;'));assert.ok(calls.some(c=>c.url.endsWith('/letters/myrine')))}));
+test('first letter and both trade directions use same dispatch endpoint without subjects',()=>rig(async({node,calls})=>{await dip.loadDiplomacyDrawer();await dip.dipWrite('contact');assert.match(node('dtab-letters').innerHTML,/Send a runner/);node('letter-compose-text').value='First';await dip.dipSendInThread('letter-compose','contact');let p=calls.filter(c=>c.opts.method==='POST').at(-1);assert.deepEqual(JSON.parse(p.opts.body),{destination_id:'contact',message:'First'});node('letter-compose-text').value='Buy';node('letter-compose-good').value='grain';node('letter-compose-qty').value='1';node('letter-compose-silver').value='2';await dip.dipSendInThread('letter-compose','contact');p=calls.filter(c=>c.opts.method==='POST').at(-1);assert.deepEqual(JSON.parse(p.opts.body).trade_offer,{kind:'buy',want_good:'grain',want_qty:1,offer_silver:2});globalThis.document.querySelector=()=>({value:'sell'});node('letter-compose-text').value='Sell';node('letter-compose-offer-good').value='grain';node('letter-compose-offer-qty').value='3';node('letter-compose-want-silver').value='4';await dip.dipSendInThread('letter-compose','contact');p=calls.filter(c=>c.opts.method==='POST').at(-1);assert.deepEqual(JSON.parse(p.opts.body).trade_offer,{kind:'sell',offer_good:'grain',offer_qty:3,want_silver:4})}));
+test('unreachable destination does not open composer or dispatch',()=>rig(async({node,calls})=>{await dip.loadDiplomacyDrawer();const before=node('dtab-letters').innerHTML;for(const id of ['rumour','home','outpost','missing'])await dip.dipWrite(id);assert.equal(node('dtab-letters').innerHTML,before);assert.equal(calls.filter(c=>c.opts.method==='POST').length,0)}));
+test('late response cannot overwrite a replacement world',()=>rig(async({node})=>{let resolve;globalThis.fetch=()=>new Promise(r=>{resolve=r});const pending=dip.loadDiplomacyDrawer();State.WORLD_ID='new-world';node('dtab-letters').innerHTML='new world';resolve(new Response(JSON.stringify({items:[person]})));await pending;assert.equal(node('dtab-letters').innerHTML,'new world')}));
+test('state words distinguish whose turn it is',()=>{assert.equal(dip.lettersState('waiting_you'),'Waiting on you');assert.equal(dip.lettersState('waiting_them'),'Waiting on them');assert.equal(dip.lettersState('done'),'Done')});
+test('accepted terms persist, only supplied actions render, gifts carry no trade controls',()=>{const html=dip.lettersThreadHTML({counterpart_name:'Myrine',items:[{...letter,id:'old',actions:[],trade_offer:{kind:'sell',offer_qty:2,offer_good:'copper',want_silver:5,status:'accepted'},offer_state:'accepted'},{...letter,id:'gift',kind:'gift',message:'Gift received',goods:{silver:5.125},actions:[]}]});assert.match(html,/Agreed: 2 copper for 5 silver/);assert.match(html,/Gift received: 5.125 silver/);assert.doesNotMatch(html,/dipAccept|dipDecline/);assert.match(html,/data-letter="gift" open/)});
+test('expired windows suppress reply and trade actions without a refresh button',()=>{assert.deepEqual(dip.letterActions({...letter,reply_window_closed:true}),[]);assert.deepEqual(dip.letterActions({actions:['trade_accept','trade_decline'],expires_at:'2000-01-01T00:00:00Z'}),[])});
 
-test('M: actual drawer opens Queue and retains Correspondence, Known and Runners',()=>rig(async({body})=>{
-  await dip.loadDiplomacyDrawer();
-  assert.deepEqual([...body.innerHTML.matchAll(/data-tab="([^"]+)"/g)].map(m=>m[1]),['queue','threads','archive','known','runners']);
-  assert.doesNotMatch(body.innerHTML,/Compose|Cities|Rulers/);
+test('local draft survives server failure, a retry and successful dispatch clears saved copy',()=>rig(async({node})=>{
+ await dip.loadDiplomacyDrawer();await dip.dipWrite('contact');
+ const compose=node('letter-compose');compose.querySelectorAll=()=>[node('letter-compose-text')];
+ node('letter-compose-text').value='Keep this unsent letter';
+ await dip.refreshDiplomacyLetters();assert.equal(node('letter-compose-text').value,'Keep this unsent letter');
+ const real=globalThis.fetch;globalThis.fetch=async(url,opts)=>opts?.method==='POST'?new Response(JSON.stringify({error:'Route is closed'}),{status:409}):real(url,opts);
+ await dip.dipSendInThread('letter-compose','contact');assert.equal(node('letter-compose-text').value,'Keep this unsent letter');assert.match(node('letter-compose-status').textContent,/Route is closed/);
+ globalThis.fetch=real;await dip.dipSendInThread('letter-compose','contact');await dip.refreshDiplomacyLetters();assert.equal(node('letter-compose-text').value,'');
 }));
-
-test('M: Known keeps ruler and city knowledge, gates rumours',()=>rig(async({node})=>{
-  await dip.loadDiplomacyDrawer();
-  assert.ok(node('tab-known').listener,'real Known click registered');
-  await node('tab-known').listener.call(node('tab-known'));
-  const html=node('dtab-known').innerHTML;
-  assert.match(html,/Alector/);assert.match(html,/Kyme/);assert.match(html,/Rumour city/);
-  assert.match(html,/1 known city/);assert.match(html,/1 rumoured city/);
-  assert.match(html,/data-write="contact"/);assert.doesNotMatch(html,/data-write="rumour"/);
-  assert.match(html,/Copper/);assert.match(html,/east/);assert.match(html,/tin/);
-}));
-
-test('M: first letter and both trade directions remain reachable without any prior letter',()=>rig(async({node,calls})=>{
-  await dip.loadDiplomacyDrawer();assert.equal(typeof dip.dipWrite,'function');
-  await dip.dipWrite('contact');
-  const html=node('dtab-threads').innerHTML;
-  assert.match(html,/Kyme/);assert.match(html,/data-open/);assert.match(html,/Attach trade offer/);assert.doesNotMatch(html,/NaN|Invalid Date/);
-  const cid='dip-thread-Kyme-compose';
-  assert.match(html,new RegExp('id="'+cid+'-text"'));
-  node(cid+'-text').value='First letter';await dip.dipSendInThread(cid,'contact');
-  let posts=calls.filter(c=>c.opts.method==='POST');assert.deepEqual(JSON.parse(posts.at(-1).opts.body),{destination_id:'contact',message:'First letter'});
-  node(cid+'-text').value='Buy grain';node(cid+'-good').value='grain';node(cid+'-qty').value='1';node(cid+'-silver').value='2';await dip.dipSendInThread(cid,'contact');
-  posts=calls.filter(c=>c.opts.method==='POST');assert.deepEqual(JSON.parse(posts.at(-1).opts.body).trade_offer,{kind:'buy',want_good:'grain',want_qty:1,offer_silver:2});
-  globalThis.document.querySelector=()=>({value:'sell'});node(cid+'-text').value='Sell grain';node(cid+'-offer-good').value='grain';node(cid+'-offer-qty').value='3';node(cid+'-want-silver').value='4';await dip.dipSendInThread(cid,'contact');
-  posts=calls.filter(c=>c.opts.method==='POST');assert.deepEqual(JSON.parse(posts.at(-1).opts.body).trade_offer,{kind:'sell',offer_good:'grain',offer_qty:3,want_silver:4});
-  assert.ok(posts.every(c=>c.url.endsWith('/settlements/origin/messengers')));
-}));
-
-test('M: selecting rumour, own city or a removed contact creates no draft or dispatch',()=>rig(async({node,calls})=>{
-  await dip.loadDiplomacyDrawer();assert.equal(typeof dip.dipWrite,'function');
-  const before=node('dtab-threads').innerHTML;
-  for(const id of ['rumour','origin','outpost','unnamed','missing'])await dip.dipWrite(id);
-  assert.equal(node('dtab-threads').innerHTML,before);assert.equal(calls.filter(c=>c.opts.method==='POST').length,0);
-}));
-
-
-test('M: host still reads both tabs but does not gain a settlement-only trade composer',()=>rig(async({node})=>{
-  State.MY_SETTLEMENT_ID=null;
-  await dip.loadDiplomacyDrawer();await node('tab-known').listener.call(node('tab-known'));
-  assert.match(node('dtab-known').innerHTML,/Kyme/);assert.doesNotMatch(node('dtab-known').innerHTML,/data-write=/);
-  await dip.dipWrite('contact');assert.doesNotMatch(node('dtab-threads').innerHTML,/dip-inline-compose/);
-}));
-
-test('M: failed Known fetch offers retry without inventing an empty directory',()=>rig(async({node})=>{
-  await dip.loadDiplomacyDrawer();
-  const real=globalThis.fetch;
-  globalThis.fetch=async url=>url.endsWith('/cities')?new Response('{}',{status:403}):real(url);
-  await node('tab-known').listener.call(node('tab-known'));
-  assert.match(node('dtab-known').innerHTML,/Could not load/);assert.equal(node('dtab-known').dataset.loaded,undefined);
-  globalThis.fetch=real;await node('tab-known').listener.call(node('tab-known'));
-  assert.match(node('dtab-known').innerHTML,/Kyme/);
-}));
-
-test('M: Write clears a stale composer while the chosen conversation loads',()=>rig(async({node})=>{
-  await dip.loadDiplomacyDrawer();await dip.dipWrite('contact');
-  assert.match(node('dtab-threads').innerHTML,/dip-inline-compose/);
-  const real=globalThis.fetch;let release;
-  globalThis.fetch=async(url,opts)=>url.endsWith('/inbox?history=true')?await new Promise(resolve=>{release=()=>resolve(new Response('[]',{status:200}));}):real(url,opts);
-  const pending=dip.dipWrite('contact');
-  try {assert.doesNotMatch(node('dtab-threads').innerHTML,/dip-inline-compose/);assert.match(node('dtab-threads').innerHTML,/Loading/);}
-  finally {await new Promise(resolve=>setImmediate(resolve));release();await pending;}
-  assert.match(node('dtab-threads').innerHTML,/dip-inline-compose/);
-}));
-
-
-test('M: late unavailable-actions response preserves a typed first letter',()=>rig(async({node})=>{
-  await dip.loadDiplomacyDrawer();
-  const real=globalThis.fetch;let release;
-  globalThis.fetch=async(url,opts)=>url.endsWith('/actions')?await new Promise(resolve=>{release=()=>resolve(new Response(JSON.stringify([{category:'diplomacy',available:false,name:'reply',requirements:[]}]),{status:200}));}):real(url,opts);
-  const pending=dip.dipWrite('contact');
-  for(let i=0;i<20&&!release;i++)await new Promise(resolve=>setImmediate(resolve));
-  assert.ok(release,'actual composer reaches the delayed capability request');
-  const text=node('dip-thread-Kyme-compose-text');text.value='Keep these words while capabilities load.';
-  release();await pending;
-  assert.equal(text.value,'Keep these words while capabilities load.');
-  assert.match(node('dtab-threads').innerHTML,/Unavailable:.*reply/);
-}));
-
-
-test('received history stays in the actual drawer after departure without dead reply or offer controls',()=>rig(async({node,calls})=>{
- const real=globalThis.fetch;
- globalThis.fetch=async(url,opts)=>url.endsWith('/inbox?history=true')?new Response(JSON.stringify([
-  {id:'old',from_name:'Kyme',from_id:'contact',status:'arrived',message:'An old received letter',reply_text:'My old answer',sent_at:'2026-10-01T09:00:00Z',arrived_at:'2026-10-01T09:01:00Z',read_at:'already'},
-  {id:'offer',from_name:'Kyme',from_id:'contact',status:'arrived',message:'The previous bargain',trade_offer:{status:'declined'},sent_at:'2026-10-01T09:00:00Z',arrived_at:'2026-10-01T09:01:00Z',read_at:'already'}
- ])):real(url,opts);
- await dip.loadDiplomacyDrawer();await dip.switchDiplomacyTab('threads');
- const html=node('dtab-threads').innerHTML;
- assert.match(html,/An old received letter/);assert.match(html,/My old answer/);assert.match(html,/declined/);
- assert.doesNotMatch(html,/dip-reply-row-old|dipAccept\('offer'|dipDecline\('offer'/);
-}));
-
-test('Queue mount does not fetch legacy history; actual Correspondence click loads once and tab changes preserve a written draft',()=>rig(async({node,calls})=>{
- await dip.loadDiplomacyDrawer();
- assert.ok(calls.some(c=>c.url.includes('/messengers/queue?')));
- assert.ok(!calls.some(c=>c.url.includes('/inbox?history=true')),'hidden old history must stay lazy');
- await node('tab-threads').listener.call(node('tab-threads'));
- assert.equal(calls.filter(c=>c.url.includes('/inbox?history=true')).length,1);
- await node('tab-queue').listener.call(node('tab-queue'));
- await node('tab-threads').listener.call(node('tab-threads'));
- assert.equal(calls.filter(c=>c.url.includes('/inbox?history=true')).length,1,'same mounted tab should not reload');
- await dip.dipWrite('contact');const text=node('dip-thread-Kyme-compose-text');text.value='Keep my unsent letter';
- const reads=calls.filter(c=>c.url.includes('/inbox?history=true')).length;
- await node('tab-queue').listener.call(node('tab-queue'));await node('tab-threads').listener.call(node('tab-threads'));
- assert.equal(text.value,'Keep my unsent letter');assert.equal(calls.filter(c=>c.url.includes('/inbox?history=true')).length,reads);
-}));
-
-test('a late lazy history request cannot replace a newer Write composer or typed draft',()=>rig(async({node})=>{
- await dip.loadDiplomacyDrawer();const real=globalThis.fetch;let release,history=0;
- globalThis.fetch=async(url,opts)=>{
-  if(url.endsWith('/inbox?history=true')&&history++===0)return new Promise(resolve=>{release=()=>resolve(new Response(JSON.stringify([{id:'stale',from_name:'Old counterpart',from_id:'stale-city',message:'Stale response'}])));});
-  return real(url,opts);
- };
- const older=node('tab-threads').listener.call(node('tab-threads'));
- for(let i=0;i<20&&!release;i++)await new Promise(resolve=>setImmediate(resolve));assert.ok(release);
- await dip.dipWrite('contact');const text=node('dip-thread-Kyme-compose-text');text.value='My current draft';
- release();await older;assert.equal(text.value,'My current draft');assert.match(node('dtab-threads').innerHTML,/dip-thread-Kyme/);assert.doesNotMatch(node('dtab-threads').innerHTML,/Stale response/);
-}));
-
-test('actual legacy Correspondence hides closed return post while preserving no-deadline delivered reply',()=>rig(async({node})=>{
- const real=globalThis.fetch;
- globalThis.fetch=async(url,opts)=>url.endsWith('/inbox?history=true')?new Response(JSON.stringify([
-  {id:'closed-letter',from_name:'Unknown origin',status:'delivered',message:'Too late',reply_window_closed:true,read_at:'read'},
-  {id:'legacy-letter',from_name:'Unknown origin',status:'delivered',message:'Legacy without deadline',reply_window_closed:false,read_at:'read'}
- ])):real(url,opts);
- await dip.loadDiplomacyDrawer();await dip.switchDiplomacyTab('threads');const html=node('dtab-threads').innerHTML;
- assert.match(html,/Return post closed/);assert.doesNotMatch(html,/dip-reply-row-closed-letter/);assert.match(html,/dip-reply-row-legacy-letter/);
-}));
-
-test('legacy return-post refusal shows the real cutoff error beside the retained draft',()=>rig(async({node,calls})=>{
- const input=node('dip-reply-closed'),row=node('dip-reply-row-closed'),result=node('reply-result');input.value='My late answer';row.querySelector=()=>result;
- globalThis.fetch=async(url,opts)=>{calls.push({url,opts});return new Response(JSON.stringify({error:'the reply window has closed; the messenger is due to leave'}),{status:409});};
- await dip.dipReply('closed');assert.match(result.textContent,/reply window has closed/);assert.equal(input.value,'My late answer');assert.equal(row.outerHTML,undefined);
- assert.equal(calls.length,1);assert.equal(calls[0].url,'/api/v1/worlds/world/messengers/closed/reply');
+test('an unavailable thread retains a local reply when the server recovers',()=>rig(async({node})=>{
+ await dip.loadDiplomacyDrawer();await dip.dipToggleThread('dip-thread-myrine');node('letter-compose').querySelectorAll=()=>[node('dip-reply-incoming')];node('dip-reply-incoming').value='Do not lose this reply';
+ const real=globalThis.fetch;globalThis.fetch=async()=>new Response('{}',{status:403});await dip.refreshDiplomacyLetters();assert.match(node('dtab-letters').innerHTML,/Could not load letters/);
+ globalThis.fetch=real;await dip.refreshDiplomacyLetters();assert.equal(node('dip-reply-incoming').value,'Do not lose this reply');
 }));

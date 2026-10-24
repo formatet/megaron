@@ -1,0 +1,29 @@
+{
+  "items": [
+    {
+      "counterpart_id": "faa69b12-8646-48f7-88e7-9bc5325c154b",
+      "counterpart_name": "Myrine",
+      "preview": "Two copper for five silver.",
+      "state": "waiting_you",
+      "reply_before": "2026-10-24T14:14:20.433704+02:00",
+      "latest_at": "2026-10-24T12:14:20.458938+02:00",
+      "letter_count": 2
+    },
+    {
+      "counterpart_id": "93da265c-2ae6-4869-b28a-fc02320e4535",
+      "counterpart_name": "Dorian",
+      "preview": "Can you spare grain for the next voyage?",
+      "state": "waiting_them",
+      "latest_at": "2026-10-24T12:14:20.473479+02:00",
+      "letter_count": 1
+    },
+    {
+      "counterpart_id": "d756b50e-85a3-45ed-b05d-860853d0716a",
+      "counterpart_name": "Thestor",
+      "preview": "Welcome home. We shall meet at Pylos.",
+      "state": "done",
+      "latest_at": "2026-10-24T12:14:20.466668+02:00",
+      "letter_count": 1
+    }
+  ]
+}

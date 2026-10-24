@@ -1,0 +1,1 @@
+{"time":"2026-10-24T12:10:38.810041399+02:00","level":"ERROR","msg":"run migrations","err":"create migrator: read tcp 127.0.0.1:57596->127.0.0.1:33253: read: connection reset by peer"}

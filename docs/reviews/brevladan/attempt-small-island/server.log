@@ -1,0 +1,178 @@
+{"time":"2026-10-24T12:11:47.740231331+02:00","level":"INFO","msg":"migrations applied"}
+{"time":"2026-10-24T12:11:47.762174472+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"54a73b8d-1591-4cbd-8110-131c729ac945","seed":1792836707752724527,"width":56,"height":40,"err":"invalid map: forest fraction = 0.304 (want 0.22..0.30); landmass 6 (99 tiles) has 0 rivers (want 1-2)"}
+{"time":"2026-10-24T12:11:47.771145039+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"54a73b8d-1591-4cbd-8110-131c729ac945","seed":1792836707752724528,"width":56,"height":40,"err":"invalid map: productive tin = 1 (want >= 2)"}
+{"time":"2026-10-24T12:11:47.779963042+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"54a73b8d-1591-4cbd-8110-131c729ac945","seed":1792836707752724529,"width":56,"height":40,"err":"invalid map: forest fraction = 0.310 (want 0.22..0.30)"}
+{"time":"2026-10-24T12:11:47.788520906+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"54a73b8d-1591-4cbd-8110-131c729ac945","seed":1792836707752724530,"width":56,"height":40,"err":"invalid map: forest fraction = 0.325 (want 0.22..0.30)"}
+{"time":"2026-10-24T12:11:47.796855967+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"54a73b8d-1591-4cbd-8110-131c729ac945","seed":1792836707752724531,"width":56,"height":40,"err":"invalid map: productive tin = 1 (want >= 2)"}
+{"time":"2026-10-24T12:11:48.524010027+02:00","level":"INFO","msg":"world created","name":"Letters proof","id":"54a73b8d-1591-4cbd-8110-131c729ac945","seed":1792836707752724532}
+{"time":"2026-10-24T12:11:48.530344789+02:00","level":"INFO","msg":"world ready","id":"54a73b8d-1591-4cbd-8110-131c729ac945"}
+{"time":"2026-10-24T12:11:48.530612287+02:00","level":"INFO","msg":"chronicle opened","world":"Letters proof","dir":"/tmp/brevladan-proof-mtesqi30/chronicles"}
+{"time":"2026-10-24T12:11:48.531275309+02:00","level":"INFO","msg":"tick worker started","tick_seconds":3600}
+{"time":"2026-10-24T12:11:48.531331099+02:00","level":"INFO","msg":"build","commit":"c5e08ef+brevladan"}
+{"time":"2026-10-24T12:11:48.531158308+02:00","level":"INFO","msg":"scheduled event worker started","poll":10000000000}
+{"time":"2026-10-24T12:11:48.531689322+02:00","level":"INFO","msg":"keryx server starting","addr":":38521"}
+2026/10/24 12:11:48 [tki9/I7ySYpRWkZ-000001] "GET http://127.0.0.1:38521/healthz HTTP/1.1" from 127.0.0.1:35944 - 200 61B in 430.904µs
+2026/10/24 12:11:48 [tki9/I7ySYpRWkZ-000002] "GET http://127.0.0.1:38521/api/v1/worlds HTTP/1.1" from 127.0.0.1:35946 - 200 152B in 398.467µs
+{"time":"2026-10-24T12:11:48.538784321+02:00","level":"INFO","msg":"daily ticks seeded","worlds":1}
+{"time":"2026-10-24T12:11:48.585237801+02:00","level":"INFO","msg":"player registered","id":"5b99bda8-7e9f-4cd3-910c-5105c9189f43","username":"Letters-a41c8ba3"}
+2026/10/24 12:11:48 [tki9/I7ySYpRWkZ-000003] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:35962 - 201 391B in 47.9275ms
+{"time":"2026-10-24T12:11:48.60328652+02:00","level":"INFO","msg":"world started","world":"54a73b8d-1591-4cbd-8110-131c729ac945","wanaxes":1}
+2026/10/24 12:11:48 [tki9/I7ySYpRWkZ-000004] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:35974 - 201 327B in 17.406325ms
+2026/10/24 12:11:48 [tki9/I7ySYpRWkZ-000005] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:35980 - 200 1464B in 6.953567ms
+2026/10/24 12:11:48 [tki9/I7ySYpRWkZ-000006] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:35996 - 200 163B in 361.013µs
+{"time":"2026-10-24T12:11:48.701587886+02:00","level":"INFO","msg":"player registered","id":"bae001dc-c915-4828-a427-59904b384f23","username":"Letters-abce4017"}
+2026/10/24 12:11:48 [tki9/I7ySYpRWkZ-000007] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:36006 - 201 391B in 46.439352ms
+2026/10/24 12:11:48 [tki9/I7ySYpRWkZ-000008] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:36012 - 201 327B in 9.20968ms
+2026/10/24 12:11:48 [tki9/I7ySYpRWkZ-000009] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:36024 - 200 1464B in 3.106428ms
+2026/10/24 12:11:48 [tki9/I7ySYpRWkZ-000010] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:36028 - 200 163B in 250.618µs
+{"time":"2026-10-24T12:11:48.762718963+02:00","level":"INFO","msg":"player registered","id":"f05d832b-ebac-4871-9e2b-81dfe1b5ecf7","username":"Letters-5bfa500b"}
+2026/10/24 12:11:48 [tki9/I7ySYpRWkZ-000011] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:36030 - 201 391B in 46.701938ms
+2026/10/24 12:11:48 [tki9/I7ySYpRWkZ-000012] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:36042 - 201 327B in 9.346445ms
+2026/10/24 12:11:48 [tki9/I7ySYpRWkZ-000013] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:36054 - 200 1467B in 2.865046ms
+2026/10/24 12:11:48 [tki9/I7ySYpRWkZ-000014] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:36056 - 200 163B in 234.396µs
+{"time":"2026-10-24T12:11:48.823274745+02:00","level":"INFO","msg":"player registered","id":"73e4caf3-acb2-43b7-8f5c-7c63970f762c","username":"Letters-2dc071b6"}
+2026/10/24 12:11:48 [tki9/I7ySYpRWkZ-000015] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:36062 - 201 391B in 46.584909ms
+2026/10/24 12:11:48 [tki9/I7ySYpRWkZ-000016] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:36076 - 201 326B in 9.61681ms
+2026/10/24 12:11:48 [tki9/I7ySYpRWkZ-000017] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:36092 - 200 1456B in 2.70411ms
+2026/10/24 12:11:48 [tki9/I7ySYpRWkZ-000018] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:36100 - 200 162B in 209.919µs
+{"time":"2026-10-24T12:11:48.884127275+02:00","level":"INFO","msg":"player registered","id":"1dca3277-11c5-4129-947d-2a4ddb24cc22","username":"Letters-787704de"}
+2026/10/24 12:11:48 [tki9/I7ySYpRWkZ-000019] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:36102 - 201 391B in 46.85058ms
+2026/10/24 12:11:48 [tki9/I7ySYpRWkZ-000020] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:36106 - 201 327B in 8.982888ms
+2026/10/24 12:11:48 [tki9/I7ySYpRWkZ-000021] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:36112 - 200 1455B in 2.664793ms
+2026/10/24 12:11:48 [tki9/I7ySYpRWkZ-000022] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:36114 - 200 160B in 233.394µs
+{"time":"2026-10-24T12:11:48.944223858+02:00","level":"INFO","msg":"player registered","id":"724ce60e-b081-48c7-8af7-08d22fae0492","username":"Letters-e6dfa1e0"}
+2026/10/24 12:11:48 [tki9/I7ySYpRWkZ-000023] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:36116 - 201 391B in 46.511412ms
+2026/10/24 12:11:48 [tki9/I7ySYpRWkZ-000024] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:38802 - 201 327B in 10.035732ms
+2026/10/24 12:11:48 [tki9/I7ySYpRWkZ-000025] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:38812 - 200 1464B in 2.892114ms
+2026/10/24 12:11:48 [tki9/I7ySYpRWkZ-000026] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:38816 - 200 163B in 219.97µs
+{"time":"2026-10-24T12:11:49.005349819+02:00","level":"INFO","msg":"player registered","id":"f8420ccd-5d86-4834-8e82-db10fde663f7","username":"Letters-464f2150"}
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000027] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:38830 - 201 391B in 46.522544ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000028] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:38836 - 201 327B in 7.602975ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000029] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:38842 - 200 1464B in 2.128973ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000030] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:38844 - 200 163B in 184.837µs
+{"time":"2026-10-24T12:11:49.063234889+02:00","level":"INFO","msg":"player registered","id":"2cec1800-3207-42fc-be30-f1578b46c865","username":"Letters-b3a2d2a3"}
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000031] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:38846 - 201 391B in 46.076685ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000032] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:38852 - 201 327B in 7.56179ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000033] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:38862 - 200 1461B in 1.468402ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000034] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:38872 - 200 161B in 161.384µs
+{"time":"2026-10-24T12:11:49.120342355+02:00","level":"INFO","msg":"player registered","id":"40cc24e1-8344-4221-9044-5f861a167455","username":"Letters-13d90532"}
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000035] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:38880 - 201 391B in 46.462881ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000036] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:38890 - 201 327B in 7.193974ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000037] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:38904 - 200 1458B in 1.329749ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000038] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:38916 - 200 161B in 140.833µs
+{"time":"2026-10-24T12:11:49.176583982+02:00","level":"INFO","msg":"player registered","id":"03cc49a5-2f0a-434b-ba46-487746110284","username":"Letters-4a2eaacd"}
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000039] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:38930 - 201 391B in 46.352805ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000040] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:38946 - 201 326B in 8.033931ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000041] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:38958 - 200 1456B in 1.392109ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000042] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:38964 - 200 162B in 159.718µs
+{"time":"2026-10-24T12:11:49.234092588+02:00","level":"INFO","msg":"player registered","id":"47b1fd3a-6a5f-4b6a-a46a-99e47f961aad","username":"Letters-4944b3d1"}
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000043] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:38980 - 201 391B in 46.325012ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000044] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:38994 - 201 327B in 7.316794ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000045] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:38996 - 200 1458B in 1.322754ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000046] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:39008 - 200 161B in 147.491µs
+{"time":"2026-10-24T12:11:49.291067778+02:00","level":"INFO","msg":"player registered","id":"989c473a-fb2c-44d8-b290-260d729d0bc8","username":"Letters-2456419d"}
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000047] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:39010 - 201 391B in 46.683032ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000048] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:39020 - 201 326B in 7.231938ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000049] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:39030 - 200 1450B in 1.442462ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000050] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:39044 - 200 160B in 149.115µs
+{"time":"2026-10-24T12:11:49.347973891+02:00","level":"INFO","msg":"player registered","id":"cd5a5b8a-37ba-4a3c-b2f6-ddc22c9d53ea","username":"Letters-40a52a84"}
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000051] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:39056 - 201 391B in 46.551222ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000052] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:39058 - 201 327B in 8.71529ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000053] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:39074 - 200 1458B in 1.974546ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000054] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:39076 - 200 161B in 170.905µs
+{"time":"2026-10-24T12:11:49.406915643+02:00","level":"INFO","msg":"player registered","id":"ce0e31bb-7296-406b-b933-11868fab657b","username":"Letters-a8e41410"}
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000055] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:39092 - 201 391B in 46.104822ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000056] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:39104 - 201 327B in 6.874293ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000057] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:39120 - 200 1455B in 1.838215ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000058] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:39136 - 200 160B in 193.869µs
+{"time":"2026-10-24T12:11:49.463951712+02:00","level":"INFO","msg":"player registered","id":"f5a17c49-d74c-4e13-9296-831a345a5581","username":"Letters-022ca3fa"}
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000059] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:39142 - 201 391B in 46.531971ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000060] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:39146 - 201 326B in 8.247855ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000061] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:39154 - 200 1450B in 1.465742ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000062] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:39170 - 200 160B in 159.162µs
+{"time":"2026-10-24T12:11:49.522063624+02:00","level":"INFO","msg":"player registered","id":"54ffcb20-7ad0-4cd6-a8b9-95853e79ec47","username":"Letters-83c28897"}
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000063] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:39176 - 201 391B in 46.587478ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000064] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:39192 - 201 327B in 7.530346ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000065] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:39196 - 200 1461B in 1.765531ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000066] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:39212 - 200 162B in 231.83µs
+{"time":"2026-10-24T12:11:49.580334681+02:00","level":"INFO","msg":"player registered","id":"d0194cc2-98aa-4b20-a852-89bc9b57e6c1","username":"Letters-7b0b564e"}
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000067] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:39226 - 201 391B in 46.861696ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000068] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:39228 - 201 326B in 7.357652ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000069] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:39242 - 200 1453B in 1.454052ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000070] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:39248 - 200 161B in 137.715µs
+{"time":"2026-10-24T12:11:49.637898222+02:00","level":"INFO","msg":"player registered","id":"8fae9cde-8fd0-413c-ae51-034034ffe4fc","username":"Letters-cea7edc6"}
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000071] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:39252 - 201 391B in 46.628149ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000072] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:39262 - 201 327B in 7.068128ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000073] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:39276 - 200 1458B in 1.553884ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000074] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:39292 - 200 161B in 401.082µs
+{"time":"2026-10-24T12:11:49.695852753+02:00","level":"INFO","msg":"player registered","id":"554431d4-e594-4ed5-8a97-0acc344ccf95","username":"Letters-6cdbb3e9"}
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000075] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:39294 - 201 391B in 46.939629ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000076] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:39310 - 201 327B in 7.96259ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000077] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:39324 - 200 1461B in 1.343055ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000078] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:39328 - 200 162B in 187.532µs
+{"time":"2026-10-24T12:11:49.753612671+02:00","level":"INFO","msg":"player registered","id":"87fe5968-2da6-46fb-960c-a95e751d1267","username":"Letters-0be499b9"}
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000079] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:39340 - 201 391B in 46.636769ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000080] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:39344 - 201 327B in 7.145178ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000081] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:39356 - 200 1461B in 1.492885ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000082] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:39364 - 200 162B in 186.892µs
+{"time":"2026-10-24T12:11:49.810496194+02:00","level":"INFO","msg":"player registered","id":"3842b314-f8e4-4341-b397-3ea628887b54","username":"Letters-776fd1dc"}
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000083] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:39374 - 201 391B in 46.446597ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000084] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:39390 - 201 327B in 7.39117ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000085] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:39394 - 200 1464B in 1.420856ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000086] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:39404 - 200 163B in 186.074µs
+{"time":"2026-10-24T12:11:49.867768002+02:00","level":"INFO","msg":"player registered","id":"26135519-cc59-4fd6-82ad-ed0365ae0eee","username":"Letters-fb2e62ad"}
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000087] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:39412 - 201 391B in 46.393172ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000088] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:39418 - 201 326B in 6.519104ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000089] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:39432 - 200 1462B in 1.539147ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000090] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:39436 - 200 164B in 179.922µs
+{"time":"2026-10-24T12:11:49.924277088+02:00","level":"INFO","msg":"player registered","id":"4d7e3730-f970-4bc7-87d8-7b3c2a493a99","username":"Letters-3d059b60"}
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000091] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:39450 - 201 391B in 46.342028ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000092] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:39464 - 201 327B in 7.998664ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000093] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:39480 - 200 1461B in 1.574817ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000094] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:39484 - 200 162B in 152.867µs
+{"time":"2026-10-24T12:11:49.983105153+02:00","level":"INFO","msg":"player registered","id":"b2bf896b-ada9-4452-92fd-e3ed8f30cc88","username":"Letters-ee548810"}
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000095] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:39500 - 201 391B in 47.023372ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000096] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:39514 - 201 326B in 7.117065ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000097] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:39528 - 200 1459B in 1.515757ms
+2026/10/24 12:11:49 [tki9/I7ySYpRWkZ-000098] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:39534 - 200 163B in 178.78µs
+{"time":"2026-10-24T12:11:50.040664887+02:00","level":"INFO","msg":"player registered","id":"8f8d7860-f1fe-4292-8b5c-f0e5f77aa444","username":"Letters-758886da"}
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000099] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:39540 - 201 391B in 47.062881ms
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000100] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:39544 - 201 327B in 7.228095ms
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000101] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:39550 - 200 1464B in 1.713123ms
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000102] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:39564 - 200 163B in 183.334µs
+{"time":"2026-10-24T12:11:50.098083217+02:00","level":"INFO","msg":"player registered","id":"f00f76bb-6fa1-4b8d-b2bc-a5709c9cd6db","username":"Letters-27c0fe68"}
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000103] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:39576 - 201 391B in 46.170633ms
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000104] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:39592 - 201 327B in 6.838868ms
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000105] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:39598 - 200 1461B in 1.687349ms
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000106] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:39602 - 200 162B in 251.357µs
+{"time":"2026-10-24T12:11:50.156302999+02:00","level":"INFO","msg":"player registered","id":"82ee82d9-4e1c-4f12-b4b8-3636de819ec9","username":"Letters-d46c2720"}
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000107] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:39604 - 201 391B in 47.429909ms
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000108] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:39618 - 201 327B in 7.197992ms
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000109] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:39628 - 200 1455B in 1.876717ms
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000110] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:39634 - 200 160B in 193.941µs
+{"time":"2026-10-24T12:11:50.214024846+02:00","level":"INFO","msg":"player registered","id":"414972bc-be7a-45b9-b156-e42e65b44637","username":"Letters-cb3de17a"}
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000111] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:39638 - 201 391B in 46.709101ms
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000112] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:39642 - 201 327B in 7.142599ms
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000113] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:39644 - 200 1467B in 1.393921ms
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000114] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:39648 - 200 164B in 176.246µs
+{"time":"2026-10-24T12:11:50.270968971+02:00","level":"INFO","msg":"player registered","id":"3cc582ab-4756-4131-8c70-315bbf337984","username":"Letters-f16b8dad"}
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000115] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:39664 - 201 391B in 46.509337ms
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000116] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:39680 - 201 327B in 6.375235ms
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000117] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:39686 - 200 1464B in 1.619566ms
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000118] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:39688 - 200 163B in 146.064µs
+{"time":"2026-10-24T12:11:50.327283325+02:00","level":"INFO","msg":"player registered","id":"3a95d7c2-7e0f-4d5d-8e9c-9bbe698e636d","username":"Letters-be28ae76"}
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000119] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:39700 - 201 391B in 46.921591ms
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000120] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:39708 - 201 327B in 7.750755ms
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000121] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:39710 - 200 1458B in 1.457747ms
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000122] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:39722 - 200 161B in 173.693µs
+{"time":"2026-10-24T12:11:50.384999853+02:00","level":"INFO","msg":"player registered","id":"f72776db-7754-43af-83d2-0d39d1912d3d","username":"Letters-b6a98c7e"}
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000123] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:39732 - 201 391B in 46.660793ms
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000124] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:39736 - 201 327B in 6.66426ms
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000125] "GET http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/units HTTP/1.1" from 127.0.0.1:39746 - 200 1464B in 1.37944ms
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000126] "GET http://127.0.0.1:38521/api/v1/auth/me HTTP/1.1" from 127.0.0.1:39760 - 200 163B in 146.468µs
+{"time":"2026-10-24T12:11:50.441867243+02:00","level":"INFO","msg":"player registered","id":"44e2b769-9ce9-4a90-9687-9420aa240343","username":"Letters-a39206f1"}
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000127] "POST http://127.0.0.1:38521/api/v1/auth/register HTTP/1.1" from 127.0.0.1:39768 - 201 391B in 47.120991ms
+2026/10/24 12:11:50 [tki9/I7ySYpRWkZ-000128] "POST http://127.0.0.1:38521/api/v1/worlds/54a73b8d-1591-4cbd-8110-131c729ac945/join HTTP/1.1" from 127.0.0.1:39780 - 409 153B in 3.233013ms
+{"time":"2026-10-24T12:11:50.447031444+02:00","level":"INFO","msg":"shutting down"}
+{"time":"2026-10-24T12:11:50.447035454+02:00","level":"INFO","msg":"tick worker stopped"}
+{"time":"2026-10-24T12:11:50.447029166+02:00","level":"INFO","msg":"scheduled event worker stopped"}

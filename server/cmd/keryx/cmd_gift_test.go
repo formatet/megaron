@@ -62,3 +62,16 @@ func TestGiftNoticeExactLossAndOwner(t *testing.T) {
 		}
 	}
 }
+
+func TestGiftNamesWanaxWithoutSenderCity(t *testing.T) {
+	out, err := captureStdout(t, func() error {
+		printGiftOutcome(notificationItem{Body: json.RawMessage(`{"sender_name":"Myrine","recipient_name":"Leandros","origin_name":"Secret Kyme","destination_name":"Nostos","good_key":"silver","credited_quantity":2.125}`)})
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(out, "Myrine → Leandros") || strings.Contains(out, "Kyme") || strings.Contains(out, "Nostos") {
+		t.Fatal(out)
+	}
+}

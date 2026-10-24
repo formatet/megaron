@@ -158,7 +158,8 @@ export function initWS() {
       }
       // A returning messenger carries the reply, so the diplomacy data is stale
       // on both ends of the round trip (messenger/handler.go).
-      if (msg.kind === 'MessengerArrival' || msg.kind === 'MessengerReturned') {
+      if (['MessengerArrival','MessengerReturned','GiftDelivered','GiftLost'].includes(msg.kind)) {
+        coalesce('letters', () => window.refreshDiplomacyLetters?.());
         coalesce('diplomacy-badge', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers/inbox?history=true`).then(r => r.ok && r.json().then(updateDiplomacyBadge))); 
         coalesce('messengers', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; })));
       }

@@ -1,0 +1,348 @@
+{
+  "health": {
+    "commit": "c5e08ef+brevladan",
+    "migration": 210,
+    "status": "ok"
+  },
+  "world": "3947c685-a157-4f2b-9c62-7052caf1d343",
+  "map_seed": "1792836831425346846",
+  "actors": [
+    {
+      "host": {
+        "host_state": {
+          "at_milli": 0,
+          "q": 6,
+          "r": 31,
+          "status": "can_found_here",
+          "can_found_here": true
+        },
+        "can_cancel_training": false,
+        "id": "ad3f1d06-576e-4a10-be53-5381c6b9a832",
+        "type": "nomadic_host",
+        "category": "land",
+        "size": 1,
+        "upkeep_food_per_tick": 0,
+        "upkeep_grain_per_tick": 0,
+        "upkeep_silver_per_tick": 0,
+        "upkeep_context": "none",
+        "status": "positioned",
+        "deployable": true,
+        "display_name": "Nomadic Host of Dikonaros",
+        "shipyard_waiting": false,
+        "q": 6,
+        "r": 31,
+        "current_q": 6,
+        "current_r": 31,
+        "in_battle": false,
+        "can_lay_up": false,
+        "can_fit_out": false
+      },
+      "pid": "052560a0-5f11-43f2-91e4-140af8652d3e",
+      "name": "Leandros",
+      "sid": "8f3fb5e4-e327-4398-8078-9f269a0d0aea",
+      "province": {
+        "id": "35b4f6bf-a49b-423b-9d1a-09379b6853eb",
+        "settlement_id": "8f3fb5e4-e327-4398-8078-9f269a0d0aea",
+        "name": "Nostos",
+        "culture": "minoan",
+        "q": 6,
+        "r": 31,
+        "state": "active",
+        "walls": 0,
+        "size_tier": 1,
+        "owner": "Dikonaros",
+        "own": true,
+        "is_capital": true,
+        "allied": false,
+        "visible": true,
+        "army_total": 200
+      }
+    },
+    {
+      "host": {
+        "host_state": {
+          "at_milli": 0,
+          "q": 1,
+          "r": 30,
+          "status": "can_found_here",
+          "can_found_here": true
+        },
+        "can_cancel_training": false,
+        "id": "dcd193ae-1e48-43f5-ba1b-b6ac6c705e38",
+        "type": "nomadic_host",
+        "category": "land",
+        "size": 1,
+        "upkeep_food_per_tick": 0,
+        "upkeep_grain_per_tick": 0,
+        "upkeep_silver_per_tick": 0,
+        "upkeep_context": "none",
+        "status": "positioned",
+        "deployable": true,
+        "display_name": "Nomadic Host of Wedaneus",
+        "shipyard_waiting": false,
+        "q": 1,
+        "r": 30,
+        "current_q": 1,
+        "current_r": 30,
+        "in_battle": false,
+        "can_lay_up": false,
+        "can_fit_out": false
+      },
+      "pid": "0f3227cd-214b-4643-8762-a616a48ed574",
+      "name": "Myrine",
+      "sid": "d714836d-3bc2-4bac-8094-8e93ef9507eb",
+      "province": {
+        "id": "dc724343-019d-49f6-ad9e-10427166458d",
+        "settlement_id": "d714836d-3bc2-4bac-8094-8e93ef9507eb",
+        "name": "Kyme",
+        "culture": "minoan",
+        "q": 1,
+        "r": 30,
+        "state": "active",
+        "walls": 0,
+        "size_tier": 1,
+        "owner": "Wedaneus",
+        "own": true,
+        "is_capital": true,
+        "allied": false,
+        "visible": true,
+        "army_total": 201
+      }
+    },
+    {
+      "host": {
+        "host_state": {
+          "at_milli": 0,
+          "q": 9,
+          "r": 25,
+          "status": "can_found_here",
+          "can_found_here": true
+        },
+        "can_cancel_training": false,
+        "id": "7918a4fb-4a81-4f0a-ba51-85ba7c62cd12",
+        "type": "nomadic_host",
+        "category": "land",
+        "size": 1,
+        "upkeep_food_per_tick": 0,
+        "upkeep_grain_per_tick": 0,
+        "upkeep_silver_per_tick": 0,
+        "upkeep_context": "none",
+        "status": "positioned",
+        "deployable": true,
+        "display_name": "Nomadic Host of Koturos",
+        "shipyard_waiting": false,
+        "q": 9,
+        "r": 25,
+        "current_q": 9,
+        "current_r": 25,
+        "in_battle": false,
+        "can_lay_up": false,
+        "can_fit_out": false
+      },
+      "pid": "d5f5c6dd-119c-4ddd-a349-1e2c56c65ccc",
+      "name": "Dorian",
+      "sid": "ca01a2b0-00ab-4fe6-a563-b224d52e6fdc",
+      "province": {
+        "id": "705ab552-c416-4aa1-b6ca-ed65c09d1e96",
+        "settlement_id": "ca01a2b0-00ab-4fe6-a563-b224d52e6fdc",
+        "name": "Aulis",
+        "culture": "minoan",
+        "q": 9,
+        "r": 25,
+        "state": "active",
+        "walls": 0,
+        "size_tier": 1,
+        "owner": "Koturos",
+        "own": true,
+        "is_capital": true,
+        "allied": false,
+        "visible": true,
+        "army_total": 200
+      }
+    },
+    {
+      "host": {
+        "host_state": {
+          "at_milli": 0,
+          "q": 3,
+          "r": 37,
+          "status": "can_found_here",
+          "can_found_here": true
+        },
+        "can_cancel_training": false,
+        "id": "99612a08-0a4c-4060-bccb-24dff61ef1b5",
+        "type": "nomadic_host",
+        "category": "land",
+        "size": 1,
+        "upkeep_food_per_tick": 0,
+        "upkeep_grain_per_tick": 0,
+        "upkeep_silver_per_tick": 0,
+        "upkeep_context": "none",
+        "status": "positioned",
+        "deployable": true,
+        "display_name": "Nomadic Host of Knidia",
+        "shipyard_waiting": false,
+        "q": 3,
+        "r": 37,
+        "current_q": 3,
+        "current_r": 37,
+        "in_battle": false,
+        "can_lay_up": false,
+        "can_fit_out": false
+      },
+      "pid": "28931a69-b07a-4c0a-b32d-13a68f22510d",
+      "name": "Thestor",
+      "sid": "14610069-b027-42a4-8507-732b710c4959",
+      "province": {
+        "id": "fb5d88e5-8da1-449b-9b05-6e8e9413f0be",
+        "settlement_id": "14610069-b027-42a4-8507-732b710c4959",
+        "name": "Pylos",
+        "culture": "minoan",
+        "q": 3,
+        "r": 37,
+        "state": "active",
+        "walls": 0,
+        "size_tier": 1,
+        "owner": "Knidia",
+        "own": true,
+        "is_capital": true,
+        "allied": false,
+        "visible": true,
+        "army_total": 200
+      }
+    }
+  ],
+  "letters": {
+    "free": {
+      "arrives_at": "2026-10-24T16:13:54.458442435+02:00",
+      "case_id": "ae617766-7eb5-4764-a533-72383f3aa8a7",
+      "distance": 6,
+      "id": "cfdbcecd-71b7-47f1-9f3c-b3120c077b84"
+    },
+    "offer": {
+      "arrives_at": "2026-10-24T16:13:54.47124537+02:00",
+      "case_id": "e7779e7e-4f52-45f5-935f-b08f34720260",
+      "distance": 6,
+      "id": "6dd037e0-eee3-4596-b573-2864c8cc8bf6"
+    },
+    "completed": {
+      "arrives_at": "2026-10-24T16:13:54.478014196+02:00",
+      "case_id": "32d478c1-f41f-4ed7-bef5-3f62e1a2287b",
+      "distance": 6,
+      "id": "6ccc717b-caa1-4078-bf04-091ec5d15c92"
+    },
+    "outgoing": {
+      "arrives_at": "2026-10-24T15:13:54.48510463+02:00",
+      "case_id": "1b453825-89ca-4337-9405-e23e8ad274ab",
+      "distance": 6,
+      "id": "638ecdda-6f97-4f2c-a4a8-b8059957e65f"
+    }
+  },
+  "source_hashes": {
+    "server/api/handlers/letters_test.go": "8397554952809bcad5c0cd70ab0c904717d0b9db7797096e4352ae7251bd341c",
+    "server/api/handlers/letters.go": "1660ac30b566cd8c90176066e664a0e61cdf43abf9f40c008d2f21f5ea7ce36a",
+    "server/api/handlers/messenger_trade_offer_good_validation_test.go": "61931fce978def1003bc415465baba473c5aa8c34f42a7a36f65028b1e095c3c",
+    "server/api/handlers/messenger_trade_naval_test.go": "dbd6ad73ff06827e8c49d8e7b26f44d82028548a65eeeeda09e3e7f027b4824d",
+    "server/api/handlers/messenger_test.go": "0a439d64573a7768991572d7f40534d473f83410ca45d475f264fd3a48e07d44",
+    "server/api/handlers/messenger_runners_test.go": "626d191f8994576d587cd090717df56c613902bf88c079810500c512c1c1e41c",
+    "server/api/handlers/messenger_runners.go": "3eba372bc017e9571acd2ba1573237452a181b17bea4d0a69d01e678ab764e2b",
+    "server/api/handlers/messenger_reply_window_test.go": "3749f7a857b5a86df3f98e3c3347319e4263f45b38a8c6d5fe49033c72fbfb63",
+    "server/api/handlers/messenger_reply_window.go": "43580c51b60b59747d08b39a9e981251fbe25ba974c4b4915c00ba7a9053c352",
+    "server/api/handlers/messenger_reply_test.go": "e5b8e43311421432b727cad9ffb443705633ab6d02dfa885daea03925173f22d",
+    "server/api/handlers/messenger_read_test.go": "0f2338aa2725f2918cc36534705178cdee0fd93d0a92455480f18fee0ff26bbe",
+    "server/api/handlers/messenger_read.go": "9cdf80a28dbdbb23e6adf7c2f5b3ad4b16b927b38d9ad3513b42167a1325eb74",
+    "server/api/handlers/messenger_queue_test.go": "467be45d12b5df9a97bbe9f85b29847787873ad25410e2ba1a4eb08dd5ca4f1b",
+    "server/api/handlers/messenger_queue.go": "889903d051d4d2bd5cb614dbf69d67204effa24ea0369f2419541c0bb512a1b7",
+    "server/api/handlers/messenger_passage_texts_test.go": "281187e968b545dc779d7d0883ac9ccbd2f7d0326064fe818220b882f3dc80ac",
+    "server/api/handlers/messenger_passage_test.go": "e316e2a114872215a0822fd8af18f5dd471a1b61bbfc9cbba70ff409c31e6e8e",
+    "server/api/handlers/messenger_passage_map_test.go": "2e88dbb2e4e5389e562c0fdcaed950f2de1d09e1d0b303700079c4a99e804bca",
+    "server/api/handlers/messenger_passage_leg_test.go": "095c8a03f79bf6b13ee6f0132138a156253ece855c5cc70c7fc2ecfae055f15c",
+    "server/api/handlers/messenger_passage_eye_test.go": "456fa1d0632b030c4500d4c12ff6610e84870270087c8497d75fa896967f8b0b",
+    "server/api/handlers/messenger_passage_arrange_test.go": "35f8702120cdd61ae2eb52397cfb395926ea12fe9bebfdfd44c6bc7b3e3adf68",
+    "server/api/handlers/messenger_passage.go": "c36bb55e8e6153b8584cf708e0967fb5cc7f1453c6cb65161dbfb990ec808c35",
+    "server/api/handlers/messenger_origin_eye_test.go": "e38f8461099464b2c0dca632699000905ed4a7d8cf0183bea9753fbf028b50dc",
+    "server/api/handlers/messenger_offer_release_test.go": "fed8cc449768003c225fa437efc873431c21da8ba89dab0962fca136144e6b7d",
+    "server/api/handlers/messenger_offer_answer_on_return_test.go": "e62392035a86aec33805666ea18fb0fa76feb724346428145a8ade4fca65dd6b",
+    "server/api/handlers/messenger_inbox_insolvent_test.go": "67a66de244edcc619384fd8394938b6456979e03366e5e6980b5c51821881b41",
+    "server/api/handlers/messenger_expiry_visibility_test.go": "8a92d6a8b7a5731d86fbffef81cfe90b1606aa2fa810ed5dfc025b88f43665f0",
+    "server/api/handlers/messenger_carrier_fate_test.go": "5fbf09291e0ef704fb829927eca8be4afcd2f5fa94c833772746045f1320838a",
+    "server/api/handlers/messenger_carrier_deploy_test.go": "24cf1afe7112301bc20c3c9cd95db31b41223aece13c3e1e57f377b0802fccbe",
+    "server/api/handlers/messenger_callback_eye_test.go": "51d7d5e8927d0efb6f006e4a363aa84521ef80c0da6d0c1d9c40853dbb7bd341",
+    "server/api/handlers/messenger.go": "adc82f3c88fad2357159ea99bf65034443cba70b99992527a3f1dd02933e5db2",
+    "server/api/handlers/marches_messengers_fow_test.go": "c6b5caf24a1a84b9b7c4795d85f48d701369c54846f1cef597c6ff8ee83f2d44",
+    "server/api/handlers/correspondence_upgrade_test.go": "51c50eec3034a7aab634a9eddbc7331e9c57f8b90a729fae532f2bc1d9858f18",
+    "server/api/handlers/correspondence_send_identity_test.go": "6a6ef31e41c9f7f86849f46a88fa21f14872d052b6185ab48d746545ef0845e5",
+    "server/api/handlers/correspondence_integration_lifecycle_test.go": "83e58f0bcb1a2e9d58eb4c96bf2244ab545b4058e6a891899d5bbdd4fd57209e",
+    "server/api/handlers/correspondence_cases.go": "fca787f0c43c171fa6124dc3fbe4b2d8e4c2b1de7d62528f561c464d2556ba44",
+    "server/cmd/keryx/cmd_letters_test.go": "e0c428e18c55a8ba75ca2139eee04ba87555d97b885309e79360006d370260b1",
+    "server/cmd/keryx/cmd_letters.go": "d6e766364f7df3c15d741f1e934eb2ef35142035f9733a666565e33d369c747b",
+    "server/cmd/keryx/cmd_messenger_test.go": "81eb3d65f52c6ca52b10e8041768e19edf61945671540565ec8aff5d56555d19",
+    "server/cmd/keryx/cmd_messenger_split.go": "48ead9c20467c297dec63c69d5cb6e93a0c7e91913d2d2064ee2b489b3da4cb4",
+    "server/cmd/keryx/cmd_messenger.go": "5ddbe8b9bb675185559fb9e7d9a97b76a4d638e9a33bd1976ae339f52ed96d4a",
+    "server/cmd/keryx/cmd_diplomacy.go": "00f42b497363a5852d706bd2f953fae9bf88893b1b0f8d6bbda2a6ab7cc0fb75",
+    "web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs": "994b547e03e108ce53af36b3ba1a0af7cd2cfa15be593901e7d8f431f9255bf5",
+    "web/static/js/megaron/ui/drawers/diplomacy_runners.test.mjs": "8fe760d0bcddba7b572ff3e4813c272200f9dc35fdcbaede22501a565ce9588c",
+    "web/static/js/megaron/ui/drawers/diplomacy_runners.js": "67cca6da8a513351397fda51ee9ab24341eb5b2b4c88a76977f612b1604fca4e",
+    "web/static/js/megaron/ui/drawers/diplomacy_goods_select.test.mjs": "4cb629123f3416b76571d30125aa0056c268c4d0d46307e98a62bdcdbc57095f",
+    "web/static/js/megaron/ui/drawers/diplomacy.js": "1a829148f7f05f2a23ec1e152025fc46de1315015aa3ecb5adc07ba4dc538387",
+    "web/static/megaron.css": "4943b33ec4d78a858b70b079b8bc89dbbea632882237234d76382148fad6d9a4"
+  },
+  "posts": [
+    {
+      "method": "POST",
+      "path": "https://umami.formatet.se/api/send"
+    },
+    {
+      "method": "POST",
+      "path": "https://umami.formatet.se/api/send"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/3947c685-a157-4f2b-9c62-7052caf1d343/messengers/6dd037e0-eee3-4596-b573-2864c8cc8bf6/read"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/3947c685-a157-4f2b-9c62-7052caf1d343/messengers/6dd037e0-eee3-4596-b573-2864c8cc8bf6/read"
+    },
+    {
+      "method": "POST",
+      "path": "https://umami.formatet.se/api/send"
+    },
+    {
+      "method": "POST",
+      "path": "https://umami.formatet.se/api/send"
+    },
+    {
+      "method": "POST",
+      "path": "https://umami.formatet.se/api/send"
+    },
+    {
+      "method": "POST",
+      "path": "https://umami.formatet.se/api/send"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/3947c685-a157-4f2b-9c62-7052caf1d343/messengers/6dd037e0-eee3-4596-b573-2864c8cc8bf6/trade-accept"
+    },
+    {
+      "method": "POST",
+      "path": "https://umami.formatet.se/api/send"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/3947c685-a157-4f2b-9c62-7052caf1d343/messengers/cfdbcecd-71b7-47f1-9f3c-b3120c077b84/reply"
+    },
+    {
+      "method": "POST",
+      "path": "https://umami.formatet.se/api/send"
+    }
+  ],
+  "page_errors": [],
+  "reply_ground": {
+    "id": "cfdbcecd-71b7-47f1-9f3c-b3120c077b84",
+    "status": "returning",
+    "reply_text": "We shall meet you at the harbour."
+  },
+  "fixture": "normal register/join/found; explicit human Wanax names, mutual scouted contacts and stocks; real HTTP sends; three arrival timers advanced to current100 and processed by actual worker; fourth remains outbound; actual CLI reply and native browser accept/reply",
+  "result": "PASS"
+}

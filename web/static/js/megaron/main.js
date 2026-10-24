@@ -54,7 +54,7 @@ import {
 } from './ui/drawers/economy.js';
 import { loadKultDrawer, okRite, bringOffering, cancelOffering } from './ui/drawers/kult.js';
 import {
-  loadDiplomacyDrawer, dipToggleKind, dipToggleThread, dipSendInThread,
+  loadDiplomacyDrawer, refreshDiplomacyLetters, dipToggleKind, dipToggleThread, dipSendInThread,
   dipCancel, dipAccept, dipDecline, dipReply, dipWrite,
   dipArrangePassage, dipCallBack,
 } from './ui/drawers/diplomacy.js';
@@ -195,6 +195,7 @@ Object.assign(window, {
   dipDecline,
   dipReply,
   dipWrite,
+  refreshDiplomacyLetters,
   dipSendInThread,
   dipToggleKind,
   dipToggleThread,

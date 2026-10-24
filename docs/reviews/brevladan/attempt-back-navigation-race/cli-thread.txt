@@ -1,0 +1,12 @@
+Myrine
+
+Myrine · today 12:12
+The winter crossing is clear.
+Will you join us at the harbour?
+Send with their runner (leaves today 14:12): keryx reply --id f5d14571-10d7-410a-8c04-8b1efcaf4e55 --text "..."
+
+Myrine · today 12:12
+Two copper for five silver.
+Offer: 2 copper for 5 silver
+Decline: keryx trade-decline --id 96167b1c-c42c-465d-b8ad-8da75d3d1262
+Accept: keryx trade-accept --id 96167b1c-c42c-465d-b8ad-8da75d3d1262

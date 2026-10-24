@@ -1,0 +1,52 @@
+[
+  {
+    "code": "A1",
+    "file": "A1-desktop-letters.png",
+    "description": "Letters, 1280px"
+  },
+  {
+    "code": "A2",
+    "file": "A2-desktop-thread.png",
+    "description": "Exchange and actions, 1280px"
+  },
+  {
+    "code": "A3",
+    "file": "A3-desktop-write.png",
+    "description": "Write to reachable Wanax, 1280px"
+  },
+  {
+    "code": "A4",
+    "file": "A4-desktop-runners.png",
+    "description": "Runners, 1280px"
+  },
+  {
+    "code": "B1",
+    "file": "B1-mobile-letters.png",
+    "description": "Letters, 390px"
+  },
+  {
+    "code": "B2",
+    "file": "B2-mobile-thread.png",
+    "description": "Exchange and actions, 390px"
+  },
+  {
+    "code": "B3",
+    "file": "B3-mobile-write.png",
+    "description": "Write to reachable Wanax, 390px"
+  },
+  {
+    "code": "B4",
+    "file": "B4-mobile-runners.png",
+    "description": "Runners, 390px"
+  },
+  {
+    "code": "C1",
+    "file": "C1-desktop-agreed.png",
+    "description": "Accepted offer remains in the exchange"
+  },
+  {
+    "code": "C2",
+    "file": "C2-desktop-gift.png",
+    "description": "Recorded gift outcome, person name and exact goods; origin hidden"
+  }
+]

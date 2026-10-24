@@ -906,7 +906,7 @@ func (h *MessengerHandler) Inbox(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT m.id, COALESCE(m.origin_id, m.origin_unit_id), COALESCE(os.name, 'Nomadic Host'), m.destination_id, ds.name,
+		`SELECT m.id, m.sender_id, COALESCE(NULLIF(sp.wanax_name,''),sp.username), m.destination_id, ds.name,
 		        m.message_text, m.trade_offer, m.status, m.sent_at, m.arrives_at, m.expires_at, m.read_at, m.reply_text,
 		        -- Fas 2a: affordability is DATA, not a visibility filter. It used to be
 		        -- part of the WHERE clause, which made an insolvent pending offer's
@@ -935,7 +935,7 @@ func (h *MessengerHandler) Inbox(w http.ResponseWriter, r *http.Request) {
 		 FROM messengers m
 		 -- LEFT: a host-sent messenger (mig 087) has no origin settlement; its
 		 -- sender shows as the host, and it must still land in the inbox.
-		 LEFT JOIN settlements os ON os.id = m.origin_id
+		 JOIN players sp ON sp.id = m.sender_id
 		 JOIN settlements ds ON ds.id = m.destination_id
 		 WHERE m.world_id = $1
 		   AND ds.owner_id = $2 AND correspondence_recipient(m.id,$2)

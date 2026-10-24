@@ -1,20 +1,14 @@
-A **messenger** is a person who walks your letter to another Wanax's city — and walks the reply back. The **Diplomacy (✉)** drawer holds everything: tabs **Queue**, **Correspondence**, **Known** and **Runners**.
+A **messenger** walks your letter to another Wanax and brings the answer home. **Diplomacy (✉)** has two tabs: **Letters** and **Runners**.
 
-## Incoming queue
+## Your letters
 
-**Diplomacy → Queue** opens first. **Waiting on you** shows received letters awaiting a reply and open trade offers, even when you cannot afford the requested goods or silver. **Past correspondence** retains received letters and resolved offers. **Expired without answer** means the deadline passed; it does not mean the other Wanax actively declined.
+**Letters** has one row per Wanax: their name, the last line of the latest letter, and **Waiting on you**, **Waiting on them** or **Done**. Letters awaiting your answer come first, with the nearest deadline first. An unanswered offer remains actionable even when you cannot afford its payment.
 
-The queue shows each letter separately. Groups apply to the displayed page, with newest letters first inside each group. **Older correspondence →** opens the next page; there may be older unanswered letters there. **Refresh from newest** starts again with current states. Letters sent after you began paging appear on refresh. Existing conversations and outgoing letters remain under **Correspondence**.
+Open a Wanax to read your exchange, oldest first. The newest letter is open; expand an older letter to read it. Opening a letter marks it read. Reading never accepts a trade or sends an answer. Offers have **Accept** and **Decline** buttons. An accepted offer remains in the exchange as **Agreed**, with its exact terms; agreement does not prove the goods have arrived.
 
-A row shows its offer, payment blocker and local answer deadline before you open it. **Read letter** marks only that opened letter as read. Reading never accepts, declines or replies. The server supplies available responses; an unaffordable open offer can still be declined. Accepting rechecks payment and transport, so the server may explain why a listed offer cannot currently be dispatched.
+The reply box sits below the exchange. **Send with their runner** uses the bearer waiting for your answer and shows when he leaves. **Send a runner** sends a new letter to a city you have contacted. **Write** lists the Wanax you can reach, with their contacted cities beneath. A rumour does not open a route. You can also write from a known city's Inspect panel. Unsent text stays in the box in this browser while you use the drawer; it is not saved to the server.
 
-In Keryx, use `inbox --queue`, optionally `--limit 30` and `--cursor <next_cursor>`. `--json` returns the same page and opaque next cursor. Queue listing does not mark letters read. The ordinary `inbox` command still displays and marks its letters read; `inbox --history` keeps its existing history view.
-
-## Writing
-
-**Diplomacy → Known**: find a city or ruler and press **Write** to open a conversation. Write your letter and press **Dispatch →**. Rumours do not open a writing route. You can also write from a known city’s Inspect panel. Inside an open conversation, an incoming letter has a **Reply** box directly under it.
-
-**Correspondence** groups everything into conversations, one per counterpart. A **⚖** badge marks a pending [[trade|trade offer]]; a **●** marks something unread.
+Keryx: `letters` lists your correspondents; `letters "Myrine"` reads your exchange with that Wanax. `--json` returns the same data. `reply --id <letter-id> --text "..."` answers with the waiting bearer. `message --to <city> --text "..."` sends a new runner; `trade-offer` attaches structured trade terms. `inbox` remains available for received letters and marks those displayed as read.
 
 ## Letters take time
 
@@ -22,7 +16,7 @@ A letter to a distant city takes days, and the reply takes as long again. You ar
 
 A reply uses the **same bearer** who brought the letter. You can return a letter even if you have not discovered the sender's city; answering does not create a new messenger or reveal that city's location.
 
-A newly delivered plain letter can be answered on its arrival day and the following day. The bearer leaves at the start of the next day. **Queue** shows **Return post before** with the local departure time. Once the return-post window closes, you cannot reply through that bearer, even while his departure is still being processed. Reading does not extend his stay. A previously issued longer stay keeps its saved deadline. If an older letter has no saved deadline, the client says the deadline is unavailable and the server still decides whether its bearer can answer. Trade offers keep their own answer deadline.
+A newly delivered plain letter can be answered on its arrival day and the following day. The bearer leaves at the start of the next day. **Letters** shows the departure time with the local departure time. Once the return-post window closes, you cannot reply through that bearer, even while his departure is still being processed. Reading does not extend his stay. A previously issued longer stay keeps its saved deadline. Trade offers keep their own answer deadline.
 
 If nobody replies, your messenger does not wait forever in that city's court. After a while he gives up and turns around on his own, walking home just as he would with an answer in hand — the same road, taking the same time. You are still told the moment he is back, only without a reply riding along.
 
@@ -39,29 +33,3 @@ The first letter you send to a city also opens [[contact]] with it for good.
 A messenger cannot swim any more than a Runner can. When a letter's road crosses open water it waits in your own port for a ship instead — see [[sea]] for how the crossing actually works.
 
 If an order Runner is waiting for a ship, open its dispatch to see the sealed order's unit, destination and mission. Your Notifications history keeps those details readable after the Runner moves. Only your own order is shown; another Wanax's Runner does not reveal its envelope.
-
-## Personal case archive
-
-**Diplomacy → Personal archive** keeps newly sent correspondence by person and case. Set **New case subject** when writing a new letter. Different matters with the same Wanax remain separate. Open a case to see its letters; older letters are folded beneath the newest. Opening the archive does not mark letters read or send a reply.
-
-Names are preserved as recorded at departure. Renaming or losing a city does not rewrite the letters, and a city's new owner does not inherit another Wanax's personal archive. A recipient sees a new letter only after delivery to that recipient. Replies become visible to the original sender when the bearer returns. Historical letters without a proven recipient remain in the older **Correspondence** view and are not assigned to today's owner in the personal archive.
-
-Search the archive by person, city, subject or traded good. **Older →** pages through cases in creation order, or letters within an opened case in send order. A new letter can continue an existing case using one of its cities that remains in your current contacts; the server checks the person and contact again at dispatch. Same-bearer replies remain in **Queue**.
-
-Keryx: `correspondence`, `correspondence --search copper`, or `correspondence --case <case-id>`. Use `--limit`, `--cursor` and `--json` for the same paginated archive. `message --subject "Winter copper"` starts a case; `message --case <case-id>` continues it. Both city and wandering-host messages support these fields. A personal case never grants a new contact or reveals a map position.
-
-## Private draft and note
-
-Open a personal case to restore your saved letter draft and private note. **Save draft and note** keeps both on the server for your next visit or another device. **Dispatch new letter** uses that draft in this exact case and clears the saved draft after a successful send. A draft is private; saving it never sends a letter or tells the other person that you are writing.
-
-If another tab or device saved newer text, your save is refused and your local text stays in the editor. Copy the text you want to keep before choosing **Load saved copy**. Leaving a case discards unsaved edits; save first. Notes and drafts stay with your person when a city changes hands.
-
-Keryx: `correspondence-private --case <id>` reads your own draft, note and saved version. To save, supply all three: `--draft "..." --note "..." --version <last-read-version>`. Empty text clears that field. A stale version fails instead of overwriting newer text. `--json` returns the same private document as the web editor.
-
-## Memory with a Wanax
-
-Each personal case includes **Memory with this Wanax**, covering your cases with the same person. **Accepted agreements** records the exact accepted trade terms. Acceptance and physical delivery are separate: this archive says when the delivery outcome is unavailable rather than interpreting a loss as betrayal. An original sender learns a remote acceptance only when its bearer returns.
-
-Inside an archived letter, open **Keep a private passage**, choose the letter or its visible reply, and keep an exact passage as **My note**. You may shorten the passage, but it must match its source exactly. A private note never creates a shared promise, debt or reputation score. **Open source letter** opens the exact preserved letter, including older letters beyond the first page; **Remove my note** deletes your bookmark. Your counterpart never sees it.
-
-Keryx: `correspondence-memory --case <id>` reads the same memory (`--limit`, `--cursor`, `--json`). `correspondence-cite --case <id> --letter <id> --source message --quote "exact passage"` keeps a private passage; use `--source reply` for a visible reply. `correspondence-cite-remove --case <id> --id <citation-id>` removes it. Repeated saves of the same passage do not make duplicate notes. `correspondence --case <case-id> --letter <letter-id>` opens an exact old source letter without paging through newer ones.

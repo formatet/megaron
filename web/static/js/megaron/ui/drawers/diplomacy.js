@@ -1,35 +1,13 @@
-import { updateDiplomacyBadge, readDiplomacyLetters } from '../diplomacy_reads.js';
-import { giftText } from '../gifts.js';
+import { readDiplomacyLetters } from '../diplomacy_reads.js';
 import { showInlineResult } from '../inline_result.js';
-import { State, ownCapital } from '../../state.js';
+import { State } from '../../state.js';
 import { fetchAuth } from '../../api.js';
 import { esc, fmtAgo, formatApiError, passageNote } from '../format.js';
-import { fmtEta, fmtArrival, arrivalHTML } from '../time.js';
-import { renderLockedActions } from '../misc.js';
-import { fmtNum } from '../fmt_num.js';
+import { fmtArrival, arrivalHTML } from '../time.js';
 import { fmtTickTime } from '../fmt_clock.js';
-import { sentStatusHTML } from '../runner_status.js';
+import { serverNow } from '../../clock.js';
 import { loadDipRunners } from './diplomacy_runners.js';
-import { loadDipQueue } from './diplomacy_queue.js';
-import { loadDipArchive } from './diplomacy_archive.js';
 
-// "expires <eta>" while a trade offer's window is still open, collapsing to a
-// bare "expired" once it's closed — a closed offer isn't an arrival, and
-// "expires expired" is not a state a player recognises.
-function expiryWord(iso) {
-  const eta = fmtEta(iso, undefined, 'expired');
-  return eta === 'expired' ? eta : 'expires ' + eta;
-}
-
-// Tradeable-goods catalogue (GET /api/v1/goods) — the same set
-// MessengerHandler.tradeableGood validates a trade offer's want_good/
-// offer_good against (server: api/handlers/goods.go + messenger.go). Static
-// for a world's lifetime, so fetch once and memoize rather than refetching
-// on every drawer render — same pattern as getRecipes() in city.js:421.
-// On failure the promise is cleared so the next render retries instead of
-// permanently caching a failure; null (not []) is returned to distinguish
-// "could not load" from "server has no tradeable goods" — see
-// goodsOptionsHTML below.
 let _tradeableGoodsPromise = null;
 async function getTradeableGoods() {
   if (!_tradeableGoodsPromise) {
@@ -66,475 +44,135 @@ export function goodsSelectDisabledAttr(goods) {
   return goods === null ? ' disabled' : '';
 }
 
-// ── Diplomacy drawer ──────────────────────────────────────────────────────
+let currentPerson = null;
 let draftDestination = null;
-let unreadByThread = new Map();
+let requestGeneration = 0;
+const drafts = new Map();
+const draftKey = () => State.WORLD_ID+':'+State.MY_PLAYER_ID+':'+(currentPerson || draftDestination?.settlement_id);
+const lettersRoot = () => document.getElementById('dtab-letters');
+const writableCities = () => State.provinceData.filter(p => !p.own && !p.is_outpost && p.settlement_id && p.name);
+const personName = p => p.owner || p.owner_name || 'Wanax';
 
-// The exact destination set the former Compose dropdown used. The city
-// directory includes rumours too; it must never become a dispatch catalogue.
-function writableCities() {
-  return State.provinceData.filter(p => !p.own && !p.is_outpost && p.settlement_id && p.name);
+export function lettersState(state) {
+  return { waiting_you: 'Waiting on you', waiting_them: 'Waiting on them', done: 'Done' }[state] || 'Done';
 }
-
+export function lettersListHTML(page) {
+  return (page.items || []).map(p => `<button class="letter-person" data-person="${esc(p.counterpart_id)}"><strong>${esc(p.counterpart_name)}</strong><span class="letter-person-state">${lettersState(p.state)}${p.reply_before ? ' · before ' + esc(fmtTickTime(undefined,p.reply_before)) : ''}</span><span class="letter-person-preview">${esc(p.preview || '')}</span></button>`).join('') || '<p class="empty-state">No letters yet.</p>';
+}
+export function letterActions(m) {
+  const actions = Array.isArray(m.actions) ? m.actions : [];
+  return actions.filter(a => !(a === 'reply' && (m.reply_window_closed || (m.reply_before && Date.parse(m.reply_before) <= serverNow()))) && !(['trade_accept','trade_decline'].includes(a) && m.expires_at && Date.parse(m.expires_at) <= serverNow()));
+}
+export function offerLine(m) {
+  const o=m.trade_offer;if(!o)return '';
+  const terms=o.kind==='sell' ? `${String(o.offer_qty)} ${o.offer_good} for ${String(o.want_silver)} silver` : `${String(o.want_qty)} ${o.want_good} for ${String(o.offer_silver)} silver`;
+  const state=m.offer_state || o.status;
+  return (['accepted','returned'].includes(state) ? 'Agreed: ' : state==='pending' ? 'Offer: ' : state==='expired' ? 'Expired without answer: ' : `${state || 'Trade'}: `)+terms;
+}
+export function lettersThreadHTML(page) {
+  const rows=page.items || [];
+  return rows.map((m,i)=>{
+    const actions=letterActions(m);
+    const controls=actions.includes('trade_accept') || actions.includes('trade_decline') || actions.includes('trade_cancel') ? `<div id="dip-trade-${esc(m.id)}">${actions.includes('trade_accept') ? `<button class="btn-small" onclick="dipAccept('${esc(m.id)}',this)">Accept</button>` : ''}${actions.includes('trade_decline') ? `<button class="btn-small" onclick="dipDecline('${esc(m.id)}',this)">Decline</button>` : ''}${actions.includes('trade_cancel') ? `<button class="btn-small" onclick="dipCancel('${esc(m.id)}',this)">Cancel offer</button>` : ''}</div>` : '';
+    return `<details class="letter-entry" data-letter="${esc(m.id)}"${i===rows.length-1?' open':''}><summary>${esc(m.direction==='outgoing'?'You':m.sender_name || page.counterpart_name)} · ${fmtAgo(m.sent_at)}${m.kind==='gift'?' · Gift':''}</summary><p class="dip-msg-text">${esc(m.message || '')}${m.kind==='gift'&&m.goods ? ': '+esc(Object.entries(m.goods).map(([good,qty])=>String(qty)+' '+good).join(', ')) : ''}</p>${m.reply_text ? `<p class="dip-msg-text">${m.direction==='incoming'?'Your reply':'Reply'}: ${esc(m.reply_text)}</p>` : ''}${m.trade_offer ? `<p>${esc(offerLine(m))}</p>` : ''}${m.missing_payment ? `<p>${esc(m.missing_payment)}</p>` : ''}${controls}</details>`;
+  }).join('');
+}
+function rememberDraft() {
+  const el=document.getElementById('letter-compose');if(!el)return;
+  const saved={};el.querySelectorAll('input,textarea,select').forEach(c=>{if(c.id)saved[c.id]=c.type==='radio'?c.checked:c.value;});
+  drafts.set(draftKey(),saved);
+}
+function restoreDraft() {
+  const saved=drafts.get(draftKey());if(!saved)return;
+  for(const [id,value] of Object.entries(saved)){const c=document.getElementById(id);if(c){if(c.type==='radio')c.checked=value;else c.value=value;}}
+  dipToggleKind('letter-compose');
+}
+function toolbar(title='') { return `<div class="letters-toolbar"><button class="btn-small" data-letters-back>Letters</button><strong>${esc(title)}</strong><button class="btn-small" data-write-list>Write</button></div>`; }
+function bindToolbar(el) {
+  el.querySelector('[data-write-list]')?.addEventListener('click',showWriteList);
+  el.querySelector('[data-letters-back]')?.addEventListener('click',()=>{rememberDraft();currentPerson=null;draftDestination=null;return loadDipThreads();});
+}
 export async function loadDiplomacyDrawer() {
-  draftDestination = null;
-  const body = document.getElementById('diplomacy-body');
-  body.innerHTML = `
-    <div class="drawer-tabs">
-      <button class="dtab active" data-tab="queue">Queue</button>
-      <button class="dtab" data-tab="threads">Correspondence</button>
-      <button class="dtab" data-tab="archive">Personal archive</button>
-      <button class="dtab" data-tab="known">Known</button>
-      <button class="dtab" data-tab="runners">Runners</button>
-    </div>
-    <div id="dtab-queue" class="city-tab"></div>
-    <div id="dtab-threads" class="city-tab" hidden><div class="loading" style="font-size:.8rem">Loading…</div></div>
-    <div id="dtab-archive" class="city-tab" hidden></div>
-    <div id="dtab-known" class="city-tab" hidden></div>
-    <div id="dtab-runners" class="city-tab" hidden></div>`;
-
-  body.querySelectorAll('.dtab').forEach(tab => {
-    tab.addEventListener('click', function() { return switchDiplomacyTab(this.dataset.tab); });
-  });
-
-  await loadDipQueue();
-}
-
-export async function switchDiplomacyTab(name) {
-  const body = document.getElementById('diplomacy-body');
-  const el = document.getElementById('dtab-' + name);
-  if (!body || !el) return;
-  body.querySelectorAll('.dtab').forEach(tab => tab.classList.toggle('active', tab.dataset.tab === name));
-  body.querySelectorAll('.city-tab').forEach(tab => {
-    const show = tab === el;
-    tab.hidden = !show;
-    tab.style.display = show ? '' : 'none';
-  });
-  if (name === 'queue' && !el.dataset.loaded) return loadDipQueue();
-  if (name === 'threads' && !el.dataset.loaded) return loadDipThreads();
-  if (name === 'archive' && !el.dataset.loaded) return loadDipArchive();
-  if (name === 'known') return loadDipKnown();
-  if (name === 'runners') return loadDipRunners();
-}
-
-async function loadDipKnown() {
-  const el = document.getElementById('dtab-known');
-  if (!el || el.dataset.loaded) return;
-  el.dataset.loaded = '1';
-  el.innerHTML = '<div class="loading">Loading…</div>';
-  try {
-    const [cityResponse, rulerResponse] = await Promise.all([
-      fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/cities`),
-      fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/diplomacy`),
-    ]);
-    if (!cityResponse.ok || !rulerResponse.ok) throw new Error('directory unavailable');
-    const [cities, rulers] = await Promise.all([cityResponse.json(), rulerResponse.json()]);
-    const contacts = new Map(writableCities().map(p => [p.settlement_id, p]));
-    const writeButton = id => id && State.MY_SETTLEMENT_ID
-      ? `<button class="btn-small" data-write="${esc(id)}">Write</button>` : '';
-    const cityRow = c => {
-      const contact = !c.own && contacts.has(c.settlement_id);
-      const status = c.own ? 'Your city' : contact ? 'Can write' : c.knowledge === 'rumour' ? 'Rumour only' : 'Known';
-      const deposits = [c.copper_deposit ? 'Copper' : '', c.tin_deposit ? 'Tin' : '', c.silver_deposit ? 'Silver' : '', c.cedar_deposit ? 'Cedar' : '', c.incense_deposit ? 'Incense' : ''].filter(Boolean).join(', ');
-      const location = c.knowledge === 'known' && c.q != null && c.r != null
-        ? `${fmtNum(c.q)}, ${fmtNum(c.r)}` : c.bearing ? c.bearing.replace(/^~(\d+) hexes /, (_, n) => `~${fmtNum(Number(n))} hexes `) : 'Location unknown';
-      return `<div class="dsec"><div class="stat-row"><span class="sr-label">${esc(c.name)}</span><span class="sr-val">${contact ? writeButton(c.settlement_id) : ''}</span></div>
-        <div>${esc(c.owner || 'Owner unknown')} · ${status}</div>
-        <details><summary>Details</summary><div>${esc(location)}</div><div>${esc(deposits || c.industry_hint || '')}</div></details></div>`;
-    };
-    const grouped = new Set();
-    el.innerHTML = rulers.map(r => {
-      const owned = cities.filter(c => c.owner_id === r.owner_id);
-      owned.forEach(c => grouped.add(c));
-      const destination = owned.find(c => !c.own && contacts.has(c.settlement_id));
-      const known = `${fmtNum(r.known_cities)} known ${r.known_cities === 1 ? 'city' : 'cities'}`;
-      const rumoured = `${fmtNum(r.rumour_cities)} rumoured ${r.rumour_cities === 1 ? 'city' : 'cities'}`;
-      return `<div class="dsec-title">${esc(r.owner)} ${writeButton(destination?.settlement_id)}</div><div>${known} · ${rumoured}</div>` + owned.map(cityRow).join('');
-    }).join('') + cities.filter(c => !grouped.has(c)).map(cityRow).join('');
-    if (!cities.length && !rulers.length) el.innerHTML = '<p class="empty-state">No cities or rulers known yet — explore the map.</p>';
-    el.querySelectorAll('[data-write]').forEach(button => button.addEventListener('click', () => dipWrite(button.dataset.write)));
-  } catch (_) {
-    delete el.dataset.loaded;
-    el.innerHTML = '<p class="empty-state">Could not load known cities and rulers. Open Known to retry.</p>';
-  }
-}
-
-// Start the same inline composer used by existing correspondence, including
-// its untouched buy/sell offer fields. A directory rumour cannot seed a draft.
-export async function dipWrite(settlementID) {
-  const destination = writableCities().find(p => p.settlement_id === settlementID);
-  if (!destination || !State.MY_SETTLEMENT_ID) return;
-  draftDestination = destination;
-  const body = document.getElementById('diplomacy-body');
-  body.querySelectorAll('.dtab').forEach(tab => {
-    tab.classList.toggle('active', tab.dataset.tab === 'threads');
-  });
-  body.querySelectorAll('.city-tab').forEach(tab => {
-    const show = tab.id === 'dtab-threads';
-    tab.hidden = !show;
-    tab.style.display = show ? '' : 'none';
-  });
-  document.getElementById('dtab-threads').innerHTML = '<div class="loading">Loading…</div>';
+  rememberDraft();currentPerson=null;draftDestination=null;
+  const body=document.getElementById('diplomacy-body');
+  body.innerHTML='<div class="drawer-tabs"><button class="dtab active" data-tab="letters">Letters</button><button class="dtab" data-tab="runners">Runners</button></div><div id="dtab-letters" class="city-tab"></div><div id="dtab-runners" class="city-tab" hidden></div>';
+  body.querySelectorAll('.dtab').forEach(tab=>tab.addEventListener('click',()=>switchDiplomacyTab(tab.dataset.tab)));
   await loadDipThreads();
 }
-
-// A re-render (a delayed post-send refresh, a new reply) rebuilds every thread.
-// Whatever the player is mid-way through writing must survive it: draft text,
-// trade fields, buy/sell choice, open trade details, focus and text selection.
-function snapshotDrafts(root) {
-  const snap = { controls: new Map(), radios: new Map(), details: [], focus: null };
-  root.querySelectorAll('[id]').forEach(c => {
-    if (c.matches('input:not([type=radio]), textarea, select')) snap.controls.set(c.id, c.value);
-  });
-  root.querySelectorAll('input[type=radio]').forEach(r => { if (r.checked) snap.radios.set(r.name, r.value); });
-  root.querySelectorAll('.dip-thread').forEach(t => {
-    t.querySelectorAll('details').forEach((d, i) => { if (d.open) snap.details.push(t.id + ':' + i); });
-  });
-  const a = document.activeElement;
-  if (a && a.id && root.contains(a)) {
-    snap.focus = { id: a.id, start: a.selectionStart ?? null, end: a.selectionEnd ?? null };
-  }
-  return snap;
+export async function switchDiplomacyTab(name) {
+  rememberDraft();
+  if(name==='threads')name='letters';
+  const body=document.getElementById('diplomacy-body');const el=document.getElementById('dtab-'+name);if(!body||!el)return;
+  body.querySelectorAll('.dtab').forEach(t=>t.classList.toggle('active',t.dataset.tab===name));
+  body.querySelectorAll('.city-tab').forEach(t=>{t.hidden=t!==el;t.style.display=t===el?'':'none';});
+  return name==='runners'?loadDipRunners():loadDipThreads();
 }
-
-function restoreDrafts(root, snap) {
-  snap.controls.forEach((value, id) => {
-    const c = document.getElementById(id);
-    if (c && root.contains(c) && value !== '' ) c.value = value;
-  });
-  snap.radios.forEach((value, name) => {
-    root.querySelectorAll('input[type=radio]').forEach(r => { if (r.name === name) r.checked = r.value === value; });
-    if (name.endsWith('-kind')) dipToggleKind(name.slice(0, -5));
-  });
-  root.querySelectorAll('.dip-thread').forEach(t => {
-    t.querySelectorAll('details').forEach((d, i) => { if (snap.details.includes(t.id + ':' + i)) d.open = true; });
-  });
-  if (snap.focus) {
-    const f = document.getElementById(snap.focus.id);
-    if (f && root.contains(f)) {
-      f.focus();
-      if (snap.focus.start != null && f.setSelectionRange) f.setSelectionRange(snap.focus.start, snap.focus.end);
-    }
-  }
+export async function refreshDiplomacyLetters() {
+  const el=lettersRoot();if(!el)return;
+  if(el.hidden) { const runners=document.getElementById('dtab-runners'); if(runners&&!runners.hidden)return loadDipRunners(); return; }
+  rememberDraft();return loadDipThreads();
 }
-
-const threadRequests = new WeakMap();
-
-async function loadDipThreads() {
-  const el = document.getElementById('dtab-threads');
-  if (!el) return;
-  const request = Symbol('correspondence request');
-  threadRequests.set(el, request);
-  const world = State.WORLD_ID;
-  const alive = () => threadRequests.get(el) === request && State.WORLD_ID === world && document.getElementById('dtab-threads') === el;
-  let myGoods = {};
-  const capital = ownCapital();
-  if (capital) {
-    const gr = await fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/provinces/' + capital.id + '/goods');
-    if (gr.ok) { const list = await gr.json().catch(() => []); list.forEach(g => { myGoods[g.key] = g.amount || 0; }); }
-  }
-  const tradeableGoods = await getTradeableGoods();
+async function showWriteList() {
+  rememberDraft();currentPerson=null;draftDestination=null;
+  const el=lettersRoot();if(!el)return;
+  const generation=++requestGeneration,world=State.WORLD_ID;
+  el.innerHTML='<div class="loading">Loading…</div>';
   try {
-    const [inR, outR, giftR] = await Promise.all([
-      fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/messengers/inbox?history=true'),
-
-      fetchAuth('/api/v1/worlds/' + State.WORLD_ID + (State.MY_SETTLEMENT_ID
-        ? '/settlements/' + State.MY_SETTLEMENT_ID + '/messengers'
-        : '/founding/messengers')),
-      fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/gifts'),
-    ]);
-    if (!alive()) return;
-    const inbox  = (inR && inR.ok)  ? await inR.json().catch(() => [])  : [];
-    if (inR && inR.ok) updateDiplomacyBadge(inbox);
-    unreadByThread = new Map();
-    const sent   = (outR && outR.ok) ? await outR.json().catch(() => []) : [];
-
-    if (!alive()) return;
-    // Normalise both sides into a common shape and group by counterpart name.
-    // Inbox: from_name/from_id is the counterpart; Sent: destination_name/destination_id is counterpart.
-    const threads = {}; // key → { name, settlement_id, messages[] }
-
-    for (const m of inbox) {
-      const key = m.from_name || 'Unknown';
-      if (!threads[key]) threads[key] = { name: key, settlement_id: m.from_id || null, messages: [] };
-      threads[key].messages.push({ ...m, _dir: 'in' });
-    }
-    for (const m of sent) {
-      const key = m.destination_name || 'unknown';
-      if (!threads[key]) threads[key] = { name: key, settlement_id: m.destination_id || null, messages: [] };
-      else if (!threads[key].settlement_id) threads[key].settlement_id = m.destination_id || null;
-      threads[key].messages.push({ ...m, _dir: 'out' });
-    }
-
-    const gifts = giftR?.ok ? (await giftR.json().catch(() => [])) || [] : [];
-    for (const g of gifts) {
-      const b = g.body, outgoing = b.sender_id === State.MY_PLAYER_ID;
-      const name = (outgoing ? b.destination_name : b.origin_name) || 'Unknown';
-      const cityId = outgoing ? b.destination_id : b.origin_id;
-      if (!threads[name]) threads[name] = { name, settlement_id: cityId, messages: [] };
-      threads[name].messages.push({ _gift: true, _dir: outgoing ? 'out' : 'in', created_at: g.created_at,
-        message: giftText(g.kind, b), id: b.transport_id });
-    }
-
-    let draftKey = null;
-    if (draftDestination && writableCities().some(p => p.settlement_id === draftDestination.settlement_id)) {
-      draftKey = Object.keys(threads).find(key => threads[key].settlement_id === draftDestination.settlement_id);
-      if (!draftKey) {
-        draftKey = draftDestination.name;
-        if (threads[draftKey]) draftKey += ' ' + draftDestination.settlement_id;
-        threads[draftKey] = { name: draftDestination.name, settlement_id: draftDestination.settlement_id, messages: [] };
-      }
-    }
-
-    const keys = Object.keys(threads);
-    if (!keys.length) { el.innerHTML = '<p class="empty-state" style="padding:.5rem">No correspondence yet.</p>'; el.dataset.loaded = '1'; return; }
-
-    const msgTime = m => new Date(m.arrived_at || m.sent_at || m.created_at || 0).getTime();
-    keys.sort((a,b) => {
-      const ta = Math.max(...threads[a].messages.map(msgTime));
-      const tb = Math.max(...threads[b].messages.map(msgTime));
-      return tb - ta;
-    });
-
-    // Remember which threads were open so re-render keeps them open
-    const openSet = new Set();
-    el.querySelectorAll('.dip-thread[data-open]').forEach(t => openSet.add(t.id));
-
-    const drafts = snapshotDrafts(el);
-    el.innerHTML = keys.map(key => {
-      const thread = threads[key];
-      const msgs = [...thread.messages].sort((a,b) => msgTime(a) - msgTime(b));
-      const latest = msgs[msgs.length - 1] || {};
-      const hasPendingTrade = msgs.some(m => m._dir === 'in' && m.status === 'delivered' && m.trade_offer && m.trade_offer.status === 'pending');
-      const hasUnread = msgs.some(m => m._dir === 'in' && !m._gift && !m.read_at);
-
-      const threadId = 'dip-thread-' + key.replace(/[^a-z0-9]/gi,'_');
-      const isOpen = key === draftKey || openSet.has(threadId);
-      unreadByThread.set(threadId, msgs.filter(m => m._dir === 'in' && !m._gift && !m.read_at).map(m => m.id));
-      const safeDestId = esc(thread.settlement_id || '');
-      const safeName   = esc(thread.name);
-
-      let badges = '';
-      if (hasPendingTrade) badges += ' <span style="color:var(--accent-trade);font-size:.65rem">⚖</span>';
-      if (hasUnread)       badges += ' <span class="dip-unread" style="color:var(--accent);font-size:.65rem">●</span>';
-      const latestPreview = latest.message || latest.message_text || '';
-
-      // Thread wrapper: data-open attribute controls CSS visibility of body
-      let html = '<div class="dip-thread" id="' + threadId + '"' + (isOpen ? ' data-open' : '') + '>'
-        + '<div class="dip-thread-header" onclick="dipToggleThread(\'' + threadId + '\')">'
-        + '<span style="font-size:.82rem;font-weight:bold;color:var(--accent-diplomacy)">'
-        +   safeName + badges
-        + '</span>'
-        + '<span style="font-size:.68rem;color:var(--text-dim)">'
-        +   (msgs.length ? fmtAgo(latest.arrived_at || latest.sent_at || latest.created_at) : 'New conversation')
-        +   ' <span class="dip-thread-expand-hint">' + (isOpen ? '▲' : '▼') + '</span>'
-        + '</span>'
-        + '</div>';
-
-      if (latestPreview && !isOpen) {
-        html += '<div class="dip-thread-preview" onclick="dipToggleThread(\'' + threadId + '\')">'
-          + '"' + esc(latestPreview.slice(0,80)) + (latestPreview.length > 80 ? '…' : '') + '"'
-          + '</div>';
-      }
-
-      // Thread body (CSS shows/hides via data-open on parent)
-      html += '<div class="dip-thread-body">';
-
-      // Messages as chat bubbles
-      for (const m of msgs) {
-        if (m._gift) {
-          html += `<div class="dip-msg-row dip-msg-row-${m._dir}"><div class="dip-bubble dip-bubble-${m._dir}"><div class="dip-bubble-meta">Gift · ${fmtAgo(m.created_at)}</div><div class="dip-msg-text">${esc(m.message)}</div></div></div>`;
-          continue;
-        }
-        if (m._dir === 'in') {
-          const offer = m.trade_offer;
-          let tradeHtml = '';
-          if (offer && offer.status === 'pending' && m.status === 'delivered') {
-            const countdown = m.expires_at ? '<div style="font-size:.68rem;color:var(--text-dim)">' + expiryWord(m.expires_at) + '</div>' : '';
-            if (offer.kind === 'sell') {
-              tradeHtml = '<div id="dip-trade-' + m.id + '" style="background:var(--warm-white);border:1px solid var(--border);padding:.3rem .5rem;margin:.3rem 0;font-size:.78rem">'
-                + '<div>Sells <strong>' + offer.offer_qty + ' ' + esc(offer.offer_good) + '</strong> for <strong>' + offer.want_silver + ' silver</strong></div>' + countdown
-                + '<div style="display:flex;gap:.4rem;margin-top:.3rem">'
-                + '<button class="btn-small btn-primary" onclick="dipAccept(\'' + m.id + '\',this)">Accept ✓</button>'
-                + '<button class="btn-small btn-danger"  onclick="dipDecline(\'' + m.id + '\',this)">Decline ✗</button>'
-                + '</div></div>';
-            } else {
-              const have = myGoods[offer.want_good] || 0;
-              const canAccept = have >= offer.want_qty;
-              const dis = canAccept ? '' : 'disabled title="Need ' + offer.want_qty + ' ' + esc(offer.want_good) + ', have ' + Math.floor(have) + '"';
-              tradeHtml = '<div id="dip-trade-' + m.id + '" style="background:var(--warm-white);border:1px solid var(--border);padding:.3rem .5rem;margin:.3rem 0;font-size:.78rem">'
-                + '<div>Wants <strong>' + offer.want_qty + ' ' + esc(offer.want_good) + '</strong> · Offers <strong>' + offer.offer_silver + ' silver</strong></div>' + countdown
-                + '<div style="display:flex;gap:.4rem;margin-top:.3rem">'
-                + '<button class="btn-small btn-primary" onclick="dipAccept(\'' + m.id + '\',this)" ' + dis + '>Accept ✓</button>'
-                + '<button class="btn-small btn-danger"  onclick="dipDecline(\'' + m.id + '\',this)">Decline ✗</button>'
-                + '</div></div>';
-            }
-          } else if (offer) {
-            tradeHtml = '<div style="font-size:.72rem;color:var(--text-dim);font-style:italic;margin:.2rem 0">Trade: ' + esc(offer.status) + esc(tradeScheduleText(offer)) + '</div>';
-          }
-          const replyRow = !offer && m.status === 'delivered' && !m.reply_window_closed
-            ? '<div id="dip-reply-row-' + m.id + '" style="display:flex;gap:.3rem;margin-top:.3rem">'
-              + '<input id="dip-reply-' + m.id + '" type="text" placeholder="Reply…" maxlength="1000" style="flex:1;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .4rem;font-size:.75rem;font-family:var(--mono)">'
-              + '<button onclick="dipReply(\'' + m.id + '\')" style="padding:.2rem .5rem;border:1px solid var(--border);background:var(--sandstone);font-size:.7rem;cursor:pointer">Reply</button>'
-              + '</div>'
-            : '';
-          html += '<div id="dip-msg-' + m.id + '" class="dip-msg-row dip-msg-row-in">'
-            + '<div class="dip-bubble dip-bubble-in">'
-            + '<div class="dip-bubble-meta">← ' + esc(m.from_name || 'Unknown') + ' · ' + fmtAgo(m.arrived_at) + '</div>'
-            + (m.message ? '<div class="dip-msg-text">' + esc(m.message) + '</div>' : '')
-            + (m.reply_text ? '<div class="dip-msg-text">Your reply: ' + esc(m.reply_text) + '</div>' : '')
-            + (!offer && m.reply_window_closed && !m.reply_text ? '<div>Return post closed.</div>' : '')
-            + tradeHtml + replyRow
-            + '</div></div>';
-        } else {
-          // Sent message
-          const offerStatus = m.trade_offer && m.trade_offer.status;
-          // sjöhandel mellan spelare (megaron_plan_sjohandel_mellan_spelare.md
-          // R3): stamped onto trade_offer at accept — empty for a land trade.
-          const shipBit = m.trade_offer && m.trade_offer.ship_name
-            ? ' · ⛵ by sea on ' + esc(m.trade_offer.ship_name)
-            : '';
-          const statusBit = offerStatus === 'accepted' ? '<span style="color:var(--safe-text)">✓ accepted' + esc(tradeScheduleText(m.trade_offer)) + shipBit + '</span>'
-                          : offerStatus === 'declined' ? '<span style="color:var(--text-dim)">✗ declined</span>'
-                          : offerStatus === 'expired'  ? '<span style="color:var(--text-dim)">⏳ expired</span>'
-                          : sentStatusHTML(m);
-          const replyText = m.reply_text
-            ? '<div class="dip-msg-text" style="color:var(--safe-text);text-align:right">' + esc(m.reply_text) + '</div>'
-            : '';
-          let cancelBtn = '';
-          if (m.trade_offer && m.trade_offer.status === 'pending') {
-            const countdown = m.expires_at ? '<div style="font-size:.68rem;color:var(--text-dim);text-align:right">' + expiryWord(m.expires_at) + '</div>' : '';
-            cancelBtn = countdown + '<div style="text-align:right;margin-top:.2rem"><button class="btn-small btn-danger" onclick="dipCancel(\'' + m.id + '\',this)">Cancel offer ✗</button></div>';
-          }
-          // Arrange passage (megaron_plan_ordna_passage.md, 3b-3): only shown
-          // while the runner is actually waiting for one — the ship choices
-          // are the server's own (ListSent's eligible_ships), never counted
-          // client-side, so the button can never promise a ship the server
-          // would refuse.
-          let passageBtn = '';
-          if (m.can_arrange_passage) {
-            const ships = Array.isArray(m.eligible_ships) ? m.eligible_ships : [];
-            const selId = 'dip-passage-ship-' + m.id;
-            if (ships.length > 0) {
-              const opts = ships.map(s => '<option value="' + esc(s.id) + '">' + esc(s.name) + ' (' + esc(s.settlement_name) + ')</option>').join('');
-              passageBtn = '<div id="dip-passage-' + m.id + '" style="display:flex;gap:.3rem;margin-top:.3rem;align-items:center">'
-                + '<select id="' + selId + '" style="flex:1;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .3rem;font-size:.7rem">' + opts + '</select>'
-                + '<button class="btn-small btn-primary" onclick="dipArrangePassage(\'' + m.id + '\',\'' + selId + '\',this)">Arrange passage</button>'
-                + '</div>';
-            } else {
-              passageBtn = '<div style="font-size:.68rem;color:var(--text-dim);font-style:italic;margin-top:.3rem;text-align:right">no ship of yours is free there yet</div>';
-            }
-          }
-          // Call back (megaron_plan_ordna_passage.md, 3b-4 R5): the other
-          // choice for a runner stuck waiting for passage — bring it home
-          // now, undelivered. Only ever offered for an outbound runner in
-          // its OWN port (server-computed can_call_back, same rule as
-          // can_arrange_passage: never a client-side guess).
-          let callBackBtn = '';
-          if (m.can_call_back) {
-            callBackBtn = '<div style="text-align:right;margin-top:.3rem">'
-              + '<button class="btn-small btn-danger" onclick="dipCallBack(\'' + m.id + '\',this)">Call it back</button>'
-              + '</div>';
-          }
-          html += '<div class="dip-msg-row dip-msg-row-out">'
-            + '<div class="dip-bubble dip-bubble-out">'
-            + '<div class="dip-bubble-meta dip-bubble-meta-out">You → ' + esc(m.destination_name || 'unknown') + ' · ' + fmtAgo(m.sent_at || m.created_at) + '</div>'
-            + '<div class="dip-msg-text">' + esc(m.message_text || m.message || '') + '</div>'
-            + replyText
-            + '<div style="font-size:.68rem;font-family:var(--mono);text-align:right">' + statusBit + '</div>'
-            + cancelBtn + passageBtn + callBackBtn
-            + '</div></div>';
-        }
-      }
-
-      // Inline compose
-      if (thread.settlement_id && State.MY_SETTLEMENT_ID) {
-        const cid = threadId + '-compose';
-        html += '<div class="dip-inline-compose" id="' + cid + '">'
-          + '<label>New case subject <input id="' + cid + '-subject" maxlength="120" placeholder="Correspondence"></label>'
-          + '<textarea id="' + cid + '-text" maxlength="1000" placeholder="Send a message to ' + safeName + '…"></textarea>'
-          + '<details><summary style="cursor:pointer;color:var(--accent);font-size:.75rem;user-select:none">+ Attach trade offer</summary>'
-          + '<div class="dip-inline-trade" style="margin-top:.3rem">'
-          + '<div style="display:flex;gap:.6rem;font-size:.7rem;margin-bottom:.3rem">'
-          + '<label><input type="radio" name="' + cid + '-kind" value="buy" checked onchange="dipToggleKind(\'' + cid + '\')"> Buy</label>'
-          + '<label><input type="radio" name="' + cid + '-kind" value="sell" onchange="dipToggleKind(\'' + cid + '\')"> Sell</label>'
-          + '</div>'
-          + '<div id="' + cid + '-buy-fields">'
-          + '<div><div style="font-size:.68rem;color:var(--text-dim)">Want good</div><select id="' + cid + '-good"' + goodsSelectDisabledAttr(tradeableGoods) + '>' + goodsOptionsHTML(tradeableGoods) + '</select></div>'
-          + '<div><div style="font-size:.68rem;color:var(--text-dim)">Quantity</div><input id="' + cid + '-qty" type="number" min="0.1" step="0.1" placeholder="50"></div>'
-          + '<div><div style="font-size:.68rem;color:var(--text-dim)">Offer silver</div><input id="' + cid + '-silver" type="number" min="1" step="1" placeholder="60"></div>'
-          + '</div>'
-          + '<div id="' + cid + '-sell-fields" style="display:none">'
-          + '<div><div style="font-size:.68rem;color:var(--text-dim)">Offer good</div><select id="' + cid + '-offer-good"' + goodsSelectDisabledAttr(tradeableGoods) + '>' + goodsOptionsHTML(tradeableGoods) + '</select></div>'
-          + '<div><div style="font-size:.68rem;color:var(--text-dim)">Quantity</div><input id="' + cid + '-offer-qty" type="number" min="0.1" step="0.1" placeholder="20"></div>'
-          + '<div><div style="font-size:.68rem;color:var(--text-dim)">Want silver</div><input id="' + cid + '-want-silver" type="number" min="1" step="1" placeholder="80"></div>'
-          + '</div>'
-          + '</div></details>'
-          + '<div class="dip-inline-compose-row">'
-          + '<button class="btn-small btn-primary" onclick="dipSendInThread(\'' + cid + '\',\'' + safeDestId + '\')">Dispatch →</button>'
-          + '<span class="dip-compose-status" id="' + cid + '-status"></span>'
-          + '</div>'
-          + '</div>';
-      }
-
-      html += '</div></div>'; // close thread-body + thread
-      return html;
-    }).join('');
-    restoreDrafts(el, drafts);
-    for (const thread of el.querySelectorAll('.dip-thread[data-open]')) acknowledgeThread(thread);
-
-    // Do not recreate an already writable textarea when capability hints arrive.
-    const locked = await renderLockedActions('diplomacy');
-    if (!alive()) return;
-    el.insertAdjacentHTML('beforeend', locked);
-    el.dataset.loaded = '1';
-
-  } catch(e) {
-    if (!alive()) return;
-    delete el.dataset.loaded;
-    console.error('loadDipThreads', e);
-    el.innerHTML = '<p class="empty-state" style="padding:.5rem">Could not load correspondence.</p>';
-  }
+    const r=await fetchAuth(`/api/v1/worlds/${world}/cities`);if(!r.ok)throw Error();const cities=await r.json();
+    if(generation!==requestGeneration||world!==State.WORLD_ID||lettersRoot()!==el)return;
+    const contacts=new Set(writableCities().map(p=>p.settlement_id));const people=new Map();
+    for(const c of cities){if(c.own||!contacts.has(c.settlement_id))continue;const key=c.owner_id || c.owner;if(!people.has(key))people.set(key,{name:c.owner,cities:[]});people.get(key).cities.push(c);}
+    el.innerHTML=toolbar('Write')+[...people.values()].map(p=>`<section class="dsec"><strong>${esc(p.name)}</strong>${p.cities.map(c=>`<div class="stat-row"><span>${esc(c.name)}</span><button class="btn-small" data-write="${esc(c.settlement_id)}">Write</button></div>`).join('')}</section>`).join('')+(people.size?'':'<p class="empty-state">No Wanax you can reach yet.</p>');
+    bindToolbar(el);el.querySelectorAll('[data-write]').forEach(b=>b.addEventListener('click',()=>dipWrite(b.dataset.write)));
+  }catch(_){if(generation===requestGeneration)el.innerHTML=toolbar('Write')+'<p class="empty-state">Could not load contacts.</p>';bindToolbar(el);}
+}
+export async function dipWrite(id) {
+  const p=writableCities().find(p=>p.settlement_id===id);if(!p||!State.MY_SETTLEMENT_ID)return;
+  rememberDraft();draftDestination=p;currentPerson=null;
+  const body=document.getElementById('diplomacy-body');
+  body.querySelectorAll('.dtab').forEach(t=>t.classList.toggle('active',t.dataset.tab==='letters'));
+  body.querySelectorAll('.city-tab').forEach(t=>{t.hidden=t.id!=='dtab-letters';t.style.display=t.hidden?'none':'';});
+  await loadDipThreads();
+}
+async function openLetters(id) {
+  rememberDraft();draftDestination=null;currentPerson=id;return loadDipThreads();
+}
+function composerHTML(reply,destination,goods) {
+  if(reply)return `<div class="dip-inline-compose" id="letter-compose"><div id="dip-reply-row-${esc(reply.id)}"><textarea id="dip-reply-${esc(reply.id)}" maxlength="1000" aria-label="Reply"></textarea><button class="btn-small btn-primary" onclick="dipReply('${esc(reply.id)}')">Send with their runner${reply.reply_before ? ' (leaves '+esc(fmtTickTime(undefined,reply.reply_before))+')' : ''}</button></div></div>`;
+  if(!destination||!State.MY_SETTLEMENT_ID)return '';
+  return `<div class="dip-inline-compose" id="letter-compose"><textarea id="letter-compose-text" maxlength="1000" aria-label="New letter" placeholder="Write a letter…"></textarea><details><summary>Attach trade offer</summary><div class="dip-inline-trade"><label><input id="letter-compose-buy" type="radio" name="letter-compose-kind" value="buy" checked onchange="dipToggleKind('letter-compose')"> Buy</label><label><input id="letter-compose-sell" type="radio" name="letter-compose-kind" value="sell" onchange="dipToggleKind('letter-compose')"> Sell</label><div id="letter-compose-buy-fields"><label>Want good<select id="letter-compose-good"${goodsSelectDisabledAttr(goods)}>${goodsOptionsHTML(goods)}</select></label><label>Quantity<input id="letter-compose-qty" type="number" min="0.1" step="0.1"></label><label>Offer silver<input id="letter-compose-silver" type="number" min="1"></label></div><div id="letter-compose-sell-fields" hidden><label>Offer good<select id="letter-compose-offer-good"${goodsSelectDisabledAttr(goods)}>${goodsOptionsHTML(goods)}</select></label><label>Quantity<input id="letter-compose-offer-qty" type="number" min="0.1" step="0.1"></label><label>Want silver<input id="letter-compose-want-silver" type="number" min="1"></label></div></div></details><div class="dip-inline-compose-row"><button class="btn-small btn-primary" onclick="dipSendInThread('letter-compose','${esc(destination.settlement_id)}')">Send a runner</button><span id="letter-compose-status" role="status"></span></div></div>`;
+}
+async function loadDipThreads() {
+  const el=lettersRoot();if(!el)return;
+  const generation=++requestGeneration,world=State.WORLD_ID;
+  const person=currentPerson,destination=draftDestination;
+  const alive=()=>generation===requestGeneration&&State.WORLD_ID===world&&lettersRoot()===el;
+  el.innerHTML='<div class="loading">Loading…</div>';
+  if(destination){const goods=await getTradeableGoods();if(!alive())return;el.innerHTML=toolbar(personName(destination))+composerHTML(null,destination,goods);bindToolbar(el);restoreDraft();return;}
+  try {
+    const response=await fetchAuth(`/api/v1/worlds/${world}/letters${person?'/'+encodeURIComponent(person):''}`);if(!response.ok)throw Error();const page=await response.json();if(!Array.isArray(page.items))throw Error();if(!alive())return;
+    if(!person){el.innerHTML='<div class="letters-toolbar"><strong>Letters</strong><button class="btn-small" data-write-list>Write</button></div>'+lettersListHTML(page);bindToolbar(el);el.querySelectorAll('[data-person]').forEach(b=>b.addEventListener('click',()=>openLetters(b.dataset.person)));return;}
+    const reply=[...page.items].reverse().find(m=>m.direction==='incoming'&&letterActions(m).includes('reply'));
+    const city=writableCities().find(p=>p.owner_id===person || personName(p)===page.counterpart_name);
+    const goods=reply||!city?[]:await getTradeableGoods();if(!alive())return;
+    el.innerHTML=toolbar(page.counterpart_name)+lettersThreadHTML(page)+composerHTML(reply,city,goods);bindToolbar(el);restoreDraft();
+    const mark=details=>{if(details.open){const m=page.items.find(m=>m.id===details.dataset.letter);if(m?.direction==='incoming'&&m.kind!=='gift'&&!m.read_at)readDiplomacyLetters([m.id]);}};
+    el.querySelectorAll('[data-letter]').forEach(d=>{d.addEventListener('toggle',()=>mark(d));mark(d);});
+  }catch(_){if(alive()){el.innerHTML=toolbar()+'<p class="empty-state">Could not load letters.</p>';bindToolbar(el);}}
 }
 
 export function dipToggleKind(cid) {
   const kind = document.querySelector('input[name="' + cid + '-kind"]:checked')?.value || 'buy';
   const buyEl = document.getElementById(cid + '-buy-fields');
   const sellEl = document.getElementById(cid + '-sell-fields');
-  if (buyEl) buyEl.style.display = kind === 'buy' ? '' : 'none';
-  if (sellEl) sellEl.style.display = kind === 'sell' ? '' : 'none';
+  if (buyEl) { buyEl.hidden = kind !== 'buy'; buyEl.style.display = kind === 'buy' ? '' : 'none'; }
+  if (sellEl) { sellEl.hidden = kind !== 'sell'; sellEl.style.display = kind === 'sell' ? '' : 'none'; }
 }
 
-function acknowledgeThread(el) {
-  const ids = unreadByThread.get(el.id) || [];
-  if (!ids.length) return;
-  readDiplomacyLetters(ids).then(ok => {
-    if (ok && unreadByThread.get(el.id) === ids) {
-      unreadByThread.delete(el.id);
-      el.querySelector('.dip-unread')?.remove();
-    }
-  });
-}
-
-export function dipToggleThread(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const isOpen = el.hasAttribute('data-open');
-  if (isOpen) {
-    el.removeAttribute('data-open');
-  } else {
-    el.setAttribute('data-open', '');
-    acknowledgeThread(el);
-  }
-  // Update chevron hint
-  const hint = el.querySelector('.dip-thread-expand-hint');
-  if (hint) hint.textContent = el.hasAttribute('data-open') ? '▲' : '▼';
-  // Show/hide preview when collapsed
-  const preview = el.querySelector('.dip-thread-preview');
-  if (preview) preview.style.display = el.hasAttribute('data-open') ? 'none' : '';
-}
+export function dipToggleThread(id) { return openLetters(id.replace(/^dip-thread-/, '')); }
 
 export async function dipSendInThread(cid, destId) {
+  const sentDraftKey = draftKey();
   const textEl   = document.getElementById(cid + '-text');
   const statusEl = document.getElementById(cid + '-status');
   const text = textEl ? textEl.value.trim() : '';
@@ -545,8 +183,6 @@ export async function dipSendInThread(cid, destId) {
   if (!destId) { showStatus('no destination', false); return; }
   if (!State.MY_SETTLEMENT_ID) { showStatus('no settlement', false); return; }
   const body = { destination_id: destId, message: text };
-  const subject = document.getElementById(cid + '-subject')?.value.trim();
-  if (subject) body.subject = subject;
   const kind = document.querySelector('input[name="' + cid + '-kind"]:checked')?.value || 'buy';
   if (kind === 'sell') {
     const offerGood = document.getElementById(cid + '-offer-good')?.value.trim();
@@ -566,9 +202,10 @@ export async function dipSendInThread(cid, destId) {
   if (res.ok) {
     showStatus('✓ Dispatched · arrives ' + fmtArrival(data.arrives_at) + passageNote(data), true);
     if (textEl) textEl.value = '';
+    drafts.delete(sentDraftKey);
     fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/messengers').then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; }));
     // Reload threads after a short delay so sent message appears
-    setTimeout(() => loadDipThreads(), 1200);
+    setTimeout(() => refreshDiplomacyLetters(), 1200);
   } else {
     showStatus(formatApiError(data, 'send failed'), false);
   }
@@ -580,7 +217,7 @@ export async function dipCancel(id, btn) {
     method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}',
   });
   if (res.ok) {
-    await loadDipThreads();
+    rememberDraft(); await loadDipThreads();
   } else {
     const data = await res.json().catch(() => ({}));
     btn.disabled = false;
@@ -604,6 +241,7 @@ export async function dipAccept(id, btn) {
     const direction = data.kind === 'sell' ? 'incoming' : 'outgoing';
     const payment = data.kind === 'sell' ? 'silver sent' : 'silver incoming';
     block.innerHTML = '<span style="color:var(--safe-text)">✓ Accepted — ' + data.quantity + ' ' + esc(data.good_key || '') + ' ' + direction + ' · goods arrive ' + goodsETA + ' · ' + data.silver_paid + ' ' + payment + ' · arrives ' + silverETA + shipBit + '</span>';
+    if (lettersRoot()) { rememberDraft(); await loadDipThreads(); }
   } else {
     btn.disabled = false;
     if (block) {
@@ -627,6 +265,7 @@ export async function dipDecline(id, btn) {
 }
 
 export async function dipReply(id) {
+  const sentDraftKey = draftKey();
   const input = document.getElementById('dip-reply-' + id);
   const text = input ? input.value.trim() : '';
   if (!text) return;
@@ -636,6 +275,8 @@ export async function dipReply(id) {
   const data = await res.json().catch(() => ({}));
   const row = document.getElementById('dip-reply-row-' + id);
   if (res.ok && row) {
+    if (input) input.value = '';
+    drafts.delete(sentDraftKey);
     row.outerHTML = '<div style="font-size:.72rem;color:var(--safe-text);margin-top:.2rem">✓ Reply dispatched · returns ' + arrivalHTML(data.returns_at) + passageNote(data) + '</div>';
   } else if (row) {
     showInlineResult(row, formatApiError(data, 'Reply failed'), true);

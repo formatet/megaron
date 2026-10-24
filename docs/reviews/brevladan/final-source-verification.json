@@ -1,0 +1,19 @@
+{
+  "code_commit": "09fb66dd",
+  "runtime_builds": {
+    "run1": {
+      "commit": "c5e08ef+brevladan",
+      "migration": 210,
+      "status": "ok"
+    },
+    "run2": {
+      "commit": "c5e08ef+brevladan",
+      "migration": 210,
+      "status": "ok"
+    }
+  },
+  "files": 296,
+  "run1_equals_run2": true,
+  "both_equal_current_committed_runtime": true,
+  "method": "SHA256 manifests captured before each build, asserted equal after each native run, then compared with committed runtime sources at09fb66dd. Runtime build labels truthfully retain c5e08ef+brevladan."
+}

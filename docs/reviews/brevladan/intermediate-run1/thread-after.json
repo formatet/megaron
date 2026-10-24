@@ -1,0 +1,52 @@
+{
+  "counterpart_id": "0f3227cd-214b-4643-8762-a616a48ed574",
+  "counterpart_name": "Myrine",
+  "items": [
+    {
+      "id": "cfdbcecd-71b7-47f1-9f3c-b3120c077b84",
+      "sender_id": "0f3227cd-214b-4643-8762-a616a48ed574",
+      "sender_name": "Myrine",
+      "direction": "incoming",
+      "message": "The winter crossing is clear.\nWill you join us at the harbour?",
+      "reply_text": "We shall meet you at the harbour.",
+      "sent_at": "2026-10-24T12:13:54.461048+02:00",
+      "status": "returning",
+      "actions": [
+        "read"
+      ],
+      "reply_before": "2026-10-24T14:13:54.448747+02:00",
+      "reply_window_closed": false,
+      "kind": "letter"
+    },
+    {
+      "id": "6dd037e0-eee3-4596-b573-2864c8cc8bf6",
+      "sender_id": "0f3227cd-214b-4643-8762-a616a48ed574",
+      "sender_name": "Myrine",
+      "direction": "incoming",
+      "message": "Two copper for five silver.",
+      "sent_at": "2026-10-24T12:13:54.472891+02:00",
+      "status": "returning",
+      "trade_offer": {
+        "kind": "sell",
+        "status": "accepted",
+        "offer_qty": 2,
+        "ship_name": "",
+        "offer_good": "copper",
+        "want_silver": 5,
+        "goods_arrives_at": "2026-10-24T21:14:07.684447+00:00",
+        "silver_arrives_at": "2026-10-25T08:14:07.684447+00:00",
+        "goods_arrival_tick": 111,
+        "silver_arrival_tick": 122
+      },
+      "offer_state": "accepted",
+      "actions": [],
+      "expires_at": "2026-10-31T15:13:54.471245+01:00",
+      "affordable": true,
+      "read_at": "2026-10-24T12:14:05.058803+02:00",
+      "reply_window_closed": false,
+      "kind": "letter"
+    }
+  ],
+  "reply_before": null,
+  "state": "done"
+}

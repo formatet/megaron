@@ -369,6 +369,14 @@ func TestGiftHistoryPrivateUntilArrival(t *testing.T) {
 			t.Fatalf("outcome not visible once: %v", rows)
 		}
 	}
+	incoming := history(recipientToken)[0]["body"].(map[string]any)
+	if incoming["origin_name"] != nil || incoming["origin_id"] != nil {
+		t.Fatalf("gift reveals sender city: %v", incoming)
+	}
+	outgoing := history(f.token)[0]["body"].(map[string]any)
+	if outgoing["origin_name"] == nil || outgoing["origin_id"] == nil {
+		t.Fatalf("sender lost own origin: %v", outgoing)
+	}
 	if len(history(stranger)) != 0 {
 		t.Fatal("outsider can read gift history")
 	}

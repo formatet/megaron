@@ -9,26 +9,12 @@ import (
 )
 
 func inboxCmd() *cobra.Command {
-	var history, queue bool
-	var limit int
-	var cursor string
+	var history bool
 	cmd := &cobra.Command{
 		Use:   "inbox",
 		Short: "Show messenger inbox",
 		Args:  noPositionalArgs(), // no flags at all — nothing to guess
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			if queue {
-				if history {
-					return fmt.Errorf("--queue and --history cannot be combined")
-				}
-				if limit < 1 || limit > 100 {
-					return fmt.Errorf("--limit must be between 1 and 100")
-				}
-				return showCorrespondenceQueue(limit, cursor)
-			}
-			if cmd.Flags().Changed("limit") || cmd.Flags().Changed("cursor") {
-				return fmt.Errorf("--limit and --cursor require --queue")
-			}
 			c := newClient(cfg)
 			path := fmt.Sprintf("/api/v1/worlds/%s/messengers/inbox", cfg.WorldID)
 			if history {
@@ -134,8 +120,5 @@ func inboxCmd() *cobra.Command {
 		},
 	}
 	cmd.Flags().BoolVar(&history, "history", false, "include previously received correspondence")
-	cmd.Flags().BoolVar(&queue, "queue", false, "show received correspondence, including missed offers, without marking letters read")
-	cmd.Flags().IntVar(&limit, "limit", 30, "correspondence page size (1–100; requires --queue)")
-	cmd.Flags().StringVar(&cursor, "cursor", "", "next correspondence page cursor (requires --queue)")
 	return cmd
 }

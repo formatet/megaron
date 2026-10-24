@@ -1,0 +1,18 @@
+Incoming correspondence, newest first. Groups apply to this page; older unanswered letters may be on the next page.
+
+Waiting on you
+From: Pylos → Nostos · Awaiting your reply
+  Our envoys have returned safely.
+  Return post before today 14:10
+  reply: keryx reply --id 27b0c7ed-01f9-4bfc-bbde-d416a39f29b4 --text "..."
+From: Kyme → Nostos · Awaiting your answer
+  Two copper for five silver.
+  Buy 2 copper · pay 5 silver
+  Answer deadline: 31 Oct 18:10
+  decline: keryx trade-decline --id 2ee1322c-41c6-4f19-a122-ed939250580d
+  accept: keryx trade-accept --id 2ee1322c-41c6-4f19-a122-ed939250580d
+From: Kyme → Nostos · Awaiting your reply
+  The winter crossing is clear.
+Will you join us at the harbour?
+  Return post before today 14:10
+  reply: keryx reply --id 0bad56a4-3e1e-48a0-a121-1ea799a8838a --text "..."
