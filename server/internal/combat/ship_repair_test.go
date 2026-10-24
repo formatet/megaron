@@ -27,8 +27,8 @@ func TestRepairCost(t *testing.T) {
 		// (1,6 → 2,0 with §10, megaron_plan_byggkostnader).
 		// A full 5-point repair costs 5×8% = 40% of that.
 		{"war_galley, full repair", "war_galley", hullMax, "cedar", 100.0 * repairCostFractionPerHullPoint * float64(hullMax)},
-		// merchantman: Costs{timber:1.6} per crew, CrewFor=10 → 16 timmer full build.
-		{"merchantman, three hull points", "merchantman", 3, "cedar", 16.0 * repairCostFractionPerHullPoint * 3},
+		// merchantman: Costs{cedar:9.0} per crew, CrewFor=10 → 90 ceder full build (Timothy 2026-10-24).
+		{"merchantman, three hull points", "merchantman", 3, "cedar", 90.0 * repairCostFractionPerHullPoint * 3},
 		{"zero hull points costs nothing", "galley", 0, "timber", 0},
 		{"unknown unit type", "spearman", 2, "", 0},
 	}

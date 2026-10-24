@@ -187,7 +187,7 @@ func TestCanRecruit_NavalCrewAffordability(t *testing.T) {
 		foundry        bool
 	}{
 		{"galley", "timber", 30, 0, false},
-		{"merchantman", "cedar", 16, 0, false},
+		{"merchantman", "cedar", 90, 0, false},
 		{"war_galley", "cedar", 100, 30, true},
 	} {
 		t.Run(ship.typ, func(t *testing.T) {

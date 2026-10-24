@@ -68,7 +68,7 @@ try:
     page.locator('#drawer-war [data-tab="recruit"]').click()
     page.wait_for_timeout(400)
     text=page.locator('#drawer-war').inner_text();(out/(label+'-recruit.txt')).write_text(text)
-    assert '1.6 cedar/man' in text and '1.5 timber/man' in text,text
+    assert '9.0 cedar/man' in text and '1.5 timber/man' in text,text
     page.screenshot(path=str(out/(label+'.png')))
     # Real browser action: train a cohort against zero silver.
     with page.expect_response(lambda response: response.request.method=='POST' and response.url.endswith('/recruit')) as submitted:

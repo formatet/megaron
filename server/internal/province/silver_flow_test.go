@@ -13,7 +13,7 @@ func TestSilverFlowRecruitCosts(t *testing.T) {
 	}{
 		{"spearman", map[string]float64{"grain": 12}},
 		{"galley", map[string]float64{"timber": 30}},
-		{"merchantman", map[string]float64{"cedar": 16}},
+		{"merchantman", map[string]float64{"cedar": 90}},
 	} {
 		t.Run(tc.kind, func(t *testing.T) {
 			n := 100

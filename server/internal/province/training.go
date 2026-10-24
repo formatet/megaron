@@ -109,5 +109,5 @@ var UnitSpecs = map[string]UnitSpec{
 	"galley":         {Costs: map[string]float64{"timber": 1.5}, PopCost: 10, DurationTicks: 3, RequiresShipyard: true},
 	"elite_infantry": {Costs: map[string]float64{"grain": 0.24, "bronze": 0.16, "silver": 0.4}, PopCost: 10, DurationTicks: 4, RequiresBarracks: true, RequiresFoundry: true},
 	"war_galley":     {Costs: map[string]float64{"cedar": 2.0, "silver": 0.6}, PopCost: 12, DurationTicks: 5, RequiresShipyard: true, RequiresFoundry: true},
-	"merchantman":    {Costs: map[string]float64{"cedar": 1.6}, PopCost: 8, DurationTicks: 4, RequiresShipyard: true},
+	"merchantman":    {Costs: map[string]float64{"cedar": 9.0}, PopCost: 8, DurationTicks: 4, RequiresShipyard: true},
 }

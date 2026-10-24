@@ -8,8 +8,8 @@ OUT.mkdir(parents=True,exist_ok=True)
 cases=[
  ('spearman_recruit','server/internal/province/training.go','"grain": 0.12}', '"grain": 0.12, "silver": 0.2}', './internal/province','TestSilverFlowRecruitCosts/spearman',False),
  ('galley_recruit','server/internal/province/training.go','"timber": 1.5}', '"timber": 1.5, "silver": 0.3}', './internal/province','TestSilverFlowRecruitCosts/galley',False),
- ('emporos_silver','server/internal/province/training.go','"cedar": 1.6}', '"cedar": 1.6, "silver": 0.2}', './internal/province','TestSilverFlowRecruitCosts/merchantman',False),
- ('emporos_wood','server/internal/province/training.go','"cedar": 1.6}', '"timber": 1.6}', './internal/province','TestSilverFlowRecruitCosts/merchantman',False),
+ ('emporos_silver','server/internal/province/training.go','"cedar": 9.0}', '"cedar": 9.0, "silver": 0.2}', './internal/province','TestSilverFlowRecruitCosts/merchantman',False),
+ ('emporos_wood','server/internal/province/training.go','"cedar": 9.0}', '"timber": 9.0}', './internal/province','TestSilverFlowRecruitCosts/merchantman',False),
  ('galley_pay','server/internal/economy/ship_ration.go','"galley": 0,','"galley": 1,','./internal/economy','TestSoldierWagesUseActualMenAndHomeHalf',False),
  ('emporos_pay','server/internal/economy/ship_ration.go','"merchantman": 0,','"merchantman": 1,','./internal/economy','TestSoldierWagesUseActualMenAndHomeHalf',False),
  ('chariot_pay','server/internal/economy/ship_ration.go','"war_chariot": 4,','"war_chariot": 2,','./internal/economy','TestSoldierWagesUseActualMenAndHomeHalf',False),

@@ -6,7 +6,7 @@ Every ship needs a **Harbour** and a **Shipyard** ([[buildings]]). There are thr
 
 - **Galley** — 30 timber, no silver to build or maintain. Transport and sight at sea. Can carry goods.
 - **War Galley** — the warship. Needs cedar and a Foundry. Never carries cargo.
-- **Emporos** — a trade hull built with 16 cedar, no timber or silver. It draws no silver pay. It does not fight, but carries more than a Galley.
+- **Emporos** — a trade hull built with 90 cedar, no timber or silver. It draws no silver pay. It does not fight, but carries more than a Galley.
 
 A [[transfers|transfer]] or [[routes|standing order]] that goes by sea needs a free Galley or Emporos waiting in the sending port — the War Galley is never chosen. No free hull there, and the shipment goes by land instead if a road exists, or is refused.
 
