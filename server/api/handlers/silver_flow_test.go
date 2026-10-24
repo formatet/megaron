@@ -30,7 +30,7 @@ func TestSilverFlowRecruitHTTP(t *testing.T) {
 				if after := snapshotRecruitState(t, f); !reflect.DeepEqual(before, after) {
 					t.Fatal("rejection changed state")
 				}
-				if _, err := f.pool.Exec(ctx, `INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,'cedar',16,0,1000,0)`, f.settlementID); err != nil {
+				if _, err := f.pool.Exec(ctx, `INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,'cedar',90,0,1000,0)`, f.settlementID); err != nil {
 					t.Fatal(err)
 				}
 			}
