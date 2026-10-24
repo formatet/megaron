@@ -109,7 +109,6 @@ func goodsCmd() *cobra.Command {
 				fmt.Printf("%-10s  %9s  %8.1f  %6s  %10s  %8s\n",
 					key, stockStr, rateT, lvlStr, workersStr, yieldStr)
 			}
-			fmt.Println("\nWanaxes agree trade prices. The temple shows how the gods weigh offerings: keryx rite --list.")
 			if sawUnserved {
 				fmt.Println("\n! = citizens allocated beyond what the workplace can employ. They produce")
 				fmt.Println("    nothing. Raise the building's level (build it again) or move the labor.")

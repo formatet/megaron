@@ -226,7 +226,7 @@ async function loadEconomyGoods(mySettlements) {
         ).join('')}</table>`;
       }
     }
-    el.innerHTML = overviewHtml + '<p class="dim">Wanaxes agree trade prices. Kult shows how the gods weigh offerings.</p>' + (html || '<p class="empty-state" style="padding:1rem">No goods data.</p>') + await renderLockedActions('trade');
+    el.innerHTML = overviewHtml + (html || '<p class="empty-state" style="padding:1rem">No goods data.</p>') + await renderLockedActions('trade');
   } catch (_) {
     el.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load goods.</p>';
   }
