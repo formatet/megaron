@@ -18,6 +18,7 @@ function route(placeName, oq, or, dq, dr) {
 }
 
 function cargo(t) {
+  if (t.items?.length) return t.items.map(item => `${item.quantity} ${item.good_key}`).join(', ');
   return t.good_key ? `${Math.floor(t.quantity || 0)} ${t.good_key}` : '';
 }
 

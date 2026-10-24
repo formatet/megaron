@@ -86,7 +86,7 @@ func (h *ProvinceHandler) GiftHistory(w http.ResponseWriter, r *http.Request) {
 		writeError(w, 401, "not authenticated")
 		return
 	}
-	rows, err := h.pool.Query(r.Context(), `SELECT event_type,payload,created_at FROM (SELECT DISTINCT ON(payload->>'transport_id') event_type,payload,created_at,id FROM events WHERE world_id=$1 AND ((event_type='GiftDispatched' AND payload->>'sender_id'=$2) OR (event_type IN('GiftDelivered','GiftLost') AND (payload->>'sender_id'=$2 OR payload->>'recipient_id'=$2 OR payload->>'actual_recipient_id'=$2))) ORDER BY payload->>'transport_id',id DESC) gifts ORDER BY id DESC LIMIT 200`, worldID, player.String())
+	rows, err := h.pool.Query(r.Context(), `SELECT event_type,payload,created_at FROM (SELECT DISTINCT ON(payload->>'transport_id') event_type,payload,created_at,id FROM events WHERE world_id=$1 AND ((event_type IN('GiftDispatched','GiftDispatchedV2') AND payload->>'sender_id'=$2) OR (event_type IN('GiftDelivered','GiftLost','GiftDeliveredV2','GiftLostV2') AND (payload->>'sender_id'=$2 OR payload->>'recipient_id'=$2 OR payload->>'actual_recipient_id'=$2))) ORDER BY payload->>'transport_id',id DESC) gifts ORDER BY id DESC LIMIT 200`, worldID, player.String())
 	if err != nil {
 		writeError(w, 500, "could not load gifts")
 		return

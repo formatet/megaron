@@ -70,12 +70,13 @@ const (
 	// also across the sea. A ScheduledMessengerReturn already queued by an
 	// ArrivalHandler that ran before this type shipped keeps that old meaning
 	// (3b-2 R4) — it is never reinterpreted.
-	ScheduledMessengerStayEnd ScheduledEventType = "MessengerStayEnd"
-	ScheduledKharisTick       ScheduledEventType = "KharisTick"
-	ScheduledTradeDelivery    ScheduledEventType = "TradeDelivery"
-	ScheduledGiftDelivery     ScheduledEventType = "GiftDelivery"
-	ScheduledTradeReturn      ScheduledEventType = "TradeReturn"
-	ScheduledLogisticsArrival ScheduledEventType = "LogisticsArrival"
+	ScheduledMessengerStayEnd   ScheduledEventType = "MessengerStayEnd"
+	ScheduledKharisTick         ScheduledEventType = "KharisTick"
+	ScheduledTradeDelivery      ScheduledEventType = "TradeDelivery"
+	ScheduledGiftDelivery       ScheduledEventType = "GiftDelivery"
+	ScheduledShipmentDeliveryV2 ScheduledEventType = "ShipmentDeliveryV2"
+	ScheduledTradeReturn        ScheduledEventType = "TradeReturn"
+	ScheduledLogisticsArrival   ScheduledEventType = "LogisticsArrival"
 	// Physical goods transport (movement-motor transport layer) — a caravan/ship
 	// carrying a goods manifest arrives at its destination. Supersedes the abstract
 	// LogisticsArrival for movers that have a map position (see internal/transport).

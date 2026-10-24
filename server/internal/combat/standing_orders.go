@@ -415,7 +415,7 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 	// below is deterministic and keeps whatever priority the outbound-goods
 	// list already had — R4: "prioritet: behåll ordningen koden redan har."
 	manifest := transport.Manifest{}
-	usedWeight := 0.0
+	usedCargo := 0.0
 	capped := category == "naval" && shipID != nil
 	for _, n := range needs {
 		want, needed := shortfall[n.good]
@@ -433,17 +433,8 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 		}
 		send := math.Min(want, spendable)
 		if capped {
-			weight, _, werr := economy.IsShippableGood(ctx, tx, n.good)
-			if werr == nil && weight > 0 {
-				remainingCap := shipCapacity - usedWeight
-				if remainingCap <= 0 {
-					continue
-				}
-				if maxQty := remainingCap / weight; send > maxQty {
-					send = maxQty
-				}
-				usedWeight += send * weight
-			}
+			send = math.Min(send, math.Max(0, shipCapacity-usedCargo))
+			usedCargo += send
 		}
 		if send > 0 {
 			manifest[n.good] = send
@@ -652,9 +643,9 @@ func (h *StandingOrderTickHandler) dispatchReturn(ctx context.Context, tx pgx.Tx
 		}
 
 		// A sea route's return leg rides the same hull as the outbound leg,
-		// so it obeys the same weight cap (outbound: dispatch above). Goods
+		// so it obeys the same cargo cap (outbound: dispatch above). Goods
 		// are filled in good_key order so the cap is deterministic.
-		capped, shipCapacity, usedWeight := false, 0.0, 0.0
+		capped, shipCapacity, usedCargo := false, 0.0, 0.0
 		if o.shipUnitID != nil {
 			var shipType string
 			if err := tx.QueryRow(ctx, `SELECT type FROM units WHERE id = $1`, *o.shipUnitID).Scan(&shipType); err == nil {
@@ -668,11 +659,8 @@ func (h *StandingOrderTickHandler) dispatchReturn(ctx context.Context, tx pgx.Tx
 			}
 			send := stock - f.min
 			if capped && send > 0 {
-				weight, _, werr := economy.IsShippableGood(ctx, tx, f.good)
-				if werr == nil && weight > 0 {
-					send = math.Min(send, math.Max(0, shipCapacity-usedWeight)/weight)
-					usedWeight += send * weight
-				}
+				send = math.Min(send, math.Max(0, shipCapacity-usedCargo))
+				usedCargo += send
 			}
 			if send > 0 {
 				returnManifest[f.good] = send

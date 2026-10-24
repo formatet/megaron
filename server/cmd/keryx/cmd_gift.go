@@ -90,3 +90,57 @@ func giftWanax(name string) string {
 	}
 	return name
 }
+
+func printManifestOutcome(n notificationItem) {
+	var b struct {
+		Sender    string `json:"sender_name"`
+		Recipient string `json:"recipient_name"`
+		Actual    string `json:"actual_recipient_name"`
+		Changed   bool   `json:"owner_changed"`
+		Reason    string `json:"reason"`
+		Items     []struct {
+			Good     string  `json:"good_key"`
+			Quantity float64 `json:"quantity"`
+			Credited float64 `json:"credited_quantity"`
+			Lost     float64 `json:"lost_quantity"`
+			Returned float64 `json:"returned_quantity"`
+		} `json:"items"`
+	}
+	if json.Unmarshal(n.Body, &b) != nil {
+		return
+	}
+	label := "Transfer delivered"
+	if strings.HasPrefix(n.Kind, "Gift") {
+		label = "Gift delivered"
+	}
+	if strings.Contains(n.Kind, "Lost") {
+		label = strings.Replace(label, "delivered", "lost", 1)
+	}
+	if n.Kind == "GiftDispatchedV2" {
+		label = "Gift sent"
+	}
+	fmt.Printf("      %s: ", label)
+	if strings.HasPrefix(n.Kind, "Gift") {
+		fmt.Printf("%s → %s · ", giftWanax(b.Sender), giftWanax(b.Recipient))
+	}
+	for i, item := range b.Items {
+		if i > 0 {
+			fmt.Print(", ")
+		}
+		if n.Kind == "GiftDispatchedV2" {
+			fmt.Printf("%g %s", item.Quantity, item.Good)
+		} else {
+			fmt.Printf("%g %s received; %g lost", item.Credited, item.Good, item.Lost)
+			if item.Returned > 0 {
+				fmt.Printf("; %g sent home aboard the damaged ship (return can still be intercepted)", item.Returned)
+			}
+		}
+	}
+	if b.Reason != "" {
+		fmt.Printf(" · %s", strings.ReplaceAll(b.Reason, "_", " "))
+	}
+	if b.Changed {
+		fmt.Printf(" · now held by %s, intended for %s", giftWanax(b.Actual), giftWanax(b.Recipient))
+	}
+	fmt.Println()
+}

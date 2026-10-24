@@ -3000,7 +3000,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT sg.good_key, settled(sg.amount, sg.rate, sg.calc_tick), sg.rate, sg.cap,
-		        g.labor_value, g.name, g.tier, g.category
+		        g.labor_value, g.name, g.tier, g.category, g.weight > 0
 		 FROM settlement_goods sg
 		 JOIN goods g ON g.key = sg.good_key
 		 WHERE sg.settlement_id = $1
@@ -3060,6 +3060,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type goodRow struct {
+		Shippable     bool     `json:"shippable"`
 		Key           string   `json:"key"`
 		Name          string   `json:"name"`
 		Tier          string   `json:"tier"`
@@ -3092,7 +3093,8 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		var key, name, tier, category string
 		var current, rate, capV float64
 		var laborValue *float64
-		if err := rows.Scan(&key, &current, &rate, &capV, &laborValue, &name, &tier, &category); err != nil {
+		var shippable bool
+		if err := rows.Scan(&key, &current, &rate, &capV, &laborValue, &name, &tier, &category, &shippable); err != nil {
 			continue
 		}
 		if current < 0 {
@@ -3113,6 +3115,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		}
 		result = append(result, goodRow{
 			Key:           key,
+			Shippable:     shippable,
 			Name:          name,
 			Tier:          tier,
 			Category:      category,
@@ -3323,22 +3326,32 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req struct {
-		DestinationID uuid.UUID `json:"destination_id"`
-		GoodKey       string    `json:"good_key"`
-		Quantity      float64   `json:"quantity"`
+		DestinationID uuid.UUID           `json:"destination_id"`
+		GoodKey       string              `json:"good_key"`
+		Quantity      float64             `json:"quantity"`
+		Items         []economy.CargoItem `json:"items"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
 		return
 	}
-	if req.Quantity <= 0 {
-		writeError(w, http.StatusBadRequest, "quantity must be positive")
+	listRequest := req.Items != nil
+	if listRequest && (req.GoodKey != "" || req.Quantity != 0) {
+		writeError(w, 400, "use items or good_key/quantity, not both")
 		return
 	}
-	if req.GoodKey == "" {
-		writeError(w, http.StatusBadRequest, "good_key required")
+	if !listRequest {
+		req.Items = []economy.CargoItem{{GoodKey: req.GoodKey, Quantity: req.Quantity}}
+	}
+	items, total, err := economy.NormalizeCargo(req.Items)
+	if err != nil {
+		writeError(w, 400, err.Error())
 		return
 	}
+	req.Items = items
+	// The route row keeps the first item for legacy readers; the complete
+	// authoritative manifest lives in transport_goods and the V2 timer.
+	req.GoodKey, req.Quantity = items[0].GoodKey, items[0].Quantity
 
 	// Find origin settlement and verify ownership.
 	var originID uuid.UUID
@@ -3383,15 +3396,16 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	weight, shippable, err := economy.IsShippableGood(r.Context(), h.pool, req.GoodKey)
-	if err != nil {
-		writeError(w, http.StatusBadRequest, "unknown good")
-		return
-	}
-	if !shippable {
-		writeError(w, http.StatusBadRequest,
-			"cannot transfer cult — cult is produced by temple labor and converted to kharis in place, it cannot be shipped")
-		return
+	for _, item := range items {
+		_, shippable, err := economy.IsShippableGood(r.Context(), h.pool, item.GoodKey)
+		if err != nil {
+			writeError(w, 400, "unknown good")
+			return
+		}
+		if !shippable {
+			writeError(w, 400, "cannot transfer cult — cult is produced by temple labor and converted to kharis in place, it cannot be shipped")
+			return
+		}
 	}
 
 	// A navigable coastal route still needs a real ship; otherwise use a real land path.
@@ -3440,7 +3454,8 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	// held through to commit) so two concurrent transfers can never bind the
 	// same ship.
 	var shipID *uuid.UUID
-	var shipName string
+	var shipName, shipType string
+	var cargoCapacity *float64
 	if category == "naval" {
 		ship, found, ferr := transport.FindFreeShip(r.Context(), tx, worldID, playerID, originID)
 		if ferr != nil {
@@ -3448,16 +3463,19 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if found {
-			if totalWeight := weight * req.Quantity; totalWeight > ship.Capacity {
+			if total > ship.Capacity {
 				writeError(w, http.StatusUnprocessableEntity, fmt.Sprintf(
-					"%s's cargo capacity is %.0f, this shipment weighs %.0f — split it into smaller loads",
-					unit.DisplayName(ship.Type), ship.Capacity, totalWeight))
+					"%s cargo %g / %g capacity — remove %g goods",
+					unit.DisplayName(ship.Type), total, ship.Capacity, total-ship.Capacity))
 				return
 			}
 			if err := transport.BindShip(r.Context(), tx, ship.ID); err != nil {
 				writeError(w, http.StatusInternalServerError, "could not bind ship")
 				return
 			}
+			shipType = ship.Type
+			capacity := ship.Capacity
+			cargoCapacity = &capacity
 			sid := ship.ID
 			shipID = &sid
 			shipOwnName := ""
@@ -3502,14 +3520,18 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	arrivesAt := h.clk.Now().Add(tick.RealUntil(tradeTravelTicks, 0))
 
 	// Deduct from origin — silver is now a normal good in settlement_goods.
-	deductTag, err := province.DeductGood(r.Context(), tx, originID, req.GoodKey, req.Quantity)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not deduct goods")
-		return
-	}
-	if deductTag.RowsAffected() == 0 {
-		writeError(w, http.StatusUnprocessableEntity, "insufficient goods")
-		return
+	manifest := transport.Manifest{}
+	for _, item := range items {
+		deductTag, err := province.DeductGood(r.Context(), tx, originID, item.GoodKey, item.Quantity)
+		if err != nil {
+			writeError(w, 500, "could not deduct goods")
+			return
+		}
+		if deductTag.RowsAffected() == 0 {
+			writeError(w, 422, "insufficient goods: "+item.GoodKey)
+			return
+		}
+		manifest[item.GoodKey] = item.Quantity
 	}
 
 	var routeID uuid.UUID
@@ -3547,7 +3569,7 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		ArrivesAt:    arrivesAt,
 		DueTick:      tradeCurrentTick + tradeTravelTicks,
 		DepartedTick: tradeCurrentTick, Journey: &journey,
-		Manifest:      transport.Manifest{req.GoodKey: req.Quantity},
+		Manifest:      manifest,
 		Interceptable: true,
 		ShipUnitID:    shipID,
 	})
@@ -3556,8 +3578,31 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if _, err := tx.Exec(r.Context(), `UPDATE trade_routes SET transport_id=$2 WHERE id=$1`, routeID, transportID); err != nil {
+		writeError(w, 500, "could not link shipment manifest")
+		return
+	}
+
 	var dispatchedGift *events.Event
-	if isGift {
+	if listRequest {
+		var senderName string
+		if err := tx.QueryRow(r.Context(), `SELECT COALESCE(NULLIF(wanax_name,''),username) FROM players WHERE id=$1`, playerID).Scan(&senderName); err != nil {
+			writeError(w, 500, "could not read sender")
+			return
+		}
+		shipment := economy.ShipmentV2{TransportID: transportID, RouteID: routeID, SenderID: playerID, RecipientID: *destOwnerID, OriginID: originID, DestinationID: req.DestinationID, OriginName: originName, DestinationName: destName, SenderName: senderName, RecipientName: destOwnerName, Items: items, Kind: transportKind}
+		if err := h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledShipmentDeliveryV2, shipment, tradeCurrentTick+tradeTravelTicks); err != nil {
+			writeError(w, 500, "could not schedule shipment")
+			return
+		}
+		if isGift {
+			dispatchedGift, err = h.eventStore.AppendTx(r.Context(), tx, originID, events.StreamProvince, "GiftDispatchedV2", shipment, worldID, nil)
+			if err != nil {
+				writeError(w, 500, "could not record gift dispatch")
+				return
+			}
+		}
+	} else if isGift {
 		var senderName string
 		if err := tx.QueryRow(r.Context(), `SELECT COALESCE(NULLIF(wanax_name,''),username) FROM players WHERE id=$1`, playerID).Scan(&senderName); err != nil {
 			writeError(w, 500, "could not read sender")
@@ -3616,7 +3661,15 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		delete(resp, "delivered_qty")
 		resp["sent_qty"] = req.Quantity
 	}
+	resp["items"] = items
+	resp["cargo_quantity"] = total
+	resp["cargo_capacity"] = cargoCapacity
+	if listRequest {
+		delete(resp, "delivered_qty")
+		delete(resp, "sent_qty")
+	}
 	if shipID != nil {
+		resp["ship_type"] = shipType
 		resp["ship_id"] = *shipID
 		resp["ship_name"] = shipName
 	}
@@ -3746,14 +3799,15 @@ func (h *ProvinceHandler) TradeRoutes(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type routeItem struct {
-		ID           uuid.UUID `json:"id"`
-		PeerName     string    `json:"peer_name"` // destination for outgoing, origin for incoming
-		GoodKey      string    `json:"good_key"`
-		Quantity     float64   `json:"quantity"`
-		DeliveredQty float64   `json:"delivered_qty"`
-		Direction    string    `json:"direction"` // "outgoing" | "incoming"
-		DepartsAt    time.Time `json:"departs_at"`
-		ArrivesAt    time.Time `json:"arrives_at"`
+		Items        []economy.CargoItem `json:"items"`
+		ID           uuid.UUID           `json:"id"`
+		PeerName     string              `json:"peer_name"` // destination for outgoing, origin for incoming
+		GoodKey      string              `json:"good_key"`
+		Quantity     float64             `json:"quantity"`
+		DeliveredQty float64             `json:"delivered_qty"`
+		Direction    string              `json:"direction"` // "outgoing" | "incoming"
+		DepartsAt    time.Time           `json:"departs_at"`
+		ArrivesAt    time.Time           `json:"arrives_at"`
 	}
 	var result []routeItem
 	for rows.Next() {
@@ -3805,6 +3859,18 @@ func (h *ProvinceHandler) TradeRoutes(w http.ResponseWriter, r *http.Request) {
 
 	if result == nil {
 		result = []routeItem{}
+	}
+	for i := range result {
+		var raw []byte
+		err := h.pool.QueryRow(r.Context(), `SELECT COALESCE((SELECT jsonb_agg(jsonb_build_object('good_key',tg.good_key,'quantity',tg.quantity) ORDER BY tg.good_key) FROM transport_goods tg WHERE tg.transport_id=tr.transport_id),jsonb_build_array(jsonb_build_object('good_key',tr.good_key,'quantity',tr.quantity))) FROM trade_routes tr WHERE tr.id=$1`, result[i].ID).Scan(&raw)
+		if err != nil {
+			writeError(w, 500, "could not load shipment manifest")
+			return
+		}
+		if err := json.Unmarshal(raw, &result[i].Items); err != nil {
+			writeError(w, 500, "could not decode shipment manifest")
+			return
+		}
 	}
 	writeJSON(w, http.StatusOK, result)
 }

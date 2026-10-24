@@ -412,3 +412,30 @@ func TestMapTrades_PartiesSeeCityNames(t *testing.T) {
 		}
 	}
 }
+
+func TestMapTrades_CompleteManifestPrivateToParties(t *testing.T) {
+	f := setupMapTradesMineFixture(t)
+	own := findByGood(t, f.get(t, f.tokenA), "grain")
+	items, ok := own["items"].([]any)
+	if !ok || len(items) != 2 {
+		t.Fatalf("own complete manifest=%v want two goods", own["items"])
+	}
+	quantities := map[string]float64{}
+	for _, raw := range items {
+		it := raw.(map[string]any)
+		quantities[it["good_key"].(string)] = it["quantity"].(float64)
+	}
+	if quantities["grain"] != 250 || quantities["silver"] != 10 {
+		t.Fatalf("manifest=%v", quantities)
+	}
+	id := f.strangerCaravan(t, 12, 1, time.Now().Add(-time.Hour), time.Now().Add(time.Minute))
+	for _, token := range []string{f.tokenA, ""} {
+		row := findByID(f.get(t, token), id)
+		if row == nil {
+			continue
+		}
+		if _, exists := row["items"]; exists {
+			t.Fatalf("third party cargo leaked: %v", row)
+		}
+	}
+}

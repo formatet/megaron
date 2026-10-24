@@ -20,7 +20,6 @@ import (
 
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
-	"formatet/megaron/server/internal/transport"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -185,17 +184,8 @@ func TestStandingOrder_OutboundGoesNavalWhenBothEndsCoastal(t *testing.T) {
 
 	provisions := VoyageProvisions(VoyageRation("merchantman", 1, "", 0, 10), travelTicks, events.MacroTickInterval)
 
-	// R1/R4: a merchantman's capacity (200 weight units) caps the manifest —
-	// grain weighs 2.0/unit (goods.weight), so at most 100 of the 200 needed
-	// can actually go this trip, not the full shortfall.
-	var grainWeight float64
-	if err := pool.QueryRow(context.Background(), `SELECT weight FROM goods WHERE key = 'grain'`).Scan(&grainWeight); err != nil {
-		t.Fatalf("look up grain weight: %v", err)
-	}
-	shippedQty := 200.0
-	if capped := 200.0 /* merchantman capacity */ / grainWeight; shippedQty > capped {
-		shippedQty = capped
-	}
+	// A merchantman carries 120 goods, irrespective of catalogue weights.
+	shippedQty := 120.0
 
 	want := 1000.0 - shippedQty - provisions
 	if got := settledAmount(t, pool, f.capitalID, "grain"); got != want {
@@ -417,7 +407,7 @@ func TestStandingOrder_PausesWithNoShipAndNoLandRoute(t *testing.T) {
 
 // The return leg of a sea route is carried by the same hull as the outbound
 // leg, so it obeys the same capacity: the destination's surplus above each
-// return good's floor is loaded only up to the ship's weight capacity, and the
+// return good's floor is loaded only up to the ship's cargo capacity, and the
 // rest stays where it is. Until 2026-10-03 the return leg loaded the whole
 // surplus — a merchantman could bring home any tonnage the outbound leg could
 // never have carried.
@@ -456,24 +446,42 @@ func TestStandingOrder_ReturnLegCappedAtShipCapacity(t *testing.T) {
 		t.Fatalf("latest transport kind = %q, want standing_order_return", kind)
 	}
 
-	var loadedWeight, loadedQty float64
-	if err := pool.QueryRow(ctx,
-		`SELECT COALESCE(SUM(tg.quantity * g.weight), 0), COALESCE(SUM(tg.quantity), 0)
-		 FROM transport_goods tg JOIN goods g ON g.key = tg.good_key WHERE tg.transport_id = $1`,
-		returnID,
-	).Scan(&loadedWeight, &loadedQty); err != nil {
-		t.Fatalf("read return manifest: %v", err)
+	var loadedQty float64
+	if err := pool.QueryRow(ctx, `SELECT COALESCE(SUM(quantity),0) FROM transport_goods WHERE transport_id=$1`, returnID).Scan(&loadedQty); err != nil {
+		t.Fatal(err)
 	}
-	if loadedQty <= 0 {
-		t.Fatalf("return leg carries nothing — the cap must load up to capacity, not refuse")
+	if loadedQty != 120 {
+		t.Errorf("return cargo = %v, want exactly 120 goods", loadedQty)
 	}
-	if loadedWeight > transport.ShipCapacityMerchantman+0.01 {
-		t.Errorf("return leg loads weight %v, over the merchantman's capacity %v", loadedWeight, transport.ShipCapacityMerchantman)
-	}
+
 	var townStone, townTimber float64
 	_ = pool.QueryRow(ctx, `SELECT amount FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'stone'`, f.townID).Scan(&townStone)
 	_ = pool.QueryRow(ctx, `SELECT amount FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'timber'`, f.townID).Scan(&townTimber)
 	if math.Abs((2*huge-townStone-townTimber)-loadedQty) > 0.01 {
 		t.Errorf("destination lost %v, return leg carries %v — only what is loaded may leave", 2*huge-townStone-townTimber, loadedQty)
+	}
+}
+
+func TestStandingOrder_OutboundCountsMixedGoodsTogether(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	f := newCoastalStandingOrderFixture(t, pool, "so-count-mixed")
+	seedGoods(t, pool, f.capitalID, f.tick, 1000, 0)
+	shipAt(t, pool, f.worldID, f.owner, f.capitalID, "merchantman")
+	if _, err := pool.Exec(ctx, `INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,'stone',1000,0,1000000,$2)`, f.capitalID, f.tick); err != nil {
+		t.Fatal(err)
+	}
+	order := newStandingOrder(t, pool, f.worldID, f.owner, f.capitalID, f.townID, f.capitalID)
+	addOutbound(t, pool, order, "grain", 70)
+	addOutbound(t, pool, order, "stone", 70)
+	runStandingOrderTick(t, pool, f)
+	transportID, _, _ := latestTransportForOrder(t, pool, order)
+	var total float64
+	var kinds int
+	if err := pool.QueryRow(ctx, `SELECT sum(quantity),count(*) FROM transport_goods WHERE transport_id=$1`, transportID).Scan(&total, &kinds); err != nil {
+		t.Fatal(err)
+	}
+	if total != 120 || kinds != 2 {
+		t.Errorf("mixed outbound cargo %v goods/%d kinds; want120/2", total, kinds)
 	}
 }

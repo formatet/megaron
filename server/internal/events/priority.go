@@ -76,13 +76,14 @@ var tickPriorities = map[ScheduledEventType]int{
 	ScheduledSentryReturn:     tickPriorityArrival,
 	// Same tier as the sentry patrol timer above — a self-terminating sea
 	// order's own timer firing and dispatching a home march.
-	ScheduledPickupTimeout:    tickPriorityArrival,
-	ScheduledOrderDelivery:    tickPriorityArrival,
-	ScheduledMessengerArrival: tickPriorityArrival,
-	ScheduledMessengerReturn:  tickPriorityArrival,
-	ScheduledMessengerStayEnd: tickPriorityArrival,
-	ScheduledTradeDelivery:    tickPriorityArrival,
-	ScheduledGiftDelivery:     tickPriorityArrival,
+	ScheduledPickupTimeout:      tickPriorityArrival,
+	ScheduledOrderDelivery:      tickPriorityArrival,
+	ScheduledMessengerArrival:   tickPriorityArrival,
+	ScheduledMessengerReturn:    tickPriorityArrival,
+	ScheduledMessengerStayEnd:   tickPriorityArrival,
+	ScheduledTradeDelivery:      tickPriorityArrival,
+	ScheduledGiftDelivery:       tickPriorityArrival,
+	ScheduledShipmentDeliveryV2: tickPriorityArrival,
 	// Written by SQL storage_capped (mig 191) with priority 50; keep the two equal.
 	ScheduledStorageOverflowDelivery: DefaultTickPriority,
 	ScheduledTradeReturn:             tickPriorityArrival,

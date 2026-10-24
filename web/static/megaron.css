@@ -2121,3 +2121,11 @@ h4.cx-h { font-size: var(--fs-base); }
 .letter-entry summary { cursor:pointer; font-size:.78rem; }
 .letter-entry p { font-size:.8rem; overflow-wrap:anywhere; }
 @media(max-width:480px) { .letter-person { grid-template-columns:1fr; } .letter-person-state { grid-column:1; } }
+
+/* One manifest, one physical shipment. */
+.transfer-good { display:flex; align-items:center; gap:.6rem; padding:.2rem 0; }
+.transfer-good select { flex:1; min-width:0; background:var(--warm-white); border:1px solid var(--border); font:inherit; padding:.2rem; }
+.transfer-good small { display:block; color:var(--text-dim); }
+.transfer-good input { width:4rem; min-width:0; background:var(--warm-white); border:1px solid var(--border); padding:.2rem .3rem; font:inherit; border-radius:0; }
+.transfer-capacity { padding:.45rem; border:1px solid var(--border); background:var(--warm-white); }
+.transfer-capacity.overloaded { color:var(--accent); border-color:var(--accent); }

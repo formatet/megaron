@@ -8,7 +8,7 @@ The **Galley** is the ordinary ship: built of timber, rowed by twenty, the hull 
 | **Build time** | 3 game days |
 | **Food** | 0.1 per game day in port, 0.2 at sea |
 | **Pay** | none |
-| **Cargo** | 60 weight — e.g. 30 grain, 40 fish or 20 timber ([[transfers]]) |
+| **Cargo** | 20 goods of any kind ([[transfers]]) |
 | **Troops** | one land unit at a time, any size |
 | **Speed** | ordinary |
 | **Hull** | 5; repaired with timber |
