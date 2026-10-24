@@ -216,7 +216,7 @@ export function initWS() {
       // a concluded battle and a delivered order were invisible in real time
       // until the next page load. The sound could not exist without the wire,
       // so the wire is part of the same slice.
-      if (msg.kind === 'BattleWon' || msg.kind === 'BattleLost') {
+      if (msg.kind === 'BattleBegun' || msg.kind === 'BattleWon' || msg.kind === 'BattleLost') {
         playBattleClash();
         // A battle changes who holds what and which units still exist.
         coalesce('units', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; })));

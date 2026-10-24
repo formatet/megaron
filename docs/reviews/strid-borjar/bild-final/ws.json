@@ -1,0 +1,18 @@
+[
+  {
+    "kind": "BattleBegun",
+    "world_id": "4b7216f4-1f93-420a-b10f-973e96b250cf",
+    "payload": {
+      "battle_id": "8eaaaa92-f239-4987-827f-4c1ec65ba6a0",
+      "joined": false,
+      "occurred_at": "2026-10-24T17:25:00.37583946Z",
+      "opponent_name": "Idomeneus",
+      "q": 0,
+      "r": 59,
+      "role": "defender"
+    },
+    "id": "36733897-c30d-4a3d-839f-fee5145aad29",
+    "world_tick": 100,
+    "level": 2
+  }
+]

@@ -1,0 +1,6 @@
+» färsk DB på migration 210 · commit a5daca39
+--- FAIL: TestBattleBegunRecipientsAndRetry (0.03s)
+    battle_begun_test.go:46: BattleBegun count=0, want one defender notice after retry
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.030s
+FAIL

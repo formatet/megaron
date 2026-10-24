@@ -11,6 +11,31 @@ import (
 // current producers and the Codex client's archive kinds are checked together.
 func printNotificationSummary(c *Client, n notificationItem) {
 	defer printLetterReplyHint(n)
+	if n.Kind == "BattleBegun" {
+		var b struct {
+			Opponent string `json:"opponent_name"`
+			Place    string `json:"place"`
+			Q        int    `json:"q"`
+			R        int    `json:"r"`
+			At       string `json:"occurred_at"`
+			Joined   bool   `json:"joined"`
+		}
+		if json.Unmarshal(n.Body, &b) != nil {
+			return
+		}
+		if b.Opponent == "" {
+			b.Opponent = "an enemy"
+		}
+		if b.Place == "" {
+			b.Place = fmt.Sprintf("(%d, %d)", b.Q, b.R)
+		}
+		action := "battle has begun"
+		if b.Joined {
+			action = "your forces joined the battle"
+		}
+		fmt.Printf("      %s — %s at %s · %s\n", b.Opponent, action, b.Place, b.At)
+		return
+	}
 	if n.Kind == "TempleDemolitionWrath" {
 		var b demolitionKharis
 		if json.Unmarshal(n.Body, &b) == nil {

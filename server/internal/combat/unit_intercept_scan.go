@@ -304,7 +304,8 @@ func (h *UnitInterceptScanHandler) intercept(
 	// initiateOrJoinBattle/startBattle/joinBattle (Dice: unit_arrival.go's
 	// genesis-silver path only; Dice: nil-safe, falls back to
 	// economy.NewWallDice(), the same production default).
-	uah := &UnitArrivalHandler{pool: h.pool, eventStore: h.eventStore, scheduler: h.scheduler, hub: h.hub, clk: h.clk}
+	var battleOutcomes battleBegunOutcomes
+	uah := &UnitArrivalHandler{battleOutcomes: &battleOutcomes, pool: h.pool, eventStore: h.eventStore, scheduler: h.scheduler, hub: h.hub, clk: h.clk}
 	if err := uah.initiateOrJoinBattle(ctx, tx, worldID, pos.Q, pos.R, arriving, []battleParticipant{defender}); err != nil {
 		return fmt.Errorf("intercept: initiate/join battle: %w", err)
 	}
@@ -334,6 +335,7 @@ func (h *UnitInterceptScanHandler) intercept(
 		return fmt.Errorf("commit: %w", err)
 	}
 
+	uah.deliverBattleBegun(ctx, worldID)
 	slog.Info("unit intercepted — battle initiated/joined", "unit", m.id, "sentry", sentryID, "q", pos.Q, "r", pos.R)
 	return nil
 }
