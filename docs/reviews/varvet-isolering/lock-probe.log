@@ -1,0 +1,22 @@
+» färsk DB på migration 210 · commit 6bd4f17f+ändringar
+=== RUN   TestShipyardRecruitLockProbe
+=== RUN   TestShipyardRecruitLockProbe/completion_unit_first
+2026/10/24 20:04:50 INFO player registered id=e5a5eefc-8f4e-48e2-a974-e51835161907 username=shipwright-89bae86c-6432-4ec5-ad1c-c0c487e10b16
+    shipyard_lock_probe_test.go:44: 201 {"complete_at":"2026-10-24T23:04:50.709787+02:00","count":1,"forming_size":1,"men":20,"names":["Wind Keeper"],"pop_drawn":20,"population_after":4980,"population_before":5000,"shipyard_waiting":false,"shipyard_work_remaining":3,"unit_id":"82e4a32d-64df-4752-96c3-04a385de631e","unit_ids":["82e4a32d-64df-4752-96c3-04a385de631e"],"unit_type":"galley","upkeep_warning":"warning: once this unit garrisons it needs 0.1 grain + 0.0 silver per game day upkeep — this settlement's current net after its existing army's upkeep is -24.9 grain per game day, +0.0 silver per game day; it may starve/desert without more production or fewer units (`keryx status`)"}
+        
+=== RUN   TestShipyardRecruitLockProbe/completion_city_first
+2026/10/24 20:04:50 INFO player registered id=ab95d56a-8d95-437a-9f3b-f00d687f69c0 username=shipwright-61792365-4c0d-469e-ae37-8093bfc928fe
+    shipyard_lock_probe_test.go:44: 201 {"complete_at":"2026-10-24T23:04:50.783919+02:00","count":1,"forming_size":1,"men":20,"names":["Oracle Wave"],"pop_drawn":20,"population_after":4980,"population_before":5000,"shipyard_waiting":false,"shipyard_work_remaining":3,"unit_id":"9fbbcdf0-c4a2-4cfa-8653-32cf3029b7d6","unit_ids":["9fbbcdf0-c4a2-4cfa-8653-32cf3029b7d6"],"unit_type":"galley","upkeep_warning":"warning: once this unit garrisons it needs 0.1 grain + 0.0 silver per game day upkeep — this settlement's current net after its existing army's upkeep is -24.9 grain per game day, +0.0 silver per game day; it may starve/desert without more production or fewer units (`keryx status`)"}
+        
+=== RUN   TestShipyardRecruitLockProbe/startup_cutover_unit_first
+2026/10/24 20:04:50 INFO player registered id=3e6a7e82-f7ab-4cee-ba65-8dd0f684906c username=shipwright-d5d56f9b-471f-463c-a705-546befec0793
+    shipyard_lock_probe_test.go:44: 201 {"complete_at":"2026-10-24T23:04:50.857182+02:00","count":1,"forming_size":1,"men":20,"names":["Sea Crown"],"pop_drawn":20,"population_after":4980,"population_before":5000,"shipyard_waiting":false,"shipyard_work_remaining":3,"unit_id":"1ce84760-bdd6-41bc-97e5-fd080a8a8deb","unit_ids":["1ce84760-bdd6-41bc-97e5-fd080a8a8deb"],"unit_type":"galley","upkeep_warning":"warning: once this unit garrisons it needs 0.1 grain + 0.0 silver per game day upkeep — this settlement's current net after its existing army's upkeep is -24.9 grain per game day, +0.0 silver per game day; it may starve/desert without more production or fewer units (`keryx status`)"}
+        
+--- FAIL: TestShipyardRecruitLockProbe (0.22s)
+    --- FAIL: TestShipyardRecruitLockProbe/completion_unit_first (0.08s)
+    --- FAIL: TestShipyardRecruitLockProbe/completion_city_first (0.07s)
+    --- FAIL: TestShipyardRecruitLockProbe/startup_cutover_unit_first (0.07s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.224s
+FAIL
+» containern står kvar: megaron-gotest-4012940  (postgres://postgres:pw@localhost:56479/megaron_test?sslmode=disable)

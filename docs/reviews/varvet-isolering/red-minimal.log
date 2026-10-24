@@ -1,0 +1,9 @@
+» färsk DB på migration 210 · commit 6bd4f17f
+ok  	formatet/megaron/server/internal/combat	0.500s
+2026/10/24 20:01:10 INFO player registered id=d7fa9a49-cc66-4f7d-b2ef-827262b95197 username=shiprepair-157285e3-2714-4171-8a86-9bd73f6fa032
+--- FAIL: TestShipyardDeployTransitionPreservesDeadlineWithoutFreeStaff (0.06s)
+    shipyard_work_test.go:156: shipyard transition: active job 1b74614b-cbb4-4db8-9acc-1c223b6d35d3 has no saved deadline
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.065s
+FAIL
+» containern står kvar: megaron-gotest-4004015  (postgres://postgres:pw@localhost:56285/megaron_test?sslmode=disable)

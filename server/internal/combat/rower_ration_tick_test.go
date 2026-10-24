@@ -22,6 +22,14 @@ func TestRowerCrewRationChargedFromOnboardGoods(t *testing.T) {
  VALUES($1,$2,$3,'naval',1,2,$4,3,0,$5,$5,1,'{"fish":1}') RETURNING id`, f.worldID, f.ownerID, kind, status, f.capitalID).Scan(&ship); err != nil {
 					t.Fatal(err)
 				}
+				// Ration-only states deliberately omit repair/build deadlines.
+				// Do not leave these synthetic jobs for the global pre-worker
+				// shipyard cutover exercised by other packages on the same DB.
+				t.Cleanup(func() {
+					if _, err := pool.Exec(context.Background(), `DELETE FROM units WHERE id=$1`, ship); err != nil {
+						t.Errorf("cleanup ration-only ship: %v", err)
+					}
+				})
 				h := newStarvationUpkeepHandler(pool, nil)
 				e := events.ScheduledEvent{ID: 812012, WorldID: f.worldID, DueTick: 1}
 				if err := h.Handle(ctx, e); err != nil {

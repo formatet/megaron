@@ -1,0 +1,8 @@
+                  id                  |    type     |  status   | crew |       build_complete_at       | shipyard_work_remaining |               world_id               |                         name                         | world_status | timers 
+--------------------------------------+-------------+-----------+------+-------------------------------+-------------------------+--------------------------------------+------------------------------------------------------+--------------+--------
+ 1b74614b-cbb4-4db8-9acc-1c223b6d35d3 | war_galley  | repairing |    2 |                               |                         | 71e255ae-ee12-4174-a3d0-b04e0766a28f | test-rower-meal-8e02a047-a821-4364-81a0-3e63e4d08ff2 | archived     |      0
+ 8165b054-9118-4fd0-b99a-da91d309dda9 | merchantman | repairing |    2 |                               |                         | 00e837ea-6553-4171-a9e6-00e38b58fd3e | test-rower-meal-efbd93b5-6354-4286-964d-7e38844812da | archived     |      0
+ d8c9e7c5-de8d-462a-8352-c398b375a038 | galley      | repairing |    2 |                               |                         | cd18ffb3-d011-4973-aaf7-0b6ff96167cf | test-rower-meal-3a2cb78b-0570-4fc3-b5aa-9997d924edb7 | archived     |      0
+ df9e23e5-8240-4c01-8074-dec5467ff94d | galley      | repairing |   20 | 2026-10-24 18:01:10.620338+00 |                         | c652b22f-4863-4a0e-84db-7099eb5322e7 | test-world-30a20150-6deb-43eb-ad1f-5a145fc38559      | archived     |      1
+(4 rows)
+
