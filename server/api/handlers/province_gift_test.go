@@ -136,7 +136,7 @@ func TestGiftDeliveryLifecycle(t *testing.T) {
 			}
 			var event events.ScheduledEvent
 			event.WorldID = f.worldID
-			if err := f.pool.QueryRow(ctx, `SELECT id,payload FROM scheduled_events WHERE world_id=$1 AND event_type='GiftDelivery' ORDER BY id DESC LIMIT 1`, f.worldID).Scan(&event.ID, &event.Payload); err != nil {
+			if err := f.pool.QueryRow(ctx, `SELECT id,payload FROM scheduled_events WHERE world_id=$1 AND event_type IN ('GiftDelivery','GiftDeliveryV2') ORDER BY id DESC LIMIT 1`, f.worldID).Scan(&event.ID, &event.Payload); err != nil {
 				t.Fatal(err)
 			}
 			var shipment economy.GiftShipment
@@ -261,7 +261,7 @@ func TestGiftNavalCarrierCompletesEmptyReturn(t *testing.T) {
 			}
 			var e events.ScheduledEvent
 			e.WorldID = f.worldID
-			if err := f.pool.QueryRow(ctx, `SELECT id,payload FROM scheduled_events WHERE world_id=$1 AND event_type='GiftDelivery'`, f.worldID).Scan(&e.ID, &e.Payload); err != nil {
+			if err := f.pool.QueryRow(ctx, `SELECT id,payload FROM scheduled_events WHERE world_id=$1 AND event_type IN ('GiftDelivery','GiftDeliveryV2')`, f.worldID).Scan(&e.ID, &e.Payload); err != nil {
 				t.Fatal(err)
 			}
 			if fallen {
@@ -282,7 +282,7 @@ func TestGiftNavalCarrierCompletesEmptyReturn(t *testing.T) {
 			}
 			var ret events.ScheduledEvent
 			ret.WorldID = f.worldID
-			if err := f.pool.QueryRow(ctx, `SELECT se.id,se.payload FROM scheduled_events se JOIN transports tr ON tr.id=(se.payload->>'transport_id')::uuid WHERE se.world_id=$1 AND se.event_type='TransportArrival' AND tr.kind='ship_return' AND tr.ship_unit_id=$2`, f.worldID, ship).Scan(&ret.ID, &ret.Payload); err != nil {
+			if err := f.pool.QueryRow(ctx, `SELECT se.id,se.payload FROM scheduled_events se JOIN transports tr ON tr.id=(se.payload->>'transport_id')::uuid WHERE se.world_id=$1 AND se.event_type IN ('TransportArrival','TransportArrivalV2') AND tr.kind='ship_return' AND tr.ship_unit_id=$2`, f.worldID, ship).Scan(&ret.ID, &ret.Payload); err != nil {
 				t.Fatal(err)
 			}
 			a := transport.NewArrivalHandler(f.pool, nil)
@@ -357,7 +357,7 @@ func TestGiftHistoryPrivateUntilArrival(t *testing.T) {
 	}
 	var e events.ScheduledEvent
 	e.WorldID = f.worldID
-	if err := f.pool.QueryRow(ctx, `SELECT id,payload FROM scheduled_events WHERE world_id=$1 AND event_type='GiftDelivery'`, f.worldID).Scan(&e.ID, &e.Payload); err != nil {
+	if err := f.pool.QueryRow(ctx, `SELECT id,payload FROM scheduled_events WHERE world_id=$1 AND event_type IN ('GiftDelivery','GiftDeliveryV2')`, f.worldID).Scan(&e.ID, &e.Payload); err != nil {
 		t.Fatal(err)
 	}
 	h := economy.NewDeliveryHandler(f.pool, events.NewStore(f.pool), nil, f.scheduler)
@@ -439,7 +439,7 @@ func TestGiftLimpedRaidSeparatesReturnFromLoss(t *testing.T) {
 	}
 	var e events.ScheduledEvent
 	e.WorldID = f.worldID
-	if err := f.pool.QueryRow(ctx, `SELECT id,payload FROM scheduled_events WHERE world_id=$1 AND event_type='GiftDelivery'`, f.worldID).Scan(&e.ID, &e.Payload); err != nil {
+	if err := f.pool.QueryRow(ctx, `SELECT id,payload FROM scheduled_events WHERE world_id=$1 AND event_type IN ('GiftDelivery','GiftDeliveryV2')`, f.worldID).Scan(&e.ID, &e.Payload); err != nil {
 		t.Fatal(err)
 	}
 	h := economy.NewDeliveryHandler(f.pool, events.NewStore(f.pool), nil, f.scheduler)
@@ -476,7 +476,7 @@ func TestGiftLimpedRaidSeparatesReturnFromLoss(t *testing.T) {
 	}
 	var ret events.ScheduledEvent
 	ret.WorldID = f.worldID
-	if err := f.pool.QueryRow(ctx, `SELECT id,payload FROM scheduled_events WHERE world_id=$1 AND event_type='TransportArrival' AND payload->>'transport_id'=$2`, f.worldID, out.ReturnTransportID.String()).Scan(&ret.ID, &ret.Payload); err != nil {
+	if err := f.pool.QueryRow(ctx, `SELECT id,payload FROM scheduled_events WHERE world_id=$1 AND event_type IN ('TransportArrival','TransportArrivalV2') AND payload->>'transport_id'=$2`, f.worldID, out.ReturnTransportID.String()).Scan(&ret.ID, &ret.Payload); err != nil {
 		t.Fatal(err)
 	}
 	a := transport.NewArrivalHandler(f.pool, nil)
@@ -675,7 +675,7 @@ func TestGiftHistoryV2PrivateUntilArrivalAndCompleteCorrespondence(t *testing.T)
 	checkCorrespondence(claims.PlayerID, 0, 0, 0)
 	var e events.ScheduledEvent
 	e.WorldID = f.worldID
-	if err := f.pool.QueryRow(ctx, `SELECT id,payload FROM scheduled_events WHERE world_id=$1 AND event_type='ShipmentDeliveryV2'`, f.worldID).Scan(&e.ID, &e.Payload); err != nil {
+	if err := f.pool.QueryRow(ctx, `SELECT id,payload FROM scheduled_events WHERE world_id=$1 AND event_type IN ('ShipmentDeliveryV2','ShipmentDeliveryV3')`, f.worldID).Scan(&e.ID, &e.Payload); err != nil {
 		t.Fatal(err)
 	}
 	h := economy.NewDeliveryHandler(f.pool, events.NewStore(f.pool), nil, f.scheduler)

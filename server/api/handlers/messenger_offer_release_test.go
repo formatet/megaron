@@ -63,7 +63,7 @@ func TestTradeOfferEnd_RunnerTurnsHomeSameTick(t *testing.T) {
 			var status string
 			var returnDue *int
 			if err := f.pool.QueryRow(ctx,
-				`SELECT m.status, (SELECT min(due_tick) FROM scheduled_events WHERE event_type='MessengerReturn' AND payload->>'messenger_id'=$2)
+				`SELECT m.status, (SELECT min(due_tick) FROM scheduled_events WHERE event_type IN ('MessengerReturn','MessengerReturnV2') AND payload->>'messenger_id'=$2)
 				   FROM messengers m WHERE m.id=$1`, messengerID, messengerID.String()).Scan(&status, &returnDue); err != nil {
 				t.Fatal(err)
 			}

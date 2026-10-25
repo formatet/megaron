@@ -22,7 +22,6 @@ import (
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/movement"
 	"formatet/megaron/server/internal/province"
-	"formatet/megaron/server/internal/tick"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -80,7 +79,7 @@ func Dispatch(ctx context.Context, tx pgx.Tx, sched *events.Scheduler, p Dispatc
 	if err != nil {
 		return uuid.Nil, err
 	}
-	if err := sched.EnqueueTickTx(ctx, tx, p.WorldID, events.ScheduledTransportArrival,
+	if err := economy.EnqueueFreightTx(ctx, tx, sched, p.WorldID, events.ScheduledTransportArrival,
 		map[string]any{"transport_id": id}, p.DueTick); err != nil {
 		return uuid.Nil, fmt.Errorf("schedule transport arrival: %w", err)
 	}
@@ -249,15 +248,21 @@ func prepareJourney(ctx context.Context, tx pgx.Tx, p DispatchParams) (DispatchP
 			return p, err
 		}
 	}
-	p.DueTick = p.DepartedTick + p.Journey.TravelTicks
-	p.ArrivesAt = p.DepartsAt.Add(tick.RealUntil(p.DueTick, p.DepartedTick))
+	if err := economy.ClockTradeJourney(ctx, tx, p.WorldID, p.Journey, p.DepartsAt); err != nil {
+		return p, err
+	}
+	r := p.Journey.Route(0, 0)
+	p.DepartedTick = r.StartTick
+	p.DueTick = r.EndTick
+	p.DepartsAt = r.DepartureAt
+	p.ArrivesAt = r.WallAt(int64(r.EndTick)*1000 + r.OffsetMilli)
 	// Timestamp fields are compatibility projections only; tick time owns ETA.
 	return p, nil
 }
 
 // SavedPosition reads a frozen journey through the shared movement core. at is
 // a world time in thousandths of a tick. It never reads tiles or reroutes.
-func SavedPosition(raw []byte, departedTick, dueTick int, at int64) (province.MapPosition, error) {
+func SavedPosition(raw []byte, departedTick, dueTick int, at int64, now ...time.Time) (province.MapPosition, error) {
 	var j province.TradeJourney
 	if err := json.Unmarshal(raw, &j); err != nil {
 		return province.MapPosition{}, err
@@ -271,10 +276,10 @@ func SavedPosition(raw []byte, departedTick, dueTick int, at int64) (province.Ma
 	if len(j.Path) == 1 {
 		return j.Path[0], nil
 	}
-	hexes := make([]movement.Hex, len(j.Path))
-	for i, p := range j.Path {
-		hexes[i] = movement.Hex{Q: p.Q, R: p.R}
+	r := j.Route(departedTick, dueTick)
+	if r.Version == 2 && len(now) > 0 {
+		at = r.MilliAt(now[0])
 	}
-	pos, err := movement.PositionAt(movement.Move{StartTick: departedTick, EndTick: dueTick, Hexes: hexes, Costs: j.StepCosts}, movement.Milli(at))
+	pos, err := movement.PositionAt(r.Move(), movement.Milli(at))
 	return province.MapPosition{Q: pos.Q, R: pos.R}, err
 }

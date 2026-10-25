@@ -130,7 +130,7 @@ func fireArrival(t *testing.T, pool *pgxpool.Pool, worldID uuid.UUID, hub Broadc
 	var payload json.RawMessage
 	if err := pool.QueryRow(ctx,
 		`SELECT id, payload FROM scheduled_events
-		 WHERE world_id = $1 AND event_type = 'TransportArrival' AND processed_at IS NULL
+		 WHERE world_id = $1 AND event_type IN ('TransportArrival','TransportArrivalV2') AND processed_at IS NULL
 		 ORDER BY id DESC LIMIT 1`,
 		worldID,
 	).Scan(&id, &payload); err != nil {

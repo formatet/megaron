@@ -3525,8 +3525,14 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		writeError(w, 500, "could not prepare departure")
 		return
 	}
+	tradeDispatchAt := h.clk.Now()
+	if err := economy.ClockTradeJourney(r.Context(), tx, worldID, &journey, tradeDispatchAt); err != nil {
+		writeError(w, 500, "could not anchor cargo journey")
+		return
+	}
+	tradeCurrentTick = journey.Clock.StartTick
 	tradeTravelTicks := journey.TravelTicks
-	arrivesAt := h.clk.Now().Add(tick.RealUntil(tradeTravelTicks, 0))
+	arrivesAt := journey.Route(0, 0).WallAt(int64(journey.Clock.EndTick)*1000 + journey.Clock.OffsetMilli)
 
 	// Deduct from origin — silver is now a normal good in settlement_goods.
 	manifest := transport.Manifest{}
@@ -3574,7 +3580,7 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		OriginR:      originR,
 		DestQ:        destQ,
 		DestR:        destR,
-		DepartsAt:    h.clk.Now(),
+		DepartsAt:    tradeDispatchAt,
 		ArrivesAt:    arrivesAt,
 		DueTick:      tradeCurrentTick + tradeTravelTicks,
 		DepartedTick: tradeCurrentTick, Journey: &journey,
@@ -3600,7 +3606,7 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		shipment := economy.ShipmentV2{TransportID: transportID, RouteID: routeID, SenderID: playerID, RecipientID: *destOwnerID, OriginID: originID, DestinationID: req.DestinationID, OriginName: originName, DestinationName: destName, SenderName: senderName, RecipientName: destOwnerName, Items: items, Kind: transportKind}
-		if err := h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledShipmentDeliveryV2, shipment, tradeCurrentTick+tradeTravelTicks); err != nil {
+		if err := economy.EnqueueFreightTx(r.Context(), tx, h.scheduler, worldID, events.ScheduledShipmentDeliveryV2, shipment, tradeCurrentTick+tradeTravelTicks); err != nil {
 			writeError(w, 500, "could not schedule shipment")
 			return
 		}
@@ -3618,7 +3624,7 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		shipment := economy.GiftShipment{TransportID: transportID, RouteID: routeID, SenderID: playerID, RecipientID: *destOwnerID, OriginID: originID, DestinationID: req.DestinationID, OriginName: originName, DestinationName: destName, SenderName: senderName, RecipientName: destOwnerName, GoodKey: req.GoodKey, Quantity: req.Quantity}
-		if err := h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledGiftDelivery, shipment, tradeCurrentTick+tradeTravelTicks); err != nil {
+		if err := economy.EnqueueFreightTx(r.Context(), tx, h.scheduler, worldID, events.ScheduledGiftDelivery, shipment, tradeCurrentTick+tradeTravelTicks); err != nil {
 			writeError(w, 500, "could not schedule gift")
 			return
 		}
@@ -3630,7 +3636,7 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	} else {
 		// Internal transfer: no loss, no gain — delivered quantity equals what was sent.
 		// Enqueue delivery within the same transaction — atomic with the deduction.
-		if err := h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledTradeDelivery,
+		if err := economy.EnqueueFreightTx(r.Context(), tx, h.scheduler, worldID, events.ScheduledTradeDelivery,
 			map[string]any{
 				"trade_route_id":     routeID,
 				"destination_id":     req.DestinationID,
@@ -3654,17 +3660,19 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		h.eventStore.RecordCommitted(r.Context(), dispatchedGift)
 	}
 	resp := map[string]any{
-		"route_id":       routeID,
-		"kind":           transportKind,
-		"arrives_at":     arrivesAt,
-		"distance":       journey.Distance,
-		"travel_min":     float64(tradeTravelTicks) * 60,
-		"travel_ticks":   tradeTravelTicks,
-		"departure_tick": tradeCurrentTick,
-		"arrival_tick":   tradeCurrentTick + tradeTravelTicks,
-		"transport_id":   transportID,
-		"delivered_qty":  req.Quantity,
-		"category":       category,
+		"route_id":              routeID,
+		"kind":                  transportKind,
+		"arrives_at":            arrivesAt,
+		"distance":              journey.Distance,
+		"travel_min":            float64(tradeTravelTicks) * 60,
+		"travel_ticks":          tradeTravelTicks,
+		"departure_tick":        tradeCurrentTick,
+		"arrival_tick":          tradeCurrentTick + tradeTravelTicks,
+		"route_version":         2,
+		"dispatch_offset_milli": journey.Clock.OffsetMilli,
+		"transport_id":          transportID,
+		"delivered_qty":         req.Quantity,
+		"category":              category,
 	}
 	if isGift {
 		delete(resp, "delivered_qty")

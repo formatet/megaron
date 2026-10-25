@@ -117,7 +117,7 @@ func TestCaravanTransfer_ScheduleFailureRollsBackShipAndGoods(t *testing.T) {
 func installCaravanJobFailure(t *testing.T, pool *pgxpool.Pool, world uuid.UUID) {
 	t.Helper()
 	name := "caravan_fail_" + strings.ReplaceAll(uuid.NewString(), "-", "")
-	sql := fmt.Sprintf(`CREATE FUNCTION %s() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.world_id='%s'::uuid AND NEW.event_type IN ('TradeDelivery','TransportArrival') THEN RAISE EXCEPTION 'caravan schedule failure injection'; END IF; RETURN NEW; END $$; CREATE TRIGGER %s BEFORE INSERT ON scheduled_events FOR EACH ROW EXECUTE FUNCTION %s()`, name, world, name, name)
+	sql := fmt.Sprintf(`CREATE FUNCTION %s() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.world_id='%s'::uuid AND NEW.event_type IN ('TradeDelivery','TransportArrival','TradeDeliveryV2','TransportArrivalV2') THEN RAISE EXCEPTION 'caravan schedule failure injection'; END IF; RETURN NEW; END $$; CREATE TRIGGER %s BEFORE INSERT ON scheduled_events FOR EACH ROW EXECUTE FUNCTION %s()`, name, world, name, name)
 	if _, err := pool.Exec(context.Background(), sql); err != nil {
 		t.Fatal(err)
 	}
@@ -244,7 +244,7 @@ func TestCaravanAccept_ConcurrentBuyAndSellCommitOnceWithAsymmetricETA(t *testin
 			if count != 1 {
 				t.Fatalf("transport count%d", count)
 			}
-			if err := f.pool.QueryRow(context.Background(), `SELECT payload FROM scheduled_events WHERE world_id=$1 AND event_type='TradeDelivery'`, f.worldID).Scan(&raw); err != nil {
+			if err := f.pool.QueryRow(context.Background(), `SELECT payload FROM scheduled_events WHERE world_id=$1 AND event_type='TradeDeliveryV2'`, f.worldID).Scan(&raw); err != nil {
 				t.Fatal(err)
 			}
 			var payload struct {

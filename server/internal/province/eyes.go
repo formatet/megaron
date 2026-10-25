@@ -2,6 +2,8 @@ package province
 
 import (
 	"context"
+	"encoding/json"
+	"formatet/megaron/server/internal/movement"
 	"math"
 	"time"
 
@@ -110,7 +112,7 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 	mRows, err := db.Query(ctx,
 		`SELECT COALESCE(op.map_q, m.origin_q), COALESCE(op.map_r, m.origin_r),
 		        COALESCE(m.dest_q, dp.map_q), COALESCE(m.dest_r, dp.map_r),
-		        m.sent_at, m.arrives_at, m.passage_status, pp.map_q, pp.map_r
+		        m.sent_at, m.arrives_at, m.passage_status, pp.map_q, pp.map_r,m.land_route
 		 FROM messengers m
 		 -- Bifynd from 3b-1 (megaron_plan_ordna_passage.md), same root: the
 		 -- true origin is origin_id (a settlement, joined here) or, for a
@@ -134,11 +136,12 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 		 -- crossed yet.
 		 LEFT JOIN settlements pps ON pps.id = m.passage_port_id
 		 LEFT JOIN provinces pp ON pp.id = pps.province_id
-		 WHERE m.world_id = $1 AND m.sender_id = $2 AND m.status = 'outbound' AND NOT EXISTS(SELECT 1 FROM events e WHERE e.stream_id=m.id AND e.event_type='CarrierPassengerRescuedV1')`,
+		 WHERE m.world_id = $1 AND m.sender_id = $2 AND m.status = 'outbound' AND NOT EXISTS(SELECT 1 FROM events e WHERE e.stream_id=m.id AND e.event_type='CarrierPassengerRescuedV1') AND NOT EXISTS(SELECT 1 FROM events e WHERE e.stream_id=m.id AND e.id>m.carrier_witness_id AND e.event_type IN ('CarrierPassengerLostV1','CarrierPassengerRescuedV1','CarrierPassengerLandedV1','CarrierPassengerRedirectedV1'))`,
 		worldID, playerID,
 	)
 	if err == nil {
 		type outboundEyeRow struct {
+			route             []byte
 			oq, or_           int
 			dq, dr            *int
 			sentAt, arrivesAt time.Time
@@ -148,7 +151,7 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 		var outbound []outboundEyeRow
 		for mRows.Next() {
 			var row outboundEyeRow
-			if mRows.Scan(&row.oq, &row.or_, &row.dq, &row.dr, &row.sentAt, &row.arrivesAt, &row.passageStatus, &row.portQ, &row.portR) != nil {
+			if mRows.Scan(&row.oq, &row.or_, &row.dq, &row.dr, &row.sentAt, &row.arrivesAt, &row.passageStatus, &row.portQ, &row.portR, &row.route) != nil {
 				continue
 			}
 			outbound = append(outbound, row)
@@ -156,6 +159,12 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 		mRows.Close()
 		// Drain before interpolation: Queryer may be a single TX connection.
 		for _, row := range outbound {
+			if pos, active, timed := RunnerLandPosition(row.route, row.passageStatus, now); timed {
+				if active {
+					eyes = append(eyes, Eye{Pos: pos, Kind: EyeLandUnit})
+				}
+				continue
+			}
 			oq := row.oq
 			or_ := row.or_
 			dq := row.dq
@@ -211,7 +220,7 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 	rRows, err := db.Query(ctx,
 		`SELECT COALESCE(dp.map_q, m.dest_q), COALESCE(dp.map_r, m.dest_r),
 		        COALESCE(op.map_q, m.origin_q), COALESCE(op.map_r, m.origin_r),
-		        m.return_departs_at, m.arrives_at, m.passage_status, pp.map_q, pp.map_r, m.withdrawn
+		        m.return_departs_at, m.arrives_at, m.passage_status, pp.map_q, pp.map_r, m.withdrawn,m.land_route
 		 FROM messengers m
 		 LEFT JOIN settlements os ON os.id = m.origin_id
 		 LEFT JOIN provinces op ON op.id = os.province_id
@@ -222,11 +231,12 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 		 LEFT JOIN settlements pps ON pps.id = m.passage_port_id
 		 LEFT JOIN provinces pp ON pp.id = pps.province_id
 		 WHERE m.world_id = $1 AND m.sender_id = $2 AND m.status = 'returning'
-		   AND m.return_departs_at IS NOT NULL AND NOT EXISTS(SELECT 1 FROM events e WHERE e.stream_id=m.id AND e.event_type='CarrierPassengerRescuedV1')`,
+		   AND m.return_departs_at IS NOT NULL AND NOT EXISTS(SELECT 1 FROM events e WHERE e.stream_id=m.id AND e.event_type='CarrierPassengerRescuedV1') AND NOT EXISTS(SELECT 1 FROM events e WHERE e.stream_id=m.id AND e.id>m.carrier_witness_id AND e.event_type IN ('CarrierPassengerLostV1','CarrierPassengerRescuedV1','CarrierPassengerLandedV1','CarrierPassengerRedirectedV1'))`,
 		worldID, playerID,
 	)
 	if err == nil {
 		type returnEyeRow struct {
+			route                []byte
 			sq, sr               int
 			hq, hr               *int
 			departsAt, arrivesAt time.Time
@@ -237,7 +247,7 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 		var returning []returnEyeRow
 		for rRows.Next() {
 			var row returnEyeRow
-			if rRows.Scan(&row.sq, &row.sr, &row.hq, &row.hr, &row.departsAt, &row.arrivesAt, &row.passageStatus, &row.portQ, &row.portR, &row.withdrawn) != nil {
+			if rRows.Scan(&row.sq, &row.sr, &row.hq, &row.hr, &row.departsAt, &row.arrivesAt, &row.passageStatus, &row.portQ, &row.portR, &row.withdrawn, &row.route) != nil {
 				continue
 			}
 			returning = append(returning, row)
@@ -245,6 +255,12 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 		rRows.Close()
 		// Drain before interpolation: Queryer may be a single TX connection.
 		for _, row := range returning {
+			if pos, active, timed := RunnerLandPosition(row.route, row.passageStatus, now); timed {
+				if active {
+					eyes = append(eyes, Eye{Pos: pos, Kind: EyeLandUnit})
+				}
+				continue
+			}
 			sq := row.sq
 			sr := row.sr
 			hq := row.hq
@@ -478,4 +494,21 @@ func InterpolateAlongPath(now, departsAt, arrivesAt time.Time, path []MapPositio
 		idx = len(path) - 1
 	}
 	return path[idx]
+}
+
+// RunnerLandPosition is shared by eyes and markers; sealed or still-carried
+// runners have no independent land eye. Invalid saved data fails closed.
+func RunnerLandPosition(raw []byte, passage *string, now time.Time) (MapPosition, bool, bool) {
+	if len(raw) == 0 {
+		return MapPosition{}, false, false
+	}
+	var r movement.StoredRoute
+	if json.Unmarshal(raw, &r) != nil || r.Version != 2 || r.TickNanoseconds <= 0 || len(r.Hexes) == 0 {
+		return MapPosition{}, false, true
+	}
+	if passage != nil && (*passage == "returning_sealed" || (*passage == "aboard" && now.Before(r.DepartureAt))) {
+		return MapPosition{}, false, true
+	}
+	p, err := r.Position(now)
+	return MapPosition{Q: p.Q, R: p.R}, err == nil, true
 }

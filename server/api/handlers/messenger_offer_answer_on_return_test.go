@@ -89,7 +89,7 @@ func TestTradeOfferAnswer_ArrivesWithTheRunner(t *testing.T) {
 			var e events.ScheduledEvent
 			if err := f.pool.QueryRow(ctx,
 				`SELECT id, world_id, event_type, payload, due_tick FROM scheduled_events
-				  WHERE world_id=$1 AND event_type=$2 AND payload->>'messenger_id'=$3
+				  WHERE world_id=$1 AND event_type IN ($2,$2||'V2',CASE WHEN $2='ShipmentDeliveryV2' THEN 'ShipmentDeliveryV3' ELSE $2 END) AND payload->>'messenger_id'=$3
 				  ORDER BY id DESC LIMIT 1`,
 				f.worldID, events.ScheduledMessengerReturn, messengerID.String(),
 			).Scan(&e.ID, &e.WorldID, &e.EventType, &e.Payload, &e.DueTick); err != nil {

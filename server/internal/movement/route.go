@@ -61,3 +61,34 @@ func (r StoredRoute) MilliAt(now time.Time) int64 {
 func (r StoredRoute) WallAt(at int64) time.Time {
 	return r.DepartureAt.Add(time.Duration(at-int64(r.StartTick)*1000-r.OffsetMilli) * (time.Duration(r.TickNanoseconds) / 1000))
 }
+
+// RouteClock is the movement-owned clock shared by frozen journeys. Geometry
+// stays in its original catalogue; it is never copied into another JSON path.
+type RouteClock struct {
+	DepartureAt     time.Time `json:"departure_at"`
+	TickNanoseconds int64     `json:"tick_nanoseconds"`
+	Version         int       `json:"version"`
+	OffsetMilli     int64     `json:"offset_milli"`
+	StartTick       int       `json:"start_tick"`
+	EndTick         int       `json:"end_tick"`
+}
+
+// NewRouteClock anchors the unchanged rounded duration at actual dispatch.
+func NewRouteClock(dispatch int64, at time.Time, cadence time.Duration, ticks int) RouteClock {
+	// PostgreSQL projections and deadlines store microsecond timestamps.
+	// Freeze at that precision so reading an ETA cannot precede its route.
+	at = at.Truncate(time.Microsecond)
+	return RouteClock{DepartureAt: at, TickNanoseconds: int64(cadence), Version: 2, OffsetMilli: dispatch % 1000, StartTick: int(dispatch / 1000), EndTick: int(dispatch/1000) + ticks}
+}
+func (c RouteClock) Route(hexes [][2]int, costs []int64) StoredRoute {
+	return StoredRoute{DepartureAt: c.DepartureAt, TickNanoseconds: c.TickNanoseconds, Version: c.Version, OffsetMilli: c.OffsetMilli, StartTick: c.StartTick, EndTick: c.EndTick, Hexes: hexes, Costs: costs}
+}
+func (r StoredRoute) Clock() RouteClock {
+	return RouteClock{r.DepartureAt, r.TickNanoseconds, r.Version, r.OffsetMilli, r.StartTick, r.EndTick}
+}
+func (r StoredRoute) Position(now time.Time) (Hex, error) {
+	if len(r.Hexes) == 1 {
+		return Hex{Q: r.Hexes[0][0], R: r.Hexes[0][1]}, nil
+	}
+	return PositionAt(r.Move(), Milli(r.MilliAt(now)))
+}

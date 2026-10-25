@@ -494,12 +494,16 @@ func deliveryETALine(c *Client, offer map[string]any) string {
 	goodsAt, _ := offer["goods_arrives_at"].(string)
 	silverAt, _ := offer["silver_arrives_at"].(string)
 	var parts []string
-	if at, ok := offer["goods_arrival_tick"].(float64); ok {
+	if version, _ := offer["route_version"].(float64); version == 2 && goodsAt != "" {
+		parts = append(parts, "goods scheduled "+arrivalETA(c, goodsAt))
+	} else if at, ok := offer["goods_arrival_tick"].(float64); ok {
 		parts = append(parts, fmt.Sprintf("goods scheduled %s", formatWorldTime(c, at)))
 	} else if s := fmtLeg("goods", goodsAt); s != "" {
 		parts = append(parts, s)
 	}
-	if at, ok := offer["silver_arrival_tick"].(float64); ok {
+	if version, _ := offer["route_version"].(float64); version == 2 && silverAt != "" {
+		parts = append(parts, "silver scheduled "+arrivalETA(c, silverAt))
+	} else if at, ok := offer["silver_arrival_tick"].(float64); ok {
 		parts = append(parts, fmt.Sprintf("silver scheduled %s", formatWorldTime(c, at)))
 	} else if s := fmtLeg("silver", silverAt); s != "" {
 		parts = append(parts, s)

@@ -84,7 +84,7 @@ func TestDispatchPersistsJourneyAndRejectsNoPathAtomically(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT count(*) FROM transports WHERE world_id=$1`, f.worldID).Scan(&count); err != nil || count != 1 {
 		t.Fatalf("rejected dispatch mutated movers %d %v", count, err)
 	}
-	if err := pool.QueryRow(ctx, `SELECT count(*) FROM scheduled_events WHERE world_id=$1 AND event_type='TransportArrival'`, f.worldID).Scan(&count); err != nil || count != 1 {
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM scheduled_events WHERE world_id=$1 AND event_type IN ('TransportArrival','TransportArrivalV2')`, f.worldID).Scan(&count); err != nil || count != 1 {
 		t.Fatalf("rejected dispatch mutated jobs %d %v", count, err)
 	}
 }

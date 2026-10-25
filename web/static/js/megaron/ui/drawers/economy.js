@@ -276,7 +276,8 @@ export function formatCargoRows(trades, nowMs) {
   return trades.flatMap(t => (t.items?.length ? t.items.map(item => ({...t,...item,items:null})) : [t])).map(t => {
     const etaMs = new Date(t.arrives_at).getTime() - nowMs;
     let eta;
-    if (Number.isInteger(t.arrival_tick)) eta = `${fmtTickTime(t.arrival_tick)}`;
+    if (t.route_version===2) eta=fmtTickTime(null,t.arrives_at);
+    else if (Number.isInteger(t.arrival_tick)) eta = `${fmtTickTime(t.arrival_tick)}`;
     else if (etaMs <= 0) eta = 'arrived';
     else if (etaMs < 3600000) eta = `${Math.floor(etaMs / 60000)}m`;
     else eta = `${Math.floor(etaMs / 3600000)}h ${Math.floor((etaMs % 3600000) / 60000)}m`;
@@ -447,7 +448,7 @@ export async function startTransfer() {
       : `${cargo} sent — physical cargo, can be intercepted en route.`;
     if (d.kind === 'gift') resultEl.textContent = 'Gift: ' + resultEl.textContent;
     if (Number.isInteger(d.arrival_tick)) {
-      resultEl.textContent += ` Arrives ${fmtTickTime(d.arrival_tick)} (journey: ${fmtDays(d.travel_ticks)}).`;
+      resultEl.textContent += ` Arrives ${fmtTickTime(d.route_version===2?null:d.arrival_tick,d.arrives_at)} (journey: ${fmtDays(d.travel_ticks)}).`;
     }
     refreshCargoInTransit();
     loadTransferPreview();

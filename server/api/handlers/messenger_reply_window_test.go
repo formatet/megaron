@@ -203,7 +203,7 @@ func TestReturnPostConcurrentRepliesClaimSingleBearer(t *testing.T) {
 		t.Fatalf("reply winners=%d want1", winners)
 	}
 	var n int
-	if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM scheduled_events WHERE world_id=$1 AND event_type='MessengerReturn' AND payload->>'messenger_id'=$2`, f.worldID, id.String()).Scan(&n); err != nil {
+	if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM scheduled_events WHERE world_id=$1 AND event_type IN ('MessengerReturn','MessengerReturnV2') AND payload->>'messenger_id'=$2`, f.worldID, id.String()).Scan(&n); err != nil {
 		t.Fatal(err)
 	}
 	if n != 1 {

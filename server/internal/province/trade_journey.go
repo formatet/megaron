@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"formatet/megaron/server/internal/movement"
 	"math"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -17,15 +19,16 @@ var ErrNoTradePath = errors.New("no traversable trade route")
 // unrounded march ticks for the entered hexes; only the total caravan duration
 // is rounded. Reverse legs are planned separately because entering costs differ.
 type TradeJourney struct {
-	Category         string        `json:"category"`
-	Path             []MapPosition `json:"path"`
-	StepCosts        []int64       `json:"step_costs"`
-	TravelTicks      int           `json:"travel_ticks"`
-	Distance         int           `json:"distance"`
-	TimeFactorMilli  int           `json:"time_factor_milli,omitempty"`
-	Thread           bool          `json:"asterion_thread,omitempty"`
-	Stillness        bool          `json:"stillness,omitempty"`
-	DepartureChecked bool          `json:"departure_checked,omitempty"`
+	Clock            *movement.RouteClock `json:"clock,omitempty"`
+	Category         string               `json:"category"`
+	Path             []MapPosition        `json:"path"`
+	StepCosts        []int64              `json:"step_costs"`
+	TravelTicks      int                  `json:"travel_ticks"`
+	Distance         int                  `json:"distance"`
+	TimeFactorMilli  int                  `json:"time_factor_milli,omitempty"`
+	Thread           bool                 `json:"asterion_thread,omitempty"`
+	Stillness        bool                 `json:"stillness,omitempty"`
+	DepartureChecked bool                 `json:"departure_checked,omitempty"`
 }
 
 // PlanTradeJourney uses one terrain snapshot for A* and its entering-hex costs.
@@ -96,6 +99,12 @@ func (g TileGraph) tradeDocks(p MapPosition) []MapPosition {
 
 // Validate checks frozen data without querying terrain or finding a new route.
 func (j TradeJourney) Validate() error {
+	if j.Clock != nil {
+		c := j.Clock
+		if c.Version != 2 || c.TickNanoseconds < 1000 || c.DepartureAt.IsZero() || c.OffsetMilli < 0 || c.OffsetMilli >= 1000 || c.EndTick-c.StartTick != j.TravelTicks {
+			return fmt.Errorf("invalid saved trade clock")
+		}
+	}
 	if j.Category != "land" && j.Category != "naval" {
 		return fmt.Errorf("invalid journey category")
 	}
@@ -127,4 +136,24 @@ func (j TradeJourney) Validate() error {
 		return fmt.Errorf("saved trade duration does not match costs")
 	}
 	return nil
+}
+
+// Route projects the frozen geometry onto the movement-owned clock. Legacy
+// journeys retain their original interpretation until their voyage ends.
+func (j TradeJourney) Route(start, end int) movement.StoredRoute {
+	hexes := make([][2]int, len(j.Path))
+	for i, p := range j.Path {
+		hexes[i] = [2]int{p.Q, p.R}
+	}
+	if j.Clock != nil {
+		return j.Clock.Route(hexes, j.StepCosts)
+	}
+	return movement.StoredRoute{StartTick: start, EndTick: end, Hexes: hexes, Costs: j.StepCosts}
+}
+
+// StartAt binds this frozen geometry to movement's dispatch clock. Economy
+// supplies the anchor conversion without importing a higher routing owner.
+func (j *TradeJourney) StartAt(dispatch int64, now time.Time, cadence time.Duration) {
+	c := movement.NewRouteClock(dispatch, now, cadence, j.TravelTicks)
+	j.Clock = &c
 }

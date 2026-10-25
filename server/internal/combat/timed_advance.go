@@ -3,7 +3,9 @@ package combat
 import (
 	"context"
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/tick"
+	"formatet/megaron/server/internal/transport"
 	"github.com/jackc/pgx/v5"
 	"sort"
 	"time"
@@ -22,6 +24,9 @@ func (h *PlaceReachScanHandler) BeforeTimedAdvance(next events.Handler) events.H
 	}
 }
 func (h *PlaceReachScanHandler) advanceTimed(ctx context.Context, e events.ScheduledEvent) error {
+	if err := province.SweepRunnerRoutes(ctx, h.pool, e.WorldID, h.scheduler.Clock().Now()); err != nil {
+		return err
+	}
 	conn, err := h.pool.Acquire(ctx)
 	if err != nil {
 		return err
@@ -139,6 +144,10 @@ func (h *PlaceReachScanHandler) advanceTimed(ctx context.Context, e events.Sched
 		}
 		intercept := NewUnitInterceptScanHandler(h.pool, scheduler, h.store, clk, h.hub)
 		if err = intercept.scan(ctx, e, at); err != nil {
+			return err
+		}
+		freight := transport.NewInterceptScanHandler(h.pool, scheduler, h.store, h.hub, clk)
+		if err = freight.ScanAt(ctx, e); err != nil {
 			return err
 		}
 		if _, err = h.pool.Exec(ctx, `INSERT INTO timed_route_progress(world_id,last_milli) VALUES($1,$2) ON CONFLICT(world_id) DO UPDATE SET last_milli=GREATEST(timed_route_progress.last_milli,EXCLUDED.last_milli)`, e.WorldID, at); err != nil {

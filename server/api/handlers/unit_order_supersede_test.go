@@ -63,7 +63,7 @@ func TestSecondMovementOrderCallsBackOnlyUnboardedPriorRunner(t *testing.T) {
 		t.Fatalf("replacement state=%s", state)
 	}
 	var returns int
-	if err := pool.QueryRow(ctx, `SELECT count(*) FROM scheduled_events WHERE event_type='MessengerReturn' AND payload->>'messenger_id'=$1`, old.String()).Scan(&returns); err != nil {
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM scheduled_events WHERE event_type IN ('MessengerReturn','MessengerReturnV2') AND payload->>'messenger_id'=$1`, old.String()).Scan(&returns); err != nil {
 		t.Fatal(err)
 	}
 	if returns != 1 {

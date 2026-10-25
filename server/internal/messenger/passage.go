@@ -36,6 +36,7 @@ import (
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/combat"
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/movement"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/unit"
@@ -993,11 +994,12 @@ func (h *PassageScanHandler) boardOne(ctx context.Context, worldID, messengerID 
 	// A carrier selected outside this TX may have died, been seized or started
 	// another mission before boarding; it must not acquire an unwitnessed runner.
 	var shipID *uuid.UUID
+	var carrierDeparture *time.Time
 	var owner uuid.UUID
 	if carrier.transportID != nil {
 		var status string
 		var due int
-		if err := tx.QueryRow(ctx, `SELECT status,ship_unit_id,owner_id,due_tick FROM transports WHERE id=$1 AND world_id=$2 FOR UPDATE`, *carrier.transportID, worldID).Scan(&status, &shipID, &owner, &due); err == pgx.ErrNoRows {
+		if err := tx.QueryRow(ctx, `SELECT status,ship_unit_id,owner_id,due_tick,departs_at FROM transports WHERE id=$1 AND world_id=$2 FOR UPDATE`, *carrier.transportID, worldID).Scan(&status, &shipID, &owner, &due, &carrierDeparture); err == pgx.ErrNoRows {
 			return nil
 		} else if err != nil {
 			return err
@@ -1013,7 +1015,7 @@ func (h *PassageScanHandler) boardOne(ctx context.Context, worldID, messengerID 
 		var size, hull int
 		var shipOwner uuid.UUID
 		var arrival *int
-		if err := tx.QueryRow(ctx, `SELECT status,size,hull,owner_id,arrive_tick FROM units WHERE id=$1 AND world_id=$2 FOR UPDATE`, *shipID, worldID).Scan(&status, &size, &hull, &shipOwner, &arrival); err == pgx.ErrNoRows {
+		if err := tx.QueryRow(ctx, `SELECT status,size,hull,owner_id,arrive_tick,departs_at FROM units WHERE id=$1 AND world_id=$2 FOR UPDATE`, *shipID, worldID).Scan(&status, &size, &hull, &shipOwner, &arrival, &carrierDeparture); err == pgx.ErrNoRows {
 			return nil
 		} else if err != nil {
 			return err
@@ -1027,6 +1029,36 @@ func (h *PassageScanHandler) boardOne(ctx context.Context, worldID, messengerID 
 			}
 			owner = shipOwner
 		} else if shipOwner != owner {
+			return nil
+		}
+	}
+
+	if carrier.transportID != nil {
+		if err := tx.QueryRow(ctx, `SELECT departs_at FROM transports WHERE id=$1`, *carrier.transportID).Scan(&carrierDeparture); err != nil {
+			return err
+		}
+	}
+	var landRaw []byte
+	if err := tx.QueryRow(ctx, `SELECT land_route FROM messengers WHERE id=$1 FOR UPDATE`, messengerID).Scan(&landRaw); err != nil {
+		return err
+	}
+	if len(landRaw) > 0 {
+		var r movement.StoredRoute
+		if err := json.Unmarshal(landRaw, &r); err != nil {
+			return err
+		}
+		ready := r.WallAt(int64(r.EndTick)*1000 + r.OffsetMilli)
+		if len(r.Hexes) == 1 {
+			ready = r.DepartureAt
+		}
+		boarded := h.clk.Now()
+		if carrierDeparture != nil {
+			boarded = *carrierDeparture
+		}
+		// A same-hex port leg is already physically at port. Otherwise compare
+		// the shared millitick precision (unit dispatch is quantized there).
+		quantum := time.Duration(r.TickNanoseconds) / 1000
+		if len(r.Hexes) > 1 && (h.clk.Now().Add(quantum).Before(ready) || boarded.Add(quantum).Before(ready)) {
 			return nil
 		}
 	}
@@ -1070,13 +1102,11 @@ func (h *PassageScanHandler) boardOne(ctx context.Context, worldID, messengerID 
 	}
 	dueTick := carrierDueTick + landTicks
 	arrivesAt := carrierArrivesAt.Add(landDur)
-	precise := false
-	if carrier.unitID != nil {
-		if err := tx.QueryRow(ctx, `SELECT COALESCE((march_route->>'version')::int,0)=2 FROM units WHERE id=$1`, *carrier.unitID).Scan(&precise); err != nil {
-			return err
-		}
+	if err := SaveLandRouteTx(ctx, tx, worldID, messengerID, disembarkAt, province.MapPosition{Q: targetQ, R: targetR}, carrierArrivesAt, arrivesAt, carrierDueTick); err != nil {
+		return err
 	}
-	if err := scheduleCompletion(ctx, tx, h.scheduler, messengerID, dueTick, arrivesAt, precise); err != nil {
+
+	if err := scheduleCompletion(ctx, tx, h.scheduler, messengerID, dueTick, arrivesAt, true); err != nil {
 		return err
 	}
 	if err := tx.Commit(ctx); err != nil {
@@ -1174,7 +1204,7 @@ func (h *PassageScanHandler) sealLostCarrier(ctx context.Context, worldID uuid.U
 	// exactly like carrier_transport_id/carrier_unit_id/carrier_name already do.
 	tag, err := h.pool.Exec(ctx,
 		`UPDATE messengers
-		    SET passage_status = 'returning_sealed', passage_lost_until_tick = $2,
+		    SET passage_status = 'returning_sealed',land_route=NULL, passage_lost_until_tick = $2,
 		        carrier_transport_id = NULL, carrier_unit_id = NULL, carrier_name = NULL,
 		        disembark_q = NULL, disembark_r = NULL, boarded_at = NULL, disembark_at = NULL,
 		        passage_generation = passage_generation + 1
@@ -1274,7 +1304,7 @@ func scheduleCompletion(ctx context.Context, tx pgx.Tx, sched *events.Scheduler,
 	var orderPayload []byte
 	var generation int
 	if err := tx.QueryRow(ctx,
-		`UPDATE messengers SET arrives_at = $2, passage_generation = passage_generation + 1
+		`UPDATE messengers SET arrives_at = $2, passage_generation = passage_generation + CASE WHEN land_route IS NULL THEN 1 ELSE 0 END
 		  WHERE id = $1
 		  RETURNING world_id, kind, status, order_payload, passage_generation`,
 		messengerID, arrivesAt,
@@ -1283,6 +1313,13 @@ func scheduleCompletion(ctx context.Context, tx pgx.Tx, sched *events.Scheduler,
 	}
 
 	enqueue := func(typ events.ScheduledEventType, payload any) error {
+		var hasLand bool
+		if err := tx.QueryRow(ctx, `SELECT land_route IS NOT NULL FROM messengers WHERE id=$1`, messengerID).Scan(&hasLand); err != nil {
+			return err
+		}
+		if hasLand {
+			return EnqueueLandTx(ctx, tx, sched, worldID, typ, payload, dueTick)
+		}
 		if len(precise) == 0 || !precise[0] {
 			return sched.EnqueueTickTx(ctx, tx, worldID, typ, payload, dueTick)
 		}

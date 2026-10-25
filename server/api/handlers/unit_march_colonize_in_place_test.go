@@ -158,7 +158,7 @@ func TestMarch_ColonizeInPlace_PositionedUnitFoundsOnOwnHex(t *testing.T) {
 	var rawPayload []byte
 	if err := pool.QueryRow(ctx,
 		`SELECT payload FROM scheduled_events
-		 WHERE event_type = 'OrderDelivery' AND (payload->>'messenger_id')::uuid = $1
+		 WHERE event_type IN ('OrderDelivery','OrderDeliveryV2') AND (payload->>'messenger_id')::uuid = $1
 		   AND processed_at IS NULL AND failed_at IS NULL`,
 		dispatchResp.MessengerID,
 	).Scan(&rawPayload); err != nil {

@@ -101,7 +101,7 @@ func (h *WorldHandler) messengerCarrierRoute(ctx context.Context, worldID uuid.U
 		if err := h.pool.QueryRow(ctx, `SELECT journey,departed_tick,due_tick FROM transports WHERE id=$1 AND world_id=$2 AND status='in_transit'`, *carrierTransport, worldID).Scan(&raw, &start, &end); err != nil || start == nil {
 			return nil
 		}
-		pos, err := transport.SavedPosition(raw, *start, end, at)
+		pos, err := transport.SavedPosition(raw, *start, end, at, now)
 		if err != nil {
 			return nil
 		}
@@ -109,7 +109,11 @@ func (h *WorldHandler) messengerCarrierRoute(ctx context.Context, worldID uuid.U
 		if json.Unmarshal(raw, &j) != nil {
 			return nil
 		}
-		return &carrierRoute{pathCoordinates(j.Path), j.StepCosts, *start, end, pos.Q, pos.R, frozenHeading(j.Path, j.StepCosts, *start, end, at), 0, 0}
+		route := j.Route(*start, end)
+		if route.Version == 2 {
+			at = route.MilliAt(now)
+		}
+		return &carrierRoute{pathCoordinates(j.Path), j.StepCosts, *start, end, pos.Q, pos.R, frozenHeading(j.Path, j.StepCosts, *start, end, at, route), route.Version, route.OffsetMilli}
 	}
 	if carrierUnit != nil {
 		var raw []byte

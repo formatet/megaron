@@ -161,7 +161,7 @@ func (f *tradeNavalFixture) lastTradeDeliveryEvent(t *testing.T) events.Schedule
 	var payload []byte
 	if err := f.pool.QueryRow(context.Background(),
 		`SELECT id, payload FROM scheduled_events
-		  WHERE world_id = $1 AND event_type = 'TradeDelivery'
+		  WHERE world_id = $1 AND event_type IN ('TradeDelivery','TradeDeliveryV2')
 		  ORDER BY id DESC LIMIT 1`,
 		f.worldID,
 	).Scan(&id, &payload); err != nil {
@@ -178,7 +178,7 @@ func (f *tradeNavalFixture) lastTransportArrivalEvent(t *testing.T) events.Sched
 	var payload []byte
 	if err := f.pool.QueryRow(context.Background(),
 		`SELECT id, payload FROM scheduled_events
-		  WHERE world_id = $1 AND event_type = 'TransportArrival'
+		  WHERE world_id = $1 AND event_type IN ('TransportArrival','TransportArrivalV2')
 		  ORDER BY id DESC LIMIT 1`,
 		f.worldID,
 	).Scan(&id, &payload); err != nil {

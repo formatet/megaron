@@ -113,17 +113,12 @@ func BuildRouteAt(ctx context.Context, db province.Queryer, worldID uuid.UUID, p
 	if !rows.Next() || rows.Scan(&a.Tick, &a.At) != nil {
 		return StoredRoute{}, false
 	}
-	r.Version = 2
 	dispatch := a.ExactMilliAt(now)
-	// A delayed tick worker must not backdate a new journey.
 	if dispatch < int64(start)*1000 {
 		dispatch = int64(start) * 1000
 	}
-	r.StartTick = int(dispatch / 1000)
-	r.EndTick = r.StartTick + (end - start)
-	r.OffsetMilli = dispatch % 1000
-	r.DepartureAt = a.WallAt(dispatch)
-	r.TickNanoseconds = int64(time.Duration(tick.TickSeconds) * time.Second)
+	c := movement.NewRouteClock(dispatch, a.WallAt(dispatch), time.Duration(tick.TickSeconds)*time.Second, end-start)
+	r = c.Route(r.Hexes, r.Costs)
 	return r, true
 }
 
