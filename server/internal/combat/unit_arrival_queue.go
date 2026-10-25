@@ -45,7 +45,7 @@ func enqueueUnitArrivalTx(ctx context.Context, tx pgx.Tx, scheduler *events.Sche
 		}
 		// The new course atomically replaces an identical pending legacy envelope.
 		// Different envelopes (including other due ticks) retain their own jobs.
-		tag, err := tx.Exec(ctx, `UPDATE scheduled_events SET event_type=$5,payload=$6,process_after=$7 WHERE id=(SELECT id FROM scheduled_events WHERE world_id=$1 AND event_type=$2 AND due_tick=$3 AND payload=$4::jsonb AND processed_at IS NULL AND failed_at IS NULL ORDER BY id LIMIT 1 FOR UPDATE)`, worldID, string(events.ScheduledUnitArrival), due, oldBody, string(events.ScheduledUnitArrivalV2), body, arrival)
+		tag, err := tx.Exec(ctx, `UPDATE scheduled_events SET event_type=$5,payload=$6,process_after=$7 WHERE id=(SELECT id FROM scheduled_events WHERE world_id=$1 AND event_type=$2 AND due_tick=$3 AND payload=$4::jsonb AND processed_at IS NULL AND failed_at IS NULL AND attempts=0 ORDER BY id LIMIT 1 FOR UPDATE)`, worldID, string(events.ScheduledUnitArrival), due, oldBody, string(events.ScheduledUnitArrivalV2), body, arrival)
 		if err != nil {
 			return err
 		}

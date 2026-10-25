@@ -10,6 +10,7 @@ import (
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/tick"
+	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 )
 
@@ -87,6 +88,52 @@ func TestShipReport43640c42_DeparturePhase(t *testing.T) {
 			if res.DurationTicks != 1 || len(route.Hexes) != 4 {
 				t.Fatalf("fixture no longer reproduces reported three-step one-tick voyage: %+v", res)
 			}
+			t.Run("claimed_legacy_queue_row_keeps_its_identity", func(t *testing.T) {
+				tx, err := pool.Begin(ctx)
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer tx.Rollback(ctx)
+				if _, err = tx.Exec(ctx, `DELETE FROM scheduled_events WHERE world_id=$1 AND event_type=$2`, wid, string(events.ScheduledUnitArrivalV2)); err != nil {
+					t.Fatal(err)
+				}
+				p := unit.ScheduledUnitArrivalPayload{UnitID: ship, WorldID: wid, ArriveTick: &res.ArrivalTick}
+				body, _ := json.Marshal(p)
+				var id int64
+				if err = tx.QueryRow(ctx, `INSERT INTO scheduled_events(world_id,event_type,payload,process_after,due_tick,attempts) VALUES($1,$2,$3,$4,$5,1) RETURNING id`, wid, string(events.ScheduledUnitArrival), body, clk.Now(), res.ArrivalTick).Scan(&id); err != nil {
+					t.Fatal(err)
+				}
+				if err = enqueueUnitArrivalTx(ctx, tx, events.NewScheduler(pool, clk), wid, p, res.ArrivalTick); err != nil {
+					t.Fatal(err)
+				}
+				var typ string
+				if err = tx.QueryRow(ctx, `SELECT event_type FROM scheduled_events WHERE id=$1`, id).Scan(&typ); err != nil {
+					t.Fatal(err)
+				}
+				if typ != string(events.ScheduledUnitArrival) {
+					t.Fatal("already claimed legacy row was rewritten; old worker could mark the replacement done")
+				}
+				var n int
+				if err = tx.QueryRow(ctx, `SELECT count(*) FROM scheduled_events WHERE world_id=$1 AND event_type=$2`, wid, string(events.ScheduledUnitArrivalV2)).Scan(&n); err != nil || n != 1 {
+					t.Fatalf("replacement arrival count%d err%v", n, err)
+				}
+			})
+
+			t.Run("stale_claimed_legacy_arrival_cannot_finish_v2_course", func(t *testing.T) {
+				body, _ := json.Marshal(map[string]any{"unit_id": ship, "world_id": wid, "arrive_tick": res.ArrivalTick})
+				h := NewUnitArrivalHandler(pool, events.NewStore(pool), nil, events.NewScheduler(pool, clk), clk)
+				if err := h.Handle(ctx, events.ScheduledEvent{EventType: events.ScheduledUnitArrival, WorldID: wid, DueTick: res.ArrivalTick, Payload: body}); err != nil {
+					t.Fatal(err)
+				}
+				var same bool
+				if err := pool.QueryRow(ctx, `SELECT march_route=$2::jsonb AND status='marching' FROM units WHERE id=$1`, ship, raw).Scan(&same); err != nil {
+					t.Fatal(err)
+				}
+				if !same {
+					t.Fatal("an already claimed legacy event changed a new version2 voyage")
+				}
+			})
+
 			t.Run("live_position_while_world_tick_worker_lags", func(t *testing.T) {
 				halfway := res.DepartsAt.Add(time.Duration(res.DurationTicks*tick.TickSeconds) * time.Second / 2)
 				pos, err := RoutePositionAt(route, anchor.MilliAt(halfway), halfway)

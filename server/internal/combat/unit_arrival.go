@@ -109,6 +109,19 @@ func (h *UnitArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent
 	}
 	defer tx.Rollback(ctx)
 
+	if e.EventType == events.ScheduledUnitArrival {
+		// A legacy job may already have been claimed before a course replacement
+		// promoted its pending row to V2. It must never resolve that new course.
+		var raw []byte
+		if err := tx.QueryRow(ctx, `SELECT march_route FROM units WHERE id=$1 FOR UPDATE`, payload.UnitID).Scan(&raw); err != nil {
+			return err
+		}
+		var saved StoredRoute
+		if json.Unmarshal(raw, &saved) == nil && saved.Version == 2 {
+			return nil
+		}
+	}
+
 	if e.EventType == events.ScheduledUnitArrivalV2 {
 		var v2 arrivalV2Payload
 		if err := json.Unmarshal(e.Payload, &v2); err != nil {
