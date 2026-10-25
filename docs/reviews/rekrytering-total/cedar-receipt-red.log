@@ -1,0 +1,7 @@
+» färsk DB på migration 213 · commit 762c5672+ändringar
+2026/10/25 15:57:07 INFO player registered id=6ce193bb-abab-46f7-a00b-54466b0c3fef username=shipwright-a25f74b1-5181-409e-8166-650cef12e340
+--- FAIL: TestRecruitCedarReceiptAndCancellationPreservePaidGoods (0.08s)
+    recruit_quote_test.go:35: receipt must name actual cedar payment: map[complete_at:<nil> count:1 forming_size:1 men:20 names:[Way of the Bull] pop_drawn:20 population_after:4980 population_before:5000 shipyard_waiting:true shipyard_work_remaining:3 unit_id:a1e6cf9e-cc27-477b-b5be-8cba4832618b unit_ids:[a1e6cf9e-cc27-477b-b5be-8cba4832618b] unit_type:galley upkeep_warning:warning: once this unit garrisons it needs 0.1 grain + 0.0 silver per game day upkeep — this settlement's current net after its existing army's upkeep is -24.9 grain per game day, +0.0 silver per game day; it may starve/desert without more production or fewer units (`keryx status`)]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.084s
+FAIL

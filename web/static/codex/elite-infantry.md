@@ -3,8 +3,8 @@
 | | |
 |---|---|
 | **Trained at** | Barracks + Foundry |
-| **Cost** | 24 grain · 16 [[bronze]] · 40 silver per hundred |
-| **Size** | 100 men |
+| **Cost for one cohort** | 24 grain · 16 [[bronze]] · 40 silver |
+| **Size** | 100 men, drafted from the city |
 | **Training** | 4 game days |
 | **Food** | 0.6 per game day at home, 1.2 in the field |
 | **Pay** | 0.75 silver per game day at home, 1.5 in the field ([[silver]]) |

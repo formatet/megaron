@@ -6,7 +6,7 @@ globalThis.document ??= {addEventListener(){},getElementById:()=>noopEl,createEl
 globalThis.window ??= {addEventListener(){},matchMedia:()=>({matches:false,addEventListener(){}})};
 globalThis.localStorage ??= {getItem:()=>null,setItem(){},removeItem(){}};
 const { State }=await import('../state.js');
-const {renderUnitCard,unitStatusLabel}=await import('./drawers/war.js');
+const {renderUnitCard,unitStatusLabel,fmtUnitCost,recruitmentPaidText}=await import('./drawers/war.js');
 const unit=(extra={})=>({id:'u',type:'spearman',display_name:'First Spearmen',category:'land',status:'garrison',deployable:true,size:100,...extra});
 
 
@@ -188,4 +188,17 @@ test('silver flow: basic ships show zero API pay and chariots show doubled pay',
   const html=renderUnitCard(unit({type,category,status:'positioned',upkeep_context:'active',upkeep_grain_per_tick:1,upkeep_silver_per_tick:pay}));
   assert.ok(html.includes(`${pay} silver per game day`),`${type} must show server pay ${pay}`);
  }
+});
+
+
+test('recruit prices are the server total for one vessel or cohort, with the actual city draft',()=>{
+ assert.equal(fmtUnitCost({costs:{timber:30},batch_men:20,pop_cost:10},true),'30 timber (or cedar) · 20 crew from the city');
+ assert.equal(fmtUnitCost({costs:{cedar:90},batch_men:10,pop_cost:10},true),'90 cedar · 10 crew from the city');
+ assert.equal(fmtUnitCost({costs:{grain:12},batch_men:100,pop_cost:5},false),'12 grain · 100 men from the city');
+});
+
+test('recruitment receipt names the goods actually paid, including cedar substitution',()=>{
+ assert.equal(recruitmentPaidText({timber:10,cedar:20}),' · paid 20 cedar + 10 timber');
+ assert.equal(recruitmentPaidText({cedar:30}),' · paid 30 cedar');
+ assert.equal(recruitmentPaidText(undefined),'');
 });

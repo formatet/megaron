@@ -163,10 +163,16 @@ func recruitCmd() *cobra.Command {
 			// server projects this unit will push the settlement into grain/silver
 			// deficit once it garrisons.
 			var warnResp struct {
-				UpkeepWarning string `json:"upkeep_warning"`
+				UpkeepWarning string             `json:"upkeep_warning"`
+				PaidCosts     map[string]float64 `json:"paid_costs"`
 			}
-			if json.Unmarshal(data, &warnResp) == nil && warnResp.UpkeepWarning != "" {
-				fmt.Println(warnResp.UpkeepWarning)
+			if json.Unmarshal(data, &warnResp) == nil {
+				if paid := recruitmentPaidGoods(warnResp.PaidCosts); paid != "" {
+					fmt.Println("Paid " + paid + ".")
+				}
+				if warnResp.UpkeepWarning != "" {
+					fmt.Println(warnResp.UpkeepWarning)
+				}
 			}
 			return nil
 		},
@@ -225,6 +231,7 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 	// itself gives at the moment of the POST, surfaced here BEFORE committing.
 	type recruitAffordInfo struct {
 		canRecruit  bool
+		reasons     []string
 		upkeepGrain float64
 		upkeepSilv  float64
 		// Compatible server net field; current rules charge the full stated pay.
@@ -270,7 +277,15 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 						if !sustainOK {
 							sustain = true // older server without the field: don't false-warn
 						}
-						afford[u] = recruitAffordInfo{canRecruit: can, upkeepGrain: ug,
+						var reasons []string
+						if rows, ok := m["reasons"].([]any); ok {
+							for _, row := range rows {
+								if reason, ok := row.(string); ok {
+									reasons = append(reasons, reason)
+								}
+							}
+						}
+						afford[u] = recruitAffordInfo{canRecruit: can, reasons: reasons, upkeepGrain: ug,
 							upkeepSilv: us, upkeepSilvNet: usNet, sustainable: sustain}
 					}
 				}
@@ -278,8 +293,8 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 		}
 	}
 
-	fmt.Printf("%-24s  %-14s  %-28s  %-6s  %-5s  %-16s  %-6s  %s\n",
-		"Type (--unit)", "Batch", "Cost", "game days", "Pop", "Requires", "Afford", "Upkeep per game day (once garrisoned)")
+	fmt.Printf("%-24s  %-24s  %-28s  %-9s  %-16s  %-6s  %s\n",
+		"Type (--unit)", "City draft per order", "Total cost", "game days", "Requires", "Afford / what is missing", "Upkeep per game day (once garrisoned)")
 	fmt.Println(strings.Repeat("─", 110))
 	for _, u := range catalogue {
 		label := u.Type
@@ -288,14 +303,18 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 		}
 
 		isNaval := u.Type == "galley" || u.Type == "war_galley" || u.Type == "merchantman"
-		batch := fmt.Sprintf("%d men", u.BatchMen)
+		batch := fmt.Sprintf("%d men from the city", u.BatchMen)
 		if isNaval {
-			batch = fmt.Sprintf("1 vessel (%d crew)", u.BatchMen)
+			batch = fmt.Sprintf("%d crew from the city", u.BatchMen)
 		}
 
 		costParts := make([]string, 0, len(u.Costs))
 		for g, q := range u.Costs {
-			costParts = append(costParts, fmt.Sprintf("%s×%s", g, trimFloat(q)))
+			label := g
+			if g == "timber" {
+				label = "timber (or cedar)"
+			}
+			costParts = append(costParts, fmt.Sprintf("%s %s", trimFloat(q), label))
 		}
 		sort.Strings(costParts)
 		costStr := strings.Join(costParts, " ")
@@ -327,7 +346,7 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 			if info.canRecruit {
 				affordStr = "✓"
 			} else {
-				affordStr = "✗"
+				affordStr = "✗ " + strings.Join(info.reasons, "; ")
 			}
 			if info.upkeepGrain > 0 || info.upkeepSilv > 0 {
 				upkeepStr = recruitUpkeepLine(info.upkeepGrain, info.upkeepSilv)
@@ -338,8 +357,8 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 			}
 		}
 
-		fmt.Printf("%-24s  %-14s  %-28s  %-6d  %-5d  %-16s  %-6s  %s\n",
-			label, batch, costStr, u.DurationGameDays, u.PopCost, reqStr, affordStr, upkeepStr)
+		fmt.Printf("%-24s  %-24s  %-28s  %-9d  %-16s  %-6s  %s\n",
+			label, batch, costStr, u.DurationGameDays, reqStr, affordStr, upkeepStr)
 	}
 	return nil
 }
@@ -394,4 +413,16 @@ func unsustainableReason(netGrain, netSilver, unitGrain, unitSilver, grainStock,
 		// state this client's numbers no longer reflect. Say so rather than invent.
 		return "city can't carry this yet"
 	}
+}
+
+// The receipt reports the authoritative debit, not the recipe's nominal timber.
+func recruitmentPaidGoods(costs map[string]float64) string {
+	parts := []string{}
+	for good, amount := range costs {
+		if amount > 0 {
+			parts = append(parts, fmt.Sprintf("%s %s", trimFloat(amount), good))
+		}
+	}
+	sort.Strings(parts)
+	return strings.Join(parts, " + ")
 }

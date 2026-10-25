@@ -374,8 +374,9 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// draw no upkeep yet) against the city's current net-after-upkeep capacity —
 		// answering "can this city carry one more of these" before the Wanax commits.
 		type recruitAffordRow struct {
-			Unit       string `json:"unit"`
-			CanRecruit bool   `json:"can_recruit"`
+			Unit       string   `json:"unit"`
+			CanRecruit bool     `json:"can_recruit"`
+			Reasons    []string `json:"reasons"`
 			// Gross is the unit's own upkeep — what the affordability gate needs
 			// liquid at debit time (the war-chest is still charged in full).
 			UpkeepGrainPerDay  float64 `json:"upkeep_grain_per_tick"`
@@ -385,31 +386,14 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			Sustainable           bool    `json:"sustainable"`
 		}
 		var recruitAfford []recruitAffordRow
-		for unitType, spec := range province.UnitSpecs {
-			afford := laborPool >= spec.PopCost
-			if afford && spec.RequiresBarracks && !builtTypes["barracks"] {
-				afford = false
-			}
-			if afford && spec.RequiresStable && !builtTypes["stable"] {
-				afford = false
-			}
-			if afford && spec.RequiresHarbour && !builtTypes["harbour"] {
-				afford = false
-			}
-			if afford && spec.RequiresShipyard && !builtTypes["shipyard"] {
-				afford = false
-			}
-			if afford && spec.RequiresFoundry && !builtTypes["foundry"] {
-				afford = false
-			}
-			if afford {
-				// Recruit charges per man × the whole batch (a 100-man cohort or the crew).
-				batch := 100.0
-				if crew := unit.CrewFor(unit.Type(unitType)); crew > 0 {
-					batch = float64(crew)
-				}
-				afford = goodsAffordableWithCedar(goodsStock, spec.Costs, batch)
-			}
+		var pendingShips int
+		if err := h.pool.QueryRow(r.Context(), navalBuildQueueCountSQL, worldID, sett.ID).Scan(&pendingShips); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not read shipyard queue")
+			return
+		}
+		for unitType := range province.UnitSpecs {
+			reasons := recruitReasons(unitType, laborPool, builtTypes, goodsStock, pendingShips)
+			afford := len(reasons) == 0
 			fullSize := 100
 			cat := string(unit.CategoryOf(unit.Type(unitType)))
 			if cat != "land" {
@@ -421,7 +405,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			newUnitNetSilver := newUnitUp.Silver
 			sustainable := (netGrainPerDay-newUnitUp.Grain) >= 0 && (netSilverPerDay-newUnitNetSilver) >= 0
 			recruitAfford = append(recruitAfford, recruitAffordRow{
-				Unit: unitType, CanRecruit: afford,
+				Unit: unitType, CanRecruit: afford, Reasons: reasons,
 				UpkeepGrainPerDay: newUnitUp.Grain, UpkeepSilverPerDay: newUnitUp.Silver,
 				UpkeepSilverNetPerDay: newUnitNetSilver,
 				Sustainable:           sustainable,
@@ -2006,10 +1990,7 @@ func (h *ProvinceHandler) UnitCatalogue(w http.ResponseWriter, r *http.Request) 
 		spec := province.UnitSpecs[ut]
 		// Kohort-rekrytering: one land recruit call always drafts the full
 		// 100-man cohort (economy.MaxUnitSize), not a 10-man batch.
-		batchMen := economy.MaxUnitSize
-		if unit.CategoryOf(unit.Type(ut)) == unit.CategoryNaval {
-			batchMen = unit.CrewFor(unit.Type(ut))
-		}
+		batchMen := recruitBatchMen(ut)
 		costs := make(map[string]float64, len(spec.Costs))
 		for g, v := range spec.Costs {
 			costs[g] = v * float64(batchMen)
@@ -2436,7 +2417,8 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if err := deductGoods(r.Context(), tx, settlementID, totalCosts); err != nil {
+	paidCosts, err := deductGoodsPaid(r.Context(), tx, settlementID, totalCosts)
+	if err != nil {
 		var insErr *insufficientGoodsError
 		if errors.As(err, &insErr) {
 			writeGoodsError(w, insErr)
@@ -2595,7 +2577,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 				writeError(w, http.StatusInternalServerError, "could not create ship")
 				return
 			}
-			if err := combat.RecordRecruitReservation(r.Context(), tx, unitID, totalCosts, totalKharis, crew, totalMen, true); err != nil {
+			if err := combat.RecordRecruitReservation(r.Context(), tx, unitID, paidCosts, totalKharis, crew, totalMen, true); err != nil {
 				writeError(w, http.StatusInternalServerError, "could not reserve ship costs")
 				return
 			}
@@ -2692,7 +2674,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-		if err := combat.RecordRecruitReservation(r.Context(), tx, unitID, totalCosts, totalKharis, unitSize-existingSize, totalMen, existingUnitID == nil); err != nil {
+		if err := combat.RecordRecruitReservation(r.Context(), tx, unitID, paidCosts, totalKharis, unitSize-existingSize, totalMen, existingUnitID == nil); err != nil {
 			writeError(w, http.StatusInternalServerError, "could not reserve training costs")
 			return
 		}
@@ -2745,7 +2727,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 					writeError(w, http.StatusInternalServerError, "could not create spill forming unit")
 					return
 				}
-				if err := combat.RecordRecruitReservation(r.Context(), tx, spillID, totalCosts, totalKharis, newSize-100, totalMen, true); err != nil {
+				if err := combat.RecordRecruitReservation(r.Context(), tx, spillID, paidCosts, totalKharis, newSize-100, totalMen, true); err != nil {
 					writeError(w, http.StatusInternalServerError, "could not reserve spill training costs")
 					return
 				}
@@ -2803,6 +2785,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		// client. pop_drawn is the actual head-count the settlement lost,
 		// population_before/after let the client confirm the delta itself
 		// (same "verify against resulting state" pattern place/allocate use).
+		"paid_costs":        paidCosts,
 		"pop_drawn":         totalMen,
 		"population_before": population,
 		"population_after":  popAfter,

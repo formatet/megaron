@@ -1,0 +1,7 @@
+» färsk DB på migration 213 · commit 762c5672+ändringar
+2026/10/25 15:56:13 INFO player registered id=5c032307-f136-4a21-a97d-9f717d837bc8 username=shipwright-41e63042-7389-4774-95a1-ce6d1a7302e3
+--- FAIL: TestRecruitQuoteMatchesPopulationAndExplainsShortfall (0.09s)
+    recruit_quote_test.go:25: 20 citizens cannot crew a20-person ship while leaving a resident; quote={Unit:galley Can:true Reasons:[]}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.091s
+FAIL
