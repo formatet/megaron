@@ -1,0 +1,22 @@
+» färsk DB på migration 212 · commit 7e478f88
+=== RUN   TestShipReport43640c42_DeparturePhase
+=== RUN   TestShipReport43640c42_DeparturePhase/at_boundary
+    ship_immediate_report_test.go:83: duration=1 ticks route={"costs": [200, 200, 200], "hexes": [[60, 27], [59, 27], [58, 27], [58, 26]], "end_tick": 104, "start_tick": 103} announced=2026-10-24T18:10:30Z nominal_due=2026-10-24T18:10:30Z departure_milli=103000
+=== RUN   TestShipReport43640c42_DeparturePhase/at_boundary/first_entered_hex_at_dispatch
+=== RUN   TestShipReport43640c42_DeparturePhase/at_boundary/announced_eta_matches_due_tick_boundary
+=== RUN   TestShipReport43640c42_DeparturePhase/reported_phase
+    ship_immediate_report_test.go:83: duration=1 ticks route={"costs": [200, 200, 200], "hexes": [[60, 27], [59, 27], [58, 27], [58, 26]], "end_tick": 104, "start_tick": 103} announced=2026-10-24T18:11:14Z nominal_due=2026-10-24T18:10:30Z departure_milli=103733
+=== RUN   TestShipReport43640c42_DeparturePhase/reported_phase/first_entered_hex_at_dispatch
+    ship_immediate_report_test.go:94: newly dispatched ship already at {Q:58 R:26}, want first entered hex {Q:59 R:27}; consumed elapsed phase before departure
+=== RUN   TestShipReport43640c42_DeparturePhase/reported_phase/announced_eta_matches_due_tick_boundary
+    ship_immediate_report_test.go:100: announced ETA 2026-10-24 18:11:14 +0000 UTC differs from due-tick boundary 2026-10-24 18:10:30 +0000 UTC by 44s
+--- FAIL: TestShipReport43640c42_DeparturePhase (0.05s)
+    --- PASS: TestShipReport43640c42_DeparturePhase/at_boundary (0.03s)
+        --- PASS: TestShipReport43640c42_DeparturePhase/at_boundary/first_entered_hex_at_dispatch (0.00s)
+        --- PASS: TestShipReport43640c42_DeparturePhase/at_boundary/announced_eta_matches_due_tick_boundary (0.00s)
+    --- FAIL: TestShipReport43640c42_DeparturePhase/reported_phase (0.03s)
+        --- FAIL: TestShipReport43640c42_DeparturePhase/reported_phase/first_entered_hex_at_dispatch (0.00s)
+        --- FAIL: TestShipReport43640c42_DeparturePhase/reported_phase/announced_eta_matches_due_tick_boundary (0.00s)
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.057s
+FAIL

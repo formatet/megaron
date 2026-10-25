@@ -1,0 +1,8 @@
+» färsk DB på migration 213 · commit 8cd130dd+ändringar
+# formatet/megaron/server/internal/combat
+# [formatet/megaron/server/internal/combat]
+internal/combat/march_route_test.go:579:112: (*testing.common).Errorf format %) has unknown verb )
+FAIL	formatet/megaron/server/internal/combat [build failed]
+ok  	formatet/megaron/server/internal/events	0.013s
+ok  	formatet/megaron/server/internal/messenger	0.047s
+FAIL

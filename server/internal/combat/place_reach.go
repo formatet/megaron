@@ -15,6 +15,7 @@ import (
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/unit"
 	"formatet/megaron/server/internal/world"
 	"github.com/google/uuid"
@@ -64,7 +65,15 @@ func (h *PlaceReachScanHandler) flushEntries(ctx context.Context, e events.Sched
 	if err = placeReachLock(ctx, tx, e.WorldID); err != nil {
 		return err
 	}
-	outcomes, err := recordPlaceEntriesTx(ctx, tx, h.store, e.WorldID, int64(e.DueTick)*1000)
+	through := int64(e.DueTick) * 1000
+	if e.EventType == events.ScheduledUnitArrivalV2 {
+		a, err := tick.LoadAnchor(ctx, tx, e.WorldID)
+		if err != nil {
+			return err
+		}
+		through = a.MilliAt(h.scheduler.Clock().Now())
+	}
+	outcomes, err := recordPlaceEntriesTx(ctx, tx, h.store, e.WorldID, through)
 	if err != nil {
 		return err
 	}
@@ -270,6 +279,11 @@ func recordPlaceEntriesTx(ctx context.Context, tx pgx.Tx, store *events.Store, w
 	var outcomes []expeditionOutcome
 	for _, entry := range entries {
 		v := voyages[entry.voyage]
+		if v.route.Version == 2 {
+			if _, err = tx.Exec(ctx, `INSERT INTO player_scouted_tiles(world_id,player_id,q,r) VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING`, worldID, v.owner, entry.hex[0], entry.hex[1]); err != nil {
+				return nil, err
+			}
+		}
 		for _, target := range objects[entry.hex] {
 			p := target.place
 			if _, err = tx.Exec(ctx, `INSERT INTO place_names(world_id,kind,anchor_q,anchor_r) VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING`, worldID, p.Kind, p.Anchor[0], p.Anchor[1]); err != nil {

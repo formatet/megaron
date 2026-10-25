@@ -23,8 +23,10 @@ package combat
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"formatet/megaron/server/internal/tick"
 	"log/slog"
 	"sort"
 
@@ -173,6 +175,9 @@ func (h *SeaStormScanHandler) loadVoyages(ctx context.Context, worldID uuid.UUID
 		}
 		v.route, v.departTick, v.arriveTick, v.errand = route, *dep, *arr, "march"
 		v.key = fmt.Sprintf("u:%s:%d:%d", v.shipID, *dep, *arr)
+		if route.Version == 2 {
+			v.key = fmt.Sprintf("u2:%s:%x", v.shipID, sha256.Sum256(raw))
+		}
 		out = append(out, v)
 	}
 	rows.Close()
@@ -225,7 +230,7 @@ func journeyRoute(raw []byte, departed, due int) (StoredRoute, bool) {
 
 // sail rolls every sea hex this voyage has entered since its last roll, up
 // to the end of dueTick, in one TX with the progress mark.
-func (h *SeaStormScanHandler) sail(ctx context.Context, worldID uuid.UUID, dueTick int, graph province.TileGraph, occupied stormOccupancy, v seaVoyage) error {
+func (h *SeaStormScanHandler) sail(ctx context.Context, worldID uuid.UUID, dueTick int, graph province.TileGraph, occupied stormOccupancy, v seaVoyage, cutoff ...int64) error {
 	enter, err := RouteEnterMilli(v.route)
 	if err != nil {
 		return err
@@ -285,9 +290,40 @@ func (h *SeaStormScanHandler) sail(ctx context.Context, worldID uuid.UUID, dueTi
 	if err := tx.QueryRow(ctx, `SELECT COALESCE(stillness_depart_tick=$2 AND stillness_arrive_tick=$3 AND stillness_owner_id=$4 AND owner_id=$4,false) FROM units WHERE id=$1`, v.shipID, v.departTick, v.arriveTick, v.owner).Scan(&protected); err != nil {
 		return err
 	}
+	var encounters []stormEncounter
+	if v.route.Version == 2 {
+		var from *int64
+		var prev *uuid.UUID
+		if err := tx.QueryRow(ctx, `SELECT last_milli,last_storm_id FROM sea_storm_progress WHERE voyage_key=$1`, v.key).Scan(&from, &prev); err != nil {
+			return err
+		}
+		after := int64(v.route.StartTick)*1000 + v.route.OffsetMilli - 1
+		if from != nil {
+			after = *from
+		}
+		previous := uuid.Nil
+		if prev != nil {
+			previous = *prev
+		}
+		through := int64(dueTick) * 1000
+		if len(cutoff) > 0 {
+			through = cutoff[0]
+		} else if a, err := tick.LoadAnchor(ctx, tx, worldID); err == nil {
+			through = a.MilliAt(h.scheduler.Clock().Now())
+		}
+		if through < after {
+			through = after
+		}
+		encounters, previous = timedStormContacts(v.route, enter, graph, occupied, after, through, previous)
+		if _, err := tx.Exec(ctx, `UPDATE sea_storm_progress SET last_milli=$2,last_storm_id=$3 WHERE voyage_key=$1`, v.key, through, previous); err != nil {
+			return err
+		}
+	} else {
+		encounters = stormEncounters(v.route, enter, graph, occupied, last, dueTick)
+	}
 	var storms []SeaStormPayload
 	if !protected {
-		for _, encounter := range stormEncounters(v.route, enter, graph, occupied, last, dueTick) {
+		for _, encounter := range encounters {
 			before := hull
 			hull -= StormDamage
 			if hull < 0 {

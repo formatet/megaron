@@ -78,3 +78,14 @@ func (a Anchor) TickAtOrAfter(at time.Time) int {
 	}
 	return a.Tick + int((delta+d-1)/d)
 }
+
+// ExactMilliAt converts a saved historical instant without clamping it into
+// the current tick. Batch replay uses this inverse of WallAt; live UI readers
+// continue to use MilliAt's bounded phase.
+func (a Anchor) ExactMilliAt(now time.Time) int64 {
+	d := time.Duration(TickSeconds) * time.Second
+	if d <= 0 {
+		return int64(a.Tick) * 1000
+	}
+	return int64(a.Tick)*1000 + int64(now.Sub(a.At)*1000/d)
+}

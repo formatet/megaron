@@ -1,0 +1,31 @@
+Traceback (most recent call last):
+  File "/tmp/megaron-codex-skepp-omedelbart-20261025/tools/hex_for_hex_bild_20261025.py", line 36, in api
+    try:return json.load(urllib.request.urlopen(req,timeout=30))
+                         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/urllib/request.py", line 187, in urlopen
+    return opener.open(url, data, timeout)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/urllib/request.py", line 493, in open
+    response = meth(req, response)
+  File "/usr/lib/python3.14/urllib/request.py", line 602, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "/usr/lib/python3.14/urllib/request.py", line 531, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "/usr/lib/python3.14/urllib/request.py", line 464, in _call_chain
+    result = func(*args)
+  File "/usr/lib/python3.14/urllib/request.py", line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 500: Internal Server Error
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/tmp/megaron-codex-skepp-omedelbart-20261025/tools/hex_for_hex_bild_20261025.py", line 69, in <module>
+    order=api(wp+'/units/'+ship+'/march','POST',{'target_q':hq+4,'target_r':hr,'intent':'patrol'},token)
+  File "/tmp/megaron-codex-skepp-omedelbart-20261025/tools/hex_for_hex_bild_20261025.py", line 37, in api
+    except urllib.error.HTTPError as e:raise RuntimeError(str(e)+' '+e.read().decode()) from e
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: HTTP Error 500: Internal Server Error {"error":"could not stow the ship's provisions"}
+

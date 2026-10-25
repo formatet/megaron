@@ -1,0 +1,22 @@
+{"time":"2026-10-25T09:43:50.089695643+01:00","level":"INFO","msg":"migrations applied"}
+{"time":"2026-10-25T09:43:50.1110999+01:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"14d0e1b0-cfce-4cc9-95be-4ea7ec1870af","seed":1792917830101865330,"width":56,"height":40,"err":"invalid map: productive tin = 1 (want >= 2); forest fraction = 0.307 (want 0.22..0.30)"}
+{"time":"2026-10-25T09:43:50.827821892+01:00","level":"INFO","msg":"world created","name":"Lato visual proof","id":"14d0e1b0-cfce-4cc9-95be-4ea7ec1870af","seed":1792917830101865331}
+{"time":"2026-10-25T09:43:50.833642532+01:00","level":"INFO","msg":"world ready","id":"14d0e1b0-cfce-4cc9-95be-4ea7ec1870af"}
+{"time":"2026-10-25T09:43:50.833856385+01:00","level":"INFO","msg":"chronicle opened","world":"Lato visual proof","dir":"/tmp/bildplan-proof-07nomk4n/chronicles"}
+{"time":"2026-10-25T09:43:50.834404708+01:00","level":"INFO","msg":"tick worker started","tick_seconds":30}
+{"time":"2026-10-25T09:43:50.834406021+01:00","level":"INFO","msg":"scheduled event worker started","poll":10000000000}
+{"time":"2026-10-25T09:43:50.834442102+01:00","level":"INFO","msg":"build","commit":"8c4c6073"}
+{"time":"2026-10-25T09:43:50.834744646+01:00","level":"INFO","msg":"keryx server starting","addr":":60293"}
+{"time":"2026-10-25T09:43:50.841956739+01:00","level":"INFO","msg":"daily ticks seeded","worlds":1}
+2026/10/25 09:43:50 [tki9/iGpTAYcAh9-000001] "GET http://127.0.0.1:60293/healthz HTTP/1.1" from 127.0.0.1:51752 - 200 52B in 526.167µs
+2026/10/25 09:43:50 [tki9/iGpTAYcAh9-000002] "GET http://127.0.0.1:60293/api/v1/worlds HTTP/1.1" from 127.0.0.1:51756 - 200 156B in 626.754µs
+{"time":"2026-10-25T09:43:50.977106742+01:00","level":"INFO","msg":"player registered","id":"d02d6097-cab5-4f9c-8db1-341b1d403db9","username":"voyager-6cd20f50"}
+2026/10/25 09:43:50 [tki9/iGpTAYcAh9-000003] "POST http://127.0.0.1:60293/api/v1/auth/register HTTP/1.1" from 127.0.0.1:51764 - 201 391B in 48.356275ms
+{"time":"2026-10-25T09:43:50.99947016+01:00","level":"INFO","msg":"world started","world":"14d0e1b0-cfce-4cc9-95be-4ea7ec1870af","wanaxes":1}
+2026/10/25 09:43:51 [tki9/iGpTAYcAh9-000004] "POST http://127.0.0.1:60293/api/v1/worlds/14d0e1b0-cfce-4cc9-95be-4ea7ec1870af/join HTTP/1.1" from 127.0.0.1:51768 - 201 327B in 21.569419ms
+2026/10/25 09:43:51 [tki9/iGpTAYcAh9-000005] "GET http://127.0.0.1:60293/api/v1/auth/me HTTP/1.1" from 127.0.0.1:51772 - 200 161B in 325.705µs
+2026/10/25 09:43:51 [tki9/iGpTAYcAh9-000006] "GET http://127.0.0.1:60293/api/v1/worlds/14d0e1b0-cfce-4cc9-95be-4ea7ec1870af/units HTTP/1.1" from 127.0.0.1:51784 - 200 1458B in 7.205164ms
+2026/10/25 09:43:51 [tki9/iGpTAYcAh9-000007] "POST http://127.0.0.1:60293/api/v1/worlds/14d0e1b0-cfce-4cc9-95be-4ea7ec1870af/founding/settle HTTP/1.1" from 127.0.0.1:51790 - 422 84B in 2.661448ms
+{"time":"2026-10-25T09:43:51.059406027+01:00","level":"INFO","msg":"scheduled event worker stopped"}
+{"time":"2026-10-25T09:43:51.059408304+01:00","level":"INFO","msg":"tick worker stopped"}
+{"time":"2026-10-25T09:43:51.059411465+01:00","level":"INFO","msg":"shutting down"}

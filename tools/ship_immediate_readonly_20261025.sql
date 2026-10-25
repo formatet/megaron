@@ -1,0 +1,14 @@
+BEGIN READ ONLY;
+SET LOCAL statement_timeout='10s';
+SELECT jsonb_build_object('section','report','data',to_jsonb(pr.*)) FROM player_reports pr WHERE pr.id::text LIKE '43640c42%';
+SELECT jsonb_build_object('section','events_ship','data',jsonb_agg(to_jsonb(e.*) ORDER BY id)) FROM events e WHERE e.world_id::text LIKE '8d1f34f1%' AND e.world_tick BETWEEN 98 AND 110 AND (e.stream_id='bee01813-f017-4838-9e70-7424fbafa002' OR e.payload::text LIKE '%bee01813-f017-4838-9e70-7424fbafa002%');
+SELECT jsonb_build_object('section','timers','data',jsonb_agg(to_jsonb(s.*) ORDER BY id)) FROM scheduled_events s WHERE s.world_id::text LIKE '8d1f34f1%' AND s.due_tick BETWEEN 98 AND 110 AND s.payload::text LIKE '%bee01813-f017-4838-9e70-7424fbafa002%';
+SELECT jsonb_build_object('section','orders','data',jsonb_agg(jsonb_build_object('id',m.id,'sender_id',m.sender_id,'origin_id',m.origin_id,'origin_unit_id',m.origin_unit_id,'origin_q',m.origin_q,'origin_r',m.origin_r,'hex_q',m.hex_q,'hex_r',m.hex_r,'sent_at',m.sent_at,'sent_tick',m.sent_tick,'arrives_at',m.arrives_at,'return_departs_at',m.return_departs_at,'kind',m.kind,'status',m.status,'order_payload',m.order_payload) ORDER BY m.sent_at)) FROM messengers m WHERE m.world_id::text LIKE '8d1f34f1%' AND m.sender_id=(SELECT player_id FROM player_reports WHERE id::text LIKE '43640c42%') AND m.sent_at BETWEEN '2026-10-24T18:06:00Z' AND '2026-10-24T18:15:00Z';
+SELECT jsonb_build_object('section','terrain','data',jsonb_agg(jsonb_build_object('q',q,'r',r,'terrain',terrain) ORDER BY q,r)) FROM map_tiles WHERE world_id::text LIKE '8d1f34f1%' AND q BETWEEN 58 AND 61 AND r BETWEEN 26 AND 27;
+COMMIT;
+BEGIN READ ONLY;
+SET LOCAL statement_timeout='10s';
+SELECT jsonb_build_object('section','notices','data',jsonb_agg(to_jsonb(n.*) ORDER BY n.created_at)) FROM notifications n WHERE n.world_id::text LIKE '8d1f34f1%' AND n.player_id=(SELECT player_id FROM player_reports WHERE id::text LIKE '43640c42%') AND n.created_at BETWEEN '2026-10-24T18:06:00Z' AND '2026-10-24T18:16:00Z' AND (n.body_json::text LIKE '%bee01813%' OR n.kind LIKE '%Unit%' OR n.kind LIKE '%Expedition%');
+SELECT jsonb_build_object('section','ship_return_events','data',jsonb_agg(to_jsonb(e.*) ORDER BY e.id)) FROM events e WHERE e.world_id::text LIKE '8d1f34f1%' AND e.created_at BETWEEN '2026-10-24T18:10:00Z' AND '2026-10-24T18:15:00Z' AND (e.payload::text LIKE '%bee01813%' OR e.stream_id='bee01813-f017-4838-9e70-7424fbafa002');
+SELECT jsonb_build_object('section','clock_ticks','data',jsonb_agg(jsonb_build_object('id',id,'type',event_type,'tick',due_tick,'processed_at',processed_at) ORDER BY id)) FROM scheduled_events WHERE world_id::text LIKE '8d1f34f1%' AND due_tick BETWEEN 100 AND 105 AND event_type IN('KharisTick','UpkeepTick','FoodTick','Tick');
+COMMIT;

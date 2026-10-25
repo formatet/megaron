@@ -1,0 +1,5 @@
+» färsk DB på migration 213 · commit 8cd130dd+ändringar
+# formatet/megaron/server/api/handlers [formatet/megaron/server/api/handlers.test]
+api/handlers/messenger_passage_arrange_test.go:179:9: f.clk.Set undefined (type clock.Clock has no field or method Set)
+FAIL	formatet/megaron/server/api/handlers [build failed]
+FAIL

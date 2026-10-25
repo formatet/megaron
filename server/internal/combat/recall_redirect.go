@@ -114,7 +114,7 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 	posOK := false
 	if activeRoute, ok := LoadActiveRoute(storedRouteRaw, status, departTick, arriveTick); ok {
 		if anchor, aErr := tick.LoadAnchor(ctx, tx, o.WorldID); aErr == nil {
-			if p, rErr := RoutePositionAt(activeRoute, anchor.MilliAt(now)); rErr == nil {
+			if p, rErr := RoutePositionAt(activeRoute, anchor.MilliAt(now), now); rErr == nil {
 				currentPos, posOK = p, true
 			}
 		}
@@ -184,8 +184,13 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 	var newMarchRoute []byte
 	if len(path) >= 2 {
 		if stepHours, shErr := province.StepHoursDB(ctx, tx, o.WorldID, path, unit.MoveCategory(unit.Type(utype))); shErr == nil {
-			if route, ok := BuildRoute(path, stepHours, currentTick, currentTick+travelTicks); ok {
+			if route, ok := BuildRouteAt(ctx, tx, o.WorldID, path, stepHours, currentTick, currentTick+travelTicks, now); ok {
 				if raw, mErr := json.Marshal(route); mErr == nil {
+					currentTick = route.StartTick
+					if _, end, e := RouteWallTimes(ctx, tx, o.WorldID, route); e == nil {
+						arrivesAtNew = end
+					}
+
 					newMarchRoute = raw
 				}
 			}

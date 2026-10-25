@@ -1,0 +1,27 @@
+» färsk DB på migration 213 · commit 9fb2c8b8+ändringar
+=== RUN   TestShipReport43640c42_DeparturePhase
+=== RUN   TestShipReport43640c42_DeparturePhase/at_boundary
+    ship_immediate_report_test.go:86: duration=1 ticks route={"costs": [200, 200, 200], "hexes": [[60, 27], [59, 27], [58, 27], [58, 26]], "version": 2, "end_tick": 104, "start_tick": 103, "departure_at": "2026-10-24T20:09:30+02:00", "tick_nanoseconds": 60000000000} announced=2026-10-24T20:10:30+02:00 nominal_due=2026-10-24T18:10:30Z departure_milli=103000
+=== RUN   TestShipReport43640c42_DeparturePhase/at_boundary/stale_claimed_legacy_arrival_cannot_finish_v2_course
+2026/10/25 10:04:08 INFO expedition turning for home unit=e8ee3f05-172b-4a21-8149-2fd078514a7c reason=area_known q=58 r=26 arrive_tick=104
+    ship_immediate_report_test.go:101: an already claimed legacy event changed a new version2 voyage
+=== RUN   TestShipReport43640c42_DeparturePhase/reported_phase
+    ship_immediate_report_test.go:86: duration=1 ticks route={"costs": [200, 200, 200], "hexes": [[60, 27], [59, 27], [58, 27], [58, 26]], "version": 2, "end_tick": 104, "start_tick": 103, "departure_at": "2026-10-24T20:10:13.98+02:00", "offset_milli": 733, "tick_nanoseconds": 60000000000} announced=2026-10-24T20:11:13+02:00 nominal_due=2026-10-24T18:10:30Z departure_milli=103733
+=== RUN   TestShipReport43640c42_DeparturePhase/reported_phase/stale_claimed_legacy_arrival_cannot_finish_v2_course
+2026/10/25 10:04:08 INFO expedition turning for home unit=64c6717b-926e-4e8e-9677-659eaadc0dcf reason=area_known q=58 r=26 arrive_tick=104
+    ship_immediate_report_test.go:101: an already claimed legacy event changed a new version2 voyage
+=== RUN   TestShipReport43640c42_DeparturePhase/delayed_world_worker
+    ship_immediate_report_test.go:86: duration=1 ticks route={"costs": [200, 200, 200], "hexes": [[60, 27], [59, 27], [58, 27], [58, 26]], "version": 2, "end_tick": 105, "start_tick": 104, "departure_at": "2026-10-24T20:11:13.98+02:00", "offset_milli": 733, "tick_nanoseconds": 60000000000} announced=2026-10-24T20:12:13+02:00 nominal_due=2026-10-24T18:11:30Z departure_milli=103999
+=== RUN   TestShipReport43640c42_DeparturePhase/delayed_world_worker/stale_claimed_legacy_arrival_cannot_finish_v2_course
+2026/10/25 10:04:08 INFO expedition turning for home unit=c6ccd580-d67a-458a-8cf3-a41e4d7436da reason=area_known q=58 r=26 arrive_tick=105
+    ship_immediate_report_test.go:101: an already claimed legacy event changed a new version2 voyage
+--- FAIL: TestShipReport43640c42_DeparturePhase (0.10s)
+    --- FAIL: TestShipReport43640c42_DeparturePhase/at_boundary (0.04s)
+        --- FAIL: TestShipReport43640c42_DeparturePhase/at_boundary/stale_claimed_legacy_arrival_cannot_finish_v2_course (0.01s)
+    --- FAIL: TestShipReport43640c42_DeparturePhase/reported_phase (0.03s)
+        --- FAIL: TestShipReport43640c42_DeparturePhase/reported_phase/stale_claimed_legacy_arrival_cannot_finish_v2_course (0.01s)
+    --- FAIL: TestShipReport43640c42_DeparturePhase/delayed_world_worker (0.03s)
+        --- FAIL: TestShipReport43640c42_DeparturePhase/delayed_world_worker/stale_claimed_legacy_arrival_cannot_finish_v2_course (0.01s)
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.107s
+FAIL

@@ -5,12 +5,13 @@ export const ROUTE_PATTERNS={army:[],ship:[4,3],runner:[1,3],caravan:[5,2,1,2]};
 const COMPASS={north:[0,-1],'north-east':[1,-1],east:[1,0],'south-east':[1,1],south:[0,1],'south-west':[-1,1],west:[-1,0],'north-west':[-1,-1]};
 const clamp=n=>Math.max(0,Math.min(1,n));
 export function routeProgress(actor,nowMs,tickNow=null){
+ if(actor.route_version===2){const a=Date.parse(actor.departs_at||actor.sent_at),b=Date.parse(actor.arrives_at);if(Number.isFinite(a)&&b>a)return Math.min(1,(nowMs-a)/(b-a));}
  const start=actor.departure_tick,end=actor.arrival_tick;
- if(tickNow!=null&&Number.isFinite(start)&&Number.isFinite(end)&&end>start)return Math.min(1,(tickNow-start)/(end-start));
+ if(tickNow!=null&&Number.isFinite(start)&&Number.isFinite(end)&&end>start)return Math.min(1,(tickNow-start-(actor.dispatch_offset_milli||0)/1000)/(end-start));
  const a=Date.parse(actor.departs_at||actor.sent_at),b=Date.parse(actor.arrives_at);
  return Number.isFinite(a)&&b>a?Math.min(1,(nowMs-a)/(b-a)):null;
 }
-export function routePosition(path,progress,hexPx,costs=null,durationTicks=null){
+export function routePosition(path,progress,hexPx,costs=null,durationTicks=null,version=0){
  if(!Array.isArray(path)||!path.length||progress==null)return null;
  const p=clamp(progress);
  if(path.length===1||p===1){const h=path.at(-1);return {...hexPx(...h),q:h[0],r:h[1],index:path.length-1,local:1};}
@@ -20,10 +21,10 @@ export function routePosition(path,progress,hexPx,costs=null,durationTicks=null)
   // the unit. Each cost is time spent in that entered hex, not the previous
   // edge. Keep its centre and FOW hex identical to the server's province.
   const total=costs.reduce((a,b)=>a+b,0),duration=durationTicks>0?durationTicks*1000:1000000;
-  const at=Math.floor(p*duration);let index=progress<0?0:1,prefix=0;
-  for(let i=1;i<costs.length&&progress>=0;i++){
+  const at=Math.floor(p*duration);let index=version===2?0:(progress<0?0:1),prefix=0;
+  for(let i=1;i<costs.length+(version===2?1:0)&&progress>=0;i++){
    prefix+=costs[i-1];const boundary=Math.floor((duration*prefix+Math.floor(total/2))/total);
-   if(at>=boundary)index=i+1;else break;
+   if(at>=boundary)index=i+(version===2?0:1);else break;
   }
   const h=path[index];return {...hexPx(...h),q:h[0],r:h[1],index,local:0};
  }
@@ -33,8 +34,8 @@ export function routePosition(path,progress,hexPx,costs=null,durationTicks=null)
  const a=hexPx(...path[index]),b=hexPx(...path[index+1]),h=path[Math.round(steps)];
  return {x:a.x+(b.x-a.x)*local,y:a.y+(b.y-a.y)*local,q:h[0],r:h[1],index,local};
 }
-export function remainingRoute(path,progress,hexPx,costs=null,durationTicks=null){
- const pos=routePosition(path,progress,hexPx,costs,durationTicks);
+export function remainingRoute(path,progress,hexPx,costs=null,durationTicks=null,version=0){
+ const pos=routePosition(path,progress,hexPx,costs,durationTicks,version);
  if(!pos||pos.index>=path.length-1)return [];
  return [pos,...path.slice(pos.index+1).map(h=>({...hexPx(...h),q:h[0],r:h[1]}))];
 }
@@ -49,7 +50,7 @@ export function foreignArrow(actor,hexPx,live,kind='army'){
  return {type:'arrow',kind,...(actor.id?{actor_id:actor.id}:{}),...hexPx(q,r),heading:actor.heading};
 }
 export function actorRoute(actor,kind,nowMs,tickNow,hexPx,live){
- const points=remainingRoute(actor.path,routeProgress(actor,nowMs,tickNow),hexPx,actor.step_costs,actor.arrival_tick-actor.departure_tick);
+ const points=remainingRoute(actor.path,routeProgress(actor,nowMs,tickNow),hexPx,actor.step_costs,actor.arrival_tick-actor.departure_tick,actor.route_version);
  const segments=liveRouteSegments(points,live);
  return segments.length?{type:'route',kind,...(actor.id?{actor_id:actor.id}:{}),segments}:null;
 }

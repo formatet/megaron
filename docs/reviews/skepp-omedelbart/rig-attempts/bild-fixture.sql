@@ -1,0 +1,1 @@
+UPDATE map_tiles SET terrain='plains' WHERE world_id='14d0e1b0-cfce-4cc9-95be-4ea7ec1870af'; UPDATE map_tiles SET terrain='coastal_sea' WHERE world_id='14d0e1b0-cfce-4cc9-95be-4ea7ec1870af' AND q BETWEEN 16 AND 19 AND r=15; UPDATE units SET q=15,r=15,status='positioned' WHERE id='20c3205f-c721-4e15-a8b1-8e7a552bfb4d';

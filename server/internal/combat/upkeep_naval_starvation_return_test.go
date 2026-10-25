@@ -177,7 +177,7 @@ func TestUpkeep_NavalStarvationReturn_TriggersAtHalfCrew(t *testing.T) {
 	var scheduledCount int
 	if err := pool.QueryRow(ctx,
 		`SELECT count(*) FROM scheduled_events
-		 WHERE world_id = $1 AND event_type = 'UnitArrival'
+		 WHERE world_id = $1 AND event_type IN ('UnitArrival','UnitArrivalV2')
 		   AND (payload->>'unit_id')::uuid = $2 AND processed_at IS NULL`,
 		f.worldID, shipID,
 	).Scan(&scheduledCount); err != nil {
@@ -325,7 +325,7 @@ func TestUpkeep_NavalStarvationReturn_Idempotent(t *testing.T) {
 	var scheduledCount int
 	if err := pool.QueryRow(ctx,
 		`SELECT count(*) FROM scheduled_events
-		 WHERE world_id = $1 AND event_type = 'UnitArrival' AND (payload->>'unit_id')::uuid = $2`,
+		 WHERE world_id = $1 AND event_type IN ('UnitArrival','UnitArrivalV2') AND (payload->>'unit_id')::uuid = $2`,
 		f.worldID, shipID,
 	).Scan(&scheduledCount); err != nil {
 		t.Fatalf("count scheduled return arrivals: %v", err)
@@ -402,7 +402,7 @@ func TestUpkeep_NavalStarvationReturn_LandUnitNotTouched(t *testing.T) {
 	var scheduledCount int
 	if err := pool.QueryRow(ctx,
 		`SELECT count(*) FROM scheduled_events
-		 WHERE world_id = $1 AND event_type = 'UnitArrival' AND (payload->>'unit_id')::uuid = $2`,
+		 WHERE world_id = $1 AND event_type IN ('UnitArrival','UnitArrivalV2') AND (payload->>'unit_id')::uuid = $2`,
 		f.worldID, unitID,
 	).Scan(&scheduledCount); err != nil {
 		t.Fatalf("count scheduled return arrivals: %v", err)
@@ -478,7 +478,7 @@ func TestUpkeep_NavalStarvationReturn_AlreadyMarchingNotRedispatched(t *testing.
 	var scheduledCount int
 	if err := pool.QueryRow(ctx,
 		`SELECT count(*) FROM scheduled_events
-		 WHERE world_id = $1 AND event_type = 'UnitArrival' AND (payload->>'unit_id')::uuid = $2`,
+		 WHERE world_id = $1 AND event_type IN ('UnitArrival','UnitArrivalV2') AND (payload->>'unit_id')::uuid = $2`,
 		f.worldID, shipID,
 	).Scan(&scheduledCount); err != nil {
 		t.Fatalf("count scheduled return arrivals: %v", err)

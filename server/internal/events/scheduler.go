@@ -211,6 +211,13 @@ const (
 	ScheduledRoadSite ScheduledEventType = "RoadSite"
 )
 
+const (
+	ScheduledUnitArrivalV2      ScheduledEventType = "UnitArrivalV2"
+	ScheduledOrderDeliveryV2    ScheduledEventType = "OrderDeliveryV2"
+	ScheduledMessengerArrivalV2 ScheduledEventType = "MessengerArrivalV2"
+	ScheduledMessengerReturnV2  ScheduledEventType = "MessengerReturnV2"
+)
+
 // ScheduledEvent is a pending game event stored durably in PostgreSQL.
 type ScheduledEvent struct {
 	ID           int64
@@ -445,11 +452,12 @@ func (w *Worker) processBatch(ctx context.Context) error {
 		       AND world_id IN (SELECT id FROM worlds WHERE status = 'active')
 		       AND due_tick IS NOT NULL
 		       AND due_tick <= (SELECT current_tick FROM worlds w2 WHERE w2.id = scheduled_events.world_id)
-		     ORDER BY due_tick, priority, id
+ AND (event_type NOT IN ('UnitArrivalV2','OrderDeliveryV2','MessengerArrivalV2','MessengerReturnV2') OR process_after <= $1)
+		     ORDER BY due_tick, priority, CASE WHEN event_type IN ('UnitArrivalV2','OrderDeliveryV2','MessengerArrivalV2','MessengerReturnV2') THEN process_after ELSE '-infinity'::timestamptz END, id
 		     LIMIT 20
 		     FOR UPDATE SKIP LOCKED
 		 )
-		 RETURNING id, world_id, event_type, payload, process_after, processed_at, failed_at, attempts, due_tick, priority`,
+		 RETURNING id, world_id, event_type, payload, process_after, processed_at, failed_at, attempts, due_tick, priority`, w.clock.Now(),
 	)
 	if err != nil {
 		return fmt.Errorf("claim events: %w", err)
@@ -476,6 +484,13 @@ func (w *Worker) processBatch(ctx context.Context) error {
 		if a.Priority != b.Priority {
 			return a.Priority < b.Priority
 		}
+		if DeadlineEvent(a.EventType) && DeadlineEvent(b.EventType) && !a.ProcessAfter.Equal(b.ProcessAfter) {
+			return a.ProcessAfter.Before(b.ProcessAfter)
+		}
+		if DeadlineEvent(a.EventType) != DeadlineEvent(b.EventType) {
+			return !DeadlineEvent(a.EventType)
+		}
+
 		return a.ID < b.ID
 	})
 
@@ -539,4 +554,19 @@ func (w *Worker) markFailed(ctx context.Context, id int64) {
 	); err != nil {
 		slog.Error("mark event failed", "id", id, "err", err)
 	}
+}
+
+// EnqueueDeadlineTx is used only by versioned events with a physical deadline.
+// Their eligibility requires both the world tick and this saved instant.
+func (s *Scheduler) EnqueueDeadlineTx(ctx context.Context, tx pgx.Tx, worldID uuid.UUID, typ ScheduledEventType, payload any, due int, at time.Time) error {
+	raw, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(ctx, `INSERT INTO scheduled_events(world_id,event_type,payload,process_after,due_tick,priority) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT DO NOTHING`, worldID, string(typ), raw, at, due, TickPriority(typ))
+	return err
+}
+
+func DeadlineEvent(t ScheduledEventType) bool {
+	return t == ScheduledUnitArrivalV2 || t == ScheduledOrderDeliveryV2 || t == ScheduledMessengerArrivalV2 || t == ScheduledMessengerReturnV2
 }

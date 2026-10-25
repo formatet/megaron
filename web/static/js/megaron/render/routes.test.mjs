@@ -53,3 +53,12 @@ test('arrow border and route shadow pixels are also clipped to LIVE sight',()=>{
  drawMovement(ctx,foreignArrow({q:1,r:1,heading:'north-east'},px,live),x=>x<21);
  assert.ok(calls.length);assert.ok(calls.every(c=>c[0]<21&&c[2]===1&&c[3]===1));
 });
+
+test('version2 begins at actual departure and reaches each hex at its own prefix',()=>{
+ const a={route_version:2,dispatch_offset_milli:733,departure_tick:103,arrival_tick:104};
+ const p=routeProgress(a,0,103.733);
+ assert.ok(Math.abs(p)<1e-12);
+ for(const [progress,index] of [[0,0],[.332,0],[.333,1],[.666,1],[.667,2],[.999,2],[1,3]]) {
+  assert.equal(routePosition(path,progress,px,[200,200,200],1,2).index,index);
+ }
+});

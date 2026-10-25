@@ -876,11 +876,22 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 			slog.Error("march route: could not read step costs", "unit", o.UnitID, "err", err)
 			return nil, reject(http.StatusInternalServerError, "pathfinding error")
 		}
-		route, ok := BuildRoute(path, stepHours, currentTick, currentTick+travelTicks)
+		route, ok := BuildRouteAt(ctx, departureDB, o.WorldID, path, stepHours, currentTick, currentTick+travelTicks, now)
 		if !ok {
 			slog.Error("march route: invalid stored route", "unit", o.UnitID)
 			return nil, reject(http.StatusInternalServerError, "pathfinding error")
 		}
+		shift := route.StartTick - currentTick
+		currentTick = route.StartTick
+		if expeditionPlan != nil {
+			expeditionPlan.TurnTick += shift
+			expeditionPlan.HomeByTick += shift
+		}
+		now, arrivesAt, err = RouteWallTimes(ctx, departureDB, o.WorldID, route)
+		if err != nil {
+			return nil, err
+		}
+
 		marchRoute, err = json.Marshal(route)
 		if err != nil {
 			slog.Error("march route: could not encode stored route", "unit", o.UnitID, "err", err)
@@ -1388,7 +1399,7 @@ func CurrentUnitPosition(ctx context.Context, pool *pgxpool.Pool, clk clock.Cloc
 	if u.Status == unit.StatusMarching {
 		if route, ok := LoadActiveRoute(u.MarchRoute, string(u.Status), u.DepartTick, u.ArriveTick); ok {
 			if anchor, err := tick.LoadAnchor(ctx, pool, u.WorldID); err == nil {
-				return RoutePositionAt(route, anchor.MilliAt(clk.Now()))
+				return RoutePositionAt(route, anchor.MilliAt(clk.Now()), clk.Now())
 			}
 		}
 		if u.Q != nil && u.R != nil && u.TargetQ != nil && u.TargetR != nil && u.DepartsAt != nil && u.ArrivesAt != nil {

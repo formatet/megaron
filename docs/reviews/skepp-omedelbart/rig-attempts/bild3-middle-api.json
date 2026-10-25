@@ -1,0 +1,70 @@
+{
+  "can_cancel_training": false,
+  "id": "eaed9e70-39a3-4c46-9379-ad0520d3edd7",
+  "type": "galley",
+  "category": "naval",
+  "size": 1,
+  "crew": 20,
+  "upkeep_food_per_tick": 0.2,
+  "provisions_by_good": {
+    "fish": 1.25,
+    "grain": 1.25,
+    "oil": 1.25,
+    "wine": 1.25
+  },
+  "upkeep_grain_per_tick": 0.2,
+  "upkeep_silver_per_tick": 0,
+  "upkeep_context": "active",
+  "hull": 3,
+  "provision_days": 25,
+  "provisions_aboard": true,
+  "status": "marching",
+  "deployable": true,
+  "name": "Sea Palace",
+  "display_name": "Sea Palace, Galley of Lato",
+  "support_settlement_id": "d8eb8456-96f0-4ba0-9df5-f3f72b6caac4",
+  "support_settlement_name": "Lato",
+  "shipyard_waiting": false,
+  "q": 12,
+  "r": 23,
+  "target_q": 15,
+  "target_r": 23,
+  "departs_at": "2026-10-25T09:45:21.299446+01:00",
+  "arrives_at": "2026-10-25T09:45:51.299446+01:00",
+  "arrival_tick": 104,
+  "duration_ticks": 1,
+  "arrives_at_utc": "2026-10-25T08:45:51.299446Z",
+  "path": [
+    [
+      12,
+      23
+    ],
+    [
+      13,
+      23
+    ],
+    [
+      14,
+      23
+    ],
+    [
+      15,
+      23
+    ]
+  ],
+  "route_version": 2,
+  "dispatch_offset_milli": 733,
+  "step_costs": [
+    333,
+    333,
+    333
+  ],
+  "departure_tick": 103,
+  "current_q": 12,
+  "current_r": 23,
+  "troop_capacity": 1,
+  "march_intent": "patrol",
+  "in_battle": false,
+  "can_lay_up": false,
+  "can_fit_out": false
+}

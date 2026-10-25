@@ -1,0 +1,64 @@
+TAP version 13
+# Subtest: remaining route starts at the actor, retains its actual corners, and shrinks to nothing at arrival
+ok 1 - remaining route starts at the actor, retains its actual corners, and shrinks to nothing at arrival
+  ---
+  duration_ms: 1.128037
+  type: 'test'
+  ...
+# Subtest: remaining route and actor share weighted saved-step timing and the world tick phase
+ok 2 - remaining route and actor share weighted saved-step timing and the world tick phase
+  ---
+  duration_ms: 0.236997
+  type: 'test'
+  ...
+# Subtest: remaining route never paints across remembered or unknown hexes
+ok 3 - remaining route never paints across remembered or unknown hexes
+  ---
+  duration_ms: 0.125811
+  type: 'test'
+  ...
+# Subtest: foreign arrow reads only current live position and compass, never private route or destination
+ok 4 - foreign arrow reads only current live position and compass, never private route or destination
+  ---
+  duration_ms: 0.155168
+  type: 'test'
+  ...
+# Subtest: four own actor kinds have distinct ink patterns and use the same remaining-route function
+ok 5 - four own actor kinds have distinct ink patterns and use the same remaining-route function
+  ---
+  duration_ms: 0.281755
+  type: 'test'
+  ...
+# Subtest: movement ink uses integer pixels, with no stroke, blur, or background plate
+ok 6 - movement ink uses integer pixels, with no stroke, blur, or background plate
+  ---
+  duration_ms: 0.549373
+  type: 'test'
+  ...
+# Subtest: weighted sprites and trails follow server PositionAt entry ownership, legacy couriers follow ReadMarch round
+ok 7 - weighted sprites and trails follow server PositionAt entry ownership, legacy couriers follow ReadMarch round
+  ---
+  duration_ms: 0.119973
+  type: 'test'
+  ...
+# Subtest: arrow border and route shadow pixels are also clipped to LIVE sight
+ok 8 - arrow border and route shadow pixels are also clipped to LIVE sight
+  ---
+  duration_ms: 0.180672
+  type: 'test'
+  ...
+# Subtest: version2 begins at actual departure and reaches each hex at its own prefix
+ok 9 - version2 begins at actual departure and reaches each hex at its own prefix
+  ---
+  duration_ms: 0.226128
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 43.513656

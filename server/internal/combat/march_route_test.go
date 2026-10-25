@@ -435,7 +435,7 @@ func TestAcceptance1_ExecuteRecall_RedirectSavesRoute(t *testing.T) {
 	if len(outboundWant.Hexes) < 3 {
 		t.Fatalf("test fixture is too weak: oracle outbound path %v has no real detour", outboundWant.Hexes)
 	}
-	expectFromHex := outboundWant.Hexes[1] // val A: already entered at t=StartTick*1000
+	expectFromHex := outboundWant.Hexes[0] // Version2: actual dispatch starts at origin.
 
 	markUnitArrivalProcessed(t, pool, worldID, unitID)
 	newTargetQ, newTargetR := 2, 1
@@ -561,7 +561,10 @@ func TestAcceptance2_ExecuteRecall_CatchesWhereTimeSays(t *testing.T) {
 	}
 
 	// 30% of the 4-tick journey.
-	clk.Advance(time.Duration(0.3*float64(res.DurationTicks)*float64(tick.TickSeconds)) * time.Second)
+	clk.Advance(time.Duration(0.8*float64(res.DurationTicks)*float64(tick.TickSeconds)) * time.Second)
+	if _, err := pool.Exec(ctx, `UPDATE worlds SET current_tick=3,last_tick_at=$2 WHERE id=$1`, worldID, clk.Now().Add(-time.Duration(float64(tick.TickSeconds)*0.2)*time.Second)); err != nil {
+		t.Fatal(err)
+	}
 
 	applied, err := ExecuteRecall(ctx, pool, scheduler, eventStore, clk, RecallOrder{
 		WorldID: worldID, UnitID: unitID, Mode: "recall",
@@ -573,6 +576,6 @@ func TestAcceptance2_ExecuteRecall_CatchesWhereTimeSays(t *testing.T) {
 		t.Fatal("ExecuteRecall returned (nil, nil) — unit was no longer marching?")
 	}
 	if applied.FromQ != 1 || applied.FromR != 0 {
-		t.Errorf("ExecuteRecall caught the unit at (%d,%d), want (1,0) (the ford — val A, already entered at departure)", applied.FromQ, applied.FromR)
+		t.Errorf("ExecuteRecall caught the unit at (%d,%d), want (1,0) (the ford — v2 weighted prefix reached at 80%%)", applied.FromQ, applied.FromR)
 	}
 }

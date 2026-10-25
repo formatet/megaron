@@ -1524,20 +1524,22 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type messengerMarker struct {
-		Path          [][2]int  `json:"path,omitempty"`
-		StepCosts     []int64   `json:"step_costs,omitempty"`
-		DepartureTick *int      `json:"departure_tick,omitempty"`
-		ArrivalTick   *int      `json:"arrival_tick,omitempty"`
-		CurrentQ      *int      `json:"current_q,omitempty"`
-		CurrentR      *int      `json:"current_r,omitempty"`
-		Heading       string    `json:"heading,omitempty"`
-		ID            uuid.UUID `json:"id"`
-		OriginQ       int       `json:"origin_q"`
-		OriginR       int       `json:"origin_r"`
-		DestQ         int       `json:"dest_q"`
-		DestR         int       `json:"dest_r"`
-		SentAt        time.Time `json:"sent_at"`
-		ArrivesAt     time.Time `json:"arrives_at"`
+		Path                [][2]int  `json:"path,omitempty"`
+		RouteVersion        int       `json:"route_version,omitempty"`
+		DispatchOffsetMilli int64     `json:"dispatch_offset_milli,omitempty"`
+		StepCosts           []int64   `json:"step_costs,omitempty"`
+		DepartureTick       *int      `json:"departure_tick,omitempty"`
+		ArrivalTick         *int      `json:"arrival_tick,omitempty"`
+		CurrentQ            *int      `json:"current_q,omitempty"`
+		CurrentR            *int      `json:"current_r,omitempty"`
+		Heading             string    `json:"heading,omitempty"`
+		ID                  uuid.UUID `json:"id"`
+		OriginQ             int       `json:"origin_q"`
+		OriginR             int       `json:"origin_r"`
+		DestQ               int       `json:"dest_q"`
+		DestR               int       `json:"dest_r"`
+		SentAt              time.Time `json:"sent_at"`
+		ArrivesAt           time.Time `json:"arrives_at"`
 		// Own marks the requesting player's runners — the client draws
 		// them along their WHOLE route (dimmed over fog): a player's own
 		// courier is information they already possess (temenos_orderlopare_
@@ -1774,6 +1776,8 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 			if route := h.messengerCarrierRoute(r.Context(), worldID, m.CarrierUnitID, m.CarrierTransportID, now); route != nil {
 				m.Path = route.Path
 				m.StepCosts = route.Costs
+				m.RouteVersion = route.Version
+				m.DispatchOffsetMilli = route.OffsetMilli
 				m.DepartureTick = &route.Start
 				m.ArrivalTick = &route.End
 				m.CurrentQ, m.CurrentR = &route.CurrentQ, &route.CurrentR

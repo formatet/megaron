@@ -117,7 +117,13 @@ func (h *UpkeepHandler) carrierDeathLocation(ctx context.Context, tx pgx.Tx, wor
 	if s.status == "marching" {
 		if route, active := LoadActiveRoute(s.route, s.status, s.departTick, s.arriveTick); active {
 			var err error
-			pos, err = RoutePositionAt(route, int64(currentTick)*1000)
+			if h.clk != nil {
+				pos, err = RoutePositionAt(route, int64(currentTick)*1000, h.clk.Now())
+			} else if route.Version == 2 {
+				return nil, 0, 0, fmt.Errorf("timed carrier death requires injected clock")
+			} else {
+				pos, err = RoutePositionAt(route, int64(currentTick)*1000)
+			}
 			if err != nil {
 				return nil, 0, 0, err
 			}

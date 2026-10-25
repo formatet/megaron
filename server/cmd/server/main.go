@@ -184,13 +184,17 @@ func main() {
 	worker.Register(events.ScheduledLoyaltyWelfareTick, events.RetiredLoyaltyTick)
 	worker.Register(events.ScheduledColonyPenaltyTick, events.RetiredLoyaltyTick)
 	worker.Register(events.ScheduledBorrowedArmyTick, events.RetiredLoyaltyTick)
+	worker.Register(events.ScheduledOrderDeliveryV2, orderDeliveryH.Handle)
 	worker.Register(events.ScheduledOrderDelivery, orderDeliveryH.Handle)
 	roadSiteH := combat.NewRoadSiteHandler(pool, scheduler, eventStore, hub)
 	worker.Register(events.ScheduledRoadSite, roadSiteH.Handle)
 	// P3 soak fix (2026-07-19): notify the owner if a march order's courier
 	// delivery keeps failing until dead-lettered, instead of it silently
 	// vanishing after the dispatch's 202 promised it was en route.
+	worker.RegisterDeadLetterHook(events.ScheduledOrderDeliveryV2, orderDeliveryH.NotifyDeadLetter)
 	worker.RegisterDeadLetterHook(events.ScheduledOrderDelivery, orderDeliveryH.NotifyDeadLetter)
+	worker.Register(events.ScheduledMessengerArrivalV2, messengerArrivalH.Handle)
+	worker.Register(events.ScheduledMessengerReturnV2, messengerReturnH.Handle)
 	worker.Register(events.ScheduledMessengerArrival, messengerArrivalH.Handle)
 	worker.Register(events.ScheduledMessengerReturn, messengerReturnH.Handle)
 	worker.Register(events.ScheduledMessengerStayEnd, messengerStayEndH.Handle)
@@ -208,16 +212,18 @@ func main() {
 	worker.Register(events.ScheduledInterceptScan, interceptH.Handle)
 	worker.Register(events.ScheduledPassageScan, passageScanH.Handle)
 	unitInterceptH := combat.NewUnitInterceptScanHandler(pool, scheduler, eventStore, gameClock, hub)
-	worker.Register(events.ScheduledUnitInterceptScan, unitInterceptH.Handle)
+	worker.Register(events.ScheduledUnitInterceptScan, placeReachH.BeforeTimedAdvance(unitInterceptH.Handle))
 	seaStormH := combat.NewSeaStormScanHandler(pool, scheduler, eventStore, hub)
-	worker.Register(events.ScheduledSeaStormScan, seaStormH.Handle)
-	worker.Register(events.ScheduledPlaceReachScan, placeReachH.Handle)
+	worker.Register(events.ScheduledSeaStormScan, placeReachH.BeforeTimedAdvance(seaStormH.Handle))
+	worker.Register(events.ScheduledPlaceReachScan, placeReachH.BeforeTimedAdvance(placeReachH.Handle))
 	marchSightH := combat.NewMarchSightingHandler(pool, scheduler, hub, gameClock)
 	worker.Register(events.ScheduledMarchSightingScan, marchSightH.Handle)
 	marchEncounterH := combat.NewMarchEncounterHandler(pool, scheduler, eventStore, gameClock, hub)
-	worker.Register(events.ScheduledMarchEncounterScan, marchEncounterH.Handle)
+	worker.Register(events.ScheduledMarchEncounterScan, placeReachH.BeforeTimedAdvance(marchEncounterH.Handle))
 	// unitArrivalH itself is constructed earlier, above passageScanH — see the
 	// comment there.
+	worker.Register(events.ScheduledUnitArrivalV2, placeReachH.BeforeTimedAdvance(unitArrivalH.HandleV2))
+	worker.RegisterDeadLetterHook(events.ScheduledUnitArrivalV2, unitArrivalH.NotifyDeadLetter)
 	worker.Register(events.ScheduledUnitArrival, placeReachH.BeforeArrival(unitArrivalH.Handle))
 	// P3 soak fix (2026-07-19): same reasoning as the order-delivery hook above —
 	// a marching unit's arrival that dead-letters must tell its owner, not just

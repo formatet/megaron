@@ -1,0 +1,46 @@
+» färsk DB på migration 213 · commit fe078375
+=== RUN   TestShipReport43640c42_DeparturePhase
+=== RUN   TestShipReport43640c42_DeparturePhase/at_boundary
+    ship_immediate_report_test.go:86: duration=1 ticks route={"costs": [200, 200, 200], "hexes": [[60, 27], [59, 27], [58, 27], [58, 26]], "version": 2, "end_tick": 104, "start_tick": 103, "departure_at": "2026-10-24T20:09:30+02:00", "tick_nanoseconds": 60000000000} announced=2026-10-24T20:10:30+02:00 nominal_due=2026-10-24T18:10:30Z departure_milli=103000
+=== RUN   TestShipReport43640c42_DeparturePhase/at_boundary/live_position_while_world_tick_worker_lags
+=== RUN   TestShipReport43640c42_DeparturePhase/at_boundary/prefix_memory
+=== RUN   TestShipReport43640c42_DeparturePhase/at_boundary/start_hex_at_dispatch
+=== RUN   TestShipReport43640c42_DeparturePhase/at_boundary/announced_eta_matches_due_tick_boundary
+=== RUN   TestShipReport43640c42_DeparturePhase/reported_phase
+    ship_immediate_report_test.go:86: duration=1 ticks route={"costs": [200, 200, 200], "hexes": [[60, 27], [59, 27], [58, 27], [58, 26]], "version": 2, "end_tick": 104, "start_tick": 103, "departure_at": "2026-10-24T20:10:13.98+02:00", "offset_milli": 733, "tick_nanoseconds": 60000000000} announced=2026-10-24T20:11:13+02:00 nominal_due=2026-10-24T18:10:30Z departure_milli=103733
+=== RUN   TestShipReport43640c42_DeparturePhase/reported_phase/live_position_while_world_tick_worker_lags
+=== RUN   TestShipReport43640c42_DeparturePhase/reported_phase/prefix_memory
+=== RUN   TestShipReport43640c42_DeparturePhase/reported_phase/start_hex_at_dispatch
+=== RUN   TestShipReport43640c42_DeparturePhase/reported_phase/announced_eta_matches_due_tick_boundary
+=== RUN   TestShipReport43640c42_DeparturePhase/delayed_world_worker
+    ship_immediate_report_test.go:86: duration=1 ticks route={"costs": [200, 200, 200], "hexes": [[60, 27], [59, 27], [58, 27], [58, 26]], "version": 2, "end_tick": 105, "start_tick": 104, "departure_at": "2026-10-24T20:11:13.98+02:00", "offset_milli": 733, "tick_nanoseconds": 60000000000} announced=2026-10-24T20:12:13+02:00 nominal_due=2026-10-24T18:11:30Z departure_milli=103999
+=== RUN   TestShipReport43640c42_DeparturePhase/delayed_world_worker/live_position_while_world_tick_worker_lags
+=== RUN   TestShipReport43640c42_DeparturePhase/delayed_world_worker/prefix_memory
+=== RUN   TestShipReport43640c42_DeparturePhase/delayed_world_worker/start_hex_at_dispatch
+=== RUN   TestShipReport43640c42_DeparturePhase/delayed_world_worker/announced_eta_matches_due_tick_boundary
+--- PASS: TestShipReport43640c42_DeparturePhase (0.11s)
+    --- PASS: TestShipReport43640c42_DeparturePhase/at_boundary (0.03s)
+        --- PASS: TestShipReport43640c42_DeparturePhase/at_boundary/live_position_while_world_tick_worker_lags (0.00s)
+        --- PASS: TestShipReport43640c42_DeparturePhase/at_boundary/prefix_memory (0.01s)
+        --- PASS: TestShipReport43640c42_DeparturePhase/at_boundary/start_hex_at_dispatch (0.00s)
+        --- PASS: TestShipReport43640c42_DeparturePhase/at_boundary/announced_eta_matches_due_tick_boundary (0.00s)
+    --- PASS: TestShipReport43640c42_DeparturePhase/reported_phase (0.04s)
+        --- PASS: TestShipReport43640c42_DeparturePhase/reported_phase/live_position_while_world_tick_worker_lags (0.00s)
+        --- PASS: TestShipReport43640c42_DeparturePhase/reported_phase/prefix_memory (0.01s)
+        --- PASS: TestShipReport43640c42_DeparturePhase/reported_phase/start_hex_at_dispatch (0.00s)
+        --- PASS: TestShipReport43640c42_DeparturePhase/reported_phase/announced_eta_matches_due_tick_boundary (0.00s)
+    --- PASS: TestShipReport43640c42_DeparturePhase/delayed_world_worker (0.03s)
+        --- PASS: TestShipReport43640c42_DeparturePhase/delayed_world_worker/live_position_while_world_tick_worker_lags (0.00s)
+        --- PASS: TestShipReport43640c42_DeparturePhase/delayed_world_worker/prefix_memory (0.01s)
+        --- PASS: TestShipReport43640c42_DeparturePhase/delayed_world_worker/start_hex_at_dispatch (0.00s)
+        --- PASS: TestShipReport43640c42_DeparturePhase/delayed_world_worker/announced_eta_matches_due_tick_boundary (0.00s)
+=== RUN   TestTimedStormContactsDoNotReachFutureHexes
+--- PASS: TestTimedStormContactsDoNotReachFutureHexes (0.00s)
+=== RUN   TestTimedEncounterCatchesCrossingBetweenTickSamples
+2026/10/25 09:52:49 INFO march encounter: crossing armies collided — battle initiated/joined q=1 r=0 units=2
+--- PASS: TestTimedEncounterCatchesCrossingBetweenTickSamples (0.03s)
+=== RUN   TestTimedAdvanceStopsBeforeFutureHexMemory
+2026/10/25 09:52:49 INFO march encounter: crossing armies collided — battle initiated/joined q=1 r=0 units=2
+--- PASS: TestTimedAdvanceStopsBeforeFutureHexMemory (0.06s)
+PASS
+ok  	formatet/megaron/server/internal/combat	0.196s

@@ -2,6 +2,7 @@ package combat
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -68,6 +69,33 @@ func NewUnitArrivalHandler(pool *pgxpool.Pool, store *events.Store, hub Broadcas
 	return &UnitArrivalHandler{pool: pool, eventStore: store, hub: hub, scheduler: scheduler, clk: clk, Dice: economy.NewWallDice()}
 }
 
+type arrivalV2Payload struct {
+	unit.ScheduledUnitArrivalPayload
+	RouteKey string `json:"route_key"`
+}
+
+// HandleV2 resolves only this exact saved route at its own deadline.
+func (h *UnitArrivalHandler) HandleV2(ctx context.Context, e events.ScheduledEvent) error {
+	var p arrivalV2Payload
+	if err := json.Unmarshal(e.Payload, &p); err != nil {
+		return err
+	}
+	var raw []byte
+	var arrives time.Time
+	if err := h.pool.QueryRow(ctx, `SELECT march_route,arrives_at FROM units WHERE id=$1 AND status='marching'`, p.UnitID).Scan(&raw, &arrives); err == pgx.ErrNoRows {
+		return nil
+	} else if err != nil {
+		return err
+	}
+	if fmt.Sprintf("%x", sha256.Sum256(raw)) != p.RouteKey {
+		return nil
+	}
+	if h.clk.Now().Before(arrives) {
+		return fmt.Errorf("route arrival called before saved deadline")
+	}
+	return h.Handle(ctx, e)
+}
+
 // Handle processes one ScheduledUnitArrival scheduled event.
 func (h *UnitArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
 	var payload unit.ScheduledUnitArrivalPayload
@@ -80,6 +108,38 @@ func (h *UnitArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent
 		return fmt.Errorf("begin tx: %w", err)
 	}
 	defer tx.Rollback(ctx)
+
+	if e.EventType == events.ScheduledUnitArrival {
+		// A legacy job may already have been claimed before a course replacement
+		// promoted its pending row to V2. It must never resolve that new course.
+		var raw []byte
+		if err := tx.QueryRow(ctx, `SELECT march_route FROM units WHERE id=$1 FOR UPDATE`, payload.UnitID).Scan(&raw); err != nil {
+			return err
+		}
+		var saved StoredRoute
+		if json.Unmarshal(raw, &saved) == nil && saved.Version == 2 {
+			return nil
+		}
+	}
+
+	if e.EventType == events.ScheduledUnitArrivalV2 {
+		var v2 arrivalV2Payload
+		if err := json.Unmarshal(e.Payload, &v2); err != nil {
+			return err
+		}
+		var raw []byte
+		var arrives *time.Time
+		var status string
+		if err := tx.QueryRow(ctx, `SELECT march_route,arrives_at,status FROM units WHERE id=$1 FOR UPDATE`, payload.UnitID).Scan(&raw, &arrives, &status); err != nil {
+			return err
+		}
+		if status != "marching" || arrives == nil || fmt.Sprintf("%x", sha256.Sum256(raw)) != v2.RouteKey {
+			return nil
+		}
+		if h.clk.Now().Before(*arrives) {
+			return fmt.Errorf("arrival before saved deadline")
+		}
+	}
 
 	if payload.ArriveTick != nil {
 		// A superseded arrival: recall/redirect (and a fresh march after the
@@ -271,25 +331,34 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 		}
 	}()
 
-	// Sweep FOW along the actual path walked by this unit. Best-effort: log on
-	// error, never abort the arrival. Runs for every arrival (garrison, combat,
-	// colonise) so isolated spawns always reveal the terrain they traversed.
-	if path, _, pathOK, pathErr := province.FindPath(ctx, tx, worldID,
-		province.MapPosition{Q: u.q, R: u.r},
-		province.MapPosition{Q: destQ, R: destR},
-		u.moveCategory(),
-	); pathErr != nil {
-		slog.Warn("pathfind error during arrival FOW sweep", "unit", unitID, "err", pathErr)
-	} else if pathOK {
-		for _, tile := range path {
-			if _, insErr := tx.Exec(ctx,
-				`INSERT INTO player_scouted_tiles (world_id, player_id, q, r)
+	var savedRaw []byte
+	if err := tx.QueryRow(ctx, `SELECT march_route FROM units WHERE id=$1`, unitID).Scan(&savedRaw); err != nil {
+		return err
+	}
+	var saved StoredRoute
+	_ = json.Unmarshal(savedRaw, &saved)
+	if saved.Version != 2 {
+		// Sweep FOW along the actual path walked by this unit. Best-effort: log on
+		// error, never abort the arrival. Runs for every arrival (garrison, combat,
+		// colonise) so isolated spawns always reveal the terrain they traversed.
+		if path, _, pathOK, pathErr := province.FindPath(ctx, tx, worldID,
+			province.MapPosition{Q: u.q, R: u.r},
+			province.MapPosition{Q: destQ, R: destR},
+			u.moveCategory(),
+		); pathErr != nil {
+			slog.Warn("pathfind error during arrival FOW sweep", "unit", unitID, "err", pathErr)
+		} else if pathOK {
+			for _, tile := range path {
+				if _, insErr := tx.Exec(ctx,
+					`INSERT INTO player_scouted_tiles (world_id, player_id, q, r)
 				 VALUES ($1,$2,$3,$4) ON CONFLICT DO NOTHING`,
-				worldID, u.ownerID, tile.Q, tile.R,
-			); insErr != nil {
-				slog.Warn("FOW sweep insert failed", "unit", unitID, "q", tile.Q, "r", tile.R, "err", insErr)
+					worldID, u.ownerID, tile.Q, tile.R,
+				); insErr != nil {
+					slog.Warn("FOW sweep insert failed", "unit", unitID, "q", tile.Q, "r", tile.R, "err", insErr)
+				}
 			}
 		}
+
 	}
 
 	// Explore intent: the unit reaches its target and immediately turns for
@@ -1514,8 +1583,13 @@ func (h *UnitArrivalHandler) dispatchLeg(
 	var marchRoute []byte
 	if len(path) >= 2 {
 		if stepHours, shErr := province.StepHoursDB(ctx, tx, worldID, path, u.moveCategory()); shErr == nil {
-			if route, ok := BuildRoute(path, stepHours, currentTick, currentTick+travelTicks); ok {
+			if route, ok := BuildRouteAt(ctx, tx, worldID, path, stepHours, currentTick, currentTick+travelTicks, h.clk.Now()); ok {
 				if raw, mErr := json.Marshal(route); mErr == nil {
+					currentTick = route.StartTick
+					if _, end, e := RouteWallTimes(ctx, tx, worldID, route); e == nil {
+						arrivesAt = end
+					}
+
 					marchRoute = raw
 				}
 			}
@@ -1569,7 +1643,7 @@ func (h *UnitArrivalHandler) dispatchLeg(
 	}
 	arriveTick := currentTick + travelTicks
 	arrPayload := unit.ScheduledUnitArrivalPayload{UnitID: u.id, WorldID: worldID, ArriveTick: &arriveTick}
-	if err := h.scheduler.EnqueueTickTx(ctx, tx, worldID, events.ScheduledUnitArrival, arrPayload, currentTick+travelTicks); err != nil {
+	if err := enqueueUnitArrivalTx(ctx, tx, h.scheduler, worldID, arrPayload, currentTick+travelTicks); err != nil {
 		return time.Time{}, 0, fmt.Errorf("schedule leg arrival: %w", err)
 	}
 	return arrivesAt, arriveTick, nil

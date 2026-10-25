@@ -112,7 +112,7 @@ func (f singleRecallFixture) assertApplied(t *testing.T) {
 	if target != 0 || arrive != 3 {
 		t.Fatalf("order dropped without jitter: target%d arrive%d want0/3", target, arrive)
 	}
-	if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM scheduled_events WHERE world_id=$1 AND event_type='UnitArrival' AND due_tick=3`, f.world).Scan(&count); err != nil {
+	if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM scheduled_events WHERE world_id=$1 AND event_type IN ('UnitArrival','UnitArrivalV2') AND due_tick=3`, f.world).Scan(&count); err != nil {
 		t.Fatal(err)
 	}
 	kind := unit.EventUnitMarchRecalled

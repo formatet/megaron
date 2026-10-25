@@ -36,6 +36,9 @@ type Milli int64
 // integer scale chosen by the caller (e.g. thousandths of
 // TerrainMoveTicks); this package only cares about their ratios.
 type Move struct {
+	// Version 2 reaches each hex at its prefix boundary, from actual dispatch.
+	Version            int
+	OffsetMilli        int64
 	StartTick, EndTick int     // whole ticks; EndTick > StartTick. The rounding to a whole tick (R2) is already done by the caller.
 	Hexes              []Hex   // at least two
 	Costs              []int64 // len == len(Hexes)-1, all > 0
@@ -54,6 +57,13 @@ const millisPerTick = 1000
 // product D*T (total duration in Milli times total cost) must fit in int64,
 // since Boundaries multiplies them together for every prefix sum.
 func (m Move) Validate() error {
+	if m.Version != 0 && m.Version != 2 {
+		return fmt.Errorf("movement: unsupported route version %d", m.Version)
+	}
+	if m.OffsetMilli < 0 || m.OffsetMilli >= 1000 || (m.Version == 0 && m.OffsetMilli != 0) {
+		return fmt.Errorf("movement: invalid dispatch offset")
+	}
+
 	if len(m.Hexes) < 2 {
 		return fmt.Errorf("movement: Move needs at least two hexes, got %d", len(m.Hexes))
 	}
@@ -98,7 +108,7 @@ func Boundaries(m Move) ([]Milli, error) {
 		total += c
 	}
 	d := int64(m.EndTick-m.StartTick) * millisPerTick
-	start := int64(m.StartTick) * millisPerTick
+	start := int64(m.StartTick)*millisPerTick + m.OffsetMilli
 	half := total / 2
 
 	bounds := make([]Milli, len(m.Hexes))
@@ -136,7 +146,10 @@ func PositionAt(m Move, t Milli) (Hex, error) {
 	if err != nil {
 		return Hex{}, err
 	}
-	edges := bounds[:len(bounds)-1] // b_0..b_{n-1}; b_n is the executed arrival, not an edge
+	edges := bounds[:len(bounds)-1] // Legacy entry ownership.
+	if m.Version == 2 {
+		edges = bounds[1:]
+	}
 	j := sort.Search(len(edges), func(i int) bool { return edges[i] > t })
 	return m.Hexes[j], nil
 }
@@ -156,6 +169,9 @@ func Presence(m Move, from, to Milli) ([]Interval, error) {
 		return nil, nil
 	}
 	edges := bounds[:len(bounds)-1]
+	if m.Version == 2 {
+		edges = bounds[1:]
+	}
 	last := len(m.Hexes) - 1
 	var out []Interval
 	for i, hex := range m.Hexes {
