@@ -1795,6 +1795,10 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 				m.StepCosts = route.Costs
 				m.RouteVersion = route.Version
 				m.DispatchOffsetMilli = route.OffsetMilli
+				if route.Version == 2 {
+					ls, le := route.DepartureAt, route.ArrivalAt
+					m.LegStart, m.LegEnd = &ls, &le
+				}
 				m.DepartureTick = &route.Start
 				m.ArrivalTick = &route.End
 				m.CurrentQ, m.CurrentR = &route.CurrentQ, &route.CurrentR

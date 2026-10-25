@@ -49,7 +49,7 @@ try:
   token=api('/api/v1/auth/register','POST',{'username':'voyager-'+secrets.token_hex(4),'password':secrets.token_urlsafe(30)})['access_token']
   api(wp+'/join','POST',{},token);pid=api('/api/v1/auth/me',token=token)['id']
   host=next(u for u in api(wp+'/units',token=token)['units'] if u['type']=='nomadic_host')
-  site=json.loads(sql(f"SELECT row_to_json(t) FROM(SELECT t.q,t.r FROM map_tiles t WHERE t.world_id='{world}' AND t.terrain='plains' AND EXISTS(SELECT 1 FROM map_tiles e WHERE e.world_id=t.world_id AND e.q=t.q+3 AND e.r=t.r) ORDER BY t.q,t.r LIMIT 1)t"));hq,hr=site['q'],site['r']
+  site=json.loads(sql(f"SELECT row_to_json(t) FROM(SELECT t.q,t.r FROM map_tiles t WHERE t.world_id='{world}' AND t.terrain='plains' AND t.q>5 AND t.r>5 AND t.q<45 AND t.r<30 AND EXISTS(SELECT 1 FROM map_tiles e WHERE e.world_id=t.world_id AND e.q=t.q+3 AND e.r=t.r) ORDER BY t.q,t.r LIMIT 1)t"));hq,hr=site['q'],site['r']
   sql(f"UPDATE map_tiles SET terrain='plains' WHERE world_id='{world}'; UPDATE units SET q={hq},r={hr},status='positioned' WHERE id='{host['id']}';",True)
   sid=api(wp+'/founding/settle','POST',{'name':'Lato'},token)['settlement_id']
   sql(f"UPDATE settlement_goods SET amount=10000,rate=0,cap=1000000 WHERE settlement_id='{sid}'; DELETE FROM sea_storms WHERE world_id='{world}';",True)
@@ -73,8 +73,19 @@ try:
    sql(f"UPDATE worlds SET current_tick=103,last_tick_at=now()-interval '4.4 seconds' WHERE id='{world}'; UPDATE settlement_goods SET calc_tick=103 WHERE settlement_id IN ('{sid}','{dest}');",True)
    order=api(wp+'/provinces/'+originprov+'/trade','POST',{'destination_id':dest,'items':[{'good_key':'stone','quantity':10}]},token)
    (OUT/'order.json').write_text(json.dumps(order,indent=2));start=time.monotonic();mover=order['transport_id']
+   # Explicit crossing fixtures share the real transfer's saved clock. They
+   # exercise rendering/projection; the transfer itself is dispatched by API.
+   journey=json.loads(sql(f"SELECT journey FROM transports WHERE id='{mover}'"))
+   clock=journey['clock']; route={**clock,'hexes':[[hq+1,hr+2],[hq+1,hr+1],[hq+1,hr],[hq+1,hr-1]],'costs':[1000,1000,1000]}
+   raw=json.dumps(route)
+   sql(f"INSERT INTO units(world_id,owner_id,type,category,size,crew,status,q,r,target_q,target_r,march_route,depart_tick,arrive_tick) VALUES('{world}','{pid}','infantry','land',100,0,'marching',{hq+1},{hr+2},{hq+1},{hr-1},'{raw}',{clock['start_tick']},{clock['end_tick']});",True)
+   route['hexes']=[[hq+3,hr-2],[hq+2,hr-1],[hq+1,hr],[hq,hr+1]]
+   raw=json.dumps(route)
+   sql(f"INSERT INTO messengers(world_id,sender_id,origin_id,destination_id,kind,message_text,status,hex_q,hex_r,sent_at,return_departs_at,arrives_at,land_route) SELECT world_id,owner_id,origin_id,dest_id,'message','Crossing return fixture','returning',{hq+3},{hr-2},departs_at,departs_at,arrives_at,'{raw}' FROM transports WHERE id='{mover}';",True)
    def capture(code):
     trades=api(wp+'/trades',token=token);u=next((u for u in trades if u['id']==mover),None)
+    (OUT/(code+'-units.json')).write_text(json.dumps(api(wp+'/units',token=token),indent=2))
+    (OUT/(code+'-runners.json')).write_text(json.dumps(api(wp+'/messengers',token=token),indent=2))
     (OUT/(code+'-api.json')).write_text(json.dumps(trades,indent=2))
     cli=run(str(tmp/'keryx'),'cargo',env={**clean,'POLEIA_CONFIG':str(config)});(OUT/(code+'-keryx.txt')).write_text(cli+'\n')
     for page,width,errors in pages:
@@ -88,6 +99,8 @@ try:
    assert datetime.datetime.fromisoformat(order['arrives_at'])==datetime.datetime.fromisoformat(u['arrives_at']),(order,u)
    while time.monotonic()-start<15:time.sleep(.2)
    u=capture('middle');assert u['current_q']==hq+1,u
+   while time.monotonic()-start<23:time.sleep(.2)
+   capture('late')
    while time.monotonic()-start<31:time.sleep(.2)
    for _ in range(20):
     if sql(f"SELECT status FROM transports WHERE id='{mover}'")=='delivered':break
