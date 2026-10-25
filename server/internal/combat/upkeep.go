@@ -126,6 +126,9 @@ type upkeepUnitRow struct {
 	r                *int
 	homeSettlementID *uuid.UUID
 	freightPort      *uuid.UUID
+	// carrierDocked: the carrying ship lies in port (embarked rows only), so an
+	// empty ship's passengers are fed like the docked ship itself.
+	carrierDocked bool
 }
 
 // UpkeepHandler applies grain + silver upkeep to all active units each tick.
@@ -191,7 +194,8 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 		        u.carried_by_ship_id,
 		        (SELECT s.id FROM settlements s
 		          WHERE s.id = u.support_settlement_id AND s.owner_id = u.owner_id),
-		        u.status, u.q, u.r, u.home_settlement_id
+		        u.status, u.q, u.r, u.home_settlement_id,
+		        COALESCE((SELECT c.status IN ('garrison','repairing','fitting_out') FROM units c WHERE c.id = u.carried_by_ship_id), false)
 		 FROM units u
 		 WHERE u.world_id = $1
 		   AND u.status IN ('garrison', 'marching', 'positioned', 'embarked', 'repairing', 'freighting', 'fitting_out')
@@ -213,7 +217,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 		var u upkeepUnitRow
 		if err := rows.Scan(&u.id, &u.ownerID, &u.unitType, &u.category,
 			&u.size, &u.crew, &u.settlementID, &u.unpaidPeriods, &u.cargoUnitID, &u.carrierID,
-			&u.supportSettlementID, &u.status, &u.q, &u.r, &u.homeSettlementID); err != nil {
+			&u.supportSettlementID, &u.status, &u.q, &u.r, &u.homeSettlementID, &u.carrierDocked); err != nil {
 			return fmt.Errorf("upkeep: scan unit: %w", err)
 		}
 		units = append(units, u)
@@ -665,7 +669,8 @@ func provisionSourceFor(u upkeepUnitRow) *uuid.UUID {
 // in the world — the only case where falling back to the town's stock is not
 // the teleporting logistics this mechanic removes.
 func atHomePort(u upkeepUnitRow) bool {
-	return u.status == "garrison" || u.status == "repairing" || u.status == "fitting_out" || u.freightPort != nil
+	return u.status == "garrison" || u.status == "repairing" || u.status == "fitting_out" || u.freightPort != nil ||
+		(u.status == "embarked" && u.carrierDocked)
 }
 
 // applyAttrition removes men (land) or crew (naval) from the unit due to grain

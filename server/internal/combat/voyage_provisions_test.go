@@ -203,3 +203,15 @@ func TestProvisionDaysLeft_DecimalWholeTickBoundary(t *testing.T) {
 		})
 	}
 }
+
+// Tylissos 2026-10-25: 3rd Spearmen sat aboard an Emporos docked in its own
+// harbour with empty stores and lost men to hunger every day. Passengers of a
+// docked ship fall back to the town exactly like the docked ship does.
+func TestAtHomePort_EmbarkedOnDockedShipIsFedByTheTown(t *testing.T) {
+	if !atHomePort(upkeepUnitRow{category: "land", status: "embarked", carrierDocked: true}) {
+		t.Error("cohort aboard a docked ship must count as in port")
+	}
+	if atHomePort(upkeepUnitRow{category: "land", status: "embarked", carrierDocked: false}) {
+		t.Error("cohort aboard a ship at sea must not fall back to the town")
+	}
+}
