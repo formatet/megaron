@@ -652,3 +652,7 @@ Integration: `python3 tools/correspondence_integration_upgrade.py OUTPUT_JSON` t
 
 - `python3 tools/byggplan_bild_20261024.py OUTPUT`: egen färsk BILD-rigg för byggplanen A/C/D och G1; riktig Firefox1280/390, HTTP/worker/WS, scenfixtur och transparent WebAudio-observatör. Inga produktionsändringar eller delad rigg.
 - `python3 tools/byggplan_bild_gallery_20261024.py`: bygger bildkodad granskningssida från nativefilerna och kontrollerar produktionshasharna; ändrar inga bilder.
+
+- `python3 tools/hex_for_hex_bild_20261025.py OUTPUT`: egen färsk PG16/mig213, Redis och server; riktig grundning/marsch, uttrycklig sjöledsfixtur och sen avgångsfas, Firefox1280/390 vid avgång/mitt/mål/verkställning samt riktig Keryx. Sparar källhashar, API, fixtureSQL och sidfel; städar egna tjänster.
+- `python3 tools/hex_for_hex_mutations_20261025.py OUTPUT`: fyra fysiska avgångs-/sikt-/stormmutationer, ny DB per arm, namngivet assertion-rött, byteexakt restore och nytt grönt prov. Kör aldrig samtidigt med en serverbuild eller andra källmutationer i samma worktree.
+- `python3 tools/hex_for_hex_schema_20261025.py OUTPUT`: offline PG16, 212→213→212→213; bevarar gammal stormprogress och kontrollerar nullable uppgradering samt dirty=false. Rör ingen delad rigg.

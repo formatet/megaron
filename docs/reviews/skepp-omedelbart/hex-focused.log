@@ -1,0 +1,115 @@
+» färsk DB på migration 213 · commit 8cd130dd+ändringar
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=30 r=22 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=11 r=31 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=21 r=15 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=17 r=24 units=4
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=26 r=17 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=25 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=14 r=17 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=23 r=9 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=29 r=26 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=11 r=6 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=20 r=15 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=28 r=22 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=22 r=13 units=3
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=15 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=18 r=8 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=25 r=8 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=16 r=10 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=29 r=21 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=25 r=13 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=6 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=11 r=25 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=17 r=18 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=10 r=15 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=25 r=28 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=8 r=22 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=19 r=10 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=21 r=24 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=18 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=18 r=19 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=14 r=15 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=30 r=10 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=10 r=25 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=19 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=16 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=14 r=14 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=32 r=25 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=10 r=19 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=17 r=29 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=24 r=15 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=21 r=14 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=20 units=3
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=25 r=22 units=3
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=24 r=17 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=33 r=17 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=27 r=26 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=13 r=15 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=16 r=20 units=3
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=14 r=27 units=3
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=29 r=10 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=25 r=11 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=23 r=18 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=21 r=19 units=3
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=26 r=11 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=27 r=17 units=3
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=20 r=11 units=3
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=28 r=34 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=23 r=28 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=22 r=25 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=16 r=21 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=27 r=23 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=10 r=34 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=23 r=21 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=9 r=19 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=12 r=24 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=20 r=16 units=3
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=18 r=18 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=4 r=32 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=30 r=20 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=17 r=33 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=17 r=17 units=3
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=17 units=4
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=17 r=26 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=14 units=3
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=24 r=11 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=10 r=8 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=11 r=26 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=25 r=29 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=11 r=14 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=21 r=25 units=3
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=22 r=16 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=24 r=30 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=26 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=28 r=15 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=21 r=20 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=24 r=36 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=17 r=20 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=24 r=24 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=19 r=3 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=26 r=21 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=1 r=0 units=2
+2026/10/25 09:28:37 INFO march encounter: crossing armies collided — battle initiated/joined q=1 r=0 units=2
+2026/10/25 09:28:37 ERROR march route: could not read step costs unit=996d6df8-2ee7-4dd4-82fe-11f3196734e7 err="timeout: context already done: context canceled"
+2026/10/25 09:28:37 ERROR march route: could not read current game day unit=41a09fc7-2620-4207-807b-d47e8ae8b298 err="timeout: context already done: context canceled"
+2026/10/25 09:28:37 INFO expedition turning for home unit=a6205c91-c7ee-4bd4-96c4-d74d41928fd4 reason=area_known q=2 r=0 arrive_tick=3
+2026/10/25 09:28:37 INFO recall/redirect order reached unit, new course set unit=39de0d82-6768-44d3-83bc-27697b06d2e8 mode=redirect from_q=0 from_r=0 to_q=2 to_r=1 arrives_at=2026-10-25T12:28:37.663+01:00
+--- FAIL: TestAcceptance1_ExecuteRecall_RedirectSavesRoute (0.02s)
+    march_route_test.go:453: ExecuteRecall read current position (0,0), want [0 1] (the saved-route answer, not the old re-walk's origin)
+    march_route_test.go:465: route has 4 hexes, want 3: got=[[0 0] [0 1] [1 1] [2 1]] want=[[0 1] [1 1] [2 1]]
+2026/10/25 09:28:37 INFO unit arrived (garrison) unit=787a9dac-5b30-41a1-b1d1-25167c1cf5b4 q=1 r=0 status=garrison
+2026/10/25 09:28:38 INFO recall/redirect order reached unit, new course set unit=683abc37-0ee2-41f6-ac84-a863e4796548 mode=recall from_q=3 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-12T07:00:00.000+02:00
+2026/10/25 09:28:38 INFO recall/redirect order reached unit, new course set unit=75864df1-cf19-41d4-9db6-d5b24558be5d mode=redirect from_q=3 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-12T07:00:00.000+02:00
+2026/10/25 09:28:38 INFO scheduled event worker started poll=10ms
+2026/10/25 09:28:38 ERROR mark event done failed id=140 err="context canceled"
+2026/10/25 09:28:38 ERROR event worker batch failed err="claim events: context canceled"
+2026/10/25 09:28:38 INFO scheduled event worker stopped
+2026/10/25 09:28:38 WARN place reach before arrival failed; continuing movement world=80190302-ff96-4fbe-99d2-bcbdd109e6d1 error="context canceled"
+2026/10/25 09:28:38 WARN place reach skips invalid unit route world=3d037f07-32dc-43db-a951-f8f754c7f988 unit=7b27e100-ae06-47a3-a38f-83d0754e754a
+2026/10/25 09:28:39 INFO unit intercepted — battle initiated/joined unit=6c780c79-b408-47c0-8f88-ac964f1b8fb6 sentry=017ff7fe-71ae-4ff9-a3e8-61bfc1b5dc7c q=1 r=0
+2026/10/25 09:28:39 INFO unit intercept scan: sentry alerted (no combat) unit=ef749970-55eb-43b1-a022-c60ade0b4084 sentry=377750ae-03e4-4c76-95c2-f629431b0a2f q=1 r=0
+2026/10/25 09:28:39 INFO unit intercept scan: sentry alerted (no combat) unit=b1d28f1a-0256-4f49-bfb4-b11e778ef87d sentry=1bc733a6-5f2a-42b0-99d3-a0e32ef27f00 q=1 r=0
+2026/10/25 09:28:39 INFO unit intercepted — battle initiated/joined unit=3e95c693-aa60-409a-9696-cb48fab688da sentry=cdac46bd-354a-47a8-a843-1d0f00410f8d q=1 r=0
+FAIL
+FAIL	formatet/megaron/server/internal/combat	2.634s
+FAIL

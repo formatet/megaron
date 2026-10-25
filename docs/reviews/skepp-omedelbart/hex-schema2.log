@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "/tmp/megaron-codex-skepp-omedelbart-20261025/tools/hex_for_hex_schema_20261025.py", line 22, in <module>
+    migrate('goto','212')
+    ~~~~~~~^^^^^^^^^^^^^^
+  File "/tmp/megaron-codex-skepp-omedelbart-20261025/tools/hex_for_hex_schema_20261025.py", line 20, in migrate
+    if r.returncode:raise RuntimeError(r.stdout+r.stderr)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: error: failed to open database: read tcp 127.0.0.1:51708->127.0.0.1:33346: read: connection reset by peer
+

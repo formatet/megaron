@@ -1,0 +1,7 @@
+» färsk DB på migration 213 · commit fe078375+ändringar
+=== RUN   TestTimedStormContactsDoNotReachFutureHexes
+    timed_progress_test.go:29: future storm hit: [{tick:104 hex:[2 0] id:[253 105 188 184 140 153 78 25 153 215 69 16 165 155 195 108]}]
+--- FAIL: TestTimedStormContactsDoNotReachFutureHexes (0.00s)
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.002s
+FAIL

@@ -1,0 +1,13 @@
+{
+  "postgres": 16,
+  "versions": [
+    212,
+    213,
+    212,
+    213
+  ],
+  "legacy_last_tick_preserved": 42,
+  "new_progress_nullable_on_upgrade": true,
+  "dirty": false,
+  "private_container_removed": true
+}

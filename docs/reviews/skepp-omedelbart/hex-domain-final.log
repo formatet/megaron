@@ -1,0 +1,4 @@
+» färsk DB på migration 213 · commit 8cd130dd+ändringar
+ok  	formatet/megaron/server/internal/messenger	3.167s
+ok  	formatet/megaron/server/internal/combat	16.877s
+ok  	formatet/megaron/server/internal/events	0.136s

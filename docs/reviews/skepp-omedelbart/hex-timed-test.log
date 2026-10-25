@@ -1,0 +1,40 @@
+» färsk DB på migration 213 · commit 8cd130dd+ändringar
+=== RUN   TestAcceptance1_StartMarch_SavesRoute
+--- PASS: TestAcceptance1_StartMarch_SavesRoute (0.02s)
+=== RUN   TestAcceptance1_StartMarch_ColonizeInPlace_SavesNoRoute
+--- PASS: TestAcceptance1_StartMarch_ColonizeInPlace_SavesNoRoute (0.02s)
+=== RUN   TestAcceptance1_DispatchReturnHome_SavesRoute
+2026/10/25 09:31:28 INFO expedition turning for home unit=68070e66-9ac7-4c6a-9d84-5c5ecf155537 reason=area_known q=2 r=0 arrive_tick=3
+--- PASS: TestAcceptance1_DispatchReturnHome_SavesRoute (0.03s)
+=== RUN   TestAcceptance1_MarchShipToNearestOwnPort_SavesRoute
+--- PASS: TestAcceptance1_MarchShipToNearestOwnPort_SavesRoute (0.02s)
+=== RUN   TestAcceptance1_ExecuteRecall_RedirectSavesRoute
+2026/10/25 09:31:28 INFO recall/redirect order reached unit, new course set unit=1f305ad3-b505-4be0-af83-0b0fc1601588 mode=redirect from_q=0 from_r=0 to_q=2 to_r=1 arrives_at=2026-10-25T12:31:28.645+01:00
+--- PASS: TestAcceptance1_ExecuteRecall_RedirectSavesRoute (0.02s)
+=== RUN   TestShipReport43640c42_DeparturePhase
+=== RUN   TestShipReport43640c42_DeparturePhase/at_boundary
+    ship_immediate_report_test.go:83: duration=1 ticks route={"costs": [200, 200, 200], "hexes": [[60, 27], [59, 27], [58, 27], [58, 26]], "version": 2, "end_tick": 104, "start_tick": 103} announced=2026-10-24T20:10:30+02:00 nominal_due=2026-10-24T18:10:30Z departure_milli=103000
+=== RUN   TestShipReport43640c42_DeparturePhase/at_boundary/prefix_memory
+=== RUN   TestShipReport43640c42_DeparturePhase/at_boundary/start_hex_at_dispatch
+=== RUN   TestShipReport43640c42_DeparturePhase/at_boundary/announced_eta_matches_due_tick_boundary
+=== RUN   TestShipReport43640c42_DeparturePhase/reported_phase
+    ship_immediate_report_test.go:83: duration=1 ticks route={"costs": [200, 200, 200], "hexes": [[60, 27], [59, 27], [58, 27], [58, 26]], "version": 2, "end_tick": 104, "start_tick": 103, "offset_milli": 733} announced=2026-10-24T20:11:13+02:00 nominal_due=2026-10-24T18:10:30Z departure_milli=103733
+=== RUN   TestShipReport43640c42_DeparturePhase/reported_phase/prefix_memory
+=== RUN   TestShipReport43640c42_DeparturePhase/reported_phase/start_hex_at_dispatch
+=== RUN   TestShipReport43640c42_DeparturePhase/reported_phase/announced_eta_matches_due_tick_boundary
+--- PASS: TestShipReport43640c42_DeparturePhase (0.06s)
+    --- PASS: TestShipReport43640c42_DeparturePhase/at_boundary (0.03s)
+        --- PASS: TestShipReport43640c42_DeparturePhase/at_boundary/prefix_memory (0.01s)
+        --- PASS: TestShipReport43640c42_DeparturePhase/at_boundary/start_hex_at_dispatch (0.00s)
+        --- PASS: TestShipReport43640c42_DeparturePhase/at_boundary/announced_eta_matches_due_tick_boundary (0.00s)
+    --- PASS: TestShipReport43640c42_DeparturePhase/reported_phase (0.03s)
+        --- PASS: TestShipReport43640c42_DeparturePhase/reported_phase/prefix_memory (0.01s)
+        --- PASS: TestShipReport43640c42_DeparturePhase/reported_phase/start_hex_at_dispatch (0.00s)
+        --- PASS: TestShipReport43640c42_DeparturePhase/reported_phase/announced_eta_matches_due_tick_boundary (0.00s)
+=== RUN   TestTimedStormContactsDoNotReachFutureHexes
+--- PASS: TestTimedStormContactsDoNotReachFutureHexes (0.00s)
+=== RUN   TestTimedEncounterCatchesCrossingBetweenTickSamples
+2026/10/25 09:31:28 INFO march encounter: crossing armies collided — battle initiated/joined q=1 r=0 units=2
+--- PASS: TestTimedEncounterCatchesCrossingBetweenTickSamples (0.03s)
+PASS
+ok  	formatet/megaron/server/internal/combat	0.210s
