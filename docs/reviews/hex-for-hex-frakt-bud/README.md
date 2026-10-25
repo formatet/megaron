@@ -4,7 +4,7 @@ Gren `codex/hex-for-hex-frakt-bud`, från `8fa5d1c4`. **Ingen merge, push eller 
 
 Frakt och bud står nu kvar på starthexen tills nästa hex verkligen nås. Deras befintliga avrundade restid behålls. Varje terrängkostnads prefix fördelar hexankomsterna över den totalen, från faktisk avgång. Server, webbkarta och Keryx läser den sparade rörelsen; sikt får aldrig börja från en framtida hex.
 
-**Kod och slutresultat:** fylls efter slutkörningen. **BILD:** [native Firefox, desktop och mobil](index.html).
+**Kod och slutresultat:** `f657a960`, migration 214; återstartens hela färska Go-svit grön (26 paket med tester, world 150.165s), vet grön. **BILD:** [native Firefox, desktop och mobil](index.html).
 
 ## Inventering och ägare
 
@@ -64,3 +64,13 @@ Gate: bevisar att fysisk logistik och bud för geografi→brist→brons kan läs
 - [Bildproveniens](bild-handover/proof.json), [fixtur](bild-handover/fixture.sql), riktiga API-/Keryxsvar och sex nativebilder. Reproduktion: `python tools/freight_hex_bild_20261025.py OUTPUT`. Egen färsk PostgreSQL/Redis/server, inga prod-/acc-ingrepp, ingen DOM- eller svars-mockning.
 
 Äldre fixtures läser nu faktisk V1/V2/V3-jobbtyp och korrekt generation; historiska V1-envelopeprov behåller generation 0. ETA-provet jämför med samma mikrosekundprecision som lagringen. En callback-från-hamn-fixtur låter först budet nå hamnen; separat prov täcker återkallelse ute på vägen.
+
+## Återstart: kvarvarande klockprov och korsningsbild
+
+Produktionsrättning `f657a960`: ombordbudets karta hade korrekt fysisk position men ett felaktigt webbfönster från `boarded_at`. V2-fönstret kommer nu från bärarens sparade avgång och slutgräns, både för enhet och frakt. Det tidigare ofärdiga testet är verkligt [rött på checkpointen](resume-carrier-test.log), [grönt med rättningen](resume-carrier-green.log), och [rött när rättningen fysiskt tas bort](resume-carrier-mutant.log). Originalbytes återställdes exakt.
+
+[Utökad Firefoxrigg](bild-crossing/proof.json): åtta nativebilder i 1280/390, tre samtidiga korsande rutter vid 0.5/15.4/23.4 sekunder, inklusive ett hemvändande bud; riktig karavanleverans vid 34.4 sekunder. Karavanen går genom verklig transfer-API och Keryx. De två korsande aktörerna är öppet loggade DB-scenfixturer på samma sparade klocka, inte ett påstående att dessa skickats genom order-API. Samtliga källhashar oförändrade och inga sidfel. Linjernas befintliga pixelmönster är oförändrade; ingen före/efter-stiländring.
+
+En första återstartskörning av bildriggen underkändes korrekt av källhashvakten när mutationstestet kördes för tidigt parallellt. Den körningen är inte bevis; efter exakt restore kördes riggen rent igen. Fullsviten startades om från färsk DB efter restore; se `resume-full-go.log`.
+
+Slutkontroll: hela `resume-full-go.log` grön efter exakt restore; `resume-vet.log` grön. Alla 949 produktionshashar i bildprovet matchar slutkoden. Tidigare 770 JS, schema- och fem mutationsbevis gäller oförändrade delar; återstarten tillför ett sjätte mutationsprov för bärarens webbfönster.

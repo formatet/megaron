@@ -1,0 +1,109 @@
+{
+  "expedition_rules": {
+    "area_radius": 5,
+    "default_ticks": 10,
+    "max_ticks": 365,
+    "min_ticks": 4
+  },
+  "units": [
+    {
+      "can_cancel_training": false,
+      "id": "ac1aef98-6fa8-4c63-82af-55a60b3208c7",
+      "type": "spearman",
+      "category": "land",
+      "size": 100,
+      "upkeep_food_per_tick": 1,
+      "upkeep_grain_per_tick": 1,
+      "upkeep_silver_per_tick": 0,
+      "upkeep_context": "active",
+      "status": "positioned",
+      "deployable": true,
+      "display_name": "1st Spearmen of Lato",
+      "ordinal": 1,
+      "support_settlement_id": "60eeb2a3-7199-48dc-8f2e-6fff13e0a198",
+      "support_settlement_name": "Lato",
+      "shipyard_waiting": false,
+      "q": 7,
+      "r": 29,
+      "in_battle": false,
+      "can_lay_up": false,
+      "can_fit_out": false
+    },
+    {
+      "can_cancel_training": false,
+      "id": "0f7d9859-3e88-4839-9ba5-e575e0f4c1fa",
+      "type": "spearman",
+      "category": "land",
+      "size": 100,
+      "upkeep_food_per_tick": 1,
+      "upkeep_grain_per_tick": 1,
+      "upkeep_silver_per_tick": 0,
+      "upkeep_context": "active",
+      "status": "positioned",
+      "deployable": true,
+      "display_name": "2nd Spearmen of Lato",
+      "ordinal": 2,
+      "support_settlement_id": "60eeb2a3-7199-48dc-8f2e-6fff13e0a198",
+      "support_settlement_name": "Lato",
+      "shipyard_waiting": false,
+      "q": 7,
+      "r": 29,
+      "in_battle": false,
+      "can_lay_up": false,
+      "can_fit_out": false
+    },
+    {
+      "can_cancel_training": false,
+      "id": "0ecca542-7ad4-49f7-8cda-07ffc76351de",
+      "type": "infantry",
+      "category": "land",
+      "size": 100,
+      "upkeep_food_per_tick": 0,
+      "upkeep_grain_per_tick": 0,
+      "upkeep_silver_per_tick": 0,
+      "upkeep_context": "active",
+      "status": "marching",
+      "deployable": true,
+      "display_name": "infantry of Perimos",
+      "shipyard_waiting": false,
+      "q": 11,
+      "r": 29,
+      "target_q": 11,
+      "target_r": 26,
+      "arrival_tick": 108,
+      "duration_ticks": 5,
+      "arrives_at_utc": "2026-10-25T14:48:45.161134219Z",
+      "path": [
+        [
+          11,
+          29
+        ],
+        [
+          11,
+          28
+        ],
+        [
+          11,
+          27
+        ],
+        [
+          11,
+          26
+        ]
+      ],
+      "route_version": 2,
+      "dispatch_offset_milli": 735,
+      "step_costs": [
+        1000,
+        1000,
+        1000
+      ],
+      "departure_tick": 103,
+      "current_q": 11,
+      "current_r": 26,
+      "in_battle": false,
+      "can_lay_up": false,
+      "can_fit_out": false
+    }
+  ]
+}

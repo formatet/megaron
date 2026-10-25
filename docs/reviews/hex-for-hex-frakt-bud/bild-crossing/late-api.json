@@ -1,0 +1,58 @@
+[
+  {
+    "route_version": 2,
+    "dispatch_offset_milli": 735,
+    "items": [
+      {
+        "good_key": "stone",
+        "quantity": 10
+      }
+    ],
+    "kind": "transfer",
+    "route_known": true,
+    "path": [
+      [
+        10,
+        27
+      ],
+      [
+        11,
+        27
+      ],
+      [
+        12,
+        27
+      ],
+      [
+        13,
+        27
+      ]
+    ],
+    "step_costs": [
+      1000,
+      1000,
+      1000
+    ],
+    "category": "land",
+    "heading": "south-east",
+    "id": "04257b25-85fa-42da-9a13-c1aafad0c87f",
+    "good_key": "stone",
+    "quantity": 10,
+    "origin_q": 10,
+    "origin_r": 27,
+    "dest_q": 13,
+    "dest_r": 27,
+    "departs_at": "2026-10-25T15:48:11.143607+01:00",
+    "arrives_at": "2026-10-25T15:48:41.143607+01:00",
+    "mine": true,
+    "arrival_tick": 108,
+    "departure_tick": 103,
+    "travel_ticks": 5,
+    "current_q": 12,
+    "current_r": 27,
+    "owner": "Perimos",
+    "role": "sender",
+    "origin_name": "Lato",
+    "dest_name": "Petras"
+  }
+]
