@@ -1,3 +1,4 @@
+import { buildingLabel } from './building_names.js';
 import { demolitionKharisText } from './demolish.js';
 // ── Shared formatting helpers ──────────────────────────────────────────────
 // Formatting helpers; clock/world anchor are shared lower-layer dependencies.
@@ -341,7 +342,12 @@ export function notifText(kind, body) {
 
     case 'OpeningDispatch': return esc(body.title || 'Opening dispatch');
     case 'agora_ready': return `Community chat account ready: ${body.user_id || 'your Wanax account'} — open Account to get your chat password.`;
-    case 'BuildComplete':      return `Build complete: ${esc(body.temple || body.building_type || '')}`;
+    case 'BuildComplete': {
+      const what=body.temple || body.building_name || buildingLabel(body.building_type);
+      const site=body.hex_q != null && body.hex_r != null ? ` at (${body.hex_q},${body.hex_r})` : '';
+      const city=body.settlement_name || 'your city';
+      return `${esc(what)} built${site} for ${esc(city)}${body.unlocked_goods?.length ? ' — place workers to start production' : ''}`;
+    }
     case 'GoodsCrafted': {
       // Payload per ProvinceHandler.Craft: output_key, produced, consumed{good:qty}.
       // Name what went in — casting bronze is the moment the copper/tin chain pays
@@ -358,7 +364,7 @@ export function notifText(kind, body) {
       const place = { river: 'river', massif: 'mountain massif', desert: 'desert', forest: 'cedar forest' }[body.kind] || 'place';
       return `Your ${esc(body.unit_name || body.unit_type || 'unit')} is the first to reach this ${place} — you may name it. Click it at (${body.q},${body.r}) on the map.`;
     }
-    case 'TrainComplete':      return `Training done: ${body.count || ''} ${body.unit_type || ''}`;
+    case 'TrainComplete': return `${esc(body.unit_name || unitTypeLabel(body.unit_type))} ready in ${esc(body.settlement_name || 'your city')}`;
     case 'ArmyArrival':        return `Army arrived — ${body.outcome || ''}`;
     case 'ColonyFounded':      return `Colony founded: ${body.name || ''}`;
     case 'MetropolisFounded': {
@@ -367,7 +373,7 @@ export function notifText(kind, body) {
       // (colonyFoundedGrainLine reads the same grain_* fields).
       const parts = [`Your metropolis is founded: ${body.name || ''}`];
       if (body.known_hexes != null) parts.push(`${body.known_hexes}/${(body.known_hexes || 0) + (body.unknown_hexes || 0)} catchment hexes known`);
-      if (body.poseidon_gift) parts.push('Poseidon grants a galley');
+      if (body.poseidon_gift) parts.push('Poseidon grants a Galley');
       return parts.join(' — ');
     }
     case 'OutpostEstablished': return 'Outpost established';
@@ -861,7 +867,7 @@ export function notifText(kind, body) {
         case 'harvest_blessing': return `The gods fill your granaries${place} — +${Math.round(amount)} grain`;
         case 'bountiful_harvest': return `The gods bless the fields${place} — grain, oil and wine yield a quarter more for ${amount} game days`;
         case 'divine_recruits':  return `Warriors answer a divine call${place} — +${amount} men`;
-        case 'sea_blessing':     return `Poseidon guides a vessel to your harbour${place} — +${amount} galley`;
+        case 'sea_blessing':     return `Poseidon guides a vessel to your harbour${place} — +${amount} Galley`;
         default:                 return `${kind} — ${payloadSummary(body)}`;
       }
     }

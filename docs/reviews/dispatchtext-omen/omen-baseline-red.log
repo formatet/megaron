@@ -1,0 +1,6 @@
+» färsk DB på migration 214 · commit 473af47c+ändringar
+--- FAIL: TestOmenNoFactsMeansSilence (0.03s)
+    omen_truth_test.go:17: no true omen candidate, must remain silent; got 1 invented omens
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.037s
+FAIL

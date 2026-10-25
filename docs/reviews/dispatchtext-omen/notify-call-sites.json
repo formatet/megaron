@@ -1,0 +1,633 @@
+[
+  {
+    "kind": "\u003cdynamic\u003e",
+    "source": "server/internal/combat/battle.go:938:14",
+    "fields": []
+  },
+  {
+    "kind": "\u003cdynamic\u003e",
+    "source": "server/internal/combat/collapse.go:328:7",
+    "fields": [
+      "cause",
+      "last_settlement",
+      "name",
+      "q",
+      "r",
+      "settlement_id",
+      "warband_unit_id"
+    ]
+  },
+  {
+    "kind": "\u003cdynamic\u003e",
+    "source": "server/internal/combat/march_sighting.go:371:6",
+    "fields": []
+  },
+  {
+    "kind": "\u003cdynamic\u003e",
+    "source": "server/internal/combat/road.go:560:7",
+    "fields": [
+      "q",
+      "r",
+      "target_q",
+      "target_r",
+      "unit_id"
+    ]
+  },
+  {
+    "kind": "\u003cdynamic\u003e",
+    "source": "server/internal/combat/sea_storm.go:401:13",
+    "fields": []
+  },
+  {
+    "kind": "\u003cdynamic\u003e",
+    "source": "server/internal/combat/ship_hull.go:245:12",
+    "fields": [
+      "hull",
+      "hull_max",
+      "name",
+      "q",
+      "r",
+      "returning_home",
+      "sunk",
+      "unit_id",
+      "unit_type"
+    ]
+  },
+  {
+    "kind": "\u003cdynamic\u003e",
+    "source": "server/internal/combat/ship_repair.go:178:13",
+    "fields": [
+      "hull",
+      "name",
+      "settlement_id",
+      "unit_id",
+      "unit_type"
+    ]
+  },
+  {
+    "kind": "\u003cdynamic\u003e",
+    "source": "server/internal/combat/shipyard_work.go:100:12",
+    "fields": []
+  },
+  {
+    "kind": "\u003cdynamic\u003e",
+    "source": "server/internal/combat/upkeep.go:529:6",
+    "fields": []
+  },
+  {
+    "kind": "\u003cdynamic\u003e",
+    "source": "server/internal/combat/upkeep.go:581:6",
+    "fields": []
+  },
+  {
+    "kind": "\u003cdynamic\u003e",
+    "source": "server/internal/economy/hex_blockade.go:201:8",
+    "fields": []
+  },
+  {
+    "kind": "\u003cdynamic\u003e",
+    "source": "server/internal/economy/hex_take.go:233:7",
+    "fields": []
+  },
+  {
+    "kind": "\u003cdynamic\u003e",
+    "source": "server/internal/economy/siege_dispatch.go:104:7",
+    "fields": []
+  },
+  {
+    "kind": "\u003cdynamic\u003e",
+    "source": "server/internal/economy/trade.go:592:6",
+    "fields": []
+  },
+  {
+    "kind": "\u003cdynamic\u003e",
+    "source": "server/internal/kharis/tick.go:1279:6",
+    "fields": []
+  },
+  {
+    "kind": "\u003cdynamic\u003e",
+    "source": "server/internal/messenger/handler.go:519:6",
+    "fields": []
+  },
+  {
+    "kind": "\u003cdynamic\u003e",
+    "source": "server/internal/messenger/order_delivery.go:241:10",
+    "fields": [
+      "arrives_at",
+      "name",
+      "q",
+      "r",
+      "target_q",
+      "target_r",
+      "unit_id"
+    ]
+  },
+  {
+    "kind": "\u003cdynamic\u003e",
+    "source": "server/internal/messenger/order_delivery.go:276:8",
+    "fields": [
+      "arrives_at",
+      "name",
+      "q",
+      "r",
+      "target_q",
+      "target_r",
+      "unit_id"
+    ]
+  },
+  {
+    "kind": "BuildComplete",
+    "source": "server/internal/combat/build.go:284:7",
+    "fields": []
+  },
+  {
+    "kind": "CaravanRaided",
+    "source": "server/internal/transport/intercept.go:390:7",
+    "fields": []
+  },
+  {
+    "kind": "CaravanSeized",
+    "source": "server/internal/transport/intercept.go:389:7",
+    "fields": []
+  },
+  {
+    "kind": "CityAnnexReady",
+    "source": "server/internal/combat/occupation_check.go:85:9",
+    "fields": [
+      "name",
+      "settlement_id"
+    ]
+  },
+  {
+    "kind": "CityOccupied",
+    "source": "server/internal/combat/occupation.go:257:8",
+    "fields": [
+      "name",
+      "occupation_ticks_to_annex",
+      "role",
+      "settlement_id"
+    ]
+  },
+  {
+    "kind": "CityOccupied",
+    "source": "server/internal/combat/occupation.go:262:7",
+    "fields": [
+      "choices",
+      "default",
+      "name",
+      "occupation_ticks_to_annex",
+      "role",
+      "settlement_id"
+    ]
+  },
+  {
+    "kind": "CityOccupied",
+    "source": "server/internal/combat/siege_capitulation.go:151:7",
+    "fields": [
+      "cause",
+      "name",
+      "occupation_ticks_to_annex",
+      "role",
+      "settlement_id"
+    ]
+  },
+  {
+    "kind": "CityOccupied",
+    "source": "server/internal/combat/siege_capitulation.go:155:7",
+    "fields": [
+      "cause",
+      "choices",
+      "default",
+      "name",
+      "occupation_ticks_to_annex",
+      "role",
+      "settlement_id"
+    ]
+  },
+  {
+    "kind": "ColonyFounded",
+    "source": "server/internal/combat/unit_arrival.go:2151:7",
+    "fields": []
+  },
+  {
+    "kind": "DivineBlessing",
+    "source": "server/internal/kharis/tick.go:1571:7",
+    "fields": [
+      "amount",
+      "name",
+      "settlement_id",
+      "type"
+    ]
+  },
+  {
+    "kind": "DivinePunishment",
+    "source": "server/internal/kharis/tick.go:1481:7",
+    "fields": []
+  },
+  {
+    "kind": "MarchStalled",
+    "source": "server/internal/combat/unit_arrival.go:219:6",
+    "fields": [
+      "name",
+      "q",
+      "r",
+      "reason",
+      "unit_id"
+    ]
+  },
+  {
+    "kind": "MessengerArrival",
+    "source": "server/internal/messenger/handler.go:258:6",
+    "fields": []
+  },
+  {
+    "kind": "MessengerReturned",
+    "source": "server/internal/messenger/handler.go:445:6",
+    "fields": []
+  },
+  {
+    "kind": "MetropolisFounded",
+    "source": "server/api/handlers/found_metropolis.go:480:7",
+    "fields": []
+  },
+  {
+    "kind": "OccupationDefended",
+    "source": "server/internal/combat/occupation.go:289:7",
+    "fields": [
+      "name",
+      "occupation_ticks_to_annex",
+      "settlement_id"
+    ]
+  },
+  {
+    "kind": "OfferExpired",
+    "source": "server/internal/economy/trade.go:128:7",
+    "fields": [
+      "counterparty_id",
+      "good_key",
+      "kind",
+      "messenger_id",
+      "quantity",
+      "resolution",
+      "settlement_id",
+      "silver"
+    ]
+  },
+  {
+    "kind": "OrderFailed",
+    "source": "server/internal/combat/road.go:528:8",
+    "fields": [
+      "reason",
+      "unit_id",
+      "verb"
+    ]
+  },
+  {
+    "kind": "OrderFailed",
+    "source": "server/internal/messenger/order_delivery.go:370:6",
+    "fields": []
+  },
+  {
+    "kind": "OrderFailed",
+    "source": "server/internal/messenger/order_delivery.go:401:6",
+    "fields": []
+  },
+  {
+    "kind": "OrderFailed",
+    "source": "server/internal/messenger/order_delivery_failure.go:25:7",
+    "fields": []
+  },
+  {
+    "kind": "OrderFailed",
+    "source": "server/internal/messenger/passage.go:1220:7",
+    "fields": [
+      "messenger_id",
+      "reason"
+    ]
+  },
+  {
+    "kind": "PassageStalled",
+    "source": "server/internal/messenger/passage.go:685:7",
+    "fields": []
+  },
+  {
+    "kind": "PickupTimedOut",
+    "source": "server/internal/combat/unit_arrival.go:1165:7",
+    "fields": [
+      "note",
+      "q",
+      "r",
+      "unit_id"
+    ]
+  },
+  {
+    "kind": "PickupWaiting",
+    "source": "server/internal/combat/unit_arrival.go:1001:7",
+    "fields": [
+      "note",
+      "pickup_unit_id",
+      "q",
+      "r",
+      "unit_id",
+      "waiting_until_tick"
+    ]
+  },
+  {
+    "kind": "RiteAnswered",
+    "source": "server/api/handlers/settlement.go:1356:6",
+    "fields": []
+  },
+  {
+    "kind": "ScoutReport",
+    "source": "server/internal/combat/unit_arrival.go:1355:7",
+    "fields": [
+      "cedar_deposit",
+      "copper_deposit",
+      "incense_deposit",
+      "q",
+      "r",
+      "silver_deposit",
+      "terrain",
+      "tin_deposit",
+      "unit_id"
+    ]
+  },
+  {
+    "kind": "SentryAlerted",
+    "source": "server/internal/combat/unit_intercept_scan.go:304:14",
+    "fields": [
+      "foreign_owner",
+      "foreign_type",
+      "q",
+      "r",
+      "sentry_unit_id"
+    ]
+  },
+  {
+    "kind": "SettlementBurned",
+    "source": "server/internal/combat/occupation.go:540:9",
+    "fields": [
+      "name",
+      "role",
+      "settlement_id"
+    ]
+  },
+  {
+    "kind": "SettlementBurned",
+    "source": "server/internal/combat/occupation.go:544:8",
+    "fields": [
+      "looted",
+      "name",
+      "role",
+      "settlement_id"
+    ]
+  },
+  {
+    "kind": "SettlementCaptured",
+    "source": "server/internal/combat/occupation.go:454:8",
+    "fields": [
+      "role",
+      "settlement_id"
+    ]
+  },
+  {
+    "kind": "SettlementCaptured",
+    "source": "server/internal/combat/occupation.go:458:7",
+    "fields": [
+      "role",
+      "settlement_id"
+    ]
+  },
+  {
+    "kind": "SettlementLooted",
+    "source": "server/internal/combat/occupation.go:585:8",
+    "fields": [
+      "building_hit",
+      "name",
+      "pop_lost",
+      "role",
+      "settlement_id"
+    ]
+  },
+  {
+    "kind": "SettlementLooted",
+    "source": "server/internal/combat/occupation.go:590:7",
+    "fields": [
+      "looted",
+      "name",
+      "role",
+      "settlement_id"
+    ]
+  },
+  {
+    "kind": "ShipCaptured",
+    "source": "server/internal/combat/naval_seizure.go:105:7",
+    "fields": [
+      "former_owner_id",
+      "q",
+      "r",
+      "unit_id"
+    ]
+  },
+  {
+    "kind": "ShipLost",
+    "source": "server/internal/combat/naval_seizure.go:108:7",
+    "fields": [
+      "captor_id",
+      "q",
+      "r",
+      "unit_id"
+    ]
+  },
+  {
+    "kind": "ShipStranded",
+    "source": "server/internal/transport/arrival.go:296:7",
+    "fields": [
+      "q",
+      "r",
+      "unit_id"
+    ]
+  },
+  {
+    "kind": "ShipSweptFromSea",
+    "source": "server/internal/combat/unit_arrival.go:1516:8",
+    "fields": [
+      "arrives_at",
+      "name",
+      "q",
+      "r",
+      "reason",
+      "unit_id"
+    ]
+  },
+  {
+    "kind": "StandingOrderDispatched",
+    "source": "server/internal/combat/standing_orders.go:742:6",
+    "fields": [
+      "arrives_at",
+      "goods",
+      "leg",
+      "standing_order_id"
+    ]
+  },
+  {
+    "kind": "StandingOrderPaused",
+    "source": "server/internal/combat/standing_orders.go:726:7",
+    "fields": [
+      "reason",
+      "standing_order_id"
+    ]
+  },
+  {
+    "kind": "TrainComplete",
+    "source": "server/internal/combat/train.go:144:8",
+    "fields": [
+      "count",
+      "settlement_id",
+      "unit_id",
+      "unit_type"
+    ]
+  },
+  {
+    "kind": "TransferDelivered",
+    "source": "server/internal/transport/arrival.go:254:7",
+    "fields": [
+      "dest_id",
+      "dest_name",
+      "goods"
+    ]
+  },
+  {
+    "kind": "UnitArrived",
+    "source": "server/internal/combat/unit_arrival.go:1221:7",
+    "fields": [
+      "name",
+      "q",
+      "r",
+      "status",
+      "unit_id"
+    ]
+  },
+  {
+    "kind": "UnitArrived",
+    "source": "server/internal/combat/unit_arrival.go:1250:9",
+    "fields": [
+      "name",
+      "q",
+      "r",
+      "status",
+      "unit_id"
+    ]
+  },
+  {
+    "kind": "UnitArrived",
+    "source": "server/internal/combat/unit_arrival.go:1727:8",
+    "fields": []
+  },
+  {
+    "kind": "UnitArrived",
+    "source": "server/internal/combat/unit_arrival.go:1787:7",
+    "fields": [
+      "name",
+      "q",
+      "r",
+      "status",
+      "unit_id"
+    ]
+  },
+  {
+    "kind": "UnitArrived",
+    "source": "server/internal/combat/unit_arrival.go:1860:7",
+    "fields": [
+      "name",
+      "q",
+      "r",
+      "stance",
+      "status",
+      "unit_id"
+    ]
+  },
+  {
+    "kind": "UnitArrived",
+    "source": "server/internal/combat/unit_arrival.go:648:7",
+    "fields": [
+      "name",
+      "q",
+      "r",
+      "status",
+      "type",
+      "unit_id"
+    ]
+  },
+  {
+    "kind": "UnitArrived",
+    "source": "server/internal/combat/unit_arrival.go:706:9",
+    "fields": [
+      "name",
+      "note",
+      "unit_id"
+    ]
+  },
+  {
+    "kind": "UnitArrived",
+    "source": "server/internal/combat/unit_arrival.go:774:7",
+    "fields": [
+      "name",
+      "q",
+      "r",
+      "status",
+      "unit_id"
+    ]
+  },
+  {
+    "kind": "UnitArrived",
+    "source": "server/internal/combat/unit_arrival.go:796:6",
+    "fields": [
+      "name",
+      "note",
+      "q",
+      "r",
+      "status",
+      "unit_id"
+    ]
+  },
+  {
+    "kind": "UnitArrived",
+    "source": "server/internal/combat/unit_arrival.go:869:7",
+    "fields": [
+      "name",
+      "note",
+      "q",
+      "r",
+      "status",
+      "unit_id"
+    ]
+  },
+  {
+    "kind": "UnitExploreReturned",
+    "source": "server/internal/combat/unit_arrival.go:1539:7",
+    "fields": [
+      "arrives_at",
+      "name",
+      "q",
+      "r",
+      "unit_id"
+    ]
+  },
+  {
+    "kind": "UnitFetched",
+    "source": "server/internal/combat/unit_arrival.go:1065:7",
+    "fields": [
+      "note",
+      "q",
+      "r",
+      "ship_id",
+      "unit_id"
+    ]
+  },
+  {
+    "kind": "UnitLostAtSea",
+    "source": "server/internal/combat/upkeep.go:642:7",
+    "fields": []
+  }
+]

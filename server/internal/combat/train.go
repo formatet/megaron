@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"formatet/megaron/server/internal/unit"
 	"log/slog"
 
 	"formatet/megaron/server/internal/economy"
@@ -140,12 +141,15 @@ func (h *TrainCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 
 		if h.hub != nil {
 			var ownerID uuid.UUID
-			_ = h.pool.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id = $1`, p.SettlementID).Scan(&ownerID)
+			var settlementName string
+			_ = h.pool.QueryRow(ctx, `SELECT owner_id,name FROM settlements WHERE id = $1`, p.SettlementID).Scan(&ownerID, &settlementName)
 			_ = h.hub.NotifyPlayer(ctx, e.WorldID, ownerID, "TrainComplete", 4, map[string]any{
-				"settlement_id": p.SettlementID,
-				"unit_type":     p.UnitType,
-				"count":         p.Count,
-				"unit_id":       p.UnitID,
+				"settlement_id":   p.SettlementID,
+				"settlement_name": settlementName,
+				"unit_name":       unit.DisplayName(p.UnitType),
+				"unit_type":       p.UnitType,
+				"count":           p.Count,
+				"unit_id":         p.UnitID,
 			})
 		}
 	}

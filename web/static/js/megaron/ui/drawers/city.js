@@ -1,3 +1,4 @@
+import { BUILDING_LABELS as _BLD_LBL } from '../building_names.js';
 import { disbandUnitsHTML } from '../disband.js';
 import { showInlineResult, confirmInline } from '../inline_result.js';
 import { demolishLabel, demolishPrompt, demolishResultLine } from '../demolish.js';
@@ -173,13 +174,7 @@ export async function loadCityDrawer() {
 }
 
 // ── City build action ─────────────────────────────────────────────────────
-const _BLD_LBL = {
-  farm:'Farm', barracks:'Barracks', mine:'Mine', lumbermill:'Lumbermill',
-  stonequarry:'Stone Quarry', market:'Market', wall:'Wall', tower:'Tower',
-  harbour:'Harbour', shipyard:'Shipyard', foundry:'Foundry', stable:'Stable',
-  bronze_wall:'Bronze Wall', olive_press:'Olive Press', winery:'Winery',
-  temple:'Temple', pen:'Pen', silo:'Granary',
-};
+
 
 // A temple is built for one god: the Construct list has one row per god, its
 // value "temple:<god_id>". splitBuildValue gives back the type and the god.
@@ -567,7 +562,7 @@ async function refreshCityBuildings(provinceID) {
     if (bq.length) h2 += `<div class="dsec-title" style="margin-top:.8rem">Build queue</div><table class="goods-mini">${
       // A building finishes, it doesn't arrive — say "ready" (matches the
       // Training column below and war.js's ship-build phrasing).
-      bq.map(b => `<tr><td>${esc(b.name||_BLD_LBL[b.type]||b.type)}</td><td>${arrivalHTML(b.complete_at, undefined, 'ready')}</td>` +
+      bq.map(b => `<tr><td>${esc(b.name||_BLD_LBL[b.type]||b.type)} · ${esc(b.settlement_name||pd.name||'this city')}${b.hex_q != null ? ` at (${b.hex_q},${b.hex_r})` : ''}</td><td>${arrivalHTML(b.complete_at, undefined, 'ready')}</td>` +
         `<td style="text-align:right"><button class="btn-small" onclick="cancelBuild('${provinceID}','${b.id}')" style="padding:.05rem .3rem;font-size:.68rem;cursor:pointer">✕</button></td></tr>`).join('')
     }</table>`;
     if (tu.length) {

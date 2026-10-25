@@ -244,10 +244,14 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 		return fmt.Errorf("commit: %w", err)
 	}
 
+	var settlementName string
+	_ = h.pool.QueryRow(ctx, `SELECT name FROM settlements WHERE id=$1`, p.SettlementID).Scan(&settlementName)
 	completed := map[string]any{
-		"building_type": p.BuildingType,
-		"hex_q":         p.HexQ,
-		"hex_r":         p.HexR,
+		"building_type":   p.BuildingType,
+		"building_name":   province.BuildingDisplayName(string(p.BuildingType)),
+		"settlement_name": settlementName,
+		"hex_q":           p.HexQ,
+		"hex_r":           p.HexR,
 	}
 	if godID != nil {
 		completed["god_id"] = *godID
@@ -261,10 +265,12 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 		var ownerID uuid.UUID
 		_ = h.pool.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id = $1`, p.SettlementID).Scan(&ownerID)
 		body := map[string]any{
-			"settlement_id": p.SettlementID,
-			"building_type": p.BuildingType,
-			"hex_q":         p.HexQ,
-			"hex_r":         p.HexR,
+			"settlement_id":   p.SettlementID,
+			"building_type":   p.BuildingType,
+			"building_name":   province.BuildingDisplayName(string(p.BuildingType)),
+			"settlement_name": settlementName,
+			"hex_q":           p.HexQ,
+			"hex_r":           p.HexR,
 		}
 		if godID != nil {
 			body["god_id"] = *godID
@@ -279,7 +285,7 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 			body["unlocked_goods"] = unlockedGoods
 			body["hint"] = fmt.Sprintf(
 				"%s is built but produces nothing until staffed — place a citizen to work %s (`keryx place`/`staff`, or the city's placement grid) to start production.",
-				p.BuildingType, strings.Join(unlockedGoods, ", "))
+				province.BuildingDisplayName(string(p.BuildingType)), strings.Join(unlockedGoods, ", "))
 		}
 		_ = h.hub.NotifyPlayer(ctx, e.WorldID, ownerID, "BuildComplete", 4, body)
 	}

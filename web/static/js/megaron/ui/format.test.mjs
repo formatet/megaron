@@ -764,3 +764,10 @@ test('BattleBegun puts the Wanax before the place and carries a clock time', () 
   assert.match(text, /\d\d:\d\d/);
   assert.equal(notifText('BattleBegun', { opponent_name: 'Nestor', q: 1, r: 0, joined: true }), 'Nestor — your forces joined the battle at (1, 0)');
 });
+
+test('completion dispatches name the city, player building/unit and actual build hex',()=>{
+ assert.match(notifText('BuildComplete',{building_type:'lumbermill',settlement_name:'Tylissos',hex_q:0,hex_r:7,unlocked_goods:['timber']}),/Lumbermill built at \(0,7\) for Tylissos/);
+ for(const [unit,label] of [['merchantman','Emporos'],['war_galley','War Galley'],['elite_infantry','Elite Infantry'],['galley','Galley']]){
+  const text=notifText('TrainComplete',{unit_type:unit,count:1,settlement_name:'Tylissos'});assert.match(text,new RegExp(label+' ready in Tylissos'));assert.doesNotMatch(text,/merchantman|war_galley|elite_infantry|\bgalley\b/);
+ }
+});

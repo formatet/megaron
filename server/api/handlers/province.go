@@ -146,23 +146,28 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 		// Build queue — include so API clients don't need a separate endpoint.
 		type buildItem struct {
-			ID         uuid.UUID `json:"id"`
-			Type       string    `json:"type"`
-			CreatedAt  time.Time `json:"created_at"`
-			CompleteAt time.Time `json:"complete_at"`
-			GodID      string    `json:"god_id,omitempty"`
-			Name       string    `json:"name,omitempty"`
+			ID             uuid.UUID `json:"id"`
+			Type           string    `json:"type"`
+			CreatedAt      time.Time `json:"created_at"`
+			CompleteAt     time.Time `json:"complete_at"`
+			GodID          string    `json:"god_id,omitempty"`
+			Name           string    `json:"name,omitempty"`
+			HexQ           *int      `json:"hex_q,omitempty"`
+			HexR           *int      `json:"hex_r,omitempty"`
+			SettlementName string    `json:"settlement_name"`
 		}
 		var buildQueue []buildItem
 		qrows, _ := h.pool.Query(r.Context(),
-			`SELECT id, building_type, created_at, complete_at, coalesce(god_id,'') FROM build_queue
+			`SELECT id, building_type, created_at, complete_at, coalesce(god_id,''),hex_q,hex_r FROM build_queue
 			 WHERE settlement_id = $1 ORDER BY complete_at`,
 			sett.ID,
 		)
 		if qrows != nil {
 			for qrows.Next() {
 				var bi buildItem
-				_ = qrows.Scan(&bi.ID, &bi.Type, &bi.CreatedAt, &bi.CompleteAt, &bi.GodID)
+				_ = qrows.Scan(&bi.ID, &bi.Type, &bi.CreatedAt, &bi.CompleteAt, &bi.GodID, &bi.HexQ, &bi.HexR)
+				bi.SettlementName = sett.Name
+				bi.Name = province.BuildingDisplayName(bi.Type)
 				if bi.GodID != "" {
 					bi.Name = religion.TempleName(bi.GodID)
 				}

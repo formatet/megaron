@@ -69,6 +69,10 @@ func (h *ShipyardWorkCompleteHandler) Handle(ctx context.Context, e events.Sched
 	}
 	kind := "TrainComplete"
 	body := map[string]any{"unit_id": p.UnitID, "unit_type": typ, "settlement_id": city, "count": 1, "size_after": 0}
+	var settlementName string
+	_ = tx.QueryRow(ctx, `SELECT name FROM settlements WHERE id=$1`, city).Scan(&settlementName)
+	body["settlement_name"] = settlementName
+	body["unit_name"] = unit.DisplayName(typ)
 	stream := city
 	if status == "repairing" {
 		kind = EventShipRepaired
