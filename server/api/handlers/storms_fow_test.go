@@ -158,3 +158,22 @@ func TestStorms_ForgottenWhenItsRememberedPlaceIsInSightAndEmpty(t *testing.T) {
 		t.Fatalf("the stale memory must be deleted, %d rows left", n)
 	}
 }
+
+// A storm moves as one body: one remembered hex in sight and empty means the whole
+// remembered picture is stale, even if its other hexes lie beyond sight (Timothy 2026-10-25).
+func TestStorms_ForgottenWhenAnyRememberedHexIsInSightAndEmpty(t *testing.T) {
+	pool, worldID, viewerID, _, get := stormsRig(t)
+	id := seedStorm(t, pool, worldID, 0, [3][2]int{{20, 5}, {21, 5}, {20, 6}})
+	if _, err := pool.Exec(context.Background(),
+		`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, 3, 0, 'coastal_sea'), ($1, 4, 0, 'coastal_sea'), ($1, 4, -1, 'coastal_sea') ON CONFLICT DO NOTHING`, worldID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.Exec(context.Background(),
+		`INSERT INTO player_storm_sightings (player_id, storm_id, seen_tick, hexes) VALUES ($1, $2, 3, '[{"q":3,"r":0},{"q":4,"r":0},{"q":4,"r":-1}]')`,
+		viewerID, id); err != nil {
+		t.Fatal(err)
+	}
+	if got := get(); len(got.Storms) != 0 {
+		t.Fatalf("storms = %+v, want none: (3,0) is in sight and empty, so the storm has moved on", got.Storms)
+	}
+}

@@ -34,8 +34,8 @@ type stormView struct {
 // FOW: a storm is shown live, with its heading, only while one of its hexes is inside the
 // Wanax's current sight (the same eyes and the same Eye.Sees test as /map). Seeing it writes
 // player_storm_sightings, so afterwards it is shown where it was LAST SEEN, marked
-// remembered with that tick — never its live position. A remembered storm whose every
-// remembered hex is in sight again, and which is not there, has moved on and is forgotten.
+// remembered with that tick — never its live position. A remembered storm with any
+// remembered hex in sight again, and which is not there, has moved on and is forgotten.
 // The full track is never exposed.
 func (h *WorldHandler) Storms(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
@@ -167,12 +167,13 @@ func (h *WorldHandler) Storms(w http.ResponseWriter, r *http.Request) {
 		if !ok {
 			continue
 		}
-		allInSight := len(m.hexes) > 0
+		anyInSight := false
 		for _, hx := range m.hexes {
-			allInSight = allInSight && sees(hx)
+			anyInSight = anyInSight || sees(hx)
 		}
-		if allInSight {
-			// You are looking at the place it was and it is not there: it has moved on.
+		if anyInSight {
+			// A storm moves as one body: you see a place it was and it is not there, so it
+			// has moved on — even if its other remembered hexes lie beyond sight.
 			_, _ = h.pool.Exec(ctx, `DELETE FROM player_storm_sightings WHERE player_id = $1 AND storm_id = $2`, playerID, id)
 			continue
 		}
