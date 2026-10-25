@@ -1,17 +1,22 @@
 package movement
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"time"
+)
 
 // StoredRoute is units.march_route's JSON shape (R1). Costs[i] is the cost
 // of entering Hexes[i+1] (movement.Move's own convention), in thousandths of
 // a terrain-hour.
 type StoredRoute struct {
-	Version     int      `json:"version,omitempty"`
-	OffsetMilli int64    `json:"offset_milli,omitempty"`
-	StartTick   int      `json:"start_tick"`
-	EndTick     int      `json:"end_tick"`
-	Hexes       [][2]int `json:"hexes"`
-	Costs       []int64  `json:"costs"`
+	DepartureAt     time.Time `json:"departure_at,omitempty"`
+	TickNanoseconds int64     `json:"tick_nanoseconds,omitempty"`
+	Version         int       `json:"version,omitempty"`
+	OffsetMilli     int64     `json:"offset_milli,omitempty"`
+	StartTick       int       `json:"start_tick"`
+	EndTick         int       `json:"end_tick"`
+	Hexes           [][2]int  `json:"hexes"`
+	Costs           []int64   `json:"costs"`
 }
 
 // Move converts a StoredRoute to movement's pure Move shape.
@@ -46,4 +51,13 @@ func LoadActiveRoute(raw []byte, status string, departTick, arriveTick *int) (St
 		return StoredRoute{}, false
 	}
 	return r, true
+}
+
+// MilliAt is the saved route's clock, independent of the world worker's poll
+// phase. The world anchor establishes this mapping once at dispatch.
+func (r StoredRoute) MilliAt(now time.Time) int64 {
+	return int64(r.StartTick)*1000 + r.OffsetMilli + int64(now.Sub(r.DepartureAt)/(time.Duration(r.TickNanoseconds)/1000))
+}
+func (r StoredRoute) WallAt(at int64) time.Time {
+	return r.DepartureAt.Add(time.Duration(at-int64(r.StartTick)*1000-r.OffsetMilli) * (time.Duration(r.TickNanoseconds) / 1000))
 }

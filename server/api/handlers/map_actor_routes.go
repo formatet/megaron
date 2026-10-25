@@ -122,7 +122,7 @@ func (h *WorldHandler) messengerCarrierRoute(ctx context.Context, worldID uuid.U
 		if !ok {
 			return nil
 		}
-		pos, err := combat.RoutePositionAt(r, at)
+		pos, err := combat.RoutePositionAt(r, at, now)
 		if err != nil {
 			return nil
 		}

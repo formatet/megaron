@@ -661,7 +661,7 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 	routeOK := false
 	if activeRoute, ok := combat.LoadActiveRoute(u.MarchRoute, string(u.Status), u.DepartTick, u.ArriveTick); ok {
 		if anchor, aErr := tick.LoadAnchor(ctx, h.pool, worldID); aErr == nil {
-			if p, rErr := combat.RoutePositionAt(activeRoute, anchor.MilliAt(h.clk.Now())); rErr == nil {
+			if p, rErr := combat.RoutePositionAt(activeRoute, anchor.MilliAt(h.clk.Now()), h.clk.Now()); rErr == nil {
 				currentPos, posOK = p, true
 				recallRoute, recallAnchor, routeOK = activeRoute, anchor, true
 			}
@@ -1726,7 +1726,7 @@ func (h *UnitHandler) stanceToMarchingUnit(w http.ResponseWriter, ctx context.Co
 	var currentPos province.MapPosition
 	posOK := false
 	if hasRoute {
-		if p, rErr := combat.RoutePositionAt(activeRoute, anchor.MilliAt(now)); rErr == nil {
+		if p, rErr := combat.RoutePositionAt(activeRoute, anchor.MilliAt(now), now); rErr == nil {
 			currentPos, posOK = p, true
 		}
 	}
@@ -2912,7 +2912,7 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 		var currentQ, currentR *int
 		if hasAnchor {
 			if route, ok := combat.LoadActiveRoute(u.MarchRoute, string(u.Status), u.DepartTick, u.ArriveTick); ok {
-				if pos, err := combat.RoutePositionAt(route, nowMilli); err == nil {
+				if pos, err := combat.RoutePositionAt(route, nowMilli, clk.Now()); err == nil {
 					q, r := pos.Q, pos.R
 					currentQ, currentR = &q, &r
 				}

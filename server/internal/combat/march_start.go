@@ -881,6 +881,12 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 			slog.Error("march route: invalid stored route", "unit", o.UnitID)
 			return nil, reject(http.StatusInternalServerError, "pathfinding error")
 		}
+		shift := route.StartTick - currentTick
+		currentTick = route.StartTick
+		if expeditionPlan != nil {
+			expeditionPlan.TurnTick += shift
+			expeditionPlan.HomeByTick += shift
+		}
 		now, arrivesAt, err = RouteWallTimes(ctx, departureDB, o.WorldID, route)
 		if err != nil {
 			return nil, err
@@ -1393,7 +1399,7 @@ func CurrentUnitPosition(ctx context.Context, pool *pgxpool.Pool, clk clock.Cloc
 	if u.Status == unit.StatusMarching {
 		if route, ok := LoadActiveRoute(u.MarchRoute, string(u.Status), u.DepartTick, u.ArriveTick); ok {
 			if anchor, err := tick.LoadAnchor(ctx, pool, u.WorldID); err == nil {
-				return RoutePositionAt(route, anchor.MilliAt(clk.Now()))
+				return RoutePositionAt(route, anchor.MilliAt(clk.Now()), clk.Now())
 			}
 		}
 		if u.Q != nil && u.R != nil && u.TargetQ != nil && u.TargetR != nil && u.DepartsAt != nil && u.ArrivesAt != nil {

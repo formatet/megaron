@@ -1572,6 +1572,7 @@ func (h *UnitArrivalHandler) dispatchLeg(
 		if stepHours, shErr := province.StepHoursDB(ctx, tx, worldID, path, u.moveCategory()); shErr == nil {
 			if route, ok := BuildRouteAt(ctx, tx, worldID, path, stepHours, currentTick, currentTick+travelTicks, h.clk.Now()); ok {
 				if raw, mErr := json.Marshal(route); mErr == nil {
+					currentTick = route.StartTick
 					if _, end, e := RouteWallTimes(ctx, tx, worldID, route); e == nil {
 						arrivesAt = end
 					}

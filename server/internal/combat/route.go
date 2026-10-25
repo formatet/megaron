@@ -59,7 +59,10 @@ func LoadActiveRoute(raw []byte, status string, departTick, arriveTick *int) (St
 }
 
 // RoutePositionAt is where the unit is at Milli m along its saved route.
-func RoutePositionAt(r StoredRoute, m int64) (province.MapPosition, error) {
+func RoutePositionAt(r StoredRoute, m int64, now ...time.Time) (province.MapPosition, error) {
+	if r.Version == 2 && !r.DepartureAt.IsZero() && r.TickNanoseconds > 0 && len(now) > 0 {
+		m = r.MilliAt(now[0])
+	}
 	h, err := movement.PositionAt(r.Move(), movement.Milli(m))
 	if err != nil {
 		return province.MapPosition{}, err
@@ -111,12 +114,24 @@ func BuildRouteAt(ctx context.Context, db province.Queryer, worldID uuid.UUID, p
 		return StoredRoute{}, false
 	}
 	r.Version = 2
-	r.OffsetMilli = a.MilliAt(now) - int64(start)*1000
+	dispatch := a.ExactMilliAt(now)
+	// A delayed tick worker must not backdate a new journey.
+	if dispatch < int64(start)*1000 {
+		dispatch = int64(start) * 1000
+	}
+	r.StartTick = int(dispatch / 1000)
+	r.EndTick = r.StartTick + (end - start)
+	r.OffsetMilli = dispatch % 1000
+	r.DepartureAt = a.WallAt(dispatch)
+	r.TickNanoseconds = int64(time.Duration(tick.TickSeconds) * time.Second)
 	return r, true
 }
 
 // RouteWallTimes converts saved millitick endpoints using the world's anchor.
 func RouteWallTimes(ctx context.Context, db province.Queryer, worldID uuid.UUID, r StoredRoute) (time.Time, time.Time, error) {
+	if r.Version == 2 && !r.DepartureAt.IsZero() && r.TickNanoseconds > 0 {
+		return r.DepartureAt, r.WallAt(int64(r.EndTick)*1000 + r.OffsetMilli), nil
+	}
 	rows, err := db.Query(ctx, `SELECT current_tick,last_tick_at FROM worlds WHERE id=$1`, worldID)
 	if err != nil {
 		return time.Time{}, time.Time{}, err

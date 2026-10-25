@@ -21,10 +21,13 @@ func TestShipReport43640c42_DeparturePhase(t *testing.T) {
 	oldSeconds := tick.TickSeconds
 	tick.TickSeconds = 60
 	t.Cleanup(func() { tick.TickSeconds = oldSeconds })
-	for _, offset := range []time.Duration{0, 44 * time.Second} {
+	for _, offset := range []time.Duration{0, 44 * time.Second, 104 * time.Second} {
 		name := "at_boundary"
 		if offset > 0 {
 			name = "reported_phase"
+		}
+		if offset > 60*time.Second {
+			name = "delayed_world_worker"
 		}
 		t.Run(name, func(t *testing.T) {
 			ctx := context.Background()
@@ -84,6 +87,14 @@ func TestShipReport43640c42_DeparturePhase(t *testing.T) {
 			if res.DurationTicks != 1 || len(route.Hexes) != 4 {
 				t.Fatalf("fixture no longer reproduces reported three-step one-tick voyage: %+v", res)
 			}
+			t.Run("live_position_while_world_tick_worker_lags", func(t *testing.T) {
+				halfway := res.DepartsAt.Add(time.Duration(res.DurationTicks*tick.TickSeconds) * time.Second / 2)
+				pos, err := RoutePositionAt(route, anchor.MilliAt(halfway), halfway)
+				if err != nil || pos.Q != route.Hexes[1][0] || pos.R != route.Hexes[1][1] {
+					t.Fatalf("lagged world froze physical voyage: pos%v err%v", pos, err)
+				}
+			})
+
 			t.Run("prefix_memory", func(t *testing.T) {
 				entered, err := RouteEnterMilli(route)
 				if err != nil {

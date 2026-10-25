@@ -355,6 +355,7 @@ func marchShipToNearestOwnPort(
 		if stepHours, shErr := province.StepHoursDB(ctx, tx, worldID, path, "naval"); shErr == nil {
 			if route, ok := BuildRouteAt(ctx, tx, worldID, path, stepHours, tickIndex, tickIndex+travelTicks, clk.Now()); ok {
 				if raw, mErr := json.Marshal(route); mErr == nil {
+					tickIndex = route.StartTick
 					if _, end, e := RouteWallTimes(ctx, tx, worldID, route); e == nil {
 						arrivesAt = end
 					}

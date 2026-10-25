@@ -23,6 +23,9 @@ type UnitPosition struct {
 func (u UnitPosition) Physical(ctx context.Context, db Queryer, worldID uuid.UUID, now time.Time, at int64) MapPosition {
 	origin := MapPosition{Q: u.Q, R: u.R}
 	if saved, ok := movement.LoadActiveRoute(u.Route, u.Status, u.DepartTick, u.ArriveTick); ok {
+		if saved.Version == 2 && !saved.DepartureAt.IsZero() && saved.TickNanoseconds > 0 {
+			at = saved.MilliAt(now)
+		}
 		if physical, err := movement.PositionAt(saved.Move(), movement.Milli(at)); err == nil {
 			return MapPosition{Q: physical.Q, R: physical.R}
 		}

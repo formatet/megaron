@@ -28,6 +28,10 @@ func enqueueUnitArrivalTx(ctx context.Context, tx pgx.Tx, scheduler *events.Sche
 		end := int64(r.EndTick)*1000 + r.OffsetMilli
 		arrival := a.WallAt(end)
 		departure := a.WallAt(int64(r.StartTick)*1000 + r.OffsetMilli)
+		if !r.DepartureAt.IsZero() && r.TickNanoseconds > 0 {
+			departure = r.DepartureAt
+			arrival = r.WallAt(end)
+		}
 		if _, err = tx.Exec(ctx, `UPDATE units SET departs_at=$2,arrives_at=$3 WHERE id=$1`, payload.UnitID, departure, arrival); err != nil {
 			return err
 		}

@@ -57,29 +57,37 @@ func (h *SeaStormScanHandler) BeforeTimedArrival(next events.Handler) events.Han
 		if err != nil {
 			return err
 		}
-		at := a.MilliAt(h.scheduler.Clock().Now())
-		graph, err := province.LoadTileGraph(ctx, h.pool, e.WorldID)
-		if err != nil {
+		at := a.ExactMilliAt(h.scheduler.Clock().Now())
+		if err = h.advanceTimedAt(ctx, e, at); err != nil {
 			return err
-		}
-		if err = h.stepWeather(ctx, e.WorldID, int(at/1000), graph); err != nil {
-			return err
-		}
-		occupied, err := loadStormOccupancy(ctx, h.pool, e.WorldID, int(at/1000)-stormTrackKeepTicks, int(at/1000))
-		if err != nil {
-			return err
-		}
-		voyages, err := h.loadVoyages(ctx, e.WorldID)
-		if err != nil {
-			return err
-		}
-		for _, v := range voyages {
-			if v.route.Version == 2 {
-				if err = h.sail(ctx, e.WorldID, int(at/1000), graph, occupied, v, at); err != nil {
-					return err
-				}
-			}
 		}
 		return next(ctx, e)
 	}
+}
+
+func (h *SeaStormScanHandler) advanceTimedAt(ctx context.Context, e events.ScheduledEvent, at int64) error {
+
+	graph, err := province.LoadTileGraph(ctx, h.pool, e.WorldID)
+	if err != nil {
+		return err
+	}
+	if err = h.stepWeather(ctx, e.WorldID, int(at/1000), graph); err != nil {
+		return err
+	}
+	occupied, err := loadStormOccupancy(ctx, h.pool, e.WorldID, int(at/1000)-stormTrackKeepTicks, int(at/1000))
+	if err != nil {
+		return err
+	}
+	voyages, err := h.loadVoyages(ctx, e.WorldID)
+	if err != nil {
+		return err
+	}
+	for _, v := range voyages {
+		if v.route.Version == 2 {
+			if err = h.sail(ctx, e.WorldID, int(at/1000), graph, occupied, v, at); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }

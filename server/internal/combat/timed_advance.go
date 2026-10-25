@@ -36,7 +36,7 @@ func (h *PlaceReachScanHandler) advanceTimed(ctx context.Context, e events.Sched
 	if err != nil {
 		return err
 	}
-	through := a.MilliAt(h.scheduler.Clock().Now())
+	through := a.ExactMilliAt(h.scheduler.Clock().Now())
 	from := int64(e.DueTick-1) * 1000
 	tx, err := h.pool.Begin(ctx)
 	if err != nil {
@@ -113,7 +113,7 @@ func (h *PlaceReachScanHandler) advanceTimed(ctx context.Context, e events.Sched
 		deliverPlaceReach(ctx, h.store, h.hub, e.WorldID, reached)
 		storm := NewSeaStormScanHandler(h.pool, scheduler, h.store, h.hub)
 		// Storms retain their existing priority at an exact tie.
-		if err = storm.BeforeTimedArrival(func(context.Context, events.ScheduledEvent) error { return nil })(ctx, e); err != nil {
+		if err = storm.advanceTimedAt(ctx, e, at); err != nil {
 			return err
 		}
 		encounter := NewMarchEncounterHandler(h.pool, scheduler, h.store, clk, h.hub)
@@ -121,7 +121,7 @@ func (h *PlaceReachScanHandler) advanceTimed(ctx context.Context, e events.Sched
 			return err
 		}
 		intercept := NewUnitInterceptScanHandler(h.pool, scheduler, h.store, clk, h.hub)
-		if err = intercept.scan(ctx, e); err != nil {
+		if err = intercept.scan(ctx, e, at); err != nil {
 			return err
 		}
 		if _, err = h.pool.Exec(ctx, `INSERT INTO timed_route_progress(world_id,last_milli) VALUES($1,$2) ON CONFLICT(world_id) DO UPDATE SET last_milli=GREATEST(timed_route_progress.last_milli,EXCLUDED.last_milli)`, e.WorldID, at); err != nil {

@@ -105,7 +105,7 @@ type marchingUnit struct {
 // FOW-visible enemy sentry within reach (intercept or alert policy) that
 // hasn't already been resolved against this exact march instance, then
 // re-enqueues itself.
-func (h *UnitInterceptScanHandler) scan(ctx context.Context, e events.ScheduledEvent) error {
+func (h *UnitInterceptScanHandler) scan(ctx context.Context, e events.ScheduledEvent, cutoff ...int64) error {
 	now := h.clk.Now()
 	anchor, err := tick.LoadAnchor(ctx, h.pool, e.WorldID)
 	if err != nil {
@@ -160,12 +160,15 @@ func (h *UnitInterceptScanHandler) scan(ctx context.Context, e events.ScheduledE
 			}
 			lower := int64(e.DueTick-1) * 1000
 			upper := anchor.MilliAt(now)
+			if len(cutoff) > 0 {
+				upper = cutoff[0]
+			}
 			for i, at := range entered {
 				if at >= lower && at <= upper {
 					points = append(points, sample{province.MapPosition{Q: saved.Hexes[i][0], R: saved.Hexes[i][1]}, at})
 				}
 			}
-			if pos, err := RoutePositionAt(saved, upper); err == nil {
+			if pos, err := RoutePositionAt(saved, upper, now); err == nil {
 				points = append(points, sample{pos, upper})
 			}
 		} else {

@@ -74,7 +74,7 @@ func (h *MarchEncounterHandler) timedEncounters(ctx context.Context, e events.Sc
 					if at > start {
 						start = at
 					}
-				} else if at := a.MilliAt(updated); at > start {
+				} else if at := a.ExactMilliAt(updated); at > start {
 					start = at
 				}
 				if start > through {

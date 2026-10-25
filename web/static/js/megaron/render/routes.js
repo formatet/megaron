@@ -5,6 +5,7 @@ export const ROUTE_PATTERNS={army:[],ship:[4,3],runner:[1,3],caravan:[5,2,1,2]};
 const COMPASS={north:[0,-1],'north-east':[1,-1],east:[1,0],'south-east':[1,1],south:[0,1],'south-west':[-1,1],west:[-1,0],'north-west':[-1,-1]};
 const clamp=n=>Math.max(0,Math.min(1,n));
 export function routeProgress(actor,nowMs,tickNow=null){
+ if(actor.route_version===2){const a=Date.parse(actor.departs_at||actor.sent_at),b=Date.parse(actor.arrives_at);if(Number.isFinite(a)&&b>a)return Math.min(1,(nowMs-a)/(b-a));}
  const start=actor.departure_tick,end=actor.arrival_tick;
  if(tickNow!=null&&Number.isFinite(start)&&Number.isFinite(end)&&end>start)return Math.min(1,(tickNow-start-(actor.dispatch_offset_milli||0)/1000)/(end-start));
  const a=Date.parse(actor.departs_at||actor.sent_at),b=Date.parse(actor.arrives_at);
