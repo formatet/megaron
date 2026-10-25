@@ -34,6 +34,8 @@ read from code or vault on demand. A `≥3` beside the word "invariant" makes an
 - **Codex may be working in this repo at the same time** — rules in `AGENTS.md`. If `.agents/codex-thread`
   exists, arm a Monitor at session start: `tail -n0 -F .agents/chat.log | grep --line-buffered "codex→claude"`
   (re-arm on expiry), read the log's tail, and message Codex with `tools/agent-say.sh codex "…"`.
+  **⚠️ Until Wed 2026-10-28 16:00 (Timothy 2026-10-25): Codex drives progress ALONE** — reviews, merges, pushes, deploys, keeps
+  todo/vault; canon and BILD go straight to Timothy. Claude does not lead Codex in that window (too little compute). After it, the roles below apply again.
   **Roles (Timothy 2026-10-04, reaffirmed 2026-10-14):** Claude leads — gives Codex work orders (one branch per slice),
   reviews the core diff itself, runs its own mutation check, merges, pushes, deploys, keeps todo/vault, and takes
   BILD/TEXT gates to Timothy. Codex builds, tests and proposes architecture, and hands over hash + STOP.
