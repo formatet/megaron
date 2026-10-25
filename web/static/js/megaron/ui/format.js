@@ -261,7 +261,7 @@ export function expeditionReportText(body) {
   const parts = Object.entries(byKind).map(([k, at]) => `${k} at ${at.join(', ')}`);
   if (cities.length) parts.push(`cities: ${cities.join(', ')}`);
   const found = parts.length ? parts.join('; ') : 'no ore deposits, cedar or foreign cities recorded';
-  return `${subject} is home after ${fmtDays(body.ticks_out ?? '?')}, ${body.furthest ?? '?'} hexes out at the furthest — ` +
+  return `${subject} is home${body.home ? ` in ${body.home}` : ''} after ${fmtDays(body.ticks_out ?? '?')}, ${body.furthest ?? '?'} hexes out at the furthest — ` +
          `saw ${body.hexes_seen ?? 0} hexes around (${body.area_q}, ${body.area_r}): ${found}`;
 }
 

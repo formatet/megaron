@@ -440,8 +440,13 @@ func (h *UnitArrivalHandler) expeditionHome(
 	if err != nil {
 		return err
 	}
+	var home string
+	if err := tx.QueryRow(ctx, `SELECT name FROM settlements WHERE id = $1`, settlementID).Scan(&home); err != nil {
+		return fmt.Errorf("expedition report: home: %w", err)
+	}
 	if err := h.expeditionOutcome(ctx, tx, event, worldID, u.ownerID, "ExpeditionReport", 4, map[string]any{
 		"unit_id":     u.id,
+		"home":        home,
 		"name":        unit.LoadDisplayName(ctx, tx, u.id),
 		"area_q":      e.AreaQ,
 		"area_r":      e.AreaR,

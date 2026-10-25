@@ -645,13 +645,13 @@ test('notifText: expedition return states completion and estimates wall time', a
 
 test('notifText: ExpeditionReport groups finds and names cities', () => {
   const t = notifText('ExpeditionReport', {
-    name: 'Spearmen I', area_q: 5, area_r: 0, ticks_out: 9, furthest: 7, hexes_seen: 40,
+    name: 'Spearmen I', home: 'Kommos', area_q: 5, area_r: 0, ticks_out: 9, furthest: 7, hexes_seen: 40,
     finds: [
       { kind: 'copper', q: 6, r: -1 }, { kind: 'copper', q: 7, r: 2 },
       { kind: 'city', q: 8, r: 0, name: 'Mycenae', owner: 'Atreus' },
     ],
   });
-  assert.equal(t, 'Spearmen I is home after 9 game days, 7 hexes out at the furthest — saw 40 hexes around (5, 0): ' +
+  assert.equal(t, 'Spearmen I is home in Kommos after 9 game days, 7 hexes out at the furthest — saw 40 hexes around (5, 0): ' +
     'copper at (6, -1), (7, 2); cities: Mycenae (Atreus) at (8, 0)');
 });
 

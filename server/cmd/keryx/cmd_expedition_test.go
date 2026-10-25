@@ -18,13 +18,13 @@ func TestExpeditionTexts(t *testing.T) {
 		t.Errorf("turned:\n got %q\nwant %q", got, want)
 	}
 	got := expeditionReportText(expeditionBody{
-		Name: "Spearmen I", AreaQ: 5, TicksOut: 9, Furthest: 7, HexesSeen: 40,
+		Name: "Spearmen I", Home: "Kommos", AreaQ: 5, TicksOut: 9, Furthest: 7, HexesSeen: 40,
 		Finds: []expeditionFind{
 			{Kind: "copper", Q: 6, R: -1}, {Kind: "copper", Q: 7, R: 2},
 			{Kind: "city", Q: 8, Name: "Mycenae", Owner: "Atreus"},
 		},
 	})
-	want := "Spearmen I is home after 9 game days, 7 hexes out at the furthest — saw 40 hexes around (5, 0): " +
+	want := "Spearmen I is home in Kommos after 9 game days, 7 hexes out at the furthest — saw 40 hexes around (5, 0): " +
 		"copper at (6, -1), (7, 2); cities: Mycenae (Atreus) at (8, 0)"
 	if got != want {
 		t.Errorf("report:\n got %q\nwant %q", got, want)

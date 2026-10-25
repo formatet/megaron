@@ -21,6 +21,7 @@ type expeditionFind struct {
 
 type expeditionBody struct {
 	Name       string           `json:"name"`
+	Home       string           `json:"home"`
 	AreaQ      int              `json:"area_q"`
 	AreaR      int              `json:"area_r"`
 	Reason     string           `json:"reason"`
@@ -93,5 +94,9 @@ func expeditionReportText(b expeditionBody) string {
 	if len(parts) > 0 {
 		found = strings.Join(parts, "; ")
 	}
-	return fmt.Sprintf("%s is home after %s, %d hexes out at the furthest — saw %d hexes around (%d, %d): %s", expeditionSubject(b), formatDays(b.TicksOut, "%d"), b.Furthest, b.HexesSeen, b.AreaQ, b.AreaR, found)
+	home := "home"
+	if b.Home != "" {
+		home = "home in " + b.Home
+	}
+	return fmt.Sprintf("%s is %s after %s, %d hexes out at the furthest — saw %d hexes around (%d, %d): %s", expeditionSubject(b), home, formatDays(b.TicksOut, "%d"), b.Furthest, b.HexesSeen, b.AreaQ, b.AreaR, found)
 }
