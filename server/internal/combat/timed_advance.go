@@ -52,6 +52,7 @@ func (h *PlaceReachScanHandler) advanceTimed(ctx context.Context, e events.Sched
 	if err != nil && err != pgx.ErrNoRows {
 		return err
 	}
+	fresh := err == pgx.ErrNoRows
 	if err == nil {
 		from = last
 	} else {
@@ -62,9 +63,14 @@ func (h *PlaceReachScanHandler) advanceTimed(ctx context.Context, e events.Sched
 	}
 	times := map[int64]bool{}
 	hasTimed := false
+	earliest := through
 	for _, v := range voyages {
 		if v.route.Version == 2 {
 			hasTimed = true
+			dispatch := int64(v.route.StartTick)*1000 + v.route.OffsetMilli
+			if dispatch < earliest {
+				earliest = dispatch
+			}
 		}
 		entered, err := RouteEnterMilli(v.route)
 		if err != nil {
@@ -78,6 +84,17 @@ func (h *PlaceReachScanHandler) advanceTimed(ctx context.Context, e events.Sched
 	}
 	if !hasTimed {
 		return nil
+	}
+	// A seed/catch-up job can predate the first v2 journey by many ticks.
+	// There was no timed actor then, so no timed boundary needs replaying.
+	if fresh && from < earliest {
+		from = earliest
+		last = from - 1
+		for at := range times {
+			if at < from {
+				delete(times, at)
+			}
+		}
 	}
 	for at := (from/1000 + 1) * 1000; at <= through; at += 1000 {
 		if at > last {
