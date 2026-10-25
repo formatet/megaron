@@ -1,0 +1,71 @@
+[
+  {
+    "type": "elite_infantry",
+    "costs": {
+      "bronze": 16,
+      "grain": 24,
+      "silver": 40
+    },
+    "batch_men": 100,
+    "pop_cost": 10,
+    "duration_game_days": 4,
+    "requires_barracks": true,
+    "requires_foundry": true
+  },
+  {
+    "type": "galley",
+    "costs": {
+      "timber": 30
+    },
+    "batch_men": 20,
+    "pop_cost": 10,
+    "duration_game_days": 3,
+    "requires_shipyard": true
+  },
+  {
+    "type": "merchantman",
+    "costs": {
+      "cedar": 90
+    },
+    "batch_men": 10,
+    "pop_cost": 8,
+    "duration_game_days": 4,
+    "requires_shipyard": true
+  },
+  {
+    "type": "spearman",
+    "costs": {
+      "grain": 12
+    },
+    "batch_men": 100,
+    "pop_cost": 5,
+    "duration_game_days": 1,
+    "requires_barracks": true
+  },
+  {
+    "type": "war_chariot",
+    "costs": {
+      "bronze": 20,
+      "cedar": 8,
+      "grain": 40,
+      "silver": 50,
+      "timber": 8
+    },
+    "batch_men": 100,
+    "pop_cost": 8,
+    "duration_game_days": 3,
+    "requires_stable": true
+  },
+  {
+    "type": "war_galley",
+    "costs": {
+      "cedar": 100,
+      "silver": 30
+    },
+    "batch_men": 50,
+    "pop_cost": 12,
+    "duration_game_days": 5,
+    "requires_shipyard": true,
+    "requires_foundry": true
+  }
+]

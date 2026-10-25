@@ -1,0 +1,7 @@
+--- FAIL: TestRecruitListShowsTotalDraftAndSpecificShortfalls (0.00s)
+    cmd_recruit_total_test.go:28: missing "30 timber (or cedar)": Type (--unit)             Batch           Cost                          game days  Pop    Requires          Afford  Upkeep per game day (once garrisoned)
+        ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        galley (Galley)           1 vessel (20 crew)  timber×30                     3       10     shipyard          ✗       
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.003s
+FAIL

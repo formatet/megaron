@@ -24,4 +24,11 @@ Klienterna visar hela priset, draften, timber(or cedar), serverns orsaker och fa
 
 ## Verifiering
 
-Pågående; slutresultat, mutationer och bilder fylls före överlämning. `gates-green.log` visar riktig HTTP GET/POST-paritet för lager, byggnad, cedar och full sjökö. `first-green.log` täcker invånargränsen samt cedarrekrytering/avbokning med exakt återställning av varor.
+Kod `8e19cdd7`. Hela färska Go-sviten grön:26paket med tester, world152.828s. Inga andra produktionsändringar efter kodcommitten. `gates-green.log` visar riktig HTTP GET/POST-paritet för lager, byggnad, cedar och full sjökö. `first-green.log` täcker invånargränsen samt cedarrekrytering/avbokning med exakt återställning av varor.
+
+
+771 JavaScriptprov, hela Keryx-paketet, vet och fyra day-guards gröna. Sex fysiska mutanter assertion-röda: invånargräns, byggnad, helbatchkostnad, cedar, sjökö och faktiskt betalda återbetalningsvaror. Exakta originalbytes återställda, därefter nya färska API-prov gröna. Mutationerna kördes i en separat egen checkout av8e19cdd7 för att inte påverka den samtidigt stabila fullsviten/bildriggen. En första mutantskriptkörning stoppade på en Docker-portkollision (inte påstådd testmutation); skriptet väljer därefter en ledig port, alla sex kördes om och gav riktiga assertionfel.
+
+[BILD](index.html): sex native Firefoxbilder1280/390, betalbart/namngiven brist/faktisk order. Riktig registrering, join och founding; explicit isolerad stadsfixtur. 0timber749cedar innebär enligt cedarbeslutet att **både galär och Emporos är betalbara**, vilket ersätter den äldre bildbeskrivningens antagande att galären ska nekas. Vid10timber0cedar visas exakt brist. Två riktiga webborders galär betalade30cedar vardera; DB689cedar/timber0. API och verklig Keryx verifierade. Alla945produktionshashar matchar slutkoden;0sidfel. Första riggens assertion förväntade att nollvärden saknades i paid_costs, rättades endast i riggen och ersattes av ny färsk grön körning. Samtliga sex nativebilder granskade1:1.
+
+Avgränsning: redan känd knapp väntar på ny omladdning efter lyckad beställning i samma vy; betalningslås/refresh förändras inte i denna slice. Ingen mänsklig textplaytest påstås. Inga migändringar.

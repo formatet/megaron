@@ -1,0 +1,8 @@
+2026/10/25 16:02:55 INFO player registered id=3169e4b4-49b4-4345-b668-57e7823e4f75 username=shipwright-78bb2df9-b696-4e40-a0a5-6d2d6a60d9cc
+--- FAIL: TestRecruitQuoteNamesEveryBlockingGate (0.10s)
+    --- FAIL: TestRecruitQuoteNamesEveryBlockingGate/queue (0.10s)
+        recruit_quote_test.go:126: quote={Unit:galley Can:true Reasons:[]} want canfalse reason"shipyard queue full"
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.101s
+FAIL
+» färsk DB på migration 213 · commit 8e19cdd7+ändringar

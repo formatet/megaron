@@ -1,0 +1,7 @@
+2026/10/25 16:03:02 INFO player registered id=e2c98176-c4b1-4040-8ced-6c59cd915d89 username=shipwright-e3d4bc66-7ead-4faa-9c97-d21ca8899f2e
+--- FAIL: TestRecruitCedarReceiptAndCancellationPreservePaidGoods (0.09s)
+    recruit_quote_test.go:76: cancellation converted cedar into timber: map[cedar:719 grain:0 silver:0 timber:30]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.091s
+FAIL
+» färsk DB på migration 213 · commit 8e19cdd7+ändringar

@@ -1,0 +1,22 @@
+TRAIN UNITS
+Land units train as a full 100-man cohort. Once ready, a cohort can still march after losing men. Reinforce refills it over time only in its original home city — garrison it there and use Reinforce (Army tab). Ships are built one at a time.
+Spearmen
+12 grain · 100 men from the city
+Train 100
+War Chariot
+20 bronze + 8 cedar + 40 grain + 50 silver + 8 timber (or cedar) · 100 men from the city · needs a stable · needs 8 cedar (have 0)
+Train 100
+Galley
+30 timber (or cedar) · 20 crew from the city · needs 30 timber (or cedar) (have 10)
+Build 1 Ship
+War Galley
+100 cedar + 30 silver · 50 crew from the city · needs a foundry · needs 100 cedar (have 0)
+Build 1 Ship
+Emporos
+90 cedar · 10 crew from the city · needs 90 cedar (have 0)
+Build 1 Ship
+Elite Infantry
+16 bronze + 24 grain + 40 silver · 100 men from the city · needs a foundry
+Train 100
+
+Unavailable: recall, redirect, load, unload, land ?
