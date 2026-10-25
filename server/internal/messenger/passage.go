@@ -1055,10 +1055,9 @@ func (h *PassageScanHandler) boardOne(ctx context.Context, worldID, messengerID 
 		if carrierDeparture != nil {
 			boarded = *carrierDeparture
 		}
-		// A same-hex port leg is already physically at port. Otherwise compare
-		// the shared millitick precision (unit dispatch is quantized there).
-		quantum := time.Duration(r.TickNanoseconds) / 1000
-		if len(r.Hexes) > 1 && (h.clk.Now().Add(quantum).Before(ready) || boarded.Add(quantum).Before(ready)) {
+		// A same-hex port leg is already physically at port. A walking runner
+		// must have reached its endpoint by this carrier's saved departure.
+		if len(r.Hexes) > 1 && (h.clk.Now().Before(ready) || boarded.Before(ready)) {
 			return nil
 		}
 	}

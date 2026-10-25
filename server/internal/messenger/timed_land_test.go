@@ -179,4 +179,21 @@ func TestTimedRunnerCannotBoardBeforePortOrCatchDepartedShip(t *testing.T) {
 			t.Fatalf("boarded ship that left before runner reached port, elapsed%v status%v", elapsed, passage)
 		}
 	}
+
+	// A runner still 30ms short of port must not catch a newly departing
+	// carrier either. Tick60s means one movement quantum is60ms.
+	tooSoon := now.Add(time.Minute - 30*time.Millisecond)
+	ship2 := f.ship(t, f.originID, "merchantman")
+	tid2 := f.departingTransport(t, f.originID, ship2, 503)
+	if _, err := f.pool.Exec(ctx, `UPDATE transports SET departs_at=$2,arrives_at=$3 WHERE id=$1`, tid2, tooSoon, now.Add(3*time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	clk.Set(tooSoon)
+	if err = h.boardOne(ctx, f.worldID, id, province.MapPosition{Q: 5}, 5, 0, 503, now.Add(3*time.Minute), boardedCarrier{transportID: &tid2, name: "too early"}); err != nil {
+		t.Fatal(err)
+	}
+	_, passage, _, _ := f.messengerRow(t, id)
+	if passage == nil || *passage != "awaiting_passage" {
+		t.Fatal("runner boarded 30ms before reaching port")
+	}
 }
