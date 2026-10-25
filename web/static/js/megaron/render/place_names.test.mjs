@@ -16,12 +16,10 @@ test('all four place labels occur once, avoid measured city boxes, fog and unrea
   assert.deepEqual(placeLabelLayout([...tiles].reverse(),provinces,opts),labels);assert.deepEqual(placeLabelLayout(tiles,provinces,{...opts,zoom:.3}),[]);
 });
 
-test('italic geographic label has a crisp dark halo over light terrain without a plate',()=>{
- const calls=[];const ctx={save(){},restore(){},translate(){},rotate(){},fillText(text,x,y){calls.push({text,x,y,color:this.fillStyle});}};
+test('italic geographic label sits on a solid dark plate, no halo',()=>{
+ const calls=[],rects=[];const ctx={save(){},restore(){},translate(){},rotate(){},measureText(s){return {width:s.length*4};},fillRect(x,y,w,h){rects.push({x,y,w,h,color:this.fillStyle});},fillText(text,x,y){calls.push({text,x,y,color:this.fillStyle});}};
  drawPlaceLabel(ctx,{name:'Mount Ida',x:40,y:30,angle:0});
  assert.equal(ctx.font,PLACE_LABEL_STYLE.font);assert.match(ctx.font,/^italic /);
- assert.equal(calls.length,9,'geographic label lacks its dark pixel halo');
- assert.deepEqual(calls.at(-1),{text:'Mount Ida',x:0,y:0,color:'#E8D0A8'});
- assert.equal(new Set(calls.slice(0,-1).map(c=>`${c.x},${c.y}`)).size,8);
- assert.ok(calls.slice(0,-1).every(c=>c.color==='#241F18'&&Math.abs(c.x)<=1&&Math.abs(c.y)<=1));
+ assert.deepEqual(calls,[{text:'Mount Ida',x:0,y:0,color:'#E8D0A8'}],'label must be drawn once, without a halo');
+ assert.deepEqual(rects,[{x:-20,y:-5,w:40,h:PLACE_LABEL_STYLE.height,color:'#241F18'}]);
 });

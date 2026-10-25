@@ -11,13 +11,13 @@ export function namedPlaceTerrain(tile,fallback){
  return namedRiverTerrain(tile,fallback);
 }
 export const PLACE_LABEL_STYLE={font:'italic 7px serif',height:9};
-// A crisp one-logical-pixel halo from the existing renderer palette keeps the
-// chosen italic lettering readable over white limestone, without a plate.
+// A solid dark plate behind the italic lettering (Timothy 2026-10-25: the
+// eight-way halo read as a smudged shadow) keeps it readable on any terrain.
 export function drawPlaceLabel(ctx,label){
  ctx.save();ctx.translate(label.x,label.y);ctx.rotate(label.angle);
- ctx.font=PLACE_LABEL_STYLE.font;ctx.textAlign='center';ctx.textBaseline='middle';ctx.globalAlpha=.95;
- ctx.fillStyle='#241F18';
- for(const [dx,dy] of [[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]])ctx.fillText(label.name,dx,dy);
+ ctx.font=PLACE_LABEL_STYLE.font;ctx.textAlign='center';ctx.textBaseline='middle';
+ const w=Math.ceil(ctx.measureText(label.name).width)+4,h=PLACE_LABEL_STYLE.height;
+ ctx.fillStyle='#241F18';ctx.fillRect(-Math.round(w/2),-Math.round(h/2),w,h);
  ctx.fillStyle='#E8D0A8';ctx.fillText(label.name,0,0);ctx.restore();
 }
 // World-space AABBs conservatively contain rotated text and clearance. These
