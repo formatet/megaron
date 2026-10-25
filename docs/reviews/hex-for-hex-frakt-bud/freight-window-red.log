@@ -1,0 +1,11 @@
+» färsk DB på migration 214 · commit a1ffaf03+ändringar
+=== RUN   TestTimedFreightCatchupOnlyInterceptsActiveWindow
+2026/10/25 10:52:17 INFO caravan intercepted transport=e14d7cb0-ed98-47a9-becd-6f80ee7bc585 by=f7d128d7-c61f-4df4-88b3-c58f166bc291 sentry=fae53981-6e1b-4789-b54a-a311cb600d33 q=0 r=0 ship_outcome=n/a
+2026/10/25 10:52:17 INFO caravan intercepted transport=607d7046-f151-4dd1-8d8e-8bbdaee710bc by=f7d128d7-c61f-4df4-88b3-c58f166bc291 sentry=fae53981-6e1b-4789-b54a-a311cb600d33 q=3 r=0 ship_outcome=n/a
+2026/10/25 10:52:17 INFO caravan intercepted transport=f018a48c-fe2b-496f-b103-63bd81ab06ad by=f7d128d7-c61f-4df4-88b3-c58f166bc291 sentry=fae53981-6e1b-4789-b54a-a311cb600d33 q=0 r=0 ship_outcome=n/a
+    timed_dispatch_test.go:164: window0 statusintercepted wantin_transit
+    timed_dispatch_test.go:164: window1 statusintercepted wantin_transit
+--- FAIL: TestTimedFreightCatchupOnlyInterceptsActiveWindow (0.04s)
+FAIL
+FAIL	formatet/megaron/server/internal/transport	0.043s
+FAIL

@@ -1,0 +1,32 @@
+[
+  {
+    "mutant": "freight-early-hex",
+    "test": "TestTimedFreightDispatchKeepsStartHexAndDeadline",
+    "assertion_red": true,
+    "restored_sha256": "4b04782d7b47a14ff4f441ed3db0598414576b14a74585188bc16f833f4b0e9d"
+  },
+  {
+    "mutant": "runner-early-eye",
+    "test": "TestTimedRunnerReturnWaitsForReachedHex",
+    "assertion_red": true,
+    "restored_sha256": "13edf4d3a78c2c2b123de0341df8dccb7127bc226f7db874a852977458d5a835"
+  },
+  {
+    "mutant": "port-early-boarding",
+    "test": "TestTimedRunnerCannotBoardBeforePortOrCatchDepartedShip",
+    "assertion_red": true,
+    "restored_sha256": "e53d382ffffbe8a03cefc9a98d185db981e299c9fcb9d78ed273aab1a7ee59c5"
+  },
+  {
+    "mutant": "freight-window",
+    "test": "TestTimedFreightCatchupOnlyInterceptsActiveWindow",
+    "assertion_red": true,
+    "restored_sha256": "d3ad6720b387277ccdd6aece6da0caac6533d59837bee86f5b932b17f76cc73b"
+  },
+  {
+    "mutant": "freight-deadline",
+    "test": "TestFreightDeadlineTypesWaitForExactInstant",
+    "assertion_red": true,
+    "restored_sha256": "348b2dd9e80c246b5374b4a942a16c15ed6df88608e9c78f10e22e8c02631223"
+  }
+]

@@ -49,7 +49,7 @@ try:
   token=api('/api/v1/auth/register','POST',{'username':'voyager-'+secrets.token_hex(4),'password':secrets.token_urlsafe(30)})['access_token']
   api(wp+'/join','POST',{},token);pid=api('/api/v1/auth/me',token=token)['id']
   host=next(u for u in api(wp+'/units',token=token)['units'] if u['type']=='nomadic_host')
-  site=json.loads(sql(f"SELECT row_to_json(t) FROM(SELECT q,r FROM map_tiles WHERE world_id='{world}' AND terrain='plains' AND q BETWEEN 8 AND 30 AND r BETWEEN 8 AND 25 ORDER BY q,r LIMIT 1)t"));hq,hr=site['q'],site['r']
+  site=json.loads(sql(f"SELECT row_to_json(t) FROM(SELECT t.q,t.r FROM map_tiles t WHERE t.world_id='{world}' AND t.terrain='plains' AND EXISTS(SELECT 1 FROM map_tiles e WHERE e.world_id=t.world_id AND e.q=t.q+3 AND e.r=t.r) ORDER BY t.q,t.r LIMIT 1)t"));hq,hr=site['q'],site['r']
   sql(f"UPDATE map_tiles SET terrain='plains' WHERE world_id='{world}'; UPDATE units SET q={hq},r={hr},status='positioned' WHERE id='{host['id']}';",True)
   sid=api(wp+'/founding/settle','POST',{'name':'Lato'},token)['settlement_id']
   sql(f"UPDATE settlement_goods SET amount=10000,rate=0,cap=1000000 WHERE settlement_id='{sid}'; DELETE FROM sea_storms WHERE world_id='{world}';",True)

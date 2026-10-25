@@ -1,0 +1,9 @@
+» färsk DB på migration 214 · commit ec4995a6+ändringar
+=== RUN   TestFardvagOwnRunnerCurrentLandAndFrozenCarrierPaths
+2026/10/25 10:58:08 INFO player registered id=ad1a8a47-9d7f-4801-814f-97dcd02d76d2 username=wanax-a-c2d1bb04-893b-4fab-88f0-b2d6454f0a1c
+2026/10/25 10:58:08 INFO player registered id=53a66e27-3c2c-4506-a693-bdf9523ffa47 username=wanax-b-be2e9831-e479-4e43-88f0-80a2abd903c7
+    fardvag_routes_test.go:229: aboard route restarted at scan time: got2026-10-25 10:57:08.514933 +0100 CET want saved departure2026-10-25 07:58:08.514933 +0000 UTC err<nil>
+--- FAIL: TestFardvagOwnRunnerCurrentLandAndFrozenCarrierPaths (0.15s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.149s
+FAIL

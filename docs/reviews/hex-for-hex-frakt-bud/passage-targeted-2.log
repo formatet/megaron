@@ -1,0 +1,52 @@
+» färsk DB på migration 214 · commit 8fa5d1c4+ändringar
+2026/10/25 10:42:35 INFO player registered id=9363b103-f556-48ef-901b-ffe30b054984 username=initiator-77ad6ff7-9a22-40a0-b3f3-b6f2f1864e0d
+2026/10/25 10:42:35 INFO player registered id=d1eeea31-f20c-4b06-b873-0a76c2d8c523 username=counterparty-d9f5b81a-4161-495a-b102-950191c5264e
+--- FAIL: TestLoadLiveEyes_CalledBackSeesPortNotFarShore (0.13s)
+    messenger_callback_eye_test.go:112: runner eye = {Q:1 R:0}, want the port (2,0) at the instant of call-back
+2026/10/25 10:42:35 INFO player registered id=c6cac129-7bd9-42ef-a22d-34468511a56e username=initiator-f4b01785-65d7-4318-a8ea-8d10b6a53021
+2026/10/25 10:42:35 INFO player registered id=3c726bf0-2dbf-405e-a494-aec042055020 username=counterparty-31cf9312-82b0-447b-981e-c8006d729ecb
+2026/10/25 10:42:35 INFO player registered id=bbf07ef8-3994-401a-b632-dd7af2278282 username=initiator-177c6c75-f9bc-48d9-a9e1-17e5ef328302
+2026/10/25 10:42:35 INFO player registered id=c314ae96-9e5d-4cd5-b21b-f51113b63d7a username=counterparty-99572acd-d026-479b-a2ca-c7be9db1e1b6
+--- FAIL: TestCarrierDeploy_AlreadyAboardWithQueuedLegacyTimer (0.26s)
+    --- FAIL: TestCarrierDeploy_AlreadyAboardWithQueuedLegacyTimer/landed-before-deploy (0.13s)
+        messenger_carrier_deploy_test.go:41: load pending MessengerArrival event (messenger_id=dcae7365-d471-47a4-903c-77ffb903629e): no rows in result set
+    --- FAIL: TestCarrierDeploy_AlreadyAboardWithQueuedLegacyTimer/lands-after-deploy (0.13s)
+        messenger_carrier_deploy_test.go:41: load pending MessengerArrival event (messenger_id=c668a713-20cc-4f30-b48f-745f5e8c6a60): no rows in result set
+2026/10/25 10:42:35 INFO player registered id=1dd9eff9-8e24-4e1c-ba5b-57f429184078 username=initiator-c0f15651-ec29-4ab4-9b27-ffd1c20529c7
+2026/10/25 10:42:35 INFO player registered id=7d8c1fe4-8c95-413f-853c-5a9e8d3d3be4 username=counterparty-fce59b83-0df3-4c64-8d68-a160270bb993
+--- FAIL: TestArrangePassage_OutboundRoundTrip_ShipCarriesBothLegs (0.14s)
+    messenger_passage_arrange_test.go:347: outbound leg: passage_status = 0x387f00026280, want "aboard"
+2026/10/25 10:42:35 INFO player registered id=32820ccc-00b9-4ffe-9b6e-ca467eefb8d4 username=initiator-ee4a7030-e3ed-465b-a065-c367d0f5e90d
+2026/10/25 10:42:35 INFO player registered id=fcf2955c-646c-460f-86db-b73660bb312d username=counterparty-4f6145c3-caba-4410-8b3d-0e428259b1bf
+2026/10/25 10:42:35 INFO passage: ship waiting for runner's return unit=e2e7b7bd-bede-4b80-af8d-19099b375a29 messenger=14aadd1c-1b33-4143-bd6f-c70208ca6cdd
+--- FAIL: TestArrangePassage_Unanswered_ShipCarriesHomeViaStayEnd (0.15s)
+    messenger_passage_arrange_test.go:436: load pending MessengerArrival event (messenger_id=14aadd1c-1b33-4143-bd6f-c70208ca6cdd): no rows in result set
+2026/10/25 10:42:35 INFO player registered id=314c2593-ab2c-46cf-9b3a-22be5b9747ee username=initiator-dec0cd83-7ff4-4a5f-bf9b-c10dde2d392f
+2026/10/25 10:42:35 INFO player registered id=ae918457-7470-44a7-bff1-f6c326c9eb0b username=counterparty-00d3a103-6bc1-441d-9be6-9550cf4a357b
+2026/10/25 10:42:35 INFO passage: messenger boarded messenger=1cb72ac6-5a9d-414d-bf14-9b76850db90e carrier=Galley arrives_at=2026-10-25T13:42:35.698+01:00
+2026/10/25 10:42:35 INFO passage: nothing left to wait for, ship turning for home unit=7b9c7fea-1824-490e-b3a7-f1c6f6ca71ac messenger=1cb72ac6-5a9d-414d-bf14-9b76850db90e
+2026/10/25 10:42:35 INFO field unit turning for home unit=7b9c7fea-1824-490e-b3a7-f1c6f6ca71ac from_q=4 from_r=0 home_q=1 home_r=0
+2026/10/25 10:42:35 INFO order delivered — stance applied unit=6b667e5b-65b9-47e8-8e22-3d3c904fabf1 stance=fortify
+2026/10/25 10:42:35 INFO unit returned home from explore unit=7b9c7fea-1824-490e-b3a7-f1c6f6ca71ac settlement=849e1879-3f56-4048-850f-c8000e63a12a
+2026/10/25 10:42:35 INFO player registered id=a7160d65-832f-42e5-80eb-0c2b716045b2 username=initiator-b569ab2b-0ee0-4996-9531-45dff71796ae
+2026/10/25 10:42:35 INFO player registered id=3b57c473-9a6b-41b9-b2fa-e1b844f06303 username=counterparty-49df7ce4-4b8a-4a02-b7ee-14a708c9c640
+2026/10/25 10:42:35 INFO passage: ship waiting for runner's return unit=56dc272a-df60-4e1a-9346-7c9eb930d639 messenger=d29e44be-dcb5-4fb4-a5aa-4efeb21a76cc
+2026/10/25 10:42:35 INFO field unit turning for home unit=56dc272a-df60-4e1a-9346-7c9eb930d639 from_q=4 from_r=0 home_q=1 home_r=0
+2026/10/25 10:42:35 INFO passage: passage_wait ship released unit=56dc272a-df60-4e1a-9346-7c9eb930d639
+2026/10/25 10:42:36 INFO passage: messenger boarded messenger=d29e44be-dcb5-4fb4-a5aa-4efeb21a76cc carrier=Emporos arrives_at=2026-10-25T13:42:35.950+01:00
+2026/10/25 10:42:36 INFO unit returned home from explore unit=56dc272a-df60-4e1a-9346-7c9eb930d639 settlement=85549c04-f50f-4fb0-9670-f4fa0044e5a5
+2026/10/25 10:42:36 INFO messenger returned home id=d29e44be-dcb5-4fb4-a5aa-4efeb21a76cc
+2026/10/25 10:42:36 INFO player registered id=779e353d-8385-4889-a6a6-fd65f6c40845 username=initiator-aa4502ac-332f-408b-94ad-53c26f4b0342
+2026/10/25 10:42:36 INFO player registered id=98b6f366-8dc8-496e-9794-a4935ded44ff username=counterparty-8f877ac5-7737-4fc8-8131-c28d9ca029de
+2026/10/25 10:42:36 INFO passage: messenger boarded messenger=599f081c-56c4-4e38-a2fa-9a4db5a4d290 carrier=Galley arrives_at=2026-10-25T14:42:36.027+01:00
+2026/10/25 10:42:36 INFO player registered id=7205c206-9e78-4295-a9ca-294a9a5acf89 username=initiator-8a986d43-2a93-446a-8595-89419d84eff9
+2026/10/25 10:42:36 INFO player registered id=70bf0e1e-7f4d-4f45-b862-a94a846720f6 username=counterparty-cd8f161f-0665-47df-b2a1-c8e916d3e653
+2026/10/25 10:42:36 INFO player registered id=5c8ad5a5-0f7a-47a9-8621-5f4f5243590c username=initiator-a8116c64-4ab6-481b-a923-a4e1452681ca
+2026/10/25 10:42:36 INFO player registered id=7286e61b-2774-4142-a582-55b2ae14f397 username=counterparty-f4a89337-495a-415c-8396-5e0054e5f95b
+--- FAIL: TestArrangePassage_DispatchedMidTick_RunnerBoardsAtDispatchNotNextScan (0.14s)
+    messenger_passage_arrange_test.go:867: mid-tick dispatch: passage_status = 0x387f00006fa0 immediately after Arrange, want "aboard" (R0: boarded at dispatch, not by a later scan)
+2026/10/25 10:42:36 INFO player registered id=465ef727-ae81-4c5b-80cb-0c3bf36777d8 username=initiator-613538f5-6091-4c82-b71b-6746444a51d1
+2026/10/25 10:42:36 INFO player registered id=d6ad5c07-cef3-4a2f-a428-406642dfc93a username=counterparty-f1e597ef-79d5-4618-8c1b-7a428296088b
+FAIL
+FAIL	formatet/megaron/server/api/handlers	1.532s
+FAIL

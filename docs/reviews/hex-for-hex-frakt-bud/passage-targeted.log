@@ -1,0 +1,6 @@
+» färsk DB på migration 214 · commit 8fa5d1c4+ändringar
+# formatet/megaron/server/api/handlers [formatet/megaron/server/api/handlers.test]
+api/handlers/messenger_callback_eye_test.go:73:8: f.clk.Set undefined (type clock.Clock has no field or method Set)
+api/handlers/messenger_callback_eye_test.go:153:8: f.clk.Set undefined (type clock.Clock has no field or method Set)
+FAIL	formatet/megaron/server/api/handlers [build failed]
+FAIL

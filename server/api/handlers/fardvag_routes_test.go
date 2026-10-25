@@ -209,6 +209,25 @@ func TestFardvagOwnRunnerCurrentLandAndFrozenCarrierPaths(t *testing.T) {
 	if row == nil || row["current_q"] != float64(1) || row["current_r"] != float64(1) || row["departure_tick"] != float64(10) || row["arrival_tick"] != float64(16) || len(row["step_costs"].([]any)) != 3 {
 		t.Fatalf("aboard runner lost carrier's frozen path/weighted clock: %+v", row)
 	}
+
+	// A late boarding scan must not restart the carrier's saved route clock.
+	departure := now.Add(-2 * time.Hour).Truncate(time.Microsecond)
+	route["version"] = 2
+	route["offset_milli"] = 733
+	route["departure_at"] = departure
+	route["tick_nanoseconds"] = int64(time.Hour)
+	raw, _ = json.Marshal(route)
+	if _, err := f.pool.Exec(ctx, `UPDATE units SET march_route=$2 WHERE id=$1`, ship, raw); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.pool.Exec(ctx, `UPDATE messengers SET boarded_at=$2,disembark_at=$3,arrives_at=$4 WHERE id=$1`, id, now.Add(-time.Minute), departure.Add(6*time.Hour), departure.Add(7*time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	row = fetch()
+	got, err := time.Parse(time.RFC3339Nano, row["leg_start"].(string))
+	if err != nil || !got.Equal(departure) {
+		t.Fatalf("aboard route restarted at scan time: got%v want saved departure%v err%v", got, departure, err)
+	}
 	if _, err := f.pool.Exec(ctx, `UPDATE messengers SET passage_status='awaiting_passage',carrier_unit_id=NULL,arrives_at=$2 WHERE id=$1`, id, now.Add(-time.Hour)); err != nil {
 		t.Fatal(err)
 	}

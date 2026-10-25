@@ -1,0 +1,7 @@
+Good              Qty          From            To         ETA  Position · direction
+─────────────────────────────────────────────────────────────────────────────
+stone              10          Lato        Petras  ≈ today 10:56  (2,32) · outgoing
+
+Physical cargo, not a promise — it can be intercepted and seized in transit.
+Same risk for every cargo, own or traded: on land only interception;
+at sea every storm the ship sails into costs 2 hull (of 5); hull 0 founders the ship.

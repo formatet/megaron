@@ -1,0 +1,9 @@
+» färsk DB på migration 214 · commit 8fa5d1c4+ändringar
+=== RUN   TestTimedFreightDispatchKeepsStartHexAndDeadline
+--- PASS: TestTimedFreightDispatchKeepsStartHexAndDeadline (0.02s)
+PASS
+ok  	formatet/megaron/server/internal/transport	0.019s
+=== RUN   TestTimedRunnerReturnWaitsForReachedHex
+--- PASS: TestTimedRunnerReturnWaitsForReachedHex (0.02s)
+PASS
+ok  	formatet/megaron/server/internal/messenger	0.027s
