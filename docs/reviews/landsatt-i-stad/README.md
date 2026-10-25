@@ -22,3 +22,14 @@ Problem: land-mission avvisar egen stad och webbens marchval utesluter skepp til
 `combat/upkeep.go` använder support_settlement_id som silverbetalare. `combat/march_start.go` använder samma fält som proviantkälla vid nästa sjöavgång. Reparation läser fysisk settlement_id och dess varv. Att enbart parkera skeppet i målstad lämnar dess gamla stad som betalare/proviantkälla, även på avstånd. Att flytta support till målstad ändrar försörjningsankaret.
 
 A: ändra endast fysisk hamn, behåll support. B: ändra skeppets support till målhamnen, behåll passagerarnas enligt vanlig Unload. Rekommendation B, men ordern kräver STOPP vid upkeep/proviantkanon. Inväntar svar; inga tester eller bilder för en implementation påstås.
+
+
+## Beslut och genomförande
+
+Claude16:01 förmedlade Timothys beslut **A**: fysisk settlement_id=mål, support_settlement_id oförändrad för både skepp och passagerare, inklusive nästa avgångs proviant från gamla staden. Det är ett uttryckligt försörjningsbeslut; den tidigare frågan är besvarad.
+
+Ny intern sparad mission `dock` bär den valda stadens hex i de befintliga land_target-fälten. Sjövägen och restidspriset till kusthexen behålls; ankomsten dockar i den valda staden. Befintliga land/passager/pickup-missioners persistenta tolkning ändras inte. Både vanligt segelmål egen stad och land-mission egen stad ger denna nya mission. Alla CargoIDs går i garnison, carried_by_ship_id släpps, skeppet stannar. Försörjningsankare skrivs aldrig om. Om staden hunnit byta ägare seglar skeppet hem med passagerarna; ingen automatisk ny strid.
+
+Riktig DB-baslinje `baseline-red.log`: både land och vanlig segling till egen stad nekades. `first-green.log`: båda vägarna fungerar med tre kohorter på Emporos, dessutom tomt skepp; dubbel ankomst är idempotent, ingen oombedd retur, support oförändrad och nästa uttryckligt beställda resa tar proviant ur gamla staden. Separat prov täcker ägarbyte innan ankomst; gamla bar-mark-/koloniseringstester är gröna.
+
+Cities API ger coastal och has_harbour för valytan; byggnadsuppgiften has_harbour exponeras bara för egna städer. Rykten får ingen sådan information. Webb/Keryx/Codex beskriver samma kontrakt.

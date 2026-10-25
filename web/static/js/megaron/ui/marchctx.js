@@ -354,15 +354,30 @@ export function marchDefaultQuantity(group, index) {
   return index === 0 ? group.ids.length : 0;
 }
 
+export function ownPortDestination(dest) {
+  return dest.known !== false && dest.isSettlement && dest.own === true
+    && (dest.coastal === true || dest.has_harbour === true);
+}
+
 export function marchEligibleUnits(units, dest, unitID = null) {
   return units.filter(u => (!unitID || u.id === unitID) && marchCtxOrderMode(u) !== null
     && (dest.known === false || (u.category === 'naval') === dest.isSea || (dest.terrain === 'river_ford' && u.category === 'naval')
-      || (unitID && !dest.isSea && u.category === 'naval' && u.status === 'garrison' && u.cargo_unit_id)));
+      || (ownPortDestination(dest) && u.category === 'naval')
+      || (dest.isSettlement && dest.coastal === true && u.category === 'naval' && u.cargo_unit_id)
+      || (unitID && !dest.isSea && !dest.isSettlement && u.category === 'naval' && u.status === 'garrison' && u.cargo_unit_id)));
 }
 
 // A ford admits both categories. Ships still need a naval mission, while land
 // orders retain their existing intent. This same per-unit order feeds preview/send.
 export function marchUnitOptions(dest, category, order) {
+  if (category === 'naval' && dest.isSettlement) {
+    const dock = { ...order };
+    delete dock.stance;
+    delete dock.name;
+    delete dock.cargo_intent;
+    if (!ownPortDestination(dest) || dock.intent !== 'land') delete dock.intent;
+    return dock;
+  }
   if (dest.terrain !== 'river_ford' || category !== 'naval') return { ...order };
   const naval = { ...order, intent: 'explore' };
   delete naval.stance;
@@ -383,7 +398,7 @@ export function marchIntentOptions(dest, { landing = false, colonize = false, ex
 
 function landingSelected() {
   const dest = State.marchCtxDest;
-  return !!(dest && dest.known !== false && !dest.isSea && dest.terrain !== 'river_ford' && State.marchCtxUnitID
+  return !!(dest && dest.known !== false && !dest.isSea && dest.terrain !== 'river_ford' && (!dest.isSettlement || ownPortDestination(dest)) && State.marchCtxUnitID
     && State.marchCtxUnits.some(u => u.id === State.marchCtxUnitID && u.category === 'naval' && u.cargo_unit_id));
 }
 
@@ -408,7 +423,8 @@ export async function openMarchCtx(dest, screenX, screenY) {
   let hint;
   if (unknown)                hint = 'Travel here first, then explore nearby and return home.';
   else if (dest.isSea)        hint = 'Explore reachable sea nearby, then sail home.';
-  else if (dest.isSettlement) hint = dest.allied ? 'March land units here to reinforce the garrison on arrival.' : 'March land units here to attack on arrival.';
+  else if (ownPortDestination(dest)) hint = 'Sail ships here to dock and stay. Everyone aboard joins this city’s garrison; land units reinforce it.';
+  else if (dest.isSettlement) hint = dest.allied ? 'March land units here to reinforce the garrison on arrival.' : 'March land units here, or send a laden ship to assault this coastal city on arrival.';
   else                        hint = 'March land units to this hex, found a new settlement here, or explore and return home.';
   document.getElementById('mctx-hint').textContent = hint;
 
@@ -456,7 +472,9 @@ export async function openMarchCtx(dest, screenX, screenY) {
   State.marchCtxUnits = marchEligibleUnits(all, dest, State.marchCtxUnitID);
   const landing = landingSelected();
   if (landing) {
-    document.getElementById('mctx-hint').textContent = 'Land the troops here. The ship then sails home.';
+    document.getElementById('mctx-hint').textContent = ownPortDestination(dest)
+      ? 'Land everyone aboard in this city’s garrison. The ship docks and stays here.'
+      : 'Land the troops here. The ship then sails home.';
     if (exploreRow) exploreRow.style.display = 'none';
   }
   renderMarchUnitList();

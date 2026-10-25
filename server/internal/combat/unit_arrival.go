@@ -418,6 +418,29 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 	// (or on the nearest still-unclaimed neighbour, if the world changed
 	// mid-transit) and turn the ship for home — never garrison/fight at the
 	// sea waypoint itself.
+	// New docking orders preserve the chosen city separately from the saved
+	// sea approach. Existing land/pickup/passage missions keep their semantics.
+	if u.marchIntent != nil && *u.marchIntent == "dock" {
+		if u.landTargetQ == nil || u.landTargetR == nil {
+			return fmt.Errorf("dock mission missing target city")
+		}
+		q, r := *u.landTargetQ, *u.landTargetR
+		sid, owned, err := ownPortAt(ctx, tx, worldID, u.ownerID, q, r)
+		if err != nil {
+			return err
+		}
+		if !owned {
+			return h.dispatchReturnHome(ctx, tx, u, destQ, destR, worldID, returnReasonExplore)
+		}
+		if _, err := tx.Exec(ctx, `UPDATE units SET home_settlement_id=NULL,land_target_q=NULL,land_target_r=NULL,land_cargo_intent=NULL WHERE id=$1`, u.id); err != nil {
+			return err
+		}
+		if err := h.disembarkAtOwnCity(ctx, tx, u, &sid, q, r, worldID); err != nil {
+			return err
+		}
+		return h.arriveGarrison(ctx, tx, u, q, r, &sid, worldID)
+	}
+
 	if u.marchIntent != nil && *u.marchIntent == "land" {
 		return h.landArrived(ctx, tx, u, destQ, destR, worldID)
 	}

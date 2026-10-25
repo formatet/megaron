@@ -3465,7 +3465,7 @@ export function destFromHex(h, tile, target) {
   const isSea = isWaterTerrain(tile.terrain);
   if (target) {
     return { q: h.q, r: h.r, terrain: tile.terrain, isSea, known,
-             name: target.name, isSettlement: true, allied: target.own ? true : !!target.allied };
+             name: target.name, isSettlement: true, own: !!target.own, coastal: target.coastal ?? tile.coastal, has_harbour: target.has_harbour, allied: target.own ? true : !!target.allied };
   }
   return { q: h.q, r: h.r, terrain: tile.terrain, isSea, known,
            name: known ? `${namedPlaceTerrain(tile, terrainLabel(tile.terrain))} (${h.q},${h.r})` : `Unexplored (${h.q},${h.r})`,

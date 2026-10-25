@@ -70,7 +70,7 @@ func (h *UpkeepHandler) returnForFood(ctx context.Context, outer upkeepUnitRow, 
 	// stop, irrespective of its ruler. Arrival hospitality owns the refill.
 	if position.Status == "marching" && position.ArriveTick != nil && position.TargetQ != nil && position.TargetR != nil {
 		targetQ, targetR := *position.TargetQ, *position.TargetR
-		isCityMission := intent == nil || *intent == "" || *intent == "passage" || *intent == "land" || *intent == "pickup"
+		isCityMission := intent == nil || *intent == "" || *intent == "passage" || *intent == "land" || *intent == "pickup" || *intent == "dock"
 		if landQ != nil && landR != nil {
 			targetQ, targetR = *landQ, *landR
 		}

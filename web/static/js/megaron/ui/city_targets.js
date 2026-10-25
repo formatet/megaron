@@ -17,7 +17,7 @@ export function destinationCityOptions(cities) {
 }
 export function destinationFromCity(city) {
   return {q:city.q,r:city.r,terrain:city.terrain,isSea:false,known:true,
-    name:city.name,isSettlement:true,allied:!!city.own,settlementID:city.settlement_id};
+    name:city.name,isSettlement:true,own:!!city.own,allied:!!city.own,coastal:city.coastal,has_harbour:city.has_harbour,settlementID:city.settlement_id};
 }
 export function cityDestinationLabel(dest) {
   return dest?.isSettlement && dest.name ? ` to ${dest.name}` : '';
