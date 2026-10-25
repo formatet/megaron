@@ -325,12 +325,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			}
 			afford := !atMax && province.GoodsAffordable(silverStock, spec.CostSilver)
 			if afford {
-				for goodKey, needed := range spec.Costs {
-					if !province.GoodsAffordable(goodsStock[goodKey], needed) {
-						afford = false
-						break
-					}
-				}
+				afford = goodsAffordableWithCedar(goodsStock, spec.Costs, 1)
 			}
 			buildAfford = append(buildAfford, buildAffordRow{
 				Type: string(bType), CanAfford: afford, NextLevel: next, AtMax: atMax,
@@ -408,12 +403,12 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				afford = false
 			}
 			if afford {
-				for goodKey, needed := range spec.Costs {
-					if !province.GoodsAffordable(goodsStock[goodKey], needed) {
-						afford = false
-						break
-					}
+				// Recruit charges per man × the whole batch (a 100-man cohort or the crew).
+				batch := 100.0
+				if crew := unit.CrewFor(unit.Type(unitType)); crew > 0 {
+					batch = float64(crew)
 				}
+				afford = goodsAffordableWithCedar(goodsStock, spec.Costs, batch)
 			}
 			fullSize := 100
 			cat := string(unit.CategoryOf(unit.Type(unitType)))

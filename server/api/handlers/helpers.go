@@ -205,6 +205,21 @@ func coverTimberWithCedar(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID
 	return out, spare, nil
 }
 
+// goodsAffordableWithCedar is the read-only mirror of deductGoods for the
+// can_afford/can_recruit hints: costs × mult, with spare cedar covering timber.
+func goodsAffordableWithCedar(stock map[string]float64, costs map[string]float64, mult float64) bool {
+	for key, per := range costs {
+		have := stock[key]
+		if key == "timber" {
+			have += math.Max(0, stock["cedar"]-costs["cedar"]*mult)
+		}
+		if !province.GoodsAffordable(have, per*mult) {
+			return false
+		}
+	}
+	return true
+}
+
 // deductGoods checks and deducts each good in costs from settlement_goods, using
 // the caller's transaction tx. All goods are checked first: if ANY good lacks
 // stock, nothing is deducted and an *insufficientGoodsError (listing every
