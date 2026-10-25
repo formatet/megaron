@@ -1,0 +1,42 @@
+[
+  {
+    "id": "0b465221-4a31-4933-af9e-d5ff6e74ed21",
+    "status": "garrison",
+    "q": 15,
+    "r": 23,
+    "settlement_id": "38e12ae7-7a58-41ae-a4f9-8a867077ab0b",
+    "support_settlement_id": "139ea21a-26fa-461b-89ae-0bd76747b0fe",
+    "carried_by_ship_id": null,
+    "march_intent": null
+  },
+  {
+    "id": "f179a3aa-44fd-4e07-b35b-97afe984c014",
+    "status": "garrison",
+    "q": 15,
+    "r": 23,
+    "settlement_id": "38e12ae7-7a58-41ae-a4f9-8a867077ab0b",
+    "support_settlement_id": "139ea21a-26fa-461b-89ae-0bd76747b0fe",
+    "carried_by_ship_id": null,
+    "march_intent": null
+  },
+  {
+    "id": "77e8a99b-32bb-4607-8a0e-f4ebf8ee9466",
+    "status": "garrison",
+    "q": 15,
+    "r": 23,
+    "settlement_id": "38e12ae7-7a58-41ae-a4f9-8a867077ab0b",
+    "support_settlement_id": "139ea21a-26fa-461b-89ae-0bd76747b0fe",
+    "carried_by_ship_id": null,
+    "march_intent": null
+  },
+  {
+    "id": "83001ec2-19e1-45b6-89a5-aeaa5686bb23",
+    "status": "garrison",
+    "q": 15,
+    "r": 23,
+    "settlement_id": "38e12ae7-7a58-41ae-a4f9-8a867077ab0b",
+    "support_settlement_id": "139ea21a-26fa-461b-89ae-0bd76747b0fe",
+    "carried_by_ship_id": null,
+    "march_intent": null
+  }
+]

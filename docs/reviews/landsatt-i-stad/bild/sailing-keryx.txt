@@ -1,0 +1,14 @@
+ID                                    Name                                            Size      Status      Stance     Location / ETA
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+7ff6e347-d815-42ff-b911-f3970ef407dc  1st Spearmen of Lato                            100 men   positioned    —          hex (1,51)
+  Upkeep: 1 food, 0 silver per game day
+1a347ce7-299c-442c-8562-8784ad88e672  2nd Spearmen of Lato                            100 men   positioned    —          hex (1,51)
+  Upkeep: 1 food, 0 silver per game day
+0b465221-4a31-4933-af9e-d5ff6e74ed21  Petras Carrier, Emporos of Lato                 1 vessel (crew 10, food for 6 game days (4.65 grain, 4.65 fish, 4.65 oil, 4.65 wine), passengers 3/3: 3rd Spearmen of Lato (100), 4th Spearmen of Lato (100), 5th Spearmen of Lato (100))  marching      —          sailing to dock and stay — everyone aboard joins the garrison — (10,23)→(14,23), now at (10,23) ETA ≈ today 16:22
+  Upkeep: 0.1 food, 0 silver per game day
+f179a3aa-44fd-4e07-b35b-97afe984c014  3rd Spearmen of Lato                            100 men   embarked      —          embarked on Petras Carrier
+  Upkeep: 1 food, 0 silver per game day
+77e8a99b-32bb-4607-8a0e-f4ebf8ee9466  4th Spearmen of Lato                            100 men   embarked      —          embarked on Petras Carrier
+  Upkeep: 1 food, 0 silver per game day
+83001ec2-19e1-45b6-89a5-aeaa5686bb23  5th Spearmen of Lato                            100 men   embarked      —          embarked on Petras Carrier
+  Upkeep: 1 food, 0 silver per game day

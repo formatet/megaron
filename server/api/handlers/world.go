@@ -1990,6 +1990,8 @@ type cityEntry struct {
 	Terrain        string `json:"terrain,omitempty"`
 	Kingdom        string `json:"kingdom,omitempty"`
 	Own            bool   `json:"own,omitempty"`
+	Coastal        bool   `json:"coastal,omitempty"`
+	HasHarbour     bool   `json:"has_harbour,omitempty"`
 	CopperDeposit  bool   `json:"copper_deposit,omitempty"`
 	TinDeposit     bool   `json:"tin_deposit,omitempty"`
 	SilverDeposit  bool   `json:"silver_deposit,omitempty"`
@@ -2031,13 +2033,14 @@ func (h *WorldHandler) loadCities(ctx context.Context, worldID, playerID uuid.UU
 		        COALESCE(prov.map_q, 0),
 		        COALESCE(prov.map_r, 0),
 		        COALESCE(prov.id::text, ''),
-		        s.is_capital
+		        s.is_capital, COALESCE(prov.coastal,false),
+ (s.owner_id=$2 AND EXISTS(SELECT 1 FROM buildings b WHERE b.settlement_id=s.id AND b.building_type='harbour'))
 		 FROM settlements s
 		 LEFT JOIN players p ON p.id = s.owner_id
 		 LEFT JOIN provinces prov ON prov.id = s.province_id
 		 WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'
 		 ORDER BY s.name`,
-		worldID,
+		worldID, playerID,
 	)
 	if err != nil {
 		return nil
@@ -2055,7 +2058,7 @@ func (h *WorldHandler) loadCities(ctx context.Context, worldID, playerID uuid.UU
 		if err := rows.Scan(&e.SettlementID, &e.Name, &e.Owner, &e.Culture, &terrain, &kingdom,
 			&ownerID,
 			&e.CopperDeposit, &e.TinDeposit, &e.SilverDeposit, &e.CedarDeposit, &e.IncenseDeposit,
-			&q, &r, &e.ProvinceID, &e.IsCapital); err != nil {
+			&q, &r, &e.ProvinceID, &e.IsCapital, &e.Coastal, &e.HasHarbour); err != nil {
 			continue
 		}
 		terrainStr := ""

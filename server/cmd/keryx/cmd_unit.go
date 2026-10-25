@@ -673,6 +673,9 @@ func locationStr(c *Client, u unitRow, homes map[string]settlementPos) string {
 		// Land mission (R1, megaron_plan_skeppsuppdrag_landsatt.md): the ship's
 		// own target_q/r is the SEA waypoint next to the chosen land hex, not
 		// the land hex itself — same limitation assault's offshore hex has.
+		if u.MarchIntent != nil && *u.MarchIntent == "dock" {
+			loc = "sailing to dock and stay — everyone aboard joins the garrison — "
+		}
 		if u.MarchIntent != nil && *u.MarchIntent == "land" {
 			loc = "sailing to land troops — "
 		}
@@ -774,7 +777,8 @@ Terrain passability:
   Both land AND naval:     river_ford (the river's port — steep move cost for
                            either, but the one hex where a land unit can
                            cross and a ship can still sail through)
-  (Land units cannot enter sea or river; naval units cannot enter land.
+  (Land units cannot enter sea or river. Ships can dock at your coastal cities
+  or harbours; other land remains impassable to naval units.
   river is impassable to land units — it is a wall, not a crossing. Every
   ~10 hexes of a river's length carries one river_ford instead.)
 
@@ -796,14 +800,20 @@ a reachable city of yours to return to. A land unit in the field receives the
 order by Runner; a ship must be commanded in port. Works for land or naval
 units. Omit --ticks for the server default; the server validates the range.
 
---intent land puts a laden ship's cargo ashore (megaron_plan_
-skeppsuppdrag_landsatt.md R1): the ship must be a naval unit, in its own
-port, carrying a land unit (keryx unit load first). --q/--r is the chosen
-LAND hex, not a sea hex — the ship sails to the sea hex next to it,
-lands the cargo there, and always sails home on its own afterwards. Add
---colonize to found a colony on arrival with no further order (--name to
-name it). A ship at sea takes no orders at all (march/recall/stance) —
-give every sea mission from port.
+To sail to your own coastal city or harbour, use --to "City name" without an
+explore intent. The ship docks and stays there. Everyone aboard disembarks
+into that city's garrison, including all three cohorts carried by an Emporos.
+No separate Unload order is needed. An empty ship can make the same journey.
+Its existing home city still pays its upkeep and provisions its next voyage.
+
+--intent land also accepts your own coastal city: it lands everyone aboard
+and leaves the ship docked there. For open, unclaimed land, --q/--r is the
+chosen LAND hex: the ship sails offshore, lands everyone aboard, then sails
+home by itself. Add --colonize to found a colony on open ground with no
+further order (--name to name it). Give the order from a ship in port.
+For a foreign coastal city, use an ordinary march by a laden ship for the
+existing amphibious assault; --intent land does not attack a foreign city.
+A ship at sea takes no new orders — give its whole mission before departure.
 
 Ore on mountain terrain (copper, tin, silver):
   Mountains are impassable — you cannot colonize the mountain hex itself.
@@ -826,7 +836,9 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
   keryx unit march --unit <id> --q 12 --r -8
   # Explore an area for 12 game days, then automatically return home
   keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12
-  # Land troops from a laden ship in port, then sail home on its own:
+  # Dock in your city, disembark everyone aboard, and leave the ship there:
+  keryx unit march --unit <ship-id> --to "Petras"
+  # Land troops on open ground, then sail home on its own:
   keryx unit march --unit <ship-id> --q 20 --r -5 --intent land
   # ...and found a colony there with no further order:
   keryx unit march --unit <ship-id> --q 20 --r -5 --intent land --colonize --name Thapsos
@@ -1028,7 +1040,7 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 	cmd.Flags().IntVar(&targetR, "r", 0, "target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)")
 	cmd.Flags().StringVar(&target, "target", "", "target hex as q,r — alternative to --q/--r (e.g. 5,-3)")
 	cmd.Flags().StringVar(&stance, "stance", "", "stance on arrival: fortify|storm|sentry")
-	cmd.Flags().StringVar(&intent, "intent", "", "arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (first to the selected hex, then explores around it; turns home by half the chosen duration) | land (a laden ship in port lands its cargo on an unclaimed land hex, then sails home on its own; add --colonize to found a colony there)")
+	cmd.Flags().StringVar(&intent, "intent", "", "arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (first to the selected hex, then explores around it; turns home by half the chosen duration) | land (land everyone aboard in your own coastal city and stay docked, or on open ground and sail home; add --colonize only on open ground)")
 	cmd.Flags().StringVar(&name, "name", "", "colony name (with --intent colonize, or --intent land --colonize)")
 	cmd.Flags().StringVar(&mode, "mode", "", "conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)")
 	cmd.Flags().BoolVar(&yes, "yes", false, "skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)")

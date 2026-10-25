@@ -9,6 +9,8 @@ package combat
 
 import (
 	"context"
+	"errors"
+	"github.com/jackc/pgx/v5"
 	"net/http"
 	"time"
 
@@ -109,4 +111,19 @@ func RequireShipInPort(ctx context.Context, db province.Queryer, worldID, ownerI
 	}
 	return reject(http.StatusUnprocessableEntity,
 		"ships at sea take no orders — %s is on its mission and will return to port on its own", name)
+}
+
+// ownPortAt resolves an active owned coastal city at the exact target hex.
+// Harbour work is local knowledge; it never grants access to a foreign city.
+func ownPortAt(ctx context.Context, db interface {
+	QueryRow(context.Context, string, ...any) pgx.Row
+}, worldID, ownerID uuid.UUID, q, r int) (uuid.UUID, bool, error) {
+	var id uuid.UUID
+	err := db.QueryRow(ctx, `SELECT s.id FROM settlements s JOIN provinces p ON p.id=s.province_id
+ WHERE s.world_id=$1 AND s.owner_id=$2 AND s.state='active' AND p.map_q=$3 AND p.map_r=$4
+ AND (p.coastal OR EXISTS(SELECT 1 FROM buildings b WHERE b.settlement_id=s.id AND b.building_type='harbour'))`, worldID, ownerID, q, r).Scan(&id)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return uuid.Nil, false, nil
+	}
+	return id, err == nil, err
 }

@@ -1,0 +1,12 @@
+2026/10/25 16:23:05 INFO unit arrived (garrison) unit=a9462142-4b4e-4c12-aea3-745b7bec859b q=10 r=0 status=garrison
+2026/10/25 16:23:05 INFO unit arrived (garrison) unit=9a039f7b-76df-48b0-b240-0c23967efd8f q=10 r=0 status=garrison
+2026/10/25 16:23:05 INFO unit arrived (garrison) unit=5f6d3e48-5c97-4829-8efa-6ea414d4f49d q=10 r=0 status=garrison
+--- FAIL: TestCityLandingAllPassengersStayAndSupportUnchanged (0.17s)
+    --- FAIL: TestCityLandingAllPassengersStayAndSupportUnchanged/intent=land (0.06s)
+        land_city_test.go:98: arrival id768d8519-745c-4b11-879d-85262bf07ff3 statusembarked citydb1b0562-eb2e-4958-8c36-36a14a6aa73b support51f71647-4556-48df-afe6-9042d3074043 carriera9462142-4b4e-4c12-aea3-745b7bec859b pos10,0
+    --- FAIL: TestCityLandingAllPassengersStayAndSupportUnchanged/intent= (0.05s)
+        land_city_test.go:98: arrival id50a7ed1f-8e35-44f8-8bde-0e1f90803451 statusembarked city3b5394b0-eaf0-4924-bfb5-92d0b2575f6d support0bd1499c-2aa0-4d94-9a6b-44bbf26ff3f6 carrier9a039f7b-76df-48b0-b240-0c23967efd8f pos10,0
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.175s
+FAIL
+» färsk DB på migration 214 · commit a2b6d2eb+ändringar

@@ -1,0 +1,9 @@
+» färsk DB på migration 214 · commit 04a79221+ändringar
+--- FAIL: TestCityLandingAllPassengersStayAndSupportUnchanged (0.05s)
+    --- FAIL: TestCityLandingAllPassengersStayAndSupportUnchanged/intent=land (0.03s)
+        land_city_test.go:27: own city must accept ship and passengers: (10,0) is not open, unclaimed land — a land mission needs bare ground to put troops ashore on
+    --- FAIL: TestCityLandingAllPassengersStayAndSupportUnchanged/intent= (0.03s)
+        land_city_test.go:27: own city must accept ship and passengers: ships need a mission when not sailing to a port: patrol, explore or land
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.053s
+FAIL

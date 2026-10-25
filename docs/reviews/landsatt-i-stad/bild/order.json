@@ -1,0 +1,15 @@
+{
+  "arrival_tick": 3,
+  "arrives_at": "2026-10-25T16:22:49.918216+01:00",
+  "arrives_at_utc": "2026-10-25T15:22:49.918216Z",
+  "carried_silver": 0,
+  "departs_at": "2026-10-25T16:22:31.918216+01:00",
+  "duration_ticks": 3,
+  "expedition": null,
+  "origin_q": 10,
+  "origin_r": 23,
+  "purse_shortfall": 0,
+  "target_q": 14,
+  "target_r": 23,
+  "unit_id": "0b465221-4a31-4933-af9e-d5ff6e74ed21"
+}

@@ -1,0 +1,334 @@
+TAP version 13
+# Subtest: city shortcut uses only exact Known entries, own first; duplicate names stay distinct
+ok 1 - city shortcut uses only exact Known entries, own first; duplicate names stay distinct
+  ---
+  duration_ms: 1.274683
+  type: 'test'
+  ...
+# Subtest: city names and ids cannot inject option markup
+ok 2 - city names and ids cannot inject option markup
+  ---
+  duration_ms: 0.150765
+  type: 'test'
+  ...
+# Subtest: city destination retains ownership and harbour metadata for the ship target gate
+ok 3 - city destination retains ownership and harbour metadata for the ship target gate
+  ---
+  duration_ms: 0.096406
+  type: 'test'
+  ...
+# Subtest: codex: index ids are unique and every category is declared
+ok 4 - codex: index ids are unique and every category is declared
+  ---
+  duration_ms: 0.80948
+  type: 'test'
+  ...
+# Subtest: codex: every index entry has a file and every file has an index entry
+ok 5 - codex: every index entry has a file and every file has an index entry
+  ---
+  duration_ms: 0.614972
+  type: 'test'
+  ...
+# Subtest: codex: every [[link]] and related entry resolves to an article
+ok 6 - codex: every [[link]] and related entry resolves to an article
+  ---
+  duration_ms: 0.523327
+  type: 'test'
+  ...
+# Subtest: codex: every notification kind the client shows maps to exactly one article
+ok 7 - codex: every notification kind the client shows maps to exactly one article
+  ---
+  duration_ms: 1.047381
+  type: 'test'
+  ...
+# Subtest: codex: every drawer with a ? button has an article
+ok 8 - codex: every drawer with a ? button has an article
+  ---
+  duration_ms: 0.235891
+  type: 'test'
+  ...
+# Subtest: codex: every article is reachable — linked from another article or listed as related
+ok 9 - codex: every article is reachable — linked from another article or listed as related
+  ---
+  duration_ms: 0.392288
+  type: 'test'
+  ...
+# Subtest: renderMarkdown: escapes HTML and renders links, known and missing
+ok 10 - renderMarkdown: escapes HTML and renders links, known and missing
+  ---
+  duration_ms: 0.544387
+  type: 'test'
+  ...
+# Subtest: renderMarkdown: headings, lists, tables, code and comments
+ok 11 - renderMarkdown: headings, lists, tables, code and comments
+  ---
+  duration_ms: 0.442836
+  type: 'test'
+  ...
+# Subtest: backlinksTo and searchArticles
+ok 12 - backlinksTo and searchArticles
+  ---
+  duration_ms: 0.349471
+  type: 'test'
+  ...
+# Subtest: codex: lowercase agora_ready is mapped and community rules match alpha policy
+ok 13 - codex: lowercase agora_ready is mapped and community rules match alpha policy
+  ---
+  duration_ms: 0.690501
+  type: 'test'
+  ...
+# Subtest: codex search finds abandon in Colonies and call-back in Sea
+ok 14 - codex search finds abandon in Colonies and call-back in Sea
+  ---
+  duration_ms: 5.939027
+  type: 'test'
+  ...
+# Subtest: codex: game days name the world unit and clock/date names wall time
+ok 15 - codex: game days name the world unit and clock/date names wall time
+  ---
+  duration_ms: 0.18811
+  type: 'test'
+  ...
+# Subtest: historical food-reserve notifications open the current food article
+ok 16 - historical food-reserve notifications open the current food article
+  ---
+  duration_ms: 0.090405
+  type: 'test'
+  ...
+# Subtest: temple demolition notice opens the loss and lowered-ceiling rules
+ok 17 - temple demolition notice opens the loss and lowered-ceiling rules
+  ---
+  duration_ms: 0.088982
+  type: 'test'
+  ...
+# Subtest: AK1: a group of one wears its own name, not the bare type
+ok 18 - AK1: a group of one wears its own name, not the bare type
+  ---
+  duration_ms: 1.063694
+  type: 'test'
+  ...
+# Subtest: AK2: the field unit keeps its (q,r) tag — the name says who supports it, the tag says where it stands
+ok 19 - AK2: the field unit keeps its (q,r) tag — the name says who supports it, the tag says where it stands
+  ---
+  duration_ms: 0.166489
+  type: 'test'
+  ...
+# Subtest: AK3: a garrisoned unit does not say its town twice
+ok 20 - AK3: a garrisoned unit does not say its town twice
+  ---
+  duration_ms: 0.327959
+  type: 'test'
+  ...
+# Subtest: AK4: a group of several keeps the type label and lists its members in send order
+ok 21 - AK4: a group of several keeps the type label and lists its members in send order
+  ---
+  duration_ms: 0.559472
+  type: 'test'
+  ...
+# Subtest: AK5: a lone unit gets no member list — the label already names it
+ok 22 - AK5: a lone unit gets no member list — the label already names it
+  ---
+  duration_ms: 0.108598
+  type: 'test'
+  ...
+# Subtest: AK6: units at different places stay different groups
+ok 23 - AK6: units at different places stay different groups
+  ---
+  duration_ms: 0.08667
+  type: 'test'
+  ...
+# Subtest: AK7: a missing display_name falls back to the type label, never a blank row
+ok 24 - AK7: a missing display_name falls back to the type label, never a blank row
+  ---
+  duration_ms: 0.203928
+  type: 'test'
+  ...
+# Subtest: AK8: a hostile unit name is escaped, not injected
+ok 25 - AK8: a hostile unit name is escaped, not injected
+  ---
+  duration_ms: 0.106396
+  type: 'test'
+  ...
+# Subtest: MI1: sea target is always explore, regardless of the checkbox
+ok 26 - MI1: sea target is always explore, regardless of the checkbox
+  ---
+  duration_ms: 0.225889
+  type: 'test'
+  ...
+# Subtest: MI2: an unseen (fog) land target is always explore — the only intent the server FOW rule allows there
+ok 27 - MI2: an unseen (fog) land target is always explore — the only intent the server FOW rule allows there
+  ---
+  duration_ms: 0.252995
+  type: 'test'
+  ...
+# Subtest: MI3: a known land target is a plain march by default
+ok 28 - MI3: a known land target is a plain march by default
+  ---
+  duration_ms: 0.105178
+  type: 'test'
+  ...
+# Subtest: MI4: a known land target explores when the player opts in
+ok 29 - MI4: a known land target explores when the player opts in
+  ---
+  duration_ms: 0.056741
+  type: 'test'
+  ...
+# Subtest: MI5: exploreRowVisible offers the checkbox on land, never on sea or a settlement
+ok 30 - MI5: exploreRowVisible offers the checkbox on land, never on sea or a settlement
+  ---
+  duration_ms: 0.063281
+  type: 'test'
+  ...
+# Subtest: AK9: a garrisoned/positioned unit is eligible to march
+ok 31 - AK9: a garrisoned/positioned unit is eligible to march
+  ---
+  duration_ms: 0.051437
+  type: 'test'
+  ...
+# Subtest: AK10: a marching unit is eligible too — but for redirect, not a fresh march
+ok 32 - AK10: a marching unit is eligible too — but for redirect, not a fresh march
+  ---
+  duration_ms: 0.045362
+  type: 'test'
+  ...
+# Subtest: R3 (megaron_plan_skeppsuppdrag_landsatt.md): a marching SHIP is not eligible for redirect — it takes no orders at sea
+ok 33 - R3 (megaron_plan_skeppsuppdrag_landsatt.md): a marching SHIP is not eligible for redirect — it takes no orders at sea
+  ---
+  duration_ms: 0.046788
+  type: 'test'
+  ...
+# Subtest: AK11: a fortified unit stays ineligible (server blocks fresh march on it)
+ok 34 - AK11: a fortified unit stays ineligible (server blocks fresh march on it)
+  ---
+  duration_ms: 0.048861
+  type: 'test'
+  ...
+# Subtest: AK12: a still-forming/training unit stays ineligible even while nominally marching-shaped
+ok 35 - AK12: a still-forming/training unit stays ineligible even while nominally marching-shaped
+  ---
+  duration_ms: 0.060386
+  type: 'test'
+  ...
+# Subtest: AK13: a unit embarked/disbanded/other status is ineligible
+ok 36 - AK13: a unit embarked/disbanded/other status is ineligible
+  ---
+  duration_ms: 0.044505
+  type: 'test'
+  ...
+# Subtest: AK14: marching and garrisoned units of the same type+hex stay in SEPARATE groups — a redirect send must never merge with a fresh-march send
+ok 37 - AK14: marching and garrisoned units of the same type+hex stay in SEPARATE groups — a redirect send must never merge with a fresh-march send
+  ---
+  duration_ms: 0.101148
+  type: 'test'
+  ...
+# Subtest: AK15: a redirect group is marked in its label — the player must see this send goes to a Runner
+ok 38 - AK15: a redirect group is marked in its label — the player must see this send goes to a Runner
+  ---
+  duration_ms: 0.091053
+  type: 'test'
+  ...
+# Subtest: H: defaults send all available units in the chosen first group, other groups stay unselected
+ok 39 - H: defaults send all available units in the chosen first group, other groups stay unselected
+  ---
+  duration_ms: 0.092277
+  type: 'test'
+  ...
+# Subtest: H: War target selection lists only the selected unit; normal map menu keeps all eligible units
+ok 40 - H: War target selection lists only the selected unit; normal map menu keeps all eligible units
+  ---
+  duration_ms: 0.196464
+  type: 'test'
+  ...
+# Subtest: H: a loaded ship can land on known land, while empty and marching ships cannot
+ok 41 - H: a loaded ship can land on known land, while empty and marching ships cannot
+  ---
+  duration_ms: 0.176177
+  type: 'test'
+  ...
+# Subtest: H: landing preserves cargo-colonize/name and omits naval stance; explore and plain land retain options
+ok 42 - H: landing preserves cargo-colonize/name and omits naval stance; explore and plain land retain options
+  ---
+  duration_ms: 0.123973
+  type: 'test'
+  ...
+# Subtest: H: colony forecast keeps production and food duration in game day words
+ok 43 - H: colony forecast keeps production and food duration in game day words
+  ---
+  duration_ms: 9.236943
+  type: 'test'
+  ...
+# Subtest: forecast shows the server harbour note and nothing when absent
+ok 44 - forecast shows the server harbour note and nothing when absent
+  ---
+  duration_ms: 0.316666
+  type: 'test'
+  ...
+# Subtest: river march: real map destination offers naval only, ford offers both categories
+ok 45 - river march: real map destination offers naval only, ford offers both categories
+  ---
+  duration_ms: 0.564893
+  type: 'test'
+  ...
+# Subtest: ford send uses the same per-unit mission as preview, retaining target and expedition duration
+ok 46 - ford send uses the same per-unit mission as preview, retaining target and expedition duration
+  ---
+  duration_ms: 10.85287
+  type: 'test'
+  ...
+# Subtest: playtest: coastal forecast uses full food demand without a loyalty reserve warning
+ok 47 - playtest: coastal forecast uses full food demand without a loyalty reserve warning
+  ---
+  duration_ms: 0.332339
+  type: 'test'
+  ...
+# Subtest: founding carries the authoritative wood warning without inventing a local rule
+ok 48 - founding carries the authoritative wood warning without inventing a local rule
+  ---
+  duration_ms: 0.190133
+  type: 'test'
+  ...
+# Subtest: Host summary exposes the wood warning before the closed Details section
+ok 49 - Host summary exposes the wood warning before the closed Details section
+  ---
+  duration_ms: 0.206059
+  type: 'test'
+  ...
+# Subtest: fish-fed founding forecast does not invent an empty-grain loyalty warning
+ok 50 - fish-fed founding forecast does not invent an empty-grain loyalty warning
+  ---
+  duration_ms: 0.21229
+  type: 'test'
+  ...
+# Subtest: AI forecast avoids dust horizons and identifies the farm already included
+ok 51 - AI forecast avoids dust horizons and identifies the farm already included
+  ---
+  duration_ms: 0.306553
+  type: 'test'
+  ...
+# Subtest: hiketeia: a refused march shows the warning with March anyway; other refusals do not
+ok 52 - hiketeia: a refused march shows the warning with March anyway; other refusals do not
+  ---
+  duration_ms: 0.117381
+  type: 'test'
+  ...
+# Subtest: own coastal city offers empty and laden ships in the map menu and War target picker
+ok 53 - own coastal city offers empty and laden ships in the map menu and War target picker
+  ---
+  duration_ms: 0.17383
+  type: 'test'
+  ...
+# Subtest: map city target forwards actual ownership and port metadata instead of equating allied with own
+ok 54 - map city target forwards actual ownership and port metadata instead of equating allied with own
+  ---
+  duration_ms: 0.133129
+  type: 'test'
+  ...
+1..54
+# tests 54
+# suites 0
+# pass 54
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 105.131805

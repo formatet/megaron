@@ -656,3 +656,6 @@ Integration: `python3 tools/correspondence_integration_upgrade.py OUTPUT_JSON` t
 - `python3 tools/hex_for_hex_bild_20261025.py OUTPUT`: egen färsk PG16/mig213, Redis och server; riktig grundning/marsch, uttrycklig sjöledsfixtur och sen avgångsfas, Firefox1280/390 vid avgång/mitt/mål/verkställning samt riktig Keryx. Sparar källhashar, API, fixtureSQL och sidfel; städar egna tjänster.
 - `python3 tools/hex_for_hex_mutations_20261025.py OUTPUT`: fyra fysiska avgångs-/sikt-/stormmutationer, ny DB per arm, namngivet assertion-rött, byteexakt restore och nytt grönt prov. Kör aldrig samtidigt med en serverbuild eller andra källmutationer i samma worktree.
 - `python3 tools/hex_for_hex_schema_20261025.py OUTPUT`: offline PG16, 212→213→212→213; bevarar gammal stormprogress och kontrollerar nullable uppgradering samt dirty=false. Rör ingen delad rigg.
+
+- `city_landing_bild_20261025.py OUTPUT` — isolerad nativeFirefox1280/390, verklig trepassagerarlastning och UI-landsättning i egen stad; rapport `docs/reviews/landsatt-i-stad/`.
+- `city_landing_mutants_20261025.py` — sex fysiska, återställda servermutanter för vald stad, alla passagerare, stödort, ägarbyte, matstopp och privat hamnmetadata; ny DB per arm.

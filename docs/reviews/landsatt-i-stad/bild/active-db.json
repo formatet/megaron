@@ -1,0 +1,10 @@
+{
+  "status": "marching",
+  "arrives_at": "2026-10-25T15:22:49.918216+00:00",
+  "march_intent": "dock",
+  "target_q": 14,
+  "target_r": 23,
+  "land_target_q": 15,
+  "land_target_r": 23,
+  "support_settlement_id": "139ea21a-26fa-461b-89ae-0bd76747b0fe"
+}

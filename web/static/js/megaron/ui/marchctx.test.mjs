@@ -322,3 +322,26 @@ test('hiketeia: a refused march shows the warning with March anyway; other refus
   assert.match(html, /March anyway/);
   assert.equal(hiketeiaRefusalHTML([{ data: { error: 'too far' } }]), '');
 });
+
+test('own coastal city offers empty and laden ships in the map menu and War target picker',()=>{
+ const units=[ready('land'),ready('empty',{category:'naval'}),ready('laden',{category:'naval',cargo_unit_id:'cargo'}),ready('sailing',{category:'naval',status:'marching'})];
+ const city={q:4,r:2,known:true,isSea:false,isSettlement:true,own:true,coastal:true};
+ assert.deepEqual(menu.marchEligibleUnits(units,city).map(u=>u.id),['land','empty','laden']);
+ assert.deepEqual(menu.marchEligibleUnits(units,city,'empty').map(u=>u.id),['empty']);
+ assert.deepEqual(menu.marchUnitOptions(city,'naval',{stance:'storm'}),{});
+ const inland={...city,coastal:false};
+ assert.deepEqual(menu.marchEligibleUnits(units,inland).map(u=>u.id),['land']);
+ assert.deepEqual(menu.marchEligibleUnits(units,{...inland,has_harbour:true},'empty').map(u=>u.id),['empty']);
+ assert.deepEqual(menu.marchEligibleUnits(units,{...inland,coastal:undefined},'empty'),[]);
+ assert.deepEqual(menu.marchEligibleUnits(units,{...city,own:false,allied:true},'empty'),[],'an allied city is not an own docking order');
+ assert.deepEqual(menu.marchEligibleUnits(units,{...city,own:false},'laden').map(u=>u.id),['laden']);
+ assert.deepEqual(menu.marchUnitOptions({...city,own:false},'naval',{stance:'storm'}),{});
+});
+
+test('map city target forwards actual ownership and port metadata instead of equating allied with own',async()=>{
+ const {destFromHex}=await import('../render/map.js');
+ const own=destFromHex({q:4,r:2},{terrain:'plains',coastal:true},{name:'Petras',own:true});
+ assert.equal(own.own,true);assert.equal(own.coastal,true);assert.equal(menu.ownPortDestination(own),true);
+ const allied=destFromHex({q:4,r:2},{terrain:'plains',coastal:true},{name:'Foreign',own:false,allied:true});
+ assert.equal(allied.allied,true);assert.equal(allied.own,false);assert.equal(menu.ownPortDestination(allied),false);
+});

@@ -722,7 +722,10 @@ export function renderUnitCard(u) {
       + '</div>'
       + '</div>';
   } else if (isMarching && isNaval) {
-    redirectRow = '<div style="margin-top:.2rem;font-size:.65rem;color:var(--text-dim)">On its mission — returns to port automatically, no orders reach it at sea.</div>';
+    const mission = u.march_intent === 'dock'
+      ? 'Sailing to your city — the ship docks and stays. Everyone aboard joins the city’s garrison. No orders reach it at sea.'
+      : 'On its mission — returns to port automatically, no orders reach it at sea.';
+    redirectRow = '<div style="margin-top:.2rem;font-size:.65rem;color:var(--text-dim)">' + mission + '</div>';
   }
   const orderStatus = '<div id="uorder-' + u.id + '" style="font-size:.65rem;color:var(--text-dim);margin-top:.15rem"></div>';
 

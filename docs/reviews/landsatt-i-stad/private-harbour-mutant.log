@@ -1,0 +1,8 @@
+2026/10/25 16:23:25 INFO player registered id=c83c576c-3fd6-4662-977c-7ae9db57aa48 username=wanax-a-2a895baa-7fae-485f-bac0-154313bc1c78
+2026/10/25 16:23:26 INFO player registered id=3064a9d5-0115-456f-9691-5cd098284ce6 username=wanax-b-dfc515b6-1a0a-4b0f-840c-8bfcc01381eb
+--- FAIL: TestCitiesOwnPortMetadataKeepsForeignHarbourPrivate (0.13s)
+    cities_port_test.go:41: fixture must exercise known own and foreign cities: ownfalse foreignfalse
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.133s
+FAIL
+» färsk DB på migration 214 · commit a2b6d2eb+ändringar

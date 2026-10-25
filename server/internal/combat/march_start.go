@@ -325,6 +325,8 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	// the ship is routed to the offshore hex and tagged intent=assault.
 	targetQ, targetR := o.TargetQ, o.TargetR
 	assaultLanding := false
+	dockMission := false
+	var dockQ, dockR int
 	if o.Intent != "land" && o.Intent != "passage" && unit.CategoryOf(u.Type) == unit.CategoryNaval && u.CargoUnitID != nil {
 		var settOwner uuid.UUID
 		var settCoastal bool
@@ -344,6 +346,25 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 			}
 			assaultLanding = true
 			targetQ, targetR = seaQ, seaR
+		}
+	}
+
+	// A plain voyage to an owned port keeps the selected city as its docking
+	// target, while its saved sea route ends at the existing coastal approach.
+	if o.Intent == "" && !assaultLanding && unit.CategoryOf(u.Type) == unit.CategoryNaval {
+		if _, owned, err := ownPortAt(ctx, pool, o.WorldID, o.PlayerID, targetQ, targetR); err != nil {
+			return nil, reject(500, "could not check destination port")
+		} else if owned {
+			dockMission = true
+			dockQ, dockR = targetQ, targetR
+			q, r, found, err := province.NearestSeaNeighbor(ctx, pool, o.WorldID, targetQ, targetR)
+			if err != nil {
+				return nil, reject(500, "could not resolve destination coast")
+			}
+			if !found {
+				return nil, reject(422, "this city has no navigable sea approach; choose a coastal city")
+			}
+			targetQ, targetR = q, r
 		}
 	}
 
@@ -388,17 +409,28 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		// applied to the chosen hex directly rather than a neighbour of it.
 		isSea := landTerrain == "coastal_sea" || landTerrain == "deep_sea" || landTerrain == "river" || landTerrain == "river_ford"
 		isMountain := landTerrain == "mountain_limestone" || landTerrain == "mountain_red"
-		var settledCount int
-		_ = pool.QueryRow(ctx,
-			`SELECT count(*) FROM provinces p JOIN settlements s ON s.province_id = p.id
-			 WHERE p.world_id = $1 AND p.map_q = $2 AND p.map_r = $3 AND s.state = 'active'`,
-			o.WorldID, landTargetQ, landTargetR,
-		).Scan(&settledCount)
-		if isSea || isMountain || settledCount > 0 {
-			return nil, reject(http.StatusUnprocessableEntity,
-				"(%d,%d) is not open, unclaimed land — a land mission needs bare ground to put troops ashore on",
-				landTargetQ, landTargetR)
+		_, ownCity, cityErr := ownPortAt(ctx, pool, o.WorldID, o.PlayerID, landTargetQ, landTargetR)
+		if cityErr != nil {
+			return nil, reject(http.StatusInternalServerError, "could not check the destination port")
 		}
+		var settledCount int
+		if err := pool.QueryRow(ctx, `SELECT count(*) FROM provinces p JOIN settlements s ON s.province_id=p.id WHERE p.world_id=$1 AND p.map_q=$2 AND p.map_r=$3 AND s.state='active'`, o.WorldID, landTargetQ, landTargetR).Scan(&settledCount); err != nil {
+			return nil, reject(http.StatusInternalServerError, "could not check the landing city")
+		}
+		if isSea || isMountain {
+			return nil, reject(http.StatusUnprocessableEntity, "choose open shore or one of your coastal cities to land troops; water and mountains cannot receive them")
+		}
+		if settledCount > 0 && !ownCity {
+			return nil, reject(http.StatusUnprocessableEntity, "a land mission can dock in your own coastal city or land on open shore; to attack another Wanax's coastal city, send a laden ship with an ordinary march instead")
+		}
+		if ownCity && o.CargoIntent != "" {
+			return nil, reject(http.StatusUnprocessableEntity, "this is already your city; send the ship without a colonize order to put its troops into the garrison")
+		}
+		if ownCity {
+			dockMission = true
+			dockQ, dockR = landTargetQ, landTargetR
+		}
+
 		seaQ, seaR, foundSea, seaErr := province.NearestSeaNeighbor(ctx, pool, o.WorldID, landTargetQ, landTargetR)
 		if seaErr != nil {
 			return nil, reject(http.StatusInternalServerError, "could not resolve a sea approach to the landing hex")
@@ -712,9 +744,13 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	// and assault (already redirected to the enemy's offshore hex above) is
 	// exempt — each validates its own destination on its own terms.
 	if o.Intent == "" && !assaultLanding && unit.CategoryOf(u.Type) == unit.CategoryNaval {
+		_, ownCity, portErr := ownPortAt(ctx, pool, o.WorldID, o.PlayerID, targetQ, targetR)
+		if portErr != nil {
+			return nil, reject(http.StatusInternalServerError, "could not check destination port")
+		}
 		if _, found, fErr := friendlySettlementAdjacent(ctx, pool, o.WorldID, o.PlayerID, targetQ, targetR); fErr != nil {
 			return nil, reject(http.StatusInternalServerError, "could not check for a port at the destination")
-		} else if !found {
+		} else if !found && !ownCity {
 			return nil, reject(http.StatusUnprocessableEntity,
 				"ships need a mission when not sailing to a port: patrol, explore or land")
 		}
@@ -1121,6 +1157,14 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	if assaultLanding {
 		a := "assault"
 		intentArg = &a
+		homeSettlementArg = u.SettlementID
+	}
+
+	if dockMission {
+		intent := "dock"
+		intentArg = &intent
+		lq, lr := dockQ, dockR
+		landTargetQArg, landTargetRArg = &lq, &lr
 		homeSettlementArg = u.SettlementID
 	}
 
