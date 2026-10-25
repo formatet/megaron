@@ -1,0 +1,32 @@
+[
+  {
+    "name": "docking-city",
+    "exit": 1,
+    "assertion_red": true
+  },
+  {
+    "name": "all-passengers",
+    "exit": 1,
+    "assertion_red": true
+  },
+  {
+    "name": "preserve-support",
+    "exit": 1,
+    "assertion_red": true
+  },
+  {
+    "name": "owned-port",
+    "exit": 1,
+    "assertion_red": true
+  },
+  {
+    "name": "nearer-food-stop",
+    "exit": 1,
+    "assertion_red": true
+  },
+  {
+    "name": "private-harbour",
+    "exit": 1,
+    "assertion_red": true
+  }
+]

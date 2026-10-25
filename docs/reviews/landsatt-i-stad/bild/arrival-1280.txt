@@ -1,0 +1,51 @@
+ARMY
+RECRUIT
+MOVEMENTS
+WHEN TO RETREAT
+Save
+RECALL ALL
+UNITS
+1st Spearmen of Lato
+in the field
+Upkeep: 1 food, 0 silver per game day
+(1,51)
+March
+Set
+Fetch by ship
+Build road
+2nd Spearmen of Lato
+in the field
+Upkeep: 1 food, 0 silver per game day
+(1,51)
+March
+Set
+Fetch by ship
+Build road
+Petras Carrier, Emporos of Lato
+crew 10
+in harbour
+Upkeep: 0.05 food, 0 silver per game day
+⚓ in harbour — Petras
+March
+Load
+3rd Spearmen of Lato
+in the city
+Upkeep: 0.5 food, 0 silver per game day
+Petras
+March
+Set
+Build road
+4th Spearmen of Lato
+in the city
+Upkeep: 0.5 food, 0 silver per game day
+Petras
+March
+Set
+Build road
+5th Spearmen of Lato
+in the city
+Upkeep: 0.5 food, 0 silver per game day
+Petras
+March
+Set
+Build road

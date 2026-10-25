@@ -1,0 +1,31 @@
+[
+  {
+    "settlement_id": "139ea21a-26fa-461b-89ae-0bd76747b0fe",
+    "name": "Lato",
+    "owner": "Erita",
+    "owner_id": "29fcf05b-aedf-4716-ba0f-4e6423aece5b",
+    "culture": "minoan",
+    "terrain": "plains",
+    "own": true,
+    "coastal": true,
+    "province_id": "5c4d9be9-559f-468c-8454-d7eb5935cc7b",
+    "is_capital": true,
+    "knowledge": "known",
+    "q": 9,
+    "r": 23
+  },
+  {
+    "settlement_id": "38e12ae7-7a58-41ae-a4f9-8a867077ab0b",
+    "name": "Petras",
+    "owner": "Erita",
+    "owner_id": "29fcf05b-aedf-4716-ba0f-4e6423aece5b",
+    "culture": "achaean",
+    "terrain": "plains",
+    "own": true,
+    "coastal": true,
+    "province_id": "e296739b-421c-49c4-bd36-f73aae5cff0e",
+    "knowledge": "known",
+    "q": 15,
+    "r": 23
+  }
+]

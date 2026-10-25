@@ -1,0 +1,11 @@
+--- FAIL: TestCityLandingAllPassengersStayAndSupportUnchanged (0.13s)
+    --- FAIL: TestCityLandingAllPassengersStayAndSupportUnchanged/intent=land (0.05s)
+        land_city_test.go:83: nearby city food stop must preserve docking mission, got food_return
+    --- FAIL: TestCityLandingAllPassengersStayAndSupportUnchanged/intent= (0.04s)
+        land_city_test.go:83: nearby city food stop must preserve docking mission, got food_return
+    --- FAIL: TestCityLandingAllPassengersStayAndSupportUnchanged/intent=empty (0.04s)
+        land_city_test.go:83: nearby city food stop must preserve docking mission, got food_return
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.136s
+FAIL
+» färsk DB på migration 214 · commit a2b6d2eb+ändringar

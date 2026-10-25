@@ -1,0 +1,14 @@
+2026/10/25 16:23:10 INFO unit arrived (garrison) unit=8797abf5-9b6f-4e5a-8c50-b4b9a4b15615 q=10 r=0 status=garrison
+2026/10/25 16:23:10 INFO unit arrived (garrison) unit=ee4b0fc4-b1d9-4114-9593-b9d86c344179 q=10 r=0 status=garrison
+2026/10/25 16:23:10 INFO unit arrived (garrison) unit=770cb1ce-2795-45b2-9148-8f235454a505 q=10 r=0 status=garrison
+--- FAIL: TestCityLandingAllPassengersStayAndSupportUnchanged (0.18s)
+    --- FAIL: TestCityLandingAllPassengersStayAndSupportUnchanged/intent=land (0.06s)
+        land_city_test.go:98: arrival id8797abf5-9b6f-4e5a-8c50-b4b9a4b15615 statusgarrison cityf16dc767-930b-4ee4-b158-6dea2e6a4e27 supportf16dc767-930b-4ee4-b158-6dea2e6a4e27 carrier<nil> pos10,0
+    --- FAIL: TestCityLandingAllPassengersStayAndSupportUnchanged/intent= (0.06s)
+        land_city_test.go:98: arrival idee4b0fc4-b1d9-4114-9593-b9d86c344179 statusgarrison cityc2633a07-c799-4ff4-bdd7-a9c20027bd32 supportc2633a07-c799-4ff4-bdd7-a9c20027bd32 carrier<nil> pos10,0
+    --- FAIL: TestCityLandingAllPassengersStayAndSupportUnchanged/intent=empty (0.06s)
+        land_city_test.go:98: arrival id770cb1ce-2795-45b2-9148-8f235454a505 statusgarrison city001e2b50-ff48-47ad-95aa-6b345ee0c15a support001e2b50-ff48-47ad-95aa-6b345ee0c15a carrier<nil> pos10,0
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.183s
+FAIL
+» färsk DB på migration 214 · commit a2b6d2eb+ändringar

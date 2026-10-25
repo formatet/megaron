@@ -1,0 +1,6 @@
+--- FAIL: TestCityLandingRechecksOwnershipAndKeepsPassengers (0.02s)
+    land_city_test.go:146: could not check the destination port
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.023s
+FAIL
+» färsk DB på migration 214 · commit a2b6d2eb+ändringar

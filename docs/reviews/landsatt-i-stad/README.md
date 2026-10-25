@@ -33,3 +33,16 @@ Ny intern sparad mission `dock` bär den valda stadens hex i de befintliga land_
 Riktig DB-baslinje `baseline-red.log`: både land och vanlig segling till egen stad nekades. `first-green.log`: båda vägarna fungerar med tre kohorter på Emporos, dessutom tomt skepp; dubbel ankomst är idempotent, ingen oombedd retur, support oförändrad och nästa uttryckligt beställda resa tar proviant ur gamla staden. Separat prov täcker ägarbyte innan ankomst; gamla bar-mark-/koloniseringstester är gröna.
 
 Cities API ger coastal och has_harbour för valytan; byggnadsuppgiften has_harbour exponeras bara för egna städer. Rykten får ingen sådan information. Webb/Keryx/Codex beskriver samma kontrakt.
+
+
+## Slutbevis på rebasad kod
+
+Kod **a2b6d2eb**, bas **1747b395**, migration214 oförändrad. Aktuell origin/master kontrollerad efter slutkörningen. HEL färsk Go-svit26paket grön (`full-go.log`, world149.775s); berörda API/combat gröna separat;776JS/vet/fyra day-guards gröna. Första hela körningen på äldre bas var också grön men används bara som arkiv (`pre-rebase-full-go.log`).
+
+Sex fysiska servermutanter assertion-röda på separat checkout av slutkoden, exakt restore och ny färsk berörd grön körning. Täckta/otäckta anropsvägar och **en exakt sed-mutant per kärnfil** finns i [coverage-and-mutations.md](coverage-and-mutations.md). Klienternas verkliga rött→grönt-loggar följer med; deras extra föreslagna granskningsmutanter påstås inte körda.
+
+[Firefox-BILD](index.html):8native1280/390 påa2b6d2eb,951källhashar matchar slutkod,0sidfel. Riktig registrering/join/founding, tre Load-API-anrop och EN verklig UI-landorder202. Båda bredder visar tom/lastad eligibilitet och ETA; desktop skickar ordern, mobilens ordered-bild är kartkontext och påstås inte vara andra order. Efter faktisk deadline/worker-ankomst står skepp+3kohorter i Petras, supportLato oförändrad, ingen retur köad. Alla åtta bilder granskade1:1.
+
+Rigglärdomar öppet: första UI-riggen krävde200/201 fast march korrekt ger202; nästa väntade fixturens namn men serverns displaynamn följer ordinal/stödort. Endast riggen rättades, nya rena världar kördes. Ett API-fixturprov använde en icke existerande byggnads-UNIQUE i ONCONFLICT, korrigerat i provet (ursprunglig logg `cities-port-fixture-error.log`, verkligt grönt i `rebase-affected-green.log`). Inget av dessa fel räknas som produktionsreparation. En faktisk falsk auto-return-text i War hittades och fick eget rött→grönt-prov före den sista rebasade körningen.
+
+Ingen merge/push/deploy. Ingen ny kanon utöver Timothys uttryckligaA. Ingen mänsklig textplaytest påstås. Varvet orört.
