@@ -191,6 +191,7 @@ func main() {
 	// P3 soak fix (2026-07-19): notify the owner if a march order's courier
 	// delivery keeps failing until dead-lettered, instead of it silently
 	// vanishing after the dispatch's 202 promised it was en route.
+	worker.RegisterDeadLetterHook(events.ScheduledOrderDeliveryV2, orderDeliveryH.NotifyDeadLetter)
 	worker.RegisterDeadLetterHook(events.ScheduledOrderDelivery, orderDeliveryH.NotifyDeadLetter)
 	worker.Register(events.ScheduledMessengerArrivalV2, messengerArrivalH.Handle)
 	worker.Register(events.ScheduledMessengerReturnV2, messengerReturnH.Handle)

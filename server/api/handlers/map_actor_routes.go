@@ -122,6 +122,9 @@ func (h *WorldHandler) messengerCarrierRoute(ctx context.Context, worldID uuid.U
 		if !ok {
 			return nil
 		}
+		if r.Version == 2 && !r.DepartureAt.IsZero() && r.TickNanoseconds > 0 {
+			at = r.MilliAt(now)
+		}
 		pos, err := combat.RoutePositionAt(r, at, now)
 		if err != nil {
 			return nil
