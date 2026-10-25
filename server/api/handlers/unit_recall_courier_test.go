@@ -175,7 +175,7 @@ func TestRecall_FieldUnitOrderTravelsByCourier(t *testing.T) {
 	).Scan(&eventType, &verb); err != nil {
 		t.Fatalf("load scheduled event: %v", err)
 	}
-	if eventType != string(events.ScheduledOrderDelivery) {
+	if eventType != string(events.ScheduledOrderDeliveryV2) {
 		t.Errorf("scheduled event_type = %q, want %q", eventType, events.ScheduledOrderDelivery)
 	}
 	if verb != "recall" {
@@ -206,7 +206,7 @@ func TestRecall_FieldUnitOrderTravelsByCourier(t *testing.T) {
 	var rawPayload []byte
 	if err := pool.QueryRow(ctx,
 		`SELECT payload FROM scheduled_events
-		 WHERE event_type = 'OrderDelivery' AND (payload->>'messenger_id')::uuid = $1
+		 WHERE event_type IN ('OrderDelivery','OrderDeliveryV2') AND (payload->>'messenger_id')::uuid = $1
 		   AND processed_at IS NULL AND failed_at IS NULL`,
 		resp.MessengerID,
 	).Scan(&rawPayload); err != nil {
@@ -273,14 +273,14 @@ func TestRedirect_FieldUnitOrderTravelsByCourier(t *testing.T) {
 	).Scan(&eventType, &verb); err != nil {
 		t.Fatalf("load scheduled event: %v", err)
 	}
-	if eventType != string(events.ScheduledOrderDelivery) || verb != "redirect" {
+	if eventType != string(events.ScheduledOrderDeliveryV2) || verb != "redirect" {
 		t.Fatalf("scheduled event = %s/%s, want %s/redirect", eventType, verb, events.ScheduledOrderDelivery)
 	}
 
 	var rawPayload []byte
 	if err := pool.QueryRow(ctx,
 		`SELECT payload FROM scheduled_events
-		 WHERE event_type = 'OrderDelivery' AND (payload->>'messenger_id')::uuid = $1
+		 WHERE event_type IN ('OrderDelivery','OrderDeliveryV2') AND (payload->>'messenger_id')::uuid = $1
 		   AND processed_at IS NULL AND failed_at IS NULL`,
 		resp.MessengerID,
 	).Scan(&rawPayload); err != nil {

@@ -335,6 +335,11 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 				}
 				travelTicks = ret.Journey.TravelTicks
 				var err error
+				err = ClockTradeJourney(ctx, tx, e.WorldID, ret.Journey, departsAt)
+				if err != nil {
+					return err
+				}
+				currentTick = ret.Journey.Clock.StartTick
 				saved, err = json.Marshal(ret.Journey)
 				if err != nil {
 					return err
@@ -402,7 +407,7 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 					return fmt.Errorf("update chained ETA: %w", err)
 				}
 			}
-			if err := h.scheduler.EnqueueTickTx(ctx, tx, e.WorldID, events.ScheduledTradeReturn,
+			if err := EnqueueFreightTx(ctx, tx, h.scheduler, e.WorldID, events.ScheduledTradeReturn,
 				map[string]any{
 					"destination_id": ret.DestinationID,
 					"good_key":       ret.GoodKey,
@@ -519,6 +524,10 @@ func dispatchShipReturnLeg(ctx context.Context, tx pgx.Tx, sched *events.Schedul
 	if err != nil {
 		return err
 	}
+	departsAt := sched.Clock().Now()
+	if err := ClockTradeJourney(ctx, tx, worldID, &journey, departsAt); err != nil {
+		return err
+	}
 	raw, err := json.Marshal(journey)
 	if err != nil {
 		return err
@@ -527,7 +536,7 @@ func dispatchShipReturnLeg(ctx context.Context, tx pgx.Tx, sched *events.Schedul
 	if err := tx.QueryRow(ctx, `SELECT current_tick FROM worlds WHERE id=$1`, worldID).Scan(&currentTick); err != nil {
 		return err
 	}
-	departsAt := sched.Clock().Now()
+	currentTick = journey.Clock.StartTick
 	arrivesAt := departsAt.Add(tick.RealUntil(journey.TravelTicks, 0))
 
 	var returnID uuid.UUID
@@ -543,7 +552,7 @@ func dispatchShipReturnLeg(ctx context.Context, tx pgx.Tx, sched *events.Schedul
 	).Scan(&returnID); err != nil {
 		return fmt.Errorf("insert ship return leg: %w", err)
 	}
-	return sched.EnqueueTickTx(ctx, tx, worldID, events.ScheduledTransportArrival,
+	return EnqueueFreightTx(ctx, tx, sched, worldID, events.ScheduledTransportArrival,
 		map[string]any{"transport_id": returnID}, currentTick+journey.TravelTicks)
 }
 

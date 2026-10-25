@@ -267,7 +267,7 @@ function unitPixelNow(u,nowMs=serverNow()) {
 function transportPixelNow(t,nowMs=serverNow()) {
  if(t.mine===false&&t.route_known!==true)return t.current_q!=null?{...hexPx(t.current_q,t.current_r),q:t.current_q,r:t.current_r}:null;
  const progress=routeProgress(t,nowMs,movementTickNow(nowMs));
- return t.path?.length>1?pathPx(t.path,progress,t.step_costs,t.arrival_tick-t.departure_tick):hexPathPx(t.origin_q,t.origin_r,t.dest_q,t.dest_r,progress);
+ return t.path?.length>1?pathPx(t.path,progress,t.step_costs,t.arrival_tick-t.departure_tick,t.route_version):hexPathPx(t.origin_q,t.origin_r,t.dest_q,t.dest_r,progress);
 }
 
 // messengerLegPosition (megaron_plan_budets_tre_ben.md, slice 3c, R4): where

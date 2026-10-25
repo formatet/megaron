@@ -79,13 +79,14 @@ func frozenHeading(path []province.MapPosition, costs []int64, start, end int, a
 }
 
 type carrierRoute struct {
-	Path               [][2]int
-	Costs              []int64
-	Start, End         int
-	CurrentQ, CurrentR int
-	Heading            string
-	Version            int
-	OffsetMilli        int64
+	Path                   [][2]int
+	Costs                  []int64
+	Start, End             int
+	CurrentQ, CurrentR     int
+	Heading                string
+	Version                int
+	OffsetMilli            int64
+	DepartureAt, ArrivalAt time.Time
 }
 
 func (h *WorldHandler) messengerCarrierRoute(ctx context.Context, worldID uuid.UUID, carrierUnit, carrierTransport *uuid.UUID, now time.Time) *carrierRoute {
@@ -101,7 +102,7 @@ func (h *WorldHandler) messengerCarrierRoute(ctx context.Context, worldID uuid.U
 		if err := h.pool.QueryRow(ctx, `SELECT journey,departed_tick,due_tick FROM transports WHERE id=$1 AND world_id=$2 AND status='in_transit'`, *carrierTransport, worldID).Scan(&raw, &start, &end); err != nil || start == nil {
 			return nil
 		}
-		pos, err := transport.SavedPosition(raw, *start, end, at)
+		pos, err := transport.SavedPosition(raw, *start, end, at, now)
 		if err != nil {
 			return nil
 		}
@@ -109,7 +110,11 @@ func (h *WorldHandler) messengerCarrierRoute(ctx context.Context, worldID uuid.U
 		if json.Unmarshal(raw, &j) != nil {
 			return nil
 		}
-		return &carrierRoute{pathCoordinates(j.Path), j.StepCosts, *start, end, pos.Q, pos.R, frozenHeading(j.Path, j.StepCosts, *start, end, at), 0, 0}
+		route := j.Route(*start, end)
+		if route.Version == 2 {
+			at = route.MilliAt(now)
+		}
+		return &carrierRoute{pathCoordinates(j.Path), j.StepCosts, *start, end, pos.Q, pos.R, frozenHeading(j.Path, j.StepCosts, *start, end, at, route), route.Version, route.OffsetMilli, route.DepartureAt, route.WallAt(int64(end)*1000 + route.OffsetMilli)}
 	}
 	if carrierUnit != nil {
 		var raw []byte
@@ -133,7 +138,7 @@ func (h *WorldHandler) messengerCarrierRoute(ctx context.Context, worldID uuid.U
 		for i, h := range r.Hexes {
 			path[i] = province.MapPosition{Q: h[0], R: h[1]}
 		}
-		return &carrierRoute{r.Hexes, r.Costs, r.StartTick, r.EndTick, pos.Q, pos.R, frozenHeading(path, r.Costs, r.StartTick, r.EndTick, at, r), r.Version, r.OffsetMilli}
+		return &carrierRoute{r.Hexes, r.Costs, r.StartTick, r.EndTick, pos.Q, pos.R, frozenHeading(path, r.Costs, r.StartTick, r.EndTick, at, r), r.Version, r.OffsetMilli, r.DepartureAt, r.WallAt(int64(r.EndTick)*1000 + r.OffsetMilli)}
 	}
 	return nil
 }

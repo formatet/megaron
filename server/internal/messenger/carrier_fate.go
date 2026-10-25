@@ -92,7 +92,7 @@ func (h *PassageScanHandler) applyCarrierWitness(ctx context.Context, world uuid
 	if passage != nil && *passage == "aboard" && status != "lost" && status != "arrived" {
 		switch kind {
 		case carrier.Lost:
-			if _, err := tx.Exec(ctx, `UPDATE messengers SET status='lost',passage_status=NULL,passage_port_id=NULL,passage_since_tick=NULL,passage_lost_until_tick=NULL,carrier_transport_id=NULL,carrier_unit_id=NULL,carrier_name=NULL,disembark_q=NULL,disembark_r=NULL,boarded_at=NULL,disembark_at=NULL,passage_generation=passage_generation+1 WHERE id=$1`, w.MessengerID); err != nil {
+			if _, err := tx.Exec(ctx, `UPDATE messengers SET land_route=NULL,status='lost',passage_status=NULL,passage_port_id=NULL,passage_since_tick=NULL,passage_lost_until_tick=NULL,carrier_transport_id=NULL,carrier_unit_id=NULL,carrier_name=NULL,disembark_q=NULL,disembark_r=NULL,boarded_at=NULL,disembark_at=NULL,passage_generation=passage_generation+1 WHERE id=$1`, w.MessengerID); err != nil {
 				return err
 			}
 			if err := returnDeclinedReservationTx(ctx, tx, w.MessengerID); err != nil {
@@ -110,7 +110,7 @@ func (h *PassageScanHandler) applyCarrierWitness(ctx context.Context, world uuid
 			if w.RescueShipID == nil {
 				return fmt.Errorf("rescue witness %d has no physical ship", id)
 			}
-			if _, err := tx.Exec(ctx, `UPDATE messengers SET carrier_transport_id=NULL,carrier_unit_id=$2,carrier_name=(SELECT name FROM units WHERE id=$2),disembark_q=NULL,disembark_r=NULL,disembark_at=NULL,passage_generation=passage_generation+1 WHERE id=$1`, w.MessengerID, *w.RescueShipID); err != nil {
+			if _, err := tx.Exec(ctx, `UPDATE messengers SET land_route=NULL,carrier_transport_id=NULL,carrier_unit_id=$2,carrier_name=(SELECT name FROM units WHERE id=$2),disembark_q=NULL,disembark_r=NULL,disembark_at=NULL,passage_generation=passage_generation+1 WHERE id=$1`, w.MessengerID, *w.RescueShipID); err != nil {
 				return err
 			}
 		case carrier.Landed:
@@ -158,13 +158,19 @@ func (h *PassageScanHandler) landCarrierPassenger(ctx context.Context, tx pgx.Tx
 		return err
 	}
 	if route.Mode == RouteLand {
+		if err := SaveLandRouteTx(ctx, tx, world, w.MessengerID, province.MapPosition{Q: w.Q, R: w.R}, province.MapPosition{Q: q, R: r}, h.clk.Now(), h.clk.Now().Add(route.Dur)); err != nil {
+			return err
+		}
 		return scheduleCompletion(ctx, tx, h.scheduler, w.MessengerID, currentTick+route.Ticks, h.clk.Now().Add(route.Dur))
 	}
 	if !route.PortFound {
 		return fmt.Errorf("landed runner %s has no reachable continuation port", w.MessengerID)
 	}
 	_, err = tx.Exec(ctx, `UPDATE messengers SET passage_status='awaiting_passage',passage_port_id=$2,passage_since_tick=$3,arrives_at=$4,passage_generation=passage_generation+1 WHERE id=$1`, w.MessengerID, route.Port.SettlementID, currentTick+route.LandTicks, h.clk.Now().Add(route.LandDur))
-	return err
+	if err != nil {
+		return err
+	}
+	return SaveLandRouteTx(ctx, tx, world, w.MessengerID, province.MapPosition{Q: w.Q, R: w.R}, province.MapPosition{Q: route.Port.Q, R: route.Port.R}, h.clk.Now(), h.clk.Now().Add(route.LandDur))
 }
 
 // A rescue is NOT instant news. Only a runner physically returning home can

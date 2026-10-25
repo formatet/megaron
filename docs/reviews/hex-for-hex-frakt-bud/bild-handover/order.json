@@ -1,0 +1,22 @@
+{
+  "arrival_tick": 108,
+  "arrives_at": "2026-10-25T10:56:52.278588+01:00",
+  "cargo_capacity": null,
+  "cargo_quantity": 10,
+  "category": "land",
+  "departure_tick": 103,
+  "dispatch_offset_milli": 736,
+  "distance": 3,
+  "items": [
+    {
+      "good_key": "stone",
+      "quantity": 10
+    }
+  ],
+  "kind": "transfer",
+  "route_id": "b7def480-6424-4897-b541-1b94597aac42",
+  "route_version": 2,
+  "transport_id": "a3caffc5-0cbd-48b9-b813-6523381283ec",
+  "travel_min": 300,
+  "travel_ticks": 5
+}

@@ -198,7 +198,7 @@ func TestBuildRoad_OrderDeliveryAndSiteList(t *testing.T) {
 	// Deliver the Runner: the army (already at the from hex) is flagged.
 	var raw []byte
 	if err := a.pool.QueryRow(ctx,
-		`SELECT payload FROM scheduled_events WHERE event_type = 'OrderDelivery' AND (payload->>'messenger_id')::uuid = $1 AND processed_at IS NULL`,
+		`SELECT payload FROM scheduled_events WHERE event_type IN ('OrderDelivery','OrderDeliveryV2') AND (payload->>'messenger_id')::uuid = $1 AND processed_at IS NULL`,
 		resp.MessengerID).Scan(&raw); err != nil {
 		t.Fatalf("load scheduled OrderDelivery: %v", err)
 	}

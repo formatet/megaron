@@ -13,6 +13,7 @@ import (
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/capabilities"
 	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/messenger"
 	"formatet/megaron/server/internal/notify"
@@ -495,8 +496,12 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		if err = messenger.SaveDepartureTx(r.Context(), tx, worldID, messengerID, now); err != nil {
+			writeError(w, 500, "could not freeze Runner route")
+			return
+		}
 		if passage == nil {
-			if err = h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledMessengerArrival,
+			if err = messenger.EnqueueLandTx(r.Context(), tx, h.scheduler, worldID, events.ScheduledMessengerArrival,
 				messenger.ArrivalPayload{MessengerID: messengerID}, msgArrivalDueTick); err != nil {
 				writeError(w, http.StatusInternalServerError, "could not schedule arrival")
 				return
@@ -526,8 +531,12 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		if err = messenger.SaveDepartureTx(r.Context(), tx, worldID, messengerID, now); err != nil {
+			writeError(w, 500, "could not freeze Runner route")
+			return
+		}
 		if passage == nil {
-			err = h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledMessengerArrival,
+			err = messenger.EnqueueLandTx(r.Context(), tx, h.scheduler, worldID, events.ScheduledMessengerArrival,
 				messenger.ArrivalPayload{MessengerID: messengerID}, msgArrivalDueTick)
 			if err != nil {
 				writeError(w, 500, "could not schedule Runner arrival")
@@ -645,9 +654,10 @@ func (h *MessengerHandler) SendFromHost(w http.ResponseWriter, r *http.Request) 
 	}
 	var currentTick int
 	_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&currentTick)
+	now := h.clk.Now()
 	arrivesAt, dueTick, passage, passageSinceTick, rErr := messenger.ResolveDeparture(
 		r.Context(), h.pool, worldID, playerID,
-		province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR}, h.clk.Now(), currentTick)
+		province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR}, now, currentTick)
 	if errors.Is(rErr, messenger.ErrNoPort) {
 		writeError(w, http.StatusUnprocessableEntity, rErr.Error())
 		return
@@ -680,8 +690,13 @@ func (h *MessengerHandler) SendFromHost(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	if err = messenger.SaveDepartureTx(r.Context(), tx, worldID, messengerID, now); err != nil {
+		writeError(w, 500, "could not freeze Runner route")
+		return
+	}
+
 	if passage == nil {
-		if err = h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledMessengerArrival, messenger.ArrivalPayload{MessengerID: messengerID}, dueTick); err != nil {
+		if err = messenger.EnqueueLandTx(r.Context(), tx, h.scheduler, worldID, events.ScheduledMessengerArrival, messenger.ArrivalPayload{MessengerID: messengerID}, dueTick); err != nil {
 			writeError(w, 500, "could not schedule arrival")
 			return
 		}
@@ -1262,9 +1277,15 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		writeError(w, 500, "could not prepare departure")
 		return
 	}
+	tradeDispatchAt := h.clk.Now()
+	if err := economy.ClockTradeJourney(r.Context(), tx, worldID, &journey, tradeDispatchAt); err != nil {
+		writeError(w, 500, "could not anchor cargo journey")
+		return
+	}
+	tradeAcceptCurrentTick = journey.Clock.StartTick
 	tradeAcceptDueTick := tradeAcceptCurrentTick + journey.TravelTicks
 	returnDueTick := tradeAcceptDueTick + returnJourney.TravelTicks
-	leg1ArrivesAt := h.clk.Now().Add(tick.RealUntil(journey.TravelTicks, 0))
+	leg1ArrivesAt := journey.Route(0, 0).WallAt(int64(journey.Clock.EndTick)*1000 + journey.Clock.OffsetMilli)
 
 	if kind == "sell" {
 		// Sell offer: origin=seller (escrowed goods at send), destination=buyer (acceptor).
@@ -1293,7 +1314,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		// read trade_offer long after this request's own response is gone.
 		tag, err = tx.Exec(r.Context(),
 			`UPDATE messengers SET trade_offer = trade_offer || jsonb_build_object(
-			     'status', 'accepted',
+			     'status', 'accepted','route_version',2,
 			     'goods_arrives_at', $2::timestamptz,
 			     'silver_arrives_at', $3::timestamptz,
 			     'ship_name', $4::text, 'goods_arrival_tick', $5::int, 'silver_arrival_tick', $6::int)
@@ -1316,7 +1337,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			WorldID: worldID, OwnerID: originOwner, Kind: "trade",
 			OriginID: originID, DestID: destID, Category: category,
 			OriginQ: oQ, OriginR: oR, DestQ: dQ, DestR: dR,
-			DepartsAt: h.clk.Now(), ArrivesAt: leg1ArrivesAt, DueTick: tradeAcceptDueTick,
+			DepartsAt: tradeDispatchAt, ArrivesAt: leg1ArrivesAt, DueTick: tradeAcceptDueTick,
 			DepartedTick: tradeAcceptCurrentTick, Journey: &journey,
 			Manifest: transport.Manifest{offerGood: offerQty}, Interceptable: true,
 			ShipUnitID: shipID,
@@ -1325,7 +1346,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			writeTransportDispatchError(w, tErr, "could not dispatch goods caravan")
 			return
 		}
-		if err = h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledTradeDelivery,
+		if err = economy.EnqueueFreightTx(r.Context(), tx, h.scheduler, worldID, events.ScheduledTradeDelivery,
 			map[string]any{
 				"destination_id":     destID, // buyer receives goods
 				"good_key":           offerGood,
@@ -1371,6 +1392,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		sellResp["kind"] = "sell"
 		sellResp["transport_id"] = leg1ID
 		sellResp["category"] = category
+		sellResp["route_version"] = 2
 		sellResp["departure_tick"] = tradeAcceptCurrentTick
 		sellResp["arrival_tick"] = tradeAcceptDueTick
 		sellResp["travel_ticks"] = journey.TravelTicks
@@ -1409,7 +1431,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		// from nothing.
 		tag, err = tx.Exec(r.Context(),
 			`UPDATE messengers SET trade_offer = trade_offer || jsonb_build_object(
-			     'status', 'accepted',
+			     'status', 'accepted','route_version',2,
 			     'goods_arrives_at', $2::timestamptz,
 			     'silver_arrives_at', $3::timestamptz,
 			     'ship_name', $4::text, 'goods_arrival_tick', $5::int, 'silver_arrival_tick', $6::int)
@@ -1431,7 +1453,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			WorldID: worldID, OwnerID: originOwner, Kind: "trade",
 			OriginID: originID, DestID: destID, Category: category,
 			OriginQ: oQ, OriginR: oR, DestQ: dQ, DestR: dR,
-			DepartsAt: h.clk.Now(), ArrivesAt: leg1ArrivesAt, DueTick: tradeAcceptDueTick,
+			DepartsAt: tradeDispatchAt, ArrivesAt: leg1ArrivesAt, DueTick: tradeAcceptDueTick,
 			DepartedTick: tradeAcceptCurrentTick, Journey: &journey,
 			Manifest: transport.Manifest{"silver": offerSilver}, Interceptable: true,
 			ShipUnitID: shipID,
@@ -1440,7 +1462,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			writeTransportDispatchError(w, tErr, "could not dispatch silver caravan")
 			return
 		}
-		if err = h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledTradeDelivery,
+		if err = economy.EnqueueFreightTx(r.Context(), tx, h.scheduler, worldID, events.ScheduledTradeDelivery,
 			map[string]any{
 				"destination_id":     destID, // seller receives silver
 				"good_key":           "silver",
@@ -1486,6 +1508,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		buyResp["kind"] = "buy"
 		buyResp["transport_id"] = leg1ID
 		buyResp["category"] = category
+		buyResp["route_version"] = 2
 		buyResp["departure_tick"] = tradeAcceptCurrentTick
 		buyResp["arrival_tick"] = tradeAcceptDueTick
 		buyResp["travel_ticks"] = journey.TravelTicks

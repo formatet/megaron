@@ -1,0 +1,7 @@
+» färsk DB på migration 214 · commit a1ffaf03+ändringar
+=== RUN   TestTimedRunnerReturnWaitsForReachedHex
+    timed_land_test.go:42: runner sees from a hex before reaching it: {Q:2 R:0} want(3,0)
+--- FAIL: TestTimedRunnerReturnWaitsForReachedHex (0.03s)
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.029s
+FAIL

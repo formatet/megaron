@@ -452,8 +452,8 @@ func (w *Worker) processBatch(ctx context.Context) error {
 		       AND world_id IN (SELECT id FROM worlds WHERE status = 'active')
 		       AND due_tick IS NOT NULL
 		       AND due_tick <= (SELECT current_tick FROM worlds w2 WHERE w2.id = scheduled_events.world_id)
- AND (event_type NOT IN ('UnitArrivalV2','OrderDeliveryV2','MessengerArrivalV2','MessengerReturnV2') OR process_after <= $1)
-		     ORDER BY due_tick, priority, CASE WHEN event_type IN ('UnitArrivalV2','OrderDeliveryV2','MessengerArrivalV2','MessengerReturnV2') THEN process_after ELSE '-infinity'::timestamptz END, id
+ AND (event_type NOT IN ('UnitArrivalV2','OrderDeliveryV2','MessengerArrivalV2','MessengerReturnV2','TransportArrivalV2','TradeDeliveryV2','GiftDeliveryV2','ShipmentDeliveryV3','TradeReturnV2') OR process_after <= $1)
+		     ORDER BY due_tick, priority, CASE WHEN event_type IN ('UnitArrivalV2','OrderDeliveryV2','MessengerArrivalV2','MessengerReturnV2','TransportArrivalV2','TradeDeliveryV2','GiftDeliveryV2','ShipmentDeliveryV3','TradeReturnV2') THEN process_after ELSE '-infinity'::timestamptz END, id
 		     LIMIT 20
 		     FOR UPDATE SKIP LOCKED
 		 )
@@ -568,5 +568,13 @@ func (s *Scheduler) EnqueueDeadlineTx(ctx context.Context, tx pgx.Tx, worldID uu
 }
 
 func DeadlineEvent(t ScheduledEventType) bool {
-	return t == ScheduledUnitArrivalV2 || t == ScheduledOrderDeliveryV2 || t == ScheduledMessengerArrivalV2 || t == ScheduledMessengerReturnV2
+	return t == ScheduledTransportArrivalV2 || t == ScheduledTradeDeliveryV2 || t == ScheduledGiftDeliveryV2 || t == ScheduledShipmentDeliveryV3 || t == ScheduledTradeReturnV2 || t == ScheduledUnitArrivalV2 || t == ScheduledOrderDeliveryV2 || t == ScheduledMessengerArrivalV2 || t == ScheduledMessengerReturnV2
 }
+
+const (
+	ScheduledTransportArrivalV2 ScheduledEventType = "TransportArrivalV2"
+	ScheduledTradeDeliveryV2    ScheduledEventType = "TradeDeliveryV2"
+	ScheduledGiftDeliveryV2     ScheduledEventType = "GiftDeliveryV2"
+	ScheduledShipmentDeliveryV3 ScheduledEventType = "ShipmentDeliveryV3"
+	ScheduledTradeReturnV2      ScheduledEventType = "TradeReturnV2"
+)

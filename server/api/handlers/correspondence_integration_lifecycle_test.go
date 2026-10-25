@@ -36,7 +36,7 @@ func integrationEvent(t *testing.T, f *replyFixture, letter string, kind events.
 	t.Helper()
 	var e events.ScheduledEvent
 	if err := f.pool.QueryRow(context.Background(), `SELECT id,world_id,event_type,payload,due_tick FROM scheduled_events
- WHERE world_id=$1 AND event_type=$2 AND (payload->>'messenger_id'=$3 OR payload#>>'{then_return,messenger_id}'=$3) ORDER BY id DESC LIMIT 1`, f.worldID, kind, letter).Scan(&e.ID, &e.WorldID, &e.EventType, &e.Payload, &e.DueTick); err != nil {
+ WHERE world_id=$1 AND event_type IN ($2,$2||'V2',CASE WHEN $2='ShipmentDeliveryV2' THEN 'ShipmentDeliveryV3' ELSE $2 END) AND (payload->>'messenger_id'=$3 OR payload#>>'{then_return,messenger_id}'=$3) ORDER BY id DESC LIMIT 1`, f.worldID, kind, letter).Scan(&e.ID, &e.WorldID, &e.EventType, &e.Payload, &e.DueTick); err != nil {
 		t.Fatalf("load %s: %v", kind, err)
 	}
 	if _, err := f.pool.Exec(context.Background(), `UPDATE worlds SET current_tick=GREATEST(current_tick,$2) WHERE id=$1`, f.worldID, e.DueTick); err != nil {

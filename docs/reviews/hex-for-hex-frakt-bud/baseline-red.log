@@ -1,0 +1,13 @@
+» färsk DB på migration 213 · commit 8fa5d1c4
+=== RUN   TestTimedFreightDispatchKeepsStartHexAndDeadline
+    timed_dispatch_test.go:48: caravan consumed pre-dispatch phase: at{1 0} want origin
+    timed_dispatch_test.go:55: new freight has no movement-owned saved clock
+--- FAIL: TestTimedFreightDispatchKeepsStartHexAndDeadline (0.02s)
+FAIL
+FAIL	formatet/megaron/server/internal/transport	0.019s
+=== RUN   TestTimedRunnerReturnWaitsForReachedHex
+    timed_land_test.go:42: runner sees from a hex before reaching it: {Q:2 R:0} want(3,0)
+--- FAIL: TestTimedRunnerReturnWaitsForReachedHex (0.02s)
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.026s
+FAIL

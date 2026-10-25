@@ -352,7 +352,7 @@ func cargoCmd() *cobra.Command {
 				fmt.Println("No cargo of yours currently in transit.")
 				return nil
 			}
-			fmt.Printf("%-10s  %9s  %12s  %12s  %10s  %s\n", "Good", "Qty", "From", "To", "ETA", "Direction")
+			fmt.Printf("%-10s  %9s  %12s  %12s  %10s  %s\n", "Good", "Qty", "From", "To", "ETA", "Position · direction")
 			fmt.Println("─────────────────────────────────────────────────────────────────────────────")
 			var cargoRows []map[string]any
 			for _, m := range mine {
@@ -390,7 +390,13 @@ func cargoCmd() *cobra.Command {
 					to = fmt.Sprintf("(%d,%d)", int(dq), int(dr))
 				}
 				etaStr := "—"
-				if arrivalTick, ok := m["arrival_tick"].(float64); ok {
+				if version, _ := m["route_version"].(float64); version == 2 {
+					if stamp, ok := m["arrives_at"].(string); ok {
+						if at, err := time.Parse(time.RFC3339, stamp); err == nil {
+							etaStr = gameETA(c, at)
+						}
+					}
+				} else if arrivalTick, ok := m["arrival_tick"].(float64); ok {
 					etaStr = fmt.Sprintf("%s", formatWorldTime(c, arrivalTick))
 				} else if arrivesStr, ok := m["arrives_at"].(string); ok {
 					if t, err := time.Parse(time.RFC3339, arrivesStr); err == nil {
@@ -402,7 +408,7 @@ func cargoCmd() *cobra.Command {
 					direction = "incoming"
 				}
 				fmt.Printf("%-10s  %9.0f  %12s  %12s  %10s  %s\n",
-					good, qty, from, to, etaStr, direction)
+					good, qty, from, to, etaStr, cargoPhysicalPosition(m)+" · "+direction)
 			}
 			fmt.Println("\nPhysical cargo, not a promise — it can be intercepted and seized in transit.")
 			fmt.Println("Same risk for every cargo, own or traded: on land only interception;")
@@ -410,4 +416,13 @@ func cargoCmd() *cobra.Command {
 			return nil
 		},
 	}
+}
+
+func cargoPhysicalPosition(m map[string]any) string {
+	q, qok := m["current_q"].(float64)
+	r, rok := m["current_r"].(float64)
+	if !qok || !rok {
+		return "position unknown"
+	}
+	return fmt.Sprintf("(%d,%d)", int(q), int(r))
 }

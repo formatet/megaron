@@ -1,6 +1,7 @@
 package province
 
 import (
+	"formatet/megaron/server/internal/movement"
 	"math"
 	"time"
 )
@@ -53,9 +54,29 @@ type ApparentMarch struct {
 
 // ReadMarch resolves a march on path to what a watcher sees at now. ok=false
 // for a path too short to have a direction.
-func ReadMarch(path []MapPosition, departsAt, arrivesAt, now time.Time) (ApparentMarch, bool) {
+func ReadMarch(path []MapPosition, departsAt, arrivesAt, now time.Time, saved ...movement.StoredRoute) (ApparentMarch, bool) {
 	if len(path) < 2 {
 		return ApparentMarch{}, false
+	}
+	if len(saved) > 0 && saved[0].Version == 2 {
+		r := saved[0]
+		p, err := r.Position(now)
+		if err != nil {
+			return ApparentMarch{}, false
+		}
+		bounds, err := movement.Boundaries(r.Move())
+		if err != nil {
+			return ApparentMarch{}, false
+		}
+		at := r.MilliAt(now)
+		idx := 0
+		for idx < len(path)-1 && int64(bounds[idx+1]) <= at {
+			idx++
+		}
+		if idx == len(path)-1 {
+			idx--
+		}
+		return ApparentMarch{Pos: MapPosition{Q: p.Q, R: p.R}, Heading: ScreenCompass(path[idx], path[idx+1]), stepsDone: 0, stepDur: r.WallAt(int64(bounds[idx+1])).Sub(r.WallAt(int64(bounds[idx]))), departsAt: now}, true
 	}
 	steps := len(path) - 1
 	total := arrivesAt.Sub(departsAt)

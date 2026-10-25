@@ -17,8 +17,10 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"formatet/megaron/server/internal/auth"
+	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/province"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -62,6 +64,14 @@ func TestLoadLiveEyes_CalledBackSeesPortNotFarShore(t *testing.T) {
 	if passagePortID != portID {
 		t.Fatalf("passage_port_id = %s, want the owned port %s", passagePortID, portID)
 	}
+
+	// This case calls back from the reached port; the new separate regression
+	// covers turning around earlier on the road.
+	var portReachedAt time.Time
+	if err := f.pool.QueryRow(ctx, `SELECT arrives_at FROM messengers WHERE id=$1`, messengerID).Scan(&portReachedAt); err != nil {
+		t.Fatal(err)
+	}
+	f.clk.(*clock.TestClock).Set(portReachedAt)
 
 	code, resp = f.post(t, f.initiatorToken,
 		"/worlds/"+f.worldID.String()+"/messengers/"+messengerID.String()+"/call-back", map[string]any{})
@@ -134,6 +144,14 @@ func TestMapMessengers_CalledBackShowsPortNotFarShore(t *testing.T) {
 	).Scan(&messengerID); err != nil {
 		t.Fatalf("load messenger: %v", err)
 	}
+
+	// This case calls back from the reached port; the new separate regression
+	// covers turning around earlier on the road.
+	var portReachedAt time.Time
+	if err := f.pool.QueryRow(ctx, `SELECT arrives_at FROM messengers WHERE id=$1`, messengerID).Scan(&portReachedAt); err != nil {
+		t.Fatal(err)
+	}
+	f.clk.(*clock.TestClock).Set(portReachedAt)
 
 	code, resp = f.post(t, f.initiatorToken,
 		"/worlds/"+f.worldID.String()+"/messengers/"+messengerID.String()+"/call-back", map[string]any{})

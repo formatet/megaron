@@ -1,0 +1,8 @@
+» färsk DB på migration 214 · commit 8fa5d1c4+ändringar
+--- FAIL: TestTimedFreightDeadlineMatchesFrozenRoute (0.02s)
+    timed_dispatch_test.go:103: at 1m40s got{0 0} err<nil> wantq1
+FAIL
+FAIL	formatet/megaron/server/internal/transport	0.035s
+ok  	formatet/megaron/server/internal/messenger	0.103s
+ok  	formatet/megaron/server/internal/events	0.014s
+FAIL

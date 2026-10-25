@@ -111,7 +111,7 @@ func TestSupersedeUnboardedMovementReturnsOnlyOwnWaitingEnvelopes(t *testing.T) 
 		}
 	}
 	var jobs int
-	if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM scheduled_events WHERE world_id=$1 AND event_type='MessengerReturn' AND payload->>'messenger_id' IN ($2,$3)`, f.worldID, old1.String(), old2.String()).Scan(&jobs); err != nil {
+	if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM scheduled_events WHERE world_id=$1 AND event_type IN ('MessengerReturn','MessengerReturnV2') AND payload->>'messenger_id' IN ($2,$3)`, f.worldID, old1.String(), old2.String()).Scan(&jobs); err != nil {
 		t.Fatal(err)
 	}
 	if jobs != 2 {

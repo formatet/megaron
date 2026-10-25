@@ -129,6 +129,14 @@ type inFlightTransport struct {
 // Handle scans every in-transit interceptable caravan once, seizing any caught by
 // an enemy sentry, then re-enqueues itself.
 func (h *InterceptScanHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
+	if err := h.ScanAt(ctx, e); err != nil {
+		return err
+	}
+	return h.scheduler.EnqueueTickRecurring(ctx, e.WorldID, events.ScheduledInterceptScan, struct{}{}, e.DueTick, interceptScanIntervalTicks)
+}
+
+// ScanAt is the same physical scan at an injected reached-boundary instant.
+func (h *InterceptScanHandler) ScanAt(ctx context.Context, e events.ScheduledEvent) error {
 	now := h.clk.Now()
 	anchor, err := tick.LoadAnchor(ctx, h.pool, e.WorldID)
 	if err != nil {
@@ -171,10 +179,17 @@ func (h *InterceptScanHandler) Handle(ctx context.Context, e events.ScheduledEve
 		dest := province.MapPosition{Q: t.destQ, R: t.destR}
 		var pos province.MapPosition
 		if len(t.journey) > 0 {
+			var j province.TradeJourney
+			if err := json.Unmarshal(t.journey, &j); err != nil {
+				return err
+			}
+			if j.Clock != nil && !j.Route(0, 0).InTransitAt(now) {
+				continue
+			}
 			if t.departedTick == nil {
 				return fmt.Errorf("saved transport %s missing departure tick", t.id)
 			}
-			pos, err = SavedPosition(t.journey, *t.departedTick, t.dueTick, anchor.MilliAt(now))
+			pos, err = SavedPosition(t.journey, *t.departedTick, t.dueTick, anchor.MilliAt(now), now)
 			if err != nil {
 				return fmt.Errorf("saved transport %s: %w", t.id, err)
 			}
@@ -234,8 +249,7 @@ func (h *InterceptScanHandler) Handle(ctx context.Context, e events.ScheduledEve
 	}
 
 	// Re-enqueue the next sweep.
-	return h.scheduler.EnqueueTickRecurring(ctx, e.WorldID, events.ScheduledInterceptScan,
-		struct{}{}, e.DueTick, interceptScanIntervalTicks)
+	return nil
 }
 
 // seize marks the caravan intercepted and moves its manifest to the interceptor's

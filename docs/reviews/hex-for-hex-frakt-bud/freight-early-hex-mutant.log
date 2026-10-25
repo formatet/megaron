@@ -1,0 +1,7 @@
+» färsk DB på migration 214 · commit a1ffaf03+ändringar
+=== RUN   TestTimedFreightDispatchKeepsStartHexAndDeadline
+    timed_dispatch_test.go:49: caravan consumed pre-dispatch phase: at{1 0} want origin
+--- FAIL: TestTimedFreightDispatchKeepsStartHexAndDeadline (0.02s)
+FAIL
+FAIL	formatet/megaron/server/internal/transport	0.020s
+FAIL

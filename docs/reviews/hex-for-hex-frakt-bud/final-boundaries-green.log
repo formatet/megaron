@@ -1,0 +1,4 @@
+» färsk DB på migration 214 · commit a1ffaf03+ändringar
+ok  	formatet/megaron/server/internal/transport	0.073s
+ok  	formatet/megaron/server/internal/messenger	0.097s
+ok  	formatet/megaron/server/api/handlers	1.380s

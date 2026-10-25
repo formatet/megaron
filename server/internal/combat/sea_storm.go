@@ -217,11 +217,7 @@ func journeyRoute(raw []byte, departed, due int) (StoredRoute, bool) {
 	if err := json.Unmarshal(raw, &j); err != nil || j.Validate() != nil || len(j.Path) < 2 {
 		return StoredRoute{}, false
 	}
-	hexes := make([][2]int, len(j.Path))
-	for i, p := range j.Path {
-		hexes[i] = [2]int{p.Q, p.R}
-	}
-	r := StoredRoute{StartTick: departed, EndTick: due, Hexes: hexes, Costs: j.StepCosts}
+	r := j.Route(departed, due)
 	if r.Move().Validate() != nil {
 		return StoredRoute{}, false
 	}

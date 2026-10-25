@@ -51,7 +51,7 @@ func TestDeliverySavedReturnAtomicAndFrozen(t *testing.T) {
 			evt := events.ScheduledEvent{ID: time.Now().UnixNano(), WorldID: f.worldID, Payload: raw}
 			// World-scoped physical failure after the return mover+manifest insert.
 			triggerName := "fail_saved_return_" + fmt.Sprint(time.Now().UnixNano())
-			sql := fmt.Sprintf(`CREATE FUNCTION %s() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.world_id='%s' AND NEW.event_type='TradeReturn' THEN RAISE EXCEPTION 'injected return queue failure'; END IF; RETURN NEW; END $$; CREATE TRIGGER %s BEFORE INSERT ON scheduled_events FOR EACH ROW EXECUTE FUNCTION %s()`, triggerName, f.worldID, triggerName, triggerName)
+			sql := fmt.Sprintf(`CREATE FUNCTION %s() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.world_id='%s' AND NEW.event_type IN ('TradeReturn','TradeReturnV2') THEN RAISE EXCEPTION 'injected return queue failure'; END IF; RETURN NEW; END $$; CREATE TRIGGER %s BEFORE INSERT ON scheduled_events FOR EACH ROW EXECUTE FUNCTION %s()`, triggerName, f.worldID, triggerName, triggerName)
 			if _, err := pool.Exec(ctx, sql); err != nil {
 				t.Fatal(err)
 			}
@@ -73,7 +73,7 @@ func TestDeliverySavedReturnAtomicAndFrozen(t *testing.T) {
 				t.Fatalf("status on failure %s %v", status, err)
 			}
 			var count int
-			for _, query := range []string{`SELECT count(*) FROM processed_deliveries WHERE event_id=$1`, `SELECT count(*) FROM transports WHERE world_id=$1 AND kind='trade_return'`, `SELECT count(*) FROM scheduled_events WHERE world_id=$1 AND event_type='TradeReturn'`, `SELECT count(*) FROM events WHERE world_id=$1`, `SELECT count(*) FROM notifications WHERE world_id=$1`} {
+			for _, query := range []string{`SELECT count(*) FROM processed_deliveries WHERE event_id=$1`, `SELECT count(*) FROM transports WHERE world_id=$1 AND kind='trade_return'`, `SELECT count(*) FROM scheduled_events WHERE world_id=$1 AND event_type IN ('TradeReturn','TradeReturnV2')`, `SELECT count(*) FROM events WHERE world_id=$1`, `SELECT count(*) FROM notifications WHERE world_id=$1`} {
 				arg := any(f.worldID)
 				if query == `SELECT count(*) FROM processed_deliveries WHERE event_id=$1` {
 					arg = evt.ID
@@ -106,7 +106,7 @@ func TestDeliverySavedReturnAtomicAndFrozen(t *testing.T) {
 			if err := h.Handle(ctx, evt); err != nil {
 				t.Fatal(err)
 			}
-			for _, query := range []string{`SELECT count(*) FROM events WHERE world_id=$1 AND event_type='TradeDelivery'`, `SELECT count(*) FROM notifications WHERE world_id=$1 AND kind='TradeDelivery'`, `SELECT count(*) FROM transports WHERE world_id=$1 AND kind='trade_return'`, `SELECT count(*) FROM scheduled_events WHERE world_id=$1 AND event_type='TradeReturn'`} {
+			for _, query := range []string{`SELECT count(*) FROM events WHERE world_id=$1 AND event_type='TradeDelivery'`, `SELECT count(*) FROM notifications WHERE world_id=$1 AND kind='TradeDelivery'`, `SELECT count(*) FROM transports WHERE world_id=$1 AND kind='trade_return'`, `SELECT count(*) FROM scheduled_events WHERE world_id=$1 AND event_type IN ('TradeReturn','TradeReturnV2')`} {
 				if err := pool.QueryRow(ctx, query, f.worldID).Scan(&count); err != nil || count != 1 {
 					t.Fatalf("replay rows %s: %d %v", query, count, err)
 				}

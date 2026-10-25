@@ -143,7 +143,7 @@ func (f *tradeInternalFixture) lastTradeDeliveryEvent(t *testing.T) events.Sched
 	var payload []byte
 	if err := f.pool.QueryRow(context.Background(),
 		`SELECT id, payload FROM scheduled_events
-		  WHERE world_id = $1 AND event_type = 'TradeDelivery'
+		  WHERE world_id = $1 AND event_type IN ('TradeDelivery','TradeDeliveryV2')
 		  ORDER BY id DESC LIMIT 1`,
 		f.worldID,
 	).Scan(&id, &payload); err != nil {
@@ -290,7 +290,7 @@ func TestTrade_InternalTransferCreditsDestinationExactlyOnce(t *testing.T) {
 	// test — that event type is what a second, generic credit would ride in on.
 	var arrivalCount int
 	if err := f.pool.QueryRow(ctx,
-		`SELECT count(*) FROM scheduled_events WHERE world_id = $1 AND event_type = 'TransportArrival'`,
+		`SELECT count(*) FROM scheduled_events WHERE world_id = $1 AND event_type IN ('TransportArrival','TransportArrivalV2')`,
 		f.worldID,
 	).Scan(&arrivalCount); err != nil {
 		t.Fatalf("count TransportArrival events: %v", err)

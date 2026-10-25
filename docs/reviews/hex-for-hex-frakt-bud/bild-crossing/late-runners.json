@@ -1,0 +1,46 @@
+[
+  {
+    "path": [
+      [
+        13,
+        25
+      ],
+      [
+        12,
+        26
+      ],
+      [
+        11,
+        27
+      ],
+      [
+        10,
+        28
+      ]
+    ],
+    "route_version": 2,
+    "dispatch_offset_milli": 735,
+    "step_costs": [
+      1000,
+      1000,
+      1000
+    ],
+    "departure_tick": 103,
+    "arrival_tick": 108,
+    "current_q": 11,
+    "current_r": 27,
+    "heading": "south-west",
+    "id": "6c3d459d-a284-4f7f-abb8-1c4593bbb0f0",
+    "origin_q": 13,
+    "origin_r": 27,
+    "dest_q": 10,
+    "dest_r": 27,
+    "sent_at": "2026-10-25T15:48:11.143607+01:00",
+    "arrives_at": "2026-10-25T15:48:41.143607+01:00",
+    "own": true,
+    "kind": "message",
+    "sender": "Perimos",
+    "leg_start": "2026-10-25T15:48:11.143607+01:00",
+    "leg_end": "2026-10-25T15:48:41.143607+01:00"
+  }
+]

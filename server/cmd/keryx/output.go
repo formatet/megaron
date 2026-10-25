@@ -207,6 +207,11 @@ func printPassageNote(resp map[string]any) {
 // timestamp display.
 func transferArrival(resp map[string]any, clients ...*Client) string {
 	c := firstTimeClient(clients)
+	if version, _ := resp["route_version"].(float64); version == 2 {
+		if at, ok := resp["arrives_at"].(string); ok {
+			return "arrives " + arrivalETA(c, at) + fmt.Sprintf(" (journey: %s)", formatDuration(c, resp["travel_ticks"], "%.0f"))
+		}
+	}
 	if arrival, ok := resp["arrival_tick"].(float64); ok {
 		if duration, ok := resp["travel_ticks"].(float64); ok {
 			return fmt.Sprintf("arrives %s (journey: %s)", formatWorldTime(c, arrival), formatDuration(c, duration, "%.0f"))
@@ -223,6 +228,11 @@ func tradeArrival(c *Client, resp map[string]any, good bool) string {
 	key, timestamp := "silver_arrival_tick", "silver_arrives_at"
 	if good {
 		key, timestamp = "goods_arrival_tick", "goods_arrives_at"
+	}
+	if version, _ := resp["route_version"].(float64); version == 2 {
+		if stamp, ok := resp[timestamp].(string); ok {
+			return arrivalETA(c, stamp)
+		}
 	}
 	if at, ok := resp[key].(float64); ok {
 		return fmt.Sprintf("%s", formatWorldTime(c, at))

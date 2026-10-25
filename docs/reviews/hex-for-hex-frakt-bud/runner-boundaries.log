@@ -1,0 +1,11 @@
+» färsk DB på migration 214 · commit 8fa5d1c4+ändringar
+=== RUN   TestTimedRunnerReturnWaitsForReachedHex
+--- PASS: TestTimedRunnerReturnWaitsForReachedHex (0.03s)
+=== RUN   TestTimedRunnerSightRemembersReachedPrefixWithoutPolling
+--- PASS: TestTimedRunnerSightRemembersReachedPrefixWithoutPolling (0.02s)
+=== RUN   TestTimedCallBackTurnsFromReachedHex
+--- PASS: TestTimedCallBackTurnsFromReachedHex (0.02s)
+=== RUN   TestTimedRunnerCannotBoardBeforePortOrCatchDepartedShip
+--- PASS: TestTimedRunnerCannotBoardBeforePortOrCatchDepartedShip (0.02s)
+PASS
+ok  	formatet/megaron/server/internal/messenger	0.099s

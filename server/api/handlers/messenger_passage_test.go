@@ -58,7 +58,7 @@ func TestSend_LandRouteHasNoPassage(t *testing.T) {
 
 	var pending int
 	if err := f.pool.QueryRow(context.Background(),
-		`SELECT count(*) FROM scheduled_events WHERE event_type = 'MessengerArrival'
+		`SELECT count(*) FROM scheduled_events WHERE event_type IN ('MessengerArrival','MessengerArrivalV2')
 		   AND (payload->>'messenger_id') = $1`,
 		messengerID,
 	).Scan(&pending); err != nil {
@@ -111,7 +111,7 @@ func TestSend_SeaRouteNoShip_AwaitsPassageAtOwnPort(t *testing.T) {
 
 	var pending int
 	if err := f.pool.QueryRow(context.Background(),
-		`SELECT count(*) FROM scheduled_events WHERE event_type = 'MessengerArrival'
+		`SELECT count(*) FROM scheduled_events WHERE event_type IN ('MessengerArrival','MessengerArrivalV2')
 		   AND (payload->>'messenger_id') = $1`,
 		messengerID,
 	).Scan(&pending); err != nil {

@@ -189,7 +189,7 @@ func TestBetaRunnerRealSendConsumesThread(t *testing.T) {
 	}
 	msg := send()
 	var due int
-	if err := f.pool.QueryRow(ctx, `SELECT due_tick FROM scheduled_events WHERE payload->>'messenger_id'=$1 AND event_type='MessengerArrival'`, msg.String()).Scan(&due); err != nil {
+	if err := f.pool.QueryRow(ctx, `SELECT due_tick FROM scheduled_events WHERE payload->>'messenger_id'=$1 AND event_type IN ('MessengerArrival','MessengerArrivalV2')`, msg.String()).Scan(&due); err != nil {
 		t.Fatal(err)
 	}
 	// Four forest courier steps at .75 ->3, blessed2.25 rounds2.
@@ -210,7 +210,7 @@ func TestBetaRunnerRealSendConsumesThread(t *testing.T) {
 		t.Fatal(err)
 	}
 	var after int
-	f.pool.QueryRow(ctx, `SELECT due_tick FROM scheduled_events WHERE payload->>'messenger_id'=$1 AND event_type='MessengerArrival'`, msg.String()).Scan(&after)
+	f.pool.QueryRow(ctx, `SELECT due_tick FROM scheduled_events WHERE payload->>'messenger_id'=$1 AND event_type IN ('MessengerArrival','MessengerArrivalV2')`, msg.String()).Scan(&after)
 	if after != due {
 		t.Fatal("late prayer rewrote Runner arrival")
 	}

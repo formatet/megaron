@@ -252,7 +252,7 @@ func (f *passageFixture) countScheduled(t *testing.T, eventType string, messenge
 	t.Helper()
 	var n int
 	if err := f.pool.QueryRow(context.Background(),
-		`SELECT count(*) FROM scheduled_events WHERE event_type = $1 AND (payload->>'messenger_id') = $2`,
+		`SELECT count(*) FROM scheduled_events WHERE event_type IN ($1,$1||'V2') AND (payload->>'messenger_id') = $2`,
 		eventType, messengerID.String(),
 	).Scan(&n); err != nil {
 		t.Fatalf("count scheduled %s: %v", eventType, err)
@@ -271,7 +271,7 @@ func (f *passageFixture) loadScheduledEvent(t *testing.T, eventType string, mess
 	var payload []byte
 	if err := f.pool.QueryRow(context.Background(),
 		`SELECT id, world_id, event_type, payload, due_tick FROM scheduled_events
-		  WHERE event_type = $1 AND (payload->>'messenger_id') = $2
+		  WHERE event_type IN ($1,$1||'V2') AND (payload->>'messenger_id') = $2
 		  ORDER BY id DESC LIMIT 1`,
 		eventType, messengerID.String(),
 	).Scan(&e.ID, &e.WorldID, &e.EventType, &payload, &e.DueTick); err != nil {
@@ -326,7 +326,7 @@ func TestPassageScan_BoardsWaitingMessengerAndSchedulesDisembark(t *testing.T) {
 	}
 	var dueTick int
 	if err := f.pool.QueryRow(ctx,
-		`SELECT due_tick FROM scheduled_events WHERE event_type = 'MessengerArrival' AND (payload->>'messenger_id') = $1`,
+		`SELECT due_tick FROM scheduled_events WHERE event_type IN ('MessengerArrival','MessengerArrivalV2') AND (payload->>'messenger_id') = $1`,
 		messengerID.String(),
 	).Scan(&dueTick); err != nil {
 		t.Fatalf("load scheduled due_tick: %v", err)

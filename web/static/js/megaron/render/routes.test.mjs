@@ -62,3 +62,10 @@ test('version2 begins at actual departure and reaches each hex at its own prefix
   assert.equal(routePosition(path,progress,px,[200,200,200],1,2).index,index);
  }
 });
+
+test('a runner land leg uses its own departure rather than original correspondence send',()=>{
+ const leg={route_version:2,sent_at:'2026-10-25T00:00:00Z',leg_start:'2026-10-25T12:00:00Z',leg_end:'2026-10-25T12:02:00Z',arrives_at:'2026-10-25T12:02:00Z'};
+ const progress=routeProgress(leg,Date.parse('2026-10-25T12:00:30Z'),9999);
+ assert.equal(progress,.25);
+ assert.equal(routePosition(path,progress,px,[1,1,1],2,2).index,0);
+});

@@ -454,8 +454,12 @@ func (h *UnitHandler) sendOrderCourierTx(w http.ResponseWriter, ctx context.Cont
 		return
 	}
 	payload.MessengerID = messengerID
+	if err := messenger.SaveDepartureTx(ctx, tx, payload.WorldID, payload.MessengerID, now); err != nil {
+		writeError(w, 500, "could not freeze Runner route")
+		return
+	}
 	if passage == nil {
-		if err := h.scheduler.EnqueueTickTx(ctx, tx, payload.WorldID, events.ScheduledOrderDelivery, payload, dueTick); err != nil {
+		if err := messenger.EnqueueLandTx(ctx, tx, h.scheduler, payload.WorldID, events.ScheduledOrderDelivery, payload, dueTick); err != nil {
 			writeError(w, http.StatusInternalServerError, "could not schedule order delivery")
 			return
 		}

@@ -116,6 +116,12 @@ func (f *roadFixture) fire(t *testing.T, types ...events.ScheduledEventType) int
 	t.Helper()
 	ctx := context.Background()
 	total := 0
+	for _, typ := range types {
+		if typ == events.ScheduledTransportArrival {
+			types = append(types, events.ScheduledTransportArrivalV2)
+			break
+		}
+	}
 	for round := 0; round < 10; round++ {
 		rows, err := f.pool.Query(ctx,
 			`SELECT id, event_type, payload, due_tick FROM scheduled_events
@@ -143,7 +149,7 @@ func (f *roadFixture) fire(t *testing.T, types ...events.ScheduledEventType) int
 			}
 			var herr error
 			switch e.EventType {
-			case events.ScheduledTransportArrival:
+			case events.ScheduledTransportArrival, events.ScheduledTransportArrivalV2:
 				herr = transport.NewArrivalHandler(f.pool, nil, f.store).Handle(ctx, e)
 			case events.ScheduledRoadSite:
 				herr = f.sites.Handle(ctx, e)

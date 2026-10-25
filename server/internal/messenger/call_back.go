@@ -76,11 +76,12 @@ func CallBackTx(ctx context.Context, tx pgx.Tx, sched *events.Scheduler, worldID
 	var originID *uuid.UUID
 	var originQ, originR *int
 	var generation int
+	var landRaw []byte
 	if err := tx.QueryRow(ctx,
-		`SELECT sender_id, status, passage_status, passage_port_id, origin_id, origin_q, origin_r, passage_generation
+		`SELECT sender_id, status, passage_status, passage_port_id, origin_id, origin_q, origin_r, passage_generation,land_route
 		   FROM messengers WHERE id = $1 FOR UPDATE`,
 		messengerID,
-	).Scan(&senderID, &status, &passageStatus, &passagePortID, &originID, &originQ, &originR, &generation); err != nil {
+	).Scan(&senderID, &status, &passageStatus, &passagePortID, &originID, &originQ, &originR, &generation, &landRaw); err != nil {
 		return CallBackResult{}, fmt.Errorf("call back: load messenger: %w", err)
 	}
 	if senderID != callerID {
@@ -115,6 +116,15 @@ func CallBackTx(ctx context.Context, tx pgx.Tx, sched *events.Scheduler, worldID
 		oQ, oR = *originQ, *originR
 	default:
 		return CallBackResult{}, fmt.Errorf("call back: runner has no known origin to return to")
+	}
+
+	// An awaiting runner may still be on its way to port. Turn it where it
+	// actually stands, never from the not-yet-reached city.
+	if p, active, timed := province.RunnerLandPosition(landRaw, passageStatus, now); timed && active {
+		portQ, portR = p.Q, p.R
+	}
+	if err := province.SweepRunnerRoutes(ctx, tx, worldID, now); err != nil {
+		return CallBackResult{}, err
 	}
 
 	// The runner already walked this exact road (port to origin, over land —
@@ -156,7 +166,11 @@ func CallBackTx(ctx context.Context, tx pgx.Tx, sched *events.Scheduler, worldID
 	); err != nil {
 		return CallBackResult{}, fmt.Errorf("call back: update messenger: %w", err)
 	}
-	if err := sched.EnqueueTickTx(ctx, tx, worldID, events.ScheduledMessengerReturn,
+	if err := SaveLandRouteTx(ctx, tx, worldID, messengerID, province.MapPosition{Q: portQ, R: portR}, province.MapPosition{Q: oQ, R: oR}, now, returnsAt); err != nil {
+		return CallBackResult{}, err
+	}
+
+	if err := EnqueueLandTx(ctx, tx, sched, worldID, events.ScheduledMessengerReturn,
 		ReturnPayload{MessengerID: messengerID, PassageGeneration: generation}, dueTick,
 	); err != nil {
 		return CallBackResult{}, fmt.Errorf("call back: schedule return: %w", err)

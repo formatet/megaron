@@ -79,7 +79,7 @@ func loadDelivery(t *testing.T, messengerID uuid.UUID) events.ScheduledEvent {
 	var raw []byte
 	if err := pool.QueryRow(context.Background(),
 		`SELECT payload FROM scheduled_events
-		 WHERE event_type = $1 AND (payload->>'messenger_id')::uuid = $2
+		 WHERE event_type IN ($1,$1||'V2') AND (payload->>'messenger_id')::uuid = $2
 		   AND processed_at IS NULL AND failed_at IS NULL`,
 		string(events.ScheduledOrderDelivery), messengerID,
 	).Scan(&raw); err != nil {

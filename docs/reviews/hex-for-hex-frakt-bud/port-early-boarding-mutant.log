@@ -1,0 +1,8 @@
+» färsk DB på migration 214 · commit a1ffaf03+ändringar
+=== RUN   TestTimedRunnerCannotBoardBeforePortOrCatchDepartedShip
+2026/10/25 10:53:30 INFO passage: messenger boarded messenger=5acd8e48-8a26-4086-98f3-1fe835a0d28e carrier="too early" arrives_at=2026-10-25T07:04:00.000Z
+    timed_land_test.go:197: runner boarded 30ms before reaching port
+--- FAIL: TestTimedRunnerCannotBoardBeforePortOrCatchDepartedShip (0.03s)
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.032s
+FAIL

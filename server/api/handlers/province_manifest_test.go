@@ -57,7 +57,7 @@ func TestTransferManifestAtomicDelivery(t *testing.T) {
 			}
 			var e events.ScheduledEvent
 			e.WorldID = f.worldID
-			if err := f.pool.QueryRow(ctx, `SELECT id,payload FROM scheduled_events WHERE world_id=$1 AND event_type='ShipmentDeliveryV2'`, f.worldID).Scan(&e.ID, &e.Payload); err != nil {
+			if err := f.pool.QueryRow(ctx, `SELECT id,payload FROM scheduled_events WHERE world_id=$1 AND event_type IN ('ShipmentDeliveryV2','ShipmentDeliveryV3')`, f.worldID).Scan(&e.ID, &e.Payload); err != nil {
 				t.Fatal(err)
 			}
 			var runner uuid.UUID
@@ -117,7 +117,7 @@ func TestGiftManifestDeliveryAndRetry(t *testing.T) {
 	}
 	var e events.ScheduledEvent
 	e.WorldID = f.worldID
-	if err := f.pool.QueryRow(ctx, `SELECT id,payload FROM scheduled_events WHERE world_id=$1 AND event_type='ShipmentDeliveryV2'`, f.worldID).Scan(&e.ID, &e.Payload); err != nil {
+	if err := f.pool.QueryRow(ctx, `SELECT id,payload FROM scheduled_events WHERE world_id=$1 AND event_type IN ('ShipmentDeliveryV2','ShipmentDeliveryV3')`, f.worldID).Scan(&e.ID, &e.Payload); err != nil {
 		t.Fatal(err)
 	}
 	h := economy.NewDeliveryHandler(f.pool, events.NewStore(f.pool), nil, f.scheduler)
@@ -227,7 +227,7 @@ func TestManifestLossReportsEveryGoodAndProtectsRecipientOrigin(t *testing.T) {
 			}
 			var e events.ScheduledEvent
 			e.WorldID = f.worldID
-			if err := f.pool.QueryRow(ctx, `SELECT id,payload FROM scheduled_events WHERE world_id=$1 AND event_type='ShipmentDeliveryV2'`, f.worldID).Scan(&e.ID, &e.Payload); err != nil {
+			if err := f.pool.QueryRow(ctx, `SELECT id,payload FROM scheduled_events WHERE world_id=$1 AND event_type IN ('ShipmentDeliveryV2','ShipmentDeliveryV3')`, f.worldID).Scan(&e.ID, &e.Payload); err != nil {
 				t.Fatal(err)
 			}
 			if state != "delivered" {
@@ -250,7 +250,7 @@ func TestManifestLossReportsEveryGoodAndProtectsRecipientOrigin(t *testing.T) {
 				kind = "GiftLostV2"
 			}
 			var raw []byte
-			if err := f.pool.QueryRow(ctx, `SELECT payload FROM events WHERE world_id=$1 AND event_type=$2`, f.worldID, kind).Scan(&raw); err != nil {
+			if err := f.pool.QueryRow(ctx, `SELECT payload FROM events WHERE world_id=$1 AND event_type IN ($2,$2||'V2',CASE WHEN $2='ShipmentDeliveryV2' THEN 'ShipmentDeliveryV3' ELSE $2 END)`, f.worldID, kind).Scan(&raw); err != nil {
 				t.Fatal(err)
 			}
 			var outcome economy.ShipmentOutcomeV2
@@ -287,7 +287,7 @@ func TestManifestLossReportsEveryGoodAndProtectsRecipientOrigin(t *testing.T) {
 				t.Fatal(err)
 			}
 			var count int
-			f.pool.QueryRow(ctx, `SELECT count(*) FROM events WHERE world_id=$1 AND event_type=$2`, f.worldID, kind).Scan(&count)
+			f.pool.QueryRow(ctx, `SELECT count(*) FROM events WHERE world_id=$1 AND event_type IN ($2,$2||'V2',CASE WHEN $2='ShipmentDeliveryV2' THEN 'ShipmentDeliveryV3' ELSE $2 END)`, f.worldID, kind).Scan(&count)
 			if count != 1 {
 				t.Fatalf("retry produced %d outcomes", count)
 			}
@@ -331,7 +331,7 @@ func TestTransferV2MatchesLegacyDestinationChanges(t *testing.T) {
 				}
 				var e events.ScheduledEvent
 				e.WorldID = f.worldID
-				if err := f.pool.QueryRow(ctx, `SELECT id,payload FROM scheduled_events WHERE world_id=$1 AND event_type=$2`, f.worldID, timer).Scan(&e.ID, &e.Payload); err != nil {
+				if err := f.pool.QueryRow(ctx, `SELECT id,payload FROM scheduled_events WHERE world_id=$1 AND event_type IN ($2,$2||'V2',CASE WHEN $2='ShipmentDeliveryV2' THEN 'ShipmentDeliveryV3' ELSE $2 END)`, f.worldID, timer).Scan(&e.ID, &e.Payload); err != nil {
 					t.Fatal(err)
 				}
 				switch change {

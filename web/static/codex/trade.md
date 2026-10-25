@@ -49,3 +49,5 @@ arrival game day shown in your cargo list is the scheduled delivery; delays or
 interception can prevent that delivery.
 
 The seller receives the full agreed silver payment when it arrives. Temples take no share of religious-goods sales.
+
+Cargo follows its planned road or sea route one province at a time. The map and `keryx cargo` show its current province and arrival time. A province is reached only after its share of the full journey; the final province is reached at the announced arrival time.

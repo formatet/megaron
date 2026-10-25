@@ -146,7 +146,7 @@ func TestStandingOrders_FieldUnitOrderTravelsByCourierAndAppliesOnlyToActiveBatt
 	var rawPayload []byte
 	if err := pool.QueryRow(ctx,
 		`SELECT payload FROM scheduled_events
-		 WHERE event_type = 'OrderDelivery' AND (payload->>'messenger_id')::uuid = $1
+		 WHERE event_type IN ('OrderDelivery','OrderDeliveryV2') AND (payload->>'messenger_id')::uuid = $1
 		   AND processed_at IS NULL AND failed_at IS NULL`,
 		resp.MessengerID,
 	).Scan(&rawPayload); err != nil {
@@ -195,7 +195,7 @@ func TestStandingOrders_FieldUnitOrderTravelsByCourierAndAppliesOnlyToActiveBatt
 	var rawPayload2 []byte
 	if err := pool.QueryRow(ctx,
 		`SELECT payload FROM scheduled_events
-		 WHERE event_type = 'OrderDelivery' AND (payload->>'messenger_id')::uuid = $1
+		 WHERE event_type IN ('OrderDelivery','OrderDeliveryV2') AND (payload->>'messenger_id')::uuid = $1
 		   AND processed_at IS NULL AND failed_at IS NULL`,
 		resp2.MessengerID,
 	).Scan(&rawPayload2); err != nil {
@@ -261,6 +261,7 @@ func TestStandingOrders_FieldUnitOrderTravelsByCourierAndAppliesOnlyToActiveBatt
 				t.Fatal(err)
 			}
 			legacy["messenger_id"] = legacyID
+			legacy["passage_generation"] = 0 // historical V1 envelope predates timed land dispatch
 			sealed, _ := json.Marshal(legacy)
 			if _, err := pool.Exec(ctx, `UPDATE messengers SET order_payload=$2 WHERE id=$1`, legacyID, sealed); err != nil {
 				t.Fatal(err)

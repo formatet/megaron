@@ -126,13 +126,21 @@ func StartReturnLegTx(ctx context.Context, tx pgx.Tx, sched *events.Scheduler, w
 		return StartReturnLegResult{}, fmt.Errorf("start return leg: update messenger: %w", err)
 	}
 
+	target := province.MapPosition{Q: oQ, R: oR}
+	if passage != nil {
+		target = province.MapPosition{Q: dQ, R: dR}
+	}
+	if err := SaveLandRouteTx(ctx, tx, worldID, messengerID, province.MapPosition{Q: dQ, R: dR}, target, now, returnsAt, currentTick); err != nil {
+		return StartReturnLegResult{}, err
+	}
+
 	// passage == nil: a plain land return leg — schedule the real homecoming
 	// now that its true travel time is known. passage != nil: no terminal
 	// event yet — PassageScanHandler's scheduleCompletion schedules
 	// ScheduledMessengerReturn once a carrier is boarded or the reserve is
 	// taken (R6).
 	if passage == nil {
-		if err := sched.EnqueueTickTx(ctx, tx, worldID, events.ScheduledMessengerReturn,
+		if err := EnqueueLandTx(ctx, tx, sched, worldID, events.ScheduledMessengerReturn,
 			ReturnPayload{MessengerID: messengerID}, dueTick); err != nil {
 			return StartReturnLegResult{}, fmt.Errorf("start return leg: schedule return: %w", err)
 		}
