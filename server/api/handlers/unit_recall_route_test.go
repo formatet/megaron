@@ -126,7 +126,10 @@ func TestAcceptance2_RecallPrecheck_CatchesWhereTimeSays(t *testing.T) {
 	if res.DurationTicks != 4 {
 		t.Fatalf("test fixture assumption broken: march took %d ticks, want 4", res.DurationTicks)
 	}
-	clk.Advance(time.Duration(0.3*float64(res.DurationTicks)*float64(tick.TickSeconds)) * time.Second) // 30% through
+	clk.Advance(time.Duration(0.8*float64(res.DurationTicks)*float64(tick.TickSeconds)) * time.Second)
+	if _, err := pool.Exec(ctx, `UPDATE worlds SET current_tick=3,last_tick_at=$2 WHERE id=$1`, worldID, clk.Now().Add(-time.Duration(float64(tick.TickSeconds)*0.2)*time.Second)); err != nil {
+		t.Fatal(err)
+	} // 30% through
 
 	uh := NewUnitHandler(pool, scheduler, eventStore, clk)
 	router := chi.NewRouter()
@@ -238,7 +241,10 @@ func TestAcceptance2_UnitJSON_CurrentPosMatches(t *testing.T) {
 	if res.DurationTicks != 4 {
 		t.Fatalf("test fixture assumption broken: march took %d ticks, want 4", res.DurationTicks)
 	}
-	clk.Advance(time.Duration(0.3*float64(res.DurationTicks)*float64(tick.TickSeconds)) * time.Second) // 30% through
+	clk.Advance(time.Duration(0.8*float64(res.DurationTicks)*float64(tick.TickSeconds)) * time.Second)
+	if _, err := pool.Exec(ctx, `UPDATE worlds SET current_tick=3,last_tick_at=$2 WHERE id=$1`, worldID, clk.Now().Add(-time.Duration(float64(tick.TickSeconds)*0.2)*time.Second)); err != nil {
+		t.Fatal(err)
+	} // 30% through
 
 	uh := NewUnitHandler(pool, scheduler, eventStore, clk)
 	router := chi.NewRouter()
@@ -273,7 +279,7 @@ func TestAcceptance2_UnitJSON_CurrentPosMatches(t *testing.T) {
 			t.Fatalf("unit %v has no current_q/current_r — want (1,0) (the ford)", unitID)
 		}
 		if *u.CurrentQ != 1 || *u.CurrentR != 0 {
-			t.Errorf("unit current_q/r = (%d,%d), want (1,0) (the ford — val A, already entered at departure)", *u.CurrentQ, *u.CurrentR)
+			t.Errorf("unit current_q/r = (%d,%d), want (1,0) (the ford — v2 weighted prefix reached at 80%%)", *u.CurrentQ, *u.CurrentR)
 		}
 	}
 	if !found {

@@ -2164,6 +2164,8 @@ func attachUnitPaths(ctx context.Context, db province.Queryer, worldID uuid.UUID
 		if route, ok := combat.LoadActiveRoute(u.MarchRoute, string(u.Status), u.DepartTick, u.ArriveTick); ok {
 			s.Path = route.Hexes
 			s.StepCosts = route.Costs
+			s.RouteVersion = route.Version
+			s.DispatchOffsetMilli = route.OffsetMilli
 			start := route.StartTick
 			s.DepartureTick = &start
 			continue
@@ -2332,9 +2334,11 @@ type unitSummary struct {
 	// mountains). The map animates the walker along it instead of a straight line,
 	// so it is drawn where the unit truly is. Empty for non-marching units and when
 	// no route exists (client falls back to the straight line). See marchPathWaypoints.
-	Path          [][2]int `json:"path,omitempty"`
-	StepCosts     []int64  `json:"step_costs,omitempty"`
-	DepartureTick *int     `json:"departure_tick,omitempty"`
+	Path                [][2]int `json:"path,omitempty"`
+	RouteVersion        int      `json:"route_version,omitempty"`
+	DispatchOffsetMilli int64    `json:"dispatch_offset_milli,omitempty"`
+	StepCosts           []int64  `json:"step_costs,omitempty"`
+	DepartureTick       *int     `json:"departure_tick,omitempty"`
 	// CurrentQ/CurrentR (movement 2a, R7) is a marching unit's live position
 	// read through its saved route (combat.RoutePositionAt) — never re-searched,
 	// never guessed. Omitted unless a gällande route exists AND the world's
@@ -2818,6 +2822,9 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 			at := *u.ArriveTick
 			arrivalTick = &at
 			utc := tick.EtaAt(clk, at, currentTick).UTC()
+			if route, ok := combat.LoadActiveRoute(u.MarchRoute, string(u.Status), u.DepartTick, u.ArriveTick); ok && route.Version == 2 && u.ArrivesAt != nil {
+				utc = u.ArrivesAt.UTC()
+			}
 			arrivesAtUTC = &utc
 			if u.DepartTick != nil {
 				d := at - *u.DepartTick

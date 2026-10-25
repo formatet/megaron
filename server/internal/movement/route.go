@@ -6,10 +6,12 @@ import "encoding/json"
 // of entering Hexes[i+1] (movement.Move's own convention), in thousandths of
 // a terrain-hour.
 type StoredRoute struct {
-	StartTick int      `json:"start_tick"`
-	EndTick   int      `json:"end_tick"`
-	Hexes     [][2]int `json:"hexes"`
-	Costs     []int64  `json:"costs"`
+	Version     int      `json:"version,omitempty"`
+	OffsetMilli int64    `json:"offset_milli,omitempty"`
+	StartTick   int      `json:"start_tick"`
+	EndTick     int      `json:"end_tick"`
+	Hexes       [][2]int `json:"hexes"`
+	Costs       []int64  `json:"costs"`
 }
 
 // Move converts a StoredRoute to movement's pure Move shape.
@@ -18,7 +20,7 @@ func (r StoredRoute) Move() Move {
 	for i, h := range r.Hexes {
 		hexes[i] = Hex{Q: h[0], R: h[1]}
 	}
-	return Move{StartTick: r.StartTick, EndTick: r.EndTick, Hexes: hexes, Costs: r.Costs}
+	return Move{StartTick: r.StartTick, EndTick: r.EndTick, Hexes: hexes, Costs: r.Costs, Version: r.Version, OffsetMilli: r.OffsetMilli}
 }
 
 // LoadActiveRoute parses raw (units.march_route) and reports whether it is

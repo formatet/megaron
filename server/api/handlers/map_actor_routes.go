@@ -46,7 +46,7 @@ func agreedTransportKind(kind string) bool {
 
 // The compass is the same ScreenCompass used by ReadMarch, but its current
 // step comes from the frozen journey's weighted clock, matching SavedPosition.
-func frozenHeading(path []province.MapPosition, costs []int64, start, end int, at int64) string {
+func frozenHeading(path []province.MapPosition, costs []int64, start, end int, at int64, saved ...combat.StoredRoute) string {
 	if len(path) < 2 {
 		return ""
 	}
@@ -54,13 +54,21 @@ func frozenHeading(path []province.MapPosition, costs []int64, start, end int, a
 	for i, p := range path {
 		hexes[i] = movement.Hex{Q: p.Q, R: p.R}
 	}
-	bounds, err := movement.Boundaries(movement.Move{StartTick: start, EndTick: end, Hexes: hexes, Costs: costs})
+	m := movement.Move{StartTick: start, EndTick: end, Hexes: hexes, Costs: costs}
+	if len(saved) > 0 {
+		m = saved[0].Move()
+	}
+	bounds, err := movement.Boundaries(m)
 	if err != nil {
 		return ""
 	}
 	idx := 0
 	for i := 0; i < len(bounds)-1; i++ {
-		if int64(bounds[i]) <= at {
+		b := i
+		if m.Version == 2 {
+			b = i + 1
+		}
+		if int64(bounds[b]) <= at {
 			idx = i + 1
 		}
 	}
@@ -76,6 +84,8 @@ type carrierRoute struct {
 	Start, End         int
 	CurrentQ, CurrentR int
 	Heading            string
+	Version            int
+	OffsetMilli        int64
 }
 
 func (h *WorldHandler) messengerCarrierRoute(ctx context.Context, worldID uuid.UUID, carrierUnit, carrierTransport *uuid.UUID, now time.Time) *carrierRoute {
@@ -99,7 +109,7 @@ func (h *WorldHandler) messengerCarrierRoute(ctx context.Context, worldID uuid.U
 		if json.Unmarshal(raw, &j) != nil {
 			return nil
 		}
-		return &carrierRoute{pathCoordinates(j.Path), j.StepCosts, *start, end, pos.Q, pos.R, frozenHeading(j.Path, j.StepCosts, *start, end, at)}
+		return &carrierRoute{pathCoordinates(j.Path), j.StepCosts, *start, end, pos.Q, pos.R, frozenHeading(j.Path, j.StepCosts, *start, end, at), 0, 0}
 	}
 	if carrierUnit != nil {
 		var raw []byte
@@ -120,7 +130,7 @@ func (h *WorldHandler) messengerCarrierRoute(ctx context.Context, worldID uuid.U
 		for i, h := range r.Hexes {
 			path[i] = province.MapPosition{Q: h[0], R: h[1]}
 		}
-		return &carrierRoute{r.Hexes, r.Costs, r.StartTick, r.EndTick, pos.Q, pos.R, frozenHeading(path, r.Costs, r.StartTick, r.EndTick, at)}
+		return &carrierRoute{r.Hexes, r.Costs, r.StartTick, r.EndTick, pos.Q, pos.R, frozenHeading(path, r.Costs, r.StartTick, r.EndTick, at, r), r.Version, r.OffsetMilli}
 	}
 	return nil
 }

@@ -59,6 +59,7 @@ package combat
 import (
 	"context"
 	"fmt"
+	"formatet/megaron/server/internal/tick"
 	"log/slog"
 	"sort"
 	"time"
@@ -93,11 +94,12 @@ func NewMarchEncounterHandler(pool *pgxpool.Pool, sched *events.Scheduler, store
 // crossingUnit is one marching, intercept-postured unit resolved to the hex
 // it occupies right now.
 type crossingUnit struct {
-	id    uuid.UUID
-	owner uuid.UUID
-	utype string
-	size  int
-	pos   province.MapPosition
+	id       uuid.UUID
+	owner    uuid.UUID
+	utype    string
+	size     int
+	pos      province.MapPosition
+	routeRaw []byte
 }
 
 // isForeign reports whether b is hostile to a. Kingdoms are post-MVP and
@@ -132,6 +134,13 @@ func hasForeignPair(group []crossingUnit) bool {
 // intercept-postured owners, then re-enqueues itself.
 func (h *MarchEncounterHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
 	now := h.clk.Now()
+	a, err := tick.LoadAnchor(ctx, h.pool, e.WorldID)
+	if err != nil {
+		return err
+	}
+	if err = h.timedEncounters(ctx, e, a.MilliAt(now)); err != nil {
+		return err
+	}
 
 	var currentTick int
 	if err := h.pool.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick); err != nil {
@@ -187,7 +196,8 @@ func (h *MarchEncounterHandler) loadCandidates(ctx context.Context, worldID uuid
 		   AND target_q IS NOT NULL AND target_r IS NOT NULL
 		   AND departs_at IS NOT NULL AND arrives_at IS NOT NULL
 		   AND (reaction_policy->>'foreign') = $2
-		   AND (arrive_tick IS NULL OR arrive_tick > $3)`,
+		   AND (arrive_tick IS NULL OR arrive_tick > $3)
+ AND COALESCE(march_route->>'version','0')<>'2'`,
 		worldID, string(unit.ReactionIntercept), currentTick,
 	)
 	if err != nil {
@@ -251,7 +261,7 @@ func (h *MarchEncounterHandler) loadCandidates(ctx context.Context, worldID uuid
 //
 // group is guaranteed (by Handle's caller) to span ≥2 distinct owners, all
 // already filtered to reaction_policy.foreign='intercept' by loadCandidates.
-func (h *MarchEncounterHandler) resolveHex(ctx context.Context, e events.ScheduledEvent, hex [2]int, group []crossingUnit) error {
+func (h *MarchEncounterHandler) resolveHex(ctx context.Context, e events.ScheduledEvent, hex [2]int, group []crossingUnit, at ...int64) error {
 	q, r := hex[0], hex[1]
 
 	tx, err := h.pool.Begin(ctx)
@@ -260,6 +270,17 @@ func (h *MarchEncounterHandler) resolveHex(ctx context.Context, e events.Schedul
 	}
 	defer tx.Rollback(ctx)
 
+	var reached []expeditionOutcome
+	if len(at) > 0 {
+		if err = placeReachLock(ctx, tx, e.WorldID); err != nil {
+			return err
+		}
+		reached, err = recordPlaceEntriesTx(ctx, tx, h.eventStore, e.WorldID, at[0])
+		if err != nil {
+			return err
+		}
+	}
+
 	// Idempotency (G2, plan §4): one claim per (event_id, hex) — same
 	// processed_tick_claims table UpkeepHandler uses,
 	// migration 098. The scope UUID is deterministic from (worldID, q, r) so
@@ -267,7 +288,11 @@ func (h *MarchEncounterHandler) resolveHex(ctx context.Context, e events.Schedul
 	// replayed; a genuinely NEW recurring tick always gets a fresh event_id
 	// (EnqueueTickRecurring inserts a new scheduled_events row), so this only
 	// suppresses a true replay of this event, never a later tick's collision.
-	scope := uuid.NewSHA1(e.WorldID, []byte(fmt.Sprintf("march_encounter:%d:%d", q, r)))
+	scopeText := fmt.Sprintf("march_encounter:%d:%d", q, r)
+	if len(at) > 0 {
+		scopeText = fmt.Sprintf("timed:%d:%d:%d:%s:%s", at[0], q, r, group[0].id, group[1].id)
+	}
+	scope := uuid.NewSHA1(e.WorldID, []byte(scopeText))
 	claim, err := tx.Exec(ctx,
 		`INSERT INTO processed_tick_claims (event_id, scope_id) VALUES ($1, $2)
 		 ON CONFLICT DO NOTHING`, e.ID, scope)
@@ -288,9 +313,19 @@ func (h *MarchEncounterHandler) resolveHex(ctx context.Context, e events.Schedul
 		if qErr := tx.QueryRow(ctx, `SELECT status FROM units WHERE id = $1 FOR UPDATE`, u.id).Scan(&status); qErr != nil {
 			continue
 		}
-		if status != "marching" {
+		if status != "marching" && !(len(at) > 0 && status == "positioned") {
 			continue
 		}
+		if len(at) > 0 && len(u.routeRaw) > 0 {
+			var same bool
+			if err := tx.QueryRow(ctx, `SELECT march_route=$2::jsonb FROM units WHERE id=$1`, u.id, u.routeRaw).Scan(&same); err != nil {
+				return err
+			}
+			if !same {
+				continue
+			}
+		}
+
 		live = append(live, u)
 	}
 
@@ -374,9 +409,9 @@ func (h *MarchEncounterHandler) resolveHex(ctx context.Context, e events.Schedul
 			   arrives_at    = NULL,
 			   depart_tick   = NULL,
 			   arrive_tick   = NULL,
-			   updated_at    = now()
+			   updated_at    = $4
 			 WHERE id = $1`,
-			p.unitID, q, r,
+			p.unitID, q, r, h.clk.Now(),
 		); err != nil {
 			return fmt.Errorf("march encounter: halt unit %s: %w", p.unitID, err)
 		}
@@ -386,6 +421,7 @@ func (h *MarchEncounterHandler) resolveHex(ctx context.Context, e events.Schedul
 		return fmt.Errorf("commit: %w", err)
 	}
 
+	deliverPlaceReach(ctx, h.eventStore, h.hub, e.WorldID, reached)
 	uah.deliverBattleBegun(ctx, e.WorldID)
 	slog.Info("march encounter: crossing armies collided — battle initiated/joined",
 		"q", q, "r", r, "units", len(participants))

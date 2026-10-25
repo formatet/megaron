@@ -876,11 +876,16 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 			slog.Error("march route: could not read step costs", "unit", o.UnitID, "err", err)
 			return nil, reject(http.StatusInternalServerError, "pathfinding error")
 		}
-		route, ok := BuildRoute(path, stepHours, currentTick, currentTick+travelTicks)
+		route, ok := BuildRouteAt(ctx, departureDB, o.WorldID, path, stepHours, currentTick, currentTick+travelTicks, now)
 		if !ok {
 			slog.Error("march route: invalid stored route", "unit", o.UnitID)
 			return nil, reject(http.StatusInternalServerError, "pathfinding error")
 		}
+		now, arrivesAt, err = RouteWallTimes(ctx, departureDB, o.WorldID, route)
+		if err != nil {
+			return nil, err
+		}
+
 		marchRoute, err = json.Marshal(route)
 		if err != nil {
 			slog.Error("march route: could not encode stored route", "unit", o.UnitID, "err", err)

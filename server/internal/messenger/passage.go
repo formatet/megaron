@@ -1070,7 +1070,13 @@ func (h *PassageScanHandler) boardOne(ctx context.Context, worldID, messengerID 
 	}
 	dueTick := carrierDueTick + landTicks
 	arrivesAt := carrierArrivesAt.Add(landDur)
-	if err := scheduleCompletion(ctx, tx, h.scheduler, messengerID, dueTick, arrivesAt); err != nil {
+	precise := false
+	if carrier.unitID != nil {
+		if err := tx.QueryRow(ctx, `SELECT COALESCE((march_route->>'version')::int,0)=2 FROM units WHERE id=$1`, *carrier.unitID).Scan(&precise); err != nil {
+			return err
+		}
+	}
+	if err := scheduleCompletion(ctx, tx, h.scheduler, messengerID, dueTick, arrivesAt, precise); err != nil {
 		return err
 	}
 	if err := tx.Commit(ctx); err != nil {
@@ -1262,7 +1268,7 @@ func finalTargetQuery(ctx context.Context, db queryRower, messengerID uuid.UUID)
 // previously cleared here, the instant boarding happened, which made
 // detectLostCarriers's own query dead code in the real flow — it could only
 // ever match a hand-crafted test fixture).
-func scheduleCompletion(ctx context.Context, tx pgx.Tx, sched *events.Scheduler, messengerID uuid.UUID, dueTick int, arrivesAt time.Time) error {
+func scheduleCompletion(ctx context.Context, tx pgx.Tx, sched *events.Scheduler, messengerID uuid.UUID, dueTick int, arrivesAt time.Time, precise ...bool) error {
 	var worldID uuid.UUID
 	var kind, status string
 	var orderPayload []byte
@@ -1276,6 +1282,26 @@ func scheduleCompletion(ctx context.Context, tx pgx.Tx, sched *events.Scheduler,
 		return fmt.Errorf("schedule completion: update messenger: %w", err)
 	}
 
+	enqueue := func(typ events.ScheduledEventType, payload any) error {
+		if len(precise) == 0 || !precise[0] {
+			return sched.EnqueueTickTx(ctx, tx, worldID, typ, payload, dueTick)
+		}
+		a, err := tick.LoadAnchor(ctx, tx, worldID)
+		if err != nil {
+			return err
+		}
+		switch typ {
+		case events.ScheduledOrderDelivery:
+			typ = events.ScheduledOrderDeliveryV2
+		case events.ScheduledMessengerArrival:
+			typ = events.ScheduledMessengerArrivalV2
+		case events.ScheduledMessengerReturn:
+			typ = events.ScheduledMessengerReturnV2
+		}
+		due := a.Tick + int(arrivesAt.Sub(a.At)/(time.Duration(tick.TickSeconds)*time.Second))
+		return sched.EnqueueDeadlineTx(ctx, tx, worldID, typ, payload, due, arrivesAt)
+	}
+
 	if kind == "order" {
 		var p OrderDeliveryPayload
 		if len(orderPayload) > 0 {
@@ -1285,14 +1311,12 @@ func scheduleCompletion(ctx context.Context, tx pgx.Tx, sched *events.Scheduler,
 		}
 		p.MessengerID = messengerID
 		p.PassageGeneration = generation
-		return sched.EnqueueTickTx(ctx, tx, worldID, events.ScheduledOrderDelivery, p, dueTick)
+		return enqueue(events.ScheduledOrderDelivery, p)
 	}
 	if status == "returning" {
-		return sched.EnqueueTickTx(ctx, tx, worldID, events.ScheduledMessengerReturn,
-			ReturnPayload{MessengerID: messengerID, PassageGeneration: generation}, dueTick)
+		return enqueue(events.ScheduledMessengerReturn, ReturnPayload{MessengerID: messengerID, PassageGeneration: generation})
 	}
-	if err := sched.EnqueueTickTx(ctx, tx, worldID, events.ScheduledMessengerArrival,
-		ArrivalPayload{MessengerID: messengerID, PassageGeneration: generation}, dueTick); err != nil {
+	if err := enqueue(events.ScheduledMessengerArrival, ArrivalPayload{MessengerID: messengerID, PassageGeneration: generation}); err != nil {
 		return err
 	}
 

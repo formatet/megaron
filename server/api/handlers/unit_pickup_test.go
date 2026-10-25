@@ -252,7 +252,7 @@ func TestPickup_UnitInland_ShipArrivesFirst_BoardsViaR4(t *testing.T) {
 	// The runner disembarks and delivers the march order to the unit.
 	var deliveryTick int
 	if err := f.pool.QueryRow(context.Background(),
-		`SELECT due_tick FROM scheduled_events WHERE event_type = $1 AND (payload->>'messenger_id') = $2 AND processed_at IS NULL`,
+		`SELECT due_tick FROM scheduled_events WHERE (event_type = $1 OR event_type=$1||'V2') AND (payload->>'messenger_id') = $2 AND processed_at IS NULL`,
 		string(events.ScheduledOrderDelivery), messengerID,
 	).Scan(&deliveryTick); err != nil {
 		t.Fatalf("load order delivery due tick: %v", err)
@@ -312,7 +312,7 @@ func TestPickup_UnitInland_UnitArrivesFirst_BoardsViaR3(t *testing.T) {
 	// (as opposed to R4's arriveGarrison hook, covered above).
 	var deliveryTick int
 	if err := f.pool.QueryRow(context.Background(),
-		`SELECT due_tick FROM scheduled_events WHERE event_type = $1 AND (payload->>'messenger_id') = $2 AND processed_at IS NULL`,
+		`SELECT due_tick FROM scheduled_events WHERE (event_type = $1 OR event_type=$1||'V2') AND (payload->>'messenger_id') = $2 AND processed_at IS NULL`,
 		string(events.ScheduledOrderDelivery), messengerID,
 	).Scan(&deliveryTick); err != nil {
 		t.Fatalf("load order delivery due tick: %v", err)

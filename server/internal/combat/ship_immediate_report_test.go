@@ -84,18 +84,48 @@ func TestShipReport43640c42_DeparturePhase(t *testing.T) {
 			if res.DurationTicks != 1 || len(route.Hexes) != 4 {
 				t.Fatalf("fixture no longer reproduces reported three-step one-tick voyage: %+v", res)
 			}
-			t.Run("first_entered_hex_at_dispatch", func(t *testing.T) {
+			t.Run("prefix_memory", func(t *testing.T) {
+				entered, err := RouteEnterMilli(route)
+				if err != nil {
+					t.Fatal(err)
+				}
+				for _, at := range []int64{entered[1] - 1, entered[1], entered[2], entered[3]} {
+					tx, err := pool.Begin(ctx)
+					if err != nil {
+						t.Fatal(err)
+					}
+					_, err = recordPlaceEntriesTx(ctx, tx, events.NewStore(pool), wid, at)
+					if err != nil {
+						_ = tx.Rollback(ctx)
+						t.Fatal(err)
+					}
+					if err = tx.Commit(ctx); err != nil {
+						t.Fatal(err)
+					}
+					for i := 1; i < len(entered); i++ {
+						var known bool
+						if err = pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM player_scouted_tiles WHERE world_id=$1 AND player_id=$2 AND q=$3 AND r=$4)`, wid, owner, route.Hexes[i][0], route.Hexes[i][1]).Scan(&known); err != nil {
+							t.Fatal(err)
+						}
+						if known != (entered[i] <= at) {
+							t.Fatalf("at %d hex%d known=%v entry=%d", at, i, known, entered[i])
+						}
+					}
+				}
+			})
+
+			t.Run("start_hex_at_dispatch", func(t *testing.T) {
 				pos, err := RoutePositionAt(route, anchor.MilliAt(clk.Now()))
 				if err != nil {
 					t.Fatal(err)
 				}
-				first := province.MapPosition{Q: route.Hexes[1][0], R: route.Hexes[1][1]}
+				first := province.MapPosition{Q: route.Hexes[0][0], R: route.Hexes[0][1]}
 				if pos != first {
 					t.Fatalf("newly dispatched ship already at %+v, want first entered hex %+v; consumed elapsed phase before departure", pos, first)
 				}
 			})
 			t.Run("announced_eta_matches_due_tick_boundary", func(t *testing.T) {
-				dueAt := anchor.WallAt(int64(res.ArrivalTick) * 1000)
+				dueAt := anchor.WallAt(int64(res.ArrivalTick)*1000 + route.OffsetMilli)
 				if !res.ArrivesAt.Equal(dueAt) {
 					t.Fatalf("announced ETA %s differs from due-tick boundary %s by %s", res.ArrivesAt, dueAt, res.ArrivesAt.Sub(dueAt))
 				}

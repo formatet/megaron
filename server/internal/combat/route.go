@@ -10,7 +10,12 @@ package combat
 // just the old code, unchanged).
 
 import (
+	"context"
+	"fmt"
+	"formatet/megaron/server/internal/tick"
+	"github.com/google/uuid"
 	"math"
+	"time"
 
 	"formatet/megaron/server/internal/movement"
 	"formatet/megaron/server/internal/province"
@@ -78,9 +83,51 @@ func RouteEnterMilli(r StoredRoute) ([]int64, error) {
 		return nil, err
 	}
 	out := make([]int64, len(r.Hexes))
-	out[0] = int64(r.StartTick) * 1000
+	out[0] = int64(bounds[0])
 	for i := 1; i < len(out); i++ {
-		out[i] = int64(bounds[i-1])
+		if r.Version == 2 {
+			out[i] = int64(bounds[i])
+		} else {
+			out[i] = int64(bounds[i-1])
+		}
 	}
 	return out, nil
+}
+
+// BuildRouteAt is the clocked route writer. Legacy BuildRoute remains for old
+// stored journeys and fixtures; all new physical unit voyages use version 2.
+func BuildRouteAt(ctx context.Context, db province.Queryer, worldID uuid.UUID, path []province.MapPosition, costs []float64, start, end int, now time.Time) (StoredRoute, bool) {
+	r, ok := BuildRoute(path, costs, start, end)
+	if !ok {
+		return r, false
+	}
+	rows, err := db.Query(ctx, `SELECT current_tick,last_tick_at FROM worlds WHERE id=$1`, worldID)
+	if err != nil {
+		return StoredRoute{}, false
+	}
+	defer rows.Close()
+	var a tick.Anchor
+	if !rows.Next() || rows.Scan(&a.Tick, &a.At) != nil {
+		return StoredRoute{}, false
+	}
+	r.Version = 2
+	r.OffsetMilli = a.MilliAt(now) - int64(start)*1000
+	return r, true
+}
+
+// RouteWallTimes converts saved millitick endpoints using the world's anchor.
+func RouteWallTimes(ctx context.Context, db province.Queryer, worldID uuid.UUID, r StoredRoute) (time.Time, time.Time, error) {
+	rows, err := db.Query(ctx, `SELECT current_tick,last_tick_at FROM worlds WHERE id=$1`, worldID)
+	if err != nil {
+		return time.Time{}, time.Time{}, err
+	}
+	defer rows.Close()
+	var a tick.Anchor
+	if !rows.Next() {
+		return time.Time{}, time.Time{}, fmt.Errorf("missing route anchor")
+	}
+	if err = rows.Scan(&a.Tick, &a.At); err != nil {
+		return time.Time{}, time.Time{}, err
+	}
+	return a.WallAt(int64(r.StartTick)*1000 + r.OffsetMilli), a.WallAt(int64(r.EndTick)*1000 + r.OffsetMilli), nil
 }

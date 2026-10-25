@@ -158,7 +158,7 @@ func TestExploreOrder_AutoReturn(t *testing.T) {
 	var scheduledCount int
 	if err := pool.QueryRow(ctx,
 		`SELECT count(*) FROM scheduled_events
-		 WHERE world_id = $1 AND event_type = 'UnitArrival'
+		 WHERE world_id = $1 AND event_type IN ('UnitArrival','UnitArrivalV2')
 		   AND (payload->>'unit_id')::uuid = $2 AND processed_at IS NULL`,
 		worldID, unitID,
 	).Scan(&scheduledCount); err != nil {

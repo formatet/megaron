@@ -70,10 +70,14 @@ var tickPriorities = map[ScheduledEventType]int{
 	// Physical naming rights: after sea losses, before arrival clears saved routes.
 	ScheduledPlaceReachScan: 7,
 	// 10 — det som landar.
-	ScheduledUnitArrival:      tickPriorityArrival,
-	ScheduledTransportArrival: tickPriorityArrival,
-	ScheduledLogisticsArrival: tickPriorityArrival,
-	ScheduledSentryReturn:     tickPriorityArrival,
+	ScheduledOrderDeliveryV2:    tickPriorityArrival,
+	ScheduledMessengerArrivalV2: tickPriorityArrival,
+	ScheduledMessengerReturnV2:  tickPriorityArrival,
+	ScheduledUnitArrivalV2:      tickPriorityArrival,
+	ScheduledUnitArrival:        tickPriorityArrival,
+	ScheduledTransportArrival:   tickPriorityArrival,
+	ScheduledLogisticsArrival:   tickPriorityArrival,
+	ScheduledSentryReturn:       tickPriorityArrival,
 	// Same tier as the sentry patrol timer above — a self-terminating sea
 	// order's own timer firing and dispatching a home march.
 	ScheduledPickupTimeout:      tickPriorityArrival,

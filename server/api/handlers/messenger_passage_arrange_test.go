@@ -24,8 +24,11 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"formatet/megaron/server/internal/clock"
+	tickpkg "formatet/megaron/server/internal/tick"
 	"strings"
 	"testing"
+	"time"
 
 	"formatet/megaron/server/internal/combat"
 
@@ -106,7 +109,14 @@ func settlementAt(t *testing.T, f *navalPlayerFixture, name string, q, r int, ow
 
 func (f *passageArrangeFixture) setTick(t *testing.T, tick int) {
 	t.Helper()
-	if _, err := f.pool.Exec(context.Background(), `UPDATE worlds SET current_tick = $2 WHERE id = $1`, f.worldID, tick); err != nil {
+	var previous int
+	if err := f.pool.QueryRow(context.Background(), `SELECT current_tick FROM worlds WHERE id=$1`, f.worldID).Scan(&previous); err != nil {
+		t.Fatal(err)
+	}
+	if tick > previous {
+		f.clk.(*clock.TestClock).Advance(time.Duration(tick-previous) * time.Duration(tickpkg.TickSeconds) * time.Second)
+	}
+	if _, err := f.pool.Exec(context.Background(), `UPDATE worlds SET current_tick = $2,last_tick_at=$3 WHERE id = $1`, f.worldID, tick, f.clk.Now()); err != nil {
 		t.Fatalf("advance tick: %v", err)
 	}
 }
@@ -137,13 +147,13 @@ func (f *passageArrangeFixture) loadPendingEventBy(t *testing.T, eventType, json
 	var e events.ScheduledEvent
 	var payload []byte
 	if err := f.pool.QueryRow(context.Background(),
-		`SELECT id, world_id, event_type, payload, due_tick FROM scheduled_events
-		  WHERE world_id = $1 AND event_type = $2 AND processed_at IS NULL AND (payload->>$3) = $4
-		  AND ($3 <> 'messenger_id' OR event_type NOT IN ('MessengerArrival','MessengerReturn','OrderDelivery')
+		`SELECT id, world_id, event_type, payload, due_tick,process_after FROM scheduled_events
+		  WHERE world_id = $1 AND (event_type = $2 OR event_type = $2||'V2') AND processed_at IS NULL AND (payload->>$3) = $4
+		  AND ($3 <> 'messenger_id' OR event_type NOT IN ('MessengerArrival','MessengerReturn','OrderDelivery','MessengerArrivalV2','MessengerReturnV2','OrderDeliveryV2')
                OR COALESCE((payload->>'passage_generation')::int,0)=(SELECT passage_generation FROM messengers WHERE id=$4::uuid))
           ORDER BY due_tick ASC LIMIT 1`,
 		f.worldID, eventType, jsonKey, jsonVal.String(),
-	).Scan(&e.ID, &e.WorldID, &e.EventType, &payload, &e.DueTick); err != nil {
+	).Scan(&e.ID, &e.WorldID, &e.EventType, &payload, &e.DueTick, &e.ProcessAfter); err != nil {
 		t.Fatalf("load pending %s event (%s=%s): %v", eventType, jsonKey, jsonVal, err)
 	}
 	e.Payload = payload
@@ -175,6 +185,9 @@ func (f *passageArrangeFixture) runUnitArrival(t *testing.T, atTick int, unitID 
 	t.Helper()
 	f.setTick(t, atTick)
 	ev := f.loadPendingEventBy(t, string(events.ScheduledUnitArrival), "unit_id", unitID)
+	if events.DeadlineEvent(ev.EventType) && f.clk.Now().Before(ev.ProcessAfter) {
+		f.clk.(*clock.TestClock).Set(ev.ProcessAfter)
+	}
 	if err := f.unitArrivalH.Handle(context.Background(), ev); err != nil {
 		t.Fatalf("unit arrival: %v", err)
 	}

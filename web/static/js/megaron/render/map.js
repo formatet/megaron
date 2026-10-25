@@ -214,8 +214,8 @@ function hexPathPx(q1, r1, q2, r2, progress) {
 // walks the true route (via sea / around mountains) instead of a straight hex
 // line, so the walker is drawn where the unit actually is. Returns null for an
 // empty list so callers can fall back to the straight-line hexPathPx.
-function pathPx(waypoints, progress, costs=null,durationTicks=null) {
-  return routePosition(waypoints,progress,hexPx,costs,durationTicks);
+function pathPx(waypoints, progress, costs=null,durationTicks=null,version=0) {
+  return routePosition(waypoints,progress,hexPx,costs,durationTicks,version);
 }
 
 // Hexen en enhet står på JUST NU — samma gren som ritningen av aktören använder
@@ -255,7 +255,7 @@ function unitPixelNow(u,nowMs=serverNow()) {
 
  if(u.status==='marching'&&u.departs_at&&u.arrives_at&&u.q!=null&&u.target_q!=null){
   const progress=routeProgress(u,nowMs,movementTickNow(nowMs));
-  return u.path?.length>1?pathPx(u.path,progress,u.step_costs,u.arrival_tick-u.departure_tick):hexPathPx(u.q,u.r,u.target_q,u.target_r,progress);
+  return u.path?.length>1?pathPx(u.path,progress,u.step_costs,u.arrival_tick-u.departure_tick,u.route_version):hexPathPx(u.q,u.r,u.target_q,u.target_r,progress);
  }
  return u.status==='positioned'&&u.q!=null?{...hexPx(u.q,u.r),q:u.q,r:u.r}:null;
 }
@@ -316,7 +316,7 @@ export function messengerLegPosition(m, units, trades, nowMs) {
     // R4's stop condition: the carrier isn't in the client's own data (an
     // allied ship, or a transport /trades didn't send) — use the server's
     // own reserve leg instead of hiding the runner.
-    const pos = m.path?.length>1 ? pathPx(m.path,routeProgress(m,nowMs,movementTickNow(nowMs)),m.step_costs,m.arrival_tick-m.departure_tick) : hexPathPx(m.leg_from_q, m.leg_from_r, m.leg_to_q, m.leg_to_r, progress);
+    const pos = m.path?.length>1 ? pathPx(m.path,routeProgress(m,nowMs,movementTickNow(nowMs)),m.step_costs,m.arrival_tick-m.departure_tick,m.route_version) : hexPathPx(m.leg_from_q, m.leg_from_r, m.leg_to_q, m.leg_to_r, progress);
     return {mode: 'aboard-reserve', x: pos.x, y: pos.y, q: pos.q, r: pos.r};
   }
   return null;

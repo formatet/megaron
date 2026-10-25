@@ -353,8 +353,12 @@ func marchShipToNearestOwnPort(
 	var marchRoute []byte
 	if len(path) >= 2 {
 		if stepHours, shErr := province.StepHoursDB(ctx, tx, worldID, path, "naval"); shErr == nil {
-			if route, ok := BuildRoute(path, stepHours, tickIndex, tickIndex+travelTicks); ok {
+			if route, ok := BuildRouteAt(ctx, tx, worldID, path, stepHours, tickIndex, tickIndex+travelTicks, clk.Now()); ok {
 				if raw, mErr := json.Marshal(route); mErr == nil {
+					if _, end, e := RouteWallTimes(ctx, tx, worldID, route); e == nil {
+						arrivesAt = end
+					}
+
 					marchRoute = raw
 				}
 			}
@@ -406,7 +410,7 @@ func marchShipToNearestOwnPort(
 		return fmt.Errorf("march ship to nearest own port: no scheduler configured")
 	}
 	arriveTick := tickIndex + travelTicks
-	if err := scheduler.EnqueueTickTx(ctx, tx, worldID, events.ScheduledUnitArrival,
+	if err := enqueueUnitArrivalTx(ctx, tx, scheduler, worldID,
 		unit.ScheduledUnitArrivalPayload{UnitID: unitID, WorldID: worldID, ArriveTick: &arriveTick}, tickIndex+travelTicks,
 	); err != nil {
 		return fmt.Errorf("march ship to nearest own port: schedule arrival: %w", err)

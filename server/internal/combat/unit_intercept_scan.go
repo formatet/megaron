@@ -97,13 +97,15 @@ type marchingUnit struct {
 	departsAt  time.Time
 	arrivesAt  time.Time
 	departTick *int
+	arriveTick *int
+	route      []byte
 }
 
 // Handle scans every marching unit once, acting against the strongest
 // FOW-visible enemy sentry within reach (intercept or alert policy) that
 // hasn't already been resolved against this exact march instance, then
 // re-enqueues itself.
-func (h *UnitInterceptScanHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
+func (h *UnitInterceptScanHandler) scan(ctx context.Context, e events.ScheduledEvent) error {
 	now := h.clk.Now()
 	anchor, err := tick.LoadAnchor(ctx, h.pool, e.WorldID)
 	if err != nil {
@@ -121,7 +123,7 @@ func (h *UnitInterceptScanHandler) Handle(ctx context.Context, e events.Schedule
 	eyesByOwner := map[uuid.UUID][]province.Eye{}
 
 	rows, err := h.pool.Query(ctx,
-		`SELECT id, owner_id, type, category, size, q, r, target_q, target_r, departs_at, arrives_at, depart_tick
+		`SELECT id, owner_id, type, category, size, q, r, target_q, target_r, departs_at, arrives_at, depart_tick, arrive_tick, march_route
 		 FROM units
 		 WHERE world_id = $1 AND status = 'marching'
 		   AND q IS NOT NULL AND r IS NOT NULL
@@ -136,7 +138,7 @@ func (h *UnitInterceptScanHandler) Handle(ctx context.Context, e events.Schedule
 	for rows.Next() {
 		var m marchingUnit
 		if scanErr := rows.Scan(&m.id, &m.owner, &m.utype, &m.category, &m.size,
-			&m.q, &m.r, &m.targetQ, &m.targetR, &m.departsAt, &m.arrivesAt, &m.departTick); scanErr != nil {
+			&m.q, &m.r, &m.targetQ, &m.targetR, &m.departsAt, &m.arrivesAt, &m.departTick, &m.arriveTick, &m.route); scanErr != nil {
 			rows.Close()
 			return fmt.Errorf("unit intercept scan: scan unit: %w", scanErr)
 		}
@@ -145,63 +147,83 @@ func (h *UnitInterceptScanHandler) Handle(ctx context.Context, e events.Schedule
 	rows.Close()
 
 	for _, m := range fleet {
-		origin := province.MapPosition{Q: m.q, R: m.r}
-		dest := province.MapPosition{Q: m.targetQ, R: m.targetR}
-		pos, ok, posErr := province.InterpolatePosition(ctx, h.pool, e.WorldID, origin, dest, unit.MoveCategoryOfRow(m.category, m.utype), m.departsAt, m.arrivesAt, now)
-		if posErr != nil {
-			continue // DB error is not the same as "no route" — never guess a position off the back of one
+		type sample struct {
+			pos province.MapPosition
+			at  int64
 		}
-		if !ok {
-			// No traversable route for this category (origin/target split by sea
-			// or a river). Unlike transport/intercept.go this does NOT fall back
-			// to a straight-line position — known, accepted gap for this slice
-			// (avsiktslagret §S3 is the substrate scan, not full parity with the
-			// caravan path); a unit on an unpathable course is simply not
-			// interceptable this sweep instead of guessing at a position.
-			continue
+		var points []sample
+		saved, hasRoute := LoadActiveRoute(m.route, "marching", m.departTick, m.arriveTick)
+		if hasRoute && saved.Version == 2 {
+			entered, err := RouteEnterMilli(saved)
+			if err != nil {
+				return err
+			}
+			lower := int64(e.DueTick-1) * 1000
+			upper := anchor.MilliAt(now)
+			for i, at := range entered {
+				if at >= lower && at <= upper {
+					points = append(points, sample{province.MapPosition{Q: saved.Hexes[i][0], R: saved.Hexes[i][1]}, at})
+				}
+			}
+			if pos, err := RoutePositionAt(saved, upper); err == nil {
+				points = append(points, sample{pos, upper})
+			}
+		} else {
+			origin := province.MapPosition{Q: m.q, R: m.r}
+			dest := province.MapPosition{Q: m.targetQ, R: m.targetR}
+			pos, ok, err := province.InterpolatePosition(ctx, h.pool, e.WorldID, origin, dest, unit.MoveCategoryOfRow(m.category, m.utype), m.departsAt, m.arrivesAt, now)
+			if err != nil || !ok {
+				continue
+			}
+			points = append(points, sample{pos, anchor.MilliAt(now)})
 		}
+		for _, point := range points {
+			pos := point.pos
+			sampleNow := anchor.WallAt(point.at)
+			eyesByOwner = map[uuid.UUID][]province.Eye{}
 
-		// The strongest enemy sentry watching within reach whose policy is
-		// "intercept" or "alert" — "escort"/"ignore" never match, so a sentry
-		// posted that way never triggers this scan at all (§7).
-		var sentryID, interceptorID uuid.UUID
-		var sentryType, verb string
-		if qErr := h.pool.QueryRow(ctx,
-			`SELECT id, owner_id, type, reaction_policy->>'foreign' FROM units
+			// The strongest enemy sentry watching within reach whose policy is
+			// "intercept" or "alert" — "escort"/"ignore" never match, so a sentry
+			// posted that way never triggers this scan at all (§7).
+			var sentryID, interceptorID uuid.UUID
+			var sentryType, verb string
+			if qErr := h.pool.QueryRow(ctx,
+				`SELECT id, owner_id, type, reaction_policy->>'foreign' FROM units
 			 WHERE world_id = $1 AND owner_id <> $2 AND status = 'positioned' AND stance = 'sentry'
 			   AND sentry_q IS NOT NULL AND sentry_r IS NOT NULL
 			   AND (reaction_policy->>'foreign') IN ('intercept', 'alert')
 			   AND (ABS(sentry_q - $3) + ABS(sentry_r - $4) + ABS((sentry_q + sentry_r) - ($3 + $4))) / 2 <= $5
 			 ORDER BY size DESC
 			 LIMIT 1`,
-			e.WorldID, m.owner, pos.Q, pos.R, UnitInterceptRadius,
-		).Scan(&sentryID, &interceptorID, &sentryType, &verb); qErr != nil {
-			continue // no intercept/alert-policy sentry in reach
+				e.WorldID, m.owner, pos.Q, pos.R, UnitInterceptRadius,
+			).Scan(&sentryID, &interceptorID, &sentryType, &verb); qErr != nil {
+				continue // no intercept/alert-policy sentry in reach
+			}
+
+			// FOW gate (avsiktslagret §4): the sentry's owner must actually SEE the
+			// marching unit's live position right now. Fail closed: no terrain row
+			// for the hex → treat as unseen, never guess.
+			terrain, known := graph[[2]int{pos.Q, pos.R}]
+			if !known {
+				continue
+			}
+			eyes, cached := eyesByOwner[interceptorID]
+			if !cached {
+				eyes = province.LoadLiveEyes(ctx, h.pool, e.WorldID, interceptorID, sampleNow, point.at)
+				eyesByOwner[interceptorID] = eyes
+			}
+			if !province.AnyEyeSees(eyes, pos, terrain) {
+				continue // the sentry's owner has never laid eyes on this march
+			}
+
+			if err := h.intercept(ctx, e.WorldID, m, sentryID, sentryType, interceptorID, verb, pos); err != nil {
+				slog.Error("unit intercept scan: intercept failed", "unit", m.id, "sentry", sentryID, "err", err)
+			}
 		}
 
-		// FOW gate (avsiktslagret §4): the sentry's owner must actually SEE the
-		// marching unit's live position right now. Fail closed: no terrain row
-		// for the hex → treat as unseen, never guess.
-		terrain, known := graph[[2]int{pos.Q, pos.R}]
-		if !known {
-			continue
-		}
-		eyes, cached := eyesByOwner[interceptorID]
-		if !cached {
-			eyes = province.LoadLiveEyes(ctx, h.pool, e.WorldID, interceptorID, now, anchor.MilliAt(now))
-			eyesByOwner[interceptorID] = eyes
-		}
-		if !province.AnyEyeSees(eyes, pos, terrain) {
-			continue // the sentry's owner has never laid eyes on this march
-		}
-
-		if err := h.intercept(ctx, e.WorldID, m, sentryID, sentryType, interceptorID, verb, pos); err != nil {
-			slog.Error("unit intercept scan: intercept failed", "unit", m.id, "sentry", sentryID, "err", err)
-		}
 	}
 
-	return h.scheduler.EnqueueTickRecurring(ctx, e.WorldID, events.ScheduledUnitInterceptScan,
-		struct{}{}, e.DueTick, UnitInterceptScanIntervalTicks)
+	return nil
 }
 
 // intercept acts on one (marching unit, sentry) pair, guarded so the same
@@ -338,4 +360,19 @@ func (h *UnitInterceptScanHandler) intercept(
 	uah.deliverBattleBegun(ctx, worldID)
 	slog.Info("unit intercepted — battle initiated/joined", "unit", m.id, "sentry", sentryID, "q", pos.Q, "r", pos.R)
 	return nil
+}
+
+func (h *UnitInterceptScanHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
+	if err := h.scan(ctx, e); err != nil {
+		return err
+	}
+	return h.scheduler.EnqueueTickRecurring(ctx, e.WorldID, events.ScheduledUnitInterceptScan, struct{}{}, e.DueTick, UnitInterceptScanIntervalTicks)
+}
+func (h *UnitInterceptScanHandler) BeforeTimedArrival(next events.Handler) events.Handler {
+	return func(ctx context.Context, e events.ScheduledEvent) error {
+		if err := h.scan(ctx, e); err != nil {
+			return err
+		}
+		return next(ctx, e)
+	}
 }

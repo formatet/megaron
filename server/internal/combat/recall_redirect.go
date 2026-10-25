@@ -184,8 +184,12 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 	var newMarchRoute []byte
 	if len(path) >= 2 {
 		if stepHours, shErr := province.StepHoursDB(ctx, tx, o.WorldID, path, unit.MoveCategory(unit.Type(utype))); shErr == nil {
-			if route, ok := BuildRoute(path, stepHours, currentTick, currentTick+travelTicks); ok {
+			if route, ok := BuildRouteAt(ctx, tx, o.WorldID, path, stepHours, currentTick, currentTick+travelTicks, now); ok {
 				if raw, mErr := json.Marshal(route); mErr == nil {
+					if _, end, e := RouteWallTimes(ctx, tx, o.WorldID, route); e == nil {
+						arrivesAtNew = end
+					}
+
 					newMarchRoute = raw
 				}
 			}
