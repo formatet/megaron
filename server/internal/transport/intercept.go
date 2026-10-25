@@ -179,6 +179,13 @@ func (h *InterceptScanHandler) ScanAt(ctx context.Context, e events.ScheduledEve
 		dest := province.MapPosition{Q: t.destQ, R: t.destR}
 		var pos province.MapPosition
 		if len(t.journey) > 0 {
+			var j province.TradeJourney
+			if err := json.Unmarshal(t.journey, &j); err != nil {
+				return err
+			}
+			if j.Clock != nil && !j.Route(0, 0).InTransitAt(now) {
+				continue
+			}
 			if t.departedTick == nil {
 				return fmt.Errorf("saved transport %s missing departure tick", t.id)
 			}

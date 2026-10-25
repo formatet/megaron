@@ -92,3 +92,9 @@ func (r StoredRoute) Position(now time.Time) (Hex, error) {
 	}
 	return PositionAt(r.Move(), Milli(r.MilliAt(now)))
 }
+
+// InTransitAt bounds physical hazard scans during historical catch-up. The
+// endpoint is included so arrival-tie hazards keep the existing priority.
+func (r StoredRoute) InTransitAt(now time.Time) bool {
+	return !now.Before(r.DepartureAt) && !now.After(r.WallAt(int64(r.EndTick)*1000+r.OffsetMilli))
+}

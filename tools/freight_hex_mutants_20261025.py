@@ -7,6 +7,7 @@ cases=[
  ('freight-early-hex','server/internal/transport/transport.go','r := j.Route(departedTick, dueTick)','r := j.Route(departedTick, dueTick)\n r.Version=0;r.OffsetMilli=0','./internal/transport','TestTimedFreightDispatchKeepsStartHexAndDeadline'),
  ('runner-early-eye','server/internal/province/eyes.go','p, err := r.Position(now)','r.Version=0;r.OffsetMilli=0\n p, err := r.Position(now)','./internal/messenger','TestTimedRunnerReturnWaitsForReachedHex'),
  ('port-early-boarding','server/internal/messenger/passage.go','h.clk.Now().Before(ready) || boarded.Before(ready)','h.clk.Now().Add(time.Duration(r.TickNanoseconds)/1000).Before(ready) || boarded.Add(time.Duration(r.TickNanoseconds)/1000).Before(ready)','./internal/messenger','TestTimedRunnerCannotBoardBeforePortOrCatchDepartedShip'),
+ ('freight-window','server/internal/transport/intercept.go','if j.Clock != nil && !j.Route(0, 0).InTransitAt(now)','if false && j.Clock != nil && !j.Route(0, 0).InTransitAt(now)','./internal/transport','TestTimedFreightCatchupOnlyInterceptsActiveWindow'),
  ('freight-deadline','server/internal/events/scheduler.go',"'TransportArrivalV2','TradeDeliveryV2'","'TradeDeliveryV2'",'./internal/events','TestFreightDeadlineTypesWaitForExactInstant'),
 ]
 results=[]
@@ -22,4 +23,4 @@ for i,(name,file,old,new,pkg,test) in enumerate(cases):
  assert path.read_bytes()==original
  results.append({'mutant':name,'test':test,'assertion_red':True,'restored_sha256':hashlib.sha256(original).hexdigest()})
 (OUT/'mutations.json').write_text(json.dumps(results,indent=2))
-print('PASS 4 assertion-red physical mutants; exact byte restores')
+print('PASS 5 assertion-red physical mutants; exact byte restores')

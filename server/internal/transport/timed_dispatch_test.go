@@ -6,6 +6,7 @@ import (
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/tick"
+	"github.com/google/uuid"
 	"testing"
 	"time"
 )
@@ -101,6 +102,66 @@ func TestTimedFreightDeadlineMatchesFrozenRoute(t *testing.T) {
 		p, err := SavedPosition(raw, dep, due, 0, now.Add(tt.elapsed))
 		if err != nil || p.Q != tt.want {
 			t.Errorf("at %v got%v err%v wantq%d", tt.elapsed, p, err, tt.want)
+		}
+	}
+}
+
+// Ordered catch-up sees physical rows dispatched later than its historical
+// cutoff; those rows must not be intercepted before dispatch or after arrival.
+func TestTimedFreightCatchupOnlyInterceptsActiveWindow(t *testing.T) {
+	old := tick.TickSeconds
+	tick.TickSeconds = 60
+	t.Cleanup(func() { tick.TickSeconds = old })
+	pool := testPool(t)
+	f := newFixture(t, pool)
+	ctx := context.Background()
+	now := time.Date(2026, 10, 25, 7, 0, 0, 0, time.UTC)
+	if _, err := pool.Exec(ctx, `UPDATE worlds SET current_tick=103,last_tick_at=$2 WHERE id=$1`, f.worldID, now); err != nil {
+		t.Fatal(err)
+	}
+	var raider uuid.UUID
+	if err := pool.QueryRow(ctx, `INSERT INTO players(username,password_hash) VALUES($1,'x') RETURNING id`, uuid.NewString()).Scan(&raider); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.Exec(ctx, `UPDATE settlements SET owner_id=$2,is_capital=true WHERE id=$1`, f.destID, raider); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.Exec(ctx, `INSERT INTO units(world_id,owner_id,type,category,size,crew,status,stance,q,r,sentry_q,sentry_r) VALUES($1,$2,'spearman','land',80,0,'positioned','sentry',1,0,1,0)`, f.worldID, raider); err != nil {
+		t.Fatal(err)
+	}
+	clk := clock.NewTestClock(now)
+	sched := events.NewScheduler(pool, clk)
+	ids := make([]uuid.UUID, 0, 3)
+	for _, offset := range []time.Duration{time.Minute, -6 * time.Minute, 0} {
+		tx, err := pool.Begin(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		id, err := Dispatch(ctx, tx, sched, DispatchParams{WorldID: f.worldID, OwnerID: f.owner, OriginID: f.sourceID, DestID: f.destID, Kind: "transfer", Category: "land", DestQ: 3, DepartsAt: now.Add(offset), Manifest: Manifest{"silver": 10}, Interceptable: true})
+		if err != nil {
+			_ = tx.Rollback(ctx)
+			t.Fatal(err)
+		}
+		if err = tx.Commit(ctx); err != nil {
+			t.Fatal(err)
+		}
+		ids = append(ids, id)
+	}
+	h := NewInterceptScanHandler(pool, sched, events.NewStore(pool), nil, clk)
+	if err := h.ScanAt(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: 103}); err != nil {
+		t.Fatal(err)
+	}
+	for i, id := range ids {
+		var status string
+		if err := pool.QueryRow(ctx, `SELECT status FROM transports WHERE id=$1`, id).Scan(&status); err != nil {
+			t.Fatal(err)
+		}
+		want := "in_transit"
+		if i == 2 {
+			want = "intercepted"
+		}
+		if status != want {
+			t.Errorf("window%d status%s want%s", i, status, want)
 		}
 	}
 }

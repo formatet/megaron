@@ -89,7 +89,7 @@ func TestCaravanTransfer_BentPathSavedAndETAAnchored(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if parsed.Sub(f.clk.Now()) != tick.RealUntil(8, 0) {
+	if parsed.Sub(f.clk.Now().Truncate(time.Microsecond)) != tick.RealUntil(8, 0) {
 		t.Fatalf("wall ETA duration %v", parsed.Sub(f.clk.Now()))
 	}
 }
