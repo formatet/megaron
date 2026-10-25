@@ -45,3 +45,11 @@ func TestLocationStr_Marching_WithoutCurrentPos_Unchanged(t *testing.T) {
 		t.Errorf("locationStr = %q, want %q (unchanged from before this slice)", got, want)
 	}
 }
+
+func TestLocationStr_DockingShipStaysAndLandsPassengers(t *testing.T) {
+	u := unitRow{Category: "naval", Status: "marching", TargetQ: intPtr(9), TargetR: intPtr(0), MarchIntent: strPtr("dock")}
+	got := locationStr(nil, u, nil)
+	if !strings.Contains(got, "dock and stay") || !strings.Contains(got, "everyone aboard joins the garrison") || strings.Contains(got, "returns home") {
+		t.Fatal(got)
+	}
+}

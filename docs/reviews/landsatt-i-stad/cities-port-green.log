@@ -1,0 +1,8 @@
+» färsk DB på migration 214 · commit 73b59933
+2026/10/25 16:20:29 INFO player registered id=82458c83-3688-415c-9619-55837573b9c0 username=wanax-a-88182368-5735-4c95-b463-c948756376cf
+2026/10/25 16:20:29 INFO player registered id=a45a7585-57d1-43b7-9196-fd68a6860324 username=wanax-b-23c0ebfa-acc6-4255-ac55-e67dbc93d569
+--- FAIL: TestCitiesOwnPortMetadataKeepsForeignHarbourPrivate (0.11s)
+    cities_port_test.go:17: ERROR: there is no unique or exclusion constraint matching the ON CONFLICT specification (SQLSTATE 42P10)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.115s
+FAIL

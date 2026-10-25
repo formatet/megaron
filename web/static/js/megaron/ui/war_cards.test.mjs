@@ -202,3 +202,9 @@ test('recruitment receipt names the goods actually paid, including cedar substit
  assert.equal(recruitmentPaidText({cedar:30}),' · paid 30 cedar');
  assert.equal(recruitmentPaidText(undefined),'');
 });
+
+test('a ship bound for an own city promises to dock and stay, and land everyone aboard',()=>{
+ const html=renderUnitCard(unit({category:'naval',type:'merchantman',status:'marching',march_intent:'dock'}));
+ assert.match(html,/docks and stays/);assert.match(html,/Everyone aboard joins the city’s garrison/);
+ assert.doesNotMatch(html,/returns to port automatically|>Recall<|>Redirect</);
+});

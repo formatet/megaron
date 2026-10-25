@@ -673,6 +673,9 @@ func locationStr(c *Client, u unitRow, homes map[string]settlementPos) string {
 		// Land mission (R1, megaron_plan_skeppsuppdrag_landsatt.md): the ship's
 		// own target_q/r is the SEA waypoint next to the chosen land hex, not
 		// the land hex itself — same limitation assault's offshore hex has.
+		if u.MarchIntent != nil && *u.MarchIntent == "dock" {
+			loc = "sailing to dock and stay — everyone aboard joins the garrison — "
+		}
 		if u.MarchIntent != nil && *u.MarchIntent == "land" {
 			loc = "sailing to land troops — "
 		}

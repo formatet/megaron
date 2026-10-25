@@ -4,6 +4,7 @@ import (
 	"context"
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/tick"
 	"github.com/google/uuid"
 	"testing"
 	"time"
@@ -59,6 +60,29 @@ func TestCityLandingAllPassengersStayAndSupportUnchanged(t *testing.T) {
 			if result.TargetQ != 9 || result.TargetR != 0 {
 				t.Fatalf("must sail to the saved coastal approach of the selected city, got %+v", result)
 			}
+			// Low stores still suffice for the nearer destination city. Dock is
+			// a food stop, not a patrol that must abandon its mission early.
+			ration := VoyageRation("merchantman", 1, "spearman", len(ids)*100, 10)
+			clk.Set(result.ArrivesAt.Add(-time.Duration(tick.TickSeconds) * time.Second))
+			if _, err := pool.Exec(ctx, `UPDATE worlds SET current_tick=$2,last_tick_at=$3 WHERE id=$1`, world, result.ArrivalTick-1, clk.Now()); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := pool.Exec(ctx, `UPDATE units SET provisions=$2,provision_goods=jsonb_build_object('grain',$2::float8) WHERE id=$1`, ship, 2*ration); err != nil {
+				t.Fatal(err)
+			}
+			arrivals := NewUnitArrivalHandler(pool, store, nil, sched, clk)
+			upkeep := NewUpkeepHandler(pool, sched, store, nil, arrivals, clk)
+			if err := upkeep.returnForFood(ctx, upkeepUnitRow{id: ship, category: "naval", status: "marching"}, world); err != nil {
+				t.Fatal(err)
+			}
+			var activeIntent string
+			if err := pool.QueryRow(ctx, `SELECT march_intent FROM units WHERE id=$1`, ship).Scan(&activeIntent); err != nil {
+				t.Fatal(err)
+			}
+			if activeIntent != "dock" {
+				t.Fatalf("nearby city food stop must preserve docking mission, got %s", activeIntent)
+			}
+			clk.Set(result.ArrivesAt)
 			markUnitArrivalProcessed(t, pool, world, ship)
 			h := newArrivalHandler(pool, nil)
 			runFieldArrival(t, pool, h, world, ship)
