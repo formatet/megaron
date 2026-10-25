@@ -1,0 +1,22 @@
+{"tickNow":103.73148333333333,"progress":0.7314833333333297,"position":{"x":58,"y":26,"q":58,"r":26,"index":3,"local":0},"wallProgress":0,"elapsedMs":0}
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: new voyage at dispatch must occupy first entered hex, not final hex
+
+3 !== 1
+
+    at file:///tmp/megaron-codex-skepp-omedelbart-20261025/docs/reviews/skepp-omedelbart/replay.mjs:12:55
+    at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 3,
+  expected: 1,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v22.23.4
