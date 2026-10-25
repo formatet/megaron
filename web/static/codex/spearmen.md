@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Trained at** | Barracks |
-| **Cost** | 12 grain per hundred · no silver |
+| **Cost for one cohort** | 12 grain · no silver |
 | **Size** | 100 men, drafted from the city |
 | **Training** | 1 game day |
 | **Food** | 0.5 per game day at home, 1 in the field |

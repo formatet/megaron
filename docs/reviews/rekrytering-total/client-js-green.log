@@ -1,0 +1,214 @@
+TAP version 13
+# Subtest: codex: index ids are unique and every category is declared
+ok 1 - codex: index ids are unique and every category is declared
+  ---
+  duration_ms: 1.205864
+  type: 'test'
+  ...
+# Subtest: codex: every index entry has a file and every file has an index entry
+ok 2 - codex: every index entry has a file and every file has an index entry
+  ---
+  duration_ms: 0.73913
+  type: 'test'
+  ...
+# Subtest: codex: every [[link]] and related entry resolves to an article
+ok 3 - codex: every [[link]] and related entry resolves to an article
+  ---
+  duration_ms: 0.630966
+  type: 'test'
+  ...
+# Subtest: codex: every notification kind the client shows maps to exactly one article
+ok 4 - codex: every notification kind the client shows maps to exactly one article
+  ---
+  duration_ms: 1.186672
+  type: 'test'
+  ...
+# Subtest: codex: every drawer with a ? button has an article
+ok 5 - codex: every drawer with a ? button has an article
+  ---
+  duration_ms: 0.257207
+  type: 'test'
+  ...
+# Subtest: codex: every article is reachable — linked from another article or listed as related
+ok 6 - codex: every article is reachable — linked from another article or listed as related
+  ---
+  duration_ms: 0.388691
+  type: 'test'
+  ...
+# Subtest: renderMarkdown: escapes HTML and renders links, known and missing
+ok 7 - renderMarkdown: escapes HTML and renders links, known and missing
+  ---
+  duration_ms: 0.559921
+  type: 'test'
+  ...
+# Subtest: renderMarkdown: headings, lists, tables, code and comments
+ok 8 - renderMarkdown: headings, lists, tables, code and comments
+  ---
+  duration_ms: 0.457796
+  type: 'test'
+  ...
+# Subtest: backlinksTo and searchArticles
+ok 9 - backlinksTo and searchArticles
+  ---
+  duration_ms: 0.36666
+  type: 'test'
+  ...
+# Subtest: codex: lowercase agora_ready is mapped and community rules match alpha policy
+ok 10 - codex: lowercase agora_ready is mapped and community rules match alpha policy
+  ---
+  duration_ms: 0.87012
+  type: 'test'
+  ...
+# Subtest: codex search finds abandon in Colonies and call-back in Sea
+ok 11 - codex search finds abandon in Colonies and call-back in Sea
+  ---
+  duration_ms: 6.05145
+  type: 'test'
+  ...
+# Subtest: codex: game days name the world unit and clock/date names wall time
+ok 12 - codex: game days name the world unit and clock/date names wall time
+  ---
+  duration_ms: 0.197375
+  type: 'test'
+  ...
+# Subtest: historical food-reserve notifications open the current food article
+ok 13 - historical food-reserve notifications open the current food article
+  ---
+  duration_ms: 0.089665
+  type: 'test'
+  ...
+# Subtest: temple demolition notice opens the loss and lowered-ceiling rules
+ok 14 - temple demolition notice opens the loss and lowered-ceiling rules
+  ---
+  duration_ms: 0.088407
+  type: 'test'
+  ...
+# Subtest: P: garrison shows March and eligible Reinforce; stance and battle retreat are directly available
+ok 15 - P: garrison shows March and eligible Reinforce; stance and battle retreat are directly available
+  ---
+  duration_ms: 11.073584
+  type: 'test'
+  ...
+# Subtest: P: marching land has Recall, stance and typed redirect directly available
+ok 16 - P: marching land has Recall, stance and typed redirect directly available
+  ---
+  duration_ms: 0.303322
+  type: 'test'
+  ...
+# Subtest: P: positioned units remain orderable and fetch uses server-provided ships
+ok 17 - P: positioned units remain orderable and fetch uses server-provided ships
+  ---
+  duration_ms: 0.199484
+  type: 'test'
+  ...
+# Subtest: P: naval loading unloading and repair are directly available; at sea has no recall or redirect
+ok 18 - P: naval loading unloading and repair are directly available; at sea has no recall or redirect
+  ---
+  duration_ms: 0.475104
+  type: 'test'
+  ...
+# Subtest: P: laid-up hull has Fit out and zero upkeep; fitting-out hull has ETA and no orders
+ok 19 - P: laid-up hull has Fit out and zero upkeep; fitting-out hull has ETA and no orders
+  ---
+  duration_ms: 0.442991
+  type: 'test'
+  ...
+# Subtest: P: forming training embarked repairing and freight do not offer inapplicable orders
+ok 20 - P: forming training embarked repairing and freight do not offer inapplicable orders
+  ---
+  duration_ms: 0.330133
+  type: 'test'
+  ...
+# Subtest: P: every server lifecycle status has a player label; unknown status never leaks raw jargon
+ok 21 - P: every server lifecycle status has a player label; unknown status never leaks raw jargon
+  ---
+  duration_ms: 0.212592
+  type: 'test'
+  ...
+# Subtest: P: ships off the coast take no March while a city remains, but keep the R6 stranded exception
+ok 22 - P: ships off the coast take no March while a city remains, but keep the R6 stranded exception
+  ---
+  duration_ms: 0.1646
+  type: 'test'
+  ...
+# Subtest: P: numeric values and missing ETA guards survive the restoration
+ok 23 - P: numeric values and missing ETA guards survive the restoration
+  ---
+  duration_ms: 0.374688
+  type: 'test'
+  ...
+# Subtest: B: Army card shows server rations and explicit zero spearman silver without guessing
+ok 24 - B: Army card shows server rations and explicit zero spearman silver without guessing
+  ---
+  duration_ms: 0.743583
+  type: 'test'
+  ...
+# Subtest: B: upkeep billing context comes from server, not guessed from unit status
+ok 25 - B: upkeep billing context comes from server, not guessed from unit status
+  ---
+  duration_ms: 0.585318
+  type: 'test'
+  ...
+# Subtest: B: civilian Nomadic Host has no upkeep row when the server says none
+ok 26 - B: civilian Nomadic Host has no upkeep row when the server says none
+  ---
+  duration_ms: 0.157883
+  type: 'test'
+  ...
+# Subtest: Haiku 6: a ship at sea with part of a game day aboard is not out of food
+ok 27 - Haiku 6: a ship at sea with part of a game day aboard is not out of food
+  ---
+  duration_ms: 0.137776
+  type: 'test'
+  ...
+# Subtest: equal food: roster food alias wins and ship manifest preserves each good
+ok 28 - equal food: roster food alias wins and ship manifest preserves each good
+  ---
+  duration_ms: 0.670826
+  type: 'test'
+  ...
+# Subtest: B: Army pay preserves server home, field and surviving-crew amounts
+ok 29 - B: Army pay preserves server home, field and surviving-crew amounts
+  ---
+  duration_ms: 0.696148
+  type: 'test'
+  ...
+# Subtest: freighting ship shows real provisions, final ration and empty hold without new orders
+ok 30 - freighting ship shows real provisions, final ration and empty hold without new orders
+  ---
+  duration_ms: 0.468518
+  type: 'test'
+  ...
+# Subtest: ORDER28: paused builds and repairs explain missing workers without a stale ETA
+ok 31 - ORDER28: paused builds and repairs explain missing workers without a stale ETA
+  ---
+  duration_ms: 0.141884
+  type: 'test'
+  ...
+# Subtest: silver flow: basic ships show zero API pay and chariots show doubled pay
+ok 32 - silver flow: basic ships show zero API pay and chariots show doubled pay
+  ---
+  duration_ms: 0.381843
+  type: 'test'
+  ...
+# Subtest: recruit prices are the server total for one vessel or cohort, with the actual city draft
+ok 33 - recruit prices are the server total for one vessel or cohort, with the actual city draft
+  ---
+  duration_ms: 0.161889
+  type: 'test'
+  ...
+# Subtest: recruitment receipt names the goods actually paid, including cedar substitution
+ok 34 - recruitment receipt names the goods actually paid, including cedar substitution
+  ---
+  duration_ms: 0.59423
+  type: 'test'
+  ...
+1..34
+# tests 34
+# suites 0
+# pass 34
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 109.65318

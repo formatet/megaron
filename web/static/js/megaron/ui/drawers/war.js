@@ -63,41 +63,24 @@ async function getUnitCatalogue() {
 // catalogue and can_recruit report only under the canonical 'galley'.
 const CATALOGUE_TYPE = { ship: 'galley' };
 
-// entry.costs from /api/v1/units is the TOTAL for one recruit call — a
-// batch of entry.batch_men (10 for land, the crew size for naval), NOT a
-// per-man rate. Dividing back by batch_men here recovers the same per-man
-// number the server itself stores (province.UnitSpecs costs) — this is a
-// unit conversion of fetched data, not a second hardcoded copy of it — so
-// the label keeps matching the men-count selector next to it exactly like
-// the old hardcoded "/man" strings did (this is the one place a stray ×10
-// would sneak back in, so keep any future edit here dividing, never
-// multiplying, the batch total).
+// The catalogue owns the total price and the people drafted by one order.
 function trimNum(v) {
   return (Math.round(v * 1000) / 1000).toString();
 }
-function fmtUnitCost(entry, isNaval) {
-  // batch_men is the divisor for every good below, so a missing/zero value
-  // would render "Infinity grain/man" rather than degrade. The server always
-  // sets it (10 for land, unit.CrewFor for naval), so treat absence as a
-  // failed read, not as something to paper over with a guessed batch size.
+export function fmtUnitCost(entry, isNaval) {
   if (!entry || !entry.batch_men) return null;
-  const perMan = Object.entries(entry.costs || {})
+  const goods = Object.entries(entry.costs || {})
     .filter(([, v]) => v > 0)
-    .map(([k, v]) => trimNum(v / entry.batch_men) + ' ' + k)
+    .map(([k, v]) => trimNum(v) + ' ' + (k === 'timber' ? 'timber (or cedar)' : k))
     .join(' + ');
-  const costStr = (perMan || '0 cost') + '/man';
-  // pop_cost is an AFFORDABILITY GATE, not a per-man cost and not citizens
-  // consumed: the server's only use of it is `laborPool >= spec.PopCost`
-  // (api/handlers/province.go, the can_recruit loop), and found_metropolis.go
-  // says so in as many words ("an affordability gate and a catalogue figure,
-  // never a population deduction"). What recruiting actually costs in people
-  // is one citizen per man (`population - totalMen` in Recruit). So label it
-  // as the floor it is — "5 pop" beside "3 grain/man" reads as five citizens
-  // per man, which is wrong by an order of magnitude in the scary direction.
-  // (province/training.go's own doc-comment still says "citizens consumed per
-  // unit trained" — that comment is stale; the call sites are the truth.)
-  const popStr = 'needs ' + entry.pop_cost + '+ pop';
-  return isNaval ? (costStr + ' · ' + popStr + ' (crew ' + entry.batch_men + ')') : (costStr + ' · ' + popStr);
+  return (goods || '0 cost') + ' · ' + entry.batch_men + (isNaval ? ' crew' : ' men') + ' from the city';
+}
+
+export function recruitmentPaidText(costs) {
+  const parts = Object.entries(costs || {}).filter(([, amount]) => amount > 0)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([good, amount]) => trimNum(amount) + ' ' + good);
+  return parts.length ? ' · paid ' + parts.join(' + ') : '';
 }
 
 // ── War drawer ────────────────────────────────────────────────────────────
@@ -180,7 +163,7 @@ export async function loadWarDrawer() {
     const army = pd.army || {};
     const buildings = new Set((recPd.buildings || []).map(b => b.type));
     const canRec = {};
-    (recPd.can_recruit || []).forEach(r => { canRec[r.unit] = r.can_recruit; });
+    (recPd.can_recruit || []).forEach(r => { canRec[r.unit] = r; });
     const unitResponse = unitsRes && unitsRes.ok ? await unitsRes.json() : {};
     if (seq !== warLoadSeq) return;
     const allUnits = unitResponse.units || [];
@@ -237,10 +220,11 @@ export async function loadWarDrawer() {
       const catType = CATALOGUE_TYPE[u.id] || u.id;
       const catEntry = catByType[catType];
       const noBuilding = u.req !== null;
-      const noResources = !noBuilding && canRec[catType] === false;
+      const noResources = !noBuilding && canRec[catType]?.can_recruit === false;
       const disabled = noBuilding || noResources || recruitmentPending(State.WORLD_ID, prevRecruitCity, u.id);
       const costStr = catEntry ? fmtUnitCost(catEntry, isNaval) : 'cost data unavailable';
-      const costText = noBuilding ? ('requires ' + u.req) : (noResources ? costStr + ' — insufficient' : costStr);
+      const reasons = canRec[catType]?.reasons || (noBuilding ? ['needs a ' + u.req] : []);
+      const costText = esc(costStr + (reasons.length ? ' · ' + reasons.join(' · ') : ''));
       const opStyle = disabled ? 'opacity:.5;' : '';
       if (isNaval) {
         // Ship-build overhaul: one vessel per build, optional name, no men select.
@@ -342,9 +326,10 @@ async function warRecruit(provinceID, unitType, name = '') {
   await submitRecruitment({ world, city: provinceID, type: unitType, name, status,
     accepted: async data => {
       const label = unitTypeLabel(unitType);
-      const receipt = data.names?.length
+      let receipt = data.names?.length
         ? 'Order received: building ' + data.names.join(', ') + ' — ' + (data.shipyard_waiting ? 'waiting for shipyard workers' : readyWord(data.complete_at))
         : 'Order received: ' + (data.pop_drawn || data.men || 100) + ' ' + label + ' — ' + (data.shipyard_waiting ? 'waiting for shipyard workers' : readyWord(data.complete_at));
+      receipt += recruitmentPaidText(data.paid_costs);
       rememberRecruitmentReceipt(world, provinceID, receipt);
       status(receipt);
       await loadWarDrawer();

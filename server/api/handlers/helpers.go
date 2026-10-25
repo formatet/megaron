@@ -227,9 +227,16 @@ func goodsAffordableWithCedar(stock map[string]float64, costs map[string]float64
 // atomically together with silver/kharis/population — closing the partial-drain
 // where goods were committed before a later currency deduction failed.
 func deductGoods(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, costs map[string]float64) error {
+	_, err := deductGoodsPaid(ctx, tx, settlementID, costs)
+	return err
+}
+
+// deductGoodsPaid returns the actual goods debited, including cedar substitution,
+// for receipts and cancellation reservations. The caller owns the transaction.
+func deductGoodsPaid(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, costs map[string]float64) (map[string]float64, error) {
 	costs, cedarSpare, err := coverTimberWithCedar(ctx, tx, settlementID, costs)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	// Pass 1: lock the rows and check effective (lazy-evaluated) stock.
 	var short []goodShortfall
@@ -248,7 +255,7 @@ func deductGoods(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, costs m
 		if err == pgx.ErrNoRows {
 			have = 0 // settlement has never held this good
 		} else if err != nil {
-			return err
+			return nil, err
 		}
 		if !province.GoodsAffordable(have, qty) {
 			if key == "timber" {
@@ -259,7 +266,7 @@ func deductGoods(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, costs m
 	}
 	if len(short) > 0 {
 		sort.Slice(short, func(i, j int) bool { return short[i].Good < short[j].Good })
-		return &insufficientGoodsError{Short: short}
+		return nil, &insufficientGoodsError{Short: short}
 	}
 
 	// Pass 2: every good is affordable — deduct them all (caller commits).
@@ -274,8 +281,8 @@ func deductGoods(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, costs m
 			 WHERE settlement_id = $2 AND good_key = $3`,
 			qty, settlementID, key,
 		); err != nil {
-			return err
+			return nil, err
 		}
 	}
-	return nil
+	return costs, nil
 }

@@ -1,0 +1,38 @@
+[
+  {
+    "name": "population",
+    "test": "TestRecruitQuoteMatchesPopulation",
+    "exit": 1,
+    "assertion_red": true
+  },
+  {
+    "name": "building",
+    "test": "TestRecruitQuoteNamesEveryBlockingGate/building",
+    "exit": 1,
+    "assertion_red": true
+  },
+  {
+    "name": "whole-batch",
+    "test": "TestRecruitQuoteNamesEveryBlockingGate/goods",
+    "exit": 1,
+    "assertion_red": true
+  },
+  {
+    "name": "cedar",
+    "test": "TestRecruitQuoteNamesEveryBlockingGate/cedar",
+    "exit": 1,
+    "assertion_red": true
+  },
+  {
+    "name": "queue",
+    "test": "TestRecruitQuoteNamesEveryBlockingGate/queue",
+    "exit": 1,
+    "assertion_red": true
+  },
+  {
+    "name": "refund-actual-goods",
+    "test": "TestRecruitCedarReceiptAndCancellation",
+    "exit": 1,
+    "assertion_red": true
+  }
+]

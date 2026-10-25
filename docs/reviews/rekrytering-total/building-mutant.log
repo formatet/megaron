@@ -1,0 +1,8 @@
+2026/10/25 16:02:39 INFO player registered id=74744b6b-0148-4327-b432-b28a7b1a7b53 username=shipwright-50b7c736-555e-4b10-be1e-0ef034848128
+--- FAIL: TestRecruitQuoteNamesEveryBlockingGate (0.09s)
+    --- FAIL: TestRecruitQuoteNamesEveryBlockingGate/building (0.09s)
+        recruit_quote_test.go:126: quote={Unit:galley Can:true Reasons:[]} want canfalse reason"needs a shipyard"
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.090s
+FAIL
+» färsk DB på migration 213 · commit 8e19cdd7+ändringar

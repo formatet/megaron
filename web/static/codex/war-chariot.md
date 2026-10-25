@@ -3,7 +3,7 @@ The **War Chariot** is the hardest hitter on open ground: horses, a driver and a
 | | |
 |---|---|
 | **Built at** | Stable |
-| **Cost** | 40 grain · 8 timber · 8 cedar · 20 [[bronze]] · 50 silver per hundred |
+| **Cost for one cohort** | 40 grain · 8 timber (or cedar) · 8 cedar · 20 [[bronze]] · 50 silver |
 | **Size** | 100 chariots |
 | **Training** | 3 game days |
 | **Food** | 0.8 per game day at home, 1.6 in the field |

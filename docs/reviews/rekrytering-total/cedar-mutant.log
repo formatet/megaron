@@ -1,0 +1,8 @@
+2026/10/25 16:02:49 INFO player registered id=73f430da-1847-41ca-a053-d316a7cc09f3 username=shipwright-6a3affb6-208b-4bde-95ad-f5fc19359304
+--- FAIL: TestRecruitQuoteNamesEveryBlockingGate (0.09s)
+    --- FAIL: TestRecruitQuoteNamesEveryBlockingGate/cedar (0.09s)
+        recruit_quote_test.go:126: quote={Unit:galley Can:false Reasons:[needs 30 timber (or cedar) (have 0)]} want cantrue reason""
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.095s
+FAIL
+» färsk DB på migration 213 · commit 8e19cdd7+ändringar
