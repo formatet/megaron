@@ -76,16 +76,21 @@ func testTimedCrossing(t *testing.T, integrated bool) {
 		t.Fatal("battle before middle reached")
 	}
 	if integrated {
+		// (2,0) is legitimately visible from the reached middle hex. The
+		// sentinel at (4,0) is visible only from the untravelled target.
+		if _, err := pool.Exec(ctx, `INSERT INTO map_tiles(world_id,q,r,terrain) VALUES($1,4,0,'plains') ON CONFLICT DO NOTHING`, f.worldID); err != nil {
+			t.Fatal(err)
+		}
 		progress := NewPlaceReachScanHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), nil)
 		if err := progress.advanceTimed(ctx, e); err != nil {
 			t.Fatal(err)
 		}
 		var known bool
-		if err := pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM player_scouted_tiles WHERE world_id=$1 AND player_id=$2 AND q=2 AND r=0)`, f.worldID, f.ownerA).Scan(&known); err != nil {
+		if err := pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM player_scouted_tiles WHERE world_id=$1 AND player_id=$2 AND q=4 AND r=0)`, f.worldID, f.ownerA).Scan(&known); err != nil {
 			t.Fatal(err)
 		}
 		if known {
-			t.Fatal("stopped army remembered its untravelled future target")
+			t.Fatal("stopped army used its untravelled future target as an eye")
 		}
 		if err := progress.advanceTimed(ctx, e); err != nil {
 			t.Fatal(err)

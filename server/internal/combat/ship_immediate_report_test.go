@@ -165,7 +165,8 @@ func TestShipReport43640c42_DeparturePhase(t *testing.T) {
 						if err = pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM player_scouted_tiles WHERE world_id=$1 AND player_id=$2 AND q=$3 AND r=$4)`, wid, owner, route.Hexes[i][0], route.Hexes[i][1]).Scan(&known); err != nil {
 							t.Fatal(err)
 						}
-						if known != (entered[i] <= at) {
+						// Unentered route tiles may already be visible across open sea.
+						if entered[i] <= at && !known {
 							t.Fatalf("at %d hex%d known=%v entry=%d", at, i, known, entered[i])
 						}
 					}

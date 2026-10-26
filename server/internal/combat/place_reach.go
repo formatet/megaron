@@ -94,9 +94,10 @@ type placeVoyage struct {
 	skip           bool
 }
 type placeEntry struct {
-	voyage int
-	milli  int64
-	hex    [2]int
+	voyage    int
+	milli     int64
+	hex       [2]int
+	sightOnly bool
 }
 
 type placeReachTarget struct {
@@ -263,9 +264,13 @@ func recordPlaceEntriesTx(ctx context.Context, tx pgx.Tx, store *events.Store, w
 		if err = tx.QueryRow(ctx, `SELECT last_milli FROM place_reach_progress WHERE journey_key=$1 FOR UPDATE`, v.key).Scan(&v.last); err != nil {
 			return nil, err
 		}
-		for j := 1; j < len(entered); j++ {
+		first := 1
+		if v.route.Version == 2 && v.displayID == v.id {
+			first = 0 // departure is an eye, but grants no new naming right
+		}
+		for j := first; j < len(entered); j++ {
 			if entered[j] > v.last && entered[j] <= through {
-				entries = append(entries, placeEntry{i, entered[j], v.route.Hexes[j]})
+				entries = append(entries, placeEntry{i, entered[j], v.route.Hexes[j], j == 0})
 			}
 		}
 	}
@@ -280,9 +285,22 @@ func recordPlaceEntriesTx(ctx context.Context, tx pgx.Tx, store *events.Store, w
 	for _, entry := range entries {
 		v := voyages[entry.voyage]
 		if v.route.Version == 2 {
-			if _, err = tx.Exec(ctx, `INSERT INTO player_scouted_tiles(world_id,player_id,q,r) VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING`, worldID, v.owner, entry.hex[0], entry.hex[1]); err != nil {
+			// A reached unit hex is an eye even if no map read sampled it.
+			// Transports retain their existing memory semantics.
+			if v.displayID == v.id {
+				kind := province.EyeLandUnit
+				if unit.CategoryOf(unit.Type(v.typ)) == unit.CategoryNaval {
+					kind = province.EyeShip
+				}
+				if err = province.SweepLiveRadius(ctx, tx, worldID, v.owner, province.MapPosition{Q: entry.hex[0], R: entry.hex[1]}, kind); err != nil {
+					return nil, err
+				}
+			} else if _, err = tx.Exec(ctx, `INSERT INTO player_scouted_tiles(world_id,player_id,q,r) VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING`, worldID, v.owner, entry.hex[0], entry.hex[1]); err != nil {
 				return nil, err
 			}
+		}
+		if entry.sightOnly {
+			continue
 		}
 		for _, target := range objects[entry.hex] {
 			p := target.place
