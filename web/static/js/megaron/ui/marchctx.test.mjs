@@ -11,8 +11,10 @@ import assert from 'node:assert/strict';
 // render/map.js, so — same trick as cargo.test.mjs — stub the globals its
 // import graph reaches, THEN import dynamically. A static import would evaluate
 // that graph before any test body runs.
+const menuListeners = new Map();
 const noopEl = new Proxy({}, {
-  get: (_t, k) => (k === 'style' ? {} : (k === 'value' ? '' : () => noopEl)),
+  get: (_t, k) => k === 'addEventListener' ? (event, callback) => { if (callback.name === 'updateMarchPreview') menuListeners.set(event, callback); }
+    : (k === 'style' ? {} : (k === 'value' ? '' : () => noopEl)),
   set: () => true,
 });
 globalThis.ResizeObserver ??= class { observe() {} };
@@ -409,5 +411,33 @@ test('closing the menu while expedition validation is pending leaves no order',a
   const send=menu.sendMarch();menu.closeMarchCtx();
   release({ok:true,status:200,headers:{get:()=>null},json:async()=>({available:false,reason:'unknown_terrain'})});
   await send;assert.equal(calls.filter(c=>c.method==='POST').length,0);
+ }finally{menu.closeMarchCtx();globalThis.fetch=originalFetch;document.getElementById=originalGet;Object.assign(State,before);}
+});
+
+
+test('changing the named selection during preflight cancels the stale send and allows a fresh send',async()=>{
+ const {State}=await import('../state.js');const originalFetch=globalThis.fetch,originalGet=document.getElementById;
+ const before={...State},controls=new Map(),calls=[];let release;
+ const pending=new Promise(resolve=>{release=resolve;});
+ const response=()=>({ok:true,status:200,headers:{get:()=>null},json:async()=>({available:false,reason:'courier_required'})});
+ const control=id=>{if(!controls.has(id))controls.set(id,{value:'',checked:false,style:{display:'block'},classList:{toggle(){}},disabled:false});return controls.get(id);};
+ try{
+  document.getElementById=control;control('mg-0-0').checked=true;
+  Object.assign(control('mctx-ticks'),{value:'12',min:'2',max:'365',disabled:false});
+  State.WORLD_ID='selection-change-proof';State.marchCtxUnitID=null;State.marchCtxDest={q:10,r:0,known:false,isSea:false};
+  State.marchCtxGroups=[{ids:['u1','u2'],names:['1st Spearmen','2nd Spearmen'],category:'land',mode:'march'}];
+  globalThis.fetch=async(url,opts={})=>{calls.push({url,method:opts.method||'GET'});return pending;};
+  const sending=menu.sendMarch();
+  control('mg-0-0').checked=false;control('mg-0-1').checked=true;
+  menuListeners.get('change')();
+  release(response());await sending;
+  assert.equal(calls.filter(c=>c.method==='POST').length,0,'an edited selection must invalidate the already validated IDs');
+  assert.equal(control('mctx-send').disabled,false,'a canceled send must allow the changed selection to be sent');
+  menu.closeMarchCtx(); // cancel the debounced forecast; retain this test destination
+  State.marchCtxDest={q:10,r:0,known:false,isSea:false};
+  State.marchCtxGroups=[{ids:['u1','u2'],names:['1st Spearmen','2nd Spearmen'],category:'land',mode:'march'}];
+  globalThis.fetch=async(url,opts={})=>{calls.push({url,method:opts.method||'GET'});return opts.method==='POST'?{...response(),ok:false,status:422,json:async()=>({error:'proof refusal'})}:response();};
+  await menu.sendMarch();
+  assert.deepEqual(calls.filter(c=>c.method==='POST').map(c=>c.url),['/api/v1/worlds/selection-change-proof/units/u2/march']);
  }finally{menu.closeMarchCtx();globalThis.fetch=originalFetch;document.getElementById=originalGet;Object.assign(State,before);}
 });
