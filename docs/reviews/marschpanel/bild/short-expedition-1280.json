@@ -1,0 +1,21 @@
+{
+  "refusal": "Nothing sent \u2014 the expedition duration is too short to reach the chosen area and return home \u2014 choose a longer duration or a nearer area",
+  "posts_before": 1,
+  "posts_after": 1,
+  "messengers_unchanged": true,
+  "preview_responses": [
+    {
+      "url": "http://127.0.0.1:50055/api/v1/worlds/e9070aa9-f356-4fdc-b738-6a09b9598457/units/c2784fa3-ad33-42d0-bea0-889b5fd5ab08/march-preview?target_q=10&target_r=24&unit_ids=c2784fa3-ad33-42d0-bea0-889b5fd5ab08",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:50055/api/v1/worlds/e9070aa9-f356-4fdc-b738-6a09b9598457/units/2ae230ec-0d26-441c-bc81-d65ab1657802/march-preview?target_q=10&target_r=24&unit_ids=2ae230ec-0d26-441c-bc81-d65ab1657802",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:50055/api/v1/worlds/e9070aa9-f356-4fdc-b738-6a09b9598457/units/c2784fa3-ad33-42d0-bea0-889b5fd5ab08/march-preview?target_q=26&target_r=24&intent=explore&ticks=6&unit_ids=c2784fa3-ad33-42d0-bea0-889b5fd5ab08",
+      "status": 422
+    }
+  ],
+  "errors": []
+}
