@@ -11,12 +11,21 @@ Stopvillkor: ny informations-/mekanikkonflikt tas direkt till Timothy.
 Bevis: baseline-röda prov, verkliga API-budgetprov, selektions- och asyncprov, mutanter, färsk fullGo/JS, nativeFirefox1280/390 och livehash/grundtillstånd.
 Gate: proves läsbar ordergivning i kedjans geografisteg.
 
-## Checkpoint inför clear
+## Resultat
 
-Byggt men INTE integrerat/deployat: individuella checkboxar med namn, högst1förvald; preview och send använder samma valdaID; expeditioners read-only budgetkontroll måste lyckas före någonPOST; stängd/ändrad panel invaliderar väntande sändning. Keryx accepterar exakt visningsnamn och gör samma preflight före expedition. Codex uppdaterad.
+Namngivna checkboxar väljer exakt enhet; högst en förvald. Preview och send delar urval. Både webb och Keryx kräver lyckad read-only expeditionsvalidering före första order-POST. En giltig men okänd ETA är tillåten. Stängd/ändrad panel invaliderar väntande sändning; ett nytt val kan skickas efteråt. Keryx tar exakt visningsnamn eller IDprefix och nekar tvetydiga namn. Codex beskriver samma flöde.
 
-Servern nekade redan för kort expedition för både garrison och positioned. Nytt riktigt positionedAPI-prov hittade i stället ett informationsläckage: avslag angav dold minsta restid. Additiv OrderReject.Code markerar de två budgetavslagen; ENDAST preview maskerar dem. Gammal POST-/eventbetydelse och mekanik bevaras.
+Serverns befintliga budgetmekanik är oförändrad. Budgetavslag får en additiv intern kod så att preview maskerar dold minimitid; gammal POST-/eventtext behåller sin betydelse. Inga nya migrationsfiler; migration215.
 
-Gröna delprov:54JS i marchctx+march_preview; helaKeryx-paketet på färskDB; serverns TestMarchPreview_ReadOnlyAndTiming på färskDB; domänens asymmetrisk retur/underbemannat skepp. Baseline-röda enhetsval/budget/Keryx och sekretess finns bredvid. Domänens returgränsmutant var assertionsröd på separat checkout; övriga mutanter återstår.
+Native Firefox hittade att feltexten blev för smal och att avbruten forecast lämnade ”Estimating arrival…”. Feltext får egen rad och send tömmer avbruten forecast; nytt test assertion-rött före fix. Ny capture ersätter första försöket.
 
-Kvar före integration: granska slutdiff; bredda meningsfulla klientprov för ändrat val under preflight om nödvändigt; fysiska mutanter och täckningsgränser per kärnfil; nativeFirefox1280/390 med RIKTIGA API-data (välj annan namngiven kohort och visa att bara den får order, samt för kort expedition ger0bud). Därefter fetch+rebase origin/master STRAX före hash, full färskGo/helaJS/vet/4dayguards på slutkoden, FFmerge/push/deploy/livehash+grundtillstånd/assetverifiering, todo/vault/board. Inga nya kanonbeslut behövs för nuvarande kontrakt.
+## Grindar och bevis
+
+- Kod: hel färsk Go på764b0bc5 (oförändrad slut-Go), alla26 paket gröna, world147.291s; slut-JS794/794, vet och fyra dayguards gröna. Go via tools/gotest.sh på egen tom215DB och ren miljö.
+- Mutation: [täckning, exakta sed-rader och avgränsningar](coverage-and-mutations.md). Separat checkout, assertion-rött och exakt restore; explorativ överlevare redovisad.
+- Visuell/användare: [native Firefox1280/390](bild/index.html), verkliga order-POST/DB, endast vald3rdkohort, förkort expedition nollPOST/nollbud. Scenfixturer redovisas; ingen delad/livevärld används.
+- Drift: pending integration. Läsbaslinje [ground-before.json](ground-before.json); efter deploy verifierar tools/marschpanel_deploy_verify_20261026.py processhash, dirty=false, samma värld/grundtillstånd och ändrade statiska bytes.
+
+## Kända avgränsningar
+
+Bud som följer flyttad enhet är nästa slice. Ingen mekanik/balans eller persistent eventtolkning ändrad. Nya klientprov använder HTTPtestserver/DOMstubbar; riktiga layouten/orderflödet bevisas separat med Firefox. Alla terräng-/skeppskombinationer och isolerad outboundbudgetgrind täcks inte av nya prov; se matrisen.

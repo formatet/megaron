@@ -659,3 +659,7 @@ Integration: `python3 tools/correspondence_integration_upgrade.py OUTPUT_JSON` t
 
 - `city_landing_bild_20261025.py OUTPUT` — isolerad nativeFirefox1280/390, verklig trepassagerarlastning och UI-landsättning i egen stad; rapport `docs/reviews/landsatt-i-stad/`.
 - `city_landing_mutants_20261025.py` — sex fysiska, återställda servermutanter för vald stad, alla passagerare, stödort, ägarbyte, matstopp och privat hamnmetadata; ny DB per arm.
+
+- `marschpanel_bild_20261026.py OUTPUT` — isolerad native Firefox1280/390 med namngivna enhetsval, riktig order-POST och DB-verifiering; inga liveorder.
+- `marschpanel_mutants_20261026.py` — fysiska klient-/servermutationer i separat checkout, namngivna assertionsfel och byteexakt återställning; se slicens täckningsrapport.
+- `marschpanel_deploy_verify_20261026.py --before` sparar läsbaslinje; utan flaggan verifieras livehash, ren migration215, grundtillstånd och ändrade statiska filers bytes.
