@@ -302,8 +302,9 @@ func TestShipyardReadSurfacesUseSameWorldAnchorDespiteClockSkew(t *testing.T) {
 }
 
 type shipyardNoticeRecorder struct {
-	count, level int
-	name         string
+	count, level       int
+	name               string
+	unitName, cityName string
 }
 
 func (r *shipyardNoticeRecorder) BroadcastEvent(uuid.UUID, string, any) {}
@@ -311,6 +312,8 @@ func (r *shipyardNoticeRecorder) NotifyPlayer(_ context.Context, _, _ uuid.UUID,
 	r.count++
 	r.level = level
 	r.name, _ = body.(map[string]any)["name"].(string)
+	r.unitName, _ = body.(map[string]any)["unit_name"].(string)
+	r.cityName, _ = body.(map[string]any)["settlement_name"].(string)
 	return nil
 }
 func TestShipyardCompletionPreservesNotificationIdentityAndSeverity(t *testing.T) {
@@ -325,6 +328,11 @@ func TestShipyardCompletionPreservesNotificationIdentityAndSeverity(t *testing.T
 			}
 			if _, err := f.pool.Exec(ctx, `UPDATE units SET status=$2,name='Asterion' WHERE id=$1`, f.shipID, status); err != nil {
 				t.Fatal(err)
+			}
+			if status == "forming" {
+				if _, err := f.pool.Exec(ctx, `UPDATE units SET type='merchantman',crew=10 WHERE id=$1`, f.shipID); err != nil {
+					t.Fatal(err)
+				}
 			}
 			if err := economy.StartShipyardWork(ctx, f.pool, f.shipID, 1); err != nil {
 				t.Fatal(err)
@@ -342,6 +350,17 @@ func TestShipyardCompletionPreservesNotificationIdentityAndSeverity(t *testing.T
 				if err := h.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, Payload: payload}); err != nil {
 					t.Fatal(err)
 				}
+			}
+			var cityName string
+			if err := f.pool.QueryRow(ctx, `SELECT name FROM settlements WHERE id=$1`, f.settlementID).Scan(&cityName); err != nil {
+				t.Fatal(err)
+			}
+			expectedUnit := "Galley"
+			if status == "forming" {
+				expectedUnit = "Emporos"
+			}
+			if recorder.cityName != cityName || recorder.unitName != expectedUnit {
+				t.Fatalf("shipyard completion lost city/player name: %+v", recorder)
 			}
 			want := 4
 			if status == "repairing" {

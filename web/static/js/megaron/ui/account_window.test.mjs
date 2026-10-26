@@ -111,8 +111,9 @@ test('agora_ready dispatch opens Account rather than toggling an already open wi
   h.nodes.set('dispatch-window-overlay', new Node('dispatch-window-overlay'));
   h.nodes.set('dw-body', new Node('dw-body'));
   openAccountWindow(); await settle();
-  openDispatchWindow('agora_ready', { user_id: ready.user_id }, 'now');
-  h.nodes.get('dw-account-btn').click(); await settle();
+  await openDispatchWindow('agora_ready', { user_id: ready.user_id }, 'now');
+  assert.equal(h.nodes.get('dw-action-btn').hidden, false);
+  h.nodes.get('dw-action-btn').click(); await settle();
   assert.equal(h.nodes.get('account-window-overlay').classList.contains('open'), true);
   assert.equal(h.nodes.get('dispatch-window-overlay').classList.contains('open'), false);
   assert.ok(h.nodes.get('acc-chat-get'));
