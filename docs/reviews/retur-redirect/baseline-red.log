@@ -1,0 +1,16 @@
+» färsk DB på migration 216 · commit 009e8391
+2026/10/26 19:32:09 INFO recall/redirect order reached unit, new course set unit=b1ed398b-d206-4c6a-bd35-80a24c20577f mode=recall from_q=9 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-27T04:32:09.597+01:00
+2026/10/26 19:32:09 INFO recall/redirect order reached unit, new course set unit=b1ed398b-d206-4c6a-bd35-80a24c20577f mode=redirect from_q=8 from_r=0 to_q=4 to_r=0 arrives_at=2026-10-27T00:32:09.597+01:00
+2026/10/26 19:32:09 INFO unit returned home from explore unit=b1ed398b-d206-4c6a-bd35-80a24c20577f settlement=8f5d0196-6ae0-499e-a223-da45bab7efc4
+2026/10/26 19:32:09 INFO recall/redirect order reached unit, new course set unit=b0cd1417-aa70-48b2-9636-00b70f233dba mode=recall from_q=9 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-27T04:32:09.735+01:00
+2026/10/26 19:32:09 INFO recall/redirect order reached unit, new course set unit=b0cd1417-aa70-48b2-9636-00b70f233dba mode=redirect from_q=8 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-27T04:32:09.735+01:00
+2026/10/26 19:32:09 INFO unit returned home from explore unit=b0cd1417-aa70-48b2-9636-00b70f233dba settlement=eebd770b-d810-4aee-8a6c-48efbca911e8
+--- FAIL: TestRedirectExpeditionReturnArrivesAtActualDestination (0.28s)
+    --- FAIL: TestRedirectExpeditionReturnArrivesAtActualDestination/field (0.14s)
+        redirect_return_test.go:61: redirect retained home-arrival mission: intent0x101aece17370 home8f5d0196-6ae0-499e-a223-da45bab7efc4
+        redirect_return_test.go:90: field arrival became remote garrison: statusgarrison city8f5d0196-6ae0-499e-a223-da45bab7efc4 actual(4,0)
+    --- FAIL: TestRedirectExpeditionReturnArrivesAtActualDestination/home (0.14s)
+        redirect_return_test.go:61: redirect retained home-arrival mission: intent0x101aecf25200 homeeebd770b-d810-4aee-8a6c-48efbca911e8
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.286s
+FAIL

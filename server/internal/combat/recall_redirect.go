@@ -200,6 +200,12 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 	// Recall clears any lingering colonize intent (heading home, not to found a
 	// colony); redirect keeps it — the unit still tries to fulfil it at the new target.
 	newIntent, newColonyName := marchIntent, colonyName
+	// A redirect replaces the homeward leg. Keeping explore_return after
+	// deleting the expedition row would make the new, possibly empty target
+	// execute the legacy home-garrison arrival path from a distance.
+	if o.Mode == "redirect" && marchIntent != nil && *marchIntent == "explore_return" {
+		newIntent, newColonyName, homeSettlementID = nil, nil, nil
+	}
 	if o.Mode == "recall" {
 		newIntent, newColonyName = nil, nil
 		if expeditionRecall {

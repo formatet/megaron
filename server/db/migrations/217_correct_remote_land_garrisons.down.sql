@@ -1,0 +1,2 @@
+-- Data correction only. Do not reintroduce an impossible remote garrison or
+-- delete the append-only correction outcome when rolling application code back.
