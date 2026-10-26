@@ -52,6 +52,7 @@ try:
   sql(f"UPDATE map_tiles SET terrain='plains',coastal=false WHERE world_id='{world}'; UPDATE provinces SET terrain_type='plains',coastal=false WHERE world_id='{world}'; UPDATE units SET q={q},r={r},status='positioned' WHERE id='{host['id']}';",True)
   home=api(wp+'/founding/settle','POST',{'name':'Lato'},token)['settlement_id']
   sql(f"UPDATE settlements SET population=4000 WHERE id='{home}'; UPDATE settlement_goods SET amount=10000,rate=0,cap=1000000,calc_tick=current_world_tick() WHERE settlement_id='{home}'; UPDATE units SET status='disbanded' WHERE world_id='{world}' AND owner_id='{pid}';",True)
+  cfg=tmp/'keryx.json';cfg.write_text(json.dumps({'server':base,'token':token,'world_id':world}));cfg.chmod(0o600);clienv={**clean,'POLEIA_CONFIG':str(cfg)}
   def order_state():return json.loads(sql(f"SELECT coalesce(json_agg(t),'[]') FROM(SELECT id,status,order_payload FROM messengers WHERE world_id='{world}' AND sender_id='{pid}' AND kind='order' ORDER BY id)t"))
   with sync_playwright() as pw:
    browser=pw.firefox.launch()
@@ -62,6 +63,11 @@ try:
     for n in range(1,4):
      ids.append(sql(f"INSERT INTO units(world_id,owner_id,settlement_id,support_settlement_id,type,category,size,status,q,r,ordinal) VALUES('{world}','{pid}',NULL,'{home}','spearman','land',100,'positioned',{q+2},{r},{n}) RETURNING id;",True).splitlines()[0])
     units=api(wp+'/units',token=token)['units'];named=[u for u in units if u['id'] in ids];assert len(named)==3,named
+    cli_before=order_state()
+    cli_args=['unit','march','--unit','3rd Spearmen of Lato','--target',f'{q+4},{r}','--preview']
+    cli_preview=subprocess.run([str(tmp/'keryx'),*cli_args],text=True,capture_output=True,env=clienv)
+    assert cli_preview.returncode==0 and 'No order sent' in cli_preview.stdout and order_state()==cli_before,(cli_preview.returncode,cli_preview.stdout,cli_preview.stderr)
+    (OUT/f'keryx-preview-{width}.json').write_text(json.dumps({'args':cli_args,'exit_code':cli_preview.returncode,'stdout':cli_preview.stdout,'stderr':cli_preview.stderr,'messengers_unchanged':True},indent=2))
     (OUT/f'units-{width}.json').write_text(json.dumps(named,indent=2))
     ctx=browser.new_context(viewport={'width':width,'height':height});ctx.add_cookies([{'name':'poleia_token','value':token,'url':base}]);ctx.add_init_script('localStorage.setItem("poleia_token",'+json.dumps(token)+')')
     page=ctx.new_page();errors=[];posts=[];responses=[]
@@ -101,8 +107,13 @@ try:
     assert 'too short' in refusal.lower(),refusal
     shot('M4-short-expedition-refused')
     (OUT/f'short-expedition-{width}.json').write_text(json.dumps({'refusal':refusal,'posts_before':count_before,'posts_after':len(posts),'messengers_unchanged':True,'preview_responses':responses,'errors':errors},indent=2))
+    cli_before=order_state()
+    cli_args=['unit','march','--unit','3rd Spearmen of Lato','--target',f'{q+20},{r}','--intent','explore','--ticks','6']
+    cli_short=subprocess.run([str(tmp/'keryx'),*cli_args],text=True,capture_output=True,env=clienv)
+    assert cli_short.returncode!=0 and 'too short' in (cli_short.stdout+cli_short.stderr).lower() and order_state()==cli_before,(cli_short.returncode,cli_short.stdout,cli_short.stderr)
+    (OUT/f'keryx-short-{width}.json').write_text(json.dumps({'args':cli_args,'exit_code':cli_short.returncode,'stdout':cli_short.stdout,'stderr':cli_short.stderr,'messengers_unchanged':True},indent=2))
     assert not errors,errors
-    observations.append({'width':width,'selected':selected,'selected_name':selected_name,'only_one_order':True,'short_expedition_zero_posts':True,'errors':errors})
+    observations.append({'width':width,'selected':selected,'selected_name':selected_name,'only_one_order':True,'short_expedition_zero_posts':True,'keryx_exact_name_preview_read_only':True,'keryx_short_expedition_refused_before_order':True,'errors':errors})
     ctx.close()
    browser.close()
   assert before==hashes(),'production sources changed during capture'

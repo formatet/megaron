@@ -1,7 +1,7 @@
 [
   {
     "can_cancel_training": false,
-    "id": "58abc2b1-d313-4a44-8d0a-dcf3e98372e0",
+    "id": "785a3dcd-8145-46d4-8b7a-ceae5f6d6027",
     "type": "spearman",
     "category": "land",
     "size": 100,
@@ -13,7 +13,7 @@
     "deployable": true,
     "display_name": "1st Spearmen of Lato",
     "ordinal": 1,
-    "support_settlement_id": "6af22e2d-7cea-4d2b-9f66-989304b2d4b6",
+    "support_settlement_id": "991af584-124e-40a9-a51a-7b406f53f82d",
     "support_settlement_name": "Lato",
     "shipyard_waiting": false,
     "q": 8,
@@ -24,7 +24,7 @@
   },
   {
     "can_cancel_training": false,
-    "id": "ed5b1df3-3020-491c-9e26-542262512b5d",
+    "id": "b2405f08-9dc9-40ae-bf99-5e68e679d54a",
     "type": "spearman",
     "category": "land",
     "size": 100,
@@ -36,7 +36,7 @@
     "deployable": true,
     "display_name": "2nd Spearmen of Lato",
     "ordinal": 2,
-    "support_settlement_id": "6af22e2d-7cea-4d2b-9f66-989304b2d4b6",
+    "support_settlement_id": "991af584-124e-40a9-a51a-7b406f53f82d",
     "support_settlement_name": "Lato",
     "shipyard_waiting": false,
     "q": 8,
@@ -47,7 +47,7 @@
   },
   {
     "can_cancel_training": false,
-    "id": "9026b2c1-cca1-4f3e-83b3-bdd4387f628c",
+    "id": "9f20934d-0fb2-425f-bac5-16d64ffb8e0e",
     "type": "spearman",
     "category": "land",
     "size": 100,
@@ -59,7 +59,7 @@
     "deployable": true,
     "display_name": "3rd Spearmen of Lato",
     "ordinal": 3,
-    "support_settlement_id": "6af22e2d-7cea-4d2b-9f66-989304b2d4b6",
+    "support_settlement_id": "991af584-124e-40a9-a51a-7b406f53f82d",
     "support_settlement_name": "Lato",
     "shipyard_waiting": false,
     "q": 8,

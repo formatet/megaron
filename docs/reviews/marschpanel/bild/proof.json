@@ -1,6 +1,6 @@
 {
   "health": {
-    "commit": "fb36d1d9+marschpanel",
+    "commit": "0b12fb89+marschpanel",
     "migration": 215,
     "status": "ok"
   },
@@ -968,18 +968,22 @@
   "observations": [
     {
       "width": 1280,
-      "selected": "2ae230ec-0d26-441c-bc81-d65ab1657802",
+      "selected": "9664aa22-a788-48ad-8d42-adf2b9a6a960",
       "selected_name": "3rd Spearmen of Lato",
       "only_one_order": true,
       "short_expedition_zero_posts": true,
+      "keryx_exact_name_preview_read_only": true,
+      "keryx_short_expedition_refused_before_order": true,
       "errors": []
     },
     {
       "width": 390,
-      "selected": "9026b2c1-cca1-4f3e-83b3-bdd4387f628c",
+      "selected": "9f20934d-0fb2-425f-bac5-16d64ffb8e0e",
       "selected_name": "3rd Spearmen of Lato",
       "only_one_order": true,
       "short_expedition_zero_posts": true,
+      "keryx_exact_name_preview_read_only": true,
+      "keryx_short_expedition_refused_before_order": true,
       "errors": []
     }
   ],

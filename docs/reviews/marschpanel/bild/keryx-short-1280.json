@@ -1,0 +1,18 @@
+{
+  "args": [
+    "unit",
+    "march",
+    "--unit",
+    "3rd Spearmen of Lato",
+    "--target",
+    "26,24",
+    "--intent",
+    "explore",
+    "--ticks",
+    "6"
+  ],
+  "exit_code": 1,
+  "stdout": "",
+  "stderr": "Error: Nothing sent \u2014 expedition forecast refused: the expedition duration is too short to reach the chosen area and return home \u2014 choose a longer duration or a nearer area (HTTP 422)\nSee keryx unit march --help\n",
+  "messengers_unchanged": true
+}

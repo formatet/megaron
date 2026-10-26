@@ -1,0 +1,15 @@
+{
+  "args": [
+    "unit",
+    "march",
+    "--unit",
+    "3rd Spearmen of Lato",
+    "--target",
+    "10,24",
+    "--preview"
+  ],
+  "exit_code": 0,
+  "stdout": "Arrival unavailable: a Runner must deliver this order before the march begins.\nPay: 0 \u2192 0 silver per game day in the field \u00b7 no silver drain\nNo order sent. Run again without --preview to send it.\n",
+  "stderr": "",
+  "messengers_unchanged": true
+}
