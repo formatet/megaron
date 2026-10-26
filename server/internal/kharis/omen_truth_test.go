@@ -189,3 +189,36 @@ func TestOmenObservedOutcomeCooldownAndSpecificity(t *testing.T) {
 	}
 
 }
+
+func TestMaintainedTickProducesObservedOmenOnce(t *testing.T) {
+	pool, wid, sid := newGrowthFixture(t, [6]string{"plains", "plains", "plains", "plains", "plains", "plains"}, 1000)
+	ctx := context.Background()
+	var owner uuid.UUID
+	if err := pool.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id=$1`, sid).Scan(&owner); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.Exec(ctx, `INSERT INTO player_world_records(player_id,world_id,kharis_amount,kharis_cap,kharis_calc_tick,kharis_rate) VALUES($1,$2,40,100,0,0) ON CONFLICT DO NOTHING`, owner, wid); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.Exec(ctx, `UPDATE player_world_records SET settlement_id=$3 WHERE player_id=$1 AND world_id=$2`, owner, wid, sid); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.Exec(ctx, `UPDATE settlement_goods SET rate=CASE WHEN good_key='grain' THEN $2 ELSE 0 END WHERE settlement_id=$1`, sid, economy.GrainConsumptionPerTick(1000)+1); err != nil {
+		t.Fatal(err)
+	}
+	h := NewTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), nil)
+	h.randomFloat = func() float64 { return .5 }
+	w := wanaxSnap{playerID: owner, settlementID: sid, kharis: 40, kharisCap: 50, templeCities: 1, maxTempleLevel: 1, cityCount: 1, population: 1000}
+	for i := 0; i < 2; i++ {
+		if err := h.processMaintenance(ctx, w, wid, 215991); err != nil {
+			t.Fatal(err)
+		}
+	}
+	var count int
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM events WHERE world_id=$1 AND event_type='OmenObservedV1'`, wid).Scan(&count); err != nil {
+		t.Fatal(err)
+	}
+	if count != 1 {
+		t.Fatalf("actual maintenance path must produce exactly one observed omen, got %d", count)
+	}
+}
