@@ -42,6 +42,9 @@ type MarchOrder struct {
 	Delivered bool
 	// ExpectedPosition constrains a late Runner to the destination it actually
 	// reached. It cannot issue an order to a unit which has since left that hex.
+	// FollowingMeeting is set only by the new following-envelope handler after
+	// an actual meeting; it is never read from a saved legacy march payload.
+	FollowingMeeting bool `json:"-"`
 	ExpectedPosition *province.MapPosition
 	WorldID          uuid.UUID
 	PlayerID         uuid.UUID
@@ -852,7 +855,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 				return nil, reject(409, "the unit changed course before the Runner delivered this order")
 			}
 		}
-		if o.ExpectedPosition != nil && !redirecting {
+		if o.ExpectedPosition != nil && !(redirecting && o.FollowingMeeting) {
 			var stillThere bool
 			if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM units u LEFT JOIN settlements s ON s.id=u.settlement_id LEFT JOIN provinces p ON p.id=s.province_id WHERE u.id=$1 AND u.status IN ('positioned','garrison') AND COALESCE(u.q,p.map_q)=$2 AND COALESCE(u.r,p.map_r)=$3)`, o.UnitID, o.ExpectedPosition.Q, o.ExpectedPosition.R).Scan(&stillThere); err != nil {
 				return nil, err

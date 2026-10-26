@@ -14,7 +14,8 @@ cases=[
  ('temporary-wait','server/internal/messenger/order_pursuit.go','p.FollowWaiting = true','p.FollowWaiting = false','TestOrderPursuit_GuardsAndWaiting/embarked'),
  ('owner-guard','server/internal/messenger/order_pursuit.go','u.OwnerID != p.PlayerID || u.WorldID != p.WorldID','false','TestOrderPursuit_GuardsAndWaiting/owner'),
  ('moving-dispatch','server/internal/messenger/order_delivery.go','if p.FollowUnit {\n\t\t\tres, err = combat.SetStanceInPursuit','if false && p.FollowUnit {\n\t\t\tres, err = combat.SetStanceInPursuit','TestOrderPursuit_MovingMeeting/stance'),
- ('moving-final-guard','server/internal/combat/march_start.go','if o.ExpectedPosition != nil && !redirecting {','if o.ExpectedPosition != nil {','TestOrderPursuit_MovingMeeting/march'),
+ ('moving-final-guard','server/internal/combat/march_start.go','if o.ExpectedPosition != nil && !(redirecting && o.FollowingMeeting) {','if o.ExpectedPosition != nil {','TestOrderPursuit_MovingMeeting/march'),
+ ('legacy-contract','server/internal/combat/march_start.go','!(redirecting && o.FollowingMeeting)','!redirecting','TestOrderPursuit_UnflaggedMovingEnvelopeKeepsOldMeaning'),
  ('frozen-clock','server/internal/messenger/recall.go','if route.Version == 2 && !route.DepartureAt.IsZero() && route.TickNanoseconds > 0 {','if false && route.Version == 2 && !route.DepartureAt.IsZero() && route.TickNanoseconds > 0 {','TestInterceptCourierRoute_FrozenPhysicalClock'),
 ]
 # Mutate the witness predicate itself, retaining SQL shape and all parameters.

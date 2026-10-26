@@ -401,3 +401,28 @@ func TestOrderPursuit_MovingRouteLeg(t *testing.T) {
 		})
 	}
 }
+
+func TestOrderPursuit_UnflaggedMovingEnvelopeKeepsOldMeaning(t *testing.T) {
+	f := setupSingleRecall(t, "march")
+	ctx := context.Background()
+	raw := pursuitPayload(t, f, "march")
+	var p OrderDeliveryPayload
+	json.Unmarshal(raw, &p)
+	p.FollowUnit = false
+	route := combat.StoredRoute{Version: 2, StartTick: 1, EndTick: 5, DepartureAt: f.clk.Now().Add(-time.Duration(tick.TickSeconds) * time.Second), TickNanoseconds: int64(time.Duration(tick.TickSeconds) * time.Second), Hexes: [][2]int{{1, 0}, {2, 0}, {3, 0}, {4, 0}}, Costs: []int64{1000, 1000, 2000}}
+	saved, _ := json.Marshal(route)
+	if _, err := f.pool.Exec(ctx, `UPDATE units SET status='marching',q=1,r=0,target_q=4,target_r=0,depart_tick=1,arrive_tick=5,departs_at=$2,arrives_at=$3,march_route=$4 WHERE id=$1`, f.unitID, route.DepartureAt, route.DepartureAt.Add(4*time.Duration(tick.TickSeconds)*time.Second), saved); err != nil {
+		t.Fatal(err)
+	}
+	raw, _ = json.Marshal(p)
+	if err := f.handler.Handle(ctx, events.ScheduledEvent{Payload: raw}); err != nil {
+		t.Fatal(err)
+	}
+	var target int
+	if err := f.pool.QueryRow(ctx, `SELECT target_q FROM units WHERE id=$1`, f.unitID).Scan(&target); err != nil {
+		t.Fatal(err)
+	}
+	if target != 4 || len(f.hub.failures) != 1 {
+		t.Fatalf("unflagged envelope changed frozen moving-meeting meaning: target%d failures%v", target, f.hub.failures)
+	}
+}

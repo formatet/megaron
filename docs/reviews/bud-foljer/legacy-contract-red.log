@@ -1,0 +1,7 @@
+» färsk DB på migration 217 · commit 7d2f2ba3+ändringar
+2026/10/26 20:08:56 INFO order delivered — march started unit=6078b727-5ddb-4c28-ad94-f0d088d30c1e target_q=0 target_r=0 arrival_tick=3
+--- FAIL: TestOrderPursuit_UnflaggedMovingEnvelopeKeepsOldMeaning (0.05s)
+    order_pursuit_test.go:426: unflagged envelope changed frozen moving-meeting meaning: target0 failures[]
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.049s
+FAIL

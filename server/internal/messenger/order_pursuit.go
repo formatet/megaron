@@ -85,10 +85,12 @@ func (h *OrderDeliveryHandler) advanceFollowingOrder(ctx context.Context, p *Ord
 		if p.March != nil {
 			p.March.ExpectedPosition = &pos
 			p.March.Delivered = true
+			p.March.FollowingMeeting = true
 		}
 		if p.AfterArrival != nil {
 			p.AfterArrival.ExpectedPosition = &pos
 			p.AfterArrival.Delivered = true
+			p.AfterArrival.FollowingMeeting = true
 			p.MeetAtDestination = false
 		}
 		return true, "", claim()
