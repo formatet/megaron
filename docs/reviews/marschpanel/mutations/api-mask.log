@@ -1,0 +1,9 @@
+2026/10/26 16:32:57 INFO player registered id=b47ebc94-f33f-43e5-bc81-4d62868a614a username=ticker-625fd7db-71b5-49f1-929c-da6a4bb652cb
+2026/10/26 16:32:57 INFO player registered id=028ccc9b-804e-43e9-9dd4-61a7671401a9 username=other-115e4011-3492-47d9-931e-e432907ef9b7
+--- FAIL: TestMarchPreview_ReadOnlyAndTiming (0.16s)
+    unit_march_preview_test.go:241: budget preview/dispatch mismatch: 422 {"error":"the chosen hex (10,0) is 10 game days away — more than half of the 6 game days you gave, so it could not get back in time; give it at least 20 game days"}
+         / 422 {"error":"the chosen hex (10,0) is 10 game days away — more than half of the 6 game days you gave, so it could not get back in time; give it at least 20 game days"}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.165s
+FAIL
+» färsk DB på migration 215 · commit 764b0bc5+ändringar

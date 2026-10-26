@@ -1,0 +1,13 @@
+--- FAIL: TestExploreTicksOrderAndPreview (0.00s)
+    --- FAIL: TestExploreTicksOrderAndPreview/dispatchunit (0.00s)
+        cmd_expedition_client_test.go:27: wrong preview GET /api/v1/worlds/world/units/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/march-preview?intent=explore0&target_q=50&target_r=-30&ticks=120
+    --- FAIL: TestExploreTicksOrderAndPreview/dispatchalias (0.00s)
+        cmd_expedition_client_test.go:27: wrong preview GET /api/v1/worlds/world/units/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/march-preview?intent=explore0&target_q=50&target_r=-30&ticks=120
+    --- FAIL: TestExploreTicksOrderAndPreview/previewunit (0.00s)
+        cmd_expedition_client_test.go:27: wrong preview GET /api/v1/worlds/world/units/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/march-preview?intent=explore0&target_q=50&target_r=-30&ticks=120
+    --- FAIL: TestExploreTicksOrderAndPreview/previewalias (0.00s)
+        cmd_expedition_client_test.go:27: wrong preview GET /api/v1/worlds/world/units/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/march-preview?intent=explore0&target_q=50&target_r=-30&ticks=120
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.004s
+FAIL
+» färsk DB på migration 215 · commit 764b0bc5+ändringar

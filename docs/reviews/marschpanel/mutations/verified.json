@@ -1,0 +1,154 @@
+[
+  {
+    "name": "web-default",
+    "file": "web/static/js/megaron/ui/marchctx.js",
+    "old": "index === 0 && group.ids.length ? 1 : 0",
+    "new": "index === 0 && group.ids.length ? group.ids.length : 0",
+    "test": "H: defaults select one",
+    "command": [
+      "node",
+      "--test",
+      "web/static/js/megaron/ui/marchctx.test.mjs"
+    ],
+    "assertion_red": true,
+    "source_sha256": "7e676d99aa6378e670f1ed157523ea439a1fb10ac6445bf673d5c57270a60b26"
+  },
+  {
+    "name": "web-selection",
+    "file": "web/static/js/megaron/ui/marchctx.js",
+    "old": "if(selected(i,k))picks.push",
+    "new": "if(selected(i,0))picks.push",
+    "test": "named choices let the third",
+    "command": [
+      "node",
+      "--test",
+      "web/static/js/megaron/ui/marchctx.test.mjs"
+    ],
+    "assertion_red": true,
+    "source_sha256": "7e676d99aa6378e670f1ed157523ea439a1fb10ac6445bf673d5c57270a60b26"
+  },
+  {
+    "name": "web-preflight",
+    "file": "web/static/js/megaron/ui/marchctx.js",
+    "old": "p.order.intent==='explore'&&p.mode!=='redirect'",
+    "new": "false&&p.order.intent==='explore'&&p.mode!=='redirect'",
+    "test": "too-short expedition is refused",
+    "command": [
+      "node",
+      "--test",
+      "web/static/js/megaron/ui/marchctx.test.mjs"
+    ],
+    "assertion_red": true,
+    "source_sha256": "7e676d99aa6378e670f1ed157523ea439a1fb10ac6445bf673d5c57270a60b26"
+  },
+  {
+    "name": "web-version",
+    "file": "web/static/js/megaron/ui/marchctx.js",
+    "old": "selectionVersion!==marchSelectionVersion||world!==State.WORLD_ID||destination!==State.marchCtxDest",
+    "new": "world!==State.WORLD_ID||destination!==State.marchCtxDest",
+    "test": "changing the named selection",
+    "command": [
+      "node",
+      "--test",
+      "web/static/js/megaron/ui/marchctx.test.mjs"
+    ],
+    "assertion_red": true,
+    "source_sha256": "7e676d99aa6378e670f1ed157523ea439a1fb10ac6445bf673d5c57270a60b26"
+  },
+  {
+    "name": "keryx-name",
+    "file": "server/cmd/keryx/cmd_resolve.go",
+    "old": "strings.EqualFold(strings.TrimSpace(u.DisplayName), needle) || ",
+    "new": "",
+    "test": "TestResolveUnitExactDisplayName",
+    "command": [
+      "/tmp/megaron-marschpanel-mutants-final-20261026/tools/gotest.sh",
+      "./cmd/keryx/",
+      "-run",
+      "TestResolveUnitExactDisplayName",
+      "-count=1"
+    ],
+    "assertion_red": true,
+    "source_sha256": "6e93effda250ffddfdac74ca8b915ff5ecebbd6a21c15bffb51860f5f101c99e"
+  },
+  {
+    "name": "keryx-preflight",
+    "file": "server/cmd/keryx/cmd_unit.go",
+    "old": "if intent == \"explore\" {\n\t\t\t\tif _, err := fetchMarchPreview",
+    "new": "if false && intent == \"explore\" {\n\t\t\t\tif _, err := fetchMarchPreview",
+    "test": "TestExploreRefusalBeforeRunnerDispatch",
+    "command": [
+      "/tmp/megaron-marschpanel-mutants-final-20261026/tools/gotest.sh",
+      "./cmd/keryx/",
+      "-run",
+      "TestExploreRefusalBeforeRunnerDispatch",
+      "-count=1"
+    ],
+    "assertion_red": true,
+    "source_sha256": "79cd4526e01f70879e52fd13b8855ea0eb070a68263cb5fed568063d7afb1e61"
+  },
+  {
+    "name": "keryx-query",
+    "file": "server/cmd/keryx/cmd_march_preview.go",
+    "old": "query.Set(key, fmt.Sprint(value))",
+    "new": "query.Set(key, fmt.Sprint(value)+\"0\")",
+    "test": "TestExploreTicksOrderAndPreview",
+    "command": [
+      "/tmp/megaron-marschpanel-mutants-final-20261026/tools/gotest.sh",
+      "./cmd/keryx/",
+      "-run",
+      "TestExploreTicksOrderAndPreview",
+      "-count=1"
+    ],
+    "assertion_red": true,
+    "source_sha256": "0f8e48422612836a914178a4c640c7021c04b7b9bd6939abef89a25d56ffb48f"
+  },
+  {
+    "name": "api-mask",
+    "file": "server/api/handlers/unit_march_preview.go",
+    "old": "if rej.Code == combat.RejectExpeditionBudget {",
+    "new": "if false && rej.Code == combat.RejectExpeditionBudget {",
+    "test": "TestMarchPreview_ReadOnlyAndTiming",
+    "command": [
+      "/tmp/megaron-marschpanel-mutants-final-20261026/tools/gotest.sh",
+      "./api/handlers/",
+      "-run",
+      "TestMarchPreview_ReadOnlyAndTiming",
+      "-count=1"
+    ],
+    "assertion_red": true,
+    "source_sha256": "511d1173677f94d606f8dffc1e655612ea96eafc389e2e696f5433f0455dc7e9"
+  },
+  {
+    "name": "return-budget",
+    "file": "server/internal/combat/march_start.go",
+    "old": "if travelTicks+returnTicks > expeditionPlan.LengthTicks {",
+    "new": "if false && travelTicks+returnTicks > expeditionPlan.LengthTicks {",
+    "test": "TestMarchPreview_ReadOnlyAndTiming",
+    "command": [
+      "/tmp/megaron-marschpanel-mutants-final-20261026/tools/gotest.sh",
+      "./api/handlers/",
+      "-run",
+      "TestMarchPreview_ReadOnlyAndTiming",
+      "-count=1"
+    ],
+    "assertion_red": true,
+    "source_sha256": "673c7c6733a2f564007770e0bf75e15550e34328b1aa9dbaa092affaec30b853"
+  },
+  {
+    "name": "outbound-code",
+    "file": "server/internal/combat/march_start.go",
+    "old": "return nil, rejectExpeditionBudget(\"the chosen hex",
+    "new": "return nil, reject(http.StatusUnprocessableEntity, \"the chosen hex",
+    "test": "TestMarchPreview_ReadOnlyAndTiming",
+    "command": [
+      "/tmp/megaron-marschpanel-mutants-final-20261026/tools/gotest.sh",
+      "./api/handlers/",
+      "-run",
+      "TestMarchPreview_ReadOnlyAndTiming",
+      "-count=1"
+    ],
+    "assertion_red": true,
+    "source_sha256": "673c7c6733a2f564007770e0bf75e15550e34328b1aa9dbaa092affaec30b853"
+  }
+]

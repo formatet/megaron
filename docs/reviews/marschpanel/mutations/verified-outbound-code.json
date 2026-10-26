@@ -1,0 +1,18 @@
+[
+  {
+    "name": "outbound-code",
+    "file": "server/internal/combat/march_start.go",
+    "old": "return nil, rejectExpeditionBudget(\"the chosen hex",
+    "new": "return nil, reject(http.StatusUnprocessableEntity, \"the chosen hex",
+    "test": "TestMarchPreview_ReadOnlyAndTiming",
+    "command": [
+      "/tmp/megaron-marschpanel-mutants-final-20261026/tools/gotest.sh",
+      "./api/handlers/",
+      "-run",
+      "TestMarchPreview_ReadOnlyAndTiming",
+      "-count=1"
+    ],
+    "assertion_red": true,
+    "source_sha256": "673c7c6733a2f564007770e0bf75e15550e34328b1aa9dbaa092affaec30b853"
+  }
+]

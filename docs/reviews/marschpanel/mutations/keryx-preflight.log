@@ -1,0 +1,6 @@
+--- FAIL: TestExploreRefusalBeforeRunnerDispatch (0.00s)
+    cmd_named_expedition_test.go:65: preflight must refuse before sending: err<nil> previews0 posts1
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL
+» färsk DB på migration 215 · commit 764b0bc5+ändringar

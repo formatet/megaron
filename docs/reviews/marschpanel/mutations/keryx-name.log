@@ -1,0 +1,9 @@
+--- FAIL: TestResolveUnitExactDisplayName (0.00s)
+    --- FAIL: TestResolveUnitExactDisplayName/unique (0.00s)
+        cmd_named_expedition_test.go:26: named unit not resolved:  no unit of yours matches " 3RD SPEARMEN OF TYLISSOS " — run `keryx unit list` for the name or full id
+    --- FAIL: TestResolveUnitExactDisplayName/ambiguous (0.00s)
+        cmd_named_expedition_test.go:23: ambiguous name must not guess:  no unit of yours matches " 3RD SPEARMEN OF TYLISSOS " — run `keryx unit list` for the name or full id
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.003s
+FAIL
+» färsk DB på migration 215 · commit 764b0bc5+ändringar
