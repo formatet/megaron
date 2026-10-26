@@ -1,0 +1,101 @@
+[
+  {
+    "name": "middleware-api",
+    "file": "server/internal/auth/middleware.go",
+    "old": "svc.recordActivity(r.Context(), claims.PlayerID)",
+    "new": "// activity observation removed",
+    "occurrence": 0,
+    "expected_test": "TestAuthenticatedActivityLifecycle",
+    "assertion_red": true,
+    "source_commit": "0d5bc55fe4ffd51fec6449e40a23cd19df02341f",
+    "source_sha256": "685143e3b166fa32dfccd766d166f4a584275b5765ffb02d0293b5a41e1318c6"
+  },
+  {
+    "name": "middleware-web",
+    "file": "server/internal/auth/middleware.go",
+    "old": "svc.recordActivity(r.Context(), claims.PlayerID)",
+    "new": "// activity observation removed",
+    "occurrence": 1,
+    "expected_test": "TestAuthenticatedActivityLifecycle",
+    "assertion_red": true,
+    "source_commit": "0d5bc55fe4ffd51fec6449e40a23cd19df02341f",
+    "source_sha256": "685143e3b166fa32dfccd766d166f4a584275b5765ffb02d0293b5a41e1318c6"
+  },
+  {
+    "name": "middleware-optional",
+    "file": "server/internal/auth/middleware.go",
+    "old": "svc.recordActivity(r.Context(), claims.PlayerID)",
+    "new": "// activity observation removed",
+    "occurrence": 2,
+    "expected_test": "TestAuthenticatedActivityLifecycle",
+    "assertion_red": true,
+    "source_commit": "0d5bc55fe4ffd51fec6449e40a23cd19df02341f",
+    "source_sha256": "685143e3b166fa32dfccd766d166f4a584275b5765ffb02d0293b5a41e1318c6"
+  },
+  {
+    "name": "db-gate",
+    "file": "server/internal/auth/activity.go",
+    "old": "(last_seen_at IS NULL OR last_seen_at <= $2::timestamptz - interval '5 minutes')",
+    "new": "true",
+    "occurrence": 0,
+    "expected_test": "TestActivityConcurrentRequestsWriteOnce",
+    "assertion_red": true,
+    "source_commit": "0d5bc55fe4ffd51fec6449e40a23cd19df02341f",
+    "source_sha256": "b13ba868bb3003dab5b02dc32b8b9bd3471e0761e49d06e979cab31aecd62d43"
+  },
+  {
+    "name": "cache-gate",
+    "file": "server/internal/auth/activity.go",
+    "old": "ok && now.Before(next)",
+    "new": "ok && false && now.Before(next)",
+    "occurrence": 0,
+    "expected_test": "TestAuthenticatedActivityLifecycle",
+    "assertion_red": true,
+    "source_commit": "0d5bc55fe4ffd51fec6449e40a23cd19df02341f",
+    "source_sha256": "b13ba868bb3003dab5b02dc32b8b9bd3471e0761e49d06e979cab31aecd62d43"
+  },
+  {
+    "name": "failure-retry",
+    "file": "server/internal/auth/activity.go",
+    "old": "delete(s.activityNext, playerID)",
+    "new": "// failed observation cache kept",
+    "occurrence": 0,
+    "expected_test": "TestActivityFailureDoesNotRejectAuthentication",
+    "assertion_red": true,
+    "source_commit": "0d5bc55fe4ffd51fec6449e40a23cd19df02341f",
+    "source_sha256": "b13ba868bb3003dab5b02dc32b8b9bd3471e0761e49d06e979cab31aecd62d43"
+  },
+  {
+    "name": "five-minute-boundary",
+    "file": "server/internal/auth/activity.go",
+    "old": "interval '5 minutes'",
+    "new": "interval '4 minutes'",
+    "occurrence": 0,
+    "expected_test": "TestActivityFiveMinuteGateAndCacheExpiry",
+    "assertion_red": true,
+    "source_commit": "0d5bc55fe4ffd51fec6449e40a23cd19df02341f",
+    "source_sha256": "b13ba868bb3003dab5b02dc32b8b9bd3471e0761e49d06e979cab31aecd62d43"
+  },
+  {
+    "name": "null-observation",
+    "file": "server/internal/auth/activity.go",
+    "old": "last_seen_at IS NULL OR ",
+    "new": "",
+    "occurrence": 0,
+    "expected_test": "TestAuthenticatedActivityLifecycle",
+    "assertion_red": true,
+    "source_commit": "0d5bc55fe4ffd51fec6449e40a23cd19df02341f",
+    "source_sha256": "b13ba868bb3003dab5b02dc32b8b9bd3471e0761e49d06e979cab31aecd62d43"
+  },
+  {
+    "name": "migration-no-backfill",
+    "file": "server/db/migrations/216_player_activity.up.sql",
+    "old": "TIMESTAMPTZ;",
+    "new": "TIMESTAMPTZ DEFAULT now();",
+    "occurrence": 0,
+    "expected_test": "TestAuthenticatedActivityLifecycle",
+    "assertion_red": true,
+    "source_commit": "0d5bc55fe4ffd51fec6449e40a23cd19df02341f",
+    "source_sha256": "b8713c30a2d61e50e7ecf17cb47ea883843541b29d618ecbc031ecb96e18673c"
+  }
+]

@@ -1,6 +1,6 @@
 {
   "health": {
-    "commit": "eeb1d99c+activity",
+    "commit": "0d5bc55f+activity",
     "migration": 216,
     "status": "ok"
   },
@@ -12,7 +12,7 @@
         "row_version": "3621"
       },
       "after": {
-        "last_seen_at": "2026-10-26T16:03:06.087316+00:00",
+        "last_seen_at": "2026-10-26T16:07:53.663631+00:00",
         "row_version": "3623"
       },
       "repeat_unchanged": true
@@ -24,7 +24,7 @@
         "row_version": "3624"
       },
       "after": {
-        "last_seen_at": "2026-10-26T16:03:06.238462+00:00",
+        "last_seen_at": "2026-10-26T16:07:53.835+00:00",
         "row_version": "3626"
       },
       "repeat_unchanged": true
@@ -36,13 +36,14 @@
         "row_version": "3627"
       },
       "after": {
-        "last_seen_at": "2026-10-26T16:03:06.394137+00:00",
+        "last_seen_at": "2026-10-26T16:07:54.00806+00:00",
         "row_version": "3629"
       },
       "repeat_unchanged": true
     }
   ],
   "offline_schema_cycle": "216\u2192215\u2192216",
+  "source_hashes_unchanged": 960,
   "accounts_preserved": 3,
   "reintroduced_stamps_null": true
 }

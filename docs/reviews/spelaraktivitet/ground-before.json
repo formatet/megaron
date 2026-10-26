@@ -1,0 +1,18 @@
+{
+  "migration": {
+    "version": 215,
+    "dirty": false
+  },
+  "worlds": [
+    {
+      "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+      "status": "active",
+      "tick": 2859
+    }
+  ],
+  "players": 15,
+  "settlements": 5,
+  "units": 18,
+  "goods": 85,
+  "gossip": 603
+}

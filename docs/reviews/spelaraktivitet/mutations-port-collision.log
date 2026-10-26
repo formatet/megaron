@@ -1,0 +1,7 @@
+assertion-red middleware-api
+assertion-red middleware-web
+Traceback (most recent call last):
+  File "/tmp/megaron-codex-spelaraktivitet-20261026/tools/player_activity_mutants.py", line 34, in <module>
+    assert result.returncode and '--- FAIL: '+expected in result.stdout and '[build failed]' not in result.stdout,(name,result.stdout[-2000:])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('middleware-optional', "docker: Error response from daemon: failed to set up container networking: driver failed programming external connectivity on endpoint megaron-gotest-3390992 (2870b00a0e39b099aea33e4ce07fdb55155f856302305dab7d52599fd7c1c6ca): failed to bind host port 0.0.0.0:56876/tcp: address already in use\n\nRun 'docker run --help' for more information\n")

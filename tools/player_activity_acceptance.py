@@ -11,8 +11,8 @@ containers=[];proc=None
 clean={k:os.environ[k] for k in ('HOME','PATH')};clean['CGO_ENABLED']='0'
 def run(*args,**kw):return subprocess.check_output(args,text=True,**kw).strip()
 def hashes():return {str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for d in ('server','web') for p in sorted((ROOT/d).rglob('*')) if p.is_file() and p.suffix in ('.go','.js','.md','.html','.sql','.css','.json') and not p.name.endswith('_test.go')}
-before=hashes();fixtures=[];shots=[];observations=[]
-(OUT/'source-before.json').write_text(json.dumps(before,indent=2))
+source_before=hashes()
+(OUT/'source-before.json').write_text(json.dumps(source_before,indent=2))
 def launch(kind,image,args):
  name='megaron-activity-'+secrets.token_hex(4)+'-'+kind;internal='5432' if kind=='pg' else '6379'
  run('docker','run','-d','--rm','--name',name,'-p','127.0.0.1::'+internal,*args,image);containers.append(name)
@@ -75,7 +75,8 @@ try:
   assert sql("SELECT version::text||'|'||dirty::text FROM schema_migrations")=='216|false'
   assert sql('SELECT count(*) FROM players WHERE last_seen_at IS NOT NULL')=='0'
   assert sql('SELECT count(*) FROM players')==count
-  (OUT/'proof.json').write_text(json.dumps({'health':health,'observations':observations,'offline_schema_cycle':'216→215→216','accounts_preserved':int(count),'reintroduced_stamps_null':True},indent=2)+'\n')
+  assert source_before==hashes(),'production sources changed during acceptance'
+  (OUT/'proof.json').write_text(json.dumps({'health':health,'observations':observations,'offline_schema_cycle':'216→215→216','source_hashes_unchanged':len(source_before),'accounts_preserved':int(count),'reintroduced_stamps_null':True},indent=2)+'\n')
   print('PASS real HTTP/Bearer, web cookie and Keryx; repeat row unchanged; offline216→215→216/accounts preserved/NULL stamps')
 finally:
  if proc is not None:

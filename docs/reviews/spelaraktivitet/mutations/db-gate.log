@@ -1,0 +1,20 @@
+» färsk DB på migration 216 · commit 0d5bc55f+ändringar
+2026/10/26 17:05:35 INFO player registered id=2cf6aafc-a528-404f-aff8-3c3a530968ca username=activity-686728b9
+--- FAIL: TestAuthenticatedActivityLifecycle (0.06s)
+    --- FAIL: TestAuthenticatedActivityLifecycle/api (0.00s)
+        activity_test.go:104: another process bypassed five minute DB gate
+    --- FAIL: TestAuthenticatedActivityLifecycle/web (0.00s)
+        activity_test.go:104: another process bypassed five minute DB gate
+    --- FAIL: TestAuthenticatedActivityLifecycle/optional (0.00s)
+        activity_test.go:104: another process bypassed five minute DB gate
+2026/10/26 17:05:35 INFO player registered id=2b7d0383-7290-4455-87e6-25e43937e519 username=activity-race-060094d5
+--- FAIL: TestActivityConcurrentRequestsWriteOnce (0.08s)
+    activity_test.go:156: concurrent activity wrote20 times, want1
+2026/10/26 17:05:35 INFO player registered id=5b8fbb3a-2eaf-4fbc-a925-7e0df23b9f66 username=activity-failure-84fef736
+2026/10/26 17:05:35 WARN could not record authenticated activity player_id=5b8fbb3a-2eaf-4fbc-a925-7e0df23b9f66 error="context canceled"
+2026/10/26 17:05:35 INFO player registered id=dc3a5d77-24c0-46e0-b75c-dd67deb1ff11 username=activity-boundary-96cf5cec
+--- FAIL: TestActivityFiveMinuteGateAndCacheExpiry (0.05s)
+    activity_test.go:217: activity before five minute gate wrote player
+FAIL
+FAIL	formatet/megaron/server/internal/auth	0.245s
+FAIL

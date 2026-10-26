@@ -1,0 +1,11 @@
+» färsk DB på migration 216 · commit 0d5bc55f+ändringar
+2026/10/26 17:05:42 INFO player registered id=d8c5a91d-7bd8-4812-8cb4-4b93addc55f2 username=activity-5d481464
+2026/10/26 17:05:42 INFO player registered id=c48c5033-093a-42d7-80a4-0585d8a1bf77 username=activity-race-b466b05e
+2026/10/26 17:05:42 INFO player registered id=55adfe15-29ff-4403-9933-94f0d83c27cc username=activity-failure-80e93413
+2026/10/26 17:05:42 WARN could not record authenticated activity player_id=55adfe15-29ff-4403-9933-94f0d83c27cc error="context canceled"
+--- FAIL: TestActivityFailureDoesNotRejectAuthentication (0.05s)
+    activity_test.go:190: failed observation poisoned the retry cache
+2026/10/26 17:05:42 INFO player registered id=23c3a1bd-fdfa-4bd7-8aee-f6e2f195a084 username=activity-boundary-ff078e56
+FAIL
+FAIL	formatet/megaron/server/internal/auth	0.234s
+FAIL

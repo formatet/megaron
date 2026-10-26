@@ -18,3 +18,13 @@ Gate: proves driftens möjlighet att skilja saknad aktivitet från en bestående
 ## Aktivitetsstämpelns avgränsning
 
 NULL betyder ännu inte observerad sedan införandet; historiska login-/budtider kopieras inte in. Öppenflikspollning räknas som serverkontakt. Cachen begränsar observationsförsök perprocess till femminuter; SQLvillkoret begränsar faktiska rowupdates även mellan processer. Mätningen är grov: om en ny process träffar nära slutet på en tidigare observationsperiod kan nästa observation dröja ytterligare en cacheperiod. Ingen offentlig online-/närvaroyta tillkommer.
+
+## Resultat och grindar
+
+Implementerat i `0d5bc55f`: nullable stämpel, alla tre authmiddleware, perprocesscache och villkoradUPDATE, ettsekundsgräns och retry efter telemetrifel. Stämpeln används bara av driftläsverktyget. [Täckning och nio egna mutanter](coverage-and-mutations.md) anger exakt vad nya prov täcker/inte täcker och exakta GNU sed-rader.
+
+Riktig isolerad process: [health och HTTP/cookie/nativeKeryx/schema](acceptance/proof.json). Ren216 och216→215→216prov bevarar konton; rollback släpper avsiktligt den nya observationskolumnen. Inga visuella ändringar, därför inget BILDbehov. Hel färskGo26paket är grön (world145.305s), auth-race grön,794JS/vet/fyradayguards gröna. Råloggar finns bredvid. Inga livekonton eller bud skapades för acceptansen.
+
+Första baslinjekörningen saknade kolumnen och räknas bara som schemaunderlag. Den riktiga röda baslinjen kördes med216kolumnen men utan middlewareimplementation (`auth-baseline-red.log`), där faktiska assertions nekar utebliven aktivitet på API/web/optional och0uppdateringar vid samtidighet. Mutationernas första portkollision är ett riggfel, inte bevis; den ersattes av komplett renkörning med explicita lediga portar.
+
+Drift: ännu inte deployad; läsbaslinje i ground-before.json, verifieras efter integration med player_activity_deploy_verify.py. Ingen spelmekanik ändrades för Pompejus eftersom tidslinjen bevisade korrekt sändtick.

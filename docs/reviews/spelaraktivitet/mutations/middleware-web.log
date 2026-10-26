@@ -1,0 +1,12 @@
+» färsk DB på migration 216 · commit 0d5bc55f+ändringar
+2026/10/26 17:05:28 INFO player registered id=65abd55d-b584-476d-b5b0-e35d75fae033 username=activity-00700486
+--- FAIL: TestAuthenticatedActivityLifecycle (0.06s)
+    --- FAIL: TestAuthenticatedActivityLifecycle/web (0.00s)
+        activity_test.go:87: valid auth did not record recent wall time
+2026/10/26 17:05:28 INFO player registered id=1928bd5d-1ce7-484e-a72b-a99be78d1958 username=activity-race-9f39b910
+2026/10/26 17:05:28 INFO player registered id=40a3ca7b-1169-49ef-a0b9-be9a38a4a269 username=activity-failure-50b6444a
+2026/10/26 17:05:28 WARN could not record authenticated activity player_id=40a3ca7b-1169-49ef-a0b9-be9a38a4a269 error="context canceled"
+2026/10/26 17:05:28 INFO player registered id=b30ee5e3-8d54-4843-bb77-c2863e4eee19 username=activity-boundary-513aba68
+FAIL
+FAIL	formatet/megaron/server/internal/auth	0.239s
+FAIL

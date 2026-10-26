@@ -1,0 +1,10 @@
+assertion-red middleware-api
+assertion-red middleware-web
+assertion-red middleware-optional
+assertion-red db-gate
+assertion-red cache-gate
+assertion-red failure-retry
+assertion-red five-minute-boundary
+assertion-red null-observation
+assertion-red migration-no-backfill
+PASS 9 assertion-red mutants, exact restore, fresh auth green

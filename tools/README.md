@@ -663,3 +663,8 @@ Integration: `python3 tools/correspondence_integration_upgrade.py OUTPUT_JSON` t
 - `marschpanel_bild_20261026.py OUTPUT` — isolerad native Firefox1280/390 med namngivna enhetsval, riktig order-POST och DB-verifiering; inga liveorder.
 - `marschpanel_mutants_20261026.py` — fysiska klient-/servermutationer i separat checkout, namngivna assertionsfel och byteexakt återställning; se slicens täckningsrapport.
 - `marschpanel_deploy_verify_20261026.py --before` sparar läsbaslinje; utan flaggan verifieras livehash, ren migration215, grundtillstånd och ändrade statiska filers bytes.
+
+- `player_activity_audit.py OUTPUT.json` — read-only driftlista över senaste autentiserade serverkontakt, separat token-/budtid och rätt värld. Ingen offentlig närvaroyta; polling räknas, NULL betyder ännu inte observerad.
+- `player_activity_acceptance.py OUTPUT` — egen PG/Redis/server, verklig Bearer/cookie/Keryx, oförändrad rowversion vid repetition och offline216→215→216 utan kontoförlust.
+- `player_activity_mutants.py CHECKOUT OUTPUT` — nio fysiska auth-/throttle-/migrationsmutanter i separat clean checkout, egen färsk DB per arm och exakt återställning.
+- `player_activity_deploy_verify.py --before` sparar läsbaslinje; utan flaggan verifieras liveprocess, ren216 och bevarat grundtillstånd.
