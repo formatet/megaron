@@ -1,0 +1,27 @@
+{"time":"2026-10-26T20:14:49.426602749+01:00","level":"INFO","msg":"world tick advanced","world":"8d1f34f1-96d8-4487-87dc-805948d86428","tick":3048}
+[20:15:13] api/handlers/unit.go has changed
+[20:15:13] building...
+2026/10/26 20:15:14 [poleia/CoK4vP7zRv-001043] "GET http://localhost:8080/healthz HTTP/1.1" from [::1]:44878 - 200 51B in 466.594µs
+2026/10/26 20:15:39 [poleia/CoK4vP7zRv-001044] "GET http://localhost:8080/healthz HTTP/1.1" from [::1]:57912 - 200 51B in 831.583µs
+{"time":"2026-10-26T20:15:49.828913601+01:00","level":"INFO","msg":"world tick advanced","world":"8d1f34f1-96d8-4487-87dc-805948d86428","tick":3049}
+[20:16:12] running...
+{"time":"2026-10-26T20:16:12.245206849+01:00","level":"INFO","msg":"migrations applied"}
+{"time":"2026-10-26T20:16:12.251523005+01:00","level":"INFO","msg":"world ready","id":"8d1f34f1-96d8-4487-87dc-805948d86428"}
+{"time":"2026-10-26T20:16:12.251932769+01:00","level":"INFO","msg":"chronicle opened","world":"Megaron fresh reseed","dir":"/var/lib/poleia/chronicles"}
+{"time":"2026-10-26T20:16:12.254299736+01:00","level":"INFO","msg":"scheduled event worker started","poll":10000000000}
+{"time":"2026-10-26T20:16:12.254315592+01:00","level":"INFO","msg":"tick worker started","tick_seconds":60}
+{"time":"2026-10-26T20:16:12.255589141+01:00","level":"INFO","msg":"build","commit":"0b446a9"}
+{"time":"2026-10-26T20:16:12.256319607+01:00","level":"INFO","msg":"keryx server starting","addr":":8080"}
+{"time":"2026-10-26T20:16:12.25898548+01:00","level":"INFO","msg":"daily ticks seeded","worlds":1}
+2026/10/26 20:16:22 [poleia/Z8Pa2mItpW-000001] "GET http://localhost:8080/healthz HTTP/1.1" from [::1]:37056 - 200 51B in 726.79µs
+2026/10/26 20:16:23 [poleia/Z8Pa2mItpW-000002] "GET http://localhost:8080/healthz HTTP/1.1" from [::1]:37066 - 200 51B in 381.65µs
+2026/10/26 20:16:23 [poleia/Z8Pa2mItpW-000003] "GET http://10.0.1.92:8080/static/codex/marching.md HTTP/1.1" from 10.0.1.99:49332 - 200 9861B in 115.879887ms
+2026/10/26 20:16:23 [poleia/Z8Pa2mItpW-000004] "GET http://10.0.1.92:8080/static/codex/runners.md HTTP/1.1" from 10.0.1.99:49336 - 200 4478B in 150.396µs
+2026/10/26 20:16:23 [poleia/Z8Pa2mItpW-000005] "GET http://10.0.1.92:8080/static/js/megaron/ui/drawers/war.js HTTP/1.1" from 10.0.1.99:49348 - 200 63906B in 187.764µs
+2026/10/26 20:16:23 [poleia/Z8Pa2mItpW-000006] "GET http://10.0.1.92:8080/static/js/megaron/ui/marchctx.js HTTP/1.1" from 10.0.1.99:49352 - 200 43476B in 190.992µs
+2026/10/26 20:16:23 [poleia/Z8Pa2mItpW-000007] "GET http://10.0.1.92:8080/static/js/megaron/ui/marchctx.test.mjs HTTP/1.1" from 10.0.1.99:49354 - 200 29787B in 167.457µs
+2026/10/26 20:16:23 [poleia/Z8Pa2mItpW-000008] "GET http://10.0.1.92:8080/static/js/megaron/ui/runner_status.js HTTP/1.1" from 10.0.1.99:49370 - 200 4805B in 113.611µs
+2026/10/26 20:16:23 [poleia/Z8Pa2mItpW-000009] "GET http://10.0.1.92:8080/static/js/megaron/ui/runner_status.test.mjs HTTP/1.1" from 10.0.1.99:49380 - 200 5384B in 159.575µs
+2026/10/26 20:16:23 [poleia/Z8Pa2mItpW-000010] "GET http://10.0.1.92:8080/static/js/megaron/ui/stance.js HTTP/1.1" from 10.0.1.99:49388 - 200 1899B in 61.424µs
+2026/10/26 20:16:23 [poleia/Z8Pa2mItpW-000011] "GET http://10.0.1.92:8080/static/js/megaron/ui/stance.test.mjs HTTP/1.1" from 10.0.1.99:49402 - 200 1964B in 60.458µs
+2026/10/26 20:16:23 [poleia/Z8Pa2mItpW-000012] "GET http://10.0.1.92:8080/static/js/megaron/ui/war_cards.test.mjs HTTP/1.1" from 10.0.1.99:49410 - 200 14979B in 166.246µs

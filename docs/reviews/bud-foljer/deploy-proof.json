@@ -1,0 +1,77 @@
+{
+  "ground": {
+    "migration": {
+      "version": 217,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 3049
+      }
+    ],
+    "players": 15,
+    "settlements": 6,
+    "units": 18,
+    "goods": 102,
+    "gossip": 648,
+    "unit_under_review": {
+      "id": "a05591e4-e160-46e3-8ae0-2f80421a4286",
+      "status": "disbanded",
+      "q": 49,
+      "r": 24,
+      "settlement_id": "a60b2a08-4ec1-4177-94a7-1982c01dc82b",
+      "support_settlement_id": "b3d9b932-6b5e-4b5b-b1cc-7a92b988010d",
+      "owner_id": "c3a51eae-557b-42c7-9631-7c9ae2edb4bf"
+    },
+    "correction_events": 1
+  },
+  "health": {
+    "commit": "0b446a9",
+    "migration": 217,
+    "status": "ok"
+  },
+  "checkout": "0b446a9ebe5f5e16ad175406090ec359f95d12ee",
+  "static": {
+    "web/static/codex/marching.md": "11bfbaf68564b37c92c1af9da48ba91c8dbf6bd93977e27fa2ca020551d38142",
+    "web/static/codex/runners.md": "0a5321c259e57d02a5aae026d99221dd508c36e7be89f08daefd76c7af3dcc4c",
+    "web/static/js/megaron/ui/drawers/war.js": "087f432c71f2c86ddc2591c8be0012dc0a4ff48f2d14f03dfb01f9317747f0c4",
+    "web/static/js/megaron/ui/marchctx.js": "a279f2e7f85c8dcf5d7d408766a21ea7842a476c7af95233ae9336c3e632846d",
+    "web/static/js/megaron/ui/marchctx.test.mjs": "ffabe6230f45c21f02948fefa08c2e17cd5ded07cd990bff597e4e63cc1b7d85",
+    "web/static/js/megaron/ui/runner_status.js": "82ae8e09a2eab1b023b9b9c91d4293390f01529b71c2f280000a7002ce2cb62f",
+    "web/static/js/megaron/ui/runner_status.test.mjs": "1e5e71efd90e43252546e2a4ea2cbeb50cd204ad3913576154dd3870c31df3bd",
+    "web/static/js/megaron/ui/stance.js": "17eccbb97aafa39e3d0d3095f03591887f721a35d85953c997c85f4ac7a0a35f",
+    "web/static/js/megaron/ui/stance.test.mjs": "cba9712d2e71c8e4e384a21d1de28902b23af8851591c3ac501bf0f79134deb4",
+    "web/static/js/megaron/ui/war_cards.test.mjs": "b1e28d894ba7c343e31ff95666db14b3f1b8575558ca959b4ed8a4c2d651c55b"
+  },
+  "expected": "0b446a9ebe5f5e16ad175406090ec359f95d12ee",
+  "before": {
+    "migration": {
+      "version": 217,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 3036
+      }
+    ],
+    "players": 15,
+    "settlements": 6,
+    "units": 18,
+    "goods": 102,
+    "gossip": 644,
+    "unit_under_review": {
+      "id": "a05591e4-e160-46e3-8ae0-2f80421a4286",
+      "status": "disbanded",
+      "q": 49,
+      "r": 24,
+      "settlement_id": "a60b2a08-4ec1-4177-94a7-1982c01dc82b",
+      "support_settlement_id": "b3d9b932-6b5e-4b5b-b1cc-7a92b988010d",
+      "owner_id": "c3a51eae-557b-42c7-9631-7c9ae2edb4bf"
+    },
+    "correction_events": 1
+  }
+}

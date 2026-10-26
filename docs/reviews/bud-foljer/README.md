@@ -29,3 +29,5 @@ Provenance för den egna riggen (motsvarande acceptance.sh-format, inte den dela
 Avgränsning: inga nya order till skepp på havet, ingen omskrivning av gamla event/avslutade missar, inget synminnes-backfill. Bordning/räddning/landstigning återanvänder befintlig passageägare; nya prov täcker dess spärrar och väntan men inte en ny full sjöresa. Claim före domänexekvering behåller befintlig transaktionsgräns; detta är ingen generell omskrivning av ordermotorn.
 
 Kodgrind slutkod: hel färsk Go (26 paket; [logg](full-go-green.log)), 803 JS gröna, vet och fyra språkspärrar gröna. 19 assertion-röda mutanter/exakt restore, tre genomförda separata HTTP/worker/Keryx/Firefoxprov; sista byggd från65202f6e är deployunderlaget. BILD A1/A2 granskat vid1:1 och visas Timothy i efterhand.
+
+Drift LIVE `0b446a9e`/migration217ren: nyprocess bevisad före schemaläsning, samma värld/15spelare/6städer/18enheter/102varurader, tio ändrade statiska filer byteexakta. [Deploybevis](deploy-proof.json) och [ombyggnads-/startlogg](deploy-journal.log). Inga testorder eller datarättningar i livevärlden.
