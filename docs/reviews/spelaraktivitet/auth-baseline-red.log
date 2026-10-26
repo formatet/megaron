@@ -1,0 +1,16 @@
+» färsk DB på migration 216 · commit eeb1d99c
+2026/10/26 17:00:07 INFO player registered id=7ad455e2-a436-4eb3-97a6-d59b19ba6782 username=activity-9a34f6ec
+--- FAIL: TestAuthenticatedActivityLifecycle (0.06s)
+    --- FAIL: TestAuthenticatedActivityLifecycle/api (0.00s)
+        activity_test.go:29: valid auth did not record recent wall time
+    --- FAIL: TestAuthenticatedActivityLifecycle/web (0.00s)
+        activity_test.go:29: valid auth did not record recent wall time
+    --- FAIL: TestAuthenticatedActivityLifecycle/optional (0.00s)
+        activity_test.go:29: valid auth did not record recent wall time
+2026/10/26 17:00:07 INFO player registered id=17fe011b-3bbb-4dc0-a349-9dd9604eee25 username=activity-race-dd6dc41f
+--- FAIL: TestActivityConcurrentRequestsWriteOnce (0.05s)
+    activity_test.go:47: concurrent activity wrote0 times, want1
+2026/10/26 17:00:07 INFO player registered id=0d782e0d-31e7-4d29-be12-f14e6cf711d0 username=activity-failure-c041123e
+FAIL
+FAIL	formatet/megaron/server/internal/auth	0.161s
+FAIL

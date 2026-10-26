@@ -1,0 +1,11 @@
+» färsk DB på migration 215 · commit eeb1d99c
+2026/10/26 16:59:56 INFO player registered id=901e728c-f622-462e-bbf5-d448ad7a3eac username=activity-9e5ad63c
+--- FAIL: TestAuthenticatedActivityLifecycle (0.05s)
+    activity_test.go:20: ERROR: column "last_seen_at" does not exist (SQLSTATE 42703)
+2026/10/26 16:59:56 INFO player registered id=00cadeac-c53e-4cbd-b127-42781d90142f username=activity-race-5192888e
+--- FAIL: TestActivityConcurrentRequestsWriteOnce (0.05s)
+    activity_test.go:48: concurrent activity wrote0 times, want1
+2026/10/26 16:59:56 INFO player registered id=66f16204-0461-44a9-8ac2-10567c85ac3c username=activity-failure-8a6a8fc6
+FAIL
+FAIL	formatet/megaron/server/internal/auth	0.156s
+FAIL

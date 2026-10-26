@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"sync"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -44,10 +45,13 @@ type Claims struct {
 
 // Service handles authentication operations.
 type Service struct {
-	pool       *pgxpool.Pool
-	jwtSecret  []byte
-	accessTTL  time.Duration
-	refreshTTL time.Duration
+	pool          *pgxpool.Pool
+	jwtSecret     []byte
+	accessTTL     time.Duration
+	refreshTTL    time.Duration
+	activityMu    sync.Mutex
+	activityNext  map[uuid.UUID]time.Time
+	activitySweep time.Time
 }
 
 // NewService creates a Service with the given pool and JWT secret.

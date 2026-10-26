@@ -93,7 +93,7 @@ Go (minimum version in `server/go.mod`) · chi · PostgreSQL 16 (pgx/v5) · Redi
   Inject `clock.Clock` via constructor; use `clock.TestClock` in tests. Only `internal/events` and `main.go`
   may hold a `*clock.WallClock`.
 - **Sanctioned wall-clock exceptions** (non-game time, deliberately outside `clock.Clock`): WS I/O deadlines
-  (`internal/notify/hub.go`) · auth token/cookie expiry (`internal/auth`, `api/handlers/auth.go`) ·
+  (`internal/notify/hub.go`) · auth token/cookie expiry and authenticated-contact telemetry (`internal/auth`, `api/handlers/auth.go`) ·
   `internal/chronicle` · `cmd/create-world` seed · CLI display in `cmd/keryx`.
   **No new exceptions without updating this list.**
 

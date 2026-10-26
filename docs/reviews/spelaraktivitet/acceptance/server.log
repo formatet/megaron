@@ -1,0 +1,31 @@
+{"time":"2026-10-26T17:03:05.129586503+01:00","level":"INFO","msg":"migrations applied"}
+{"time":"2026-10-26T17:03:05.150238374+01:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"d0fbb9fd-c8a7-4999-b375-3ed9b05ccfa1","seed":1793030585141028708,"width":56,"height":40,"err":"invalid map: productive tin = 1 (want >= 2); no buildable east tile (q > maxQ/2) has tin in its 6-hex catchment"}
+{"time":"2026-10-26T17:03:05.158283577+01:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"d0fbb9fd-c8a7-4999-b375-3ed9b05ccfa1","seed":1793030585141028709,"width":56,"height":40,"err":"invalid map: landmass 2 (92 tiles) has 0 rivers (want 1-2)"}
+{"time":"2026-10-26T17:03:05.166666728+01:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"d0fbb9fd-c8a7-4999-b375-3ed9b05ccfa1","seed":1793030585141028710,"width":56,"height":40,"err":"invalid map: productive tin = 1 (want >= 2)"}
+{"time":"2026-10-26T17:03:05.880129608+01:00","level":"INFO","msg":"world created","name":"March selection proof","id":"d0fbb9fd-c8a7-4999-b375-3ed9b05ccfa1","seed":1793030585141028711}
+{"time":"2026-10-26T17:03:05.886562904+01:00","level":"INFO","msg":"world ready","id":"d0fbb9fd-c8a7-4999-b375-3ed9b05ccfa1"}
+{"time":"2026-10-26T17:03:05.88681537+01:00","level":"INFO","msg":"chronicle opened","world":"March selection proof","dir":"/tmp/activity-proof-2dnpcn22/chronicles"}
+{"time":"2026-10-26T17:03:05.887374082+01:00","level":"INFO","msg":"build","commit":"eeb1d99c+activity"}
+{"time":"2026-10-26T17:03:05.887372347+01:00","level":"INFO","msg":"tick worker started","tick_seconds":1800}
+{"time":"2026-10-26T17:03:05.88737234+01:00","level":"INFO","msg":"scheduled event worker started","poll":10000000000}
+{"time":"2026-10-26T17:03:05.887599252+01:00","level":"INFO","msg":"keryx server starting","addr":":38853"}
+{"time":"2026-10-26T17:03:05.89448783+01:00","level":"INFO","msg":"daily ticks seeded","worlds":1}
+2026/10/26 17:03:05 [tki9/ZZClZLBb3r-000001] "GET http://127.0.0.1:38853/healthz HTTP/1.1" from 127.0.0.1:60032 - 200 61B in 658.316µs
+2026/10/26 17:03:05 [tki9/ZZClZLBb3r-000002] "GET http://127.0.0.1:38853/api/v1/worlds HTTP/1.1" from 127.0.0.1:60036 - 200 159B in 695.373µs
+{"time":"2026-10-26T17:03:06.015478027+01:00","level":"INFO","msg":"player registered","id":"2f00697c-258c-49de-b717-6d88c828edde","username":"Activity-api-947d0a8c"}
+2026/10/26 17:03:06 [tki9/ZZClZLBb3r-000003] "POST http://127.0.0.1:38853/api/v1/auth/register HTTP/1.1" from 127.0.0.1:60050 - 201 398B in 45.780757ms
+2026/10/26 17:03:06 [tki9/ZZClZLBb3r-000004] "GET http://127.0.0.1:38853/api/v1/auth/me HTTP/1.1" from 127.0.0.1:60060 - 401 74B in 38.105µs
+2026/10/26 17:03:06 [tki9/ZZClZLBb3r-000005] "GET http://127.0.0.1:38853/api/v1/auth/me HTTP/1.1" from 127.0.0.1:60072 - 200 180B in 1.478175ms
+2026/10/26 17:03:06 [tki9/ZZClZLBb3r-000006] "GET http://127.0.0.1:38853/api/v1/auth/me HTTP/1.1" from 127.0.0.1:60086 - 200 180B in 375.452µs
+{"time":"2026-10-26T17:03:06.203456433+01:00","level":"INFO","msg":"player registered","id":"4c24dde4-01c8-40aa-a638-1cb313a3d3fc","username":"Activity-web-19f48b67"}
+2026/10/26 17:03:06 [tki9/ZZClZLBb3r-000007] "POST http://127.0.0.1:38853/api/v1/auth/register HTTP/1.1" from 127.0.0.1:60098 - 201 398B in 46.09227ms
+2026/10/26 17:03:06 [tki9/ZZClZLBb3r-000008] "GET http://127.0.0.1:38853/play HTTP/1.1" from 127.0.0.1:60112 - 303 75B in 2.517902ms
+2026/10/26 17:03:06 [tki9/ZZClZLBb3r-000009] "GET http://127.0.0.1:38853/world/d0fbb9fd-c8a7-4999-b375-3ed9b05ccfa1/join HTTP/1.1" from 127.0.0.1:60120 - 200 2924B in 624.139µs
+2026/10/26 17:03:06 [tki9/ZZClZLBb3r-000010] "GET http://127.0.0.1:38853/api/v1/auth/me HTTP/1.1" from 127.0.0.1:60124 - 200 180B in 354.34µs
+{"time":"2026-10-26T17:03:06.357449863+01:00","level":"INFO","msg":"player registered","id":"d9bbfe26-4b2f-4b25-9ea4-e79e9b351357","username":"Activity-keryx-5aa6171c"}
+2026/10/26 17:03:06 [tki9/ZZClZLBb3r-000011] "POST http://127.0.0.1:38853/api/v1/auth/register HTTP/1.1" from 127.0.0.1:60134 - 201 400B in 46.308348ms
+2026/10/26 17:03:06 [tki9/ZZClZLBb3r-000012] "GET http://127.0.0.1:38853/api/v1/worlds/d0fbb9fd-c8a7-4999-b375-3ed9b05ccfa1/units HTTP/1.1" from 127.0.0.1:60140 - 200 124B in 7.062181ms
+2026/10/26 17:03:06 [tki9/ZZClZLBb3r-000013] "GET http://127.0.0.1:38853/api/v1/auth/me HTTP/1.1" from 127.0.0.1:60146 - 200 184B in 376.686µs
+{"time":"2026-10-26T17:03:06.471887117+01:00","level":"INFO","msg":"scheduled event worker stopped"}
+{"time":"2026-10-26T17:03:06.471892935+01:00","level":"INFO","msg":"shutting down"}
+{"time":"2026-10-26T17:03:06.471893876+01:00","level":"INFO","msg":"tick worker stopped"}

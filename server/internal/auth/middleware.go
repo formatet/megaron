@@ -30,6 +30,7 @@ func Middleware(svc *Service) func(http.Handler) http.Handler {
 				writeUnauthorized(w)
 				return
 			}
+			svc.recordActivity(r.Context(), claims.PlayerID)
 			ctx := context.WithValue(r.Context(), contextKeyPlayerID, claims.PlayerID)
 			ctx = context.WithValue(ctx, contextKeyUsername, claims.Username)
 			next.ServeHTTP(w, r.WithContext(ctx))
@@ -58,6 +59,7 @@ func WebMiddleware(svc *Service) func(http.Handler) http.Handler {
 			token := tokenFromRequest(r)
 			if token != "" {
 				if claims, err := svc.ValidateAccessToken(token); err == nil {
+					svc.recordActivity(r.Context(), claims.PlayerID)
 					ctx := context.WithValue(r.Context(), contextKeyPlayerID, claims.PlayerID)
 					ctx = context.WithValue(ctx, contextKeyUsername, claims.Username)
 					next.ServeHTTP(w, r.WithContext(ctx))
@@ -77,6 +79,7 @@ func OptionalMiddleware(svc *Service) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if token := tokenFromRequest(r); token != "" {
 				if claims, err := svc.ValidateAccessToken(token); err == nil {
+					svc.recordActivity(r.Context(), claims.PlayerID)
 					ctx := context.WithValue(r.Context(), contextKeyPlayerID, claims.PlayerID)
 					ctx = context.WithValue(ctx, contextKeyUsername, claims.Username)
 					next.ServeHTTP(w, r.WithContext(ctx))
