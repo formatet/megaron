@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/tmp/megaron-codex-synminne-20261026/tools/route_sight_acceptance.py", line 69, in <module>
+    tiles=data['tiles']
+          ~~~~^^^^^^^^^
+TypeError: list indices must be integers or slices, not str

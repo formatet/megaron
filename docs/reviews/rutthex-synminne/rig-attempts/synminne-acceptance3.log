@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/tmp/megaron-codex-synminne-20261026/tools/route_sight_acceptance.py", line 72, in <module>
+    assert middle['tier']=='remembered' and future['tier']=='fog',(middle,future)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ({'q': 9, 'r': 26, 'terrain': 'plains', 'visible': True, 'tier': 'live', 'fertility': 0.41832621284967675, 'mineral': 0.31741325948090887, 'copper_deposit': True}, {'q': 18, 'r': 26, 'terrain': 'fog', 'visible': False, 'tier': 'fog'})

@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/tmp/megaron-codex-synminne-20261026/tools/route_sight_acceptance.py", line 56, in <module>
+    assert result.returncode==0,result.stderr
+           ^^^^^^^^^^^^^^^^^^^^
+AssertionError: Error: target hex not found (HTTP 404)
+See keryx unit march --help
+

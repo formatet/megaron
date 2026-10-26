@@ -43,10 +43,17 @@ try:
  assert not missing(),'reported holes remain'
  second=json.loads(run(*command,'-apply',cwd=ROOT/'server',env=env))
  assert second['added']==0,'repair not idempotent'
+ others=[]
+ owners=json.loads(sql(f"SELECT COALESCE(json_agg(DISTINCT owner_id),'[]') FROM units WHERE world_id='{world}' AND march_route->>'version'='2' AND owner_id!='{player}'"))
+ for owner in owners:
+  cmd=['go','run','./cmd/backfill-route-sight','-world',world,'-player',owner]
+  a=json.loads(run(*cmd,'-apply',cwd=ROOT/'server',env=env))
+  b=json.loads(run(*cmd,'-apply',cwd=ROOT/'server',env=env));assert b['added']==0
+  others.append({'first':a,'second':b})
  assert stable()==before,'repair changed data outside terrain memory'
  # Every pre-existing memory row survives; other players remain byte-identical.
  # Counts and hashes only leave the private clone.
- proof={'source_dump_sha256':hashlib.sha256(backup).hexdigest(),'missing_before':missing_before,'missing_after':missing(),'dry_run':dry,'first':first,'second':second,'unchanged_tables':before}
+ proof={'source_dump_sha256':hashlib.sha256(backup).hexdigest(),'missing_before':missing_before,'missing_after':missing(),'dry_run':dry,'first':first,'second':second,'other_owners':others,'unchanged_tables':before}
  Path(sys.argv[1]).write_text(json.dumps(proof,indent=2)+'\n')
  print('PASS private live clone: dry-run rollback, reported holes filled, idempotent,',len(before),'other tables unchanged')
 finally:subprocess.run(['docker','rm','-f',name],capture_output=True)

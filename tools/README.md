@@ -677,3 +677,15 @@ Integration: `python3 tools/correspondence_integration_upgrade.py OUTPUT_JSON` t
 - `order_pursuit_acceptance.py OUTPUT` — own fresh PG/Redis/server, earlier real CLI march and delayed stance; same Runner follows physically, native Firefox1280/390, no post-dispatch fixtures.
 - `order_pursuit_server_mutants.py CLEAN_CHECKOUT OUTPUT` and `order_pursuit_client_mutants.py CLEAN_CHECKOUT OUTPUT` — named assertion-red pursuit mutants, fresh PG per Go arm, exact source restoration.
 - `order_pursuit_deploy_verify.py [--before]` — read-only process/clean217/ground/assets proof for the pursuit deployment.
+
+### Route sight memory
+
+`go run ./cmd/backfill-route-sight -world UUID -player UUID [-witnesses FILE] [-apply]`
+(from `server/`, explicit `DATABASE_URL`) repairs only terrain memory from retained v2
+routes whose exact hash has witnessed progress. Default rolls back. Verify historical
+ownership before use; missing/replaced routes are skipped, never recalculated. Optional
+land-eye coordinates require independent passage evidence. `tools/route_sight_upgrade.py`
+proves rollback/idempotency on a private live clone; `route_sight_acceptance.py` proves
+CLI→worker→map with no intermediate polls; `route_sight_mutants.py CHECKOUT OUTPUT`
+requires four assertion failures and exact restoration. `route_sight_deploy_verify.py`
+checks process/ground/assets. Contract/evidence: `docs/reviews/rutthex-synminne/README.md`.

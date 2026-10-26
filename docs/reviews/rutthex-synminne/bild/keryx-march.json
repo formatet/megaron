@@ -1,0 +1,5 @@
+{
+  "exit_code": 0,
+  "stdout": "{\n  \"arrival_tick\": 9,\n  \"arrives_at\": \"2026-10-26T21:27:10.701185+01:00\",\n  \"arrives_at_utc\": \"2026-10-26T20:27:10.701185Z\",\n  \"departs_at\": \"2026-10-26T21:26:52.701185+01:00\",\n  \"duration_ticks\": 9,\n  \"expedition\": null,\n  \"origin_q\": 6,\n  \"origin_r\": 24,\n  \"target_q\": 14,\n  \"target_r\": 24,\n  \"unit_id\": \"b7665f03-22cf-457b-a419-bab23c5ecb2d\"\n}\n",
+  "stderr": ""
+}

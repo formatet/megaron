@@ -1,0 +1,8 @@
+{"added":4,"after":4,"applied":false,"before":0,"explicit_land_witnesses":0,"retained_journeys":1,"route_eyes":9,"unwitnessed_routes_skipped":0}
+{"added":4,"after":4,"applied":true,"before":0,"explicit_land_witnesses":0,"retained_journeys":1,"route_eyes":9,"unwitnessed_routes_skipped":0}
+--- FAIL: TestBackfillOnlyWitnessedPrefixAndDryRunRollback (0.04s)
+    main_test.go:64: prefix missing or future revealed: got4 want3
+FAIL
+FAIL	formatet/megaron/server/cmd/backfill-route-sight	0.040s
+FAIL
+» färsk DB på migration 217 · commit 49f1e342+ändringar

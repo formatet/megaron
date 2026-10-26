@@ -1,0 +1,23 @@
+{
+  "middle": {
+    "q": 9,
+    "r": 26,
+    "terrain": "plains",
+    "visible": true,
+    "tier": "remembered",
+    "fertility": 0.5610186656860572,
+    "mineral": 0.16411923516720306
+  },
+  "future": {
+    "q": 18,
+    "r": 26,
+    "terrain": "fog",
+    "visible": false,
+    "tier": "fog"
+  },
+  "state": {
+    "status": "positioned",
+    "q": 14,
+    "r": 24
+  }
+}

@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/tmp/megaron-codex-synminne-20261026/tools/route_sight_mutants.py", line 20, in <module>
+    assert result.returncode!=0 and '--- FAIL: '+test in log and assertion in log,(name,log)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('backfill-future', 'FAIL\tformatet/megaron/server/cmd/backfill-route-sight [build failed]\nFAIL\n» färsk DB på migration 217 · commit 49f1e342+ändringar\n# formatet/megaron/server/cmd/backfill-route-sight [formatet/megaron/server/cmd/backfill-route-sight.test]\ncmd/backfill-route-sight/main.go:110:10: declared and not used: at\n')

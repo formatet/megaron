@@ -1,0 +1,19 @@
+{
+  "health": {
+    "commit": "49f1e342+route-sight",
+    "migration": 217,
+    "status": "ok"
+  },
+  "keryx_march": true,
+  "worker_arrival": {
+    "status": "positioned",
+    "q": 14,
+    "r": 24
+  },
+  "memory_present_before_first_map_read": true,
+  "middle_tier": "remembered",
+  "future_tier": "fog",
+  "page_errors": [],
+  "source_hashes_unchanged": 964,
+  "fixture": "plains map, positioned host, known target only; real CLI order and worker movement"
+}

@@ -1,0 +1,6 @@
+--- FAIL: TestRouteHexShipRetainsCoastButNotInland (0.03s)
+    route_sight_memory_test.go:53: ship sight: coast=true inland=true
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.032s
+FAIL
+» färsk DB på migration 217 · commit 49f1e342+ändringar

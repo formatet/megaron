@@ -1,0 +1,6 @@
+--- FAIL: TestRouteHexRetainsFullSightBetweenPolls (0.03s)
+    route_sight_memory_test.go:27: passed middle hex lost its full radius-2 sight between polls
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.034s
+FAIL
+» färsk DB på migration 217 · commit 49f1e342+ändringar

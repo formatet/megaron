@@ -1,0 +1,38 @@
+[
+  {
+    "name": "bare-prefix",
+    "file": "server/internal/combat/place_reach.go",
+    "replace": "if v.displayID == v.id {",
+    "with": "if false {",
+    "test": "TestRouteHexRetainsFullSightBetweenPolls",
+    "assertion": "passed middle hex lost",
+    "red": true
+  },
+  {
+    "name": "no-departure-eye",
+    "file": "server/internal/combat/place_reach.go",
+    "replace": "first = 0 // departure",
+    "with": "first = 1 // departure",
+    "test": "TestRouteHexSightStartsAtExactBoundary",
+    "assertion": "start=false",
+    "red": true
+  },
+  {
+    "name": "ship-as-land",
+    "file": "server/internal/combat/place_reach.go",
+    "replace": "kind = province.EyeShip",
+    "with": "kind = province.EyeLandUnit",
+    "test": "TestRouteHexShipRetainsCoastButNotInland",
+    "assertion": "ship sight:",
+    "red": true
+  },
+  {
+    "name": "backfill-future",
+    "file": "server/cmd/backfill-route-sight/main.go",
+    "replace": "if int64(at) <= last {",
+    "with": "if int64(at) <= last || true {",
+    "test": "TestBackfillOnlyWitnessedPrefixAndDryRunRollback",
+    "assertion": "prefix missing or future revealed",
+    "red": true
+  }
+]

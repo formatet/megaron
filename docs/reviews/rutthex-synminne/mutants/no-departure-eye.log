@@ -1,0 +1,6 @@
+--- FAIL: TestRouteHexSightStartsAtExactBoundary (0.02s)
+    route_sight_memory_test.go:84: at733 start=false first=false
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.027s
+FAIL
+» färsk DB på migration 217 · commit 49f1e342+ändringar

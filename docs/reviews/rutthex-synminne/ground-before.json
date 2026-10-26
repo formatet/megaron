@@ -1,0 +1,26 @@
+{
+  "health": {
+    "commit": "0b446a9",
+    "migration": 217,
+    "status": "ok"
+  },
+  "ground": {
+    "migration": {
+      "version": 217,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 3122
+      }
+    ],
+    "players": 15,
+    "settlements": 6,
+    "units": 18,
+    "goods": 102,
+    "unit_positions": "3b219ce7a70b7d524ab1d4734f327995"
+  },
+  "checkout": "577c63ab0d5a248889e353c6b22f87cb26790b8d"
+}

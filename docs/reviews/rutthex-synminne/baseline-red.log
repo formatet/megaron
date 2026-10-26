@@ -1,0 +1,6 @@
+» färsk DB på migration 217 · commit 577c63ab
+--- FAIL: TestRouteHexRetainsFullSightBetweenPolls (0.03s)
+    route_sight_memory_test.go:22: passed middle hex lost its full radius-2 sight between polls
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.029s
+FAIL
