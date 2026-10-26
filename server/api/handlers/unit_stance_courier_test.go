@@ -152,9 +152,7 @@ func TestStance_FieldUnitOrderTravelsByCourier(t *testing.T) {
 		t.Fatalf("load scheduled OrderDelivery: %v", err)
 	}
 	odh := messenger.NewOrderDeliveryHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), nil, clk)
-	if err := odh.Handle(ctx, events.ScheduledEvent{Payload: rawPayload}); err != nil {
-		t.Fatalf("deliver stance order: %v", err)
-	}
+	deliverFollowingCourier(t, pool, clk, odh, resp.MessengerID)
 	if err := pool.QueryRow(ctx, `SELECT stance FROM units WHERE id = $1`, unitID).Scan(&stance); err != nil {
 		t.Fatalf("read unit post-delivery: %v", err)
 	}

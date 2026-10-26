@@ -214,9 +214,7 @@ func TestRecall_FieldUnitOrderTravelsByCourier(t *testing.T) {
 	}
 	clk := clock.NewTestClock(time.Now())
 	odh := messenger.NewOrderDeliveryHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), nil, clk)
-	if err := odh.Handle(ctx, events.ScheduledEvent{Payload: rawPayload}); err != nil {
-		t.Fatalf("deliver recall order: %v", err)
-	}
+	deliverFollowingCourier(t, pool, clk, odh, resp.MessengerID)
 
 	var newTargetQ, newTargetR int
 	if err := pool.QueryRow(ctx, `SELECT status, target_q, target_r FROM units WHERE id = $1`, f.unitID).
@@ -288,9 +286,7 @@ func TestRedirect_FieldUnitOrderTravelsByCourier(t *testing.T) {
 	}
 	clk := clock.NewTestClock(time.Now())
 	odh := messenger.NewOrderDeliveryHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), nil, clk)
-	if err := odh.Handle(ctx, events.ScheduledEvent{Payload: rawPayload}); err != nil {
-		t.Fatalf("deliver redirect order: %v", err)
-	}
+	deliverFollowingCourier(t, pool, clk, odh, resp.MessengerID)
 
 	var targetQ, targetR int
 	if err := pool.QueryRow(ctx, `SELECT target_q, target_r FROM units WHERE id = $1`, f.unitID).Scan(&targetQ, &targetR); err != nil {

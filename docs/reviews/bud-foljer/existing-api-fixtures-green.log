@@ -1,0 +1,41 @@
+» färsk DB på migration 217 · commit ab6a5ce6+ändringar
+=== RUN   TestMarch_ColonizeInPlace_PositionedUnitFoundsOnOwnHex
+2026/10/26 20:04:40 INFO player registered id=75af2a6d-6918-492b-9264-dd44e5675026 username=settler-f5fafa37-6ce6-4a8d-9232-7018a8a89ab1
+2026/10/26 20:04:40 INFO order delivered — march started unit=f096d166-8742-43b5-a237-57632fb27f3d target_q=5 target_r=-1 arrival_tick=4
+--- PASS: TestMarch_ColonizeInPlace_PositionedUnitFoundsOnOwnHex (0.09s)
+=== RUN   TestRecall_FieldUnitOrderTravelsByCourier
+2026/10/26 20:04:40 INFO player registered id=bc48d225-a64c-40d7-9c2c-17dc70f3a81a username=recall-courier-2f0b833c-5528-4ea8-84cd-d18db62f2fe5
+--- PASS: TestRecall_FieldUnitOrderTravelsByCourier (0.10s)
+=== RUN   TestRedirect_FieldUnitOrderTravelsByCourier
+2026/10/26 20:04:40 INFO player registered id=e2eb2d6b-a3fe-4b66-8824-752e684c0bc0 username=recall-courier-f59e14fc-06dd-42fd-857e-ee41060357af
+--- PASS: TestRedirect_FieldUnitOrderTravelsByCourier (0.10s)
+=== RUN   TestRecall_InterceptsAheadOfStaleSnapshot
+2026/10/26 20:04:40 INFO player registered id=11c0b201-f98d-4123-9006-c2d188c757ab username=intercept-1f832c10-e069-42b4-b35c-5e63630f3ff8
+--- PASS: TestRecall_InterceptsAheadOfStaleSnapshot (0.11s)
+=== RUN   TestStance_FieldUnitOrderTravelsByCourier
+2026/10/26 20:04:40 INFO player registered id=93ecdb0c-5a11-4971-93aa-265e48f8cacf username=stance-4a8955d0-025e-46b6-a33a-b7f0446f72a5
+2026/10/26 20:04:40 INFO order delivered — stance applied unit=46699ace-5a8b-4a44-9ba2-e5296069e04d stance=fortify
+--- PASS: TestStance_FieldUnitOrderTravelsByCourier (0.08s)
+=== RUN   TestStanceMarching_DispatchCatchesUpLikeRedirect
+2026/10/26 20:04:40 INFO player registered id=94512e1a-3c1c-4c81-a062-d3e1508ef001 username=recall-courier-980083de-e4e2-4b8b-a9f4-9caa798b4824
+--- PASS: TestStanceMarching_DispatchCatchesUpLikeRedirect (0.08s)
+=== RUN   TestStanceMarching_DeliveredWhileMarching
+2026/10/26 20:04:41 INFO player registered id=6c0020f8-bb6c-4c98-9ff7-d3127ade9776 username=recall-courier-2451e87e-743f-4bda-a05a-a4c8b20fe6b4
+2026/10/26 20:04:41 INFO order delivered — stance applied after pursuit unit=196190d0-decb-401f-a401-91aabe22ccb2 stance=sentry
+2026/10/26 20:04:41 INFO unit arrived (garrison) unit=196190d0-decb-401f-a401-91aabe22ccb2 q=4 r=0 status=positioned
+--- PASS: TestStanceMarching_DeliveredWhileMarching (0.11s)
+=== RUN   TestStanceMarching_DeliveredAfterArrival
+2026/10/26 20:04:41 INFO player registered id=fd3c5a13-1cc8-4ae4-9a86-565665df1649 username=recall-courier-57e47842-f610-4b8c-97ef-dbce78e48ca5
+2026/10/26 20:04:41 INFO order delivered — stance applied after pursuit unit=a686238f-b93a-41d4-9dce-379f95b519cb stance=fortify
+--- PASS: TestStanceMarching_DeliveredAfterArrival (0.09s)
+=== RUN   TestStanceMarching_CoexistsWithRedirect
+2026/10/26 20:04:41 INFO player registered id=e9b0b119-7fd3-4077-9118-53531001fab8 username=recall-courier-7a465265-de35-41a9-92e0-f4f030513859
+--- PASS: TestStanceMarching_CoexistsWithRedirect (0.10s)
+=== RUN   TestStanceMarching_NoInterceptAimsAtDestination
+2026/10/26 20:04:41 INFO player registered id=28e86704-02a0-477f-b989-4020239819c8 username=intercept-24e41a76-e0ad-4fd6-8e6e-0ec4e420223f
+--- PASS: TestStanceMarching_NoInterceptAimsAtDestination (0.09s)
+=== RUN   TestStanceMarching_FrozenStanceVerbStillRefusesMarching
+2026/10/26 20:04:41 INFO player registered id=85b23fef-016e-44c6-9304-50e7474979a5 username=recall-courier-ecf35fda-2805-4b43-8a90-796854c86525
+--- PASS: TestStanceMarching_FrozenStanceVerbStillRefusesMarching (0.06s)
+PASS
+ok  	formatet/megaron/server/api/handlers	1.038s

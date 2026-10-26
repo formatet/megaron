@@ -143,9 +143,7 @@ func TestStanceMarching_DeliveredWhileMarching(t *testing.T) {
 	evt := loadDelivery(t, d.MessengerID)
 	clk := clock.NewTestClock(time.Now())
 	odh := messenger.NewOrderDeliveryHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), nil, clk)
-	if err := odh.Handle(ctx, evt); err != nil {
-		t.Fatalf("deliver: %v", err)
-	}
+	deliverFollowingCourier(t, pool, clk, odh, d.MessengerID)
 
 	var status string
 	var stance *string
@@ -184,9 +182,17 @@ func TestStanceMarching_DeliveredWhileMarching(t *testing.T) {
 	}
 
 	// The march ends: the sentry holds the hex it stopped on.
-	if _, err := pool.Exec(ctx, `UPDATE units SET arrives_at = now() WHERE id=$1`, f.unitID); err != nil {
-		t.Fatalf("fast-forward march: %v", err)
+	var arrival time.Time
+	if err := pool.QueryRow(ctx, `SELECT arrives_at FROM units WHERE id=$1`, f.unitID).Scan(&arrival); err != nil {
+		t.Fatalf("read march deadline: %v", err)
 	}
+	// This handler-level test has not processed UnitArrival yet. Following
+	// may reach the endpoint after that job became due; process it at current
+	// time rather than rewinding the clock or rewriting its saved deadline.
+	if arrival.Before(clk.Now()) {
+		arrival = clk.Now()
+	}
+	advanceOrderTestClock(t, pool, clk, f.worldID, arrival)
 	payload, _ := json.Marshal(unit.ScheduledUnitArrivalPayload{UnitID: f.unitID, WorldID: f.worldID})
 	ah := combat.NewUnitArrivalHandler(pool, events.NewStore(pool), nil, events.NewScheduler(pool, clk), clk)
 	if err := ah.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, Payload: payload}); err != nil {
@@ -217,9 +223,7 @@ func TestStanceMarching_DeliveredAfterArrival(t *testing.T) {
 	}
 	clk := clock.NewTestClock(time.Now())
 	odh := messenger.NewOrderDeliveryHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), nil, clk)
-	if err := odh.Handle(ctx, loadDelivery(t, d.MessengerID)); err != nil {
-		t.Fatalf("deliver: %v", err)
-	}
+	deliverFollowingCourier(t, pool, clk, odh, d.MessengerID)
 	var status string
 	var stance *string
 	var q int

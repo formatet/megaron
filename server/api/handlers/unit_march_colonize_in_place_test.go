@@ -165,9 +165,7 @@ func TestMarch_ColonizeInPlace_PositionedUnitFoundsOnOwnHex(t *testing.T) {
 		t.Fatalf("load scheduled OrderDelivery: %v", err)
 	}
 	odh := messenger.NewOrderDeliveryHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), nil, clk)
-	if err := odh.Handle(ctx, events.ScheduledEvent{Payload: rawPayload}); err != nil {
-		t.Fatalf("deliver order: %v", err)
-	}
+	deliverFollowingCourier(t, pool, clk, odh, dispatchResp.MessengerID)
 
 	var intent, status string
 	var colonyName *string

@@ -188,9 +188,7 @@ func TestRecall_InterceptsAheadOfStaleSnapshot(t *testing.T) {
 	}
 	clk := clock.NewTestClock(time.Now())
 	odh := messenger.NewOrderDeliveryHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), nil, clk)
-	if err := odh.Handle(ctx, events.ScheduledEvent{Payload: rawPayload}); err != nil {
-		t.Fatalf("deliver recall order: %v", err)
-	}
+	deliverFollowingCourier(t, pool, clk, odh, resp.MessengerID)
 
 	var status string
 	var targetQ, targetR int
