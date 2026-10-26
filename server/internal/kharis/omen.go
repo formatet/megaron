@@ -114,12 +114,12 @@ func omenText(f omenFact, level omenBand, originQ, originR int, specific bool) (
 		if f.Net <= 0 {
 			return "", 0, false
 		}
-		return "Full bowls at the altar: the fields now provide more food than the townsfolk eat.", precision, true
+		return "Full bowls at the altar: the town now produces more food than its people eat.", precision, true
 	case "food_deficit":
 		if f.Net >= 0 {
 			return "", 0, false
 		}
-		return "A thin offering: the townsfolk now eat more food than their fields provide.", precision, true
+		return "A thin offering: the people now eat more food than their town produces.", precision, true
 	}
 	return "", 0, false
 }
