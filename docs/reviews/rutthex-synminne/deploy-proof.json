@@ -1,0 +1,32 @@
+{
+  "health": {
+    "commit": "33c7ea7",
+    "migration": 217,
+    "status": "ok"
+  },
+  "ground": {
+    "migration": {
+      "version": 217,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 3127
+      }
+    ],
+    "players": 15,
+    "settlements": 6,
+    "units": 18,
+    "goods": 102,
+    "unit_positions": "3b219ce7a70b7d524ab1d4734f327995"
+  },
+  "checkout": "33c7ea7f56ffc915bbb7881e49220320cd96360f",
+  "assets": {
+    "web/static/megaron.css": "1f72e17ee52960426d33f02691e17472e9c30005106fbdb0df2100bfdaf00cb3",
+    "web/static/js/megaron/render/map.js": "2772750158912f59fab47d81d0d93c6939e959be3df636c35e76fab47b0c0222",
+    "web/static/js/megaron/render/routes.js": "442841a31e1ef23ac2554a3eb91f6083030860987e9e74c16e745d344a99b53e",
+    "web/static/codex/marching.md": "11bfbaf68564b37c92c1af9da48ba91c8dbf6bd93977e27fa2ca020551d38142"
+  }
+}

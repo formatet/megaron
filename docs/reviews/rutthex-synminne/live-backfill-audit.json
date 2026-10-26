@@ -1,0 +1,22 @@
+[
+  {
+    "added": 0,
+    "after": 1024,
+    "applied": false,
+    "before": 1024,
+    "explicit_land_witnesses": 3,
+    "retained_journeys": 6,
+    "route_eyes": 88,
+    "unwitnessed_routes_skipped": 0
+  },
+  {
+    "added": 0,
+    "after": 22,
+    "applied": false,
+    "before": 22,
+    "explicit_land_witnesses": 0,
+    "retained_journeys": 3,
+    "route_eyes": 6,
+    "unwitnessed_routes_skipped": 0
+  }
+]

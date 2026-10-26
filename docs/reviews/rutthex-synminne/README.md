@@ -4,7 +4,7 @@
 
 V2-prefix sparade enbart en nådd rutthex; dess fulla synfält kunde försvinna mellan kartläsningar. Varje nådd enhetshex använder nu samma `province.SweepLiveRadius` som levande sikt. Avgångshexen räknas från exakt avgång, utan ny namngivningsrätt. Kod `49f1e342`; slutlig rigg `a8ce5a41`.
 
-Provenance: riktig acceptansprocess `49f1e342+route-sight`, migration217, statusok. `bild/proof.json` och `bild/server.log`. Server/web hade964 identiska produktionsfilhashar genom scenariot. Deploybevis tillkommer separat.
+Provenance: riktig acceptansprocess `49f1e342+route-sight`, migration217, statusok. `bild/proof.json` och `bild/server.log`. Server/web hade964 identiska produktionsfilhashar genom scenariot. LIVE33c7ea7f, migration217ren. `deploy-proof.json` verifierar den nya processen och oförändrat grundtillstånd.
 
 ## Slice-kontrakt
 
