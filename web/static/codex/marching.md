@@ -1,6 +1,6 @@
 ## Giving a march order
 
-**Right-click the destination hex.** The order menu shows what the destination is, which of your units can go and **March →**. Only one unit is selected initially. Tick the checkbox beside each named unit you want to order; units sharing a type or location are separate choices. **More** holds stance ([[stances]]), expedition duration and column name.
+**Right-click the destination hex.** The order menu shows what the destination is, which of your units can go and **March →**. Only one unit is selected initially. Select the checkbox beside each named unit you want to order; units sharing a type or location are separate choices. **More** holds stance ([[stances]]), expedition duration and column name.
 
 You can also left-click a hex and use **March here →** — or **Send galleys →** at sea, or **Colonize →** on empty land ([[colonies]]). Hovering those buttons previews the result on the map.
 
