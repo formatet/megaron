@@ -371,7 +371,9 @@ test('too-short expedition is refused before any order POST, including a Runner 
   State.marchCtxGroups=[{ids:['field'],names:['3rd Spearmen of Tylissos'],category:'land',mode:'march'}];
   State.marchCtxUnits=[ready('field',{status:'positioned'})];
   globalThis.fetch=async(url,opts={})=>{calls.push({url,method:opts.method||'GET'});return {ok:false,status:422,headers:{get:()=>null},json:async()=>({error:'The chosen expedition duration is too short.'})};};
+  control('mctx-eta').innerHTML='Estimating arrival…';control('mctx-eta').style.display='block';
   await menu.sendMarch();
+  assert.equal(control('mctx-eta').style.display,'none','a refused preflight must clear its canceled loading forecast');
   assert.equal(calls.filter(c=>c.method==='POST').length,0,'no Runner may leave for a known invalid expedition');
   assert.equal(calls.filter(c=>c.url.includes('march-preview')).length,1);
   assert.match(control('mctx-err').textContent,/too short/);

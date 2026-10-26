@@ -626,6 +626,8 @@ export async function sendMarch() {
   catch (error) { document.getElementById('mctx-err').textContent = error.message; return; }
 
   marchPreview.cancel();
+  const canceledForecast = document.getElementById('mctx-eta');
+  if (canceledForecast) { canceledForecast.innerHTML = ''; canceledForecast.style.display = 'none'; }
   document.getElementById('mctx-send').disabled = true;
   document.getElementById('mctx-err').textContent = '';
 
