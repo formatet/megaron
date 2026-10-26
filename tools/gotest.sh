@@ -32,7 +32,7 @@ trap cleanup EXIT
 
 docker run -d --rm --name "$NAME" -e POSTGRES_PASSWORD=pw -p "$PORT:5432" postgres:16-alpine >/dev/null
 for _ in $(seq 1 30); do
-  docker exec "$NAME" pg_isready -U postgres -q 2>/dev/null && break
+  docker exec "$NAME" pg_isready -h 127.0.0.1 -U postgres -q 2>/dev/null && break
   sleep 1
 done
 docker exec "$NAME" psql -U postgres -qc 'CREATE DATABASE megaron_test;'
