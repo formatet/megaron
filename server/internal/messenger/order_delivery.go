@@ -34,6 +34,11 @@ import (
 
 // OrderDeliveryPayload is the ScheduledOrderDelivery payload.
 type OrderDeliveryPayload struct {
+	// Explicit opt-in for newly dispatched land-unit orders. Old queued
+	// envelopes keep their frozen delivery meaning.
+	FollowUnit        bool `json:"following_unit,omitempty"`
+	PursuitLegs       int  `json:"pursuit_legs,omitempty"`
+	FollowWaiting     bool `json:"following_wait,omitempty"`
 	MeetAtDestination bool `json:"meet_at_destination,omitempty"`
 	// AfterArrival is only attached to newly sent recall/redirect envelopes.
 	// Old queued envelopes keep their original miss-on-arrival behavior.
@@ -90,25 +95,43 @@ func (h *OrderDeliveryHandler) Handle(ctx context.Context, e events.ScheduledEve
 		return fmt.Errorf("unmarshal order delivery payload: %w", err)
 	}
 
-	// Atomic claim: outbound→arrived is one-way; a replay no-ops here.
-	// megaron_plan_budet_liftar.md R4: passage_generation = $2 also catches a
-	// STALE firing — this envelope's sea-lift plan was superseded (its carrier
-	// was lost and it re-boarded, or it took the reserve) after this exact
-	// event was scheduled. A plain land envelope never has its generation
-	// bumped (payload and row both stay 0), so this is a no-op change for the
-	// unaffected common case.
-	ct, err := h.pool.Exec(ctx,
-		`UPDATE messengers SET status='arrived',
+	if p.FollowUnit {
+		deliver, failure, err := h.advanceFollowingOrder(ctx, &p)
+		if err != nil {
+			return err
+		}
+		if !deliver {
+			return nil
+		}
+		if failure != "" {
+			if p.Verb == "recall" || p.Verb == "redirect" {
+				return h.failSingleRecall(ctx, p, failure)
+			}
+			h.notifyOrderFailed(ctx, p, failure)
+			return nil
+		}
+	} else {
+		// Atomic claim: outbound→arrived is one-way; a replay no-ops here.
+		// megaron_plan_budet_liftar.md R4: passage_generation = $2 also catches a
+		// STALE firing — this envelope's sea-lift plan was superseded (its carrier
+		// was lost and it re-boarded, or it took the reserve) after this exact
+		// event was scheduled. A plain land envelope never has its generation
+		// bumped (payload and row both stay 0), so this is a no-op change for the
+		// unaffected common case.
+		ct, err := h.pool.Exec(ctx,
+			`UPDATE messengers SET status='arrived',
 		        passage_status = NULL, carrier_transport_id = NULL, carrier_unit_id = NULL, carrier_name = NULL
 		  WHERE id=$1 AND status NOT IN ('arrived','lost') AND NOT EXISTS(SELECT 1 FROM events e WHERE e.stream_id=messengers.id AND e.id>messengers.carrier_witness_id AND e.event_type IN `+carrier.TypesSQL+`) AND passage_generation = $2
 		    AND (passage_status IS NULL OR passage_status = 'aboard')`,
-		p.MessengerID, p.PassageGeneration)
-	if err != nil {
-		return fmt.Errorf("claim order messenger: %w", err)
-	}
-	if ct.RowsAffected() == 0 {
-		slog.Info("order messenger already processed or superseded by a later passage — idempotent replay skipped", "messenger", p.MessengerID)
-		return nil
+			p.MessengerID, p.PassageGeneration)
+		if err != nil {
+			return fmt.Errorf("claim order messenger: %w", err)
+		}
+		if ct.RowsAffected() == 0 {
+			slog.Info("order messenger already processed or superseded by a later passage — idempotent replay skipped", "messenger", p.MessengerID)
+			return nil
+		}
+
 	}
 
 	// R3 (megaron_plan_skeppsuppdrag_landsatt.md): going forward, no fresh
@@ -171,7 +194,13 @@ func (h *OrderDeliveryHandler) Handle(ctx context.Context, e events.ScheduledEve
 		if p.Stance == nil {
 			return fmt.Errorf("order delivery %s: stance verb without stance payload", p.MessengerID)
 		}
-		res, err := combat.SetStance(ctx, h.pool, h.eventStore, *p.Stance)
+		var res *combat.StanceApplied
+		var err error
+		if p.FollowUnit {
+			res, err = combat.SetStanceInPursuit(ctx, h.pool, h.eventStore, *p.Stance)
+		} else {
+			res, err = combat.SetStance(ctx, h.pool, h.eventStore, *p.Stance)
+		}
 		if err != nil {
 			var rej *combat.OrderReject
 			if errors.As(err, &rej) {
@@ -224,7 +253,7 @@ func (h *OrderDeliveryHandler) Handle(ctx context.Context, e events.ScheduledEve
 					return h.failSingleRecall(ctx, p, "the Runner reached the destination, but the unit was no longer there")
 				}
 			}
-			if u.Status == unit.StatusPositioned || u.Status == unit.StatusGarrison {
+			if u.Status == unit.StatusPositioned || u.Status == unit.StatusGarrison || (p.FollowUnit && u.Status == unit.StatusMarching) {
 				res, err := combat.StartMarch(ctx, h.pool, h.scheduler, h.eventStore, h.clk, *p.AfterArrival, nil)
 				if err != nil {
 					var rej *combat.OrderReject

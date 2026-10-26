@@ -1449,15 +1449,18 @@ func provisionsShort(have, need, ration float64, days int) *OrderReject {
 
 // CurrentUnitPosition shares the physical read used by a delivered course and
 // a late Runner: saved route/tick anchor first, legacy route only as fallback.
-func CurrentUnitPosition(ctx context.Context, pool *pgxpool.Pool, clk clock.Clock, u *unit.Unit) (province.MapPosition, error) {
+func CurrentUnitPosition(ctx context.Context, db interface {
+	province.Queryer
+	tick.Queryer
+}, clk clock.Clock, u *unit.Unit) (province.MapPosition, error) {
 	if u.Status == unit.StatusMarching {
 		if route, ok := LoadActiveRoute(u.MarchRoute, string(u.Status), u.DepartTick, u.ArriveTick); ok {
-			if anchor, err := tick.LoadAnchor(ctx, pool, u.WorldID); err == nil {
+			if anchor, err := tick.LoadAnchor(ctx, db, u.WorldID); err == nil {
 				return RoutePositionAt(route, anchor.MilliAt(clk.Now()), clk.Now())
 			}
 		}
 		if u.Q != nil && u.R != nil && u.TargetQ != nil && u.TargetR != nil && u.DepartsAt != nil && u.ArrivesAt != nil {
-			pos, ok, err := province.InterpolatePosition(ctx, pool, u.WorldID, province.MapPosition{Q: *u.Q, R: *u.R}, province.MapPosition{Q: *u.TargetQ, R: *u.TargetR}, unit.MoveCategory(u.Type), *u.DepartsAt, *u.ArrivesAt, clk.Now())
+			pos, ok, err := province.InterpolatePosition(ctx, db, u.WorldID, province.MapPosition{Q: *u.Q, R: *u.R}, province.MapPosition{Q: *u.TargetQ, R: *u.TargetR}, unit.MoveCategory(u.Type), *u.DepartsAt, *u.ArrivesAt, clk.Now())
 			if err == nil && ok {
 				return pos, nil
 			}
@@ -1466,7 +1469,7 @@ func CurrentUnitPosition(ctx context.Context, pool *pgxpool.Pool, clk clock.Cloc
 		return province.MapPosition{Q: *u.Q, R: *u.R}, nil
 	} else if u.SettlementID != nil {
 		var pos province.MapPosition
-		if err := pool.QueryRow(ctx, `SELECT p.map_q,p.map_r FROM settlements s JOIN provinces p ON p.id=s.province_id WHERE s.id=$1`, *u.SettlementID).Scan(&pos.Q, &pos.R); err == nil {
+		if err := db.QueryRow(ctx, `SELECT p.map_q,p.map_r FROM settlements s JOIN provinces p ON p.id=s.province_id WHERE s.id=$1`, *u.SettlementID).Scan(&pos.Q, &pos.R); err == nil {
 			return pos, nil
 		}
 	}

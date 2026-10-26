@@ -1509,7 +1509,8 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 		        m.passage_status, pp.map_q, pp.map_r, pps.name, m.withdrawn,
 		        m.carrier_transport_id, m.carrier_unit_id, m.carrier_name,
 		        m.disembark_q, m.disembark_r, m.boarded_at, m.disembark_at,
-		        m.passage_stalled_notified_tick,ds.owner_id,m.land_route
+		        m.passage_stalled_notified_tick,ds.owner_id,m.land_route,
+ COALESCE((m.order_payload->>'following_unit')::boolean,false),COALESCE((m.order_payload->>'pursuit_legs')::int,0),COALESCE((m.order_payload->>'following_wait')::boolean,false)
 		 FROM messengers m
 		 -- LEFT: a host-sent messenger (mig 087) has no origin settlement; its frozen
 		 -- departure point (origin_q/origin_r) places it, with terrain off the tile.
@@ -1562,7 +1563,10 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 		Sender string `json:"sender"`
 		// OrderUnitID ties a kind='order' runner to the unit it is
 		// running to, so the unit card can show "order på väg" + courier ETA.
-		OrderUnitID *uuid.UUID `json:"order_unit_id,omitempty"`
+		OrderUnitID   *uuid.UUID `json:"order_unit_id,omitempty"`
+		FollowUnit    bool       `json:"following_unit,omitempty"`
+		PursuitLegs   int        `json:"pursuit_legs,omitempty"`
+		FollowWaiting bool       `json:"following_wait,omitempty"`
 		// PassageStatus/PassagePort (megaron_plan_budet_liftar.md) are set only
 		// while the runner is 'awaiting_passage' at its own port — the client
 		// shows it standing there rather than mid-crossing. Once boarded or
@@ -1623,13 +1627,15 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 		var landRaw []byte
 		var land movement.StoredRoute
 		var stalledNotifiedTick *int
+		var follow, waiting bool
+		var legs int
 		if err := rows.Scan(&m.ID, &senderID, &m.Sender, &m.Kind, &orderUnitID,
 			&m.OriginQ, &m.OriginR, &originTerrain, &m.DestQ, &m.DestR, &destTerrain,
 			&m.SentAt, &m.ArrivesAt, &status, &returnDepartsAt,
 			&m.PassageStatus, &portQ, &portR, &m.PassagePort, &withdrawn,
 			&carrierTransportID, &carrierUnitID, &carrierName,
 			&disembarkQ, &disembarkR, &boardedAt, &disembarkAt,
-			&stalledNotifiedTick, &recipientID, &landRaw); err != nil {
+			&stalledNotifiedTick, &recipientID, &landRaw, &follow, &legs, &waiting); err != nil {
 			continue
 		}
 		timedLand := len(landRaw) > 0 && json.Unmarshal(landRaw, &land) == nil && land.Version == 2
@@ -1672,6 +1678,7 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 		if m.Own && orderUnitID != nil {
 			if uid, err := uuid.Parse(*orderUnitID); err == nil {
 				m.OrderUnitID = &uid
+				m.FollowUnit, m.PursuitLegs, m.FollowWaiting = follow, legs, waiting
 			}
 		}
 		// R3 (megaron_plan_budets_tre_ben.md, slice 3c): tell the OWNER which

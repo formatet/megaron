@@ -1,0 +1,5 @@
+[{"event_type":"UnitMarchOrdered","created_at":"2026-10-25T16:25:55.757878+00:00","world_tick":1439,"payload":{"stance": "", "unit_id": "a05591e4-e160-46e3-8ae0-2f80421a4286", "origin_q": 54, "origin_r": 31, "target_q": 52, "target_r": 26, "arrives_at": "2026-10-25T17:33:55+01:00", "departs_at": "2026-10-25T17:25:55+01:00"}}, 
+ {"event_type":"ExpeditionTurnedHome","created_at":"2026-10-25T16:47:25.738381+00:00","world_tick":1460,"payload":{"q": 49, "r": 29, "area_q": 52, "area_r": 26, "reason": "area_known", "unit_id": "a05591e4-e160-46e3-8ae0-2f80421a4286", "arrive_tick": 1480, "home_settlement_id": "d540b57b-8625-4dec-83a8-6f645e9a4cfe"}}, 
+ {"event_type":"MarchRedirected","created_at":"2026-10-25T16:59:08.42881+00:00","world_tick":1472,"payload":{"from_q": 52, "from_r": 26, "unit_id": "a05591e4-e160-46e3-8ae0-2f80421a4286", "arrives_at": "2026-10-25T18:10:08+01:00", "new_target_q": 49, "new_target_r": 24}}, 
+ {"event_type":"UnitArrived","created_at":"2026-10-25T17:10:18.090659+00:00","world_tick":1483,"payload":{"q": 49, "r": 24, "unit_id": "a05591e4-e160-46e3-8ae0-2f80421a4286", "new_status": "garrison"}}]
+

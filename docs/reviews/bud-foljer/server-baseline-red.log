@@ -1,0 +1,15 @@
+» färsk DB på migration 216 · commit 009e8391+ändringar
+2026/10/26 17:19:41 INFO order delivered but no longer executable unit=4911deeb-5b4d-4a5b-a09b-c5cdb648962d verb=march reason="the Runner reached (2,0), but the unit is no longer there"
+2026/10/26 17:19:41 INFO order delivered — stance applied unit=dda30836-1dd6-496e-b606-7af6482307d2 stance=storm
+--- FAIL: TestOrderPursuit_MovedUnitNeedsPhysicalLeg (0.15s)
+    --- FAIL: TestOrderPursuit_MovedUnitNeedsPhysicalLeg/march (0.04s)
+        order_pursuit_test.go:85: Runner finished or delivered remotely instead of following: statusarrived arrives2026-10-07 18:00:00 +0200 CEST
+    --- FAIL: TestOrderPursuit_MovedUnitNeedsPhysicalLeg/recall (0.04s)
+        order_pursuit_test.go:85: Runner finished or delivered remotely instead of following: statusarrived arrives2026-10-07 18:00:00 +0200 CEST
+    --- FAIL: TestOrderPursuit_MovedUnitNeedsPhysicalLeg/redirect (0.04s)
+        order_pursuit_test.go:85: Runner finished or delivered remotely instead of following: statusarrived arrives2026-10-07 18:00:00 +0200 CEST
+    --- FAIL: TestOrderPursuit_MovedUnitNeedsPhysicalLeg/stance (0.04s)
+        order_pursuit_test.go:85: Runner finished or delivered remotely instead of following: statusarrived arrives2026-10-07 18:00:00 +0200 CEST
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.154s
+FAIL

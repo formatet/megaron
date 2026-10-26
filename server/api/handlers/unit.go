@@ -447,7 +447,7 @@ func (h *UnitHandler) sendOrderCourierTx(w http.ResponseWriter, ctx context.Cont
 		writeError(w, http.StatusInternalServerError, "could not replace the earlier unboarded order")
 		return
 	}
-	messengerID, err := insertOrderMessenger(ctx, tx, payload, msgText, origin,
+	messengerID, err := insertOrderMessenger(ctx, tx, &payload, msgText, origin,
 		unitPos.Q, unitPos.R, courierArrivesAt, passage, passageSinceTickArg)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not dispatch order runner")
@@ -482,6 +482,9 @@ func (h *UnitHandler) sendOrderCourierTx(w http.ResponseWriter, ctx context.Cont
 		"superseded_messenger_ids": superseded,
 		"courier_arrives_at":       courierArrivesAt,
 		"courier_due_tick":         dueTick,
+		"following_unit":           payload.FollowUnit,
+		"pursuit_legs":             payload.PursuitLegs,
+		"following_wait":           payload.FollowWaiting,
 	}
 	if passage != nil {
 		resp["passage_status"] = "awaiting_passage"
@@ -514,10 +517,18 @@ func mustJSON(v any) []byte {
 // walking to deliver the order to.
 func insertOrderMessenger(
 	ctx context.Context, tx pgx.Tx,
-	payload messenger.OrderDeliveryPayload, msgText string, origin orderOrigin,
+	payload *messenger.OrderDeliveryPayload, msgText string, origin orderOrigin,
 	destQ, destR int, arrivesAt time.Time,
 	passage *messenger.PassagePort, passageSinceTick *int,
 ) (uuid.UUID, error) {
+	switch payload.Verb {
+	case "march", "recall", "redirect", "stance", "stance_pursuit":
+		var category string
+		if err := tx.QueryRow(ctx, `SELECT category FROM units WHERE id=$1`, payload.UnitID).Scan(&category); err != nil {
+			return uuid.Nil, err
+		}
+		payload.FollowUnit = category == string(unit.CategoryLand)
+	}
 	var originQ, originR *int
 	if origin.unitID != nil {
 		originQ, originR = &origin.q, &origin.r
@@ -1067,7 +1078,7 @@ func (h *UnitHandler) dispatchPickupRunner(
 	}
 	defer tx.Rollback(ctx)
 
-	messengerID, err := insertOrderMessenger(ctx, tx, payload, msgText, origin,
+	messengerID, err := insertOrderMessenger(ctx, tx, &payload, msgText, origin,
 		unitQ, unitR, now, passage, &currentTick)
 	if err != nil {
 		return uuid.Nil, err
@@ -2201,10 +2212,14 @@ func attachUnitPaths(ctx context.Context, db province.Queryer, worldID uuid.UUID
 // leak. TargetQ/R only for orders that carry a destination (march, redirect,
 // build_road). There is no arrival tick: messengers stores only arrives_at.
 type orderEnRoute struct {
-	Verb      string    `json:"verb"`
-	TargetQ   *int      `json:"target_q,omitempty"`
-	TargetR   *int      `json:"target_r,omitempty"`
-	ArrivesAt time.Time `json:"arrives_at"`
+	FollowUnit    bool      `json:"following_unit"`
+	PursuitLegs   int       `json:"pursuit_legs"`
+	FollowWaiting bool      `json:"following_wait"`
+	PassageStatus *string   `json:"passage_status,omitempty"`
+	Verb          string    `json:"verb"`
+	TargetQ       *int      `json:"target_q,omitempty"`
+	TargetR       *int      `json:"target_r,omitempty"`
+	ArrivesAt     time.Time `json:"arrives_at"`
 }
 
 // attachOrdersEnRoute fills OrdersEnRoute from the order Runners still on
@@ -2226,7 +2241,8 @@ func attachOrdersEnRoute(ctx context.Context, db province.Queryer, worldID, owne
 		`SELECT (order_payload->>'unit_id')::uuid, order_payload->>'verb',
 		        COALESCE(order_payload->'march'->>'TargetQ', order_payload->'recall'->>'NewTargetQ', order_payload->'build_road'->>'to_q'),
 		        COALESCE(order_payload->'march'->>'TargetR', order_payload->'recall'->>'NewTargetR', order_payload->'build_road'->>'to_r'),
-		        arrives_at
+		        arrives_at,COALESCE((order_payload->>'following_unit')::boolean,false),COALESCE((order_payload->>'pursuit_legs')::int,0),
+ COALESCE((order_payload->>'following_wait')::boolean,false) OR COALESCE(passage_status IN ('awaiting_passage','returning_sealed','unknown'),false),passage_status
 		   FROM messengers
 		  WHERE world_id = $1 AND sender_id = $2 AND kind = 'order' AND status = 'outbound'
 		    AND order_payload->>'unit_id' IS NOT NULL
@@ -2241,14 +2257,17 @@ func attachOrdersEnRoute(ctx context.Context, db province.Queryer, worldID, owne
 		var verb string
 		var tq, tr *string
 		var arrives time.Time
-		if rows.Scan(&unitID, &verb, &tq, &tr, &arrives) != nil {
+		var follow, waiting bool
+		var legs int
+		var passage *string
+		if rows.Scan(&unitID, &verb, &tq, &tr, &arrives, &follow, &legs, &waiting, &passage) != nil {
 			continue
 		}
 		i, ok := index[unitID]
 		if !ok {
 			continue
 		}
-		o := orderEnRoute{Verb: verb, ArrivesAt: arrives}
+		o := orderEnRoute{Verb: verb, ArrivesAt: arrives, FollowUnit: follow, PursuitLegs: legs, FollowWaiting: waiting, PassageStatus: passage}
 		if tq != nil && tr != nil {
 			q, qErr := strconv.Atoi(*tq)
 			r, rErr := strconv.Atoi(*tr)
