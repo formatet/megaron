@@ -291,6 +291,13 @@ func TestOrderPursuit_GuardsAndWaiting(t *testing.T) {
 				t.Fatalf("guard claimed/failed: %s %v", status, f.hub.failures)
 			}
 			if mode != "embarked" && mode != "unlocated" && mode != "noport" {
+				var jobs int
+				if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM scheduled_events WHERE event_type='OrderDeliveryV2' AND payload->>'messenger_id'=$1`, f.messengerID.String()).Scan(&jobs); err != nil {
+					t.Fatal(err)
+				}
+				if jobs != 0 || p.PursuitLegs != 0 || p.FollowWaiting {
+					t.Fatalf("guard scheduled or advanced the Runner: jobs%d payload%+v", jobs, p)
+				}
 				return
 			}
 			if !p.FollowWaiting || !due.After(f.clk.Now()) {
