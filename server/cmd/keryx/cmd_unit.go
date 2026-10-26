@@ -798,7 +798,8 @@ the order is refused; try another hex or a unit departing from elsewhere.
 It turns home by half the duration and reports what it saw on return. It needs
 a reachable city of yours to return to. A land unit in the field receives the
 order by Runner; a ship must be commanded in port. Works for land or naval
-units. Omit --ticks for the server default; the server validates the range.
+units. Omit --ticks for the server default. Before sending, the read-only forecast
+validates the duration and return budget; an invalid expedition sends no Runner.
 
 To sail to your own coastal city or harbour, use --to "City name" without an
 explore intent. The ship docks and stays there. Everyone aboard disembarks
@@ -920,6 +921,11 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 				}
 				return showMarchPreview(c, path+"-preview", body)
 			}
+			if intent == "explore" {
+				if _, err := fetchMarchPreview(c, path+"-preview", body); err != nil {
+					return fmt.Errorf("Nothing sent — expedition forecast refused: %w", err)
+				}
+			}
 			// Colonize catchment forecast (DEL A, megaron_koloni_legibilitet_plan.md):
 			// show the grain balance the new colony would start with BEFORE the march
 			// is dispatched, then confirm. Skipped in --json mode (machine caller).
@@ -1035,7 +1041,7 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 
 	cmd.Flags().IntVar(&expeditionTicks, "ticks", 0, "explore duration in game days (omit for server default)")
 	cmd.Flags().BoolVar(&previewOnly, "preview", false, "estimate arrival without sending an order")
-	cmd.Flags().StringVar(&unitID, "unit", "", "unit UUID (required)")
+	cmd.Flags().StringVar(&unitID, "unit", "", "exact unit name or UUID prefix (required)")
 	cmd.Flags().IntVar(&targetQ, "q", 0, "target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)")
 	cmd.Flags().IntVar(&targetR, "r", 0, "target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)")
 	cmd.Flags().StringVar(&target, "target", "", "target hex as q,r — alternative to --q/--r (e.g. 5,-3)")
@@ -1428,7 +1434,7 @@ with its reason.`,
 		},
 	}
 
-	cmd.Flags().StringVar(&unitID, "unit", "", "unit UUID (required)")
+	cmd.Flags().StringVar(&unitID, "unit", "", "exact unit name or UUID prefix (required)")
 	cmd.Flags().StringVar(&target, "target", "", "new target hex as q,r — axial coordinates, read them off 'keryx map' (alternative to --q/--r)")
 	cmd.Flags().IntVar(&q, "q", 0, "new target hex Q — axial coordinate, alternative to --target")
 	cmd.Flags().IntVar(&r, "r", 0, "new target hex R — axial coordinate, alternative to --target")
@@ -1484,7 +1490,7 @@ repair completes and its hull returns to full.`,
 		},
 	}
 
-	cmd.Flags().StringVar(&unitID, "unit", "", "unit UUID (required)")
+	cmd.Flags().StringVar(&unitID, "unit", "", "exact unit name or UUID prefix (required)")
 	_ = cmd.MarkFlagRequired("unit")
 	return cmd
 }
@@ -1649,7 +1655,7 @@ its destination and the stance applies where it stopped.`,
 		},
 	}
 
-	cmd.Flags().StringVar(&unitID, "unit", "", "unit UUID (required)")
+	cmd.Flags().StringVar(&unitID, "unit", "", "exact unit name or UUID prefix (required)")
 	cmd.Flags().StringVar(&stance, "stance", "", "stance: fortify|storm|sentry|none (required)")
 	cmd.Flags().StringVar(&reaction, "reaction", "",
 		"reaction to foreign units when --stance sentry: intercept|escort|ignore|alert (default intercept; all four wired for unit-vs-unit, escort/alert still stubs against caravans)")
@@ -1752,7 +1758,7 @@ battle only. A unit not in a battle is refused — set the default instead.`,
 		},
 	}
 
-	cmd.Flags().StringVar(&unitID, "unit", "", "unit UUID (required)")
+	cmd.Flags().StringVar(&unitID, "unit", "", "exact unit name or UUID prefix (required)")
 	cmd.Flags().BoolVar(&holdToLastMan, "hold-to-last-man", false, "disable rout for this unit's side — fight to annihilation")
 	cmd.Flags().BoolVar(&whenLosing, "when-losing", false, "Retreat when it goes badly — at the fixed loss threshold")
 	_ = cmd.MarkFlagRequired("unit")

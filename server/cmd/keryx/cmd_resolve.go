@@ -92,7 +92,7 @@ func resolveProvince(c *Client, worldID, nameOrID string) (string, error) {
 // resolveUnitID resolves a --unit/--ship value to a full unit UUID. An
 // exact UUID-shaped string is trusted outright — the server checks
 // existence and ownership itself, same as resolveSettlement above.
-// Anything shorter is treated as a prefix and matched case-insensitively
+// Exact display names and shorter ID prefixes are matched case-insensitively
 // against the player's own units (GET .../units — the same list `keryx
 // unit list` reads): zero matches names what to run for the full id, more
 // than one lists every candidate instead of guessing at which one was meant.
@@ -118,16 +118,16 @@ func resolveUnitID(c *Client, worldID, idOrPrefix string) (string, error) {
 	if err := json.Unmarshal(data, &resp); err != nil {
 		return "", err
 	}
-	needle := strings.ToLower(idOrPrefix)
+	needle := strings.ToLower(strings.TrimSpace(idOrPrefix))
 	var matches []unitRow
 	for _, u := range resp.Units {
-		if strings.HasPrefix(strings.ToLower(u.ID), needle) {
+		if strings.EqualFold(strings.TrimSpace(u.DisplayName), needle) || strings.HasPrefix(strings.ToLower(u.ID), needle) {
 			matches = append(matches, u)
 		}
 	}
 	switch len(matches) {
 	case 0:
-		return "", fmt.Errorf("no unit of yours starts with %q — run `keryx unit list` for the full id", idOrPrefix)
+		return "", fmt.Errorf("no unit of yours matches %q — run `keryx unit list` for the name or full id", idOrPrefix)
 	case 1:
 		return matches[0].ID, nil
 	default:

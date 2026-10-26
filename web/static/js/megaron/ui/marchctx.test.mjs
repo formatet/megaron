@@ -60,31 +60,31 @@ test('AK3: a garrisoned unit does not say its town twice', () => {
   assert.equal(html.match(/Knossos/g).length, 1, 'the "· Knossos" tag repeats the name and must be dropped');
 });
 
-test('AK4: a group of several keeps the type label and lists its members in send order', () => {
+test('AK4: an origin group lists the exact named units as individual choices', () => {
   const units = [
     spearman('u1', 'First', 12, 7),
     spearman('u2', 'Second', 12, 7),
     spearman('u3', 'Third', 12, 7),
   ];
   const groups = groupMarchUnits(units, []);
-  assert.equal(groups.length, 1, 'identical units at one place stay ONE group — the counter is the affordance');
+  assert.equal(groups.length, 1, 'units at one place retain an origin group, with individually selectable members');
   assert.equal(groups[0].ids.length, 3);
 
   const names = marchGroupNamesHTML(groups[0]);
-  assert.match(names, /1\. First Spearmen of Knossos/);
-  assert.match(names, /2\. Second Spearmen of Knossos/);
-  assert.match(names, /3\. Third Spearmen of Knossos/);
+  assert.match(names, /First Spearmen of Knossos/);
+  assert.match(names, /Second Spearmen of Knossos/);
+  assert.match(names, /Third Spearmen of Knossos/);
 
-  // names[] must track ids[] index for index, because sendMarch sends ids[0..n-1].
+  // Every checkbox maps the visible name to this exact unit ID.
   assert.deepEqual(groups[0].ids, ['u1', 'u2', 'u3']);
   assert.deepEqual(groups[0].names, [
     'First Spearmen of Knossos', 'Second Spearmen of Knossos', 'Third Spearmen of Knossos',
   ]);
 });
 
-test('AK5: a lone unit gets no member list — the label already names it', () => {
+test('AK5: a lone unit still has an explicit selected checkbox', () => {
   const groups = groupMarchUnits([spearman('u1', 'First', 12, 7)], []);
-  assert.equal(marchGroupNamesHTML(groups[0]), '');
+  assert.match(marchGroupNamesHTML(groups[0]), /id="mg-0-0" checked/);
 });
 
 test('AK6: units at different places stay different groups', () => {
@@ -192,9 +192,9 @@ test('AK15: a redirect group is marked in its label — the player must see this
 
 const menu = await import('./marchctx.js');
 const ready = (id, extra = {}) => ({ id, type: 'spearman', category: 'land', status: 'garrison', deployable: true, ...extra });
-test('H: defaults send all available units in the chosen first group, other groups stay unselected', () => {
+test('H: defaults select one named unit, other groups stay unselected', () => {
   const groups = [{ ids: ['a', 'b', 'c'] }, { ids: ['d', 'e'] }];
-  assert.deepEqual(groups.map((g, i) => menu.marchDefaultQuantity(g, i)), [3, 0], 'all units of the first group must be ready for a single click');
+  assert.deepEqual(groups.map((g, i) => menu.marchDefaultQuantity(g, i)), [1, 0], 'opening the menu must not order the whole group');
 });
 test('H: War target selection lists only the selected unit; normal map menu keeps all eligible units', () => {
   const units = [ready('a'), ready('b'), ready('no', { deployable: false })];
@@ -261,7 +261,7 @@ test('ford send uses the same per-unit mission as preview, retaining target and 
   const calls = [];
   try {
     document.getElementById = control;
-    control('mg-0').value='1'; control('mg-1').value='1';
+    control('mg-0-0').checked=true; control('mg-1-0').checked=true;
     Object.assign(control('mctx-ticks'), {value:'12',min:'2',max:'96',disabled:false});
     control('mctx-stance').value='sentry';
     State.WORLD_ID='ford-proof';State.marchCtxUnitID=null;
@@ -269,7 +269,8 @@ test('ford send uses the same per-unit mission as preview, retaining target and 
     State.marchCtxGroups=[{ids:['land'],mode:'march',category:'land'},{ids:['ship'],mode:'march',category:'naval'}];
     State.marchCtxUnits=[ready('land'),ready('ship',{category:'naval'})];
     globalThis.fetch=async (url, opts = {}) => {
-      if (opts.method === 'POST') calls.push({url,body:JSON.parse(opts.body)});
+      if (opts.method !== 'POST') return {ok:true,status:200,headers:{get:()=>null},json:async()=>({available:false,reason:'unknown_terrain'})};
+      calls.push({url,body:JSON.parse(opts.body)});
       // Refuse after observing the submitted bodies: no world refresh or audio.
       return {ok:false,status:422,headers:{get:()=>null},json:async()=>({error:'proof refusal'})};
     };
@@ -344,4 +345,69 @@ test('map city target forwards actual ownership and port metadata instead of equ
  assert.equal(own.own,true);assert.equal(own.coastal,true);assert.equal(menu.ownPortDestination(own),true);
  const allied=destFromHex({q:4,r:2},{terrain:'plains',coastal:true},{name:'Foreign',own:false,allied:true});
  assert.equal(allied.allied,true);assert.equal(allied.own,false);assert.equal(menu.ownPortDestination(allied),false);
+});
+
+
+test('named choices let the third cohort be selected without its first two siblings',()=>{
+ const groups=groupMarchUnits([spearman('u1','First',12,7),spearman('u2','Second',12,7),spearman('u3','Third',12,7)],[]);
+ const html=marchGroupNamesHTML(groups[0],0);
+ assert.match(html,/type="checkbox"/);
+ for(let k=0;k<3;k++)assert.match(html,new RegExp('id="mg-0-'+k+'"'));
+ assert.equal(typeof menu.selectedMarchPicks,'function');
+ assert.deepEqual(menu.selectedMarchPicks(groups,(i,k)=>i===0&&k===2).map(p=>[p.id,p.name]),[['u3','Third Spearmen of Knossos']]);
+});
+
+test('too-short expedition is refused before any order POST, including a Runner order',async()=>{
+ const {State}=await import('../state.js');const originalFetch=globalThis.fetch,originalGet=document.getElementById;
+ const before={...State};const controls=new Map();const control=id=>{if(!controls.has(id))controls.set(id,{value:'',checked:false,style:{display:'block'},classList:{toggle(){}},disabled:false});return controls.get(id);};
+ const calls=[];
+ try{
+  document.getElementById=control;control('mg-0').value='1';control('mg-0-0').checked=true;
+  Object.assign(control('mctx-ticks'),{value:'6',min:'2',max:'365',disabled:false});
+  control('mctx-explore-chk').checked=true;
+  State.WORLD_ID='budget-proof';State.marchCtxUnitID=null;State.marchCtxDest={q:10,r:0,known:false,isSea:false};
+  State.marchCtxGroups=[{ids:['field'],names:['3rd Spearmen of Tylissos'],category:'land',mode:'march'}];
+  State.marchCtxUnits=[ready('field',{status:'positioned'})];
+  globalThis.fetch=async(url,opts={})=>{calls.push({url,method:opts.method||'GET'});return {ok:false,status:422,headers:{get:()=>null},json:async()=>({error:'The chosen expedition duration is too short.'})};};
+  await menu.sendMarch();
+  assert.equal(calls.filter(c=>c.method==='POST').length,0,'no Runner may leave for a known invalid expedition');
+  assert.equal(calls.filter(c=>c.url.includes('march-preview')).length,1);
+  assert.match(control('mctx-err').textContent,/too short/);
+ }finally{menu.closeMarchCtx();globalThis.fetch=originalFetch;document.getElementById=originalGet;Object.assign(State,before);}
+});
+
+test('preview and send use only the explicitly selected third named cohort',async()=>{
+ const {State}=await import('../state.js');const originalFetch=globalThis.fetch,originalGet=document.getElementById;
+ const before={...State},controls=new Map(),calls=[];
+ const control=id=>{if(!controls.has(id))controls.set(id,{value:'',checked:false,style:{display:'block'},classList:{toggle(){}},disabled:false});return controls.get(id);};
+ try{
+  document.getElementById=control;control('mg-0-2').checked=true;
+  Object.assign(control('mctx-ticks'),{value:'12',min:'2',max:'365',disabled:false});
+  State.WORLD_ID='named-proof';State.marchCtxUnitID=null;State.marchCtxDest={q:10,r:0,known:false,isSea:false};
+  State.marchCtxGroups=[{ids:['u1','u2','u3'],names:['1st Spearmen','2nd Spearmen','3rd Spearmen'],category:'land',mode:'march'}];
+  globalThis.fetch=async(url,opts={})=>{calls.push({url,method:opts.method||'GET',body:opts.body});return {ok:opts.method!=='POST',status:opts.method==='POST'?422:200,headers:{get:()=>null},json:async()=>opts.method==='POST'?{error:'proof refusal'}:{available:false,reason:'unknown_terrain'}};};
+  await menu.sendMarch();
+  const orders=calls.filter(c=>/\/units\/u[123]\//.test(c.url));
+  assert.equal(orders.length,2);
+  assert.match(orders[0].url,/units\/u3\/march-preview/);assert.match(orders[0].url,/unit_ids=u3/);
+  assert.match(orders[1].url,/units\/u3\/march$/);
+  assert.deepEqual(JSON.parse(orders[1].body),{target_q:10,target_r:0,intent:'explore',ticks:12});
+ }finally{menu.closeMarchCtx();globalThis.fetch=originalFetch;document.getElementById=originalGet;Object.assign(State,before);}
+});
+
+test('closing the menu while expedition validation is pending leaves no order',async()=>{
+ const {State}=await import('../state.js');const originalFetch=globalThis.fetch,originalGet=document.getElementById;
+ const before={...State},controls=new Map(),calls=[];let release;
+ const response=new Promise(resolve=>{release=resolve;});
+ const control=id=>{if(!controls.has(id))controls.set(id,{value:'',checked:false,style:{display:'block'},classList:{toggle(){}},disabled:false});return controls.get(id);};
+ try{
+  document.getElementById=control;control('mg-0-0').checked=true;
+  Object.assign(control('mctx-ticks'),{value:'12',min:'2',max:'365',disabled:false});
+  State.WORLD_ID='pending-proof';State.marchCtxUnitID=null;State.marchCtxDest={q:10,r:0,known:false,isSea:false};
+  State.marchCtxGroups=[{ids:['u1'],names:['1st Spearmen'],category:'land',mode:'march'}];
+  globalThis.fetch=async(url,opts={})=>{calls.push({url,method:opts.method||'GET'});return response;};
+  const send=menu.sendMarch();menu.closeMarchCtx();
+  release({ok:true,status:200,headers:{get:()=>null},json:async()=>({available:false,reason:'unknown_terrain'})});
+  await send;assert.equal(calls.filter(c=>c.method==='POST').length,0);
+ }finally{menu.closeMarchCtx();globalThis.fetch=originalFetch;document.getElementById=originalGet;Object.assign(State,before);}
 });

@@ -1,0 +1,52 @@
+» färsk DB på migration 215 · commit 978bd4b7+ändringar
+--- FAIL: TestExploreTicksOrderAndPreview (0.00s)
+    --- FAIL: TestExploreTicksOrderAndPreview/dispatchunit (0.00s)
+        cmd_expedition_client_test.go:34: wrong dispatch GET map[]
+        cmd_expedition_client_test.go:58: calls=2
+    --- FAIL: TestExploreTicksOrderAndPreview/dispatchalias (0.00s)
+        cmd_expedition_client_test.go:34: wrong dispatch GET map[]
+        cmd_expedition_client_test.go:58: calls=2
+Error: Nothing sent — expedition forecast refused: the chosen expedition duration is too short (HTTP 422)
+Usage:
+  march [flags]
+
+Examples:
+  keryx unit march --unit <id> --q 5 --r -3
+  keryx unit march --unit <id> --target 5,-3
+  keryx unit march --unit <id> --q 5 --r -3 --stance fortify
+  keryx unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos --yes
+  # Colonize the hex the unit already stands on (no coords needed):
+  keryx unit march --unit <id> --intent colonize --name Thapsos --yes
+  # Any march reveals fog along its route toward a frontier coordinate:
+  keryx unit march --unit <id> --q 12 --r -8
+  # Explore an area for 12 game days, then automatically return home
+  keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12
+  # Dock in your city, disembark everyone aboard, and leave the ship there:
+  keryx unit march --unit <ship-id> --to "Petras"
+  # Land troops on open ground, then sail home on its own:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land
+  # ...and found a colony there with no further order:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land --colonize --name Thapsos
+  # Attack an enemy settlement and annex it instead of the sack default:
+  keryx unit march --unit <id> --q 5 --r -3 --mode annex
+
+Flags:
+      --colonize        with --intent land: found a colony on arrival with no further order (use --name to name it)
+      --confirm         send the order after the hiketeia warning (attacking a fallen Wanax's risen host)
+  -h, --help            help for march
+      --intent string   arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (first to the selected hex, then explores around it; turns home by half the chosen duration) | land (land everyone aboard in your own coastal city and stay docked, or on open ground and sail home; add --colonize only on open ground)
+      --mode string     conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)
+      --name string     colony name (with --intent colonize, or --intent land --colonize)
+      --preview         estimate arrival without sending an order
+      --q int           target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --r int           target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --stance string   stance on arrival: fortify|storm|sentry
+      --target string   target hex as q,r — alternative to --q/--r (e.g. 5,-3)
+      --ticks int       explore duration in game days (omit for server default)
+      --to string       known city name as destination — alternative to --q/--r or --target
+      --unit string     unit UUID (required)
+      --yes             skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)
+
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.008s
+FAIL

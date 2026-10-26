@@ -9,7 +9,7 @@ import { stanceSentLine } from './stance.js';
 import { MusicPlayer } from './misc.js';
 import { playWarHorn } from './sfx.js';
 import { configureExpedition, expeditionTicks, expeditionMissionText } from './expedition.js';
-import { createMarchPreview } from './march_preview.js';
+import { createMarchPreview, loadMarchPreview } from './march_preview.js';
 import { destinationCities, destinationCityOptions, destinationFromCity, cityDestinationLabel } from './city_targets.js';
 import { canvas } from '../render/map.js';
 
@@ -25,6 +25,7 @@ import { canvas } from '../render/map.js';
 // unseen hex — the server's FOW rule accepts nothing else there), + stance.
 
 let expeditionRules;
+let marchSelectionVersion=0;
 const marchCtx = document.getElementById('march-ctx');
 let cityChoices = [];
 let cityChoiceVersion = 0;
@@ -70,12 +71,9 @@ const marchPreview = createMarchPreview(html => {
 }, fetchAuth);
 
 function updateMarchPreview() {
+  ++marchSelectionVersion;
   if (!State.marchCtxDest) return;
-  const picks = [];
-  State.marchCtxGroups.forEach((g, i) => {
-    const n = Math.max(0, Math.min(parseInt(document.getElementById('mg-' + i)?.value, 10) || 0, g.ids.length));
-    for (let k = 0; k < n; k++) picks.push({ id: g.ids[k], mode: g.mode, category: g.category, name: g.names[k] });
-  });
+  const picks = selectedMarchPicks(State.marchCtxGroups, (i,k)=>document.getElementById(`mg-${i}-${k}`)?.checked);
   const colonize = document.getElementById('mctx-colonize-chk')?.checked
     && document.getElementById('mctx-colonize-row').style.display !== 'none';
   const explore = document.getElementById('mctx-explore-chk')?.checked
@@ -104,6 +102,7 @@ marchCtx.addEventListener('input', updateMarchPreview);
 marchCtx.addEventListener('change', updateMarchPreview);
 
 export function closeMarchCtx() {
+  ++marchSelectionVersion;
   ++cityChoiceVersion;
   cityChoices=[];
   marchPreview.cancel();
@@ -295,7 +294,7 @@ function positionMarchCtx(screenX, screenY) {
   repositionMarchCtx();
 }
 
-// Forecasts change height on every quantity edit. Keep the established top
+// Forecasts change height on every selection edit. Keep the established top
 // and left so controls stay under the pointer; scroll additional content inside
 // the remaining viewport instead of anchoring the menu's bottom to the screen.
 function repositionMarchCtx() {
@@ -351,7 +350,7 @@ export function chooseMarchTarget(unitID) {
 }
 
 export function marchDefaultQuantity(group, index) {
-  return index === 0 ? group.ids.length : 0;
+  return index === 0 && group.ids.length ? 1 : 0;
 }
 
 export function ownPortDestination(dest) {
@@ -403,6 +402,7 @@ function landingSelected() {
 }
 
 export async function openMarchCtx(dest, screenX, screenY) {
+  ++marchSelectionVersion;
   marchPreview.cancel();
   State.marchCtxGroups = [];
   const more = document.getElementById('mctx-more');
@@ -503,16 +503,8 @@ export function marchCtxOrderMode(u) {
   return null;
 }
 
-// Each unit is one vessel (naval) or one 100-man stack (land). Group the
-// fungible ones by type + origin so the player picks a quantity ("send 3 of 5")
-// instead of hunting identical checkboxes — the count expands back into that
-// many discrete /units/{id}/march calls on send.
-//
-// The grouping is worth keeping; what it used to throw away was IDENTITY. The
-// row label was unitTypeLabel(g.type), i.e. the type, and a field unit's only
-// location tag is a raw (q,r) — so telling two spearmen apart meant counting
-// hexes (Timothy 2026-08-04). Groups therefore carry `names` alongside `ids`,
-// in the SAME order, because sendMarch takes the first n of ids.
+// Origin groups keep type, location and order mode readable. Every member
+// retains its name alongside its ID and is selected independently.
 export function groupMarchUnits(units, provinceData) {
   const byKey = new Map();
   for (const u of units) {
@@ -556,13 +548,21 @@ export function marchGroupLabelHTML(g) {
   return esc(head) + locTag + redirectTag;
 }
 
-// Numbered, because the count sends the first n in this order — the list is the
-// queue, not just a roster.
-export function marchGroupNamesHTML(g) {
-  if (g.ids.length < 2) return '';
-  return '<div class="mctx-names">'
-    + g.names.map((n, k) => (k + 1) + '. ' + esc(n)).join('<br>')
-    + '</div>';
+// Every checkbox names its exact unit. Grouping keeps the origin readable;
+// it never chooses unnamed siblings by expanding a quantity.
+export function marchGroupNamesHTML(g,index=0) {
+ return '<div class="mctx-names">'+g.names.map((name,k)=>
+  '<label class="mctx-unit-choice"><input type="checkbox" id="mg-'+index+'-'+k+'"'
+  +(k<marchDefaultQuantity(g,index)?' checked':'')+'> '+(g.ids.length===1?marchGroupLabelHTML(g):esc(name))+'</label>'
+ ).join('')+'</div>';
+}
+
+export function selectedMarchPicks(groups,selected) {
+ const picks=[];
+ groups.forEach((g,i)=>g.ids.forEach((id,k)=>{
+  if(selected(i,k))picks.push({id,name:g.names?.[k]||unitTypeLabel(g.type),mode:g.mode,category:g.category});
+ }));
+ return picks;
 }
 
 export function renderMarchUnitList() {
@@ -579,15 +579,10 @@ export function renderMarchUnitList() {
     return;
   }
   State.marchCtxGroups = groupMarchUnits(State.marchCtxUnits, State.provinceData);
-  el.innerHTML = State.marchCtxGroups.map((g, i) => {
-    const max = g.ids.length;
-    return '<div class="mctx-row">'
-      + '<span class="mctx-label">' + marchGroupLabelHTML(g) + '</span>'
-      + '<input class="mctx-input" type="number" id="mg-' + i + '" min="0" max="' + max + '" value="' + marchDefaultQuantity(g, i) + '">'
-      + '<span class="mctx-max">of ' + fmtNum(max) + '</span>'
-      + '</div>'
-      + marchGroupNamesHTML(g);
-  }).join('');
+  el.innerHTML = State.marchCtxGroups.map((g,i)=>
+    (g.ids.length>1?'<div class="mctx-row"><span class="mctx-label">'+marchGroupLabelHTML(g)+'</span></div>':'')
+    +marchGroupNamesHTML(g,i)
+  ).join('');
   // Fleets have no stance — only land units take a stance.
   stanceRow.style.display = (landingSelected() || State.marchCtxDest?.isSea || State.marchCtxUnits.every(u => u.category === 'naval')) ? 'none' : 'block';
 }
@@ -607,15 +602,9 @@ export async function sendMarch() {
   // /recall (redirect), everyone else's to /march (Timothy 2026-09-25).
   // Mixed selections must work: some units march, some redirect, in the
   // same send.
-  const picks = [];
-  State.marchCtxGroups.forEach((g, i) => {
-    const el = document.getElementById('mg-' + i);
-    let n = el ? parseInt(el.value, 10) || 0 : 0;
-    n = Math.max(0, Math.min(n, g.ids.length));
-    for (let k = 0; k < n; k++) picks.push({ id: g.ids[k], mode: g.mode, category: g.category });
-  });
+  const picks = selectedMarchPicks(State.marchCtxGroups, (i,k)=>document.getElementById(`mg-${i}-${k}`)?.checked);
   if (!picks.length) {
-    document.getElementById('mctx-err').textContent = 'Choose how many units to send.';
+    document.getElementById('mctx-err').textContent = 'Choose the units to send by name.';
     return;
   }
   // Naval fleets carry no stance.
@@ -639,6 +628,24 @@ export async function sendMarch() {
   marchPreview.cancel();
   document.getElementById('mctx-send').disabled = true;
   document.getElementById('mctx-err').textContent = '';
+
+  const selectionVersion=marchSelectionVersion, world=State.WORLD_ID;
+  try {
+    // A 200 unavailable ETA still validates the budget without disclosing the
+    // route. A refused forecast must leave every selected unit unordered.
+    await Promise.all(picks.filter(p=>p.order.intent==='explore'&&p.mode!=='redirect').map(p=>
+      loadMarchPreview(world,p,{target_q:destination.q,target_r:destination.r,...p.order,ticks,unit_ids:picks.map(p=>p.id).join(',')},fetchAuth)));
+  } catch(error) {
+    if(selectionVersion===marchSelectionVersion&&world===State.WORLD_ID){
+      document.getElementById('mctx-err').textContent='Nothing sent — '+error.message;
+    }
+    if(world===State.WORLD_ID&&destination===State.marchCtxDest)document.getElementById('mctx-send').disabled=false;
+    return;
+  }
+  if(selectionVersion!==marchSelectionVersion||world!==State.WORLD_ID||destination!==State.marchCtxDest){
+    document.getElementById('mctx-send').disabled=false;
+    return;
+  }
 
   const results = await Promise.all(picks.map(p => {
     if (p.mode === 'redirect') {

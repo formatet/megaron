@@ -1,0 +1,309 @@
+TAP version 13
+# Subtest: AK1: a group of one wears its own name, not the bare type
+ok 1 - AK1: a group of one wears its own name, not the bare type
+  ---
+  duration_ms: 1.068456
+  type: 'test'
+  ...
+# Subtest: AK2: the field unit keeps its (q,r) tag — the name says who supports it, the tag says where it stands
+ok 2 - AK2: the field unit keeps its (q,r) tag — the name says who supports it, the tag says where it stands
+  ---
+  duration_ms: 0.136448
+  type: 'test'
+  ...
+# Subtest: AK3: a garrisoned unit does not say its town twice
+ok 3 - AK3: a garrisoned unit does not say its town twice
+  ---
+  duration_ms: 0.310897
+  type: 'test'
+  ...
+# Subtest: AK4: a group of several keeps the type label and lists its members in send order
+ok 4 - AK4: a group of several keeps the type label and lists its members in send order
+  ---
+  duration_ms: 0.515406
+  type: 'test'
+  ...
+# Subtest: AK5: a lone unit gets no member list — the label already names it
+ok 5 - AK5: a lone unit gets no member list — the label already names it
+  ---
+  duration_ms: 0.094774
+  type: 'test'
+  ...
+# Subtest: AK6: units at different places stay different groups
+ok 6 - AK6: units at different places stay different groups
+  ---
+  duration_ms: 0.074648
+  type: 'test'
+  ...
+# Subtest: AK7: a missing display_name falls back to the type label, never a blank row
+ok 7 - AK7: a missing display_name falls back to the type label, never a blank row
+  ---
+  duration_ms: 0.182124
+  type: 'test'
+  ...
+# Subtest: AK8: a hostile unit name is escaped, not injected
+ok 8 - AK8: a hostile unit name is escaped, not injected
+  ---
+  duration_ms: 0.10922
+  type: 'test'
+  ...
+# Subtest: MI1: sea target is always explore, regardless of the checkbox
+ok 9 - MI1: sea target is always explore, regardless of the checkbox
+  ---
+  duration_ms: 0.214978
+  type: 'test'
+  ...
+# Subtest: MI2: an unseen (fog) land target is always explore — the only intent the server FOW rule allows there
+ok 10 - MI2: an unseen (fog) land target is always explore — the only intent the server FOW rule allows there
+  ---
+  duration_ms: 0.221416
+  type: 'test'
+  ...
+# Subtest: MI3: a known land target is a plain march by default
+ok 11 - MI3: a known land target is a plain march by default
+  ---
+  duration_ms: 0.096251
+  type: 'test'
+  ...
+# Subtest: MI4: a known land target explores when the player opts in
+ok 12 - MI4: a known land target explores when the player opts in
+  ---
+  duration_ms: 0.053365
+  type: 'test'
+  ...
+# Subtest: MI5: exploreRowVisible offers the checkbox on land, never on sea or a settlement
+ok 13 - MI5: exploreRowVisible offers the checkbox on land, never on sea or a settlement
+  ---
+  duration_ms: 0.057711
+  type: 'test'
+  ...
+# Subtest: AK9: a garrisoned/positioned unit is eligible to march
+ok 14 - AK9: a garrisoned/positioned unit is eligible to march
+  ---
+  duration_ms: 0.047831
+  type: 'test'
+  ...
+# Subtest: AK10: a marching unit is eligible too — but for redirect, not a fresh march
+ok 15 - AK10: a marching unit is eligible too — but for redirect, not a fresh march
+  ---
+  duration_ms: 0.041751
+  type: 'test'
+  ...
+# Subtest: R3 (megaron_plan_skeppsuppdrag_landsatt.md): a marching SHIP is not eligible for redirect — it takes no orders at sea
+ok 16 - R3 (megaron_plan_skeppsuppdrag_landsatt.md): a marching SHIP is not eligible for redirect — it takes no orders at sea
+  ---
+  duration_ms: 0.04353
+  type: 'test'
+  ...
+# Subtest: AK11: a fortified unit stays ineligible (server blocks fresh march on it)
+ok 17 - AK11: a fortified unit stays ineligible (server blocks fresh march on it)
+  ---
+  duration_ms: 0.047631
+  type: 'test'
+  ...
+# Subtest: AK12: a still-forming/training unit stays ineligible even while nominally marching-shaped
+ok 18 - AK12: a still-forming/training unit stays ineligible even while nominally marching-shaped
+  ---
+  duration_ms: 0.04309
+  type: 'test'
+  ...
+# Subtest: AK13: a unit embarked/disbanded/other status is ineligible
+ok 19 - AK13: a unit embarked/disbanded/other status is ineligible
+  ---
+  duration_ms: 0.040889
+  type: 'test'
+  ...
+# Subtest: AK14: marching and garrisoned units of the same type+hex stay in SEPARATE groups — a redirect send must never merge with a fresh-march send
+ok 20 - AK14: marching and garrisoned units of the same type+hex stay in SEPARATE groups — a redirect send must never merge with a fresh-march send
+  ---
+  duration_ms: 0.090769
+  type: 'test'
+  ...
+# Subtest: AK15: a redirect group is marked in its label — the player must see this send goes to a Runner
+ok 21 - AK15: a redirect group is marked in its label — the player must see this send goes to a Runner
+  ---
+  duration_ms: 0.06846
+  type: 'test'
+  ...
+# Subtest: H: defaults select one named unit, other groups stay unselected
+not ok 22 - H: defaults select one named unit, other groups stay unselected
+  ---
+  duration_ms: 0.646259
+  type: 'test'
+  location: '/tmp/megaron-codex-marschpanel-20261026/web/static/js/megaron/ui/marchctx.test.mjs:195:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    opening the menu must not order the whole group
+    + actual - expected
+    
+      [
+    +   3,
+    -   1,
+        0
+      ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 1
+    1: 0
+  actual:
+    0: 3
+    1: 0
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-marschpanel-20261026/web/static/js/megaron/ui/marchctx.test.mjs:197:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: H: War target selection lists only the selected unit; normal map menu keeps all eligible units
+ok 23 - H: War target selection lists only the selected unit; normal map menu keeps all eligible units
+  ---
+  duration_ms: 0.166713
+  type: 'test'
+  ...
+# Subtest: H: a loaded ship can land on known land, while empty and marching ships cannot
+ok 24 - H: a loaded ship can land on known land, while empty and marching ships cannot
+  ---
+  duration_ms: 0.174383
+  type: 'test'
+  ...
+# Subtest: H: landing preserves cargo-colonize/name and omits naval stance; explore and plain land retain options
+ok 25 - H: landing preserves cargo-colonize/name and omits naval stance; explore and plain land retain options
+  ---
+  duration_ms: 0.115058
+  type: 'test'
+  ...
+# Subtest: H: colony forecast keeps production and food duration in game day words
+ok 26 - H: colony forecast keeps production and food duration in game day words
+  ---
+  duration_ms: 8.923067
+  type: 'test'
+  ...
+# Subtest: forecast shows the server harbour note and nothing when absent
+ok 27 - forecast shows the server harbour note and nothing when absent
+  ---
+  duration_ms: 0.238861
+  type: 'test'
+  ...
+# Subtest: river march: real map destination offers naval only, ford offers both categories
+ok 28 - river march: real map destination offers naval only, ford offers both categories
+  ---
+  duration_ms: 0.418572
+  type: 'test'
+  ...
+# Subtest: ford send uses the same per-unit mission as preview, retaining target and expedition duration
+ok 29 - ford send uses the same per-unit mission as preview, retaining target and expedition duration
+  ---
+  duration_ms: 9.298092
+  type: 'test'
+  ...
+# Subtest: playtest: coastal forecast uses full food demand without a loyalty reserve warning
+ok 30 - playtest: coastal forecast uses full food demand without a loyalty reserve warning
+  ---
+  duration_ms: 0.275861
+  type: 'test'
+  ...
+# Subtest: founding carries the authoritative wood warning without inventing a local rule
+ok 31 - founding carries the authoritative wood warning without inventing a local rule
+  ---
+  duration_ms: 0.175983
+  type: 'test'
+  ...
+# Subtest: Host summary exposes the wood warning before the closed Details section
+ok 32 - Host summary exposes the wood warning before the closed Details section
+  ---
+  duration_ms: 0.19599
+  type: 'test'
+  ...
+# Subtest: fish-fed founding forecast does not invent an empty-grain loyalty warning
+ok 33 - fish-fed founding forecast does not invent an empty-grain loyalty warning
+  ---
+  duration_ms: 0.179365
+  type: 'test'
+  ...
+# Subtest: AI forecast avoids dust horizons and identifies the farm already included
+ok 34 - AI forecast avoids dust horizons and identifies the farm already included
+  ---
+  duration_ms: 0.277367
+  type: 'test'
+  ...
+# Subtest: hiketeia: a refused march shows the warning with March anyway; other refusals do not
+ok 35 - hiketeia: a refused march shows the warning with March anyway; other refusals do not
+  ---
+  duration_ms: 0.107309
+  type: 'test'
+  ...
+# Subtest: own coastal city offers empty and laden ships in the map menu and War target picker
+ok 36 - own coastal city offers empty and laden ships in the map menu and War target picker
+  ---
+  duration_ms: 0.170976
+  type: 'test'
+  ...
+# Subtest: map city target forwards actual ownership and port metadata instead of equating allied with own
+ok 37 - map city target forwards actual ownership and port metadata instead of equating allied with own
+  ---
+  duration_ms: 0.121566
+  type: 'test'
+  ...
+# Subtest: named choices let the third cohort be selected without its first two siblings
+not ok 38 - named choices let the third cohort be selected without its first two siblings
+  ---
+  duration_ms: 0.199828
+  type: 'test'
+  location: '/tmp/megaron-codex-marschpanel-20261026/web/static/js/megaron/ui/marchctx.test.mjs:350:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /type="checkbox"/. Input:
+    
+    '<div class="mctx-names">1. First Spearmen of Knossos<br>2. Second Spearmen of Knossos<br>3. Third Spearmen of Knossos</div>'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: '<div class="mctx-names">1. First Spearmen of Knossos<br>2. Second Spearmen of Knossos<br>3. Third Spearmen of Knossos</div>'
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-marschpanel-20261026/web/static/js/megaron/ui/marchctx.test.mjs:353:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: too-short expedition is refused before any order POST, including a Runner order
+not ok 39 - too-short expedition is refused before any order POST, including a Runner order
+  ---
+  duration_ms: 0.70255
+  type: 'test'
+  location: '/tmp/megaron-codex-marschpanel-20261026/web/static/js/megaron/ui/marchctx.test.mjs:359:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    no Runner may leave for a known invalid expedition
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-marschpanel-20261026/web/static/js/megaron/ui/marchctx.test.mjs:372:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..39
+# tests 39
+# suites 0
+# pass 36
+# fail 3
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 94.115119

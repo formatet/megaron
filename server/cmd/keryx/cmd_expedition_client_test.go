@@ -22,7 +22,7 @@ func TestExploreTicksOrderAndPreview(t *testing.T) {
 						return
 					}
 					calls++
-					if preview {
+					if strings.HasSuffix(r.URL.Path, "/march-preview") {
 						if r.Method != "GET" || !strings.HasSuffix(r.URL.Path, "/march-preview") || r.URL.Query().Get("ticks") != "12" || r.URL.Query().Get("intent") != "explore" {
 							t.Errorf("wrong preview %s %s", r.Method, r.URL)
 						}
@@ -54,7 +54,11 @@ func TestExploreTicksOrderAndPreview(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				if calls != 1 {
+				wantCalls := 2
+				if preview {
+					wantCalls = 1
+				}
+				if calls != wantCalls {
 					t.Fatalf("calls=%d", calls)
 				}
 				if !strings.Contains(out, "first to (5,-3), then explores around it") {

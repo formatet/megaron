@@ -237,8 +237,36 @@ func TestMarchPreview_ReadOnlyAndTiming(t *testing.T) {
 	shortReq.Header.Set("Authorization", "Bearer "+accessToken)
 	shortRec := httptest.NewRecorder()
 	r.ServeHTTP(shortRec, shortReq)
-	if budgetPreview.Code != 422 || shortRec.Code != 422 || budgetPreview.Body.String() != shortRec.Body.String() || snapshot() != before {
+	if budgetPreview.Code != 422 || shortRec.Code != 422 || !strings.Contains(budgetPreview.Body.String(), "duration is too short") || snapshot() != before {
 		t.Fatalf("budget preview/dispatch mismatch: %d %s / %d %s", budgetPreview.Code, budgetPreview.Body.String(), shortRec.Code, shortRec.Body.String())
+	}
+	if strings.Contains(budgetPreview.Body.String(), "at least") || strings.Contains(budgetPreview.Body.String(), "away") || strings.Contains(budgetPreview.Body.String(), "duration_ticks") {
+		t.Fatalf("garrison expedition rejection leaks hidden route timing: %s", budgetPreview.Body.String())
+	}
+	// A valid but too-short field expedition is refused by preview before a
+	// physical Runner is sent. Its nearby first leg fits half the allowance,
+	// but the actual journey home to the city does not fit the whole budget.
+	if _, err := pool.Exec(ctx, `UPDATE units SET status='positioned',settlement_id=NULL,q=8,r=0 WHERE id=$1`, unitID); err != nil {
+		t.Fatal(err)
+	}
+	before = snapshot()
+	fieldShort := request(base + "/march-preview?target_q=10&target_r=0&intent=explore&ticks=6")
+	if fieldShort.Code != 422 {
+		t.Fatalf("positioned expedition shorter than actual return accepted: %d %s", fieldShort.Code, fieldShort.Body.String())
+	}
+	if snapshot() != before {
+		t.Fatal("refused field expedition preview sent a Runner or mutated game state")
+	}
+	fieldLong := request(base + "/march-preview?target_q=10&target_r=0&intent=explore&ticks=31")
+	if fieldLong.Code != 200 || !strings.Contains(fieldLong.Body.String(), `"planned_expedition_ticks":31`) || strings.Contains(fieldLong.Body.String(), "arrival_tick") || strings.Contains(fieldLong.Body.String(), "planned_home_by_tick_if_departing_now") {
+		t.Fatalf("field expedition plan leaked an immediate departure or rejected a sufficient budget: %d %s", fieldLong.Code, fieldLong.Body.String())
+	}
+	if snapshot() != before {
+		t.Fatal("sufficient field expedition preview mutated game state")
+	}
+	// Budget rejection itself must not disclose the hidden route's duration.
+	if strings.Contains(fieldShort.Body.String(), "at least") || strings.Contains(fieldShort.Body.String(), "away") || strings.Contains(fieldShort.Body.String(), "arrival_tick") || strings.Contains(fieldShort.Body.String(), "duration_ticks") {
+		t.Fatalf("field expedition rejection leaks hidden route timing: %s", fieldShort.Body.String())
 	}
 	// Positioned units receive a physical Runner, not an instant march ETA.
 	if _, err := pool.Exec(ctx, `UPDATE units SET status='positioned',settlement_id=NULL,q=1,r=0 WHERE id=$1`, unitID); err != nil {

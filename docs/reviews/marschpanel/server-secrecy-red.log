@@ -1,0 +1,9 @@
+» färsk DB på migration 215 · commit 978bd4b7+ändringar
+=== RUN   TestMarchPreview_ReadOnlyAndTiming
+2026/10/26 14:14:40 INFO player registered id=05c23ed0-72b3-43ec-8235-7f524da6c6a3 username=ticker-6cc18903-d21d-4572-877a-57f95d0cc437
+2026/10/26 14:14:40 INFO player registered id=d86be5d1-0863-454e-a995-95774f0cf9ed username=other-0f285403-2391-4918-bae9-00225cb3dd7e
+    unit_march_preview_test.go:266: field expedition rejection leaks hidden route timing: {"error":"the expedition needs at least 12 game days for its outward and return routes"}
+--- FAIL: TestMarchPreview_ReadOnlyAndTiming (0.17s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.168s
+FAIL

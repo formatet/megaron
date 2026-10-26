@@ -1,0 +1,13 @@
+» färsk DB på migration 215 · commit 978bd4b7+ändringar
+=== RUN   TestExpeditionLifecycle_ReservesAsymmetricHomeRoute
+2026/10/26 14:16:07 INFO expedition turning for home unit=5a0e4bb3-5a02-469a-b578-69439478dd2d reason=half_time q=5 r=0 arrive_tick=11
+2026/10/26 14:16:07 INFO expedition home unit=5a0e4bb3-5a02-469a-b578-69439478dd2d ticks_out=11 hexes_seen=8 finds=0
+2026/10/26 14:16:07 INFO unit returned home from explore unit=5a0e4bb3-5a02-469a-b578-69439478dd2d settlement=ccff4439-d1e1-4f62-b6da-43791b619627
+--- PASS: TestExpeditionLifecycle_ReservesAsymmetricHomeRoute (0.10s)
+=== RUN   TestExpeditionLifecycle_ShorthandedNavalHomeBudget
+2026/10/26 14:16:07 INFO expedition turning for home unit=069a832f-f160-41e2-8b13-0fd2d83e66a7 reason=area_known q=10 r=0 arrive_tick=10
+2026/10/26 14:16:07 INFO expedition home unit=069a832f-f160-41e2-8b13-0fd2d83e66a7 ticks_out=10 hexes_seen=15 finds=0
+2026/10/26 14:16:07 INFO unit returned home from explore unit=069a832f-f160-41e2-8b13-0fd2d83e66a7 settlement=6d5920ce-f601-417b-87b9-e9ee2b6f7fd5
+--- PASS: TestExpeditionLifecycle_ShorthandedNavalHomeBudget (0.13s)
+PASS
+ok  	formatet/megaron/server/internal/combat	0.237s

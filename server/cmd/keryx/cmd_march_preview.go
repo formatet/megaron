@@ -10,11 +10,7 @@ import (
 
 // Preview shares the order's resolved arguments, but never dispatches it.
 func showMarchPreview(c *Client, path string, order map[string]any) error {
-	query := url.Values{}
-	for key, value := range order {
-		query.Set(key, fmt.Sprint(value))
-	}
-	data, err := c.get(path + "?" + query.Encode())
+	data, err := fetchMarchPreview(c, path, order)
 	if err != nil {
 		return err
 	}
@@ -63,6 +59,16 @@ func showMarchPreview(c *Client, path string, order map[string]any) error {
 	}
 	fmt.Println("No order sent. Run again without --preview to send it.")
 	return nil
+}
+
+// fetchMarchPreview is read-only validation shared by explicit preview and the
+// expedition preflight. An unavailable ETA may still be a valid expedition.
+func fetchMarchPreview(c *Client, path string, order map[string]any) ([]byte, error) {
+	query := url.Values{}
+	for key, value := range order {
+		query.Set(key, fmt.Sprint(value))
+	}
+	return c.get(path + "?" + query.Encode())
 }
 
 // Financial fields are independent of the arrival estimate. Pointers preserve

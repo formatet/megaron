@@ -84,12 +84,22 @@ type MarchOrder struct {
 	ExpeditionTicks int
 }
 
+// RejectExpeditionBudget lets read-only previews hide route timing in refusals.
+const RejectExpeditionBudget = "expedition_budget"
+
 // OrderReject is a game-rule validation failure with the HTTP status the API
 // layer should answer with; the delivery handler maps it to an OrderFailed
 // notice. Shared by every order verb (march, stance, …).
 type OrderReject struct {
+	Code   string
 	Status int
 	Reason string
+}
+
+func rejectExpeditionBudget(format string, args ...any) *OrderReject {
+	r := reject(http.StatusUnprocessableEntity, format, args...)
+	r.Code = RejectExpeditionBudget
+	return r
 }
 
 func (e *OrderReject) Error() string { return e.Reason }
@@ -877,7 +887,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		expeditionPlan.TurnTick = ExpeditionTurnTick(currentTick, expeditionPlan.LengthTicks)
 		expeditionPlan.HomeByTick = currentTick + expeditionPlan.LengthTicks
 		if currentTick+travelTicks > expeditionPlan.TurnTick {
-			return nil, reject(http.StatusUnprocessableEntity, "the chosen hex (%d,%d) is %s away — more than half of the %s you gave, so it could not get back in time; give it at least %s", expeditionPlan.AreaQ, expeditionPlan.AreaR, tick.FormatDays(travelTicks), tick.FormatDays(expeditionPlan.LengthTicks), tick.FormatDays(2*travelTicks))
+			return nil, rejectExpeditionBudget("the chosen hex (%d,%d) is %s away — more than half of the %s you gave, so it could not get back in time; give it at least %s", expeditionPlan.AreaQ, expeditionPlan.AreaR, tick.FormatDays(travelTicks), tick.FormatDays(expeditionPlan.LengthTicks), tick.FormatDays(2*travelTicks))
 		}
 		// Entered-terrain costs and tick rounding are asymmetric: reserve the
 		// actual route home, rather than assuming it costs the outbound leg.
@@ -890,7 +900,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		}
 		returnTicks := legTravelTicks(u.Type, u.Crew, u.CargoUnitID != nil, home.cost)
 		if travelTicks+returnTicks > expeditionPlan.LengthTicks {
-			return nil, reject(http.StatusUnprocessableEntity, "the expedition needs at least %s for its outward and return routes", tick.FormatDays(travelTicks+returnTicks))
+			return nil, rejectExpeditionBudget("the expedition needs at least %s for its outward and return routes", tick.FormatDays(travelTicks+returnTicks))
 		}
 		exploreHomeID = &home.id
 	}

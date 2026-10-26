@@ -1,14 +1,14 @@
 ## Giving a march order
 
-**Right-click the destination hex.** The order menu shows what the destination is, which of your units can go and **March →**. All available units in the first group are selected; change the amounts to send a different group. **More** holds stance ([[stances]]), expedition duration and column name.
+**Right-click the destination hex.** The order menu shows what the destination is, which of your units can go and **March →**. Only one unit is selected initially. Tick the checkbox beside each named unit you want to order; units sharing a type or location are separate choices. **More** holds stance ([[stances]]), expedition duration and column name.
 
 You can also left-click a hex and use **March here →** — or **Send galleys →** at sea, or **Colonize →** on empty land ([[colonies]]). Hovering those buttons previews the result on the map.
 
-Choose how many units to send and the menu estimates each unit’s arrival **before you send the order**. **War → Army → March** selects that unit; click a destination on the map to open the same menu. Ships with different crews or cargo may arrive at different times. The estimate uses the current route and speed; conditions can change before arrival.
+Choose the named units to send and the menu estimates each selected unit’s arrival **before you send the order**. **War → Army → March** selects that unit; click a destination on the map to open the same menu. Ships with different crews or cargo may arrive at different times. The estimate uses the current route and speed; conditions can change before arrival.
 
 If a messenger must first deliver the order, or the destination is unexplored, the forecast says why arrival is not yet known. Redirects also wait for a messenger; their current course continues until delivery. The **Sold** line shows the selected units’ silver drain at home and in the field, and how long their paying city’s treasury lasts after departure; with several paying cities, it shows the shortest treasury duration; spearmen show **0 → 0**. No forecast sends an order.
 
-In Keryx, use `march --unit <id> --target q,r --preview` (or `unit march` with the same flags). Add `--json` for the server forecast. Omit `--preview` when you are ready to send.
+In Keryx, use `march --unit <id> --target q,r --preview` (or `unit march` with the same flags). Add `--json` for the server forecast. Omit `--preview` when you are ready to send. `--unit` also accepts an exact unit name, for example `--unit "3rd Spearmen of Tylissos"`; names are case-insensitive and an ambiguous name is refused.
 
 **Choose a city quickly:** the order menu's **Destination city** list offers your own cities first, followed by cities you have actually seen, remembered or contacted. Selecting one fills the destination; you can still choose a hex on the map. A city known only through rumours is not a destination yet. The confirmation names the city.
 
@@ -77,6 +77,6 @@ its recorded costs and arrival game day when the movement rules change. A finish
 
 An expedition preview shows its planned length. For a unit in garrison it can also show the planned homecoming **if it departed immediately**. The order may still need physical delivery. The preview names the selected first destination; its route and arrival time remain undisclosed.
 
-A march preview applies the same expedition budget checks as the order. It leaves unseen first-leg routes undisclosed. A Host founds with `founding settle`, not a colony march. Without confirmation, nothing is sent.
+A march preview applies the same expedition budget checks as the order. Before sending an expedition, both the web menu and Keryx check its duration without dispatching anything. A refused or unavailable validation sends no Runner: choose a longer duration or a nearer area. A valid expedition may still have an unavailable arrival time. Unseen routes and their travel times remain undisclosed. A Host founds with `founding settle`, not a colony march. Without confirmation, nothing is sent.
 
 If you send a new movement order to the same unit while an earlier order Runner still waits unboarded in one of your ports, the earlier order is withdrawn in the same dispatch. That Runner walks home; the new order still travels physically. A Runner already aboard a ship or travelling elsewhere continues on its own course, and an independent stance order is unaffected. Your dispatch receipt says when it withdrew an earlier order.

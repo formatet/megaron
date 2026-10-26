@@ -1,0 +1,7 @@
+» färsk DB på migration 215 · commit 978bd4b7
+=== RUN   TestMarchPreview_ReadOnlyAndTiming
+2026/10/26 14:13:08 INFO player registered id=02ead97e-ffc8-4628-a40e-b956172026fb username=ticker-e413fe0b-e694-4505-b62d-4c0c1390fed6
+2026/10/26 14:13:08 INFO player registered id=30806302-107f-4da0-8265-d854c25a8132 username=other-eae05ea3-605d-4b93-b7f0-bf78778dd89a
+--- PASS: TestMarchPreview_ReadOnlyAndTiming (0.17s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.171s

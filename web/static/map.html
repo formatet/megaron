@@ -499,10 +499,10 @@
    reach a unit that already has orders) — marked distinctly from a plain
    march group so the player knows this send goes to the Runner, not the map. */
 .mctx-redirect { color: var(--accent-war); }
-/* Members of a multi-unit group, listed under their row so the player can see
-   WHO is being ordered instead of counting hexes. Indented to the label column
-   and a step smaller — the count stays the affordance, the names inform it. */
-.mctx-names { margin: -.15rem 0 .15rem .6rem; color: var(--text-dim); font-size: .68rem; line-height: 1.45; }
+/* Each named unit is an explicit choice, including cohorts at one origin. */
+.mctx-names { margin: .1rem 0 .3rem; color: var(--text); font-size: .75rem; line-height: 1.45; }
+.mctx-unit-choice { display: flex; align-items: start; gap: .4rem; padding: .2rem 0; cursor: pointer; }
+.mctx-unit-choice input { margin-top: .2rem; accent-color: var(--accent-war); }
 .mctx-input {
   width: 44px; padding: .15rem .3rem; border: 1px solid var(--border);
   background: var(--warm-white); font-family: var(--mono); font-size: .78rem;

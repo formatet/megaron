@@ -1,0 +1,9 @@
+» färsk DB på migration 215 · commit 978bd4b7+ändringar
+=== RUN   TestMarchPreview_ReadOnlyAndTiming
+2026/10/26 14:16:03 INFO player registered id=c40b8afb-9cfc-4c58-a0e2-ba62811fb231 username=ticker-ca4e529f-dcd3-4559-bb5e-9aa18083726b
+2026/10/26 14:16:03 INFO player registered id=5fb6c936-db09-4916-ba0c-54c168a8e3a9 username=other-76d23d77-2f8a-4430-915e-7acd28141e81
+    unit_march_preview_test.go:255: positioned expedition shorter than actual return accepted: 200 {"available":false,"planned_expedition_ticks":6,"planned_first_target_q":10,"planned_first_target_r":0,"reason":"unknown_terrain","silver_payer_count":0,"silver_runway_ticks":null,"upkeep_silver_field":0,"upkeep_silver_home":0}
+--- FAIL: TestMarchPreview_ReadOnlyAndTiming (0.17s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.172s
+FAIL

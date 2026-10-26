@@ -102,6 +102,12 @@ func (h *UnitHandler) MarchPreview(w http.ResponseWriter, r *http.Request) {
 		if _, err := combat.PreviewMarch(ctx, h.pool, h.clk, order, targetKnown); err != nil {
 			var rej *combat.OrderReject
 			if errors.As(err, &rej) {
+				// Route costs may cross unseen terrain. Refuse the selected budget
+				// without exposing its minimum duration or either leg's timing.
+				if rej.Code == combat.RejectExpeditionBudget {
+					writeError(w, rej.Status, "the expedition duration is too short to reach the chosen area and return home — choose a longer duration or a nearer area")
+					return
+				}
 				writeError(w, rej.Status, rej.Reason)
 			} else {
 				writeError(w, http.StatusInternalServerError, "march preview failed")

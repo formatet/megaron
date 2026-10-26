@@ -1,0 +1,11 @@
+» färsk DB på migration 215 · commit 978bd4b7+ändringar
+--- FAIL: TestResolveUnitExactDisplayName (0.00s)
+    --- FAIL: TestResolveUnitExactDisplayName/unique (0.00s)
+        cmd_named_expedition_test.go:17: named unit not resolved:  no unit of yours starts with " 3RD SPEARMEN OF TYLISSOS " — run `keryx unit list` for the full id
+    --- FAIL: TestResolveUnitExactDisplayName/ambiguous (0.00s)
+        cmd_named_expedition_test.go:17: ambiguous name must not guess:  no unit of yours starts with " 3RD SPEARMEN OF TYLISSOS " — run `keryx unit list` for the full id
+--- FAIL: TestExploreRefusalBeforeRunnerDispatch (0.00s)
+    cmd_named_expedition_test.go:33: preflight must refuse before sending: err<nil> previews0 posts1
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.005s
+FAIL
