@@ -1,0 +1,46 @@
+{
+  "ground": {
+    "migration": {
+      "version": 216,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 2864
+      }
+    ],
+    "players": 15,
+    "settlements": 5,
+    "units": 18,
+    "goods": 85,
+    "gossip": 604
+  },
+  "health": {
+    "commit": "c2ef4b9",
+    "migration": 216,
+    "status": "ok"
+  },
+  "checkout": "c2ef4b9d7d2eace6911ebcba551c82a84001dc27",
+  "static": {},
+  "expected": "c2ef4b9d7d2eace6911ebcba551c82a84001dc27",
+  "before": {
+    "migration": {
+      "version": 215,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 2859
+      }
+    ],
+    "players": 15,
+    "settlements": 5,
+    "units": 18,
+    "goods": 85,
+    "gossip": 603
+  }
+}
