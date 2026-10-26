@@ -215,7 +215,7 @@ func InterceptCourierTarget(
 // InterceptCourierTargetRoute is InterceptCourierTarget for a marching unit
 // with a gällande saved route (movement 2a, R6.d) — no path search at all
 // (R1): the path and each hex's entry time come straight from route via
-// combat.RouteEnterMilli + anchor.WallAt. err is non-nil only for a
+// combat.RouteEnterMilli + the saved physical clock (legacy: anchor.WallAt). err is non-nil only for a
 // Boundaries/PositionAt computation failure, which should not happen for a
 // route that already passed combat.LoadActiveRoute's own validation.
 func InterceptCourierTargetRoute(
@@ -233,6 +233,9 @@ func InterceptCourierTargetRoute(
 	enterAt := make([]time.Time, len(enterMilli))
 	for i, m := range enterMilli {
 		enterAt[i] = anchor.WallAt(m)
+		if route.Version == 2 && !route.DepartureAt.IsZero() && route.TickNanoseconds > 0 {
+			enterAt[i] = route.WallAt(m)
+		}
 	}
 	g, roads, err := province.LoadWorldGraph(ctx, db, worldID)
 	if err != nil {

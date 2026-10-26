@@ -1,0 +1,23 @@
+» färsk DB på migration 217 · commit 8b3c49e3+ändringar
+2026/10/26 19:56:01 INFO order delivered — march started unit=f7db197b-dbb9-4884-8185-05e60ea56b52 target_q=0 target_r=0 arrival_tick=6
+2026/10/26 19:56:01 INFO order delivered — stance applied unit=80eeb6c7-b079-4f8d-8124-17d30d21d991 stance=storm
+2026/10/26 19:56:01 INFO order delivered but no longer executable unit=53ebb004-cdd9-49cf-a3a0-00db2fda6be6 verb=march reason="the unit has left the hex the Runner reached"
+2026/10/26 19:56:01 INFO order delivered — stance applied unit=b721adb8-d2b8-4c5f-a867-0a74a0c50706 stance=storm
+--- FAIL: TestOrderPursuit_MovingMeeting (0.16s)
+    --- FAIL: TestOrderPursuit_MovingMeeting/march (0.04s)
+        order_pursuit_test.go:187: physical moving meeting failed: [map[intent: messenger_id:ad8f8aca-394e-4e9b-8b65-8d08479a55ab name:infantry of Home reason:the unit has left the hex the Runner reached target_q:0 target_r:0 unit_id:53ebb004-cdd9-49cf-a3a0-00db2fda6be6 verb:march]]
+    --- FAIL: TestOrderPursuit_MovingMeeting/recall (0.04s)
+        order_pursuit_test.go:187: physical moving meeting failed: [map[messenger_id:cf1a406e-43bb-4678-ae69-7b6bd5a8e448 name:infantry of Home player_id:b985281a-b367-43ff-8b81-f290227a7f79 reason:the unit has left the hex the Runner reached unit_id:431e38cf-7083-47ca-8da2-8a5d350647b9 verb:recall world_id:8cf268ca-7b26-4087-a71c-1a51f072b71c]]
+    --- FAIL: TestOrderPursuit_MovingMeeting/redirect (0.04s)
+        order_pursuit_test.go:187: physical moving meeting failed: [map[messenger_id:e45c0aab-c5c8-43a4-9666-581471be1f37 name:infantry of Home player_id:99441c85-5128-470d-a516-ebcb391260bb reason:the unit has left the hex the Runner reached unit_id:edcc5580-25f2-4ce2-8abb-6126f68bfa75 verb:redirect world_id:db56f9be-14f1-4f32-867b-f2e7ba0704d2]]
+--- FAIL: TestInterceptCourierRoute_FrozenPhysicalClock (0.03s)
+    order_pursuit_test.go:212: intercept used world phase instead of frozen physical route: {2 0} true
+2026/10/26 19:56:01 INFO order delivered but no longer executable unit=2cd49af2-29dd-4761-b7c4-7ae5bc0c2497 verb=stance reason="the Runner could not find this unit — it has been disbanded"
+2026/10/26 19:56:01 INFO order delivered — stance applied unit=4b29b52c-78a7-4f74-9076-917871ee8e72 stance=storm
+2026/10/26 19:56:01 INFO order delivered — stance applied unit=c6e72b54-f82a-4e11-a695-1a6d66ece46a stance=storm
+--- FAIL: TestOrderPursuit_GuardsAndWaiting (0.29s)
+    --- FAIL: TestOrderPursuit_GuardsAndWaiting/owner (0.03s)
+        order_pursuit_test.go:246: ERROR: null value in column "owner_id" of relation "units" violates not-null constraint (SQLSTATE 23502)
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.678s
+FAIL
