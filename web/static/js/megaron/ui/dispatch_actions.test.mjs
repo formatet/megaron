@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {State} from '../state.js';
 import {readFileSync} from 'node:fs';
 import {dispatchAction,followDispatchAction} from './dispatch_actions.js';
 const context={provinces:[{id:'province',settlement_id:'city',name:'Tylissos',own:true,q:2,r:3}],units:[{id:'ship',category:'naval',status:'garrison'},{id:'army',category:'land',status:'garrison'}],standingOrders:[{id:'route',from_name:'Tylissos',to_name:'Petras'}]};
@@ -45,4 +46,12 @@ test('cult, delivered goods and live cargo reach their actionable selected surfa
  for(const kind of ['TradeDelivery','TradeReturn','GiftDeliveredV2','TransferDelivered','TransferDeliveredV2']){const action=dispatchAction(kind,{dest_id:'city'},context);assert.equal(action.type,'goods',kind);assert.equal(action.id,'province');}
  const cargo=dispatchAction('GiftDispatchedV2',{transport_id:'cargo',dest_id:'city'},{...context,transports:[{id:'cargo'}]});assert.equal(cargo.type,'cargo');assert.equal(cargo.id,'cargo');
  assert.equal(dispatchAction('TrainComplete',{unit_id:'deleted',settlement_id:'city'},context).type,'city','a dead unit never gets a bogus unit card');
+});
+
+test('following a dispatch closes the covering drawer before showing its target',async()=>{
+ const calls=[];State.activeDrawer='notif';
+ globalThis.window={closeDrawer:name=>{calls.push(['close',name]);State.activeDrawer=null;},warFocusUnit:id=>calls.push(['unit',id])};
+ await followDispatchAction({type:'unit',id:'ship'});
+ assert.deepEqual(calls,[['close','notif'],['unit','ship']]);
+ assert.equal(State.activeDrawer,null);
 });

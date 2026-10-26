@@ -39,6 +39,7 @@ export function dispatchAction(kind,p={},context={}) {
 
 export async function followDispatchAction(action) {
  if(!action)return;
+ if(State.activeDrawer)window.closeDrawer?.(State.activeDrawer);
  switch(action.type){
   case 'letters':return window.openLettersWith?.(action.person);
   case 'account':return (await import('./account_window.js')).openAccountWindow();
