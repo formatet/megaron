@@ -1,0 +1,4 @@
+Queue: 1/2 slots used — fixed limit; population and buildings do not add slots. Finish or cancel a build.
+Type            Queue ID (cancel-build --id)            Done
+──────────────────────────────────────────────────────────────────────────────────────────
+Lumbermill      7090db67-0bba-4362-b602-f05833a5ce44    Petras at (16,23) · ≈ today 14:04

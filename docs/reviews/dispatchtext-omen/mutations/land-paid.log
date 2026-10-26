@@ -1,0 +1,7 @@
+2026/10/26 14:01:02 INFO player registered id=af7a7511-9337-4e6e-b640-b722fc0cccd9 username=shipwright-885d3257-4a54-4528-94c6-dc4e544e34fd
+--- FAIL: TestRecruitWarChariotCedarCancellationLandAndSpill (0.09s)
+    recruit_land_cedar_cancel_test.go:53: part0 refunded nominal rather than paid goods: map[bronze:84 cedar:85.6 grain:2000 silver:1000 timber:1.6]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.097s
+FAIL
+» färsk DB på migration 215 · commit 49f4bd4a+ändringar

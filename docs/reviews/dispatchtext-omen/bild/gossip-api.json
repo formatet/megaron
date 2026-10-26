@@ -1,0 +1,65 @@
+[
+  {
+    "id": "802756e8-a9dd-4251-b469-6800ac2925be",
+    "source_region": "Petras",
+    "category": "omen",
+    "text": "A thin offering: the people now eat more food than their town produces.",
+    "generated_at": "2026-10-26T14:04:42.468562+01:00",
+    "importance": "minor",
+    "hops": 0,
+    "omen": {
+      "text": "A thin offering: the people now eat more food than their town produces.",
+      "true": true,
+      "region": "Petras",
+      "fact_id": "4e478df5-2961-4f23-8bf8-8dfab6279bfe",
+      "category": "food_deficit",
+      "precision": 3,
+      "observed_tick": 6
+    }
+  },
+  {
+    "id": "ee64b9a4-172a-458a-b263-a342876530cd",
+    "source_region": "Petras",
+    "category": "omen",
+    "text": "A thin offering: the people now eat more food than their town produces.",
+    "generated_at": "2026-10-26T14:04:30.469103+01:00",
+    "importance": "minor",
+    "hops": 0,
+    "omen": {
+      "text": "A thin offering: the people now eat more food than their town produces.",
+      "true": true,
+      "region": "Petras",
+      "fact_id": "4591acd2-afea-41ba-86e0-f8f74b103399",
+      "category": "food_deficit",
+      "precision": 3,
+      "observed_tick": 4
+    }
+  },
+  {
+    "id": "a5cfd782-ae1d-47de-9552-ad34c415776e",
+    "source_region": "Petras",
+    "category": "omen",
+    "text": "A thin offering: the people now eat more food than their town produces.",
+    "generated_at": "2026-10-26T14:04:18.417946+01:00",
+    "importance": "minor",
+    "hops": 0,
+    "omen": {
+      "text": "A thin offering: the people now eat more food than their town produces.",
+      "true": true,
+      "region": "Petras",
+      "fact_id": "8af0ec68-fe70-45ca-a63d-ff4a0be53cbc",
+      "category": "food_deficit",
+      "precision": 3,
+      "observed_tick": 2
+    }
+  },
+  {
+    "id": "0264b3d8-6627-48ba-9647-3535582d28f3",
+    "source_region": "Foreign harbour",
+    "category": "trade",
+    "text": "Foreign copper cargo is travelling along a distant road",
+    "generated_at": "2026-10-26T14:04:01.037461+01:00",
+    "importance": "minor",
+    "hops": 0
+  }
+]

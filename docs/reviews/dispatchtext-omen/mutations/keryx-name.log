@@ -1,0 +1,6 @@
+--- FAIL: TestCompletionDispatchCityAndPlayerNames (0.00s)
+    completion_dispatch_test.go:21: TrainComplete got"      merchantman ready in Tylissos\n" err<nil>
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL
+» färsk DB på migration 215 · commit 49f4bd4a+ändringar

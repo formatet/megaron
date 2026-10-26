@@ -1,0 +1,6 @@
+--- FAIL: TestMaintainedTickProducesObservedOmenOnce (0.05s)
+    omen_truth_test.go:222: actual maintenance path must produce exactly one observed omen, got 0
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.048s
+FAIL
+» färsk DB på migration 215 · commit 31b65419+ändringar

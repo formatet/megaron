@@ -1,0 +1,13 @@
+UPDATE map_tiles SET terrain='plains',coastal=false WHERE world_id='4045b2aa-41b4-44d5-9086-5a51f8432d00'; UPDATE units SET q=9,r=23,status='positioned' WHERE id='eff6fd65-a737-45f6-b831-50cc7d423882';
+
+INSERT INTO provinces(world_id,map_q,map_r,terrain_type,coastal) VALUES('4045b2aa-41b4-44d5-9086-5a51f8432d00',15,23,'plains',true) RETURNING id;
+
+INSERT INTO settlements(world_id,province_id,name,culture_id,owner_id,control_type,is_capital,state,population) VALUES('4045b2aa-41b4-44d5-9086-5a51f8432d00','50f4a973-174c-4c6f-9f78-c7c3c5b471c5','Petras','minoan','6d565444-6202-435d-b4eb-bad0af077ed2','colony',false,'active',2000) RETURNING id;
+
+UPDATE settlements SET culture_id='minoan',population=2000 WHERE id='b7b70d72-b48b-442c-9416-f03df5f72d83'; UPDATE provinces SET coastal=true WHERE id='50f4a973-174c-4c6f-9f78-c7c3c5b471c5'; UPDATE map_tiles SET terrain='forest_olive_grove' WHERE world_id='4045b2aa-41b4-44d5-9086-5a51f8432d00' AND q=16 AND r=23; UPDATE map_tiles SET coastal=true WHERE world_id='4045b2aa-41b4-44d5-9086-5a51f8432d00' AND q=15 AND r=23; INSERT INTO buildings(settlement_id,building_type,level,god_id) VALUES('e49cb309-2f9a-4380-9c6a-91cf8999d0d2','temple',3,'potnia'),('e49cb309-2f9a-4380-9c6a-91cf8999d0d2','shipyard',1,NULL),('e49cb309-2f9a-4380-9c6a-91cf8999d0d2','harbour',1,NULL) ON CONFLICT DO NOTHING; INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) SELECT 'e49cb309-2f9a-4380-9c6a-91cf8999d0d2',key,10000,0,1000000,current_world_tick() FROM goods ON CONFLICT(settlement_id,good_key) DO UPDATE SET amount=10000,rate=0,cap=1000000,calc_tick=current_world_tick(); UPDATE settlement_goods SET amount=10000,rate=0,cap=1000000,calc_tick=current_world_tick() WHERE settlement_id='b7b70d72-b48b-442c-9416-f03df5f72d83';
+
+INSERT INTO player_world_records(player_id,world_id,kharis_amount,kharis_cap,kharis_calc_tick,kharis_rate) VALUES('6d565444-6202-435d-b4eb-bad0af077ed2','4045b2aa-41b4-44d5-9086-5a51f8432d00',95,100,current_world_tick(),0) ON CONFLICT(player_id,world_id) DO UPDATE SET kharis_amount=95,kharis_cap=100,kharis_calc_tick=current_world_tick(),kharis_rate=0;
+
+INSERT INTO players(username,password_hash) VALUES('foreign-b5aa0316','x') RETURNING id;
+
+INSERT INTO gossip_events(world_id,recipient_id,source_region,category,text,transport_owner_id) VALUES('4045b2aa-41b4-44d5-9086-5a51f8432d00','6d565444-6202-435d-b4eb-bad0af077ed2','Fixture harbour','trade','OWN TRANSPORT FIXTURE must be hidden','6d565444-6202-435d-b4eb-bad0af077ed2'),('4045b2aa-41b4-44d5-9086-5a51f8432d00','6d565444-6202-435d-b4eb-bad0af077ed2','Foreign harbour','trade','Foreign copper cargo is travelling along a distant road','2d2bd6e2-578c-4cdf-ac6c-cb0d85c471be');

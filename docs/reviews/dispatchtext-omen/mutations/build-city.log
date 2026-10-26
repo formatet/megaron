@@ -1,0 +1,7 @@
+2026/10/26 13:56:22 INFO build complete settlement=042905a3-1fe0-47a5-90c7-c0c3487b05d9 building=stonequarry
+--- FAIL: TestCompletionNoticesCarryCityAndPlayerNames (0.03s)
+    completion_context_test.go:16: build context:map[building_name:Stone Quarry building_type:stonequarry hex_q:0x1f9f4172add8 hex_r:0x1f9f4172adf0 hint:Stone Quarry is built but produces nothing until staffed — place a citizen to work stone (`keryx place`/`staff`, or the city's placement grid) to start production. settlement_id:042905a3-1fe0-47a5-90c7-c0c3487b05d9 settlement_name: unlocked_goods:[stone]]
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.029s
+FAIL
+» färsk DB på migration 215 · commit 31b65419+ändringar

@@ -1,0 +1,6 @@
+--- FAIL: TestTransportGossipDoesNotReturnToItsOwner (0.04s)
+    gossip_test.go:423: transport owner heard its own gossip or witness lost it
+FAIL
+FAIL	formatet/megaron/server/internal/gossip	0.045s
+FAIL
+» färsk DB på migration 215 · commit 31b65419+ändringar

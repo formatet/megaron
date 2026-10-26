@@ -1,0 +1,174 @@
+TAP version 13
+# Subtest: CG1: a refused +1 carries the server's own reason, and does NOT count as a change
+ok 1 - CG1: a refused +1 carries the server's own reason, and does NOT count as a change
+  ---
+  duration_ms: 0.991129
+  type: 'test'
+  ...
+# Subtest: CG2: each distinct server refusal surfaces as itself — not one generic line
+ok 2 - CG2: each distinct server refusal surfaces as itself — not one generic line
+  ---
+  duration_ms: 1.008321
+  type: 'test'
+  ...
+# Subtest: CG3: a successful +1 reports a change and says nothing
+ok 3 - CG3: a successful +1 reports a change and says nothing
+  ---
+  duration_ms: 0.12831
+  type: 'test'
+  ...
+# Subtest: CG4: Fill that places nothing at all explains why (the old code broke out silently)
+ok 4 - CG4: Fill that places nothing at all explains why (the old code broke out silently)
+  ---
+  duration_ms: 0.132956
+  type: 'test'
+  ...
+# Subtest: CG5: Fill that places some then hits the cap stays quiet — the pips moved, that IS the feedback
+ok 5 - CG5: Fill that places some then hits the cap stays quiet — the pips moved, that IS the feedback
+  ---
+  duration_ms: 0.265984
+  type: 'test'
+  ...
+# Subtest: CG6: Fill respects cap as its loop guard
+ok 6 - CG6: Fill respects cap as its loop guard
+  ---
+  duration_ms: 0.134266
+  type: 'test'
+  ...
+# Subtest: CG7: −1 deletes the matching ordinal and reports a change
+ok 7 - CG7: −1 deletes the matching ordinal and reports a change
+  ---
+  duration_ms: 0.225093
+  type: 'test'
+  ...
+# Subtest: CG8: −1 with no matching citizen says so and refreshes instead of doing nothing
+ok 8 - CG8: −1 with no matching citizen says so and refreshes instead of doing nothing
+  ---
+  duration_ms: 0.192787
+  type: 'test'
+  ...
+# Subtest: CG9: a failed DELETE is reported, not swallowed
+ok 9 - CG9: a failed DELETE is reported, not swallowed
+  ---
+  duration_ms: 0.259828
+  type: 'test'
+  ...
+# Subtest: CG10: an empty or non-JSON error body still produces a line, never blank silence
+ok 10 - CG10: an empty or non-JSON error body still produces a line, never blank silence
+  ---
+  duration_ms: 0.337354
+  type: 'test'
+  ...
+# Subtest: CG11: an expired session reads as the server's own sentence, not "error 401"
+ok 11 - CG11: an expired session reads as the server's own sentence, not "error 401"
+  ---
+  duration_ms: 0.163658
+  type: 'test'
+  ...
+# Subtest: CG12: the city centre and a hex are never confused for one another
+ok 12 - CG12: the city centre and a hex are never confused for one another
+  ---
+  duration_ms: 0.087541
+  type: 'test'
+  ...
+# Subtest: CG13: two different hexes get different keys — a restore must not land on the wrong one
+ok 13 - CG13: two different hexes get different keys — a restore must not land on the wrong one
+  ---
+  duration_ms: 0.078883
+  type: 'test'
+  ...
+# Subtest: CG14: the key survives a round trip through a re-rendered element with the same identity
+ok 14 - CG14: the key survives a round trip through a re-rendered element with the same identity
+  ---
+  duration_ms: 0.055523
+  type: 'test'
+  ...
+# Subtest: CG15: a missing or dataset-less element yields null, so nothing is restored rather than throwing
+ok 15 - CG15: a missing or dataset-less element yields null, so nothing is restored rather than throwing
+  ---
+  duration_ms: 0.051261
+  type: 'test'
+  ...
+# Subtest: CG11: insufficient_goods is delegated to formatApiError, the same helper every other surface uses
+ok 16 - CG11: insufficient_goods is delegated to formatApiError, the same helper every other surface uses
+  ---
+  duration_ms: 0.127674
+  type: 'test'
+  ...
+# Subtest: takeLabel says what taking does, building part only when one stands there
+ok 17 - takeLabel says what taking does, building part only when one stands there
+  ---
+  duration_ms: 9.387515
+  type: 'test'
+  ...
+# Subtest: CG16: −1 is disabled on a held hex where none of the gubbar are yours
+ok 18 - CG16: −1 is disabled on a held hex where none of the gubbar are yours
+  ---
+  duration_ms: 0.404827
+  type: 'test'
+  ...
+# Subtest: CG fishing: zero places disables adding; coast, bay and harbour capacities and yields are server values
+ok 19 - CG fishing: zero places disables adding; coast, bay and harbour capacities and yields are server values
+  ---
+  duration_ms: 0.602602
+  type: 'test'
+  ...
+# Subtest: ORDER15: two temples are two named cards and each staffing target carries its god
+ok 20 - ORDER15: two temples are two named cards and each staffing target carries its god
+  ---
+  duration_ms: 0.362009
+  type: 'test'
+  ...
+# Subtest: ORDER15: staffing posts god and -1 removes a worker at that god's temple only
+ok 21 - ORDER15: staffing posts god and -1 removes a worker at that god's temple only
+  ---
+  duration_ms: 0.221922
+  type: 'test'
+  ...
+# Subtest: ORDER28: shipyard staffing shows binary pace and preserves temple labels
+ok 22 - ORDER28: shipyard staffing shows binary pace and preserves temple labels
+  ---
+  duration_ms: 0.248726
+  type: 'test'
+  ...
+# Subtest: ORDER30: server workplace options without market render only assignable workplaces
+ok 23 - ORDER30: server workplace options without market render only assignable workplaces
+  ---
+  duration_ms: 0.231179
+  type: 'test'
+  ...
+# Subtest: a dispatch selects the actual reached build-site ordinal, never an arbitrary hex or capital
+not ok 24 - a dispatch selects the actual reached build-site ordinal, never an arbitrary hex or capital
+  ---
+  duration_ms: 0.647441
+  type: 'test'
+  location: '/tmp/megaron-codex-dispatch-omen-mutants/web/static/js/megaron/ui/citygrid.test.mjs:277:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    'city' !== 'hex:9'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'hex:9'
+  actual: 'city'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-dispatch-omen-mutants/web/static/js/megaron/ui/citygrid.test.mjs:279:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..24
+# tests 24
+# suites 0
+# pass 23
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 72.549364

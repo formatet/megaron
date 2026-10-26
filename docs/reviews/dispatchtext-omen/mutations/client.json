@@ -1,0 +1,50 @@
+[
+  {
+    "name": "drawer-close",
+    "file": "web/static/js/megaron/ui/dispatch_actions.js",
+    "old": "if(State.activeDrawer)window.closeDrawer?.(State.activeDrawer);",
+    "new": "",
+    "test": "ui/dispatch_actions.test.mjs",
+    "assertion_red": true
+  },
+  {
+    "name": "staff-action",
+    "file": "web/static/js/megaron/ui/dispatch_actions.js",
+    "old": "kind==='BuildComplete'&&STAFFABLE.has(p.building_type)",
+    "new": "false&&kind==='BuildComplete'&&STAFFABLE.has(p.building_type)",
+    "test": "ui/dispatch_actions.test.mjs",
+    "assertion_red": true
+  },
+  {
+    "name": "exact-hex",
+    "file": "web/static/js/megaron/ui/citygrid.js",
+    "old": "return hex?`hex:${hex.hex_ordinal}`:null;",
+    "new": "return \"city\";",
+    "test": "ui/citygrid.test.mjs",
+    "assertion_red": true
+  },
+  {
+    "name": "kult-city",
+    "file": "web/static/js/megaron/ui/drawers/kult.js",
+    "old": "return id?provinces.find(p=>p.own&&p.id===id)||null:fallback;",
+    "new": "return fallback;",
+    "test": "ui/drawers/kult.test.mjs",
+    "assertion_red": true
+  },
+  {
+    "name": "unit-text",
+    "file": "web/static/js/megaron/ui/format.js",
+    "old": "body.unit_name || unitTypeLabel(body.unit_type)",
+    "new": "body.unit_name || body.unit_type",
+    "test": "ui/format.test.mjs",
+    "assertion_red": true
+  },
+  {
+    "name": "stale-dispatch",
+    "file": "web/static/js/megaron/ui/dispatch_window.js",
+    "old": "if(version!==dispatchOpenVersion||world!==State.WORLD_ID)return;",
+    "new": "if(false)return;",
+    "test": "ui/dispatch_window.test.mjs",
+    "assertion_red": true
+  }
+]

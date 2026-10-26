@@ -1,0 +1,6 @@
+--- FAIL: TestOmenNoFactsMeansSilence (0.04s)
+    omen_truth_test.go:30: no true omen candidate, must remain silent; got 1 invented omens: A bright vein in the altar stone: metal-bearing ground lies to the west — close by.
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.040s
+FAIL
+» färsk DB på migration 215 · commit 31b65419+ändringar

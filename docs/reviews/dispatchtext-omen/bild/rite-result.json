@@ -1,0 +1,19 @@
+{
+  "effect": {
+    "strength_factor": 1.25,
+    "until_tick": 13
+  },
+  "effect_type": "garrison_defense",
+  "kharis_spent": 0,
+  "message": "Potnia shelters your walls \u2014 your own garrison defends this city a quarter stronger for 6 game days.",
+  "mood": "Favorable",
+  "offer_multiplier": 1,
+  "offering_expected": 14.642053868579453,
+  "offering_value_unit": "worker_ticks",
+  "offering_verdict": "worthy \u2014 meets the prayer's requirement; more will not improve the answer",
+  "offering_work": 14.642053868579453,
+  "offering_worth": 14.642053868579453,
+  "prayer": "minoan_potnia_walls",
+  "success": true,
+  "valuation_version": 2
+}

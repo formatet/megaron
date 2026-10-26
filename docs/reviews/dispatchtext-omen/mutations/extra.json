@@ -1,0 +1,29 @@
+[
+  {
+    "name": "keryx-name",
+    "file": "server/cmd/keryx/notification_text.go",
+    "old": "unit.DisplayName(b.UnitType)",
+    "new": "b.UnitType",
+    "test": "TestCompletionDispatchCityAndPlayerNames",
+    "assertion_red": true,
+    "sed": "sed -i 's|unit.DisplayName(b.UnitType)|b.UnitType|g' server/cmd/keryx/notification_text.go"
+  },
+  {
+    "name": "propagate-owner",
+    "file": "server/internal/gossip/gossip.go",
+    "old": "rm.transportOwner != nil && *rm.transportOwner == learnerID",
+    "new": "false && rm.transportOwner != nil && *rm.transportOwner == learnerID",
+    "test": "TestTransportGossipDoesNotReturnToItsOwner",
+    "assertion_red": true,
+    "sed": "sed -i 's|rm.transportOwner != nil && \\*rm.transportOwner == learnerID|false \\&\\& rm.transportOwner != nil \\&\\& *rm.transportOwner == learnerID|g' server/internal/gossip/gossip.go"
+  },
+  {
+    "name": "realm-cooldown",
+    "file": "server/internal/kharis/omen.go",
+    "old": "state != \"empty\" && current-previous < band.Gap",
+    "new": "false && state != \"empty\" && current-previous < band.Gap",
+    "test": "TestOmenObservedOutcomeCooldownAndSpecificity",
+    "assertion_red": true,
+    "sed": "sed -i 's|state != \"empty\" && current-previous < band.Gap|false \\&\\& state != \"empty\" \\&\\& current-previous < band.Gap|g' server/internal/kharis/omen.go"
+  }
+]

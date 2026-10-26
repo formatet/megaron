@@ -1,0 +1,23 @@
+{
+  "complete_at": "2026-10-26T14:04:24.519241+01:00",
+  "count": 1,
+  "forming_size": 1,
+  "men": 10,
+  "names": [
+    "Petras Proof"
+  ],
+  "paid_costs": {
+    "cedar": 90
+  },
+  "pop_drawn": 10,
+  "population_after": 1990,
+  "population_before": 2000,
+  "shipyard_waiting": false,
+  "shipyard_work_remaining": 4,
+  "unit_id": "dd536f59-4e92-467d-b912-c42be276d57f",
+  "unit_ids": [
+    "dd536f59-4e92-467d-b912-c42be276d57f"
+  ],
+  "unit_type": "merchantman",
+  "upkeep_warning": "warning: once this unit garrisons it needs 0.1 grain + 0.0 silver per game day upkeep \u2014 this settlement's current net after its existing army's upkeep is -9.5 grain per game day, +0.0 silver per game day; it may starve/desert without more production or fewer units (`keryx status`)"
+}

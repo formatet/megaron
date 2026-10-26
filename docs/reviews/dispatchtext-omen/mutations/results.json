@@ -1,0 +1,83 @@
+[
+  {
+    "name": "false-deposit",
+    "file": "server/internal/kharis/omen.go",
+    "old": "copper_deposit = true",
+    "new": "copper_deposit IS NOT NULL",
+    "test": "TestOmenNoFactsMeansSilence",
+    "assertion_red": true,
+    "sed": "sed -i 's|copper_deposit = true|copper_deposit IS NOT NULL|g' server/internal/kharis/omen.go"
+  },
+  {
+    "name": "tick-caller",
+    "file": "server/internal/kharis/tick.go",
+    "old": "if err := h.generateOmen(ctx, w.settlementID, worldID);",
+    "new": "if err := error(nil);",
+    "test": "TestMaintainedTickProducesObservedOmenOnce",
+    "assertion_red": true,
+    "sed": "sed -i 's|if err := h.generateOmen(ctx, w.settlementID, worldID);|if err := error(nil);|g' server/internal/kharis/tick.go"
+  },
+  {
+    "name": "own-broadcast",
+    "file": "server/internal/gossip/gossip.go",
+    "old": "transportOwnerID != nil && recipID == *transportOwnerID",
+    "new": "false && transportOwnerID != nil && recipID == *transportOwnerID",
+    "test": "TestTransportGossipDoesNotReturnToItsOwner",
+    "assertion_red": true,
+    "sed": "sed -i 's|transportOwnerID != nil && recipID == \\*transportOwnerID|false \\&\\& transportOwnerID != nil \\&\\& recipID == *transportOwnerID|g' server/internal/gossip/gossip.go"
+  },
+  {
+    "name": "trade-owner",
+    "file": "server/internal/economy/trade.go",
+    "old": "p.GoodKey, transportOwner);",
+    "new": "p.GoodKey);",
+    "test": "TestDeliveryTransportGossipKeepsOriginalOwner",
+    "assertion_red": true,
+    "sed": "sed -i 's|p.GoodKey, transportOwner);|p.GoodKey);|g' server/internal/economy/trade.go"
+  },
+  {
+    "name": "api-owner",
+    "file": "server/api/handlers/settlement.go",
+    "old": "transport_owner_id<>$2",
+    "new": "true",
+    "test": "TestGossipShowsTrueOmensAndOthersTradeOnly",
+    "assertion_red": true,
+    "sed": "sed -i 's|transport_owner_id<>\\$2|true|g' server/api/handlers/settlement.go"
+  },
+  {
+    "name": "queue-city",
+    "file": "server/api/handlers/province.go",
+    "old": "bi.SettlementName = sett.Name",
+    "new": "bi.SettlementName = \"\"",
+    "test": "TestBuildQueueCarriesCityPlayerNameAndHex",
+    "assertion_red": true,
+    "sed": "sed -i 's|bi.SettlementName = sett.Name|bi.SettlementName = \"\"|g' server/api/handlers/province.go"
+  },
+  {
+    "name": "build-city",
+    "file": "server/internal/combat/build.go",
+    "old": "\"settlement_name\": settlementName",
+    "new": "\"settlement_name\": \"\"",
+    "test": "TestCompletionNoticesCarryCityAndPlayerNames",
+    "assertion_red": true,
+    "sed": "sed -i 's|\"settlement_name\": settlementName|\"settlement_name\": \"\"|g' server/internal/combat/build.go"
+  },
+  {
+    "name": "train-name",
+    "file": "server/internal/combat/train.go",
+    "old": "unit.DisplayName(p.UnitType)",
+    "new": "p.UnitType",
+    "test": "TestCompletionNoticesCarryCityAndPlayerNames",
+    "assertion_red": false,
+    "sed": "sed -i 's|unit.DisplayName(p.UnitType)|p.UnitType|g' server/internal/combat/train.go"
+  },
+  {
+    "name": "shipyard-name",
+    "file": "server/internal/combat/shipyard_work.go",
+    "old": "body[\"unit_name\"] = unit.DisplayName(typ)",
+    "new": "body[\"unit_name\"] = typ",
+    "test": "TestShipyardCompletionPreservesNotificationIdentityAndSeverity",
+    "assertion_red": true,
+    "sed": "sed -i 's|body[\"unit_name\"] = unit.DisplayName(typ)|body[\"unit_name\"] = typ|g' server/internal/combat/shipyard_work.go"
+  }
+]

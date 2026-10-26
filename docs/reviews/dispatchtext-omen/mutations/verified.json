@@ -1,0 +1,182 @@
+[
+  {
+    "name": "false-deposit",
+    "file": "server/internal/kharis/omen.go",
+    "old": "copper_deposit = true",
+    "new": "copper_deposit IS NOT NULL",
+    "test": "TestOmenNoFactsMeansSilence",
+    "assertion_red": true,
+    "sed": "sed -i 's|copper_deposit = true|copper_deposit IS NOT NULL|g' server/internal/kharis/omen.go"
+  },
+  {
+    "name": "tick-caller",
+    "file": "server/internal/kharis/tick.go",
+    "old": "if err := h.generateOmen(ctx, w.settlementID, worldID);",
+    "new": "if err := error(nil);",
+    "test": "TestMaintainedTickProducesObservedOmenOnce",
+    "assertion_red": true,
+    "sed": "sed -i 's|if err := h\\.generateOmen(ctx, w\\.settlementID, worldID);|if err := error(nil);|g' server/internal/kharis/tick.go"
+  },
+  {
+    "name": "own-broadcast",
+    "file": "server/internal/gossip/gossip.go",
+    "old": "transportOwnerID != nil && recipID == *transportOwnerID",
+    "new": "false && transportOwnerID != nil && recipID == *transportOwnerID",
+    "test": "TestTransportGossipDoesNotReturnToItsOwner",
+    "assertion_red": true,
+    "sed": "sed -i 's|transportOwnerID != nil && recipID == \\*transportOwnerID|false \\&\\& transportOwnerID != nil \\&\\& recipID == *transportOwnerID|g' server/internal/gossip/gossip.go"
+  },
+  {
+    "name": "trade-owner",
+    "file": "server/internal/economy/trade.go",
+    "old": "p.GoodKey, transportOwner);",
+    "new": "p.GoodKey);",
+    "test": "TestDeliveryTransportGossipKeepsOriginalOwner",
+    "assertion_red": true,
+    "sed": "sed -i 's|p\\.GoodKey, transportOwner);|p.GoodKey);|g' server/internal/economy/trade.go"
+  },
+  {
+    "name": "api-owner",
+    "file": "server/api/handlers/settlement.go",
+    "old": "transport_owner_id<>$2",
+    "new": "true",
+    "test": "TestGossipShowsTrueOmensAndOthersTradeOnly",
+    "assertion_red": true,
+    "sed": "sed -i 's|transport_owner_id<>\\$2|true|g' server/api/handlers/settlement.go"
+  },
+  {
+    "name": "queue-city",
+    "file": "server/api/handlers/province.go",
+    "old": "bi.SettlementName = sett.Name",
+    "new": "bi.SettlementName = \"\"",
+    "test": "TestBuildQueueCarriesCityPlayerNameAndHex",
+    "assertion_red": true,
+    "sed": "sed -i 's|bi\\.SettlementName = sett\\.Name|bi.SettlementName = \"\"|g' server/api/handlers/province.go"
+  },
+  {
+    "name": "build-city",
+    "file": "server/internal/combat/build.go",
+    "old": "\"settlement_name\": settlementName",
+    "new": "\"settlement_name\": \"\"",
+    "test": "TestCompletionNoticesCarryCityAndPlayerNames",
+    "assertion_red": true,
+    "sed": "sed -i 's|\"settlement_name\": settlementName|\"settlement_name\": \"\"|g' server/internal/combat/build.go"
+  },
+  {
+    "name": "shipyard-name",
+    "file": "server/internal/combat/shipyard_work.go",
+    "old": "body[\"unit_name\"] = unit.DisplayName(typ)",
+    "new": "body[\"unit_name\"] = typ",
+    "test": "TestShipyardCompletionPreservesNotificationIdentityAndSeverity",
+    "assertion_red": true,
+    "sed": "sed -i 's|body\\[\"unit_name\"\\] = unit\\.DisplayName(typ)|body[\"unit_name\"] = typ|g' server/internal/combat/shipyard_work.go"
+  },
+  {
+    "name": "train-name",
+    "file": "server/internal/combat/train.go",
+    "old": "unit.DisplayName(p.UnitType)",
+    "new": "(func() string { _ = unit.DisplayName(p.UnitType); return p.UnitType })()",
+    "test": "TestCompletionNoticesCarryCityAndPlayerNames",
+    "assertion_red": true,
+    "sed": "sed -i 's|unit\\.DisplayName(p\\.UnitType)|(func() string { _ = unit.DisplayName(p.UnitType); return p.UnitType })()|g' server/internal/combat/train.go"
+  },
+  {
+    "name": "keryx-name",
+    "file": "server/cmd/keryx/notification_text.go",
+    "old": "unit.DisplayName(b.UnitType)",
+    "new": "b.UnitType",
+    "test": "TestCompletionDispatchCityAndPlayerNames",
+    "assertion_red": true,
+    "sed": "sed -i 's|unit\\.DisplayName(b\\.UnitType)|b.UnitType|g' server/cmd/keryx/notification_text.go"
+  },
+  {
+    "name": "propagate-owner",
+    "file": "server/internal/gossip/gossip.go",
+    "old": "rm.transportOwner != nil && *rm.transportOwner == learnerID",
+    "new": "false && rm.transportOwner != nil && *rm.transportOwner == learnerID",
+    "test": "TestTransportGossipDoesNotReturnToItsOwner",
+    "assertion_red": true,
+    "sed": "sed -i 's|rm\\.transportOwner != nil && \\*rm\\.transportOwner == learnerID|false \\&\\& rm.transportOwner != nil \\&\\& *rm.transportOwner == learnerID|g' server/internal/gossip/gossip.go"
+  },
+  {
+    "name": "realm-cooldown",
+    "file": "server/internal/kharis/omen.go",
+    "old": "state != \"empty\" && current-previous < band.Gap",
+    "new": "false && state != \"empty\" && current-previous < band.Gap",
+    "test": "TestOmenObservedOutcomeCooldownAndSpecificity",
+    "assertion_red": true,
+    "sed": "sed -i 's|state != \"empty\" && current-previous < band\\.Gap|false \\&\\& state != \"empty\" \\&\\& current-previous < band.Gap|g' server/internal/kharis/omen.go"
+  },
+  {
+    "name": "land-paid",
+    "file": "server/api/handlers/province.go",
+    "old": "unitID, paidCosts, totalKharis, unitSize-existingSize",
+    "new": "unitID, totalCosts, totalKharis, unitSize-existingSize",
+    "test": "TestRecruitWarChariotCedarCancellationLandAndSpill",
+    "assertion_red": true,
+    "sed": "sed -i 's|unitID, paidCosts, totalKharis, unitSize-existingSize|unitID, totalCosts, totalKharis, unitSize-existingSize|g' server/api/handlers/province.go"
+  },
+  {
+    "name": "spill-paid",
+    "file": "server/api/handlers/province.go",
+    "old": "spillID, paidCosts, totalKharis, newSize-100",
+    "new": "spillID, totalCosts, totalKharis, newSize-100",
+    "test": "TestRecruitWarChariotCedarCancellationLandAndSpill",
+    "assertion_red": true,
+    "sed": "sed -i 's|spillID, paidCosts, totalKharis, newSize-100|spillID, totalCosts, totalKharis, newSize-100|g' server/api/handlers/province.go"
+  },
+  {
+    "name": "drawer-close",
+    "file": "web/static/js/megaron/ui/dispatch_actions.js",
+    "old": "if(State.activeDrawer)window.closeDrawer?.(State.activeDrawer);",
+    "new": "",
+    "test": "ui/dispatch_actions.test.mjs",
+    "assertion_red": true,
+    "sed": "sed -i 's|if(State\\.activeDrawer)window\\.closeDrawer?\\.(State\\.activeDrawer);||g' web/static/js/megaron/ui/dispatch_actions.js"
+  },
+  {
+    "name": "staff-action",
+    "file": "web/static/js/megaron/ui/dispatch_actions.js",
+    "old": "kind==='BuildComplete'&&STAFFABLE.has(p.building_type)",
+    "new": "false&&kind==='BuildComplete'&&STAFFABLE.has(p.building_type)",
+    "test": "ui/dispatch_actions.test.mjs",
+    "assertion_red": true,
+    "sed": "sed -i 's|kind==='\"'\"'BuildComplete'\"'\"'&&STAFFABLE\\.has(p\\.building_type)|false\\&\\&kind==='\"'\"'BuildComplete'\"'\"'\\&\\&STAFFABLE.has(p.building_type)|g' web/static/js/megaron/ui/dispatch_actions.js"
+  },
+  {
+    "name": "exact-hex",
+    "file": "web/static/js/megaron/ui/citygrid.js",
+    "old": "return hex?`hex:${hex.hex_ordinal}`:null;",
+    "new": "return \"city\";",
+    "test": "ui/citygrid.test.mjs",
+    "assertion_red": true,
+    "sed": "sed -i 's|return hex?`hex:\\${hex\\.hex_ordinal}`:null;|return \"city\";|g' web/static/js/megaron/ui/citygrid.js"
+  },
+  {
+    "name": "kult-city",
+    "file": "web/static/js/megaron/ui/drawers/kult.js",
+    "old": "return id?provinces.find(p=>p.own&&p.id===id)||null:fallback;",
+    "new": "return fallback;",
+    "test": "ui/drawers/kult.test.mjs",
+    "assertion_red": true,
+    "sed": "sed -i 's|return id?provinces\\.find(p=>p\\.own&&p\\.id===id)\\|\\|null:fallback;|return fallback;|g' web/static/js/megaron/ui/drawers/kult.js"
+  },
+  {
+    "name": "unit-text",
+    "file": "web/static/js/megaron/ui/format.js",
+    "old": "body.unit_name || unitTypeLabel(body.unit_type)",
+    "new": "body.unit_name || body.unit_type",
+    "test": "ui/format.test.mjs",
+    "assertion_red": true,
+    "sed": "sed -i 's|body\\.unit_name \\|\\| unitTypeLabel(body\\.unit_type)|body.unit_name \\|\\| body.unit_type|g' web/static/js/megaron/ui/format.js"
+  },
+  {
+    "name": "stale-dispatch",
+    "file": "web/static/js/megaron/ui/dispatch_window.js",
+    "old": "if(version!==dispatchOpenVersion||world!==State.WORLD_ID)return;",
+    "new": "if(false)return;",
+    "test": "ui/dispatch_window.test.mjs",
+    "assertion_red": true,
+    "sed": "sed -i 's|if(version!==dispatchOpenVersion\\|\\|world!==State\\.WORLD_ID)return;|if(false)return;|g' web/static/js/megaron/ui/dispatch_window.js"
+  }
+]

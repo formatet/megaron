@@ -1,0 +1,8 @@
+2026/10/26 13:58:28 INFO build complete settlement=641516ff-3c95-458f-8630-b106b1e288e3 building=stonequarry
+2026/10/26 13:58:28 INFO training complete settlement=641516ff-3c95-458f-8630-b106b1e288e3 unit=merchantman count=1
+--- FAIL: TestCompletionNoticesCarryCityAndPlayerNames (0.04s)
+    completion_context_test.go:35: train context:map[count:1 settlement_id:641516ff-3c95-458f-8630-b106b1e288e3 settlement_name:Notifytown unit_id:8bb09017-338a-42de-b82d-612b12775f91 unit_name:merchantman unit_type:merchantman]
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.038s
+FAIL
+» färsk DB på migration 215 · commit 31b65419+ändringar

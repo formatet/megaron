@@ -1,0 +1,6 @@
+--- FAIL: TestTransportGossipDoesNotReturnToItsOwner (0.04s)
+    gossip_test.go:429: contact propagation returned owner's own transport as a rumour
+FAIL
+FAIL	formatet/megaron/server/internal/gossip	0.047s
+FAIL
+» färsk DB på migration 215 · commit 49f4bd4a+ändringar

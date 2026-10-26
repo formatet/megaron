@@ -1,0 +1,117 @@
+TAP version 13
+# Subtest: completed hex building targets its owning city grid and exact site, including zero coordinate
+not ok 1 - completed hex building targets its owning city grid and exact site, including zero coordinate
+  ---
+  duration_ms: 1.967555
+  type: 'test'
+  location: '/tmp/megaron-codex-dispatch-omen-mutants/web/static/js/megaron/ui/dispatch_actions.test.mjs:7:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+      {
+    -   building: 'lumbermill',
+    -   god: null,
+    -   hex: {
+    -     q: 0,
+    -     r: 7
+    -   },
+        id: 'province',
+    +   label: 'Show Tylissos',
+    +   type: 'city'
+    -   label: 'Staff Lumbermill',
+    -   settlementID: 'city',
+    -   type: 'staff'
+      }
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    type: 'staff'
+    id: 'province'
+    settlementID: 'city'
+    building: 'lumbermill'
+    god: ~
+    hex:
+      q: 0
+      r: 7
+    label: 'Staff Lumbermill'
+  actual:
+    type: 'city'
+    id: 'province'
+    label: 'Show Tylissos'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-dispatch-omen-mutants/web/static/js/megaron/ui/dispatch_actions.test.mjs:8:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: workplace completion selects city centre and god; unit completions select the actual live card
+not ok 2 - workplace completion selects city centre and god; unit completions select the actual live card
+  ---
+  duration_ms: 0.283959
+  type: 'test'
+  location: '/tmp/megaron-codex-dispatch-omen-mutants/web/static/js/megaron/ui/dispatch_actions.test.mjs:12:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + undefined
+    - null
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: ~
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-dispatch-omen-mutants/web/static/js/megaron/ui/dispatch_actions.test.mjs:14:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: correspondence and standing route targets are specific, absent routes are omitted
+ok 3 - correspondence and standing route targets are specific, absent routes are omitted
+  ---
+  duration_ms: 0.250368
+  type: 'test'
+  ...
+# Subtest: every current literal and archived reader kind omits a targetless button, and maps an explicit incident site honestly
+ok 4 - every current literal and archived reader kind omits a targetless button, and maps an explicit incident site honestly
+  ---
+  duration_ms: 1.713457
+  type: 'test'
+  ...
+# Subtest: the live unit action reaches the existing focused War surface
+ok 5 - the live unit action reaches the existing focused War surface
+  ---
+  duration_ms: 0.186983
+  type: 'test'
+  ...
+# Subtest: cult, delivered goods and live cargo reach their actionable selected surface
+ok 6 - cult, delivered goods and live cargo reach their actionable selected surface
+  ---
+  duration_ms: 0.171624
+  type: 'test'
+  ...
+# Subtest: following a dispatch closes the covering drawer before showing its target
+ok 7 - following a dispatch closes the covering drawer before showing its target
+  ---
+  duration_ms: 0.202878
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 5
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 49.320335

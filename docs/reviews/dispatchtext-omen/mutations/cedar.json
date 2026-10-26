@@ -1,0 +1,20 @@
+[
+  {
+    "name": "land-paid",
+    "file": "server/api/handlers/province.go",
+    "old": "unitID, paidCosts, totalKharis, unitSize-existingSize",
+    "new": "unitID, totalCosts, totalKharis, unitSize-existingSize",
+    "test": "TestRecruitWarChariotCedarCancellationLandAndSpill",
+    "assertion_red": true,
+    "sed": "sed -i 's|unitID, paidCosts, totalKharis, unitSize-existingSize|unitID, totalCosts, totalKharis, unitSize-existingSize|g' server/api/handlers/province.go"
+  },
+  {
+    "name": "spill-paid",
+    "file": "server/api/handlers/province.go",
+    "old": "spillID, paidCosts, totalKharis, newSize-100",
+    "new": "spillID, totalCosts, totalKharis, newSize-100",
+    "test": "TestRecruitWarChariotCedarCancellationLandAndSpill",
+    "assertion_red": true,
+    "sed": "sed -i 's|spillID, paidCosts, totalKharis, newSize-100|spillID, totalCosts, totalKharis, newSize-100|g' server/api/handlers/province.go"
+  }
+]

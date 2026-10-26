@@ -1,0 +1,8 @@
+2026/10/26 13:56:12 INFO player registered id=f252e015-5b5f-483b-baa0-d3813929e633 username=wanax-a-f74a0f76-9284-4bce-958a-85d7b834cd1f
+2026/10/26 13:56:12 INFO player registered id=6fd7ec22-083a-48db-aed9-7423780f9a20 username=wanax-b-326c5b39-8682-402a-951b-ee3c2eb2ff18
+--- FAIL: TestGossipShowsTrueOmensAndOthersTradeOnly (0.11s)
+    gossip_truth_test.go:51: feed leaked own trade or unsupported old omen: [{"id":"176ab262-b905-46c9-b386-fd3947649631","source_region":"Here","category":"economy","text":"other tin","generated_at":"2026-10-26T13:56:12.844168+01:00","importance":"minor","hops":0},{"id":"a57a1152-ee26-4c7d-a3fb-dad5934c6bc4","source_region":"Here","category":"economy","text":"my own tin","generated_at":"2026-10-26T13:56:12.843757+01:00","importance":"minor","hops":0},{"id":"e9ddf62f-c6bc-4f74-b9c6-21aa803adb3f","source_region":"Here","category":"omen","text":"true storm omen","generated_at":"2026-10-26T13:56:12.843355+01:00","importance":"minor","hops":0,"omen":{"true":true,"category":"storm","precision":1}}]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.117s
+FAIL
+» färsk DB på migration 215 · commit 31b65419+ändringar

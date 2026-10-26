@@ -1,0 +1,11 @@
+2026/10/26 13:56:06 INFO trade delivery destination=f83ed332-75bc-454a-9bb3-f2b79ff96595 good=tin qty=2
+2026/10/26 13:56:06 INFO trade delivery destination=74eb7897-f8a9-4320-a938-937a5b282be9 good=tin qty=2
+--- FAIL: TestDeliveryTransportGossipKeepsOriginalOwner (0.05s)
+    --- FAIL: TestDeliveryTransportGossipKeepsOriginalOwner/legacy (0.03s)
+        trade_gossip_owner_test.go:43: delivery told owner its own trade rumour: 1
+    --- FAIL: TestDeliveryTransportGossipKeepsOriginalOwner/physical (0.03s)
+        trade_gossip_owner_test.go:43: delivery told owner its own trade rumour: 1
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.056s
+FAIL
+» färsk DB på migration 215 · commit 31b65419+ändringar

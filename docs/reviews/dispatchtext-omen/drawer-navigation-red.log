@@ -1,0 +1,87 @@
+TAP version 13
+# Subtest: completed hex building targets its owning city grid and exact site, including zero coordinate
+ok 1 - completed hex building targets its owning city grid and exact site, including zero coordinate
+  ---
+  duration_ms: 1.039065
+  type: 'test'
+  ...
+# Subtest: workplace completion selects city centre and god; unit completions select the actual live card
+ok 2 - workplace completion selects city centre and god; unit completions select the actual live card
+  ---
+  duration_ms: 0.249882
+  type: 'test'
+  ...
+# Subtest: correspondence and standing route targets are specific, absent routes are omitted
+ok 3 - correspondence and standing route targets are specific, absent routes are omitted
+  ---
+  duration_ms: 0.15441
+  type: 'test'
+  ...
+# Subtest: every current literal and archived reader kind omits a targetless button, and maps an explicit incident site honestly
+ok 4 - every current literal and archived reader kind omits a targetless button, and maps an explicit incident site honestly
+  ---
+  duration_ms: 1.056347
+  type: 'test'
+  ...
+# Subtest: the live unit action reaches the existing focused War surface
+ok 5 - the live unit action reaches the existing focused War surface
+  ---
+  duration_ms: 0.207715
+  type: 'test'
+  ...
+# Subtest: cult, delivered goods and live cargo reach their actionable selected surface
+ok 6 - cult, delivered goods and live cargo reach their actionable selected surface
+  ---
+  duration_ms: 0.152317
+  type: 'test'
+  ...
+# Subtest: following a dispatch closes the covering drawer before showing its target
+not ok 7 - following a dispatch closes the covering drawer before showing its target
+  ---
+  duration_ms: 0.904801
+  type: 'test'
+  location: '/tmp/megaron-codex-dispatchtext-omen-20261025/web/static/js/megaron/ui/dispatch_actions.test.mjs:51:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+      [
+        [
+    -     'close',
+    -     'notif'
+    -   ],
+    -   [
+          'unit',
+          'ship'
+        ]
+      ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0:
+      0: 'close'
+      1: 'notif'
+    1:
+      0: 'unit'
+      1: 'ship'
+  actual:
+    0:
+      0: 'unit'
+      1: 'ship'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-dispatchtext-omen-20261025/web/static/js/megaron/ui/dispatch_actions.test.mjs:55:9)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 6
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 50.757486

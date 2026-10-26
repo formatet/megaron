@@ -1,0 +1,11 @@
+[
+  {
+    "name": "train-name",
+    "file": "server/internal/combat/train.go",
+    "old": "unit.DisplayName(p.UnitType)",
+    "new": "(func() string { _ = unit.DisplayName(p.UnitType); return p.UnitType })()",
+    "test": "TestCompletionNoticesCarryCityAndPlayerNames",
+    "assertion_red": true,
+    "sed": "sed -i 's|unit.DisplayName(p.UnitType)|(func() string { _ = unit.DisplayName(p.UnitType); return p.UnitType })()|g' server/internal/combat/train.go"
+  }
+]

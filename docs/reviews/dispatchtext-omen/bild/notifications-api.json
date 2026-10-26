@@ -1,0 +1,319 @@
+[
+  {
+    "id": "30e04713-0d34-483f-9ef3-aaae463438cd",
+    "kind": "BuildComplete",
+    "level": 4,
+    "body": {
+      "hint": "Lumbermill is built but produces nothing until staffed \u2014 place a citizen to work timber (`keryx place`/`staff`, or the city's placement grid) to start production.",
+      "hex_q": 16,
+      "hex_r": 23,
+      "building_name": "Lumbermill",
+      "building_type": "lumbermill",
+      "settlement_id": "e49cb309-2f9a-4380-9c6a-91cf8999d0d2",
+      "unlocked_goods": [
+        "timber"
+      ],
+      "settlement_name": "Petras"
+    },
+    "created_at": "2026-10-26T14:04:48.37039+01:00",
+    "read_at": null,
+    "world_tick": 7
+  },
+  {
+    "id": "75ae4394-0027-4b5d-aa45-1bd0a1e59cd7",
+    "kind": "StorageOverflow",
+    "level": 2,
+    "body": {
+      "cap": 9695.8432050361,
+      "name": "Petras",
+      "reason": "production",
+      "good_key": "grain",
+      "player_id": "6d565444-6202-435d-b4eb-bad0af077ed2",
+      "world_tick": 7,
+      "province_id": "50f4a973-174c-4c6f-9f78-c7c3c5b471c5",
+      "lost_quantity": 1.3999999999996362,
+      "settlement_id": "e49cb309-2f9a-4380-9c6a-91cf8999d0d2"
+    },
+    "created_at": "2026-10-26T14:04:48.362356+01:00",
+    "read_at": null,
+    "world_tick": 7
+  },
+  {
+    "id": "4f49d106-11d1-43ce-a40c-d8c29e076799",
+    "kind": "TrainComplete",
+    "level": 4,
+    "body": {
+      "count": 1,
+      "unit_id": "dd536f59-4e92-467d-b912-c42be276d57f",
+      "unit_name": "Emporos",
+      "unit_type": "merchantman",
+      "size_after": 0,
+      "settlement_id": "e49cb309-2f9a-4380-9c6a-91cf8999d0d2",
+      "settlement_name": "Petras"
+    },
+    "created_at": "2026-10-26T14:04:36.370315+01:00",
+    "read_at": null,
+    "world_tick": 5
+  },
+  {
+    "id": "86e1899d-cd77-46b8-822d-73b65fbc1e02",
+    "kind": "StorageOverflow",
+    "level": 2,
+    "body": {
+      "cap": 9799.043328154312,
+      "name": "Petras",
+      "reason": "production",
+      "good_key": "grain",
+      "player_id": "6d565444-6202-435d-b4eb-bad0af077ed2",
+      "world_tick": 5,
+      "province_id": "50f4a973-174c-4c6f-9f78-c7c3c5b471c5",
+      "lost_quantity": 1.3999999999996362,
+      "settlement_id": "e49cb309-2f9a-4380-9c6a-91cf8999d0d2"
+    },
+    "created_at": "2026-10-26T14:04:36.367556+01:00",
+    "read_at": null,
+    "world_tick": 5
+  },
+  {
+    "id": "1240ba33-3d6c-4075-b0f0-5729e02077df",
+    "kind": "StandingOrderDispatched",
+    "level": 3,
+    "body": {
+      "leg": "outbound",
+      "goods": [
+        {
+          "good_key": "grain",
+          "quantity": 9850.377180451127
+        }
+      ],
+      "arrives_at": "2026-10-26T14:05:12.505202442+01:00",
+      "standing_order_id": "5000ce25-ff06-4857-9848-2c4c9a060f33"
+    },
+    "created_at": "2026-10-26T14:04:18.507404+01:00",
+    "read_at": null,
+    "world_tick": 2
+  },
+  {
+    "id": "d55bd216-dc45-4345-b123-0d32c1043a9f",
+    "kind": "StorageCapacityWarning",
+    "level": 3,
+    "body": {
+      "cap": 10000,
+      "name": "Petras",
+      "amount": 10000,
+      "good_key": "fish",
+      "incoming": 0,
+      "player_id": "6d565444-6202-435d-b4eb-bad0af077ed2",
+      "world_tick": 2,
+      "province_id": "50f4a973-174c-4c6f-9f78-c7c3c5b471c5",
+      "clear_streak": 0,
+      "net_per_tick": -2.4936004376206116,
+      "full_in_ticks": 0,
+      "settlement_id": "e49cb309-2f9a-4380-9c6a-91cf8999d0d2"
+    },
+    "created_at": "2026-10-26T14:04:18.482552+01:00",
+    "read_at": null,
+    "world_tick": 2
+  },
+  {
+    "id": "b8dc20fe-a468-448d-9275-ecf6ec0f8209",
+    "kind": "StorageCapacityWarning",
+    "level": 3,
+    "body": {
+      "cap": 10000,
+      "name": "Petras",
+      "amount": 10000,
+      "good_key": "oil",
+      "incoming": 0,
+      "player_id": "6d565444-6202-435d-b4eb-bad0af077ed2",
+      "world_tick": 2,
+      "province_id": "50f4a973-174c-4c6f-9f78-c7c3c5b471c5",
+      "clear_streak": 0,
+      "net_per_tick": -2.4936004376206116,
+      "full_in_ticks": 0,
+      "settlement_id": "e49cb309-2f9a-4380-9c6a-91cf8999d0d2"
+    },
+    "created_at": "2026-10-26T14:04:18.482552+01:00",
+    "read_at": null,
+    "world_tick": 2
+  },
+  {
+    "id": "3f3a25a8-3e7e-41de-bc24-6d42790bb063",
+    "kind": "StorageCapacityWarning",
+    "level": 3,
+    "body": {
+      "cap": 10000,
+      "name": "Petras",
+      "amount": 10000,
+      "good_key": "wine",
+      "incoming": 0,
+      "player_id": "6d565444-6202-435d-b4eb-bad0af077ed2",
+      "world_tick": 2,
+      "province_id": "50f4a973-174c-4c6f-9f78-c7c3c5b471c5",
+      "clear_streak": 0,
+      "net_per_tick": -2.4936004376206116,
+      "full_in_ticks": 0,
+      "settlement_id": "e49cb309-2f9a-4380-9c6a-91cf8999d0d2"
+    },
+    "created_at": "2026-10-26T14:04:18.482552+01:00",
+    "read_at": null,
+    "world_tick": 2
+  },
+  {
+    "id": "c06579ef-9240-4aeb-93aa-85cd9ce71233",
+    "kind": "StorageCapacityWarning",
+    "level": 3,
+    "body": {
+      "cap": 9900.7425,
+      "name": "Petras",
+      "amount": 9900.7425,
+      "good_key": "grain",
+      "incoming": 0,
+      "player_id": "6d565444-6202-435d-b4eb-bad0af077ed2",
+      "world_tick": 2,
+      "province_id": "50f4a973-174c-4c6f-9f78-c7c3c5b471c5",
+      "clear_streak": 0,
+      "net_per_tick": -1.0691986871381656,
+      "full_in_ticks": 0,
+      "settlement_id": "e49cb309-2f9a-4380-9c6a-91cf8999d0d2"
+    },
+    "created_at": "2026-10-26T14:04:18.482552+01:00",
+    "read_at": null,
+    "world_tick": 2
+  },
+  {
+    "id": "8505e863-6c59-4d9a-ac5b-ff7bb7eb3f35",
+    "kind": "StorageCapacityWarning",
+    "level": 3,
+    "body": {
+      "cap": 9999.5,
+      "name": "Lato",
+      "amount": 9999.5,
+      "good_key": "fish",
+      "incoming": 0,
+      "player_id": "6d565444-6202-435d-b4eb-bad0af077ed2",
+      "world_tick": 2,
+      "province_id": "ce8807cd-a6fe-4d9c-8bb3-ef651e3a54f4",
+      "clear_streak": 0,
+      "net_per_tick": -3.007096727225523,
+      "full_in_ticks": 0,
+      "settlement_id": "b7b70d72-b48b-442c-9416-f03df5f72d83"
+    },
+    "created_at": "2026-10-26T14:04:18.482552+01:00",
+    "read_at": null,
+    "world_tick": 2
+  },
+  {
+    "id": "d7e65406-6a7a-44eb-b1c3-e02357ebfa30",
+    "kind": "StorageCapacityWarning",
+    "level": 3,
+    "body": {
+      "cap": 9899.505,
+      "name": "Lato",
+      "amount": 9899.505,
+      "good_key": "grain",
+      "incoming": 0,
+      "player_id": "6d565444-6202-435d-b4eb-bad0af077ed2",
+      "world_tick": 2,
+      "province_id": "ce8807cd-a6fe-4d9c-8bb3-ef651e3a54f4",
+      "clear_streak": 0,
+      "net_per_tick": 2.6212901816765672,
+      "full_in_ticks": 0,
+      "settlement_id": "b7b70d72-b48b-442c-9416-f03df5f72d83"
+    },
+    "created_at": "2026-10-26T14:04:18.482552+01:00",
+    "read_at": null,
+    "world_tick": 2
+  },
+  {
+    "id": "533b01ee-6174-4d4e-be9a-37711ce29fdf",
+    "kind": "StorageCapacityWarning",
+    "level": 3,
+    "body": {
+      "cap": 9999.5,
+      "name": "Lato",
+      "amount": 9999.5,
+      "good_key": "oil",
+      "incoming": 0,
+      "player_id": "6d565444-6202-435d-b4eb-bad0af077ed2",
+      "world_tick": 2,
+      "province_id": "ce8807cd-a6fe-4d9c-8bb3-ef651e3a54f4",
+      "clear_streak": 0,
+      "net_per_tick": -3.007096727225523,
+      "full_in_ticks": 0,
+      "settlement_id": "b7b70d72-b48b-442c-9416-f03df5f72d83"
+    },
+    "created_at": "2026-10-26T14:04:18.482552+01:00",
+    "read_at": null,
+    "world_tick": 2
+  },
+  {
+    "id": "5eb1af59-32ee-4339-8b33-7a8258352a58",
+    "kind": "StorageCapacityWarning",
+    "level": 3,
+    "body": {
+      "cap": 9999.5,
+      "name": "Lato",
+      "amount": 9999.5,
+      "good_key": "wine",
+      "incoming": 0,
+      "player_id": "6d565444-6202-435d-b4eb-bad0af077ed2",
+      "world_tick": 2,
+      "province_id": "ce8807cd-a6fe-4d9c-8bb3-ef651e3a54f4",
+      "clear_streak": 0,
+      "net_per_tick": -3.007096727225523,
+      "full_in_ticks": 0,
+      "settlement_id": "b7b70d72-b48b-442c-9416-f03df5f72d83"
+    },
+    "created_at": "2026-10-26T14:04:18.482552+01:00",
+    "read_at": null,
+    "world_tick": 2
+  },
+  {
+    "id": "ffa717af-a20c-4b02-b36b-bbada9c7b0a9",
+    "kind": "MetropolisFounded",
+    "level": 2,
+    "body": {
+      "q": 9,
+      "r": 23,
+      "name": "Lato",
+      "coastal": false,
+      "known_hexes": 13,
+      "province_id": "ce8807cd-a6fe-4d9c-8bb3-ef651e3a54f4",
+      "grain_amount": 1200,
+      "grain_carried": 1200,
+      "settlement_id": "b7b70d72-b48b-442c-9416-f03df5f72d83",
+      "unknown_hexes": 6,
+      "silver_carried": 120,
+      "food_net_per_tick": 0.5999999999999996,
+      "grain_net_per_tick": 0.5999999999999996
+    },
+    "created_at": "2026-10-26T14:04:00.699747+01:00",
+    "read_at": null,
+    "world_tick": 0
+  },
+  {
+    "id": "598fd956-bd37-44a3-be8d-8cbb8c4f9fd4",
+    "kind": "OpeningDispatch",
+    "level": 4,
+    "body": {
+      "title": "Your people await you",
+      "host_id": "eff6fd65-a737-45f6-b831-50cc7d423882",
+      "returning": false,
+      "paragraphs": [
+        "Time. A game day passes every 6 seconds. Game days begin after 1 Wanaxes join.",
+        "Foot soldiers cross a plains hex in 1 game day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. War chariots cross plains in 0.67 game day but need 2 in olive woodland and 3 in hills, cedar forest or desert. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a game day.",
+        "Your Host carries 1200 grain and 120 silver. It lives on subsistence until founding; these reserves do not drain. Find your place \u2014 founding is final.",
+        "Food first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.",
+        "The gods. A new Wanax starts at 40 Kharis. It fades slowly from the start; each additional city increases the daily cost, even with a temple. A temple takes 16 game days to build: staff and feed it to earn favour. Low standing risks punishment.",
+        "Place citizens on olive woodland or cedar forest for timber, and on stone-bearing ground for stone; idle citizens produce nothing.",
+        "Orders travel. A Runner must reach a unit in the field before it follows your new order.",
+        "Bronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.",
+        "Rules: ? (Codex). Problems: Report. Community chat: Account."
+      ]
+    },
+    "created_at": "2026-10-26T14:04:00.510736+01:00",
+    "read_at": null,
+    "world_tick": 0
+  }
+]

@@ -26,4 +26,12 @@ Claude16:30 2026-10-25 godkände Timothys form: kharis<5/5–29/30–59/60–89/
 
 Rigglärdom: initiala depositfrågan läste boolesk false som IS NOT NULL, vilket sanningsprovet stoppade; frågan kräver nu faktiskt true. Ett andra-tempel-fixturprov är explicit is_capital=false (DB-default är true); annars valde det fel matstad. Inga grönbevis på de felaktiga körningarna påstås.
 
-Fullbevis och BILD återstår före integration.
+## Slutbevis
+
+Slutkod `c4a66c74`, rebasad på färsk origin/master `fc2741e2` före slutsviten. Hel färsk Go-svit på migration215,789JS-prov, vet och fyra dagsvaktytor. Resultat i `full-go-final.log`, `full-js-final.log`, `vet-final.log`, `day-guard.log`; inget tidigare mellanresultat ersätter slutkörningen.
+
+20 fysiska assertion-röda mutanter:14Go/färskaDB och6JS, exakt återställning. `coverage-and-mutations.md` listar varje nytt provs täckta/otäckta anrop/grenar och exakta byteverifierade sed-rader. Den initiala train-mutantens byggfel räknas inte; korrigerad mutant faller på den riktiga assertionen. Land/spill-war_chariot-skulden är täckt och båda mutanterna röda.
+
+NativeFirefox1280/390: verkliga workerutfall och API-data i egen värld; byggplatsen väljs i Petras, Emporos markeras, Kult öppnas i Petras, handelsrutten markeras och sanna omen syns medan egen handel filtreras. Bilder/proveniens/gränser i `bild/README.md`. Bildgranskning hittade en täckande Notifications-panel; rött→grönt regressionsprov och slutlig normal klickväg bevisar nu att målytan visas utan att riggen stänger paneler åt produkten.
+
+Integration/deploy verifieras separat med livehash, ren migration, bevarad värld och byteexakta publika assets; se `deploy-proof.json` när den finns.

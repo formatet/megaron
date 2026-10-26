@@ -1,0 +1,6 @@
+--- FAIL: TestOmenObservedOutcomeCooldownAndSpecificity (0.05s)
+    omen_truth_test.go:125: retry bypassed realm cooldown: 3
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.052s
+FAIL
+» färsk DB på migration 215 · commit 49f4bd4a+ändringar

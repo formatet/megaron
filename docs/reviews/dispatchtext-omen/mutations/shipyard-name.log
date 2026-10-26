@@ -1,0 +1,11 @@
+2026/10/26 13:56:30 INFO player registered id=3340dc88-4e14-48a9-97fd-5b41bd1a6b5c username=shiprepair-0e268a95-185e-44f2-9e1e-e0840b5942f8
+2026/10/26 13:56:30 INFO player registered id=74856a79-a54f-4214-ba4a-d548c8cc7c83 username=shiprepair-2555eee1-554b-4c20-8441-df7a8cf90a18
+--- FAIL: TestShipyardCompletionPreservesNotificationIdentityAndSeverity (0.16s)
+    --- FAIL: TestShipyardCompletionPreservesNotificationIdentityAndSeverity/forming (0.08s)
+        shipyard_work_test.go:363: shipyard completion lost city/player name: &{count:1 level:4 name: unitName:merchantman cityName:Drydock}
+    --- FAIL: TestShipyardCompletionPreservesNotificationIdentityAndSeverity/repairing (0.08s)
+        shipyard_work_test.go:363: shipyard completion lost city/player name: &{count:1 level:3 name:Asterion, Galley of Drydock unitName:galley cityName:Drydock}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.159s
+FAIL
+» färsk DB på migration 215 · commit 31b65419+ändringar

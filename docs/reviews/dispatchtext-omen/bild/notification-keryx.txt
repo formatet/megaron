@@ -1,0 +1,42 @@
+15 notification(s), 15 unread
+────────────────────────────────────────────────────────────
+*[today 14:04]  BuildComplete
+      Lumbermill built at (16,23) for Petras — place workers to start production
+*[today 14:04]  StorageOverflow
+      Petras: storage full — lost 1 grain from production (capacity 9.7k). Send goods away or trade.
+*[today 14:04]  TrainComplete
+      Emporos ready in Petras
+*[today 14:04]  StorageOverflow
+      Petras: storage full — lost 1 grain from production (capacity 9.8k). Send goods away or trade.
+*[today 14:04]  StandingOrderDispatched
+      Standing delivery setting out — 9.9k grain
+*[today 14:04]  StorageCapacityWarning
+      Petras: fish storage full in 0 game days (capacity 10.0k). Send goods away or trade.
+*[today 14:04]  StorageCapacityWarning
+      Petras: oil storage full in 0 game days (capacity 10.0k). Send goods away or trade.
+*[today 14:04]  StorageCapacityWarning
+      Petras: wine storage full in 0 game days (capacity 10.0k). Send goods away or trade.
+*[today 14:04]  StorageCapacityWarning
+      Petras: grain storage full in 0 game days (capacity 9.9k). Send goods away or trade.
+*[today 14:04]  StorageCapacityWarning
+      Lato: fish storage full in 0 game days (capacity 10.0k). Send goods away or trade.
+*[today 14:04]  StorageCapacityWarning
+      Lato: grain storage full in 0 game days (capacity 9.9k). Send goods away or trade.
+*[today 14:04]  StorageCapacityWarning
+      Lato: oil storage full in 0 game days (capacity 10.0k). Send goods away or trade.
+*[today 14:04]  StorageCapacityWarning
+      Lato: wine storage full in 0 game days (capacity 10.0k). Send goods away or trade.
+*[today 14:04]  MetropolisFounded
+      Your metropolis is founded: Lato — 13/19 catchment hexes known
+      Lato food production covers consumption (net +0.6 per game day).
+*[today 14:04]  OpeningDispatch
+      Your people await you
+      Time. A game day passes every 6 seconds. Game days begin after 1 Wanaxes join.
+      Foot soldiers cross a plains hex in 1 game day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. War chariots cross plains in 0.67 game day but need 2 in olive woodland and 3 in hills, cedar forest or desert. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a game day.
+      Your Host carries 1200 grain and 120 silver. It lives on subsistence until founding; these reserves do not drain. Find your place — founding is final.
+      Food first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.
+      The gods. A new Wanax starts at 40 Kharis. It fades slowly from the start; each additional city increases the daily cost, even with a temple. A temple takes 16 game days to build: staff and feed it to earn favour. Low standing risks punishment.
+      Place citizens on olive woodland or cedar forest for timber, and on stone-bearing ground for stone; idle citizens produce nothing.
+      Orders travel. A Runner must reach a unit in the field before it follows your new order.
+      Bronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.
+      Rules: ? (Codex). Problems: Report. Community chat: Account.
