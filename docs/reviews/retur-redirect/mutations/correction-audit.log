@@ -1,0 +1,30 @@
+» färsk DB på migration 217 · commit 1feeec6d+ändringar
+2026/10/26 19:42:25 INFO recall/redirect order reached unit, new course set unit=1a2e3f6c-38a4-4a1b-a8d9-5c20bbc27b0e mode=recall from_q=9 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-27T04:42:25.324+01:00
+2026/10/26 19:42:25 INFO expedition home unit=1a2e3f6c-38a4-4a1b-a8d9-5c20bbc27b0e ticks_out=18 hexes_seen=64 finds=0
+2026/10/26 19:42:25 INFO unit returned home from explore unit=1a2e3f6c-38a4-4a1b-a8d9-5c20bbc27b0e settlement=db892828-4745-45d4-9385-41a60898fd0d
+2026/10/26 19:42:25 INFO recall/redirect order reached unit, new course set unit=7ee46dba-7c8a-4dd4-80b5-a5cccdc6dd50 mode=recall from_q=9 from_r=0 to_q=1 to_r=0 arrives_at=2026-10-26T22:42:25.491+01:00
+2026/10/26 19:42:25 INFO expedition home unit=7ee46dba-7c8a-4dd4-80b5-a5cccdc6dd50 ticks_out=6 hexes_seen=125 finds=0
+2026/10/26 19:42:25 INFO unit returned home from explore unit=7ee46dba-7c8a-4dd4-80b5-a5cccdc6dd50 settlement=6328c1b0-3a42-4243-a3c1-f9c10ed96ca9
+2026/10/26 19:42:25 INFO recall/redirect order reached unit, new course set unit=586be339-f196-44c0-9d8f-75af62fa2a4c mode=recall from_q=0 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-26T20:42:25.640+01:00
+2026/10/26 19:42:25 INFO unit arrived (garrison) unit=586be339-f196-44c0-9d8f-75af62fa2a4c q=0 r=0 status=garrison
+2026/10/26 19:42:25 INFO recall/redirect order reached unit, new course set unit=3e90c36a-dbfd-45d4-8848-db24bc4d35eb mode=redirect from_q=9 from_r=0 to_q=4 to_r=0 arrives_at=2026-10-27T00:42:25.688+01:00
+2026/10/26 19:42:25 INFO scout report filed unit=3e90c36a-dbfd-45d4-8848-db24bc4d35eb q=4 r=0 terrain=plains copper=false tin=false silver=false cedar=false incense=false
+2026/10/26 19:42:25 INFO field unit turning for home unit=3e90c36a-dbfd-45d4-8848-db24bc4d35eb from_q=4 from_r=0 home_q=0 home_r=0
+2026/10/26 19:42:25 INFO unit returned home from explore unit=3e90c36a-dbfd-45d4-8848-db24bc4d35eb settlement=8d9f31f0-8aad-40f1-821f-f660938c378b
+2026/10/26 19:42:25 INFO recall/redirect order reached unit, new course set unit=f5e67beb-bb13-4a14-a4a8-5fee580e6b41 mode=recall from_q=9 from_r=0 to_q=-1 to_r=0 arrives_at=2026-10-27T05:42:25.829+01:00
+2026/10/26 19:42:25 INFO expedition home unit=f5e67beb-bb13-4a14-a4a8-5fee580e6b41 ticks_out=19 hexes_seen=64 finds=1
+2026/10/26 19:42:25 INFO unit returned home from explore unit=f5e67beb-bb13-4a14-a4a8-5fee580e6b41 settlement=b1101538-6320-4c1f-9bbf-61324eb213d2
+2026/10/26 19:42:26 INFO recall/redirect order reached unit, new course set unit=0b1d9ec0-68fc-4e2e-a157-924309782703 mode=recall from_q=9 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-27T04:42:26.080+01:00
+2026/10/26 19:42:26 INFO expedition home unit=0b1d9ec0-68fc-4e2e-a157-924309782703 ticks_out=18 hexes_seen=64 finds=1
+2026/10/26 19:42:26 INFO unit returned home from explore unit=0b1d9ec0-68fc-4e2e-a157-924309782703 settlement=f9179ecd-502e-46db-9894-9e8e79e22244
+2026/10/26 19:42:26 INFO recall/redirect order reached unit, new course set unit=4b7ef848-25c8-464b-b9ad-d2d35d049a90 mode=recall from_q=9 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-27T04:42:26.214+01:00
+2026/10/26 19:42:26 INFO recall/redirect order reached unit, new course set unit=4b7ef848-25c8-464b-b9ad-d2d35d049a90 mode=redirect from_q=8 from_r=0 to_q=4 to_r=0 arrives_at=2026-10-27T00:42:26.214+01:00
+2026/10/26 19:42:26 INFO unit arrived (garrison) unit=4b7ef848-25c8-464b-b9ad-d2d35d049a90 q=4 r=0 status=positioned
+2026/10/26 19:42:26 INFO recall/redirect order reached unit, new course set unit=bcf7cbc9-d80d-4d00-812f-f3830956f078 mode=recall from_q=9 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-27T04:42:26.361+01:00
+2026/10/26 19:42:26 INFO recall/redirect order reached unit, new course set unit=bcf7cbc9-d80d-4d00-812f-f3830956f078 mode=redirect from_q=8 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-27T04:42:26.361+01:00
+2026/10/26 19:42:26 INFO unit arrived (garrison) unit=bcf7cbc9-d80d-4d00-812f-f3830956f078 q=0 r=0 status=garrison
+--- FAIL: TestRemoteLandGarrisonCorrectionPreservesPhysicalState (0.05s)
+    remote_garrison_correction_test.go:57: correction outcomes0, want1 after rerun
+FAIL
+FAIL	formatet/megaron/server/internal/combat	1.324s
+FAIL

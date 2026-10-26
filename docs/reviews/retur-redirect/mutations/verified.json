@@ -1,0 +1,46 @@
+[
+  {
+    "name": "return-intent",
+    "file": "server/internal/combat/recall_redirect.go",
+    "old": "if o.Mode == \"redirect\" && marchIntent != nil && *marchIntent == \"explore_return\" {",
+    "new": "if false && o.Mode == \"redirect\" && marchIntent != nil && *marchIntent == \"explore_return\" {",
+    "occurrence": 0,
+    "expected_test": "TestRedirectExpeditionReturnArrivesAtActualDestination",
+    "assertion_red": true,
+    "source_commit": "1feeec6d4331bfe70461728734c1dae936216e09",
+    "source_sha256": "22d8e48216a94aadc27862aac65a89f54cd70d95cee79855a0a2e13be4035fff"
+  },
+  {
+    "name": "home-anchor",
+    "file": "server/internal/combat/recall_redirect.go",
+    "old": "newIntent, newColonyName, homeSettlementID = nil, nil, nil",
+    "new": "newIntent, newColonyName, homeSettlementID = nil, nil, homeSettlementID",
+    "occurrence": 0,
+    "expected_test": "TestRedirectExpeditionReturnArrivesAtActualDestination",
+    "assertion_red": true,
+    "source_commit": "1feeec6d4331bfe70461728734c1dae936216e09",
+    "source_sha256": "22d8e48216a94aadc27862aac65a89f54cd70d95cee79855a0a2e13be4035fff"
+  },
+  {
+    "name": "naval-exemption",
+    "file": "server/db/migrations/217_correct_remote_land_garrisons.up.sql",
+    "old": "u.category='land' AND ",
+    "new": "",
+    "occurrence": 0,
+    "expected_test": "TestRemoteLandGarrisonCorrectionPreservesPhysicalState",
+    "assertion_red": true,
+    "source_commit": "1feeec6d4331bfe70461728734c1dae936216e09",
+    "source_sha256": "3c23865d9084d5bc72773b85463f0ff7267509afa25b06b75ba8f700818d5f59"
+  },
+  {
+    "name": "correction-audit",
+    "file": "server/db/migrations/217_correct_remote_land_garrisons.up.sql",
+    "old": "UnitGarrisonLocationCorrectedV1",
+    "new": "UnitGarrisonLocationWrongV1",
+    "occurrence": 0,
+    "expected_test": "TestRemoteLandGarrisonCorrectionPreservesPhysicalState",
+    "assertion_red": true,
+    "source_commit": "1feeec6d4331bfe70461728734c1dae936216e09",
+    "source_sha256": "3c23865d9084d5bc72773b85463f0ff7267509afa25b06b75ba8f700818d5f59"
+  }
+]

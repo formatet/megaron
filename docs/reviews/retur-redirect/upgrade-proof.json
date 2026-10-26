@@ -1,0 +1,46 @@
+{
+  "source_dump_sha256": "fe4b5f4d08c22fa275686f505ac608617fec909309fb61b4a8e6068f9745254e",
+  "dump_bytes": 7483374,
+  "corrected_units": [
+    "a05591e4-e160-46e3-8ae0-2f80421a4286"
+  ],
+  "unchanged_hashes": {
+    "worlds": "5a58e610c461fdaa6d2037964cd69061",
+    "players": "62113eaf381940939f8a72d2a31814ad",
+    "settlements": "9c2b00898191bd0158b9af9a467fcadd",
+    "provinces": "d9ebf6f8dcf83455643618f49da535af",
+    "settlement_goods": "6ddb817860fdd353ce22a6a0611aa3b7",
+    "player_scouted_tiles": "494f50d35c690a8c862798b260dcac27",
+    "unit_physical_state": "d6ebd0c5611577501765b5eaee3ee6eb"
+  },
+  "steps": [
+    {
+      "command": [
+        "up"
+      ],
+      "schema": "217|false",
+      "corrections": 1,
+      "stable_hashes": true,
+      "old_events_unchanged": true
+    },
+    {
+      "command": [
+        "down",
+        "1"
+      ],
+      "schema": "216|false",
+      "corrections": 1,
+      "stable_hashes": true,
+      "old_events_unchanged": true
+    },
+    {
+      "command": [
+        "up"
+      ],
+      "schema": "217|false",
+      "corrections": 1,
+      "stable_hashes": true,
+      "old_events_unchanged": true
+    }
+  ]
+}

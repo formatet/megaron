@@ -1,0 +1,23 @@
+{
+  "can_cancel_training": false,
+  "id": "ddaf8c67-e924-4b13-bbe0-7b0dc33a55d9",
+  "type": "spearman",
+  "category": "land",
+  "size": 100,
+  "upkeep_food_per_tick": 1,
+  "upkeep_grain_per_tick": 1,
+  "upkeep_silver_per_tick": 0,
+  "upkeep_context": "active",
+  "status": "positioned",
+  "deployable": true,
+  "display_name": "5th Spearmen of Lato",
+  "ordinal": 5,
+  "support_settlement_id": "8d44485c-b0e9-4016-b1a5-e3479dc295eb",
+  "support_settlement_name": "Lato",
+  "shipyard_waiting": false,
+  "q": 10,
+  "r": 24,
+  "in_battle": false,
+  "can_lay_up": false,
+  "can_fit_out": false
+}

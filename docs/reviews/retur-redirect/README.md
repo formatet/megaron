@@ -9,3 +9,15 @@ Non-scope: utåtgående explore-intent/legacy-pointexpedition ändras inte. Budf
 Acceptans: redirect släcker explorationsintent+hemankare; tomhex slutarpositioned, hemmahex korrektgarnison; gamla fördröjdaarrivaljobs no-op; recall behåller expedition/report; korrigering bevarar alla fysiska koordinater/gods/ägare/support.
 Bevis: liveSQL+events5th, rött→grönt livscykelprov, migrering216→217/backfillkontroll, mutanter/exaktrestore, helfärskGo/JS/vet, isoleradHTTP/worker/Keryx och livehash/datajämförelse.
 Gate: blocks korrekt läsning och fysisk ordergivning i geografisteget.
+
+## Resultat
+
+Kärna `1feeec6d`. Endast redirect under `explore_return` släcker hemresans intent/hemankare; utåtgående legacy-explore samt vanlig land/navalrecall är oförändrade. Ingen ändring av historiska eventpayloads/handlers behövs för nya korrekta ben. Inventeringen fann noll pågående felaktiga returben och exakt en redan felmärkt landgarnison:5thSpearmen på(49,24), Kommos på(54,32).
+
+217 korrigerar den omöjliga relationen till positioned/settlement=NULL. Sjöhamnars garnisoner på angränsande havshex är undantagna. Ett nytt auditutfall dokumenterar korrigeringen; gamla händelser förblir oförändrade. Down återinför avsiktligt inte den felaktiga relationen.
+
+Grindar: hel färskGo26grön på1feeec6d (world155.245s),794JS/vet/fyra dayguards gröna; fyra assertion-röda mutanter + exaktrestore; privat driftkopia216→217→216→217 med endast denna korrigering och bevarade fysik-/payor-/resurs-/kontohashar. Verklig isolerad Keryx→HTTP202→Runner→worker→fältankomst samt senare gammaltreturjobb gröna. [Täckning/exakta mutanter](coverage-and-mutations.md), [offlineuppgradering](upgrade-proof.json), [nativebilder](index.html).
+
+BILDtestets första desktopbild togs mitt i draweranimationen; slutriggen väntar på öppningsövergången och alla slutbilder läses vid1:1. Scenen har uttrycklig inkommande returrutt; den utger sig inte för att vara Timothys levande värld. Ingen nyUI eller spelhandling tillkommer; befintlig webb/Keryx/Codex använder den korrigerade serverplatsen/statusen.
+
+Drift: pending deploy. Bevisverktyget jämför före/efter för just5th, oförändrad fysisk hex/ägare/support, en correctionaudit och samma grundtillstånd. Budförföljning är separat WIPb907d1b0, återupptas efter denna akuta fix.

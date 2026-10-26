@@ -1,0 +1,23 @@
+{
+  "health": {
+    "commit": "1feeec6d+return-redirect",
+    "migration": 217,
+    "status": "ok"
+  },
+  "state_after": {
+    "id": "ddaf8c67-e924-4b13-bbe0-7b0dc33a55d9",
+    "status": "positioned",
+    "q": 10,
+    "r": 24,
+    "settlement_id": null,
+    "support_settlement_id": "8d44485c-b0e9-4016-b1a5-e3479dc295eb",
+    "march_intent": null,
+    "home_settlement_id": null
+  },
+  "original_return_job_fired": true,
+  "keryx_redirect": true,
+  "api_status": "positioned",
+  "page_errors": [],
+  "source_hashes_unchanged": 962,
+  "fixture": "explicit homeward spearman route; actual CLI dispatch, Runner and worker arrival"
+}

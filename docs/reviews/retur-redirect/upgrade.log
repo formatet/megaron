@@ -1,0 +1,4 @@
+217/u correct_remote_land_garrisons (8.017532ms)
+217/d correct_remote_land_garrisons (5.774081ms)
+217/u correct_remote_land_garrisons (5.839288ms)
+PASS offline live-clone 216→217→216→217: 1 correction(s), no teleport/payor/resource changes, old events intact

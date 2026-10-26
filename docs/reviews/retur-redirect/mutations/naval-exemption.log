@@ -1,0 +1,30 @@
+» färsk DB på migration 217 · commit 1feeec6d+ändringar
+2026/10/26 19:42:20 INFO recall/redirect order reached unit, new course set unit=69a09110-c982-4648-ada0-bb7a7bee9bf9 mode=recall from_q=9 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-27T04:42:20.921+01:00
+2026/10/26 19:42:21 INFO expedition home unit=69a09110-c982-4648-ada0-bb7a7bee9bf9 ticks_out=18 hexes_seen=64 finds=0
+2026/10/26 19:42:21 INFO unit returned home from explore unit=69a09110-c982-4648-ada0-bb7a7bee9bf9 settlement=1922c44d-0382-4cbf-80c2-6d5f2dc93388
+2026/10/26 19:42:21 INFO recall/redirect order reached unit, new course set unit=ab995fc7-fb35-4a55-8fff-a6bf649f7b1f mode=recall from_q=9 from_r=0 to_q=1 to_r=0 arrives_at=2026-10-26T22:42:21.101+01:00
+2026/10/26 19:42:21 INFO expedition home unit=ab995fc7-fb35-4a55-8fff-a6bf649f7b1f ticks_out=6 hexes_seen=125 finds=0
+2026/10/26 19:42:21 INFO unit returned home from explore unit=ab995fc7-fb35-4a55-8fff-a6bf649f7b1f settlement=c44ed6d1-be13-42f1-af37-1ab3283f887f
+2026/10/26 19:42:21 INFO recall/redirect order reached unit, new course set unit=e1ee38dc-5545-4f6d-b87a-42805e0ce5ba mode=recall from_q=0 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-26T20:42:21.291+01:00
+2026/10/26 19:42:21 INFO unit arrived (garrison) unit=e1ee38dc-5545-4f6d-b87a-42805e0ce5ba q=0 r=0 status=garrison
+2026/10/26 19:42:21 INFO recall/redirect order reached unit, new course set unit=832142a3-db1c-45b8-8eb8-563c7ed3bf33 mode=redirect from_q=9 from_r=0 to_q=4 to_r=0 arrives_at=2026-10-27T00:42:21.364+01:00
+2026/10/26 19:42:21 INFO scout report filed unit=832142a3-db1c-45b8-8eb8-563c7ed3bf33 q=4 r=0 terrain=plains copper=false tin=false silver=false cedar=false incense=false
+2026/10/26 19:42:21 INFO field unit turning for home unit=832142a3-db1c-45b8-8eb8-563c7ed3bf33 from_q=4 from_r=0 home_q=0 home_r=0
+2026/10/26 19:42:21 INFO unit returned home from explore unit=832142a3-db1c-45b8-8eb8-563c7ed3bf33 settlement=6e8cafb1-ae0a-46dd-b094-5a74869649e7
+2026/10/26 19:42:21 INFO recall/redirect order reached unit, new course set unit=0f09b7e2-52d2-4865-88b3-16eaf9610c08 mode=recall from_q=9 from_r=0 to_q=-1 to_r=0 arrives_at=2026-10-27T05:42:21.520+01:00
+2026/10/26 19:42:21 INFO expedition home unit=0f09b7e2-52d2-4865-88b3-16eaf9610c08 ticks_out=19 hexes_seen=64 finds=1
+2026/10/26 19:42:21 INFO unit returned home from explore unit=0f09b7e2-52d2-4865-88b3-16eaf9610c08 settlement=f665fb25-ef67-4e1c-85fa-a164739ace5b
+2026/10/26 19:42:21 INFO recall/redirect order reached unit, new course set unit=4afd92d8-35c9-4514-bcf6-a55451a82541 mode=recall from_q=9 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-27T04:42:21.813+01:00
+2026/10/26 19:42:21 INFO expedition home unit=4afd92d8-35c9-4514-bcf6-a55451a82541 ticks_out=18 hexes_seen=64 finds=1
+2026/10/26 19:42:21 INFO unit returned home from explore unit=4afd92d8-35c9-4514-bcf6-a55451a82541 settlement=c1ebdef2-ea79-4c5a-a634-3840704a59f2
+2026/10/26 19:42:22 INFO recall/redirect order reached unit, new course set unit=52e3a1f6-3686-41a1-999f-827ea3b12f0f mode=recall from_q=9 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-27T04:42:21.954+01:00
+2026/10/26 19:42:22 INFO recall/redirect order reached unit, new course set unit=52e3a1f6-3686-41a1-999f-827ea3b12f0f mode=redirect from_q=8 from_r=0 to_q=4 to_r=0 arrives_at=2026-10-27T00:42:21.954+01:00
+2026/10/26 19:42:22 INFO unit arrived (garrison) unit=52e3a1f6-3686-41a1-999f-827ea3b12f0f q=4 r=0 status=positioned
+2026/10/26 19:42:22 INFO recall/redirect order reached unit, new course set unit=1f73ee2d-c949-4bb5-8665-cd35ec06fd8d mode=recall from_q=9 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-27T04:42:22.108+01:00
+2026/10/26 19:42:22 INFO recall/redirect order reached unit, new course set unit=1f73ee2d-c949-4bb5-8665-cd35ec06fd8d mode=redirect from_q=8 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-27T04:42:22.108+01:00
+2026/10/26 19:42:22 INFO unit arrived (garrison) unit=1f73ee2d-c949-4bb5-8665-cd35ec06fd8d q=0 r=0 status=garrison
+--- FAIL: TestRemoteLandGarrisonCorrectionPreservesPhysicalState (0.05s)
+    remote_garrison_correction_test.go:64: changed legitimate/unknown garrison 5024ed35-29fe-45f2-a799-01ae8f363640
+FAIL
+FAIL	formatet/megaron/server/internal/combat	1.488s
+FAIL

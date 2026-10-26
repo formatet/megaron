@@ -1,0 +1,5 @@
+assertion-red return-intent
+assertion-red home-anchor
+assertion-red naval-exemption
+assertion-red correction-audit
+PASS 4 assertion-red mutants, exact restore, fresh redirect/recall green

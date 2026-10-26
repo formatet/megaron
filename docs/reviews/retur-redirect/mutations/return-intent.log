@@ -1,0 +1,34 @@
+» färsk DB på migration 217 · commit 1feeec6d+ändringar
+2026/10/26 19:42:09 INFO recall/redirect order reached unit, new course set unit=b62e3aa7-890f-451f-8d85-a961f8e83ce4 mode=recall from_q=9 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-27T04:42:09.911+01:00
+2026/10/26 19:42:09 INFO expedition home unit=b62e3aa7-890f-451f-8d85-a961f8e83ce4 ticks_out=18 hexes_seen=64 finds=0
+2026/10/26 19:42:09 INFO unit returned home from explore unit=b62e3aa7-890f-451f-8d85-a961f8e83ce4 settlement=31e157ba-e587-45e3-9123-4be4c32e7c69
+2026/10/26 19:42:10 INFO recall/redirect order reached unit, new course set unit=16fb45c2-4261-40f2-a59a-e879e5e28f3b mode=recall from_q=9 from_r=0 to_q=1 to_r=0 arrives_at=2026-10-26T22:42:10.077+01:00
+2026/10/26 19:42:10 INFO expedition home unit=16fb45c2-4261-40f2-a59a-e879e5e28f3b ticks_out=6 hexes_seen=125 finds=0
+2026/10/26 19:42:10 INFO unit returned home from explore unit=16fb45c2-4261-40f2-a59a-e879e5e28f3b settlement=fc33f0e4-f7b3-4370-b5f0-7baee00366b7
+2026/10/26 19:42:10 INFO recall/redirect order reached unit, new course set unit=9d55c30d-330f-4719-b74b-ac76aeff9cd2 mode=recall from_q=0 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-26T20:42:10.227+01:00
+2026/10/26 19:42:10 INFO unit arrived (garrison) unit=9d55c30d-330f-4719-b74b-ac76aeff9cd2 q=0 r=0 status=garrison
+2026/10/26 19:42:10 INFO recall/redirect order reached unit, new course set unit=90d653ac-7150-45d9-8cd5-44fbaa23a853 mode=redirect from_q=9 from_r=0 to_q=4 to_r=0 arrives_at=2026-10-27T00:42:10.276+01:00
+2026/10/26 19:42:10 INFO scout report filed unit=90d653ac-7150-45d9-8cd5-44fbaa23a853 q=4 r=0 terrain=plains copper=false tin=false silver=false cedar=false incense=false
+2026/10/26 19:42:10 INFO field unit turning for home unit=90d653ac-7150-45d9-8cd5-44fbaa23a853 from_q=4 from_r=0 home_q=0 home_r=0
+2026/10/26 19:42:10 INFO unit returned home from explore unit=90d653ac-7150-45d9-8cd5-44fbaa23a853 settlement=19946fa9-3631-4203-925e-527ae41ddeb0
+2026/10/26 19:42:10 INFO recall/redirect order reached unit, new course set unit=d5ee9868-207d-4960-99f6-79703324c116 mode=recall from_q=9 from_r=0 to_q=-1 to_r=0 arrives_at=2026-10-27T05:42:10.425+01:00
+2026/10/26 19:42:10 INFO expedition home unit=d5ee9868-207d-4960-99f6-79703324c116 ticks_out=19 hexes_seen=64 finds=1
+2026/10/26 19:42:10 INFO unit returned home from explore unit=d5ee9868-207d-4960-99f6-79703324c116 settlement=8319324b-49d4-46dc-9032-fbb5696933d4
+2026/10/26 19:42:10 INFO recall/redirect order reached unit, new course set unit=c2dccc38-191b-435d-be10-fb8ca0ef37cb mode=recall from_q=9 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-27T04:42:10.675+01:00
+2026/10/26 19:42:10 INFO expedition home unit=c2dccc38-191b-435d-be10-fb8ca0ef37cb ticks_out=18 hexes_seen=64 finds=1
+2026/10/26 19:42:10 INFO unit returned home from explore unit=c2dccc38-191b-435d-be10-fb8ca0ef37cb settlement=5c5198c5-64e9-4843-9b22-0636d15e9ce1
+2026/10/26 19:42:10 INFO recall/redirect order reached unit, new course set unit=a35e396e-010a-4bde-916c-af3730e9fadd mode=recall from_q=9 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-27T04:42:10.810+01:00
+2026/10/26 19:42:10 INFO recall/redirect order reached unit, new course set unit=a35e396e-010a-4bde-916c-af3730e9fadd mode=redirect from_q=8 from_r=0 to_q=4 to_r=0 arrives_at=2026-10-27T00:42:10.810+01:00
+2026/10/26 19:42:10 INFO unit returned home from explore unit=a35e396e-010a-4bde-916c-af3730e9fadd settlement=8af22b52-99a3-4813-bb92-69930b85c968
+2026/10/26 19:42:11 INFO recall/redirect order reached unit, new course set unit=06677dfb-b5e2-45b3-9b6a-aadd2e360ed6 mode=recall from_q=9 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-27T04:42:10.954+01:00
+2026/10/26 19:42:11 INFO recall/redirect order reached unit, new course set unit=06677dfb-b5e2-45b3-9b6a-aadd2e360ed6 mode=redirect from_q=8 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-27T04:42:10.954+01:00
+2026/10/26 19:42:11 INFO unit returned home from explore unit=06677dfb-b5e2-45b3-9b6a-aadd2e360ed6 settlement=aaf7e9e2-c0c6-437d-83d4-21d2d1cb34d9
+--- FAIL: TestRedirectExpeditionReturnArrivesAtActualDestination (0.29s)
+    --- FAIL: TestRedirectExpeditionReturnArrivesAtActualDestination/field (0.14s)
+        redirect_return_test.go:61: redirect retained home-arrival mission: intent0x612d928a50 home8af22b52-99a3-4813-bb92-69930b85c968
+        redirect_return_test.go:90: field arrival became remote garrison: statusgarrison city8af22b52-99a3-4813-bb92-69930b85c968 actual(4,0)
+    --- FAIL: TestRedirectExpeditionReturnArrivesAtActualDestination/home (0.15s)
+        redirect_return_test.go:61: redirect retained home-arrival mission: intent0x612d661e50 homeaaf7e9e2-c0c6-437d-83d4-21d2d1cb34d9
+FAIL
+FAIL	formatet/megaron/server/internal/combat	1.326s
+FAIL

@@ -668,3 +668,8 @@ Integration: `python3 tools/correspondence_integration_upgrade.py OUTPUT_JSON` t
 - `player_activity_acceptance.py OUTPUT` — egen PG/Redis/server, verklig Bearer/cookie/Keryx, oförändrad rowversion vid repetition och offline216→215→216 utan kontoförlust.
 - `player_activity_mutants.py CHECKOUT OUTPUT` — nio fysiska auth-/throttle-/migrationsmutanter i separat clean checkout, egen färsk DB per arm och exakt återställning.
 - `player_activity_deploy_verify.py --before` sparar läsbaslinje; utan flaggan verifieras liveprocess, ren216 och bevarat grundtillstånd.
+
+- `return_redirect_upgrade.py OUTPUT.json` — read-only driftbackup i minnet, egenPG16-kopia,216→217→216→217; verifierar att bara felaktig landgarnisonsrelation rättas och att fysisk position/payor/resurser/gamlaevent är oförändrade. Ingen backup publiceras eller skrivs till drift.
+- `return_redirect_mutants.py CHECKOUT OUTPUT` — fyra fysiska return-/home-/naval-/auditmutanter på separat clean checkout, färsk DB per arm och exakt återställning.
+- `return_redirect_acceptance.py OUTPUT` — explicit returruttscen i egenPG/Redis/server, riktig Keryx/Runner/worker och Firefox1280/390; visar fältankomst och ofarligt gammalt returjobb.
+- `return_redirect_deploy_verify.py --before` sparar grund-/5th-baslinje; utan flaggan verifieras process217, exakt en korrigeringsaudit, fysisk hex/ägare/support oförändrade och samma grunddata.

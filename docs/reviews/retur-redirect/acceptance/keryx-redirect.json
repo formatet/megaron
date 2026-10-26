@@ -1,0 +1,5 @@
+{
+  "exit_code": 0,
+  "stdout": "{\n  \"catch_up\": \"on_the_march\",\n  \"courier_arrives_at\": \"2026-10-26T19:43:19.817144444+01:00\",\n  \"courier_due_tick\": 2,\n  \"messenger_id\": \"5a6cac5a-4255-421c-942c-57d7786d2ea1\",\n  \"mode\": \"redirect\",\n  \"status\": \"order_dispatched\",\n  \"superseded_messenger_ids\": null,\n  \"target_q\": 10,\n  \"target_r\": 24,\n  \"unit_id\": \"ddaf8c67-e924-4b13-bbe0-7b0dc33a55d9\",\n  \"verb\": \"redirect\"\n}\n",
+  "stderr": ""
+}
