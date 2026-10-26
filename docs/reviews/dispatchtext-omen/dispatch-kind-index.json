@@ -1,0 +1,162 @@
+{
+  "literal_call_sites": 56,
+  "dynamic_call_sites": 18,
+  "current_kinds": [
+    "BattleLost",
+    "BattleWon",
+    "BuildComplete",
+    "CaravanRaided",
+    "CaravanSeized",
+    "CityAnnexReady",
+    "CityCollapsed",
+    "CityOccupied",
+    "ColonyFounded",
+    "DivineBlessing",
+    "DivinePunishment",
+    "ForeignMarchSightedV2",
+    "HexBlockaded",
+    "HexTaken",
+    "HexUnblockaded",
+    "MarchStalled",
+    "MessengerArrival",
+    "MessengerReturned",
+    "MetropolisFounded",
+    "OccupationDefended",
+    "OfferAccepted",
+    "OfferDeclined",
+    "OfferExpired",
+    "OrderFailed",
+    "PassageStalled",
+    "PickupTimedOut",
+    "PickupWaiting",
+    "RiteAnswered",
+    "RoadEdgeBuilt",
+    "ScoutReport",
+    "SentryAlerted",
+    "SettlementBurned",
+    "SettlementCaptured",
+    "SettlementLooted",
+    "ShipCaptured",
+    "ShipDamaged",
+    "ShipFoundered",
+    "ShipLost",
+    "ShipRepaired",
+    "ShipStormDamaged",
+    "ShipStranded",
+    "ShipSweptFromSea",
+    "SiegeLifted",
+    "SiegeStarted",
+    "StandingOrderDispatched",
+    "StandingOrderPaused",
+    "SubsistenceWarning",
+    "TradeDelivery",
+    "TrainComplete",
+    "TransferDelivered",
+    "UnitArrived",
+    "UnitAttrition",
+    "UnitDeserted",
+    "UnitExploreReturned",
+    "UnitFetched",
+    "UnitLostAtSea",
+    "UnitRecalled",
+    "UnitRedirected",
+    "UpkeepUnpaid"
+  ],
+  "archived_reader_only": [
+    "ArmyArrival",
+    "BattleBegun",
+    "CivilianStarvationEnded",
+    "CivilianStarvationStarted",
+    "ExpeditionReport",
+    "ExpeditionTurnedHome",
+    "FoodShortfall",
+    "ForeignMarchSighted",
+    "GarrisonStarvationEnded",
+    "GarrisonStarvationStarted",
+    "GiftDelivered",
+    "GiftDispatchedV2",
+    "GiftLost",
+    "GoodsCrafted",
+    "KharisBandChanged",
+    "KharisDeclining",
+    "MessengerLostAtSea",
+    "MessengerRescuedAtSea",
+    "OpeningDispatch",
+    "OutpostCaptured",
+    "OutpostEstablished",
+    "PlaceFirstReached",
+    "SettlementDefended",
+    "SettlementSacked",
+    "ShipCameHomeForFood",
+    "SitosFundLow",
+    "SitosGranaryRelease",
+    "SitosIntervention",
+    "StorageCapacityWarning",
+    "StorageOverflow",
+    "TempleDemolitionWrath",
+    "TradeLost",
+    "TradeReturn",
+    "TransferDeliveredV2",
+    "UnitReturnedStarving",
+    "agora_ready"
+  ],
+  "dynamic_traces": {
+    "combat/battle.go": [
+      "BattleWon",
+      "BattleLost"
+    ],
+    "combat/collapse.go": [
+      "CityCollapsed"
+    ],
+    "combat/march_sighting.go": [
+      "ForeignMarchSightedV2"
+    ],
+    "combat/road.go": [
+      "RoadEdgeBuilt"
+    ],
+    "combat/sea_storm.go": [
+      "ShipStormDamaged",
+      "ShipFoundered"
+    ],
+    "combat/ship_hull.go": [
+      "ShipDamaged"
+    ],
+    "combat/ship_repair.go": [
+      "ShipRepaired"
+    ],
+    "combat/shipyard_work.go": [
+      "TrainComplete",
+      "ShipRepaired"
+    ],
+    "combat/upkeep.go": [
+      "UnitAttrition",
+      "UnitDeserted",
+      "UpkeepUnpaid"
+    ],
+    "economy/hex_blockade.go": [
+      "HexBlockaded",
+      "HexUnblockaded"
+    ],
+    "economy/hex_take.go": [
+      "HexTaken"
+    ],
+    "economy/siege_dispatch.go": [
+      "SiegeStarted",
+      "SiegeLifted"
+    ],
+    "economy/trade.go": [
+      "TradeDelivery"
+    ],
+    "kharis/tick.go": [
+      "SubsistenceWarning"
+    ],
+    "messenger/handler.go": [
+      "OfferAccepted",
+      "OfferDeclined"
+    ],
+    "messenger/order_delivery.go": [
+      "UnitRecalled",
+      "UnitRedirected"
+    ]
+  }
+}
