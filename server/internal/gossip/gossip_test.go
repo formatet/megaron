@@ -401,3 +401,41 @@ func TestPropagateOnContactUpsertsKnownSettlement(t *testing.T) {
 		t.Errorf("expected industry_hint=tin, got %q", hint)
 	}
 }
+
+func TestTransportGossipDoesNotReturnToItsOwner(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	world, players := testWorld(t, pool, "owner", "witness", "learner")
+	origin := testSettlement(t, pool, world, players[0], 0, 0, "Origin")
+	witness := testSettlement(t, pool, world, players[1], 1, 0, "Witness")
+	if err := Broadcast(ctx, pool, world, origin, "economy", "tin flows from Origin to Elsewhere.", 6, ImportanceMinor, origin, "tin", players[0]); err != nil {
+		t.Fatal(err)
+	}
+	count := func(player uuid.UUID) int {
+		t.Helper()
+		var n int
+		if err := pool.QueryRow(ctx, `SELECT count(*) FROM gossip_events WHERE world_id=$1 AND recipient_id=$2`, world, player).Scan(&n); err != nil {
+			t.Fatal(err)
+		}
+		return n
+	}
+	if count(players[0]) != 0 || count(players[1]) != 1 {
+		t.Fatal("transport owner heard its own gossip or witness lost it")
+	}
+	if err := PropagateOnContact(ctx, pool, players[0], witness, world); err != nil {
+		t.Fatal(err)
+	}
+	if count(players[0]) != 0 {
+		t.Fatal("contact propagation returned owner's own transport as a rumour")
+	}
+	if err := PropagateOnContact(ctx, pool, players[2], witness, world); err != nil {
+		t.Fatal(err)
+	}
+	var recorded uuid.UUID
+	if err := pool.QueryRow(ctx, `SELECT transport_owner_id FROM gossip_events WHERE world_id=$1 AND recipient_id=$2`, world, players[2]).Scan(&recorded); err != nil {
+		t.Fatal(err)
+	}
+	if recorded != players[0] {
+		t.Fatal("transport provenance lost on contact")
+	}
+}

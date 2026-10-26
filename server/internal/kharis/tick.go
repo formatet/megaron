@@ -491,8 +491,8 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 		if newKharis >= blessThreshold && rand.Float64() < blessProbability {
 			h.applyDivineBlessing(ctx, w.settlementID, worldID, w.playerID)
 		}
-		if rand.Float64() < 0.20 {
-			h.generateOmen(ctx, w.settlementID, worldID)
+		if err := h.generateOmen(ctx, w.settlementID, worldID); err != nil {
+			return err
 		}
 	} else {
 		// No temple production this day — dailyDecay above is the only kharis
@@ -1651,30 +1651,6 @@ func (h *TickHandler) insertGarrisonUnit(ctx context.Context, settlementID, worl
 		 VALUES ($1, $2, $3, $4, $5, $6, 'garrison', $7, $7, $8)`,
 		worldID, *ownerID, utype, category, size, crew, settlementID, ordinal)
 	return err
-}
-
-// generateOmen produces an atmospheric temple omen (20% chance per maintained day).
-// Omens are written to the gossip stream and appear in the player's Rumours panel.
-func (h *TickHandler) generateOmen(ctx context.Context, settlementID, worldID uuid.UUID) {
-	omens := []string{
-		"The heart of the offering lay clean and red. The gods are pleased.",
-		"Smoke rose straight toward heaven — a season of calm and steady winds.",
-		"The sacred birds ate freely from the offered grain. The harvest will be generous.",
-		"The flame consumed the offering without hesitation. Order holds for now.",
-		"A serpent crossed the temple threshold and departed unharmed. Old powers watch this place.",
-		"Birds flew westward in tight formation. Something stirs beyond your sight.",
-		"The offering was pale but the liver whole. The gods withhold judgement.",
-		"Clouds gathered during the rite, then passed without rain. The future is contested.",
-		"The sacred flame guttered three times before catching. Patience is called for.",
-		"A dark mark appeared near the gate of the liver — a shadow at the threshold.",
-		"The birds fell silent for a long time before resuming their cries. The gods listen.",
-		"Wind shifted against the smoke during the final prayer. Something turns.",
-		"Two ravens circled the altar three times. The gods debate.",
-		"The entrails were tangled — an augur's nightmare. Ambiguity rules this season.",
-		"A child laughed outside the temple during the rite. The gods find something amusing.",
-	}
-	text := omens[rand.Intn(len(omens))]
-	h.addDivineGossip(ctx, settlementID, worldID, "omen", text)
 }
 
 // addDivineGossip inserts a gossip event for the owner of the given settlement.

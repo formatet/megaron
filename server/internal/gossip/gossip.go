@@ -59,7 +59,7 @@ const rumorMaxAge = "3 days"
 func Broadcast(
 	ctx context.Context, tx Tx, worldID, sourceSettlementID uuid.UUID,
 	category, text string, radius int,
-	importance string, subjectSettlementID uuid.UUID, industryHint string,
+	importance string, subjectSettlementID uuid.UUID, industryHint string, transportOwner ...uuid.UUID,
 ) error {
 	var regionName string
 	if err := tx.QueryRow(ctx,
@@ -104,15 +104,23 @@ func Broadcast(
 		hintArg = &industryHint
 	}
 
+	var transportOwnerID *uuid.UUID
+	if len(transportOwner) > 0 && transportOwner[0] != uuid.Nil {
+		transportOwnerID = &transportOwner[0]
+	}
 	rumorID := uuid.New()
 	for _, recipID := range recipients {
+		if transportOwnerID != nil && recipID == *transportOwnerID {
+			continue
+		}
+
 		if _, err := tx.Exec(ctx,
 			`INSERT INTO gossip_events
 			   (world_id, recipient_id, source_region, category, text, rumor_id, hops,
-			    importance, subject_settlement_id, industry_hint)
-			 VALUES ($1, $2, $3, $4, $5, $6, 0, $7, $8, $9)
+			    importance, subject_settlement_id, industry_hint,transport_owner_id)
+			 VALUES ($1, $2, $3, $4, $5, $6, 0, $7, $8, $9,$10)
 			 ON CONFLICT (recipient_id, rumor_id) WHERE rumor_id IS NOT NULL DO NOTHING`,
-			worldID, recipID, regionName, category, text, rumorID, importance, subjectArg, hintArg,
+			worldID, recipID, regionName, category, text, rumorID, importance, subjectArg, hintArg, transportOwnerID,
 		); err != nil {
 			return err
 		}
@@ -159,7 +167,7 @@ func PropagateOnContact(ctx context.Context, tx Tx, learnerID, sourceSettlementI
 	}
 
 	rows, err := tx.Query(ctx,
-		`SELECT rumor_id, category, text, hops, importance, subject_settlement_id, industry_hint
+		`SELECT rumor_id, category, text, hops, importance, subject_settlement_id, industry_hint,transport_owner_id
 		 FROM gossip_events
 		 WHERE world_id = $1 AND recipient_id = $2
 		   AND rumor_id IS NOT NULL
@@ -175,18 +183,19 @@ func PropagateOnContact(ctx context.Context, tx Tx, learnerID, sourceSettlementI
 	}
 
 	type rumor struct {
-		id         uuid.UUID
-		category   string
-		text       string
-		hops       int
-		importance string
-		subject    *uuid.UUID
-		hint       *string
+		id             uuid.UUID
+		category       string
+		text           string
+		hops           int
+		importance     string
+		subject        *uuid.UUID
+		hint           *string
+		transportOwner *uuid.UUID
 	}
 	var rumors []rumor
 	for rows.Next() {
 		var rm rumor
-		if scanErr := rows.Scan(&rm.id, &rm.category, &rm.text, &rm.hops, &rm.importance, &rm.subject, &rm.hint); scanErr == nil {
+		if scanErr := rows.Scan(&rm.id, &rm.category, &rm.text, &rm.hops, &rm.importance, &rm.subject, &rm.hint, &rm.transportOwner); scanErr == nil {
 			rumors = append(rumors, rm)
 		}
 	}
@@ -196,13 +205,16 @@ func PropagateOnContact(ctx context.Context, tx Tx, learnerID, sourceSettlementI
 	}
 
 	for _, rm := range rumors {
+		if rm.transportOwner != nil && *rm.transportOwner == learnerID {
+			continue
+		}
 		if _, err := tx.Exec(ctx,
 			`INSERT INTO gossip_events
 			   (world_id, recipient_id, source_region, category, text, rumor_id, hops,
-			    importance, subject_settlement_id, industry_hint)
-			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+			    importance, subject_settlement_id, industry_hint,transport_owner_id)
+			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,$11)
 			 ON CONFLICT (recipient_id, rumor_id) WHERE rumor_id IS NOT NULL DO NOTHING`,
-			worldID, learnerID, sourceName, rm.category, rm.text, rm.id, rm.hops+1, rm.importance, rm.subject, rm.hint,
+			worldID, learnerID, sourceName, rm.category, rm.text, rm.id, rm.hops+1, rm.importance, rm.subject, rm.hint, rm.transportOwner,
 		); err != nil {
 			return err
 		}

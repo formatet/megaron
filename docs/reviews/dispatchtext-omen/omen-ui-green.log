@@ -1,0 +1,52 @@
+TAP version 13
+# Subtest: hopsLabel: 0 or missing hops → no qualifier (matches keryx cmd_gossip.go hopLabel)
+ok 1 - hopsLabel: 0 or missing hops → no qualifier (matches keryx cmd_gossip.go hopLabel)
+  ---
+  duration_ms: 0.476803
+  type: 'test'
+  ...
+# Subtest: hopsLabel: 1 hop is singular, N hops is plural
+ok 2 - hopsLabel: 1 hop is singular, N hops is plural
+  ---
+  duration_ms: 0.11463
+  type: 'test'
+  ...
+# Subtest: renderRumourRowHTML: a row renders region, category, hops and text, marked as Rumour
+ok 3 - renderRumourRowHTML: a row renders region, category, hops and text, marked as Rumour
+  ---
+  duration_ms: 9.161189
+  type: 'test'
+  ...
+# Subtest: renderRumourRowHTML: importance=major gets the highlight class
+ok 4 - renderRumourRowHTML: importance=major gets the highlight class
+  ---
+  duration_ms: 0.214084
+  type: 'test'
+  ...
+# Subtest: renderRumourRowHTML: escapes rumour text so a hostile string cannot inject markup
+ok 5 - renderRumourRowHTML: escapes rumour text so a hostile string cannot inject markup
+  ---
+  duration_ms: 0.243705
+  type: 'test'
+  ...
+# Subtest: renderRumourRowHTML: a 0-hop rumour carries no distance qualifier
+ok 6 - renderRumourRowHTML: a 0-hop rumour carries no distance qualifier
+  ---
+  duration_ms: 0.223467
+  type: 'test'
+  ...
+# Subtest: a truthful divine omen is distinguished from a rumour
+ok 7 - a truthful divine omen is distinguished from a rumour
+  ---
+  duration_ms: 0.235101
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 56.804594

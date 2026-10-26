@@ -52,3 +52,5 @@ test('renderRumourRowHTML: escapes rumour text so a hostile string cannot inject
 test('renderRumourRowHTML: a 0-hop rumour carries no distance qualifier', () => {
   assert.doesNotMatch(renderRumourRowHTML({ ...GOSSIP_ROW, hops: 0 }), /hops? away/);
 });
+
+test('a truthful divine omen is distinguished from a rumour',()=>{const html=renderRumourRowHTML({...GOSSIP_ROW,category:'omen',omen:{true:true,precision:1}});assert.match(html,/<i>Omen<\/i>/);assert.doesNotMatch(html,/<i>Rumour<\/i>/);});

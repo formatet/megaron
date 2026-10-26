@@ -1,0 +1,72 @@
+TAP version 13
+# Subtest: hopsLabel: 0 or missing hops → no qualifier (matches keryx cmd_gossip.go hopLabel)
+ok 1 - hopsLabel: 0 or missing hops → no qualifier (matches keryx cmd_gossip.go hopLabel)
+  ---
+  duration_ms: 0.519583
+  type: 'test'
+  ...
+# Subtest: hopsLabel: 1 hop is singular, N hops is plural
+ok 2 - hopsLabel: 1 hop is singular, N hops is plural
+  ---
+  duration_ms: 0.126274
+  type: 'test'
+  ...
+# Subtest: renderRumourRowHTML: a row renders region, category, hops and text, marked as Rumour
+ok 3 - renderRumourRowHTML: a row renders region, category, hops and text, marked as Rumour
+  ---
+  duration_ms: 9.75543
+  type: 'test'
+  ...
+# Subtest: renderRumourRowHTML: importance=major gets the highlight class
+ok 4 - renderRumourRowHTML: importance=major gets the highlight class
+  ---
+  duration_ms: 0.22304
+  type: 'test'
+  ...
+# Subtest: renderRumourRowHTML: escapes rumour text so a hostile string cannot inject markup
+ok 5 - renderRumourRowHTML: escapes rumour text so a hostile string cannot inject markup
+  ---
+  duration_ms: 0.267238
+  type: 'test'
+  ...
+# Subtest: renderRumourRowHTML: a 0-hop rumour carries no distance qualifier
+ok 6 - renderRumourRowHTML: a 0-hop rumour carries no distance qualifier
+  ---
+  duration_ms: 0.215575
+  type: 'test'
+  ...
+# Subtest: a truthful divine omen is distinguished from a rumour
+not ok 7 - a truthful divine omen is distinguished from a rumour
+  ---
+  duration_ms: 0.632208
+  type: 'test'
+  location: '/tmp/megaron-codex-dispatchtext-omen-20261025/web/static/js/megaron/ui/drawers/gossip.test.mjs:56:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /<i>Omen<\/i>/. Input:
+    
+    `<div class="notif-list-item nl-routine gossip-row"><span class="nli-kind">🗣</span><span class="nli-text"><i>Rumour</i> · Argolid · omen <span class="gossip-hops">(2 hops away)</span>: Mycenae's granaries overflow this season.</span><span class="nli-time">Aug 16 12:00</span></div>`
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: `<div class="notif-list-item nl-routine gossip-row"><span class="nli-kind">🗣</span><span class="nli-text"><i>Rumour</i> · Argolid · omen <span class="gossip-hops">(2 hops away)</span>: Mycenae's granaries overflow this season.</span><span class="nli-time">Aug 16 12:00</span></div>`
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-dispatchtext-omen-20261025/web/static/js/megaron/ui/drawers/gossip.test.mjs:56:167)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 6
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 60.575846

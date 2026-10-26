@@ -18,9 +18,10 @@ export function hopsLabel(hops) {
 // be read as something that certainly happened.
 export function renderRumourRowHTML(g) {
   const hops = hopsLabel(g.hops);
+  const omen = g.category === 'omen' && g.omen?.true === true;
   return '<div class="notif-list-item nl-routine gossip-row' + (g.importance === 'major' ? ' gossip-major' : '') + '">'
-    + '<span class="nli-kind">🗣</span>'
-    + '<span class="nli-text"><i>Rumour</i> · ' + esc(g.source_region || 'Unknown region')
+    + '<span class="nli-kind">' + (omen ? '✦' : '🗣') + '</span>'
+    + '<span class="nli-text"><i>' + (omen ? 'Omen' : 'Rumour') + '</i> · ' + esc(g.source_region || 'Unknown region')
     + (g.category ? ' · ' + esc(g.category) : '')
     + (hops ? ' <span class="gossip-hops">(' + hops + ')</span>' : '')
     + ': ' + esc(g.text) + '</span>'

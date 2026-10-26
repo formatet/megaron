@@ -1,0 +1,5 @@
+» färsk DB på migration 215 · commit 9ae475c2+ändringar
+ok  	formatet/megaron/server/internal/kharis	0.039s
+ok  	formatet/megaron/server/internal/gossip	0.157s
+ok  	formatet/megaron/server/internal/economy	0.002s [no tests to run]
+ok  	formatet/megaron/server/api/handlers	0.005s [no tests to run]

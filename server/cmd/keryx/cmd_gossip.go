@@ -45,6 +45,9 @@ func gossipCmd() *cobra.Command {
 					when = clockTime(t)
 				}
 				marker := " "
+				if category, _ := g["category"].(string); category == "omen" {
+					marker = "✦ Omen "
+				}
 				if importance == "major" {
 					marker = "!" // major rumor: falls a settlement, travels several hops
 				}

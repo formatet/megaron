@@ -1497,9 +1497,12 @@ func (h *SettlementHandler) Gossip(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT id, source_region, category, text, generated_at, importance, hops
+		`SELECT id, source_region, category, text, generated_at, importance, hops,fact_data
 		 FROM gossip_events
 		 WHERE world_id = $1 AND recipient_id = $2
+ AND (category<>'omen' OR fact_data IS NOT NULL)
+ AND (transport_owner_id IS NULL OR transport_owner_id<>$2)
+ AND NOT (transport_owner_id IS NULL AND category='economy' AND text LIKE '% flows from % to %.' AND EXISTS(SELECT 1 FROM settlements s WHERE s.id=subject_settlement_id AND s.owner_id=$2))
 		 ORDER BY generated_at DESC
 		 LIMIT 30`,
 		worldID, playerID,
@@ -1511,18 +1514,19 @@ func (h *SettlementHandler) Gossip(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type item struct {
-		ID           uuid.UUID `json:"id"`
-		SourceRegion string    `json:"source_region"`
-		Category     string    `json:"category"`
-		Text         string    `json:"text"`
-		GeneratedAt  time.Time `json:"generated_at"`
-		Importance   string    `json:"importance"`
-		Hops         int       `json:"hops"`
+		ID           uuid.UUID       `json:"id"`
+		SourceRegion string          `json:"source_region"`
+		Category     string          `json:"category"`
+		Text         string          `json:"text"`
+		GeneratedAt  time.Time       `json:"generated_at"`
+		Importance   string          `json:"importance"`
+		Hops         int             `json:"hops"`
+		Omen         json.RawMessage `json:"omen,omitempty"`
 	}
 	var result []item
 	for rows.Next() {
 		var g item
-		if err := rows.Scan(&g.ID, &g.SourceRegion, &g.Category, &g.Text, &g.GeneratedAt, &g.Importance, &g.Hops); err == nil {
+		if err := rows.Scan(&g.ID, &g.SourceRegion, &g.Category, &g.Text, &g.GeneratedAt, &g.Importance, &g.Hops, &g.Omen); err == nil {
 			result = append(result, g)
 		}
 	}

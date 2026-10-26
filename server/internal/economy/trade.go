@@ -484,11 +484,21 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 		_ = h.pool.QueryRow(ctx, `SELECT name FROM settlements WHERE id = $1`, originSettlementID).Scan(&originName)
 		_ = h.pool.QueryRow(ctx, `SELECT name FROM settlements WHERE id = $1`, p.DestinationID).Scan(&destName)
 		if originName != "" && destName != "" {
-			if err := gossip.Broadcast(ctx, h.pool, e.WorldID, originSettlementID, "economy",
-				fmt.Sprintf("%s flows from %s to %s.", p.GoodKey, originName, destName), 6,
-				gossip.ImportanceMinor, originSettlementID, p.GoodKey); err != nil {
-				slog.Error("trade delivery: broadcast gossip", "err", err)
+			var transportOwner uuid.UUID
+			var ownerErr error
+			if p.TransportID != uuid.Nil {
+				ownerErr = h.pool.QueryRow(ctx, `SELECT owner_id FROM transports WHERE id=$1`, p.TransportID).Scan(&transportOwner)
+			} else {
+				ownerErr = h.pool.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id=$1`, originSettlementID).Scan(&transportOwner)
 			}
+			if ownerErr != nil {
+				slog.Error("trade delivery: gossip owner unavailable", "err", ownerErr)
+			} else if transportOwner != uuid.Nil {
+				if err := gossip.Broadcast(ctx, h.pool, e.WorldID, originSettlementID, "economy", fmt.Sprintf("%s flows from %s to %s.", p.GoodKey, originName, destName), 6, gossip.ImportanceMinor, originSettlementID, p.GoodKey, transportOwner); err != nil {
+					slog.Error("trade delivery: broadcast gossip", "err", err)
+				}
+			}
+
 		}
 	}
 
