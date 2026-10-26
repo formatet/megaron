@@ -39,7 +39,7 @@ func TestPlaytestNotifications_UUIDGiftAndInternalDelivery(t *testing.T) {
 	for _, gift := range []string{`true`, `"de291886-44cb-4f4e-8b52-6d488f8fd053"`} {
 		n := notificationItem{Kind: "MetropolisFounded", Body: json.RawMessage(`{"name":"Knossos","poseidon_gift":` + gift + `}`)}
 		out := capturePrint(t, func() { printNotificationSummary(nil, n) })
-		if !strings.Contains(out, "Knossos") || !strings.Contains(out, "Poseidon grants a galley") {
+		if !strings.Contains(out, "Knossos") || !strings.Contains(out, "Poseidon grants a Galley") {
 			t.Fatalf("gift %s: %s", gift, out)
 		}
 	}

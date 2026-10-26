@@ -362,7 +362,7 @@ export function notifText(kind, body) {
     }
     case 'PlaceFirstReached': {
       const place = { river: 'river', massif: 'mountain massif', desert: 'desert', forest: 'cedar forest' }[body.kind] || 'place';
-      return `Your ${esc(body.unit_name || body.unit_type || 'unit')} is the first to reach this ${place} — you may name it. Click it at (${body.q},${body.r}) on the map.`;
+      return `Your ${esc(body.unit_name || unitTypeLabel(body.unit_type) || 'unit')} is the first to reach this ${place} — you may name it. Click it at (${body.q},${body.r}) on the map.`;
     }
     case 'TrainComplete': return `${esc(body.unit_name || unitTypeLabel(body.unit_type))} ready in ${esc(body.settlement_name || 'your city')}`;
     case 'ArmyArrival':        return `Army arrived — ${body.outcome || ''}`;
@@ -459,11 +459,11 @@ export function notifText(kind, body) {
     // unit" — falling back to unit_type/'A unit' for older bodies persisted
     // before this slice, or a unit whose row could not be resolved.
     case 'UnitAttrition':      return body.disbanded
-                                 ? `${body.name || body.unit_type || 'A unit'} starved to nothing — no ${body.reason === 'food_shortage' ? 'food' : 'grain'}`
-                                 : `${body.name || body.unit_type || 'A unit'} starving — lost ${body.lost || 0} to hunger`;
+                                 ? `${body.name || unitTypeLabel(body.unit_type) || 'A unit'} starved to nothing — no ${body.reason === 'food_shortage' ? 'food' : 'grain'}`
+                                 : `${body.name || unitTypeLabel(body.unit_type) || 'A unit'} starving — lost ${body.lost || 0} to hunger`;
     case 'UnitDeserted':       return body.disbanded
-                                 ? `${body.name || body.unit_type || 'A unit'} deserted — unpaid, unit lost`
-                                 : `${body.name || body.unit_type || 'A unit'} deserting — ${body.lost || 0} left (unpaid)`;
+                                 ? `${body.name || unitTypeLabel(body.unit_type) || 'A unit'} deserted — unpaid, unit lost`
+                                 : `${body.name || unitTypeLabel(body.unit_type) || 'A unit'} deserting — ${body.lost || 0} left (unpaid)`;
     case 'UpkeepUnpaid': {
       // Forewarning fired BEFORE desertion starts (SLICE A) — recordUnpaid's
       // else-branch used to bump unpaid_periods with zero player-facing signal
@@ -473,7 +473,7 @@ export function notifText(kind, body) {
       const tail = left === 1
         ? ' — one more unpaid period and they desert'
         : ` — ${left} periods left before desertion`;
-      return `${body.name || body.unit_type || 'A unit'} unpaid (period ${body.unpaid_periods || 0})${tail}`;
+      return `${body.name || unitTypeLabel(body.unit_type) || 'A unit'} unpaid (period ${body.unpaid_periods || 0})${tail}`;
     }
     case 'ForeignMarchSighted': {
       // The notice that starts the clock in the asynchronicity gate: a foreign
@@ -600,7 +600,7 @@ export function notifText(kind, body) {
       // their orders and never carry this flag, even at the same hull loss.
       // subject falls back to unit_type/'ship' for bodies persisted before
       // the naming fix (megaron_plan_dispatches.md §4).
-      const subject = `Your ${body.name || body.unit_type || 'ship'}`;
+      const subject = `Your ${body.name || unitTypeLabel(body.unit_type) || 'ship'}`;
       if (body.sunk) return `${subject} was sunk in battle`;
       const hull = `hull ${body.hull ?? '?'}/${body.hull_max ?? 5}`;
       return body.returning_home
@@ -625,7 +625,7 @@ export function notifText(kind, body) {
     case 'ShipRepaired': {
       // Payload per ShipRepairCompleteHandler (megaron_plan_skeppsreparation.md
       // Slice C point 4) — hull is always hull_max here, the repair job's outcome.
-      return `Your ${body.name || body.unit_type || 'ship'} is repaired (hull ${body.hull ?? 5}/5) and ready to sail`;
+      return `Your ${body.name || unitTypeLabel(body.unit_type) || 'ship'} is repaired (hull ${body.hull ?? 5}/5) and ready to sail`;
     }
     case 'CityOccupied': {
       // Payload per occupation.go's occupySettlement (megaron_plan_erovring.md
@@ -690,7 +690,7 @@ export function notifText(kind, body) {
     }
     case 'UnitLostAtSea': {
       const cause = body.reason === 'silver_shortage' ? 'the ship went unpaid' : 'the ship starved';
-      return `${body.name || body.unit_type || 'A unit'} lost at sea — ${cause}, ${body.lost || 0} men gone`;
+      return `${body.name || unitTypeLabel(body.unit_type) || 'A unit'} lost at sea — ${cause}, ${body.lost || 0} men gone`;
     }
     case 'CaravanSeized': {
       // ship_outcome (megaron_plan_sjohandel_kraver_skepp.md R5) is present
@@ -739,7 +739,7 @@ export function notifText(kind, body) {
     case 'RoadEdgeBuilt':
       return `Road finished between (${body.q}, ${body.r}) and (${body.target_q}, ${body.target_r}) — everyone may use it`;
     case 'UnitArrived': {
-      const subject = body.name || body.type || 'A unit';
+      const subject = body.name || unitTypeLabel(body.type) || 'A unit';
       const stance = body.stance ? `, standing ${body.stance}` : '';
       return `${subject} arrived at (${body.q}, ${body.r}) — ${body.status || 'positioned'}${stance}`;
     }
@@ -834,7 +834,7 @@ export function notifText(kind, body) {
       return `Transfer delivered to ${body.dest_name || 'destination'}${goods ? `: ${goods}` : ''}`;
     }
     case 'SentryAlerted':
-      return `Sentry spotted ${body.foreign_owner || 'an unknown'}'s ${body.foreign_type || 'unit'} at (${body.q}, ${body.r})`;
+      return `Sentry spotted ${body.foreign_owner || 'an unknown'}'s ${unitTypeLabel(body.foreign_type) || 'unit'} at (${body.q}, ${body.r})`;
     case 'DivinePunishment': {
       // Payload: type/amount/name (megaron_plan_tre_tysta_notiserna.md — name
       // is additive, older persisted notifications may lack it). amount's UNIT

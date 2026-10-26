@@ -1,0 +1,4 @@
+('up',): 215|f
+('down', '1'): 214|f
+('up', '1'): 215|f
+retained row after rollback/upgrade: historical outcome|t|t

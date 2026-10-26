@@ -4146,3 +4146,10 @@ export function initMap() {
     }
   }, 3000);
 }
+
+// Dispatch navigation uses the same selection and action panel as a map click.
+export function focusDispatchHex(q,r) {
+  window.centreOn?.(q,r);
+  openHexPanel({q,r});
+  State.dirty=true;
+}

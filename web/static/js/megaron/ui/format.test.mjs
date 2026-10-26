@@ -67,7 +67,7 @@ test('unknown kind: payload with more keys than the cap is truncated with an ell
 test('known kinds are unaffected by the default-arm change', () => {
   assert.equal(
     notifText('BuildComplete', { building_type: 'farm' }),
-    'Build complete: farm',
+    'Farm built for your city',
   );
   assert.equal(
     notifText('ScoutReport', { q: 7, r: 40, terrain: 'hills', copper_deposit: true }),
@@ -131,17 +131,17 @@ test('mutual_wipe trailer reads as neither side holding', () => {
 // case, so it fell to the raw-payload default.
 test('ShipDamaged: sunk reads as a loss, not a hull number', () => {
   const line = notifText('ShipDamaged', { unit_type: 'galley', hull: 0, hull_max: 5, sunk: true, returning_home: false });
-  assert.equal(line, 'Your galley was sunk in battle');
+  assert.equal(line, 'Your Galley was sunk in battle');
 });
 
 test('ShipDamaged: routed survivor is limping home for repair', () => {
   const line = notifText('ShipDamaged', { unit_type: 'war_galley', hull: 3, hull_max: 5, sunk: false, returning_home: true });
-  assert.equal(line, 'Your war_galley took damage (hull 3/5) and is limping home for repair');
+  assert.equal(line, 'Your War Galley took damage (hull 3/5) and is limping home for repair');
 });
 
 test('ShipDamaged: winning side keeps its orders', () => {
   const line = notifText('ShipDamaged', { unit_type: 'merchantman', hull: 4, hull_max: 5, sunk: false, returning_home: false });
-  assert.equal(line, 'Your merchantman took damage (hull 4/5) but holds its orders');
+  assert.equal(line, 'Your Emporos took damage (hull 4/5) but holds its orders');
 });
 
 // A7 (megaron_mvp_mandag.md §A7): 16 NotifyPlayer kinds fell through to the
@@ -191,7 +191,7 @@ test('A7: the sixteen previously-uncased kinds get real text, not the default ar
   );
   assert.equal(
     notifText('UnitArrived', { unit_id: 'x', type: 'ship', q: 5, r: 6, status: 'positioned', stance: 'sentry' }),
-    'ship arrived at (5, 6) — positioned, standing sentry',
+    'Galley arrived at (5, 6) — positioned, standing sentry',
   );
   assert.equal(
     notifText('UnitExploreReturned', { unit_id: 'x', q: 1, r: 1 }),
@@ -224,7 +224,7 @@ test('A7: the sixteen previously-uncased kinds get real text, not the default ar
   );
   assert.equal(
     notifText('SentryAlerted', { foreign_owner: 'Wanax3', foreign_type: 'chariot', q: 9, r: 9 }),
-    "Sentry spotted Wanax3's chariot at (9, 9)",
+    "Sentry spotted Wanax3's War Chariot at (9, 9)",
   );
 });
 
@@ -278,7 +278,7 @@ test('DivineBlessing names the settlement and the right unit per type', () => {
   );
   assert.equal(
     notifText('DivineBlessing', { type: 'sea_blessing', amount: 1, name: 'Phaistos' }),
-    'Poseidon guides a vessel to your harbour at Phaistos — +1 galley',
+    'Poseidon guides a vessel to your harbour at Phaistos — +1 Galley',
   );
 });
 
@@ -691,7 +691,7 @@ test('storm notices: a named storm is called by name; the first to meet an unnam
 
 test('playtest: internal delivery has a neutral delivery name and UUID founding gift remains readable', () => {
   assert.equal(notifText('TradeDelivery', {quantity: 20, good_key: 'grain'}), 'Delivery arrived: 20 grain');
-  assert.match(notifText('MetropolisFounded', {name: 'Knossos', poseidon_gift: 'de291886-44cb-4f4e-8b52-6d488f8fd053'}), /Knossos.*Poseidon grants a galley/);
+  assert.match(notifText('MetropolisFounded', {name: 'Knossos', poseidon_gift: 'de291886-44cb-4f4e-8b52-6d488f8fd053'}), /Knossos.*Poseidon grants a Galley/);
 });
 
 
@@ -769,5 +769,12 @@ test('completion dispatches name the city, player building/unit and actual build
  assert.match(notifText('BuildComplete',{building_type:'lumbermill',settlement_name:'Tylissos',hex_q:0,hex_r:7,unlocked_goods:['timber']}),/Lumbermill built at \(0,7\) for Tylissos/);
  for(const [unit,label] of [['merchantman','Emporos'],['war_galley','War Galley'],['elite_infantry','Elite Infantry'],['galley','Galley']]){
   const text=notifText('TrainComplete',{unit_type:unit,count:1,settlement_name:'Tylissos'});assert.match(text,new RegExp(label+' ready in Tylissos'));assert.doesNotMatch(text,/merchantman|war_galley|elite_infantry|\bgalley\b/);
+ }
+});
+
+test('legacy unit type fallbacks use player names across loss, pay and sentry dispatches',()=>{
+ for(const type of ['merchantman','war_galley','elite_infantry','galley'])for(const kind of ['TrainComplete','UnitAttrition','UnitDeserted','UpkeepUnpaid','ShipDamaged','ShipRepaired','UnitLostAtSea','UnitArrived','SentryAlerted']){
+  const text=notifText(kind,{unit_type:type,type,foreign_type:type,settlement_name:'Tylissos',q:1,r:2});
+  assert.doesNotMatch(text,/merchantman|war_galley|elite_infantry|\bgalley\b/,kind+' '+type);
  }
 });

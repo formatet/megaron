@@ -1,0 +1,130 @@
+TAP version 13
+# Subtest: codex: index ids are unique and every category is declared
+ok 1 - codex: index ids are unique and every category is declared
+  ---
+  duration_ms: 0.763813
+  type: 'test'
+  ...
+# Subtest: codex: every index entry has a file and every file has an index entry
+ok 2 - codex: every index entry has a file and every file has an index entry
+  ---
+  duration_ms: 0.647967
+  type: 'test'
+  ...
+# Subtest: codex: every [[link]] and related entry resolves to an article
+ok 3 - codex: every [[link]] and related entry resolves to an article
+  ---
+  duration_ms: 0.544594
+  type: 'test'
+  ...
+# Subtest: codex: every notification kind the client shows maps to exactly one article
+ok 4 - codex: every notification kind the client shows maps to exactly one article
+  ---
+  duration_ms: 1.07452
+  type: 'test'
+  ...
+# Subtest: codex: every drawer with a ? button has an article
+ok 5 - codex: every drawer with a ? button has an article
+  ---
+  duration_ms: 0.23673
+  type: 'test'
+  ...
+# Subtest: codex: every article is reachable — linked from another article or listed as related
+ok 6 - codex: every article is reachable — linked from another article or listed as related
+  ---
+  duration_ms: 0.444606
+  type: 'test'
+  ...
+# Subtest: renderMarkdown: escapes HTML and renders links, known and missing
+ok 7 - renderMarkdown: escapes HTML and renders links, known and missing
+  ---
+  duration_ms: 0.519915
+  type: 'test'
+  ...
+# Subtest: renderMarkdown: headings, lists, tables, code and comments
+ok 8 - renderMarkdown: headings, lists, tables, code and comments
+  ---
+  duration_ms: 0.427519
+  type: 'test'
+  ...
+# Subtest: backlinksTo and searchArticles
+ok 9 - backlinksTo and searchArticles
+  ---
+  duration_ms: 0.330649
+  type: 'test'
+  ...
+# Subtest: codex: lowercase agora_ready is mapped and community rules match alpha policy
+ok 10 - codex: lowercase agora_ready is mapped and community rules match alpha policy
+  ---
+  duration_ms: 0.645666
+  type: 'test'
+  ...
+# Subtest: codex search finds abandon in Colonies and call-back in Sea
+ok 11 - codex search finds abandon in Colonies and call-back in Sea
+  ---
+  duration_ms: 5.817141
+  type: 'test'
+  ...
+# Subtest: codex: game days name the world unit and clock/date names wall time
+ok 12 - codex: game days name the world unit and clock/date names wall time
+  ---
+  duration_ms: 0.173132
+  type: 'test'
+  ...
+# Subtest: historical food-reserve notifications open the current food article
+ok 13 - historical food-reserve notifications open the current food article
+  ---
+  duration_ms: 0.097063
+  type: 'test'
+  ...
+# Subtest: temple demolition notice opens the loss and lowered-ceiling rules
+ok 14 - temple demolition notice opens the loss and lowered-ceiling rules
+  ---
+  duration_ms: 0.090298
+  type: 'test'
+  ...
+# Subtest: completed hex building targets its owning city grid and exact site, including zero coordinate
+ok 15 - completed hex building targets its owning city grid and exact site, including zero coordinate
+  ---
+  duration_ms: 1.083988
+  type: 'test'
+  ...
+# Subtest: workplace completion selects city centre and god; unit completions select the actual live card
+ok 16 - workplace completion selects city centre and god; unit completions select the actual live card
+  ---
+  duration_ms: 0.243763
+  type: 'test'
+  ...
+# Subtest: correspondence and standing route targets are specific, absent routes are omitted
+ok 17 - correspondence and standing route targets are specific, absent routes are omitted
+  ---
+  duration_ms: 0.166017
+  type: 'test'
+  ...
+# Subtest: every current literal and archived reader kind omits a targetless button, and maps an explicit incident site honestly
+ok 18 - every current literal and archived reader kind omits a targetless button, and maps an explicit incident site honestly
+  ---
+  duration_ms: 1.532903
+  type: 'test'
+  ...
+# Subtest: the live unit action reaches the existing focused War surface
+ok 19 - the live unit action reaches the existing focused War surface
+  ---
+  duration_ms: 0.337952
+  type: 'test'
+  ...
+# Subtest: cult, delivered goods and live cargo reach their actionable selected surface
+ok 20 - cult, delivered goods and live cargo reach their actionable selected surface
+  ---
+  duration_ms: 0.181791
+  type: 'test'
+  ...
+1..20
+# tests 20
+# suites 0
+# pass 20
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 59.532456

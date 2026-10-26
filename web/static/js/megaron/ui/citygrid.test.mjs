@@ -19,7 +19,7 @@ globalThis.document ??= {
 globalThis.window ??= { addEventListener() {}, matchMedia: () => ({ matches: false, addEventListener() {} }) };
 globalThis.localStorage ??= { getItem: () => null, setItem() {}, removeItem() {} };
 
-const { placementOutcome, refusalText, selectionKey, takeLabel, goodRowHTML, cityBuildingsHTML } = await import('./citygrid.js');
+const { placementOutcome, refusalText, selectionKey, takeLabel, goodRowHTML, cityBuildingsHTML,placementTargetKey } = await import('./citygrid.js');
 
 // The refusal sentences below are copied verbatim from the server
 // (api/handlers/settlement_placement.go) — they are the actual bodies this
@@ -272,4 +272,12 @@ test('ORDER30: server workplace options without market render only assignable wo
   assert.match(html, /&quot;building_type&quot;:&quot;foundry&quot;/);
   assert.match(html, /data-good="bronze"/);
   assert.equal((html.match(/data-verb="place1"/g) || []).length, 2);
+});
+
+test('a dispatch selects the actual reached build-site ordinal, never an arbitrary hex or capital',()=>{
+ const hexes=[{hex_q:0,hex_r:7,hex_ordinal:9},{hex_q:1,hex_r:7,hex_ordinal:10}];
+ assert.equal(placementTargetKey(hexes,{q:0,r:7}),'hex:9');
+ assert.equal(placementTargetKey(hexes,{q:1,r:7}),'hex:10');
+ assert.equal(placementTargetKey(hexes,{q:999,r:7}),null);
+ assert.equal(placementTargetKey(hexes,null,'city'),'city');
 });

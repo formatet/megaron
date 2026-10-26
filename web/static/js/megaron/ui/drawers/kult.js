@@ -12,17 +12,24 @@ import { kharisNetView, kharisDecayHTML, kharisRulesHTML } from './kult_kharis.j
 
 // ── Kult drawer ───────────────────────────────────────────────────────────
 // See cityLoadSeq: an older reply must not replace what a newer load rendered.
+let dispatchCityID=null,dispatchWorldID=null;
+const dispatchCity=()=>dispatchWorldID===State.WORLD_ID?dispatchCityID:null;
+export function kultCityForID(provinces,id,fallback){
+ return id?provinces.find(p=>p.own&&p.id===id)||null:fallback;
+}
+const activeKultCity=()=>kultCityForID(State.provinceData||[],dispatchCity(),ownCapital());
+const activeKultSettlement=()=>{const city=activeKultCity();return city?.settlement_id||(!dispatchCity()?State.MY_SETTLEMENT_ID:null);};
+export async function openKultFromDispatch(id){
+ if(!kultCityForID(State.provinceData||[],id,null))return;
+ dispatchCityID=id;dispatchWorldID=State.WORLD_ID;window.openDrawer?.('kult');await loadKultDrawer();
+}
 let kultLoadSeq = 0;
 export async function loadKultDrawer() {
   const seq = ++kultLoadSeq;
   const el = document.getElementById('kult-body');
   el.innerHTML = '<div class="loading" style="padding:.5rem">Loading…</div>';
 
-  if (!State.MY_SETTLEMENT_ID) {
-    el.innerHTML = '<p class="empty-state" style="padding:1rem">No settlement.</p>';
-    return;
-  }
-  const capital = ownCapital();
+  const capital = activeKultCity();
   if (!capital) {
     el.innerHTML = '<p class="empty-state" style="padding:1rem">No settlement.</p>';
     return;
@@ -30,7 +37,7 @@ export async function loadKultDrawer() {
 
   try {
     const [sr, pr] = await Promise.all([
-      fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/settlements/' + State.MY_SETTLEMENT_ID),
+      fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/settlements/' + activeKultSettlement()),
       fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/provinces/' + capital.id),
     ]);
     if (!sr.ok) throw new Error();
@@ -45,7 +52,7 @@ export async function loadKultDrawer() {
     const mood      = sd.divine_mood  || 'Indifferent';
     const cultLevel = sd.cult_level   || 'enkel';
 
-    let html = '<div class="dsec"><div class="dsec-title">Divine favour</div>' +
+    let html = '<div class="dsec"><div class="dsec-title">Cult in '+esc(capital.name)+'</div><div class="dsec-title">Divine favour</div>' +
       '<div class="stat-row"><span class="sr-label">Mood</span>' +
       '<span class="sr-val" style="color:' + (MOOD_COLORS[mood] || 'inherit') + '">' + (MOOD_LABELS[mood] || mood) + '</span></div>';
     // Net kharis (temple gain − decay) — the figure that answers "did raising
@@ -150,7 +157,7 @@ export async function okRite(prayerID) {
   if (!prayer || !host) return;
   const stock = {};
   try {
-    const r = await fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/provinces/' + ownCapital().id + '/goods');
+    const r = await fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/provinces/' + activeKultCity().id + '/goods');
     if (r.ok) (await r.json()).forEach(g => { stock[g.key] = g.amount; });
   } catch (_) { /* fields still show the recipe */ }
   host.innerHTML = offerRowHTML(prayer, stock);
@@ -159,7 +166,7 @@ export async function okRite(prayerID) {
   const inputs = Array.from(host.querySelectorAll('.offer-input'));
   const update = () => {
     const offering = Object.fromEntries(inputs.map(i => [i.dataset.good, Number(i.value) || 0]));
-    if (foodLine) foodLine.textContent = offerFoodText(offering, stock, cityFood, ownCapital().name);
+    if (foodLine) foodLine.textContent = offerFoodText(offering, stock, cityFood, activeKultCity().name);
   };
   inputs.forEach(i => i.addEventListener('input', update));
   update();
@@ -186,7 +193,7 @@ export async function bringOffering(prayerID) {
 async function castRite(prayerID, offering, host) {
   const body = { prayer: prayerID || '' };
   if (offering) body.offering = offering;
-  const r = await fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/settlements/' + State.MY_SETTLEMENT_ID + '/rite', {
+  const r = await fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/settlements/' + activeKultSettlement() + '/rite', {
     method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body),
   });
   const d = await r.json().catch(function(){return {};});

@@ -1,3 +1,4 @@
+import { buildingLabel } from './building_names.js';
 import { fmtNum } from './fmt_num.js';
 import { State } from '../state.js';
 import { fetchAuth } from '../api.js';
@@ -100,7 +101,7 @@ export function goodRowHTML(target, good, take) {
 // placements carry `god` so the server knows which temple the worker stands at.
 export function cityBuildingsHTML(buildings) {
   return buildings.map(b => `
-        <div class="dsec-title">${esc(b.name || b.building_type)} L${b.level}</div>
+        <div class="dsec-title" data-building-type="${esc(b.building_type)}" ${b.god_id ? `data-god="${esc(b.god_id)}"` : ''}>${esc(b.name || buildingLabel(b.building_type))} L${b.level}</div>
         ${(b.goods || []).map(good => goodRowHTML({ target_kind: 'building', building_type: b.building_type, ...(b.god_id ? { god: b.god_id } : {}) }, good)).join('')}
       `).join('');
 }
@@ -205,6 +206,12 @@ export async function placementOutcome(verb, ctx) {
 // selectionKey identifies which hex (or the city centre) the player has open,
 // so a re-render can put them back where they were. Kept as a tiny pure helper
 // because it is the one piece of the restore path worth locking in a test.
+export function placementTargetKey(hexes,targetHex,selected=null){
+ if(!targetHex)return selected;
+ const hex=hexes.find(h=>h.hex_q===targetHex.q&&h.hex_r===targetHex.r);
+ return hex?`hex:${hex.hex_ordinal}`:null;
+}
+
 export function selectionKey(g) {
   if (!g || !g.dataset) return null;
   return g.dataset.target === 'city' ? 'city' : 'hex:' + g.dataset.ordinal;
@@ -232,7 +239,7 @@ const liveSelection = new WeakMap();
 //                  that flicker is what made the panel appear to jump away on
 //                  every click (Timothy 2026-09-10).
 export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR, renderOpts = {}) {
-  const { selected = null, silent = false } = renderOpts;
+  const { selected = null, silent = false, targetHex=null, buildingType=null, god=null } = renderOpts;
   const mySeq = ++renderSeq;
   if (!silent) { liveSelection.delete(containerEl); containerEl.innerHTML = '<div class="loading" style="font-size:.8rem">Loading…</div>'; }
 
@@ -252,6 +259,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
 
   const hexes = opts.hexes || [];
   const buildings = opts.buildings || [];
+  const selectedHex=targetHex&&hexes.find(h=>h.hex_q===targetHex.q&&h.hex_r===targetHex.r);
 
   // SVG viewBox: compute from actual hex centres so the widget scales to
   // whatever the catchment ring's true pixel spread is, rather than a
@@ -312,7 +320,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
 
   // What the player has open right now. Updated by selectTarget and handed to
   // the next render so +1/−1 does not close the panel they are clicking in.
-  let openKey = silent && liveSelection.has(containerEl) ? liveSelection.get(containerEl) : selected;
+  let openKey = silent && liveSelection.has(containerEl) ? liveSelection.get(containerEl) : placementTargetKey(hexes,targetHex,selected);
 
   const rerender = () => renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
     { selected: openKey, silent: true });
@@ -402,5 +410,9 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
   if (openKey) {
     const again = groups.find(g => selectionKey(g) === openKey);
     if (again) selectTarget(again);
+    if(buildingType&&!selectedHex){
+      const title=[...containerEl.querySelectorAll('[data-building-type]')].find(el=>el.dataset.buildingType===buildingType&&(!god||el.dataset.god===god));
+      if(title){title.classList.add('ucard-focus');title.scrollIntoView({block:'center'});}
+    }
   }
 }

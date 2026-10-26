@@ -174,7 +174,7 @@ export async function loadEconomyDrawer() {
     });
   });
 
-  loadEconomyGoods(mySettlements);
+  await loadEconomyGoods(mySettlements);
 }
 
 async function loadEconomyGoods(mySettlements) {
@@ -210,7 +210,7 @@ async function loadEconomyGoods(mySettlements) {
       const goods = await r.json();
       const silver = goods.find(g => g.key === 'silver');
       const others = goods.filter(g => g.key !== 'silver' && (g.amount > 0 || g.producible));
-      html += `<div class="dsec-title" style="margin-top:.8rem">${s.name}${s.is_capital?' ★':''}</div>`;
+      html += `<div class="dsec-title" id="economy-city-${esc(s.id)}" style="margin-top:.8rem">${esc(s.name)}${s.is_capital?' ★':''}</div>`;
       if (silver) {
         html += `<div class="silver-balance">
           <div>
@@ -261,9 +261,8 @@ async function loadEconomyTransfer(mySettlements) {
       <div class="dsec-title">Your cargo in transit</div>
       <div id="ec-tr-cargo" class="loading" style="padding:.4rem 0">Loading…</div>
     </div>`;
-  loadTransferDestinations(document.getElementById('ec-tr-from').value);
-  loadTransferGoods(document.getElementById('ec-tr-from').value);
-  refreshCargoInTransit();
+  await Promise.all([loadTransferDestinations(document.getElementById('ec-tr-from').value),
+    loadTransferGoods(document.getElementById('ec-tr-from').value),refreshCargoInTransit()]);
 }
 
 // formatCargoRows is the pure part of the "your cargo in transit" list — no
@@ -282,6 +281,7 @@ export function formatCargoRows(trades, nowMs) {
     else if (etaMs < 3600000) eta = `${Math.floor(etaMs / 60000)}m`;
     else eta = `${Math.floor(etaMs / 3600000)}h ${Math.floor((etaMs % 3600000) / 60000)}m`;
     return {
+      id:t.id,
       good: t.good_key || '?',
       qty: Math.floor(t.quantity || 0),
       from: t.origin_name || `(${t.origin_q},${t.origin_r})`,
@@ -304,7 +304,7 @@ export function renderCargoHTML(trades, nowMs) {
   return '<table class="goods-mini"><tr style="color:var(--text-dim);font-size:.7rem">' +
     '<td>Good</td><td>Qty</td><td>From → To</td><td>Dir</td><td style="text-align:right">ETA</td></tr>' +
     rows.map(row =>
-      `<tr><td>${esc(row.good)}</td><td>${row.qty}</td><td>${esc(row.from)} → ${esc(row.to)}</td>` +
+      `<tr data-cargo-id="${esc(row.id||'')}"><td>${esc(row.good)}</td><td>${row.qty}</td><td>${esc(row.from)} → ${esc(row.to)}</td>` +
       `<td>${esc(row.direction)}</td><td style="text-align:right">${esc(row.eta)}</td></tr>`
     ).join('') +
     '</table>' +
@@ -561,7 +561,7 @@ async function loadEconomyAutomation(mySettlements) {
   if (toSel && mySettlements.length > 1) toSel.selectedIndex = 1;
   bindStandingGoodsRows('out', goods);
   bindStandingGoodsRows('home', goods);
-  refreshStandingOrders();
+  await refreshStandingOrders();
 }
 
 // renderStandingOrdersHTML is pure (list in, markup out) for the same
@@ -585,7 +585,7 @@ export function renderStandingOrdersHTML(orders) {
       const returning = (o.return || []).map(g => `${esc(g.good_key)} ${stockAmount(g.floor)}`).join(', ');
       const settings = `<div class="standing-order-config">Keep at destination: ${outbound || 'not available'}</div>`
         + `<div class="standing-order-config">${returning ? 'Bring home above: ' + returning : 'Return cargo: none'}</div>`;
-      return `<tr>
+      return `<tr id="standing-order-${esc(o.id)}">
         <td>${esc(o.from_name)} → ${esc(o.to_name)}${shipNote}${settings}</td>
         <td>${esc(statusText)}</td>
         <td style="text-align:right;white-space:nowrap">
@@ -651,4 +651,31 @@ export async function resumeStandingOrder(id) {
 export async function deleteStandingOrder(id) {
   await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/standing-orders/${id}`, { method: 'DELETE' });
   refreshStandingOrders();
+}
+
+export async function focusStandingOrder(id){
+ window.openDrawer?.('economy');
+ await loadEconomyDrawer();
+ const cities=State.provinceData.filter(p=>p.own&&!p.is_outpost);
+ document.querySelectorAll('#economy-body .dtab').forEach(t=>t.classList.toggle('active',t.dataset.tab==='automation'));
+ document.querySelectorAll('#economy-body .city-tab').forEach(t=>{t.style.display=t.id==='ectab-automation'?'':'none';});
+ await loadEconomyAutomation(cities);
+ const row=document.getElementById('standing-order-'+id);
+ if(row){row.classList.add('ucard-focus');row.scrollIntoView({block:'center'});}
+}
+
+export async function focusEconomyCity(id){
+ window.openDrawer?.('economy');
+ await loadEconomyDrawer();
+ const title=document.getElementById('economy-city-'+id);
+ if(title){title.classList.add('ucard-focus');title.scrollIntoView({block:'center'});}
+}
+export async function focusCargo(id){
+ window.openDrawer?.('economy');await loadEconomyDrawer();
+ const cities=State.provinceData.filter(p=>p.own&&!p.is_outpost);
+ document.querySelectorAll('#economy-body .dtab').forEach(t=>t.classList.toggle('active',t.dataset.tab==='transfer'));
+ document.querySelectorAll('#economy-body .city-tab').forEach(t=>{t.style.display=t.id==='ectab-transfer'?'':'none';});
+ await loadEconomyTransfer(cities);
+ const row=[...document.querySelectorAll('[data-cargo-id]')].find(r=>r.dataset.cargoId===id);
+ if(row){row.classList.add('ucard-focus');row.scrollIntoView({block:'center'});}
 }

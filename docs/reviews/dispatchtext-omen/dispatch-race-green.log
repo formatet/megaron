@@ -1,0 +1,142 @@
+TAP version 13
+# Subtest: AK1: a direct q/r on the payload wins outright, no lookup needed
+ok 1 - AK1: a direct q/r on the payload wins outright, no lookup needed
+  ---
+  duration_ms: 0.979841
+  type: 'test'
+  ...
+# Subtest: AK2: settlement_id resolves via State.provinceData
+ok 2 - AK2: settlement_id resolves via State.provinceData
+  ---
+  duration_ms: 0.128863
+  type: 'test'
+  ...
+# Subtest: AK3: dest_id/destination_id (transport/trade kinds) resolve the same way settlement_id does
+ok 3 - AK3: dest_id/destination_id (transport/trade kinds) resolve the same way settlement_id does
+  ---
+  duration_ms: 0.090516
+  type: 'test'
+  ...
+# Subtest: AK4: OfferAccepted/Declined/Expired go to the COUNTERPARTY city, not the recipient's own (Timothy 2026-09-04, megaron_plan_dispatches.md §3)
+ok 4 - AK4: OfferAccepted/Declined/Expired go to the COUNTERPARTY city, not the recipient's own (Timothy 2026-09-04, megaron_plan_dispatches.md §3)
+  ---
+  duration_ms: 0.133861
+  type: 'test'
+  ...
+# Subtest: AK5: OfferAccepted falls back to settlement_id if counterparty_id is somehow absent
+ok 5 - AK5: OfferAccepted falls back to settlement_id if counterparty_id is somehow absent
+  ---
+  duration_ms: 0.084885
+  type: 'test'
+  ...
+# Subtest: AK6: a non-offer kind never picks up counterparty_id even if present
+ok 6 - AK6: a non-offer kind never picks up counterparty_id even if present
+  ---
+  duration_ms: 0.107458
+  type: 'test'
+  ...
+# Subtest: AK7: an unresolvable settlement_id falls through to a unit_id lookup
+ok 7 - AK7: an unresolvable settlement_id falls through to a unit_id lookup
+  ---
+  duration_ms: 0.089489
+  type: 'test'
+  ...
+# Subtest: AK8: a foreign unit (not own) is still found via State.foreignUnitData
+ok 8 - AK8: a foreign unit (not own) is still found via State.foreignUnitData
+  ---
+  duration_ms: 0.08112
+  type: 'test'
+  ...
+# Subtest: AK9: no destination anywhere returns null (the disabled-button case)
+ok 9 - AK9: no destination anywhere returns null (the disabled-button case)
+  ---
+  duration_ms: 0.194463
+  type: 'test'
+  ...
+# Subtest: OC1: CityOccupied as attacker offers sack/burn from the payload's own choices, never annex (too early)
+ok 10 - OC1: CityOccupied as attacker offers sack/burn from the payload's own choices, never annex (too early)
+  ---
+  duration_ms: 0.270494
+  type: 'test'
+  ...
+# Subtest: OC2: CityOccupied as defender offers nothing — it is not this Wanax's choice to make
+ok 11 - OC2: CityOccupied as defender offers nothing — it is not this Wanax's choice to make
+  ---
+  duration_ms: 0.102707
+  type: 'test'
+  ...
+# Subtest: OC3: CityAnnexReady offers all three — sack/burn remain available once annex unlocks
+ok 12 - OC3: CityAnnexReady offers all three — sack/burn remain available once annex unlocks
+  ---
+  duration_ms: 0.060824
+  type: 'test'
+  ...
+# Subtest: OC4: an unrelated dispatch kind offers nothing
+ok 13 - OC4: an unrelated dispatch kind offers nothing
+  ---
+  duration_ms: 0.047908
+  type: 'test'
+  ...
+# Subtest: OC5: a missing/malformed choices list on CityOccupied degrades to no buttons rather than throwing
+ok 14 - OC5: a missing/malformed choices list on CityOccupied degrades to no buttons rather than throwing
+  ---
+  duration_ms: 0.051698
+  type: 'test'
+  ...
+# Subtest: OC6: buildOccupationOrderBody sends exactly {action} — sack loots everything by default, no goods picker
+ok 15 - OC6: buildOccupationOrderBody sends exactly {action} — sack loots everything by default, no goods picker
+  ---
+  duration_ms: 0.064631
+  type: 'test'
+  ...
+# Subtest: PS1: PassageStalled resolves "take me there" via the port q/r the server sends
+ok 16 - PS1: PassageStalled resolves "take me there" via the port q/r the server sends
+  ---
+  duration_ms: 0.054135
+  type: 'test'
+  ...
+# Subtest: opening dispatch preserves all archived paragraphs and escapes text
+ok 17 - opening dispatch preserves all archived paragraphs and escapes text
+  ---
+  duration_ms: 0.232456
+  type: 'test'
+  ...
+# Subtest: opening dispatch destination resolves the current own Host from its id
+ok 18 - opening dispatch destination resolves the current own Host from its id
+  ---
+  duration_ms: 0.068827
+  type: 'test'
+  ...
+# Subtest: stalled dispatch shows owned sealed order with escaped text
+ok 19 - stalled dispatch shows owned sealed order with escaped text
+  ---
+  duration_ms: 0.103458
+  type: 'test'
+  ...
+# Subtest: PassageStalled prints the server explanation, one source for web and keryx
+ok 20 - PassageStalled prints the server explanation, one source for web and keryx
+  ---
+  duration_ms: 0.064686
+  type: 'test'
+  ...
+# Subtest: A.1: letter and trade-offer dispatches name the Wanax that Reply opens (Timothy 2026-10-23)
+ok 21 - A.1: letter and trade-offer dispatches name the Wanax that Reply opens (Timothy 2026-10-23)
+  ---
+  duration_ms: 0.107178
+  type: 'test'
+  ...
+# Subtest: a delayed route lookup cannot replace a newer dispatch or reopen a closed window
+ok 22 - a delayed route lookup cannot replace a newer dispatch or reopen a closed window
+  ---
+  duration_ms: 14.369822
+  type: 'test'
+  ...
+1..22
+# tests 22
+# suites 0
+# pass 22
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 68.552153

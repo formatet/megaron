@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 // autostart) — same problem documented in cargo.test.mjs/economy.test.mjs.
 // Stub the one global it touches, then dynamically import.
 globalThis.document ??= { addEventListener() {} };
-const { cultLevelLabel, prayerStatusHTML, templeOfferingsHTML, prayerResultText } = await import('./kult.js');
+const { cultLevelLabel, prayerStatusHTML, templeOfferingsHTML, prayerResultText,kultCityForID } = await import('./kult.js');
 
 // The server never runs a five-tier cult-level model (forsummad/enkel/vardig/
 // praktfull/overdadig) — internal/kharis/tick.go's deriveMood "replaces
@@ -162,4 +162,13 @@ test('preparation is reachable without the traditional recipe, not a promise tha
  const html=prayerStatusHTML({id:'minoan_potnia_vision_v2',affordable:false,can_prepare_offering:true,unavailable_reason:'insufficient offering'});
  assert.match(html,/okRite\('minoan_potnia_vision_v2'\).*Compose offering/);
  assert.match(html,/traditional gift is unavailable/);
+});
+
+test('dispatch cult city selection is exact and cannot fall back to the capital for another city',()=>{
+ const capital={id:'cap',settlement_id:'s1',own:true},target={id:'target',settlement_id:'s2',own:true};
+ const rows=[capital,target,{id:'foreign',own:false}];
+ assert.equal(kultCityForID(rows,'target',capital),target);
+ assert.equal(kultCityForID(rows,'gone',capital),null);
+ assert.equal(kultCityForID(rows,'foreign',capital),null);
+ assert.equal(kultCityForID(rows,null,capital),capital);
 });

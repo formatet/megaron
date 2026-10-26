@@ -1,7 +1,7 @@
+import { dispatchAction, followDispatchAction } from './dispatch_actions.js';
 import { openMobilePanel, closeMobilePanel } from './mobile_panels.js';
 import { notificationDay } from './notification_state.js';
 import { State } from '../state.js';
-import { openAccountWindow } from './account_window.js';
 import { fetchAuth } from '../api.js';
 import { notifText, notifIcon, colonyFoundedGrainLine, formatApiError, passageNote, messengerEnvelopeText, esc } from './format.js';
 import { codexArticleForKind, openCodex } from './codex.js';
@@ -44,7 +44,7 @@ const COUNTERPARTY_KINDS = new Set(['OfferAccepted', 'OfferDeclined', 'OfferExpi
 // enterTargetIndex.
 // The Wanax whose letters thread "Reply" opens, or "" — letter and
 // trade-offer dispatches (byggplan A.1). Old rows without the id keep
-// "Take me there".
+// a correspondence target when the person id is available.
 const LETTER_KINDS = new Set(['MessengerArrival', 'MessengerReturned', 'OfferAccepted', 'OfferDeclined']);
 export function letterPersonFor(kind, payload) {
   if (!LETTER_KINDS.has(kind) || !payload) return '';
@@ -70,7 +70,9 @@ export function resolveDestination(kind, payload) {
   return null;
 }
 
+let dispatchOpenVersion=0;
 export function closeDispatchWindow() {
+  ++dispatchOpenVersion;
   const el = document.getElementById('dispatch-window-overlay');
   closeMobilePanel(el);
   if (el) el.classList.remove('open');
@@ -276,13 +278,19 @@ export function openingDispatchHTML(payload) {
   return paragraphs.filter(p => typeof p === 'string').map(p => `<p class="dw-text">${esc(p)}</p>`).join('');
 }
 
-export function openDispatchWindow(kind, payload, timeLabel) {
+export async function openDispatchWindow(kind, payload, timeLabel) {
+  const version=++dispatchOpenVersion,world=State.WORLD_ID;
   payload = payload || {};
   const overlay = document.getElementById('dispatch-window-overlay');
   const body = document.getElementById('dw-body');
   if (!overlay || !body) return;
 
-  const dest = resolveDestination(kind, payload);
+  const actionContext={};
+  if(kind.startsWith('StandingOrder')&&payload.standing_order_id){
+    try {const r=await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/standing-orders`);if(r.ok)actionContext.standingOrders=await r.json();}catch{}
+  }
+  if(version!==dispatchOpenVersion||world!==State.WORLD_ID)return;
+  const action=dispatchAction(kind,payload,actionContext);
   const grainLine = kind === 'ColonyFounded' ? colonyFoundedGrainLine(payload) : '';
   // Third door into the Codex (megaron_plan_kodex.md): every dispatch kind
   // the index maps gets a link to the article that explains it.
@@ -290,9 +298,7 @@ export function openDispatchWindow(kind, payload, timeLabel) {
   const occChoices = occupationChoicesFor(kind, payload);
   const settlementID = payload.settlement_id;
   const showOcc = occChoices.length > 0 && !!settlementID;
-  const showChat = kind === 'agora_ready';
   const showPassageStalled = kind === 'PassageStalled' && !!payload.messenger_id;
-  const replyTo = letterPersonFor(kind, payload);
 
   body.innerHTML = `
     <div class="dw-row">
@@ -305,8 +311,7 @@ export function openDispatchWindow(kind, payload, timeLabel) {
     <div class="dw-time">${esc(timeLabel || notificationDay({payload}))}</div>
     ${showOcc ? occupationBlockHTML(occChoices) : ''}
     ${showPassageStalled ? passageStalledBlockHTML(payload) : ''}
-    ${replyTo ? '<button class="dw-goto-btn" id="dw-reply-btn">✉ Reply</button>' : `<button class="dw-goto-btn" id="dw-goto-btn" ${dest || (kind === 'OrderFailed' && payload.unit_id) ? '' : 'disabled title="No known location for this dispatch"'}>${kind === 'OrderFailed' && payload.unit_id ? 'Review unit' : '⌖ Take me there'}</button>`}
-    ${showChat ? '<button class="dw-goto-btn" id="dw-account-btn">Open account — Community chat</button>' : ''}
+    ${action ? `<button class="dw-goto-btn" id="dw-action-btn">${esc(action.label)}</button>` : ''}
     ${article ? '<button class="dw-goto-btn dw-codex-btn" id="dw-codex-btn">? Read about this</button>' : ''}
     <label class="dw-mute-row">
       <input type="checkbox" id="dw-mute-chk">
@@ -316,19 +321,9 @@ export function openDispatchWindow(kind, payload, timeLabel) {
   openMobilePanel(overlay, closeDispatchWindow);
   overlay.classList.add('open');
 
-  if (replyTo) document.getElementById('dw-reply-btn').addEventListener('click', () => {
+  document.getElementById('dw-action-btn')?.addEventListener('click',()=>{
     closeDispatchWindow();
-    if (window.openLettersWith) window.openLettersWith(replyTo);
-  });
-  else document.getElementById('dw-goto-btn').addEventListener('click', () => {
-    closeDispatchWindow();
-    if (kind === 'OrderFailed' && payload.unit_id && window.warFocusUnit) window.warFocusUnit(payload.unit_id);
-    else if (dest) window.centreOn(dest.q, dest.r);
-  });
-
-  if (showChat) document.getElementById('dw-account-btn').addEventListener('click', () => {
-    closeDispatchWindow();
-    openAccountWindow();
+    followDispatchAction(action);
   });
 
   if (article) {

@@ -211,7 +211,17 @@ func printBuildQueue(c *Client, worldID, provinceID string) error {
 		t := buildingLabel(m)
 		id, _ := m["id"].(string)
 		ca, _ := m["complete_at"].(string)
-		fmt.Printf("%-14s  %-38s  %s\n", t, id, buildQueueETA(c, ca))
+		city, _ := m["settlement_name"].(string)
+		if city == "" {
+			city, _ = sett["name"].(string)
+		}
+		where := city
+		if q, ok := m["hex_q"].(float64); ok {
+			if r, ok := m["hex_r"].(float64); ok {
+				where += fmt.Sprintf(" at (%.0f,%.0f)", q, r)
+			}
+		}
+		fmt.Printf("%-14s  %-38s  %s · %s\n", t, id, where, buildQueueETA(c, ca))
 	}
 	return nil
 }

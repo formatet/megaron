@@ -66,7 +66,7 @@
   },
   {
     "kind": "\u003cdynamic\u003e",
-    "source": "server/internal/combat/shipyard_work.go:100:12",
+    "source": "server/internal/combat/shipyard_work.go:104:12",
     "fields": []
   },
   {
@@ -96,7 +96,7 @@
   },
   {
     "kind": "\u003cdynamic\u003e",
-    "source": "server/internal/economy/trade.go:592:6",
+    "source": "server/internal/economy/trade.go:602:6",
     "fields": []
   },
   {
@@ -137,7 +137,7 @@
   },
   {
     "kind": "BuildComplete",
-    "source": "server/internal/combat/build.go:284:7",
+    "source": "server/internal/combat/build.go:290:7",
     "fields": []
   },
   {
@@ -206,7 +206,7 @@
   },
   {
     "kind": "ColonyFounded",
-    "source": "server/internal/combat/unit_arrival.go:2151:7",
+    "source": "server/internal/combat/unit_arrival.go:2174:7",
     "fields": []
   },
   {
@@ -312,7 +312,7 @@
   },
   {
     "kind": "PickupTimedOut",
-    "source": "server/internal/combat/unit_arrival.go:1165:7",
+    "source": "server/internal/combat/unit_arrival.go:1188:7",
     "fields": [
       "note",
       "q",
@@ -322,7 +322,7 @@
   },
   {
     "kind": "PickupWaiting",
-    "source": "server/internal/combat/unit_arrival.go:1001:7",
+    "source": "server/internal/combat/unit_arrival.go:1024:7",
     "fields": [
       "note",
       "pickup_unit_id",
@@ -339,7 +339,7 @@
   },
   {
     "kind": "ScoutReport",
-    "source": "server/internal/combat/unit_arrival.go:1355:7",
+    "source": "server/internal/combat/unit_arrival.go:1378:7",
     "fields": [
       "cedar_deposit",
       "copper_deposit",
@@ -450,7 +450,7 @@
   },
   {
     "kind": "ShipSweptFromSea",
-    "source": "server/internal/combat/unit_arrival.go:1516:8",
+    "source": "server/internal/combat/unit_arrival.go:1539:8",
     "fields": [
       "arrives_at",
       "name",
@@ -480,11 +480,13 @@
   },
   {
     "kind": "TrainComplete",
-    "source": "server/internal/combat/train.go:144:8",
+    "source": "server/internal/combat/train.go:146:8",
     "fields": [
       "count",
       "settlement_id",
+      "settlement_name",
       "unit_id",
+      "unit_name",
       "unit_type"
     ]
   },
@@ -499,7 +501,19 @@
   },
   {
     "kind": "UnitArrived",
-    "source": "server/internal/combat/unit_arrival.go:1221:7",
+    "source": "server/internal/combat/city_disembark.go:40:8",
+    "fields": [
+      "name",
+      "q",
+      "r",
+      "settlement_id",
+      "status",
+      "unit_id"
+    ]
+  },
+  {
+    "kind": "UnitArrived",
+    "source": "server/internal/combat/unit_arrival.go:1244:7",
     "fields": [
       "name",
       "q",
@@ -510,7 +524,7 @@
   },
   {
     "kind": "UnitArrived",
-    "source": "server/internal/combat/unit_arrival.go:1250:9",
+    "source": "server/internal/combat/unit_arrival.go:1273:9",
     "fields": [
       "name",
       "q",
@@ -521,12 +535,12 @@
   },
   {
     "kind": "UnitArrived",
-    "source": "server/internal/combat/unit_arrival.go:1727:8",
+    "source": "server/internal/combat/unit_arrival.go:1750:8",
     "fields": []
   },
   {
     "kind": "UnitArrived",
-    "source": "server/internal/combat/unit_arrival.go:1787:7",
+    "source": "server/internal/combat/unit_arrival.go:1810:7",
     "fields": [
       "name",
       "q",
@@ -537,7 +551,7 @@
   },
   {
     "kind": "UnitArrived",
-    "source": "server/internal/combat/unit_arrival.go:1860:7",
+    "source": "server/internal/combat/unit_arrival.go:1883:7",
     "fields": [
       "name",
       "q",
@@ -549,7 +563,7 @@
   },
   {
     "kind": "UnitArrived",
-    "source": "server/internal/combat/unit_arrival.go:648:7",
+    "source": "server/internal/combat/unit_arrival.go:671:7",
     "fields": [
       "name",
       "q",
@@ -561,7 +575,7 @@
   },
   {
     "kind": "UnitArrived",
-    "source": "server/internal/combat/unit_arrival.go:706:9",
+    "source": "server/internal/combat/unit_arrival.go:729:9",
     "fields": [
       "name",
       "note",
@@ -570,7 +584,7 @@
   },
   {
     "kind": "UnitArrived",
-    "source": "server/internal/combat/unit_arrival.go:774:7",
+    "source": "server/internal/combat/unit_arrival.go:797:7",
     "fields": [
       "name",
       "q",
@@ -581,7 +595,7 @@
   },
   {
     "kind": "UnitArrived",
-    "source": "server/internal/combat/unit_arrival.go:796:6",
+    "source": "server/internal/combat/unit_arrival.go:819:6",
     "fields": [
       "name",
       "note",
@@ -593,7 +607,7 @@
   },
   {
     "kind": "UnitArrived",
-    "source": "server/internal/combat/unit_arrival.go:869:7",
+    "source": "server/internal/combat/unit_arrival.go:892:7",
     "fields": [
       "name",
       "note",
@@ -605,7 +619,7 @@
   },
   {
     "kind": "UnitExploreReturned",
-    "source": "server/internal/combat/unit_arrival.go:1539:7",
+    "source": "server/internal/combat/unit_arrival.go:1562:7",
     "fields": [
       "arrives_at",
       "name",
@@ -616,7 +630,7 @@
   },
   {
     "kind": "UnitFetched",
-    "source": "server/internal/combat/unit_arrival.go:1065:7",
+    "source": "server/internal/combat/unit_arrival.go:1088:7",
     "fields": [
       "note",
       "q",

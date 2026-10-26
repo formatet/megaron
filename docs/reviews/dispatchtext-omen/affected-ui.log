@@ -1,0 +1,688 @@
+TAP version 13
+# Subtest: CG1: a refused +1 carries the server's own reason, and does NOT count as a change
+ok 1 - CG1: a refused +1 carries the server's own reason, and does NOT count as a change
+  ---
+  duration_ms: 1.02612
+  type: 'test'
+  ...
+# Subtest: CG2: each distinct server refusal surfaces as itself — not one generic line
+ok 2 - CG2: each distinct server refusal surfaces as itself — not one generic line
+  ---
+  duration_ms: 1.702857
+  type: 'test'
+  ...
+# Subtest: CG3: a successful +1 reports a change and says nothing
+ok 3 - CG3: a successful +1 reports a change and says nothing
+  ---
+  duration_ms: 0.146143
+  type: 'test'
+  ...
+# Subtest: CG4: Fill that places nothing at all explains why (the old code broke out silently)
+ok 4 - CG4: Fill that places nothing at all explains why (the old code broke out silently)
+  ---
+  duration_ms: 0.120194
+  type: 'test'
+  ...
+# Subtest: CG5: Fill that places some then hits the cap stays quiet — the pips moved, that IS the feedback
+ok 5 - CG5: Fill that places some then hits the cap stays quiet — the pips moved, that IS the feedback
+  ---
+  duration_ms: 0.190681
+  type: 'test'
+  ...
+# Subtest: CG6: Fill respects cap as its loop guard
+ok 6 - CG6: Fill respects cap as its loop guard
+  ---
+  duration_ms: 0.137325
+  type: 'test'
+  ...
+# Subtest: CG7: −1 deletes the matching ordinal and reports a change
+ok 7 - CG7: −1 deletes the matching ordinal and reports a change
+  ---
+  duration_ms: 0.220879
+  type: 'test'
+  ...
+# Subtest: CG8: −1 with no matching citizen says so and refreshes instead of doing nothing
+ok 8 - CG8: −1 with no matching citizen says so and refreshes instead of doing nothing
+  ---
+  duration_ms: 0.209284
+  type: 'test'
+  ...
+# Subtest: CG9: a failed DELETE is reported, not swallowed
+ok 9 - CG9: a failed DELETE is reported, not swallowed
+  ---
+  duration_ms: 0.275934
+  type: 'test'
+  ...
+# Subtest: CG10: an empty or non-JSON error body still produces a line, never blank silence
+ok 10 - CG10: an empty or non-JSON error body still produces a line, never blank silence
+  ---
+  duration_ms: 0.431431
+  type: 'test'
+  ...
+# Subtest: CG11: an expired session reads as the server's own sentence, not "error 401"
+ok 11 - CG11: an expired session reads as the server's own sentence, not "error 401"
+  ---
+  duration_ms: 0.20767
+  type: 'test'
+  ...
+# Subtest: CG12: the city centre and a hex are never confused for one another
+ok 12 - CG12: the city centre and a hex are never confused for one another
+  ---
+  duration_ms: 0.092396
+  type: 'test'
+  ...
+# Subtest: CG13: two different hexes get different keys — a restore must not land on the wrong one
+ok 13 - CG13: two different hexes get different keys — a restore must not land on the wrong one
+  ---
+  duration_ms: 0.075073
+  type: 'test'
+  ...
+# Subtest: CG14: the key survives a round trip through a re-rendered element with the same identity
+ok 14 - CG14: the key survives a round trip through a re-rendered element with the same identity
+  ---
+  duration_ms: 0.071363
+  type: 'test'
+  ...
+# Subtest: CG15: a missing or dataset-less element yields null, so nothing is restored rather than throwing
+ok 15 - CG15: a missing or dataset-less element yields null, so nothing is restored rather than throwing
+  ---
+  duration_ms: 0.050123
+  type: 'test'
+  ...
+# Subtest: CG11: insufficient_goods is delegated to formatApiError, the same helper every other surface uses
+ok 16 - CG11: insufficient_goods is delegated to formatApiError, the same helper every other surface uses
+  ---
+  duration_ms: 0.128029
+  type: 'test'
+  ...
+# Subtest: takeLabel says what taking does, building part only when one stands there
+ok 17 - takeLabel says what taking does, building part only when one stands there
+  ---
+  duration_ms: 9.044279
+  type: 'test'
+  ...
+# Subtest: CG16: −1 is disabled on a held hex where none of the gubbar are yours
+ok 18 - CG16: −1 is disabled on a held hex where none of the gubbar are yours
+  ---
+  duration_ms: 0.299139
+  type: 'test'
+  ...
+# Subtest: CG fishing: zero places disables adding; coast, bay and harbour capacities and yields are server values
+ok 19 - CG fishing: zero places disables adding; coast, bay and harbour capacities and yields are server values
+  ---
+  duration_ms: 0.521016
+  type: 'test'
+  ...
+# Subtest: ORDER15: two temples are two named cards and each staffing target carries its god
+ok 20 - ORDER15: two temples are two named cards and each staffing target carries its god
+  ---
+  duration_ms: 0.347105
+  type: 'test'
+  ...
+# Subtest: ORDER15: staffing posts god and -1 removes a worker at that god's temple only
+ok 21 - ORDER15: staffing posts god and -1 removes a worker at that god's temple only
+  ---
+  duration_ms: 0.170374
+  type: 'test'
+  ...
+# Subtest: ORDER28: shipyard staffing shows binary pace and preserves temple labels
+ok 22 - ORDER28: shipyard staffing shows binary pace and preserves temple labels
+  ---
+  duration_ms: 0.225783
+  type: 'test'
+  ...
+# Subtest: ORDER30: server workplace options without market render only assignable workplaces
+ok 23 - ORDER30: server workplace options without market render only assignable workplaces
+  ---
+  duration_ms: 0.288273
+  type: 'test'
+  ...
+# Subtest: a dispatch selects the actual reached build-site ordinal, never an arbitrary hex or capital
+ok 24 - a dispatch selects the actual reached build-site ordinal, never an arbitrary hex or capital
+  ---
+  duration_ms: 0.140429
+  type: 'test'
+  ...
+# Subtest: AK1: formatCargoRows carries good/quantity/from/to straight through
+ok 25 - AK1: formatCargoRows carries good/quantity/from/to straight through
+  ---
+  duration_ms: 0.980133
+  type: 'test'
+  ...
+# Subtest: cities by name: the row says Athenai → Knossos, coordinates only when no name came
+ok 26 - cities by name: the row says Athenai → Knossos, coordinates only when no name came
+  ---
+  duration_ms: 0.333393
+  type: 'test'
+  ...
+# Subtest: AK2: ETA is computed from arrives_at - nowMs, not from the wall clock
+ok 27 - AK2: ETA is computed from arrives_at - nowMs, not from the wall clock
+  ---
+  duration_ms: 0.101029
+  type: 'test'
+  ...
+# Subtest: AK3: an already-arrived trade (arrives_at in the past) reads "arrived"
+ok 28 - AK3: an already-arrived trade (arrives_at in the past) reads "arrived"
+  ---
+  duration_ms: 0.098051
+  type: 'test'
+  ...
+# Subtest: AK4: quantity floors fractional amounts (matches the rest of the drawer)
+ok 29 - AK4: quantity floors fractional amounts (matches the rest of the drawer)
+  ---
+  duration_ms: 0.1524
+  type: 'test'
+  ...
+# Subtest: AK5 (regression): renderCargoHTML on an empty list says nothing is in transit, not a blank table
+ok 30 - AK5 (regression): renderCargoHTML on an empty list says nothing is in transit, not a blank table
+  ---
+  duration_ms: 0.093051
+  type: 'test'
+  ...
+# Subtest: AK6: renderCargoHTML never claims a fixed loss percentage — only that cargo is physical and can be seized
+ok 31 - AK6: renderCargoHTML never claims a fixed loss percentage — only that cargo is physical and can be seized
+  ---
+  duration_ms: 0.146564
+  type: 'test'
+  ...
+# Subtest: AK7: renderCargoHTML escapes good_key so a hostile good name cannot inject markup
+ok 32 - AK7: renderCargoHTML escapes good_key so a hostile good name cannot inject markup
+  ---
+  duration_ms: 0.098696
+  type: 'test'
+  ...
+# Subtest: AK7: a shipment the caller is receiving is labelled incoming
+ok 33 - AK7: a shipment the caller is receiving is labelled incoming
+  ---
+  duration_ms: 0.336918
+  type: 'test'
+  ...
+# Subtest: AK8: a shipment the caller dispatched is labelled outgoing
+ok 34 - AK8: a shipment the caller dispatched is labelled outgoing
+  ---
+  duration_ms: 0.548286
+  type: 'test'
+  ...
+# Subtest: AK9: the direction reaches the markup, not just the row object
+ok 35 - AK9: the direction reaches the markup, not just the row object
+  ---
+  duration_ms: 0.263246
+  type: 'test'
+  ...
+# Subtest: cargo uses the authoritative rounded arrival tick even when wall projection is overdue
+ok 36 - cargo uses the authoritative rounded arrival tick even when wall projection is overdue
+  ---
+  duration_ms: 9.857799
+  type: 'test'
+  ...
+# Subtest: BK1: mine is buildable from the catalogue (was missing entirely from the old hardcoded list)
+ok 37 - BK1: mine is buildable from the catalogue (was missing entirely from the old hardcoded list)
+  ---
+  duration_ms: 1.067037
+  type: 'test'
+  ...
+# Subtest: silver_mine is gone from the Construct label map — an unlabelled fallback would betray a stale catalogue entry
+ok 38 - silver_mine is gone from the Construct label map — an unlabelled fallback would betray a stale catalogue entry
+  ---
+  duration_ms: 0.178287
+  type: 'test'
+  ...
+# Subtest: BK2: costs are read from the catalogue, not hardcoded — mutating the fixture mutates the rendered string
+ok 39 - BK2: costs are read from the catalogue, not hardcoded — mutating the fixture mutates the rendered string
+  ---
+  duration_ms: 0.138952
+  type: 'test'
+  ...
+# Subtest: BK3: cost rounding matches the CLI (%.0f per good, cmd_build.go), not the pre-mig-136 hardcoded values
+ok 40 - BK3: cost rounding matches the CLI (%.0f per good, cmd_build.go), not the pre-mig-136 hardcoded values
+  ---
+  duration_ms: 0.146956
+  type: 'test'
+  ...
+# Subtest: BK4: an option is name and price only — no purpose, no requires tail (Timothy 2026-09-30: too long)
+ok 41 - BK4: an option is name and price only — no purpose, no requires tail (Timothy 2026-09-30: too long)
+  ---
+  duration_ms: 5.215798
+  type: 'test'
+  ...
+# Subtest: BK6: wall keeps its old hardcoded upgrade-ladder copy — the catalogue entry has no upgrade_costs for it (stop condition, megaron_plan_byggkatalogen_i_webben.md §7)
+ok 42 - BK6: wall keeps its old hardcoded upgrade-ladder copy — the catalogue entry has no upgrade_costs for it (stop condition, megaron_plan_byggkatalogen_i_webben.md §7)
+  ---
+  duration_ms: 0.179328
+  type: 'test'
+  ...
+# Subtest: HX1: a valid, empty hex renders as a build option with its coords and terrain
+ok 43 - HX1: a valid, empty hex renders as a build option with its coords and terrain
+  ---
+  duration_ms: 0.348375
+  type: 'test'
+  ...
+# Subtest: HX2: a hex missing from valid_hexes_for_building but already carrying a SAME-type building is offered as an upgrade
+ok 44 - HX2: a hex missing from valid_hexes_for_building but already carrying a SAME-type building is offered as an upgrade
+  ---
+  duration_ms: 0.125861
+  type: 'test'
+  ...
+# Subtest: HX3: a hex carrying a DIFFERENT-type building is not offered at all
+ok 45 - HX3: a hex carrying a DIFFERENT-type building is not offered at all
+  ---
+  duration_ms: 0.261435
+  type: 'test'
+  ...
+# Subtest: HX4: a hex present in both lists is rendered once, as a build option (valid_hexes_for_building wins)
+ok 46 - HX4: a hex present in both lists is rendered once, as a build option (valid_hexes_for_building wins)
+  ---
+  duration_ms: 0.331522
+  type: 'test'
+  ...
+# Subtest: HX4b: server effect strings are escaped, and a missing effect leaves no dangling dash
+ok 47 - HX4b: server effect strings are escaped, and a missing effect leaves no dangling dash
+  ---
+  duration_ms: 0.185421
+  type: 'test'
+  ...
+# Subtest: HX5: no placement-options data yet renders no options, not an error
+ok 48 - HX5: no placement-options data yet renders no options, not an error
+  ---
+  duration_ms: 0.081793
+  type: 'test'
+  ...
+# Subtest: B1: the wall option shows the next rung, greyed with its reason until the Granary is high enough
+ok 49 - B1: the wall option shows the next rung, greyed with its reason until the Granary is high enough
+  ---
+  duration_ms: 6.938046
+  type: 'test'
+  ...
+# Subtest: ORDER17: standing shipyard quotes its next level instead of L1
+ok 50 - ORDER17: standing shipyard quotes its next level instead of L1
+  ---
+  duration_ms: 0.222605
+  type: 'test'
+  ...
+# Subtest: ORDER17: each farm hex has its own next price and max does not offer L4
+ok 51 - ORDER17: each farm hex has its own next price and max does not offer L4
+  ---
+  duration_ms: 0.215601
+  type: 'test'
+  ...
+# Subtest: ORDER17: selected build price is readable below the picker with server duration
+ok 52 - ORDER17: selected build price is readable below the picker with server duration
+  ---
+  duration_ms: 0.369546
+  type: 'test'
+  ...
+# Subtest: ORDER15: temple list has one row per god with its own quote, value carries the god
+ok 53 - ORDER15: temple list has one row per god with its own quote, value carries the god
+  ---
+  duration_ms: 0.877283
+  type: 'test'
+  ...
+# Subtest: ORDER15: startBuild POST body carries god for a temple and not for others
+ok 54 - ORDER15: startBuild POST body carries god for a temple and not for others
+  ---
+  duration_ms: 17.39593
+  type: 'test'
+  ...
+# Subtest: Construct list is alphabetical by the name the player reads, not the type key
+ok 55 - Construct list is alphabetical by the name the player reads, not the type key
+  ---
+  duration_ms: 0.986083
+  type: 'test'
+  ...
+# Subtest: atStorageCeiling: mirrors keryx — >=99% of a positive cap, nothing without a cap
+ok 56 - atStorageCeiling: mirrors keryx — >=99% of a positive cap, nothing without a cap
+  ---
+  duration_ms: 0.741472
+  type: 'test'
+  ...
+# Subtest: goodsRateCell: a good at cap reads "full" (dimmed) not green growth, and names the wasted rate
+ok 57 - goodsRateCell: a good at cap reads "full" (dimmed) not green growth, and names the wasted rate
+  ---
+  duration_ms: 9.32191
+  type: 'test'
+  ...
+# Subtest: goodsRateCell: at cap but idle (rate 0) reads plain "full", no wasted-rate tail
+ok 58 - goodsRateCell: at cap but idle (rate 0) reads plain "full", no wasted-rate tail
+  ---
+  duration_ms: 0.18381
+  type: 'test'
+  ...
+# Subtest: goodsRateCell: below cap and producing keeps the green growth cell
+ok 59 - goodsRateCell: below cap and producing keeps the green growth cell
+  ---
+  duration_ms: 0.161388
+  type: 'test'
+  ...
+# Subtest: goodsRateCell: below cap and idle renders an empty cell
+ok 60 - goodsRateCell: below cap and idle renders an empty cell
+  ---
+  duration_ms: 0.092503
+  type: 'test'
+  ...
+# Subtest: AK1: economy.js imports under node --test without a DOM (proves the misc.js pointerdown listener no longer runs at module scope)
+ok 61 - AK1: economy.js imports under node --test without a DOM (proves the misc.js pointerdown listener no longer runs at module scope)
+  ---
+  duration_ms: 0.070974
+  type: 'test'
+  ...
+# Subtest: parseGoodAmountPairs: matches keryx cmd_route.go's good:amount,good:amount shape
+ok 62 - parseGoodAmountPairs: matches keryx cmd_route.go's good:amount,good:amount shape
+  ---
+  duration_ms: 0.606449
+  type: 'test'
+  ...
+# Subtest: parseGoodAmountPairs: empty/blank input is an empty list, not an error
+ok 63 - parseGoodAmountPairs: empty/blank input is an empty list, not an error
+  ---
+  duration_ms: 0.122751
+  type: 'test'
+  ...
+# Subtest: parseGoodAmountPairs: a malformed pair is dropped, not thrown — a typo must not crash the form
+ok 64 - parseGoodAmountPairs: a malformed pair is dropped, not thrown — a typo must not crash the form
+  ---
+  duration_ms: 0.26024
+  type: 'test'
+  ...
+# Subtest: renderStandingOrdersHTML: empty list renders the empty-state message
+ok 65 - renderStandingOrdersHTML: empty list renders the empty-state message
+  ---
+  duration_ms: 0.373597
+  type: 'test'
+  ...
+# Subtest: renderStandingOrdersHTML: an active order offers Pause, a paused one offers Resume and shows its reason
+ok 66 - renderStandingOrdersHTML: an active order offers Pause, a paused one offers Resume and shows its reason
+  ---
+  duration_ms: 0.226304
+  type: 'test'
+  ...
+# Subtest: renderStandingOrdersHTML: a naval route names its bound ship
+ok 67 - renderStandingOrdersHTML: a naval route names its bound ship
+  ---
+  duration_ms: 0.098379
+  type: 'test'
+  ...
+# Subtest: settlementFoodRow: a self-sufficient, well-stocked settlement reads "stocks growing"
+ok 68 - settlementFoodRow: a self-sufficient, well-stocked settlement reads "stocks growing"
+  ---
+  duration_ms: 0.146646
+  type: 'test'
+  ...
+# Subtest: settlementFoodRow: server reports shrinking reads "starving" and ranks worst (except cannot-feed)
+ok 69 - settlementFoodRow: server reports shrinking reads "starving" and ranks worst (except cannot-feed)
+  ---
+  duration_ms: 0.077324
+  type: 'test'
+  ...
+# Subtest: settlementFoodRow: food_self_sufficient===false overrides stock direction — always the worst, even with full stores
+ok 70 - settlementFoodRow: food_self_sufficient===false overrides stock direction — always the worst, even with full stores
+  ---
+  duration_ms: 0.063409
+  type: 'test'
+  ...
+# Subtest: settlementFoodRow: no province data (failed fetch) renders "no data" instead of throwing or guessing
+ok 71 - settlementFoodRow: no province data (failed fetch) renders "no data" instead of throwing or guessing
+  ---
+  duration_ms: 0.062204
+  type: 'test'
+  ...
+# Subtest: sortSettlementRows: default brist sort puts cannot-feed first, then starving, then stable
+ok 72 - sortSettlementRows: default brist sort puts cannot-feed first, then starving, then stable
+  ---
+  duration_ms: 0.169872
+  type: 'test'
+  ...
+# Subtest: sortSettlementRows: sorting by population desc does not mutate the input array
+ok 73 - sortSettlementRows: sorting by population desc does not mutate the input array
+  ---
+  duration_ms: 0.085779
+  type: 'test'
+  ...
+# Subtest: renderSettlementsOverviewHTML: empty rows render nothing
+ok 74 - renderSettlementsOverviewHTML: empty rows render nothing
+  ---
+  duration_ms: 0.100829
+  type: 'test'
+  ...
+# Subtest: renderSettlementsOverviewHTML: each row links to openCitySettlement and shows name/pop/rate/status
+ok 75 - renderSettlementsOverviewHTML: each row links to openCitySettlement and shows name/pop/rate/status
+  ---
+  duration_ms: 0.365684
+  type: 'test'
+  ...
+# Subtest: renderSettlementsOverviewHTML: the active sort column shows its arrow, others do not
+ok 76 - renderSettlementsOverviewHTML: the active sort column shows its arrow, others do not
+  ---
+  duration_ms: 0.186603
+  type: 'test'
+  ...
+# Subtest: loadEconomyDrawer: with no owned settlements, renders the empty-state message and returns before touching anything else
+ok 77 - loadEconomyDrawer: with no owned settlements, renders the empty-state message and returns before touching anything else
+  ---
+  duration_ms: 0.169194
+  type: 'test'
+  ...
+# Subtest: settlement food column follows full fish-inclusive authoritative net
+ok 78 - settlement food column follows full fish-inclusive authoritative net
+  ---
+  duration_ms: 0.077395
+  type: 'test'
+  ...
+# Subtest: AIRound3: overview sorts and displays food after army, keeps people-only fallback
+ok 79 - AIRound3: overview sorts and displays food after army, keeps people-only fallback
+  ---
+  duration_ms: 0.214572
+  type: 'test'
+  ...
+# Subtest: food status separates declining stock from hunger and never invents missing balances
+ok 80 - food status separates declining stock from hunger and never invents missing balances
+  ---
+  duration_ms: 0.373725
+  type: 'test'
+  ...
+# Subtest: standing route list shows configured stock targets and return floors, including zero and decimals
+ok 81 - standing route list shows configured stock targets and return floors, including zero and decimals
+  ---
+  duration_ms: 0.615652
+  type: 'test'
+  ...
+# Subtest: Economy City link closes Economy before opening the requested province
+ok 82 - Economy City link closes Economy before opening the requested province
+  ---
+  duration_ms: 0.914934
+  type: 'test'
+  ...
+# Subtest: Economy id: actual drawer joins settlement ids while links and goods keep province ids
+ok 83 - Economy id: actual drawer joins settlement ids while links and goods keep province ids
+  ---
+  duration_ms: 31.54949
+  type: 'test'
+  ...
+# Subtest: Economy id: missing or refused overview remains no data; never match province id or name
+ok 84 - Economy id: missing or refused overview remains no data; never match province id or name
+  ---
+  duration_ms: 5.400203
+  type: 'test'
+  ...
+# Subtest: N: actual POST preserves multiple outbound goods, return floor zero, decimals and destination crew
+ok 85 - N: actual POST preserves multiple outbound goods, return floor zero, decimals and destination crew
+  ---
+  duration_ms: 20.848336
+  type: 'test'
+  ...
+# Subtest: N: blank optional rows leave an empty return array and source crew intact
+ok 86 - N: blank optional rows leave an empty return array and source crew intact
+  ---
+  duration_ms: 1.083676
+  type: 'test'
+  ...
+# Subtest: N: drawer keeps three tabs and crew choices, replaces both CSV inputs with addable goods rows
+ok 87 - N: drawer keeps three tabs and crew choices, replaces both CSV inputs with addable goods rows
+  ---
+  duration_ms: 15.141391
+  type: 'test'
+  ...
+# Subtest: N: same-city and missing-outbound rows still cannot dispatch
+ok 88 - N: same-city and missing-outbound rows still cannot dispatch
+  ---
+  duration_ms: 0.228726
+  type: 'test'
+  ...
+# Subtest: N: failed goods fetch sends no form, reopening Automation retries full inventory
+ok 89 - N: failed goods fetch sends no form, reopening Automation retries full inventory
+  ---
+  duration_ms: 2.888075
+  type: 'test'
+  ...
+# Subtest: AK1: vredgad (Wrathful mood) renders an English label, not the raw Swedish string
+ok 90 - AK1: vredgad (Wrathful mood) renders an English label, not the raw Swedish string
+  ---
+  duration_ms: 0.711369
+  type: 'test'
+  ...
+# Subtest: AK1b: tveksam (Suspicious mood) renders an English label, not the raw Swedish string
+ok 91 - AK1b: tveksam (Suspicious mood) renders an English label, not the raw Swedish string
+  ---
+  duration_ms: 0.174646
+  type: 'test'
+  ...
+# Subtest: AK2: vardig and overdadig — already-correct-looking values — still translate correctly
+ok 92 - AK2: vardig and overdadig — already-correct-looking values — still translate correctly
+  ---
+  duration_ms: 0.111517
+  type: 'test'
+  ...
+# Subtest: AK3: enkel (pre-first-tick fallback) gets an honest label, not a fake tier name
+ok 93 - AK3: enkel (pre-first-tick fallback) gets an honest label, not a fake tier name
+  ---
+  duration_ms: 0.110463
+  type: 'test'
+  ...
+# Subtest: AK4: a value the server never sends still falls back to itself, not a fabricated label
+ok 94 - AK4: a value the server never sends still falls back to itself, not a fabricated label
+  ---
+  duration_ms: 0.121716
+  type: 'test'
+  ...
+# Subtest: Alpha: realm god waiting time uses game days and blocks Offer
+ok 95 - Alpha: realm god waiting time uses game days and blocks Offer
+  ---
+  duration_ms: 9.307996
+  type: 'test'
+  ...
+# Subtest: Alpha: active gift shows its remaining game days and cannot be offered again
+ok 96 - Alpha: active gift shows its remaining game days and cannot be offered again
+  ---
+  duration_ms: 0.21276
+  type: 'test'
+  ...
+# Subtest: Alpha: affordable available prayer still exposes the real cast action
+ok 97 - Alpha: affordable available prayer still exposes the real cast action
+  ---
+  duration_ms: 0.110646
+  type: 'test'
+  ...
+# Subtest: Alpha B: unused departure gift remains pending after god wait expires
+ok 98 - Alpha B: unused departure gift remains pending after god wait expires
+  ---
+  duration_ms: 0.24697
+  type: 'test'
+  ...
+# Subtest: Alpha B: pending ship gift shows god wait separately without a gift duration
+ok 99 - Alpha B: pending ship gift shows god wait separately without a gift duration
+  ---
+  duration_ms: 0.383856
+  type: 'test'
+  ...
+# Subtest: Alpha B: consumed departure gift waits for the god before another Offer
+ok 100 - Alpha B: consumed departure gift waits for the god before another Offer
+  ---
+  duration_ms: 0.207856
+  type: 'test'
+  ...
+# Subtest: temple rows render the server reference and mixed next gift without repricing
+ok 101 - temple rows render the server reference and mixed next gift without repricing
+  ---
+  duration_ms: 0.254411
+  type: 'test'
+  ...
+# Subtest: quarter-grain reference and smaller silver debit remain visible
+ok 102 - quarter-grain reference and smaller silver debit remain visible
+  ---
+  duration_ms: 0.141328
+  type: 'test'
+  ...
+# Subtest: unfunded temple shows all-or-nothing outcome and escapes the city name
+ok 103 - unfunded temple shows all-or-nothing outcome and escapes the city name
+  ---
+  duration_ms: 0.143542
+  type: 'test'
+  ...
+# Subtest: realm without temples explains the missing gain
+ok 104 - realm without temples explains the missing gain
+  ---
+  duration_ms: 0.060924
+  type: 'test'
+  ...
+# Subtest: Kult controller renders the realm breakdown and templeless net from the province API
+ok 105 - Kult controller renders the realm breakdown and templeless net from the province API
+  ---
+  duration_ms: 17.475349
+  type: 'test'
+  ...
+# Subtest: ORDER15: each temple names its own offering row; prayer shows the temple it needs
+ok 106 - ORDER15: each temple names its own offering row; prayer shows the temple it needs
+  ---
+  duration_ms: 0.148364
+  type: 'test'
+  ...
+# Subtest: everyday result has no synthetic silent answer; legacy and recorded history retain theirs
+ok 107 - everyday result has no synthetic silent answer; legacy and recorded history retain theirs
+  ---
+  duration_ms: 0.083425
+  type: 'test'
+  ...
+# Subtest: concrete temple and kharis blockers stay visible during a god wait
+ok 108 - concrete temple and kharis blockers stay visible during a god wait
+  ---
+  duration_ms: 0.130554
+  type: 'test'
+  ...
+# Subtest: preparation is reachable without the traditional recipe, not a promise that payment will succeed
+ok 109 - preparation is reachable without the traditional recipe, not a promise that payment will succeed
+  ---
+  duration_ms: 0.095788
+  type: 'test'
+  ...
+# Subtest: dispatch cult city selection is exact and cannot fall back to the capital for another city
+ok 110 - dispatch cult city selection is exact and cannot fall back to the capital for another city
+  ---
+  duration_ms: 0.080485
+  type: 'test'
+  ...
+# Subtest: cargo counts every quantity equally and shows total overload
+ok 111 - cargo counts every quantity equally and shows total overload
+  ---
+  duration_ms: 12.12981
+  type: 'test'
+  ...
+# Subtest: manifest inputs keep positive fractional amounts and omit empty rows
+ok 112 - manifest inputs keep positive fractional amounts and omit empty rows
+  ---
+  duration_ms: 0.28659
+  type: 'test'
+  ...
+# Subtest: list outcomes and cargo table show every good without exposing sender city
+ok 113 - list outcomes and cargo table show every good without exposing sender city
+  ---
+  duration_ms: 1.4556
+  type: 'test'
+  ...
+1..113
+# tests 113
+# suites 0
+# pass 113
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 104.337722

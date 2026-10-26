@@ -155,3 +155,22 @@ test('A.1: letter and trade-offer dispatches name the Wanax that Reply opens (Ti
   // Other kinds never become Reply, even with a stray id.
   assert.equal(letterPersonFor('UnitArrived', { sender_id: 'p-x' }), '');
 });
+
+test('a delayed route lookup cannot replace a newer dispatch or reopen a closed window',async()=>{
+ const {openDispatchWindow,closeDispatchWindow}=await import('./dispatch_window.js');
+ const saved={document:globalThis.document,window:globalThis.window,localStorage:globalThis.localStorage,fetch:globalThis.fetch};
+ const classes=new Set();const element=()=>({innerHTML:'',style:{},classList:{add:k=>classes.add(k),remove:k=>classes.delete(k),toggle(){}},addEventListener(){}});
+ const overlay=element(),body=element(),node=element();
+ globalThis.document={body:node,getElementById:id=>id==='dispatch-window-overlay'?overlay:id==='dw-body'?body:id==='net-status'?null:node};
+ globalThis.window={matchMedia:()=>({matches:false})};globalThis.localStorage={getItem:()=>null};
+ State.WORLD_ID='world';State.provinceData=[{id:'city',own:true,name:'New city',q:0,r:0}];
+ let finish;
+ globalThis.fetch=async url=>String(url).includes('standing-orders')?new Promise(resolve=>{finish=()=>resolve(new Response('[{"id":"route"}]',{status:200}));}):new Response('{"muted_kinds":[]}',{status:200});
+ try{
+  const pending=openDispatchWindow('StandingOrderPaused',{standing_order_id:'route'});
+  await openDispatchWindow('BuildComplete',{settlement_id:'city',building_type:'lumbermill',settlement_name:'New city'});
+  const newest=body.innerHTML;finish();await pending;assert.equal(body.innerHTML,newest,'stale route overwrote the newer completion');
+  const closed=openDispatchWindow('StandingOrderPaused',{standing_order_id:'route'});closeDispatchWindow();finish();await closed;
+  assert.equal(classes.has('open'),false,'late route lookup reopened dismissed dispatch');
+ }finally{closeDispatchWindow();Object.assign(globalThis,saved);}
+});

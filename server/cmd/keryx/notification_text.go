@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/unit"
 	"sort"
 	"strings"
 )
@@ -136,6 +138,11 @@ func printNotificationSummary(c *Client, n notificationItem) {
 		Type              string             `json:"type"`
 		UnitType          string             `json:"unit_type"`
 		BuildingType      string             `json:"building_type"`
+		BuildingName      string             `json:"building_name"`
+		SettlementName    string             `json:"settlement_name"`
+		UnitName          string             `json:"unit_name"`
+		HexQ              *int               `json:"hex_q"`
+		HexR              *int               `json:"hex_r"`
 		Temple            string             `json:"temple"` // a temple's name, "Temple of Potnia"
 		OutputKey         string             `json:"output_key"`
 		Produced          float64            `json:"produced"`
@@ -187,7 +194,7 @@ func printNotificationSummary(c *Client, n notificationItem) {
 	if json.Unmarshal(n.Body, &b) != nil {
 		return
 	}
-	subject := firstNotificationText(b.Name, b.UnitType, b.Type, "A unit")
+	subject := firstNotificationText(b.Name, unit.DisplayName(firstNotificationText(b.UnitType, b.Type)), "A unit")
 	city := firstNotificationText(b.Name, "The city")
 	at := fmt.Sprintf("(%d, %d)", b.Q, b.R)
 	cargo := []string{}
@@ -201,13 +208,14 @@ func printNotificationSummary(c *Client, n notificationItem) {
 	case "OpeningDispatch":
 		line = firstNotificationText(b.Title, "Opening dispatch")
 	case "BuildComplete":
-		what := notificationWords(b.BuildingType)
-		if b.Temple != "" {
-			what = b.Temple
+		what := firstNotificationText(b.Temple, b.BuildingName, province.BuildingDisplayName(b.BuildingType))
+		site := ""
+		if b.HexQ != nil && b.HexR != nil {
+			site = fmt.Sprintf(" at (%d,%d)", *b.HexQ, *b.HexR)
 		}
-		line = fmt.Sprintf("%s completed %s", city, what)
-		if b.Level > 0 {
-			line += fmt.Sprintf(" (level %d)", b.Level)
+		line = fmt.Sprintf("%s built%s for %s", what, site, firstNotificationText(b.SettlementName, b.Name, "your city"))
+		if b.BuildingType == "lumbermill" || b.BuildingType == "mine" || b.BuildingType == "farm" || b.BuildingType == "stonequarry" {
+			line += " — place workers to start production"
 		}
 	case "GoodsCrafted":
 		line = fmt.Sprintf("Cast %s %s", notificationAmount(b.Produced), b.OutputKey)
@@ -215,7 +223,7 @@ func printNotificationSummary(c *Client, n notificationItem) {
 			line += " from " + from
 		}
 	case "TrainComplete":
-		line = fmt.Sprintf("Training complete: %d %s", b.Count, notificationWords(b.UnitType))
+		line = fmt.Sprintf("%s ready in %s", firstNotificationText(b.UnitName, unit.DisplayName(b.UnitType)), firstNotificationText(b.SettlementName, "your city"))
 	case "ArmyArrival":
 		line = "Your army arrived"
 		if b.Outcome != "" {
@@ -229,7 +237,7 @@ func printNotificationSummary(c *Client, n notificationItem) {
 			line += fmt.Sprintf(" — %d/%d catchment hexes known", *b.KnownHexes, *b.KnownHexes+b.UnknownHexes)
 		}
 		if len(b.PoseidonGift) > 0 && string(b.PoseidonGift) != "false" && string(b.PoseidonGift) != "null" {
-			line += " — Poseidon grants a galley"
+			line += " — Poseidon grants a Galley"
 		}
 	case "OutpostEstablished":
 		line = "Your outpost was established"
@@ -327,7 +335,7 @@ func printNotificationSummary(c *Client, n notificationItem) {
 	case "ShipStranded":
 		line = "Your ship has nowhere left to dock and sits stranded at " + at + " — give it a new order"
 	case "SentryAlerted":
-		line = fmt.Sprintf("Sentry spotted %s's %s at %s", firstNotificationText(b.ForeignOwner, "an unknown Wanax"), firstNotificationText(b.ForeignType, "unit"), at)
+		line = fmt.Sprintf("Sentry spotted %s's %s at %s", firstNotificationText(b.ForeignOwner, "an unknown Wanax"), firstNotificationText(unit.DisplayName(b.ForeignType), "unit"), at)
 	case "StandingOrderDispatched":
 		leg := "setting out"
 		if b.Leg == "return" {

@@ -639,3 +639,19 @@ async function refreshCityBuildings(provinceID) {
     }
   } catch(e) { console.error('refreshCityBuildings', e); }
 }
+
+// Select the owning city before loading: a dispatch must never open the capital
+// as a substitute for the city named in its payload.
+export async function openCityFromDispatch(action) {
+ const city=(State.provinceData||[]).find(c=>c.own&&c.id===action.id);
+ if(!city)return;
+ State.cityViewID=city.id;State.selectedHex={q:city.q,r:city.r};State.dirty=true;
+ window.centreOn?.(city.q,city.r);window.openDrawer?.('city');
+ await loadCityDrawer();
+ document.querySelector('#city-body [data-tab="produktion"]')?.click();
+ if(action.type==='staff'){
+  const grid=document.getElementById('city-gubbe-grid');
+  if(grid)await renderGubbeGrid(grid,city.id,city.q,city.r,{selected:action.hex?null:'city',targetHex:action.hex,buildingType:action.building,god:action.god});
+  grid?.scrollIntoView({block:'start'});
+ }
+}

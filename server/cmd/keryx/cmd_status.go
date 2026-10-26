@@ -1376,5 +1376,5 @@ func buildingLabel(m map[string]any) string {
 		return name
 	}
 	t, _ := m["type"].(string)
-	return t
+	return province.BuildingDisplayName(t)
 }
