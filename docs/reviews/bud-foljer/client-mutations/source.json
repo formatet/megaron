@@ -1,0 +1,13 @@
+{
+  "source_commit": "e38aab2847dee2860751c5d6e0260cd69f670d18",
+  "targets": {
+    "server/cmd/keryx/cmd_unit.go": "24ee83ad7ca4c7a1f1925e59fed0ceead1b865025a68cc3f1eecd4477f301a73",
+    "server/cmd/keryx/cmd_unit_orders_en_route.go": "4c688c3fd0cd9295b9346d582e72a8972ef8040d9ea922cee7aa7b0c41ac812c",
+    "web/static/js/megaron/ui/runner_status.js": "82ae8e09a2eab1b023b9b9c91d4293390f01529b71c2f280000a7002ce2cb62f",
+    "web/static/js/megaron/ui/stance.js": "17eccbb97aafa39e3d0d3095f03591887f721a35d85953c997c85f4ac7a0a35f",
+    "web/static/js/megaron/ui/marchctx.js": "a279f2e7f85c8dcf5d7d408766a21ea7842a476c7af95233ae9336c3e632846d",
+    "web/static/js/megaron/ui/drawers/war.js": "087f432c71f2c86ddc2591c8be0012dc0a4ff48f2d14f03dfb01f9317747f0c4",
+    "server/api/handlers/unit.go": "367e5087141df6e4571bb92af5f0d8469c5af7d39b317f9648530f7b42e73cb7",
+    "server/api/handlers/world.go": "f8fd902555e06740f945aa06b5eb704e74aeea006414fa9533f3bed00f6a7f36"
+  }
+}

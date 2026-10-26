@@ -1,0 +1,149 @@
+{
+  "source_commit": "e38aab2847dee2860751c5d6e0260cd69f670d18",
+  "checkout": "/tmp/megaron-pursuit-client-mutants-20261026",
+  "suites": {
+    "js": [
+      "node",
+      "--test",
+      "web/static/js/megaron/ui/runner_status.test.mjs",
+      "web/static/js/megaron/ui/stance.test.mjs",
+      "web/static/js/megaron/ui/marchctx.test.mjs",
+      "web/static/js/megaron/ui/war_cards.test.mjs"
+    ],
+    "keryx": [
+      "/tmp/megaron-pursuit-client-mutants-20261026/tools/gotest.sh",
+      "./cmd/keryx",
+      "-run",
+      "^TestOrdersEnRoutePursuit",
+      "-v"
+    ],
+    "api": [
+      "/tmp/megaron-pursuit-client-mutants-20261026/tools/gotest.sh",
+      "./api/handlers",
+      "-run",
+      "^TestOrderPursuitAPI",
+      "-v"
+    ]
+  },
+  "mutants": [
+    {
+      "name": "keryx-json-field",
+      "file": "server/cmd/keryx/cmd_unit.go",
+      "old": "json:\"following_unit\"",
+      "new": "json:\"follow_unit\"",
+      "expected_test": "TestOrdersEnRoutePursuitUsesNextMeeting",
+      "assertion_red": true,
+      "observationally_redundant_survivor": false,
+      "source_sha256": "24ee83ad7ca4c7a1f1925e59fed0ceead1b865025a68cc3f1eecd4477f301a73",
+      "mutated_sha256": "5743ed2e839ade130f3a2e83bca720af229c329b5d2d6ead3df6e9db90e1992c",
+      "restored_sha256": "24ee83ad7ca4c7a1f1925e59fed0ceead1b865025a68cc3f1eecd4477f301a73"
+    },
+    {
+      "name": "keryx-pending",
+      "file": "server/cmd/keryx/cmd_unit_orders_en_route.go",
+      "old": "if o.FollowingUnit {",
+      "new": "if false && o.FollowingUnit {",
+      "expected_test": "TestOrdersEnRoutePursuitUsesNextMeeting",
+      "assertion_red": true,
+      "observationally_redundant_survivor": false,
+      "source_sha256": "4c688c3fd0cd9295b9346d582e72a8972ef8040d9ea922cee7aa7b0c41ac812c",
+      "mutated_sha256": "2f3ea60a81262e166bc0f6283ec899de2171f98c45e96502ac0d35e8b8f5447d",
+      "restored_sha256": "4c688c3fd0cd9295b9346d582e72a8972ef8040d9ea922cee7aa7b0c41ac812c"
+    },
+    {
+      "name": "web-runner-status",
+      "file": "web/static/js/megaron/ui/runner_status.js",
+      "old": "if (runner.following_unit) {",
+      "new": "if (false && runner.following_unit) {",
+      "expected_test": "order pursuit: next meeting time never promises delivery to a moving unit",
+      "assertion_red": true,
+      "observationally_redundant_survivor": false,
+      "source_sha256": "82ae8e09a2eab1b023b9b9c91d4293390f01529b71c2f280000a7002ce2cb62f",
+      "mutated_sha256": "b04bc8e5c2a5f2da28dde8b56b05200c3cd7848d8cf3a95000e76e2d67eadc7d",
+      "restored_sha256": "82ae8e09a2eab1b023b9b9c91d4293390f01529b71c2f280000a7002ce2cb62f"
+    },
+    {
+      "name": "web-stance-receipt",
+      "file": "web/static/js/megaron/ui/stance.js",
+      "old": "if (d?.following_unit) return",
+      "new": "if (false && d?.following_unit) return",
+      "expected_test": "stance receipt: following-unit time is the next meeting, not guaranteed delivery",
+      "assertion_red": true,
+      "observationally_redundant_survivor": false,
+      "source_sha256": "17eccbb97aafa39e3d0d3095f03591887f721a35d85953c997c85f4ac7a0a35f",
+      "mutated_sha256": "96a406c32e69c05676b0b86d062b544b17217a8b6a8e514a78a0c663a20581c8",
+      "restored_sha256": "17eccbb97aafa39e3d0d3095f03591887f721a35d85953c997c85f4ac7a0a35f"
+    },
+    {
+      "name": "web-march-receipt",
+      "file": "web/static/js/megaron/ui/marchctx.js",
+      "old": "dispatched && first.data.following_unit",
+      "new": "false && dispatched && first.data.following_unit",
+      "expected_test": "march receipt: a following Runner",
+      "assertion_red": true,
+      "observationally_redundant_survivor": false,
+      "source_sha256": "a279f2e7f85c8dcf5d7d408766a21ea7842a476c7af95233ae9336c3e632846d",
+      "mutated_sha256": "9bde17849b026c045a4a0f8f01ab288088e5f0392af754af106e32ddf043e86f",
+      "restored_sha256": "a279f2e7f85c8dcf5d7d408766a21ea7842a476c7af95233ae9336c3e632846d"
+    },
+    {
+      "name": "web-recall-redirect-receipt",
+      "file": "web/static/js/megaron/ui/drawers/war.js",
+      "old": "if (d?.following_unit) return",
+      "new": "if (false && d?.following_unit) return",
+      "expected_test": "recall and redirect receipts qualify the first meeting when the Runner follows",
+      "assertion_red": true,
+      "observationally_redundant_survivor": false,
+      "source_sha256": "087f432c71f2c86ddc2591c8be0012dc0a4ff48f2d14f03dfb01f9317747f0c4",
+      "mutated_sha256": "6564d4ec1b6144e87db17b4cc01196067995d0efaa8d0404c1d3e0e458aeb687",
+      "restored_sha256": "087f432c71f2c86ddc2591c8be0012dc0a4ff48f2d14f03dfb01f9317747f0c4"
+    },
+    {
+      "name": "api-opt-in",
+      "file": "server/api/handlers/unit.go",
+      "old": "payload.FollowUnit = category == string(unit.CategoryLand)",
+      "new": "payload.FollowUnit = false && category == string(unit.CategoryLand)",
+      "expected_test": "TestOrderPursuitAPI_DispatchOptInPersists",
+      "assertion_red": true,
+      "observationally_redundant_survivor": false,
+      "source_sha256": "367e5087141df6e4571bb92af5f0d8469c5af7d39b317f9648530f7b42e73cb7",
+      "mutated_sha256": "3a5c646208fd4fad13cc6b08cbc266f8dcc6ce7c980f0952d743d1b412dfd846",
+      "restored_sha256": "367e5087141df6e4571bb92af5f0d8469c5af7d39b317f9648530f7b42e73cb7"
+    },
+    {
+      "name": "api-owner-metadata",
+      "file": "server/api/handlers/world.go",
+      "old": "if m.Own && orderUnitID != nil {",
+      "new": "if false && m.Own && orderUnitID != nil {",
+      "expected_test": "TestOrderPursuitAPI_MapMetadataOnlyForOwner/owner",
+      "assertion_red": true,
+      "observationally_redundant_survivor": false,
+      "source_sha256": "f8fd902555e06740f945aa06b5eb704e74aeea006414fa9533f3bed00f6a7f36",
+      "mutated_sha256": "0bc1267881886bf70d3091044f18553236ec37f344b7f60be730095b80a2c903",
+      "restored_sha256": "f8fd902555e06740f945aa06b5eb704e74aeea006414fa9533f3bed00f6a7f36"
+    },
+    {
+      "name": "api-foreign-redundant-guard",
+      "file": "server/api/handlers/world.go",
+      "old": "if m.Own && orderUnitID != nil {",
+      "new": "if orderUnitID != nil {",
+      "expected_test": null,
+      "assertion_red": false,
+      "observationally_redundant_survivor": true,
+      "source_sha256": "f8fd902555e06740f945aa06b5eb704e74aeea006414fa9533f3bed00f6a7f36",
+      "mutated_sha256": "bc40fa9baf204c27c78f6902f09504ecf9b507881f74d5753f94e464d37a63b2",
+      "restored_sha256": "f8fd902555e06740f945aa06b5eb704e74aeea006414fa9533f3bed00f6a7f36"
+    }
+  ],
+  "baseline_green": [
+    "js",
+    "keryx",
+    "api"
+  ],
+  "restored_green": [
+    "js",
+    "keryx",
+    "api"
+  ],
+  "clean_checkout_after_restore": true
+}

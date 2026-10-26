@@ -1,0 +1,12 @@
+assertion-red keryx-json-field
+assertion-red keryx-pending
+assertion-red web-runner-status
+assertion-red web-stance-receipt
+assertion-red web-march-receipt
+assertion-red web-recall-redirect-receipt
+assertion-red api-opt-in
+Traceback (most recent call last):
+  File "/tmp/megaron-codex-budfoljer-20261026/tools/order_pursuit_client_mutants.py", line 94, in <module>
+    assert result.returncode != 0, (name, 'mutant survived')
+           ^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('api-foreign-private', 'mutant survived')

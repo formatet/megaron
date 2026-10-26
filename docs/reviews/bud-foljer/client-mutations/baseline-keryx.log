@@ -1,0 +1,7 @@
+» färsk DB på migration 217 · commit e38aab28
+=== RUN   TestOrdersEnRoutePursuitUsesNextMeeting
+--- PASS: TestOrdersEnRoutePursuitUsesNextMeeting (0.00s)
+=== RUN   TestOrdersEnRoutePursuitWaitHasNoDeliveryETA
+--- PASS: TestOrdersEnRoutePursuitWaitHasNoDeliveryETA (0.00s)
+PASS
+ok  	formatet/megaron/server/cmd/keryx	0.003s

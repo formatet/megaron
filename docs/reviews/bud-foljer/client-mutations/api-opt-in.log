@@ -1,0 +1,50 @@
+» färsk DB på migration 217 · commit e38aab28+ändringar
+=== RUN   TestOrderPursuitAPI_DispatchOptInPersists
+=== RUN   TestOrderPursuitAPI_DispatchOptInPersists/march
+2026/10/26 20:00:34 INFO player registered id=9acf9a21-d275-491c-a60b-935941972a7c username=recall-courier-ae7ab6d0-5064-442e-8c3a-9d50e12fdcda
+    unit_order_pursuit_api_test.go:61: receipt lost new land-order contract: {"courier_arrives_at":"2026-10-26T22:00:34.501337247+01:00","courier_due_tick":2,"following_unit":false,"following_wait":false,"messenger_id":"a8acfbc9-b069-4876-94ed-5fec8236b2d4","pursuit_legs":0,"status":"order_dispatched","superseded_messenger_ids":null,"target_q":2,"target_r":1,"unit_id":"710c078c-c36c-4608-be78-73ed40103040","verb":"march"}
+=== RUN   TestOrderPursuitAPI_DispatchOptInPersists/recall
+2026/10/26 20:00:34 INFO player registered id=f74f09d2-2fd9-4f5f-bd5e-1bf95c3a889c username=recall-courier-38ebf34c-4574-4f72-af38-9c19d12f6fff
+    unit_order_pursuit_api_test.go:61: receipt lost new land-order contract: {"catch_up":"on_the_march","courier_arrives_at":"2026-10-26T22:00:34.585069904+01:00","courier_due_tick":2,"following_unit":false,"following_wait":false,"messenger_id":"a85b5a76-4927-4ddd-9268-367362dc428e","mode":"recall","pursuit_legs":0,"status":"order_dispatched","superseded_messenger_ids":null,"unit_id":"f2474b19-8e35-4a1e-bfa2-3e6ec40c83a9","verb":"recall"}
+=== RUN   TestOrderPursuitAPI_DispatchOptInPersists/redirect
+2026/10/26 20:00:34 INFO player registered id=c72adf8d-ecb8-4571-b2d9-8ce3c5bd8e90 username=recall-courier-9e9ad7f7-81fd-4061-a226-a9907be40c10
+    unit_order_pursuit_api_test.go:61: receipt lost new land-order contract: {"catch_up":"on_the_march","courier_arrives_at":"2026-10-26T22:00:34.655868498+01:00","courier_due_tick":2,"following_unit":false,"following_wait":false,"messenger_id":"f5068138-5303-4e42-bd8f-45982bf9c4fd","mode":"redirect","pursuit_legs":0,"status":"order_dispatched","superseded_messenger_ids":null,"target_q":2,"target_r":1,"unit_id":"ea9fe827-74c0-4e03-a115-0d3f4d3d54d2","verb":"redirect"}
+=== RUN   TestOrderPursuitAPI_DispatchOptInPersists/stance
+2026/10/26 20:00:34 INFO player registered id=715b599c-fcea-4664-8d51-36d32416b09f username=recall-courier-9d783037-1cce-424d-b27a-408d7d8d9b22
+    unit_order_pursuit_api_test.go:61: receipt lost new land-order contract: {"courier_arrives_at":"2026-10-26T22:00:34.733453844+01:00","courier_due_tick":2,"following_unit":false,"following_wait":false,"messenger_id":"5e3c376c-afa6-4d85-9854-49a97969a94b","pursuit_legs":0,"stance":"storm","status":"order_dispatched","superseded_messenger_ids":null,"unit_id":"27114a24-3a41-4ea3-a482-1bc3c355afc9","verb":"stance"}
+=== RUN   TestOrderPursuitAPI_DispatchOptInPersists/stance_pursuit
+2026/10/26 20:00:34 INFO player registered id=9d482d5f-4037-469a-bbf3-deed79b1cd6f username=recall-courier-28bef88f-9112-4970-9cf5-e7ce0f9c1e45
+    unit_order_pursuit_api_test.go:61: receipt lost new land-order contract: {"catch_up":"on_the_march","courier_arrives_at":"2026-10-26T22:00:34.813692789+01:00","courier_due_tick":2,"following_unit":false,"following_wait":false,"intercept_q":4,"intercept_r":0,"messenger_id":"a4b2ef2c-d4d1-4a1a-96db-42b08c828d48","pursuit_legs":0,"stance":"storm","status":"order_dispatched","superseded_messenger_ids":null,"unit_arrives_at":"2026-10-26T22:15:34.812298+01:00","unit_id":"e071abab-e81e-46e7-9f0d-d7356f615bb9","verb":"stance_pursuit"}
+--- FAIL: TestOrderPursuitAPI_DispatchOptInPersists (0.39s)
+    --- FAIL: TestOrderPursuitAPI_DispatchOptInPersists/march (0.09s)
+    --- FAIL: TestOrderPursuitAPI_DispatchOptInPersists/recall (0.07s)
+    --- FAIL: TestOrderPursuitAPI_DispatchOptInPersists/redirect (0.08s)
+    --- FAIL: TestOrderPursuitAPI_DispatchOptInPersists/stance (0.08s)
+    --- FAIL: TestOrderPursuitAPI_DispatchOptInPersists/stance_pursuit (0.08s)
+=== RUN   TestOrderPursuitAPI_ListKeepsMetadataPrivateAndWaiting
+2026/10/26 20:00:34 INFO player registered id=49d927c7-dcd6-4d5c-85f5-d4dd68175325 username=recall-courier-4a65f2b8-7b57-400e-9bdc-9da0754486ef
+2026/10/26 20:00:34 INFO player registered id=dede1031-b35f-4f6e-8288-e113c9862811 username=pursuit-other-b7b904d1-9bf8-4c25-9e42-c9701b3ad14c
+=== RUN   TestOrderPursuitAPI_ListKeepsMetadataPrivateAndWaiting/travel
+    unit_order_pursuit_api_test.go:166: metadata/intent lost: map[arrives_at:2026-10-26T22:00:34.891649+01:00 following_unit:false following_wait:false pursuit_legs:2 target_q:2 target_r:1 verb:redirect]
+=== RUN   TestOrderPursuitAPI_ListKeepsMetadataPrivateAndWaiting/waiting
+    unit_order_pursuit_api_test.go:166: metadata/intent lost: map[arrives_at:2026-10-26T22:00:34.891649+01:00 following_unit:false following_wait:true pursuit_legs:2 target_q:2 target_r:1 verb:redirect]
+=== RUN   TestOrderPursuitAPI_ListKeepsMetadataPrivateAndWaiting/awaiting_passage
+    unit_order_pursuit_api_test.go:166: metadata/intent lost: map[arrives_at:2026-10-26T22:00:34.891649+01:00 following_unit:false following_wait:true passage_status:awaiting_passage pursuit_legs:2 target_q:2 target_r:1 verb:redirect]
+=== RUN   TestOrderPursuitAPI_ListKeepsMetadataPrivateAndWaiting/returning_sealed
+    unit_order_pursuit_api_test.go:166: metadata/intent lost: map[arrives_at:2026-10-26T22:00:34.891649+01:00 following_unit:false following_wait:true passage_status:returning_sealed pursuit_legs:2 target_q:2 target_r:1 verb:redirect]
+--- FAIL: TestOrderPursuitAPI_ListKeepsMetadataPrivateAndWaiting (0.15s)
+    --- FAIL: TestOrderPursuitAPI_ListKeepsMetadataPrivateAndWaiting/travel (0.01s)
+    --- FAIL: TestOrderPursuitAPI_ListKeepsMetadataPrivateAndWaiting/waiting (0.00s)
+    --- FAIL: TestOrderPursuitAPI_ListKeepsMetadataPrivateAndWaiting/awaiting_passage (0.00s)
+    --- FAIL: TestOrderPursuitAPI_ListKeepsMetadataPrivateAndWaiting/returning_sealed (0.00s)
+=== RUN   TestOrderPursuitAPI_MapMetadataOnlyForOwner
+2026/10/26 20:00:35 INFO player registered id=20f1792f-5cd8-4ff4-a5a6-54a98b5f3788 username=recall-courier-8193bf42-0448-4978-9581-b9190e3de321
+2026/10/26 20:00:35 INFO player registered id=7b5b0f45-aa15-42a2-9876-da41261d6e5f username=pursuit-viewer-15878500-f5ea-4afd-a417-a2289927477a
+=== RUN   TestOrderPursuitAPI_MapMetadataOnlyForOwner/owner
+=== RUN   TestOrderPursuitAPI_MapMetadataOnlyForOwner/foreign_visible
+--- PASS: TestOrderPursuitAPI_MapMetadataOnlyForOwner (0.13s)
+    --- PASS: TestOrderPursuitAPI_MapMetadataOnlyForOwner/owner (0.01s)
+    --- PASS: TestOrderPursuitAPI_MapMetadataOnlyForOwner/foreign_visible (0.01s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.674s
+FAIL

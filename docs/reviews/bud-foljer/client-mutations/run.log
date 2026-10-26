@@ -1,0 +1,10 @@
+assertion-red keryx-json-field
+assertion-red keryx-pending
+assertion-red web-runner-status
+assertion-red web-stance-receipt
+assertion-red web-march-receipt
+assertion-red web-recall-redirect-receipt
+assertion-red api-opt-in
+assertion-red api-owner-metadata
+observationally-redundant-survivor api-foreign-redundant-guard
+PASS 8 named assertion-red mutants + 1 documented redundant-guard survivor; exact SHA restore; JS/Keryx/API fresh green

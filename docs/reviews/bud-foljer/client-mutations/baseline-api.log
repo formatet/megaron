@@ -1,0 +1,40 @@
+» färsk DB på migration 217 · commit e38aab28
+=== RUN   TestOrderPursuitAPI_DispatchOptInPersists
+=== RUN   TestOrderPursuitAPI_DispatchOptInPersists/march
+2026/10/26 20:00:24 INFO player registered id=ca6862f7-bdd4-411d-8a0e-aa3d37430cc2 username=recall-courier-fdcaa848-58bb-4174-bbb5-d22cd8a05083
+=== RUN   TestOrderPursuitAPI_DispatchOptInPersists/recall
+2026/10/26 20:00:24 INFO player registered id=b67ff7d7-c42f-416c-9656-2a462313df84 username=recall-courier-f1f7e694-b1e8-4a7e-a620-445a39582e16
+=== RUN   TestOrderPursuitAPI_DispatchOptInPersists/redirect
+2026/10/26 20:00:24 INFO player registered id=eb341fce-9200-42ae-bbab-0d2225cabefc username=recall-courier-88690267-4a04-45b1-9802-d1b712086041
+=== RUN   TestOrderPursuitAPI_DispatchOptInPersists/stance
+2026/10/26 20:00:24 INFO player registered id=8176924e-ab6c-4d6c-addc-2098d13f84dc username=recall-courier-c7123496-2022-4161-a7cc-7fd6469699e0
+=== RUN   TestOrderPursuitAPI_DispatchOptInPersists/stance_pursuit
+2026/10/26 20:00:24 INFO player registered id=de242a71-15ba-4215-9049-363c87f4328f username=recall-courier-f41c9d54-db20-4fbb-baeb-203813b8d49b
+--- PASS: TestOrderPursuitAPI_DispatchOptInPersists (0.40s)
+    --- PASS: TestOrderPursuitAPI_DispatchOptInPersists/march (0.08s)
+    --- PASS: TestOrderPursuitAPI_DispatchOptInPersists/recall (0.08s)
+    --- PASS: TestOrderPursuitAPI_DispatchOptInPersists/redirect (0.08s)
+    --- PASS: TestOrderPursuitAPI_DispatchOptInPersists/stance (0.08s)
+    --- PASS: TestOrderPursuitAPI_DispatchOptInPersists/stance_pursuit (0.08s)
+=== RUN   TestOrderPursuitAPI_ListKeepsMetadataPrivateAndWaiting
+2026/10/26 20:00:24 INFO player registered id=e578652a-997a-4743-a1c9-4284590a5103 username=recall-courier-a7522130-ef9e-49ad-b309-1f9a6d82da26
+2026/10/26 20:00:24 INFO player registered id=39c4f2dd-14d6-4f20-bf1b-573be10daab0 username=pursuit-other-038ae51b-c3ac-4296-a19e-812deaf38572
+=== RUN   TestOrderPursuitAPI_ListKeepsMetadataPrivateAndWaiting/travel
+=== RUN   TestOrderPursuitAPI_ListKeepsMetadataPrivateAndWaiting/waiting
+=== RUN   TestOrderPursuitAPI_ListKeepsMetadataPrivateAndWaiting/awaiting_passage
+=== RUN   TestOrderPursuitAPI_ListKeepsMetadataPrivateAndWaiting/returning_sealed
+--- PASS: TestOrderPursuitAPI_ListKeepsMetadataPrivateAndWaiting (0.15s)
+    --- PASS: TestOrderPursuitAPI_ListKeepsMetadataPrivateAndWaiting/travel (0.01s)
+    --- PASS: TestOrderPursuitAPI_ListKeepsMetadataPrivateAndWaiting/waiting (0.00s)
+    --- PASS: TestOrderPursuitAPI_ListKeepsMetadataPrivateAndWaiting/awaiting_passage (0.00s)
+    --- PASS: TestOrderPursuitAPI_ListKeepsMetadataPrivateAndWaiting/returning_sealed (0.00s)
+=== RUN   TestOrderPursuitAPI_MapMetadataOnlyForOwner
+2026/10/26 20:00:24 INFO player registered id=775676e2-8e47-4606-a9ee-26df96343ad5 username=recall-courier-7518640b-aa2d-41a3-bb90-b33e47e2f11e
+2026/10/26 20:00:24 INFO player registered id=e3f13c38-6879-492a-96e6-df27e3494c08 username=pursuit-viewer-6506c04d-7c2e-41a3-957b-1c7b9ddd1167
+=== RUN   TestOrderPursuitAPI_MapMetadataOnlyForOwner/owner
+=== RUN   TestOrderPursuitAPI_MapMetadataOnlyForOwner/foreign_visible
+--- PASS: TestOrderPursuitAPI_MapMetadataOnlyForOwner (0.13s)
+    --- PASS: TestOrderPursuitAPI_MapMetadataOnlyForOwner/owner (0.01s)
+    --- PASS: TestOrderPursuitAPI_MapMetadataOnlyForOwner/foreign_visible (0.01s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.684s
