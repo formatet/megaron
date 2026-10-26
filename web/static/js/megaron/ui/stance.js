@@ -1,3 +1,4 @@
+import { orderPursuitText } from './runner_status.js';
 // Stance orders, as the War drawer and the march menu word them — pure, so
 // node can test them without a DOM (war.js touches `document` at import).
 //
@@ -18,6 +19,7 @@ export function canTakeStance(u) {
 // formatted courier arrival (fmtArrival(d.courier_arrives_at)).
 export function stanceSentLine(d, when) {
   const s = (d && d.stance) || 'stance';
+  if (d?.following_unit) return '🏃 ' + s + ': ' + orderPursuitText(d, when) + ' The stance bites where the unit stops.';
   const at = d && d.intercept_q != null ? ' at (' + d.intercept_q + ',' + d.intercept_r + ')' : '';
   if (d && d.catch_up === 'on_the_march') {
     return '🏃 ' + s + ': the unit is marching, so the messenger must catch up — reaches it' + at + ' ~' + when

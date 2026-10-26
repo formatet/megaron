@@ -27,3 +27,11 @@ test('stanceSentLine: no messenger can overtake — it follows the unit to its d
 test('stanceSentLine: a standing field unit keeps the plain receipt', () => {
   assert.match(stanceSentLine({ stance: 'storm' }, 'y'), /reaches the unit ~y and applies on delivery/);
 });
+
+test('stance receipt: following-unit time is the next meeting, not guaranteed delivery',()=>{
+ const line=stanceSentLine({following_unit:true,stance:'sentry',catch_up:'at_destination'},'today 18:30');
+ assert.match(line,/Runner following the unit/);
+ assert.match(line,/next meeting today 18:30/);
+ assert.match(line,/applies when they meet/);
+ assert.doesNotMatch(line,/reaches the unit|reaching it|applies where it stopped/);
+});

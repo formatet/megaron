@@ -208,3 +208,26 @@ test('a ship bound for an own city promises to dock and stay, and land everyone 
  assert.match(html,/docks and stays/);assert.match(html,/Everyone aboard joins the city’s garrison/);
  assert.doesNotMatch(html,/returns to port automatically|>Recall<|>Redirect</);
 });
+
+test('pursuit pending belongs to its named unit and uses the current Runner meeting time',()=>{
+ const saved=State.messengerData;
+ try{
+  State.messengerData=[{own:true,kind:'order',order_unit_id:'u',following_unit:true,pursuit_legs:2,arrives_at:new Date(Date.now()+3600e3).toISOString()}];
+  const html=renderUnitCard(unit({display_name:'3rd Spearmen of Lato'}));
+  assert.match(html,/3rd Spearmen of Lato/);
+  assert.match(html,/Runner following the unit/);
+  assert.match(html,/next meeting/);
+  assert.doesNotMatch(renderUnitCard(unit({id:'another'})),/Runner following/);
+ }finally{State.messengerData=saved;}
+});
+
+test('recall and redirect receipts qualify the first meeting when the Runner follows',async()=>{
+ const {orderSentLine}=await import('./drawers/war.js');
+ assert.equal(typeof orderSentLine,'function');
+ for(const verb of ['Recall','Redirect']){
+  const line=orderSentLine({status:'order_dispatched',following_unit:true,courier_arrives_at:new Date(Date.now()+3600e3).toISOString(),catch_up:'at_destination'},verb);
+  assert.match(line,/Runner following the unit/);
+  assert.match(line,/next meeting/);
+  assert.doesNotMatch(line,/reaches the unit|still present/);
+ }
+});

@@ -19,7 +19,7 @@ import { expeditionMissionText } from '../expedition.js';
 import { chooseMarchTarget } from '../marchctx.js';
 import { fmtNum, fmtDays } from '../fmt_num.js';
 import { fmtTickTime } from '../fmt_clock.js';
-import { orderRunnerHTML } from '../runner_status.js';
+import { orderRunnerHTML, orderPursuitText } from '../runner_status.js';
 import { recallAll, recallAllControlsHTML, recallAllResultHTML } from '../recall_all.js';
 import { roadPanelHTML, roadOrderBody, parseHex } from '../roadorder.js';
 let recallAllResult = '';
@@ -766,10 +766,11 @@ export async function warAbandon(settlementID, name) {
 // so the order needs no messenger (unit.CommandedInPerson, server-side). Read
 // the shape rather than assuming the courier field is there — printing
 // "reaches the unit undefined" was the bug this replaces.
-function orderSentLine(d, verb) {
+export function orderSentLine(d, verb) {
   if (d && d.status === 'order_applied') {
     return verb + ' order given in person — you ride with the host, so it takes effect at once.';
   }
+  if (d?.following_unit) return verb + ' order sent — ' + orderPursuitText(d, fmtArrival(d.courier_arrives_at, d.courier_due_tick)) + supersededOrderNote(d);
   if (d?.catch_up === 'at_destination') return verb + ' order sent by Runner — follows the unit to its destination, arriving ' + fmtArrival(d.courier_arrives_at, d.courier_due_tick) + '. Applies there if the unit is still present.' + supersededOrderNote(d);
   return verb + ' order sent by messenger — reaches the unit ' + fmtArrival(d.courier_arrives_at, d.courier_due_tick) + '.' + supersededOrderNote(d);
 }

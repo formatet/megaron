@@ -1,8 +1,8 @@
 **Command is never instant.** This is the rule that makes Megaron different from most strategy games.
 
-When you tell a unit in the field to turn around, change course or change stance, you do not reach the unit — you send a **Runner**, a real person who must walk to it. The game answers with something like *"Recall order sent by Runner — reaches the unit today 22:40."* Until then the unit keeps doing what it was last told.
+When you tell a unit in the field to turn around, change course or change stance, you do not reach the unit — you send a **Runner**, a real person who must walk to it. The game gives the next meeting estimate, such as *"Runner following the unit — next meeting today 22:40."* Until then the unit keeps doing what it was last told.
 
-While the Runner is still on the road, the order shows under the unit in **War → Army** and in `keryx army`, with the game day he is expected — it disappears once he has delivered it.
+While the Runner is still on the road, the order shows under the unit in **War → Army** and in `keryx army`, with the next meeting time — it disappears once he has delivered it. If the unit moves again, the meeting estimate can change; it does not promise that the order is already delivered.
 
 The one exception is your [[horde|Nomadic Host]]: you travel with it in person, so it obeys at once.
 
@@ -18,7 +18,7 @@ Recall and redirect are sent from **War → Army**, or — for redirect — by r
 
 ## Catching up with a moving unit
 
-A unit on the march does not wait for its orders. A Runner sent to it — to recall it, redirect it or change its [[stances|stance]] — is aimed at the point on its road where he can **catch up** with it, and the game tells you when he will. Runners are quicker than soldiers, but not endlessly: a recall or redirect that cannot catch the unit before it arrives still sends a Runner to its destination. The order applies there if the unit is still present. A stance order still goes — the Runner follows the unit to where it stops.
+A unit on the march does not wait for its orders. A Runner sent to it — to recall it, redirect it or change its [[stances|stance]] — is aimed at the point on its road where he can **catch up** with it, and the game tells you when he will. Runners are quicker than soldiers, but not endlessly: a recall or redirect that cannot catch the unit before it arrives still sends a Runner to its destination. For a newly sent land order, a missed meeting is not the end of the journey: if the unit has moved again, the Runner keeps the order and follows it along a new physical route. March, recall, redirect and stance orders take effect only when the Runner and the unit actually meet. The pending order says when its next meeting is expected and when it is following a new route. If it must wait before it can continue, the pending order says so without promising a delivery time. A Runner cannot deliver to a destroyed unit or one you no longer own.
 
 Letters to other Wanaxes travel the same way, but they are sacred and cannot be stopped: see [[messengers]].
 

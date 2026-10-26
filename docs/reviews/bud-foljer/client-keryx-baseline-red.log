@@ -1,0 +1,13 @@
+» färsk DB på migration 216 · commit 009e8391+ändringar
+--- FAIL: TestOrdersEnRoutePursuitUsesNextMeeting (0.00s)
+    cmd_unit_orders_en_route_test.go:40: pursuit line"Order on its way: redirect to (47,23) — the runner reaches it ≈ 1 Jan 2030 13:30" lacks"Runner following the unit"
+    cmd_unit_orders_en_route_test.go:40: pursuit line"Order on its way: redirect to (47,23) — the runner reaches it ≈ 1 Jan 2030 13:30" lacks"next meeting"
+    cmd_unit_orders_en_route_test.go:44: pursuit promised delivery"Order on its way: redirect to (47,23) — the runner reaches it ≈ 1 Jan 2030 13:30"
+    cmd_unit_orders_en_route_test.go:40: pursuit line"Order on its way: redirect to (47,23) — the runner reaches it ≈ 1 Jan 2030 13:30" lacks"Runner following the unit"
+    cmd_unit_orders_en_route_test.go:40: pursuit line"Order on its way: redirect to (47,23) — the runner reaches it ≈ 1 Jan 2030 13:30" lacks"next meeting"
+    cmd_unit_orders_en_route_test.go:44: pursuit promised delivery"Order on its way: redirect to (47,23) — the runner reaches it ≈ 1 Jan 2030 13:30"
+    cmd_unit_orders_en_route_test.go:47: reroute missing"Order on its way: redirect to (47,23) — the runner reaches it ≈ 1 Jan 2030 13:30"
+    cmd_unit_orders_en_route_test.go:56: unknown meeting"Order on its way: stance change"
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL

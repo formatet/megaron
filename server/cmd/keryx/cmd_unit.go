@@ -425,10 +425,13 @@ type unitRow struct {
 
 // orderEnRoute mirrors the server's orders_en_route entry.
 type orderEnRoute struct {
-	Verb      string `json:"verb"`
-	TargetQ   *int   `json:"target_q"`
-	TargetR   *int   `json:"target_r"`
-	ArrivesAt string `json:"arrives_at"`
+	FollowingUnit bool   `json:"following_unit"`
+	FollowingWait bool   `json:"following_wait"`
+	PursuitLegs   int    `json:"pursuit_legs"`
+	Verb          string `json:"verb"`
+	TargetQ       *int   `json:"target_q"`
+	TargetR       *int   `json:"target_r"`
+	ArrivesAt     string `json:"arrives_at"`
 }
 
 // pickupShipChoice is one ship offered as a pickup choice for a fetchable
@@ -976,9 +979,13 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 			// dispatch receipt with the COURIER's ETA, not a march start.
 			if status, _ := resp["status"].(string); status == "order_dispatched" {
 				fmt.Printf("A Runner carries your march order to unit %s — target %s", unitID[:8], cityTargetLabel(c, targetQ, targetR, cityName))
-				if courierAt, _ := resp["courier_arrives_at"].(string); courierAt != "" {
-					if t, err := time.Parse(time.RFC3339, courierAt); err == nil {
-						fmt.Printf("; the runner reaches it %s", gameETA(c, t))
+				if pursuit := pursuitDispatchText(c, resp); pursuit != "" {
+					fmt.Print("; " + pursuit)
+				} else {
+					if courierAt, _ := resp["courier_arrives_at"].(string); courierAt != "" {
+						if t, err := time.Parse(time.RFC3339, courierAt); err == nil {
+							fmt.Printf("; the runner reaches it %s", gameETA(c, t))
+						}
 					}
 				}
 				fmt.Println(" — the march begins on delivery.")
@@ -1362,13 +1369,17 @@ at delivery appears in notifications with its reason.`,
 			var resp map[string]any
 			json.Unmarshal(data, &resp)
 			fmt.Printf("Recall order sent to unit %s", unitID[:8])
-			if courierAt, _ := resp["courier_arrives_at"].(string); courierAt != "" {
-				if t, err := time.Parse(time.RFC3339, courierAt); err == nil {
-					fmt.Printf(" — Runner arrives %s", gameETA(c, t))
+			if pursuit := pursuitDispatchText(c, resp); pursuit != "" {
+				fmt.Print(" — " + pursuit)
+			} else {
+				if courierAt, _ := resp["courier_arrives_at"].(string); courierAt != "" {
+					if t, err := time.Parse(time.RFC3339, courierAt); err == nil {
+						fmt.Printf(" — Runner arrives %s", gameETA(c, t))
+					}
 				}
-			}
-			if resp["catch_up"] == "at_destination" {
-				fmt.Print("; follows the unit to its destination and applies there if it is still present")
+				if resp["catch_up"] == "at_destination" {
+					fmt.Print("; follows the unit to its destination and applies there if it is still present")
+				}
 			}
 			fmt.Println("; the unit turns home when the order is delivered.")
 			return nil
@@ -1420,13 +1431,17 @@ with its reason.`,
 			}
 			var resp map[string]any
 			json.Unmarshal(data, &resp)
-			fmt.Printf("Unit %s receives a redirect order to %s", unitID[:8], cityTargetLabel(c, newQ, newR, cityName))
-			if resp["catch_up"] == "at_destination" {
-				fmt.Print("; the Runner follows the unit to its destination and applies the order there if it is still present")
-			}
-			if courierAt, _ := resp["courier_arrives_at"].(string); courierAt != "" {
-				if t, err := time.Parse(time.RFC3339, courierAt); err == nil {
-					fmt.Printf(" — Runner arrives %s", gameETA(c, t))
+			if pursuit := pursuitDispatchText(c, resp); pursuit != "" {
+				fmt.Printf("Redirect order sent to unit %s — target %s; %s; it applies when they meet", unitID[:8], cityTargetLabel(c, newQ, newR, cityName), pursuit)
+			} else {
+				fmt.Printf("Unit %s receives a redirect order to %s", unitID[:8], cityTargetLabel(c, newQ, newR, cityName))
+				if resp["catch_up"] == "at_destination" {
+					fmt.Print("; the Runner follows the unit to its destination and applies the order there if it is still present")
+				}
+				if courierAt, _ := resp["courier_arrives_at"].(string); courierAt != "" {
+					if t, err := time.Parse(time.RFC3339, courierAt); err == nil {
+						fmt.Printf(" — Runner arrives %s", gameETA(c, t))
+					}
 				}
 			}
 			fmt.Println(".")
@@ -1670,6 +1685,11 @@ its destination and the stance applies where it stopped.`,
 // to where it stops ("at_destination") — megaron_styrande_beslut §11.
 func stanceDispatchLine(resp map[string]any, stance, unitShort, eta string) string {
 	s := fmt.Sprintf("A Runner carries your stance order (%s) to unit %s", stance, unitShort)
+	if resp["following_unit"] == true {
+		waiting, _ := resp["following_wait"].(bool)
+		waiting = waiting || resp["passage_status"] == "awaiting_passage"
+		return s + " — " + runnerPursuitText(0, eta, waiting) + ". The stance applies when they meet, and bites where the unit stops."
+	}
 	q, qok := resp["intercept_q"].(float64)
 	r, rok := resp["intercept_r"].(float64)
 	at := ""

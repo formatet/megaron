@@ -22,13 +22,13 @@ Right-click a new destination and a unit already marching shows up in the menu t
 
 ## Orders to units already in the field travel by Runner
 
-A unit standing in its city hears you at once. A unit out in the field does not — **Recall** and **Redirect** are carried by a [[runners|Runner]], and the game tells you when he will reach the unit. The horn sounds when the soldiers *receive* the order, not when you give it.
+A unit standing in its city hears you at once. A unit out in the field does not — **Recall** and **Redirect** are carried by a [[runners|Runner]], and the game estimates his next meeting with the unit. The horn sounds when the soldiers *receive* the order, not when you give it.
 
 Recall turns an expedition home to its city, where it rejoins the garrison and files its report ([[sight]]). An ordinary march returns to its departure hex. Redirect sends the unit to the destination you choose.
 
 **War → Army → Recall all**, or `keryx recall --all`, sends a separate recall order to each of your marching units.
 
-Recall and redirect need a passable route from the unit’s current position. If its position or the new route cannot be resolved, the order is refused with a reason. If the Runner cannot catch up during the march, it follows the unit to its destination and delivers there if the unit is still present. A Runner-delivered refusal appears in Dispatches; the unit keeps its existing course. Check the unit and choose a reachable destination.
+Recall and redirect need a passable route from the unit’s current position. If its position or the new route cannot be resolved, the order is refused with a reason. If the Runner cannot catch up during the march, it goes to the destination. For a newly sent land order, if the unit has moved again, the Runner keeps the same order and takes a new physical route to catch it. The order takes effect only when they meet. While the Runner follows a moving unit, **War → Army** and `keryx unit list` show the next meeting estimate, which can change; it is not a guaranteed delivery time. If the Runner must wait before continuing, they show that instead of a delivery time. A destroyed unit or a unit you no longer own cannot receive the order. A Runner-delivered refusal appears in Dispatches; the unit keeps its existing course. Check the unit and choose a reachable destination.
 
 ## Where you can march
 

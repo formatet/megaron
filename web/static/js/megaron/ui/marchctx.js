@@ -1,3 +1,4 @@
+import { orderPursuitText } from './runner_status.js';
 import { openMobilePanel, closeMobilePanel } from './mobile_panels.js';
 import { State } from '../state.js';
 import { fetchAuth } from '../api.js';
@@ -727,7 +728,9 @@ export async function sendMarch() {
     // dispatch, which hasn't started moving yet (unit.go's Recall doc
     // comment: "command is never instant").
     const redirecting = dispatched && first.data.verb === 'redirect';
-    etaEl.innerHTML = dispatched
+    etaEl.innerHTML = dispatched && first.data.following_unit
+      ? 'Order sent' + esc(cityDestinationLabel(destination)) + ' — ' + orderPursuitText(first.data, arrivalHTML(first.data.courier_arrives_at, first.data.courier_due_tick)) + passageNote(first.data) + supersededOrderNote(first.data)
+      : dispatched
       ? 'A messenger carries the order' + esc(cityDestinationLabel(destination)) + ' — reaches the unit ' +
         arrivalHTML(first.data.courier_arrives_at, first.data.courier_due_tick) +
         (first.data.catch_up === 'at_destination' ? '; follows the unit to its destination and applies there if it is still present' : redirecting ? '; the unit holds its current course until then' : '; the march begins on delivery') +

@@ -56,9 +56,26 @@ export function sentStatusHTML(m) {
 export function orderRunnerHTML(runner, nowMs) {
   const line = s => '<div style="font-size:.65rem;color:var(--text-dim)">🏃 ' + s + '</div>';
   const stuck = passagePhrase(runner);
+  if (runner.following_unit) {
+    if (runner.following_wait) return line('Runner waiting to continue following the unit');
+    const following = 'Runner following the unit' + (runner.pursuit_legs > 0 ? ' on a new route' : '');
+    if (stuck) return line(following + ' — ' + stuck + '; the order has not reached the unit');
+    const meetingAt = new Date(runner.arrives_at).getTime();
+    if (!Number.isFinite(meetingAt)) return line(following + ' — meeting time unavailable');
+    if (nowMs >= meetingAt) return line(following + ' — checking the next meeting point…');
+    return line(following + ' — next meeting ' + arrivalHTML(runner.arrives_at) + aboardBit(runner));
+  }
   if (stuck) return line('Messenger ' + stuck + ' — the order has not reached the unit');
   // Once the runner has arrived, the order is being applied server-side (a
   // worker poll away) — say so, not the stale "en route" ETA.
   if (nowMs >= new Date(runner.arrives_at).getTime()) return line('Messenger carrying the order…');
   return line('Messenger en route — order arrives ' + arrivalHTML(runner.arrives_at) + aboardBit(runner));
+}
+
+// Dispatch and roster times are meeting estimates while the unit can move.
+export function orderPursuitText(d, when) {
+  if (d.following_wait) return 'Runner waiting to continue following the unit. The order has not reached it.';
+  if (d.passage_status === 'awaiting_passage') return 'Runner following the unit — waiting for a ship. The order has not reached it.';
+  const following = 'Runner following the unit' + (d.pursuit_legs > 0 ? ' on a new route' : '');
+  return following + ' — ' + (when ? 'next meeting ' + when : 'meeting time unavailable') + '. The order applies when they meet.';
 }

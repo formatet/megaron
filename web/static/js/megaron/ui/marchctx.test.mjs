@@ -443,3 +443,19 @@ test('changing the named selection during preflight cancels the stale send and a
   assert.deepEqual(calls.filter(c=>c.method==='POST').map(c=>c.url),['/api/v1/worlds/selection-change-proof/units/u2/march']);
  }finally{menu.closeMarchCtx();globalThis.fetch=originalFetch;document.getElementById=originalGet;Object.assign(State,before);}
 });
+
+test('march receipt: a following Runner gives a meeting estimate and waits for physical delivery',async()=>{
+ const {State}=await import('../state.js');const originalFetch=globalThis.fetch,originalGet=document.getElementById;
+ const before={...State},controls=new Map();
+ const control=id=>{if(!controls.has(id))controls.set(id,{value:'',checked:false,style:{display:'block'},classList:{toggle(){}},disabled:false,innerHTML:''});return controls.get(id);};
+ try{
+  document.getElementById=control;control('mg-0-0').checked=true;
+  State.WORLD_ID='pursuit-receipt';State.marchCtxUnitID=null;State.marchCtxDest={q:4,r:0,known:true,isSea:false};
+  State.marchCtxGroups=[{ids:['u1'],names:['3rd Spearmen'],category:'land',mode:'march'}];
+  globalThis.fetch=async(url,opts={})=>({ok:true,status:opts.method==='POST'?202:200,headers:{get:()=>null},json:async()=>opts.method==='POST'?{status:'order_dispatched',following_unit:true,pursuit_legs:0,verb:'march',courier_arrives_at:new Date(Date.now()+3600e3).toISOString()}:url.endsWith('/units')?{units:[]}:[]});
+  await menu.sendMarch();await new Promise(resolve=>setTimeout(resolve,0));
+  assert.match(control('mctx-eta').innerHTML,/Runner following the unit/);
+  assert.match(control('mctx-eta').innerHTML,/next meeting/);
+  assert.doesNotMatch(control('mctx-eta').innerHTML,/reaches the unit|until then/);
+ }finally{menu.closeMarchCtx();globalThis.fetch=originalFetch;document.getElementById=originalGet;Object.assign(State,before);}
+});

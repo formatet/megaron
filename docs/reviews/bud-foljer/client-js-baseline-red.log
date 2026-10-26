@@ -1,0 +1,326 @@
+TAP version 13
+# Subtest: outbox: an outbound runner on the road shows its arrival, never the raw status
+ok 1 - outbox: an outbound runner on the road shows its arrival, never the raw status
+  ---
+  duration_ms: 9.799453
+  type: 'test'
+  ...
+# Subtest: outbox: a runner waiting in port names the port, not a past arrival
+ok 2 - outbox: a runner waiting in port names the port, not a past arrival
+  ---
+  duration_ms: 0.17668
+  type: 'test'
+  ...
+# Subtest: outbox: a runner aboard names its ship
+ok 3 - outbox: a runner aboard names its ship
+  ---
+  duration_ms: 0.22687
+  type: 'test'
+  ...
+# Subtest: outbox: delivered, returning, arrived each read as what they are
+ok 4 - outbox: delivered, returning, arrived each read as what they are
+  ---
+  duration_ms: 0.211601
+  type: 'test'
+  ...
+# Subtest: outbox: a returning runner waiting for a ship home says so
+ok 5 - outbox: a returning runner waiting for a ship home says so
+  ---
+  duration_ms: 0.138098
+  type: 'test'
+  ...
+# Subtest: outbox: a sealed runner (ship lost) is not shown as arriving
+ok 6 - outbox: a sealed runner (ship lost) is not shown as arriving
+  ---
+  duration_ms: 0.080944
+  type: 'test'
+  ...
+# Subtest: outbox: a port name is escaped
+ok 7 - outbox: a port name is escaped
+  ---
+  duration_ms: 0.116421
+  type: 'test'
+  ...
+# Subtest: order card: a runner waiting for a ship never claims to be carrying the order
+ok 8 - order card: a runner waiting for a ship never claims to be carrying the order
+  ---
+  duration_ms: 0.106979
+  type: 'test'
+  ...
+# Subtest: order card: the ordinary land runner keeps its two states
+ok 9 - order card: the ordinary land runner keeps its two states
+  ---
+  duration_ms: 0.364869
+  type: 'test'
+  ...
+# Subtest: T2: rescue uncertainty says no word without an ETA or carrier hint
+ok 10 - T2: rescue uncertainty says no word without an ETA or carrier hint
+  ---
+  duration_ms: 0.263153
+  type: 'test'
+  ...
+# Subtest: order pursuit: next meeting time never promises delivery to a moving unit
+not ok 11 - order pursuit: next meeting time never promises delivery to a moving unit
+  ---
+  duration_ms: 0.591405
+  type: 'test'
+  location: '/tmp/megaron-codex-budfoljer-20261026/web/static/js/megaron/ui/runner_status.test.mjs:69:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /Runner following the unit/. Input:
+    
+    '<div style="font-size:.65rem;color:var(--text-dim)">🏃 Messenger en route — order arrives <span title="Mon, Oct 26, 2026, 18:19 GMT+1">≈ today 18:19</span></div>'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: '<div style="font-size:.65rem;color:var(--text-dim)">🏃 Messenger en route — order arrives <span title="Mon, Oct 26, 2026, 18:19 GMT+1">≈ today 18:19</span></div>'
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-budfoljer-20261026/web/static/js/megaron/ui/runner_status.test.mjs:71:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: order pursuit: rerouted Runner keeps following after an old meeting time passes
+not ok 12 - order pursuit: rerouted Runner keeps following after an old meeting time passes
+  ---
+  duration_ms: 0.175734
+  type: 'test'
+  location: '/tmp/megaron-codex-budfoljer-20261026/web/static/js/megaron/ui/runner_status.test.mjs:76:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /Runner following the unit/. Input:
+    
+    '<div style="font-size:.65rem;color:var(--text-dim)">🏃 Messenger carrying the order…</div>'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: '<div style="font-size:.65rem;color:var(--text-dim)">🏃 Messenger carrying the order…</div>'
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-budfoljer-20261026/web/static/js/megaron/ui/runner_status.test.mjs:78:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: order pursuit: waiting for passage keeps the physical wait and hides a false meeting ETA
+not ok 13 - order pursuit: waiting for passage keeps the physical wait and hides a false meeting ETA
+  ---
+  duration_ms: 0.111711
+  type: 'test'
+  location: '/tmp/megaron-codex-budfoljer-20261026/web/static/js/megaron/ui/runner_status.test.mjs:84:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /Runner following the unit/. Input:
+    
+    '<div style="font-size:.65rem;color:var(--text-dim)">🏃 Messenger waiting in &lt;Pylos&gt; for a ship — the order has not reached the unit</div>'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: '<div style="font-size:.65rem;color:var(--text-dim)">🏃 Messenger waiting in &lt;Pylos&gt; for a ship — the order has not reached the unit</div>'
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-budfoljer-20261026/web/static/js/megaron/ui/runner_status.test.mjs:86:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: order pursuit: absent meeting time remains explicitly unknown
+not ok 14 - order pursuit: absent meeting time remains explicitly unknown
+  ---
+  duration_ms: 0.102202
+  type: 'test'
+  location: '/tmp/megaron-codex-budfoljer-20261026/web/static/js/megaron/ui/runner_status.test.mjs:91:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /meeting time unavailable/. Input:
+    
+    '<div style="font-size:.65rem;color:var(--text-dim)">🏃 Messenger en route — order arrives </div>'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: '<div style="font-size:.65rem;color:var(--text-dim)">🏃 Messenger en route — order arrives </div>'
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-budfoljer-20261026/web/static/js/megaron/ui/runner_status.test.mjs:93:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: P: garrison shows March and eligible Reinforce; stance and battle retreat are directly available
+ok 15 - P: garrison shows March and eligible Reinforce; stance and battle retreat are directly available
+  ---
+  duration_ms: 9.827458
+  type: 'test'
+  ...
+# Subtest: P: marching land has Recall, stance and typed redirect directly available
+ok 16 - P: marching land has Recall, stance and typed redirect directly available
+  ---
+  duration_ms: 0.234896
+  type: 'test'
+  ...
+# Subtest: P: positioned units remain orderable and fetch uses server-provided ships
+ok 17 - P: positioned units remain orderable and fetch uses server-provided ships
+  ---
+  duration_ms: 0.174289
+  type: 'test'
+  ...
+# Subtest: P: naval loading unloading and repair are directly available; at sea has no recall or redirect
+ok 18 - P: naval loading unloading and repair are directly available; at sea has no recall or redirect
+  ---
+  duration_ms: 0.405364
+  type: 'test'
+  ...
+# Subtest: P: laid-up hull has Fit out and zero upkeep; fitting-out hull has ETA and no orders
+ok 19 - P: laid-up hull has Fit out and zero upkeep; fitting-out hull has ETA and no orders
+  ---
+  duration_ms: 0.410834
+  type: 'test'
+  ...
+# Subtest: P: forming training embarked repairing and freight do not offer inapplicable orders
+ok 20 - P: forming training embarked repairing and freight do not offer inapplicable orders
+  ---
+  duration_ms: 0.325835
+  type: 'test'
+  ...
+# Subtest: P: every server lifecycle status has a player label; unknown status never leaks raw jargon
+ok 21 - P: every server lifecycle status has a player label; unknown status never leaks raw jargon
+  ---
+  duration_ms: 0.177754
+  type: 'test'
+  ...
+# Subtest: P: ships off the coast take no March while a city remains, but keep the R6 stranded exception
+ok 22 - P: ships off the coast take no March while a city remains, but keep the R6 stranded exception
+  ---
+  duration_ms: 0.130564
+  type: 'test'
+  ...
+# Subtest: P: numeric values and missing ETA guards survive the restoration
+ok 23 - P: numeric values and missing ETA guards survive the restoration
+  ---
+  duration_ms: 0.336769
+  type: 'test'
+  ...
+# Subtest: B: Army card shows server rations and explicit zero spearman silver without guessing
+ok 24 - B: Army card shows server rations and explicit zero spearman silver without guessing
+  ---
+  duration_ms: 0.600174
+  type: 'test'
+  ...
+# Subtest: B: upkeep billing context comes from server, not guessed from unit status
+ok 25 - B: upkeep billing context comes from server, not guessed from unit status
+  ---
+  duration_ms: 0.38917
+  type: 'test'
+  ...
+# Subtest: B: civilian Nomadic Host has no upkeep row when the server says none
+ok 26 - B: civilian Nomadic Host has no upkeep row when the server says none
+  ---
+  duration_ms: 0.093831
+  type: 'test'
+  ...
+# Subtest: Haiku 6: a ship at sea with part of a game day aboard is not out of food
+ok 27 - Haiku 6: a ship at sea with part of a game day aboard is not out of food
+  ---
+  duration_ms: 0.109198
+  type: 'test'
+  ...
+# Subtest: equal food: roster food alias wins and ship manifest preserves each good
+ok 28 - equal food: roster food alias wins and ship manifest preserves each good
+  ---
+  duration_ms: 0.539756
+  type: 'test'
+  ...
+# Subtest: B: Army pay preserves server home, field and surviving-crew amounts
+ok 29 - B: Army pay preserves server home, field and surviving-crew amounts
+  ---
+  duration_ms: 0.601323
+  type: 'test'
+  ...
+# Subtest: freighting ship shows real provisions, final ration and empty hold without new orders
+ok 30 - freighting ship shows real provisions, final ration and empty hold without new orders
+  ---
+  duration_ms: 0.407409
+  type: 'test'
+  ...
+# Subtest: ORDER28: paused builds and repairs explain missing workers without a stale ETA
+ok 31 - ORDER28: paused builds and repairs explain missing workers without a stale ETA
+  ---
+  duration_ms: 0.123874
+  type: 'test'
+  ...
+# Subtest: silver flow: basic ships show zero API pay and chariots show doubled pay
+ok 32 - silver flow: basic ships show zero API pay and chariots show doubled pay
+  ---
+  duration_ms: 0.331567
+  type: 'test'
+  ...
+# Subtest: recruit prices are the server total for one vessel or cohort, with the actual city draft
+ok 33 - recruit prices are the server total for one vessel or cohort, with the actual city draft
+  ---
+  duration_ms: 0.12917
+  type: 'test'
+  ...
+# Subtest: recruitment receipt names the goods actually paid, including cedar substitution
+ok 34 - recruitment receipt names the goods actually paid, including cedar substitution
+  ---
+  duration_ms: 0.596068
+  type: 'test'
+  ...
+# Subtest: a ship bound for an own city promises to dock and stay, and land everyone aboard
+ok 35 - a ship bound for an own city promises to dock and stay, and land everyone aboard
+  ---
+  duration_ms: 0.109718
+  type: 'test'
+  ...
+# Subtest: pursuit pending belongs to its named unit and uses the current Runner meeting time
+not ok 36 - pursuit pending belongs to its named unit and uses the current Runner meeting time
+  ---
+  duration_ms: 2.919135
+  type: 'test'
+  location: '/tmp/megaron-codex-budfoljer-20261026/web/static/js/megaron/ui/war_cards.test.mjs:212:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /Runner following the unit/. Input:
+    
+    `<div id="ucard-u" style="padding:.3rem .2rem;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap"><span style="font-size:.8rem;font-weight:bold">3rd Spearmen of Lato</span><span style="font-size:.68rem;color:var(--text-dim);margin-left:auto">in the city</span></div><div style="font-size:.65rem;color:var(--text-dim)">city</div><div style="font-size:.65rem;color:var(--text-dim)">🏃 Messenger en route — order arrives <span title="Mon, Oct 26, 2026, 18:19 GMT+1">≈ today 18:19</span></div><div style="margin-top:.2rem;display:flex;gap:.2rem;flex-wrap:wrap;align-items:center"><button onclick="unitMarch('u')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">March</button> <select id="ustance-u" style="font-size:.65rem;padding:.1rem;border:1px solid var(--border);background:var(--warm-white)"><option value="none">stance…</option><option value="fortify">fortify</option><option value="storm">storm</option><option value="sentry">sentry</option></select> <button onclick="unitStance('u')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Set</button> </div><div id="uorder-u" style="font-size:.65rem;color:var(--text-dim);margin-top:.15rem"></div></div>`
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: `<div id="ucard-u" style="padding:.3rem .2rem;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap"><span style="font-size:.8rem;font-weight:bold">3rd Spearmen of Lato</span><span style="font-size:.68rem;color:var(--text-dim);margin-left:auto">in the city</span></div><div style="font-size:.65rem;color:var(--text-dim)">city</div><div style="font-size:.65rem;color:var(--text-dim)">🏃 Messenger en route — order arrives <span title="Mon, Oct 26, 2026, 18:19 GMT+1">≈ today 18:19</span></div><div style="margin-top:.2rem;display:flex;gap:.2rem;flex-wrap:wrap;align-items:center"><button onclick="unitMarch('u')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">March</button> <select id="ustance-u" style="font-size:.65rem;padding:.1rem;border:1px solid var(--border);background:var(--warm-white)"><option value="none">stance…</option><option value="fortify">fortify</option><option value="storm">storm</option><option value="sentry">sentry</option></select> <button onclick="unitStance('u')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Set</button> </div><div id="uorder-u" style="font-size:.65rem;color:var(--text-dim);margin-top:.15rem"></div></div>`
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-budfoljer-20261026/web/static/js/megaron/ui/war_cards.test.mjs:218:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..36
+# tests 36
+# suites 0
+# pass 31
+# fail 5
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 96.155588

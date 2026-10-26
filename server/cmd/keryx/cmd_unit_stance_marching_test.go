@@ -33,3 +33,15 @@ func TestStanceDispatchLine(t *testing.T) {
 		}
 	}
 }
+
+func TestStancePursuitWaitingDoesNotPromiseMeeting(t *testing.T) {
+	for _, resp := range []map[string]any{{"following_unit": true, "following_wait": true}, {"following_unit": true, "passage_status": "awaiting_passage"}} {
+		got := stanceDispatchLine(resp, "sentry", "abcdefgh", "today 18:00")
+		if !strings.Contains(got, "Runner waiting to continue following the unit") {
+			t.Errorf("missing wait%q", got)
+		}
+		if strings.Contains(got, "18:00") || strings.Contains(got, "next meeting") {
+			t.Errorf("waiting receipt promised meeting%q", got)
+		}
+	}
+}

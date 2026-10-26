@@ -1,0 +1,23 @@
+» färsk DB på migration 216 · commit 009e8391+ändringar
+--- FAIL: TestPursuitDispatchReceiptsUseMeetingEstimate (0.00s)
+    --- FAIL: TestPursuitDispatchReceiptsUseMeetingEstimate/march (0.00s)
+        cmd_unit_pursuit_receipt_test.go:49: receipt"A Runner carries your march order to unit aaaaaaaa — target (4,0); the runner reaches it ≈ 1 Jan 2030 13:30 — the march begins on delivery.\n" lacks"Runner following the unit"
+        cmd_unit_pursuit_receipt_test.go:49: receipt"A Runner carries your march order to unit aaaaaaaa — target (4,0); the runner reaches it ≈ 1 Jan 2030 13:30 — the march begins on delivery.\n" lacks"next meeting"
+        cmd_unit_pursuit_receipt_test.go:54: receipt promises early delivery"A Runner carries your march order to unit aaaaaaaa — target (4,0); the runner reaches it ≈ 1 Jan 2030 13:30 — the march begins on delivery.\n"
+    --- FAIL: TestPursuitDispatchReceiptsUseMeetingEstimate/recall (0.00s)
+        cmd_unit_pursuit_receipt_test.go:49: receipt"Recall order sent to unit aaaaaaaa — Runner arrives ≈ 1 Jan 2030 13:30; follows the unit to its destination and applies there if it is still present; the unit turns home when the order is delivered.\n" lacks"Runner following the unit"
+        cmd_unit_pursuit_receipt_test.go:49: receipt"Recall order sent to unit aaaaaaaa — Runner arrives ≈ 1 Jan 2030 13:30; follows the unit to its destination and applies there if it is still present; the unit turns home when the order is delivered.\n" lacks"next meeting"
+        cmd_unit_pursuit_receipt_test.go:54: receipt promises early delivery"Recall order sent to unit aaaaaaaa — Runner arrives ≈ 1 Jan 2030 13:30; follows the unit to its destination and applies there if it is still present; the unit turns home when the order is delivered.\n"
+        cmd_unit_pursuit_receipt_test.go:54: receipt promises early delivery"Recall order sent to unit aaaaaaaa — Runner arrives ≈ 1 Jan 2030 13:30; follows the unit to its destination and applies there if it is still present; the unit turns home when the order is delivered.\n"
+    --- FAIL: TestPursuitDispatchReceiptsUseMeetingEstimate/redirect (0.00s)
+        cmd_unit_pursuit_receipt_test.go:49: receipt"Unit aaaaaaaa receives a redirect order to (4,0); the Runner follows the unit to its destination and applies the order there if it is still present — Runner arrives ≈ 1 Jan 2030 13:30.\n" lacks"Runner following the unit"
+        cmd_unit_pursuit_receipt_test.go:49: receipt"Unit aaaaaaaa receives a redirect order to (4,0); the Runner follows the unit to its destination and applies the order there if it is still present — Runner arrives ≈ 1 Jan 2030 13:30.\n" lacks"next meeting"
+        cmd_unit_pursuit_receipt_test.go:54: receipt promises early delivery"Unit aaaaaaaa receives a redirect order to (4,0); the Runner follows the unit to its destination and applies the order there if it is still present — Runner arrives ≈ 1 Jan 2030 13:30.\n"
+        cmd_unit_pursuit_receipt_test.go:54: receipt promises early delivery"Unit aaaaaaaa receives a redirect order to (4,0); the Runner follows the unit to its destination and applies the order there if it is still present — Runner arrives ≈ 1 Jan 2030 13:30.\n"
+        cmd_unit_pursuit_receipt_test.go:54: receipt promises early delivery"Unit aaaaaaaa receives a redirect order to (4,0); the Runner follows the unit to its destination and applies the order there if it is still present — Runner arrives ≈ 1 Jan 2030 13:30.\n"
+    --- FAIL: TestPursuitDispatchReceiptsUseMeetingEstimate/stance (0.00s)
+        cmd_unit_pursuit_receipt_test.go:49: receipt"A Runner carries your stance order (sentry) to unit aaaaaaaa; the unit is marching and no runner can overtake it — the runner follows it to its destination, reaching it ≈ 1 Jan 2030 13:30 — the stance applies where it stopped.\n" lacks"Runner following the unit"
+        cmd_unit_pursuit_receipt_test.go:49: receipt"A Runner carries your stance order (sentry) to unit aaaaaaaa; the unit is marching and no runner can overtake it — the runner follows it to its destination, reaching it ≈ 1 Jan 2030 13:30 — the stance applies where it stopped.\n" lacks"next meeting"
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.003s
+FAIL

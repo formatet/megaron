@@ -65,3 +65,37 @@ test('T2: rescue uncertainty says no word without an ETA or carrier hint', () =>
   assert.match(s, /no word/);
   assert.doesNotMatch(s, /SECRET|arrives|aboard|sealed/);
 });
+
+test('order pursuit: next meeting time never promises delivery to a moving unit', () => {
+  const s = orderRunnerHTML({ following_unit: true, pursuit_legs: 0, arrives_at: future }, Date.now());
+  assert.match(s, /Runner following the unit/);
+  assert.match(s, /next meeting/);
+  assert.doesNotMatch(s, /order arrives|reaches the unit|carrying the order/);
+});
+
+test('order pursuit: rerouted Runner keeps following after an old meeting time passes', () => {
+  const s = orderRunnerHTML({ following_unit: true, pursuit_legs: 2, arrives_at: past }, Date.now());
+  assert.match(s, /Runner following the unit/);
+  assert.match(s, /new route/);
+  assert.match(s, /checking the next meeting point/);
+  assert.doesNotMatch(s, /order arrives|carrying the order|delivered/);
+});
+
+test('order pursuit: waiting for passage keeps the physical wait and hides a false meeting ETA', () => {
+  const s = orderRunnerHTML({ following_unit: true, pursuit_legs: 1, arrives_at: future, passage_status: 'awaiting_passage', passage_port: '<Pylos>' }, Date.now());
+  assert.match(s, /Runner following the unit/);
+  assert.match(s, /waiting in &lt;Pylos&gt; for a ship/);
+  assert.doesNotMatch(s, /next meeting|order arrives|<Pylos>/);
+});
+
+test('order pursuit: absent meeting time remains explicitly unknown', () => {
+  const s = orderRunnerHTML({ following_unit: true, pursuit_legs: 1, arrives_at: '' }, Date.now());
+  assert.match(s, /meeting time unavailable/);
+  assert.doesNotMatch(s, /Invalid Date|NaN|order arrives/);
+});
+
+test('order pursuit: temporary wait has no meeting or delivery ETA',()=>{
+ const s=orderRunnerHTML({following_unit:true,following_wait:true,pursuit_legs:2,arrives_at:future},Date.now());
+ assert.match(s,/Runner waiting to continue following the unit/);
+ assert.doesNotMatch(s,/next meeting|order arrives|today|tomorrow|checking/);
+});
