@@ -1,6 +1,6 @@
 # Dispatchtexter och sanna omen
 
-Arbetsgren `codex/dispatchtext-omen`, återstart från sparad545f6881, rebasad på origin/masterfc2741e2 före fortsättningen. Pågående, ingen deploy påstås.
+Arbetsgren `codex/dispatchtext-omen`, återstart från sparad545f6881, rebasad på origin/masterfc2741e2 före fortsättningen. Integrerad och LIVE2026-10-26 14:10: `be877c2d`, process `be877c2`, migration215ren.
 
 ## Kontrakt
 
@@ -35,3 +35,5 @@ Slutkod `c4a66c74`, rebasad på färsk origin/master `fc2741e2` före slutsviten
 NativeFirefox1280/390: verkliga workerutfall och API-data i egen värld; byggplatsen väljs i Petras, Emporos markeras, Kult öppnas i Petras, handelsrutten markeras och sanna omen syns medan egen handel filtreras. Bilder/proveniens/gränser i `bild/README.md`. Bildgranskning hittade en täckande Notifications-panel; rött→grönt regressionsprov och slutlig normal klickväg bevisar nu att målytan visas utan att riggen stänger paneler åt produkten.
 
 Integration/deploy verifieras separat med livehash, ren migration, bevarad värld och byteexakta publika assets; se `deploy-proof.json` när den finns.
+
+Deploybevis: samma aktiva värld8d1f34f1, tick2674→2683,15spelare/5städer/18enheter/85varurader bevarade;21publikaassets byteexakta. Go-slutpaketet world153.175s. Ingen omstart på rutin och ingen speldataåterställning. Lokal Keryx ombyggd. Se `deploy-proof.json`.

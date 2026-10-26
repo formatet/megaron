@@ -1,0 +1,68 @@
+{
+  "ground": {
+    "migration": {
+      "version": 215,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 2683
+      }
+    ],
+    "players": 15,
+    "settlements": 5,
+    "units": 18,
+    "goods": 85,
+    "gossip": 564
+  },
+  "health": {
+    "commit": "be877c2",
+    "migration": 215,
+    "status": "ok"
+  },
+  "checkout": "be877c2d08850c13b65ee12d3359b0ec299f4656",
+  "static": {
+    "web/static/codex/buildings.md": "e35ed0882be0c555518d1ce70cd509a050beff2d70fb9d474c1792f8ca236305",
+    "web/static/codex/gossip.md": "472ac23706cbaef4c88af343357b36d32486bd88d0e17e086ae0d5b9af41b47d",
+    "web/static/codex/report.md": "b5dbb4ea996a0d459c14b69120cb646d8f05d7c3066fef9962c8074ebce756ca",
+    "web/static/codex/units.md": "460f8ce471599974067354e6f5a562180f55b5a976ee10f67a1349876dd2d134",
+    "web/static/js/megaron/render/map.js": "2772750158912f59fab47d81d0d93c6939e959be3df636c35e76fab47b0c0222",
+    "web/static/js/megaron/ui/account_window.test.mjs": "78f2b59ebd2377c54d7235a28ad1a3322f9bcef443f2df3c86906a893a526dcc",
+    "web/static/js/megaron/ui/building_names.js": "c8fc1076ab940d4a060c615f1c37eaa5dcc327af643cef7444797f1c62b2dd58",
+    "web/static/js/megaron/ui/citygrid.js": "7873a5a7ea78c4838f4b33ad3ad54c8aea80a6fb5c83d9a5f59a93011487b30c",
+    "web/static/js/megaron/ui/citygrid.test.mjs": "6055485b958bb25baa8dd44789e975f03d0885919c1423a3977b0fdbe2c21b46",
+    "web/static/js/megaron/ui/dispatch_actions.js": "e88b339fc7157a28950917b5b2547625087760d902ad8f224908d85c57b6e88f",
+    "web/static/js/megaron/ui/dispatch_actions.test.mjs": "62f758a41459dfedd42557cd5a12ce3a363c2da04389d26bf93285927cba82bf",
+    "web/static/js/megaron/ui/dispatch_window.js": "9bc2a18aef5f12a533def9d49ea7fbd452da0e0cbf9175ed0fc570fe74e3efb0",
+    "web/static/js/megaron/ui/dispatch_window.test.mjs": "05c2a7e2e9c9141dc57909534de195746a45a1417ac1de95b9d58e580e8b039d",
+    "web/static/js/megaron/ui/drawers/city.js": "d45ade95837c432647e56899cac61a43f6b61320eb718915d446ccb186a54d3f",
+    "web/static/js/megaron/ui/drawers/economy.js": "971f168b6cc860a61ff325240a63f7ab19ff950695aa68a9d943cc71cb7e8da0",
+    "web/static/js/megaron/ui/drawers/gossip.js": "25faf25fccd5c5b873e85d524bcf792c11959dfac860d33958b5a4e92fc10f7c",
+    "web/static/js/megaron/ui/drawers/gossip.test.mjs": "b7056110cca2052e4a5c910ca3d3804d4ec305af6f0a780f9fd7f4052ea8fc30",
+    "web/static/js/megaron/ui/drawers/kult.js": "45b16ba44ad22358dd92499e9cec862fc378b7641360f94ad9410fc82fdcca30",
+    "web/static/js/megaron/ui/drawers/kult.test.mjs": "3e19f5abb9fe181575b6d54eda91d77e0db5e661388a9e7584c859b645468ac9",
+    "web/static/js/megaron/ui/format.js": "3eb1a69fc0818bb8a8d33be5d502fc45c0ff5774451beba74518c8b8187023da",
+    "web/static/js/megaron/ui/format.test.mjs": "784b75e67433308bcf68249cf71c87a352298e83353541d057edd3312fcf25d8"
+  },
+  "expected": "be877c2d08850c13b65ee12d3359b0ec299f4656",
+  "before": {
+    "migration": {
+      "version": 214,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 2674
+      }
+    ],
+    "players": 15,
+    "settlements": 5,
+    "units": 18,
+    "goods": 85,
+    "gossip": 559
+  }
+}
