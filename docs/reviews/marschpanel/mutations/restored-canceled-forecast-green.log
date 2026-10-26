@@ -1,0 +1,262 @@
+TAP version 13
+# Subtest: AK1: a group of one wears its own name, not the bare type
+ok 1 - AK1: a group of one wears its own name, not the bare type
+  ---
+  duration_ms: 0.963269
+  type: 'test'
+  ...
+# Subtest: AK2: the field unit keeps its (q,r) tag — the name says who supports it, the tag says where it stands
+ok 2 - AK2: the field unit keeps its (q,r) tag — the name says who supports it, the tag says where it stands
+  ---
+  duration_ms: 0.146842
+  type: 'test'
+  ...
+# Subtest: AK3: a garrisoned unit does not say its town twice
+ok 3 - AK3: a garrisoned unit does not say its town twice
+  ---
+  duration_ms: 0.38111
+  type: 'test'
+  ...
+# Subtest: AK4: an origin group lists the exact named units as individual choices
+ok 4 - AK4: an origin group lists the exact named units as individual choices
+  ---
+  duration_ms: 0.517648
+  type: 'test'
+  ...
+# Subtest: AK5: a lone unit still has an explicit selected checkbox
+ok 5 - AK5: a lone unit still has an explicit selected checkbox
+  ---
+  duration_ms: 0.102795
+  type: 'test'
+  ...
+# Subtest: AK6: units at different places stay different groups
+ok 6 - AK6: units at different places stay different groups
+  ---
+  duration_ms: 0.095579
+  type: 'test'
+  ...
+# Subtest: AK7: a missing display_name falls back to the type label, never a blank row
+ok 7 - AK7: a missing display_name falls back to the type label, never a blank row
+  ---
+  duration_ms: 0.200174
+  type: 'test'
+  ...
+# Subtest: AK8: a hostile unit name is escaped, not injected
+ok 8 - AK8: a hostile unit name is escaped, not injected
+  ---
+  duration_ms: 0.09994
+  type: 'test'
+  ...
+# Subtest: MI1: sea target is always explore, regardless of the checkbox
+ok 9 - MI1: sea target is always explore, regardless of the checkbox
+  ---
+  duration_ms: 0.195123
+  type: 'test'
+  ...
+# Subtest: MI2: an unseen (fog) land target is always explore — the only intent the server FOW rule allows there
+ok 10 - MI2: an unseen (fog) land target is always explore — the only intent the server FOW rule allows there
+  ---
+  duration_ms: 0.219347
+  type: 'test'
+  ...
+# Subtest: MI3: a known land target is a plain march by default
+ok 11 - MI3: a known land target is a plain march by default
+  ---
+  duration_ms: 0.109474
+  type: 'test'
+  ...
+# Subtest: MI4: a known land target explores when the player opts in
+ok 12 - MI4: a known land target explores when the player opts in
+  ---
+  duration_ms: 0.051845
+  type: 'test'
+  ...
+# Subtest: MI5: exploreRowVisible offers the checkbox on land, never on sea or a settlement
+ok 13 - MI5: exploreRowVisible offers the checkbox on land, never on sea or a settlement
+  ---
+  duration_ms: 0.057471
+  type: 'test'
+  ...
+# Subtest: AK9: a garrisoned/positioned unit is eligible to march
+ok 14 - AK9: a garrisoned/positioned unit is eligible to march
+  ---
+  duration_ms: 0.047052
+  type: 'test'
+  ...
+# Subtest: AK10: a marching unit is eligible too — but for redirect, not a fresh march
+ok 15 - AK10: a marching unit is eligible too — but for redirect, not a fresh march
+  ---
+  duration_ms: 0.041044
+  type: 'test'
+  ...
+# Subtest: R3 (megaron_plan_skeppsuppdrag_landsatt.md): a marching SHIP is not eligible for redirect — it takes no orders at sea
+ok 16 - R3 (megaron_plan_skeppsuppdrag_landsatt.md): a marching SHIP is not eligible for redirect — it takes no orders at sea
+  ---
+  duration_ms: 0.04498
+  type: 'test'
+  ...
+# Subtest: AK11: a fortified unit stays ineligible (server blocks fresh march on it)
+ok 17 - AK11: a fortified unit stays ineligible (server blocks fresh march on it)
+  ---
+  duration_ms: 0.042971
+  type: 'test'
+  ...
+# Subtest: AK12: a still-forming/training unit stays ineligible even while nominally marching-shaped
+ok 18 - AK12: a still-forming/training unit stays ineligible even while nominally marching-shaped
+  ---
+  duration_ms: 0.041719
+  type: 'test'
+  ...
+# Subtest: AK13: a unit embarked/disbanded/other status is ineligible
+ok 19 - AK13: a unit embarked/disbanded/other status is ineligible
+  ---
+  duration_ms: 0.039246
+  type: 'test'
+  ...
+# Subtest: AK14: marching and garrisoned units of the same type+hex stay in SEPARATE groups — a redirect send must never merge with a fresh-march send
+ok 20 - AK14: marching and garrisoned units of the same type+hex stay in SEPARATE groups — a redirect send must never merge with a fresh-march send
+  ---
+  duration_ms: 0.086138
+  type: 'test'
+  ...
+# Subtest: AK15: a redirect group is marked in its label — the player must see this send goes to a Runner
+ok 21 - AK15: a redirect group is marked in its label — the player must see this send goes to a Runner
+  ---
+  duration_ms: 0.06255
+  type: 'test'
+  ...
+# Subtest: H: defaults select one named unit, other groups stay unselected
+ok 22 - H: defaults select one named unit, other groups stay unselected
+  ---
+  duration_ms: 0.067041
+  type: 'test'
+  ...
+# Subtest: H: War target selection lists only the selected unit; normal map menu keeps all eligible units
+ok 23 - H: War target selection lists only the selected unit; normal map menu keeps all eligible units
+  ---
+  duration_ms: 0.156739
+  type: 'test'
+  ...
+# Subtest: H: a loaded ship can land on known land, while empty and marching ships cannot
+ok 24 - H: a loaded ship can land on known land, while empty and marching ships cannot
+  ---
+  duration_ms: 0.182934
+  type: 'test'
+  ...
+# Subtest: H: landing preserves cargo-colonize/name and omits naval stance; explore and plain land retain options
+ok 25 - H: landing preserves cargo-colonize/name and omits naval stance; explore and plain land retain options
+  ---
+  duration_ms: 0.121361
+  type: 'test'
+  ...
+# Subtest: H: colony forecast keeps production and food duration in game day words
+ok 26 - H: colony forecast keeps production and food duration in game day words
+  ---
+  duration_ms: 8.774912
+  type: 'test'
+  ...
+# Subtest: forecast shows the server harbour note and nothing when absent
+ok 27 - forecast shows the server harbour note and nothing when absent
+  ---
+  duration_ms: 0.288599
+  type: 'test'
+  ...
+# Subtest: river march: real map destination offers naval only, ford offers both categories
+ok 28 - river march: real map destination offers naval only, ford offers both categories
+  ---
+  duration_ms: 0.436176
+  type: 'test'
+  ...
+# Subtest: ford send uses the same per-unit mission as preview, retaining target and expedition duration
+ok 29 - ford send uses the same per-unit mission as preview, retaining target and expedition duration
+  ---
+  duration_ms: 9.761798
+  type: 'test'
+  ...
+# Subtest: playtest: coastal forecast uses full food demand without a loyalty reserve warning
+ok 30 - playtest: coastal forecast uses full food demand without a loyalty reserve warning
+  ---
+  duration_ms: 0.297831
+  type: 'test'
+  ...
+# Subtest: founding carries the authoritative wood warning without inventing a local rule
+ok 31 - founding carries the authoritative wood warning without inventing a local rule
+  ---
+  duration_ms: 0.241619
+  type: 'test'
+  ...
+# Subtest: Host summary exposes the wood warning before the closed Details section
+ok 32 - Host summary exposes the wood warning before the closed Details section
+  ---
+  duration_ms: 0.184327
+  type: 'test'
+  ...
+# Subtest: fish-fed founding forecast does not invent an empty-grain loyalty warning
+ok 33 - fish-fed founding forecast does not invent an empty-grain loyalty warning
+  ---
+  duration_ms: 0.189268
+  type: 'test'
+  ...
+# Subtest: AI forecast avoids dust horizons and identifies the farm already included
+ok 34 - AI forecast avoids dust horizons and identifies the farm already included
+  ---
+  duration_ms: 0.292401
+  type: 'test'
+  ...
+# Subtest: hiketeia: a refused march shows the warning with March anyway; other refusals do not
+ok 35 - hiketeia: a refused march shows the warning with March anyway; other refusals do not
+  ---
+  duration_ms: 0.122865
+  type: 'test'
+  ...
+# Subtest: own coastal city offers empty and laden ships in the map menu and War target picker
+ok 36 - own coastal city offers empty and laden ships in the map menu and War target picker
+  ---
+  duration_ms: 0.179244
+  type: 'test'
+  ...
+# Subtest: map city target forwards actual ownership and port metadata instead of equating allied with own
+ok 37 - map city target forwards actual ownership and port metadata instead of equating allied with own
+  ---
+  duration_ms: 0.132734
+  type: 'test'
+  ...
+# Subtest: named choices let the third cohort be selected without its first two siblings
+ok 38 - named choices let the third cohort be selected without its first two siblings
+  ---
+  duration_ms: 0.128693
+  type: 'test'
+  ...
+# Subtest: too-short expedition is refused before any order POST, including a Runner order
+ok 39 - too-short expedition is refused before any order POST, including a Runner order
+  ---
+  duration_ms: 0.501932
+  type: 'test'
+  ...
+# Subtest: preview and send use only the explicitly selected third named cohort
+ok 40 - preview and send use only the explicitly selected third named cohort
+  ---
+  duration_ms: 0.663777
+  type: 'test'
+  ...
+# Subtest: closing the menu while expedition validation is pending leaves no order
+ok 41 - closing the menu while expedition validation is pending leaves no order
+  ---
+  duration_ms: 0.368013
+  type: 'test'
+  ...
+# Subtest: changing the named selection during preflight cancels the stale send and allows a fresh send
+ok 42 - changing the named selection during preflight cancels the stale send and allows a fresh send
+  ---
+  duration_ms: 1.008072
+  type: 'test'
+  ...
+1..42
+# tests 42
+# suites 0
+# pass 42
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 100.27162

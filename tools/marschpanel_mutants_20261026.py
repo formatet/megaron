@@ -10,6 +10,7 @@ OUT=ROOT/'docs/reviews/marschpanel/mutations';OUT.mkdir(exist_ok=True)
 J='web/static/js/megaron/ui/marchctx.js'
 G='server/cmd/keryx/'
 CASES=[
+('canceled-forecast',J,"if (canceledForecast) { canceledForecast.innerHTML = ''; canceledForecast.style.display = 'none'; }","if (false && canceledForecast) { canceledForecast.innerHTML = ''; canceledForecast.style.display = 'none'; }",'js','too-short expedition is refused'),
 ('web-default',J,'index === 0 && group.ids.length ? 1 : 0','index === 0 && group.ids.length ? group.ids.length : 0','js','H: defaults select one'),
 ('web-selection',J,'if(selected(i,k))picks.push','if(selected(i,0))picks.push','js','named choices let the third'),
 ('web-preflight',J,"p.order.intent==='explore'&&p.mode!=='redirect'","false&&p.order.intent==='explore'&&p.mode!=='redirect'",'js','too-short expedition is refused'),
@@ -33,7 +34,7 @@ for name,file,old,new,pkg,test in CASES:
   r=subprocess.run(cmd,cwd=CHECK,capture_output=True,text=True,env={**os.environ,'GOTEST_PORT':str(port)})
   log=r.stdout+r.stderr;(OUT/(name+'.log')).write_text(log)
   red=r.returncode!=0 and ('--- FAIL:' in log or 'not ok' in log) and '[build failed]' not in log
-  results.append(dict(name=name,file=file,old=old,new=new,test=test,command=cmd,assertion_red=red,source_sha256=hashlib.sha256(original).hexdigest()))
+  results.append(dict(source_commit=subprocess.check_output(['git','-C',str(CHECK),'rev-parse','HEAD'],text=True).strip(),name=name,file=file,old=old,new=new,test=test,command=cmd,assertion_red=red,source_sha256=hashlib.sha256(original).hexdigest()))
   print(name,'assertion RED' if red else 'NOT PROVEN',flush=True)
  finally:
   target.write_bytes(original);assert target.read_bytes()==original

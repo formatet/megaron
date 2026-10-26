@@ -101,3 +101,17 @@ Förväntat rött: `TestMarchPreview_ReadOnlyAndTiming`. Faktiskt utfall: [rålo
 ## Explorativ överlevare — tydlig avgränsning
 
 `march_start.go`: `if currentTick+travelTicks > expeditionPlan.TurnTick {` → `if false && currentTick+travelTicks > expeditionPlan.TurnTick {` överlevde APIprovet ([logg](mutations/outbound-budget.log), [manifest](mutations/exploratory.json)). För garrisonens symmetriska rutt nekar den efterföljande `travelTicks+returnTicks > LengthTicks` fortfarande samma expedition. Det bevisar ingen separat first-leg-gräns. Slutmatrisens `outbound-code` tar i stället bort den NYA budgettaggen enbart från första avslaget och blir röd på garrisonens sekretessassertion. Returgrinden är separat assertion-röd genom positionedfallet. Ingen ny budgetmekanik byggdes i denna slice.
+
+## Additiv slutrevision — elfte mutant
+
+BILD på riktig server fann att en nekad expedition lämnade den avbrutna förhandsvisningens “Estimating arrival…” synlig. Fix och utökat regressionsprov ligger i `fb36d1d9`. De tidigare tio mutationerna ovan kördes faktiskt på `764b0bc5`; de påstås inte ha körts om på denna revision. Endast följande nya mutant kördes på `fb36d1d9`, separat clean checkout och exakt byteåterställning.
+
+`too-short expedition is refused before any order POST, including a Runner order` startar nu med synlig laddningsindikator och bevisar att preflight422 både skickar0POST och tömmer/gömmer canceledETA. Detta DOMenhetsprov bevisar tillståndet; nativeBILD bevisar läsbarheten vid faktisk skala. Det provar inte varje nätverksfel eller varje ETAstatus.
+
+### canceled-forecast — assertion-röd
+
+```sh
+sed -z -i 's#if (canceledForecast) { canceledForecast\.innerHTML = '"'"''"'"'; canceledForecast\.style\.display = '"'"'none'"'"'; }#if (false \&\& canceledForecast) { canceledForecast.innerHTML = '"'"''"'"'; canceledForecast.style.display = '"'"'none'"'"'; }#' web/static/js/megaron/ui/marchctx.js
+```
+
+Förväntat och faktiskt rött: `too-short expedition is refused before any order POST, including a Runner order`, assertion “a refused preflight must clear its canceled loading forecast”. [Rålogg](mutations/canceled-forecast.log), [manifest med faktisk källrevision/SHA256](mutations/verified-canceled-forecast.json). Återställd revision: samtliga42marchctxprov gröna i [rålogg](mutations/restored-canceled-forecast-green.log). Exakt sedrad verifierad att ge samma byteändring som reproduktionsskriptet.

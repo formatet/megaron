@@ -1,0 +1,17 @@
+[
+  {
+    "source_commit": "fb36d1d9b6add6116f70a691b893eaef88bdf77e",
+    "name": "canceled-forecast",
+    "file": "web/static/js/megaron/ui/marchctx.js",
+    "old": "if (canceledForecast) { canceledForecast.innerHTML = ''; canceledForecast.style.display = 'none'; }",
+    "new": "if (false && canceledForecast) { canceledForecast.innerHTML = ''; canceledForecast.style.display = 'none'; }",
+    "test": "too-short expedition is refused",
+    "command": [
+      "node",
+      "--test",
+      "web/static/js/megaron/ui/marchctx.test.mjs"
+    ],
+    "assertion_red": true,
+    "source_sha256": "83b99fe3d94375be4bac6c3fccc21be8aee5123ca1a7037684c82831eb2d34b4"
+  }
+]
