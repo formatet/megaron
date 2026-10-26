@@ -16,7 +16,10 @@ r=subprocess.run(['psql',vals['DATABASE_URL'],'-XAt','-v','ON_ERROR_STOP=1','-c'
 if r.returncode:raise SystemExit('read-only ground query failed')
 print(json.dumps({'ground':json.loads(r.stdout),'health':json.load(urllib.request.urlopen('http://localhost:8080/healthz')),'checkout':subprocess.check_output(['git','-C','/opt/poleia','rev-parse','HEAD'],text=True).strip()}))
 '''
-r=subprocess.run(['ssh','root@10.0.1.92','python3','-'],input=remote,capture_output=True,text=True,check=True)
+if '--before' not in sys.argv:
+ remote=remote.replace("r=subprocess.run(['psql'", "health=json.load(urllib.request.urlopen('http://localhost:8080/healthz'))\nif not "+repr(expected)+".startswith(health['commit']):raise SystemExit('new process not ready')\nr=subprocess.run(['psql'",1)
+r=subprocess.run(['ssh','root@10.0.1.92','python3','-'],input=remote,capture_output=True,text=True)
+if r.returncode:raise SystemExit(r.stderr.strip() or 'remote verification failed')
 proof=json.loads(r.stdout)
 if '--before' in sys.argv:
  (root/'docs/reviews/retur-redirect/ground-before.json').write_text(json.dumps(proof['ground'],indent=2)+'\n')

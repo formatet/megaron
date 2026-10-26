@@ -1,0 +1,66 @@
+{
+  "ground": {
+    "migration": {
+      "version": 217,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 3021
+      }
+    ],
+    "players": 15,
+    "settlements": 5,
+    "units": 18,
+    "goods": 85,
+    "gossip": 640,
+    "unit_under_review": {
+      "id": "a05591e4-e160-46e3-8ae0-2f80421a4286",
+      "status": "positioned",
+      "q": 49,
+      "r": 24,
+      "settlement_id": null,
+      "support_settlement_id": "b3d9b932-6b5e-4b5b-b1cc-7a92b988010d",
+      "owner_id": "c3a51eae-557b-42c7-9631-7c9ae2edb4bf"
+    },
+    "correction_events": 1
+  },
+  "health": {
+    "commit": "0b31b00",
+    "migration": 217,
+    "status": "ok"
+  },
+  "checkout": "0b31b00f5ddff3bf27c399fffa8be27d9b9b41ae",
+  "static": {},
+  "expected": "0b31b00f5ddff3bf27c399fffa8be27d9b9b41ae",
+  "before": {
+    "migration": {
+      "version": 216,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 3019
+      }
+    ],
+    "players": 15,
+    "settlements": 5,
+    "units": 18,
+    "goods": 85,
+    "gossip": 640,
+    "unit_under_review": {
+      "id": "a05591e4-e160-46e3-8ae0-2f80421a4286",
+      "status": "garrison",
+      "q": 49,
+      "r": 24,
+      "settlement_id": "d540b57b-8625-4dec-83a8-6f645e9a4cfe",
+      "support_settlement_id": "b3d9b932-6b5e-4b5b-b1cc-7a92b988010d",
+      "owner_id": "c3a51eae-557b-42c7-9631-7c9ae2edb4bf"
+    },
+    "correction_events": 0
+  }
+}

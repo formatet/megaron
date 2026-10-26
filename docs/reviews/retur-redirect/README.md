@@ -20,4 +20,4 @@ Grindar: hel färskGo26grön på1feeec6d (world155.245s),794JS/vet/fyra dayguard
 
 BILDtestets första desktopbild togs mitt i draweranimationen; slutriggen väntar på öppningsövergången och alla slutbilder läses vid1:1. Scenen har uttrycklig inkommande returrutt; den utger sig inte för att vara Timothys levande värld. Ingen nyUI eller spelhandling tillkommer; befintlig webb/Keryx/Codex använder den korrigerade serverplatsen/statusen.
 
-Drift: pending deploy. Bevisverktyget jämför före/efter för just5th, oförändrad fysisk hex/ägare/support, en correctionaudit och samma grundtillstånd. Budförföljning är separat WIPb907d1b0, återupptas efter denna akuta fix.
+Drift: LIVE `0b31b00f`/migration217ren. [Deploybevis](deploy-proof.json) visar5th positioned på(49,24),settlement=NULL, samma ägare/support och exakt1correctionaudit; värld15spelare/5städer/18enheter/85varurader bevarad. Nyprocess bevisades via health före schemaläsning; inga nya felloggar. Budförföljning är separat WIPb907d1b0, återupptas efter denna akuta fix.
