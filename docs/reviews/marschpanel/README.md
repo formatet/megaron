@@ -24,7 +24,7 @@ Slutkod `fb36d1d9` (additivt ovanpå ursprungliga WIP). Native Firefox hittade a
 - Kod: hel färsk Go på764b0bc5 (oförändrad slut-Go), alla26 paket gröna, world147.291s; slut-JS794/794, vet och fyra dayguards gröna. Go via tools/gotest.sh på egen tom215DB och ren miljö.
 - Mutation: [täckning, exakta sed-rader och avgränsningar](coverage-and-mutations.md). Elva fysiska mutanter i separat checkout, assertion-rött och exakt restore; explorativ överlevare redovisad.
 - Visuell/användare: [native Firefox1280/390](bild/index.html), verkliga order-POST/DB, endast vald3rdkohort, förkort expedition nollPOST/nollbud. Verklig Keryx med exakt3rdnamn: giltig read-only preview och förkort expedition422 utan bud. Scenfixturer redovisas; ingen delad/livevärld används.
-- Drift: pending integration. Läsbaslinje [ground-before.json](ground-before.json); efter deploy verifierar tools/marschpanel_deploy_verify_20261026.py processhash, dirty=false, samma värld/grundtillstånd och ändrade statiska bytes.
+- Drift: LIVE `76545371`, verifierad processhash/migration215ren, samma värld och15spelare/5städer/18enheter/85varurader; fyra ändrade statiska filer byteexakta. [Deploybevis](deploy-proof.json). Läsbaslinje [ground-before.json](ground-before.json); efter deploy verifierar tools/marschpanel_deploy_verify_20261026.py processhash, dirty=false, samma värld/grundtillstånd och ändrade statiska bytes.
 
 ## Kända avgränsningar
 

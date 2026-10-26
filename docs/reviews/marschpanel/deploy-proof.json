@@ -1,0 +1,51 @@
+{
+  "ground": {
+    "migration": {
+      "version": 215,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 2834
+      }
+    ],
+    "players": 15,
+    "settlements": 5,
+    "units": 18,
+    "goods": 85,
+    "gossip": 597
+  },
+  "health": {
+    "commit": "7654537",
+    "migration": 215,
+    "status": "ok"
+  },
+  "checkout": "7654537186b51d31af32a2767303e2a051ef1d30",
+  "static": {
+    "web/static/codex/marching.md": "4bc0fe64ad68e1b8a164814e126cdf9d23f0bbe62b881d555e9e5d4f865c66a1",
+    "web/static/js/megaron/ui/marchctx.js": "83b99fe3d94375be4bac6c3fccc21be8aee5123ca1a7037684c82831eb2d34b4",
+    "web/static/js/megaron/ui/marchctx.test.mjs": "81082b3bd5863213ddf785745d2c91fcc3c720f854240e74ae08f9f6dbb12208",
+    "web/static/map.html": "5b6593291ae1e0251b91780b2c3620f7b2f985e498f84291b8ef52448c4bad97"
+  },
+  "expected": "7654537186b51d31af32a2767303e2a051ef1d30",
+  "before": {
+    "migration": {
+      "version": 215,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 2827
+      }
+    ],
+    "players": 15,
+    "settlements": 5,
+    "units": 18,
+    "goods": 85,
+    "gossip": 595
+  }
+}
