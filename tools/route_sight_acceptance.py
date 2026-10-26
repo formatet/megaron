@@ -51,7 +51,7 @@ try:
   uid=host['id']
   site=json.loads(sql(f"SELECT row_to_json(a) FROM (SELECT q,r FROM map_tiles a WHERE a.world_id='{world}' AND a.q>5 AND a.r>5 AND EXISTS(SELECT 1 FROM map_tiles b WHERE b.world_id=a.world_id AND b.q=a.q+12 AND b.r=a.r) AND EXISTS(SELECT 1 FROM map_tiles b WHERE b.world_id=a.world_id AND b.q=a.q+3 AND b.r=a.r+2) AND EXISTS(SELECT 1 FROM map_tiles b WHERE b.world_id=a.world_id AND b.q=a.q+12 AND b.r=a.r+2) ORDER BY a.q,a.r LIMIT 1) a"))
   q,r=site['q'],site['r']
-  sql(f"UPDATE map_tiles SET terrain='plains',coastal=false WHERE world_id='{world}'; UPDATE units SET q={q},r={r},status='positioned' WHERE id='{uid}'; DELETE FROM player_scouted_tiles WHERE world_id='{world}' AND player_id='{pid}'; INSERT INTO player_scouted_tiles(world_id,player_id,q,r) VALUES('{world}','{pid}',{q+8},{r});",True)
+  sql(f"UPDATE map_tiles SET terrain='plains',coastal=false WHERE world_id='{world}'; UPDATE units SET status='disbanded' WHERE world_id='{world}' AND owner_id='{pid}' AND id!='{uid}'; UPDATE units SET q={q},r={r},status='positioned' WHERE id='{uid}'; DELETE FROM player_scouted_tiles WHERE world_id='{world}' AND player_id='{pid}'; INSERT INTO player_scouted_tiles(world_id,player_id,q,r) VALUES('{world}','{pid}',{q+8},{r});",True)
   cfg=tmp/'keryx.json';cfg.write_text(json.dumps({'server':base,'token':token,'world_id':world}));cfg.chmod(0o600)
   result=subprocess.run([str(tmp/'keryx'),'unit','march','--unit',uid,'--target',f'{q+8},{r}','--json'],env={**clean,'POLEIA_CONFIG':str(cfg)},capture_output=True,text=True)
   (OUT/'keryx-march.json').write_text(json.dumps({'exit_code':result.returncode,'stdout':result.stdout,'stderr':result.stderr},indent=2))
