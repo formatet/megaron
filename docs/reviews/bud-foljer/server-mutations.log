@@ -1,0 +1,12 @@
+assertion-red remote-meeting
+assertion-red early-deadline
+assertion-red stale-generation
+assertion-red pending-witness
+assertion-red physical-origin
+assertion-red temporary-wait
+assertion-red owner-guard
+assertion-red moving-dispatch
+assertion-red moving-final-guard
+assertion-red legacy-contract
+assertion-red frozen-clock
+PASS 11 assertion-red, exact restore, fresh green

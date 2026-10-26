@@ -1,0 +1,33 @@
+» färsk DB på migration 217 · commit 65202f6e+ändringar
+2026/10/26 20:10:07 INFO order delivered — march started unit=125224e3-503e-4b99-9320-c5c9048cb22f target_q=0 target_r=0 arrival_tick=5
+2026/10/26 20:10:07 INFO order delivered — stance applied unit=ea4af13d-b68e-4ecf-a2b6-76c07e52fb66 stance=storm
+--- FAIL: TestOrderPursuit_MovedUnitNeedsPhysicalLeg (0.21s)
+    --- FAIL: TestOrderPursuit_MovedUnitNeedsPhysicalLeg/march (0.05s)
+        order_pursuit_test.go:86: Runner finished or delivered remotely instead of following: statusarrived arrives2026-10-07 18:00:00 +0200 CEST
+    --- FAIL: TestOrderPursuit_MovedUnitNeedsPhysicalLeg/recall (0.05s)
+        order_pursuit_test.go:86: Runner finished or delivered remotely instead of following: statusarrived arrives2026-10-07 18:00:00 +0200 CEST
+    --- FAIL: TestOrderPursuit_MovedUnitNeedsPhysicalLeg/redirect (0.05s)
+        order_pursuit_test.go:86: Runner finished or delivered remotely instead of following: statusarrived arrives2026-10-07 18:00:00 +0200 CEST
+    --- FAIL: TestOrderPursuit_MovedUnitNeedsPhysicalLeg/stance (0.06s)
+        order_pursuit_test.go:86: Runner finished or delivered remotely instead of following: statusarrived arrives2026-10-07 18:00:00 +0200 CEST
+2026/10/26 20:10:07 INFO order delivered — march started unit=20f1a86a-b465-468d-949d-9c71eaccf666 target_q=0 target_r=0 arrival_tick=3
+2026/10/26 20:10:07 INFO order delivered — stance applied unit=431742e3-229f-4e52-b097-db67cf216852 stance=storm
+2026/10/26 20:10:07 INFO order delivered but no longer executable unit=cda96608-9cdb-4f06-bc71-c4ffa88a8161 verb=stance reason="the Runner could not find this unit — it has been disbanded"
+2026/10/26 20:10:07 INFO order delivered but no longer executable unit=22ec1cbb-208c-4c8d-838e-6a197f3a8a1f verb=stance reason="this unit is no longer yours"
+2026/10/26 20:10:07 INFO order delivered — stance applied unit=b2e7749e-0dac-40b1-bb1c-9d99272c75b5 stance=storm
+2026/10/26 20:10:07 INFO order delivered — stance applied unit=0e8df9ba-9544-4de8-877d-1f259c681d15 stance=storm
+2026/10/26 20:10:07 INFO order delivered — stance applied unit=4b4d3255-5d98-49c8-ae9d-6742cb7eb946 stance=storm
+--- FAIL: TestOrderPursuit_GuardsAndWaiting (0.38s)
+    --- FAIL: TestOrderPursuit_GuardsAndWaiting/noport (0.04s)
+        order_pursuit_test.go:291: guard claimed/failed: arrived []
+2026/10/26 20:10:07 INFO order delivered — stance applied unit=4a429dd0-22dd-4cae-95f4-0f3ba25d751b stance=storm
+2026/10/26 20:10:07 INFO order delivered — stance applied unit=055bcde3-81d7-4b93-a111-5824c9683e34 stance=storm
+--- FAIL: TestOrderPursuit_MovingRouteLeg (0.08s)
+    --- FAIL: TestOrderPursuit_MovingRouteLeg/0 (0.04s)
+        order_pursuit_test.go:359: bad moving intercept: arrived q2 2026-10-07 18:00:00 +0200 CEST
+    --- FAIL: TestOrderPursuit_MovingRouteLeg/2 (0.04s)
+        order_pursuit_test.go:359: bad moving intercept: arrived q2 2026-10-07 18:00:00 +0200 CEST
+2026/10/26 20:10:07 INFO order delivered but no longer executable unit=f345e515-6326-467d-b1b3-3a8d18aac26c verb=march reason="the unit has left the hex the Runner reached"
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.922s
+FAIL

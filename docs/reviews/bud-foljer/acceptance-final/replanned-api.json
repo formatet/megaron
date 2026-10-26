@@ -1,0 +1,102 @@
+{
+  "expedition_rules": {
+    "area_radius": 5,
+    "default_ticks": 10,
+    "max_ticks": 365,
+    "min_ticks": 4
+  },
+  "units": [
+    {
+      "can_cancel_training": false,
+      "orders_en_route": [
+        {
+          "following_unit": true,
+          "pursuit_legs": 1,
+          "following_wait": false,
+          "verb": "stance",
+          "arrives_at": "2026-10-26T20:09:14.960093+01:00"
+        }
+      ],
+      "id": "3b06e01c-ad0a-452c-b401-e4be3918c9d1",
+      "type": "spearman",
+      "category": "land",
+      "size": 100,
+      "upkeep_food_per_tick": 1,
+      "upkeep_grain_per_tick": 1,
+      "upkeep_silver_per_tick": 0,
+      "upkeep_context": "active",
+      "status": "marching",
+      "deployable": true,
+      "display_name": "5th Spearmen of Lato",
+      "ordinal": 5,
+      "support_settlement_id": "7b338c2c-9a7b-4313-b34b-90f84477e33c",
+      "support_settlement_name": "Lato",
+      "shipyard_waiting": false,
+      "q": 14,
+      "r": 24,
+      "target_q": 22,
+      "target_r": 24,
+      "departs_at": "2026-10-26T20:08:44.90643+01:00",
+      "arrives_at": "2026-10-26T20:10:04.90643+01:00",
+      "arrival_tick": 13,
+      "duration_ticks": 8,
+      "arrives_at_utc": "2026-10-26T19:10:04.90643Z",
+      "path": [
+        [
+          14,
+          24
+        ],
+        [
+          15,
+          24
+        ],
+        [
+          16,
+          24
+        ],
+        [
+          17,
+          24
+        ],
+        [
+          18,
+          24
+        ],
+        [
+          19,
+          24
+        ],
+        [
+          20,
+          24
+        ],
+        [
+          21,
+          24
+        ],
+        [
+          22,
+          24
+        ]
+      ],
+      "route_version": 2,
+      "dispatch_offset_milli": 944,
+      "step_costs": [
+        1000,
+        1000,
+        1000,
+        1000,
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "departure_tick": 5,
+      "current_q": 15,
+      "current_r": 24,
+      "in_battle": false,
+      "can_lay_up": false,
+      "can_fit_out": false
+    }
+  ]
+}

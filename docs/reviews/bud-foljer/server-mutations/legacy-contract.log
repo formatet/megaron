@@ -1,0 +1,18 @@
+» färsk DB på migration 217 · commit 65202f6e+ändringar
+2026/10/26 20:10:45 INFO order delivered — march started unit=f3d112d4-e45e-4728-bcd8-7a8b61664324 target_q=0 target_r=0 arrival_tick=6
+2026/10/26 20:10:45 INFO order delivered — stance applied unit=a76aeec3-6103-42ce-993d-5f0e820955b3 stance=storm
+2026/10/26 20:10:45 INFO order delivered — march started unit=659461e8-eeda-4ca1-9ed1-04cfc64f9f08 target_q=0 target_r=0 arrival_tick=3
+2026/10/26 20:10:46 INFO order delivered — stance applied unit=31639464-1c40-4875-850c-741fcd4e1527 stance=storm
+2026/10/26 20:10:46 INFO order delivered but no longer executable unit=cd29e006-2c1c-4c86-afd2-77a42ae6dc8c verb=stance reason="the Runner could not find this unit — it has been disbanded"
+2026/10/26 20:10:46 INFO order delivered but no longer executable unit=a1b8db98-bb53-45c6-a1be-757c93c231b4 verb=stance reason="this unit is no longer yours"
+2026/10/26 20:10:46 INFO order delivered — stance applied unit=9d742a58-6c9c-4b67-9eaf-8df26d1ac23d stance=storm
+2026/10/26 20:10:46 INFO order delivered — stance applied unit=eabfd597-91d7-4a16-9cd5-fd4eaa1d2d51 stance=storm
+2026/10/26 20:10:46 INFO order delivered — stance applied unit=9efb621f-697d-455f-aea8-ce03d5beb5fe stance=storm
+2026/10/26 20:10:46 INFO order delivered — stance applied unit=619b4839-94e3-4265-a614-8acc248f4098 stance=storm
+2026/10/26 20:10:46 INFO order delivered — stance applied unit=ce77d0d8-f24a-490b-bdf1-714bc2f53afe stance=storm
+2026/10/26 20:10:46 INFO order delivered — march started unit=ef38de7e-dcc9-48d9-b7f3-4fe61951b354 target_q=0 target_r=0 arrival_tick=3
+--- FAIL: TestOrderPursuit_UnflaggedMovingEnvelopeKeepsOldMeaning (0.04s)
+    order_pursuit_test.go:426: unflagged envelope changed frozen moving-meeting meaning: target0 failures[]
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.904s
+FAIL

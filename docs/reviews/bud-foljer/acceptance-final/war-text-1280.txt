@@ -1,0 +1,15 @@
+ARMY
+RECRUIT
+MOVEMENTS
+WHEN TO RETREAT
+Save
+RECALL ALL
+UNITS
+5th Spearmen of Lato
+on the march
+Upkeep: 1 food, 0 silver per game day
+→ (22,24) arrives ≈ today 20:09
+🏃 Runner following the unit on a new route — next meeting ≈ today 20:09
+Set
+Recall
+Redirect

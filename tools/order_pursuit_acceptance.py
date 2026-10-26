@@ -69,7 +69,8 @@ try:
   def state():return json.loads(sql(f"SELECT json_build_object('unit',(SELECT row_to_json(u) FROM (SELECT id,status,q,r,target_q,target_r,stance,march_route FROM units WHERE id='{uid}')u),'runner',(SELECT row_to_json(m) FROM (SELECT id,status,hex_q,hex_r,dest_q,dest_r,land_route,arrives_at,passage_generation,order_payload FROM messengers WHERE id='{mid}')m))"))
   deadline=time.monotonic()+120
   while time.monotonic()<deadline:
-   current=state();snapshots.append(current)
+   current=state()
+   if not snapshots or current!=snapshots[-1]:snapshots.append(current)
    if current['runner']['order_payload'].get('pursuit_legs',0)>0:break
    assert current['unit']['stance'] is None,'stance applied before Runner caught up'
    time.sleep(.15)
@@ -101,7 +102,8 @@ try:
    browser.close()
   assert not errors,errors
   while time.monotonic()<deadline:
-   current=state();snapshots.append(current)
+   current=state()
+   if not snapshots or current!=snapshots[-1]:snapshots.append(current)
    if current['runner']['status']=='arrived':break
    time.sleep(.2)
   else:raise AssertionError(('following never delivered',current))

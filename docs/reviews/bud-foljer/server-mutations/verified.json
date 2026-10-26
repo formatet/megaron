@@ -1,0 +1,112 @@
+[
+  {
+    "name": "remote-meeting",
+    "file": "server/internal/messenger/order_pursuit.go",
+    "old": "if pos == at {",
+    "new": "if true {",
+    "expected_test": "TestOrderPursuit_MovedUnitNeedsPhysicalLeg",
+    "source_commit": "65202f6e01a5f957958b7b30e9312c6dc55fdc6b",
+    "sha256": "609a5dccba7d68dbe8c524bc60c80e972841db7606533369aa4c09cd9e0b7a9f",
+    "assertion_red": true
+  },
+  {
+    "name": "early-deadline",
+    "file": "server/internal/messenger/order_pursuit.go",
+    "old": "if now.Before(deadline) {",
+    "new": "if false && now.Before(deadline) {",
+    "expected_test": "TestOrderPursuit_GuardsAndWaiting/early",
+    "source_commit": "65202f6e01a5f957958b7b30e9312c6dc55fdc6b",
+    "sha256": "609a5dccba7d68dbe8c524bc60c80e972841db7606533369aa4c09cd9e0b7a9f",
+    "assertion_red": true
+  },
+  {
+    "name": "stale-generation",
+    "file": "server/internal/messenger/order_pursuit.go",
+    "old": "AND passage_generation=$4",
+    "new": "AND passage_generation>=$4",
+    "expected_test": "TestOrderPursuit_GuardsAndWaiting/generation",
+    "source_commit": "65202f6e01a5f957958b7b30e9312c6dc55fdc6b",
+    "sha256": "609a5dccba7d68dbe8c524bc60c80e972841db7606533369aa4c09cd9e0b7a9f",
+    "assertion_red": true
+  },
+  {
+    "name": "pending-witness",
+    "file": "server/internal/messenger/order_pursuit.go",
+    "old": "e.id>messengers.carrier_witness_id",
+    "new": "e.id<0 AND e.id>messengers.carrier_witness_id",
+    "expected_test": "TestOrderPursuit_GuardsAndWaiting/witness",
+    "source_commit": "65202f6e01a5f957958b7b30e9312c6dc55fdc6b",
+    "sha256": "609a5dccba7d68dbe8c524bc60c80e972841db7606533369aa4c09cd9e0b7a9f",
+    "assertion_red": true
+  },
+  {
+    "name": "physical-origin",
+    "file": "server/internal/messenger/order_pursuit.go",
+    "old": "at, landTarget, now, arrival",
+    "new": "province.MapPosition{Q:0,R:0}, landTarget, now, arrival",
+    "expected_test": "TestOrderPursuit_MovedUnitNeedsPhysicalLeg",
+    "source_commit": "65202f6e01a5f957958b7b30e9312c6dc55fdc6b",
+    "sha256": "609a5dccba7d68dbe8c524bc60c80e972841db7606533369aa4c09cd9e0b7a9f",
+    "assertion_red": true
+  },
+  {
+    "name": "temporary-wait",
+    "file": "server/internal/messenger/order_pursuit.go",
+    "old": "p.FollowWaiting = true",
+    "new": "p.FollowWaiting = false",
+    "expected_test": "TestOrderPursuit_GuardsAndWaiting/embarked",
+    "source_commit": "65202f6e01a5f957958b7b30e9312c6dc55fdc6b",
+    "sha256": "609a5dccba7d68dbe8c524bc60c80e972841db7606533369aa4c09cd9e0b7a9f",
+    "assertion_red": true
+  },
+  {
+    "name": "owner-guard",
+    "file": "server/internal/messenger/order_pursuit.go",
+    "old": "u.OwnerID != p.PlayerID || u.WorldID != p.WorldID",
+    "new": "false",
+    "expected_test": "TestOrderPursuit_GuardsAndWaiting/owner",
+    "source_commit": "65202f6e01a5f957958b7b30e9312c6dc55fdc6b",
+    "sha256": "609a5dccba7d68dbe8c524bc60c80e972841db7606533369aa4c09cd9e0b7a9f",
+    "assertion_red": true
+  },
+  {
+    "name": "moving-dispatch",
+    "file": "server/internal/messenger/order_delivery.go",
+    "old": "if p.FollowUnit {\n\t\t\tres, err = combat.SetStanceInPursuit",
+    "new": "if false && p.FollowUnit {\n\t\t\tres, err = combat.SetStanceInPursuit",
+    "expected_test": "TestOrderPursuit_MovingMeeting/stance",
+    "source_commit": "65202f6e01a5f957958b7b30e9312c6dc55fdc6b",
+    "sha256": "6f8a7bd0d0c78fe8c8f9de198e19c62e62847bbb308b680ed261e2bfea329d50",
+    "assertion_red": true
+  },
+  {
+    "name": "moving-final-guard",
+    "file": "server/internal/combat/march_start.go",
+    "old": "if o.ExpectedPosition != nil && !(redirecting && o.FollowingMeeting) {",
+    "new": "if o.ExpectedPosition != nil {",
+    "expected_test": "TestOrderPursuit_MovingMeeting/march",
+    "source_commit": "65202f6e01a5f957958b7b30e9312c6dc55fdc6b",
+    "sha256": "7aaefd3d423ef8ecdbf1a53dc7ee462a8cabd73355edb629489ca5e637fc317b",
+    "assertion_red": true
+  },
+  {
+    "name": "legacy-contract",
+    "file": "server/internal/combat/march_start.go",
+    "old": "!(redirecting && o.FollowingMeeting)",
+    "new": "!redirecting",
+    "expected_test": "TestOrderPursuit_UnflaggedMovingEnvelopeKeepsOldMeaning",
+    "source_commit": "65202f6e01a5f957958b7b30e9312c6dc55fdc6b",
+    "sha256": "7aaefd3d423ef8ecdbf1a53dc7ee462a8cabd73355edb629489ca5e637fc317b",
+    "assertion_red": true
+  },
+  {
+    "name": "frozen-clock",
+    "file": "server/internal/messenger/recall.go",
+    "old": "if route.Version == 2 && !route.DepartureAt.IsZero() && route.TickNanoseconds > 0 {",
+    "new": "if false && route.Version == 2 && !route.DepartureAt.IsZero() && route.TickNanoseconds > 0 {",
+    "expected_test": "TestInterceptCourierRoute_FrozenPhysicalClock",
+    "source_commit": "65202f6e01a5f957958b7b30e9312c6dc55fdc6b",
+    "sha256": "cea199dbab842437fc51a057c691b5b833be68591c98421b4b35d940227c87bd",
+    "assertion_red": true
+  }
+]

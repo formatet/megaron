@@ -1,0 +1,5 @@
+ID                                    Name                                            Size      Status      Stance     Location / ETA
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+3b06e01c-ad0a-452c-b401-e4be3918c9d1  5th Spearmen of Lato                            100 men   marching      —          (14,24)→(22,24), now at (15,24) ETA ≈ today 20:10
+  Upkeep: 1 food, 0 silver per game day
+  Order on its way: stance change — Runner following the unit on a new route — next meeting ≈ today 20:09

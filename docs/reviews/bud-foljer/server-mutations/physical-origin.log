@@ -1,0 +1,26 @@
+» färsk DB på migration 217 · commit 65202f6e+ändringar
+--- FAIL: TestOrderPursuit_MovedUnitNeedsPhysicalLeg (0.14s)
+    --- FAIL: TestOrderPursuit_MovedUnitNeedsPhysicalLeg/march (0.04s)
+        order_pursuit_test.go:93: new leg teleported or restarted from home: {DepartureAt:2026-10-07 16:00:00 +0000 UTC TickNanoseconds:3600000000000 Version:2 OffsetMilli:0 StartTick:1 EndTick:2 Hexes:[[0 0] [1 0] [2 0] [3 0] [4 0]] Costs:[500 500 500 500]}
+    --- FAIL: TestOrderPursuit_MovedUnitNeedsPhysicalLeg/recall (0.04s)
+        order_pursuit_test.go:93: new leg teleported or restarted from home: {DepartureAt:2026-10-07 16:00:00 +0000 UTC TickNanoseconds:3600000000000 Version:2 OffsetMilli:0 StartTick:1 EndTick:2 Hexes:[[0 0] [1 0] [2 0] [3 0] [4 0]] Costs:[500 500 500 500]}
+    --- FAIL: TestOrderPursuit_MovedUnitNeedsPhysicalLeg/redirect (0.04s)
+        order_pursuit_test.go:93: new leg teleported or restarted from home: {DepartureAt:2026-10-07 16:00:00 +0000 UTC TickNanoseconds:3600000000000 Version:2 OffsetMilli:0 StartTick:1 EndTick:2 Hexes:[[0 0] [1 0] [2 0] [3 0] [4 0]] Costs:[500 500 500 500]}
+    --- FAIL: TestOrderPursuit_MovedUnitNeedsPhysicalLeg/stance (0.04s)
+        order_pursuit_test.go:93: new leg teleported or restarted from home: {DepartureAt:2026-10-07 16:00:00 +0000 UTC TickNanoseconds:3600000000000 Version:2 OffsetMilli:0 StartTick:1 EndTick:2 Hexes:[[0 0] [1 0] [2 0] [3 0] [4 0]] Costs:[500 500 500 500]}
+2026/10/26 20:10:23 INFO order delivered — march started unit=f7814f95-52c3-4258-ab6b-5dd181fd9bb5 target_q=0 target_r=0 arrival_tick=3
+2026/10/26 20:10:24 INFO order delivered — stance applied unit=c2e9a404-788b-49a4-a37a-d78194478b30 stance=storm
+2026/10/26 20:10:24 INFO order delivered but no longer executable unit=4e53735a-3cc2-40a6-9c1d-9317d6cd1c41 verb=stance reason="the Runner could not find this unit — it has been disbanded"
+2026/10/26 20:10:24 INFO order delivered but no longer executable unit=cdfe1ed6-5281-413a-b794-7d3a8cb1276a verb=stance reason="this unit is no longer yours"
+2026/10/26 20:10:24 INFO order delivered — stance applied unit=49497e0e-5bef-4b6f-aa18-410e2c7b697d stance=storm
+2026/10/26 20:10:24 INFO order delivered — stance applied unit=4003cf96-999e-4fb5-868a-961a60bfbb61 stance=storm
+2026/10/26 20:10:24 INFO order delivered — stance applied unit=c18b8ae5-6c15-41df-a600-98d6abb994e5 stance=storm
+--- FAIL: TestOrderPursuit_MovingRouteLeg (0.07s)
+    --- FAIL: TestOrderPursuit_MovingRouteLeg/0 (0.03s)
+        order_pursuit_test.go:364: moving leg teleported
+    --- FAIL: TestOrderPursuit_MovingRouteLeg/2 (0.04s)
+        order_pursuit_test.go:364: moving leg teleported
+2026/10/26 20:10:24 INFO order delivered but no longer executable unit=c75687ae-1cd7-4179-9f2f-c275ba4449d4 verb=march reason="the unit has left the hex the Runner reached"
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.827s
+FAIL

@@ -1,0 +1,82 @@
+[
+  {
+    "file": "server/internal/messenger/order_pursuit.go",
+    "sha256": "609a5dccba7d68dbe8c524bc60c80e972841db7606533369aa4c09cd9e0b7a9f"
+  },
+  {
+    "file": "server/internal/messenger/order_pursuit.go",
+    "sha256": "609a5dccba7d68dbe8c524bc60c80e972841db7606533369aa4c09cd9e0b7a9f"
+  },
+  {
+    "file": "server/internal/messenger/order_pursuit.go",
+    "sha256": "609a5dccba7d68dbe8c524bc60c80e972841db7606533369aa4c09cd9e0b7a9f"
+  },
+  {
+    "file": "server/internal/messenger/order_pursuit.go",
+    "sha256": "609a5dccba7d68dbe8c524bc60c80e972841db7606533369aa4c09cd9e0b7a9f"
+  },
+  {
+    "file": "server/internal/messenger/order_pursuit.go",
+    "sha256": "609a5dccba7d68dbe8c524bc60c80e972841db7606533369aa4c09cd9e0b7a9f"
+  },
+  {
+    "file": "server/internal/messenger/order_pursuit.go",
+    "sha256": "609a5dccba7d68dbe8c524bc60c80e972841db7606533369aa4c09cd9e0b7a9f"
+  },
+  {
+    "file": "server/internal/messenger/order_pursuit.go",
+    "sha256": "609a5dccba7d68dbe8c524bc60c80e972841db7606533369aa4c09cd9e0b7a9f"
+  },
+  {
+    "file": "server/internal/messenger/order_delivery.go",
+    "sha256": "6f8a7bd0d0c78fe8c8f9de198e19c62e62847bbb308b680ed261e2bfea329d50"
+  },
+  {
+    "file": "server/internal/combat/march_start.go",
+    "sha256": "7aaefd3d423ef8ecdbf1a53dc7ee462a8cabd73355edb629489ca5e637fc317b"
+  },
+  {
+    "file": "server/internal/combat/march_start.go",
+    "sha256": "7aaefd3d423ef8ecdbf1a53dc7ee462a8cabd73355edb629489ca5e637fc317b"
+  },
+  {
+    "file": "server/internal/messenger/recall.go",
+    "sha256": "cea199dbab842437fc51a057c691b5b833be68591c98421b4b35d940227c87bd"
+  },
+  {
+    "file": "server/cmd/keryx/cmd_unit.go",
+    "sha256": "24ee83ad7ca4c7a1f1925e59fed0ceead1b865025a68cc3f1eecd4477f301a73"
+  },
+  {
+    "file": "server/cmd/keryx/cmd_unit_orders_en_route.go",
+    "sha256": "4c688c3fd0cd9295b9346d582e72a8972ef8040d9ea922cee7aa7b0c41ac812c"
+  },
+  {
+    "file": "web/static/js/megaron/ui/runner_status.js",
+    "sha256": "82ae8e09a2eab1b023b9b9c91d4293390f01529b71c2f280000a7002ce2cb62f"
+  },
+  {
+    "file": "web/static/js/megaron/ui/stance.js",
+    "sha256": "17eccbb97aafa39e3d0d3095f03591887f721a35d85953c997c85f4ac7a0a35f"
+  },
+  {
+    "file": "web/static/js/megaron/ui/marchctx.js",
+    "sha256": "a279f2e7f85c8dcf5d7d408766a21ea7842a476c7af95233ae9336c3e632846d"
+  },
+  {
+    "file": "web/static/js/megaron/ui/drawers/war.js",
+    "sha256": "087f432c71f2c86ddc2591c8be0012dc0a4ff48f2d14f03dfb01f9317747f0c4"
+  },
+  {
+    "file": "server/api/handlers/unit.go",
+    "sha256": "367e5087141df6e4571bb92af5f0d8469c5af7d39b317f9648530f7b42e73cb7"
+  },
+  {
+    "file": "server/api/handlers/world.go",
+    "sha256": "f8fd902555e06740f945aa06b5eb704e74aeea006414fa9533f3bed00f6a7f36"
+  },
+  {
+    "file": "server/api/handlers/world.go",
+    "sha256": "f8fd902555e06740f945aa06b5eb704e74aeea006414fa9533f3bed00f6a7f36"
+  }
+]

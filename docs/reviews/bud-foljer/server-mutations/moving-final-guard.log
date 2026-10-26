@@ -1,0 +1,23 @@
+» färsk DB på migration 217 · commit 65202f6e+ändringar
+2026/10/26 20:10:41 INFO order delivered — march started unit=b84b4e54-8e10-4926-8c1b-3cec4a4d9d60 target_q=0 target_r=0 arrival_tick=6
+2026/10/26 20:10:41 INFO order delivered — stance applied unit=eaf5eee1-86bd-4a8b-9c12-67ac11874791 stance=storm
+2026/10/26 20:10:41 INFO order delivered but no longer executable unit=de172ae4-02c6-4c06-9342-cf617a54590b verb=march reason="the unit has left the hex the Runner reached"
+2026/10/26 20:10:41 INFO order delivered — stance applied unit=a2e1e11b-834a-4b94-b6d8-98d907435d31 stance=storm
+--- FAIL: TestOrderPursuit_MovingMeeting (0.16s)
+    --- FAIL: TestOrderPursuit_MovingMeeting/march (0.04s)
+        order_pursuit_test.go:188: physical moving meeting failed: [map[intent: messenger_id:30e29a78-a06c-4602-89ae-d29eb675918d name:infantry of Home reason:the unit has left the hex the Runner reached target_q:0 target_r:0 unit_id:de172ae4-02c6-4c06-9342-cf617a54590b verb:march]]
+    --- FAIL: TestOrderPursuit_MovingMeeting/recall (0.04s)
+        order_pursuit_test.go:188: physical moving meeting failed: [map[messenger_id:8b923b1f-bacf-4a5e-9545-ca60f64c7ea6 name:infantry of Home player_id:d03f476a-d342-4f8e-af67-3561ce627bbf reason:the unit has left the hex the Runner reached unit_id:60ce72d0-dc2c-4711-8450-4d37800ca1bd verb:recall world_id:53635a36-9778-439b-9c68-e2f92d80be48]]
+    --- FAIL: TestOrderPursuit_MovingMeeting/redirect (0.04s)
+        order_pursuit_test.go:188: physical moving meeting failed: [map[messenger_id:1edff6a7-a212-496a-a29f-b74280844009 name:infantry of Home player_id:ff4eca8b-57a1-4888-8ae7-5d831703efd4 reason:the unit has left the hex the Runner reached unit_id:cf4892bb-0474-4156-bd33-fe53379f41bb verb:redirect world_id:d770e36e-9f75-4c6f-8ee6-f860c9f50c5c]]
+2026/10/26 20:10:41 INFO order delivered but no longer executable unit=eb91d264-4eb1-4352-a940-d53c272c4e8d verb=stance reason="the Runner could not find this unit — it has been disbanded"
+2026/10/26 20:10:41 INFO order delivered but no longer executable unit=381b74ea-be8a-4cc1-9264-9fdf74474a48 verb=stance reason="this unit is no longer yours"
+2026/10/26 20:10:41 INFO order delivered — stance applied unit=3bf432c1-e6ff-46fc-a476-23844492cf59 stance=storm
+2026/10/26 20:10:41 INFO order delivered — stance applied unit=5d71884a-b7e8-4f02-95cb-6d3872ea7f3c stance=storm
+2026/10/26 20:10:41 INFO order delivered — stance applied unit=9e237fd2-e230-44f9-8dc8-4dde3e63c155 stance=storm
+2026/10/26 20:10:41 INFO order delivered — stance applied unit=b10794b7-2f49-43c9-9b4f-ee9e7eefaab1 stance=storm
+2026/10/26 20:10:41 INFO order delivered — stance applied unit=ea3ca1d4-4c92-4ebd-b830-4634e33726c4 stance=storm
+2026/10/26 20:10:41 INFO order delivered but no longer executable unit=c9327916-7f38-4ce8-836d-7e62a12829b9 verb=march reason="the unit has left the hex the Runner reached"
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.908s
+FAIL

@@ -1,0 +1,18 @@
+» färsk DB på migration 217 · commit 65202f6e+ändringar
+2026/10/26 20:10:32 INFO order delivered — march started unit=da35d28a-3368-4fd1-b90b-5f122d8ddbe6 target_q=0 target_r=0 arrival_tick=6
+2026/10/26 20:10:32 INFO order delivered — stance applied unit=221f1769-eb3c-47df-ba6a-4d5098cc7831 stance=storm
+2026/10/26 20:10:32 INFO order delivered — march started unit=9dc81b6b-b2b1-4213-a7f0-5937a16eb71e target_q=0 target_r=0 arrival_tick=3
+2026/10/26 20:10:32 INFO order delivered — stance applied unit=2c1eb3eb-af34-4543-bcda-8c3fff623ca3 stance=storm
+2026/10/26 20:10:32 INFO order delivered but no longer executable unit=5dda7c75-52e4-4d8b-a542-dc464c50c487 verb=stance reason="the Runner could not find this unit — it has been disbanded"
+2026/10/26 20:10:32 INFO order delivered — stance applied unit=4f23e801-8ee7-4523-933a-df45c0d894a0 stance=storm
+2026/10/26 20:10:32 INFO order delivered — stance applied unit=9363a8b7-9636-4ca7-8b3c-2be6f0ec66e2 stance=storm
+2026/10/26 20:10:32 INFO order delivered — stance applied unit=481f23e1-ee5e-457e-91a9-24a7248c9908 stance=storm
+--- FAIL: TestOrderPursuit_GuardsAndWaiting (0.38s)
+    --- FAIL: TestOrderPursuit_GuardsAndWaiting/owner (0.04s)
+        order_pursuit_test.go:286: terminal target not reported: outbound []
+2026/10/26 20:10:32 INFO order delivered — stance applied unit=e9e0cba6-3413-49e6-a1d9-f4619ace7e22 stance=storm
+2026/10/26 20:10:32 INFO order delivered — stance applied unit=8951c66d-c720-47de-9fbb-b03e95b8f8ae stance=storm
+2026/10/26 20:10:32 INFO order delivered but no longer executable unit=a74384e4-3c63-4772-b81b-3b284c4af297 verb=march reason="the unit has left the hex the Runner reached"
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.897s
+FAIL

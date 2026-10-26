@@ -1,0 +1,20 @@
+» färsk DB på migration 217 · commit 65202f6e+ändringar
+2026/10/26 20:10:27 INFO order delivered — march started unit=06550db6-20b4-4992-a5e5-318ed0f57157 target_q=0 target_r=0 arrival_tick=6
+2026/10/26 20:10:28 INFO order delivered — stance applied unit=9515f3a2-063e-4fcb-9346-1571a3a6e3e8 stance=storm
+2026/10/26 20:10:28 INFO order delivered — march started unit=3b67434b-1f8c-450a-9de1-e20d00172579 target_q=0 target_r=0 arrival_tick=3
+2026/10/26 20:10:28 INFO order delivered — stance applied unit=705348c3-629c-4271-9611-14d8fc66121d stance=storm
+2026/10/26 20:10:28 INFO order delivered but no longer executable unit=9d418ced-3559-436c-8315-b297a5f9e396 verb=stance reason="the Runner could not find this unit — it has been disbanded"
+2026/10/26 20:10:28 INFO order delivered but no longer executable unit=e8f6b0ad-9be1-4daf-9852-5ff2cacaec19 verb=stance reason="this unit is no longer yours"
+--- FAIL: TestOrderPursuit_GuardsAndWaiting (0.36s)
+    --- FAIL: TestOrderPursuit_GuardsAndWaiting/embarked (0.04s)
+        order_pursuit_test.go:304: temporary absence did not persist a physical wait
+    --- FAIL: TestOrderPursuit_GuardsAndWaiting/unlocated (0.04s)
+        order_pursuit_test.go:304: temporary absence did not persist a physical wait
+    --- FAIL: TestOrderPursuit_GuardsAndWaiting/noport (0.04s)
+        order_pursuit_test.go:304: temporary absence did not persist a physical wait
+2026/10/26 20:10:28 INFO order delivered — stance applied unit=a7917daf-d483-49d6-a4f3-2a77442a1bbb stance=storm
+2026/10/26 20:10:28 INFO order delivered — stance applied unit=196df5e1-744d-4b4f-ae79-5232b1879961 stance=storm
+2026/10/26 20:10:28 INFO order delivered but no longer executable unit=ce3d8277-3a19-4a29-a96d-dac06f85273c verb=march reason="the unit has left the hex the Runner reached"
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.883s
+FAIL

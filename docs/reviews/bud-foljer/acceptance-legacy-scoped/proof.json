@@ -1,0 +1,800 @@
+{
+  "health": {
+    "commit": "65202f6e+order-pursuit",
+    "migration": 217,
+    "status": "ok"
+  },
+  "march": {
+    "courier_arrives_at": "2026-10-26T20:10:51.21815067+01:00",
+    "courier_due_tick": 4,
+    "following_unit": true,
+    "following_wait": false,
+    "messenger_id": "e0b8900f-7ffc-41f9-a5c5-7768978bb4bd",
+    "pursuit_legs": 0,
+    "status": "order_dispatched",
+    "superseded_messenger_ids": null,
+    "target_q": 22,
+    "target_r": 24,
+    "unit_id": "cb1f38fe-0306-4b28-9cba-441448ec7534",
+    "verb": "march"
+  },
+  "stance": {
+    "courier_arrives_at": "2026-10-26T20:11:04.230608398+01:00",
+    "courier_due_tick": 4,
+    "following_unit": true,
+    "following_wait": false,
+    "messenger_id": "13fa47d7-75c6-4281-b2ff-2596c51c4114",
+    "pursuit_legs": 0,
+    "stance": "storm",
+    "status": "order_dispatched",
+    "superseded_messenger_ids": null,
+    "unit_id": "cb1f38fe-0306-4b28-9cba-441448ec7534",
+    "verb": "stance"
+  },
+  "first_replanned": {
+    "unit": {
+      "id": "cb1f38fe-0306-4b28-9cba-441448ec7534",
+      "status": "marching",
+      "q": 14,
+      "r": 24,
+      "target_q": 22,
+      "target_r": 24,
+      "stance": null,
+      "march_route": {
+        "costs": [
+          1000,
+          1000,
+          1000,
+          1000,
+          1000,
+          1000,
+          1000,
+          1000
+        ],
+        "hexes": [
+          [
+            14,
+            24
+          ],
+          [
+            15,
+            24
+          ],
+          [
+            16,
+            24
+          ],
+          [
+            17,
+            24
+          ],
+          [
+            18,
+            24
+          ],
+          [
+            19,
+            24
+          ],
+          [
+            20,
+            24
+          ],
+          [
+            21,
+            24
+          ],
+          [
+            22,
+            24
+          ]
+        ],
+        "version": 2,
+        "end_tick": 12,
+        "start_tick": 4,
+        "departure_at": "2026-10-26T20:11:00.365241+01:00",
+        "offset_milli": 958,
+        "tick_nanoseconds": 10000000000
+      }
+    },
+    "runner": {
+      "id": "13fa47d7-75c6-4281-b2ff-2596c51c4114",
+      "status": "outbound",
+      "hex_q": 14,
+      "hex_r": 24,
+      "dest_q": 18,
+      "dest_r": 24,
+      "land_route": {
+        "costs": [
+          500,
+          500,
+          500,
+          500
+        ],
+        "hexes": [
+          [
+            14,
+            24
+          ],
+          [
+            15,
+            24
+          ],
+          [
+            16,
+            24
+          ],
+          [
+            17,
+            24
+          ],
+          [
+            18,
+            24
+          ]
+        ],
+        "version": 2,
+        "end_tick": 8,
+        "start_tick": 6,
+        "departure_at": "2026-10-26T20:11:20.348646+01:00",
+        "offset_milli": 956,
+        "tick_nanoseconds": 10000000000
+      },
+      "arrives_at": "2026-10-26T19:11:40.348646+00:00",
+      "passage_generation": 2,
+      "order_payload": {
+        "verb": "stance",
+        "stance": {
+          "Stance": "storm",
+          "UnitID": "cb1f38fe-0306-4b28-9cba-441448ec7534",
+          "WorldID": "0a48275d-a7d9-42ea-a11d-efa7d2536fc4",
+          "PlayerID": "34327926-4bef-454b-a41b-0b043ea6da95",
+          "ReactionForeign": ""
+        },
+        "unit_id": "cb1f38fe-0306-4b28-9cba-441448ec7534",
+        "world_id": "0a48275d-a7d9-42ea-a11d-efa7d2536fc4",
+        "player_id": "34327926-4bef-454b-a41b-0b043ea6da95",
+        "messenger_id": "13fa47d7-75c6-4281-b2ff-2596c51c4114",
+        "pursuit_legs": 1,
+        "following_unit": true,
+        "passage_generation": 1
+      }
+    }
+  },
+  "final": {
+    "unit": {
+      "id": "cb1f38fe-0306-4b28-9cba-441448ec7534",
+      "status": "marching",
+      "q": 14,
+      "r": 24,
+      "target_q": 22,
+      "target_r": 24,
+      "stance": "storm",
+      "march_route": {
+        "costs": [
+          1000,
+          1000,
+          1000,
+          1000,
+          1000,
+          1000,
+          1000,
+          1000
+        ],
+        "hexes": [
+          [
+            14,
+            24
+          ],
+          [
+            15,
+            24
+          ],
+          [
+            16,
+            24
+          ],
+          [
+            17,
+            24
+          ],
+          [
+            18,
+            24
+          ],
+          [
+            19,
+            24
+          ],
+          [
+            20,
+            24
+          ],
+          [
+            21,
+            24
+          ],
+          [
+            22,
+            24
+          ]
+        ],
+        "version": 2,
+        "end_tick": 12,
+        "start_tick": 4,
+        "departure_at": "2026-10-26T20:11:00.365241+01:00",
+        "offset_milli": 958,
+        "tick_nanoseconds": 10000000000
+      }
+    },
+    "runner": {
+      "id": "13fa47d7-75c6-4281-b2ff-2596c51c4114",
+      "status": "arrived",
+      "hex_q": 14,
+      "hex_r": 24,
+      "dest_q": 18,
+      "dest_r": 24,
+      "land_route": {
+        "costs": [
+          500,
+          500,
+          500,
+          500
+        ],
+        "hexes": [
+          [
+            14,
+            24
+          ],
+          [
+            15,
+            24
+          ],
+          [
+            16,
+            24
+          ],
+          [
+            17,
+            24
+          ],
+          [
+            18,
+            24
+          ]
+        ],
+        "version": 2,
+        "end_tick": 8,
+        "start_tick": 6,
+        "departure_at": "2026-10-26T20:11:20.348646+01:00",
+        "offset_milli": 956,
+        "tick_nanoseconds": 10000000000
+      },
+      "arrives_at": "2026-10-26T19:11:40.348646+00:00",
+      "passage_generation": 2,
+      "order_payload": {
+        "verb": "stance",
+        "stance": {
+          "Stance": "storm",
+          "UnitID": "cb1f38fe-0306-4b28-9cba-441448ec7534",
+          "WorldID": "0a48275d-a7d9-42ea-a11d-efa7d2536fc4",
+          "PlayerID": "34327926-4bef-454b-a41b-0b043ea6da95",
+          "ReactionForeign": ""
+        },
+        "unit_id": "cb1f38fe-0306-4b28-9cba-441448ec7534",
+        "world_id": "0a48275d-a7d9-42ea-a11d-efa7d2536fc4",
+        "player_id": "34327926-4bef-454b-a41b-0b043ea6da95",
+        "messenger_id": "13fa47d7-75c6-4281-b2ff-2596c51c4114",
+        "pursuit_legs": 1,
+        "following_unit": true,
+        "passage_generation": 1
+      }
+    }
+  },
+  "snapshots": [
+    {
+      "unit": {
+        "id": "cb1f38fe-0306-4b28-9cba-441448ec7534",
+        "status": "positioned",
+        "q": 14,
+        "r": 24,
+        "target_q": null,
+        "target_r": null,
+        "stance": null,
+        "march_route": null
+      },
+      "runner": {
+        "id": "13fa47d7-75c6-4281-b2ff-2596c51c4114",
+        "status": "outbound",
+        "hex_q": 6,
+        "hex_r": 24,
+        "dest_q": 14,
+        "dest_r": 24,
+        "land_route": {
+          "costs": [
+            500,
+            500,
+            500,
+            500,
+            500,
+            500,
+            500,
+            500
+          ],
+          "hexes": [
+            [
+              6,
+              24
+            ],
+            [
+              7,
+              24
+            ],
+            [
+              8,
+              24
+            ],
+            [
+              9,
+              24
+            ],
+            [
+              10,
+              24
+            ],
+            [
+              11,
+              24
+            ],
+            [
+              12,
+              24
+            ],
+            [
+              13,
+              24
+            ],
+            [
+              14,
+              24
+            ]
+          ],
+          "version": 2,
+          "end_tick": 5,
+          "start_tick": 1,
+          "departure_at": "2026-10-26T20:10:24.230608+01:00",
+          "offset_milli": 344,
+          "tick_nanoseconds": 10000000000
+        },
+        "arrives_at": "2026-10-26T19:11:04.230608+00:00",
+        "passage_generation": 1,
+        "order_payload": {
+          "verb": "stance",
+          "stance": {
+            "Stance": "storm",
+            "UnitID": "cb1f38fe-0306-4b28-9cba-441448ec7534",
+            "WorldID": "0a48275d-a7d9-42ea-a11d-efa7d2536fc4",
+            "PlayerID": "34327926-4bef-454b-a41b-0b043ea6da95",
+            "ReactionForeign": ""
+          },
+          "unit_id": "cb1f38fe-0306-4b28-9cba-441448ec7534",
+          "world_id": "0a48275d-a7d9-42ea-a11d-efa7d2536fc4",
+          "player_id": "34327926-4bef-454b-a41b-0b043ea6da95",
+          "messenger_id": "00000000-0000-0000-0000-000000000000",
+          "following_unit": true
+        }
+      }
+    },
+    {
+      "unit": {
+        "id": "cb1f38fe-0306-4b28-9cba-441448ec7534",
+        "status": "marching",
+        "q": 14,
+        "r": 24,
+        "target_q": 22,
+        "target_r": 24,
+        "stance": null,
+        "march_route": {
+          "costs": [
+            1000,
+            1000,
+            1000,
+            1000,
+            1000,
+            1000,
+            1000,
+            1000
+          ],
+          "hexes": [
+            [
+              14,
+              24
+            ],
+            [
+              15,
+              24
+            ],
+            [
+              16,
+              24
+            ],
+            [
+              17,
+              24
+            ],
+            [
+              18,
+              24
+            ],
+            [
+              19,
+              24
+            ],
+            [
+              20,
+              24
+            ],
+            [
+              21,
+              24
+            ],
+            [
+              22,
+              24
+            ]
+          ],
+          "version": 2,
+          "end_tick": 12,
+          "start_tick": 4,
+          "departure_at": "2026-10-26T20:11:00.365241+01:00",
+          "offset_milli": 958,
+          "tick_nanoseconds": 10000000000
+        }
+      },
+      "runner": {
+        "id": "13fa47d7-75c6-4281-b2ff-2596c51c4114",
+        "status": "outbound",
+        "hex_q": 6,
+        "hex_r": 24,
+        "dest_q": 14,
+        "dest_r": 24,
+        "land_route": {
+          "costs": [
+            500,
+            500,
+            500,
+            500,
+            500,
+            500,
+            500,
+            500
+          ],
+          "hexes": [
+            [
+              6,
+              24
+            ],
+            [
+              7,
+              24
+            ],
+            [
+              8,
+              24
+            ],
+            [
+              9,
+              24
+            ],
+            [
+              10,
+              24
+            ],
+            [
+              11,
+              24
+            ],
+            [
+              12,
+              24
+            ],
+            [
+              13,
+              24
+            ],
+            [
+              14,
+              24
+            ]
+          ],
+          "version": 2,
+          "end_tick": 5,
+          "start_tick": 1,
+          "departure_at": "2026-10-26T20:10:24.230608+01:00",
+          "offset_milli": 344,
+          "tick_nanoseconds": 10000000000
+        },
+        "arrives_at": "2026-10-26T19:11:04.230608+00:00",
+        "passage_generation": 1,
+        "order_payload": {
+          "verb": "stance",
+          "stance": {
+            "Stance": "storm",
+            "UnitID": "cb1f38fe-0306-4b28-9cba-441448ec7534",
+            "WorldID": "0a48275d-a7d9-42ea-a11d-efa7d2536fc4",
+            "PlayerID": "34327926-4bef-454b-a41b-0b043ea6da95",
+            "ReactionForeign": ""
+          },
+          "unit_id": "cb1f38fe-0306-4b28-9cba-441448ec7534",
+          "world_id": "0a48275d-a7d9-42ea-a11d-efa7d2536fc4",
+          "player_id": "34327926-4bef-454b-a41b-0b043ea6da95",
+          "messenger_id": "00000000-0000-0000-0000-000000000000",
+          "following_unit": true
+        }
+      }
+    },
+    {
+      "unit": {
+        "id": "cb1f38fe-0306-4b28-9cba-441448ec7534",
+        "status": "marching",
+        "q": 14,
+        "r": 24,
+        "target_q": 22,
+        "target_r": 24,
+        "stance": null,
+        "march_route": {
+          "costs": [
+            1000,
+            1000,
+            1000,
+            1000,
+            1000,
+            1000,
+            1000,
+            1000
+          ],
+          "hexes": [
+            [
+              14,
+              24
+            ],
+            [
+              15,
+              24
+            ],
+            [
+              16,
+              24
+            ],
+            [
+              17,
+              24
+            ],
+            [
+              18,
+              24
+            ],
+            [
+              19,
+              24
+            ],
+            [
+              20,
+              24
+            ],
+            [
+              21,
+              24
+            ],
+            [
+              22,
+              24
+            ]
+          ],
+          "version": 2,
+          "end_tick": 12,
+          "start_tick": 4,
+          "departure_at": "2026-10-26T20:11:00.365241+01:00",
+          "offset_milli": 958,
+          "tick_nanoseconds": 10000000000
+        }
+      },
+      "runner": {
+        "id": "13fa47d7-75c6-4281-b2ff-2596c51c4114",
+        "status": "outbound",
+        "hex_q": 14,
+        "hex_r": 24,
+        "dest_q": 18,
+        "dest_r": 24,
+        "land_route": {
+          "costs": [
+            500,
+            500,
+            500,
+            500
+          ],
+          "hexes": [
+            [
+              14,
+              24
+            ],
+            [
+              15,
+              24
+            ],
+            [
+              16,
+              24
+            ],
+            [
+              17,
+              24
+            ],
+            [
+              18,
+              24
+            ]
+          ],
+          "version": 2,
+          "end_tick": 8,
+          "start_tick": 6,
+          "departure_at": "2026-10-26T20:11:20.348646+01:00",
+          "offset_milli": 956,
+          "tick_nanoseconds": 10000000000
+        },
+        "arrives_at": "2026-10-26T19:11:40.348646+00:00",
+        "passage_generation": 2,
+        "order_payload": {
+          "verb": "stance",
+          "stance": {
+            "Stance": "storm",
+            "UnitID": "cb1f38fe-0306-4b28-9cba-441448ec7534",
+            "WorldID": "0a48275d-a7d9-42ea-a11d-efa7d2536fc4",
+            "PlayerID": "34327926-4bef-454b-a41b-0b043ea6da95",
+            "ReactionForeign": ""
+          },
+          "unit_id": "cb1f38fe-0306-4b28-9cba-441448ec7534",
+          "world_id": "0a48275d-a7d9-42ea-a11d-efa7d2536fc4",
+          "player_id": "34327926-4bef-454b-a41b-0b043ea6da95",
+          "messenger_id": "13fa47d7-75c6-4281-b2ff-2596c51c4114",
+          "pursuit_legs": 1,
+          "following_unit": true,
+          "passage_generation": 1
+        }
+      }
+    },
+    {
+      "unit": {
+        "id": "cb1f38fe-0306-4b28-9cba-441448ec7534",
+        "status": "marching",
+        "q": 14,
+        "r": 24,
+        "target_q": 22,
+        "target_r": 24,
+        "stance": "storm",
+        "march_route": {
+          "costs": [
+            1000,
+            1000,
+            1000,
+            1000,
+            1000,
+            1000,
+            1000,
+            1000
+          ],
+          "hexes": [
+            [
+              14,
+              24
+            ],
+            [
+              15,
+              24
+            ],
+            [
+              16,
+              24
+            ],
+            [
+              17,
+              24
+            ],
+            [
+              18,
+              24
+            ],
+            [
+              19,
+              24
+            ],
+            [
+              20,
+              24
+            ],
+            [
+              21,
+              24
+            ],
+            [
+              22,
+              24
+            ]
+          ],
+          "version": 2,
+          "end_tick": 12,
+          "start_tick": 4,
+          "departure_at": "2026-10-26T20:11:00.365241+01:00",
+          "offset_milli": 958,
+          "tick_nanoseconds": 10000000000
+        }
+      },
+      "runner": {
+        "id": "13fa47d7-75c6-4281-b2ff-2596c51c4114",
+        "status": "arrived",
+        "hex_q": 14,
+        "hex_r": 24,
+        "dest_q": 18,
+        "dest_r": 24,
+        "land_route": {
+          "costs": [
+            500,
+            500,
+            500,
+            500
+          ],
+          "hexes": [
+            [
+              14,
+              24
+            ],
+            [
+              15,
+              24
+            ],
+            [
+              16,
+              24
+            ],
+            [
+              17,
+              24
+            ],
+            [
+              18,
+              24
+            ]
+          ],
+          "version": 2,
+          "end_tick": 8,
+          "start_tick": 6,
+          "departure_at": "2026-10-26T20:11:20.348646+01:00",
+          "offset_milli": 956,
+          "tick_nanoseconds": 10000000000
+        },
+        "arrives_at": "2026-10-26T19:11:40.348646+00:00",
+        "passage_generation": 2,
+        "order_payload": {
+          "verb": "stance",
+          "stance": {
+            "Stance": "storm",
+            "UnitID": "cb1f38fe-0306-4b28-9cba-441448ec7534",
+            "WorldID": "0a48275d-a7d9-42ea-a11d-efa7d2536fc4",
+            "PlayerID": "34327926-4bef-454b-a41b-0b043ea6da95",
+            "ReactionForeign": ""
+          },
+          "unit_id": "cb1f38fe-0306-4b28-9cba-441448ec7534",
+          "world_id": "0a48275d-a7d9-42ea-a11d-efa7d2536fc4",
+          "player_id": "34327926-4bef-454b-a41b-0b043ea6da95",
+          "messenger_id": "13fa47d7-75c6-4281-b2ff-2596c51c4114",
+          "pursuit_legs": 1,
+          "following_unit": true,
+          "passage_generation": 1
+        }
+      }
+    }
+  ],
+  "page_errors": [],
+  "source_hashes_unchanged": 963,
+  "fixture": "positioned Spearmen; real earlier CLI march and delayed CLI stance, no post-dispatch DB mutations"
+}

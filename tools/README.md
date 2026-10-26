@@ -673,3 +673,7 @@ Integration: `python3 tools/correspondence_integration_upgrade.py OUTPUT_JSON` t
 - `return_redirect_mutants.py CHECKOUT OUTPUT` — fyra fysiska return-/home-/naval-/auditmutanter på separat clean checkout, färsk DB per arm och exakt återställning.
 - `return_redirect_acceptance.py OUTPUT` — explicit returruttscen i egenPG/Redis/server, riktig Keryx/Runner/worker och Firefox1280/390; visar fältankomst och ofarligt gammalt returjobb.
 - `return_redirect_deploy_verify.py --before` sparar grund-/5th-baslinje; utan flaggan verifieras process217, exakt en korrigeringsaudit, fysisk hex/ägare/support oförändrade och samma grunddata.
+
+- `order_pursuit_acceptance.py OUTPUT` — own fresh PG/Redis/server, earlier real CLI march and delayed stance; same Runner follows physically, native Firefox1280/390, no post-dispatch fixtures.
+- `order_pursuit_server_mutants.py CLEAN_CHECKOUT OUTPUT` and `order_pursuit_client_mutants.py CLEAN_CHECKOUT OUTPUT` — named assertion-red pursuit mutants, fresh PG per Go arm, exact source restoration.
+- `order_pursuit_deploy_verify.py [--before]` — read-only process/clean217/ground/assets proof for the pursuit deployment.

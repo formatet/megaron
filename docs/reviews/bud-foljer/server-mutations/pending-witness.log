@@ -1,0 +1,19 @@
+» färsk DB på migration 217 · commit 65202f6e+ändringar
+2026/10/26 20:10:19 INFO order delivered — march started unit=6d36a445-004c-439c-940f-c0fdbeeca548 target_q=0 target_r=0 arrival_tick=6
+2026/10/26 20:10:19 INFO order delivered — stance applied unit=bea73531-6ced-4d55-9d23-99172574fe72 stance=storm
+2026/10/26 20:10:19 INFO order delivered — march started unit=a1d6be98-a827-4d0c-b8c6-af1cb8b9b28a target_q=0 target_r=0 arrival_tick=3
+2026/10/26 20:10:19 INFO order delivered — stance applied unit=80458bd3-f991-40c5-ad8b-c8268dfda56a stance=storm
+2026/10/26 20:10:20 INFO order delivered but no longer executable unit=37953e7d-7e74-4b99-be4a-801d8a1dee3f verb=stance reason="the Runner could not find this unit — it has been disbanded"
+2026/10/26 20:10:20 INFO order delivered but no longer executable unit=992b73dd-f622-4b95-8f14-dbe5d28a5834 verb=stance reason="this unit is no longer yours"
+2026/10/26 20:10:20 INFO order delivered — stance applied unit=a0fa4691-c8cc-4a66-b689-92dd483a024f stance=storm
+2026/10/26 20:10:20 INFO order delivered — stance applied unit=170c540e-5d12-495a-a896-42f624b2ee84 stance=storm
+2026/10/26 20:10:20 INFO order delivered — stance applied unit=837b2767-9f64-4773-a2b6-050a0ab19c2d stance=storm
+--- FAIL: TestOrderPursuit_GuardsAndWaiting (0.37s)
+    --- FAIL: TestOrderPursuit_GuardsAndWaiting/witness (0.04s)
+        order_pursuit_test.go:299: guard scheduled or advanced the Runner: jobs1 payload{FollowUnit:true PursuitLegs:1 FollowWaiting:false MeetAtDestination:false AfterArrival:<nil> WorldID:3c06da6e-46d7-4de1-8fb8-a8c0606b0709 PlayerID:d584f983-4911-4bba-970e-cd5fef3f528a UnitID:be88cd97-f4ab-46fc-a80b-62d899edff24 MessengerID:89d1476c-4a06-4ece-8821-2a123cf89ce8 Verb:stance March:<nil> Stance:0x13a5e6e94d70 Recall:<nil> StandingOrders:<nil> Occupy:<nil> BuildRoad:<nil> PassageGeneration:1}
+2026/10/26 20:10:20 INFO order delivered — stance applied unit=1f8a985a-d998-40ee-8aeb-7b563d6a15ca stance=storm
+2026/10/26 20:10:20 INFO order delivered — stance applied unit=c10bc40a-a765-4f87-9310-554aa62e58cd stance=storm
+2026/10/26 20:10:20 INFO order delivered but no longer executable unit=da1b0a97-970a-4c9f-a498-ebbd5d99241f verb=march reason="the unit has left the hex the Runner reached"
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.894s
+FAIL

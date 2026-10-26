@@ -1,0 +1,24 @@
+» färsk DB på migration 217 · commit 65202f6e+ändringar
+2026/10/26 20:10:36 INFO order delivered — march started unit=c6cb2345-53ff-4e4e-aa51-da1790465a2f target_q=0 target_r=0 arrival_tick=6
+2026/10/26 20:10:36 INFO order delivered — stance applied unit=7876feb4-b9dd-4a01-9bf6-775e20e67e8a stance=storm
+2026/10/26 20:10:36 INFO order delivered — march started unit=8a31cf0c-8268-4e2c-bd54-1c06c3e747cf target_q=0 target_r=0 arrival_tick=3
+2026/10/26 20:10:36 INFO order delivered but no longer executable unit=3f12d67e-5988-4b98-a91d-58bc4cf4a446 verb=stance reason="unit cannot change stance while marching (must be garrison or positioned)"
+--- FAIL: TestOrderPursuit_MovingMeeting (0.17s)
+    --- FAIL: TestOrderPursuit_MovingMeeting/stance (0.04s)
+        order_pursuit_test.go:188: physical moving meeting failed: [map[messenger_id:2788d826-5536-4a3f-946e-1657445ecb67 name:infantry of Home reason:unit cannot change stance while marching (must be garrison or positioned) unit_id:3f12d67e-5988-4b98-a91d-58bc4cf4a446 verb:stance]]
+2026/10/26 20:10:36 INFO order delivered but no longer executable unit=8665dc78-bbfd-4033-add2-d4a0ddf0a2bb verb=stance reason="the Runner could not find this unit — it has been disbanded"
+2026/10/26 20:10:36 INFO order delivered but no longer executable unit=14934363-8816-43d4-8510-0837b6cccacf verb=stance reason="this unit is no longer yours"
+2026/10/26 20:10:36 INFO order delivered — stance applied unit=384a3844-8d74-4ed7-b465-b07d8a529555 stance=storm
+2026/10/26 20:10:36 INFO order delivered — stance applied unit=5c3543c0-9253-4c07-ae2d-c943ffd97a41 stance=storm
+2026/10/26 20:10:36 INFO order delivered — stance applied unit=d782429e-062a-464e-bace-8478180c9285 stance=storm
+2026/10/26 20:10:37 INFO order delivered but no longer executable unit=fd3d6936-2720-4564-be6b-aee98a4fbbd0 verb=stance reason="unit cannot change stance while marching (must be garrison or positioned)"
+2026/10/26 20:10:37 INFO order delivered but no longer executable unit=99608bbd-109a-4a16-8e17-412b6acf8655 verb=stance reason="unit cannot change stance while marching (must be garrison or positioned)"
+--- FAIL: TestOrderPursuit_MovingRouteLeg (0.10s)
+    --- FAIL: TestOrderPursuit_MovingRouteLeg/0 (0.05s)
+        order_pursuit_test.go:399: route meeting did not deliver: [map[messenger_id:bcb60590-3eaf-4b92-a369-54849a1ab223 name:infantry of Home reason:unit cannot change stance while marching (must be garrison or positioned) unit_id:fd3d6936-2720-4564-be6b-aee98a4fbbd0 verb:stance]]
+    --- FAIL: TestOrderPursuit_MovingRouteLeg/2 (0.05s)
+        order_pursuit_test.go:399: route meeting did not deliver: [map[messenger_id:0db1bd87-a9d1-4482-8075-f192d0692d8c name:infantry of Home reason:unit cannot change stance while marching (must be garrison or positioned) unit_id:99608bbd-109a-4a16-8e17-412b6acf8655 verb:stance]]
+2026/10/26 20:10:37 INFO order delivered but no longer executable unit=19d979a1-31bd-49d0-b894-c2ff3795b11c verb=march reason="the unit has left the hex the Runner reached"
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.915s
+FAIL

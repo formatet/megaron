@@ -1,0 +1,28 @@
+{
+  "migration": {
+    "version": 217,
+    "dirty": false
+  },
+  "worlds": [
+    {
+      "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+      "status": "active",
+      "tick": 3036
+    }
+  ],
+  "players": 15,
+  "settlements": 6,
+  "units": 18,
+  "goods": 102,
+  "gossip": 644,
+  "unit_under_review": {
+    "id": "a05591e4-e160-46e3-8ae0-2f80421a4286",
+    "status": "disbanded",
+    "q": 49,
+    "r": 24,
+    "settlement_id": "a60b2a08-4ec1-4177-94a7-1982c01dc82b",
+    "support_settlement_id": "b3d9b932-6b5e-4b5b-b1cc-7a92b988010d",
+    "owner_id": "c3a51eae-557b-42c7-9631-7c9ae2edb4bf"
+  },
+  "correction_events": 1
+}

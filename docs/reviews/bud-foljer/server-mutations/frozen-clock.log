@@ -1,0 +1,18 @@
+» färsk DB på migration 217 · commit 65202f6e+ändringar
+2026/10/26 20:10:49 INFO order delivered — march started unit=c436bb88-8228-4b99-ba4f-e8c67970a1c1 target_q=0 target_r=0 arrival_tick=6
+2026/10/26 20:10:50 INFO order delivered — stance applied unit=f0f25b48-e8b3-42ff-9e9b-221d4003372d stance=storm
+2026/10/26 20:10:50 INFO order delivered — march started unit=bb329938-85ca-4920-86b4-e9264093e568 target_q=0 target_r=0 arrival_tick=3
+2026/10/26 20:10:50 INFO order delivered — stance applied unit=bf6ff045-047f-4cbc-bdd5-43d6f0ef170b stance=storm
+--- FAIL: TestInterceptCourierRoute_FrozenPhysicalClock (0.03s)
+    order_pursuit_test.go:213: intercept used world phase instead of frozen physical route: {2 0} true
+2026/10/26 20:10:50 INFO order delivered but no longer executable unit=6ae72ab1-8094-4b31-a757-3be4b3a301de verb=stance reason="the Runner could not find this unit — it has been disbanded"
+2026/10/26 20:10:50 INFO order delivered but no longer executable unit=4f29d73e-4590-47ef-9145-0ece7e1d6b96 verb=stance reason="this unit is no longer yours"
+2026/10/26 20:10:50 INFO order delivered — stance applied unit=9c63c0b2-1384-48f7-9c79-fc5d9e9406d3 stance=storm
+2026/10/26 20:10:50 INFO order delivered — stance applied unit=b0b87350-8f9c-46fb-a41a-957c7c538252 stance=storm
+2026/10/26 20:10:50 INFO order delivered — stance applied unit=0fd46ef9-a303-4dee-8193-0a6f1f91ab9f stance=storm
+2026/10/26 20:10:50 INFO order delivered — stance applied unit=c2bc4bf6-f8d3-48b7-b3cc-d6fbd3c7bd52 stance=storm
+2026/10/26 20:10:50 INFO order delivered — stance applied unit=fe6be534-521b-4e99-92b8-0e77a88b42f7 stance=storm
+2026/10/26 20:10:50 INFO order delivered but no longer executable unit=2b530858-b9ab-47c1-b687-1e087cb6334f verb=march reason="the unit has left the hex the Runner reached"
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.923s
+FAIL
