@@ -17,13 +17,13 @@ Namngivna checkboxar väljer exakt enhet; högst en förvald. Preview och send d
 
 Serverns befintliga budgetmekanik är oförändrad. Budgetavslag får en additiv intern kod så att preview maskerar dold minimitid; gammal POST-/eventtext behåller sin betydelse. Inga nya migrationsfiler; migration215.
 
-Native Firefox hittade att feltexten blev för smal och att avbruten forecast lämnade ”Estimating arrival…”. Feltext får egen rad och send tömmer avbruten forecast; nytt test assertion-rött före fix. Ny capture ersätter första försöket.
+Slutkod `fb36d1d9` (additivt ovanpå ursprungliga WIP). Native Firefox hittade att feltexten blev för smal och att avbruten forecast lämnade ”Estimating arrival…”. Feltext får egen rad och send tömmer avbruten forecast; nytt test assertion-rött före fix. Ny capture ersätter första försöket.
 
 ## Grindar och bevis
 
 - Kod: hel färsk Go på764b0bc5 (oförändrad slut-Go), alla26 paket gröna, world147.291s; slut-JS794/794, vet och fyra dayguards gröna. Go via tools/gotest.sh på egen tom215DB och ren miljö.
-- Mutation: [täckning, exakta sed-rader och avgränsningar](coverage-and-mutations.md). Separat checkout, assertion-rött och exakt restore; explorativ överlevare redovisad.
-- Visuell/användare: [native Firefox1280/390](bild/index.html), verkliga order-POST/DB, endast vald3rdkohort, förkort expedition nollPOST/nollbud. Scenfixturer redovisas; ingen delad/livevärld används.
+- Mutation: [täckning, exakta sed-rader och avgränsningar](coverage-and-mutations.md). Elva fysiska mutanter i separat checkout, assertion-rött och exakt restore; explorativ överlevare redovisad.
+- Visuell/användare: [native Firefox1280/390](bild/index.html), verkliga order-POST/DB, endast vald3rdkohort, förkort expedition nollPOST/nollbud. Verklig Keryx med exakt3rdnamn: giltig read-only preview och förkort expedition422 utan bud. Scenfixturer redovisas; ingen delad/livevärld används.
 - Drift: pending integration. Läsbaslinje [ground-before.json](ground-before.json); efter deploy verifierar tools/marschpanel_deploy_verify_20261026.py processhash, dirty=false, samma värld/grundtillstånd och ändrade statiska bytes.
 
 ## Kända avgränsningar
