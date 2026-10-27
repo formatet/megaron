@@ -3,7 +3,7 @@
 from pathlib import Path
 import re,json,sys
 from day_guard import ROOT,js_strings
-old=re.compile(r'\b(?:elite infantry|war chariots?)\b',re.I)
+old=re.compile(r'\b(?:elite infantry|war chariots?|agema)\b',re.I)
 units=re.compile(r'(?<![\w-])units(?![\w-])',re.I)
 problems=[];count=0
 index=json.loads((ROOT/'web/static/codex/index.json').read_text());titles={a['id']:a['title'] for a in index['articles']}
