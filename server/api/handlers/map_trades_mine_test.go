@@ -439,3 +439,55 @@ func TestMapTrades_CompleteManifestPrivateToParties(t *testing.T) {
 		}
 	}
 }
+
+func TestMapTradesStandingOrderIdentityIsSenderPrivate(t *testing.T) {
+	f := setupMapTradesMineFixture(t)
+	ctx := context.Background()
+	rows, err := f.pool.Query(ctx, `SELECT id,owner_id,origin_id,dest_id FROM transports WHERE world_id=$1`, f.worldID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	type shipment struct{ id, owner, origin, dest uuid.UUID }
+	all := []shipment{}
+	for rows.Next() {
+		var s shipment
+		if err := rows.Scan(&s.id, &s.owner, &s.origin, &s.dest); err != nil {
+			t.Fatal(err)
+		}
+		all = append(all, s)
+	}
+	rows.Close()
+	routes := map[string]string{}
+	for _, s := range all {
+		var route uuid.UUID
+		if err := f.pool.QueryRow(ctx, `INSERT INTO standing_orders(world_id,owner_id,from_settlement_id,to_settlement_id,crewed_by_settlement_id) VALUES($1,$2,$3,$4,$3) RETURNING id`, f.worldID, s.owner, s.origin, s.dest).Scan(&route); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := f.pool.Exec(ctx, `UPDATE transports SET standing_order_id=$1 WHERE id=$2`, route, s.id); err != nil {
+			t.Fatal(err)
+		}
+		routes[s.id.String()] = route.String()
+	}
+	seenSender, seenRecipient := false, false
+	for _, m := range f.get(t, f.tokenA) {
+		if m["mine"] == true {
+			seenSender = true
+			if m["standing_order_id"] != routes[m["id"].(string)] {
+				t.Fatalf("own route identity missing %+v", m)
+			}
+		} else {
+			seenRecipient = true
+			if _, leak := m["standing_order_id"]; leak {
+				t.Fatalf("recipient/foreign route identity leaked %+v", m)
+			}
+		}
+	}
+	if !seenSender || !seenRecipient {
+		t.Fatalf("fixture lacks both ownership sides sender%v recipient%v", seenSender, seenRecipient)
+	}
+	for _, m := range f.get(t, "") {
+		if _, leak := m["standing_order_id"]; leak {
+			t.Fatal("unauthenticated route identity")
+		}
+	}
+}

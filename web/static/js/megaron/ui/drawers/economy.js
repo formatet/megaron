@@ -155,7 +155,7 @@ export async function loadEconomyDrawer() {
     '<div class="drawer-tabs">' +
       '<button class="dtab active" data-tab="goods">Goods</button>' +
       '<button class="dtab" data-tab="transfer">Transfer</button>' +
-      '<button class="dtab" data-tab="automation">Automation</button>' +
+      '<button class="dtab" data-tab="automation">Routes &amp; cargo</button>' +
     '</div>' +
     '<div id="ectab-goods" class="city-tab"></div>' +
     '<div id="ectab-transfer" class="city-tab" style="display:none"></div>' +
@@ -257,10 +257,7 @@ async function loadEconomyTransfer(mySettlements) {
         <div id="ec-tr-result" class="action-result"></div>
       </div>
     </div>
-    <div class="dsec">
-      <div class="dsec-title">Your cargo in transit</div>
-      <div id="ec-tr-cargo" class="loading" style="padding:.4rem 0">Loading…</div>
-    </div>`;
+    <p class="empty-state">Track land and sea cargo under Routes &amp; cargo.</p>`;
   await Promise.all([loadTransferDestinations(document.getElementById('ec-tr-from').value),
     loadTransferGoods(document.getElementById('ec-tr-from').value),refreshCargoInTransit()]);
 }
@@ -319,6 +316,7 @@ export function renderCargoHTML(trades, nowMs) {
 // Called on tab load and again right after a successful transfer, so a freshly
 // dispatched caravan appears without having to leave and reopen the tab.
 async function refreshCargoInTransit() {
+  if (document.getElementById('ec-so-list')) return refreshStandingOrders();
   const el = document.getElementById('ec-tr-cargo');
   if (!el) return;
   el.innerHTML = '<div class="loading" style="padding:.4rem 0">Loading…</div>';
@@ -446,6 +444,7 @@ export async function startTransfer() {
     resultEl.textContent = d.ship_name
       ? `${cargo} sent aboard ${d.ship_name} — carried, can be intercepted en route, and sails home empty afterward.`
       : `${cargo} sent — physical cargo, can be intercepted en route.`;
+    resultEl.textContent += ' Track it under Routes & cargo.';
     if (d.kind === 'gift') resultEl.textContent = 'Gift: ' + resultEl.textContent;
     if (Number.isInteger(d.arrival_tick)) {
       resultEl.textContent += ` Arrives ${fmtTickTime(d.route_version===2?null:d.arrival_tick,d.arrives_at)} (journey: ${fmtDays(d.travel_ticks)}).`;
@@ -523,7 +522,7 @@ async function loadEconomyAutomation(mySettlements) {
     if (!goods.length) throw new Error('empty inventory');
   } catch (_) {
     if (seq !== automationLoadSeq) return;
-    el.innerHTML = '<p class="empty-state">Could not load goods. Open Automation again to retry.</p>';
+    el.innerHTML = '<p class="empty-state">Could not load goods. Open Routes & cargo again to retry.</p>';
     return;
   }
   if (seq !== automationLoadSeq) return;
@@ -556,7 +555,7 @@ async function loadEconomyAutomation(mySettlements) {
     <div class="dsec">
       <div class="dsec-title">Standing orders</div>
       <div id="ec-so-list" class="loading" style="padding:.4rem 0">Loading…</div>
-    </div>`;
+    </div><div class="dsec"><div class="dsec-title">Other cargo in transit</div><div id="ec-tr-cargo"></div></div>`;
   const toSel = document.getElementById('ec-so-to');
   if (toSel && mySettlements.length > 1) toSel.selectedIndex = 1;
   bindStandingGoodsRows('out', goods);
@@ -566,7 +565,12 @@ async function loadEconomyAutomation(mySettlements) {
 
 // renderStandingOrdersHTML is pure (list in, markup out) for the same
 // testability reason as renderCargoHTML above.
-export function renderStandingOrdersHTML(orders) {
+export function routeCargoHTML(trades, nowMs) {
+ if(!trades.length)return '<p class="empty-state">No cargo travelling.</p>';
+ return trades.map(t=>'<div class="standing-order-config" data-cargo-id="'+esc(t.id)+'"><strong>'+ (t.category==='naval'?'Ship':'Caravan')+'</strong> · '+esc(t.origin_name||'Origin')+' → '+esc(t.dest_name||'Destination')+'<br>'+formatCargoRows([t],nowMs).map(row=>esc(String(row.qty))+' '+esc(row.good)+' · '+esc(row.eta)).join('<br>')+'</div>').join('');
+}
+
+export function renderStandingOrdersHTML(orders, trades, nowMs = 0) {
   if (!orders.length) return '<p class="empty-state" style="padding:.4rem 0">No standing orders yet.</p>';
   return '<table class="goods-mini"><tr style="color:var(--text-dim);font-size:.7rem">' +
     '<td>Route</td><td>Status</td><td></td></tr>' +
@@ -583,8 +587,9 @@ export function renderStandingOrdersHTML(orders) {
         ? Number(value).toLocaleString('en-US', { maximumFractionDigits: 20 }) : 'unknown';
       const outbound = (o.outbound || []).map(g => `${esc(g.good_key)} ${stockAmount(g.threshold)}`).join(', ');
       const returning = (o.return || []).map(g => `${esc(g.good_key)} ${stockAmount(g.floor)}`).join(', ');
+      const travelling = trades === undefined ? '' : trades === null ? '<p class="empty-state">Could not load cargo.</p>' : routeCargoHTML(trades.filter(t => t.standing_order_id === o.id), nowMs);
       const settings = `<div class="standing-order-config">Keep at destination: ${outbound || 'not available'}</div>`
-        + `<div class="standing-order-config">${returning ? 'Bring home above: ' + returning : 'Return cargo: none'}</div>`;
+        + `<div class="standing-order-config">${returning ? 'Bring home above: ' + returning : 'Return cargo: none'}</div>` + travelling;
       return `<tr id="standing-order-${esc(o.id)}">
         <td>${esc(o.from_name)} → ${esc(o.to_name)}${shipNote}${settings}</td>
         <td>${esc(statusText)}</td>
@@ -602,10 +607,15 @@ async function refreshStandingOrders() {
   if (!el) return;
   el.innerHTML = '<div class="loading" style="padding:.4rem 0">Loading…</div>';
   try {
-    const r = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/standing-orders`);
-    if (!r.ok) { el.innerHTML = '<p class="empty-state" style="padding:.4rem 0">Could not load.</p>'; return; }
-    const orders = (await r.json()) || [];
-    el.innerHTML = renderStandingOrdersHTML(orders);
+    const world=State.WORLD_ID;
+    const [r,cargoResponse]=await Promise.all([fetchAuth(`/api/v1/worlds/${world}/standing-orders`),fetchAuth(`/api/v1/worlds/${world}/trades`)]);
+    if(State.WORLD_ID!==world||document.getElementById('ec-so-list')!==el)return;
+    if (!r.ok) { el.innerHTML = '<p class="empty-state">Could not load routes.</p>'; return; }
+    const orders=(await r.json())||[];
+    const trades=cargoResponse.ok?(await cargoResponse.json()).filter(t=>t.role==='sender'||t.role==='recipient'):null;
+    el.innerHTML=renderStandingOrdersHTML(orders,trades,serverNow());
+    const other=document.getElementById('ec-tr-cargo');
+    if(other)other.innerHTML=trades===null?'<p class="empty-state">Could not load cargo.</p>':routeCargoHTML(trades.filter(t=>!orders.some(o=>o.id===t.standing_order_id)),serverNow());
   } catch (_) {
     el.innerHTML = '<p class="empty-state" style="padding:.4rem 0">Could not load.</p>';
   }

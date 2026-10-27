@@ -592,7 +592,7 @@ func (h *SettlementHandler) ReturnArmy(w http.ResponseWriter, r *http.Request) {
 		inf, cha, ship, settlementID,
 	)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not return army units")
+		writeError(w, http.StatusInternalServerError, "could not return army forces")
 		return
 	}
 

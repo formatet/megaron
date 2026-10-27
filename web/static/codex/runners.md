@@ -2,7 +2,7 @@
 
 When you tell a unit in the field to turn around, change course or change stance, you do not reach the unit — you send a **Runner**, a real person who must walk to it. The game gives the next meeting estimate, such as *"Runner following the unit — next meeting today 22:40."* Until then the unit keeps doing what it was last told.
 
-While the Runner is still on the road, the order shows under the unit in **War → Army** and in `keryx army`, with the next meeting time — it disappears once he has delivered it. If the unit moves again, the meeting estimate can change; it does not promise that the order is already delivered.
+While the Runner is still on the road, the order shows under the unit in **War → Forces** and in `keryx army`, with the next meeting time — it disappears once he has delivered it. If the unit moves again, the meeting estimate can change; it does not promise that the order is already delivered.
 
 The one exception is your [[horde|Nomadic Host]]: you travel with it in person, so it obeys at once.
 
@@ -12,9 +12,9 @@ Because orders move at walking pace, **a defender who is offline is not helpless
 
 ## When an order fails
 
-Sometimes a Runner arrives and the order can no longer be carried out. You get an *Order failed* notification that names the order and the reason. Look at the unit in **War → Army** and decide again.
+Sometimes a Runner arrives and the order can no longer be carried out. You get an *Order failed* notification that names the order and the reason. Look at the unit in **War → Forces** and decide again.
 
-Recall and redirect are sent from **War → Army**, or — for redirect — by right-clicking a new destination for a unit that is already marching. See [[marching]].
+Recall and redirect are sent from **War → Forces**, or — for redirect — by right-clicking a new destination for a unit that is already marching. See [[marching]].
 
 ## Catching up with a moving unit
 

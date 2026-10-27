@@ -1,4 +1,4 @@
-A **standing order** is a caravan route that runs by itself. For a game that runs while you sleep, the **Economy → Automation** tab may be the most important screen you have.
+A **standing order** is a caravan route that runs by itself. For a game that runs while you sleep, the **Economy → Routes & cargo** tab may be the most important screen you have.
 
 Under **New standing order**, set *From*, *To*, and which end supplies the caravan's crew. Then:
 
@@ -33,3 +33,11 @@ Without a traversable road or an eligible ship on a sea lane, a shipment is refu
 before goods are taken. A standing route pauses and explains the obstacle. The
 arrival game day shown in your cargo list is the scheduled delivery; delays or
 interception can prevent that delivery.
+
+## Follow your cargo
+
+**Economy → Routes & cargo** shows the ship or caravan travelling on each
+standing route, with its cargo and arrival. Other shipments are listed
+separately. Both land and sea cargo live here; **War → Marches** is for the
+forces you order to move. A route's ship remains in **War → Forces → Ships**,
+with its route named on the card.

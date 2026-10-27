@@ -137,6 +137,7 @@ func newRootCommand() *cobra.Command {
 		meCmd(),
 		dispatchesCmd(),
 		armyAliasCmd(),
+		forcesAliasCmd(),
 		marchAliasCmd(),
 		reinforceAliasCmd(),
 		recallAliasCmd(),

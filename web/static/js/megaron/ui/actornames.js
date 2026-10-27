@@ -11,8 +11,8 @@
 // Kanoniska nycklar = units.type i DB.
 const UNIT_LABELS = {
   spearman:       'Spearmen',
-  elite_infantry: 'Elite Infantry',
-  war_chariot:    'War Chariot',
+  elite_infantry: 'Bronze Guard',
+  war_chariot:    'Chariot',
   galley:         'Galley',
   war_galley:     'War Galley',
   merchantman:    'Emporos',

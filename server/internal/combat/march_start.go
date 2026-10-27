@@ -316,7 +316,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 			}
 			if !foundSea {
 				return nil, reject(http.StatusUnprocessableEntity,
-					"settlement has no adjacent sea hex — naval units cannot depart an inland settlement")
+					"settlement has no adjacent sea hex — naval forces cannot depart an inland settlement")
 			}
 			originQ, originR = seaQ, seaR
 		}
@@ -725,7 +725,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	if o.Intent == "patrol" {
 		if unit.CategoryOf(u.Type) != unit.CategoryNaval {
 			return nil, reject(http.StatusUnprocessableEntity,
-				"only naval units can patrol a sea hex (land units hold position with the fortify/storm/sentry stance in place)")
+				"only naval forces can patrol a sea hex (land forces hold position with the fortify/storm/sentry stance in place)")
 		}
 		if u.SettlementID == nil {
 			return nil, reject(http.StatusUnprocessableEntity,
@@ -742,7 +742,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	if o.Intent == "colonize" {
 		// Only land units found colonies — they become the new colony's garrison.
 		if unit.CategoryOf(u.Type) != unit.CategoryLand {
-			return nil, reject(http.StatusUnprocessableEntity, "only land units can found a colony")
+			return nil, reject(http.StatusUnprocessableEntity, "only land forces can found a colony")
 		}
 		if rej := colonizeDispatchPreflight(ctx, pool, clk, o.WorldID, o.PlayerID, targetQ, targetR, o.Name); rej != nil {
 			return nil, rej
@@ -778,7 +778,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	// (megaron_floden_plan.md, Timothy 2026-07-29).
 	isSea := destTerrain == "coastal_sea" || destTerrain == "deep_sea" || destTerrain == "river"
 	if unit.CategoryOf(u.Type) == unit.CategoryLand && isSea {
-		return nil, reject(http.StatusUnprocessableEntity, "land units cannot enter sea terrain")
+		return nil, reject(http.StatusUnprocessableEntity, "land forces cannot enter sea terrain")
 	}
 
 	// A* pathfinding: verify that a traversable route exists and derive the real

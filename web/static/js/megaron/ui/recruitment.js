@@ -28,7 +28,7 @@ export async function submitRecruitment({ world, city, type, name, status, accep
     await accepted(data);
     return true;
   } catch (error) {
-    status(received ? 'Order received. Refresh Army to see the updated units.' : 'Could not confirm the order. Check Army before trying again.');
+    status(received ? 'Order received. Refresh Army to see the updated forces.' : 'Could not confirm the order. Check Army before trying again.');
     return received;
   } finally { pending.delete(id); }
 }

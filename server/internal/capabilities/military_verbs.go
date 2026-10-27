@@ -33,7 +33,7 @@ func canMarch(cc checkContext) Verb {
 		[]Requirement{
 			req("a garrisoned unit here", ok,
 				fmt.Sprintf("%d deployable unit(s) here", n),
-				"recruit or build a unit here first — only garrisoned units can march"),
+				"recruit or build a unit here first — only garrisoned forces can march"),
 		})
 }
 
@@ -69,7 +69,7 @@ func canRecall(cc checkContext) Verb {
 		[]Requirement{
 			req("a unit currently marching", ok,
 				fmt.Sprintf("%d unit(s) marching", n),
-				"march a unit first — recall only applies to units already in transit"),
+				"march a unit first — recall only applies to forces already in transit"),
 		})
 }
 
@@ -109,7 +109,7 @@ func canRedirect(cc checkContext) Verb {
 		[]Requirement{
 			req("a unit currently marching", ok,
 				fmt.Sprintf("%d unit(s) marching", n),
-				"march a unit first — redirect only applies to units already in transit"),
+				"march a unit first — redirect only applies to forces already in transit"),
 		})
 }
 
@@ -191,7 +191,7 @@ func canDisband(cc checkContext) Verb {
 	n := cc.disbandableUnitsHere()
 	ok := n > 0
 	return verb("disband", CategoryMilitary,
-		"Release units back to civilian population.",
+		"Release forces back to civilian population.",
 		[]Requirement{
 			req("a unit garrisoned or laid up here", ok,
 				fmt.Sprintf("%d unit(s) here", n),

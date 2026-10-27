@@ -1,4 +1,4 @@
-Open **City → Buildings**. The tab shows what is **built** (and its level), the **build queue** (with an ETA and a **✕** to cancel), **training** (units in progress) and **Construct**. Choose from the Construct list — each entry names the building and its cost — and press **+ Build**. A notification tells you when it is done.
+Open **City → Buildings**. The tab shows what is **built** (and its level), the **build queue** (with an ETA and a **✕** to cancel), **training** (forces in progress) and **Construct**. Choose from the Construct list — each entry names the building and its cost — and press **+ Build**. A notification tells you when it is done.
 
 | Building | What it is for |
 |---|---|
@@ -9,8 +9,8 @@ Open **City → Buildings**. The tab shows what is **built** (and its level), th
 | **Stone Quarry** | Stands on a land hex you choose and works the stone there — far more on hills and limestone. |
 | **Mine** | Stands on an ore deposit hex and extracts whatever it holds — copper, tin or silver. |
 | **Foundry** | Smelts copper and tin into bronze ([[bronze]]). The gate to elite soldiers and war galleys. |
-| **Barracks** | Enables recruiting infantry and war chariots ([[units]]). |
-| **Stable** | Enables war chariots. |
+| **Barracks** | Enables recruiting infantry and chariots ([[units|Forces]]). |
+| **Stable** | Enables chariots. |
 | **Olive Press** | Refines a press-worker's oil from the settlement's groves. Works inside the city. |
 | **Winery** | Refines a vintner's wine from the settlement's vines. Works inside the city. |
 | **Pen** | Raises the herd cap by 100 per level (50 without one). Animals above the cap are eaten, then lost ([[food]]). Works inside the city. |

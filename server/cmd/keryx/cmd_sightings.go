@@ -109,7 +109,7 @@ func sightingsCmd() *cobra.Command {
 		Use:   "sightings",
 		Short: "List every foreign unit and garrisoned city currently in your live vision",
 		Long: `List every foreign (non-owned) unit and garrisoned city your eyes currently
-reach — GET /foreign-units for units (temenos_synlighet.md tier 1: full type,
+reach — GET /foreign-forces for forces (temenos_synlighet.md tier 1: full type,
 size and stance, never a blur), GET /provinces for garrisons (own=false,
 army_total>0). Remembered (tier 2) tiles never appear here — memory carries no
 activity, only live sight does.
@@ -214,7 +214,7 @@ something of mine", not "how far is it from my palace".`,
 			}
 
 			if len(rawUnits) == 0 && len(garrisons) == 0 && len(messengers) == 0 && len(caravans) == 0 {
-				fmt.Println("No foreign units in sight.")
+				fmt.Println("No foreign forces in sight.")
 				return nil
 			}
 
@@ -283,7 +283,7 @@ something of mine", not "how far is it from my palace".`,
 					fmt.Printf("  %d hexes %-2s   %s (%s)   %d men\n", g.Distance, g.Bearing, g.Name, owner, g.ArmyTotal)
 				}
 			}
-			fmt.Print("\nMarch there: keryx unit march --unit <id> --q <q> --r <r>   (your units: keryx unit list)\n")
+			fmt.Print("\nMarch there: keryx unit march --unit <id> --q <q> --r <r>   (your forces: keryx unit list)\n")
 			return nil
 		},
 	}

@@ -147,7 +147,7 @@ func (h *WorldHandler) ForeignUnits(w http.ResponseWriter, r *http.Request) {
 		worldID, playerID,
 	)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not load foreign units")
+		writeError(w, http.StatusInternalServerError, "could not load foreign forces")
 		return
 	}
 	defer rows.Close()
@@ -210,7 +210,7 @@ func (h *WorldHandler) ForeignUnits(w http.ResponseWriter, r *http.Request) {
 		out = append(out, fu)
 	}
 	if err := rows.Err(); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not load foreign units")
+		writeError(w, http.StatusInternalServerError, "could not load foreign forces")
 		return
 	}
 	// Names are loaded after the rows are drained — only for units that passed

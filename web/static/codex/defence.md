@@ -8,11 +8,11 @@ You see **which way it is going — never where**. An army walking round a mount
 
 ## Why the defender has time
 
-Orders are physical ([[runners]]). The attacker's army walks the whole distance to you; your answer usually has a much shorter way to go — from your city to the nearby units, or to the garrison already there. **Distance is the defender's ally.**
+Orders are physical ([[runners]]). The attacker's army walks the whole distance to you; your answer usually has a much shorter way to go — from your city to the nearby forces, or to the garrison already there. **Distance is the defender's ally.**
 
 ## Buying warning time
 
-- Post units in **sentry** on the approaches — roads, river crossings, the coast ([[stances]]).
+- Post forces in **sentry** on the approaches — roads, river crossings, the coast ([[stances]]).
 - Keep a ship at sea near your coast.
 - Well-filled [[food|food stores]] buys time against a [[sieges|siege]].
 - Walls absorb damage in [[battle]] ([[buildings]]).

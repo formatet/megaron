@@ -19,7 +19,7 @@ The open horizon belongs to whoever stands at the water, and it reaches only acr
 
 The map shows **colour for live sight, grayscale for remembered ground, and black for places never seen**. Remembered ground keeps its terrain details, frozen as you last saw it. It can be wrong, and it will not tell you so.
 
-**Foreign units are drawn only on ground you can see live**, never on remembered ground. They are drawn with a blinking outline.
+**Foreign forces are drawn only on ground you can see live**, never on remembered ground. They are drawn with a blinking outline.
 
 ## Moving actors on the map
 

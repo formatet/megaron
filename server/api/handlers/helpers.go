@@ -127,7 +127,7 @@ func insufficientTradeMsg(party, good string, need, have float64) string {
 
 // insufficientUnitsMsg compares the army a caller tried to send (want) against
 // what the settlement actually holds (have) and lists every unit type that fell
-// short, so a blind "insufficient units" 422 becomes actionable — the caller
+// short, so a blind "insufficient forces" 422 becomes actionable — the caller
 // sees exactly which units it lacks and by how much (e.g. when an agent tries to
 // outpost with more troops than its fresh garrison holds). Unit keys are the
 // wire names the caller sends, so the message is machine-parseable.
@@ -150,9 +150,9 @@ func insufficientUnitsMsg(want, have province.ArmyComposition) string {
 		}
 	}
 	if len(parts) == 0 {
-		return "insufficient units"
+		return "insufficient forces"
 	}
-	return "insufficient units: " + strings.Join(parts, ", ")
+	return "insufficient forces: " + strings.Join(parts, ", ")
 }
 
 // coverTimberWithCedar lets cedar stand in for timber 1:1 (megaron_plan_cedar_virke.md,

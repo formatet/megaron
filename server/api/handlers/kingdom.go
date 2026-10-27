@@ -466,7 +466,7 @@ func (h *KingdomHandler) Council(w http.ResponseWriter, r *http.Request) {
 // clean units translation (unit identity can't be rebuilt on return). Kingdoms are
 // POST-MVP and this route is gated off (requireKingdomsEnabled),
 // so this path never runs in the live game. It must be rebuilt on the units model when
-// kingdoms are re-enabled — see megaron_todo → "SB7 follow-up: borrow-army på units".
+// kingdoms are re-enabled — see megaron_todo → "SB7 follow-up: borrow-army på forces".
 func (h *KingdomHandler) BorrowArmy(w http.ResponseWriter, r *http.Request) {
 	kingdomID, err := uuid.Parse(chi.URLParam(r, "kingdomID"))
 	if err != nil {
@@ -562,11 +562,11 @@ func (h *KingdomHandler) BorrowArmy(w http.ResponseWriter, r *http.Request) {
 		req.Spearman, req.WarChariot, req.Ship, settlementID,
 	)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not deduct units")
+		writeError(w, http.StatusInternalServerError, "could not deduct forces")
 		return
 	}
 	if tag.RowsAffected() == 0 {
-		writeError(w, http.StatusUnprocessableEntity, "insufficient units in lender's settlement")
+		writeError(w, http.StatusUnprocessableEntity, "insufficient forces in lender's settlement")
 		return
 	}
 

@@ -6,7 +6,7 @@ Right-click the site, select **Found a new settlement on arrival**, name it, cho
 
 **The unit is consumed.** Those men become the colony's population — a cohort of 100 founds a colony of 100, and nobody else comes with them. You cannot recall them and you cannot change your mind. To make a colony bigger, march more men there and [[units|disband]] them: they settle as citizens.
 
-**They carry a colony purse.** The fixed purse comes from the city they leave: **30 silver for spearmen, 60 for elite infantry, 90 for chariots**. It becomes the colony's starting silver, independently of daily pay. A colony's spearmen draw no daily silver; professionals and ships still need pay ([[upkeep]]). Send more with a [[transfers|transfer]] when it needs it. Sent from a city with too little, they take what there is, and the order tells you how much short they are. A purse that never reaches a new colony comes back to whichever of your cities the men walk into. <!-- src: server/internal/combat/march_start.go colonistPurse -->
+**They carry a colony purse.** The fixed purse comes from the city they leave: **30 silver for spearmen, 60 for Bronze Guard, 90 for chariots**. It becomes the colony's starting silver, independently of daily pay. A colony's spearmen draw no daily silver; professionals and ships still need pay ([[upkeep]]). Send more with a [[transfers|transfer]] when it needs it. Sent from a city with too little, they take what there is, and the order tells you how much short they are. A purse that never reaches a new colony comes back to whichever of your cities the men walk into. <!-- src: server/internal/combat/march_start.go colonistPurse -->
 
 You are notified when the colony is founded, with how its food looks.
 

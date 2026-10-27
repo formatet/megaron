@@ -22,7 +22,7 @@ export function warMovements({ units = [], foreign = [], marches = [], provinces
   const isOwn = (q, r) => ownPos.has(q + ',' + r);
 
   const outgoing = units
-    .filter(u => u.status === 'marching' && u.target_q != null && u.target_r != null)
+    .filter(u => u.status === 'marching' && !u.bound_route_id && u.target_q != null && u.target_r != null)
     .map(u => ({
       title: actorName(u) + (u.march_intent ? ' · ' + u.march_intent : ''),
       target_q: u.target_q, target_r: u.target_r,
@@ -48,7 +48,9 @@ export function warMovements({ units = [], foreign = [], marches = [], provinces
     })
     .filter(m => m.target_q != null);
 
+  const freight = new Set(['trade','trade_return','gift','transfer','standing_order_out','standing_order_return']);
   for (const m of marches) {
+    if (freight.has(m.intent)) continue;
     const row = {
       title: cap(m.intent),
       target_q: m.target_q, target_r: m.target_r,

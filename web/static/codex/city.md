@@ -14,8 +14,8 @@ Open **More** for people in service and the labour pool, **Devotion** ([[temples
 
 ## Buildings
 
-What stands, what is queued (with a **✕** to cancel), units in training, and **Construct**. See [[buildings]].
+What stands, what is queued (with a **✕** to cancel), forces in training, and **Construct**. See [[buildings]].
 
 ## Garrison
 
-The units standing in this city. Orders to them are given from **War** ([[units]]).
+The forces standing in this city. Orders to them are given from **War** ([[units|Forces]]).

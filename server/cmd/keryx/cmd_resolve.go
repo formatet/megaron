@@ -139,7 +139,7 @@ func resolveUnitID(c *Client, worldID, idOrPrefix string) (string, error) {
 			}
 			lines = append(lines, fmt.Sprintf("  %s  %s", u.ID, name))
 		}
-		return "", fmt.Errorf("%q matches %d of your units — be more specific:\n%s", idOrPrefix, len(matches), strings.Join(lines, "\n"))
+		return "", fmt.Errorf("%q matches %d of your forces — be more specific:\n%s", idOrPrefix, len(matches), strings.Join(lines, "\n"))
 	}
 }
 

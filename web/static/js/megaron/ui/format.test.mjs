@@ -224,7 +224,7 @@ test('A7: the sixteen previously-uncased kinds get real text, not the default ar
   );
   assert.equal(
     notifText('SentryAlerted', { foreign_owner: 'Wanax3', foreign_type: 'chariot', q: 9, r: 9 }),
-    "Sentry spotted Wanax3's War Chariot at (9, 9)",
+    "Sentry spotted Wanax3's Chariot at (9, 9)",
   );
 });
 
@@ -235,7 +235,7 @@ test('A7: the sixteen previously-uncased kinds get real text, not the default ar
 test('DivinePunishment names the settlement and the right unit per type', () => {
   assert.equal(
     notifText('DivinePunishment', { type: 'chariot_loss', amount: 18, name: 'Phaistos' }),
-    'The gods scattered your war chariots in the night at Phaistos — 18 lost',
+    'The gods scattered your chariots in the night at Phaistos — 18 lost',
   );
   assert.equal(
     notifText('DivinePunishment', { type: 'ship_loss', amount: 1, name: 'Phaistos' }),
@@ -767,7 +767,7 @@ test('BattleBegun puts the Wanax before the place and carries a clock time', () 
 
 test('completion dispatches name the city, player building/unit and actual build hex',()=>{
  assert.match(notifText('BuildComplete',{building_type:'lumbermill',settlement_name:'Tylissos',hex_q:0,hex_r:7,unlocked_goods:['timber']}),/Lumbermill built at \(0,7\) for Tylissos/);
- for(const [unit,label] of [['merchantman','Emporos'],['war_galley','War Galley'],['elite_infantry','Elite Infantry'],['galley','Galley']]){
+ for(const [unit,label] of [['merchantman','Emporos'],['war_galley','War Galley'],['elite_infantry','Bronze Guard'],['galley','Galley']]){
   const text=notifText('TrainComplete',{unit_type:unit,count:1,settlement_name:'Tylissos'});assert.match(text,new RegExp(label+' ready in Tylissos'));assert.doesNotMatch(text,/merchantman|war_galley|elite_infantry|\bgalley\b/);
  }
 });

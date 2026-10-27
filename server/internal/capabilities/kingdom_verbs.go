@@ -162,7 +162,7 @@ func canKingdomBorrowArmy(cc checkContext) Verb {
 	}
 	lenderOK := otherMembers > 0
 	return verb("kingdom-borrow-army", CategoryKingdom,
-		"Borrow units from a kingdom member's settlement — basileus only.",
+		"Borrow forces from a kingdom member's settlement — basileus only.",
 		[]Requirement{
 			req("you are basileus of a kingdom", isBasileus,
 				boolDetail(isBasileus, "role: basileus", "not basileus"),

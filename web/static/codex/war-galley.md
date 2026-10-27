@@ -22,4 +22,4 @@ It is also why only the War Galley costs silver and draws pay. A Galley or an Em
 
 So it is a costly specialist. It strikes hard and is the fastest ship at sea, but it has the same 5 hull points as any other hull. Three Galleys roll fewer dice together, yet carry three times the hull — a real danger to it, more so once it is damaged.
 
-Build it when ships must fight or hunt other ships. It carries no cargo, so trade stays with the [[galley]] and the [[emporos]]. See [[units]] and [[battle]].
+Build it when ships must fight or hunt other ships. It carries no cargo, so trade stays with the [[galley]] and the [[emporos]]. See [[units|Forces]] and [[battle]].

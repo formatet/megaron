@@ -21,9 +21,9 @@ export async function recallAll(units, recallOne) {
 }
 
 export function recallAllSummary(count) {
-  if (!count) return 'No units are being called home.';
+  if (!count) return 'No forces are being called home.';
   const small = ['Zero','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
-  return (small[count] || String(count)) + (count === 1 ? ' unit is' : ' units are') + ' being called home.';
+  return (small[count] || String(count)) + (count === 1 ? ' unit is' : ' forces are') + ' being called home.';
 }
 
 export function recallAllResultHTML(results) {

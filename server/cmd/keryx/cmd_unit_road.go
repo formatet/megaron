@@ -140,7 +140,7 @@ func fetchUnitRow(c *Client, worldID, unitID string) (unitRow, error) {
 			return u, nil
 		}
 	}
-	return unitRow{}, fmt.Errorf("unit %s not found among your units", unitID)
+	return unitRow{}, fmt.Errorf("unit %s not found among your forces", unitID)
 }
 
 // roadsCmd lists the caller's unfinished roads — so a road stuck waiting for its

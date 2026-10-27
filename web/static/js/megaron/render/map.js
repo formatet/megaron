@@ -3362,7 +3362,7 @@ function unitListHTML(units, foreignUnits) {
         + '<button data-unit-id="' + u.id + '" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Show →</button>'
         + '</div>';
     }).join('');
-    html += '<div style="margin-bottom:.5rem"><div class="ir-label" style="margin-bottom:.2rem">Units here</div>' + rows + '</div>';
+    html += '<div style="margin-bottom:.5rem"><div class="ir-label" style="margin-bottom:.2rem">Forces here</div>' + rows + '</div>';
   }
   if (foreignUnits && foreignUnits.length) {
     const rows = foreignUnits.map(u => {
@@ -3372,7 +3372,7 @@ function unitListHTML(units, foreignUnits) {
         + '<span>' + lbl + ' ×' + u.size + ' <span style="color:var(--text-dim)">(' + owner + ', ' + u.status + ')</span></span>'
         + '</div>';
     }).join('');
-    html += '<div style="margin-bottom:.5rem"><div class="ir-label" style="margin-bottom:.2rem">Foreign units here</div>' + rows + '</div>';
+    html += '<div style="margin-bottom:.5rem"><div class="ir-label" style="margin-bottom:.2rem">Foreign forces here</div>' + rows + '</div>';
   }
   return html;
 }

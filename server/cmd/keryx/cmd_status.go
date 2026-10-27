@@ -466,11 +466,11 @@ func armyUpkeepWarning(netG, netS, grainStock, silverStock float64) string {
 	// famine (soak 2026-07-22, two playtesters in a row).
 	switch {
 	case gCritical && sCritical:
-		return "  ⚠ neither grain nor silver covers the army's upkeep — units starve/desert once the stock runs out" + gNote + sNote + " (see `keryx recruit --list`)"
+		return "  ⚠ neither grain nor silver covers the army's upkeep — forces starve/desert once the stock runs out" + gNote + sNote + " (see `keryx recruit --list`)"
 	case gCritical:
-		return "  ⚠ grain doesn't cover the army's upkeep — units can starve" + gNote + " (silver is fine; see `keryx recruit --list`)"
+		return "  ⚠ grain doesn't cover the army's upkeep — forces can starve" + gNote + " (silver is fine; see `keryx recruit --list`)"
 	case sCritical:
-		return "  ⚠ silver doesn't cover the army's pay — units can desert" + sNote + " (food is fine; see `keryx recruit --list`)"
+		return "  ⚠ silver doesn't cover the army's pay — forces can desert" + sNote + " (food is fine; see `keryx recruit --list`)"
 	}
 	return ""
 }
@@ -1039,7 +1039,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				// so it serializes verbatim); dbType feeds the shared display map.
 				units := []struct{ jsonKey, dbType string }{
 					{"Spearman", "spearman"}, {"WarChariot", "war_chariot"},
-					{"Ship", "galley"}, {"EliteInfantry", "elite_infantry"},
+					{"Ship", "galley"}, {"Bronze Guard", "elite_infantry"},
 					{"WarGalley", "war_galley"}, {"Merchantman", "merchantman"},
 				}
 				// Kohortuppdelning (A16, 2026-07-25): each line above is a SUM across
@@ -1071,12 +1071,12 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 						// everything this city supports — so a Wanax with half the army
 						// in the field reads "100 spearmen, upkeep for 200" and thinks
 						// the number is broken.
-						fmt.Printf("  %-10s %s %s, %s silver per game day  (everything the city pays — including field units)\n", "Upkeep", trimFloat(g), label, trimFloat(s))
+						fmt.Printf("  %-10s %s %s, %s silver per game day  (everything the city pays — including field forces)\n", "Upkeep", trimFloat(g), label, trimFloat(s))
 					}
 				}
 				// Legibilitet (2026-07-24): namnge att detta bara är garnisonen HÄR —
 				// `unit list` räknar hela rostret (fält, andra städer, ockuperade ruiner).
-				fmt.Println("  Field units and other cities are shown in `keryx unit list`.")
+				fmt.Println("  Field forces and other cities are shown in `keryx unit list`.")
 			}
 
 			// Completed buildings — so the agent doesn't re-queue what already exists.

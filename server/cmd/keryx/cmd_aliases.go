@@ -19,7 +19,7 @@ import "github.com/spf13/cobra"
 func armyAliasCmd() *cobra.Command {
 	c := unitListCmd()
 	c.Use = "army"
-	c.Short = "List your units (alias for `unit list`)"
+	c.Short = "List your forces (alias for `unit list`)"
 	return c
 }
 
@@ -50,7 +50,7 @@ func reinforceAliasCmd() *cobra.Command {
 // `keryx recall` next. Same guessability gap the other aliases exist for.
 func recallAliasCmd() *cobra.Command {
 	c := unitRecallCmd()
-	c.Short = "Recall a marching unit, or all marching units (alias for `unit recall`)"
+	c.Short = "Recall a marching unit, or all marching forces (alias for `unit recall`)"
 	return c
 }
 
@@ -83,5 +83,14 @@ func placementsAliasCmd() *cobra.Command {
 	c := cityCmd()
 	c.Use = "placements [city]"
 	c.Short = "Show a settlement's catchment hexes, building slots and idle pool (alias for `city`)"
+	return c
+}
+
+// forcesAliasCmd is the player-facing roster name; older entry points remain.
+func forcesAliasCmd() *cobra.Command {
+	c := unitListCmd()
+	c.Use = "forces"
+	c.Aliases = []string{"units"}
+	c.Short = "List your forces"
 	return c
 }

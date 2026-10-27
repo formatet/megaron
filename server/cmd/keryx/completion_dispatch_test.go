@@ -11,7 +11,7 @@ func TestCompletionDispatchCityAndPlayerNames(t *testing.T) {
 		{"BuildComplete", `{"building_type":"lumbermill","settlement_name":"Tylissos","hex_q":0,"hex_r":7}`, "Lumbermill built at (0,7) for Tylissos"},
 		{"TrainComplete", `{"unit_type":"merchantman","settlement_name":"Tylissos","count":1}`, "Emporos ready in Tylissos"},
 		{"TrainComplete", `{"unit_type":"war_galley","settlement_name":"Petras"}`, "War Galley ready in Petras"},
-		{"TrainComplete", `{"unit_type":"elite_infantry","settlement_name":"Petras"}`, "Elite Infantry ready in Petras"},
+		{"TrainComplete", `{"unit_type":"elite_infantry","settlement_name":"Petras"}`, "Bronze Guard ready in Petras"},
 	} {
 		out, err := captureStdout(t, func() error {
 			printNotificationSummary(nil, notificationItem{Kind: tc.kind, Body: json.RawMessage(tc.body)})

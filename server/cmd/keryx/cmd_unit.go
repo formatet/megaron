@@ -18,7 +18,7 @@ import (
 func unitCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "unit",
-		Short: "Manage discrete military units",
+		Short: "Manage discrete military forces",
 	}
 	cmd.AddCommand(
 		unitListCmd(),
@@ -248,7 +248,7 @@ long as it stands out there. A watch is a standing expense, not a free eye.`,
 func unitListCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "list",
-		Short: "List your units",
+		Short: "List your forces",
 		Example: `  keryx unit list
   keryx unit list --json`,
 		Args: noPositionalArgs(), // no flags at all — nothing to guess
@@ -270,7 +270,7 @@ func unitListCmd() *cobra.Command {
 				return fmt.Errorf("parse response: %w", err)
 			}
 			if len(resp.Units) == 0 {
-				fmt.Println("No units.")
+				fmt.Println("No forces.")
 				return nil
 			}
 			// Forward-post naming (P7, megaron_plan_utforskaren.md): a sentried
@@ -293,33 +293,69 @@ func unitListCmd() *cobra.Command {
 			fmt.Printf("%-36s  %-46s  %-8s  %-10s  %-9s  %s\n",
 				"ID", "Name", "Size", "Status", "Stance", "Location / ETA")
 			fmt.Println(strings.Repeat("─", 140))
+			hasHost := false
 			for _, u := range resp.Units {
-				name := u.DisplayName
-				if name == "" {
-					name = unit.DisplayName(u.Type) + shipNameSuffix(u.Name)
+				if u.Type == "nomadic_host" {
+					hasHost = true
+					break
 				}
-				status := u.Status
-				if status == "laid_up" {
-					status = "Laid up"
+			}
+			for _, group := range []string{"Land Forces", "Ships", "People"} {
+				if group == "People" && !hasHost {
+					continue
 				}
-				if status == "fitting_out" {
-					status = "Fitting out"
+				fmt.Printf("\n%s\n", group)
+				count := 0
+				for _, u := range resp.Units {
+					if forceRosterGroup(u) != group {
+						continue
+					}
+					count++
+					name := u.DisplayName
+					if name == "" {
+						name = unit.DisplayName(u.Type) + shipNameSuffix(u.Name)
+					}
+					status := u.Status
+					if status == "laid_up" {
+						status = "Laid up"
+					}
+					if status == "fitting_out" {
+						status = "Fitting out"
+					}
+					fmt.Printf("%-36s  %-46s  %-8s  %-12s  %-9s  %s\n",
+						u.ID, name, formatSize(c, u), status, stanceStr(u.Stance), locationStr(c, u, homes))
+					if u.BoundRouteID != nil && u.BoundRouteName != nil {
+						fmt.Println("  on the " + *u.BoundRouteName + " route")
+					}
+					if upkeep := unitUpkeepLine(u); upkeep != "" {
+						fmt.Println("  " + upkeep)
+					}
+					if u.Expedition != nil {
+						fmt.Println("  " + expeditionMissionText(u.Expedition, c))
+					}
+					for _, o := range u.OrdersEnRoute {
+						fmt.Println("  " + ordersEnRouteLine(c, o))
+					}
 				}
-				fmt.Printf("%-36s  %-46s  %-8s  %-12s  %-9s  %s\n",
-					u.ID, name, formatSize(c, u), status, stanceStr(u.Stance), locationStr(c, u, homes))
-				if upkeep := unitUpkeepLine(u); upkeep != "" {
-					fmt.Println("  " + upkeep)
-				}
-				if u.Expedition != nil {
-					fmt.Println("  " + expeditionMissionText(u.Expedition, c))
-				}
-				for _, o := range u.OrdersEnRoute {
-					fmt.Println("  " + ordersEnRouteLine(c, o))
+				if count == 0 {
+					fmt.Println("  None.")
 				}
 			}
 			return nil
 		},
 	}
+}
+
+// forceRosterGroup classifies presentation from authoritative type/category.
+// Physical status remains a per-force fact and never becomes a group.
+func forceRosterGroup(u unitRow) string {
+	if u.Type == "nomadic_host" {
+		return "People"
+	}
+	if u.Category == "naval" {
+		return "Ships"
+	}
+	return "Land Forces"
 }
 
 // unitUpkeepLine uses authoritative roster rates, including explicit zero silver.
@@ -402,6 +438,8 @@ type unitRow struct {
 	// standing sea route it's locked to. Server-formatted, same reason
 	// DisplayName is.
 	FreightingNote *string `json:"freighting_note"`
+	BoundRouteID   *string `json:"bound_route_id"`
+	BoundRouteName *string `json:"bound_route_name"`
 	// PassageFor/WaitingForReturn (megaron_plan_ordna_passage.md 3b-3): a ship
 	// on a "passage"/"passage_wait" mission names the runner's destination,
 	// server-formatted for the same reason FreightingNote is.
@@ -773,16 +811,16 @@ Use --preview to estimate arrival without sending an order. The estimate uses
 the current state; courier orders and unknown routes cannot promise an arrival.
 
 Terrain passability:
-  Impassable (all units):  mountain_limestone, mountain_red
-  Land units only:         plains, hills, forest_olive_grove, forest_cedar,
+  Impassable (all forces):  mountain_limestone, mountain_red
+  Land forces only:         plains, hills, forest_olive_grove, forest_cedar,
                            scrub_maquis, semi_desert, river_valley, river_delta
-  Naval units only:        coastal_sea, deep_sea, river
+  Naval forces only:        coastal_sea, deep_sea, river
   Both land AND naval:     river_ford (the river's port — steep move cost for
                            either, but the one hex where a land unit can
                            cross and a ship can still sail through)
-  (Land units cannot enter sea or river. Ships can dock at your coastal cities
-  or harbours; other land remains impassable to naval units.
-  river is impassable to land units — it is a wall, not a crossing. Every
+  (Land forces cannot enter sea or river. Ships can dock at your coastal cities
+  or harbours; other land remains impassable to naval forces.
+  river is impassable to land forces — it is a wall, not a crossing. Every
   ~10 hexes of a river's length carries one river_ford instead.)
 
 A newly recruited land cohort must finish gathering men and training before
@@ -801,7 +839,7 @@ the order is refused; try another hex or a unit departing from elsewhere.
 It turns home by half the duration and reports what it saw on return. It needs
 a reachable city of yours to return to. A land unit in the field receives the
 order by Runner; a ship must be commanded in port. Works for land or naval
-units. Omit --ticks for the server default. Before sending, the read-only forecast
+forces. Omit --ticks for the server default. Before sending, the read-only forecast
 validates the duration and return budget; an invalid expedition sends no Runner.
 
 To sail to your own coastal city or harbour, use --to "City name" without an
@@ -1310,7 +1348,7 @@ func currentHex(c *Client, worldID, unitID string) (int, int, error) {
 		Units []unitRow `json:"units"`
 	}
 	if err := json.Unmarshal(data, &resp); err != nil {
-		return 0, 0, fmt.Errorf("parse units: %w", err)
+		return 0, 0, fmt.Errorf("parse forces: %w", err)
 	}
 	for _, u := range resp.Units {
 		if u.ID != unitID {
@@ -1324,7 +1362,7 @@ func currentHex(c *Client, worldID, unitID string) (int, int, error) {
 		}
 		return *u.Q, *u.R, nil
 	}
-	return 0, 0, fmt.Errorf("unit %s not found among your units", unitID)
+	return 0, 0, fmt.Errorf("unit %s not found among your forces", unitID)
 }
 
 // ---- unit recall / redirect ---------------------------------------------------
@@ -1335,7 +1373,7 @@ func unitRecallCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "recall",
-		Short: "Recall a marching unit, or all marching units",
+		Short: "Recall a marching unit, or all marching forces",
 		Long: `Send a recall order to a marching unit. The order travels as a visible
 Runner; command is never instant — the unit keeps marching on its original
 course until the runner physically catches up with it, then turns for home
@@ -1662,7 +1700,7 @@ its destination and the stance applies where it stopped.`,
 			if stance == "none" {
 				fmt.Printf("Unit %s stance cleared\n", unitID[:8])
 			} else if reactionApplied, _ := stanceResp["reaction_foreign"].(string); stance == "sentry" && reactionApplied != "" {
-				fmt.Printf("Unit %s stance → %s (reacts to foreign units: %s)\n", unitID[:8], stance, reactionApplied)
+				fmt.Printf("Unit %s stance → %s (reacts to foreign forces: %s)\n", unitID[:8], stance, reactionApplied)
 			} else {
 				fmt.Printf("Unit %s stance → %s\n", unitID[:8], stance)
 			}
@@ -1673,7 +1711,7 @@ its destination and the stance applies where it stopped.`,
 	cmd.Flags().StringVar(&unitID, "unit", "", "exact unit name or UUID prefix (required)")
 	cmd.Flags().StringVar(&stance, "stance", "", "stance: fortify|storm|sentry|none (required)")
 	cmd.Flags().StringVar(&reaction, "reaction", "",
-		"reaction to foreign units when --stance sentry: intercept|escort|ignore|alert (default intercept; all four wired for unit-vs-unit, escort/alert still stubs against caravans)")
+		"reaction to foreign forces when --stance sentry: intercept|escort|ignore|alert (default intercept; all four wired for unit-vs-unit, escort/alert still stubs against caravans)")
 	_ = cmd.MarkFlagRequired("unit")
 	_ = cmd.MarkFlagRequired("stance")
 	return cmd
@@ -1861,7 +1899,7 @@ func unitUnloadCmd() *cobra.Command {
 			}
 			_ = json.Unmarshal(data, &resp)
 			if n := len(resp.CargoUnitIDs); n > 1 {
-				fmt.Printf("%d land units disembarked from ship %s\n", n, shipID[:8])
+				fmt.Printf("%d land forces disembarked from ship %s\n", n, shipID[:8])
 			} else {
 				fmt.Printf("Cargo unit disembarked from ship %s\n", shipID[:8])
 			}
@@ -1891,7 +1929,7 @@ func unitPickupCmd() *cobra.Command {
 		Use:   "pickup <unit>",
 		Short: "Send a ship to fetch a unit standing in the field",
 		Example: `  keryx unit pickup <unit-id> --ship <ship-id> [--wait N]
-  (find fetchable units and eligible ships with: keryx unit)`,
+  (find fetchable forces and eligible ships with: keryx unit)`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if shipID == "" {

@@ -92,7 +92,7 @@ function updateMarchPreview() {
   catch (error) { document.getElementById('mctx-mission').textContent = error.message; marchPreview.update(State.WORLD_ID, [], {}); return; }
   document.getElementById('mctx-mission').textContent = exploring
     ? 'Explore for ' + fmtDuration(ticks) + ', then return home.'
-      + (picks.some(p => p.mode === 'redirect') ? ' Only units starting a new march take this expedition; marching units receive a redirect and end their expedition.' : '')
+      + (picks.some(p => p.mode === 'redirect') ? ' Only forces starting a new march take this expedition; marching forces receive a redirect and end their expedition.' : '')
     : '';
   marchPreview.update(State.WORLD_ID, picks, {
     target_q: State.marchCtxDest.q, target_r: State.marchCtxDest.r,
@@ -424,9 +424,9 @@ export async function openMarchCtx(dest, screenX, screenY) {
   let hint;
   if (unknown)                hint = 'Travel here first, then explore nearby and return home.';
   else if (dest.isSea)        hint = 'Explore reachable sea nearby, then sail home.';
-  else if (ownPortDestination(dest)) hint = 'Sail ships here to dock and stay. Everyone aboard joins this city’s garrison; land units reinforce it.';
-  else if (dest.isSettlement) hint = dest.allied ? 'March land units here to reinforce the garrison on arrival.' : 'March land units here, or send a laden ship to assault this coastal city on arrival.';
-  else                        hint = 'March land units to this hex, found a new settlement here, or explore and return home.';
+  else if (ownPortDestination(dest)) hint = 'Sail ships here to dock and stay. Everyone aboard joins this city’s garrison; land forces reinforce it.';
+  else if (dest.isSettlement) hint = dest.allied ? 'March land forces here to reinforce the garrison on arrival.' : 'March land forces here, or send a laden ship to assault this coastal city on arrival.';
+  else                        hint = 'March land forces to this hex, found a new settlement here, or explore and return home.';
   document.getElementById('mctx-hint').textContent = hint;
 
   // Colonize option only for empty, ALREADY-SEEN land tiles — and never in
@@ -454,9 +454,9 @@ export async function openMarchCtx(dest, screenX, screenY) {
   positionMarchCtx(screenX, screenY);
 
   loadMarchCities();
-  document.getElementById('mctx-units').innerHTML = '<span style="color:var(--text-dim);font-size:.75rem">Loading units…</span>';
+  document.getElementById('mctx-units').innerHTML = '<span style="color:var(--text-dim);font-size:.75rem">Loading forces…</span>';
   const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`);
-  if (!res.ok) { document.getElementById('mctx-units').innerHTML = '<span style="color:var(--accent);font-size:.75rem">Could not load units.</span>'; return; }
+  if (!res.ok) { document.getElementById('mctx-units').innerHTML = '<span style="color:var(--accent);font-size:.75rem">Could not load forces.</span>'; return; }
   const unitResponse = await res.json();
   if (State.marchCtxDest !== dest) return;
   expeditionRules = unitResponse.expedition_rules;
@@ -572,9 +572,9 @@ export function renderMarchUnitList() {
   State.marchCtxGroups = [];
   if (!State.marchCtxUnits.length) {
     const dest = State.marchCtxDest;
-    let empty = 'No land units ready to march.';
+    let empty = 'No land forces ready to march.';
     if (dest && dest.isSea) empty = 'No galleys available. Build ships in a coastal city first.';
-    else if (dest && dest.known === false) empty = 'No units ready to explore.';
+    else if (dest && dest.known === false) empty = 'No forces ready to explore.';
     el.innerHTML = '<p style="font-size:.73rem;color:var(--text-dim);margin:.3rem 0">' + empty + '</p>';
     stanceRow.style.display = 'none';
     return;
@@ -605,7 +605,7 @@ export async function sendMarch() {
   // same send.
   const picks = selectedMarchPicks(State.marchCtxGroups, (i,k)=>document.getElementById(`mg-${i}-${k}`)?.checked);
   if (!picks.length) {
-    document.getElementById('mctx-err').textContent = 'Choose the units to send by name.';
+    document.getElementById('mctx-err').textContent = 'Choose the forces to send by name.';
     return;
   }
   // Naval fleets carry no stance.
@@ -735,7 +735,7 @@ export async function sendMarch() {
         arrivalHTML(first.data.courier_arrives_at, first.data.courier_due_tick) +
         (first.data.catch_up === 'at_destination' ? '; follows the unit to its destination and applies there if it is still present' : redirecting ? '; the unit holds its current course until then' : '; the march begins on delivery') +
         passageNote(first.data) + supersededOrderNote(first.data)
-      : '✓ Units marching' + esc(cityDestinationLabel(destination)) + ' — arrives ' +
+      : '✓ Forces marching' + esc(cityDestinationLabel(destination)) + ' — arrives ' +
         arrivalHTML(first.data.arrives_at_utc || first.data.arrives_at, first.data.arrival_tick);
     // The stance for a marching unit rides a second Runner that must catch up.
     if (first.data.expedition) etaEl.innerHTML += '<br>' + esc(expeditionMissionText(first.data.expedition));

@@ -22,7 +22,7 @@ type BuildingSpec struct {
 // (byggnadsregeln), exposed per hex via GET .../placement-options.
 var BuildingPurposes = map[BuildingType]string{
 	BuildingFarm:        "Stands on a grain hex and works its field",
-	BuildingBarracks:    "Enables recruiting spearmen and war chariots",
+	BuildingBarracks:    "Enables recruiting spearmen and chariots",
 	BuildingMine:        "Stands on an ore deposit and extracts what the hex holds",
 	BuildingLumbermill:  "Stands on a forest hex and works its stands",
 	BuildingStonequarry: "Stands on a land hex; its crew quarry the stone there — far more on hills and limestone",
@@ -31,7 +31,7 @@ var BuildingPurposes = map[BuildingType]string{
 	BuildingHarbour:     "Works the settlement's coastal waters and enables sea trade",
 	BuildingShipyard:    "Builds and repairs ships",
 	BuildingFoundry:     "Smelts copper and tin into bronze",
-	BuildingStable:      "Enables war chariots",
+	BuildingStable:      "Enables chariots",
 	BuildingTemple:      "Dedicated to one god: opens that god's prayers, and its workers keep your kharis",
 	BuildingOlivePress:  "Refines a press-worker's oil from the settlement's groves",
 	BuildingWinery:      "Refines a vintner's wine from the settlement's vines",

@@ -31,8 +31,8 @@ func TestLandUnitName(t *testing.T) {
 		want     string
 	}{
 		{"kanoniskt", "spearman", 2, "Knossos", "", "2nd Spearmen of Knossos"},
-		{"elit", "elite_infantry", 1, "Knossos", "", "1st Elite Infantry of Knossos"},
-		{"vagn", "war_chariot", 3, "Miletos", "", "3rd War Chariot of Miletos"},
+		{"elit", "elite_infantry", 1, "Knossos", "", "1st Bronze Guard of Knossos"},
+		{"vagn", "war_chariot", 3, "Miletos", "", "3rd Chariot of Miletos"},
 		// Utan stad OCH utan Wanax ska ledet falla bort helt — inte lämna ett
 		// "of " eller ett "of <tomt>".
 		{"utan stad", "spearman", 2, "", "", "2nd Spearmen"},

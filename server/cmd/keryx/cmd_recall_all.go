@@ -27,7 +27,7 @@ func recallAllUnits(c *Client, worldID string) error {
 		Units []unitRow `json:"units"`
 	}
 	if err := json.Unmarshal(data, &list); err != nil {
-		return fmt.Errorf("could not read units: %w", err)
+		return fmt.Errorf("could not read forces: %w", err)
 	}
 	results := make([]recallAllResult, 0)
 	called := 0
@@ -70,7 +70,7 @@ func recallAllUnits(c *Client, worldID string) error {
 
 func recallAllSummary(count int) string {
 	if count == 0 {
-		return "No units are being called home."
+		return "No forces are being called home."
 	}
 	small := []string{"Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"}
 	amount := fmt.Sprint(count)
@@ -80,5 +80,5 @@ func recallAllSummary(count int) string {
 	if count == 1 {
 		return amount + " unit is being called home."
 	}
-	return amount + " units are being called home."
+	return amount + " forces are being called home."
 }

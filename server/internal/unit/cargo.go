@@ -72,7 +72,7 @@ func BindCargoTx(ctx context.Context, tx pgx.Tx, ship, cargo uuid.UUID) error {
 		return err
 	}
 	if len(ids) >= CargoCapacity(kind) {
-		return fmt.Errorf("%s carries at most %d land units: %w", DisplayName(string(kind)), CargoCapacity(kind), ErrCargoFull)
+		return fmt.Errorf("%s carries at most %d land forces: %w", DisplayName(string(kind)), CargoCapacity(kind), ErrCargoFull)
 	}
 	var cargoWorld, cargoOwner uuid.UUID
 	var cargoType Type
@@ -85,7 +85,7 @@ func BindCargoTx(ctx context.Context, tx pgx.Tx, ship, cargo uuid.UUID) error {
 		return fmt.Errorf("ship and land unit must have the same owner and world")
 	}
 	if cargoCategory != CategoryLand || !CanEmbark(cargoType) {
-		return fmt.Errorf("only land units can be loaded onto ships")
+		return fmt.Errorf("only land forces can be loaded onto ships")
 	}
 	if carriedBy != nil {
 		return fmt.Errorf("land unit is already aboard a ship")

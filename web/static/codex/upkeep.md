@@ -2,7 +2,7 @@ Soldiers eat **food: grain, fish, oil and wine**, shared in proportion to the st
 
 ## Pay — silver
 
-**Field pay starts at 1 silver per 100 people per game day**, the wage of a worker. Spearmen draw **0 silver**. A full hundred-man elite infantry cohort draws **1.5 silver in the field and 0.75 at home**; a full chariot cohort draws **4 in the field and 2 at home**. Remaining men determine the bill, so a half-strength cohort draws half the pay.
+**Field pay starts at 1 silver per 100 people per game day**, the wage of a worker. Spearmen draw **0 silver**. A full hundred-man Bronze Guard cohort draws **1.5 silver in the field and 0.75 at home**; a full chariot cohort draws **4 in the field and 2 at home**. Remaining men determine the bill, so a half-strength cohort draws half the pay.
 
 **Home pay is always half field pay.** Garrison, repairs and fitting out count as home. Marching, posted troops, freight missions and soldiers embarked aboard a ship count as field service. Soldiers’ pay does not flow back into the city: the stated silver bill is what the city loses.
 
@@ -28,4 +28,4 @@ Your [[horde|Nomadic Host]]'s spearman escort draws no silver. The silver reserv
 
 ## The rule of thumb
 
-Your army is only as large as your economy can feed and pay. Build [[food]] surplus before you build cohorts, and [[silver]] income before expanding your professional forces ([[units]]).
+Your army is only as large as your economy can feed and pay. Build [[food]] surplus before you build cohorts, and [[silver]] income before expanding your professional forces ([[units|Forces]]).

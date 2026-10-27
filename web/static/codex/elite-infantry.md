@@ -1,4 +1,4 @@
-**Elite Infantry** are bronze-armed warriors: few, costly, and three times as deadly as spearmen man for man.
+**Bronze Guard** are bronze-armed warriors: few, costly, and three times as deadly as spearmen man for man.
 
 | | |
 |---|---|
@@ -10,4 +10,4 @@
 | **Pay** | 0.75 silver per game day at home, 1.5 in the field ([[silver]]) |
 | **In battle** | 3 dice per active man per round |
 
-Bronze is the gate: no foundry, copper and tin, no elite. See [[units]], [[bronze]] and [[battle]].
+Bronze is the gate: no foundry, copper and tin, no elite. See [[units|Forces]], [[bronze]] and [[battle]].

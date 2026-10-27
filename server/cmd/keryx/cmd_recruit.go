@@ -14,11 +14,11 @@ import (
 
 var unitAliases = map[string]string{
 	"hoplites": "spearman", "hoplite": "spearman", "inf": "spearman", "infantry": "spearman", "spearman": "spearman", "spear": "spearman",
-	"chariot": "war_chariot", "chariots": "war_chariot", "cha": "war_chariot", "war_chariot": "war_chariot",
+	"war chariot": "war_chariot", "chariot": "war_chariot", "chariots": "war_chariot", "cha": "war_chariot", "war_chariot": "war_chariot",
 	"trireme": "galley", "ship": "galley", "shp": "galley", "galley": "galley",
 	"war_galley": "war_galley", "wargalley": "war_galley", "warship": "war_galley",
 	"emporos": "merchantman", "merchantman": "merchantman", "merchant": "merchantman", "trader": "merchantman",
-	"agema": "elite_infantry", "elite": "elite_infantry", "eli": "elite_infantry", "elite_infantry": "elite_infantry",
+	"bronze guard": "elite_infantry", "bronze_guard": "elite_infantry", "elite infantry": "elite_infantry", "agema": "elite_infantry", "elite": "elite_infantry", "eli": "elite_infantry", "elite_infantry": "elite_infantry",
 }
 
 func recruitCmd() *cobra.Command {
@@ -31,7 +31,7 @@ func recruitCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "recruit",
-		Short: "Recruit a 100-man land cohort, or build a ship (--list to see all recruitable units)",
+		Short: "Recruit a 100-man land cohort, or build a ship (--list to see all recruitable forces)",
 		// Exemplen visar de KANONISKA namnen — samma strängar `recruit --list`
 		// skriver ut. Aliasen (hoplites, chariot, ship …) fungerar fortfarande och
 		// löses i unitAliases ovan, men de stod i exempelblocket, som är det
@@ -64,10 +64,10 @@ func recruitCmd() *cobra.Command {
 				return printRecruitCatalogue(c, cfg.WorldID, prov)
 			}
 			if unit == "" {
-				return fmt.Errorf("--unit is required (or use --list to see recruitable units)")
+				return fmt.Errorf("--unit is required (or use --list to see recruitable forces)")
 			}
 
-			apiUnit, ok := unitAliases[unit]
+			apiUnit, ok := unitAliases[strings.ToLower(strings.TrimSpace(unit))]
 			if !ok {
 				// Kanoniska namn bara. De retirerade (hoplites, agema) och de interna
 				// (merchantman) lever kvar som INDATA-alias ovan så äldre agenter inte
@@ -84,7 +84,7 @@ func recruitCmd() *cobra.Command {
 				men = 100
 			}
 			if count > 1 && !isNaval {
-				return fmt.Errorf("count only applies to ships; land units grow via --men")
+				return fmt.Errorf("count only applies to ships; land forces grow via --men")
 			}
 			if count < 1 || count > 20 {
 				return fmt.Errorf("--count must be 1–20")

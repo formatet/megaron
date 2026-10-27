@@ -249,3 +249,14 @@ test('standing route list shows configured stock targets and return floors, incl
  const escaped=renderStandingOrdersHTML([{id:'escape',from_name:'Source',to_name:'Other',status:'active',outbound:[{good_key:'<script>',threshold:2}]}]);
  assert.ok(!escaped.includes('<script>'));assert.match(escaped,/&lt;script&gt;/);
 });
+
+test('route cargo uses saved route identity; unrelated shipments are not merged by endpoints',()=>{
+ const base={from_name:'Home',to_name:'Far',status:'active',outbound:[],return:[]};
+ const orders=[{...base,id:'route-a',ship_name:'Dolphin'},{...base,id:'route-b'}];
+ const trades=[{id:'ship-leg',standing_order_id:'route-a',category:'naval',good_key:'tin',quantity:4,origin_name:'Home',dest_name:'Far',arrives_at:'2026-10-28T00:00:00Z'}, {id:'land-leg',standing_order_id:'route-b',category:'land',good_key:'copper',quantity:7,origin_name:'Home',dest_name:'Far',arrives_at:'2026-10-28T00:00:00Z'}, {id:'other-leg',category:'land',good_key:'grain',quantity:9}];
+ const html=renderStandingOrdersHTML(orders,trades,0);
+ assert.ok(html.includes('Ship'));assert.ok(html.includes('Caravan'));assert.ok(html.includes('Dolphin'));
+ const split=html.indexOf('id="standing-order-route-b"');
+ assert.ok(html.slice(0,split).includes('data-cargo-id="ship-leg"'));assert.ok(!html.slice(0,split).includes('data-cargo-id="land-leg"'));
+ assert.ok(html.slice(split).includes('data-cargo-id="land-leg"'));assert.ok(!html.includes('other-leg'));
+});

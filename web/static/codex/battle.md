@@ -4,16 +4,16 @@
 
 If your forces defend a hex, or you own the city there, you receive a dispatch when battle begins: *"Idomeneus — battle has begun at Petras"*, with its clock time. It names the opposing Wanax and the place you can already see; it reveals no march route or home city. Select **Take me there** to see the hex. With sound on, you hear the same clash as for a battle's outcome.
 
-Each defending Wanax receives one notice per battle, even with several units. Reinforcements do not repeat it; a new defending Wanax receives a first notice when their forces join. You can mute the dispatch and still find it in **Notifications**.
+Each defending Wanax receives one notice per battle, even with several forces. Reinforcements do not repeat it; a new defending Wanax receives a first notice when their forces join. You can mute the dispatch and still find it in **Notifications**.
 
 ## How a battle runs
 
 A battle is not one roll. It runs over several game days, and it always resolves the same way from the moment it begins. What decides it:
 
 - **How many of your men actually fight.** 90% of each side engages each round. This participation is fixed for every city.
-- **What kind of men they are.** An ordinary soldier strikes once; elite infantry three times as hard; war chariots five. This is what [[bronze]] buys.
+- **What kind of men they are.** An ordinary soldier strikes once; Bronze Guard three times as hard; chariots five. This is what [[bronze]] buys.
 - **Walls**, if a city is involved. A wall absorbs a fixed amount of damage each game day — a shield, not a sword. **storm** halves it, at a price.
-- **When they break.** A side that has lost enough routs and withdraws with its survivors. Annihilation is the exception. You choose how much is "enough" for your whole realm under **War → Army → When to retreat** — **Hold to the last man** or **Retreat when it goes badly** (the default, retreating when 20% of starting strength remains) — and can override it for one unit in the battle it is fighting; see [[stances]].
+- **When they break.** A side that has lost enough routs and withdraws with its survivors. Annihilation is the exception. You choose how much is "enough" for your whole realm under **War → Forces → When to retreat** — **Hold to the last man** or **Retreat when it goes badly** (the default, retreating when 20% of starting strength remains) — and can override it for one unit in the battle it is fighting; see [[stances]].
 
 ## After the battle
 

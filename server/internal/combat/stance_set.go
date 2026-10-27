@@ -109,7 +109,7 @@ func setStance(ctx context.Context, pool *pgxpool.Pool, eventStore *events.Store
 		return nil, reject(http.StatusForbidden, "unit not in this world")
 	}
 	if unit.CategoryOf(u.Type) == unit.CategoryNaval {
-		return nil, reject(http.StatusUnprocessableEntity, "naval units cannot take a stance")
+		return nil, reject(http.StatusUnprocessableEntity, "naval forces cannot take a stance")
 	}
 	marching := allowMarching && u.Status == unit.StatusMarching
 	if u.Status != unit.StatusGarrison && u.Status != unit.StatusPositioned && !marching {

@@ -1,4 +1,4 @@
-The **War Chariot** is the hardest hitter on open ground: horses, a driver and a warrior, built with cedar and bronze.
+The **Chariot** is the hardest hitter on open ground: horses, a driver and a warrior, built with cedar and bronze.
 
 | | |
 |---|---|
@@ -10,4 +10,4 @@ The **War Chariot** is the hardest hitter on open ground: horses, a driver and a
 | **Pay** | 2 silver per game day at home, 4 in the field ([[silver]]) |
 | **In battle** | 5 dice per chariot per round |
 
-Chariots need cedar and bronze both, and their pay is the highest in the army. See [[units]], [[upkeep]] and [[battle]].
+Chariots need cedar and bronze both, and their pay is the highest in the army. See [[units|Forces]], [[upkeep]] and [[battle]].

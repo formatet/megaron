@@ -28,7 +28,7 @@ func formatDisbandResult(resp map[string]any) string {
 		}
 	}
 	if len(lines) == 0 {
-		return "Unit disbanded. Refresh units to see the result."
+		return "Unit disbanded. Refresh forces to see the result."
 	}
 	return strings.Join(lines, "\n")
 }
@@ -56,7 +56,7 @@ func disbandUnitIDs(c *Client, selectors []string) ([]string, error) {
 			}
 		}
 		if len(matches) != 1 {
-			return nil, fmt.Errorf("%q matches %d units — choose a unique name or id from keryx units", selector, len(matches))
+			return nil, fmt.Errorf("%q matches %d forces — choose a unique name or id from keryx forces", selector, len(matches))
 		}
 		if seen[matches[0].ID] {
 			return nil, fmt.Errorf("choose each whole unit only once")
@@ -74,7 +74,7 @@ func disbandCmd() *cobra.Command {
   keryx disband --unit <unit-id> --province Phaistos
   keryx disband --unit <unit-id> --unit <another-unit-id>`, RunE: func(cmd *cobra.Command, _ []string) error {
 		if len(selectors) == 0 {
-			return fmt.Errorf("disband a whole unit by its id or unique name: use --unit (see keryx units)")
+			return fmt.Errorf("disband a whole unit by its id or unique name: use --unit (see keryx forces)")
 		}
 		c := newClient(cfg)
 		city, err := selectedProvince(c, province, nil)

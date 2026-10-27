@@ -1,4 +1,4 @@
-Everything your cities make, eat and trade is a **good**. The **Economy (⚖)** drawer shows your goods across every settlement, in three tabs: **Goods**, **Transfer** and **Automation**.
+Everything your cities make, eat and trade is a **good**. The **Economy (⚖)** drawer shows your goods across every settlement, in three tabs: **Goods**, **Transfer** and **Routes & cargo**.
 
 | Good | What it is for |
 |---|---|
@@ -7,7 +7,7 @@ Everything your cities make, eat and trade is a **good**. The **Economy (⚖)** 
 | **Timber, stone** | The material of nearly every [[buildings|building]]. Timber comes from olive groves, maquis, hills and river valleys in your [[catchment]]. Early on, timber is almost always your bottleneck. |
 | **Cedar** | Found only where there is a deposit, but a cedar forest yields far more wood than an olive grove. Levels your best buildings; builds war galleys. **Cedar stands in for timber:** whatever a cost needs in timber and you lack, your cedar covers one for one. |
 | **Copper, tin** | The two halves of bronze — never found together ([[bronze]]). |
-| **Bronze** | Elite infantry, war chariots, war galleys, the best walls. |
+| **Bronze** | Bronze Guard, chariots, war galleys, the best walls. |
 | **Silver** | The currency, and the only thing that pays soldiers ([[silver]]). |
 | **Incense** | Rare; found only on marked dry hexes and needing no building. An offering of it pleases the gods more than any other gift ([[incense]]). |
 
@@ -15,7 +15,7 @@ Everything your cities make, eat and trade is a **good**. The **Economy (⚖)** 
 
 - **Goods** — stock, production and use of each good, city by city. The settlements table compares people, food produced minus food eaten, food game days and shortage status; select a city to close Economy and open its City drawer. Goods piling up with nothing using them are marked — see [[surplus]].
 - **Transfer** — move goods between your own cities ([[transfers]]).
-- **Automation** — [[routes|standing orders]] that move goods for you while you are away.
+- **Routes & cargo** — [[routes|standing orders]] that move goods for you while you are away.
 
 To learn what another city needs or can spare, ask its Wanax in a [[messengers|letter]] through **Diplomacy → Correspondence**, then agree a [[trade|trade offer]].
 

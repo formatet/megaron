@@ -14,6 +14,7 @@ import { loadMap } from '../../render/map.js';
 import { loadCityDrawer } from './city.js';
 import { retreatBody, retreatDefaultSectionHTML, unitRetreatControlHTML } from '../retreat.js';
 import { canTakeStance, stanceSentLine } from '../stance.js';
+import { forceSections } from '../forces.js';
 import { warMovements } from '../movements.js';
 import { expeditionMissionText } from '../expedition.js';
 import { chooseMarchTarget } from '../marchctx.js';
@@ -46,7 +47,7 @@ let _unitCataloguePromise = null;
 async function getUnitCatalogue() {
   if (!_unitCataloguePromise) {
     _unitCataloguePromise = fetchAuth('/api/v1/units').then(r => {
-      if (!r.ok) throw new Error('units catalogue fetch failed: ' + r.status);
+      if (!r.ok) throw new Error('forces catalogue fetch failed: ' + r.status);
       return r.json();
     }).catch(e => {
       console.error('getUnitCatalogue', e);
@@ -98,9 +99,9 @@ export async function loadWarDrawer() {
 
   body.innerHTML = `
     <div class="drawer-tabs">
-      <button class="dtab active" data-tab="army">Army</button>
+      <button class="dtab active" data-tab="army">Forces</button>
       <button class="dtab" data-tab="recruit">Recruit</button>
-      <button class="dtab" data-tab="movements">Movements</button>
+      <button class="dtab" data-tab="movements">Marches</button>
     </div>
     <div id="wtab-army" class="city-tab"><div class="loading" style="font-size:.8rem">Loading…</div></div>
     <div id="wtab-recruit" class="city-tab" style="display:none"><div class="loading" style="font-size:.8rem">Loading…</div></div>
@@ -137,10 +138,10 @@ export async function loadWarDrawer() {
       const unitResponse = unitsRes && unitsRes.ok ? await unitsRes.json() : {};
       if (seq !== warLoadSeq) return;
       const allUnits = unitResponse.units || [];
-      let armyHtml = retreatSec + '<div class="dsec">' + recallAllControlsHTML(allUnits, recallAllResult, recallAllBusy) + '</div>' + '<div class="dsec"><div class="dsec-title">Units</div>';
+      let armyHtml = retreatSec + '<div class="dsec">' + recallAllControlsHTML(allUnits, recallAllResult, recallAllBusy) + '</div>' + '<div class="dsec"><div class="dsec-title">Forces</div>';
       armyHtml += allUnits.length
-        ? allUnits.map(u => renderUnitCard(u)).join('')
-        : '<p class="empty-state">No units.</p>';
+        ? renderForceGroups(allUnits)
+        : '<p class="empty-state">No forces.</p>';
       armyHtml += '</div>';
       document.getElementById('wtab-army').innerHTML = armyHtml;
       applyUnitFocus();
@@ -174,11 +175,11 @@ export async function loadWarDrawer() {
     (catalogue || []).forEach(u => { catByType[u.type] = u; });
 
     // Army tab — the realm-wide retreat setting, then the discrete units list
-    let armyHtml = retreatSec + '<div class="dsec">' + recallAllControlsHTML(allUnits, recallAllResult, recallAllBusy) + '</div>' + '<div class="dsec"><div class="dsec-title">Units</div>';
+    let armyHtml = retreatSec + '<div class="dsec">' + recallAllControlsHTML(allUnits, recallAllResult, recallAllBusy) + '</div>' + '<div class="dsec"><div class="dsec-title">Forces</div>';
     if (allUnits.length) {
-      armyHtml += allUnits.map(u => renderUnitCard(u)).join('');
+      armyHtml += renderForceGroups(allUnits);
     } else {
-      armyHtml += '<p class="empty-state">No units. Recruit in the Recruit tab.</p>';
+      armyHtml += '<p class="empty-state">No forces. Recruit in the Recruit tab.</p>';
     }
     armyHtml += '</div>';
     armyHtml += '<div id="war-unit-res" style="font-size:.75rem;margin:.3rem .6rem;min-height:1rem"></div>';
@@ -208,8 +209,8 @@ export async function loadWarDrawer() {
     } else {
       recHtml += '<input type="hidden" id="war-recruit-city" value="' + capital.id + '">';
     }
-    recHtml += '<div class="dsec-title">Train Units</div>';
-    recHtml += '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.3rem">Land units train as a full 100-man cohort. Once ready, a cohort can still march after losing men. Reinforce refills it over time only in its original home city — garrison it there and use Reinforce (Army tab). Ships are built one at a time.</div>';
+    recHtml += '<div class="dsec-title">Recruit Forces</div>';
+    recHtml += '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.3rem">Land forces train as a full 100-man cohort. Once ready, a cohort can still march after losing men. Reinforce refills it over time only in its original home city — garrison it there and use Reinforce (Army tab). Ships are built one at a time.</div>';
     const NAVAL_SPEC_IDS = ['ship', 'war_galley', 'merchantman'];
     for (const u of UNIT_SPECS) {
       const isNaval = NAVAL_SPEC_IDS.includes(u.id);
@@ -285,14 +286,14 @@ function renderWarMovements() {
   };
   let html = '';
   if (outgoing.length) {
-    html += '<div class="dsec"><div class="dsec-title">Outgoing</div>';
+    html += '<div class="dsec"><div class="dsec-title">Your Marches</div>';
     html += outgoing.map(m => '<div class="obj-card">'
       + '<div class="obj-icon">⚔</div>'
-      + '<div class="obj-info"><div class="obj-name">' + esc(m.title) + ' → ' + placeName(m.target_q, m.target_r) + '</div><div class="obj-sub">Arrives ' + arrivalHTML(m.arrives_at) + ' · recall/redirect in the Army tab</div></div>'
+      + '<div class="obj-info"><div class="obj-name">' + esc(m.title) + ' → ' + placeName(m.target_q, m.target_r) + '</div><div class="obj-sub">Arrives ' + arrivalHTML(m.arrives_at) + ' · recall/redirect in the Forces tab</div></div>'
       + '</div>').join('');
     html += '</div>';
   } else {
-    html += '<div class="dsec"><p class="empty-state">No armies in the field.</p></div>';
+    html += '<div class="dsec"><p class="empty-state">No ordered forces in the field.</p></div>';
   }
   if (incoming.length) {
     html += '<div class="dsec"><div class="dsec-title" style="color:var(--accent)">⚠ Incoming</div>';
@@ -367,7 +368,7 @@ export async function unitCancelTraining(unitID) {
     await loadWarDrawer();
     status(data.already_cancelled ? 'Training was already cancelled.' : `Training cancelled: ${data.pop_restored} people returned and reserved resources refunded.`);
   } catch (_) {
-    status(received ? 'Training cancelled. Refresh Army to see the updated units.' : 'Could not confirm cancellation. Refresh Army before trying again.');
+    status(received ? 'Training cancelled. Refresh Army to see the updated forces.' : 'Could not confirm cancellation. Refresh Army before trying again.');
   } finally { cancellingTraining.delete(key); }
 }
 
@@ -391,7 +392,7 @@ export async function warDisband(provinceID, unitID, button) {
     await loadCityDrawer();
     if(activeCitySettlement()?.id===provinceID)document.querySelector('#city-body .dtab[data-tab="garnison"]')?.click();
     status(disbandReceipt(data),true);
-  } catch (_) { status(received?'Unit disbanded. Reopen the city to see the result.':'Could not confirm disbanding. Refresh units before trying again.'); }
+  } catch (_) { status(received?'Unit disbanded. Reopen the city to see the result.':'Could not confirm disbanding. Refresh forces before trying again.'); }
   finally {disbandingUnits.delete(key);if(button && button.isConnected)button.disabled=false;}
 }
 
@@ -436,6 +437,10 @@ function roadFromHex(u) {
     if (p) return { q: p.q, r: p.r };
   }
   return null;
+}
+
+export function renderForceGroups(forces) {
+ return forceSections(forces).map(group=>'<div class="dsec"><div class="dsec-title">'+group.name+'</div>'+ (group.forces.length?group.forces.map(renderUnitCard).join(''):'<p class="empty-state">None.</p>')+'</div>').join('');
 }
 
 export function renderUnitCard(u) {
@@ -486,6 +491,8 @@ export function renderUnitCard(u) {
   } else if (u.q != null) {
     loc = '(' + u.q + ',' + u.r + ')';
   }
+
+  if (u.bound_route_name) loc = 'on the ' + esc(u.bound_route_name) + ' route' + (loc ? ' · ' + loc : '');
 
   // Progress: naval forming shows the build ETA (size is always 1); land forming
   // shows the men/100 gathering bar; land training shows a full bar + ready ETA
@@ -799,8 +806,8 @@ export async function unitRecallAll() {
   try {
     const response = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`);
     const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'Could not load units.');
-    if (!Array.isArray(data.units)) throw new Error('Could not read units.');
+    if (!response.ok) throw new Error(data.error || 'Could not load forces.');
+    if (!Array.isArray(data.units)) throw new Error('Could not read forces.');
     hasMarching = data.units.some(u => u.status === 'marching');
     recallAllResult = recallAllResultHTML(await recallAll(data.units, unitRecall));
   } catch (error) {
@@ -940,7 +947,7 @@ export async function saveRetreatDefault() {
   const data = await res.json().catch(() => ({}));
   if (!resEl) return;
   if (res.ok) {
-    resEl.textContent = 'Saved — applies to battles your units enter from now on.';
+    resEl.textContent = 'Saved — applies to battles your forces enter from now on.';
   } else {
     resEl.className = 'retreat-res retreat-res-err';
     resEl.textContent = formatApiError(data, 'Could not save your retreat setting');

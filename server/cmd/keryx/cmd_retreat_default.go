@@ -24,8 +24,8 @@ With no flag it shows the current setting. Set exactly one of:
   --hold-to-last-man     Hold to the last man
   --when-losing          Retreat when it goes badly (the default, at the fixed loss threshold)
 
-It applies at once, but only to units that ENTER a battle after the change; a
-battle already under way keeps what its units carried in. To change a unit in a
+It applies at once, but only to forces that ENTER a battle after the change; a
+battle already under way keeps what its forces carried in. To change a unit in a
 battle now, use "keryx unit retreat-order".`,
 		Example: `  keryx retreat-default
   keryx retreat-default --hold-to-last-man
@@ -69,7 +69,7 @@ battle now, use "keryx unit retreat-order".`,
 			}
 			fmt.Println("Retreat default: " + describeRetreatDefault(resp.HoldToLastMan))
 			if set == 1 {
-				fmt.Println("Applies to units entering a battle from now on; battles under way keep what they had.")
+				fmt.Println("Applies to forces entering a battle from now on; battles under way keep what they had.")
 			}
 			return nil
 		},

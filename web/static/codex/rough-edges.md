@@ -2,7 +2,7 @@ Honest notes on the current build, so you do not mistake a gap for your own mist
 
 ## Things that work, but awkwardly
 
-- **March in the Army tab takes typed coordinates**, not a map click. Right-clicking the map is the friendlier path — it also reaches units already on the march ([[marching]]).
+- **March in the Forces tab takes typed coordinates**, not a map click. Right-clicking the map is the friendlier path — it also reaches forces already on the march ([[marching]]).
 
 ## Not in this version
 

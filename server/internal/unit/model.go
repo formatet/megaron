@@ -163,8 +163,8 @@ func MarchHoursFactorFor(t Type) float64 {
 // Unmapped keys fall back to the raw key.
 var displayNames = map[string]string{
 	string(TypeSpearman):      "Spearmen",
-	string(TypeEliteInfantry): "Elite Infantry",
-	string(TypeWarChariot):    "War Chariot",
+	string(TypeEliteInfantry): "Bronze Guard",
+	string(TypeWarChariot):    "Chariot",
 	string(TypeGalley):        "Galley",
 	"trireme":                 "Galley",
 	string(TypeNomadicHost):   "Nomadic Host",
@@ -180,6 +180,9 @@ var displayNames = map[string]string{
 // this is the single shared list so a future surface can check itself
 // against the same vocabulary instead of hand-copying it.
 var RetiredIdentifiers = []string{"hoplites", "agema", "trireme", "hiereus"}
+
+// RetiredDisplayLabels are accepted as legacy input, but never displayed.
+var RetiredDisplayLabels = []string{"Elite Infantry", "War Chariot", "Units"}
 
 // DisplayName returns the canonical human-readable name for a unit's DB type
 // key, falling back to the raw key for any type not yet in the table (e.g. a

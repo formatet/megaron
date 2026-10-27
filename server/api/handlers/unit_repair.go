@@ -50,7 +50,7 @@ func (h *UnitHandler) Repair(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if u.Category != unit.CategoryNaval {
-		writeError(w, http.StatusUnprocessableEntity, "only naval units have a hull to repair")
+		writeError(w, http.StatusUnprocessableEntity, "only naval forces have a hull to repair")
 		return
 	}
 	if u.Status != unit.StatusGarrison {

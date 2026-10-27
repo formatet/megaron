@@ -1,4 +1,4 @@
-**Silver is the currency and pays your professional forces.** Elite infantry, chariots and War Galleys need it; spearmen, Galleys and Emporoi need no silver to recruit or maintain.
+**Silver is the currency and pays your professional forces.** Bronze Guard, chariots and War Galleys need it; spearmen, Galleys and Emporoi need no silver to recruit or maintain.
 
 Professionals draw pay every game day. A Wanax who runs dry risks their desertion — see [[upkeep]].
 

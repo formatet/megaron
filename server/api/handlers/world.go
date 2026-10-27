@@ -1281,7 +1281,7 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		        t.dest_q, t.dest_r, COALESCE(dp.terrain_type, ''),
 		        t.departs_at, t.arrives_at, t.category, COALESCE(pl.wanax_name, pl.username, ''), t.journey, t.departed_tick, t.due_tick,
 		        COALESCE(os.name, ''), COALESCE(ds.name, ''),t.ship_unit_id,t.kind,
-                COALESCE((SELECT jsonb_agg(jsonb_build_object('good_key',g.good_key,'quantity',g.quantity) ORDER BY g.good_key) FROM transport_goods g WHERE g.transport_id=t.id),'[]'::jsonb)
+                COALESCE((SELECT jsonb_agg(jsonb_build_object('good_key',g.good_key,'quantity',g.quantity) ORDER BY g.good_key) FROM transport_goods g WHERE g.transport_id=t.id),'[]'::jsonb),t.standing_order_id
 		 FROM transports t
 		 LEFT JOIN players pl ON pl.id = t.owner_id
 		 LEFT JOIN settlements os ON os.id = t.origin_id
@@ -1302,6 +1302,7 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type tradeMarker struct {
+		StandingOrderID     *uuid.UUID          `json:"standing_order_id,omitempty"`
 		RouteVersion        int                 `json:"route_version,omitempty"`
 		DispatchOffsetMilli int64               `json:"dispatch_offset_milli,omitempty"`
 		Items               []economy.CargoItem `json:"items"`
@@ -1360,9 +1361,10 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		var savedJourney, rawItems []byte
 		var departedTick *int
 		var dueTick int
+		var standingOrderID *uuid.UUID
 		if err := rows.Scan(&m.ID, &ownerID, &destOwnerID, &m.GoodKey, &m.Quantity, &m.OriginQ, &m.OriginR, &originTerrain,
 			&m.DestQ, &m.DestR, &destTerrain, &m.DepartsAt, &m.ArrivesAt, &category, &m.Owner, &savedJourney, &departedTick, &dueTick,
-			&m.OriginName, &m.DestName, &m.ShipUnitID, &m.Kind, &rawItems); err != nil {
+			&m.OriginName, &m.DestName, &m.ShipUnitID, &m.Kind, &rawItems, &standingOrderID); err != nil {
 			continue
 		}
 		if err := json.Unmarshal(rawItems, &m.Items); err != nil {
@@ -1370,6 +1372,9 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		m.Category = category
+		if authenticated && ownerID == playerID {
+			m.StandingOrderID = standingOrderID
+		}
 		var journey *province.TradeJourney
 		var savedPos *province.MapPosition
 		if len(savedJourney) > 0 {

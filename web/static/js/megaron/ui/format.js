@@ -844,7 +844,7 @@ export function notifText(kind, body) {
       const protection = body.protection_until ? ` Protected from further divine punishment until ${fmtClock(body.protection_until)}.` : '';
       const amount = body.amount || 0;
       switch (body.type) {
-        case 'chariot_loss':    return `The gods scattered your war chariots in the night${place} — ${amount} lost${protection}`;
+        case 'chariot_loss':    return `The gods scattered your chariots in the night${place} — ${amount} lost${protection}`;
         case 'ship_loss':       return body.unit_name
           ? `A divine storm sank ${body.unit_name} in your harbour${place} — the ship is lost${protection}`
           : `A divine storm claimed a vessel from your harbour${place}${protection}`;

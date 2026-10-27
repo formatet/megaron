@@ -658,7 +658,7 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 		// River is water too, a wall for land units (megaron_floden_plan.md, Timothy 2026-07-29).
 		isSea := destTerrain == "coastal_sea" || destTerrain == "deep_sea" || destTerrain == "river"
 		if unit.CategoryOf(u.Type) == unit.CategoryLand && isSea {
-			writeError(w, http.StatusUnprocessableEntity, "land units cannot enter sea terrain")
+			writeError(w, http.StatusUnprocessableEntity, "land forces cannot enter sea terrain")
 			return
 		}
 	}
@@ -1179,7 +1179,7 @@ func (h *UnitHandler) Load(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if n, max := len(ship.CargoUnitIDs), unit.CargoCapacity(ship.Type); n >= max {
-		writeError(w, http.StatusConflict, fmt.Sprintf("%s carries at most %d land %s — unload first", unit.DisplayName(string(ship.Type)), max, map[bool]string{true: "unit", false: "units"}[max == 1]))
+		writeError(w, http.StatusConflict, fmt.Sprintf("%s carries at most %d land %s — unload first", unit.DisplayName(string(ship.Type)), max, map[bool]string{true: "unit", false: "forces"}[max == 1]))
 		return
 	}
 	if ship.SettlementID == nil {
@@ -1198,7 +1198,7 @@ func (h *UnitHandler) Load(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if unit.CategoryOf(cargo.Type) != unit.CategoryLand {
-		writeError(w, http.StatusUnprocessableEntity, "only land units can be loaded onto ships")
+		writeError(w, http.StatusUnprocessableEntity, "only land forces can be loaded onto ships")
 		return
 	}
 	if !unit.CanEmbark(cargo.Type) {
@@ -1241,7 +1241,7 @@ func (h *UnitHandler) Load(w http.ResponseWriter, r *http.Request) {
 			*ship.SettlementID,
 		).Scan(&hasHarbour)
 		if !hasHarbour {
-			writeError(w, http.StatusUnprocessableEntity, "units can only embark at coastal settlements or harbours")
+			writeError(w, http.StatusUnprocessableEntity, "forces can only embark at coastal settlements or harbours")
 			return
 		}
 	}
@@ -1430,7 +1430,7 @@ func (h *UnitHandler) Unload(w http.ResponseWriter, r *http.Request) {
 			*ship.SettlementID,
 		).Scan(&hasHarbour)
 		if !hasHarbour {
-			writeError(w, http.StatusUnprocessableEntity, "units can only disembark at coastal settlements or harbours")
+			writeError(w, http.StatusUnprocessableEntity, "forces can only disembark at coastal settlements or harbours")
 			return
 		}
 	}
@@ -1616,7 +1616,7 @@ func (h *UnitHandler) SetStance(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if unit.CategoryOf(u.Type) == unit.CategoryNaval {
-			writeError(w, http.StatusUnprocessableEntity, "naval units cannot take a stance")
+			writeError(w, http.StatusUnprocessableEntity, "naval forces cannot take a stance")
 			return
 		}
 		unitPos := province.MapPosition{Q: *u.Q, R: *u.R}
@@ -1686,7 +1686,7 @@ func (h *UnitHandler) stanceToMarchingUnit(w http.ResponseWriter, ctx context.Co
 		return
 	}
 	if unit.CategoryOf(u.Type) == unit.CategoryNaval {
-		writeError(w, http.StatusUnprocessableEntity, "naval units cannot take a stance")
+		writeError(w, http.StatusUnprocessableEntity, "naval forces cannot take a stance")
 		return
 	}
 	if u.Q == nil || u.R == nil || u.TargetQ == nil || u.TargetR == nil || u.DepartsAt == nil || u.ArrivesAt == nil {
@@ -2077,7 +2077,7 @@ func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {
 
 	units, err := h.store.ListByOwner(r.Context(), playerID, worldID)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not load units")
+		writeError(w, http.StatusInternalServerError, "could not load forces")
 		return
 	}
 
@@ -2120,6 +2120,10 @@ func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {
 	attachUnitPaths(r.Context(), h.pool, worldID, units, summaries)
 	attachBattleFlags(r.Context(), h.pool, worldID, playerID, summaries)
 	attachFreightingNotes(r.Context(), h.pool, worldID, playerID, summaries)
+	if err := attachBoundRoutes(r.Context(), h.pool, worldID, playerID, summaries); err != nil {
+		writeError(w, 500, "could not load bound routes")
+		return
+	}
 	attachPassageNotes(r.Context(), h.pool, worldID, units, summaries)
 	attachExpeditionNotes(r.Context(), h.pool, worldID, summaries)
 	attachPickupNotes(r.Context(), h.pool, worldID, playerID, units, summaries)
@@ -2410,7 +2414,9 @@ type unitSummary struct {
 	// other status. Server-formatted for the same reason DisplayName is: a
 	// client should never have to reconstruct this from transport/route rows
 	// itself.
-	FreightingNote *string `json:"freighting_note,omitempty"`
+	FreightingNote *string    `json:"freighting_note,omitempty"`
+	BoundRouteID   *uuid.UUID `json:"bound_route_id,omitempty"`
+	BoundRouteName *string    `json:"bound_route_name,omitempty"`
 	// PassageFor/WaitingForReturn (megaron_plan_ordna_passage.md 3b-3): a ship
 	// on a "passage" mission names the runner's destination; once it actually
 	// holds for that runner's return leg (march_intent="passage_wait"),

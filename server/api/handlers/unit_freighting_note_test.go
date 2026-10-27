@@ -6,6 +6,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 
 	"github.com/google/uuid"
@@ -81,7 +82,46 @@ func TestAttachFreightingNotes_PrefersInFlightLegOverStandingRoute(t *testing.T)
 		{ID: shipA, Status: "freighting"},
 		{ID: shipB, Status: "freighting"},
 	}
+	// Add an independent persistent binding to A as well: its current leg remains
+	// Faraway while its recurring route is Home → Colony.
+	var routeA, routeB uuid.UUID
+	if err := pool.QueryRow(ctx, `INSERT INTO standing_orders(world_id,owner_id,from_settlement_id,to_settlement_id,crewed_by_settlement_id,ship_unit_id) VALUES($1,$2,$3,$4,$3,$5) RETURNING id`, worldID, owner, home, routeTo, shipA).Scan(&routeA); err != nil {
+		t.Fatal(err)
+	}
+	if err := pool.QueryRow(ctx, `SELECT id FROM standing_orders WHERE ship_unit_id=$1`, shipB).Scan(&routeB); err != nil {
+		t.Fatal(err)
+	}
 	attachFreightingNotes(ctx, pool, worldID, owner, summaries)
+	if err := attachBoundRoutes(ctx, pool, worldID, owner, summaries); err != nil {
+		t.Fatal(err)
+	}
+	for i, want := range []uuid.UUID{routeA, routeB} {
+		if summaries[i].BoundRouteID == nil || *summaries[i].BoundRouteID != want || summaries[i].BoundRouteName == nil || *summaries[i].BoundRouteName != "Home → Colony" {
+			t.Fatalf("missing durable binding %+v", summaries[i])
+		}
+	}
+	summaries[1].Status = "garrison"
+	summaries[1].BoundRouteID = nil
+	summaries[1].BoundRouteName = nil
+	if _, err := pool.Exec(ctx, `UPDATE standing_orders SET status='paused' WHERE id=$1`, routeB); err != nil {
+		t.Fatal(err)
+	}
+	if err := attachBoundRoutes(ctx, pool, worldID, owner, summaries); err != nil {
+		t.Fatal(err)
+	}
+	if summaries[1].BoundRouteID == nil || *summaries[1].BoundRouteID != routeB {
+		t.Fatal("paused/idle binding omitted")
+	}
+	foreign := []unitSummary{{ID: shipA}}
+	if err := attachBoundRoutes(ctx, pool, worldID, uuid.New(), foreign); err != nil {
+		t.Fatal(err)
+	}
+	raw, _ := json.Marshal(foreign[0])
+	var fields map[string]any
+	_ = json.Unmarshal(raw, &fields)
+	if _, leak := fields["bound_route_id"]; leak {
+		t.Fatalf("foreign route leaked %s", raw)
+	}
 
 	if summaries[0].FreightingNote == nil || *summaries[0].FreightingNote != "carrying goods to Faraway" {
 		t.Errorf("ship A note = %v, want \"carrying goods to Faraway\"", summaries[0].FreightingNote)

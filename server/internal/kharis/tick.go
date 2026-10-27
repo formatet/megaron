@@ -1324,7 +1324,7 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 	punishments := []punishment{
 		{
 			"chariot_loss",
-			"The gods have scattered your war chariots in the night. Chariots have perished.",
+			"The gods have scattered your chariots in the night. Chariots have perished.",
 			`WITH victims AS (
 			     SELECT id, size FROM units
 			     WHERE settlement_id = $1 AND world_id=$2 AND owner_id=$3 AND size>0 AND status = 'garrison' AND type = 'war_chariot'

@@ -61,10 +61,10 @@ func TestOtherNavalUnaffected(t *testing.T) {
 func TestDisplayName_ConsistentAcrossKnownTypes(t *testing.T) {
 	cases := map[string]string{
 		"spearman":       "Spearmen",
-		"war_chariot":    "War Chariot",
+		"war_chariot":    "Chariot",
 		"galley":         "Galley",
 		"trireme":        "Galley",
-		"elite_infantry": "Elite Infantry",
+		"elite_infantry": "Bronze Guard",
 		"war_galley":     "War Galley",
 		"merchantman":    "Emporos",
 	}

@@ -10,4 +10,4 @@
 | **Pay** | none |
 | **In battle** | 50 dice per round for 100 active men — half the men, rounded up |
 
-Spearmen hold walls, escort colonists and form the mass of a field army. Against [[elite-infantry]] and [[war-chariot|chariots]] they lose man for man, but they cost no [[bronze]] and no silver. See [[units]], [[marching]] and [[battle]].
+Spearmen hold walls, escort colonists and form the mass of a field army. Against [[elite-infantry|Bronze Guard]] and [[war-chariot|chariots]] they lose man for man, but they cost no [[bronze]] and no silver. See [[units|Forces]], [[marching]] and [[battle]].

@@ -16,18 +16,18 @@ def sources(surface):
  if surface=='keryx':return [p for p in (ROOT/'server/cmd/keryx').glob('*.go') if not p.name.endswith('_test.go')]
  if surface=='server':return [p for d in ('api','internal') for p in (ROOT/'server'/d).rglob('*.go') if not p.name.endswith('_test.go')]
  raise ValueError(surface)
-def js_strings(s):
+def js_strings(s, *, offsets=False):
  """Scan JS literals, including strings inside nested template expressions.
  Regexes and comments are code, not player prose. Template identifiers are not
  emitted; nested string literals still are, so new prose cannot hide in ${...}.
  """
  out=[]
- def emit(start,val):out.append((s.count('\n',0,start)+1,val))
+ def emit(start,val):out.append((start if offsets else s.count('\n',0,start)+1,val))
  def quoted(i,quote):
   start=i;i+=1
   while i<len(s):
    if s[i]=='\\':i+=2;continue
-   if s[i]==quote:emit(start,s[start+1:i]);return i+1
+   if s[i]==quote:emit(start+1,s[start+1:i]);return i+1
    i+=1
   return i
  def template(i):

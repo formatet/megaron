@@ -1,12 +1,12 @@
 ## Giving a march order
 
-**Right-click the destination hex.** The order menu shows what the destination is, which of your units can go and **March →**. Only one unit is selected initially. Select the checkbox beside each named unit you want to order; units sharing a type or location are separate choices. **More** holds stance ([[stances]]), expedition duration and column name.
+**Right-click the destination hex.** The order menu shows what the destination is, which of your forces can go and **March →**. Only one unit is selected initially. Select the checkbox beside each named unit you want to order; forces sharing a type or location are separate choices. **More** holds stance ([[stances]]), expedition duration and column name.
 
 You can also left-click a hex and use **March here →** — or **Send galleys →** at sea, or **Colonize →** on empty land ([[colonies]]). Hovering those buttons previews the result on the map.
 
-Choose the named units to send and the menu estimates each selected unit’s arrival **before you send the order**. **War → Army → March** selects that unit; click a destination on the map to open the same menu. Ships with different crews or cargo may arrive at different times. The estimate uses the current route and speed; conditions can change before arrival.
+Choose the named forces to send and the menu estimates each selected unit’s arrival **before you send the order**. **War → Forces → March** selects that unit; click a destination on the map to open the same menu. Ships with different crews or cargo may arrive at different times. The estimate uses the current route and speed; conditions can change before arrival.
 
-If a messenger must first deliver the order, or the destination is unexplored, the forecast says why arrival is not yet known. Redirects also wait for a messenger; their current course continues until delivery. The **Sold** line shows the selected units’ silver drain at home and in the field, and how long their paying city’s treasury lasts after departure; with several paying cities, it shows the shortest treasury duration; spearmen show **0 → 0**. No forecast sends an order.
+If a messenger must first deliver the order, or the destination is unexplored, the forecast says why arrival is not yet known. Redirects also wait for a messenger; their current course continues until delivery. The **Sold** line shows the selected forces’ silver drain at home and in the field, and how long their paying city’s treasury lasts after departure; with several paying cities, it shows the shortest treasury duration; spearmen show **0 → 0**. No forecast sends an order.
 
 In Keryx, use `march --unit <id> --target q,r --preview` (or `unit march` with the same flags). Add `--json` for the server forecast. Omit `--preview` when you are ready to send. `--unit` also accepts an exact unit name, for example `--unit "3rd Spearmen of Tylissos"`; names are case-insensitive and an ambiguous name is refused.
 
@@ -18,17 +18,17 @@ A notification tells you when a unit arrives.
 
 ## A marching unit is still reachable
 
-Right-click a new destination and a unit already marching shows up in the menu too, marked **on the march → redirect by messenger**. Pick it like any other unit — the order is a **Redirect**, not a fresh march: the unit keeps going on its old course until the Runner reaches it, then turns onto the new one. You can also redirect from the unit’s **War → Army** row, including by typed coordinates.
+Right-click a new destination and a unit already marching shows up in the menu too, marked **on the march → redirect by messenger**. Pick it like any other unit — the order is a **Redirect**, not a fresh march: the unit keeps going on its old course until the Runner reaches it, then turns onto the new one. You can also redirect from the unit’s **War → Forces** row, including by typed coordinates.
 
-## Orders to units already in the field travel by Runner
+## Orders to forces already in the field travel by Runner
 
 A unit standing in its city hears you at once. A unit out in the field does not — **Recall** and **Redirect** are carried by a [[runners|Runner]], and the game estimates his next meeting with the unit. The horn sounds when the soldiers *receive* the order, not when you give it.
 
 Recall turns an expedition home to its city, where it rejoins the garrison and files its report ([[sight]]). An ordinary march returns to its departure hex. Redirect sends the unit to the destination you choose.
 
-**War → Army → Recall all**, or `keryx recall --all`, sends a separate recall order to each of your marching units.
+**War → Forces → Recall all**, or `keryx recall --all`, sends a separate recall order to each of your marching forces.
 
-Recall and redirect need a passable route from the unit’s current position. If its position or the new route cannot be resolved, the order is refused with a reason. If the Runner cannot catch up during the march, it goes to the destination. For a newly sent land order, if the unit has moved again, the Runner keeps the same order and takes a new physical route to catch it. The order takes effect only when they meet. While the Runner follows a moving unit, **War → Army** and `keryx unit list` show the next meeting estimate, which can change; it is not a guaranteed delivery time. If the Runner must wait before continuing, they show that instead of a delivery time. A destroyed unit or a unit you no longer own cannot receive the order. A Runner-delivered refusal appears in Dispatches; the unit keeps its existing course. Check the unit and choose a reachable destination.
+Recall and redirect need a passable route from the unit’s current position. If its position or the new route cannot be resolved, the order is refused with a reason. If the Runner cannot catch up during the march, it goes to the destination. For a newly sent land order, if the unit has moved again, the Runner keeps the same order and takes a new physical route to catch it. The order takes effect only when they meet. While the Runner follows a moving unit, **War → Forces** and `keryx unit list` show the next meeting estimate, which can change; it is not a guaranteed delivery time. If the Runner must wait before continuing, they show that instead of a delivery time. A destroyed unit or a unit you no longer own cannot receive the order. A Runner-delivered refusal appears in Dispatches; the unit keeps its existing course. Check the unit and choose a reachable destination.
 
 ## Where you can march
 
@@ -44,9 +44,9 @@ A marching army eats more than one in garrison and cannot forage ([[upkeep]]). I
 
 ## Exploring an area
 
-Choose **Explore** in the map menu; the default expedition duration is ready to use. Open **More** to change the duration in **game days**. The chosen hex is the centre of an area, even in fog. The order summary shows its extent and duration before sending; **War → Army → March** offers the same controls.
+Choose **Explore** in the map menu; the default expedition duration is ready to use. Open **More** to change the duration in **game days**. The chosen hex is the centre of an area, even in fog. The order summary shows its extent and duration before sending; **War → Forces → March** offers the same controls.
 
-It travels first to the exact hex you chose, even if that hex is already seen, then chooses nearby unexplored ground on its own. It turns home by half the duration. It can turn earlier if the area is already explored or nothing further is reachable. **War → Army** and `keryx unit list` show the area, duration, latest turn and home game day, and why it has turned. A Runner-delivered order begins when received, so those game days become known when it starts. On return, Dispatches carries the report ([[sight]]).
+It travels first to the exact hex you chose, even if that hex is already seen, then chooses nearby unexplored ground on its own. It turns home by half the duration. It can turn earlier if the area is already explored or nothing further is reachable. **War → Forces** and `keryx unit list` show the area, duration, latest turn and home game day, and why it has turned. A Runner-delivered order begins when received, so those game days become known when it starts. On return, Dispatches carries the report ([[sight]]).
 
 The chosen hex is the first destination. If it cannot be reached from this unit's position, the order is refused without substituting another destination. Choose a reachable hex or use a unit departing from elsewhere. After reaching the chosen hex, a ship prefers unseen coastal water over open sea.
 
@@ -57,7 +57,7 @@ In Keryx: `unit march --unit <id> --target q,r --intent explore --ticks N`. Omit
 For foot soldiers, each plain, river valley or delta takes **1 game day**; olive groves
 and maquis **1.5 game days**; hills and cedar forest **2 game days**; semi-desert **3 game days**.
 A ford takes **2.5 game days** on foot. Mountains cannot be crossed.
-War chariots are fast on the flat and slow everywhere else: **0.67 game days** on a
+Chariots are fast on the flat and slow everywhere else: **0.67 game days** on a
 plain, river valley or delta, **2 game days** in olive groves and maquis, and
 **3 game days** in hills, cedar forest and semi-desert. A ford takes them 2.5 game days
 too. The Nomadic Host

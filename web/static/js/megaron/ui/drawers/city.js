@@ -161,8 +161,8 @@ export async function loadCityDrawer() {
     // ── Garnison ────────────────────────────────────────────────────────────
     if (pd) {
       document.getElementById('city-gar-sec').innerHTML = `
-        <div class="dsec-title">Whole units in ${esc(capital.name)}</div>
-        ${unitsResp.ok ? disbandUnitsHTML(units, capital.settlement_id || pd.id, capital.id) : '<p class="empty-state">Could not load units. Reopen the city to try again.</p>'}
+        <div class="dsec-title">Whole forces in ${esc(capital.name)}</div>
+        ${unitsResp.ok ? disbandUnitsHTML(units, capital.settlement_id || pd.id, capital.id) : '<p class="empty-state">Could not load forces. Reopen the city to try again.</p>'}
         <div id="war-disband-res" class="action-result" role="status"></div>`;
     }
 

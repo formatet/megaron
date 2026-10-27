@@ -1,4 +1,4 @@
-A **stance** tells a unit how to behave where it stands. Set it in the order menu when you march, or later from **War → Army** with the stance selector and **Set** — which, for a unit in the field, is an order carried by [[runners|Runner]].
+A **stance** tells a unit how to behave where it stands. Set it in the order menu when you march, or later from **War → Forces** with the stance selector and **Set** — which, for a unit in the field, is an order carried by [[runners|Runner]].
 
 - **fortify** — dig in and hold this ground. The unit cannot move until the stance is cleared. Battle participation stays at 90%.
 - **storm** — assault posture against an adjacent city. Halves what its wall absorbs, at the cost of much heavier losses of your own.
@@ -6,7 +6,7 @@ A **stance** tells a unit how to behave where it stands. Set it in the order men
 
 ## A unit already on the march
 
-You can give a marching unit a stance too — from **War → Army**, or by picking a stance when you right-click a new destination for it. The order goes by [[runners|Runner]], and the Runner has to **catch up** with the unit: the game tells you where and roughly when it will reach it. From then the unit carries the stance, and it takes hold **where the unit stops** — fortify digs in there, sentry watches that ground, storm goes into the assault it is marching on. A stance never turns a unit off its road.
+You can give a marching unit a stance too — from **War → Forces**, or by picking a stance when you right-click a new destination for it. The order goes by [[runners|Runner]], and the Runner has to **catch up** with the unit: the game tells you where and roughly when it will reach it. From then the unit carries the stance, and it takes hold **where the unit stops** — fortify digs in there, sentry watches that ground, storm goes into the assault it is marching on. A stance never turns a unit off its road.
 
 If the unit is too far ahead for any Runner to overtake, the Runner follows it to its destination and the stance applies where it stopped.
 
@@ -16,7 +16,7 @@ A unit in **fortify** or **sentry** on a hex that a neighbouring city holds lets
 
 ## Sentry is a siege
 
-Units in sentry on the hexes an enemy city works stop those hexes feeding it. Hold that long enough and the city gives up without a battle — see [[sieges]].
+Forces in sentry on the hexes an enemy city works stop those hexes feeding it. Hold that long enough and the city gives up without a battle — see [[sieges]].
 
 ## A watch is not free
 
@@ -28,7 +28,7 @@ From the command line there are also dedicated watch orders: a ship on **patrol*
 
 When your men break off a battle is set in two places:
 
-- **For the whole realm** — **War → Army → When to retreat**, or `keryx retreat-default` ([[keryx]]). Choose **Hold to the last man** or **Retreat when it goes badly** (the default). The latter withdraws when 20% of the side’s starting strength remains. Every unit carries this into a battle it enters. It applies at once, since no one has to carry it anywhere, but only to battles entered from then on — a battle already under way keeps what its units brought.
-- **For one unit, in the battle it is fighting now** — the **this battle** selector on its card in **War → Army** (it only appears while the unit is fighting), or `keryx unit retreat-order`. Choose the same two modes. It overrides the realm setting for that battle only. On a field unit it is an order, and travels by [[runners|Runner]].
+- **For the whole realm** — **War → Forces → When to retreat**, or `keryx retreat-default` ([[keryx]]). Choose **Hold to the last man** or **Retreat when it goes badly** (the default). The latter withdraws when 20% of the side’s starting strength remains. Every unit carries this into a battle it enters. It applies at once, since no one has to carry it anywhere, but only to battles entered from then on — a battle already under way keeps what its forces brought.
+- **For one unit, in the battle it is fighting now** — the **this battle** selector on its card in **War → Forces** (it only appears while the unit is fighting), or `keryx unit retreat-order`. Choose the same two modes. It overrides the realm setting for that battle only. On a field unit it is an order, and travels by [[runners|Runner]].
 
 In Keryx, use `--hold-to-last-man` or `--when-losing` with either command. Fixed loss percentages are no longer a choice.

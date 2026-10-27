@@ -31,7 +31,7 @@ func TestInsufficientGoodsErrorSingle(t *testing.T) {
 	}
 }
 
-// insufficientUnitsMsg turns a blind "insufficient units" 422 into an actionable
+// insufficientUnitsMsg turns a blind "insufficient forces" 422 into an actionable
 // list: agents that try to outpost/march with more troops than their garrison
 // holds need to see which units are short and by how much to scale down.
 func TestInsufficientUnitsMsg(t *testing.T) {
@@ -39,7 +39,7 @@ func TestInsufficientUnitsMsg(t *testing.T) {
 	want := province.ArmyComposition{Spearman: 30, WarChariot: 5}
 	have := province.ArmyComposition{Spearman: 10, WarChariot: 5}
 	got := insufficientUnitsMsg(want, have)
-	exp := "insufficient units: spearman (need 30, have 10)"
+	exp := "insufficient forces: spearman (need 30, have 10)"
 	if got != exp {
 		t.Errorf("insufficientUnitsMsg = %q, want %q", got, exp)
 	}
@@ -49,7 +49,7 @@ func TestInsufficientUnitsMsgMultiple(t *testing.T) {
 	want := province.ArmyComposition{Spearman: 20, Ship: 3, EliteInfantry: 4}
 	have := province.ArmyComposition{Spearman: 5, Ship: 0, EliteInfantry: 1}
 	got := insufficientUnitsMsg(want, have)
-	exp := "insufficient units: spearman (need 20, have 5), ship (need 3, have 0), elite_infantry (need 4, have 1)"
+	exp := "insufficient forces: spearman (need 20, have 5), ship (need 3, have 0), elite_infantry (need 4, have 1)"
 	if got != exp {
 		t.Errorf("insufficientUnitsMsg = %q, want %q", got, exp)
 	}
@@ -59,7 +59,7 @@ func TestInsufficientUnitsMsgMultiple(t *testing.T) {
 // shortfall), fall back to the plain message rather than an empty list.
 func TestInsufficientUnitsMsgNoShortfall(t *testing.T) {
 	a := province.ArmyComposition{Spearman: 5}
-	if got := insufficientUnitsMsg(a, a); got != "insufficient units" {
+	if got := insufficientUnitsMsg(a, a); got != "insufficient forces" {
 		t.Errorf("insufficientUnitsMsg = %q, want plain fallback", got)
 	}
 }

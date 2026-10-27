@@ -68,5 +68,5 @@ func kingdomTreasuryDepositCmd() *cobra.Command {
 }
 
 func kingdomBorrowArmyCmd() *cobra.Command {
-	return kingdomStubCmd("kingdom-borrow-army", "Borrow units from a kingdom member's settlement")
+	return kingdomStubCmd("kingdom-borrow-army", "Borrow forces from a kingdom member's settlement")
 }

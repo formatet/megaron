@@ -71,7 +71,7 @@ func TestRecallAllLoopsEveryMarchingUnit(t *testing.T) {
 						t.Fatalf("bad partial report: %s", out)
 					}
 				} else {
-					for _, word := range []string{"Alpha: recall sent.", "Beta: already on its way", "Gamma: recall sent.", "Two units are being called home."} {
+					for _, word := range []string{"Alpha: recall sent.", "Beta: already on its way", "Gamma: recall sent.", "Two forces are being called home."} {
 						if !strings.Contains(out, word) {
 							t.Errorf("missing %q: %s", word, out)
 						}
@@ -97,7 +97,7 @@ func TestRecallAllNoneAndInvalidFlags(t *testing.T) {
 	cmd := unitRecallCmd()
 	cmd.SetArgs([]string{"--all"})
 	out, err := captureStdout(t, cmd.Execute)
-	if err != nil || !strings.Contains(out, "No units are being called home.") {
+	if err != nil || !strings.Contains(out, "No forces are being called home.") {
 		t.Fatalf("%s %v", out, err)
 	}
 	for _, args := range [][]string{{}, {"--all", "--unit", "a"}, {"--all", "--target", "1,2"}, {"--all", "--intent", "explore"}} {

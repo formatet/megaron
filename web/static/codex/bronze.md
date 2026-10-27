@@ -2,7 +2,7 @@ This is the strategic shape of the whole world.
 
 Bronze needs **copper and tin**. **Copper and tin are never found on the same landmass** — the world is made that way on purpose, every time. It is not bad luck, and no new world will fix it.
 
-Therefore **nobody can make bronze alone.** Not the richest Wanax, not the luckiest start. Bronze — and with it elite infantry, war chariots, war galleys and the best walls — exists only for those who cross water, or who trade with someone who has.
+Therefore **nobody can make bronze alone.** Not the richest Wanax, not the luckiest start. Bronze — and with it Bronze Guard, chariots, war galleys and the best walls — exists only for those who cross water, or who trade with someone who has.
 
 ## Three roads
 
