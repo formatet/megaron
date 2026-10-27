@@ -689,3 +689,7 @@ proves rollback/idempotency on a private live clone; `route_sight_acceptance.py`
 CLI→worker→map with no intermediate polls; `route_sight_mutants.py CHECKOUT OUTPUT`
 requires four assertion failures and exact restoration. `route_sight_deploy_verify.py`
 checks process/ground/assets. Contract/evidence: `docs/reviews/rutthex-synminne/README.md`.
+
+### Numeric kharis proof
+
+`python3 tools/kharis_tal_bild_20261027.py OUTPUT` runs fresh owned PG/Redis/server, real register/join/found and explicit kharis/temple fixtures; checks API, Keryx status/me/rite and native Firefox Wrathful/Favorable at1280/390 twice. `python3 tools/kharis_tal_mutations_20261027.py CHECKOUT OUTPUT` runs six physical assertion-red mutations in a separate checkout, exact restoration and fresh green. `python3 tools/kharis_tal_deploy_verify_20261027.py --before` records read-only ground state; omit `--before` after deployment to verify process217, world continuity and static bytes. Evidence: `docs/reviews/kharis-tal/`.

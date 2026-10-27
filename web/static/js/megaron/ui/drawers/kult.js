@@ -74,7 +74,7 @@ export async function loadKultDrawer() {
     html += divineValuesHTML(pd?.divine_values);
 
     // Prayer catalog
-    html += '<div class="dsec"><div class="dsec-title">Prayers</div>';
+    html += '<div class="dsec"><div class="dsec-title">Prayers</div>' + kharisStandingHTML(pd);
     if (!prayers.length) {
       html += '<p class="empty-state">No prayers available — build a temple first.</p>';
     } else {

@@ -428,15 +428,14 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		var kharisNetKnown, kharisDevotionIdle bool
 		var kharisWrath *kharis.WrathStatus
 		var kharisStanding *kharis.Standing
+		kharisKnown := false
 		viewerID, authenticated := auth.PlayerIDFromContext(r.Context())
 		ownCult := authenticated && sett.OwnerID != nil && *sett.OwnerID == viewerID
 		if sett.OwnerID != nil {
 			if k, kerr := loadPlayerKharis(r.Context(), h.pool, *sett.OwnerID, worldID); kerr == nil {
 				kharisNow, kharisRate = k.Amount, k.Rate
 				kharisCap, maxTempleLevel = k.Cap, k.MaxTempleLevel
-			} else if ownCult {
-				writeError(w, 500, "could not load kharis standing")
-				return
+				kharisKnown = true
 			}
 		}
 		if ownCult {
@@ -446,8 +445,10 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			kharisWrath = &wrath
-			standing := kharis.DescribeStanding(kharisNow, maxTempleLevel > 0, wrath.ProtectionRemainingDays)
-			kharisStanding = &standing
+			if kharisKnown {
+				standing := kharis.DescribeStanding(kharisNow, maxTempleLevel > 0, wrath.ProtectionRemainingDays)
+				kharisStanding = &standing
+			}
 			decay, decayErr := kharis.ProjectDecay(r.Context(), h.pool, *sett.OwnerID, worldID)
 			kharisCityCount, kharisPopulation = decay.CityCount, decay.Population
 			kharisBaseDecay, kharisCityDecay, kharisPopulationDecay = decay.Base, decay.Cities, decay.Residents
