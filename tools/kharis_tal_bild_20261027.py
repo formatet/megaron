@@ -70,7 +70,8 @@ try:
       if page.locator('#dc-dismiss-all').is_visible():page.locator('#dc-dismiss-all').click()
       for brief in page.locator('.lb-dismiss').all():
        if brief.is_visible():brief.click()
-      page.evaluate("async()=>{window.openDrawer('kult');await (await import('/static/js/megaron/ui/drawers/kult.js')).loadKultDrawer()}")
+      page.locator("#trig-kult").click()
+      page.wait_for_function("(s)=>document.querySelector('#kult-body')?.textContent.includes(s)",arg=summary)
       page.wait_for_timeout(300);text=page.locator('#kult-body').inner_text();assert summary in text,text
       rect=page.locator('#kult-body').evaluate('(e)=>({client:e.clientWidth,scroll:e.scrollWidth})');assert rect['scroll']<=rect['client']+1,rect
       filename=f'{cycle}-{band}-{width}.png';page.screenshot(path=str(OUT/filename));shots.append({'file':filename,'summary':summary});assert not errors,errors

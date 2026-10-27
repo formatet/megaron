@@ -1,0 +1,48 @@
+{
+  "mutations": [
+    {
+      "file": "server/internal/kharis/standing.go",
+      "replace": "return blessProbability",
+      "with": "return 0",
+      "test": "TestStandingCurrentConsequences",
+      "assertion_red": true
+    },
+    {
+      "file": "server/internal/kharis/tick.go",
+      "replace": "blessProbability = 0.15",
+      "with": "blessProbability = 0.16",
+      "test": "TestStandingCurrentConsequences",
+      "assertion_red": true
+    },
+    {
+      "file": "server/api/handlers/province.go",
+      "replace": "kharisStanding = &standing",
+      "with": "kharisStanding = nil; _ = standing",
+      "test": "TestProvinceStandingMatchesTickOwner",
+      "assertion_red": true
+    },
+    {
+      "file": "server/api/handlers/world_me.go",
+      "replace": "cult.DescribeStanding(kharis.Amount, kharis.MaxTempleLevel > 0, wrath.ProtectionRemainingDays)",
+      "with": "cult.Standing{}; _ = wrath",
+      "test": "TestWorldMe_OwnWorldIsolation",
+      "assertion_red": true
+    },
+    {
+      "file": "server/internal/kharis/demolition.go",
+      "replace": "DescribeStanding(d.KharisAfter, afterLevel > 0, wrath.ProtectionRemainingDays)",
+      "with": "Standing{}; _ = wrath",
+      "test": "TestTempleDemolitionDebtFloorReplay",
+      "assertion_red": true
+    },
+    {
+      "file": "server/internal/kharis/transition_notices.go",
+      "replace": "DescribeStanding(amount, w.templeCities > 0, wrath.ProtectionRemainingDays)",
+      "with": "Standing{}; _ = wrath",
+      "test": "TestKharisBandNoticeBoundariesAndExternalChanges",
+      "assertion_red": true
+    }
+  ],
+  "exact_restore": true,
+  "fresh_restored_green": true
+}

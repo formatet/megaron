@@ -1,0 +1,7 @@
+2026/10/27 08:45:54 INFO player registered id=a381f683-0ffc-4798-83e8-7446b2eae0c4 username=buildhex-1ae96493-2cd3-4e42-808c-bd080ccbef51
+--- FAIL: TestTempleDemolitionDebtFloorReplay (0.09s)
+    temple_demolition_kharis_test.go:44: standing after demolition {Band: PunishmentProbability:0 BlessingProbability:0 Summary:} want {Band:Favorable PunishmentProbability:0 BlessingProbability:0 Summary:Kharis 70.0 (Favorable) · a standing temple is required for spontaneous blessings}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.090s
+FAIL
+» färsk DB på migration 217 · commit 0f645cab+ändringar

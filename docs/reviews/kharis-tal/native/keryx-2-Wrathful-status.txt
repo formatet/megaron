@@ -1,0 +1,46 @@
+Wanax Karpathia · today 08:47
+
+1 citizen = 100 people
+Lato [minoan]  Pop: 1.0k people  Labor: 10 citizens  Walls: 0/3  Settlements: 1/5
+Walls hold 2.0k. The next wall needs a Granary of level 1 (yours: 0) — `keryx build --type silo`.
+Population 1000 — growing: food net +0.6 per game day
+Next citizen 0 / 100 · in about 20 game days (about 20 hours)
+
+No trade contacts yet — trade needs a foreign settlement within your vision. Run `keryx cities` to see known/rumoured neighbours (march outward or colonise to reach one), then `keryx message --to <name>` or `keryx trade-offer` once one is visible.
+
+Food for 240.0 game days at current consumption (1200 grain, 0 fish, 0 oil, 0 wine)
+Herd 50 / 50 — full: new animals are eaten, then lost. A pen raises the cap.
+
+Last today 08:47: 1 goods produced, 0 consumed  ·  keryx ticklog for details
+
+Resources
+  (per game day; food and army balances are itemized below)
+  Silver      120  —
+  Food     production 5.6 − people eat 5.0 = net +0.6 per game day (before army)
+  Grain      1.2k  production 5.6 per game day  (3 citizens needed for people on best food slots · 3 on food)
+  Automatic food: 0.50 grain + 0.00 fish per game day without placed citizens (nearby ground 0.50 grain; 0 people outside whole citizens: 0.00 grain + 0.00 fish, a fraction of the best food worker)
+  Army     eats 1 food per game day → food net -0.4 per game day after army
+  Silver   net +0.0 per game day after army pay
+  ⚠ Timber production ~0 — timber gates harbour (16)/barracks (8)/foundry (8)/temple (8). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).
+  ⚠ Unmined deposit in the catchment: tin, silver — build a mine on its hex to extract it (a hex holds one building; if another stands there, demolish it first with `keryx demolish`)
+  Kharis        4  (Wrathful) · ceiling 75 · net -0.2 per game day (temple − decay)
+  Kharis 4.0 (Wrathful) · about 3% chance of divine punishment each game day
+  Upkeep of the cult: 0.10 base + 1 city cost 0.00 + 1000 residents cost 0.10 = 0.20 kharis per game day
+  Temple production: 0.00 kharis per game day
+  One more fed temple worker gives at least +1.05 kharis per game day before cult upkeep, and more when the cult’s reference offering of grain is scarce in the world. Requires a free citizen, a temple workplace and its daily offering.
+  Everyday prayers work at a level-1 temple. Spontaneous blessings need 60 kharis and a maintained temple. Only a level-2 temple or higher lets kharis grow that far. Kharis retained above a lowered ceiling still counts.
+  Below 15 kharis: 3% chance of divine punishment per game day, with or without a temple.
+  → ceiling 75 is set by your level-2 temple; kharis is declining. Your temple has empty workplaces: assign a free citizen with `keryx staff temple +1` and supply its daily offering.
+  Temple of Potnia in Lato: reference 0.25 grain per game day — alternatives: 0.25 fish or 0.25 timber or 0.25 silver — stock: 1200 grain, 0 fish, 0 timber, 120 silver — next gift: 0.25 grain  ✓
+  → feed the temples with local grain, fish, timber or silver or cast a rite — see `keryx rite --list`.
+
+Army (garrison in Lato)
+  Spearmen    200
+      6397d877-4266-47ab-a3bb-29ac1d35f336  100
+      f57293bb-4fc8-4b40-9c54-bcf4c92ac402  100
+  Upkeep     1 food, 0 silver per game day  (everything the city pays — including field units)
+  Field units and other cities are shown in `keryx unit list`.
+
+Buildings
+  Farm         L1
+  Temple of Potnia L2

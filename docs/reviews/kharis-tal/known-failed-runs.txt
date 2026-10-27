@@ -1,0 +1,3 @@
+Initial targeted run: profile exact five-field expectation and decimal-format assertions obsolete under ordered output changes; corrected.
+Initial standing API fixture: wrong /api/v1 test-router prefix and absent player_world_records seed; corrected fixtures.
+Two full pre-final runs: new ownCult missing-pool 500 guard broke legacy API fixture contracts. Removed stricter guard; unknown standing now stays unavailable. Final code 0f645cab tested separately.

@@ -1,0 +1,7 @@
+2026/10/27 08:45:43 INFO player registered id=13e86324-f0d1-4b99-bb3b-62d665827ff2 username=minegate-061195f6-d67a-46c5-961c-878a1f89b1be
+--- FAIL: TestProvinceStandingMatchesTickOwner (0.09s)
+    kharis_standing_test.go:53: amount=4 temple=false: {Band: PunishmentProbability:0 BlessingProbability:0 Summary:} want {Band:Wrathful PunishmentProbability:0.03 BlessingProbability:0 Summary:Kharis 4.0 (Wrathful) · about 3% chance of divine punishment each game day}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.096s
+FAIL
+» färsk DB på migration 217 · commit 0f645cab+ändringar

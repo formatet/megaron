@@ -1,0 +1,987 @@
+{
+  "province": {
+    "army": {
+      "Spearman": 200,
+      "WarChariot": 0,
+      "Ship": 0,
+      "EliteInfantry": 0,
+      "WarGalley": 0,
+      "Merchantman": 0
+    },
+    "army_upkeep": {
+      "grain": 1,
+      "food": 1,
+      "silver": 0
+    },
+    "army_upkeep_circulated_silver": 0,
+    "automatic_food": {
+      "nearjord_grain_per_tick": 0.5,
+      "remainder_people": 0,
+      "remainder_grain_per_tick": 0,
+      "remainder_fish_per_tick": 0
+    },
+    "available_prayers": [
+      {
+        "can_prepare_offering": true,
+        "god_id": "potnia",
+        "id": "minoan_potnia_vision_v2",
+        "name": "Potnia's Vision",
+        "god": "Potnia",
+        "temple": "Temple of Potnia",
+        "effect_type": "oracle_memory_v2",
+        "effect": "Marks an unseen source of copper, tin, silver or incense and the unknown ground within two hexes as memory; no live activity.",
+        "min_kharis": 5,
+        "offering": {
+          "grain": 10,
+          "silver": 3
+        },
+        "affordable": true,
+        "is_default": false,
+        "favours": {
+          "bronze": 1.3,
+          "fish": 2.2,
+          "grain": 0.6,
+          "incense": 2.1,
+          "oil": 1.5,
+          "pottery": 1.1,
+          "purple": 2,
+          "silver": 1.4,
+          "stone": 0.4
+        },
+        "offering_baseline": 17.339999999999996
+      },
+      {
+        "can_prepare_offering": true,
+        "god_id": "potnia",
+        "id": "minoan_potnia_walls",
+        "name": "Mistress of the Walls",
+        "god": "Potnia",
+        "temple": "Temple of Potnia",
+        "effect_type": "garrison_defense",
+        "effect": "Your own garrison defending this city fights a quarter stronger for 6 game days.",
+        "min_kharis": 5,
+        "offering": {
+          "grain": 8,
+          "timber": 4
+        },
+        "unavailable_reason": "insufficient offering",
+        "affordable": false,
+        "is_default": true,
+        "favours": {
+          "bronze": 1.5,
+          "fish": 0.4,
+          "grain": 1,
+          "horses": 1.6,
+          "incense": 1.5,
+          "livestock": 2,
+          "pottery": 0.5,
+          "stone": 0.4,
+          "wine": 1.7
+        },
+        "offering_baseline": 20.4
+      },
+      {
+        "can_prepare_offering": false,
+        "god_id": "velchanos",
+        "id": "minoan_velchanos_green_shoots",
+        "name": "Green Shoots",
+        "god": "Velchanos",
+        "temple": "Temple of Velchanos",
+        "effect_type": "harvest_blessing",
+        "effect": "Grain, oil and wine yield a quarter more for 25 game days; fish and the herd are unchanged.",
+        "min_kharis": 30,
+        "offering": {
+          "grain": 15,
+          "silver": 2
+        },
+        "unavailable_reason": "no Temple of Velchanos",
+        "affordable": false,
+        "is_default": false,
+        "favours": {
+          "copper": 0.5,
+          "fish": 0.9,
+          "grain": 1.3,
+          "incense": 2,
+          "livestock": 1.3,
+          "oil": 1.6,
+          "stone": 0.3,
+          "timber": 0.4,
+          "tin": 0.5,
+          "wine": 2
+        },
+        "offering_baseline": 36.55
+      },
+      {
+        "can_prepare_offering": false,
+        "god_id": "asterion",
+        "id": "minoan_asterion_thread",
+        "name": "The Thread Shows a Path",
+        "god": "Asterion",
+        "temple": "Temple of Asterion",
+        "effect_type": "next_land_departure",
+        "effect": "Your next land caravan or Runner from this city travels faster; the caravan is harder to intercept.",
+        "min_kharis": 5,
+        "offering": {
+          "silver": 3,
+          "timber": 4
+        },
+        "unavailable_reason": "no Temple of Asterion",
+        "affordable": false,
+        "is_default": false,
+        "offering_baseline": 11.899999999999999
+      },
+      {
+        "can_prepare_offering": false,
+        "god_id": "sea_daimons_stillness",
+        "id": "minoan_stillness_passage",
+        "name": "Favourable Passage",
+        "god": "The Sea Daimons of Stillness",
+        "temple": "Temple of the Sea Daimons of Stillness",
+        "effect_type": "next_ship_departure",
+        "effect": "The next ship leaving this port sails faster and takes no storm damage on its outward leg.",
+        "min_kharis": 5,
+        "offering": {
+          "fish": 6,
+          "silver": 3
+        },
+        "unavailable_reason": "no Temple of the Sea Daimons of Stillness",
+        "affordable": false,
+        "is_default": false,
+        "offering_baseline": 15.299999999999999
+      }
+    ],
+    "besieged": false,
+    "besieged_by": [],
+    "build_queue": [],
+    "build_queue_max": 2,
+    "build_quotes": [
+      {
+        "type": "barracks",
+        "current_level": 0,
+        "next_level": 1,
+        "at_max_level": false,
+        "costs": {
+          "stone": 16,
+          "timber": 8
+        },
+        "cost_silver": 0,
+        "duration_game_days": 10
+      },
+      {
+        "type": "farm",
+        "current_level": 0,
+        "next_level": 1,
+        "at_max_level": false,
+        "costs": {
+          "stone": 4,
+          "timber": 6
+        },
+        "cost_silver": 0,
+        "duration_game_days": 4,
+        "new_site": true
+      },
+      {
+        "type": "foundry",
+        "current_level": 0,
+        "next_level": 1,
+        "at_max_level": false,
+        "costs": {
+          "stone": 20,
+          "timber": 8
+        },
+        "cost_silver": 0,
+        "duration_game_days": 16
+      },
+      {
+        "type": "harbour",
+        "current_level": 0,
+        "next_level": 1,
+        "at_max_level": false,
+        "costs": {
+          "stone": 12,
+          "timber": 16
+        },
+        "cost_silver": 0,
+        "duration_game_days": 12
+      },
+      {
+        "type": "lumbermill",
+        "current_level": 0,
+        "next_level": 1,
+        "at_max_level": false,
+        "costs": {
+          "stone": 4,
+          "timber": 8
+        },
+        "cost_silver": 0,
+        "duration_game_days": 6,
+        "new_site": true
+      },
+      {
+        "type": "market",
+        "current_level": 0,
+        "next_level": 1,
+        "at_max_level": false,
+        "costs": {
+          "stone": 8,
+          "timber": 10
+        },
+        "cost_silver": 0,
+        "duration_game_days": 8
+      },
+      {
+        "type": "mine",
+        "current_level": 0,
+        "next_level": 1,
+        "at_max_level": false,
+        "costs": {
+          "stone": 16,
+          "timber": 6
+        },
+        "cost_silver": 0,
+        "duration_game_days": 10,
+        "new_site": true
+      },
+      {
+        "type": "olive_press",
+        "current_level": 0,
+        "next_level": 1,
+        "at_max_level": false,
+        "costs": {
+          "stone": 8,
+          "timber": 8
+        },
+        "cost_silver": 0,
+        "duration_game_days": 8
+      },
+      {
+        "type": "pen",
+        "current_level": 0,
+        "next_level": 1,
+        "at_max_level": false,
+        "costs": {
+          "stone": 4,
+          "timber": 6
+        },
+        "cost_silver": 0,
+        "duration_game_days": 4
+      },
+      {
+        "type": "shipyard",
+        "current_level": 0,
+        "next_level": 1,
+        "at_max_level": false,
+        "costs": {
+          "stone": 12,
+          "timber": 24
+        },
+        "cost_silver": 0,
+        "duration_game_days": 12
+      },
+      {
+        "type": "silo",
+        "current_level": 0,
+        "next_level": 1,
+        "at_max_level": false,
+        "costs": {
+          "stone": 8,
+          "timber": 12
+        },
+        "cost_silver": 0,
+        "duration_game_days": 8
+      },
+      {
+        "type": "stable",
+        "current_level": 0,
+        "next_level": 1,
+        "at_max_level": false,
+        "costs": {
+          "stone": 8,
+          "timber": 12
+        },
+        "cost_silver": 0,
+        "duration_game_days": 8
+      },
+      {
+        "type": "stonequarry",
+        "current_level": 0,
+        "next_level": 1,
+        "at_max_level": false,
+        "costs": {
+          "stone": 8,
+          "timber": 6
+        },
+        "cost_silver": 0,
+        "duration_game_days": 6,
+        "new_site": true
+      },
+      {
+        "type": "temple",
+        "current_level": 2,
+        "next_level": 3,
+        "at_max_level": false,
+        "costs": {
+          "cedar": 8,
+          "stone": 96,
+          "timber": 32
+        },
+        "cost_silver": 0,
+        "duration_game_days": 48,
+        "god_id": "potnia",
+        "name": "Temple of Potnia"
+      },
+      {
+        "type": "temple",
+        "current_level": 0,
+        "next_level": 1,
+        "at_max_level": false,
+        "costs": {
+          "stone": 24,
+          "timber": 8
+        },
+        "cost_silver": 0,
+        "duration_game_days": 16,
+        "god_id": "velchanos",
+        "name": "Temple of Velchanos"
+      },
+      {
+        "type": "temple",
+        "current_level": 0,
+        "next_level": 1,
+        "at_max_level": false,
+        "costs": {
+          "stone": 24,
+          "timber": 8
+        },
+        "cost_silver": 0,
+        "duration_game_days": 16,
+        "god_id": "asterion",
+        "name": "Temple of Asterion"
+      },
+      {
+        "type": "temple",
+        "current_level": 0,
+        "next_level": 1,
+        "at_max_level": false,
+        "costs": {
+          "stone": 24,
+          "timber": 8
+        },
+        "cost_silver": 0,
+        "duration_game_days": 16,
+        "god_id": "sea_daimons_stillness",
+        "name": "Temple of the Sea Daimons of Stillness"
+      },
+      {
+        "type": "wall",
+        "current_level": 0,
+        "next_level": 1,
+        "at_max_level": false,
+        "costs": {
+          "stone": 4,
+          "timber": 12
+        },
+        "cost_silver": 0,
+        "duration_game_days": 6
+      },
+      {
+        "type": "winery",
+        "current_level": 0,
+        "next_level": 1,
+        "at_max_level": false,
+        "costs": {
+          "stone": 8,
+          "timber": 8
+        },
+        "cost_silver": 0,
+        "duration_game_days": 8
+      },
+      {
+        "type": "farm",
+        "current_level": 1,
+        "next_level": 2,
+        "at_max_level": false,
+        "costs": {
+          "stone": 8,
+          "timber": 12
+        },
+        "cost_silver": 0,
+        "duration_game_days": 8,
+        "hex_q": 43,
+        "hex_r": 6
+      }
+    ],
+    "buildings": [
+      {
+        "id": "80523f12-5dda-4fde-8831-57814a7a0321",
+        "type": "farm",
+        "level": 1,
+        "hex_q": 43,
+        "hex_r": 6
+      },
+      {
+        "id": "ccef046f-d4d7-4db4-bb02-b12053b6bcb2",
+        "type": "temple",
+        "level": 2,
+        "god_id": "potnia",
+        "name": "Temple of Potnia"
+      }
+    ],
+    "can_afford": [
+      {
+        "type": "stonequarry",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "market",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "wall",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "harbour",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "foundry",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "silo",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "farm",
+        "can_afford": false,
+        "next_level": 2
+      },
+      {
+        "type": "barracks",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "olive_press",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "mine",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "lumbermill",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "shipyard",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "stable",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "temple",
+        "can_afford": false,
+        "next_level": 3
+      },
+      {
+        "type": "winery",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "pen",
+        "can_afford": false,
+        "next_level": 1
+      }
+    ],
+    "can_recruit": [
+      {
+        "unit": "spearman",
+        "can_recruit": false,
+        "reasons": [
+          "needs a barracks"
+        ],
+        "upkeep_grain_per_tick": 0.5,
+        "upkeep_silver_per_tick": 0,
+        "upkeep_silver_net_per_tick": 0,
+        "sustainable": false
+      },
+      {
+        "unit": "war_chariot",
+        "can_recruit": false,
+        "reasons": [
+          "needs a stable",
+          "needs 20 bronze (have 0)",
+          "needs 8 cedar (have 0)",
+          "needs 8 timber (or cedar) (have 0)"
+        ],
+        "upkeep_grain_per_tick": 0.8,
+        "upkeep_silver_per_tick": 2,
+        "upkeep_silver_net_per_tick": 2,
+        "sustainable": false
+      },
+      {
+        "unit": "galley",
+        "can_recruit": false,
+        "reasons": [
+          "needs a shipyard",
+          "needs 30 timber (or cedar) (have 0)"
+        ],
+        "upkeep_grain_per_tick": 0.1,
+        "upkeep_silver_per_tick": 0,
+        "upkeep_silver_net_per_tick": 0,
+        "sustainable": false
+      },
+      {
+        "unit": "elite_infantry",
+        "can_recruit": false,
+        "reasons": [
+          "needs a barracks",
+          "needs a foundry",
+          "needs 16 bronze (have 0)"
+        ],
+        "upkeep_grain_per_tick": 0.6,
+        "upkeep_silver_per_tick": 0.75,
+        "upkeep_silver_net_per_tick": 0.75,
+        "sustainable": false
+      },
+      {
+        "unit": "war_galley",
+        "can_recruit": false,
+        "reasons": [
+          "needs a shipyard",
+          "needs a foundry",
+          "needs 100 cedar (have 0)"
+        ],
+        "upkeep_grain_per_tick": 0.25,
+        "upkeep_silver_per_tick": 0.25,
+        "upkeep_silver_net_per_tick": 0.25,
+        "sustainable": false
+      },
+      {
+        "unit": "merchantman",
+        "can_recruit": false,
+        "reasons": [
+          "needs a shipyard",
+          "needs 90 cedar (have 0)"
+        ],
+        "upkeep_grain_per_tick": 0.05,
+        "upkeep_silver_per_tick": 0,
+        "upkeep_silver_net_per_tick": 0,
+        "sustainable": false
+      }
+    ],
+    "culture": "minoan",
+    "divine_values": {
+      "bronze": 18.7,
+      "cedar": 1.7,
+      "copper": 1.7,
+      "fish": 1.7,
+      "grain": 1.7,
+      "incense": 6.8,
+      "livestock": 1.7,
+      "oil": 1.7,
+      "silver": 1.7,
+      "stone": 3.4,
+      "timber": 1.7,
+      "tin": 1.7,
+      "wine": 1.7
+    },
+    "food": {
+      "consumed": {},
+      "consumed_tick": null,
+      "consumption_per_tick": 5,
+      "coverage_ticks": 240,
+      "food_net_per_tick": 0.5999999999999996,
+      "goods": {
+        "fish": 0,
+        "grain": 1200,
+        "oil": 0,
+        "wine": 0
+      },
+      "growth_state": "growing",
+      "herd": {
+        "births_grain": 5,
+        "births_in": 5,
+        "births_next": 5,
+        "cap": 50,
+        "count": 50,
+        "next_birth_tick": 5
+      },
+      "production_per_tick": 5.6
+    },
+    "food_gubbar_placed": 3,
+    "food_gubbar_required": 3,
+    "food_net_per_tick_after_upkeep": -0.40000000000000036,
+    "food_self_sufficient": true,
+    "grain_consum_rate": 5,
+    "grain_prod_rate": 5.6,
+    "harvest_blessing": null,
+    "id": "6810d8d1-7129-461c-ae30-6151d7ae2f0b",
+    "kharis": 70,
+    "kharis_base_decay": 0.1,
+    "kharis_blessing_threshold": 60,
+    "kharis_cap": 75,
+    "kharis_city_count": 1,
+    "kharis_city_decay": 0,
+    "kharis_daily_decay": 0.2,
+    "kharis_devotion_idle": true,
+    "kharis_mood": "Favorable",
+    "kharis_net_known": true,
+    "kharis_net_per_tick": -0.2,
+    "kharis_per_temple_worker": 1.05,
+    "kharis_per_tick": 0,
+    "kharis_population": 1000,
+    "kharis_population_decay": 0.1,
+    "kharis_production_per_tick": 0,
+    "kharis_rate": 0,
+    "kharis_standing": {
+      "band": "Favorable",
+      "punishment_probability": 0,
+      "blessing_probability": 0.15,
+      "summary": "Kharis 70.0 (Favorable) \u00b7 about 15% chance of a spontaneous blessing each game day"
+    },
+    "kharis_wrath": {
+      "threshold": 15,
+      "daily_probability": 0.03,
+      "protection_remaining_days": 0
+    },
+    "kingdom_id": null,
+    "labor_pool": 1000,
+    "last_tick": {
+      "consumption": {},
+      "production": {
+        "grain": 5.6
+      },
+      "tick": 0
+    },
+    "max_temple_level": 2,
+    "name": "Lato",
+    "net_grain_per_tick_after_upkeep": -0.40000000000000036,
+    "net_silver_per_tick_after_upkeep": 0,
+    "next_citizen_growth_per_tick": 5,
+    "next_citizen_in_ticks": 20,
+    "next_citizen_progress": 0,
+    "owner_id": "64105729-6ea0-4425-a9e3-3bbd49b290dd",
+    "population": 1000,
+    "population_cap": 2000,
+    "resources": {
+      "bronze": {
+        "amount": 0,
+        "rate": 0,
+        "cap": 1000000
+      },
+      "cedar": {
+        "amount": 0,
+        "rate": 0,
+        "cap": 1000000
+      },
+      "copper": {
+        "amount": 0,
+        "rate": 0,
+        "cap": 1000000
+      },
+      "cult": {
+        "amount": 0,
+        "rate": 0,
+        "cap": 1000000
+      },
+      "fish": {
+        "amount": 0,
+        "rate": 0,
+        "cap": 2000
+      },
+      "grain": {
+        "amount": 1200,
+        "rate": 5.6,
+        "cap": 2000
+      },
+      "horses": {
+        "amount": 0,
+        "rate": 0,
+        "cap": 1000000
+      },
+      "incense": {
+        "amount": 0,
+        "rate": 0,
+        "cap": 1000000
+      },
+      "livestock": {
+        "amount": 50,
+        "rate": 0,
+        "cap": 1000000
+      },
+      "oil": {
+        "amount": 0,
+        "rate": 0,
+        "cap": 2000
+      },
+      "pottery": {
+        "amount": 0,
+        "rate": 0,
+        "cap": 1000000
+      },
+      "purple": {
+        "amount": 0,
+        "rate": 0,
+        "cap": 1000000
+      },
+      "silver": {
+        "amount": 120,
+        "rate": 0,
+        "cap": 960
+      },
+      "stone": {
+        "amount": 0,
+        "rate": 0,
+        "cap": 1000000
+      },
+      "timber": {
+        "amount": 0,
+        "rate": 0,
+        "cap": 1000000
+      },
+      "tin": {
+        "amount": 0,
+        "rate": 0,
+        "cap": 1000000
+      },
+      "wine": {
+        "amount": 0,
+        "rate": 0,
+        "cap": 2000
+      }
+    },
+    "settlement_cap": {
+      "max": 5,
+      "used": 1
+    },
+    "silo_level": 0,
+    "state": "active",
+    "storage": [
+      {
+        "good_key": "bronze",
+        "amount": 0,
+        "cap": 1000000,
+        "net_per_tick": 0,
+        "incoming": 0,
+        "full_in_ticks": null,
+        "warning": false
+      },
+      {
+        "good_key": "cedar",
+        "amount": 0,
+        "cap": 1000000,
+        "net_per_tick": 0,
+        "incoming": 0,
+        "full_in_ticks": null,
+        "warning": false
+      },
+      {
+        "good_key": "copper",
+        "amount": 0,
+        "cap": 1000000,
+        "net_per_tick": 0,
+        "incoming": 0,
+        "full_in_ticks": null,
+        "warning": false
+      },
+      {
+        "good_key": "cult",
+        "amount": 0,
+        "cap": 1000000,
+        "net_per_tick": 0,
+        "incoming": 0,
+        "full_in_ticks": null,
+        "warning": false
+      },
+      {
+        "good_key": "fish",
+        "amount": 0,
+        "cap": 2000,
+        "net_per_tick": 0,
+        "incoming": 0,
+        "full_in_ticks": null,
+        "warning": false
+      },
+      {
+        "good_key": "grain",
+        "amount": 1200,
+        "cap": 2000,
+        "net_per_tick": -0.40000000000000036,
+        "incoming": 0,
+        "full_in_ticks": null,
+        "warning": false
+      },
+      {
+        "good_key": "horses",
+        "amount": 0,
+        "cap": 1000000,
+        "net_per_tick": 0,
+        "incoming": 0,
+        "full_in_ticks": null,
+        "warning": false
+      },
+      {
+        "good_key": "incense",
+        "amount": 0,
+        "cap": 1000000,
+        "net_per_tick": 0,
+        "incoming": 0,
+        "full_in_ticks": null,
+        "warning": false
+      },
+      {
+        "good_key": "livestock",
+        "amount": 50,
+        "cap": 1000000,
+        "net_per_tick": 0,
+        "incoming": 0,
+        "full_in_ticks": null,
+        "warning": false
+      },
+      {
+        "good_key": "oil",
+        "amount": 0,
+        "cap": 2000,
+        "net_per_tick": 0,
+        "incoming": 0,
+        "full_in_ticks": null,
+        "warning": false
+      },
+      {
+        "good_key": "pottery",
+        "amount": 0,
+        "cap": 1000000,
+        "net_per_tick": 0,
+        "incoming": 0,
+        "full_in_ticks": null,
+        "warning": false
+      },
+      {
+        "good_key": "purple",
+        "amount": 0,
+        "cap": 1000000,
+        "net_per_tick": 0,
+        "incoming": 0,
+        "full_in_ticks": null,
+        "warning": false
+      },
+      {
+        "good_key": "silver",
+        "amount": 120,
+        "cap": 960,
+        "net_per_tick": 0,
+        "incoming": 0,
+        "full_in_ticks": null,
+        "warning": false
+      },
+      {
+        "good_key": "stone",
+        "amount": 0,
+        "cap": 1000000,
+        "net_per_tick": 0,
+        "incoming": 0,
+        "full_in_ticks": null,
+        "warning": false
+      },
+      {
+        "good_key": "timber",
+        "amount": 0,
+        "cap": 1000000,
+        "net_per_tick": 0,
+        "incoming": 0,
+        "full_in_ticks": null,
+        "warning": false
+      },
+      {
+        "good_key": "tin",
+        "amount": 0,
+        "cap": 1000000,
+        "net_per_tick": 0,
+        "incoming": 0,
+        "full_in_ticks": null,
+        "warning": false
+      },
+      {
+        "good_key": "wine",
+        "amount": 0,
+        "cap": 2000,
+        "net_per_tick": 0,
+        "incoming": 0,
+        "full_in_ticks": null,
+        "warning": false
+      }
+    ],
+    "storm_no_fishing": 0,
+    "temple_capacity": 4,
+    "temple_offers": [
+      {
+        "settlement_id": "6810d8d1-7129-461c-ae30-6151d7ae2f0b",
+        "name": "Lato",
+        "building_id": "ccef046f-d4d7-4db4-bb02-b12053b6bcb2",
+        "god_id": "potnia",
+        "temple": "Temple of Potnia",
+        "required_goods": {
+          "grain": 0.25
+        },
+        "alternatives": {
+          "fish": 0.25,
+          "silver": 0.25,
+          "timber": 0.25
+        },
+        "stock": {
+          "fish": 0,
+          "grain": 1200,
+          "silver": 120,
+          "timber": 0
+        },
+        "offering": {
+          "grain": 0.25
+        },
+        "fed": true
+      }
+    ],
+    "temple_staffed": 0,
+    "temples": [
+      {
+        "building_id": "ccef046f-d4d7-4db4-bb02-b12053b6bcb2",
+        "god_id": "potnia",
+        "name": "Temple of Potnia",
+        "level": 2,
+        "staffed": 0,
+        "capacity": 4
+      }
+    ],
+    "training_units": [],
+    "walls": 0
+  },
+  "profile": {
+    "kharis_standing": {
+      "band": "Favorable",
+      "punishment_probability": 0,
+      "blessing_probability": 0.15,
+      "summary": "Kharis 70.0 (Favorable) \u00b7 about 15% chance of a spontaneous blessing each game day"
+    },
+    "wanax_name": "Karpathia",
+    "founded_tick": 0,
+    "cities": 1,
+    "population": 1000,
+    "kharis": 70
+  }
+}

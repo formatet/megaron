@@ -1,0 +1,6 @@
+--- FAIL: TestKharisBandNoticeBoundariesAndExternalChanges (0.03s)
+    transition_notices_test.go:193: new band notice lacks saved standing
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.031s
+FAIL
+» färsk DB på migration 217 · commit 0f645cab+ändringar

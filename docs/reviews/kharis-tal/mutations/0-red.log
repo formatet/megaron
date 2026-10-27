@@ -1,0 +1,6 @@
+--- FAIL: TestStandingCurrentConsequences (0.00s)
+    standing_test.go:29: amount=60 temple=true shield=0: {Band:Favorable PunishmentProbability:0 BlessingProbability:0 Summary:Kharis 60.0 (Favorable) · no spontaneous blessing or punishment at this standing}
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.005s
+FAIL
+» färsk DB på migration 217 · commit 0f645cab+ändringar

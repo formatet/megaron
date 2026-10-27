@@ -1,0 +1,8 @@
+2026/10/27 08:45:49 INFO player registered id=9ded3d97-b02e-485d-b8a1-4a002e6678e4 username=profile-a-71b6ef3d-76d9-4eda-9da9-c024b7f4aace
+2026/10/27 08:45:49 INFO player registered id=dd75a7da-d4a7-470e-b148-96f10517cc3b username=profile-b-839a9c82-e710-41cb-ad2b-cc342a3fd5a7
+--- FAIL: TestWorldMe_OwnWorldIsolation (0.16s)
+    world_me_test.go:88: missing profile meaning: {KharisStanding:{Band: PunishmentProbability:0 BlessingProbability:0 Summary:} WanaxName:Nestor FoundedTick:0x11c6f5b01a30 Cities:2 Population:1600 Kharis:15}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.166s
+FAIL
+» färsk DB på migration 217 · commit 0f645cab+ändringar

@@ -1,0 +1,43 @@
+{
+  "health": {
+    "commit": "0f645cab+kharis-tal",
+    "migration": 217,
+    "status": "ok"
+  },
+  "source_unchanged": true,
+  "shots": [
+    {
+      "file": "1-Wrathful-1280.png",
+      "summary": "Kharis 4.0 (Wrathful) \u00b7 about 3% chance of divine punishment each game day"
+    },
+    {
+      "file": "1-Wrathful-390.png",
+      "summary": "Kharis 4.0 (Wrathful) \u00b7 about 3% chance of divine punishment each game day"
+    },
+    {
+      "file": "1-Favorable-1280.png",
+      "summary": "Kharis 70.0 (Favorable) \u00b7 about 15% chance of a spontaneous blessing each game day"
+    },
+    {
+      "file": "1-Favorable-390.png",
+      "summary": "Kharis 70.0 (Favorable) \u00b7 about 15% chance of a spontaneous blessing each game day"
+    },
+    {
+      "file": "2-Wrathful-1280.png",
+      "summary": "Kharis 4.0 (Wrathful) \u00b7 about 3% chance of divine punishment each game day"
+    },
+    {
+      "file": "2-Wrathful-390.png",
+      "summary": "Kharis 4.0 (Wrathful) \u00b7 about 3% chance of divine punishment each game day"
+    },
+    {
+      "file": "2-Favorable-1280.png",
+      "summary": "Kharis 70.0 (Favorable) \u00b7 about 15% chance of a spontaneous blessing each game day"
+    },
+    {
+      "file": "2-Favorable-390.png",
+      "summary": "Kharis 70.0 (Favorable) \u00b7 about 15% chance of a spontaneous blessing each game day"
+    }
+  ],
+  "fixture": "Fresh register/join/found; explicit temple2 and kharis4/70 fixtures; real API/Keryx/Firefox, twice each at1280/390. No response or DOM substitution."
+}
