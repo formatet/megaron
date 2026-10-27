@@ -18,3 +18,8 @@ test('realm labels are escaped and absent projections do not invent kharis',()=>
  const html=realmKultHTML({temples:[{id:'x',name:'<temple>',city_name:'<city>',offer:{}}],prayers:[],unbuilt_temples:[]});
  assert.ok(html.includes('&lt;temple&gt;'));assert.ok(html.includes('&lt;city&gt;'));assert.ok(!html.includes('Kharis 0'));
 });
+
+test('realm workforce is labelled across the realm, not here',()=>{
+ const html=realmKultHTML({kharis:{temple_staffed:3,temple_capacity:6},temples:[],prayers:[],unbuilt_temples:[]});
+ assert.ok(html.includes('Temple workers across your realm'));assert.ok(!html.includes('Temple workers here'));
+});

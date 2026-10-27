@@ -67,6 +67,7 @@ try:
   for command in [['status'],['rite','--list']]:
    text=run(str(tmp/'keryx'),*command,env=clienv)
    for city in cities:assert city['name'] in text,(command,city,text)
+   if command==['status']:assert text.count('workers 1/2')==3,text
    (OUT/('keryx-'+command[0]+'.txt')).write_text(text)
   with sync_playwright() as pw:
    browser=pw.firefox.launch()

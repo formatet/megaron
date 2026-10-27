@@ -19,8 +19,13 @@ func TestRealmCultCLIThreeTemplesAndCityPrayerRouting(t *testing.T) {
 		prayers = append(prayers, cultPrayer{SettlementID: "s-" + city, ProvinceID: "p-" + city, CityName: city, HasTemple: true, riteAvailablePrayer: riteAvailablePrayer{ID: god, God: god, Name: "Prayer", Affordable: true, CanPrepareOffering: true}})
 	}
 	round3Client(t, func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/provinces/default") {
+			json.NewEncoder(w).Encode(map[string]any{"settlement": map[string]any{"name": "Mycenae", "population": 1000, "resources": map[string]any{}}})
+			return
+		}
 		if !strings.HasSuffix(r.URL.Path, "/cult") {
-			t.Errorf("unexpected API %s", r.URL.Path)
+			json.NewEncoder(w).Encode([]any{})
+			return
 		}
 		json.NewEncoder(w).Encode(cultView{Kharis: map[string]any{}, Temples: temples, Prayers: prayers, Unbuilt: []cultUnbuilt{{CityName: "Kommos", Name: "Potnia"}}})
 	})
@@ -40,7 +45,7 @@ func TestRealmCultCLIThreeTemplesAndCityPrayerRouting(t *testing.T) {
 	if !strings.Contains(filtered, "--settlement s-Kommos") || strings.Contains(filtered, "s-Amnissos") {
 		t.Fatal(filtered)
 	}
-	status, err := captureStdout(t, func() error { printRealmTemples(newClient(cfg)); return nil })
+	status, err := captureStdout(t, statusCmd().Execute)
 	if err != nil {
 		t.Fatal(err)
 	}
