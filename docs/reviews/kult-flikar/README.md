@@ -4,7 +4,7 @@
 
 Kult läste böner från en vald stad och dolde därmed andra gudars tempel och böner. Nu läser Kult en ägarprivat riksvy med tre flikar. Varje bön, arbetsplatslänk och rivning behåller sin stad; samma gud i två städer ger två skilda handlingsrader. Byggda tempel och direkt betalbara böner visas först.
 
-Slutkod `b85a8309` (bas `b1080116`); hel färsk Go GRÖN (world154.930s),808JS/vet/fyra tidsgrindar och10mutanter gröna. Native12tabbilder+1rivningskvitto från riktiga flöden. Deploykvittot tillkommer efter utrullning. Ingen migration, balansändring eller ändrad eventtolkning. **Bevisar kedjegrinden** genom att spelaren kan hitta och använda sina verkliga tempel och böner.
+Slutkod `b85a8309` (bas `b1080116`); hel färsk Go GRÖN (world154.930s),808JS/vet/fyra tidsgrindar och10mutanter gröna. Native12tabbilder+1rivningskvitto från riktiga flöden. LIVE `41702d6d`; ny process/ren217/samma värld och grundantal/åtta byte-exakta statiska filer verifierade. Anonymt anrop till riksvyn ger401. Se `deploy-proof.json`. Ingen migration, balansändring eller ändrad eventtolkning. **Bevisar kedjegrinden** genom att spelaren kan hitta och använda sina verkliga tempel och böner.
 
 ## Slice-kontrakt och baslinje
 

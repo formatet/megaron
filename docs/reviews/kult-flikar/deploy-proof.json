@@ -1,0 +1,56 @@
+{
+  "ground": {
+    "migration": {
+      "version": 217,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 4498
+      }
+    ],
+    "players": 15,
+    "settlements": 6,
+    "units": 18,
+    "goods": 102,
+    "gossip": 993
+  },
+  "health": {
+    "commit": "41702d6",
+    "migration": 217,
+    "status": "ok"
+  },
+  "checkout": "41702d6de5980aef5f82033a670d5ae4bb1eef5d",
+  "static": {
+    "web/static/codex/kharis.md": "c189fe04c5ce7be5352e3cba2c65ad315508662098f93035ea9a256e9911aaf0",
+    "web/static/codex/temples.md": "0185edb1d2def6c850b5ae057c0137b2f35998c8cdf2cf60177e95db2cdaba71",
+    "web/static/js/megaron/ui/drawers/inline_handlers.test.mjs": "437cafc491274dfbcdde9e94ae859265b0fbbbfaa628d3eadc5a01cc3232d95f",
+    "web/static/js/megaron/ui/drawers/kult.js": "80057085ab6becde910f89c03ae0adbc94d3316e241f6264f8eca709fbf17409",
+    "web/static/js/megaron/ui/drawers/kult.test.mjs": "89a0698a1d7c98e53b1da548a05a2efa2d13e8ce84b3cb7dcdbbac459d83b76d",
+    "web/static/js/megaron/ui/drawers/kult_kharis.js": "4afd05c1bf3292271f250af129c4312a435ea1ac615640634addc5b1a422980b",
+    "web/static/js/megaron/ui/drawers/kult_realm.js": "22d6f3179ea9679fca8389be896864f50a6a6bd46dfd7d7e0f497b568c00b8d6",
+    "web/static/js/megaron/ui/drawers/kult_realm.test.mjs": "a45cf7573ae5b732597d01a0e981beeddf9c5204aedf389a7d6f5f68c6038619"
+  },
+  "cult_anonymous_status": 401,
+  "expected": "41702d6de5980aef5f82033a670d5ae4bb1eef5d",
+  "before": {
+    "migration": {
+      "version": 217,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 4495
+      }
+    ],
+    "players": 15,
+    "settlements": 6,
+    "units": 18,
+    "goods": 102,
+    "gossip": 992
+  }
+}
