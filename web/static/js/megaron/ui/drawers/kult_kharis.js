@@ -21,7 +21,7 @@ export function kharisDecayHTML(pd) {
 
 }
 
-export function kharisNetView(pd) {
+export function kharisNetView(pd, scope = 'city') {
   const out = { netHtml: '', idleHtml: '' };
   if (!pd) return out;
 
@@ -36,7 +36,7 @@ export function kharisNetView(pd) {
   }
 
   if (Number.isInteger(pd.temple_staffed) && Number.isInteger(pd.temple_capacity)) {
-    out.netHtml += '<div class="stat-row"><span class="sr-label">Temple workers here</span><span class="sr-val">' + pd.temple_staffed + '/' + pd.temple_capacity + '</span></div>';
+    out.netHtml += '<div class="stat-row"><span class="sr-label">' + (scope === 'realm' ? 'Temple workers across your realm' : 'Temple workers here') + '</span><span class="sr-val">' + pd.temple_staffed + '/' + pd.temple_capacity + '</span></div>';
   }
   if (pd.kharis_devotion_idle === true && !(pd.kharis > pd.kharis_cap)) {
     out.idleHtml = '<p class="kult-warn">Temple workplaces remain unfilled — place citizens in your temples in City.</p>';

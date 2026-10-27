@@ -134,66 +134,7 @@ func riteCmd() *cobra.Command {
 			// the province status endpoint, which exposes `available_prayers`. Works for
 			// any culture — no hardcoded akhaier_* IDs.
 			if list {
-				// The same city a cast would use (--settlement, else the capital),
-				// not the login default — GPT19: a colony without a temple listed
-				// "no temple" while the cast from the capital succeeded.
-				listProvince := cfg.ProvinceID
-				provs, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces", cfg.WorldID))
-				if err != nil {
-					return err
-				}
-				var listMarkers []map[string]any
-				_ = json.Unmarshal(provs, &listMarkers)
-				if sid := riteSettlement(listMarkers, settlementID); sid != "" {
-					for _, m := range listMarkers {
-						if msid, _ := m["settlement_id"].(string); msid == sid {
-							listProvince, _ = m["id"].(string)
-							break
-						}
-					}
-				}
-				data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces/%s", cfg.WorldID, listProvince))
-				if err != nil {
-					return err
-				}
-				if jsonMode {
-					printRawJSON(data)
-					return nil
-				}
-				var p riteProvinceStatus
-				if err := json.Unmarshal(data, &p); err != nil {
-					return fmt.Errorf("parse response: %w", err)
-				}
-				if len(p.Settlement.AvailablePrayers) == 0 {
-					fmt.Println("No prayers available (no settlement here, or none for this culture).")
-					return nil
-				}
-				// Gynnsamhet is read via the gods' mood, never a computed percentage
-				// (Timothy 2026-07-11 hard invariant — "gudarna är inte maskiner").
-				fmt.Printf("The gods are %s (kharis %s).\n%s\n\n", p.Settlement.KharisMood, prayerKharisReading(p.Settlement.Kharis), p.Settlement.KharisStanding.Summary)
-				printDivineValues(p.Settlement.DivineValues)
-				fmt.Printf("%-28s  %-20s  %-8s  %-22s  %-45s  %-12s  %s\n",
-					"Prayer ID", "Name", "MinKhar", "Offering", "Effect", "Ready", "Cooldown")
-				for _, pr := range p.Settlement.AvailablePrayers {
-					ready, cooldownStr := prayerReadiness(pr)
-					fmt.Printf("%-28s  %-20s  %-8.0f  %-22s  %-45s  %-12s  %s\n",
-						pr.ID, pr.Name, pr.MinKharis, formatOffering(pr.Offering), pr.Effect, ready, cooldownStr)
-					// The temple's reading: an offering is composed now, and its
-					// worth turns on world scarcity a Wanax cannot see through the
-					// fog. The temple knows — so it says so here, where the choice
-					// is made.
-					if taste := favouredGoods(pr.Favours); taste != "" {
-						fmt.Printf("    %s favours %s", pr.God, taste)
-						if pr.OfferingBaseline > 0 {
-							fmt.Printf("  ·  expects an offering worth ~%.0f (--offer good=amount)", pr.OfferingBaseline)
-						}
-						fmt.Println()
-					} else if pr.God != "" {
-						fmt.Printf("    %s\n", pr.God)
-					}
-				}
-				fmt.Println("\nKharis is a requirement, never spent. Everyday prayers answer when their requirements are met; legacy prayers may remain silent. An accepted offering is spent either way.")
-				return nil
+				return listRealmPrayers(c, settlementID)
 			}
 
 			// Resolve own capital settlement if --settlement not given. Markers are kept

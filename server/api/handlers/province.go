@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -32,6 +31,38 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+type prayerRow struct {
+	CanPrepareOffering  bool               `json:"can_prepare_offering"`
+	GodID               string             `json:"god_id,omitempty"`
+	ID                  string             `json:"id"`
+	Name                string             `json:"name"`
+	God                 string             `json:"god"`
+	Temple              string             `json:"temple,omitempty"` // the temple it is prayed at
+	EffectType          string             `json:"effect_type"`
+	Effect              string             `json:"effect"`
+	MinKharis           float64            `json:"min_kharis"`
+	Offering            map[string]float64 `json:"offering"`
+	UnavailableReason   string             `json:"unavailable_reason,omitempty"`
+	Affordable          bool               `json:"affordable"`
+	Default             bool               `json:"is_default"`
+	DeparturePending    bool               `json:"departure_pending,omitempty"`
+	ActiveRemainingDays int                `json:"active_remaining_game_days,omitempty"`
+	// Game-days, not wall-clock minutes: CooldownTicks is a TICK count
+	// and one tick IS one day (megaron_plan_ticket_ar_dygnet). The old
+	// cooldown_remaining_minutes reported 1440 for a 24-tick cooldown —
+	// true, unreadable, and in the wrong unit. Rounds UP, so a cooldown
+	// with any time left never reports 0.
+	CooldownRemainingDays int `json:"cooldown_remaining_game_days,omitempty"`
+	// The temple's reading of the gods (temenos_prayers_komposition_plan.md).
+	// An offering is now composed, and its worth depends on world scarcity —
+	// data no Wanax can observe through the fog. The temple is exactly the
+	// institution that would know, so it tells you: what this god favours,
+	// and what the traditional recipe is currently reckoned to be worth.
+	// Without this the composition mechanic is unplayable noise.
+	Favours          map[string]float64 `json:"favours,omitempty"`
+	OfferingBaseline float64            `json:"offering_baseline,omitempty"`
+}
 
 // maxParallelBuilds caps how many buildings a single settlement may have
 // queued at once (Build's queue guard, below). Hoisted to package scope
@@ -477,60 +508,6 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			templeOffers = offers
 		}
 
-		// Temple presence — a prayer needs its own god's temple (ORDER 15); a
-		// legacy prayer without a god takes any temple, as the rite handler does.
-		var templeGods []string
-		_ = h.pool.QueryRow(r.Context(),
-			`SELECT coalesce(array_agg(god_id), '{}') FROM buildings WHERE settlement_id = $1 AND building_type = 'temple'`,
-			sett.ID,
-		).Scan(&templeGods)
-		hasTemple := len(templeGods) > 0
-		hasTempleFor := func(god string) bool { return (god == "" && hasTemple) || slices.Contains(templeGods, god) }
-
-		// available_prayers: the settlement culture's prayers with full affordability:
-		// material offering costs + kharis tier gate + temple presence.
-		// All three gates mirror the real Rite handler so affordable:true is trustworthy.
-		// cooldown_remaining_game_days is >0 when the prayer is on cooldown (game-days,
-		// not wall clock — one tick IS one day).
-		// Effect (Plan A / A7, megaron_kult_legibilitet_plan.md) surfaces spec.Description
-		// so a Wanax knows what a prayer does before casting it. DESIGN INVARIANT
-		// (Timothy 2026-07-11, HARD): never add a success_chance/odds field here — the
-		// gods are not machines. Gynnsamhet is read via the settlement's kharis_mood
-		// sibling field (kharisToMood, web.go), not a computed percentage.
-		type prayerRow struct {
-			CanPrepareOffering  bool               `json:"can_prepare_offering"`
-			GodID               string             `json:"god_id,omitempty"`
-			ID                  string             `json:"id"`
-			Name                string             `json:"name"`
-			God                 string             `json:"god"`
-			Temple              string             `json:"temple,omitempty"` // the temple it is prayed at
-			EffectType          string             `json:"effect_type"`
-			Effect              string             `json:"effect"`
-			MinKharis           float64            `json:"min_kharis"`
-			Offering            map[string]float64 `json:"offering"`
-			UnavailableReason   string             `json:"unavailable_reason,omitempty"`
-			Affordable          bool               `json:"affordable"`
-			Default             bool               `json:"is_default"`
-			DeparturePending    bool               `json:"departure_pending,omitempty"`
-			ActiveRemainingDays int                `json:"active_remaining_game_days,omitempty"`
-			// Game-days, not wall-clock minutes: CooldownTicks is a TICK count
-			// and one tick IS one day (megaron_plan_ticket_ar_dygnet). The old
-			// cooldown_remaining_minutes reported 1440 for a 24-tick cooldown —
-			// true, unreadable, and in the wrong unit. Rounds UP, so a cooldown
-			// with any time left never reports 0.
-			CooldownRemainingDays int `json:"cooldown_remaining_game_days,omitempty"`
-			// The temple's reading of the gods (temenos_prayers_komposition_plan.md).
-			// An offering is now composed, and its worth depends on world scarcity —
-			// data no Wanax can observe through the fog. The temple is exactly the
-			// institution that would know, so it tells you: what this god favours,
-			// and what the traditional recipe is currently reckoned to be worth.
-			// Without this the composition mechanic is unplayable noise.
-			Favours          map[string]float64 `json:"favours,omitempty"`
-			OfferingBaseline float64            `json:"offering_baseline,omitempty"`
-		}
-		// The gods' current reckoning — one read for the whole prayer list.
-		divineValues, _ := religion.LoadDivineValues(r.Context(), h.pool, worldID)
-
 		// Devotion + what this settlement's temple can employ.
 		templeStaff, err := economy.LoadTempleStaffing(r.Context(), h.pool, sett.ID)
 		if err != nil {
@@ -538,98 +515,10 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		var prayerTick int
-		if err := h.pool.QueryRow(r.Context(), `SELECT current_tick FROM worlds WHERE id=$1`, worldID).Scan(&prayerTick); err != nil {
-			writeError(w, http.StatusInternalServerError, "could not read prayer time")
+		prayers, divineValues, prayerErr := h.loadPrayerRows(r.Context(), sett, worldID, kharisNow, goodsStock)
+		if prayerErr != nil {
+			writeError(w, 500, "could not load prayers")
 			return
-		}
-		prayers := []prayerRow{}
-		for _, pid := range religion.CulturePrayers[string(sett.CultureID)] {
-			spec := religion.PrayerSpecs[pid]
-			afford := hasTempleFor(spec.GodID) && kharisNow >= spec.MinKharis
-			// Opening the offering form does not require the traditional recipe.
-			canPrepareOffering := afford
-			if afford {
-				for g, need := range spec.Offering {
-					if !province.GoodsAffordable(goodsStock[g], need) {
-						afford = false
-						break
-					}
-				}
-			}
-			// Check cooldown: same query as the Rite handler.
-			// Use sett.OwnerID (not request auth) so spectators see the owner's cooldown.
-			var cooldownRemainingDays int
-			if spec.GodID == "" && spec.CooldownTicks > 0 && sett.OwnerID != nil {
-				var lastCast time.Time
-				if cdErr := h.pool.QueryRow(r.Context(),
-					`SELECT created_at FROM events
-					 WHERE world_id = $1
-					   AND event_type = 'RiteCast'
-					   AND payload->>'player_id' = $2
-					   AND payload->>'prayer' = $3
-					   AND (payload->>'success')::boolean = true
-					   AND stream_id = $4
-					 ORDER BY created_at DESC LIMIT 1`,
-					worldID, sett.OwnerID.String(), pid, sett.ID,
-				).Scan(&lastCast); cdErr == nil {
-					elapsed := h.clk.Now().Sub(lastCast)
-					remaining := tick.RealUntil(spec.CooldownTicks, 0) - elapsed
-					if remaining > 0 {
-						cooldownRemainingDays = tick.GameDaysLeft(remaining)
-						afford = false
-						canPrepareOffering = false
-					}
-				}
-			}
-			activeRemainingDays := 0
-			if spec.GodID != "" && sett.OwnerID != nil {
-				var cdErr error
-				cooldownRemainingDays, cdErr = religion.GodCooldownRemaining(r.Context(), h.pool, worldID, *sett.OwnerID, spec.GodID, prayerTick)
-				if cdErr != nil {
-					writeError(w, http.StatusInternalServerError, "could not read divine waiting time")
-					return
-				}
-				activeRemainingDays, cdErr = religion.PrayerActiveRemaining(r.Context(), h.pool, sett.ID, *sett.OwnerID, spec.EffectType, prayerTick)
-				if cdErr != nil {
-					writeError(w, http.StatusInternalServerError, "could not read active prayer")
-					return
-				}
-				if cooldownRemainingDays > 0 || activeRemainingDays > 0 {
-					afford = false
-					canPrepareOffering = false
-				}
-			}
-			departurePending := activeRemainingDays > 0 && (spec.EffectType == religion.EffectNextLandDeparture || spec.EffectType == religion.EffectNextShipDeparture)
-			if departurePending {
-				activeRemainingDays = 0
-			}
-			reason := ""
-			temple := ""
-			if spec.GodID != "" {
-				temple = religion.TempleName(spec.GodID)
-			}
-			if !hasTempleFor(spec.GodID) {
-				reason = "no temple"
-				if temple != "" {
-					reason = "no " + temple
-				}
-			} else if kharisNow < spec.MinKharis {
-				reason = "insufficient kharis"
-			} else if !afford && cooldownRemainingDays == 0 && activeRemainingDays == 0 && !departurePending {
-				// Timed/pending states already have precise structured fields.
-				// A generic reason would hide them in the prayer list.
-				reason = "insufficient offering"
-			}
-			prayers = append(prayers, prayerRow{DeparturePending: departurePending, CanPrepareOffering: canPrepareOffering,
-				GodID: spec.GodID, ID: spec.ID, Name: spec.Name, God: spec.God, Temple: temple, EffectType: spec.EffectType,
-				Default: spec.ID == religion.DefaultBattleFrenzyFor(string(sett.CultureID)), ActiveRemainingDays: activeRemainingDays,
-				Effect:    spec.Description,
-				MinKharis: spec.MinKharis, Offering: spec.Offering, Affordable: afford, UnavailableReason: reason,
-				CooldownRemainingDays: cooldownRemainingDays,
-				Favours:               religion.FavoursFor(spec),
-				OfferingBaseline:      religion.TraditionalBaseline(spec, divineValues),
-			})
 		}
 
 		// Silver is authoritative in settlement_goods (mig 057 silver_unify); the

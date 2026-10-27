@@ -1,4 +1,4 @@
-import { showInlineResult } from '../inline_result.js';
+import { confirmInline, showInlineResult } from '../inline_result.js';
 import { State, ownCapital } from '../../state.js';
 import { fetchAuth } from '../../api.js';
 import { esc } from '../format.js';
@@ -6,6 +6,8 @@ import { fmtEta } from '../time.js';
 import { fmtDays } from '../fmt_num.js';
 import { serverNow } from '../../clock.js';
 import { renderLockedActions } from '../misc.js';
+import { demolishPrompt, demolishResultLine } from '../demolish.js';
+import { realmKultHTML, prayerActionID } from './kult_realm.js';
 import { divineValuesHTML } from './kult_values.js';
 import { offerRowHTML, offeringFromEntries, offerFoodText } from './kult_offer.js';
 import { kharisNetView, kharisDecayHTML, kharisRulesHTML, kharisStandingHTML } from './kult_kharis.js';
@@ -21,85 +23,47 @@ const activeKultCity=()=>kultCityForID(State.provinceData||[],dispatchCity(),own
 const activeKultSettlement=()=>{const city=activeKultCity();return city?.settlement_id||(!dispatchCity()?State.MY_SETTLEMENT_ID:null);};
 export async function openKultFromDispatch(id){
  if(!kultCityForID(State.provinceData||[],id,null))return;
- dispatchCityID=id;dispatchWorldID=State.WORLD_ID;window.openDrawer?.('kult');await loadKultDrawer();
+ dispatchCityID=id;dispatchWorldID=State.WORLD_ID;kultTab='prayers';window.openDrawer?.('kult');await loadKultDrawer();
 }
 let kultLoadSeq = 0;
+let kultTab = 'kharis';
 export async function loadKultDrawer() {
-  const seq = ++kultLoadSeq;
-  const el = document.getElementById('kult-body');
-  el.innerHTML = '<div class="loading" style="padding:.5rem">Loading…</div>';
+ const seq=++kultLoadSeq, world=State.WORLD_ID;
+ const el=document.getElementById('kult-body');
+ el.innerHTML='<div class="loading">Loading…</div>';
+ try {
+  const response=await fetchAuth('/api/v1/worlds/'+world+'/cult');
+  if(!response.ok)throw new Error('cult unavailable');
+  const view=await response.json();
+  const locked=await renderLockedActions('cult');
+  if(seq!==kultLoadSeq||world!==State.WORLD_ID)return;
+  prayerFood.clear();
+  prayerCatalog=(view.prayers||[]).map(p=>({...p,action_id:prayerActionID(p)}));
+  el.innerHTML=realmKultHTML(view,kultTab,prayerStatusHTML)+locked;
+  el.querySelectorAll?.('[data-cult-tab]').forEach(button=>button.addEventListener('click',()=>{
+   kultTab=button.dataset.cultTab;
+   el.querySelectorAll('[data-cult-tab]').forEach(b=>{b.classList.toggle('active',b===button);b.setAttribute('aria-selected',b===button?'true':'false');});
+   el.querySelectorAll('[data-cult-panel]').forEach(panel=>panel.hidden=panel.dataset.cultPanel!==kultTab);
+  }));
+  el.querySelectorAll?.('[data-cult-demolish]').forEach(button=>button.addEventListener('click',()=>demolishCultTemple(view.temples.find(t=>t.id===button.dataset.cultDemolish))));
+  el.querySelectorAll?.('[data-cult-city]').forEach(button=>button.addEventListener('click',()=>window.openCitySettlement(button.dataset.cultCity)));
+ }catch(error){if(seq===kultLoadSeq&&world===State.WORLD_ID)el.innerHTML='<p class="empty-state">Could not load your realm’s cult. Try again.</p>';}
+}
 
-  const capital = activeKultCity();
-  if (!capital) {
-    el.innerHTML = '<p class="empty-state" style="padding:1rem">No settlement.</p>';
-    return;
-  }
-
-  try {
-    const [sr, pr] = await Promise.all([
-      fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/settlements/' + activeKultSettlement()),
-      fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/provinces/' + capital.id),
-    ]);
-    if (!sr.ok) throw new Error();
-    const sd = await sr.json();
-    const pd = pr.ok ? (await pr.json()).settlement : null;
-    const prayers = (pd && pd.available_prayers) || [];
-    prayerCatalog = prayers;
-    cityFood = (pd && pd.food) || null;
-    const MOOD_LABELS = { Favorable:'Favorable', Indifferent:'Indifferent', Suspicious:'Suspicious', Wrathful:'Wrathful' };
-    const MOOD_COLORS = { Favorable:'var(--safe-text)', Indifferent:'var(--text-dim)', Suspicious:'var(--border)', Wrathful:'var(--danger)' };
-
-    const mood      = sd.divine_mood  || 'Indifferent';
-    const cultLevel = sd.cult_level   || 'enkel';
-
-    let html = '<div class="dsec"><div class="dsec-title">Cult in '+esc(capital.name)+'</div><div class="dsec-title">Divine favour</div>' +
-      '<div class="stat-row"><span class="sr-label">Mood</span>' +
-      '<span class="sr-val" style="color:' + (MOOD_COLORS[mood] || 'inherit') + '">' + (MOOD_LABELS[mood] || mood) + '</span></div>';
-    // Net kharis (temple gain − decay) — the figure that answers "did raising
-    // devotion actually help", never computed client-side. See kult_kharis.js.
-    const { netHtml, idleHtml } = kharisNetView(pd);
-    html += kharisStandingHTML(pd) + netHtml + kharisDecayHTML(pd) + idleHtml + kharisRulesHTML(pd);
-    html += '</div>';
-
-    // Cult level — derived from kharis (read-only; set by daily temple tick)
-    html += '<div class="dsec"><div class="dsec-title">Cult level</div>' +
-      '<div class="stat-row"><span class="sr-label">Level</span>' +
-      '<span class="sr-val">' + cultLevelLabel(cultLevel) + '</span></div></div>';
-
-    // The server plans the entire local gift; render its plan without repricing.
-    if (pd && Array.isArray(pd.temple_offers)) {
-      html += templeOfferingsHTML(pd.temple_offers);
-    }
-
-    html += divineValuesHTML(pd?.divine_values);
-
-    // Prayer catalog
-    html += '<div class="dsec"><div class="dsec-title">Prayers</div>' + kharisStandingHTML(pd);
-    if (!prayers.length) {
-      html += '<p class="empty-state">No prayers available — build a temple first.</p>';
-    } else {
-      const frenzyUntil = sd.battle_frenzy_until ? new Date(sd.battle_frenzy_until) : null;
-      const frenzyActive = frenzyUntil && frenzyUntil.getTime() > serverNow();
-      prayers.forEach(p => {
-        const offeringStr = Object.entries(p.offering || {}).map(([g,q]) => `${q} ${g}`).join(' + ') || '—';
-        const statusHtml = prayerStatusHTML(p, frenzyActive, sd.battle_frenzy_until);
-
-        html += `<div class="stat-row" style="align-items:flex-start;flex-wrap:wrap">
-          <span class="sr-label">${esc(p.name)} <span style="color:var(--text-dim);font-size:.68rem">(${esc(p.god)}, ≥${p.min_kharis} kharis — requirement, not spent${p.temple ? ', ' + esc(p.temple) : ''})</span><br>
-          <span style="color:var(--text-dim);font-size:.7rem">${esc(p.effect || '')}<br>traditional offering: ${offeringStr}${p.god_id ? '<br>The god answers when the requirements are met. More offering will not improve the answer.' : ''}</span></span>
-          <span class="sr-val">${statusHtml}</span>
-        </div><div class="offer-row" id="offer-row-${esc(p.id)}"></div>`;
-      });
-    }
-    html += '</div>';
-
-    html += await renderLockedActions('cult');
-    if (seq !== kultLoadSeq) return;
-    el.innerHTML = html;
-  } catch(_) {
-    if (seq !== kultLoadSeq) return;
-    el.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load.</p>';
-  }
+async function demolishCultTemple(temple){
+ if(!temple)return;
+ const host=document.getElementById('cult-demolish-'+temple.id);
+ const url='/api/v1/worlds/'+State.WORLD_ID+'/provinces/'+temple.province_id+'/buildings';
+ try{
+  const response=await fetchAuth(url);if(!response.ok)throw new Error();
+  const building=(await response.json()).find(b=>b.id===temple.id);
+  if(!building?.demolition_kharis){showInlineResult(host,'Temple consequences are unavailable. Try again.',true);return;}
+  confirmInline(host,demolishPrompt(temple.name+' in '+temple.city_name,building.demolition_kharis),async()=>{
+   const res=await fetchAuth(url+'/'+temple.id,{method:'DELETE'});const result=await res.json();
+   if(!res.ok){showInlineResult(host,result.error||'Could not demolish',true);return;}
+   await loadKultDrawer();showInlineResult('kult-body',demolishResultLine(temple.name,result.citizens_lifted,result.demolition_kharis));
+  },{confirmLabel:'Demolish',cancelLabel:'Keep it'});
+ }catch(_){showInlineResult(host,'Could not load demolition consequences. Try again.',true);}
 }
 
 const TEMPLE_GOOD_ORDER = ['grain', 'fish', 'timber', 'silver'];
@@ -148,25 +112,28 @@ export function cultLevelLabel(cultLevel) {
 }
 
 let prayerCatalog = [];
-let cityFood = null;
+const prayerFood = new Map();
 
 // Offer opens the offering row under the prayer; nothing is sent yet.
 export async function okRite(prayerID) {
-  const prayer = prayerCatalog.find(p => p.id === prayerID);
+  const prayer = prayerCatalog.find(p => p.action_id === prayerID || p.id === prayerID);
   const host = document.getElementById('offer-row-' + prayerID);
   if (!prayer || !host) return;
   const stock = {};
   try {
-    const r = await fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/provinces/' + activeKultCity().id + '/goods');
-    if (r.ok) (await r.json()).forEach(g => { stock[g.key] = g.amount; });
-  } catch (_) { /* fields still show the recipe */ }
-  host.innerHTML = offerRowHTML(prayer, stock);
+    const base='/api/v1/worlds/'+State.WORLD_ID+'/provinces/'+prayer.province_id;
+    const [r,status]=await Promise.all([fetchAuth(base+'/goods'),fetchAuth(base)]);
+    if(!r.ok||!status.ok)throw new Error('city unavailable');
+    (await r.json()).forEach(g=>{stock[g.key]=g.amount;});
+    prayerFood.set(prayerID,(await status.json()).settlement?.food);
+  } catch (_) {showInlineResult(host,'Could not load this temple’s city. Try again.',true);return;}
+  host.innerHTML = offerRowHTML({...prayer,id:prayerID}, stock);
   // The food line follows the fields as the gift is changed.
   const foodLine = host.querySelector('[data-offer-food]');
   const inputs = Array.from(host.querySelectorAll('.offer-input'));
   const update = () => {
     const offering = Object.fromEntries(inputs.map(i => [i.dataset.good, Number(i.value) || 0]));
-    if (foodLine) foodLine.textContent = offerFoodText(offering, stock, cityFood, activeKultCity().name);
+    if (foodLine) foodLine.textContent = offerFoodText(offering, stock, prayerFood.get(prayerID), prayer.city_name);
   };
   inputs.forEach(i => i.addEventListener('input', update));
   update();
@@ -178,7 +145,7 @@ export function cancelOffering(prayerID) {
 }
 
 export async function bringOffering(prayerID) {
-  const prayer = prayerCatalog.find(p => p.id === prayerID);
+  const prayer = prayerCatalog.find(p => p.action_id === prayerID || p.id === prayerID);
   const host = document.getElementById('offer-row-' + prayerID);
   const inputs = host ? Array.from(host.querySelectorAll('.offer-input')) : [];
   if (prayer?.can_prepare_offering && !prayer.affordable && !inputs.some(i => Number.isFinite(Number(i.value)) && Number(i.value) > 0)) {
@@ -191,15 +158,17 @@ export async function bringOffering(prayerID) {
 
 // No offering = the prayer's traditional recipe on the server.
 async function castRite(prayerID, offering, host) {
-  const body = { prayer: prayerID || '' };
+  const prayer=prayerCatalog.find(p=>p.action_id===prayerID||p.id===prayerID);
+  if(!prayer)return;
+  const body = { prayer: prayer.id };
   if (offering) body.offering = offering;
-  const r = await fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/settlements/' + activeKultSettlement() + '/rite', {
+  const r = await fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/settlements/' + prayer.settlement_id + '/rite', {
     method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body),
   });
   const d = await r.json().catch(function(){return {};});
   if (r.ok) {
     await loadKultDrawer();
-    showInlineResult('kult-body', prayerResultText(d, prayerCatalog.find(p => p.id === prayerID)));
+    showInlineResult('kult-body', prayerResultText(d, prayerCatalog.find(p => p.action_id === prayerID || p.id === prayerID)));
   } else {
     showInlineResult(host || 'kult-body', d.error || 'Rite failed', true);
   }

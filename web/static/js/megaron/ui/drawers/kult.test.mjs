@@ -119,8 +119,7 @@ test('Kult controller renders the realm breakdown and templeless net from the pr
     kharis_net_known:true,kharis_net_per_tick:-1.1,kharis_per_tick:0,temple_offers:[],available_prayers:[]};
   globalThis.fetch=async url=>{
     calls.push(url);
-    if(url.endsWith('/settlements/capital'))return new Response(JSON.stringify({divine_mood:'Indifferent',cult_level:'vardig'}));
-    if(url.endsWith('/provinces/province'))return new Response(JSON.stringify({settlement:pd}));
+    if(url.endsWith('/cult'))return new Response(JSON.stringify({kharis:pd,temples:[],prayers:[],unbuilt_temples:[]}));
     if(url.endsWith('/actions'))return new Response('[]');
     assert.fail('Unexpected API request '+url);
   };
@@ -129,7 +128,7 @@ test('Kult controller renders the realm breakdown and templeless net from the pr
   assert.match(body.innerHTML,/-1.1 kharis per game day/);
   assert.match(body.innerHTML,/No temples/);
   assert.doesNotMatch(body.innerHTML,/Passive|144|holds for/);
-  assert.equal(calls.length,3);
+  assert.equal(calls.length,2);
 });
 
 test('ORDER15: each temple names its own offering row; prayer shows the temple it needs', () => {
@@ -171,4 +170,22 @@ test('dispatch cult city selection is exact and cannot fall back to the capital 
  assert.equal(kultCityForID(rows,'gone',capital),null);
  assert.equal(kultCityForID(rows,'foreign',capital),null);
  assert.equal(kultCityForID(rows,null,capital),capital);
+});
+
+test('same god in two cities: offering from second row posts only to that city',async t=>{
+ const {State}=await import('../../state.js');const {loadKultDrawer,bringOffering}=await import('./kult.js');
+ const state={WORLD_ID:State.WORLD_ID};const old={document:globalThis.document,fetch:globalThis.fetch,localStorage:globalThis.localStorage};
+ t.after(()=>{Object.assign(State,state);Object.assign(globalThis,old);});
+ const result={};const body={innerHTML:'',querySelector:()=>result};
+ globalThis.document={getElementById:id=>id==='kult-body'?body:null,addEventListener(){}};
+ globalThis.localStorage={getItem:()=>null};State.WORLD_ID='realm-routing';const posts=[];
+ const prayers=['one','two'].map(id=>({id:'same-prayer',settlement_id:id,province_id:'p-'+id,city_name:id,has_temple:true,affordable:true,can_prepare_offering:true}));
+ globalThis.fetch=async(url,options={})=>{
+  if(url.endsWith('/cult'))return new Response(JSON.stringify({kharis:{},temples:[],prayers,unbuilt_temples:[]}));
+  if(url.endsWith('/actions'))return new Response('[]');
+  if(options.method==='POST'){posts.push([url,JSON.parse(options.body)]);return new Response(JSON.stringify({success:true,message:'Answered'}));}
+  assert.fail('Unexpected '+url);
+ };
+ await loadKultDrawer();await bringOffering('two__same-prayer');
+ assert.deepEqual(posts,[['/api/v1/worlds/realm-routing/settlements/two/rite',{prayer:'same-prayer'}]]);
 });

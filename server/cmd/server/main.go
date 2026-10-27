@@ -432,6 +432,7 @@ func main() {
 		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/foreign-units", wh.ForeignUnits)
 		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/rural-projections", wh.RuralProjections)
 		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/wanaxes", wh.Wanaxes)
+		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/cult", ph.Cult)
 		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/cities", wh.Cities)
 		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/diplomacy", wh.Diplomacy)
 
