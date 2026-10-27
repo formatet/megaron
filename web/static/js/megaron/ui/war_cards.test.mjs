@@ -231,3 +231,11 @@ test('recall and redirect receipts qualify the first meeting when the Runner fol
   assert.doesNotMatch(line,/reaches the unit|still present/);
  }
 });
+
+test('route-bound Ships name the route in port and freight while keeping the current leg',()=>{
+ for(const status of ['garrison','freighting','laid_up']){
+  const html=renderUnitCard(unit({type:'merchantman',category:'naval',status,bound_route_id:'route',bound_route_name:'Lato → <Petras>',freighting_note:'carrying goods to Faraway'}));
+  assert.match(html,/on the Lato → &lt;Petras&gt; route/);
+  if(status==='freighting')assert.match(html,/carrying goods to Faraway/);
+ }
+});

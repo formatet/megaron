@@ -115,9 +115,9 @@ try:
      text=page.locator('#wtab-army').inner_text();assert not any(t.text_content()=='People' for t in page.locator('#wtab-army .dsec-title').all()) and 'Nomadic Host' not in text,text
      assert 'Bronze Guard' in text and 'Chariot' in text and 'on the Lato → Amnissos route' in text,text
      elite=next(u for u in rows if u['type']=='elite_infantry');page.locator('#ucard-'+elite['id']).scroll_into_view_if_needed();shot(page,f'{cycle}-land-{width}')
-     page.locator('#wtab-army .dsec-title').filter(has_text='Ships',exact=True).scroll_into_view_if_needed();shot(page,f'{cycle}-ships-{width}')
+     page.locator('#wtab-army .dsec-title').filter(has_text='Ships').scroll_into_view_if_needed();shot(page,f'{cycle}-ships-{width}')
      page.locator('#war-body [data-tab="movements"]').click();text=page.locator('#wtab-movements').inner_text();assert soldier['display_name'] in text and 'Blue Dolphin' not in text and 'stone' not in text,text;shot(page,f'{cycle}-marches-{width}')
-     page.locator('#trig-economy').click();page.wait_for_selector('#economy-body [data-tab="automation"]');page.locator('#economy-body [data-tab="automation"]').click();page.wait_for_selector('#ec-so-list [data-cargo-id]');text=page.locator('#ec-so-list').inner_text();assert 'Ship' in text and 'Caravan' in text and 'Amnissos' in text and 'Petras' in text,text
+     page.locator('#drawer-war .drawer-close').click();page.locator('#trig-economy').click();page.wait_for_selector('#economy-body [data-tab="automation"]');page.locator('#economy-body [data-tab="automation"]').click();page.wait_for_selector('#ec-so-list [data-cargo-id]');text=page.locator('#ec-so-list').inner_text();assert 'Ship' in text and 'Caravan' in text and 'Amnissos' in text and 'Petras' in text,text
      page.locator('#ec-so-list').scroll_into_view_if_needed();shot(page,f'{cycle}-routes-{width}');assert not errors,errors;ctx.close()
    browser.close()
   assert before==hashes(),'production sources changed during capture'

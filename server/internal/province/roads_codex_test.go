@@ -36,7 +36,7 @@ func TestCodexRoadsArticleMatchesCode(t *testing.T) {
 	}
 	factors := []struct{ label, category string }{
 		{"Foot soldiers", "land"}, {"Runners and messengers", CategoryCourier},
-		{"Caravans", CategoryCaravan}, {"War chariots", CategoryWarChariot},
+		{"Caravans", CategoryCaravan}, {"Chariots", CategoryWarChariot},
 	}
 	for _, f := range factors {
 		rt, _ := RoadTicks(f.category)

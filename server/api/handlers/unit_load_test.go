@@ -281,7 +281,7 @@ func TestUnitLoad_EmporosThreeAndFourthRejected(t *testing.T) {
 		if rec.Code != want {
 			t.Fatalf("passenger%d returned%d %s want%d", passenger, rec.Code, rec.Body.String(), want)
 		}
-		if passenger == 4 && !strings.Contains(rec.Body.String(), "at most 3 land units") {
+		if passenger == 4 && !strings.Contains(rec.Body.String(), "at most 3 land forces") {
 			t.Fatalf("fourth passenger refusal = %s, want it to name the limit", rec.Body.String())
 		}
 	}
