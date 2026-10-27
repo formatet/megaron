@@ -24,7 +24,7 @@ try:
   for binary,pkg in [('temenos','./cmd/server'),('keryx','./cmd/keryx')]:run('go','build','-ldflags','-X main.buildCommit='+commit,'-o',str(tmp/binary),pkg,cwd=ROOT/'server',env=clean)
   pg=launch('pg','postgres:16-alpine',['-e','POSTGRES_PASSWORD=proof','-e','POSTGRES_DB=proof']);redis=launch('redis','redis:7-alpine',[])
   for _ in range(100):
-   if subprocess.run(['docker','exec',containers[0],'pg_isready','-U','postgres','-q'],capture_output=True).returncode==0:break
+   if subprocess.run(['docker','exec',containers[0],'pg_isready','-h','127.0.0.1','-U','postgres','-q'],capture_output=True).returncode==0:break
    time.sleep(.25)
   with socket.socket() as s:s.bind(('127.0.0.1',0));port=s.getsockname()[1]
   base=f'http://127.0.0.1:{port}'
@@ -87,7 +87,7 @@ try:
        for city in cities:assert city['name'] in panel.inner_text()
       filename=f'{cycle}-{tab}-{width}.png';page.screenshot(path=str(OUT/filename));shots.append({'file':filename,'tab':tab})
      # Manage opens the correct city's ordinary City surface.
-     target=view['temples'][-1];page.locator('[data-cult-temple="'+target['id']+'"] [data-cult-city]').click()
+     target=next(t for t in view['temples'] if t['city_name']=='Kommos');page.locator('[data-cult-temple="'+target['id']+'"] [data-cult-city]').click()
      page.wait_for_function('(name)=>document.querySelector("#city-drawer-title")?.textContent.includes(name)',arg=target['city_name'])
      assert not errors,errors
      ctx.close()
@@ -105,9 +105,20 @@ try:
    assert sent.value.status==200,sent.value.text();(OUT/'rite.json').write_text(json.dumps(sent.value.json(),indent=2));after_stock=sql(f"SELECT json_agg(t) FROM(SELECT settlement_id,good_key,amount FROM settlement_goods WHERE settlement_id IN ('{cities[1]['id']}','{cities[2]['id']}') ORDER BY settlement_id,good_key)t")
    before_rows=json.loads(before_stock);after_rows=json.loads(after_stock);other=cities[1]['id'];assert [r for r in before_rows if r['settlement_id']==other]==[r for r in after_rows if r['settlement_id']==other];assert before_stock!=after_stock
    (OUT/'offering-stock.json').write_text(json.dumps({'before':before_rows,'after':after_rows,'selected_city':prayer['settlement_id']},indent=2))
+   # Fresh quote, cancel without DELETE, then confirmed demolition of this city's temple.
+   page.locator('[data-cult-tab="temples"]').click();victim=next(t for t in api(wp+'/cult',token=token)['temples'] if t['city_name']=='Kommos')
+   row=page.locator('[data-cult-temple="'+victim['id']+'"]');deletes=[];page.on('request',lambda request:deletes.append(request.url) if request.method=='DELETE' else None)
+   row.locator('[data-cult-demolish]').click();confirm=page.locator('#cult-demolish-'+victim['id']);confirm.get_by_role('button',name='Keep it',exact=True).click();assert not deletes,deletes
+   row.locator('[data-cult-demolish]').click()
+   with page.expect_response(lambda response: response.request.method=='DELETE' and response.url.endswith('/buildings/'+victim['id'])) as removed:
+    confirm.get_by_role('button',name='Demolish',exact=True).click()
+   assert removed.value.status==200,removed.value.text();page.wait_for_selector('[data-cult-temple="'+victim['id']+'"]',state='detached')
+   remaining=api(wp+'/cult',token=token)['temples'];assert len(remaining)==2 and not any(t['id']==victim['id'] for t in remaining),remaining
+   assert all(t['city_name']!='Kommos' for t in remaining)
+   (OUT/'demolition.json').write_text(json.dumps({'response':removed.value.json(),'remaining':remaining,'delete_requests':deletes},indent=2));page.screenshot(path=str(OUT/'demolition-success-1280.png'))
    ctx.close();browser.close()
   assert before==hashes(),'production sources changed during capture'
-  (OUT/'proof.json').write_text(json.dumps({'health':health,'source_unchanged':True,'shots':shots,'fixture':'Fresh register/join/found+explicit second/third own cities and three temples/two gods. Actual staffing APIs; native tab/city routing twice1280/390. Actual Kommos offering API+DB confirms other same-god city unchanged.'},indent=2))
+  (OUT/'proof.json').write_text(json.dumps({'health':health,'source_unchanged':True,'shots':shots,'fixture':'Fresh register/join/found+explicit second/third own cities and three temples/two gods. Actual staffing APIs; native tab/city routing twice1280/390. Actual Kommos offering API+DB confirms other same-god city unchanged; fresh demolition quote, cancel sends no DELETE, confirmed demolition removes only Kommos temple.'},indent=2))
   print('PASS real realm cult three cities/two gods, native tabs/city routing and exact-city offering',flush=True)
 finally:
  if proc is not None:proc.terminate();proc.wait(timeout=15)

@@ -1,0 +1,17 @@
+--- FAIL: TestRealmCultCLIThreeTemplesAndCityPrayerRouting (0.00s)
+    cmd_cult_test.go:53: 1 citizen = 100 people
+        Mycenae []  Pop: 1.0k people  Labor: 0 citizens  Walls: 0/3
+        
+        Food stores not reported.
+        
+        Resources
+          (per game day; food and army balances are itemized below)
+          ⚠ Timber production ~0 — timber gates harbour (16)/barracks (8)/foundry (8)/temple (8). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).
+          Kharis        0  () · net not reported
+          Cult upkeep not reported
+        
+        
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.003s
+FAIL
+» färsk DB på migration 217 · commit b85a8309+ändringar

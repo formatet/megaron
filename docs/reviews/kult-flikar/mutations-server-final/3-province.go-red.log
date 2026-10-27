@@ -1,0 +1,8 @@
+2026/10/27 20:18:30 INFO player registered id=e8c7757f-96fc-47f6-a527-5086a41fd3db username=cult-owner-234ef851-1047-4051-87c5-f8d154f4c745
+2026/10/27 20:18:30 INFO player registered id=ce9af56b-d7c7-479b-9c3f-800b9ff0642c username=cult-other-58792f9f-d246-4592-9480-5d4cfb91d7ff
+--- FAIL: TestRealmCultThreeTemplesTwoGodsAndOwnerPrivacy (0.16s)
+    cult_test.go:152: realm/city prayer drift {CanPrepareOffering:true GodID:asterion ID:minoan_asterion_thread Name:The Thread Shows a Path God:Asterion Temple:Temple of Asterion EffectType:next_land_departure Effect:Your next land caravan or Runner from this city travels faster; the caravan is harder to intercept. MinKharis:5 Offering:map[silver:3 timber:4] UnavailableReason: Affordable:true Default:false DeparturePending:false ActiveRemainingDays:0 CooldownRemainingDays:0 Favours:map[] OfferingBaseline:0} vs {CanPrepareOffering:false GodID:asterion ID:minoan_asterion_thread Name:The Thread Shows a Path God:Asterion Temple:Temple of Asterion EffectType:next_land_departure Effect:Your next land caravan or Runner from this city travels faster; the caravan is harder to intercept. MinKharis:5 Offering:map[silver:3 timber:4] UnavailableReason:insufficient kharis Affordable:false Default:false DeparturePending:false ActiveRemainingDays:0 CooldownRemainingDays:0 Favours:map[] OfferingBaseline:0}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.160s
+FAIL
+» färsk DB på migration 217 · commit b85a8309+ändringar

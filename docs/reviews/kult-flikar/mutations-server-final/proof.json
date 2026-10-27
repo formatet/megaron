@@ -1,0 +1,34 @@
+{
+  "mutants": [
+    {
+      "file": "server/api/handlers/cult.go",
+      "old": "AND owner_id=$2 AND state",
+      "new": "AND owner_id IS NOT NULL AND $2::uuid IS NOT NULL AND state",
+      "named_red": "TestRealmCultThreeTemplesTwoGodsAndOwnerPrivacy",
+      "assertion_red": true
+    },
+    {
+      "file": "server/api/handlers/cult.go",
+      "old": "if p.Affordable {",
+      "new": "if false && p.Affordable {",
+      "named_red": "TestRealmCultThreeTemplesTwoGodsAndOwnerPrivacy",
+      "assertion_red": true
+    },
+    {
+      "file": "server/api/handlers/cult_prayers.go",
+      "old": "canPrepareOffering := afford",
+      "new": "canPrepareOffering := false",
+      "named_red": "TestRealmCultThreeTemplesTwoGodsAndOwnerPrivacy",
+      "assertion_red": true
+    },
+    {
+      "file": "server/api/handlers/province.go",
+      "old": "worldID, kharisNow, goodsStock)",
+      "new": "worldID, 0, goodsStock)",
+      "named_red": "TestRealmCultThreeTemplesTwoGodsAndOwnerPrivacy",
+      "assertion_red": true
+    }
+  ],
+  "byte_identical_restore": true,
+  "fresh_restored_green": true
+}

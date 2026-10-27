@@ -1,0 +1,77 @@
+Wanax Dikonaros · today 20:20
+
+1 citizen = 100 people
+Tylissos [minoan]  Pop: 2.0k people  Labor: 20 citizens  Walls: 0/3  Settlements: 3/5
+Walls hold 2.0k. The next wall needs a Granary of level 1 (yours: 0) — `keryx build --type silo`.
+Population 2000 — not growing: food net -4.4 per game day (needs more than 0)
+Next citizen 0 / 100 · not growing
+This is Tylissos. You have 3 cities — `keryx settlements` lists them, `keryx status --province <id>` shows another.
+
+No trade contacts yet — trade needs a foreign settlement within your vision. Run `keryx cities` to see known/rumoured neighbours (march outward or colonise to reach one), then `keryx message --to <name>` or `keryx trade-offer` once one is visible.
+
+Food for 4000.0 game days at current consumption (10000 grain, 10000 fish, 10000 oil, 10000 wine)
+Herd 10000 / 50 — full: new animals are eaten, then lost. A pen raises the cap.
+Storage: fish 10.0k/10.0k — full in 0 game days. Send goods away or trade.
+Storage: grain 10.0k/10.0k — full in 0 game days. Send goods away or trade.
+Storage: oil 10.0k/10.0k — full in 0 game days. Send goods away or trade.
+Storage: wine 10.0k/10.0k — full in 0 game days. Send goods away or trade.
+
+Last today 20:20: 1 goods produced, 0 consumed  ·  keryx ticklog for details
+
+Resources
+  (per game day; food and army balances are itemized below)
+  Silver    10.0k  —
+  Food     production 5.6 − people eat 10.0 = net -4.4 per game day (before army)
+  Grain     10.0k  production 5.6 per game day  (6 citizens needed for people on best food slots · 3 on food)
+  Automatic food: 0.50 grain + 0.00 fish per game day without placed citizens (nearby ground 0.50 grain; 0 people outside whole citizens: 0.00 grain + 0.00 fish, a fraction of the best food worker)
+  Army     eats 1 food per game day → food net -5.4 per game day after army
+  Silver   net +0.0 per game day after army pay
+  Fish      10.0k  —
+  Timber    10.0k  —
+  Stone     10.0k  —
+  Copper    10.0k  —
+  Tin       10.0k  —
+  Bronze    10.0k  —
+  ⚠ Timber production ~0 — timber gates harbour (16)/barracks (8)/foundry (8)/temple (8). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).
+  ⚠ Unmined deposit in the catchment: tin, silver — build a mine on its hex to extract it (a hex holds one building; if another stands there, demolish it first with `keryx demolish`)
+  Kharis       70  (Favorable) · ceiling 50 · net -1.1 per game day (upkeep only above ceiling)
+  Kharis 70.0 (Favorable) · about 15% chance of a spontaneous blessing each game day
+  Upkeep of the cult: 0.10 base + 3 cities cost 0.40 + 6000 residents cost 0.60 = 1.10 kharis per game day
+  Temple production: 0.00 kharis per game day
+  Everyday prayers work at a level-1 temple. Spontaneous blessings need 60 kharis and a maintained temple. Only a level-2 temple or higher lets kharis grow that far. Kharis retained above a lowered ceiling still counts.
+  Below 15 kharis: 3% chance of divine punishment per game day, with or without a temple.
+  → kharis declines through daily cult upkeep; temple workers and offerings do not raise it while it is above the ceiling 50. Once below, temples can raise it again, up to the ceiling.
+Temples across your realm
+  Temple of Asterion — Amnissos · level 1 · workers 1/2
+  Temple of Asterion in Amnissos: reference 0.25 grain per game day — alternatives: 0.25 fish or 0.25 timber or 0.25 silver — stock: 1e+04 grain, 1e+04 fish, 1e+04 timber, 1e+04 silver — next gift: 0.25 grain  ✓
+  Manage: keryx staff temple +1 --province 55a352c1-7f63-488d-b14d-9b4d5b9f8db9 --god asterion
+  Demolish: keryx demolish --type temple --god asterion --province 55a352c1-7f63-488d-b14d-9b4d5b9f8db9
+  Temple of Asterion — Kommos · level 1 · workers 1/2
+  Temple of Asterion in Kommos: reference 0.25 grain per game day — alternatives: 0.25 fish or 0.25 timber or 0.25 silver — stock: 1e+04 grain, 1e+04 fish, 1e+04 timber, 1e+04 silver — next gift: 0.25 grain  ✓
+  Manage: keryx staff temple +1 --province 3dbb7214-32ac-43d7-a789-fe8e90c59755 --god asterion
+  Demolish: keryx demolish --type temple --god asterion --province 3dbb7214-32ac-43d7-a789-fe8e90c59755
+  Temple of the Sea Daimons of Stillness — Tylissos · level 1 · workers 1/2
+  Temple of the Sea Daimons of Stillness in Tylissos: reference 0.25 grain per game day — alternatives: 0.25 fish or 0.25 timber or 0.25 silver — stock: 1e+04 grain, 1e+04 fish, 1e+04 timber, 1e+04 silver — next gift: 0.25 grain  ✓
+  Manage: keryx staff temple +1 --province fb697183-5214-4aae-b35a-77be727d75da --god sea_daimons_stillness
+  Demolish: keryx demolish --type temple --god sea_daimons_stillness --province fb697183-5214-4aae-b35a-77be727d75da
+Not built
+  Temple of Potnia — Amnissos · open this city to build
+  Temple of Velchanos — Amnissos · open this city to build
+  Temple of the Sea Daimons of Stillness — Amnissos · open this city to build
+  Temple of Potnia — Kommos · open this city to build
+  Temple of Velchanos — Kommos · open this city to build
+  Temple of the Sea Daimons of Stillness — Kommos · open this city to build
+  Temple of Potnia — Tylissos · open this city to build
+  Temple of Velchanos — Tylissos · open this city to build
+  Temple of Asterion — Tylissos · open this city to build
+
+Army (garrison in Tylissos)
+  Spearmen    200
+      af4ee174-0e8a-4aa0-ac39-85e0e78994b8  100
+      dd39fd18-790c-407c-8e27-81bdd8651320  100
+  Upkeep     1 food, 0 silver per game day  (everything the city pays — including field units)
+  Field units and other cities are shown in `keryx unit list`.
+
+Buildings
+  Farm         L1
+  Temple of the Sea Daimons of Stillness L1

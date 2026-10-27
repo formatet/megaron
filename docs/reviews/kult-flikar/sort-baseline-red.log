@@ -1,0 +1,8 @@
+» färsk DB på migration 217 · commit ae6afdb7+ändringar
+2026/10/27 20:16:58 INFO player registered id=e82fb4ed-2d8a-4803-9198-74d92bf3c97e username=cult-owner-c000c0ba-fd07-484c-bfc6-656d63fa4209
+2026/10/27 20:16:58 INFO player registered id=78c602b1-2946-4acd-860c-d3eb1c5ee028 username=cult-other-95521350-c90b-4f24-8662-580db36bde85
+--- FAIL: TestRealmCultThreeTemplesTwoGodsAndOwnerPrivacy (0.13s)
+    cult_test.go:94: affordable prayer sorted after one needing a composed offering or unavailable temple
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.138s
+FAIL

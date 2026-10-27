@@ -1,0 +1,367 @@
+{
+  "before": [
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "bronze",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "cedar",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "copper",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "cult",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "fish",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "grain",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "horses",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "incense",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "livestock",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "oil",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "pottery",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "purple",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "shipbuilding",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "silver",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "stone",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "timber",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "tin",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "wine",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "bronze",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "cedar",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "copper",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "cult",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "fish",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "grain",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "horses",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "incense",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "livestock",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "oil",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "pottery",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "purple",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "shipbuilding",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "silver",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "stone",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "timber",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "tin",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "wine",
+      "amount": 10000
+    }
+  ],
+  "after": [
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "bronze",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "cedar",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "copper",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "cult",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "fish",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "grain",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "horses",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "incense",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "livestock",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "oil",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "pottery",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "purple",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "shipbuilding",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "silver",
+      "amount": 9997
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "stone",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "timber",
+      "amount": 9996
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "tin",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "245ab88b-814f-4723-9062-b7a74bafb31c",
+      "good_key": "wine",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "bronze",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "cedar",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "copper",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "cult",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "fish",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "grain",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "horses",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "incense",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "livestock",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "oil",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "pottery",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "purple",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "shipbuilding",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "silver",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "stone",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "timber",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "tin",
+      "amount": 10000
+    },
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "good_key": "wine",
+      "amount": 10000
+    }
+  ],
+  "selected_city": "245ab88b-814f-4723-9062-b7a74bafb31c"
+}

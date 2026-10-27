@@ -1,0 +1,48 @@
+{
+  "mutants": [
+    {
+      "file": "web/static/js/megaron/ui/drawers/kult_realm.js",
+      "old": "p.settlement_id + '__' + p.id",
+      "new": "p.id",
+      "test": "three temples and two gods",
+      "assertion_red": true
+    },
+    {
+      "file": "web/static/js/megaron/ui/drawers/kult.js",
+      "old": "prayer.settlement_id + '/rite'",
+      "new": "'wrong-city' + '/rite'",
+      "test": "same god in two cities",
+      "assertion_red": true
+    },
+    {
+      "file": "web/static/js/megaron/ui/drawers/kult_kharis.js",
+      "old": "Temple workers across your realm",
+      "new": "Temple workers here",
+      "test": "realm workforce is labelled",
+      "assertion_red": true
+    },
+    {
+      "file": "server/cmd/keryx/cmd_cult.go",
+      "old": "p.SettlementID, p.ID",
+      "new": "p.ProvinceID, p.ID",
+      "test": "TestRealmCultCLIThreeTemplesAndCityPrayerRouting",
+      "assertion_red": true
+    },
+    {
+      "file": "server/cmd/keryx/cmd_status.go",
+      "old": "realmCultShown := printRealmTemples(c)",
+      "new": "realmCultShown := false",
+      "test": "TestRealmCultCLIThreeTemplesAndCityPrayerRouting",
+      "assertion_red": true
+    },
+    {
+      "file": "server/cmd/keryx/cmd_rite.go",
+      "old": "return listRealmPrayers(c, settlementID)",
+      "new": "return nil",
+      "test": "TestRiteListReadsTheCastsCity",
+      "assertion_red": true
+    }
+  ],
+  "exact_restore": true,
+  "restored_green": true
+}

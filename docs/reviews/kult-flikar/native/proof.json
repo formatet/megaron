@@ -1,0 +1,59 @@
+{
+  "health": {
+    "commit": "b85a8309+kult-tabs",
+    "migration": 217,
+    "status": "ok"
+  },
+  "source_unchanged": true,
+  "shots": [
+    {
+      "file": "1-kharis-1280.png",
+      "tab": "kharis"
+    },
+    {
+      "file": "1-prayers-1280.png",
+      "tab": "prayers"
+    },
+    {
+      "file": "1-temples-1280.png",
+      "tab": "temples"
+    },
+    {
+      "file": "1-kharis-390.png",
+      "tab": "kharis"
+    },
+    {
+      "file": "1-prayers-390.png",
+      "tab": "prayers"
+    },
+    {
+      "file": "1-temples-390.png",
+      "tab": "temples"
+    },
+    {
+      "file": "2-kharis-1280.png",
+      "tab": "kharis"
+    },
+    {
+      "file": "2-prayers-1280.png",
+      "tab": "prayers"
+    },
+    {
+      "file": "2-temples-1280.png",
+      "tab": "temples"
+    },
+    {
+      "file": "2-kharis-390.png",
+      "tab": "kharis"
+    },
+    {
+      "file": "2-prayers-390.png",
+      "tab": "prayers"
+    },
+    {
+      "file": "2-temples-390.png",
+      "tab": "temples"
+    }
+  ],
+  "fixture": "Fresh register/join/found+explicit second/third own cities and three temples/two gods. Actual staffing APIs; native tab/city routing twice1280/390. Actual Kommos offering API+DB confirms other same-god city unchanged; fresh demolition quote, cancel sends no DELETE, confirmed demolition removes only Kommos temple."
+}

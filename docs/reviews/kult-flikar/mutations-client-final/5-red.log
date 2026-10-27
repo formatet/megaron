@@ -1,0 +1,6 @@
+--- FAIL: TestRiteListReadsTheCastsCity (0.00s)
+    rite_list_settlement_test.go:35: rite --list read the login default, not the capital:
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL
+» färsk DB på migration 217 · commit b85a8309+ändringar

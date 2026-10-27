@@ -1,0 +1,8 @@
+2026/10/27 20:18:14 INFO player registered id=883e1ce7-6c48-4643-8e41-650226037a0a username=cult-owner-cf55002d-f51a-4d27-9bd6-a802d27593b3
+2026/10/27 20:18:14 INFO player registered id=ce8abd96-d3c2-4081-b31a-71932330072f username=cult-other-97e84405-8140-4320-9810-c233abb44115
+--- FAIL: TestRealmCultThreeTemplesTwoGodsAndOwnerPrivacy (0.13s)
+    cult_test.go:88: 500 {"error":"could not load realm cult"}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.135s
+FAIL
+» färsk DB på migration 217 · commit b85a8309+ändringar

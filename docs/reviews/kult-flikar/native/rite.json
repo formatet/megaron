@@ -1,0 +1,19 @@
+{
+  "effect": {
+    "departure_pending": true,
+    "time_factor": 0.75
+  },
+  "effect_type": "next_land_departure",
+  "kharis_spent": 0,
+  "message": "Asterion's thread waits for your next land caravan or Runner from this city.",
+  "mood": "Favorable",
+  "offer_multiplier": 1,
+  "offering_expected": 11.899999999999999,
+  "offering_value_unit": "worker_ticks",
+  "offering_verdict": "worthy \u2014 meets the prayer's requirement; more will not improve the answer",
+  "offering_work": 11.899999999999999,
+  "offering_worth": 11.899999999999999,
+  "prayer": "minoan_asterion_thread",
+  "success": true,
+  "valuation_version": 2
+}

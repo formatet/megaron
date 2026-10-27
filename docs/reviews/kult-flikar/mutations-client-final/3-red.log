@@ -1,0 +1,25 @@
+--- FAIL: TestRealmCultCLIThreeTemplesAndCityPrayerRouting (0.00s)
+    cmd_cult_test.go:38: missing city-specific cast Tylissos: Offering values — per unit, before each god's preferences; not trade prices:
+          Current offering values unavailable.
+        
+        Prayers across your realm — ready prayers first
+        Prayer — sea_daimons_stillness · Tylissos
+          sea_daimons_stillness · yes · —
+          Requires 0 kharis · traditional offering —
+          
+          Cast here: keryx rite --settlement p-Tylissos --prayer sea_daimons_stillness
+        Prayer — asterion · Amnissos
+          asterion · yes · —
+          Requires 0 kharis · traditional offering —
+          
+          Cast here: keryx rite --settlement p-Amnissos --prayer asterion
+        Prayer — asterion · Kommos
+          asterion · yes · —
+          Requires 0 kharis · traditional offering —
+          
+          Cast here: keryx rite --settlement p-Kommos --prayer asterion
+        Kharis is a requirement, never spent. Spontaneous blessings are separate from prayers.
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.003s
+FAIL
+» färsk DB på migration 217 · commit b85a8309+ändringar

@@ -693,3 +693,7 @@ checks process/ground/assets. Contract/evidence: `docs/reviews/rutthex-synminne/
 ### Numeric kharis proof
 
 `python3 tools/kharis_tal_bild_20261027.py OUTPUT` runs fresh owned PG/Redis/server, real register/join/found and explicit kharis/temple fixtures; checks API, Keryx status/me/rite and native Firefox Wrathful/Favorable at1280/390 twice. `python3 tools/kharis_tal_mutations_20261027.py CHECKOUT OUTPUT` runs six physical assertion-red mutations in a separate checkout, exact restoration and fresh green. `python3 tools/kharis_tal_deploy_verify_20261027.py --before` records read-only ground state; omit `--before` after deployment to verify process217, world continuity and static bytes. Evidence: `docs/reviews/kharis-tal/`.
+
+### Realm Kult proof
+
+`python3 tools/kult_tabs_bild_20261027.py OUTPUT` exercises realm Kult in a fresh owned server: three cities/temples/two gods, real staffing, Keryx, native Firefox tabs1280/390 twice, colony navigation, exact-city offering and confirmed temple demolition. `kult_tabs_server_mutations_20261027.py CHECKOUT OUTPUT` and `kult_tabs_client_mutations_20261027.py CHECKOUT OUTPUT` require an isolated checkout and prove named red/exact restore/fresh green. `kult_tabs_deploy_verify_20261027.py --before` captures read-only ground state; omit the flag after deploy. Evidence: `docs/reviews/kult-flikar/`.

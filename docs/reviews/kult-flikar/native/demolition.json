@@ -1,0 +1,138 @@
+{
+  "response": {
+    "building_type": "temple",
+    "citizens_lifted": 1,
+    "demolished": true,
+    "demolition_kharis": {
+      "standing_after": {
+        "band": "Favorable",
+        "punishment_probability": 0,
+        "blessing_probability": 0.15,
+        "summary": "Kharis 60.0 (Favorable) \u00b7 about 15% chance of a spontaneous blessing each game day"
+      },
+      "god_id": "asterion",
+      "god_name": "Asterion",
+      "level": 1,
+      "penalty_per_level": 10,
+      "kharis_loss": 10,
+      "kharis_before": 70,
+      "kharis_after": 60,
+      "cap_before": 50,
+      "cap_after": 50
+    },
+    "hex_q": null,
+    "hex_r": null,
+    "level": 1
+  },
+  "remaining": [
+    {
+      "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+      "province_id": "55a352c1-7f63-488d-b14d-9b4d5b9f8db9",
+      "city_name": "Amnissos",
+      "id": "21eee396-d2fe-44e6-9ba2-3b19c30d4fda",
+      "god_id": "asterion",
+      "name": "Temple of Asterion",
+      "level": 1,
+      "staffed": 1,
+      "capacity": 2,
+      "offer": {
+        "settlement_id": "ba9685ea-3a0b-486d-9514-d7fafd6e84ff",
+        "name": "Amnissos",
+        "building_id": "21eee396-d2fe-44e6-9ba2-3b19c30d4fda",
+        "god_id": "asterion",
+        "temple": "Temple of Asterion",
+        "required_goods": {
+          "grain": 0.25
+        },
+        "alternatives": {
+          "fish": 0.25,
+          "silver": 0.25,
+          "timber": 0.25
+        },
+        "stock": {
+          "fish": 10000,
+          "grain": 10000,
+          "silver": 10000,
+          "timber": 10000
+        },
+        "offering": {
+          "grain": 0.25
+        },
+        "fed": true
+      },
+      "demolition_kharis": {
+        "standing_after": {
+          "band": "Indifferent",
+          "punishment_probability": 0,
+          "blessing_probability": 0,
+          "summary": "Kharis 50.0 (Indifferent) \u00b7 no spontaneous blessing or punishment at this standing"
+        },
+        "god_id": "asterion",
+        "god_name": "Asterion",
+        "level": 1,
+        "penalty_per_level": 10,
+        "kharis_loss": 10,
+        "kharis_before": 60,
+        "kharis_after": 50,
+        "cap_before": 50,
+        "cap_after": 50
+      }
+    },
+    {
+      "settlement_id": "6982b477-6e21-42b1-ad87-5260151dfab8",
+      "province_id": "fb697183-5214-4aae-b35a-77be727d75da",
+      "city_name": "Tylissos",
+      "id": "08a66c77-8ed8-4983-b546-95a1273c3caf",
+      "god_id": "sea_daimons_stillness",
+      "name": "Temple of the Sea Daimons of Stillness",
+      "level": 1,
+      "staffed": 1,
+      "capacity": 2,
+      "offer": {
+        "settlement_id": "6982b477-6e21-42b1-ad87-5260151dfab8",
+        "name": "Tylissos",
+        "building_id": "08a66c77-8ed8-4983-b546-95a1273c3caf",
+        "god_id": "sea_daimons_stillness",
+        "temple": "Temple of the Sea Daimons of Stillness",
+        "required_goods": {
+          "grain": 0.25
+        },
+        "alternatives": {
+          "fish": 0.25,
+          "silver": 0.25,
+          "timber": 0.25
+        },
+        "stock": {
+          "fish": 10000,
+          "grain": 10000,
+          "silver": 10000,
+          "timber": 10000
+        },
+        "offering": {
+          "grain": 0.25
+        },
+        "fed": true
+      },
+      "demolition_kharis": {
+        "standing_after": {
+          "band": "Indifferent",
+          "punishment_probability": 0,
+          "blessing_probability": 0,
+          "summary": "Kharis 50.0 (Indifferent) \u00b7 no spontaneous blessing or punishment at this standing"
+        },
+        "god_id": "sea_daimons_stillness",
+        "god_name": "the Sea Daimons of Stillness",
+        "level": 1,
+        "penalty_per_level": 10,
+        "kharis_loss": 10,
+        "kharis_before": 60,
+        "kharis_after": 50,
+        "cap_before": 50,
+        "cap_after": 50
+      }
+    }
+  ],
+  "delete_requests": [
+    "http://127.0.0.1:47197/api/v1/worlds/95fe5782-8645-4c79-9755-3853bf6bccb2/provinces/3dbb7214-32ac-43d7-a789-fe8e90c59755/buildings/6f0d9ffe-5409-4da7-b1cf-9b6211d3364e"
+  ]
+}

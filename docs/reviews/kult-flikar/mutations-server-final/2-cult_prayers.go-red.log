@@ -1,0 +1,8 @@
+2026/10/27 20:18:24 INFO player registered id=5bf1da06-6877-45ac-b7b7-c4089052a6e2 username=cult-owner-6e485568-efd6-4cb6-ab25-0692cda1b542
+2026/10/27 20:18:24 INFO player registered id=f6796150-348f-43b2-b091-bdc022f6579e username=cult-other-27c679ca-a80d-4c50-a350-e1ac3ff52693
+--- FAIL: TestRealmCultThreeTemplesTwoGodsAndOwnerPrivacy (0.27s)
+    cult_test.go:161: no ready/missing split ready0 missing12
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.276s
+FAIL
+» färsk DB på migration 217 · commit b85a8309+ändringar
