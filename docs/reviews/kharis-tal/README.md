@@ -4,7 +4,7 @@
 
 Kult visade sinnelag utan tal och aktuell följd; profil och Keryx saknade delvis betydelsen. Servern beskriver nu kharis, band och aktuell chans på samma underlag som ticklogiken. Webb, Keryx, nya notiser och rivningsbesked använder denna beskrivning. Codex förklarar skalan, banden, taket, slumpen och omen.
 
-Kod `0f645cab` (kärna `0d1853c3`), bas `92cb709a`. Slutverifiering GRÖN: hel färsk Go (world157.208s),804JS,vet,fyra tidsgrindar,sex fysiska mutanter med exakt återställning och färsk grön kontroll,åtta Firefoxbilder från två rena1280/390-körningar. Driftbevis tillkommer efter deploy. Ingen migration eller balansändring.
+Kod `0f645cab` (kärna `0d1853c3`), bas `92cb709a`. Slutverifiering GRÖN: hel färsk Go (world157.208s),804JS,vet,fyra tidsgrindar,sex fysiska mutanter med exakt återställning och färsk grön kontroll,åtta Firefoxbilder från två rena1280/390-körningar. LIVE `00180a07`; processhash verifierad, migration217ren, samma värld15spelare/6städer/18enheter/102varurader och8byte-exakta ändrade statiska filer. Se `deploy-proof.json`. Ingen migration eller balansändring.
 
 ## Slice-kontrakt
 
