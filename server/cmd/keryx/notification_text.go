@@ -65,6 +65,16 @@ func printNotificationSummary(c *Client, n notificationItem) {
 			return
 		}
 	}
+	if n.Kind == "KharisDeclining" || n.Kind == "KharisBandChanged" {
+		var snapshot struct {
+			Standing struct {
+				Summary string `json:"summary"`
+			} `json:"kharis_standing"`
+		}
+		if json.Unmarshal(n.Body, &snapshot) == nil && snapshot.Standing.Summary != "" {
+			fmt.Println("      " + snapshot.Standing.Summary)
+		}
+	}
 	if n.Kind == "KharisDeclining" {
 		var b struct {
 			Kharis    float64 `json:"kharis"`

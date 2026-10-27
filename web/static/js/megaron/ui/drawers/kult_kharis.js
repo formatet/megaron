@@ -1,3 +1,4 @@
+import { esc } from '../format.js';
 import { fmtDuration } from '../fmt_num.js';
 import { fmtClock } from '../fmt_clock.js';
 // kult_kharis.js — pure formatting for the kharis NET figure and the
@@ -14,9 +15,9 @@ export function kharisDecayHTML(pd) {
   if (!pd || !values.every(key => Number.isFinite(pd[key]))) return '<p class="empty-state">Cult upkeep not reported.</p>';
   const count = pd.kharis_city_count;
   return '<div class="stat-row"><span class="sr-label">Upkeep of the cult</span><span class="sr-val">' +
-    pd.kharis_base_decay.toFixed(2) + ' base + ' + count + (count === 1 ? ' city' : ' cities') +
-    ' cost ' + pd.kharis_city_decay.toFixed(2) + ' + ' + pd.kharis_population + ' residents cost ' +
-    pd.kharis_population_decay.toFixed(2) + ' = ' + pd.kharis_daily_decay.toFixed(2) + ' kharis per game day</span></div>';
+    pd.kharis_base_decay.toFixed(1) + ' base + ' + count + (count === 1 ? ' city' : ' cities') +
+    ' cost ' + pd.kharis_city_decay.toFixed(1) + ' + ' + pd.kharis_population + ' residents cost ' +
+    pd.kharis_population_decay.toFixed(1) + ' = ' + pd.kharis_daily_decay.toFixed(1) + ' kharis per game day</span></div><p class="empty-state">This is what your whole realm loses each game day before temple production.</p>';
 
 }
 
@@ -48,6 +49,10 @@ export function kharisNetView(pd) {
       ' kharis per game day before cult upkeep, and more when the cult’s reference offering of grain is scarce in the world. Requires a free citizen, a temple workplace and its daily offering.</p>';
   }
   return out;
+}
+
+export function kharisStandingHTML(pd) {
+ return pd?.kharis_standing?.summary ? `<p class="empty-state">${esc(pd.kharis_standing.summary)}</p>` : '';
 }
 
 export function kharisRulesHTML(pd) {

@@ -74,8 +74,8 @@ func TestWorldMe_OwnWorldIsolation(t *testing.T) {
 		if err := json.Unmarshal(rec.Body.Bytes(), &fields); err != nil {
 			t.Fatal(err)
 		}
-		if len(fields) != 5 {
-			t.Fatalf("profile must have exactly five fields: %s", rec.Body.String())
+		if len(fields) != 6 {
+			t.Fatalf("profile must have six fields including standing: %s", rec.Body.String())
 		}
 		var got WorldProfile
 		if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
@@ -84,6 +84,9 @@ func TestWorldMe_OwnWorldIsolation(t *testing.T) {
 		return got
 	}
 	first := read()
+	if first.KharisStanding.Summary == "" || first.KharisStanding.Band != "Suspicious" {
+		t.Fatalf("missing profile meaning: %+v", first)
+	}
 	if first.WanaxName != "Nestor" || first.FoundedTick == nil || *first.FoundedTick != 42 || first.Cities != 2 || first.Population != 1600 || first.Kharis != 15 {
 		t.Fatalf("own profile includes foreign/stale data or raw kharis: %+v", first)
 	}

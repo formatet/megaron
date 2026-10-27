@@ -488,7 +488,7 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 				"temples_total":        offerTotal,
 			},
 			worldID, nil)
-		if newKharis >= blessThreshold && rand.Float64() < blessProbability {
+		if newKharis >= blessThreshold && rand.Float64() < BlessingProbability(newKharis, maintained) {
 			h.applyDivineBlessing(ctx, w.settlementID, worldID, w.playerID)
 		}
 		if err := h.generateOmen(ctx, w.settlementID, worldID); err != nil {

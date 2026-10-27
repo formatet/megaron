@@ -35,6 +35,14 @@ func TestTempleDemolitionDebtFloorReplay(t *testing.T) {
 		if code != 200 {
 			t.Fatalf("delete %d %v", code, body)
 		}
+		raw, _ := json.Marshal(body["demolition_kharis"])
+		var quote kharis.TempleDemolition
+		if err := json.Unmarshal(raw, &quote); err != nil {
+			t.Fatal(err)
+		}
+		if want := kharis.DescribeStanding(tc.want, false, 0); quote.StandingAfter != want {
+			t.Fatalf("standing after demolition %+v want %+v", quote.StandingAfter, want)
+		}
 		var got float64
 		if err := f.pool.QueryRow(context.Background(), `SELECT kharis_amount FROM player_world_records WHERE settlement_id=$1`, f.settlementID).Scan(&got); err != nil {
 			t.Fatal(err)

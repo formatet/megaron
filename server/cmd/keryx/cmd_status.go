@@ -975,6 +975,11 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			} else {
 				fmt.Printf("  %-8s %6s  (%s) · %s\n", "Kharis", resource(kv), mood, netStr)
 			}
+			if standing, ok := sett["kharis_standing"].(map[string]any); ok {
+				if summary, ok := standing["summary"].(string); ok {
+					fmt.Println("  " + summary)
+				}
+			}
 			if line := kharisDecayLine(sett); line != "" {
 				fmt.Println("  " + line)
 			}

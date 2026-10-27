@@ -21,11 +21,14 @@ func meCmd() *cobra.Command {
 				return nil
 			}
 			var profile struct {
-				WanaxName   string  `json:"wanax_name"`
-				FoundedTick *int    `json:"founded_tick"`
-				Cities      int     `json:"cities"`
-				Population  int     `json:"population"`
-				Kharis      float64 `json:"kharis"`
+				WanaxName      string `json:"wanax_name"`
+				FoundedTick    *int   `json:"founded_tick"`
+				Cities         int    `json:"cities"`
+				Population     int    `json:"population"`
+				KharisStanding struct {
+					Summary string `json:"summary"`
+				} `json:"kharis_standing"`
+				Kharis float64 `json:"kharis"`
 			}
 			if err := json.Unmarshal(data, &profile); err != nil {
 				return err
@@ -35,6 +38,9 @@ func meCmd() *cobra.Command {
 				founded = "Since " + formatWorldTime(c, *profile.FoundedTick)
 			}
 			fmt.Printf("Wanax: %s\nFounded: %s\nCities: %d\nPopulation: %d\nKharis: %.1f\n", profile.WanaxName, founded, profile.Cities, profile.Population, profile.Kharis)
+			if profile.KharisStanding.Summary != "" {
+				fmt.Println(profile.KharisStanding.Summary)
+			}
 			return nil
 		},
 	}

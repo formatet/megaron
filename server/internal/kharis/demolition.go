@@ -14,15 +14,16 @@ const TempleDemolitionPenaltyPerLevel = 10.0
 // TempleDemolition is a read-only quote before deletion and the actual outcome
 // when read under the demolition transaction's realm and building locks.
 type TempleDemolition struct {
-	GodID           string  `json:"god_id"`
-	GodName         string  `json:"god_name"`
-	Level           int     `json:"level"`
-	PenaltyPerLevel float64 `json:"penalty_per_level"`
-	KharisLoss      float64 `json:"kharis_loss"`
-	KharisBefore    float64 `json:"kharis_before"`
-	KharisAfter     float64 `json:"kharis_after"`
-	CapBefore       float64 `json:"cap_before"`
-	CapAfter        float64 `json:"cap_after"`
+	StandingAfter   Standing `json:"standing_after"`
+	GodID           string   `json:"god_id"`
+	GodName         string   `json:"god_name"`
+	Level           int      `json:"level"`
+	PenaltyPerLevel float64  `json:"penalty_per_level"`
+	KharisLoss      float64  `json:"kharis_loss"`
+	KharisBefore    float64  `json:"kharis_before"`
+	KharisAfter     float64  `json:"kharis_after"`
+	CapBefore       float64  `json:"cap_before"`
+	CapAfter        float64  `json:"cap_after"`
 }
 
 func ProjectTempleDemolition(ctx context.Context, db tick.Queryer, player, world, building uuid.UUID) (*TempleDemolition, error) {
@@ -48,5 +49,10 @@ func ProjectTempleDemolition(ctx context.Context, db tick.Queryer, player, world
 	d.KharisLoss = d.KharisBefore - d.KharisAfter
 	d.CapBefore = EffectiveKharisCap(rawCap, beforeLevel)
 	d.CapAfter = EffectiveKharisCap(rawCap, afterLevel)
+	wrath, err := LoadWrathStatus(ctx, db, player, world)
+	if err != nil {
+		return nil, err
+	}
+	d.StandingAfter = DescribeStanding(d.KharisAfter, afterLevel > 0, wrath.ProtectionRemainingDays)
 	return d, nil
 }

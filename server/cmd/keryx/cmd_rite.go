@@ -38,8 +38,11 @@ type riteAvailablePrayer struct {
 // riteProvinceStatus is the slice of the province status response this file needs.
 type riteProvinceStatus struct {
 	Settlement struct {
-		DivineValues     map[string]float64    `json:"divine_values"`
-		Kharis           float64               `json:"kharis"`
+		DivineValues   map[string]float64 `json:"divine_values"`
+		Kharis         float64            `json:"kharis"`
+		KharisStanding struct {
+			Summary string `json:"summary"`
+		} `json:"kharis_standing"`
 		KharisMood       string                `json:"kharis_mood"`
 		AvailablePrayers []riteAvailablePrayer `json:"available_prayers"`
 		Name             string                `json:"name"`
@@ -167,7 +170,7 @@ func riteCmd() *cobra.Command {
 				}
 				// Gynnsamhet is read via the gods' mood, never a computed percentage
 				// (Timothy 2026-07-11 hard invariant — "gudarna är inte maskiner").
-				fmt.Printf("The gods are %s (kharis %s).\n\n", p.Settlement.KharisMood, prayerKharisReading(p.Settlement.Kharis))
+				fmt.Printf("The gods are %s (kharis %s).\n%s\n\n", p.Settlement.KharisMood, prayerKharisReading(p.Settlement.Kharis), p.Settlement.KharisStanding.Summary)
 				printDivineValues(p.Settlement.DivineValues)
 				fmt.Printf("%-28s  %-20s  %-8s  %-22s  %-45s  %-12s  %s\n",
 					"Prayer ID", "Name", "MinKhar", "Offering", "Effect", "Ready", "Cooldown")
@@ -367,6 +370,9 @@ func confirmRiteCast(c *Client, markers []map[string]any, settlementID, prayerID
 	}
 
 	fmt.Printf("The gods are %s (kharis %.0f).\n", p.Settlement.KharisMood, p.Settlement.Kharis)
+	if p.Settlement.KharisStanding.Summary != "" {
+		fmt.Println(p.Settlement.KharisStanding.Summary)
+	}
 	fmt.Printf("Prayer: %s (%s)\n", chosen.Name, chosen.God)
 	fmt.Printf("Effect: %s\n", chosen.Effect)
 	previewGift := chosen.Offering

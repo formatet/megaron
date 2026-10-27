@@ -135,7 +135,7 @@ func TestProvinceCultUpkeepDoesNotRevealForeignRealm(t *testing.T) {
 	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
 		t.Fatal(err)
 	}
-	for _, key := range []string{"kharis_wrath", "kharis_population", "kharis_population_decay", "kharis_daily_decay", "kharis_net_per_tick", "kharis_production_per_tick"} {
+	for _, key := range []string{"kharis_standing", "kharis_wrath", "kharis_population", "kharis_population_decay", "kharis_daily_decay", "kharis_net_per_tick", "kharis_production_per_tick"} {
 		if _, exists := body.Settlement[key]; exists {
 			t.Errorf("foreign realm field %s leaked", key)
 		}

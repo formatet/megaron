@@ -165,12 +165,17 @@ func (h *TickHandler) observeKharisBand(ctx context.Context, w wanaxSnap, world 
 	if err != nil {
 		return err
 	}
+	wrath, err := LoadWrathStatus(ctx, tx, w.playerID, world)
+	if err != nil {
+		return err
+	}
+	standing := DescribeStanding(amount, w.templeCities > 0, wrath.ProtectionRemainingDays)
 	band := kharisBand(amount)
 	level := 3
 	if band == "Suspicious" || band == "Wrathful" {
 		level = 2
 	}
-	body := map[string]any{"settlement_id": sid, "settlement_name": name, "name": name, "province_id": pid, "q": q, "r": r, "kharis": amount}
+	body := map[string]any{"settlement_id": sid, "settlement_name": name, "name": name, "province_id": pid, "q": q, "r": r, "kharis": amount, "kharis_standing": standing}
 	n, err := h.recordTransition(ctx, tx, world, w.playerID, w.playerID, "kharis_band", kharisBand(w.kharis), band, tick, "KharisBandChanged", level, body)
 	if err != nil {
 		return err
@@ -181,7 +186,7 @@ func (h *TickHandler) observeKharisBand(ctx context.Context, w wanaxSnap, world 
 		kind = "KharisDeclining"
 		days = int(math.Max(0, math.Ceil((amount-WrathThreshold)/(-net))))
 	}
-	warningBody := map[string]any{"settlement_id": sid, "name": name, "province_id": pid, "q": q, "r": r, "kharis": amount, "net_per_tick": net, "days_to_15": days, "wrath_threshold": WrathThreshold}
+	warningBody := map[string]any{"settlement_id": sid, "name": name, "province_id": pid, "q": q, "r": r, "kharis": amount, "net_per_tick": net, "days_to_15": days, "wrath_threshold": WrathThreshold, "kharis_standing": standing}
 	// Record both directions, but announce only a downward crossing with negative net.
 	if declineState(amount) != "below" {
 		kind = ""

@@ -8,7 +8,7 @@ import { serverNow } from '../../clock.js';
 import { renderLockedActions } from '../misc.js';
 import { divineValuesHTML } from './kult_values.js';
 import { offerRowHTML, offeringFromEntries, offerFoodText } from './kult_offer.js';
-import { kharisNetView, kharisDecayHTML, kharisRulesHTML } from './kult_kharis.js';
+import { kharisNetView, kharisDecayHTML, kharisRulesHTML, kharisStandingHTML } from './kult_kharis.js';
 
 // ── Kult drawer ───────────────────────────────────────────────────────────
 // See cityLoadSeq: an older reply must not replace what a newer load rendered.
@@ -58,7 +58,7 @@ export async function loadKultDrawer() {
     // Net kharis (temple gain − decay) — the figure that answers "did raising
     // devotion actually help", never computed client-side. See kult_kharis.js.
     const { netHtml, idleHtml } = kharisNetView(pd);
-    html += netHtml + kharisDecayHTML(pd) + idleHtml + kharisRulesHTML(pd);
+    html += kharisStandingHTML(pd) + netHtml + kharisDecayHTML(pd) + idleHtml + kharisRulesHTML(pd);
     html += '</div>';
 
     // Cult level — derived from kharis (read-only; set by daily temple tick)

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { kharisNetView, kharisDecayHTML } from './kult_kharis.js';
+import { kharisNetView, kharisDecayHTML, kharisStandingHTML } from './kult_kharis.js';
 
 test('AK1: kharis_net_known true draws a Net row, distinct from Passive, signed with one decimal', () => {
   const view = kharisNetView({ kharis_net_per_tick: 2.34, kharis_net_known: true, kharis_devotion_idle: false });
@@ -45,11 +45,11 @@ test('a null/undefined payload draws nothing, crashes nothing', () => {
 test('realm decay breakdown uses authoritative base, city cost and total, including templeless realms', () => {
   const pd = {kharis_city_count: 5, kharis_base_decay: 0.1, kharis_city_decay: 1, kharis_daily_decay: 1.1, kharis_population:2500, kharis_population_decay:.25,
     kharis_net_known: true, kharis_net_per_tick: -1.1, temple_offers: []};
-  assert.match(kharisDecayHTML(pd), /0.10 base \+ 5 cities cost 1.00 \+ 2500 residents cost 0.25 = 1.10 kharis per game day/);
+  assert.match(kharisDecayHTML(pd), /0.1 base \+ 5 cities cost 1.0 \+ 2500 residents cost 0.3 = 1.1 kharis per game day/);
   assert.match(kharisNetView(pd).netHtml, /-1.1 kharis per game day/);
   // Deliberately unlike today's rule: display values, never recalculate the formula.
-  assert.match(kharisDecayHTML({...pd, kharis_base_decay: 0.7, kharis_city_decay: 8.6, kharis_daily_decay: 9.3}), /0.70 base \+ 5 cities cost 8.60 \+ 2500 residents cost 0.25 = 9.30 kharis per game day/);
-  assert.match(kharisDecayHTML({...pd, kharis_city_count: 1, kharis_city_decay: 0, kharis_daily_decay: 0.1}), /1 city cost 0.00/);
+  assert.match(kharisDecayHTML({...pd, kharis_base_decay: 0.7, kharis_city_decay: 8.6, kharis_daily_decay: 9.3}), /0.7 base \+ 5 cities cost 8.6 \+ 2500 residents cost 0.3 = 9.3 kharis per game day/);
+  assert.match(kharisDecayHTML({...pd, kharis_city_count: 1, kharis_city_decay: 0, kharis_daily_decay: 0.1}), /1 city cost 0.0/);
 });
 
 test('missing or partial realm decay never claims zero cost', () => {
@@ -92,3 +92,8 @@ test('ORDER29: empty temple slots above the ceiling do not invite staffing to ra
  assert.match(view.netHtml,/above the ceiling 50/);
  assert.doesNotMatch(view.netHtml,/One more|place citizens/);
 });
+
+ test('standing uses escaped server meaning without recomputing probability',()=>{
+ assert.match(kharisStandingHTML({kharis:90,kharis_standing:{summary:'Kharis 4.0 (Wrathful) · 3% <risk>'}}),/3% &lt;risk&gt;/);
+ assert.equal(kharisStandingHTML({kharis:90}),'');
+ });

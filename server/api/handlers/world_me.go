@@ -4,18 +4,20 @@ import (
 	"net/http"
 
 	"formatet/megaron/server/internal/auth"
+	cult "formatet/megaron/server/internal/kharis"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
-// WorldProfile is the caller's five-field profile for one joined world.
+// WorldProfile is the caller's owner-private profile for one joined world.
 type WorldProfile struct {
-	WanaxName   string  `json:"wanax_name"`
-	FoundedTick *int    `json:"founded_tick"`
-	Cities      int     `json:"cities"`
-	Population  int     `json:"population"`
-	Kharis      float64 `json:"kharis"`
+	KharisStanding cult.Standing `json:"kharis_standing"`
+	WanaxName      string        `json:"wanax_name"`
+	FoundedTick    *int          `json:"founded_tick"`
+	Cities         int           `json:"cities"`
+	Population     int           `json:"population"`
+	Kharis         float64       `json:"kharis"`
 }
 
 // Me handles GET /worlds/{worldID}/me. Identity comes exclusively from Bearer
@@ -66,5 +68,11 @@ func (h *WorldHandler) Me(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	profile.Kharis = kharis.Amount
+	wrath, err := cult.LoadWrathStatus(r.Context(), h.pool, playerID, worldID)
+	if err != nil {
+		writeError(w, 500, "could not load divine protection")
+		return
+	}
+	profile.KharisStanding = cult.DescribeStanding(kharis.Amount, kharis.MaxTempleLevel > 0, wrath.ProtectionRemainingDays)
 	writeJSON(w, http.StatusOK, profile)
 }

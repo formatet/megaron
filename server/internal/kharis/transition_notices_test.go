@@ -185,6 +185,13 @@ func TestKharisBandNoticeBoundariesAndExternalChanges(t *testing.T) {
 	if err := h.processMaintenance(ctx, w, wid, 920000001); err != nil {
 		t.Fatal(err)
 	}
+	var meaning string
+	if err := pool.QueryRow(ctx, `SELECT body_json->'kharis_standing'->>'summary' FROM notifications WHERE world_id=$1 AND kind='KharisBandChanged'`, wid).Scan(&meaning); err != nil {
+		t.Fatal(err)
+	}
+	if meaning == "" {
+		t.Fatal("new band notice lacks saved standing")
+	}
 	// First observation reports the maintenance crossing, including at tick zero.
 	var from, to string
 	var level int

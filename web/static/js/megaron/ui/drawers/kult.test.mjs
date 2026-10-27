@@ -125,7 +125,7 @@ test('Kult controller renders the realm breakdown and templeless net from the pr
     assert.fail('Unexpected API request '+url);
   };
   await loadKultDrawer();
-  assert.match(body.innerHTML,/0.10 base \+ 5 cities cost 1.00 \+ 2500 residents cost 0.25 = 1.10 kharis per game day/);
+  assert.match(body.innerHTML,/0.1 base \+ 5 cities cost 1.0 \+ 2500 residents cost 0.3 = 1.1 kharis per game day/);
   assert.match(body.innerHTML,/-1.1 kharis per game day/);
   assert.match(body.innerHTML,/No temples/);
   assert.doesNotMatch(body.innerHTML,/Passive|144|holds for/);

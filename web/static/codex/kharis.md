@@ -1,11 +1,15 @@
-**Kharis** is your standing with the gods — a relationship, not a resource. It is held for your whole realm, not per city, and your [[account|Account]] summary shows its current amount. The **Kult (⛩)** drawer shows it as a mood:
+**Kharis** is your standing with the gods — a relationship, not a resource. It is held for your whole realm, not per city, and your [[account|Account]] summary shows its current amount. The **Kult (⛩)** drawer shows the number, mood and its current meaning:
 
 | Mood | Meaning |
 |---|---|
-| **Favorable** | The gods may bless you: a blessed harvest (a quarter more food for 25 game days, fish excepted) or unexpected recruits. |
-| **Indifferent** | They have noticed you and do nothing. |
+| **Favorable** (60 and above) | The gods may bless you: a blessed harvest (a quarter more food for 25 game days, fish excepted) or unexpected recruits. |
+| **Indifferent** (30 to below 60) | They have noticed you and do nothing. |
 | **Suspicious** (5 to below 30) | Below 15, a 3% chance of punishment each game day, with or without a temple; recent punishment gives seven game days of protection. |
 | **Wrathful** (below 5) | The same risk below 15, except during protection: chariots break, ships are lost, food rots or plague takes a garrison. |
+
+A standing temple and at least **60 kharis** give a **15% chance of a spontaneous blessing each game day**. This is separate from a prayer: kharis is a requirement for prayers, never spent. The number is your standing, not a percentage. Protection temporarily removes punishment risk; a favorable mood without a standing temple cannot bring spontaneous blessings. These are dice rolls, not promises.
+
+Higher kharis also brings true omens more often, from farther away and with more detail. Only the highest standing can rarely point to a concrete place for an urgent fact. Omens never reveal exact strength, future arrival times or routes, and do not reveal unknown place names.
 
 Blessings and punishments arrive as notifications.
 
