@@ -197,13 +197,16 @@ func (h *ProvinceHandler) Cult(w http.ResponseWriter, r *http.Request) {
 	// Stable city/god order is retained within each readiness group.
 	sort.SliceStable(view.Prayers, func(i, j int) bool {
 		rank := func(p CultPrayer) int {
-			if p.CanPrepareOffering {
+			if p.Affordable {
 				return 0
 			}
-			if p.HasTemple {
+			if p.CanPrepareOffering {
 				return 1
 			}
-			return 2
+			if p.HasTemple {
+				return 2
+			}
+			return 3
 		}
 		return rank(view.Prayers[i]) < rank(view.Prayers[j])
 	})

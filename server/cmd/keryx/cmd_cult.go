@@ -46,6 +46,9 @@ func loadRealmCult(c *Client) (cultView, error) {
 		return view, err
 	}
 	err = json.Unmarshal(raw, &view)
+	if err == nil && view.Kharis == nil {
+		err = fmt.Errorf("realm cult projection unavailable")
+	}
 	return view, err
 }
 func listRealmPrayers(c *Client, settlement string) error {
@@ -101,11 +104,11 @@ func cultDivineValues(m map[string]any) map[string]float64 {
 	}
 	return out
 }
-func printRealmTemples(c *Client) {
+func printRealmTemples(c *Client) bool {
 	view, err := loadRealmCult(c)
 	if err != nil {
 		fmt.Println("Realm cult overview unavailable.")
-		return
+		return false
 	}
 	fmt.Println("Temples across your realm")
 	for _, t := range view.Temples {
@@ -123,4 +126,6 @@ func printRealmTemples(c *Client) {
 	for _, t := range view.Unbuilt {
 		fmt.Printf("  %s — %s · open this city to build\n", t.Name, t.CityName)
 	}
+
+	return true
 }

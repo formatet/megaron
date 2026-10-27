@@ -84,7 +84,16 @@ func TestRealmCultThreeTemplesTwoGodsAndOwnerPrivacy(t *testing.T) {
 	exec(`INSERT INTO buildings(settlement_id,building_type,level,god_id) VALUES($1,'temple',3,'potnia')`, foreign)
 	// A physical worker belongs to the exact building, not a realm-wide weight.
 	exec(`INSERT INTO settlement_placement(settlement_id,gubbe_ordinal,target_kind,building_type,good_key,building_id) SELECT $1,1,'building','temple','cult',id FROM buildings WHERE settlement_id=$1 AND building_type='temple'`, cities[0])
+	exec(`UPDATE settlement_goods SET amount=0 WHERE settlement_id=$1 AND good_key='timber'`, cities[1])
 	view := read(token)
+	unreadySeen := false
+	for _, p := range view.Prayers {
+		if !p.Affordable {
+			unreadySeen = true
+		} else if unreadySeen {
+			t.Fatal("affordable prayer sorted after one needing a composed offering or unavailable temple")
+		}
+	}
 	if len(view.Temples) != 3 {
 		t.Fatalf("realm temples=%d want3", len(view.Temples))
 	}

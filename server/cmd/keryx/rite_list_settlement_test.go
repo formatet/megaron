@@ -14,7 +14,7 @@ func TestRiteListReadsTheCastsCity(t *testing.T) {
 	round3Client(t, func(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case strings.HasSuffix(r.URL.Path, "/cult"):
-			fmt.Fprint(w, `{"prayers":[{"id":"minoan_potnia_vision_v2","name":"Potnia Vision","settlement_id":"capital","city_name":"Capital"}]}`)
+			fmt.Fprint(w, `{"kharis":{},"temples":[],"unbuilt_temples":[],"prayers":[{"id":"minoan_potnia_vision_v2","name":"Potnia Vision","settlement_id":"capital","city_name":"Capital"}]}`)
 		case strings.HasSuffix(r.URL.Path, "/provinces"):
 			fmt.Fprint(w, `[{"id":"colony-prov","settlement_id":"colony","own":true,"is_capital":false},
 			                {"id":"capital-prov","settlement_id":"capital","own":true,"is_capital":true}]`)

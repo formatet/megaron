@@ -1010,12 +1010,12 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				fmt.Print(line)
 			}
 
-			printRealmTemples(c)
+			realmCultShown := printRealmTemples(c)
 
 			// Kult: each temple city's reference, stock and planned local gift — answers
 			// direkt på "kommer min kharis klättra idag" utan att vänta på tick.
 
-			if temples, ok := sett["temple_offers"].([]any); ok {
+			if temples, ok := sett["temple_offers"].([]any); ok && !realmCultShown {
 				if len(temples) == 0 {
 					fmt.Println("  Temples: none — kharis doesn't climb without a temple + offerings.")
 				}
