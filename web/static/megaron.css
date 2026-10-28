@@ -1960,6 +1960,7 @@ body:has(.auth-page) main {
 .cx-entry { display: block; padding: 0.15rem 0; }
 .cx-link { color: var(--accent); text-decoration: none; border-bottom: 1px dotted var(--accent); }
 .cx-link:hover { border-bottom-style: solid; }
+.force-codex-name { font-size: .8rem; font-weight: bold; }
 .cx-link-missing { color: var(--text-dim); }
 .cx-crumb {
   font-family: var(--mono);

@@ -1,0 +1,5 @@
+- what happened,
+- **⌖ Take me there**, which jumps the map to where it happened,
+- on a letter or a trade offer, **✉ Reply** instead, which opens your letters with that Wanax (in Keryx: `keryx letters <id>`, printed under the notice),
+- **? Read about this**, which opens the Codex article that explains it,
+- a checkbox, *Stop these as dispatches*. Muting only silences the chip. The event is always kept in the archive. In [[keryx|Keryx]] the same setting is `keryx dispatches --mute <Kind>`, and it is shared between the two.

@@ -1,0 +1,3 @@
+- **fortify** — dig in and hold this ground. The unit cannot move until the stance is cleared. Battle participation stays at 90%.
+- **storm** — assault posture against an adjacent city. Halves what its wall absorbs, at the cost of much heavier losses of your own.
+- **sentry** — watch this ground. The unit spots marches passing nearby and **intercepts** enemy caravans within reach. You are alerted when it catches something.

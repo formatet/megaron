@@ -1,0 +1,95 @@
+{
+  "health": {
+    "commit": "c87e750d+wiki",
+    "migration": 218,
+    "status": "ok"
+  },
+  "shots": [
+    {
+      "file": "1-search-mana-1280.png"
+    },
+    {
+      "file": "1-kharis-1280.png"
+    },
+    {
+      "file": "1-search-ship-1280.png"
+    },
+    {
+      "file": "1-galley-1280.png"
+    },
+    {
+      "file": "1-granary-1280.png"
+    },
+    {
+      "file": "1-hills-1280.png"
+    },
+    {
+      "file": "1-oikos-1280.png"
+    },
+    {
+      "file": "1-search-mana-390.png"
+    },
+    {
+      "file": "1-kharis-390.png"
+    },
+    {
+      "file": "1-search-ship-390.png"
+    },
+    {
+      "file": "1-galley-390.png"
+    },
+    {
+      "file": "1-granary-390.png"
+    },
+    {
+      "file": "1-hills-390.png"
+    },
+    {
+      "file": "1-oikos-390.png"
+    },
+    {
+      "file": "2-search-mana-1280.png"
+    },
+    {
+      "file": "2-kharis-1280.png"
+    },
+    {
+      "file": "2-search-ship-1280.png"
+    },
+    {
+      "file": "2-galley-1280.png"
+    },
+    {
+      "file": "2-granary-1280.png"
+    },
+    {
+      "file": "2-hills-1280.png"
+    },
+    {
+      "file": "2-oikos-1280.png"
+    },
+    {
+      "file": "2-search-mana-390.png"
+    },
+    {
+      "file": "2-kharis-390.png"
+    },
+    {
+      "file": "2-search-ship-390.png"
+    },
+    {
+      "file": "2-galley-390.png"
+    },
+    {
+      "file": "2-granary-390.png"
+    },
+    {
+      "file": "2-hills-390.png"
+    },
+    {
+      "file": "2-oikos-390.png"
+    }
+  ],
+  "source_unchanged": true,
+  "fixture": "Fresh register/join/found and explicitly logged own ships. Real Forces entity click, Codex search and Keryx requests; two fresh Firefox contexts at1280/390."
+}

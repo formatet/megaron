@@ -1,0 +1,7 @@
+**Not yet in the world.** An **Oikos** is a planned deeper association between Wanaxes, opening shared sight, shared cargo and diplomacy beyond correspondence, trade and a non-aggression pact.
+
+It is outside the current playable version. This article promises no arrival date, costs or detailed rules. Dormant kingdom code is gated; its existence does not make an Oikos available to create or join.
+
+For what you can do now, see [[messengers|letters]], [[trade]] and [[xenia]].
+
+<!-- src: Timothy2026-10-25 order-codex-artiklar; vault temenos_diplomati.md principle2026-09-26 and temenos_kingdoms.md post-MVP gate -->

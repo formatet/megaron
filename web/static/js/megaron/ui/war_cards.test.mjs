@@ -239,3 +239,9 @@ test('route-bound Ships name the route in port and freight while keeping the cur
   if(status==='freighting')assert.match(html,/carrying goods to Faraway/);
  }
 });
+
+
+test('Forces name opens the Codex article for its actual unit type',()=>{
+ const html=renderUnitCard(unit({type:'merchantman',category:'naval',display_name:'Cargo <one>'}));
+ assert.match(html,/<a[^>]*data-cx-kind="unit"[^>]*data-cx-key="merchantman"[^>]*>Cargo &lt;one&gt;<\/a>/);
+});

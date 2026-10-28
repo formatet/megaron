@@ -1,0 +1,1 @@
+A river includes its fords and connected delta. A mountain massif joins neighbouring limestone and red mountains; a desert joins neighbouring desert hexes; a cedar forest joins neighbouring cedar woodland. Massifs, deserts and cedar forests must cover at least five hexes to be named. Olive groves are cultivated land and cannot be named this way.

@@ -1,0 +1,3 @@
+**The wall is the ceiling.** A city with no wall holds 2 000 people, a Palisade 5 000, a Stone Wall 10 000, a Bronze Wall 20 000. A city at its ceiling loses no one; it simply stops growing until you raise the wall. Each wall needs a Granary of the same level first — Construct shows the next wall greyed out with "needs a Granary of level 2" until you have it. See [[growth]].
+
+**The coast rule.** A city can build a Harbour or a Shipyard only if its own hex borders the sea or a river; an inland city never can, so to reach the sea you must found a coastal colony ([[colonies]]). The [[founding]] forecast tells you which kind of site you are looking at.

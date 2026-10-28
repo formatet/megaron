@@ -1,0 +1,3 @@
+The chosen hex is the first destination. If it cannot be reached from this unit's position, the order is refused without substituting another destination. Choose a reachable hex or use a unit departing from elsewhere. After reaching the chosen hex, a ship prefers unseen coastal water over open sea.
+
+In Keryx: `unit march --unit <id> --target q,r --intent explore --ticks N`. Omit `--ticks` for the server's default duration; the current allowed range comes from the game. Add `--preview` to check the order without dispatching. Exploration routes cross unknown ground, so their arrival forecast stays unavailable.

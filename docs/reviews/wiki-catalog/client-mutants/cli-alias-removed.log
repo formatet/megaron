@@ -1,0 +1,6 @@
+» färsk DB på migration 218 · commit c87e750d+ändringar
+--- FAIL: TestCodexSearchTitleAliasBodyOrderAndSafeResolution (0.00s)
+    codex_search_test.go:30: resolve "mana"={ID: Title: Category: Related:[] Aliases:[] Future:false} false
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL

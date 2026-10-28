@@ -1,0 +1,1 @@
+The headline names only the recipient: "Your runner to Wanax Oledoledoff at Tiryns was lost at sea in a storm." For an order: "Your runner to your Bronze Guard at (9, 4) was lost at sea in a storm." The full origin stays in the sealed envelope below.

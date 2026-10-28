@@ -1,0 +1,5 @@
+Economy → Transfer compares **Land** and **Sea** before you send a transfer or gift. Both show the journey in game days and real time, its arrival estimate, risk and requirements. An unavailable alternative explains why: a missing connected path, no departure/arrival coast or harbour, or no free ship with cargo space. Times assume departure now; an accepted agreement or standing route departs later and checks again. A preview reserves nothing.
+
+Land cargo can be intercepted. Sea cargo can be intercepted and the ship can meet storms; the same risks apply to your own goods, gifts, trade and standing routes. Sea needs your available Galley or Emporos at departure, enough cargo space and the existing voyage provisions.
+
+Your selection is saved. An explicitly chosen land route never turns into a sea voyage, or vice versa, when conditions change. A standing route waits or pauses according to its existing rules if it cannot use the chosen mode. Older orders without a selection keep automatic routing.

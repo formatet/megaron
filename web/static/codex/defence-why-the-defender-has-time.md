@@ -1,0 +1,1 @@
+Orders are physical ([[runners]]). The attacker's army walks the whole distance to you; your answer usually has a much shorter way to go — from your city to the nearby forces, or to the garrison already there. **Distance is the defender's ally.**

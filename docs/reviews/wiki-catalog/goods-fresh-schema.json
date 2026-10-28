@@ -1,0 +1,146 @@
+{
+  "schema_migrations": "218:false",
+  "source_commit": "f9926f57b3e6a34837a6ab73be66c1651cdbda48",
+  "goods": [
+    {
+      "key": "bronze",
+      "name": "Bronze",
+      "tier": "manufactured",
+      "category": "strategic",
+      "status": "active"
+    },
+    {
+      "key": "cedar",
+      "name": "Cedar",
+      "tier": "commodity",
+      "category": "bulk",
+      "status": "active"
+    },
+    {
+      "key": "copper",
+      "name": "Copper",
+      "tier": "commodity",
+      "category": "strategic",
+      "status": "active"
+    },
+    {
+      "key": "cult",
+      "name": "Cult",
+      "tier": "manufactured",
+      "category": "sacred",
+      "status": "active"
+    },
+    {
+      "key": "fish",
+      "name": "Fish",
+      "tier": "commodity",
+      "category": "staple",
+      "status": "active"
+    },
+    {
+      "key": "grain",
+      "name": "Grain",
+      "tier": "commodity",
+      "category": "staple",
+      "status": "active"
+    },
+    {
+      "key": "horses",
+      "name": "Horses",
+      "tier": "commodity",
+      "category": "strategic",
+      "status": "parked"
+    },
+    {
+      "key": "incense",
+      "name": "Incense",
+      "tier": "commodity",
+      "category": "prestige",
+      "status": "active"
+    },
+    {
+      "key": "livestock",
+      "name": "Livestock",
+      "tier": "commodity",
+      "category": "staple",
+      "status": "active"
+    },
+    {
+      "key": "oil",
+      "name": "Oil",
+      "tier": "commodity",
+      "category": "prestige",
+      "status": "active"
+    },
+    {
+      "key": "pottery",
+      "name": "Pottery",
+      "tier": "commodity",
+      "category": "strategic",
+      "status": "parked"
+    },
+    {
+      "key": "purple",
+      "name": "Purple",
+      "tier": "commodity",
+      "category": "prestige",
+      "status": "parked"
+    },
+    {
+      "key": "shipbuilding",
+      "name": "Shipyard work",
+      "tier": "manufactured",
+      "category": "bulk",
+      "status": "parked"
+    },
+    {
+      "key": "silver",
+      "name": "Silver",
+      "tier": "precious",
+      "category": "precious",
+      "status": "active"
+    },
+    {
+      "key": "stone",
+      "name": "Stone",
+      "tier": "commodity",
+      "category": "bulk",
+      "status": "active"
+    },
+    {
+      "key": "timber",
+      "name": "Timber",
+      "tier": "commodity",
+      "category": "bulk",
+      "status": "active"
+    },
+    {
+      "key": "tin",
+      "name": "Tin",
+      "tier": "commodity",
+      "category": "strategic",
+      "status": "active"
+    },
+    {
+      "key": "wine",
+      "name": "Wine",
+      "tier": "commodity",
+      "category": "prestige",
+      "status": "active"
+    }
+  ],
+  "public_tradeable_ids": [
+    "bronze",
+    "cedar",
+    "copper",
+    "fish",
+    "grain",
+    "incense",
+    "livestock",
+    "oil",
+    "stone",
+    "timber",
+    "tin",
+    "wine"
+  ]
+}

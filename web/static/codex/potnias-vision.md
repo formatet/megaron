@@ -1,0 +1,16 @@
+Potnia's Vision is a prayer to Potnia.
+
+Marks an unseen source of copper, tin, silver or incense and the unknown ground within two hexes as memory; no live activity.
+
+<!-- facts: prayer minoan_potnia_vision_v2 -->
+| Reference | Current rule |
+|---|---|
+| God | Potnia |
+| Minimum standing | 5 Kharis |
+| Traditional offering | 10 grain · 3 silver |
+| God’s waiting time | 24 game days |
+<!-- /facts -->
+
+Offer in **Kult → Prayers** at the matching city and god, or use `keryx rite --prayer minoan_potnia_vision_v2`. A valid composed offering can replace the traditional recipe.
+
+See [[prayer-requirements]], [[offerings]] and [[temples]].

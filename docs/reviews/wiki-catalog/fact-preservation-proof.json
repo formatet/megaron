@@ -1,0 +1,5599 @@
+{
+  "baseline": "f9926f57",
+  "source_blocks": 634,
+  "matched_atoms": 687,
+  "missing_atoms": 0,
+  "corrections": [
+    {
+      "old_article": "buildings",
+      "line": 3,
+      "source_sha256": "70efc8276cf5de71f2a8cf9baca5d708e266fe5a08b0a11a692d62a41727c0f5",
+      "homes": [
+        "barracks"
+      ],
+      "correction": "Barracks gates Spearmen and Bronze Guard; Chariot requires Stable, not Barracks. Documentation corrected, no mechanics changed."
+    },
+    {
+      "old_article": "transfers",
+      "line": 15,
+      "source_sha256": "df9e1ef695f1f253d040fd9134f6382038498b44d65c2e72f1ea490b2d00a8e4",
+      "homes": [
+        "transfers-sending-it-by-sea"
+      ],
+      "correction": "Clarify automatic routing versus explicit saved choice; preserve current visible tab labels. No new mechanics."
+    },
+    {
+      "old_article": "routes",
+      "line": 1,
+      "source_sha256": "22e6b342591d8cde7ef5bd69145f76bf1152d5f828d4c891abe032ea467141b3",
+      "homes": [
+        "routes"
+      ],
+      "correction": "Clarify automatic routing versus explicit saved choice; preserve current visible tab labels. No new mechanics."
+    },
+    {
+      "old_article": "routes",
+      "line": 20,
+      "source_sha256": "1c69f347f20e0067210287ae18c623a1fbd7d55c424c30b1581960d6b998d91d",
+      "homes": [
+        "routes-sea-routes"
+      ],
+      "correction": "Clarify automatic routing versus explicit saved choice; preserve current visible tab labels. No new mechanics."
+    },
+    {
+      "old_article": "trade",
+      "line": 26,
+      "source_sha256": "26a1fb92a8c7a37135b2966f27f6f9e08bc3d0f301cd840c5ad50be15ad72b04",
+      "homes": [
+        "trade-delivery"
+      ],
+      "correction": "Clarify automatic routing versus explicit saved choice; preserve current visible tab labels. No new mechanics."
+    },
+    {
+      "old_article": "sea",
+      "line": 11,
+      "source_sha256": "24a50b5c4ab6adb6b96d4f3e917ef78426462b4fe182cca05df2792a9105a6ee",
+      "homes": [
+        "ship-types"
+      ],
+      "correction": "Clarify automatic routing versus explicit saved choice; preserve current visible tab labels. No new mechanics."
+    },
+    {
+      "old_article": "sea",
+      "line": 19,
+      "source_sha256": "dbd3cbbe7f281bd9a7e617381706edbfb2bbbb52b8596340f809e1387b12b018",
+      "homes": [
+        "landing-in-own-city"
+      ],
+      "correction": "Timothy2026-10-28 physical departure port; deployed d09a74af"
+    },
+    {
+      "old_article": "units",
+      "line": 36,
+      "source_sha256": "a3695c470bafd188bcd7ce181e0f6791e7e5bf25c64c1796f6bc394d73a8b950",
+      "homes": [
+        "units-the-forces-tab"
+      ],
+      "correction": "Clarify automatic routing versus explicit saved choice; preserve current visible tab labels. No new mechanics."
+    }
+  ],
+  "records": [
+    {
+      "old_article": "welcome",
+      "line": 1,
+      "source_sha256": "02e395780e4ce7d3a6fe120f50f87ebf1d66245cad2a961a99987dea18d5e7eb",
+      "homes": [
+        "welcome"
+      ]
+    },
+    {
+      "old_article": "welcome",
+      "line": 3,
+      "source_sha256": "a0b3bcfa10cdbf71518a9d4e56688a9adbee6c96f62b39e2daa4e1fe0fe87b36",
+      "homes": [
+        "welcome"
+      ]
+    },
+    {
+      "old_article": "welcome",
+      "line": 7,
+      "source_sha256": "d90183744b31a4e6088fd46eca64feedc0aa4a6fe8cd71e219461054f38e218a",
+      "homes": [
+        "welcome-your-opening-dispatch"
+      ]
+    },
+    {
+      "old_article": "welcome",
+      "line": 9,
+      "source_sha256": "14b87f1e191f4f25913e1b219eb4970443d94a24395b4144c7fbae9990c707f5",
+      "homes": [
+        "welcome-your-opening-dispatch"
+      ]
+    },
+    {
+      "old_article": "welcome",
+      "line": 11,
+      "source_sha256": "d97cc491e516128773208547064a82f35806776676071a1eb1257098fbc939af",
+      "homes": [
+        "welcome-your-opening-dispatch"
+      ]
+    },
+    {
+      "old_article": "welcome",
+      "line": 15,
+      "source_sha256": "fd97ebf061e58b4878852e7927a6fe3ba731b6810eb52548847aee4a88e5f243",
+      "homes": [
+        "welcome-three-rules-that-explain-almost-everything"
+      ]
+    },
+    {
+      "old_article": "welcome",
+      "line": 17,
+      "source_sha256": "84f0214c89458ebaa497f589c9d8149c04fadf91d4e20432fb9408d49a5a00bf",
+      "homes": [
+        "welcome-three-rules-that-explain-almost-everything"
+      ]
+    },
+    {
+      "old_article": "welcome",
+      "line": 19,
+      "source_sha256": "9f430c913716ba17db66e0989b0a2ecd0437ef4a8b2ed76288c4faefddbe09c6",
+      "homes": [
+        "welcome-three-rules-that-explain-almost-everything"
+      ]
+    },
+    {
+      "old_article": "welcome",
+      "line": 23,
+      "source_sha256": "8d67678f4410ffad47887403fe5fd9d6759ef77ceaa7bce615f672006608a956",
+      "homes": [
+        "welcome-where-to-begin"
+      ]
+    },
+    {
+      "old_article": "welcome",
+      "line": 30,
+      "source_sha256": "bb070b6c7fa71cd0a8e302a87c6c860431479d8d57763c74cd422f1befb8c207",
+      "homes": [
+        "welcome-where-to-begin"
+      ]
+    },
+    {
+      "old_article": "welcome",
+      "line": 32,
+      "source_sha256": "55da048d723c6ce4e59c4fff98436a9c1cae46e0cc23797cd0838413b89f2012",
+      "homes": [
+        "welcome-where-to-begin"
+      ]
+    },
+    {
+      "old_article": "account",
+      "line": 1,
+      "source_sha256": "283327a6af895c81ff5c3bd067550a8d303023192778a7572a446b4d345e067f",
+      "homes": [
+        "account"
+      ]
+    },
+    {
+      "old_article": "account",
+      "line": 3,
+      "source_sha256": "7ae26e6bdd02c437a3fdd58a742e67dd76ab9b132fdf77b6df2b4f7472b86f43",
+      "homes": [
+        "account"
+      ]
+    },
+    {
+      "old_article": "account",
+      "line": 5,
+      "source_sha256": "dbb8e77b95c5e6b333d3ad781a879ebc0937c4987b7b918b1873efd9f84a8989",
+      "homes": [
+        "account"
+      ]
+    },
+    {
+      "old_article": "account",
+      "line": 7,
+      "source_sha256": "039dae2005089845a983a129a8e63a3923326b4c3be59e3583249045f532de44",
+      "homes": [
+        "account"
+      ]
+    },
+    {
+      "old_article": "getting-in",
+      "line": 1,
+      "source_sha256": "90dec57116471a1d8d24dda4147173534a4951179330c69a974492e8d95a3a48",
+      "homes": [
+        "getting-in"
+      ]
+    },
+    {
+      "old_article": "getting-in",
+      "line": 3,
+      "source_sha256": "d5352140ba6ad91b2c8f8a8a1a3cab833a61084d64361681532fe6b6e43f43fd",
+      "homes": [
+        "getting-in"
+      ]
+    },
+    {
+      "old_article": "getting-in",
+      "line": 6,
+      "source_sha256": "ba41af6d78a770b2388cdb3268082add6a9d7a62e7d885dc8127d2c3adbf2d8a",
+      "homes": [
+        "getting-in-details"
+      ]
+    },
+    {
+      "old_article": "getting-in",
+      "line": 10,
+      "source_sha256": "2e1f6821b7a5c4557e881dee0da2f073306af90f3735edd44072293a7fa79094",
+      "homes": [
+        "getting-in-a-world-that-has-not-begun"
+      ]
+    },
+    {
+      "old_article": "getting-in",
+      "line": 12,
+      "source_sha256": "be17418e28f10d2820e1a7082fab9328aed09d3641bd32fe43ca635931759972",
+      "homes": [
+        "getting-in-a-world-that-has-not-begun"
+      ]
+    },
+    {
+      "old_article": "getting-in",
+      "line": 16,
+      "source_sha256": "6b4fc473725748b72f4b7ee843c1b5a1ce3d491b17fa87fdfe4f9ebd29b26083",
+      "homes": [
+        "getting-in-if-you-are-signed-out"
+      ]
+    },
+    {
+      "old_article": "time",
+      "line": 3,
+      "source_sha256": "b7a9b2d70ed5dbeedef1aa7e6b52e22a2659ebc2d11f959857edf05ac1d64051",
+      "homes": [
+        "time-game-days-and-the-clock"
+      ]
+    },
+    {
+      "old_article": "time",
+      "line": 5,
+      "source_sha256": "1615c80a90fbfb46a4a26f007911632e45d8e2b894b3c706a455a5677cfdc6e2",
+      "homes": [
+        "time-game-days-and-the-clock"
+      ]
+    },
+    {
+      "old_article": "time",
+      "line": 9,
+      "source_sha256": "e54bc6dce7397262493e7d5e00c3657ab0d9b54cd5c85dbd8ca1d0d142359d4a",
+      "homes": [
+        "time-the-world-does-not-wait-for-you"
+      ]
+    },
+    {
+      "old_article": "time",
+      "line": 13,
+      "source_sha256": "49a1d460fc90ba200f26128c21d5acec726cd89139f4b4addec95bf5b68cfa2a",
+      "homes": [
+        "time-before-the-world-begins"
+      ]
+    },
+    {
+      "old_article": "time",
+      "line": 15,
+      "source_sha256": "7c7ac0f15641988998e14ea0e43c3c546a7e2df050d75085f91f0da4030061af",
+      "homes": [
+        "time-before-the-world-begins"
+      ]
+    },
+    {
+      "old_article": "screen",
+      "line": 3,
+      "source_sha256": "a7dcf6ef0eb56ddaec5c0c06fc9078d3a9a46659302be529c5b94038870fe279",
+      "homes": [
+        "screen-top-bar"
+      ]
+    },
+    {
+      "old_article": "screen",
+      "line": 12,
+      "source_sha256": "8898e7baf193223edca8d86d0bf2c058e0c24e93917d50c598bbed9d9ab24956",
+      "homes": [
+        "screen-bottom-bar-the-drawers"
+      ]
+    },
+    {
+      "old_article": "screen",
+      "line": 21,
+      "source_sha256": "2d5dd381d4c21df655a105b1a1c51b0d326f5071afe1e6524aba69ca901bf1cb",
+      "homes": [
+        "screen-bottom-bar-the-drawers"
+      ]
+    },
+    {
+      "old_article": "screen",
+      "line": 25,
+      "source_sha256": "642e8dcadb9720d2f6656aca4a236b5e59fbf97ffe9bb58ba5aa9157419882d6",
+      "homes": [
+        "screen-the-map"
+      ]
+    },
+    {
+      "old_article": "screen",
+      "line": 25,
+      "source_sha256": "87f868fd09006ec47347b23e4d6bec212f28df9624c93af343741b2b51925126",
+      "homes": [
+        "screen-the-map"
+      ]
+    },
+    {
+      "old_article": "screen",
+      "line": 25,
+      "source_sha256": "d229845fcaebed0f6208fa638bbd56ff739411a2ed90234eee915ea40648a776",
+      "homes": [
+        "screen-the-map"
+      ]
+    },
+    {
+      "old_article": "screen",
+      "line": 25,
+      "source_sha256": "889a98bd2b9e808deec1b5c3a91a824d48c5b47008361d901a63a4c1ac8acf04",
+      "homes": [
+        "screen-the-map"
+      ]
+    },
+    {
+      "old_article": "screen",
+      "line": 25,
+      "source_sha256": "62b2425f3ff4bf2a451205c41aa4cbb0af3a88846c407d9fba86d2ecf4192751",
+      "homes": [
+        "screen-the-map-2"
+      ]
+    },
+    {
+      "old_article": "screen",
+      "line": 25,
+      "source_sha256": "0b24868e0a18943eebd8d935f707542f6334433c95479dbf11164757488c7dc2",
+      "homes": [
+        "screen-the-map-2"
+      ]
+    },
+    {
+      "old_article": "screen",
+      "line": 32,
+      "source_sha256": "d4806b0730daa5b24cb0b0709d7965f8be3f78f328300887529ece3f5dd65de7",
+      "homes": [
+        "screen-the-map-2"
+      ]
+    },
+    {
+      "old_article": "runners",
+      "line": 1,
+      "source_sha256": "cc805e1dab32c42e768dfe5800dd4a2d4773562975eb157efeed236fd1f42da3",
+      "homes": [
+        "runners"
+      ]
+    },
+    {
+      "old_article": "runners",
+      "line": 3,
+      "source_sha256": "9b63b35763e163acc393e28c88e9088d5f134bce7ddf60662bc17e59fb765798",
+      "homes": [
+        "runners"
+      ]
+    },
+    {
+      "old_article": "runners",
+      "line": 5,
+      "source_sha256": "212b09b2d6423ade21c3d801d55c4dab96908aace5ee0e4e31d2aa9a4d123eee",
+      "homes": [
+        "runners-details"
+      ]
+    },
+    {
+      "old_article": "runners",
+      "line": 7,
+      "source_sha256": "d0ddc7864daba0dcb1646e2aa866c7099c9c8831b0b30e443c2471bcbacff830",
+      "homes": [
+        "runners-details"
+      ]
+    },
+    {
+      "old_article": "runners",
+      "line": 11,
+      "source_sha256": "6f3fefe15bfdecfb793d005b9615565a8da7524f2e6364b48cad09ef1975fd71",
+      "homes": [
+        "runners-why-this-is-good-for-you"
+      ]
+    },
+    {
+      "old_article": "runners",
+      "line": 15,
+      "source_sha256": "987a3929172dcd4adf02681299faecd7534fc9991507cc2415a1c9d32d9149a3",
+      "homes": [
+        "runners-when-an-order-fails"
+      ]
+    },
+    {
+      "old_article": "runners",
+      "line": 17,
+      "source_sha256": "8d067b708743a8ae4b5e940a194de17064c7fcc44e910a2add30c7551f3e508b",
+      "homes": [
+        "runners-when-an-order-fails"
+      ]
+    },
+    {
+      "old_article": "runners",
+      "line": 21,
+      "source_sha256": "745ed7d307656ade6410a7d256dfc66e18d69107938be7f92571cf18df69beac",
+      "homes": [
+        "runners-catching-up-with-a-moving-unit"
+      ]
+    },
+    {
+      "old_article": "runners",
+      "line": 23,
+      "source_sha256": "1b7829e1642e52f5d1c6a4a71ed0f6e17e6a7b9bc1ce0ba801cb293fffa9eb93",
+      "homes": [
+        "runners-catching-up-with-a-moving-unit-2"
+      ]
+    },
+    {
+      "old_article": "runners",
+      "line": 27,
+      "source_sha256": "5ff9e355d9ba3f3215621624c2b4aa047c6e276d0225fb8303639be98144c583",
+      "homes": [
+        "runners-crossing-the-sea"
+      ]
+    },
+    {
+      "old_article": "runners",
+      "line": 31,
+      "source_sha256": "0e77fa34365d687de27b6d90101b5d72b9e07078d7cdabd570394d7147d56d92",
+      "homes": [
+        "runners-the-runners-tab"
+      ]
+    },
+    {
+      "old_article": "runners",
+      "line": 33,
+      "source_sha256": "75bdb7d09b01490f718000cf75a5b5472088859c303b0cdf4eb3eafa57a436b3",
+      "homes": [
+        "runners-the-runners-tab"
+      ]
+    },
+    {
+      "old_article": "runners",
+      "line": 37,
+      "source_sha256": "e12e1ed8d5b03344eed458f7f21d28ad8bc90ebc8d9a789126068d2fe9e48c28",
+      "homes": [
+        "runners-runner-speed"
+      ]
+    },
+    {
+      "old_article": "runners",
+      "line": 41,
+      "source_sha256": "1ec43a639924fddb9cf8a2b8eaa87c71a2a660b2ec72f342bcdc2b8d36da8509",
+      "homes": [
+        "runners-runner-speed"
+      ]
+    },
+    {
+      "old_article": "coming-back",
+      "line": 1,
+      "source_sha256": "dc52f230835458079bf67b5e764702d9a50ee27e0afa26f03d1651ba9b122675",
+      "homes": [
+        "coming-back"
+      ]
+    },
+    {
+      "old_article": "coming-back",
+      "line": 5,
+      "source_sha256": "9a9b4c6c838f4067b0ac7d640639eb3b5a8e95a57b81228d68ff083a49bd21db",
+      "homes": [
+        "coming-back-open-the-notifications-archive"
+      ]
+    },
+    {
+      "old_article": "coming-back",
+      "line": 7,
+      "source_sha256": "1da82fd0e0c37d071218ada18bf42e60e086691452bf81e46b0372c86abd91d9",
+      "homes": [
+        "coming-back-open-the-notifications-archive"
+      ]
+    },
+    {
+      "old_article": "coming-back",
+      "line": 9,
+      "source_sha256": "db07d0e3fc9978be3b7852a1c3a34257f548c33edd46dbd79418bc0c470bab80",
+      "homes": [
+        "coming-back-open-the-notifications-archive-2"
+      ]
+    },
+    {
+      "old_article": "coming-back",
+      "line": 17,
+      "source_sha256": "127c97527e866a9177c36075b050988f580d02161ade667c79323800e77f8ab9",
+      "homes": [
+        "coming-back-what-to-act-on-first"
+      ]
+    },
+    {
+      "old_article": "coming-back",
+      "line": 22,
+      "source_sha256": "232a1bfe68e5c3c079f77daa2ed5f351304231939370636fce0c72b07101977f",
+      "homes": [
+        "coming-back-what-to-act-on-first"
+      ]
+    },
+    {
+      "old_article": "coming-back",
+      "line": 24,
+      "source_sha256": "3bd090a8bad3c48e61b447f811a476d5f89a73a241087346e5a116078a85b24f",
+      "homes": [
+        "coming-back-what-to-act-on-first"
+      ]
+    },
+    {
+      "old_article": "coming-back",
+      "line": 28,
+      "source_sha256": "4b8bdbc752cae2296374123414acbf1bff344e85628e28ce8fd7db5ad3a7e329",
+      "homes": [
+        "coming-back-making-the-next-absence-easier"
+      ]
+    },
+    {
+      "old_article": "coming-back",
+      "line": 30,
+      "source_sha256": "b63c805388249e7d312fec782e7e3090182dc86164795f1a72318a2cc4791520",
+      "homes": [
+        "coming-back-making-the-next-absence-easier"
+      ]
+    },
+    {
+      "old_article": "horde",
+      "line": 1,
+      "source_sha256": "af2d187194c8b1b2f311ab658c409c1fdbd08003924b9403463efb23e899e58f",
+      "homes": [
+        "horde"
+      ]
+    },
+    {
+      "old_article": "horde",
+      "line": 3,
+      "source_sha256": "31ec0ddc7029c5ba82bde182d87f7ed2137588332cc1bd2c7a082ef6e4b3542d",
+      "homes": [
+        "horde"
+      ]
+    },
+    {
+      "old_article": "horde",
+      "line": 7,
+      "source_sha256": "6e049bb6b30028c1ebe8804f905f8c622e9c4126f70b40f722faebcbc111d37e",
+      "homes": [
+        "horde-what-the-host-is"
+      ]
+    },
+    {
+      "old_article": "horde",
+      "line": 15,
+      "source_sha256": "c281f585532252c943f0ee1b89ecde399d0fbbc06ed0971ea94d9a64816ddb9e",
+      "homes": [
+        "horde-walking"
+      ]
+    },
+    {
+      "old_article": "horde",
+      "line": 17,
+      "source_sha256": "ed92d295ded4365314fc32c464bf84eb51277aa8f1cea8e64cbe4cc8dfffe404",
+      "homes": [
+        "horde-walking"
+      ]
+    },
+    {
+      "old_article": "horde",
+      "line": 21,
+      "source_sha256": "ddea49dcb1b21bee71bfbecb868d5a3a4e96545c13073e1c4c9ef762e47b1fbd",
+      "homes": [
+        "horde-where-you-are"
+      ]
+    },
+    {
+      "old_article": "horde",
+      "line": 23,
+      "source_sha256": "6a111e7f58d6979776a66fcad7c4687e3c18f58faceba12fab48446a2cc4ba77",
+      "homes": [
+        "horde-where-you-are"
+      ]
+    },
+    {
+      "old_article": "horde",
+      "line": 27,
+      "source_sha256": "6987d3bbd5383a2e12823f210f9b76ac855a2d4b637b9fc47d2d6fa791a4bfd4",
+      "homes": [
+        "horde-reserves-for-founding"
+      ]
+    },
+    {
+      "old_article": "horde",
+      "line": 29,
+      "source_sha256": "934cc5aa4e6ec4058a58512900a83ff411bfd3970e2e07f9e8726e41c871b391",
+      "homes": [
+        "horde-reserves-for-founding"
+      ]
+    },
+    {
+      "old_article": "founding",
+      "line": 1,
+      "source_sha256": "00eb03e0b7bfddca3a83f516255eb5b7a777b1bcf07a5d7868e0a1d65c0f676a",
+      "homes": [
+        "founding"
+      ]
+    },
+    {
+      "old_article": "founding",
+      "line": 5,
+      "source_sha256": "7af068e88fbed9247908e189daa6611b8d56f7f90bd97a403a3561758fdb23af",
+      "homes": [
+        "founding-read-the-ground-first"
+      ]
+    },
+    {
+      "old_article": "founding",
+      "line": 7,
+      "source_sha256": "69effeb8576536e45275065aeeb79003877b5a716622246f68151f5bbb3fa80b",
+      "homes": [
+        "founding-read-the-ground-first"
+      ]
+    },
+    {
+      "old_article": "founding",
+      "line": 9,
+      "source_sha256": "cd25740fad5450ba7bb230f531fba19ff918565fc67273577f8a6d5c2372a5ac",
+      "homes": [
+        "founding-read-the-ground-first"
+      ]
+    },
+    {
+      "old_article": "founding",
+      "line": 13,
+      "source_sha256": "53d1b9945cf9d4c7fe8fbbe4abc1742007af4447903739e751db087a5664d3bf",
+      "homes": [
+        "founding-read-the-ground-first-2"
+      ]
+    },
+    {
+      "old_article": "founding",
+      "line": 15,
+      "source_sha256": "9a85d0e51331413a4792b2410c2ccce66a8cabfbfa8e66d0ace3576b3b439ae6",
+      "homes": [
+        "founding-read-the-ground-first-2"
+      ]
+    },
+    {
+      "old_article": "founding",
+      "line": 19,
+      "source_sha256": "1bc4b03fec23ab813ba8ef2433f0939299e6d1f3725dc6636bf1b80b2d4359a6",
+      "homes": [
+        "founding-where-you-cannot-found"
+      ]
+    },
+    {
+      "old_article": "founding",
+      "line": 23,
+      "source_sha256": "6c234286293cc160fd964d0579b64dc9a33bff5a017fc905559aa84646ed0210",
+      "homes": [
+        "founding-settling"
+      ]
+    },
+    {
+      "old_article": "founding",
+      "line": 25,
+      "source_sha256": "d980818c4af2dc4af09e724e34fb0b2bcb4ed08c391ead982b455c656a69e893",
+      "homes": [
+        "founding-settling"
+      ]
+    },
+    {
+      "old_article": "founding",
+      "line": 27,
+      "source_sha256": "4fdd2425be472d65763ab8f6ab60bf3b686b3f6729b55505d3643593774430a2",
+      "homes": [
+        "founding-settling-2"
+      ]
+    },
+    {
+      "old_article": "founding",
+      "line": 34,
+      "source_sha256": "659fc8d792097a027615a7408bd12516ea8324f38a3ed61e4de6f2026de12602",
+      "homes": [
+        "founding-settling-2"
+      ]
+    },
+    {
+      "old_article": "founding",
+      "line": 36,
+      "source_sha256": "ce8b8ae94afd34b322bac99d68370f35795968cbfcab5ad0bbf96beac99c3933",
+      "homes": [
+        "founding-settling-3"
+      ]
+    },
+    {
+      "old_article": "founding",
+      "line": 38,
+      "source_sha256": "d3e4d30ac9f2beb62c463d9734563d3d0048abaf2c411c2f499cec128712fe54",
+      "homes": [
+        "founding-settling-3"
+      ]
+    },
+    {
+      "old_article": "founding",
+      "line": 40,
+      "source_sha256": "dfbc220703f14ab44bb660b7f48e1fa084d8cd3d4ac1fb7c63b08af509e93a46",
+      "homes": [
+        "founding-settling-3"
+      ]
+    },
+    {
+      "old_article": "founding",
+      "line": 42,
+      "source_sha256": "8389583b9abfdc423d7727e57bdd0f7f1b8dedcc729cfc8f7316c9a61322ae72",
+      "homes": [
+        "founding-settling-4"
+      ]
+    },
+    {
+      "old_article": "last-city",
+      "line": 1,
+      "source_sha256": "4d5a267702b6a23d0393e2cabcd73b4b18a6631bfdf8ed443d2a80affb3758eb",
+      "homes": [
+        "last-city"
+      ]
+    },
+    {
+      "old_article": "last-city",
+      "line": 5,
+      "source_sha256": "8ff3669e1923afceed9326e7c2eeb3b9f63e9353a2e757d4e61f439badc26c14",
+      "homes": [
+        "last-city-gather-the-survivors"
+      ]
+    },
+    {
+      "old_article": "last-city",
+      "line": 7,
+      "source_sha256": "50f827f542bfbfac84537a4f333b29805fd8d744468b8e8bf29ca107e8a551fa",
+      "homes": [
+        "last-city-gather-the-survivors"
+      ]
+    },
+    {
+      "old_article": "last-city",
+      "line": 12,
+      "source_sha256": "58fd02073359a62d1ac437346c8eac3d06d0670d53cba8fa552256f812ba0726",
+      "homes": [
+        "last-city-gather-the-survivors"
+      ]
+    },
+    {
+      "old_article": "last-city",
+      "line": 14,
+      "source_sha256": "3d078d5b2a99fec44b471f31ecf10255afc132069cfd9022e68349dd0cfc056f",
+      "homes": [
+        "last-city-gather-the-survivors"
+      ]
+    },
+    {
+      "old_article": "last-city",
+      "line": 18,
+      "source_sha256": "5ee1872e6dba346154939bf9d8f4f13220b758c9dbd42147217844bf28e65291",
+      "homes": [
+        "last-city-leave-this-world"
+      ]
+    },
+    {
+      "old_article": "last-city",
+      "line": 20,
+      "source_sha256": "2bffade88fd66af08189ef89181ec716cb8ebdc20e4074a9575bd3f7115245e0",
+      "homes": [
+        "last-city-leave-this-world"
+      ]
+    },
+    {
+      "old_article": "last-city",
+      "line": 22,
+      "source_sha256": "a0d59af1148ab37e28767ff46f6c6f23e9f3e1abfb779ce9f23ee1ae116aad97",
+      "homes": [
+        "last-city-leave-this-world"
+      ]
+    },
+    {
+      "old_article": "city",
+      "line": 1,
+      "source_sha256": "0a160450d3ccae4a25fbb28da21233596acd71590b09cfd3fc21891fe2fdae2b",
+      "homes": [
+        "city"
+      ]
+    },
+    {
+      "old_article": "city",
+      "line": 3,
+      "source_sha256": "cfabf8603dfe79b8c1f1c8aecdf0aaad5a1cc354c3d4c7121383d184ca6057e6",
+      "homes": [
+        "city"
+      ]
+    },
+    {
+      "old_article": "city",
+      "line": 7,
+      "source_sha256": "5bf56d1cd89b4658ca62c2b4abfc9c14b41fce89f960abb9b2f3dc82d2722d05",
+      "homes": [
+        "city"
+      ]
+    },
+    {
+      "old_article": "city",
+      "line": 9,
+      "source_sha256": "d681baf8eaee412d7ee5982da35aac23cc5934b0061ad254a14d5ee2b428eb7b",
+      "homes": [
+        "city"
+      ]
+    },
+    {
+      "old_article": "city",
+      "line": 13,
+      "source_sha256": "587d13984cdba13e947fa8599d207891a1b88025e9cc18a4ea2d2896df82041f",
+      "homes": [
+        "city"
+      ]
+    },
+    {
+      "old_article": "city",
+      "line": 17,
+      "source_sha256": "0fdda1130d90cc7eace8042c16da83396940bd70ae6fd29d881299de77165066",
+      "homes": [
+        "city"
+      ]
+    },
+    {
+      "old_article": "city",
+      "line": 21,
+      "source_sha256": "d538bae0987353ecfc287ec7574e3bf56052115a45c4b8beb96a1168128e3da7",
+      "homes": [
+        "city"
+      ]
+    },
+    {
+      "old_article": "catchment",
+      "line": 1,
+      "source_sha256": "c7ff654d7a78552519e675e72a3b1a3c55813f6ba4dafcb831000019a8c7ff39",
+      "homes": [
+        "catchment"
+      ]
+    },
+    {
+      "old_article": "catchment",
+      "line": 3,
+      "source_sha256": "a471b7a35de44de9915099469c78b1bcda376163fe5ca5400c9274b845c2bda7",
+      "homes": [
+        "catchment"
+      ]
+    },
+    {
+      "old_article": "catchment",
+      "line": 5,
+      "source_sha256": "8e86863294d138180159ff6a4b1e51a05d567c928eaa3c60daeadeb73cf69353",
+      "homes": [
+        "catchment-details"
+      ]
+    },
+    {
+      "old_article": "catchment",
+      "line": 7,
+      "source_sha256": "98a0841ca5c36fb5bf5847d6c30efb6820b74f644c80ceebdcee9d23b1ea5a30",
+      "homes": [
+        "catchment-details"
+      ]
+    },
+    {
+      "old_article": "catchment",
+      "line": 11,
+      "source_sha256": "998f6da4bf71234cb0564b3dcf5d9f2ccca4b0aa03f50620156b6542cd775f0f",
+      "homes": [
+        "catchment-what-it-means-for-you"
+      ]
+    },
+    {
+      "old_article": "catchment",
+      "line": 11,
+      "source_sha256": "89db4e9bf5c501aa5249b5eb4b66db34930a26d664dea3e0a4d52debf98f0e06",
+      "homes": [
+        "catchment-what-it-means-for-you"
+      ]
+    },
+    {
+      "old_article": "catchment",
+      "line": 11,
+      "source_sha256": "eadedfbbf9ce97c63c00afaaa54aeead2ac2bfb92c08c677b46e820cbfceec0d",
+      "homes": [
+        "catchment-what-it-means-for-you"
+      ]
+    },
+    {
+      "old_article": "catchment",
+      "line": 11,
+      "source_sha256": "870f1163ac28f95218e1b895d7e1b1d338927ef54d5deca6e6676c435861fb7c",
+      "homes": [
+        "catchment-what-it-means-for-you"
+      ]
+    },
+    {
+      "old_article": "catchment",
+      "line": 11,
+      "source_sha256": "f96342d653880d301680917d239ba9f67d96bf6f31c45b668d837e84e0f9409f",
+      "homes": [
+        "catchment-what-it-means-for-you-2"
+      ]
+    },
+    {
+      "old_article": "catchment",
+      "line": 11,
+      "source_sha256": "41787c8aefe6238d8078ce8001c872417f752d32ca04efa2b01cc132f0fb7a82",
+      "homes": [
+        "catchment-what-it-means-for-you-2"
+      ]
+    },
+    {
+      "old_article": "catchment",
+      "line": 18,
+      "source_sha256": "05487d6c7f72d18dd6a0da917d7a6a2b19f90f71656c080a6d7f52a4556a3acd",
+      "homes": [
+        "catchment-what-it-means-for-you-2"
+      ]
+    },
+    {
+      "old_article": "citizens",
+      "line": 1,
+      "source_sha256": "70005f9aaf524270df06b18aa5e4a9b0ab0dd1912265a127c6029263798288dc",
+      "homes": [
+        "citizens"
+      ]
+    },
+    {
+      "old_article": "citizens",
+      "line": 5,
+      "source_sha256": "16ea26a11f69a30dad2f700408c1e41b7a9f3616d7b228836bc804c73149de14",
+      "homes": [
+        "citizens-placing-people"
+      ]
+    },
+    {
+      "old_article": "citizens",
+      "line": 7,
+      "source_sha256": "8a213f3f50f950d02c869a442e019f682f3b0b27257846ce785269a6aafcb275",
+      "homes": [
+        "citizens-placing-people"
+      ]
+    },
+    {
+      "old_article": "citizens",
+      "line": 9,
+      "source_sha256": "d80325e54efa299df80bac6e01e3f33ec00cbd1df267ecdda401f1efa7b88eba",
+      "homes": [
+        "citizens-placing-people"
+      ]
+    },
+    {
+      "old_article": "citizens",
+      "line": 13,
+      "source_sha256": "10b74c15ee9696635209130c75b325f02497e0b8b0229398d86499599bf1ce0b",
+      "homes": [
+        "citizens-placing-people"
+      ]
+    },
+    {
+      "old_article": "citizens",
+      "line": 15,
+      "source_sha256": "a941e311984e125f4a577ee798095042fbbb46bb78ab2ce2db84efa372faf3ec",
+      "homes": [
+        "citizens-placing-people"
+      ]
+    },
+    {
+      "old_article": "citizens",
+      "line": 19,
+      "source_sha256": "793b2cb022bd12c5d208dc6d103f432ac6da7c0e006749ed0c57b9d9e71eac49",
+      "homes": [
+        "citizens-the-one-number-that-matters"
+      ]
+    },
+    {
+      "old_article": "citizens",
+      "line": 23,
+      "source_sha256": "492cabee0788393d6744108f58b58075451daf7a7bc8f5505e87a7cd071bb8aa",
+      "homes": [
+        "free-citizens"
+      ]
+    },
+    {
+      "old_article": "citizens",
+      "line": 25,
+      "source_sha256": "9cf4a1408bc721f75ca88a08c76529527e2bae6539223ea5fb5bbadc713952d4",
+      "homes": [
+        "free-citizens"
+      ]
+    },
+    {
+      "old_article": "citizens",
+      "line": 27,
+      "source_sha256": "8bc4d50b7c665374428b045eded75664982d4e5e8260e34d6f7793190fdf9abd",
+      "homes": [
+        "free-citizens"
+      ]
+    },
+    {
+      "old_article": "citizens",
+      "line": 29,
+      "source_sha256": "82895b0eb90e1379ae07e4da38324f7897e2d27ad22b7833c2be414f148b8bf0",
+      "homes": [
+        "free-citizens"
+      ]
+    },
+    {
+      "old_article": "citizens",
+      "line": 31,
+      "source_sha256": "5a12d5e34e76a94246660c2a84f21365061954856bae043025d09e55ae0492b5",
+      "homes": [
+        "free-citizens"
+      ]
+    },
+    {
+      "old_article": "citizens",
+      "line": 33,
+      "source_sha256": "45e411a2d66dffe5a3d4d116451045393fc216da25c85cc6d6f9990df6f8f06d",
+      "homes": [
+        "free-citizens-2"
+      ]
+    },
+    {
+      "old_article": "citizens",
+      "line": 35,
+      "source_sha256": "89695ea397765529a335742a521b861dcdf0fb7629da5d36bcfc6c3494e0f11f",
+      "homes": [
+        "keryx-argument-reminders-2",
+        "free-citizens-2"
+      ]
+    },
+    {
+      "old_article": "food",
+      "line": 1,
+      "source_sha256": "129e80e6c914fd9c8c60eec67e01077c1a5ac35704c87f71235bde01a136edae",
+      "homes": [
+        "food"
+      ]
+    },
+    {
+      "old_article": "food",
+      "line": 5,
+      "source_sha256": "ba9f33cfac0be6d2f1d2add6dbd8b362d7d60c0e8799c71a4db152e2440a7699",
+      "homes": [
+        "food-when-there-is-not-enough"
+      ]
+    },
+    {
+      "old_article": "food",
+      "line": 7,
+      "source_sha256": "89f570a94498cb7293ae4ad6966aa17bb3b2f8b3749faa228b7e6961a2b2125e",
+      "homes": [
+        "food-when-there-is-not-enough"
+      ]
+    },
+    {
+      "old_article": "food",
+      "line": 11,
+      "source_sha256": "6067afd5b4af2028203551d04d1b71f86281852d5f6a6251eb0600c6f61d6edd",
+      "homes": [
+        "food-when-there-is-not-enough"
+      ]
+    },
+    {
+      "old_article": "food",
+      "line": 13,
+      "source_sha256": "f01259c7a08516064e529fb7ae767d998ef036101e96da28829460ca05c7ee93",
+      "homes": [
+        "food-when-there-is-not-enough-2"
+      ]
+    },
+    {
+      "old_article": "food",
+      "line": 15,
+      "source_sha256": "ed8ccc21ee51b934abe2aa1ecf62cda6b93c9d087509be4538b22a1015d26fad",
+      "homes": [
+        "food-when-there-is-not-enough-2"
+      ]
+    },
+    {
+      "old_article": "food",
+      "line": 19,
+      "source_sha256": "44c283b5f501dfdfc47c78c3d2c4b37ac482b6182be353a5bb1f6323124e25eb",
+      "homes": [
+        "food-the-herd-and-the-pen"
+      ]
+    },
+    {
+      "old_article": "food",
+      "line": 23,
+      "source_sha256": "78798ee41e21b50657205a5cd348d636bbbd8768dddccf22eb5059332d0fc86a",
+      "homes": [
+        "food-what-to-do-about-it"
+      ]
+    },
+    {
+      "old_article": "food",
+      "line": 29,
+      "source_sha256": "e91cf8d5ddbbebe86a6c11eb169febd23ce02fe1cb0bc4f96a23a922bc53803a",
+      "homes": [
+        "food-what-to-do-about-it"
+      ]
+    },
+    {
+      "old_article": "food",
+      "line": 31,
+      "source_sha256": "908f822c7b8c5c3b99d4fbf201f5ec6a53d3962a580127957bd26d59f883b343",
+      "homes": [
+        "food-what-to-do-about-it"
+      ]
+    },
+    {
+      "old_article": "fishing",
+      "line": 1,
+      "source_sha256": "c99827d915baaa2228a704bc3933390249fb30b9033eb57e2a7147de3b0036c7",
+      "homes": [
+        "fishing"
+      ]
+    },
+    {
+      "old_article": "fishing",
+      "line": 3,
+      "source_sha256": "f2bb43955b47b9756656c946b09ce64d7381630780d1f0a58b6e1fd70c787d4a",
+      "homes": [
+        "fishing"
+      ]
+    },
+    {
+      "old_article": "fishing",
+      "line": 9,
+      "source_sha256": "827871c5d5e4ec569605678bace3309bed5287d2c2b3c726d0096008d3e24236",
+      "homes": [
+        "fishing-details"
+      ]
+    },
+    {
+      "old_article": "fishing",
+      "line": 11,
+      "source_sha256": "92af8447f9e60a978a7ed28f54fdc7201d947bdb1be1f3a7267b50a138eaed7b",
+      "homes": [
+        "fishing-details"
+      ]
+    },
+    {
+      "old_article": "fishing",
+      "line": 13,
+      "source_sha256": "c6c79b6bd7c778c94d7dbc56ef351fa67e24764b02d1c7c0ae956aaa338b61e5",
+      "homes": [
+        "fishing-details"
+      ]
+    },
+    {
+      "old_article": "fishing",
+      "line": 15,
+      "source_sha256": "85eac86b89b2007a83542cc7243fe8d46a16010d9689f1d0df415841d3f9c168",
+      "homes": [
+        "fishing-details"
+      ]
+    },
+    {
+      "old_article": "shipyard",
+      "line": 1,
+      "source_sha256": "f15eadb7b12c31d04c307286c368e7d313ad6b25cf5ee897e6b17a40bdae334d",
+      "homes": [
+        "shipyard-workers"
+      ]
+    },
+    {
+      "old_article": "shipyard",
+      "line": 3,
+      "source_sha256": "3bb2f420937b8815c25aeed0a1b62b8ee58229e6f2cf8d249bc46d48d86a83b0",
+      "homes": [
+        "shipyard-workers"
+      ]
+    },
+    {
+      "old_article": "shipyard",
+      "line": 5,
+      "source_sha256": "25860082daf6b2caa0a2c0a8e5503e2f9b54ea05580874c015451dc71e996275",
+      "homes": [
+        "shipyard-workers"
+      ]
+    },
+    {
+      "old_article": "shipyard",
+      "line": 7,
+      "source_sha256": "d397c08a582c17e8080595a322c0617fccdf04bf244e345e63d9fda85ddf1497",
+      "homes": [
+        "shipyard-workers"
+      ]
+    },
+    {
+      "old_article": "shipyard",
+      "line": 9,
+      "source_sha256": "5d2dbd2171c726f2b0df8a15bfa27282692c7cffb4efbd9f5b698d80f07df5bb",
+      "homes": [
+        "shipyard-workers"
+      ]
+    },
+    {
+      "old_article": "shipyard",
+      "line": 11,
+      "source_sha256": "dea42167d7a005311996b64871420a97dbb6d51dfdaf90fbccbe922621e620e8",
+      "homes": [
+        "shipyard-workers"
+      ]
+    },
+    {
+      "old_article": "shipyard",
+      "line": 13,
+      "source_sha256": "880ba1415feb68520dc7616152c3f2fbe1b7df429447116ddf53728e54b4e700",
+      "homes": [
+        "shipyard-workers"
+      ]
+    },
+    {
+      "old_article": "harbour",
+      "line": 1,
+      "source_sha256": "3c692fe936ddfe9a700a013303ac9ea0428c890c2247cd51c5e21ad9071d39bc",
+      "homes": [
+        "deep-water-fishing"
+      ]
+    },
+    {
+      "old_article": "harbour",
+      "line": 3,
+      "source_sha256": "7540b78fd8a658e8965164205731f508763a3d81dd5b454202007385e4164d6d",
+      "homes": [
+        "deep-water-fishing"
+      ]
+    },
+    {
+      "old_article": "harbour",
+      "line": 10,
+      "source_sha256": "3a7afeca7afade181dde6ab7b8ebad033268f20c91d7f2a2c13c4777e6901f24",
+      "homes": [
+        "deep-water-fishing"
+      ]
+    },
+    {
+      "old_article": "harbour",
+      "line": 12,
+      "source_sha256": "cfabd5f7f894e2d1d3af0d363a0038567b79d42024ad0956741e886282bdf9e1",
+      "homes": [
+        "deep-water-fishing"
+      ]
+    },
+    {
+      "old_article": "growth",
+      "line": 1,
+      "source_sha256": "0f04c65d7c86adaec19957edd88279d1e71492e6223b432a20567891742677ae",
+      "homes": [
+        "growth"
+      ]
+    },
+    {
+      "old_article": "growth",
+      "line": 3,
+      "source_sha256": "d3de7f45457f656730ecc8afcc11133cdfc45b06578d29d7533a040976766a05",
+      "homes": [
+        "growth"
+      ]
+    },
+    {
+      "old_article": "growth",
+      "line": 3,
+      "source_sha256": "5179e85fc64977c8d744694301b958974d5c871429515d97b9e1a46bce64b7b4",
+      "homes": [
+        "growth"
+      ]
+    },
+    {
+      "old_article": "growth",
+      "line": 3,
+      "source_sha256": "0d942657689900b035cef2bbd066baf4bdb8be5e67be7b6993e586aa4d24c36d",
+      "homes": [
+        "growth-details"
+      ]
+    },
+    {
+      "old_article": "growth",
+      "line": 3,
+      "source_sha256": "f58177087d4f2996bb705d563d853f7b63dd123f31935b16702434703eb15578",
+      "homes": [
+        "growth-details"
+      ]
+    },
+    {
+      "old_article": "growth",
+      "line": 8,
+      "source_sha256": "0ca043ff327d5de4e3a9f1e53f8e40f02ecc9ad6524200b9987b2c786e25a5c9",
+      "homes": [
+        "growth-details-2"
+      ]
+    },
+    {
+      "old_article": "growth",
+      "line": 10,
+      "source_sha256": "716f676e829242ec3dce14e1ab42645c5dfea0a120976b936ab8f29963d1017b",
+      "homes": [
+        "growth-details-2"
+      ]
+    },
+    {
+      "old_article": "growth",
+      "line": 12,
+      "source_sha256": "aa293978b360408e2b5511bc17b2560c85534c499861219d9910a6d3ebff011c",
+      "homes": [
+        "growth-details-2"
+      ]
+    },
+    {
+      "old_article": "growth",
+      "line": 14,
+      "source_sha256": "5415035d7920ff31b55503d9370651e751f076527f5e4ce01d9a21a9a46b5dc4",
+      "homes": [
+        "growth-details-2"
+      ]
+    },
+    {
+      "old_article": "growth",
+      "line": 18,
+      "source_sha256": "41bdd50e2618be2f0df75e7b9f68a1cd442f2d0dbe57c896072452221b074103",
+      "homes": [
+        "growth-next-citizen"
+      ]
+    },
+    {
+      "old_article": "growth",
+      "line": 25,
+      "source_sha256": "9b62d4cc7fdcad107e1f3b298e8bbdac9b6020dd44ca98eda6b9e6d8d9da277b",
+      "homes": [
+        "growth-next-citizen"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 1,
+      "source_sha256": "4518e94fad5bb77a7df410675870b6f4ad50d6924ca1cd3e0e4b6697d6475e9b",
+      "homes": [
+        "buildings"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 3,
+      "source_sha256": "7005c6ead1a8163aeb7fed8d3399eab368f63b471d90f06fbd0bc046e5cc0280",
+      "homes": [
+        "farm"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 3,
+      "source_sha256": "b8f98ac0a47cafbdd95d82b80fddcc108c47e2da81af048b24879af23d907a27",
+      "homes": [
+        "buildings"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 3,
+      "source_sha256": "8c6c6d698c5b9641e4382248846db471903eda6ea7a4b31bcc8b7448a5ead0bc",
+      "homes": [
+        "buildings-details"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 3,
+      "source_sha256": "70d6734517b3ef05e3fdb37de2767541d15499ea2eabad85cbc55b16393f452b",
+      "homes": [
+        "lumbermill"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 3,
+      "source_sha256": "434a7fa4fe6d6cd4e5ec8b0870ffeb4c2d5df0820905243f93ea9a8d83dcf6a3",
+      "homes": [
+        "stone-quarry"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 3,
+      "source_sha256": "858119c10e5ab514df929b3bf38c12aa080cc01d536805308dc1b937d727cf95",
+      "homes": [
+        "mine"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 3,
+      "source_sha256": "d61879d7adc60e2155a502d48ec31da8e14f9cf8ac179b25fba8231fa500b3fe",
+      "homes": [
+        "foundry"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 3,
+      "source_sha256": "70efc8276cf5de71f2a8cf9baca5d708e266fe5a08b0a11a692d62a41727c0f5",
+      "homes": [
+        "barracks"
+      ],
+      "correction": "Barracks gates Spearmen and Bronze Guard; Chariot requires Stable, not Barracks. Documentation corrected, no mechanics changed."
+    },
+    {
+      "old_article": "buildings",
+      "line": 3,
+      "source_sha256": "07896d3a4750693ba445a99173414c7e36f0c06ae371b4b42f1d5bf626c2200a",
+      "homes": [
+        "stable"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 3,
+      "source_sha256": "40c49c1f2b8c3f9ecd24819ff5bccaff482c50a904ac8d4031106eb18605dd66",
+      "homes": [
+        "olive-press"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 3,
+      "source_sha256": "8f8789e978063f3bf89233658a12bc18eb2cb0641163297ce8ffa0482e78f1b8",
+      "homes": [
+        "winery"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 3,
+      "source_sha256": "7f7dd8bf0a0426761ab7635eec087190aaf3b9655887019080b632b370aababb",
+      "homes": [
+        "pen"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 3,
+      "source_sha256": "ca85666464be75c49177d8291820bf63eab6ebe92580e409426ba53942ca0f1a",
+      "homes": [
+        "market"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 3,
+      "source_sha256": "ee0fd0503a768d1dc838d5c597f35e15f3ceecf6e2b607263522b4e2958e5a56",
+      "homes": [
+        "temple"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 3,
+      "source_sha256": "d36b70a42c72bbf30256d1eca824d1d6f2a95de2b036f68f94fc50961f69f0b8",
+      "homes": [
+        "granary"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 3,
+      "source_sha256": "93b06f01735c7f8b1b822aa16367606b789c593d4aa26ce12db1193184c8d748",
+      "homes": [
+        "walls"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 22,
+      "source_sha256": "16273e7e87d81168d81da07a9ba1f6eb654c3bc911f3b88da4c682d924e3ed04",
+      "homes": [
+        "buildings-details-3"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 24,
+      "source_sha256": "fdad199a8ec16c73f7275629e5c3f6adaf94092b807ef991c90f99d740680c46",
+      "homes": [
+        "buildings-details-3"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 28,
+      "source_sha256": "62afae18d4b111d34143b3eafe77b120a93a7a6e24bab809b936d9b09db1f455",
+      "homes": [
+        "hex-buildings"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 30,
+      "source_sha256": "25bab5854cc3e9ddea8e00ee31b5a87ff9e8f7c6255913eb4b10cca237e42b3d",
+      "homes": [
+        "hex-buildings"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 32,
+      "source_sha256": "8ecd211e07d7d207ad485b4beef36456c9498c8584ccfaec9b7646a81db5ba65",
+      "homes": [
+        "hex-buildings-2"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 36,
+      "source_sha256": "40bc0c252ebf2dd0ac0bef6fa906a19e68a2a5d55faa4f56f73dc15995a8ea56",
+      "homes": [
+        "hex-production-buildings"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 40,
+      "source_sha256": "47dc1c842ddee0ebb636acf5a913533a1e178660e7d7d2eb18975dc8e6fc83e1",
+      "homes": [
+        "building-levels"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 42,
+      "source_sha256": "43bd87800724499a18a35a9f088852c11c75232d60b6649cb8c3234608b41b6c",
+      "homes": [
+        "building-levels"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 44,
+      "source_sha256": "7ed1f0da8a214eeba708c75c2f90efd6374b041838422620b5f71ed2e21eb4e9",
+      "homes": [
+        "building-levels"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 46,
+      "source_sha256": "0f6b29e38e84f062b407b86f845cf8576453b6ea9c98cf79bd9a0a161d75486c",
+      "homes": [
+        "building-levels"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 49,
+      "source_sha256": "c8d53353d7931b74030aeb45f7304f3183010f8863e7cee91a111f7a73ae092b",
+      "homes": [
+        "building-levels-2"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 51,
+      "source_sha256": "d8a0467ff40b650e22658c9ef9f02ca960bf969466e38c0fdb57ace359e932d8",
+      "homes": [
+        "building-levels-2"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 55,
+      "source_sha256": "16f0d47f958290a8f7d49dc4bffa1ec554772668e7b51ddc25926e6083b6ede1",
+      "homes": [
+        "demolition"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 57,
+      "source_sha256": "a12b0a4b5cc665f0fec7306fdd0eae864c19e85cf05922f30e8b2b1d9ba9a09b",
+      "homes": [
+        "demolition"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 59,
+      "source_sha256": "3345a6486d61ee3b4dfe5732db53d494103e7256ca162396af7a6f9c268571d3",
+      "homes": [
+        "demolition"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 61,
+      "source_sha256": "3b04d2bf284aaeed3d32a711ab1b5a3871919536923928fb2b839ba70b56c5e7",
+      "homes": [
+        "demolition-2"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 63,
+      "source_sha256": "9e9f7b0994ad37a35004036a3225e595d54959e5008f341506f327616f5ece27",
+      "homes": [
+        "demolition-2"
+      ]
+    },
+    {
+      "old_article": "buildings",
+      "line": 65,
+      "source_sha256": "8afd62c41c700ff6438a1b98075043f1d4f6cbf4db5b88b8f2b3f60da37490eb",
+      "homes": [
+        "demolition-2"
+      ]
+    },
+    {
+      "old_article": "goods",
+      "line": 1,
+      "source_sha256": "a1aec9b6e28bf98f41dc1f5759ceddf162b709c8f8b58f8390eff9dda135e379",
+      "homes": [
+        "goods"
+      ]
+    },
+    {
+      "old_article": "goods",
+      "line": 3,
+      "source_sha256": "fd792c430f115df71c186fc5234deb2e5eeaf67cd90ffc60d7f89d7b58a73556",
+      "homes": [
+        "goods"
+      ]
+    },
+    {
+      "old_article": "goods",
+      "line": 3,
+      "source_sha256": "43181d98cecda9fb9463e52aa12d5cab51f64edc4aaf8b28ea70c0ba991b20ef",
+      "homes": [
+        "goods"
+      ]
+    },
+    {
+      "old_article": "goods",
+      "line": 3,
+      "source_sha256": "c04b34e01c660a324ed0bea1c8e25192d45340c6f482f11ac403d7f00c10a148",
+      "homes": [
+        "goods-details"
+      ]
+    },
+    {
+      "old_article": "goods",
+      "line": 3,
+      "source_sha256": "c19bc7898ce018c8e3167f05b3f7c9bc5cd937d979f96fd47aef21284ae37d5a",
+      "homes": [
+        "goods-details"
+      ]
+    },
+    {
+      "old_article": "goods",
+      "line": 3,
+      "source_sha256": "4946dd66b4ea6b79ae657ca2867ec6f3b73364851dddfee9eb57a7464a301d5b",
+      "homes": [
+        "goods-details"
+      ]
+    },
+    {
+      "old_article": "goods",
+      "line": 3,
+      "source_sha256": "53a9a3a2868518e555567871c28808d252ef250ec87047047671555c25dbd952",
+      "homes": [
+        "goods-details"
+      ]
+    },
+    {
+      "old_article": "goods",
+      "line": 3,
+      "source_sha256": "97e4457f0d8f5828d3c85c32a2bdbdf9970ec822633a414a84401402738153cf",
+      "homes": [
+        "goods-details"
+      ]
+    },
+    {
+      "old_article": "goods",
+      "line": 3,
+      "source_sha256": "ff773dba3f54e47b43a71da10ffe64826f75550c04917b9aeeb44fbe3ebaf4a2",
+      "homes": [
+        "goods-details"
+      ]
+    },
+    {
+      "old_article": "goods",
+      "line": 16,
+      "source_sha256": "2d172aa8fc68d01e5b4f82297041666c1bf7cac0e6cb24110385df4de58f5a1f",
+      "homes": [
+        "goods-the-three-tabs"
+      ]
+    },
+    {
+      "old_article": "goods",
+      "line": 20,
+      "source_sha256": "d20c6e22f5c904ac3a34f6fda20857a9efd3776bdcbe2d11ac6480f309fdea95",
+      "homes": [
+        "goods-the-three-tabs"
+      ]
+    },
+    {
+      "old_article": "goods",
+      "line": 24,
+      "source_sha256": "dbc3f88a962d07c8c301492f1ff8334c633a72fd7f43daa19acda8988ad7e298",
+      "homes": [
+        "goods-offerings-and-trade"
+      ]
+    },
+    {
+      "old_article": "goods",
+      "line": 26,
+      "source_sha256": "eba1e8e502e854a0e03ac498eecd1bd51c603f22db1f3f3dd5651282742f3036",
+      "homes": [
+        "goods-offerings-and-trade"
+      ]
+    },
+    {
+      "old_article": "goods",
+      "line": 28,
+      "source_sha256": "30a6cf02007b6c1db523004ab7f295b38ef0ee97dc4ebb667e5c9055f0af16ae",
+      "homes": [
+        "goods-offerings-and-trade"
+      ]
+    },
+    {
+      "old_article": "goods",
+      "line": 33,
+      "source_sha256": "6524417fe4cbe34c61005f14e351ed28c8f06ad9aa58de126e00f9a2a855c79a",
+      "homes": [
+        "goods-storage-capacity"
+      ]
+    },
+    {
+      "old_article": "goods",
+      "line": 35,
+      "source_sha256": "108961c582a995645d5e45af2017a0f650f37e1ce6350b6f82430a0f35049b35",
+      "homes": [
+        "goods-storage-capacity"
+      ]
+    },
+    {
+      "old_article": "goods",
+      "line": 37,
+      "source_sha256": "3f02252a46becb0162cc04f021a37d8a8394ae1a921bb80c1844d42161d17b65",
+      "homes": [
+        "goods-storage-capacity"
+      ]
+    },
+    {
+      "old_article": "goods",
+      "line": 39,
+      "source_sha256": "b1a01e93896f7a87354bcf236039c626feba05e9ed8759a6bc41285d97a1060d",
+      "homes": [
+        "goods-storage-capacity-2"
+      ]
+    },
+    {
+      "old_article": "silver",
+      "line": 1,
+      "source_sha256": "b3a2619fa15805acacd780af1dca40157a0262c616e9e6a208f74101fae91fa4",
+      "homes": [
+        "silver"
+      ]
+    },
+    {
+      "old_article": "silver",
+      "line": 3,
+      "source_sha256": "0a9eb8dd10ef5d0689e2481136b87c3d8a69924bf213ae962d9a1ec50951eb48",
+      "homes": [
+        "silver"
+      ]
+    },
+    {
+      "old_article": "silver",
+      "line": 7,
+      "source_sha256": "d706e6dc09b877535152496c758e770438bc4f553c78e44c211b6fe8a200a0e6",
+      "homes": [
+        "silver"
+      ]
+    },
+    {
+      "old_article": "silver",
+      "line": 10,
+      "source_sha256": "8da40f5689dc3c7dc613e9f4f602ebc7f2631ff2024f9a84c7ba4a66ea88b07a",
+      "homes": [
+        "silver"
+      ]
+    },
+    {
+      "old_article": "silver",
+      "line": 12,
+      "source_sha256": "a272dbb0ca376ee1a7e87a85f7efff9a7f7bf9125642318fdec199b863b75404",
+      "homes": [
+        "silver"
+      ]
+    },
+    {
+      "old_article": "incense",
+      "line": 1,
+      "source_sha256": "84684683245b17dcee1ceeb09db1ba33d52bf2160479e551d99b845e783929b2",
+      "homes": [
+        "incense"
+      ]
+    },
+    {
+      "old_article": "incense",
+      "line": 5,
+      "source_sha256": "f575aa194a296de7d76cf8425fe5cba88b9384cba39f96cc98fc9667190e0747",
+      "homes": [
+        "incense-where-it-comes-from"
+      ]
+    },
+    {
+      "old_article": "incense",
+      "line": 9,
+      "source_sha256": "ceb4a03a4e5d18a515e861f5fbf117b1873753eafc831bc47a4c7e22b918fa97",
+      "homes": [
+        "incense-what-it-does-at-the-altar"
+      ]
+    },
+    {
+      "old_article": "incense",
+      "line": 13,
+      "source_sha256": "0dbd5625500ddfa6da27fbf669a8393844c16bdae9584bc92c6e0061c54076f0",
+      "homes": [
+        "incense-some-history"
+      ]
+    },
+    {
+      "old_article": "surplus",
+      "line": 1,
+      "source_sha256": "75d448b6aa5400adf7ce6f27ebd70c4bd3092fe6ae41c372295692433c59ec1d",
+      "homes": [
+        "surplus"
+      ]
+    },
+    {
+      "old_article": "surplus",
+      "line": 3,
+      "source_sha256": "061b5d22c8ca89ff62ab50a899a05daa913e874d225d5188915d37edb70bce92",
+      "homes": [
+        "surplus"
+      ]
+    },
+    {
+      "old_article": "surplus",
+      "line": 5,
+      "source_sha256": "7df98fac02351a15792ce216cd0874dee87ac723c39b4c2cb1819133a553b93b",
+      "homes": [
+        "surplus"
+      ]
+    },
+    {
+      "old_article": "surplus",
+      "line": 7,
+      "source_sha256": "4cc90893dd75b96d14d09edb99d6256d5701c0a561da0541e3f1034cdddcabe4",
+      "homes": [
+        "surplus"
+      ]
+    },
+    {
+      "old_article": "gifts",
+      "line": 1,
+      "source_sha256": "38cc3a7deb720753ca463b553e062bffe5b098f901d47bf0e5606c493778210b",
+      "homes": [
+        "gifts"
+      ]
+    },
+    {
+      "old_article": "gifts",
+      "line": 3,
+      "source_sha256": "d9e22d6c76a6b19f5045559dd7064954d71accd0fc77d87c49581bfa74f09f52",
+      "homes": [
+        "gifts"
+      ]
+    },
+    {
+      "old_article": "gifts",
+      "line": 7,
+      "source_sha256": "df046c86630282c66b39f3ca28eabfae08a57ac2ba7f21a1adc7f5236f766e06",
+      "homes": [
+        "gifts-on-the-road"
+      ]
+    },
+    {
+      "old_article": "gifts",
+      "line": 9,
+      "source_sha256": "5e6d29ffafda289fb8a3233394d63e613d92e1bd8d381ea8108c03d7b7b86f02",
+      "homes": [
+        "gifts-on-the-road"
+      ]
+    },
+    {
+      "old_article": "gifts",
+      "line": 13,
+      "source_sha256": "aee3651863ce4e7fb41049035f3a50d44340a62606b8f1bf610f1343e443d1c5",
+      "homes": [
+        "gifts-at-the-destination"
+      ]
+    },
+    {
+      "old_article": "gifts",
+      "line": 15,
+      "source_sha256": "a26700cacf903114b16cb8a860cb9082f082d6e6883e3c3a0f7e14876e095e71",
+      "homes": [
+        "gifts-at-the-destination"
+      ]
+    },
+    {
+      "old_article": "gifts",
+      "line": 17,
+      "source_sha256": "8cb66c660f55b8d899b5f8a58bb4ba598ca94e6e7087daf64ca2c29408e7d519",
+      "homes": [
+        "gifts-at-the-destination"
+      ]
+    },
+    {
+      "old_article": "gifts",
+      "line": 19,
+      "source_sha256": "2be9e57a4bc851c533882fba33bf6041e47acacf3afe927de90384eaf59e274c",
+      "homes": [
+        "gifts-at-the-destination"
+      ]
+    },
+    {
+      "old_article": "gifts",
+      "line": 21,
+      "source_sha256": "f460597591504bafaf2c17d4504966a791cd1b923a7072eaa5cfb785e854af34",
+      "homes": [
+        "gifts-at-the-destination"
+      ]
+    },
+    {
+      "old_article": "transfers",
+      "line": 1,
+      "source_sha256": "0d7ea934d5297ec238defccd191fac1593efe4ebab2493316d16e0f153351247",
+      "homes": [
+        "transfers"
+      ]
+    },
+    {
+      "old_article": "transfers",
+      "line": 3,
+      "source_sha256": "12e5fca2fd7fe980bd7955c5b8a20af612ce82d2e45353cc290b3e557bd24075",
+      "homes": [
+        "transfers"
+      ]
+    },
+    {
+      "old_article": "transfers",
+      "line": 7,
+      "source_sha256": "414e3893a8bfbb3f2d389a55a07ae41a2204c033a6521f137b7eb582db5f9f8f",
+      "homes": [
+        "transfers-cargo-is-physical"
+      ]
+    },
+    {
+      "old_article": "transfers",
+      "line": 9,
+      "source_sha256": "4267aa7f89e0763eeab63a6804abd2c91ce19880265ce34c69c1fbba1c04628c",
+      "homes": [
+        "transfers-cargo-is-physical"
+      ]
+    },
+    {
+      "old_article": "transfers",
+      "line": 11,
+      "source_sha256": "c3afa15b9ba65ce4753f4004ec35f2d0e25ba3d7da37d6bafc8ce2a3639eb4d4",
+      "homes": [
+        "transfers-cargo-is-physical"
+      ]
+    },
+    {
+      "old_article": "transfers",
+      "line": 15,
+      "source_sha256": "df9e1ef695f1f253d040fd9134f6382038498b44d65c2e72f1ea490b2d00a8e4",
+      "homes": [
+        "transfers-sending-it-by-sea"
+      ],
+      "correction": "Clarify automatic routing versus explicit saved choice; preserve current visible tab labels. No new mechanics."
+    },
+    {
+      "old_article": "transfers",
+      "line": 17,
+      "source_sha256": "ada0132210acdf06106ed65ef18cf286cbd0f6b93a5dcceec8b03321408a9370",
+      "homes": [
+        "transfers-sending-it-by-sea"
+      ]
+    },
+    {
+      "old_article": "transfers",
+      "line": 19,
+      "source_sha256": "acb2558c637815bf4b0caa4cc905875e1802d104ac69da48e5e37579fba659d0",
+      "homes": [
+        "transfers-sending-it-by-sea"
+      ]
+    },
+    {
+      "old_article": "transfers",
+      "line": 21,
+      "source_sha256": "a90e4daf3326004806552d82d44e2e70910d8e12393f85d64aa707136f74da4e",
+      "homes": [
+        "transfers-sending-it-by-sea-2"
+      ]
+    },
+    {
+      "old_article": "transfers",
+      "line": 25,
+      "source_sha256": "80def8c53b24642e5a5144c6cb8cd69471796718971c97df0875438220849eff",
+      "homes": [
+        "transfers-sending-it-by-sea-2"
+      ]
+    },
+    {
+      "old_article": "transfers",
+      "line": 29,
+      "source_sha256": "7e1b1f229145a242299f2a78ddd9048dfe279b40ba2f49323e7fe93c6ae57664",
+      "homes": [
+        "transfers-route-and-journey-time"
+      ]
+    },
+    {
+      "old_article": "transfers",
+      "line": 35,
+      "source_sha256": "e9615f9321e1e91714ce34351f437588bebc3a02d9eb7c10ab893326c78a5735",
+      "homes": [
+        "transfers-route-and-journey-time"
+      ]
+    },
+    {
+      "old_article": "transfers",
+      "line": 41,
+      "source_sha256": "6561b4ff74f48384648b20f9d08b9971b6ce321c3f04704438cab716b353c269",
+      "homes": [
+        "transfers-route-and-journey-time"
+      ]
+    },
+    {
+      "old_article": "transfers",
+      "line": 47,
+      "source_sha256": "4f301c28c4070d876a4de2157d8f49c4421ef8e41f03cf61f79d367a1fcd49c6",
+      "homes": [
+        "transfers-route-and-journey-time-2"
+      ]
+    },
+    {
+      "old_article": "transfers",
+      "line": 49,
+      "source_sha256": "78bd1e2bdf1176a20daea9e9bb132c75568ab71a2c1dcff2f39aed7c7f236763",
+      "homes": [
+        "transfers-route-and-journey-time-2"
+      ]
+    },
+    {
+      "old_article": "transfers",
+      "line": 57,
+      "source_sha256": "0da2d0b11613cce5c0c5862460f45fdfd2990e7564e78baedaa2ae54ddf7bab7",
+      "homes": [
+        "transfers-choose-land-or-sea"
+      ]
+    },
+    {
+      "old_article": "transfers",
+      "line": 59,
+      "source_sha256": "3c7f608a64186376b294836472d5f51323e814cb4b7fd66935b82432a55826bc",
+      "homes": [
+        "transfers-choose-land-or-sea"
+      ]
+    },
+    {
+      "old_article": "transfers",
+      "line": 61,
+      "source_sha256": "1cfb669e0ba320bcfe8aef8ad02095277f1f74ce539326d32ee4791eb60333fd",
+      "homes": [
+        "transfers-choose-land-or-sea"
+      ]
+    },
+    {
+      "old_article": "transfers",
+      "line": 63,
+      "source_sha256": "5b6e334fc8e6a84ab8078025c5b804e5a7c077af9d6eed77d2991a8208202357",
+      "homes": [
+        "transfers-choose-land-or-sea-2"
+      ]
+    },
+    {
+      "old_article": "routes",
+      "line": 1,
+      "source_sha256": "22e6b342591d8cde7ef5bd69145f76bf1152d5f828d4c891abe032ea467141b3",
+      "homes": [
+        "routes"
+      ],
+      "correction": "Clarify automatic routing versus explicit saved choice; preserve current visible tab labels. No new mechanics."
+    },
+    {
+      "old_article": "routes",
+      "line": 3,
+      "source_sha256": "fd9ad926f23207fc01f8b9b376b872d9ff14cc03f48a41f35eef5b0ff828f021",
+      "homes": [
+        "routes"
+      ]
+    },
+    {
+      "old_article": "routes",
+      "line": 5,
+      "source_sha256": "e72f8ec4cb014f5fa49dd57a80685e49dc665b2a4a138e4828ce72e61e4aa4df",
+      "homes": [
+        "routes-details"
+      ]
+    },
+    {
+      "old_article": "routes",
+      "line": 8,
+      "source_sha256": "328095be417d032787a7b03ea0606eb8609354a1528eb13b2cef0ce203e8dce1",
+      "homes": [
+        "routes-details-2"
+      ]
+    },
+    {
+      "old_article": "routes",
+      "line": 12,
+      "source_sha256": "d723a8e66703c7b0f18573a7f7189f0f1a903fd0669eb3cbf78a0f3212d16751",
+      "homes": [
+        "routes-what-to-use-it-for"
+      ]
+    },
+    {
+      "old_article": "routes",
+      "line": 16,
+      "source_sha256": "b776d6f64b6673a5d05d9edce0597c07a9359c22b9c0fca16630d056a4031915",
+      "homes": [
+        "routes-what-to-use-it-for"
+      ]
+    },
+    {
+      "old_article": "routes",
+      "line": 20,
+      "source_sha256": "1c69f347f20e0067210287ae18c623a1fbd7d55c424c30b1581960d6b998d91d",
+      "homes": [
+        "routes-sea-routes"
+      ],
+      "correction": "Clarify automatic routing versus explicit saved choice; preserve current visible tab labels. No new mechanics."
+    },
+    {
+      "old_article": "routes",
+      "line": 22,
+      "source_sha256": "4c08d2da27e981fdebe22cf2a35076a5ab1fc2c9bae2c6e03f835263a326be92",
+      "homes": [
+        "routes-sea-routes"
+      ]
+    },
+    {
+      "old_article": "routes",
+      "line": 26,
+      "source_sha256": "406aa7c12b4b0ced0e2fff622ee36f23d2a299cfdee4c0f4d9f199d96c3bbaa2",
+      "homes": [
+        "trade-route-and-journey-time",
+        "routes-route-and-journey-time"
+      ]
+    },
+    {
+      "old_article": "routes",
+      "line": 32,
+      "source_sha256": "3bd5616daea228e912800267b12a13fc5deefd9f5070e223f6d021282a84d801",
+      "homes": [
+        "trade-route-and-journey-time",
+        "routes-route-and-journey-time"
+      ]
+    },
+    {
+      "old_article": "routes",
+      "line": 39,
+      "source_sha256": "f5f5be2f3ad686cc5b35e58fe5596abbdf4d8c09ccdd4210b2b22438a89f1a74",
+      "homes": [
+        "routes-follow-your-cargo"
+      ]
+    },
+    {
+      "old_article": "routes",
+      "line": 45,
+      "source_sha256": "18d565df39a265ffbee006cd484ddda0b4b981dcb505bb541465178c9e6582c6",
+      "homes": [
+        "routes-follow-your-cargo"
+      ]
+    },
+    {
+      "old_article": "trade",
+      "line": 1,
+      "source_sha256": "c2a431dcf49f0560c89c7c80a685dc63c6670d618c44798107d25360bac56d5f",
+      "homes": [
+        "trade"
+      ]
+    },
+    {
+      "old_article": "trade",
+      "line": 3,
+      "source_sha256": "98053d70605f871a05096bd82fd3b79d16b50d3f3b0540d369137b54191b1a4c",
+      "homes": [
+        "trade"
+      ]
+    },
+    {
+      "old_article": "trade",
+      "line": 7,
+      "source_sha256": "fb2fcde1aa84688341adec916cdba3e1abf773ea8cdd2f765c040a19fbb000dd",
+      "homes": [
+        "trade-making-an-offer"
+      ]
+    },
+    {
+      "old_article": "trade",
+      "line": 9,
+      "source_sha256": "45d9019709e41d2c48ada9a5024c11653f75a263f939fda86df8d9c12f90f909",
+      "homes": [
+        "trade-making-an-offer"
+      ]
+    },
+    {
+      "old_article": "trade",
+      "line": 12,
+      "source_sha256": "42495f9d357c8e6ecb48375a834316a1d252d0601afeede4172d94a86eeaa345",
+      "homes": [
+        "trade-making-an-offer"
+      ]
+    },
+    {
+      "old_article": "trade",
+      "line": 16,
+      "source_sha256": "57c925f07075da69336badef62c6bc5d2aa966bffc00fe0fbf043d3be7d9a09f",
+      "homes": [
+        "trade-answering-an-offer"
+      ]
+    },
+    {
+      "old_article": "trade",
+      "line": 18,
+      "source_sha256": "0a3247f0fd656df3c32584b5724efc161afafabbb10dbbc480ec89ad43aacbbf",
+      "homes": [
+        "trade-answering-an-offer"
+      ]
+    },
+    {
+      "old_article": "trade",
+      "line": 22,
+      "source_sha256": "5e21eeff8bf8fc07ee1e1fa81a721e9fe7845d9abab4c5dfc2f246d80291c407",
+      "homes": [
+        "trade-delivery"
+      ]
+    },
+    {
+      "old_article": "trade",
+      "line": 24,
+      "source_sha256": "30ae17ad98c0f712eb5d7b1026514729682dfe60951caf1bd46a9ec1305a988e",
+      "homes": [
+        "trade-delivery"
+      ]
+    },
+    {
+      "old_article": "trade",
+      "line": 26,
+      "source_sha256": "26a1fb92a8c7a37135b2966f27f6f9e08bc3d0f301cd840c5ad50be15ad72b04",
+      "homes": [
+        "trade-delivery"
+      ],
+      "correction": "Clarify automatic routing versus explicit saved choice; preserve current visible tab labels. No new mechanics."
+    },
+    {
+      "old_article": "trade",
+      "line": 28,
+      "source_sha256": "66a2b4fad4cf3ce69420772b33dd03365c026834ea7978bec76f97b342677b14",
+      "homes": [
+        "trade-delivery"
+      ]
+    },
+    {
+      "old_article": "trade",
+      "line": 30,
+      "source_sha256": "cb5f29ed124583aef7460e57504daa4ae032cd8844f5fcb5a467a8f7d6a16ae7",
+      "homes": [
+        "trade-delivery-2"
+      ]
+    },
+    {
+      "old_article": "trade",
+      "line": 34,
+      "source_sha256": "454965b1c1169c10caa9d1cd35c16f2f2138c96cbbf214d013d46ce0dd090f7c",
+      "homes": [
+        "trade-finding-partners"
+      ]
+    },
+    {
+      "old_article": "trade",
+      "line": 36,
+      "source_sha256": "ffaa15ef6dc2c080adb3cf89279eb5fb17de8bf02cbf80baa96fa5954c6b61d0",
+      "homes": [
+        "trade-finding-partners"
+      ]
+    },
+    {
+      "old_article": "trade",
+      "line": 40,
+      "source_sha256": "406aa7c12b4b0ced0e2fff622ee36f23d2a299cfdee4c0f4d9f199d96c3bbaa2",
+      "homes": [
+        "trade-route-and-journey-time",
+        "routes-route-and-journey-time"
+      ]
+    },
+    {
+      "old_article": "trade",
+      "line": 46,
+      "source_sha256": "3bd5616daea228e912800267b12a13fc5deefd9f5070e223f6d021282a84d801",
+      "homes": [
+        "trade-route-and-journey-time",
+        "routes-route-and-journey-time"
+      ]
+    },
+    {
+      "old_article": "trade",
+      "line": 51,
+      "source_sha256": "333b49331e98326e509b8e514844d93a9401cd3921314f4c49461175345a3b19",
+      "homes": [
+        "trade-route-and-journey-time"
+      ]
+    },
+    {
+      "old_article": "trade",
+      "line": 53,
+      "source_sha256": "3c18482ae1f51b5e3c2f7ca54257ef7841303d5077397ae44f89b0a70e05a16f",
+      "homes": [
+        "trade-route-and-journey-time"
+      ]
+    },
+    {
+      "old_article": "trade",
+      "line": 55,
+      "source_sha256": "677b0e74f105ea1fc623dd63be3f79d45bcf9131155728c288d8a0b81d9802a3",
+      "homes": [
+        "trade-route-and-journey-time-2"
+      ]
+    },
+    {
+      "old_article": "sight",
+      "line": 1,
+      "source_sha256": "2b395d553530a23a0ac7dc01e924abee83f013f6071d73544fd592ff3d20b46b",
+      "homes": [
+        "sight"
+      ]
+    },
+    {
+      "old_article": "sight",
+      "line": 5,
+      "source_sha256": "d59e5f4f8369c557106f5214eee25e4f91174a63085dab71e79404f45a91e0d6",
+      "homes": [
+        "live-sight"
+      ]
+    },
+    {
+      "old_article": "sight",
+      "line": 7,
+      "source_sha256": "c226a05359a1d6db5a677d19568c139456bcabea449441f8136aa014c14bebf4",
+      "homes": [
+        "live-sight"
+      ]
+    },
+    {
+      "old_article": "sight",
+      "line": 16,
+      "source_sha256": "7bf9b9f58ef4e04fcaab9112f8f23b8ddbeb36db9e97f0a4c5627e1705cb62e5",
+      "homes": [
+        "live-sight-2"
+      ]
+    },
+    {
+      "old_article": "sight",
+      "line": 20,
+      "source_sha256": "8935309dca579c3ca5c10837ce7bf1af94ea8fb106fb4508d036b8974b288f72",
+      "homes": [
+        "map-memory"
+      ]
+    },
+    {
+      "old_article": "sight",
+      "line": 22,
+      "source_sha256": "bb16b3cd29bd76cdec142f7f95b624bf0dbf1e457c9a2ae9d0dfb8df44cece12",
+      "homes": [
+        "map-memory"
+      ]
+    },
+    {
+      "old_article": "sight",
+      "line": 26,
+      "source_sha256": "78d92d9040f6a6a048f1e48d2c82fff10ec87e11ef9f987d72d9a1637d35aa8b",
+      "homes": [
+        "map-actors"
+      ]
+    },
+    {
+      "old_article": "sight",
+      "line": 28,
+      "source_sha256": "d93ce13f8f98b747e01289b55581e32ac10610c54e2d69adbeedb05a0165a0f5",
+      "homes": [
+        "map-actors"
+      ]
+    },
+    {
+      "old_article": "sight",
+      "line": 32,
+      "source_sha256": "404b351f77c834db2abda4b035ce3fcfa6110264f645b5d0eabaaf4149d5296e",
+      "homes": [
+        "exploration"
+      ]
+    },
+    {
+      "old_article": "sight",
+      "line": 34,
+      "source_sha256": "72155001a31b73dae8f6c5d4cf02e11c65fceb49ab59ac14615a8d4007489c73",
+      "homes": [
+        "exploration"
+      ]
+    },
+    {
+      "old_article": "sight",
+      "line": 34,
+      "source_sha256": "66deb70ab2e11da343d0611d66a65d355fcee648bb79afabae8e70a3019e1cb2",
+      "homes": [
+        "exploration-2"
+      ]
+    },
+    {
+      "old_article": "sight",
+      "line": 34,
+      "source_sha256": "8681de43cfd87d2b53592b53ebc02ed619c83cc22fc0ecc9213253e6a2a204da",
+      "homes": [
+        "exploration-2"
+      ]
+    },
+    {
+      "old_article": "sight",
+      "line": 34,
+      "source_sha256": "3e437f77d791399556e0a96272357b97236e33242aaad2b02593d98d6dd4aa76",
+      "homes": [
+        "exploration-2"
+      ]
+    },
+    {
+      "old_article": "sight",
+      "line": 34,
+      "source_sha256": "e2b68da4f80399a3e0a633ce6859409f2919fce7a66fd9e0ab1d7b775c2a2249",
+      "homes": [
+        "exploration-3"
+      ]
+    },
+    {
+      "old_article": "sight",
+      "line": 34,
+      "source_sha256": "7ae4bbd7d1b314f7ce0491502ed3396e2542a4cecf86719ac070d7ac4579f034",
+      "homes": [
+        "exploration-3"
+      ]
+    },
+    {
+      "old_article": "sight",
+      "line": 42,
+      "source_sha256": "0e523d0d5b97f7a4a4337a834f689f15d0993195f4af409ebacfc8637571787d",
+      "homes": [
+        "exploration-3"
+      ]
+    },
+    {
+      "old_article": "sight",
+      "line": 46,
+      "source_sha256": "68caace0f4a01e77504ee0cb3120275e25f53a28393dc72350664a8783bce579",
+      "homes": [
+        "rivers"
+      ]
+    },
+    {
+      "old_article": "sight",
+      "line": 48,
+      "source_sha256": "ca16a38c97027a53954b108f45392094d3059618f5dee95604b9870aa834600b",
+      "homes": [
+        "rivers"
+      ]
+    },
+    {
+      "old_article": "xenia",
+      "line": 1,
+      "source_sha256": "da52f735940084bc7207ee493177f201c89dc043f803d9fbe7237122f1431dfc",
+      "homes": [
+        "xenia"
+      ]
+    },
+    {
+      "old_article": "xenia",
+      "line": 5,
+      "source_sha256": "03f17275cd82458d55bbcc830ce8fb57dcb44d32dfccae0291dbbe8768c441c1",
+      "homes": [
+        "xenia-themis-what-the-gods-hold"
+      ]
+    },
+    {
+      "old_article": "xenia",
+      "line": 9,
+      "source_sha256": "41d66f524defa0e13bc2ffd581eae6ad8f9b4c22963c69753fbefc3fa930d489",
+      "homes": [
+        "xenia-the-messenger-is-sacred"
+      ]
+    },
+    {
+      "old_article": "xenia",
+      "line": 13,
+      "source_sha256": "57efec469b7e5e153ee0ecdd014ed480a751ec8bf82f994209770d3a48fa9d6a",
+      "homes": [
+        "xenia-we-carry-each-other-s-messengers"
+      ]
+    },
+    {
+      "old_article": "xenia",
+      "line": 17,
+      "source_sha256": "3e213c13a405044ccfa6c60ff1e24426848c39f3ef345d28dc7758c06d43e960",
+      "homes": [
+        "xenia-the-guest-is-fed"
+      ]
+    },
+    {
+      "old_article": "xenia",
+      "line": 21,
+      "source_sha256": "465698b057023bc15b379ace68973a782b2849f79600c8a916f979b861284e5e",
+      "homes": [
+        "xenia-the-suppliant-hiketeia"
+      ]
+    },
+    {
+      "old_article": "xenia",
+      "line": 23,
+      "source_sha256": "478855a4f85be5e77a6f37d513721be3eb9283e7d8fbc7ca47d3897ac6bc82a0",
+      "homes": [
+        "xenia-the-suppliant-hiketeia"
+      ]
+    },
+    {
+      "old_article": "contact",
+      "line": 1,
+      "source_sha256": "fce8bb9c5f8d4138d1aaea6537793a6c8f2b37674fbee4b2d8b8c1eb80c4143d",
+      "homes": [
+        "contact"
+      ]
+    },
+    {
+      "old_article": "contact",
+      "line": 3,
+      "source_sha256": "388d1bdc63befbc64b55fa7decba5b158037ea39df8394aded20641de810d66e",
+      "homes": [
+        "contact"
+      ]
+    },
+    {
+      "old_article": "contact",
+      "line": 7,
+      "source_sha256": "71eebace5cb0bb209e6000f3a6384f2a388603487b40b6e5694a13b1d34eecf8",
+      "homes": [
+        "contact"
+      ]
+    },
+    {
+      "old_article": "contact",
+      "line": 9,
+      "source_sha256": "9d33dfd55247f6ee733ad8fcadaf67647c5fba00b1136c9896e084f97a7e741b",
+      "homes": [
+        "contact-details"
+      ]
+    },
+    {
+      "old_article": "contact",
+      "line": 11,
+      "source_sha256": "01f3e9d8e9300b6e14d91bac23ca215a5700d4d8ce72b755fb84218a610c5cf3",
+      "homes": [
+        "contact-details"
+      ]
+    },
+    {
+      "old_article": "contact",
+      "line": 13,
+      "source_sha256": "969f0799a0ff477cfce1711a0532061b386cf5fccd877c833325e7d2ee2b6ad3",
+      "homes": [
+        "contact-details"
+      ]
+    },
+    {
+      "old_article": "contact",
+      "line": 15,
+      "source_sha256": "990d749b9ef2b764489751214e8cf08c5124a549f78b4790b9d7eff8fcfed1a1",
+      "homes": [
+        "contact-details"
+      ]
+    },
+    {
+      "old_article": "contact",
+      "line": 17,
+      "source_sha256": "8a71b3d93c7d97d339ff68f7f440d869003c3d736642696b9cdf8fc73b13948b",
+      "homes": [
+        "contact-details"
+      ]
+    },
+    {
+      "old_article": "contact",
+      "line": 19,
+      "source_sha256": "34be7353aaa8fa06a8a13de99409fca3f098af0b99585b986fc3a6c9cd56367e",
+      "homes": [
+        "contact-details-2"
+      ]
+    },
+    {
+      "old_article": "runner-lost-at-sea",
+      "line": 1,
+      "source_sha256": "fd353c3b49c9e1f6dba40f6d22e43f985de1c97a8566da291ab137ff69becc6e",
+      "homes": [
+        "runner-lost-at-sea"
+      ]
+    },
+    {
+      "old_article": "runner-lost-at-sea",
+      "line": 3,
+      "source_sha256": "8c51f6f80a2adce3b7b5dbace93c5127e607259f80eba213b76b8ce82c0269d6",
+      "homes": [
+        "runner-lost-at-sea"
+      ]
+    },
+    {
+      "old_article": "runner-lost-at-sea",
+      "line": 5,
+      "source_sha256": "b5cfcbd50f6883a743190b01476d3cafef6cb24f63d95f0895a71a4dea65dcad",
+      "homes": [
+        "runner-lost-at-sea"
+      ]
+    },
+    {
+      "old_article": "runner-lost-at-sea",
+      "line": 7,
+      "source_sha256": "559c0573b07893ab3d997ed8e54d23c1e0b0c50968e55b436299d1905306d061",
+      "homes": [
+        "runner-lost-at-sea"
+      ]
+    },
+    {
+      "old_article": "runner-lost-at-sea",
+      "line": 9,
+      "source_sha256": "187e2ec80e4e9bc041bf3cc4cf8be51daf5469b9230186128f483f8abf0c46b7",
+      "homes": [
+        "runner-lost-at-sea-details"
+      ]
+    },
+    {
+      "old_article": "runner-lost-at-sea",
+      "line": 11,
+      "source_sha256": "2d81c63dae55385c26efa508496571eff10fcc95ee79d690d412068958d7e330",
+      "homes": [
+        "runner-lost-at-sea-details"
+      ]
+    },
+    {
+      "old_article": "runner-lost-at-sea",
+      "line": 13,
+      "source_sha256": "69047424ca64fc09f70713f3f3c64af96d1d320945dc55602a4483838ed61642",
+      "homes": [
+        "runner-lost-at-sea-details"
+      ]
+    },
+    {
+      "old_article": "runner-lost-at-sea",
+      "line": 15,
+      "source_sha256": "ad498b33e96f1e7ba6bbbfdfa55b78f2fec1ed8e8f4aece9930502a56ed6aa32",
+      "homes": [
+        "runner-lost-at-sea-details"
+      ]
+    },
+    {
+      "old_article": "runner-lost-at-sea",
+      "line": 17,
+      "source_sha256": "c8c4bf5a9541373a70cda6d4a9055a65e207ac4b5352acbd91fc8bed628f8632",
+      "homes": [
+        "runner-lost-at-sea-details-2"
+      ]
+    },
+    {
+      "old_article": "runner-rescued-at-sea",
+      "line": 1,
+      "source_sha256": "bcc863de95a4a19041866e48f068f6985db9da85359bbba1b91f40081e416275",
+      "homes": [
+        "runner-rescued-at-sea"
+      ]
+    },
+    {
+      "old_article": "runner-rescued-at-sea",
+      "line": 3,
+      "source_sha256": "e4b262484133059a40561c693489055fabce4248fea4707b02bf79dff17e5dd3",
+      "homes": [
+        "runner-rescued-at-sea"
+      ]
+    },
+    {
+      "old_article": "runner-rescued-at-sea",
+      "line": 5,
+      "source_sha256": "1b2c9c6287d73af419b88016d30f9af3a4180a4446dfd56e4cd17b6a06f2d046",
+      "homes": [
+        "runner-rescued-at-sea"
+      ]
+    },
+    {
+      "old_article": "runner-rescued-at-sea",
+      "line": 7,
+      "source_sha256": "6848af2d48c32dcfea1863474c339e34d81a5ec7d3b2e1b20320560e925d8e6f",
+      "homes": [
+        "runner-rescued-at-sea-details"
+      ]
+    },
+    {
+      "old_article": "runner-rescued-at-sea",
+      "line": 9,
+      "source_sha256": "2ad96558ea96964854218d5ccd985074393719bfb0e11539803c3c52a4e75d83",
+      "homes": [
+        "runner-rescued-at-sea-details"
+      ]
+    },
+    {
+      "old_article": "runner-rescued-at-sea",
+      "line": 11,
+      "source_sha256": "0cb6853649b0c44d871096f7916f59a51651b7fc4a835deda6af90dd3692fd79",
+      "homes": [
+        "runner-rescued-at-sea-details"
+      ]
+    },
+    {
+      "old_article": "messengers",
+      "line": 1,
+      "source_sha256": "f3c3f9331f8f7a8704874ca4d3319816b7e3a368bdfc6e7a5b1db7e3550f2430",
+      "homes": [
+        "messengers"
+      ]
+    },
+    {
+      "old_article": "messengers",
+      "line": 5,
+      "source_sha256": "6a998c81a140d8b6088189f26132e3ff3b817bbfe151397e939e22c0c947574c",
+      "homes": [
+        "messengers-your-letters"
+      ]
+    },
+    {
+      "old_article": "messengers",
+      "line": 7,
+      "source_sha256": "e6fa32df77030148d8742e4f2f7781d85c64a6e08e60aed73d235a01b2f84eed",
+      "homes": [
+        "messengers-your-letters"
+      ]
+    },
+    {
+      "old_article": "messengers",
+      "line": 9,
+      "source_sha256": "a31937e179946c61e238bcdfcb9f242839c19cdc1e65541c32eeffa8e6a4cd77",
+      "homes": [
+        "messengers-your-letters-2"
+      ]
+    },
+    {
+      "old_article": "messengers",
+      "line": 11,
+      "source_sha256": "e9af095f4ad7d00d7008452a4767512e8eb461a86584c3acc9e61dc314ccf3b8",
+      "homes": [
+        "messengers-your-letters-2"
+      ]
+    },
+    {
+      "old_article": "messengers",
+      "line": 15,
+      "source_sha256": "dbb978c21994ac59b63f8522cf7e1aba9b197d7b8a3ecdaedb4a16b1d5da1909",
+      "homes": [
+        "messengers-letters-take-time"
+      ]
+    },
+    {
+      "old_article": "messengers",
+      "line": 17,
+      "source_sha256": "c7f723aeda538cf6a1d705cdf32c322215aec4dca9a7c65f423ca04e4f47b844",
+      "homes": [
+        "messengers-letters-take-time"
+      ]
+    },
+    {
+      "old_article": "messengers",
+      "line": 19,
+      "source_sha256": "f7036e745022a5e324c48ba0a160367405990dad19996aa10f14f9a99e7a1e07",
+      "homes": [
+        "messengers-letters-take-time"
+      ]
+    },
+    {
+      "old_article": "messengers",
+      "line": 21,
+      "source_sha256": "a42c0383dcaba0ed1b7e60dc39d933d90e55d4b4e0e51c3359ac1f37b9ee71fc",
+      "homes": [
+        "messengers-letters-take-time-2"
+      ]
+    },
+    {
+      "old_article": "messengers",
+      "line": 25,
+      "source_sha256": "42d09245ab2c39350e56c9a8859efba4f2591a01e1a95fbc6081497b3499938c",
+      "homes": [
+        "messengers-messengers-are-sacred"
+      ]
+    },
+    {
+      "old_article": "messengers",
+      "line": 27,
+      "source_sha256": "0b75d169edc4014a2d67a3d7590ae6a9779f7b6c98c60d2ec05c0108b4cd74cc",
+      "homes": [
+        "messengers-messengers-are-sacred"
+      ]
+    },
+    {
+      "old_article": "messengers",
+      "line": 29,
+      "source_sha256": "17ed50c3e0c3d279b1d580667b01873ac97eb1ccaaff1ad48e6d9d153e25750c",
+      "homes": [
+        "messengers-messengers-are-sacred"
+      ]
+    },
+    {
+      "old_article": "messengers",
+      "line": 33,
+      "source_sha256": "06d86e7503c84e19f384ee59c75abf86420db229019ac9cc689f8ab2bf8e8ddf",
+      "homes": [
+        "messengers-crossing-the-sea"
+      ]
+    },
+    {
+      "old_article": "messengers",
+      "line": 35,
+      "source_sha256": "5fb49a3c1d1fe09f60831ab607b78853ac3887d1aca063c4399968eec16d086e",
+      "homes": [
+        "messengers-crossing-the-sea"
+      ]
+    },
+    {
+      "old_article": "gossip",
+      "line": 1,
+      "source_sha256": "54bd5e2ab246486ea03d8bdfe8a2a5fa73963c77d5a965c0bf051326cfc1853d",
+      "homes": [
+        "gossip"
+      ]
+    },
+    {
+      "old_article": "gossip",
+      "line": 3,
+      "source_sha256": "3f7ad156bac7f03f14168766f6edfdace81084806b4493c706369dae8cc9677f",
+      "homes": [
+        "gossip"
+      ]
+    },
+    {
+      "old_article": "gossip",
+      "line": 5,
+      "source_sha256": "3a3b6ee16816f58944b96f2d6fa18e23b7e7d0e4d22be1fc135ac298a444dfe6",
+      "homes": [
+        "gossip"
+      ]
+    },
+    {
+      "old_article": "gossip",
+      "line": 9,
+      "source_sha256": "247b833e1d9b97fbe5d17481bf77fb6e86157dc512cbf0d60115f9848c0730ab",
+      "homes": [
+        "gossip-details"
+      ]
+    },
+    {
+      "old_article": "gossip",
+      "line": 11,
+      "source_sha256": "72a8df6f6b26177b109064e6bcbff0491c831eb0d8710faa8e57bd1bc3ac0d0c",
+      "homes": [
+        "gossip-details"
+      ]
+    },
+    {
+      "old_article": "gossip",
+      "line": 16,
+      "source_sha256": "72809421c7a70c5f71df7c49529617add092d2185249b9cada5e7d73bcbfe92a",
+      "homes": [
+        "gossip-divine-omens"
+      ]
+    },
+    {
+      "old_article": "gossip",
+      "line": 18,
+      "source_sha256": "7e896ea6853a32d7f78549618f44908a2ff779db43c06861b6d88e526ace304f",
+      "homes": [
+        "gossip-divine-omens"
+      ]
+    },
+    {
+      "old_article": "gossip",
+      "line": 20,
+      "source_sha256": "4a96d27f667dfbc2ce49002c018ec849ac2232ee6f799bbf5af458b317d829dd",
+      "homes": [
+        "gossip-divine-omens"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 1,
+      "source_sha256": "81ad4d67c2b2f45f6134dc2d04b06ad0e92426dcd63fca64de08d17cf27be194",
+      "homes": [
+        "sea"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 5,
+      "source_sha256": "e8bb7329475c2eb20eac70461eaa0cf179d8af7ee4d9343ea8264e5440199788",
+      "homes": [
+        "ship-types"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 7,
+      "source_sha256": "de470173578d4c5592cb594b9df89690583356a43c65d79958555d52a8c80444",
+      "homes": [
+        "ship-types"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 11,
+      "source_sha256": "24a50b5c4ab6adb6b96d4f3e917ef78426462b4fe182cca05df2792a9105a6ee",
+      "homes": [
+        "ship-types"
+      ],
+      "correction": "Clarify automatic routing versus explicit saved choice; preserve current visible tab labels. No new mechanics."
+    },
+    {
+      "old_article": "sea",
+      "line": 13,
+      "source_sha256": "c5886d148132f3bc8a5afb5179ec8f68c4df54fdc87ce81bcd21a86484777460",
+      "homes": [
+        "ship-types-2"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 17,
+      "source_sha256": "8deed18b246e8868c9792fd53579c9810eb1988c83869da85fd34e991638eadc",
+      "homes": [
+        "landing-in-own-city"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 19,
+      "source_sha256": "dbd3cbbe7f281bd9a7e617381706edbfb2bbbb52b8596340f809e1387b12b018",
+      "homes": [
+        "landing-in-own-city"
+      ],
+      "correction": "Timothy2026-10-28 physical departure port; deployed d09a74af"
+    },
+    {
+      "old_article": "sea",
+      "line": 21,
+      "source_sha256": "22bea04329ae2a020e60e154b3070fc5e3f7f4b67c1887649251d498c8607737",
+      "homes": [
+        "landing-in-own-city-2"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 25,
+      "source_sha256": "a2e6175d9cb456179e0d4b0ab458a1c2a1b1e425bfefabcbfc4d3494a84474c4",
+      "homes": [
+        "ship-missions"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 25,
+      "source_sha256": "29d35545511cec28b2943033db2e903703b02ed4e10a75cb551950f693fb714e",
+      "homes": [
+        "ship-missions-2"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 25,
+      "source_sha256": "ec87724f77dbb5a26bdfb42a53807fab5f02b57013aa36a25a07a242e38ea8a6",
+      "homes": [
+        "ship-missions-2"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 25,
+      "source_sha256": "82c0fdc14592111f744523b5c1b2e24f7d1ebcad04041f12fc46f67f1cc3dcc5",
+      "homes": [
+        "ship-missions-2"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 25,
+      "source_sha256": "5071ee6295a2240315d5edd0368b29b109aff6f1111032bf3a3ab6b5914ddbf1",
+      "homes": [
+        "ship-missions-3"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 33,
+      "source_sha256": "e00d561083f53d6ba533fd797e268ff4beb9418ec55b59487e781e30b9794869",
+      "homes": [
+        "sea-storm-risks"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 35,
+      "source_sha256": "727457c4aa208685635b9268bd235fbcbe0a9f9b0094ac73f2782dbd04cbedf9",
+      "homes": [
+        "sea-storm-risks-2"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 41,
+      "source_sha256": "5816eb78256b7c63c8ef482bce130b63eac47a0c39269570c130a42550bb68de",
+      "homes": [
+        "ship-loss"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 43,
+      "source_sha256": "c1a6e0a6c9f312c44e0920268ff8673e583eac0447930d48a8113e4c005a9dc7",
+      "homes": [
+        "ship-loss"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 47,
+      "source_sha256": "b05acb4b214449c7c140cec30281a5967d9ac0d31a730d6b3a17935b29ecf7f0",
+      "homes": [
+        "runner-passage"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 49,
+      "source_sha256": "37c5415698e514f27b7f91c1506ad352d915b81c2d97776cb7264b5ffc5b2534",
+      "homes": [
+        "runner-passage"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 49,
+      "source_sha256": "9fc0fbcd730c55d557e9634af178bfc20d0a26a277b04f95bda9e19324f3c7bf",
+      "homes": [
+        "runner-passage-2"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 49,
+      "source_sha256": "a793588f45f5f734b48b8c197c24a54cc37891a7d69a757adde213412ca76601",
+      "homes": [
+        "runner-passage-2"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 49,
+      "source_sha256": "40cc2216349f15d77095c64f1853256ade207a539615788aec418beebb183d8b",
+      "homes": [
+        "runner-passage-3"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 54,
+      "source_sha256": "7aa273006c3178bac2aefb33458c33629044973b409eb3341cb02983d3b6fb4c",
+      "homes": [
+        "runner-passage-3"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 58,
+      "source_sha256": "e67031755edb98ba00eb3eb93692dd43e9f4273b158c3a58d285482974a8a274",
+      "homes": [
+        "runner-passage-on-map"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 60,
+      "source_sha256": "6d84e97ffe57c768585a87337349c3870ee4351ddd7da90f8342ffa1da5d72d1",
+      "homes": [
+        "runner-passage-on-map"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 67,
+      "source_sha256": "8628ec78f96590086b3d1917367f329f36fede7a22838a124864a26352d4a12c",
+      "homes": [
+        "runner-waiting"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 69,
+      "source_sha256": "187481323840ea704e4d227d7e1cbb3a617592884a5561efa57dd8f2b81cbf2d",
+      "homes": [
+        "runner-waiting"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 75,
+      "source_sha256": "93ba7f197f4346928bb49b0d94d226deb81ee38b7d74f1d21001ce4e6055b0e0",
+      "homes": [
+        "runner-return"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 77,
+      "source_sha256": "6789e0e8661abceeee251a08997ea75ef0d8771902146458985af6b26a3fc8c7",
+      "homes": [
+        "runner-return"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 79,
+      "source_sha256": "826e8bf29d4a1af82a91269cb3936399c76f7a5362ce0e8778638477ce0cabd2",
+      "homes": [
+        "runner-return"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 83,
+      "source_sha256": "cf2930310b246032e4ba34a27f60e5cd309741628e042bd913933175056ea797",
+      "homes": [
+        "arrange-passage"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 85,
+      "source_sha256": "b5779e7ed96ad1ecbc0ae2f133ca967ac00b9c8ca5125790f659c23cf5bd0c2e",
+      "homes": [
+        "arrange-passage"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 85,
+      "source_sha256": "313b51c376787c58ee4776537cbfa91a962b3d70ecd69fccd61ee61b6ac0159e",
+      "homes": [
+        "arrange-passage-2"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 85,
+      "source_sha256": "d8973637f1538fd13b24acc19db59eacb32fc5ba062ae1fecd53ae47e60e011a",
+      "homes": [
+        "arrange-passage-2"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 85,
+      "source_sha256": "1a98c888ee24c5f1924c38cb643658df8d3bf600f550cf541500df967e4560a9",
+      "homes": [
+        "arrange-passage-2"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 92,
+      "source_sha256": "cb1d9fc21d7c5b0a711e611fe4c46ecd574f2f8f275b6dcbc9d8730a9befbedc",
+      "homes": [
+        "fetch-by-ship"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 94,
+      "source_sha256": "1130c8cfd07e633a825c2d565443dd1470fb3601c15a29f7f2353a66c74201ad",
+      "homes": [
+        "fetch-by-ship"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 94,
+      "source_sha256": "d025225659f313e93dc7b93782ead19269b03d29bc6bcdd35742d3665904b820",
+      "homes": [
+        "fetch-by-ship"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 94,
+      "source_sha256": "011cbe941826b60af5851fa3eba66d42ab271ee9be334ded44c01f0cb3b0efcc",
+      "homes": [
+        "fetch-by-ship-2"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 94,
+      "source_sha256": "b3f26bce7dd43c52d6060f13915e966539a267fb7ecfc63bbabeefde2b8bd014",
+      "homes": [
+        "fetch-by-ship-2"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 99,
+      "source_sha256": "acf05fac10ba7e6317bbb52ed01daa9b6ea1e6573698cddc3f9957c056109696",
+      "homes": [
+        "fetch-by-ship-2"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 103,
+      "source_sha256": "e02d81da677e902f081a54d1474755c54d73b8c3660dc2f2e2af726d1e80f0cc",
+      "homes": [
+        "sailing-time"
+      ]
+    },
+    {
+      "old_article": "sea",
+      "line": 108,
+      "source_sha256": "3e3e415bdd4c581c68981b81c58067789df1bb24db9d5f499d9ffd3764df2310",
+      "homes": [
+        "units-the-forces-tab-2",
+        "sailing-time"
+      ]
+    },
+    {
+      "old_article": "naming-the-land",
+      "line": 1,
+      "source_sha256": "c9a10a7e152c8e468f66e4b56c27b3a993c2bf9d214795c615823650a7085e79",
+      "homes": [
+        "naming-the-land"
+      ]
+    },
+    {
+      "old_article": "naming-the-land",
+      "line": 3,
+      "source_sha256": "cca13664835189d0382a4efe3fe0f24fa07ee2662393f3a9bf3e35292fccff8f",
+      "homes": [
+        "naming-the-land"
+      ]
+    },
+    {
+      "old_article": "naming-the-land",
+      "line": 5,
+      "source_sha256": "2e967181e3bcb974404e597bcf3a666a071413e3a0dd4eb895e4c1e9f2826cb9",
+      "homes": [
+        "naming-the-land"
+      ]
+    },
+    {
+      "old_article": "naming-the-land",
+      "line": 7,
+      "source_sha256": "93a1c6efea1ae848ab69fb16a5296a37f16dfbd8a93811d821aeb479c4edfe59",
+      "homes": [
+        "naming-the-land-details"
+      ]
+    },
+    {
+      "old_article": "naming-the-land",
+      "line": 11,
+      "source_sha256": "6baf7c45eaa3be8aa8af538b0f55c1160993e8a4a12b7fd0a41be501af6d1290",
+      "homes": [
+        "naming-the-land-give-it-a-name"
+      ]
+    },
+    {
+      "old_article": "naming-the-land",
+      "line": 13,
+      "source_sha256": "bf5a7c17c5c664558577b3b864f619e9950e57698f3295a9dfc4511fb3fc2a88",
+      "homes": [
+        "naming-the-land-give-it-a-name"
+      ]
+    },
+    {
+      "old_article": "naming-the-land",
+      "line": 15,
+      "source_sha256": "138f8a94645420296d2c871d012de353857d9af71e697d9ef220261d029da71a",
+      "homes": [
+        "naming-the-land-give-it-a-name"
+      ]
+    },
+    {
+      "old_article": "naming-the-land",
+      "line": 19,
+      "source_sha256": "29ed075379aaf7788f1a83324d304a0615b33d0d04cee8e5663a807eca1f4d3d",
+      "homes": [
+        "naming-the-land-keryx"
+      ]
+    },
+    {
+      "old_article": "naming-the-land",
+      "line": 21,
+      "source_sha256": "e656f0b04be3e72a784fd264284c4e9ec30997c1c12c330b3f2e1e6317a983bf",
+      "homes": [
+        "naming-the-land-keryx"
+      ]
+    },
+    {
+      "old_article": "naming-the-land",
+      "line": 23,
+      "source_sha256": "4a7467cbd97de5de54a594c6832b39cabbf1ca955e028ddc3aa02276592474cd",
+      "homes": [
+        "naming-the-land-keryx"
+      ]
+    },
+    {
+      "old_article": "naming-the-land",
+      "line": 25,
+      "source_sha256": "6432fd66f4679e503a9fca4f9b5ae410e749e651ff75f3f6b2c7b9c9ec7caffe",
+      "homes": [
+        "naming-the-land-keryx"
+      ]
+    },
+    {
+      "old_article": "storms",
+      "line": 1,
+      "source_sha256": "33931c2f3474d434fb385b2f82aadff7d71691a8f24c28b7f3e1433c94c67b2a",
+      "homes": [
+        "storms"
+      ]
+    },
+    {
+      "old_article": "storms",
+      "line": 5,
+      "source_sha256": "f86a54fb2ad4e9f9c80f72d69a9022d024c524ac207e16ae1c025263024a92b7",
+      "homes": [
+        "storms-how-they-move"
+      ]
+    },
+    {
+      "old_article": "storms",
+      "line": 9,
+      "source_sha256": "0c8cb39d6b97c251dbce18a6e81e05f5b87c2c4fe746d100aec1e7e9962bfb15",
+      "homes": [
+        "storms-what-they-do"
+      ]
+    },
+    {
+      "old_article": "storms",
+      "line": 11,
+      "source_sha256": "4649a6b4e94136d626ff89cb6a36d2b36bda86cfef5b88728d7124047c40cb31",
+      "homes": [
+        "storms-what-they-do"
+      ]
+    },
+    {
+      "old_article": "storms",
+      "line": 13,
+      "source_sha256": "fdc238c1c4b39742a2eee5f8357e39a5cdd0a2f086e3f9c2c5ab2f83eed1b0ef",
+      "homes": [
+        "storms-what-they-do"
+      ]
+    },
+    {
+      "old_article": "storms",
+      "line": 17,
+      "source_sha256": "53badc6266969e7482515a8d5180846ae126f9ad8b6a9bc70bb8b360ec42cf1e",
+      "homes": [
+        "storms-what-you-see"
+      ]
+    },
+    {
+      "old_article": "storms",
+      "line": 19,
+      "source_sha256": "b619eed5e68e62a72ec47bdd4293b09fd5384723f89bfaff5778289de47d466d",
+      "homes": [
+        "storms-what-you-see"
+      ]
+    },
+    {
+      "old_article": "storms",
+      "line": 23,
+      "source_sha256": "b8770d4eb707d08e8403c9345c5c3f95db68d24f919f98cf7f9d66a51f549284",
+      "homes": [
+        "storms-naming-a-storm"
+      ]
+    },
+    {
+      "old_article": "storms",
+      "line": 25,
+      "source_sha256": "8e8af3670d7491abe03e29e97bbe29868fa2f027309feefcde962bff159e6c0c",
+      "homes": [
+        "storms-naming-a-storm"
+      ]
+    },
+    {
+      "old_article": "storms",
+      "line": 27,
+      "source_sha256": "98a58c570900d5f1825729c6564dc1d0b334d2ee584d1fa57fdb96fad2aaf9e4",
+      "homes": [
+        "storms-naming-a-storm"
+      ]
+    },
+    {
+      "old_article": "units",
+      "line": 1,
+      "source_sha256": "9f6022348fe11dc89be68502421307985d148f9e11f2a8965f587166a9c96310",
+      "homes": [
+        "units"
+      ]
+    },
+    {
+      "old_article": "units",
+      "line": 5,
+      "source_sha256": "0a6cea3e8fb80391bf46db03835f5ec5f997619fd4433b85348c6e86740d067b",
+      "homes": [
+        "units-recruiting"
+      ]
+    },
+    {
+      "old_article": "units",
+      "line": 7,
+      "source_sha256": "361a7a86a9d8b1fac16084405c6b54c12a9bee5ba41d718df59a872a19b9b380",
+      "homes": [
+        "units-recruiting"
+      ]
+    },
+    {
+      "old_article": "units",
+      "line": 16,
+      "source_sha256": "0fb771d4f053d7255ca14871673db95118cda2ffc24f6c52558c6e6aa21c549c",
+      "homes": [
+        "units-recruiting"
+      ]
+    },
+    {
+      "old_article": "units",
+      "line": 18,
+      "source_sha256": "68b941d1ec2dee2196015845e9e15bfe0707334856f8dca70dee00ac3a741229",
+      "homes": [
+        "units-recruiting-2"
+      ]
+    },
+    {
+      "old_article": "units",
+      "line": 20,
+      "source_sha256": "16ceff80302dc245c58599328a9a6aeb66d8f0f50a5915f0230ad64d6be0b8a0",
+      "homes": [
+        "units-recruiting-2"
+      ]
+    },
+    {
+      "old_article": "units",
+      "line": 24,
+      "source_sha256": "c040eb114db3e9889f47d7da47928a2b98c65eafb2d4b8481ce628a25574536d",
+      "homes": [
+        "units-recruits-are-your-own-people"
+      ]
+    },
+    {
+      "old_article": "units",
+      "line": 26,
+      "source_sha256": "19ab0c0ac4f8ecbab5dc9534d03ebc83cffbd8de75a314c77eca4134c829d7ad",
+      "homes": [
+        "units-recruits-are-your-own-people"
+      ]
+    },
+    {
+      "old_article": "units",
+      "line": 28,
+      "source_sha256": "66841bf642925b52051fa8422fdde284bfb35d8f6cd8d318c3a9fb2f3a9d530b",
+      "homes": [
+        "units-recruits-are-your-own-people-2"
+      ]
+    },
+    {
+      "old_article": "units",
+      "line": 30,
+      "source_sha256": "dc6b61e0ae0639f3c272e5725614ca2584fd2af32b0a9dbf06560a1c41953ee3",
+      "homes": [
+        "units-recruits-are-your-own-people-3"
+      ]
+    },
+    {
+      "old_article": "units",
+      "line": 34,
+      "source_sha256": "15ccbe183f2e3849f62a970d29f6f4013a9768259b3a45e9fb2eab396be15d62",
+      "homes": [
+        "units-the-forces-tab"
+      ]
+    },
+    {
+      "old_article": "units",
+      "line": 36,
+      "source_sha256": "a3695c470bafd188bcd7ce181e0f6791e7e5bf25c64c1796f6bc394d73a8b950",
+      "homes": [
+        "units-the-forces-tab"
+      ],
+      "correction": "Clarify automatic routing versus explicit saved choice; preserve current visible tab labels. No new mechanics."
+    },
+    {
+      "old_article": "units",
+      "line": 38,
+      "source_sha256": "455abf324e559f2dc382fdb0d001e63d6cd0fe7aab10bdd7cd87cabcc95b7424",
+      "homes": [
+        "units-the-forces-tab-2"
+      ]
+    },
+    {
+      "old_article": "units",
+      "line": 40,
+      "source_sha256": "3e3e415bdd4c581c68981b81c58067789df1bb24db9d5f499d9ffd3764df2310",
+      "homes": [
+        "units-the-forces-tab-2",
+        "sailing-time"
+      ]
+    },
+    {
+      "old_article": "units",
+      "line": 44,
+      "source_sha256": "4fe3dea6715e0f0acc76cf72f333bd54c61ba1aba5cf89d92b05b01c0277e890",
+      "homes": [
+        "units-forces-and-marches"
+      ]
+    },
+    {
+      "old_article": "units",
+      "line": 49,
+      "source_sha256": "619c041b9c61d4f15b3bf1ae0f2b33228feadc46004909f6a26298222e334f2c",
+      "homes": [
+        "units-forces-and-marches"
+      ]
+    },
+    {
+      "old_article": "units",
+      "line": 55,
+      "source_sha256": "48f1e62b6e3a19e0b5f8c19dbfe6be616e80dfa136526e961405ccdfa89eccca",
+      "homes": [
+        "units-forces-and-marches"
+      ]
+    },
+    {
+      "old_article": "galley",
+      "line": 1,
+      "source_sha256": "4dba3f3b339e99e045b4a2ad29ffe3893f5a5b44baf7e5b7182ee4ae88cb91a6",
+      "homes": [
+        "galley"
+      ]
+    },
+    {
+      "old_article": "galley",
+      "line": 3,
+      "source_sha256": "ebe4d959aab42bd952c5560fad0fe5c8eec720e121e2e6ccde9ccb569d94a85d",
+      "homes": [
+        "galley"
+      ]
+    },
+    {
+      "old_article": "galley",
+      "line": 17,
+      "source_sha256": "bea8cc1db2538c735b75f48311717772b43377bc444286d73aa69cc55f3db40c",
+      "homes": [
+        "galley"
+      ]
+    },
+    {
+      "old_article": "galley",
+      "line": 19,
+      "source_sha256": "57e86d8ca2a51cd8c47a6b5c752a59e674f0fa255a3cc081392c60f61c86b996",
+      "homes": [
+        "galley"
+      ]
+    },
+    {
+      "old_article": "war-galley",
+      "line": 1,
+      "source_sha256": "9a2947d17e75de271dc1b6e7ab1c351a5fe9d85fb774bacc02fb4c0a13aeb299",
+      "homes": [
+        "war-galley"
+      ]
+    },
+    {
+      "old_article": "war-galley",
+      "line": 3,
+      "source_sha256": "291fef9bd46333f7f5dd1532ee062f345821fa4870602d7aefdd560f815731d0",
+      "homes": [
+        "war-galley"
+      ]
+    },
+    {
+      "old_article": "war-galley",
+      "line": 19,
+      "source_sha256": "845fa99cf579f44df587eb828ae6ef434dae94473a7d557c8475dee9fe8f8d27",
+      "homes": [
+        "war-galley-why-it-is-dangerous"
+      ]
+    },
+    {
+      "old_article": "war-galley",
+      "line": 21,
+      "source_sha256": "ee61f3d3758060ac85c853f2a8b1ec212843283d3c7be2eed51b238beeec61b7",
+      "homes": [
+        "war-galley-why-it-is-dangerous"
+      ]
+    },
+    {
+      "old_article": "war-galley",
+      "line": 23,
+      "source_sha256": "6a51b0edea39c9764d2eb92bf070f01518f60bab8cf0426610351a36605d2788",
+      "homes": [
+        "war-galley-why-it-is-dangerous"
+      ]
+    },
+    {
+      "old_article": "war-galley",
+      "line": 25,
+      "source_sha256": "3d6f964df88bbb64df12eaefb92436dd10f909cfa0d0869740060d96cf16d97c",
+      "homes": [
+        "war-galley-why-it-is-dangerous"
+      ]
+    },
+    {
+      "old_article": "emporos",
+      "line": 1,
+      "source_sha256": "07fce3bc76951c2b784841b296832426ae222d0ddfbd256b92edd8626b396131",
+      "homes": [
+        "emporos"
+      ]
+    },
+    {
+      "old_article": "emporos",
+      "line": 3,
+      "source_sha256": "fc407bdf954e78882be98792e5a715429a0ee96b664ca37ca4ad1264accbad5a",
+      "homes": [
+        "emporos"
+      ]
+    },
+    {
+      "old_article": "emporos",
+      "line": 17,
+      "source_sha256": "a474bdf3598f1d517df1bacbb67dc7a6bd65d9e9999022b14b3b0103ed3587bb",
+      "homes": [
+        "emporos"
+      ]
+    },
+    {
+      "old_article": "spearmen",
+      "line": 1,
+      "source_sha256": "0d3021a8e7207513720d49885454155c81213043eb328ce71d96c2038578325f",
+      "homes": [
+        "spearmen"
+      ]
+    },
+    {
+      "old_article": "spearmen",
+      "line": 3,
+      "source_sha256": "0e7959bb0b15c49f2e6ec5d2da06c73848893d01a9babaf59549dd701d55b7ff",
+      "homes": [
+        "spearmen"
+      ]
+    },
+    {
+      "old_article": "spearmen",
+      "line": 13,
+      "source_sha256": "3a6eb16c59363aec479644aedc32f57b745721ccf7de56cde1064232e0657fb3",
+      "homes": [
+        "spearmen"
+      ]
+    },
+    {
+      "old_article": "elite-infantry",
+      "line": 1,
+      "source_sha256": "e5c77ee48d3ec87325d9feffd885c0ab5df62492d6996f6ee2da82df11ad7395",
+      "homes": [
+        "elite-infantry"
+      ]
+    },
+    {
+      "old_article": "elite-infantry",
+      "line": 3,
+      "source_sha256": "f6dc32a91d5491e5cd3f27fa9f6ed39d83e0be7c989ecb0f268a5c1910d46d00",
+      "homes": [
+        "elite-infantry"
+      ]
+    },
+    {
+      "old_article": "elite-infantry",
+      "line": 13,
+      "source_sha256": "a571d4829806ce79dc1f55de5e472a226ee130a8dfd4887c828bf3804bb5a91f",
+      "homes": [
+        "elite-infantry"
+      ]
+    },
+    {
+      "old_article": "war-chariot",
+      "line": 1,
+      "source_sha256": "35f2488677701508e153db41ed1f6dc217cd4b390fe0d3af1e946933f3a1954a",
+      "homes": [
+        "war-chariot"
+      ]
+    },
+    {
+      "old_article": "war-chariot",
+      "line": 3,
+      "source_sha256": "cccb435cf717fe4e2d9f3d1dfcf850b4332485a7c8d25692fbfce40df849dff7",
+      "homes": [
+        "war-chariot"
+      ]
+    },
+    {
+      "old_article": "war-chariot",
+      "line": 13,
+      "source_sha256": "2fa929e7e05b4ff98116d6b3b2e69aea843c89eb72d4cfaa054380428321733d",
+      "homes": [
+        "war-chariot"
+      ]
+    },
+    {
+      "old_article": "marching",
+      "line": 3,
+      "source_sha256": "cfdb325f55f95bf223765b3ac86df769129e021a9dd63fc10ae118f38c66600e",
+      "homes": [
+        "marching-giving-a-march-order"
+      ]
+    },
+    {
+      "old_article": "marching",
+      "line": 5,
+      "source_sha256": "45cdf1172bf21b1b581403b5cbd47aba0c124d73d19aa3f2f7eb9ed3f03cd68f",
+      "homes": [
+        "marching-giving-a-march-order"
+      ]
+    },
+    {
+      "old_article": "marching",
+      "line": 7,
+      "source_sha256": "c5a79a30a0249f1357f7f9f0bf5188683ca498dfaba27315edc89c836143a6c0",
+      "homes": [
+        "marching-giving-a-march-order"
+      ]
+    },
+    {
+      "old_article": "marching",
+      "line": 9,
+      "source_sha256": "f87fa74fc72b6b6d4a27ac636ab033e4b6c43e6598ccbfcfc145a05d3482ed57",
+      "homes": [
+        "marching-giving-a-march-order-2"
+      ]
+    },
+    {
+      "old_article": "marching",
+      "line": 11,
+      "source_sha256": "d8a3197134a167ec8daac45138897c6c1a3a91a9ccc0205004a19c6f36dd0999",
+      "homes": [
+        "marching-giving-a-march-order-2"
+      ]
+    },
+    {
+      "old_article": "marching",
+      "line": 13,
+      "source_sha256": "ac983e74b57dfe311cf51a64916e564504ca085ba523cf0986e11308f01d6e0f",
+      "homes": [
+        "marching-giving-a-march-order-2"
+      ]
+    },
+    {
+      "old_article": "marching",
+      "line": 15,
+      "source_sha256": "eec95e81440915c6f6926b3629aefcbb4426dec62fc3e7d53831fbaac95e3713",
+      "homes": [
+        "marching-giving-a-march-order-3"
+      ]
+    },
+    {
+      "old_article": "marching",
+      "line": 17,
+      "source_sha256": "ff6926abee323a8eda48730e4900a27df70eb7a3cee7cb1addc3782bb73a5321",
+      "homes": [
+        "marching-giving-a-march-order-3"
+      ]
+    },
+    {
+      "old_article": "marching",
+      "line": 21,
+      "source_sha256": "628af90260556ccfa607cec61f09bf97bd5d8474e3bf29b116f394d102e65800",
+      "homes": [
+        "marching-a-marching-unit-is-still-reachable"
+      ]
+    },
+    {
+      "old_article": "marching",
+      "line": 25,
+      "source_sha256": "567b8bdc391f8ce3ecd2949e23aaac25031db4da18af25fea8992bde62de4482",
+      "homes": [
+        "marching-orders-to-forces-already-in-the-field-travel-by-runner"
+      ]
+    },
+    {
+      "old_article": "marching",
+      "line": 27,
+      "source_sha256": "f24a6315dcb7bcd1c2ec2ff764ab99b6cf264a346cb6d7c0a788ab0d62eab740",
+      "homes": [
+        "marching-orders-to-forces-already-in-the-field-travel-by-runner"
+      ]
+    },
+    {
+      "old_article": "marching",
+      "line": 29,
+      "source_sha256": "58c6c60fad5c77f545cdf9989e176cde4b94d7cf9f9dfe8a0fac72646298da32",
+      "homes": [
+        "marching-orders-to-forces-already-in-the-field-travel-by-runner"
+      ]
+    },
+    {
+      "old_article": "marching",
+      "line": 31,
+      "source_sha256": "9f2e503774f2764c77f8f754579bcca5009876db08851aa17096de8216c11586",
+      "homes": [
+        "marching-orders-to-forces-already-in-the-field-travel-by-runner-2"
+      ]
+    },
+    {
+      "old_article": "marching",
+      "line": 35,
+      "source_sha256": "b822bd21e29af9652bb07d239ae3c849c48b6bc7273cfeb0d0c36f57d3dd2ff6",
+      "homes": [
+        "marching-where-you-can-march"
+      ]
+    },
+    {
+      "old_article": "marching",
+      "line": 41,
+      "source_sha256": "c931106003c93438b077413a01c282a7a97690127a8e9633da4ad27b9e619bc4",
+      "homes": [
+        "marching-on-the-road"
+      ]
+    },
+    {
+      "old_article": "marching",
+      "line": 43,
+      "source_sha256": "d5cac9f36d42f237ce7a3056efef330c51b7e385d7cf28873635af3758cee580",
+      "homes": [
+        "marching-on-the-road"
+      ]
+    },
+    {
+      "old_article": "marching",
+      "line": 47,
+      "source_sha256": "c620e7d1a5d3d85517452221537f57917856b1e2209268257ce84705cdb950f9",
+      "homes": [
+        "marching-exploring-an-area"
+      ]
+    },
+    {
+      "old_article": "marching",
+      "line": 49,
+      "source_sha256": "d9ee7e8df98b68b883ad2d157c9d223a26e7fa3b9221efc8c7e658fa9432ad55",
+      "homes": [
+        "marching-exploring-an-area"
+      ]
+    },
+    {
+      "old_article": "marching",
+      "line": 51,
+      "source_sha256": "d1089eab16921a8e53b50ceb00e87bf1533ac11b40c556dbf1ba368bde1c5f0b",
+      "homes": [
+        "marching-exploring-an-area-2"
+      ]
+    },
+    {
+      "old_article": "marching",
+      "line": 53,
+      "source_sha256": "b7089aed68494190cd4ed17508445c3ea72f7e547411129110fa8fe1d78147b9",
+      "homes": [
+        "marching-exploring-an-area-2"
+      ]
+    },
+    {
+      "old_article": "marching",
+      "line": 57,
+      "source_sha256": "3f6e7dc55f9d0f1c77db6a00c99b09ff5b79284f7201eea59c328ae4ff9543a5",
+      "homes": [
+        "marching-terrain-and-journey-time"
+      ]
+    },
+    {
+      "old_article": "marching",
+      "line": 66,
+      "source_sha256": "9d4b4037e1fd101dfc985db56ec650c6576eb9da1d90cb4d041f2b3b4f9fd60b",
+      "homes": [
+        "marching-terrain-and-journey-time-2"
+      ]
+    },
+    {
+      "old_article": "marching",
+      "line": 73,
+      "source_sha256": "42fc4806660b58568aebd3ff6f7211119ca651705f6d6f0161bd056e5ef18198",
+      "homes": [
+        "marching-terrain-and-journey-time-2"
+      ]
+    },
+    {
+      "old_article": "marching",
+      "line": 78,
+      "source_sha256": "22429b40e4471f914def622a02aedc3e7f8e54c33277ab33e8e1284add7f2ad1",
+      "homes": [
+        "marching-terrain-and-journey-time-2"
+      ]
+    },
+    {
+      "old_article": "marching",
+      "line": 80,
+      "source_sha256": "8ad0bc9c79949fd2f3001c452dd3b06486b6248f398ed3394c688d3c79e5c6a0",
+      "homes": [
+        "marching-terrain-and-journey-time-3"
+      ]
+    },
+    {
+      "old_article": "marching",
+      "line": 82,
+      "source_sha256": "76650bde87af987cbe2d7abfb729fbf376decba4bd4172d949eea617869a377a",
+      "homes": [
+        "marching-terrain-and-journey-time-3"
+      ]
+    },
+    {
+      "old_article": "roads",
+      "line": 1,
+      "source_sha256": "24660bea69b24e196af9f8d8aa25d83cb742ba2208087141e9160a5479188d11",
+      "homes": [
+        "roads"
+      ]
+    },
+    {
+      "old_article": "roads",
+      "line": 6,
+      "source_sha256": "065ef94458a8ebf4c730760bf78fef4eec35c7d155059587614261cacf87e1c6",
+      "homes": [
+        "roads-what-a-road-does"
+      ]
+    },
+    {
+      "old_article": "roads",
+      "line": 8,
+      "source_sha256": "e2df5945162e5318a321d832edb4470aadf0ddb10cb0e36a0b02c80773bdbdbf",
+      "homes": [
+        "roads-what-a-road-does"
+      ]
+    },
+    {
+      "old_article": "roads",
+      "line": 16,
+      "source_sha256": "ddd2efa44281509adad4bdd07b4dea0a7de35c11ca8451f316c795fec1fe74a7",
+      "homes": [
+        "roads-what-a-road-does"
+      ]
+    },
+    {
+      "old_article": "roads",
+      "line": 18,
+      "source_sha256": "3cc754ab249006071421339cd69724c8d74b416788bd74151fd64f454c061b29",
+      "homes": [
+        "roads-what-a-road-does"
+      ]
+    },
+    {
+      "old_article": "roads",
+      "line": 22,
+      "source_sha256": "df3d131370b61ae507e826667557953b2b872264ef3e87af1952c9a7e1969c4b",
+      "homes": [
+        "roads-building-one"
+      ]
+    },
+    {
+      "old_article": "roads",
+      "line": 24,
+      "source_sha256": "a96b39db3597a2eca4352427d474ec0456ae522d6ea48449bfbd38873aa908cb",
+      "homes": [
+        "roads-building-one"
+      ]
+    },
+    {
+      "old_article": "roads",
+      "line": 26,
+      "source_sha256": "7e966fcc85c661f619df181ebaaaadeb6cfe5fe0cf950c91ced6d433b79a2f63",
+      "homes": [
+        "roads-building-one"
+      ]
+    },
+    {
+      "old_article": "roads",
+      "line": 33,
+      "source_sha256": "12efca41b908e8033e0b1f242adebc66145680e579751bb14cec00b88e7a98a9",
+      "homes": [
+        "roads-building-one"
+      ]
+    },
+    {
+      "old_article": "roads",
+      "line": 37,
+      "source_sha256": "056b644386a89ac024716490e1abd863c5d01d60439a6d101253708aaa25a378",
+      "homes": [
+        "roads-when-it-goes-wrong"
+      ]
+    },
+    {
+      "old_article": "roads",
+      "line": 43,
+      "source_sha256": "35949ef0156617bc2d3a96da5dd4c6928528b6b80e2b8607f10bd3ad0685e7bb",
+      "homes": [
+        "roads-seeing-roads"
+      ]
+    },
+    {
+      "old_article": "roads",
+      "line": 45,
+      "source_sha256": "9f5c519bd87a3cbe8839ac3dbb93091cbf43059b9278abfb094a9d03ed076ec9",
+      "homes": [
+        "roads-seeing-roads"
+      ]
+    },
+    {
+      "old_article": "stances",
+      "line": 1,
+      "source_sha256": "5907c7cba2b7527dbe86e1b8be336ad6f058fc05490a604f1ceea476c2a36e8c",
+      "homes": [
+        "stances"
+      ]
+    },
+    {
+      "old_article": "stances",
+      "line": 3,
+      "source_sha256": "d6d4b0a8d42075a8d501d418ee16d7470038115cdb10cd839e979f6ac6786035",
+      "homes": [
+        "stances-details"
+      ]
+    },
+    {
+      "old_article": "stances",
+      "line": 9,
+      "source_sha256": "9512ec79abbf144af98cd3ef96dc073f9aa49ee5fc77975142a081977d6c5b57",
+      "homes": [
+        "stances-a-unit-already-on-the-march"
+      ]
+    },
+    {
+      "old_article": "stances",
+      "line": 11,
+      "source_sha256": "8efb7f51cf786b0764cc8ae025f81b35054fc765aa83c208343d3d3b1409b91e",
+      "homes": [
+        "stances-a-unit-already-on-the-march"
+      ]
+    },
+    {
+      "old_article": "stances",
+      "line": 15,
+      "source_sha256": "ae7291fae627736c46950ccf4058013237ed5407ceb538c2df582338b57b0dc8",
+      "homes": [
+        "stances-taking-a-shared-hex"
+      ]
+    },
+    {
+      "old_article": "stances",
+      "line": 19,
+      "source_sha256": "6069504dd974ae7736b4830ff20ec64024e8b220b5289cb76d9440a6787228f2",
+      "homes": [
+        "stances-sentry-is-a-siege"
+      ]
+    },
+    {
+      "old_article": "stances",
+      "line": 23,
+      "source_sha256": "551e89cfa41a7cde9ecec7213b5022cb4da4489826d8fe8ba368029a0ae9d54d",
+      "homes": [
+        "stances-a-watch-is-not-free"
+      ]
+    },
+    {
+      "old_article": "stances",
+      "line": 25,
+      "source_sha256": "596b25ca43527c460d5aded2727e6f1c4fe455b30d38553a3ffdf176db613e67",
+      "homes": [
+        "stances-a-watch-is-not-free"
+      ]
+    },
+    {
+      "old_article": "stances",
+      "line": 29,
+      "source_sha256": "8a0988b98f0dff3dc57ae2bbba52e0f4eca410c54cb753496ef20045d93f4c7b",
+      "homes": [
+        "stances-when-to-retreat"
+      ]
+    },
+    {
+      "old_article": "stances",
+      "line": 31,
+      "source_sha256": "278cdc2eb54e220d6b4fb1763673f408a985582716628aced391629e1c6fd0d5",
+      "homes": [
+        "stances-when-to-retreat"
+      ]
+    },
+    {
+      "old_article": "stances",
+      "line": 34,
+      "source_sha256": "c8c7ec5ab84f2587dda9947c645de0637898a7e93c849a6fd5a1dcfefaba754f",
+      "homes": [
+        "stances-when-to-retreat"
+      ]
+    },
+    {
+      "old_article": "defence",
+      "line": 1,
+      "source_sha256": "5a59c90218f671084e8db8a7c560b590b813bb1ce05682ac7a64f7a672e48cd2",
+      "homes": [
+        "defence"
+      ]
+    },
+    {
+      "old_article": "defence",
+      "line": 5,
+      "source_sha256": "4709daaf3148415429a229ef8d7c0151472b4a5d942ce9aaed72402be08086e5",
+      "homes": [
+        "defence-you-are-told-when-something-comes"
+      ]
+    },
+    {
+      "old_article": "defence",
+      "line": 7,
+      "source_sha256": "c5d50b65f295fdc80ef019f027fd421b6a213b72c972dedd4f45546213ef73a3",
+      "homes": [
+        "defence-you-are-told-when-something-comes"
+      ]
+    },
+    {
+      "old_article": "defence",
+      "line": 11,
+      "source_sha256": "ebcd25b4ad6db93ae4cdd9523a11e5b1dcd9d3df1b53213df356d91f403b278b",
+      "homes": [
+        "defence-why-the-defender-has-time"
+      ]
+    },
+    {
+      "old_article": "defence",
+      "line": 15,
+      "source_sha256": "f904d5ef0aa589755f4d1d7a23ea5be2f0734e8405a6d80b7041abb214c08384",
+      "homes": [
+        "defence-buying-warning-time"
+      ]
+    },
+    {
+      "old_article": "defence",
+      "line": 20,
+      "source_sha256": "ef87ca043643be8688eff565ee67ea880e8083034d05659c167e689a9dc89430",
+      "homes": [
+        "defence-buying-warning-time"
+      ]
+    },
+    {
+      "old_article": "battle",
+      "line": 1,
+      "source_sha256": "47e49a0ea77ed21336098a67878e012bc710939162a5c0ff919120ecedc95680",
+      "homes": [
+        "battle"
+      ]
+    },
+    {
+      "old_article": "battle",
+      "line": 5,
+      "source_sha256": "62426d9f8233ffb5c19c735d2e5a3fb7732a997eb0ef637bb98786eeab438d6c",
+      "homes": [
+        "battle-when-battle-begins"
+      ]
+    },
+    {
+      "old_article": "battle",
+      "line": 7,
+      "source_sha256": "d8a8e3a655b5d474f6558a034ded3b5015b67ec79433f8b953cfe843e9973b09",
+      "homes": [
+        "battle-when-battle-begins"
+      ]
+    },
+    {
+      "old_article": "battle",
+      "line": 11,
+      "source_sha256": "e5717242314161ee2fd80f2272bf27a77aa15100211a0249e16c7092c01633fc",
+      "homes": [
+        "battle-how-a-battle-runs"
+      ]
+    },
+    {
+      "old_article": "battle",
+      "line": 13,
+      "source_sha256": "aafb1380f16070f89894871a866e6898ecfafa4ebd65347f9fbe7d2921adf756",
+      "homes": [
+        "battle-how-a-battle-runs"
+      ]
+    },
+    {
+      "old_article": "battle",
+      "line": 20,
+      "source_sha256": "d4babde4823502e4c1c5b317cbe5ca7a68c5b465a1b4025084148233fd92f892",
+      "homes": [
+        "battle-after-the-battle"
+      ]
+    },
+    {
+      "old_article": "battle",
+      "line": 22,
+      "source_sha256": "6d68f836e4ca419ea950eadd00b75eb27bd07ed22712989b52b480ecd7422016",
+      "homes": [
+        "battle-after-the-battle"
+      ]
+    },
+    {
+      "old_article": "battle",
+      "line": 24,
+      "source_sha256": "b62df388dfcc76103201b244154db55ac19e0b593a78b9deed6c26c9a08bbd2f",
+      "homes": [
+        "battle-after-the-battle"
+      ]
+    },
+    {
+      "old_article": "sieges",
+      "line": 3,
+      "source_sha256": "59e762afd4c6606d0fe86b6c16e7e5a307380086d130cba62c4a8b25cba441ed",
+      "homes": [
+        "sieges-starving-a-city-out"
+      ]
+    },
+    {
+      "old_article": "sieges",
+      "line": 5,
+      "source_sha256": "a18e9d0baf4e1670330c950c348c9e5d7882747386dd585b27a17eeaad0650c8",
+      "homes": [
+        "sieges-starving-a-city-out"
+      ]
+    },
+    {
+      "old_article": "sieges",
+      "line": 9,
+      "source_sha256": "3fa8286c4bdc73748bf5ca6c041ab01d359fde5807b10f8a7d40909880cc120f",
+      "homes": [
+        "sieges-blockaded-hexes"
+      ]
+    },
+    {
+      "old_article": "sieges",
+      "line": 13,
+      "source_sha256": "b367cd493e317f2767dbc4b5836449add39c4782f53556d31f92eac62e17d3a5",
+      "homes": [
+        "sieges-taking-a-hex"
+      ]
+    },
+    {
+      "old_article": "sieges",
+      "line": 17,
+      "source_sha256": "45d6d08afd3d849f0fa75acee77593058636eb77c4670d8f5293a3b84f0d8de4",
+      "homes": [
+        "sieges-when-it-happens-to-you"
+      ]
+    },
+    {
+      "old_article": "sieges",
+      "line": 19,
+      "source_sha256": "cf7fbf28ade6554d4d391b078f4417f3b2007bedbe1382f0157949e07b701570",
+      "homes": [
+        "sieges-when-it-happens-to-you"
+      ]
+    },
+    {
+      "old_article": "sieges",
+      "line": 21,
+      "source_sha256": "84b5309239e1cf1441d4f88f4fb04d1a79e41f5a397abc42be3aad324ad5b2fe",
+      "homes": [
+        "sieges-when-it-happens-to-you"
+      ]
+    },
+    {
+      "old_article": "sieges",
+      "line": 25,
+      "source_sha256": "91453e4f756ef2284c3544626c9ac9298b45c717dc528a327510bad8d462d9e1",
+      "homes": [
+        "sieges-when-it-happens-to-you"
+      ]
+    },
+    {
+      "old_article": "occupation",
+      "line": 1,
+      "source_sha256": "a2146c2f7b200681e4132da97f84a907b3ac22a9238774b9f6e43e7dfb6c8c79",
+      "homes": [
+        "occupation"
+      ]
+    },
+    {
+      "old_article": "occupation",
+      "line": 3,
+      "source_sha256": "96a1fe052305cdb322fb1b506ee8aff00d791db9a708af62b16d1973be283871",
+      "homes": [
+        "occupation"
+      ]
+    },
+    {
+      "old_article": "occupation",
+      "line": 7,
+      "source_sha256": "b4723b37738032aed0708f4624cf6f33031be60f5290bb9e0dd83ca970fede4e",
+      "homes": [
+        "occupation-when-the-occupation-ripens"
+      ]
+    },
+    {
+      "old_article": "occupation",
+      "line": 9,
+      "source_sha256": "2c21a09c997ac82355de22a532ec254e056b2ec4ec8f5927586a6df2d48abe7b",
+      "homes": [
+        "occupation-when-the-occupation-ripens"
+      ]
+    },
+    {
+      "old_article": "occupation",
+      "line": 14,
+      "source_sha256": "54e6d31ef536e2a676c32ae00dfa3d561da363dea0712c13313f806cccc7d705",
+      "homes": [
+        "occupation-when-the-occupation-ripens"
+      ]
+    },
+    {
+      "old_article": "occupation",
+      "line": 16,
+      "source_sha256": "4b8c63f5e653164b19048267af3a5fb4b4177d6dafe047c10b2a8126d42428d5",
+      "homes": [
+        "occupation-when-the-occupation-ripens"
+      ]
+    },
+    {
+      "old_article": "occupation",
+      "line": 22,
+      "source_sha256": "a73592082924e482bace1752e1b41eb16bb0d68b3e53f9fa351d33d2758e400e",
+      "homes": [
+        "occupation-when-it-happens-to-you"
+      ]
+    },
+    {
+      "old_article": "occupation",
+      "line": 24,
+      "source_sha256": "633306066066e182614916bf6ae854b93b58b8a81f1ccbae967ed7ea219ca6a1",
+      "homes": [
+        "occupation-when-it-happens-to-you"
+      ]
+    },
+    {
+      "old_article": "ship-food-return",
+      "line": 1,
+      "source_sha256": "8c04cbb411c6856f1ce6e5232afeddeb0daafcdd9922f2f00e5d73be80351b35",
+      "homes": [
+        "ship-food-return"
+      ]
+    },
+    {
+      "old_article": "ship-food-return",
+      "line": 3,
+      "source_sha256": "125ee64e769d79dd44bbab7c6f2cf53f2868bc4e0ec82368cd427a2801296fa6",
+      "homes": [
+        "ship-food-return"
+      ]
+    },
+    {
+      "old_article": "ship-food-return",
+      "line": 7,
+      "source_sha256": "08344d86522114ea99387ed74ccc3f1dbd4786ef6a47c8116542f909ad4cb4e8",
+      "homes": [
+        "ship-food-return"
+      ]
+    },
+    {
+      "old_article": "ship-food-return",
+      "line": 9,
+      "source_sha256": "b7a3d6a9af56dfc76a0cb54a70aa8bab7c62e831ed3acdb489ef03f8ba019bc0",
+      "homes": [
+        "ship-food-return"
+      ]
+    },
+    {
+      "old_article": "upkeep",
+      "line": 1,
+      "source_sha256": "b82c3a5a358f62fa83bdf9076e2598adcfcc9ed01f5a87ab4d5270b6abf3dd20",
+      "homes": [
+        "upkeep"
+      ]
+    },
+    {
+      "old_article": "upkeep",
+      "line": 5,
+      "source_sha256": "1f534ab8c71d1cbe67530f0ef7811422c9963e398496d2352243a1ba3003c624",
+      "homes": [
+        "military-pay"
+      ]
+    },
+    {
+      "old_article": "upkeep",
+      "line": 7,
+      "source_sha256": "dbf52b273887d66155d3c2faf01398862c2de7d4b380a8fb877d38ccc71c47d2",
+      "homes": [
+        "military-pay"
+      ]
+    },
+    {
+      "old_article": "upkeep",
+      "line": 9,
+      "source_sha256": "5e2fb4634da913e9c1da50bcc1dc511560eaa7be01a97c4ef38354bcc08008bf",
+      "homes": [
+        "military-pay"
+      ]
+    },
+    {
+      "old_article": "upkeep",
+      "line": 11,
+      "source_sha256": "0bf1bae3f1a8afc1d2189b89e7c87316473f5211052ce4eb50a51c5ce2776fbd",
+      "homes": [
+        "military-pay-2"
+      ]
+    },
+    {
+      "old_article": "upkeep",
+      "line": 13,
+      "source_sha256": "02cdaf03b410234fdde38b8e0ff936b22059b3fc6ffd05942c93d9a6a690a40c",
+      "homes": [
+        "military-pay-2"
+      ]
+    },
+    {
+      "old_article": "upkeep",
+      "line": 17,
+      "source_sha256": "8fe70bf60665f1ee90042fa9a45b9d698ef64e13d0861c32c02ae913bfcbced0",
+      "homes": [
+        "military-food"
+      ]
+    },
+    {
+      "old_article": "upkeep",
+      "line": 19,
+      "source_sha256": "642ef2409b7c307de2185af33a5b6ac90eaad6231301eba76f6badc371ca0421",
+      "homes": [
+        "military-food"
+      ]
+    },
+    {
+      "old_article": "upkeep",
+      "line": 21,
+      "source_sha256": "e35f382d8ae7ef550ccc6d8da0ce0e4c86817eacb17bbc6cc118e554aec22b87",
+      "homes": [
+        "military-food-2"
+      ]
+    },
+    {
+      "old_article": "upkeep",
+      "line": 23,
+      "source_sha256": "2ff674e7f8713b055d364b094de6ddae486d463eeab99c9e4f6e64838b8d3911",
+      "homes": [
+        "military-food-2"
+      ]
+    },
+    {
+      "old_article": "upkeep",
+      "line": 27,
+      "source_sha256": "f7f83f0f07612a71a887ac8cbfb90b36837c21fc512b42f68dd298da8e68599e",
+      "homes": [
+        "upkeep-before-you-settle"
+      ]
+    },
+    {
+      "old_article": "upkeep",
+      "line": 31,
+      "source_sha256": "91b313210837ca210145db6092a242e33bbb3a7ce03d5645400b7e7b950baebf",
+      "homes": [
+        "upkeep-the-rule-of-thumb"
+      ]
+    },
+    {
+      "old_article": "temple-demolition",
+      "line": 1,
+      "source_sha256": "10522ec4d78ee722d7e793f15533b58672b248b25bd35c95654d2410f8141e57",
+      "homes": [
+        "temple-demolition"
+      ]
+    },
+    {
+      "old_article": "temple-demolition",
+      "line": 3,
+      "source_sha256": "4fbb1861029c4e510c8b44302a8323ca7df679f2a5925f010e3a8f74bb0fa3c9",
+      "homes": [
+        "temple-demolition"
+      ]
+    },
+    {
+      "old_article": "temple-demolition",
+      "line": 5,
+      "source_sha256": "8856174f0c8bb811105761653ff6442084d23d345ba1d2f0897d3c5d1b8da365",
+      "homes": [
+        "temple-demolition"
+      ]
+    },
+    {
+      "old_article": "temple-demolition",
+      "line": 7,
+      "source_sha256": "f7ade0bfb57ac5f481bffce7b07776202ef33ec578f6f966a382326f314e5036",
+      "homes": [
+        "temple-demolition"
+      ]
+    },
+    {
+      "old_article": "divine-wrath",
+      "line": 1,
+      "source_sha256": "e8fdd4dbdc51accf705dde54c3a53a1e16807e15d37a26b603960a39772c92c7",
+      "homes": [
+        "divine-wrath"
+      ]
+    },
+    {
+      "old_article": "divine-wrath",
+      "line": 5,
+      "source_sha256": "0289c925cd91dcea4880c7a08b8119f9a4b71e09e31a129daf04ab299f58cfe8",
+      "homes": [
+        "divine-wrath-warning-before-danger"
+      ]
+    },
+    {
+      "old_article": "divine-wrath",
+      "line": 7,
+      "source_sha256": "57b5a8c6c911139d9c1ff348e9b7756764043104eb74cebfbf8023fd57f17922",
+      "homes": [
+        "divine-wrath-warning-before-danger"
+      ]
+    },
+    {
+      "old_article": "divine-wrath",
+      "line": 11,
+      "source_sha256": "b94c14910b30f004f0983d020291c3cc84372f4087b9813f93cfb58d78f4be73",
+      "homes": [
+        "divine-wrath-seven-game-days-after-punishment"
+      ]
+    },
+    {
+      "old_article": "divine-wrath",
+      "line": 13,
+      "source_sha256": "f7511163361131fd969be86b8d73e400091f306b321113fd8721a02b1059a592",
+      "homes": [
+        "divine-wrath-seven-game-days-after-punishment"
+      ]
+    },
+    {
+      "old_article": "divine-wrath",
+      "line": 17,
+      "source_sha256": "d7ae22dfdf6e71f4e0ec0e82467d3b63d16a27e298540a056c80ee4d83afd67e",
+      "homes": [
+        "divine-wrath-temple-levels"
+      ]
+    },
+    {
+      "old_article": "kharis",
+      "line": 1,
+      "source_sha256": "ea7972885093cfe02f8deb0a50a6c7c20a0c41280ca71311abd8dac49cecc92e",
+      "homes": [
+        "kharis"
+      ]
+    },
+    {
+      "old_article": "kharis",
+      "line": 3,
+      "source_sha256": "d8727d6fa4b10dfe5c8a29aeac8dcae7231323849ae690e2c5c83924a1a6e70e",
+      "homes": [
+        "kharis-details"
+      ]
+    },
+    {
+      "old_article": "kharis",
+      "line": 10,
+      "source_sha256": "78eb0fa91367f0a610c87fd959958ecd760179923fff17804d60bf492f32a569",
+      "homes": [
+        "kharis-details"
+      ]
+    },
+    {
+      "old_article": "kharis",
+      "line": 12,
+      "source_sha256": "846f529731f19571578e34be0538d05ea457fc6d7c1a2ad13c8bc92be19e97b5",
+      "homes": [
+        "kharis-details-2"
+      ]
+    },
+    {
+      "old_article": "kharis",
+      "line": 14,
+      "source_sha256": "84efaf45aad897bae48c3775a84d4e626925c718b63651e1ac6cfbec70940d2b",
+      "homes": [
+        "kharis-details-2"
+      ]
+    },
+    {
+      "old_article": "kharis",
+      "line": 16,
+      "source_sha256": "49e1042f469127029d5ff9d104dc92fab426c8e514c592228feee523ff7dcc22",
+      "homes": [
+        "kharis-details-2"
+      ]
+    },
+    {
+      "old_article": "kharis",
+      "line": 20,
+      "source_sha256": "2c0cd6c0aacd59e814e7ba92410e6ea8a957dab837c34a7b5bda5e6fb91d1145",
+      "homes": [
+        "cult-upkeep"
+      ]
+    },
+    {
+      "old_article": "kharis",
+      "line": 22,
+      "source_sha256": "fcee321082ca6254de5e975134b6ad5f1cd5e3e452f1e30dff6cf4d81dd589d8",
+      "homes": [
+        "cult-upkeep"
+      ]
+    },
+    {
+      "old_article": "kharis",
+      "line": 24,
+      "source_sha256": "d3dd1f436a11a296a112dd612d644b8c61539a3263558d8b5940fbc3929c2137",
+      "homes": [
+        "cult-upkeep-2"
+      ]
+    },
+    {
+      "old_article": "kharis",
+      "line": 26,
+      "source_sha256": "a297d60aec5451784565a934223d7d38345e5a1fce9176ff3888573f7923eac9",
+      "homes": [
+        "cult-upkeep-2"
+      ]
+    },
+    {
+      "old_article": "kharis",
+      "line": 30,
+      "source_sha256": "ee325fb84dcd1d3e3ebbd5d29fd879eb0af374233aa9b38d2c74cf57c9ca848f",
+      "homes": [
+        "raising-kharis"
+      ]
+    },
+    {
+      "old_article": "kharis",
+      "line": 32,
+      "source_sha256": "3e8c353d29e3eccbee10b93e820bf39668c5264e54bb3a208ace750c9b570134",
+      "homes": [
+        "raising-kharis"
+      ]
+    },
+    {
+      "old_article": "kharis",
+      "line": 36,
+      "source_sha256": "ae002cfbea4cdf5d3421b92d9f942ee9245e817e89a058cd44f9a84e397f4316",
+      "homes": [
+        "raising-kharis"
+      ]
+    },
+    {
+      "old_article": "kharis",
+      "line": 38,
+      "source_sha256": "8247ff7c33df621271002f42430512c673a2002dd7105dd34938c4016b8e3fde",
+      "homes": [
+        "raising-kharis-2"
+      ]
+    },
+    {
+      "old_article": "kharis",
+      "line": 40,
+      "source_sha256": "db75e10f864bd74c42659ef28e9f2afad4682988483001aaf7a6b5f62544388b",
+      "homes": [
+        "raising-kharis-2"
+      ]
+    },
+    {
+      "old_article": "kharis",
+      "line": 42,
+      "source_sha256": "4d0e5bacec01e206b5d45f4cf6542f113200a7b8bb1492b1472721f95492c98a",
+      "homes": [
+        "raising-kharis-2"
+      ]
+    },
+    {
+      "old_article": "kharis",
+      "line": 44,
+      "source_sha256": "fd2964c59929a516213598401a1f9ed6d98e52a4a7348d2a2e9f0e7e55e0834c",
+      "homes": [
+        "rites-the-prayers",
+        "raising-kharis-2"
+      ]
+    },
+    {
+      "old_article": "kharis",
+      "line": 48,
+      "source_sha256": "cb5570306ec69e0509f68ecdb5ab4f296b6f3149cfa6800f02595c9a3de3bfdc",
+      "homes": [
+        "raising-kharis-2"
+      ]
+    },
+    {
+      "old_article": "kharis",
+      "line": 50,
+      "source_sha256": "a71a24f31bc8e268d572a7fa2c06df60a5b7c10ec9a5fee73cec63a1e700ec7e",
+      "homes": [
+        "raising-kharis-3"
+      ]
+    },
+    {
+      "old_article": "kharis",
+      "line": 52,
+      "source_sha256": "b47fc153935b9eb0547c25027012f05188dd5916bba2f3b7b959033e82be5062",
+      "homes": [
+        "temple-levels-2",
+        "raising-kharis-3"
+      ]
+    },
+    {
+      "old_article": "kharis",
+      "line": 54,
+      "source_sha256": "be88dce125022757124a1e9d92716eed0524aba762d62e399754648b7115c21d",
+      "homes": [
+        "raising-kharis-3"
+      ]
+    },
+    {
+      "old_article": "temples",
+      "line": 1,
+      "source_sha256": "3d50abf7a591d32337213e5223ae9b83f222aa8dd5fb2e7134d108a95b99d1c9",
+      "homes": [
+        "temples"
+      ]
+    },
+    {
+      "old_article": "temples",
+      "line": 5,
+      "source_sha256": "2152ae59004a7c7369f20212dfc620fa5af45f3cb0889e5eccb758dca643ed88",
+      "homes": [
+        "temples-building-one"
+      ]
+    },
+    {
+      "old_article": "temples",
+      "line": 9,
+      "source_sha256": "ec9b60fc60b3e6bc52dafa293d8ce59262dec464ac74a6a9c8d2b80466122a8b",
+      "homes": [
+        "temple-workers"
+      ]
+    },
+    {
+      "old_article": "temples",
+      "line": 11,
+      "source_sha256": "781afb9259ba4ba4c2d5e7e7b1ea072d857005e1322249933b80c6a140572c43",
+      "homes": [
+        "temple-workers"
+      ]
+    },
+    {
+      "old_article": "temples",
+      "line": 13,
+      "source_sha256": "ff136a4ac75b06b9a72856a2f2e02f751ffcfa138e469b808fba255455caeac9",
+      "homes": [
+        "temple-workers"
+      ]
+    },
+    {
+      "old_article": "temples",
+      "line": 17,
+      "source_sha256": "f3c0ad93b3d12aa3bf0c0476b05bda7e7acfa1143f684c747435f0cabd61c5b3",
+      "homes": [
+        "daily-offerings"
+      ]
+    },
+    {
+      "old_article": "temples",
+      "line": 19,
+      "source_sha256": "f01c305844f6191d60879302cd460c3b8a803f795ad1d8f8919d3b2112240144",
+      "homes": [
+        "daily-offerings"
+      ]
+    },
+    {
+      "old_article": "temples",
+      "line": 21,
+      "source_sha256": "391a6b49da00f4060e5bf4e6e50f15f0353d23930babfe2d9d6e4bb1bd24dca3",
+      "homes": [
+        "daily-offerings-2"
+      ]
+    },
+    {
+      "old_article": "temples",
+      "line": 25,
+      "source_sha256": "5e607542e70fa151249dd658d8a2a4c32edeffe15b71f9a5d4348f21814105ad",
+      "homes": [
+        "temple-levels"
+      ]
+    },
+    {
+      "old_article": "temples",
+      "line": 27,
+      "source_sha256": "85f21b9addd25462e564a3346caada67fe550b42b7b3993d93da3dc1a752d9b1",
+      "homes": [
+        "temple-levels"
+      ]
+    },
+    {
+      "old_article": "temples",
+      "line": 29,
+      "source_sha256": "b47fc153935b9eb0547c25027012f05188dd5916bba2f3b7b959033e82be5062",
+      "homes": [
+        "temple-levels-2",
+        "raising-kharis-3"
+      ]
+    },
+    {
+      "old_article": "temples",
+      "line": 33,
+      "source_sha256": "f8101f0c4b8229956f9059730f9944278c1755ce54c69150570ce3005a9dc26b",
+      "homes": [
+        "temples-find-your-temples"
+      ]
+    },
+    {
+      "old_article": "temples",
+      "line": 38,
+      "source_sha256": "10a4b32957c9e60bf6fdcd41c1e7f7c2f21ac0ac94b12f5b0b3519a2114281a2",
+      "homes": [
+        "temples-find-your-temples"
+      ]
+    },
+    {
+      "old_article": "temples",
+      "line": 44,
+      "source_sha256": "47f48df9670761eeeb2bf8f023728df67b8b08fb061e9e549ed4eabbe2bda75e",
+      "homes": [
+        "temples-find-your-temples"
+      ]
+    },
+    {
+      "old_article": "rites",
+      "line": 1,
+      "source_sha256": "ff52ffc0392d16d9ee9fa1b74c61b0232166f583ea974c431de501271213a68f",
+      "homes": [
+        "rites"
+      ]
+    },
+    {
+      "old_article": "rites",
+      "line": 3,
+      "source_sha256": "d777202f661dc1d282ba119fb888b257e747a99d6bd9e4201e7ac0efaa5c90ef",
+      "homes": [
+        "rites"
+      ]
+    },
+    {
+      "old_article": "rites",
+      "line": 5,
+      "source_sha256": "5672ad7f1ccfeb7211492b0a72033bc87745bc761da1c4d822f696cf57218323",
+      "homes": [
+        "rites-details"
+      ]
+    },
+    {
+      "old_article": "rites",
+      "line": 9,
+      "source_sha256": "2620560f4fcb69f9b5845adff5fe910c56ac85545b538f47f58823755f0bbdc7",
+      "homes": [
+        "prayer-requirements"
+      ]
+    },
+    {
+      "old_article": "rites",
+      "line": 11,
+      "source_sha256": "227d9e93e7273d5dceb4520f07eb4c7720bcec0b28cd0916653b6ad409ffa0c5",
+      "homes": [
+        "prayer-requirements"
+      ]
+    },
+    {
+      "old_article": "rites",
+      "line": 13,
+      "source_sha256": "26a7a0c0e98347ad67283d4edca3a6fafe992361ee647db43cdf3ba8a8f2d013",
+      "homes": [
+        "prayer-requirements-2"
+      ]
+    },
+    {
+      "old_article": "rites",
+      "line": 15,
+      "source_sha256": "3f1ceb083814431b31d26cc195dd56a9442eb02208556f1af626f470f107772b",
+      "homes": [
+        "prayer-requirements-2"
+      ]
+    },
+    {
+      "old_article": "rites",
+      "line": 19,
+      "source_sha256": "e140fa0256e37cc106811f615c335f6bbfab92164d136a11734268bc6e330734",
+      "homes": [
+        "rites-the-prayers"
+      ]
+    },
+    {
+      "old_article": "rites",
+      "line": 21,
+      "source_sha256": "c902013c7965b64042d3266b021c515317929a0ae35fb58b904c5c0561a8d501",
+      "homes": [
+        "rites-the-prayers"
+      ]
+    },
+    {
+      "old_article": "rites",
+      "line": 23,
+      "source_sha256": "fd2964c59929a516213598401a1f9ed6d98e52a4a7348d2a2e9f0e7e55e0834c",
+      "homes": [
+        "rites-the-prayers",
+        "raising-kharis-2"
+      ]
+    },
+    {
+      "old_article": "rites",
+      "line": 29,
+      "source_sha256": "c7dcfbd1895ccde8ce140f1569d6f44663a73dc05e81e69f237cd4aa2bdc2a2d",
+      "homes": [
+        "minoan-prayers"
+      ]
+    },
+    {
+      "old_article": "rites",
+      "line": 33,
+      "source_sha256": "81d6a9d47e00bcf4be3a40e4bfd3118149cf097449e604294c1c48de45b85896",
+      "homes": [
+        "minoan-prayers-2"
+      ]
+    },
+    {
+      "old_article": "rites",
+      "line": 36,
+      "source_sha256": "9365764df359d83872d35224867a25ef9b7863dc619a027db2f6a491e2ed9cc7",
+      "homes": [
+        "minoan-prayers-2"
+      ]
+    },
+    {
+      "old_article": "rites",
+      "line": 38,
+      "source_sha256": "424eca250054f3bcf2524ea4f15216785b6fd7c9dcf1a042054dac0d52665c05",
+      "homes": [
+        "minoan-prayers-3"
+      ]
+    },
+    {
+      "old_article": "rites",
+      "line": 40,
+      "source_sha256": "13347734292ef270d328e7f77587638de509876cd4e9a2f411af6135fc02d092",
+      "homes": [
+        "minoan-prayers-3"
+      ]
+    },
+    {
+      "old_article": "rites",
+      "line": 44,
+      "source_sha256": "d6d3120083d47fb38a0f722ca514fb636dfac4a0ce9dfee32251574f29285c74",
+      "homes": [
+        "offerings"
+      ]
+    },
+    {
+      "old_article": "rites",
+      "line": 46,
+      "source_sha256": "69d7f16e6d9a41ce88de552f79b34950dff109e844352c4c41319704f59c79ba",
+      "homes": [
+        "offerings"
+      ]
+    },
+    {
+      "old_article": "rites",
+      "line": 48,
+      "source_sha256": "c962730f85b99214b4d7903da7a27c912bc2050f1571ad0e64783665c64c61a9",
+      "homes": [
+        "offerings"
+      ]
+    },
+    {
+      "old_article": "colonies",
+      "line": 1,
+      "source_sha256": "f4ed9035bebfd72705ac1409cd88d93c62f1abb95d1ea82b86e291cb79a4c6cb",
+      "homes": [
+        "colonies"
+      ]
+    },
+    {
+      "old_article": "colonies",
+      "line": 5,
+      "source_sha256": "ee023b0506ef08492b476cdcd5592080fba305147f9cb4c139716d5df1d7c2a2",
+      "homes": [
+        "colonies-founding-a-colony"
+      ]
+    },
+    {
+      "old_article": "colonies",
+      "line": 7,
+      "source_sha256": "cac33d65f2a3a86a5eac5d424bc4048ec3c254f2a7848c57cfa4d488389435c0",
+      "homes": [
+        "colonies-founding-a-colony"
+      ]
+    },
+    {
+      "old_article": "colonies",
+      "line": 9,
+      "source_sha256": "b7708dfe231dbe90f9210a485f55cfcf18d56ebd838414995a1fa53e371d74ab",
+      "homes": [
+        "colonies-founding-a-colony"
+      ]
+    },
+    {
+      "old_article": "colonies",
+      "line": 11,
+      "source_sha256": "19239e794626db2d62489f5192f0ad24434003301076084940a997474a7bb9cd",
+      "homes": [
+        "colonies-founding-a-colony-2"
+      ]
+    },
+    {
+      "old_article": "colonies",
+      "line": 15,
+      "source_sha256": "054142f118a9fa07c10939367b22f57f2fb81fb4f2f7e755f20d016fec75cd56",
+      "homes": [
+        "colonies-colonies-are-not-metropolises"
+      ]
+    },
+    {
+      "old_article": "colonies",
+      "line": 17,
+      "source_sha256": "0ba8e65bbf9863270d20fb274984974fd92d436ea4e5da826c205ba3de66e0e6",
+      "homes": [
+        "colonies-colonies-are-not-metropolises"
+      ]
+    },
+    {
+      "old_article": "colonies",
+      "line": 21,
+      "source_sha256": "aba2a9447924cf15e0fcd9aa12c1bab79ed2abdfe2a5f92fa066983ef0d94b41",
+      "homes": [
+        "colonies-abandoning-a-colony"
+      ]
+    },
+    {
+      "old_article": "colonies",
+      "line": 23,
+      "source_sha256": "0e7b5a4792c0ad6d8994f9e446e3251ee78fcee9009de567145ccab509729bbc",
+      "homes": [
+        "colonies-abandoning-a-colony"
+      ]
+    },
+    {
+      "old_article": "colonies",
+      "line": 25,
+      "source_sha256": "af243817c2f0ffba080f2ea02bcf12d8cdc9491efa998fe5f96814b9021bc0fc",
+      "homes": [
+        "colonies-abandoning-a-colony"
+      ]
+    },
+    {
+      "old_article": "colonies",
+      "line": 27,
+      "source_sha256": "8f6065729df952d931f278eba1853639ae100a834c8e8acebe4decba192c7003",
+      "homes": [
+        "colonies-abandoning-a-colony"
+      ]
+    },
+    {
+      "old_article": "bronze",
+      "line": 1,
+      "source_sha256": "9d292fde06a2d31318dfe9e1f57fee4050d807abb34ec11dcff39b9448bc0425",
+      "homes": [
+        "bronze"
+      ]
+    },
+    {
+      "old_article": "bronze",
+      "line": 3,
+      "source_sha256": "ff43aa564e7794189b4d9a39b58a594b37b85559518e5359c284ede8e2d79ea2",
+      "homes": [
+        "bronze"
+      ]
+    },
+    {
+      "old_article": "bronze",
+      "line": 5,
+      "source_sha256": "99ce6e8fc41dcec695f7c6f1cf63cce830b13321a275ef95ee7ad353fc2bae7c",
+      "homes": [
+        "bronze"
+      ]
+    },
+    {
+      "old_article": "bronze",
+      "line": 9,
+      "source_sha256": "9a7e93b876952063f3db9074a551deb4dd9eb68eb796a82a144ac94ea1c0b178",
+      "homes": [
+        "bronze"
+      ]
+    },
+    {
+      "old_article": "bronze",
+      "line": 13,
+      "source_sha256": "01e1e39295401bfce12f15b64775c400112d0f24e91a0928844ac383cab8f529",
+      "homes": [
+        "bronze"
+      ]
+    },
+    {
+      "old_article": "bronze",
+      "line": 17,
+      "source_sha256": "5a2ce6a6adbf51781a7ff135b0f4c3daf8270ef4688bb9740167344815279af4",
+      "homes": [
+        "bronze"
+      ]
+    },
+    {
+      "old_article": "report",
+      "line": 1,
+      "source_sha256": "dff4e0d1adb614741149b702e3b68ea9ffc062bbf12177179637eae9c6f23ba4",
+      "homes": [
+        "report"
+      ]
+    },
+    {
+      "old_article": "report",
+      "line": 3,
+      "source_sha256": "772cf296c7a5915144780f05a16b7fdf4d0e78da4f3746956b059c12f8ff5a72",
+      "homes": [
+        "report"
+      ]
+    },
+    {
+      "old_article": "report",
+      "line": 5,
+      "source_sha256": "386a758b9a471c61b96549433996130c208fc19230d88f6e6ca22adacf4fa9b6",
+      "homes": [
+        "report"
+      ]
+    },
+    {
+      "old_article": "report",
+      "line": 9,
+      "source_sha256": "4b90b8aa26dcde99177a6095859b784e8fb9e007236d83ef8b03de2c3cb2fdd0",
+      "homes": [
+        "report"
+      ]
+    },
+    {
+      "old_article": "report",
+      "line": 11,
+      "source_sha256": "ee7e66ec1a5f219c39929ef955b3d721198b6dce7701bfc04e8f6b03d0a821aa",
+      "homes": [
+        "report"
+      ]
+    },
+    {
+      "old_article": "report",
+      "line": 13,
+      "source_sha256": "30574416c8e0504830a51f68a0cc9aa0d6eb06cf23ed4ab49244679eb153031c",
+      "homes": [
+        "report"
+      ]
+    },
+    {
+      "old_article": "report",
+      "line": 15,
+      "source_sha256": "9b733f1b52daac5f8da26552780917007bd37a3623ee2d270bc55ff9bc0e13aa",
+      "homes": [
+        "report"
+      ]
+    },
+    {
+      "old_article": "rough-edges",
+      "line": 1,
+      "source_sha256": "35fd19ce2f501e1e022bcb605c495ab55bd73da2971152926d0ff4cd3d64cbff",
+      "homes": [
+        "rough-edges"
+      ]
+    },
+    {
+      "old_article": "rough-edges",
+      "line": 5,
+      "source_sha256": "84bb39388a14de8616d8b4eb47a48c096e88624d4bd2d930a67d3e214e30e1f2",
+      "homes": [
+        "rough-edges"
+      ]
+    },
+    {
+      "old_article": "rough-edges",
+      "line": 9,
+      "source_sha256": "e1fa89ad606f31d1b1ebc850866c3363dd11a40116a51fd011f933379d046c0b",
+      "homes": [
+        "rough-edges"
+      ]
+    },
+    {
+      "old_article": "rough-edges",
+      "line": 11,
+      "source_sha256": "861a3e0b85f2bf1a02bd3402e553156294c58f5089dea7ed5dbe35ce5540806f",
+      "homes": [
+        "rough-edges"
+      ]
+    },
+    {
+      "old_article": "keryx",
+      "line": 1,
+      "source_sha256": "d1acfea2a13149e014efa3d0e0f28c4618a9e31a90f1cf2457621bafc953017f",
+      "homes": [
+        "keryx"
+      ]
+    },
+    {
+      "old_article": "keryx",
+      "line": 3,
+      "source_sha256": "9fd9d65e0d8bd9017de0bc47b79ca45a4340f79e1e534b3f7dc24b6606382dbb",
+      "homes": [
+        "keryx"
+      ]
+    },
+    {
+      "old_article": "keryx",
+      "line": 7,
+      "source_sha256": "89923e5b9bdf4c58f7900f73c6029588623d08ea7f187527c69ab927ad11b9bd",
+      "homes": [
+        "keryx-getting-started"
+      ]
+    },
+    {
+      "old_article": "keryx",
+      "line": 9,
+      "source_sha256": "c7c4f98848665887aa6acda76affcde1bd33693319bc4fc65674f2954dca2f4c",
+      "homes": [
+        "keryx-getting-started"
+      ]
+    },
+    {
+      "old_article": "keryx",
+      "line": 16,
+      "source_sha256": "9402193e66fd27e6848df14e9ff142d4642813ddd7f48b6fbe07a46fd2bdade8",
+      "homes": [
+        "keryx-getting-started"
+      ]
+    },
+    {
+      "old_article": "keryx",
+      "line": 20,
+      "source_sha256": "9472aaa67eed8c857671602f05f9f69fde6f6267bffc4ad8265e4167f59432de",
+      "homes": [
+        "keryx-a-few-useful-commands"
+      ]
+    },
+    {
+      "old_article": "keryx",
+      "line": 33,
+      "source_sha256": "3d6eb1181df80efb03995f5b0ea8aad5e0160649516e4980d4dd93e3e3f568b8",
+      "homes": [
+        "keryx-a-few-useful-commands"
+      ]
+    },
+    {
+      "old_article": "keryx",
+      "line": 35,
+      "source_sha256": "ba8a38c7e2c3fd21a43a95fb09351ebe92a5e2e7c204231cacf514a138a2ee38",
+      "homes": [
+        "keryx-a-few-useful-commands"
+      ]
+    },
+    {
+      "old_article": "keryx",
+      "line": 37,
+      "source_sha256": "09284a19be4cbef65e862ad14f8f441941f97dc9d08956eae13e808ca177b7da",
+      "homes": [
+        "keryx-a-few-useful-commands"
+      ]
+    },
+    {
+      "old_article": "keryx",
+      "line": 39,
+      "source_sha256": "1ecdacf89195b1c2779cc418cddf8705fe83092967b5723efb0ba007c179a96b",
+      "homes": [
+        "keryx-a-few-useful-commands-2"
+      ]
+    },
+    {
+      "old_article": "keryx",
+      "line": 41,
+      "source_sha256": "10905ce9a8aef6240151e0bece806e3305e17f06cb02c2d460307554e40639c8",
+      "homes": [
+        "keryx-a-few-useful-commands-2"
+      ]
+    },
+    {
+      "old_article": "keryx",
+      "line": 43,
+      "source_sha256": "7021af13433bf0e981ad9311fe6e900191e393a973ab673220f4495542c8dd92",
+      "homes": [
+        "keryx-a-few-useful-commands-2"
+      ]
+    },
+    {
+      "old_article": "keryx",
+      "line": 48,
+      "source_sha256": "e172861cf40dce8cc75c9fc27b333364691c52a12ea047bdaf7b2c30db9d7ffc",
+      "homes": [
+        "keryx-argument-reminders"
+      ]
+    },
+    {
+      "old_article": "keryx",
+      "line": 52,
+      "source_sha256": "01f196e71d03933a2a08dad3af65e4e2997b2be259a971c08d2310667e26a5cc",
+      "homes": [
+        "keryx-argument-reminders"
+      ]
+    },
+    {
+      "old_article": "keryx",
+      "line": 56,
+      "source_sha256": "5ffcffa6fffbe33f578a355aebae9697751110969f24a290b217bd1b03c34010",
+      "homes": [
+        "keryx-argument-reminders"
+      ]
+    },
+    {
+      "old_article": "keryx",
+      "line": 62,
+      "source_sha256": "5ff0003815124245b7bb82efbae10524432d56b1d4400a8d0dcef48af52a8275",
+      "homes": [
+        "keryx-argument-reminders"
+      ]
+    },
+    {
+      "old_article": "keryx",
+      "line": 64,
+      "source_sha256": "89695ea397765529a335742a521b861dcdf0fb7629da5d36bcfc6c3494e0f11f",
+      "homes": [
+        "keryx-argument-reminders-2",
+        "free-citizens-2"
+      ]
+    },
+    {
+      "old_article": "community-chat",
+      "line": 1,
+      "source_sha256": "8eb94a3a3fda3335bd2002ddf2ab0f448df0e89a2cce1529f37c74ffff7a640d",
+      "homes": [
+        "community-chat"
+      ]
+    },
+    {
+      "old_article": "community-chat",
+      "line": 5,
+      "source_sha256": "02c559bb3ab74ef731c47eb13533d0dcd8efd78443553fff1bfed78cdaec2ba6",
+      "homes": [
+        "community-chat-your-chat-account"
+      ]
+    },
+    {
+      "old_article": "community-chat",
+      "line": 7,
+      "source_sha256": "26ecb0a9170d620730593e3e34da2a3a58772c8d590a80e501ae21d5be7a69b6",
+      "homes": [
+        "community-chat-your-chat-account"
+      ]
+    },
+    {
+      "old_article": "community-chat",
+      "line": 9,
+      "source_sha256": "10fb0ddcea9e622904d8e06eada74c4096a798fe74108b763a9a297908ebd3c1",
+      "homes": [
+        "community-chat-your-chat-account"
+      ]
+    },
+    {
+      "old_article": "community-chat",
+      "line": 11,
+      "source_sha256": "ff771348d5c25f56bf98ee45d75176fc4565398af85a0a79bacfc591c68719d0",
+      "homes": [
+        "community-chat-your-chat-account"
+      ]
+    },
+    {
+      "old_article": "community-chat",
+      "line": 13,
+      "source_sha256": "6092db2f1cec3f33198ab893e6da3c7faab231131bda736eb5ed712c91e15c15",
+      "homes": [
+        "community-chat-your-chat-account"
+      ]
+    },
+    {
+      "old_article": "community-chat",
+      "line": 17,
+      "source_sha256": "75f01a4ba1163790d1a934568eb82d9c6e9fc516a759f874acfc5231537712d2",
+      "homes": [
+        "community-chat-chat-rules-and-privacy"
+      ]
+    },
+    {
+      "old_article": "community-chat",
+      "line": 22,
+      "source_sha256": "a0b7da0f857c8ebaef7abad3daab9d4c8c1709ab58e0863d46fd026d01b2450b",
+      "homes": [
+        "community-chat-chat-rules-and-privacy"
+      ]
+    },
+    {
+      "old_article": "community-chat",
+      "line": 24,
+      "source_sha256": "46c7092ace9ca195c71b2c5188c42a37f1e33dc4e77750a5a8f86c7390b006bc",
+      "homes": [
+        "community-chat-chat-rules-and-privacy"
+      ]
+    },
+    {
+      "old_article": "glossary",
+      "line": 1,
+      "source_sha256": "d10fdbcfdf156a263c77b12d274b1a6d6806e65e595ea67aea580f2dd0e35847",
+      "homes": [
+        "glossary"
+      ]
+    },
+    {
+      "old_article": "glossary",
+      "line": 3,
+      "source_sha256": "e48c65ececca7685f771a6ed46352e564dadc33e9016c0af6d880780dd52b304",
+      "homes": [
+        "glossary"
+      ]
+    },
+    {
+      "old_article": "glossary",
+      "line": 5,
+      "source_sha256": "4b61e385cf1da5b289222c2a829ce6002d8399bca64fbed85e4faad3a8f73329",
+      "homes": [
+        "glossary"
+      ]
+    },
+    {
+      "old_article": "glossary",
+      "line": 7,
+      "source_sha256": "4057c68a52c467a23493ed32b411d3f08309c9604715107bcd8ddde52fbcd005",
+      "homes": [
+        "glossary"
+      ]
+    },
+    {
+      "old_article": "glossary",
+      "line": 9,
+      "source_sha256": "9ae522866086aadb1e68d1d71f4dc8904addea5818e4e21818d30cd3587475fa",
+      "homes": [
+        "glossary"
+      ]
+    },
+    {
+      "old_article": "glossary",
+      "line": 11,
+      "source_sha256": "a7f5e37f13b6699f8d1ceab569a07cd37a74e1be574f99e4eb6cd0e19556c44f",
+      "homes": [
+        "glossary"
+      ]
+    },
+    {
+      "old_article": "glossary",
+      "line": 13,
+      "source_sha256": "268ce31379db4c6c6b1ff3757ca11357afac8b3c2a6ee524c65472942b9743fd",
+      "homes": [
+        "glossary"
+      ]
+    },
+    {
+      "old_article": "glossary",
+      "line": 15,
+      "source_sha256": "d0ce7a50f38ab6caf23bf4e010de72ce163d19956033584c85994161d4bad3d1",
+      "homes": [
+        "glossary"
+      ]
+    },
+    {
+      "old_article": "glossary",
+      "line": 17,
+      "source_sha256": "91a208eb649aabee0b5013bd6495050f15f1402638b37e9c342f304dba2189d1",
+      "homes": [
+        "glossary"
+      ]
+    },
+    {
+      "old_article": "glossary",
+      "line": 19,
+      "source_sha256": "7c2e3bb9355fe2375b343b0d76becb983559a923f83e25adb3ad0a6583b258f0",
+      "homes": [
+        "glossary"
+      ]
+    },
+    {
+      "old_article": "glossary",
+      "line": 21,
+      "source_sha256": "a523f04e146f9976edbcd3363775fe67fe917e75925fe3e9ec732dd1392dca96",
+      "homes": [
+        "glossary"
+      ]
+    },
+    {
+      "old_article": "glossary",
+      "line": 23,
+      "source_sha256": "2d7caac8ed62f2ac575275252da08c0d017391027fbc03a1c6f1818dfc8a77bc",
+      "homes": [
+        "glossary"
+      ]
+    },
+    {
+      "old_article": "glossary",
+      "line": 25,
+      "source_sha256": "55e99c860355165288fbaa321d46b7dcabf9e3f932596918570f9d940de4613c",
+      "homes": [
+        "glossary"
+      ]
+    },
+    {
+      "old_article": "glossary",
+      "line": 27,
+      "source_sha256": "c0b33ef3d86d1204d34884ee419f584171054f54cd263306f1f54804da455197",
+      "homes": [
+        "glossary"
+      ]
+    },
+    {
+      "old_article": "glossary",
+      "line": 29,
+      "source_sha256": "9c293c957baf134d6bfbb277492db4e2d8f009c4943b0f7847b41cbb4efeef18",
+      "homes": [
+        "glossary"
+      ]
+    }
+  ],
+  "missing": []
+}

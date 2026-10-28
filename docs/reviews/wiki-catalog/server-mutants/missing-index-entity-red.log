@@ -1,0 +1,6 @@
+» färsk DB på migration 218 · commit c87e750d+ändringar
+--- FAIL: TestCodexEntityCoverageFromRuntimeCatalogues (0.01s)
+    codex_catalog_test.go:217: current catalogue entities without article: [building:farm]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.009s
+FAIL

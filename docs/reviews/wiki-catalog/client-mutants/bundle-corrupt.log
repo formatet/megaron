@@ -1,0 +1,192 @@
+TAP version 13
+# Subtest: codex: index ids are unique and every category is declared
+ok 1 - codex: index ids are unique and every category is declared
+  ---
+  duration_ms: 0.830234
+  type: 'test'
+  ...
+# Subtest: codex: every index entry has a file and every file has an index entry
+ok 2 - codex: every index entry has a file and every file has an index entry
+  ---
+  duration_ms: 0.800285
+  type: 'test'
+  ...
+# Subtest: codex: every [[link]] and related entry resolves to an article
+ok 3 - codex: every [[link]] and related entry resolves to an article
+  ---
+  duration_ms: 0.901619
+  type: 'test'
+  ...
+# Subtest: codex: every notification kind the client shows maps to exactly one article
+ok 4 - codex: every notification kind the client shows maps to exactly one article
+  ---
+  duration_ms: 0.703612
+  type: 'test'
+  ...
+# Subtest: codex: every drawer with a ? button has an article
+ok 5 - codex: every drawer with a ? button has an article
+  ---
+  duration_ms: 0.237096
+  type: 'test'
+  ...
+# Subtest: codex: every article is reachable — linked from another article or listed as related
+ok 6 - codex: every article is reachable — linked from another article or listed as related
+  ---
+  duration_ms: 0.869654
+  type: 'test'
+  ...
+# Subtest: renderMarkdown: escapes HTML and renders links, known and missing
+ok 7 - renderMarkdown: escapes HTML and renders links, known and missing
+  ---
+  duration_ms: 0.49736
+  type: 'test'
+  ...
+# Subtest: renderMarkdown: headings, lists, tables, code and comments
+ok 8 - renderMarkdown: headings, lists, tables, code and comments
+  ---
+  duration_ms: 0.418176
+  type: 'test'
+  ...
+# Subtest: backlinksTo and searchArticles
+ok 9 - backlinksTo and searchArticles
+  ---
+  duration_ms: 0.389942
+  type: 'test'
+  ...
+# Subtest: codex: lowercase agora_ready is mapped and community rules match alpha policy
+ok 10 - codex: lowercase agora_ready is mapped and community rules match alpha policy
+  ---
+  duration_ms: 0.716182
+  type: 'test'
+  ...
+# Subtest: codex search finds the specific colony abandonment and Runner return articles
+ok 11 - codex search finds the specific colony abandonment and Runner return articles
+  ---
+  duration_ms: 7.229004
+  type: 'test'
+  ...
+# Subtest: codex: game days name the world unit and clock/date names wall time
+ok 12 - codex: game days name the world unit and clock/date names wall time
+  ---
+  duration_ms: 0.210098
+  type: 'test'
+  ...
+# Subtest: historical food-reserve notifications open the current food article
+ok 13 - historical food-reserve notifications open the current food article
+  ---
+  duration_ms: 0.07704
+  type: 'test'
+  ...
+# Subtest: temple demolition notice opens the loss and lowered-ceiling rules
+ok 14 - temple demolition notice opens the loss and lowered-ceiling rules
+  ---
+  duration_ms: 0.106805
+  type: 'test'
+  ...
+# Subtest: Codex search ranks titles before aliases before content and normalises separators
+ok 15 - Codex search ranks titles before aliases before content and normalises separators
+  ---
+  duration_ms: 5.301934
+  type: 'test'
+  ...
+# Subtest: current catalogue objects resolve to their individual Codex article
+ok 16 - current catalogue objects resolve to their individual Codex article
+  ---
+  duration_ms: 0.363126
+  type: 'test'
+  ...
+# Subtest: article bundle matches every Markdown source exactly
+not ok 17 - article bundle matches every Markdown source exactly
+  ---
+  duration_ms: 1.847359
+  type: 'test'
+  location: '/tmp/megaron-wiki-client-mutants/web/static/js/megaron/ui/codex.test.mjs:208:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    harbour has a stale bundled article; run python3 tools/codex_facts.py
+    + actual - expected
+    
+    + 'A WRONG Harbour opens deep-water fishing places in a coastal city’s [[catchment]]. Build it through **City → Buildings → Construct**, or `keryx build --type harbour`. Place fishers on the water itself; the harbour has no workplaces to staff. See [[deep-water-fishing]] for its fishing places and [[shipyard]] for building ships.\n' +
+    - 'A Harbour opens deep-water fishing places in a coastal city’s [[catchment]]. Build it through **City → Buildings → Construct**, or `keryx build --type harbour`. Place fishers on the water itself; the harbour has no workplaces to staff. See [[deep-water-fishing]] for its fishing places and [[shipyard]] for building ships.\n' +
+        '\n' +
+        '<!-- facts: building harbour -->\n' +
+        '| Reference | Current rule |\n' +
+        '|---|---|\n' +
+        '| Cost, level 1 | 16 timber (or cedar) · 12 stone |\n' +
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: |-
+    A Harbour opens deep-water fishing places in a coastal city’s [[catchment]]. Build it through **City → Buildings → Construct**, or `keryx build --type harbour`. Place fishers on the water itself; the harbour has no workplaces to staff. See [[deep-water-fishing]] for its fishing places and [[shipyard]] for building ships.
+    
+    <!-- facts: building harbour -->
+    | Reference | Current rule |
+    |---|---|
+    | Cost, level 1 | 16 timber (or cedar) · 12 stone |
+    | Build time, level 1 | 12 game days |
+    | Maximum level | 3 |
+    | Cost to level 2 | 32 timber (or cedar) · 4 cedar · 24 stone |
+    | Cost to level 3 | 64 timber (or cedar) · 8 cedar · 48 stone |
+    | Site | The city must border navigable water. |
+    <!-- /facts -->
+    
+  actual: |-
+    A WRONG Harbour opens deep-water fishing places in a coastal city’s [[catchment]]. Build it through **City → Buildings → Construct**, or `keryx build --type harbour`. Place fishers on the water itself; the harbour has no workplaces to staff. See [[deep-water-fishing]] for its fishing places and [[shipyard]] for building ships.
+    
+    <!-- facts: building harbour -->
+    | Reference | Current rule |
+    |---|---|
+    | Cost, level 1 | 16 timber (or cedar) · 12 stone |
+    | Build time, level 1 | 12 game days |
+    | Maximum level | 3 |
+    | Cost to level 2 | 32 timber (or cedar) · 4 cedar · 24 stone |
+    | Cost to level 3 | 64 timber (or cedar) · 8 cedar · 48 stone |
+    | Site | The city must border navigable water. |
+    <!-- /facts -->
+    
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-wiki-client-mutants/web/static/js/megaron/ui/codex.test.mjs:211:29)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: generated Codex facts are current with their reference catalogue
+not ok 18 - generated Codex facts are current with their reference catalogue
+  ---
+  duration_ms: 32.697751
+  type: 'test'
+  location: '/tmp/megaron-wiki-client-mutants/web/static/js/megaron/ui/codex.test.mjs:214:1'
+  failureType: 'testCodeFailure'
+  error: 'Command failed: python3 /tmp/megaron-wiki-client-mutants/tools/codex_facts.py --check'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    genericNodeError (node:internal/errors:983:15)
+    wrappedFn (node:internal/errors:537:14)
+    checkExecSyncError (node:child_process:916:11)
+    execFileSync (node:child_process:952:15)
+    TestContext.<anonymous> (file:///tmp/megaron-wiki-client-mutants/web/static/js/megaron/ui/codex.test.mjs:215:2)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  ...
+# Subtest: Codex tables keep labelled wiki links in one cell
+ok 19 - Codex tables keep labelled wiki links in one cell
+  ---
+  duration_ms: 0.336657
+  type: 'test'
+  ...
+1..19
+# tests 19
+# suites 0
+# pass 17
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 112.481004

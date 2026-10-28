@@ -1,0 +1,36 @@
+{
+  "base": "c87e750d",
+  "physical_mutants": [
+    {
+      "mutant": "alias-removed",
+      "exit": 1,
+      "assertion": "Codex search ranks titles"
+    },
+    {
+      "mutant": "title-priority-reversed",
+      "exit": 1,
+      "assertion": "Codex search ranks titles"
+    },
+    {
+      "mutant": "unit-entity-wrong",
+      "exit": 1,
+      "assertion": "Forces name opens"
+    },
+    {
+      "mutant": "generated-cost-corrupt",
+      "exit": 1,
+      "assertion": "generated Codex facts are current"
+    },
+    {
+      "mutant": "bundle-corrupt",
+      "exit": 1,
+      "assertion": "article bundle matches"
+    },
+    {
+      "mutant": "cli-alias-removed",
+      "exit": 1,
+      "assertion": "resolve \"mana\""
+    }
+  ],
+  "restored_js_and_fresh_cli_green": true
+}

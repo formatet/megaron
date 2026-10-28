@@ -1,0 +1,795 @@
+{
+  "buildings": [
+    {
+      "costs": {
+        "stone": 16,
+        "timber": 8
+      },
+      "duration_game_days": 10,
+      "max_level": 1,
+      "purpose": "Enables recruiting Spearmen and Bronze Guard",
+      "type": "barracks"
+    },
+    {
+      "costs": {
+        "stone": 4,
+        "timber": 6
+      },
+      "duration_game_days": 4,
+      "hex_bound": true,
+      "max_level": 3,
+      "purpose": "Stands on a grain hex and works its field",
+      "requires_terrain": [
+        "hills",
+        "plains",
+        "river_delta",
+        "river_valley"
+      ],
+      "type": "farm",
+      "upgrade_costs": {
+        "2": {
+          "stone": 8,
+          "timber": 12
+        },
+        "3": {
+          "stone": 16,
+          "timber": 24
+        }
+      }
+    },
+    {
+      "costs": {
+        "stone": 20,
+        "timber": 8
+      },
+      "duration_game_days": 16,
+      "max_level": 1,
+      "purpose": "Smelts copper and tin into bronze",
+      "type": "foundry"
+    },
+    {
+      "costs": {
+        "stone": 12,
+        "timber": 16
+      },
+      "duration_game_days": 12,
+      "max_level": 3,
+      "purpose": "Works the settlement's coastal waters and enables sea trade",
+      "requires_coastal": true,
+      "requires_terrain": [
+        "deep_sea"
+      ],
+      "type": "harbour",
+      "upgrade_costs": {
+        "2": {
+          "cedar": 4,
+          "stone": 24,
+          "timber": 32
+        },
+        "3": {
+          "cedar": 8,
+          "stone": 48,
+          "timber": 64
+        }
+      }
+    },
+    {
+      "costs": {
+        "stone": 4,
+        "timber": 8
+      },
+      "duration_game_days": 6,
+      "hex_bound": true,
+      "max_level": 3,
+      "purpose": "Stands on a forest hex and works its stands",
+      "requires_terrain": [
+        "forest_cedar",
+        "forest_olive_grove",
+        "hills",
+        "river_valley",
+        "scrub_maquis"
+      ],
+      "type": "lumbermill",
+      "upgrade_costs": {
+        "2": {
+          "stone": 8,
+          "timber": 16
+        },
+        "3": {
+          "stone": 16,
+          "timber": 32
+        }
+      }
+    },
+    {
+      "costs": {
+        "stone": 8,
+        "timber": 10
+      },
+      "duration_game_days": 8,
+      "max_level": 3,
+      "purpose": "Enables trade offers and updates market price snapshots; no workers needed",
+      "type": "market",
+      "upgrade_costs": {
+        "2": {
+          "stone": 16,
+          "timber": 20
+        },
+        "3": {
+          "stone": 32,
+          "timber": 40
+        }
+      }
+    },
+    {
+      "costs": {
+        "stone": 16,
+        "timber": 6
+      },
+      "duration_game_days": 10,
+      "hex_bound": true,
+      "max_level": 3,
+      "purpose": "Stands on an ore deposit and extracts what the hex holds",
+      "requires_deposits": [
+        "copper",
+        "silver",
+        "tin"
+      ],
+      "type": "mine",
+      "upgrade_costs": {
+        "2": {
+          "stone": 32,
+          "timber": 12
+        },
+        "3": {
+          "stone": 64,
+          "timber": 24
+        }
+      }
+    },
+    {
+      "costs": {
+        "stone": 8,
+        "timber": 8
+      },
+      "duration_game_days": 8,
+      "max_level": 3,
+      "purpose": "Refines a press-worker's oil from the settlement's groves",
+      "requires_terrain": [
+        "forest_olive_grove",
+        "hills",
+        "plains"
+      ],
+      "type": "olive_press",
+      "upgrade_costs": {
+        "2": {
+          "stone": 16,
+          "timber": 16
+        },
+        "3": {
+          "stone": 32,
+          "timber": 32
+        }
+      }
+    },
+    {
+      "costs": {
+        "stone": 4,
+        "timber": 6
+      },
+      "duration_game_days": 4,
+      "max_level": 3,
+      "purpose": "Holds a bigger herd; animals the pen cannot hold are eaten, then lost",
+      "type": "pen",
+      "upgrade_costs": {
+        "2": {
+          "stone": 8,
+          "timber": 12
+        },
+        "3": {
+          "stone": 16,
+          "timber": 24
+        }
+      }
+    },
+    {
+      "costs": {
+        "stone": 12,
+        "timber": 24
+      },
+      "duration_game_days": 12,
+      "max_level": 3,
+      "purpose": "Builds and repairs ships",
+      "requires_coastal": true,
+      "type": "shipyard",
+      "upgrade_costs": {
+        "2": {
+          "cedar": 4,
+          "stone": 24,
+          "timber": 48
+        },
+        "3": {
+          "cedar": 8,
+          "stone": 48,
+          "timber": 96
+        }
+      }
+    },
+    {
+      "costs": {
+        "stone": 8,
+        "timber": 12
+      },
+      "duration_game_days": 8,
+      "max_level": 3,
+      "purpose": "Stores more food (not the herd); a wall of level N needs a Granary of level N",
+      "type": "silo",
+      "upgrade_costs": {
+        "2": {
+          "stone": 16,
+          "timber": 24
+        },
+        "3": {
+          "bronze": 8,
+          "stone": 32,
+          "timber": 48
+        }
+      }
+    },
+    {
+      "costs": {
+        "stone": 8,
+        "timber": 12
+      },
+      "duration_game_days": 8,
+      "max_level": 3,
+      "purpose": "Enables chariots",
+      "type": "stable",
+      "upgrade_costs": {
+        "2": {
+          "stone": 16,
+          "timber": 24
+        },
+        "3": {
+          "stone": 32,
+          "timber": 48
+        }
+      }
+    },
+    {
+      "costs": {
+        "stone": 8,
+        "timber": 6
+      },
+      "duration_game_days": 6,
+      "hex_bound": true,
+      "max_level": 3,
+      "purpose": "Stands on a land hex; its crew quarry the stone there — far more on hills and limestone",
+      "requires_terrain": [
+        "forest_cedar",
+        "forest_olive_grove",
+        "hills",
+        "mountain_limestone",
+        "mountain_red",
+        "plains",
+        "river_delta",
+        "river_valley",
+        "scrub_maquis",
+        "semi_desert"
+      ],
+      "type": "stonequarry",
+      "upgrade_costs": {
+        "2": {
+          "stone": 16,
+          "timber": 12
+        },
+        "3": {
+          "stone": 32,
+          "timber": 24
+        }
+      }
+    },
+    {
+      "costs": {
+        "stone": 24,
+        "timber": 8
+      },
+      "duration_game_days": 16,
+      "max_level": 3,
+      "purpose": "Dedicated to one god: opens that god's prayers, and its workers keep your kharis",
+      "type": "temple",
+      "upgrade_costs": {
+        "2": {
+          "cedar": 4,
+          "stone": 48,
+          "timber": 16
+        },
+        "3": {
+          "cedar": 8,
+          "stone": 96,
+          "timber": 32
+        }
+      }
+    },
+    {
+      "costs": {
+        "stone": 4,
+        "timber": 12
+      },
+      "duration_game_days": 6,
+      "max_level": 1,
+      "purpose": "Adds a wall tier (Palisade → Stone Wall → Bronze Wall) for combat defence",
+      "type": "wall",
+      "wall_ladder": [
+        {
+          "costs": {
+            "stone": 4,
+            "timber": 12
+          },
+          "level": 1,
+          "name": "Palisade",
+          "population_cap": 5000,
+          "requires_silo": 1
+        },
+        {
+          "costs": {
+            "stone": 40,
+            "timber": 20
+          },
+          "level": 2,
+          "name": "Stone Wall",
+          "population_cap": 10000,
+          "requires_silo": 2
+        },
+        {
+          "costs": {
+            "bronze": 20,
+            "stone": 80
+          },
+          "level": 3,
+          "name": "Bronze Wall",
+          "population_cap": 20000,
+          "requires_silo": 3
+        }
+      ]
+    },
+    {
+      "costs": {
+        "stone": 8,
+        "timber": 8
+      },
+      "duration_game_days": 8,
+      "max_level": 3,
+      "purpose": "Refines a vintner's wine from the settlement's vines",
+      "requires_terrain": [
+        "hills",
+        "plains",
+        "river_valley",
+        "scrub_maquis"
+      ],
+      "type": "winery",
+      "upgrade_costs": {
+        "2": {
+          "stone": 16,
+          "timber": 16
+        },
+        "3": {
+          "stone": 32,
+          "timber": 32
+        }
+      }
+    }
+  ],
+  "entity_names": {
+    "building": {
+      "barracks": "Barracks",
+      "farm": "Farm",
+      "foundry": "Foundry",
+      "harbour": "Harbour",
+      "lumbermill": "Lumbermill",
+      "market": "Market",
+      "mine": "Mine",
+      "olive_press": "Olive Press",
+      "pen": "Pen",
+      "shipyard": "Shipyard",
+      "silo": "Granary",
+      "stable": "Stable",
+      "stonequarry": "Stone Quarry",
+      "temple": "Temple",
+      "wall": "Wall",
+      "winery": "Winery"
+    },
+    "unit": {
+      "elite_infantry": "Bronze Guard",
+      "galley": "Galley",
+      "merchantman": "Emporos",
+      "nomadic_host": "Nomadic Host",
+      "spearman": "Spearmen",
+      "war_chariot": "Chariot",
+      "war_galley": "War Galley"
+    }
+  },
+  "gods": [
+    {
+      "ID": "potnia",
+      "Name": "Potnia",
+      "Cultures": [
+        "minoan"
+      ]
+    },
+    {
+      "ID": "velchanos",
+      "Name": "Velchanos",
+      "Cultures": [
+        "minoan"
+      ]
+    },
+    {
+      "ID": "asterion",
+      "Name": "Asterion",
+      "Cultures": [
+        "minoan"
+      ]
+    },
+    {
+      "ID": "sea_daimons_stillness",
+      "Name": "the Sea Daimons of Stillness",
+      "Cultures": [
+        "minoan"
+      ]
+    }
+  ],
+  "goods": [
+    {
+      "category": "strategic",
+      "key": "bronze",
+      "name": "Bronze",
+      "status": "active",
+      "tier": "manufactured",
+      "weight": 2.5
+    },
+    {
+      "category": "bulk",
+      "key": "cedar",
+      "name": "Cedar",
+      "status": "active",
+      "tier": "commodity",
+      "weight": 3
+    },
+    {
+      "category": "strategic",
+      "key": "copper",
+      "name": "Copper",
+      "status": "active",
+      "tier": "commodity",
+      "weight": 2
+    },
+    {
+      "category": "sacred",
+      "key": "cult",
+      "name": "Cult",
+      "status": "active",
+      "tier": "manufactured",
+      "weight": 0
+    },
+    {
+      "category": "staple",
+      "key": "fish",
+      "name": "Fish",
+      "status": "active",
+      "tier": "commodity",
+      "weight": 1.5
+    },
+    {
+      "category": "staple",
+      "key": "grain",
+      "name": "Grain",
+      "status": "active",
+      "tier": "commodity",
+      "weight": 2
+    },
+    {
+      "category": "strategic",
+      "key": "horses",
+      "name": "Horses",
+      "status": "parked",
+      "tier": "commodity",
+      "weight": 5
+    },
+    {
+      "category": "prestige",
+      "key": "incense",
+      "name": "Incense",
+      "status": "active",
+      "tier": "commodity",
+      "weight": 3
+    },
+    {
+      "category": "staple",
+      "key": "livestock",
+      "name": "Livestock",
+      "status": "active",
+      "tier": "commodity",
+      "weight": 3
+    },
+    {
+      "category": "prestige",
+      "key": "oil",
+      "name": "Oil",
+      "status": "active",
+      "tier": "commodity",
+      "weight": 1.5
+    },
+    {
+      "category": "strategic",
+      "key": "pottery",
+      "name": "Pottery",
+      "status": "parked",
+      "tier": "commodity",
+      "weight": 2
+    },
+    {
+      "category": "prestige",
+      "key": "purple",
+      "name": "Purple",
+      "status": "parked",
+      "tier": "commodity",
+      "weight": 1
+    },
+    {
+      "category": "bulk",
+      "key": "shipbuilding",
+      "name": "Shipyard work",
+      "status": "parked",
+      "tier": "manufactured",
+      "weight": 0
+    },
+    {
+      "category": "precious",
+      "key": "silver",
+      "name": "Silver",
+      "status": "active",
+      "tier": "precious",
+      "weight": 2
+    },
+    {
+      "category": "bulk",
+      "key": "stone",
+      "name": "Stone",
+      "status": "active",
+      "tier": "commodity",
+      "weight": 3
+    },
+    {
+      "category": "bulk",
+      "key": "timber",
+      "name": "Timber",
+      "status": "active",
+      "tier": "commodity",
+      "weight": 3
+    },
+    {
+      "category": "strategic",
+      "key": "tin",
+      "name": "Tin",
+      "status": "active",
+      "tier": "commodity",
+      "weight": 2
+    },
+    {
+      "category": "prestige",
+      "key": "wine",
+      "name": "Wine",
+      "status": "active",
+      "tier": "commodity",
+      "weight": 1.5
+    }
+  ],
+  "prayers": {
+    "minoan_asterion_thread": {
+      "ID": "minoan_asterion_thread",
+      "GodID": "asterion",
+      "EffectType": "next_land_departure",
+      "MinKharis": 5,
+      "Offering": {
+        "silver": 3,
+        "timber": 4
+      },
+      "CooldownTicks": 12,
+      "TargetKind": "",
+      "God": "Asterion",
+      "Name": "The Thread Shows a Path",
+      "Description": "Your next land caravan or Runner from this city travels faster; the caravan is harder to intercept.",
+      "Favours": null
+    },
+    "minoan_potnia_vision_v2": {
+      "ID": "minoan_potnia_vision_v2",
+      "GodID": "potnia",
+      "EffectType": "oracle_memory_v2",
+      "MinKharis": 5,
+      "Offering": {
+        "grain": 10,
+        "silver": 3
+      },
+      "CooldownTicks": 24,
+      "TargetKind": "",
+      "God": "Potnia",
+      "Name": "Potnia's Vision",
+      "Description": "Marks an unseen source of copper, tin, silver or incense and the unknown ground within two hexes as memory; no live activity.",
+      "Favours": {
+        "bronze": 1.3,
+        "fish": 2.2,
+        "grain": 0.6,
+        "incense": 2.1,
+        "oil": 1.5,
+        "pottery": 1.1,
+        "purple": 2,
+        "silver": 1.4,
+        "stone": 0.4
+      }
+    },
+    "minoan_potnia_walls": {
+      "ID": "minoan_potnia_walls",
+      "GodID": "potnia",
+      "EffectType": "garrison_defense",
+      "MinKharis": 5,
+      "Offering": {
+        "grain": 8,
+        "timber": 4
+      },
+      "CooldownTicks": 24,
+      "TargetKind": "",
+      "God": "Potnia",
+      "Name": "Mistress of the Walls",
+      "Description": "Your own garrison defending this city fights a quarter stronger for 6 game days.",
+      "Favours": {
+        "bronze": 1.5,
+        "fish": 0.4,
+        "grain": 1,
+        "horses": 1.6,
+        "incense": 1.5,
+        "livestock": 2,
+        "pottery": 0.5,
+        "stone": 0.4,
+        "wine": 1.7
+      }
+    },
+    "minoan_stillness_passage": {
+      "ID": "minoan_stillness_passage",
+      "GodID": "sea_daimons_stillness",
+      "EffectType": "next_ship_departure",
+      "MinKharis": 5,
+      "Offering": {
+        "fish": 6,
+        "silver": 3
+      },
+      "CooldownTicks": 12,
+      "TargetKind": "",
+      "God": "The Sea Daimons of Stillness",
+      "Name": "Favourable Passage",
+      "Description": "The next ship leaving this port sails faster and takes no storm damage on its outward leg.",
+      "Favours": null
+    },
+    "minoan_velchanos_green_shoots": {
+      "ID": "minoan_velchanos_green_shoots",
+      "GodID": "velchanos",
+      "EffectType": "harvest_blessing",
+      "MinKharis": 30,
+      "Offering": {
+        "grain": 15,
+        "silver": 2
+      },
+      "CooldownTicks": 25,
+      "TargetKind": "",
+      "God": "Velchanos",
+      "Name": "Green Shoots",
+      "Description": "Grain, oil and wine yield a quarter more for 25 game days; fish and the herd are unchanged.",
+      "Favours": null
+    }
+  },
+  "recipes": [
+    {
+      "building_type": "foundry",
+      "id": 1,
+      "ingredients": [
+        {
+          "good_key": "copper",
+          "quantity": 9
+        },
+        {
+          "good_key": "tin",
+          "quantity": 1
+        }
+      ],
+      "output_key": "bronze",
+      "output_qty": 1
+    }
+  ],
+  "terrain_ids": [
+    "coastal_sea",
+    "deep_sea",
+    "forest_cedar",
+    "forest_olive_grove",
+    "hills",
+    "mountain_limestone",
+    "mountain_red",
+    "plains",
+    "river",
+    "river_delta",
+    "river_ford",
+    "river_valley",
+    "scrub_maquis",
+    "semi_desert"
+  ],
+  "units": [
+    {
+      "batch_men": 100,
+      "costs": {
+        "bronze": 16,
+        "grain": 24,
+        "silver": 40
+      },
+      "duration_game_days": 4,
+      "pop_cost": 10,
+      "requires_barracks": true,
+      "requires_foundry": true,
+      "type": "elite_infantry"
+    },
+    {
+      "batch_men": 20,
+      "costs": {
+        "timber": 30
+      },
+      "duration_game_days": 3,
+      "pop_cost": 10,
+      "requires_shipyard": true,
+      "type": "galley"
+    },
+    {
+      "batch_men": 10,
+      "costs": {
+        "cedar": 90
+      },
+      "duration_game_days": 4,
+      "pop_cost": 8,
+      "requires_shipyard": true,
+      "type": "merchantman"
+    },
+    {
+      "batch_men": 100,
+      "costs": {
+        "grain": 12
+      },
+      "duration_game_days": 1,
+      "pop_cost": 5,
+      "requires_barracks": true,
+      "type": "spearman"
+    },
+    {
+      "batch_men": 100,
+      "costs": {
+        "bronze": 20,
+        "cedar": 8,
+        "grain": 40,
+        "silver": 50,
+        "timber": 8
+      },
+      "duration_game_days": 3,
+      "pop_cost": 8,
+      "requires_stable": true,
+      "type": "war_chariot"
+    },
+    {
+      "batch_men": 50,
+      "costs": {
+        "cedar": 100,
+        "silver": 30
+      },
+      "duration_game_days": 5,
+      "pop_cost": 12,
+      "requires_foundry": true,
+      "requires_shipyard": true,
+      "type": "war_galley"
+    }
+  ]
+}

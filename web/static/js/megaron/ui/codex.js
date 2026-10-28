@@ -57,6 +57,13 @@ export function articleForDrawer(drawer, idx = index) {
   return a ? a.id : null;
 }
 
+export function articleForEntity(kind,key,idx=index) {
+ return idx?.articles.find(a=>!a.future&&(a.entities||[]).some(e=>e.kind===kind&&e.key===key))?.id||null;
+}
+export async function openCodexForEntity(kind,key) {
+ await ensureLoaded();const id=articleForEntity(kind,key);if(id)await openCodex(id);
+}
+
 // inline renders the inline subset: `code`, **bold**, *italic*, [[id]] and
 // [[id|text]]. Input is escaped first; code spans are protected from the
 // other rules so `a*b` inside backticks stays literal.
@@ -108,7 +115,7 @@ export function renderMarkdown(md, titles = {}) {
     if (line.startsWith('|')) {
       const rows = [];
       while (i < lines.length && lines[i].startsWith('|')) rows.push(lines[i++]);
-      const cells = r => r.replace(/^\||\|$/g, '').split('|').map(c => c.trim());
+      const cells = r => r.replace(/^\||\|$/g, '').replace(/\[\[([^\]]+)\]\]/g, link => link.replaceAll('|', '\u0001')).split('|').map(c => c.trim().replaceAll('\u0001', '|'));
       const body = rows.filter(r => !/^\|[\s:|-]+\|?$/.test(r));
       const [head, ...rest] = body;
       out.push('<table class="cx-table"><tr>' +
@@ -155,15 +162,13 @@ export function backlinksTo(id, allBodies) {
 
 // searchArticles ranks articles for a query: title hits first, then body hits.
 export function searchArticles(q, idx, allBodies) {
-  const needle = q.trim().toLowerCase();
-  if (!needle || !idx) return [];
-  const scored = [];
-  for (const a of idx.articles) {
-    const inTitle = a.title.toLowerCase().includes(needle);
-    const inBody = (allBodies && allBodies[a.id] || '').toLowerCase().includes(needle);
-    if (inTitle || inBody) scored.push({ a, score: inTitle ? 0 : 1 });
-  }
-  return scored.sort((x, y) => x.score - y.score || x.a.title.localeCompare(y.a.title)).map(s => s.a);
+  const normalise = value => String(value || '').toLowerCase().replace(/[_-]+/g,' ').replace(/\s+/g,' ').trim();
+  const needle=normalise(q);if(!needle||!idx)return [];
+  return idx.articles.map(a=>{
+    const title=normalise(a.title),aliases=(a.aliases||[]).map(normalise),body=normalise(allBodies?.[a.id]||a.search);
+    const score=title===needle?0:title.includes(needle)?1:aliases.some(alias=>alias.includes(needle))?2:body.includes(needle)?3:4;
+    return {a,score};
+  }).filter(row=>row.score<4).sort((x,y)=>x.score-y.score||x.a.title.localeCompare(y.a.title)).map(row=>row.a);
 }
 
 // ── Loading ──────────────────────────────────────────────────────────────
@@ -189,13 +194,11 @@ async function ensureLoaded() {
         const r = await fetch(BASE + 'index.json');
         index = await r.json();
       }
-      const entries = await Promise.all(index.articles.map(async a => {
-        try {
-          const r = await fetch(BASE + a.id + '.md');
-          return [a.id, r.ok ? await r.text() : ''];
-        } catch (_) { return [a.id, '']; }
-      }));
-      bodies = Object.fromEntries(entries);
+      const response=await fetch(BASE+'articles.json');
+      if(!response.ok)throw new Error('Could not load Codex articles');
+      const bundle=await response.json();
+      if(!index.articles.every(a=>typeof bundle[a.id]==='string'))throw new Error('Incomplete Codex articles');
+      bodies=bundle;
     })();
   }
   try { await loading; } catch (_) { loading = null; throw _; }
@@ -253,7 +256,7 @@ export function codexSearch(q) {
   if (!q.trim()) { out.innerHTML = ''; return; }
   const hits = searchArticles(q, index, bodies);
   out.innerHTML = hits.length
-    ? hits.map(a => `<a class="cx-link cx-result" href="#" data-cx="${a.id}">${esc(a.title)}</a>`).join('')
+    ? hits.map(a => `<a class="cx-link cx-result" href="#" data-cx="${a.id}">${esc(a.title)}${a.future?' <small>(future)</small>':''}</a>`).join('')
     : '<p class="empty-state">Nothing matches.</p>';
 }
 
@@ -268,7 +271,7 @@ function renderIndex() {
   const cats = index.categories.map(cat => {
     const items = index.articles.filter(a => a.category === cat);
     return `<div class="cx-cat"><div class="cx-cat-title">${esc(cat)}</div>` +
-      items.map(a => `<a class="cx-link cx-entry" href="#" data-cx="${a.id}">${esc(a.title)}</a>`).join('') +
+      items.map(a => `<a class="cx-link cx-entry" href="#" data-cx="${a.id}">${esc(a.title)}${a.future?' <small>(future)</small>':''}</a>`).join('') +
       '</div>';
   }).join('');
   body.innerHTML =
@@ -302,6 +305,8 @@ function renderArticle(id) {
 // and a top-level DOM touch would run in every module (and test) that
 // imports the dispatch window — the fragility ws.js's header warns about.
 function onPanelClick(e) {
+  const entity=e.target.closest?.('[data-cx-kind][data-cx-key]');
+  if(entity){e.preventDefault();openCodexForEntity(entity.dataset.cxKind,entity.dataset.cxKey);return;}
   const a = e.target.closest && e.target.closest('#codex-panel [data-cx]');
   if (!a) return;
   e.preventDefault();

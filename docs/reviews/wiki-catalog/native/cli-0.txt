@@ -1,0 +1,4 @@
+routes-details-2           Managing standing routes
+kharis                     Kharis
+temples-find-your-temples  Finding your temples
+report                     Reporting a problem

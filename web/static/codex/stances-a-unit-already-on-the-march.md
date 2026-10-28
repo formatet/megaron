@@ -1,0 +1,3 @@
+You can give a marching unit a stance too — from **War → Forces**, or by picking a stance when you right-click a new destination for it. The order goes by [[runners|Runner]], and the Runner has to **catch up** with the unit: the game tells you where and roughly when it will reach it. From then the unit carries the stance, and it takes hold **where the unit stops** — fortify digs in there, sentry watches that ground, storm goes into the assault it is marching on. A stance never turns a unit off its road.
+
+If the unit is too far ahead for any Runner to overtake, the Runner follows it to its destination and the stance applies where it stopped.
