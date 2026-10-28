@@ -1,0 +1,61 @@
+{
+  "ground": {
+    "map_ground_hash": "e15a3fcc7d9982a332cbde9caf6c5d3c",
+    "migration": {
+      "version": 221,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 5743
+      }
+    ],
+    "players": 16,
+    "settlements": 7,
+    "units": 22,
+    "goods": 119,
+    "gossip": 1302,
+    "river_metadata": [
+      32,
+      32,
+      32
+    ]
+  },
+  "health": {
+    "commit": "6c26042",
+    "migration": 221,
+    "status": "ok"
+  },
+  "checkout": "6c26042ab1f53b0520788395f460843c6a79ac7f",
+  "static": {
+    "web/static/codex/articles.json": "e1501da203c5c123e611a50bf9f61f28a393b976d6dcf2934a3e7a30ad4bdc45",
+    "web/static/codex/units-the-forces-tab.md": "c0172f8140716112e25d6050782716e1d9fd985036e737d8eaaf8b3fcf4690f8",
+    "web/static/js/megaron/render/map.js": "f6ac8e3e94d746445b71b13b749f7e1dfe446cee9d00e6ee561d23b3461a6d3d",
+    "web/static/js/megaron/ui/drawers/war.js": "4caff192e2e6ce0909964ea9bf93e2a0d9c736d267580bfbc82e68aacc14f17c",
+    "web/static/js/megaron/ui/force_card.js": "e5f6291ec1a0924b7207b89d793804190b095bd9675489efbee59f62243e7e5e",
+    "web/static/js/megaron/ui/hex_forces.test.mjs": "88985fbc27a95fddfb7a5c3143f011c8a6cdfbeed4031ff96b13464ddbaa3327",
+    "web/static/megaron.css": "288c9cc03a8fc8306c217084abdb4b3e072c757b62154aaaf12e26b72cace02e"
+  },
+  "expected": "6c26042ab1f53b0520788395f460843c6a79ac7f",
+  "before": {
+    "map_ground_hash": "e15a3fcc7d9982a332cbde9caf6c5d3c",
+    "migration": {
+      "version": 221,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 5741
+      }
+    ],
+    "players": 16,
+    "settlements": 7,
+    "units": 22,
+    "goods": 119,
+    "gossip": 1301
+  }
+}
