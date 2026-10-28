@@ -1,4 +1,4 @@
-// The only hidden-neighbour information admitted here is the server's edge/direction.
+// Hidden neighbours admit only the server's connection edge, direction and terrain kind.
 export const RIVER_OFFSETS=[[1,0],[-1,0],[0,1],[0,-1],[1,-1],[-1,1]];
 const names=['south-east','north-west','south','north','north-east','south-west'];
 const valid=edges=>[...new Set((edges||[]).filter(i=>Number.isInteger(i)&&i>=0&&i<6))];

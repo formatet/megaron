@@ -71,7 +71,7 @@ try:
   config.write_text(json.dumps({'server':base,'token':token,'world_id':world,'province_id':hp}))
   sql(f"UPDATE map_tiles SET terrain='coastal_sea',coastal=false,river_edges=NULL,river_upstream_edges=NULL,river_downstream_edges=NULL,river_flow_known=NULL WHERE world_id='{world}'; UPDATE map_tiles SET terrain='plains' WHERE world_id='{world}' AND q BETWEEN {hq} AND {hq+12} AND r BETWEEN {hr-3} AND {hr+3}; UPDATE map_tiles SET terrain='river' WHERE world_id='{world}' AND q BETWEEN {hq+5} AND {hq+12} AND r={hr}; UPDATE map_tiles SET terrain='river_ford' WHERE world_id='{world}' AND q={hq+8} AND r={hr}; UPDATE map_tiles SET terrain='coastal_sea' WHERE world_id='{world}' AND q={hq+4} AND r={hr}; UPDATE map_tiles SET terrain='river_delta' WHERE world_id='{world}' AND q={hq+12} AND r={hr+1}; DELETE FROM player_scouted_tiles WHERE world_id='{world}' AND player_id='{pid}'; DELETE FROM player_scouted_provinces WHERE world_id='{world}' AND player_id='{pid}';",True)
   sql(f"UPDATE map_tiles SET river_edges=CASE WHEN q={hq+12} THEN 19 ELSE 3 END,river_upstream_edges=2,river_downstream_edges=CASE WHEN q={hq+12} THEN 17 ELSE 1 END,river_flow_known=true WHERE world_id='{world}' AND terrain IN('river','river_ford')",True)
-  scout=sql(f"INSERT INTO units(world_id,owner_id,type,category,size,ordinal,status,q,r) VALUES('{world}','{pid}','infantry','land',100,2,'positioned',{hq+3},{hr+1}) RETURNING id",True)
+  scout=sql(f"INSERT INTO units(world_id,owner_id,type,category,size,ordinal,status,q,r) VALUES('{world}','{pid}','infantry','land',100,2,'positioned',{hq+3},{hr+1}) RETURNING id",True).splitlines()[0]
   api_proofs=[]
   with sync_playwright() as pw:
    browser=pw.firefox.launch()
