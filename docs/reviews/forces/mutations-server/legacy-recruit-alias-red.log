@@ -1,0 +1,6 @@
+--- FAIL: TestForcesRecruitLegacyAndCanonicalLabelsAccepted (0.00s)
+    forces_taxonomy_test.go:17: "Elite Infantry"→"spearman" want"elite_infantry"
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.006s
+FAIL
+» färsk DB på migration 217 · commit cdb68db3+ändringar

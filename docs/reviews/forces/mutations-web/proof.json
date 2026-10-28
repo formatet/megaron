@@ -1,0 +1,48 @@
+{
+  "mutants": [
+    {
+      "file": "ui/misc.js",
+      "old": "walls and the Bronze Guard often decide",
+      "new": "walls and elite agema often decide",
+      "test": "retired Forces labels",
+      "assertion_red": true
+    },
+    {
+      "file": "ui/actornames.js",
+      "old": "elite_infantry: 'Bronze Guard'",
+      "new": "elite_infantry: 'Elite Infantry'",
+      "test": "retired Forces labels",
+      "assertion_red": true
+    },
+    {
+      "file": "ui/forces.js",
+      "old": "...(people.length?",
+      "new": "...(!people.length?",
+      "test": "Forces groups by kind",
+      "assertion_red": true
+    },
+    {
+      "file": "ui/movements.js",
+      "old": "!u.bound_route_id",
+      "new": "true",
+      "test": "Marches excludes every bound trade ship",
+      "assertion_red": true
+    },
+    {
+      "file": "ui/drawers/war.js",
+      "old": "if (u.bound_route_name) loc =",
+      "new": "if (false && u.bound_route_name) loc =",
+      "test": "route-bound Ships name the route",
+      "assertion_red": true
+    },
+    {
+      "file": "ui/drawers/economy.js",
+      "old": "t.standing_order_id === o.id",
+      "new": "t.id === o.id",
+      "test": "route cargo uses saved route identity",
+      "assertion_red": true
+    }
+  ],
+  "exact_restore": true,
+  "restored_full_js_green": true
+}

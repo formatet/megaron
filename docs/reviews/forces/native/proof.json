@@ -1,0 +1,71 @@
+{
+  "health": {
+    "commit": "d3653d6a+forces",
+    "migration": 217,
+    "status": "ok"
+  },
+  "shots": [
+    {
+      "file": "1-people-1280.png"
+    },
+    {
+      "file": "1-people-390.png"
+    },
+    {
+      "file": "2-people-1280.png"
+    },
+    {
+      "file": "2-people-390.png"
+    },
+    {
+      "file": "1-land-1280.png"
+    },
+    {
+      "file": "1-ships-1280.png"
+    },
+    {
+      "file": "1-marches-1280.png"
+    },
+    {
+      "file": "1-routes-1280.png"
+    },
+    {
+      "file": "1-land-390.png"
+    },
+    {
+      "file": "1-ships-390.png"
+    },
+    {
+      "file": "1-marches-390.png"
+    },
+    {
+      "file": "1-routes-390.png"
+    },
+    {
+      "file": "2-land-1280.png"
+    },
+    {
+      "file": "2-ships-1280.png"
+    },
+    {
+      "file": "2-marches-1280.png"
+    },
+    {
+      "file": "2-routes-1280.png"
+    },
+    {
+      "file": "2-land-390.png"
+    },
+    {
+      "file": "2-ships-390.png"
+    },
+    {
+      "file": "2-marches-390.png"
+    },
+    {
+      "file": "2-routes-390.png"
+    }
+  ],
+  "source_unchanged": true,
+  "fixture": "Fresh server register/join, explicit island geometry and extra force roster, actual founding/standing-order creation/two transfers and march. Transfers linked to their route records by explicit DB fixture. Native Forces with/without Host, Ships boundroute, Marches excludes freight, Economy land+sea cargo per route; two1280/390 runs, real Keryx."
+}

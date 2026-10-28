@@ -1,0 +1,26 @@
+--- FAIL: TestForcesRosterGroupsAndPeopleOnlyWithHost (0.00s)
+    --- FAIL: TestForcesRosterGroupsAndPeopleOnlyWithHost/host_false (0.00s)
+        forces_taxonomy_test.go:94: People present without Host: ID                                    Name                                            Size      Status      Stance     Location / ETA
+            ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+            
+            Land Forces
+            22222222-2222-4222-8222-222222222222  First Bronze Guard                              100 men   garrison      —          —
+            
+            Ships
+            11111111-1111-4111-8111-111111111111  Trading Dolphin                                 1 vessel (crew 0, hull 0/5 damaged, OUT OF FOOD)  freighting    —          freighting
+            
+            People
+              None.
+    --- FAIL: TestForcesRosterGroupsAndPeopleOnlyWithHost/host_true (0.00s)
+        forces_taxonomy_test.go:91: Host missing People group: ID                                    Name                                            Size      Status      Stance     Location / ETA
+            ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+            
+            Land Forces
+            22222222-2222-4222-8222-222222222222  First Bronze Guard                              100 men   garrison      —          —
+            
+            Ships
+            11111111-1111-4111-8111-111111111111  Trading Dolphin                                 1 vessel (crew 0, hull 0/5 damaged, OUT OF FOOD)  freighting    —          freighting
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.003s
+FAIL
+» färsk DB på migration 217 · commit cdb68db3+ändringar

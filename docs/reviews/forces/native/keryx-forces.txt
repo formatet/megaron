@@ -1,0 +1,23 @@
+ID                                    Name                                            Size      Status      Stance     Location / ETA
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Land Forces
+d3b258a2-a97d-4c20-a4ef-189bcb903b24  1st Spearmen of Lato                            100 men   marching      —          (5,25)→(6,25), now at (5,25) ETA ≈ today 06:16
+  Upkeep: 1 food, 0 silver per game day
+94e275fc-9158-4c31-a15e-31be4cadc91a  2nd Spearmen of Lato                            100 men   garrison      —          settlement dcaca3ba…
+  Upkeep: 0.5 food, 0 silver per game day
+be753691-6b21-4f45-8a19-8f0497a2df83  1st Bronze Guard of Lato                        100 men   garrison      —          settlement dcaca3ba…
+  Upkeep: 0.6 food, 0.75 silver per game day
+ef1242b5-0e58-4048-96f4-9eed64c0182c  1st Chariot of Lato                             100 men   garrison      —          settlement dcaca3ba…
+  Upkeep: 0.8 food, 2 silver per game day
+
+Ships
+c6ec6247-1c09-47b8-91e0-f8dd84bd1e4a  Dolphin, Galley of Lato                         1 vessel (crew 10)  garrison      —          settlement dcaca3ba…
+  Upkeep: 0.05 food, 0 silver per game day
+6724b354-075e-4c68-ab5e-0c5d130e9196  Blue Dolphin, Emporos of Lato                   1 vessel (crew 10, food for 16 game days (0.4 grain, 0.4 fish, 0.4 oil, 0.4 wine))  freighting    —          carrying goods to Amnissos
+  on the Lato → Amnissos route
+  Upkeep: 0.1 food, 0 silver per game day
+373724b2-2ea5-4810-ba17-f83935952c00  Red Dolphin, War Galley of Lato                 1 vessel (crew 10)  garrison      —          settlement dcaca3ba…
+  Upkeep: 0.05 food, 0.05 silver per game day
+e4c88b53-4e52-4f56-8e91-9f85926c2f29  Voice of Wind, Galley of Lato                   1 vessel (crew 20)  garrison      —          settlement dcaca3ba…
+  Upkeep: 0.1 food, 0 silver per game day

@@ -1,0 +1,192 @@
+TAP version 13
+# Subtest: atStorageCeiling: mirrors keryx — >=99% of a positive cap, nothing without a cap
+ok 1 - atStorageCeiling: mirrors keryx — >=99% of a positive cap, nothing without a cap
+  ---
+  duration_ms: 0.654461
+  type: 'test'
+  ...
+# Subtest: goodsRateCell: a good at cap reads "full" (dimmed) not green growth, and names the wasted rate
+ok 2 - goodsRateCell: a good at cap reads "full" (dimmed) not green growth, and names the wasted rate
+  ---
+  duration_ms: 8.395582
+  type: 'test'
+  ...
+# Subtest: goodsRateCell: at cap but idle (rate 0) reads plain "full", no wasted-rate tail
+ok 3 - goodsRateCell: at cap but idle (rate 0) reads plain "full", no wasted-rate tail
+  ---
+  duration_ms: 0.159447
+  type: 'test'
+  ...
+# Subtest: goodsRateCell: below cap and producing keeps the green growth cell
+ok 4 - goodsRateCell: below cap and producing keeps the green growth cell
+  ---
+  duration_ms: 0.142799
+  type: 'test'
+  ...
+# Subtest: goodsRateCell: below cap and idle renders an empty cell
+ok 5 - goodsRateCell: below cap and idle renders an empty cell
+  ---
+  duration_ms: 0.081838
+  type: 'test'
+  ...
+# Subtest: AK1: economy.js imports under node --test without a DOM (proves the misc.js pointerdown listener no longer runs at module scope)
+ok 6 - AK1: economy.js imports under node --test without a DOM (proves the misc.js pointerdown listener no longer runs at module scope)
+  ---
+  duration_ms: 0.066275
+  type: 'test'
+  ...
+# Subtest: parseGoodAmountPairs: matches keryx cmd_route.go's good:amount,good:amount shape
+ok 7 - parseGoodAmountPairs: matches keryx cmd_route.go's good:amount,good:amount shape
+  ---
+  duration_ms: 0.556046
+  type: 'test'
+  ...
+# Subtest: parseGoodAmountPairs: empty/blank input is an empty list, not an error
+ok 8 - parseGoodAmountPairs: empty/blank input is an empty list, not an error
+  ---
+  duration_ms: 0.108215
+  type: 'test'
+  ...
+# Subtest: parseGoodAmountPairs: a malformed pair is dropped, not thrown — a typo must not crash the form
+ok 9 - parseGoodAmountPairs: a malformed pair is dropped, not thrown — a typo must not crash the form
+  ---
+  duration_ms: 0.243339
+  type: 'test'
+  ...
+# Subtest: renderStandingOrdersHTML: empty list renders the empty-state message
+ok 10 - renderStandingOrdersHTML: empty list renders the empty-state message
+  ---
+  duration_ms: 0.31002
+  type: 'test'
+  ...
+# Subtest: renderStandingOrdersHTML: an active order offers Pause, a paused one offers Resume and shows its reason
+ok 11 - renderStandingOrdersHTML: an active order offers Pause, a paused one offers Resume and shows its reason
+  ---
+  duration_ms: 0.192927
+  type: 'test'
+  ...
+# Subtest: renderStandingOrdersHTML: a naval route names its bound ship
+ok 12 - renderStandingOrdersHTML: a naval route names its bound ship
+  ---
+  duration_ms: 0.080484
+  type: 'test'
+  ...
+# Subtest: settlementFoodRow: a self-sufficient, well-stocked settlement reads "stocks growing"
+ok 13 - settlementFoodRow: a self-sufficient, well-stocked settlement reads "stocks growing"
+  ---
+  duration_ms: 0.108767
+  type: 'test'
+  ...
+# Subtest: settlementFoodRow: server reports shrinking reads "starving" and ranks worst (except cannot-feed)
+ok 14 - settlementFoodRow: server reports shrinking reads "starving" and ranks worst (except cannot-feed)
+  ---
+  duration_ms: 0.067063
+  type: 'test'
+  ...
+# Subtest: settlementFoodRow: food_self_sufficient===false overrides stock direction — always the worst, even with full stores
+ok 15 - settlementFoodRow: food_self_sufficient===false overrides stock direction — always the worst, even with full stores
+  ---
+  duration_ms: 0.056945
+  type: 'test'
+  ...
+# Subtest: settlementFoodRow: no province data (failed fetch) renders "no data" instead of throwing or guessing
+ok 16 - settlementFoodRow: no province data (failed fetch) renders "no data" instead of throwing or guessing
+  ---
+  duration_ms: 0.053941
+  type: 'test'
+  ...
+# Subtest: sortSettlementRows: default brist sort puts cannot-feed first, then starving, then stable
+ok 17 - sortSettlementRows: default brist sort puts cannot-feed first, then starving, then stable
+  ---
+  duration_ms: 0.101104
+  type: 'test'
+  ...
+# Subtest: sortSettlementRows: sorting by population desc does not mutate the input array
+ok 18 - sortSettlementRows: sorting by population desc does not mutate the input array
+  ---
+  duration_ms: 0.078658
+  type: 'test'
+  ...
+# Subtest: renderSettlementsOverviewHTML: empty rows render nothing
+ok 19 - renderSettlementsOverviewHTML: empty rows render nothing
+  ---
+  duration_ms: 0.104262
+  type: 'test'
+  ...
+# Subtest: renderSettlementsOverviewHTML: each row links to openCitySettlement and shows name/pop/rate/status
+ok 20 - renderSettlementsOverviewHTML: each row links to openCitySettlement and shows name/pop/rate/status
+  ---
+  duration_ms: 0.26407
+  type: 'test'
+  ...
+# Subtest: renderSettlementsOverviewHTML: the active sort column shows its arrow, others do not
+ok 21 - renderSettlementsOverviewHTML: the active sort column shows its arrow, others do not
+  ---
+  duration_ms: 0.166079
+  type: 'test'
+  ...
+# Subtest: loadEconomyDrawer: with no owned settlements, renders the empty-state message and returns before touching anything else
+ok 22 - loadEconomyDrawer: with no owned settlements, renders the empty-state message and returns before touching anything else
+  ---
+  duration_ms: 0.135539
+  type: 'test'
+  ...
+# Subtest: settlement food column follows full fish-inclusive authoritative net
+ok 23 - settlement food column follows full fish-inclusive authoritative net
+  ---
+  duration_ms: 0.064984
+  type: 'test'
+  ...
+# Subtest: AIRound3: overview sorts and displays food after army, keeps people-only fallback
+ok 24 - AIRound3: overview sorts and displays food after army, keeps people-only fallback
+  ---
+  duration_ms: 0.189654
+  type: 'test'
+  ...
+# Subtest: food status separates declining stock from hunger and never invents missing balances
+ok 25 - food status separates declining stock from hunger and never invents missing balances
+  ---
+  duration_ms: 0.324323
+  type: 'test'
+  ...
+# Subtest: standing route list shows configured stock targets and return floors, including zero and decimals
+ok 26 - standing route list shows configured stock targets and return floors, including zero and decimals
+  ---
+  duration_ms: 0.386766
+  type: 'test'
+  ...
+# Subtest: route cargo uses saved route identity; unrelated shipments are not merged by endpoints
+not ok 27 - route cargo uses saved route identity; unrelated shipments are not merged by endpoints
+  ---
+  duration_ms: 2.524615
+  type: 'test'
+  location: '/tmp/megaron-forces-web-mutants/web/static/js/megaron/ui/drawers/economy.test.mjs:253:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok(html.includes('Ship'))
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-forces-web-mutants/web/static/js/megaron/ui/drawers/economy.test.mjs:258:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..27
+# tests 27
+# suites 0
+# pass 26
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 67.706582

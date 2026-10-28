@@ -1,0 +1,499 @@
+{
+  "units": [
+    {
+      "can_cancel_training": false,
+      "id": "d3b258a2-a97d-4c20-a4ef-189bcb903b24",
+      "type": "spearman",
+      "category": "land",
+      "size": 100,
+      "upkeep_food_per_tick": 1,
+      "upkeep_grain_per_tick": 1,
+      "upkeep_silver_per_tick": 0,
+      "upkeep_context": "active",
+      "status": "marching",
+      "deployable": true,
+      "display_name": "1st Spearmen of Lato",
+      "ordinal": 1,
+      "support_settlement_id": "dcaca3ba-f87d-4d6c-ace7-6def1c99329e",
+      "support_settlement_name": "Lato",
+      "shipyard_waiting": false,
+      "q": 5,
+      "r": 25,
+      "target_q": 6,
+      "target_r": 25,
+      "departs_at": "2026-10-28T05:16:46.401871+01:00",
+      "arrives_at": "2026-10-28T06:16:46.401871+01:00",
+      "arrival_tick": 1,
+      "duration_ticks": 1,
+      "arrives_at_utc": "2026-10-28T05:16:46.401871Z",
+      "path": [
+        [
+          5,
+          25
+        ],
+        [
+          6,
+          25
+        ]
+      ],
+      "route_version": 2,
+      "dispatch_offset_milli": 2,
+      "step_costs": [
+        1000
+      ],
+      "departure_tick": 0,
+      "current_q": 5,
+      "current_r": 25,
+      "in_battle": false,
+      "can_lay_up": false,
+      "can_fit_out": false
+    },
+    {
+      "can_cancel_training": false,
+      "id": "94e275fc-9158-4c31-a15e-31be4cadc91a",
+      "type": "spearman",
+      "category": "land",
+      "size": 100,
+      "upkeep_food_per_tick": 0.5,
+      "upkeep_grain_per_tick": 0.5,
+      "upkeep_silver_per_tick": 0,
+      "upkeep_context": "active",
+      "status": "garrison",
+      "deployable": true,
+      "display_name": "2nd Spearmen of Lato",
+      "ordinal": 2,
+      "support_settlement_id": "dcaca3ba-f87d-4d6c-ace7-6def1c99329e",
+      "support_settlement_name": "Lato",
+      "shipyard_waiting": false,
+      "settlement_id": "dcaca3ba-f87d-4d6c-ace7-6def1c99329e",
+      "in_battle": false,
+      "can_lay_up": false,
+      "can_fit_out": false
+    },
+    {
+      "can_cancel_training": false,
+      "id": "be753691-6b21-4f45-8a19-8f0497a2df83",
+      "type": "elite_infantry",
+      "category": "land",
+      "size": 100,
+      "upkeep_food_per_tick": 0.6,
+      "upkeep_grain_per_tick": 0.6,
+      "upkeep_silver_per_tick": 0.75,
+      "upkeep_context": "active",
+      "status": "garrison",
+      "deployable": true,
+      "display_name": "1st Bronze Guard of Lato",
+      "ordinal": 1,
+      "support_settlement_id": "dcaca3ba-f87d-4d6c-ace7-6def1c99329e",
+      "support_settlement_name": "Lato",
+      "shipyard_waiting": false,
+      "settlement_id": "dcaca3ba-f87d-4d6c-ace7-6def1c99329e",
+      "in_battle": false,
+      "can_lay_up": false,
+      "can_fit_out": false
+    },
+    {
+      "can_cancel_training": false,
+      "id": "ef1242b5-0e58-4048-96f4-9eed64c0182c",
+      "type": "war_chariot",
+      "category": "land",
+      "size": 100,
+      "upkeep_food_per_tick": 0.8,
+      "upkeep_grain_per_tick": 0.8,
+      "upkeep_silver_per_tick": 2,
+      "upkeep_context": "active",
+      "status": "garrison",
+      "deployable": true,
+      "display_name": "1st Chariot of Lato",
+      "ordinal": 1,
+      "support_settlement_id": "dcaca3ba-f87d-4d6c-ace7-6def1c99329e",
+      "support_settlement_name": "Lato",
+      "shipyard_waiting": false,
+      "settlement_id": "dcaca3ba-f87d-4d6c-ace7-6def1c99329e",
+      "in_battle": false,
+      "can_lay_up": false,
+      "can_fit_out": false
+    },
+    {
+      "can_cancel_training": false,
+      "id": "c6ec6247-1c09-47b8-91e0-f8dd84bd1e4a",
+      "type": "galley",
+      "category": "naval",
+      "size": 1,
+      "crew": 10,
+      "upkeep_food_per_tick": 0.05,
+      "upkeep_grain_per_tick": 0.05,
+      "upkeep_silver_per_tick": 0,
+      "upkeep_context": "active",
+      "hull": 5,
+      "status": "garrison",
+      "deployable": true,
+      "name": "Dolphin",
+      "display_name": "Dolphin, Galley of Lato",
+      "ordinal": 1,
+      "support_settlement_id": "dcaca3ba-f87d-4d6c-ace7-6def1c99329e",
+      "support_settlement_name": "Lato",
+      "shipyard_waiting": false,
+      "settlement_id": "dcaca3ba-f87d-4d6c-ace7-6def1c99329e",
+      "troop_capacity": 1,
+      "in_battle": false,
+      "can_lay_up": true,
+      "can_fit_out": false
+    },
+    {
+      "can_cancel_training": false,
+      "id": "6724b354-075e-4c68-ab5e-0c5d130e9196",
+      "type": "merchantman",
+      "category": "naval",
+      "size": 1,
+      "crew": 10,
+      "upkeep_food_per_tick": 0.1,
+      "provisions_by_good": {
+        "fish": 0.4,
+        "grain": 0.4,
+        "oil": 0.4,
+        "wine": 0.4
+      },
+      "upkeep_grain_per_tick": 0.1,
+      "upkeep_silver_per_tick": 0,
+      "upkeep_context": "active",
+      "hull": 5,
+      "provision_days": 16,
+      "provisions_aboard": true,
+      "status": "freighting",
+      "deployable": false,
+      "name": "Blue Dolphin",
+      "display_name": "Blue Dolphin, Emporos of Lato",
+      "ordinal": 1,
+      "support_settlement_id": "dcaca3ba-f87d-4d6c-ace7-6def1c99329e",
+      "support_settlement_name": "Lato",
+      "shipyard_waiting": false,
+      "settlement_id": "dcaca3ba-f87d-4d6c-ace7-6def1c99329e",
+      "troop_capacity": 3,
+      "in_battle": false,
+      "freighting_note": "carrying goods to Amnissos",
+      "bound_route_id": "627752e8-f4da-4cbd-bc52-352fb32ef651",
+      "bound_route_name": "Lato \u2192 Amnissos",
+      "can_lay_up": false,
+      "can_fit_out": false
+    },
+    {
+      "can_cancel_training": false,
+      "id": "373724b2-2ea5-4810-ba17-f83935952c00",
+      "type": "war_galley",
+      "category": "naval",
+      "size": 1,
+      "crew": 10,
+      "upkeep_food_per_tick": 0.05,
+      "upkeep_grain_per_tick": 0.05,
+      "upkeep_silver_per_tick": 0.05,
+      "upkeep_context": "active",
+      "hull": 5,
+      "status": "garrison",
+      "deployable": true,
+      "name": "Red Dolphin",
+      "display_name": "Red Dolphin, War Galley of Lato",
+      "ordinal": 1,
+      "support_settlement_id": "dcaca3ba-f87d-4d6c-ace7-6def1c99329e",
+      "support_settlement_name": "Lato",
+      "shipyard_waiting": false,
+      "settlement_id": "dcaca3ba-f87d-4d6c-ace7-6def1c99329e",
+      "troop_capacity": 1,
+      "in_battle": false,
+      "can_lay_up": true,
+      "can_fit_out": false
+    },
+    {
+      "can_cancel_training": false,
+      "id": "e4c88b53-4e52-4f56-8e91-9f85926c2f29",
+      "type": "galley",
+      "category": "naval",
+      "size": 1,
+      "crew": 20,
+      "upkeep_food_per_tick": 0.1,
+      "upkeep_grain_per_tick": 0.1,
+      "upkeep_silver_per_tick": 0,
+      "upkeep_context": "active",
+      "hull": 5,
+      "status": "garrison",
+      "deployable": true,
+      "name": "Voice of Wind",
+      "display_name": "Voice of Wind, Galley of Lato",
+      "ordinal": 2,
+      "support_settlement_id": "dcaca3ba-f87d-4d6c-ace7-6def1c99329e",
+      "support_settlement_name": "Lato",
+      "shipyard_waiting": false,
+      "settlement_id": "dcaca3ba-f87d-4d6c-ace7-6def1c99329e",
+      "troop_capacity": 1,
+      "in_battle": false,
+      "can_lay_up": true,
+      "can_fit_out": false
+    }
+  ],
+  "trades": [
+    {
+      "standing_order_id": "bce74e15-83f9-455a-9e64-e46ae9502b9f",
+      "route_version": 2,
+      "dispatch_offset_milli": 2,
+      "items": [
+        {
+          "good_key": "stone",
+          "quantity": 10
+        }
+      ],
+      "kind": "transfer",
+      "route_known": true,
+      "path": [
+        [
+          5,
+          25
+        ],
+        [
+          6,
+          25
+        ],
+        [
+          7,
+          25
+        ],
+        [
+          8,
+          25
+        ],
+        [
+          9,
+          25
+        ],
+        [
+          10,
+          25
+        ]
+      ],
+      "step_costs": [
+        1000,
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "category": "land",
+      "heading": "south-east",
+      "id": "31cf35ec-d179-47e2-b8dd-7e6ccfe61322",
+      "good_key": "stone",
+      "quantity": 10,
+      "origin_q": 5,
+      "origin_r": 25,
+      "dest_q": 10,
+      "dest_r": 25,
+      "departs_at": "2026-10-28T05:16:46.557116+01:00",
+      "arrives_at": "2026-10-28T13:16:46.557116+01:00",
+      "mine": true,
+      "arrival_tick": 8,
+      "departure_tick": 0,
+      "travel_ticks": 8,
+      "current_q": 5,
+      "current_r": 25,
+      "owner": "Turios",
+      "role": "sender",
+      "origin_name": "Lato",
+      "dest_name": "Petras"
+    },
+    {
+      "standing_order_id": "627752e8-f4da-4cbd-bc52-352fb32ef651",
+      "route_version": 2,
+      "dispatch_offset_milli": 2,
+      "items": [
+        {
+          "good_key": "stone",
+          "quantity": 10
+        }
+      ],
+      "kind": "transfer",
+      "route_known": true,
+      "path": [
+        [
+          4,
+          26
+        ],
+        [
+          4,
+          27
+        ],
+        [
+          4,
+          28
+        ],
+        [
+          4,
+          29
+        ],
+        [
+          5,
+          29
+        ],
+        [
+          6,
+          29
+        ],
+        [
+          7,
+          29
+        ],
+        [
+          8,
+          29
+        ],
+        [
+          9,
+          29
+        ],
+        [
+          10,
+          29
+        ],
+        [
+          11,
+          29
+        ],
+        [
+          12,
+          28
+        ],
+        [
+          13,
+          27
+        ],
+        [
+          14,
+          26
+        ],
+        [
+          15,
+          25
+        ],
+        [
+          16,
+          25
+        ],
+        [
+          17,
+          25
+        ]
+      ],
+      "step_costs": [
+        333,
+        333,
+        333,
+        333,
+        333,
+        333,
+        333,
+        333,
+        333,
+        333,
+        333,
+        333,
+        333,
+        333,
+        333,
+        333
+      ],
+      "category": "naval",
+      "heading": "south",
+      "ship_unit_id": "6724b354-075e-4c68-ab5e-0c5d130e9196",
+      "id": "1657f53b-3b89-4fad-b9be-3709bcc6ad55",
+      "good_key": "stone",
+      "quantity": 10,
+      "origin_q": 5,
+      "origin_r": 25,
+      "dest_q": 18,
+      "dest_r": 25,
+      "departs_at": "2026-10-28T05:16:46.601477+01:00",
+      "arrives_at": "2026-10-28T13:16:46.601477+01:00",
+      "mine": true,
+      "arrival_tick": 8,
+      "departure_tick": 0,
+      "travel_ticks": 8,
+      "current_q": 4,
+      "current_r": 26,
+      "owner": "Turios",
+      "role": "sender",
+      "origin_name": "Lato",
+      "dest_name": "Amnissos"
+    }
+  ],
+  "orders": [
+    {
+      "id": "bce74e15-83f9-455a-9e64-e46ae9502b9f",
+      "status": "active"
+    },
+    {
+      "id": "627752e8-f4da-4cbd-bc52-352fb32ef651",
+      "status": "active"
+    }
+  ],
+  "transfers": [
+    {
+      "arrival_tick": 8,
+      "arrives_at": "2026-10-28T13:16:46.557116+01:00",
+      "cargo_capacity": null,
+      "cargo_quantity": 10,
+      "category": "land",
+      "departure_tick": 0,
+      "dispatch_offset_milli": 2,
+      "distance": 5,
+      "items": [
+        {
+          "good_key": "stone",
+          "quantity": 10
+        }
+      ],
+      "kind": "transfer",
+      "route_id": "97ca799e-0c42-482e-87cb-8b0bc2a6772e",
+      "route_version": 2,
+      "transport_id": "31cf35ec-d179-47e2-b8dd-7e6ccfe61322",
+      "travel_min": 480,
+      "travel_ticks": 8
+    },
+    {
+      "arrival_tick": 8,
+      "arrives_at": "2026-10-28T13:16:46.601477+01:00",
+      "cargo_capacity": 120,
+      "cargo_quantity": 10,
+      "category": "naval",
+      "departure_tick": 0,
+      "dispatch_offset_milli": 2,
+      "distance": 16,
+      "items": [
+        {
+          "good_key": "stone",
+          "quantity": 10
+        }
+      ],
+      "kind": "transfer",
+      "route_id": "854fa8db-5611-4de9-9105-224ed2f23226",
+      "route_version": 2,
+      "ship_id": "6724b354-075e-4c68-ab5e-0c5d130e9196",
+      "ship_name": "Blue Dolphin, Emporos of Lato",
+      "ship_type": "merchantman",
+      "transport_id": "1657f53b-3b89-4fad-b9be-3709bcc6ad55",
+      "travel_min": 480,
+      "travel_ticks": 8
+    }
+  ],
+  "march": {
+    "arrival_tick": 1,
+    "arrives_at": "2026-10-28T06:16:46.401871+01:00",
+    "arrives_at_utc": "2026-10-28T05:16:46.401871Z",
+    "carried_silver": 0,
+    "departs_at": "2026-10-28T05:16:46.401871+01:00",
+    "duration_ticks": 1,
+    "expedition": null,
+    "origin_q": 5,
+    "origin_r": 25,
+    "purse_shortfall": 0,
+    "target_q": 6,
+    "target_r": 25,
+    "unit_id": "d3b258a2-a97d-4c20-a4ef-189bcb903b24"
+  }
+}

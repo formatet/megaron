@@ -1,0 +1,105 @@
+{
+  "commit": "cdb68db3b1cd83c2a2c5688e046917c0d8309688",
+  "mutations": [
+    {
+      "name": "display-label",
+      "file": "server/internal/unit/model.go",
+      "old": "\"Bronze Guard\"",
+      "new": "\"Elite Infantry\"",
+      "package": "./internal/unit/",
+      "named_test": "TestForcesDisplayTaxonomyAndDynamicLandNames",
+      "assertion_red": true,
+      "port": 52771,
+      "source_sha256": "5129587bde15e0593d57560d556c3c3da5a22255081ef1df868fcc9d431fd40c"
+    },
+    {
+      "name": "binding-owner",
+      "file": "server/api/handlers/unit_bound_routes.go",
+      "old": "AND so.owner_id=$2",
+      "new": "AND $2::uuid IS NOT NULL",
+      "package": "./api/handlers/",
+      "named_test": "TestAttachFreightingNotes_PrefersInFlightLegOverStandingRoute",
+      "assertion_red": true,
+      "port": 44233,
+      "source_sha256": "7166e5acd724fdd5dd8a6fa93cc995d7abfed2addba9a2c7e6451a3766ec79d0"
+    },
+    {
+      "name": "trade-recipient-privacy",
+      "file": "server/api/handlers/world.go",
+      "old": "if authenticated && ownerID == playerID {\n\t\t\tm.StandingOrderID",
+      "new": "if authenticated {\n\t\t\tm.StandingOrderID",
+      "package": "./api/handlers/",
+      "named_test": "TestMapTradesStandingOrderIdentityIsSenderPrivate",
+      "assertion_red": true,
+      "port": 60915,
+      "source_sha256": "2989029fb688ee9de3a047be6d3bb9cdeff4a63313686b964ef9fab336edba7c"
+    },
+    {
+      "name": "roster-binding-wire",
+      "file": "server/api/handlers/unit.go",
+      "old": "if err := attachBoundRoutes(r.Context(), h.pool, worldID, playerID, summaries); err != nil {",
+      "new": "if err := error(nil); err != nil {",
+      "package": "./api/handlers/",
+      "named_test": "TestListForcesIncludesBoundRouteOnIdleShip",
+      "assertion_red": true,
+      "port": 45077,
+      "source_sha256": "556a2d9fc319fc07f5518530628fde9c4306519e745fce4d6697688dd614c181"
+    },
+    {
+      "name": "legacy-recruit-alias",
+      "file": "server/cmd/keryx/cmd_recruit.go",
+      "old": "\"elite infantry\": \"elite_infantry\"",
+      "new": "\"elite infantry\": \"spearman\"",
+      "package": "./cmd/keryx/",
+      "named_test": "TestForcesRecruitLegacyAndCanonicalLabelsAccepted",
+      "assertion_red": true,
+      "port": 40065,
+      "source_sha256": "8fa4986d97c7b4165508e14b2f4afbeff75147503dc05bd8461c3c1d23193ccc"
+    },
+    {
+      "name": "canonical-forces-command",
+      "file": "server/cmd/keryx/cmd_aliases.go",
+      "old": "c.Use = \"forces\"",
+      "new": "c.Use = \"units\"",
+      "package": "./cmd/keryx/",
+      "named_test": "TestForcesRosterKeepsLegacyUnitsAlias",
+      "assertion_red": true,
+      "port": 59825,
+      "source_sha256": "018b2e5f584547ea0b95e223f70d001f83bf19bf74e3f757c66f4d53acfa1a57"
+    },
+    {
+      "name": "bound-route-display",
+      "file": "server/cmd/keryx/cmd_unit.go",
+      "old": "fmt.Println(\"  on the \" + *u.BoundRouteName + \" route\")",
+      "new": "fmt.Print(\"\")",
+      "package": "./cmd/keryx/",
+      "named_test": "TestForcesRosterDisplaysBoundRouteAndCurrentLeg",
+      "assertion_red": true,
+      "port": 50723,
+      "source_sha256": "490fa9807cde74f230cf85cd70c7f8f301217d88e0fda17e2e5a8c494e3d8086"
+    },
+    {
+      "name": "people-group",
+      "file": "server/cmd/keryx/cmd_unit.go",
+      "old": "if group == \"People\" && !hasHost {",
+      "new": "if group == \"People\" && hasHost {",
+      "package": "./cmd/keryx/",
+      "named_test": "TestForcesRosterGroupsAndPeopleOnlyWithHost",
+      "assertion_red": true,
+      "port": 48181,
+      "source_sha256": "490fa9807cde74f230cf85cd70c7f8f301217d88e0fda17e2e5a8c494e3d8086"
+    }
+  ],
+  "source_sha256": {
+    "server/internal/unit/model.go": "5129587bde15e0593d57560d556c3c3da5a22255081ef1df868fcc9d431fd40c",
+    "server/api/handlers/unit_bound_routes.go": "7166e5acd724fdd5dd8a6fa93cc995d7abfed2addba9a2c7e6451a3766ec79d0",
+    "server/api/handlers/world.go": "2989029fb688ee9de3a047be6d3bb9cdeff4a63313686b964ef9fab336edba7c",
+    "server/api/handlers/unit.go": "556a2d9fc319fc07f5518530628fde9c4306519e745fce4d6697688dd614c181",
+    "server/cmd/keryx/cmd_recruit.go": "8fa4986d97c7b4165508e14b2f4afbeff75147503dc05bd8461c3c1d23193ccc",
+    "server/cmd/keryx/cmd_aliases.go": "018b2e5f584547ea0b95e223f70d001f83bf19bf74e3f757c66f4d53acfa1a57",
+    "server/cmd/keryx/cmd_unit.go": "490fa9807cde74f230cf85cd70c7f8f301217d88e0fda17e2e5a8c494e3d8086"
+  },
+  "byte_identical_restore": true,
+  "fresh_restored_green": true,
+  "green_port": 38709
+}

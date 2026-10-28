@@ -1,0 +1,8 @@
+2026/10/27 20:51:07 INFO player registered id=d21a64c1-337c-4c31-9add-f9dbb842762f username=wanax-a-8f18b7e2-ac47-45a8-ba79-e9e5cb321d0b
+2026/10/27 20:51:07 INFO player registered id=d7c395b9-e07d-493d-a625-f21bcf91ac2e username=wanax-b-672467a5-2885-4c64-b886-10a38a4b4412
+--- FAIL: TestMapTradesStandingOrderIdentityIsSenderPrivate (0.13s)
+    map_trades_mine_test.go:481: recipient/foreign route identity leaked map[arrives_at:2026-10-27T21:51:07.229693+01:00 category:land departs_at:2026-10-27T20:51:07.229693+01:00 dest_name:Athenai dest_q:0 dest_r:0 good_key:copper id:4e923354-bad2-47b9-8a0f-2c246b50af73 items:[map[good_key:copper quantity:7]] kind:transfer mine:false origin_name:Farland origin_q:50 origin_r:50 owner:wanax-b-672467a5-2885-4c64-b886-10a38a4b4412 quantity:7 role:recipient route_known:false standing_order_id:53eb3faf-4f70-492c-ab86-6d81aef9fb71]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.137s
+FAIL
+» färsk DB på migration 217 · commit cdb68db3+ändringar

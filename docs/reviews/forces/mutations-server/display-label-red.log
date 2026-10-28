@@ -1,0 +1,6 @@
+--- FAIL: TestForcesDisplayTaxonomyAndDynamicLandNames (0.00s)
+    forces_taxonomy_test.go:11: elite_infantry="Elite Infantry" want"Bronze Guard"
+FAIL
+FAIL	formatet/megaron/server/internal/unit	0.002s
+FAIL
+» färsk DB på migration 217 · commit cdb68db3+ändringar

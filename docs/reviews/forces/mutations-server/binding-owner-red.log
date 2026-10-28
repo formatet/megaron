@@ -1,0 +1,6 @@
+--- FAIL: TestAttachFreightingNotes_PrefersInFlightLegOverStandingRoute (0.02s)
+    unit_freighting_note_test.go:123: foreign route leaked {"can_cancel_training":false,"id":"806d2039-28fd-4b8f-96e6-93616ec38018","type":"","category":"","size":0,"upkeep_food_per_tick":0,"upkeep_grain_per_tick":0,"upkeep_silver_per_tick":0,"upkeep_context":"","status":"","deployable":false,"display_name":"","shipyard_waiting":false,"in_battle":false,"bound_route_id":"2b783f22-9e8d-4a4f-8e1b-e716a1f780bf","bound_route_name":"Home → Colony","can_lay_up":false,"can_fit_out":false}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.021s
+FAIL
+» färsk DB på migration 217 · commit cdb68db3+ändringar

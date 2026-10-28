@@ -1,0 +1,4 @@
+ok  	formatet/megaron/server/internal/unit	0.002s
+ok  	formatet/megaron/server/cmd/keryx	0.004s
+ok  	formatet/megaron/server/api/handlers	0.227s
+» färsk DB på migration 217 · commit cdb68db3
