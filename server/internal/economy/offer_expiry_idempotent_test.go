@@ -124,7 +124,7 @@ func TestOfferExpiryHandler_ReplayIsIdempotent(t *testing.T) {
 	}
 	evt := events.ScheduledEvent{ID: 1, WorldID: worldID, Payload: payload}
 
-	h := NewOfferExpiryHandler(pool, nil, nil)
+	h := NewOfferExpiryHandler(pool, nil)
 
 	if err := h.Handle(ctx, evt); err != nil {
 		t.Fatalf("Handle (first run): %v", err)

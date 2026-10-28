@@ -267,7 +267,7 @@ func main() {
 	standingOrderH := combat.NewStandingOrderTickHandler(pool, scheduler, gameClock, hub)
 	worker.Register(events.ScheduledStandingOrderTick, standingOrderH.Handle)
 	worker.Register(events.ScheduledFoodTick, foodTickH.Handle)
-	offerExpiryH := economy.NewOfferExpiryHandler(pool, scheduler, hub)
+	offerExpiryH := economy.NewOfferExpiryHandler(pool, scheduler)
 	worker.Register(events.ScheduledOfferExpiry, offerExpiryH.Handle)
 	go worker.Run(ctx)
 	tickWorker := tick.New(pool, gameClock, eventStore)

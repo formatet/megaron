@@ -76,7 +76,7 @@ func TestTradeOfferEnd_RunnerTurnsHomeSameTick(t *testing.T) {
 
 			// The offer's own expiry, firing later, changes nothing.
 			raw, _ := json.Marshal(map[string]string{"messenger_id": messengerID.String()})
-			if err := economy.NewOfferExpiryHandler(f.pool, events.NewScheduler(f.pool, f.clk), nil).Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: tick + messenger.OfferExpiryTicks, Payload: raw}); err != nil {
+			if err := economy.NewOfferExpiryHandler(f.pool, events.NewScheduler(f.pool, f.clk)).Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: tick + messenger.OfferExpiryTicks, Payload: raw}); err != nil {
 				t.Fatalf("late OfferExpiry: %v", err)
 			}
 			var offerStatus string
