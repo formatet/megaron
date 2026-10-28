@@ -1,0 +1,50 @@
+{
+  "ground": {
+    "migration": {
+      "version": 218,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 5295
+      }
+    ],
+    "players": 15,
+    "settlements": 6,
+    "units": 18,
+    "goods": 102,
+    "gossip": 1184
+  },
+  "health": {
+    "commit": "d09a74a",
+    "migration": 218,
+    "status": "ok"
+  },
+  "checkout": "d09a74af6715d80d01df81906b4fdb76c3b739ee",
+  "static": {
+    "web/static/codex/sea.md": "2d000123cfe8532097bec336516bc9f50b26a0ae01ab3416aeab4a08481f9bcb",
+    "web/static/js/megaron/ui/marchctx.js": "ad9857c745eff0c022c6154056ca949d22c1dd7ca6687f9e5957a1e0c5983738"
+  },
+  "transport_options_anonymous_status": 401,
+  "expected": "d09a74af6715d80d01df81906b4fdb76c3b739ee",
+  "before": {
+    "migration": {
+      "version": 218,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 5293
+      }
+    ],
+    "players": 15,
+    "settlements": 6,
+    "units": 18,
+    "goods": 102,
+    "gossip": 1184
+  }
+}

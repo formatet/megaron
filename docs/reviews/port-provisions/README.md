@@ -14,6 +14,8 @@ Bevisplan: assertion-röd baslinje på färsk218, riktiga DB-prov, fysisk kärnm
 
 ## Verifierat beteende
 
+LIVE `d09a74af`: rätt ny process, ren218, samma värld/grundantal och två byte-exakta ändrade statiska filer verifierade (`deploy-proof.json`).
+
 Slutlig hel färsk Go,820JS,vet och fyra tidsvakter gröna. Native4bilder/Keryx5verkliga avgångar och5mutanter med färsk återkontroll gröna.
 
 Kod `c6769bb9`, serverprov `0f13616d`, sista passagefixtur `97f926cb`. Native/Keryx på samma produktionsbytes: lokal matbrist avvisas utan lager-/skepps-/jobbdeltan; därefter fem riktiga avgångar tar enbart fisk i Petras, Latos mat och supportankaret orörda. Fyra Firefoxbilder från två1280/390rundor, stabila produktionshashar.820JS/vet/tidsvakter gröna. Fem fysiska servermutanter med exakt återställning och färsk grön återkontroll: `mutations-server/summary.json`.
