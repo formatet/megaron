@@ -253,7 +253,7 @@ async function loadEconomyTransfer(mySettlements) {
         <label>To <select id="ec-tr-to" onchange="loadTransferPreview()" style="${inputStyle}">${toOpts}</select></label>
         <div id="ec-tr-items">Loading goods…</div>
         <button id="ec-tr-add" class="btn-small" onclick="addTransferGood()" type="button">+ Add good</button>
-        <div id="ec-tr-route" data-transport-choice></div>
+        <div id="ec-tr-route" class="transport-choice" data-transport-choice></div>
         <div id="ec-tr-capacity" class="transfer-capacity" role="status" aria-live="polite">Checking cargo route…</div>
         <button id="ec-tr-send" class="btn-primary btn-small" onclick="startTransfer()">Send →</button>
         <div id="ec-tr-result" class="action-result"></div>
@@ -558,7 +558,7 @@ async function loadEconomyAutomation(mySettlements) {
           <div id="ec-so-home"></div>
           <button id="ec-so-home-add" class="btn-small" type="button">Add a good</button>
         </div>
-        <div id="ec-so-route" data-transport-choice></div><button class="btn-primary btn-small" onclick="createStandingOrder()">Create route</button>
+        <div id="ec-so-route" class="transport-choice" data-transport-choice></div><button class="btn-primary btn-small" onclick="createStandingOrder()">Create route</button>
         <div id="ec-so-result" class="action-result"></div>
       </div>
     </div>

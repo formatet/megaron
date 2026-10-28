@@ -1841,6 +1841,12 @@ body:has(.auth-page) main {
   font-size: var(--fs-sm);
   box-sizing: border-box;
 }
+.transport-choice {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+.transport-choice fieldset { min-width: 0; }
+.transport-choice input[type="radio"] { width: auto; }
 .dip-inline-compose-row {
   display: flex;
   align-items: center;

@@ -79,3 +79,11 @@ test('transfer sends selected sea mode and no unavailable-route fallback',()=>ri
  await economy.startTransfer();await new Promise(resolve=>setImmediate(resolve));assert.equal(JSON.parse(calls.find(c=>c.opts.method==='POST').opts.body).by,'sea');
  calls.length=0;node('ec-tr-route').querySelector=()=>null;await economy.startTransfer();assert.equal(calls.filter(c=>c.opts.method==='POST').length,0);assert.match(node('ec-tr-result').textContent,/Choose an available/);
 }));
+
+test('changing transfer destination clears old route choices until fresh preview arrives',()=>rig(async({node})=>{
+ node('ec-tr-from').value='province-a';node('ec-tr-to').value='city-b';node('ec-tr-route').querySelector=()=>({value:'land'});node('ec-tr-route').textContent='Old route';
+ document.querySelectorAll=()=>[];let resolve;globalThis.fetch=()=>new Promise(done=>{resolve=done});
+ const pending=economy.loadTransferPreview();assert.equal(node('ec-tr-route').textContent,'Checking land and sea routes…');assert.equal(node('ec-tr-send').disabled,true);
+ resolve(new Response(JSON.stringify({selected_by:'sea',options:[{by:'land',available:true,travel_ticks:2,travel_seconds:120},{by:'sea',available:true,travel_ticks:1,travel_seconds:60}]})));await pending;
+ assert.match(node('ec-tr-route').innerHTML,/value="land" checked/);assert.equal(node('ec-tr-send').disabled,false);
+}));

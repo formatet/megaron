@@ -119,7 +119,7 @@ try:
      page.locator('#letter-compose-text').fill('Sea trade agreement')
      page.locator('#letter-compose-good').select_option('grain');page.locator('#letter-compose-qty').fill('1');page.locator('#letter-compose-silver').fill('1');page.locator('#letter-compose-text').click()
      page.wait_for_selector('#letter-compose-route input[value="sea"]');page.locator('#letter-compose-route input[value="sea"]').check()
-     page.locator('#letter-compose-route').scroll_into_view_if_needed();shot(page,f'{cycle}-trade-{width}')
+     page.locator('#letter-compose-route').scroll_into_view_if_needed();box=page.locator('#letter-compose-route').bounding_box();parent=page.locator('.dip-inline-trade').bounding_box();assert box['width']>=parent['width']*.9,('trade route choice must span the form',box,parent);assert page.locator('#letter-compose-route input[value="sea"]').bounding_box()['width']<24;shot(page,f'{cycle}-trade-{width}')
      if cycle==2 and width==390:
       page.get_by_role('button',name='Send a runner',exact=True).click();page.wait_for_function("document.getElementById('letter-compose-status').textContent.includes('Dispatched')")
      assert not errors,errors
