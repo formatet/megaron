@@ -299,17 +299,30 @@ func codexArticleTextWithRelated(t *testing.T, id string) string {
 	}
 	var idx struct {
 		Articles []struct {
-			ID      string   `json:"id"`
-			Related []string `json:"related"`
+			ID       string   `json:"id"`
+			Related  []string `json:"related"`
+			Sections []struct {
+				ID string `json:"id"`
+			} `json:"sections"`
 		} `json:"articles"`
 	}
 	if err := json.Unmarshal(raw, &idx); err != nil {
 		t.Fatal(err)
 	}
+	// A related entry may name a section; its text lives in the article's file.
+	file := map[string]string{}
+	for _, a := range idx.Articles {
+		file[a.ID] = a.ID
+		for _, s := range a.Sections {
+			file[s.ID] = a.ID
+		}
+	}
 	ids := []string{id}
 	for _, a := range idx.Articles {
 		if a.ID == id {
-			ids = append(ids, a.Related...)
+			for _, r := range a.Related {
+				ids = append(ids, file[r])
+			}
 		}
 	}
 	text := ""

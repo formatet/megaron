@@ -115,7 +115,6 @@
       "title": "The screen",
       "category": "Start here",
       "related": [
-        "screen-the-map-2",
         "coming-back",
         "report"
       ],
@@ -148,7 +147,6 @@
         "UnitRedirected"
       ],
       "related": [
-        "runners-catching-up-with-a-moving-unit-2",
         "marching",
         "defence"
       ],
@@ -262,7 +260,6 @@
       "category": "Start here",
       "drawer": "notif",
       "related": [
-        "coming-back-open-the-notifications-archive-2",
         "time",
         "routes",
         "defence"
@@ -335,10 +332,6 @@
         "MetropolisFounded"
       ],
       "related": [
-        "founding-read-the-ground-first-2",
-        "founding-settling-2",
-        "founding-settling-3",
-        "founding-settling-4",
         "catchment",
         "horde",
         "food"
@@ -410,7 +403,6 @@
       "title": "Catchment",
       "category": "Your city",
       "related": [
-        "catchment-what-it-means-for-you-2",
         "citizens",
         "founding",
         "sieges"
@@ -439,7 +431,6 @@
       "title": "Citizens and placement",
       "category": "Your city",
       "related": [
-        "free-citizens-2",
         "catchment",
         "buildings",
         "surplus"
@@ -482,7 +473,6 @@
         "SitosFundLow"
       ],
       "related": [
-        "food-when-there-is-not-enough-2",
         "citizens",
         "growth",
         "upkeep",
@@ -598,7 +588,6 @@
       "title": "Growth",
       "category": "Your city",
       "related": [
-        "growth-details-2",
         "food",
         "citizens"
       ],
@@ -626,10 +615,6 @@
         "GoodsCrafted"
       ],
       "related": [
-        "buildings-details-3",
-        "hex-buildings-2",
-        "building-levels-2",
-        "demolition-2",
         "citizens",
         "goods",
         "temples",
@@ -699,7 +684,6 @@
       "category": "Goods and trade",
       "drawer": "economy",
       "related": [
-        "goods-storage-capacity-2",
         "surplus",
         "silver",
         "bronze",
@@ -854,9 +838,6 @@
         "CaravanSeized"
       ],
       "related": [
-        "transfers-sending-it-by-sea-2",
-        "transfers-route-and-journey-time-2",
-        "transfers-choose-land-or-sea-2",
         "routes",
         "trade"
       ],
@@ -905,7 +886,6 @@
         "StandingOrderPaused"
       ],
       "related": [
-        "routes-details-2",
         "transfers",
         "coming-back",
         "colonies"
@@ -954,8 +934,6 @@
         "TradeReturn"
       ],
       "related": [
-        "trade-delivery-2",
-        "trade-route-and-journey-time-2",
         "messengers",
         "contact",
         "silver"
@@ -1029,7 +1007,6 @@
         "ExpeditionReport"
       ],
       "related": [
-        "live-sight-2",
         "exploration",
         "exploration-2",
         "exploration-3",
@@ -1118,7 +1095,6 @@
       "title": "Contact",
       "category": "The wider world",
       "related": [
-        "contact-details-2",
         "messengers",
         "trade",
         "gossip"
@@ -1144,8 +1120,6 @@
         "MessengerReturned"
       ],
       "related": [
-        "messengers-your-letters-2",
-        "messengers-letters-take-time-2",
         "contact",
         "trade",
         "runners"
@@ -1243,7 +1217,6 @@
         "ship-missions",
         "ship-missions-2",
         "ship-missions-3",
-        "sea-storm-risks-2",
         "ship-loss",
         "runner-passage",
         "runner-passage-2",
@@ -1352,10 +1325,6 @@
         "TrainComplete"
       ],
       "related": [
-        "units-recruiting-2",
-        "units-recruits-are-your-own-people-2",
-        "units-recruits-are-your-own-people-3",
-        "units-the-forces-tab-2",
         "marching",
         "upkeep",
         "battle",
@@ -1572,12 +1541,6 @@
         "MarchStalled"
       ],
       "related": [
-        "marching-giving-a-march-order-2",
-        "marching-giving-a-march-order-3",
-        "marching-orders-to-forces-already-in-the-field-travel-by-runner-2",
-        "marching-exploring-an-area-2",
-        "marching-terrain-and-journey-time-2",
-        "marching-terrain-and-journey-time-3",
         "runners",
         "stances",
         "sight",
@@ -1875,8 +1838,6 @@
         "UnitReturnedStarving"
       ],
       "related": [
-        "military-pay-2",
-        "military-food-2",
         "silver",
         "food",
         "units"
@@ -1937,11 +1898,8 @@
         "DivinePunishment"
       ],
       "related": [
-        "kharis-details-2",
         "cult-upkeep",
         "cult-upkeep-2",
-        "raising-kharis-2",
-        "raising-kharis-3",
         "temples",
         "rites"
       ],
@@ -2000,8 +1958,6 @@
       "title": "Temples and devotion",
       "category": "The gods",
       "related": [
-        "daily-offerings-2",
-        "temple-levels-2",
         "kharis",
         "buildings",
         "potnia",
@@ -2063,9 +2019,6 @@
         "RiteAnswered"
       ],
       "related": [
-        "prayer-requirements-2",
-        "minoan-prayers-2",
-        "minoan-prayers-3",
         "kharis",
         "bronze",
         "potnias-vision",
@@ -2118,7 +2071,6 @@
         "OutpostEstablished"
       ],
       "related": [
-        "colonies-founding-a-colony-2",
         "routes",
         "founding"
       ],
@@ -2200,8 +2152,6 @@
       "title": "Keryx, the command line",
       "category": "Reference",
       "related": [
-        "keryx-a-few-useful-commands-2",
-        "keryx-argument-reminders-2",
         "rough-edges"
       ],
       "sections": [
@@ -2262,7 +2212,6 @@
       "id": "farm",
       "title": "Farm",
       "category": "Your city",
-      "related": [],
       "entities": [
         {
           "kind": "building",
@@ -2282,7 +2231,6 @@
       "id": "barracks",
       "title": "Barracks",
       "category": "Your city",
-      "related": [],
       "entities": [
         {
           "kind": "building",
@@ -2301,7 +2249,6 @@
       "id": "mine",
       "title": "Mine",
       "category": "Your city",
-      "related": [],
       "entities": [
         {
           "kind": "building",
@@ -2321,7 +2268,6 @@
       "id": "lumbermill",
       "title": "Lumbermill",
       "category": "Your city",
-      "related": [],
       "entities": [
         {
           "kind": "building",
@@ -2340,7 +2286,6 @@
       "id": "stone-quarry",
       "title": "Stone Quarry",
       "category": "Your city",
-      "related": [],
       "entities": [
         {
           "kind": "building",
@@ -2360,7 +2305,6 @@
       "id": "market",
       "title": "Market",
       "category": "Your city",
-      "related": [],
       "entities": [
         {
           "kind": "building",
@@ -2379,7 +2323,6 @@
       "id": "walls",
       "title": "Wall",
       "category": "Your city",
-      "related": [],
       "entities": [
         {
           "kind": "building",
@@ -2399,7 +2342,6 @@
       "id": "foundry",
       "title": "Foundry",
       "category": "Your city",
-      "related": [],
       "entities": [
         {
           "kind": "building",
@@ -2418,7 +2360,6 @@
       "id": "stable",
       "title": "Stable",
       "category": "Your city",
-      "related": [],
       "entities": [
         {
           "kind": "building",
@@ -2437,7 +2378,6 @@
       "id": "temple",
       "title": "Temple",
       "category": "Your city",
-      "related": [],
       "entities": [
         {
           "kind": "building",
@@ -2457,7 +2397,6 @@
       "id": "olive-press",
       "title": "Olive Press",
       "category": "Your city",
-      "related": [],
       "entities": [
         {
           "kind": "building",
@@ -2476,7 +2415,6 @@
       "id": "winery",
       "title": "Winery",
       "category": "Your city",
-      "related": [],
       "entities": [
         {
           "kind": "building",
@@ -2495,7 +2433,6 @@
       "id": "pen",
       "title": "Pen",
       "category": "Your city",
-      "related": [],
       "entities": [
         {
           "kind": "building",
@@ -2514,7 +2451,6 @@
       "id": "granary",
       "title": "Granary",
       "category": "Your city",
-      "related": [],
       "entities": [
         {
           "kind": "building",
@@ -2533,7 +2469,6 @@
       "id": "plains",
       "title": "Plains",
       "category": "The wider world",
-      "related": [],
       "entities": [
         {
           "kind": "terrain",
@@ -2553,7 +2488,6 @@
       "id": "olive-grove",
       "title": "Olive Grove",
       "category": "The wider world",
-      "related": [],
       "entities": [
         {
           "kind": "terrain",
@@ -2574,7 +2508,6 @@
       "id": "hills",
       "title": "Hills",
       "category": "The wider world",
-      "related": [],
       "entities": [
         {
           "kind": "terrain",
@@ -2594,7 +2527,6 @@
       "id": "limestone-mountains",
       "title": "Limestone Mountains",
       "category": "The wider world",
-      "related": [],
       "entities": [
         {
           "kind": "terrain",
@@ -2614,7 +2546,6 @@
       "id": "red-mountains",
       "title": "Red Mountains",
       "category": "The wider world",
-      "related": [],
       "entities": [
         {
           "kind": "terrain",
@@ -2634,7 +2565,6 @@
       "id": "coastal-sea",
       "title": "Coastal Sea",
       "category": "The wider world",
-      "related": [],
       "entities": [
         {
           "kind": "terrain",
@@ -2656,7 +2586,6 @@
       "id": "deep-sea",
       "title": "Deep Sea",
       "category": "The wider world",
-      "related": [],
       "entities": [
         {
           "kind": "terrain",
@@ -2676,7 +2605,6 @@
       "id": "rivers",
       "title": "River",
       "category": "The wider world",
-      "related": [],
       "entities": [
         {
           "kind": "terrain",
@@ -2698,7 +2626,6 @@
       "id": "river-valley",
       "title": "River Valley",
       "category": "The wider world",
-      "related": [],
       "entities": [
         {
           "kind": "terrain",
@@ -2718,7 +2645,6 @@
       "id": "river-delta",
       "title": "River Delta",
       "category": "The wider world",
-      "related": [],
       "entities": [
         {
           "kind": "terrain",
@@ -2739,7 +2665,6 @@
       "id": "river-ford",
       "title": "River Ford",
       "category": "The wider world",
-      "related": [],
       "entities": [
         {
           "kind": "terrain",
@@ -2760,7 +2685,6 @@
       "id": "maquis",
       "title": "Maquis Scrub",
       "category": "The wider world",
-      "related": [],
       "entities": [
         {
           "kind": "terrain",
@@ -2780,7 +2704,6 @@
       "id": "semi-desert",
       "title": "Semi-Desert",
       "category": "The wider world",
-      "related": [],
       "entities": [
         {
           "kind": "terrain",
@@ -2801,7 +2724,6 @@
       "id": "cedar-forest",
       "title": "Cedar Forest",
       "category": "The wider world",
-      "related": [],
       "entities": [
         {
           "kind": "terrain",
@@ -2822,7 +2744,6 @@
       "id": "potnia",
       "title": "Potnia",
       "category": "The gods",
-      "related": [],
       "entities": [
         {
           "kind": "god",
@@ -2842,7 +2763,6 @@
       "id": "velchanos",
       "title": "Velchanos",
       "category": "The gods",
-      "related": [],
       "entities": [
         {
           "kind": "god",
@@ -2862,7 +2782,6 @@
       "id": "asterion",
       "title": "Asterion",
       "category": "The gods",
-      "related": [],
       "entities": [
         {
           "kind": "god",
@@ -2882,7 +2801,6 @@
       "id": "sea-daimons",
       "title": "the Sea Daimons of Stillness",
       "category": "The gods",
-      "related": [],
       "entities": [
         {
           "kind": "god",
@@ -2902,7 +2820,6 @@
       "id": "potnias-vision",
       "title": "Potnia's Vision",
       "category": "The gods",
-      "related": [],
       "entities": [
         {
           "kind": "prayer",
@@ -2923,7 +2840,6 @@
       "id": "mistress-of-the-walls",
       "title": "Mistress of the Walls",
       "category": "The gods",
-      "related": [],
       "entities": [
         {
           "kind": "prayer",
@@ -2943,7 +2859,6 @@
       "id": "green-shoots",
       "title": "Green Shoots",
       "category": "The gods",
-      "related": [],
       "entities": [
         {
           "kind": "prayer",
@@ -2963,7 +2878,6 @@
       "id": "the-thread-shows-a-path",
       "title": "The Thread Shows a Path",
       "category": "The gods",
-      "related": [],
       "entities": [
         {
           "kind": "prayer",
@@ -2984,7 +2898,6 @@
       "id": "favourable-passage",
       "title": "Favourable Passage",
       "category": "The gods",
-      "related": [],
       "entities": [
         {
           "kind": "prayer",
@@ -3004,7 +2917,6 @@
       "id": "cedar",
       "title": "Cedar",
       "category": "Goods and trade",
-      "related": [],
       "entities": [
         {
           "kind": "good",
@@ -3024,7 +2936,6 @@
       "id": "copper",
       "title": "Copper",
       "category": "Goods and trade",
-      "related": [],
       "entities": [
         {
           "kind": "good",
@@ -3044,7 +2955,6 @@
       "id": "devotion",
       "title": "Devotion",
       "category": "Goods and trade",
-      "related": [],
       "entities": [
         {
           "kind": "good",
@@ -3060,7 +2970,6 @@
       "id": "fish",
       "title": "Fish",
       "category": "Goods and trade",
-      "related": [],
       "entities": [
         {
           "kind": "good",
@@ -3080,7 +2989,6 @@
       "id": "grain",
       "title": "Grain",
       "category": "Goods and trade",
-      "related": [],
       "entities": [
         {
           "kind": "good",
@@ -3100,7 +3008,6 @@
       "id": "livestock",
       "title": "Livestock",
       "category": "Goods and trade",
-      "related": [],
       "entities": [
         {
           "kind": "good",
@@ -3120,7 +3027,6 @@
       "id": "oil",
       "title": "Oil",
       "category": "Goods and trade",
-      "related": [],
       "entities": [
         {
           "kind": "good",
@@ -3140,7 +3046,6 @@
       "id": "shipbuilding",
       "title": "Shipyard work",
       "category": "Goods and trade",
-      "related": [],
       "entities": [
         {
           "kind": "good",
@@ -3156,7 +3061,6 @@
       "id": "stone",
       "title": "Stone",
       "category": "Goods and trade",
-      "related": [],
       "entities": [
         {
           "kind": "good",
@@ -3176,7 +3080,6 @@
       "id": "timber",
       "title": "Timber",
       "category": "Goods and trade",
-      "related": [],
       "entities": [
         {
           "kind": "good",
@@ -3196,7 +3099,6 @@
       "id": "tin",
       "title": "Tin",
       "category": "Goods and trade",
-      "related": [],
       "entities": [
         {
           "kind": "good",
@@ -3216,7 +3118,6 @@
       "id": "wine",
       "title": "Wine",
       "category": "Goods and trade",
-      "related": [],
       "entities": [
         {
           "kind": "good",
