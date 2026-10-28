@@ -1114,11 +1114,11 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 	isHexBound := province.HexBoundBuildings[province.BuildingType(req.BuildingType)]
 	if isHexBound {
 		if req.HexQ == nil || req.HexR == nil {
-			writeError(w, http.StatusBadRequest, fmt.Sprintf("%s is placed on a hex — hex_q and hex_r are required", req.BuildingType))
+			writeError(w, http.StatusBadRequest, fmt.Sprintf("%s is placed on a hex — hex_q and hex_r are required", province.BuildingDisplayName(req.BuildingType)))
 			return
 		}
 	} else if req.HexQ != nil || req.HexR != nil {
-		writeError(w, http.StatusBadRequest, fmt.Sprintf("%s is a city building and does not take a hex", req.BuildingType))
+		writeError(w, http.StatusBadRequest, fmt.Sprintf("%s is a city building and does not take a hex", province.BuildingDisplayName(req.BuildingType)))
 		return
 	}
 
