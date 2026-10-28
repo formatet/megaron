@@ -2,9 +2,11 @@ package transport
 
 import (
 	"context"
+	"errors"
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
+	"github.com/jackc/pgx/v5"
 	"math"
 	"strings"
 	"testing"
@@ -178,5 +180,93 @@ func TestFreightPortFollowsPhysicalLegNotHomeReference(t *testing.T) {
 	port, err = economy.FreightPort(ctx, tx, ship)
 	if err != nil || port != nil {
 		t.Fatalf("lost leg port=%v err=%v", port, err)
+	}
+}
+
+// Live 2026-10-28 (Horns of Crete): a ship released after a delivered leg
+// and then moved as a unit to another own city must sail from where it now
+// docks; the older transport is not location evidence after a new binding.
+func TestFreightPortAfterReleaseAndMarchUsesUnitDock(t *testing.T) {
+	pool := testPool(t)
+	f := newNavalFixture(t, pool)
+	ctx := context.Background()
+	ship := mkShip(t, pool, f, f.sourceID, "merchantman")
+	for _, s := range []any{f.sourceID, f.destID} {
+		if _, err := pool.Exec(ctx, `INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,'fish',10,0,1000,0)`, s); err != nil {
+			t.Fatal(err)
+		}
+	}
+	clk := clock.NewTestClock(time.Date(2026, 10, 21, 0, 0, 0, 0, time.UTC))
+	sched := events.NewScheduler(pool, clk)
+	inTx := func(fn func(tx pgx.Tx) error) error {
+		tx, err := pool.Begin(ctx)
+		if err != nil {
+			return err
+		}
+		defer tx.Rollback(ctx)
+		if err := fn(tx); err != nil {
+			return err
+		}
+		return tx.Commit(ctx)
+	}
+	// Leg 1 source -> dest, delivered; the ship is released at dest.
+	if err := inTx(func(tx pgx.Tx) error {
+		if err := BindShip(ctx, tx, ship); err != nil {
+			return err
+		}
+		_, err := Dispatch(ctx, tx, sched, DispatchParams{WorldID: f.worldID, OwnerID: f.owner, Kind: "transfer", OriginID: f.sourceID, DestID: f.destID, Category: "naval", DestQ: 3, DepartsAt: clk.Now(), ShipUnitID: &ship})
+		return err
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if err := inTx(func(tx pgx.Tx) error {
+		if _, err := tx.Exec(ctx, `UPDATE transports SET status='delivered' WHERE ship_unit_id=$1`, ship); err != nil {
+			return err
+		}
+		return ReleaseShip(ctx, tx, ship, f.destID)
+	}); err != nil {
+		t.Fatal(err)
+	}
+	// The ship marches back to source as a unit (unit arrival owns this row).
+	if _, err := pool.Exec(ctx, `UPDATE units SET settlement_id=$2 WHERE id=$1`, ship, f.sourceID); err != nil {
+		t.Fatal(err)
+	}
+	if err := inTx(func(tx pgx.Tx) error {
+		if err := BindShip(ctx, tx, ship); err != nil {
+			return err
+		}
+		port, err := economy.FreightPort(ctx, tx, ship)
+		if err != nil || port == nil || *port != f.sourceID {
+			t.Fatalf("rebound port=%v err=%v; want source", port, err)
+		}
+		_, err = Dispatch(ctx, tx, sched, DispatchParams{WorldID: f.worldID, OwnerID: f.owner, Kind: "transfer", OriginID: f.sourceID, DestID: f.destID, Category: "naval", DestQ: 3, DepartsAt: clk.Now(), ShipUnitID: &ship})
+		return err
+	}); err != nil {
+		t.Fatalf("dispatch from the city the ship marched to: %v", err)
+	}
+}
+
+func TestDispatchShipRuleIsPlayerRefusal(t *testing.T) {
+	pool := testPool(t)
+	f := newNavalFixture(t, pool)
+	ctx := context.Background()
+	ship := mkShip(t, pool, f, f.sourceID, "merchantman")
+	if _, err := pool.Exec(ctx, `UPDATE units SET name='Horns of Crete' WHERE id=$1`, ship); err != nil {
+		t.Fatal(err)
+	}
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback(ctx)
+	if err := BindShip(ctx, tx, ship); err != nil {
+		t.Fatal(err)
+	}
+	clk := clock.NewTestClock(time.Date(2026, 10, 21, 0, 0, 0, 0, time.UTC))
+	// Ordered from dest, but the ship docks at source.
+	_, err = Dispatch(ctx, tx, events.NewScheduler(pool, clk), DispatchParams{WorldID: f.worldID, OwnerID: f.owner, Kind: "transfer", OriginID: f.destID, DestID: f.sourceID, Category: "naval", OriginQ: 3, DepartsAt: clk.Now(), ShipUnitID: &ship})
+	var refusal *DispatchRefusal
+	if !errors.As(err, &refusal) || !strings.HasPrefix(refusal.Text, "Horns of Crete is not in harbour at ") {
+		t.Fatalf("err=%v; want a player refusal naming the ship", err)
 	}
 }

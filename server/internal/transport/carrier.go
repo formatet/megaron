@@ -94,7 +94,7 @@ func FindFreeShip(ctx context.Context, tx pgx.Tx, worldID, ownerID, settlementID
 // already-bound ship; RowsAffected()==0 is reported as an error.
 func BindShip(ctx context.Context, tx pgx.Tx, shipID uuid.UUID) error {
 	tag, err := tx.Exec(ctx,
-		`UPDATE units SET status = 'freighting', updated_at = now() WHERE id = $1 AND status = 'garrison'`,
+		`UPDATE units SET status = 'freighting', freight_bound_at = now(), updated_at = now() WHERE id = $1 AND status = 'garrison'`,
 		shipID,
 	)
 	if err != nil {

@@ -158,6 +158,18 @@ func CurrentPosition(
 	)
 }
 
+// DispatchRefusal is a game-rule refusal the player can act on; its text is
+// player-facing. Any other Dispatch error is a server fault.
+type DispatchRefusal struct{ Text string }
+
+func (e *DispatchRefusal) Error() string { return e.Text }
+
+func shipRefusal(ctx context.Context, tx pgx.Tx, p DispatchParams, format string) error {
+	name := "Your ship"
+	_ = tx.QueryRow(ctx, `SELECT name FROM units WHERE id=$1 AND name IS NOT NULL AND name<>''`, *p.ShipUnitID).Scan(&name)
+	return &DispatchRefusal{Text: fmt.Sprintf(format, name)}
+}
+
 // prepareJourney makes new writers fail closed even when a caller omitted its
 // plan. Normal consumers pass the plan they used for their preflight decision.
 func prepareJourney(ctx context.Context, tx pgx.Tx, p DispatchParams) (DispatchParams, error) {
@@ -177,14 +189,14 @@ func prepareJourney(ctx context.Context, tx pgx.Tx, p DispatchParams) (DispatchP
 			return p, fmt.Errorf("load naval carrier: %w", err)
 		}
 		if category != "naval" || (kind != "galley" && kind != "merchantman") || status != "freighting" || owner != p.OwnerID {
-			return p, fmt.Errorf("naval transport requires its owner's bound galley or merchantman")
+			return p, shipRefusal(ctx, tx, p, "%s is not free to carry this shipment.")
 		}
 		var active bool
 		if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM transports WHERE ship_unit_id=$1 AND status='in_transit')`, *p.ShipUnitID).Scan(&active); err != nil {
 			return p, err
 		}
 		if active {
-			return p, fmt.Errorf("ship already carries an active transport")
+			return p, shipRefusal(ctx, tx, p, "%s is already carrying a shipment.")
 		}
 	}
 
@@ -224,7 +236,9 @@ func prepareJourney(ctx context.Context, tx pgx.Tx, p DispatchParams) (DispatchP
 			return p, err
 		}
 		if port == nil || *port != p.OriginID {
-			return p, fmt.Errorf("ship is not in the departure port")
+			var city string
+			_ = tx.QueryRow(ctx, `SELECT name FROM settlements WHERE id=$1`, p.OriginID).Scan(&city)
+			return p, shipRefusal(ctx, tx, p, "%s is not in harbour at "+city+".")
 		}
 		var portOwner uuid.UUID
 		var q, r int
