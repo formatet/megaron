@@ -76,6 +76,7 @@ try:
    sid=sql(f"INSERT INTO settlements(world_id,province_id,name,culture_id,owner_id,control_type,state,population) VALUES('{world}','{prov}','{name}','minoan','{pid}','colony','active',2000) RETURNING id;",True).splitlines()[0]
    if coastal:sql(f"INSERT INTO buildings(settlement_id,building_type,level) VALUES('{sid}','harbour',1);",True)
    cities.append({'id':sid,'province_id':prov,'name':name})
+  config.write_text(json.dumps({'server':base,'token':token,'world_id':world,'province_id':hp}))
   allcities=[{'id':home,'province_id':hp,'name':'Lato'},*cities]
   for city in allcities:
    sid=city['id'];sql(f"INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) SELECT '{sid}',key,10000,0,1000000,current_world_tick() FROM goods ON CONFLICT(settlement_id,good_key) DO UPDATE SET amount=10000,rate=0,cap=1000000,calc_tick=current_world_tick();",True)
@@ -96,7 +97,7 @@ try:
      ctx,page,errors=browser_page(browser,width,height)
      page.locator('#trig-economy').click();page.locator('#economy-body [data-tab="transfer"]').click()
      page.locator('#ec-tr-to').select_option(cities[0]['id']);page.wait_for_selector('#ec-tr-route input[value="land"]')
-     assert page.locator('#ec-tr-route input[value="land"]').is_enabled() and page.locator('#ec-tr-route input[value="sea"]').is_enabled()
+     page.wait_for_function("document.querySelector('#ec-tr-route input[value=land]')&&!document.querySelector('#ec-tr-route input[value=land]').disabled&&document.querySelector('#ec-tr-route input[value=sea]')&&!document.querySelector('#ec-tr-route input[value=sea]').disabled")
      page.locator('#ec-tr-route input[value="land"]').check();page.locator('#ec-tr-items input[data-good]').first.fill('1')
      page.locator('#ec-tr-route').scroll_into_view_if_needed();shot(page,f'{cycle}-both-land-{width}')
      page.locator('#ec-tr-send').click();page.wait_for_function("document.getElementById('ec-tr-result').textContent.includes('sent')");page.wait_for_function("!document.getElementById('ec-tr-send').disabled")
@@ -109,7 +110,7 @@ try:
      shot(page,f'{cycle}-land-only-{width}')
      page.locator('#economy-body [data-tab="automation"]').click();page.wait_for_selector('#ec-so-route input[value="land"]')
      page.locator('#ec-so-to').select_option(cities[0]['id']);page.wait_for_function("document.querySelector('#ec-so-route input[value=land]')&&!document.querySelector('#ec-so-route input[value=land]').disabled")
-     page.locator('#ec-so-route input[value="land"]').check();page.locator('#ec-so-out input[type=number]').first.fill('20')
+     page.locator('#ec-so-route input[value="land"]').check();page.locator('#ec-so-out select').first.select_option('grain');page.locator('#ec-so-out input[type=number]').first.fill('20')
      page.locator('#ec-so-route').scroll_into_view_if_needed();shot(page,f'{cycle}-standing-{width}')
      page.get_by_role('button',name='Create route',exact=True).click();page.wait_for_function("document.getElementById('ec-so-result').textContent==='Standing order created.'")
      page.locator('#drawer-economy .drawer-close').click();page.locator('#trig-diplomacy').click()

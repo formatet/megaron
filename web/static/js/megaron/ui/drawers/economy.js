@@ -380,6 +380,8 @@ export async function loadTransferPreview() {
   const to = document.getElementById('ec-tr-to')?.value;
   const el = document.getElementById('ec-tr-capacity');
   const seq = ++transferPreviewSeq, world = State.WORLD_ID;
+  const routePicker=document.getElementById('ec-tr-route'), preferredBy=selectedTransportBy('ec-tr-route');
+  if(routePicker)routePicker.textContent='Checking land and sea routes…';
   transferPreview = null;
   updateTransferCargo();
   if (!from || !to || !el) return;
@@ -390,7 +392,7 @@ export async function loadTransferPreview() {
     if (!r.ok) { el.textContent = data.error || 'Could not check cargo route.'; return; }
     const picker=document.getElementById('ec-tr-route');
     if(picker&&data.options){
-      picker.innerHTML=transportChoicesHTML(data,'ec-tr-route',selectedTransportBy('ec-tr-route'));
+      picker.innerHTML=transportChoicesHTML(data,'ec-tr-route',preferredBy);
       const select=()=>{const by=selectedTransportBy('ec-tr-route');transferPreview=data.options.find(o=>o.by===by&&o.available);if(transferPreview)transferPreview={...transferPreview,category:by==='sea'?'naval':'land'};updateTransferCargo();};
       picker.onchange=select;
       select();
