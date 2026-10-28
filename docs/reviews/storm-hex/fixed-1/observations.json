@@ -1,0 +1,46 @@
+[
+  {
+    "width": 1280,
+    "foot": "Workers here: 1 (fish)\n\nStorm \u2014 in sight\nSend galleys \u2192",
+    "storm_count": 1,
+    "visible": true,
+    "errors": []
+  },
+  {
+    "width": 390,
+    "foot": "Workers here: 1 (fish)\n\nStorm \u2014 in sight\nSend galleys \u2192",
+    "storm_count": 1,
+    "visible": true,
+    "errors": []
+  },
+  {
+    "width": 1280,
+    "scenario": "storm enters open worked hex",
+    "actual_storm_on_hex": true,
+    "slots": 1,
+    "slot_html": "<p class=\"empty-state\">Workers here: 1 (fish)</p><div class=\"hex-storm-info\" data-storm-q=\"0\" data-storm-r=\"49\" data-storm-signature=\"[[&quot;b400a54b-a6cd-44e3-84d5-20534d535775&quot;,&quot;live&quot;,null,null,null]]\"><div class=\"storm-note\" style=\"font-size:.73rem;border-top:1px solid var(--border);padding:.4rem 0\"><strong>Storm</strong> \u2014 in sight</div></div><button id=\"ip-march-btn\" style=\"display:block;width:100%;text-align:center;padding:.3rem;background:var(--bg-raised);border:1px solid var(--border);color:var(--text);font-size:.8rem;cursor:pointer;margin-top:.3rem;\">Send galleys \u2192</button>",
+    "storm_count": 1,
+    "foot": "Workers here: 1 (fish)\n\nStorm \u2014 in sight\nSend galleys \u2192"
+  },
+  {
+    "width": 1280,
+    "scenario": "city workplace",
+    "storm_count": 1,
+    "text": "(0,49) \u2014 COASTAL SEA\nStorm \u2014 in sight\nfish 1 per game day total \u00b7 +1 per game day next\n+1\nFILL\n\u22121"
+  },
+  {
+    "width": 390,
+    "scenario": "storm enters open worked hex",
+    "actual_storm_on_hex": true,
+    "slots": 1,
+    "slot_html": "<p class=\"empty-state\">Workers here: 1 (fish)</p><div class=\"hex-storm-info\" data-storm-q=\"0\" data-storm-r=\"49\" data-storm-signature=\"[[&quot;b400a54b-a6cd-44e3-84d5-20534d535775&quot;,&quot;live&quot;,null,null,null]]\"><div class=\"storm-note\" style=\"font-size:.73rem;border-top:1px solid var(--border);padding:.4rem 0\"><strong>Storm</strong> \u2014 in sight</div></div><button id=\"ip-march-btn\" style=\"display:block;width:100%;text-align:center;padding:.3rem;background:var(--bg-raised);border:1px solid var(--border);color:var(--text);font-size:.8rem;cursor:pointer;margin-top:.3rem;\">Send galleys \u2192</button>",
+    "storm_count": 1,
+    "foot": "Workers here: 1 (fish)\n\nStorm \u2014 in sight\nSend galleys \u2192"
+  },
+  {
+    "width": 390,
+    "scenario": "city workplace",
+    "storm_count": 1,
+    "text": "(0,49) \u2014 COASTAL SEA\nStorm \u2014 in sight\nfish 1 per game day total \u00b7 +1 per game day next\n+1\nFILL\n\u22121"
+  }
+]

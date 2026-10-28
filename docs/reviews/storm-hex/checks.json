@@ -1,0 +1,11 @@
+{
+  "production": "2a0ca7fd",
+  "fresh_go_exit": 0,
+  "world_seconds": 158.177,
+  "javascript": 828,
+  "vet_exit": 0,
+  "baseline_known_storm_missing_from_open_panel": true,
+  "fixed_two_desktop_mobile_runs": true,
+  "physical_mutants": 2,
+  "schema": 220
+}

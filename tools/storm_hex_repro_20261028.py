@@ -73,6 +73,11 @@ try:
   storm=sql(f"INSERT INTO sea_storms(world_id,heading,created_tick) VALUES('{world}',0,100) RETURNING id",True).splitlines()[0]
   sql(f"INSERT INTO sea_storm_track(storm_id,tick,slot,q,r) VALUES('{storm}',100,0,{fq},{fr}),('{storm}',100,1,{fq+1},{fr}),('{storm}',100,2,{fq},{fr+1});",True)
   (OUT/'storms-api.json').write_text(json.dumps(api(wp+'/storms',token=me['token']),indent=2))
+  if '--expect-live' in sys.argv:
+   run('go','build','-o',str(tmp/'keryx'),'./cmd/keryx',cwd=ROOT/'server',env=clean)
+   cfg=tmp/'keryx.json';cfg.write_text(json.dumps({'server':base,'token':me['token'],'world_id':world,'province_id':me['province']}));cfg.chmod(0o600)
+   for verb in ['storms','status']:
+    output=run(str(tmp/'keryx'),verb,env={**clean,'POLEIA_CONFIG':str(cfg)});(OUT/('cli-'+verb+'.txt')).write_text(output);assert 'storm' in output.lower(),output
   observations=[]
   with sync_playwright() as pw:
    browser=pw.firefox.launch()
@@ -97,8 +102,14 @@ try:
     point=page.evaluate("async ([q,r])=>{const m=await import('/static/js/megaron/render/map.js');const {State}=await import('/static/js/megaron/state.js');window.centreOn(q,r);const p=m.hexPx(q,r),b=document.querySelector('canvas').getBoundingClientRect();return {x:b.x+State.camera.x+p.x*State.camera.zoom*m.SCALE,y:b.y+State.camera.y+p.y*State.camera.zoom*m.SCALE};}",[fq,fr]);page.mouse.click(point['x'],point['y']);page.wait_for_timeout(100);assert page.locator('#ip-foot .storm-note').count()==0;contexts.append((ctx,page,width))
    sql(f"INSERT INTO sea_storm_track(storm_id,tick,slot,q,r) VALUES('{storm}',102,0,{fq},{fr}),('{storm}',102,1,{fq+1},{fr}),('{storm}',102,2,{fq},{fr+1});",True)
    for ctx,page,width in contexts:
-    page.wait_for_function("async ([q,r])=>{const {State}=await import('/static/js/megaron/state.js');return State.stormData.some(s=>s.hexes.some(h=>h.q===q&&h.r===r));}",arg=[fq,fr],timeout=45000)
-    note=page.locator('#ip-foot .storm-note');observations.append({'width':width,'scenario':'storm enters open worked hex','actual_storm_on_hex':True,'storm_count':note.count(),'foot':page.locator('#ip-foot').inner_text()});page.screenshot(path=str(OUT/f'entered-open-hex-{width}.png'));ctx.close()
+    page.evaluate("async()=>{window.__stormProofState=(await import('/static/js/megaron/state.js')).State;}")
+    page.wait_for_function("([q,r])=>window.__stormProofState.stormData.some(s=>s.hexes.some(h=>h.q===q&&h.r===r))",arg=[fq,fr],timeout=45000)
+    note=page.locator('#ip-foot .storm-note');observations.append({'width':width,'scenario':'storm enters open worked hex','actual_storm_on_hex':page.evaluate('([q,r])=>window.__stormProofState.stormData.some(s=>s.hexes.some(h=>h.q===q&&h.r===r))',[fq,fr]),'slots':page.locator('[data-storm-q]').count(),'slot_html':page.locator('#ip-foot').inner_html(),'storm_count':note.count(),'foot':page.locator('#ip-foot').inner_text()});page.screenshot(path=str(OUT/f'entered-open-hex-{width}.png'))
+    if '--expect-live' in sys.argv:
+     page.locator('#inspect-panel .inspect-close').click();page.locator('#trig-city').click()
+     options=api(wp+'/provinces/'+me['province']+'/placement-options',token=me['token']);ordinal=next(h['hex_ordinal'] for h in options['hexes'] if h['hex_q']==fq and h['hex_r']==fr)
+     page.locator('#city-gubbe-grid [data-ordinal="'+str(ordinal)+'"]').click();page.wait_for_selector('#gubbe-detail .storm-note');page.locator('#gubbe-detail').scroll_into_view_if_needed();page.screenshot(path=str(OUT/f'city-workplace-{width}.png'));observations.append({'width':width,'scenario':'city workplace','storm_count':page.locator('#gubbe-detail .storm-note').count(),'text':page.locator('#gubbe-detail').inner_text()})
+    ctx.close()
    browser.close()
   if '--expect-live' in sys.argv:assert all(o['storm_count']==1 for o in observations),observations
   (OUT/'process.json').write_text(json.dumps({'health':health,'source_unchanged':before==hashes()},indent=2))

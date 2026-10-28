@@ -17,6 +17,8 @@
     "width": 1280,
     "scenario": "storm enters open worked hex",
     "actual_storm_on_hex": true,
+    "slots": 0,
+    "slot_html": "<p class=\"empty-state\">Workers here: 1 (fish)</p><button id=\"ip-march-btn\" style=\"display:block;width:100%;text-align:center;padding:.3rem;background:var(--bg-raised);border:1px solid var(--border);color:var(--text);font-size:.8rem;cursor:pointer;margin-top:.3rem;\">Send galleys \u2192</button>",
     "storm_count": 0,
     "foot": "Workers here: 1 (fish)\n\nSend galleys \u2192"
   },
@@ -24,6 +26,8 @@
     "width": 390,
     "scenario": "storm enters open worked hex",
     "actual_storm_on_hex": true,
+    "slots": 0,
+    "slot_html": "<p class=\"empty-state\">Workers here: 1 (fish)</p><button id=\"ip-march-btn\" style=\"display:block;width:100%;text-align:center;padding:.3rem;background:var(--bg-raised);border:1px solid var(--border);color:var(--text);font-size:.8rem;cursor:pointer;margin-top:.3rem;\">Send galleys \u2192</button>",
     "storm_count": 0,
     "foot": "Workers here: 1 (fish)\n\nSend galleys \u2192"
   }

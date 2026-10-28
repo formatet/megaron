@@ -1,0 +1,50 @@
+TAP version 13
+# Subtest: stormPanelHTML: nothing without a storm; a named storm shows its name and no form
+ok 1 - stormPanelHTML: nothing without a storm; a named storm shows its name and no form
+  ---
+  duration_ms: 1.019805
+  type: 'test'
+  ...
+# Subtest: stormPanelHTML: only a storm you may name carries the form; names are escaped
+ok 2 - stormPanelHTML: only a storm you may name carries the form; names are escaped
+  ---
+  duration_ms: 10.380972
+  type: 'test'
+  ...
+# Subtest: hover: a named storm is called by its name
+ok 3 - hover: a named storm is called by its name
+  ---
+  duration_ms: 1.048668
+  type: 'test'
+  ...
+# Subtest: worked water storm slot follows incoming and departing weather without rebuilding other controls
+not ok 4 - worked water storm slot follows incoming and departing weather without rebuilding other controls
+  ---
+  duration_ms: 1.01323
+  type: 'test'
+  location: '/tmp/megaron-storm-hex-mutants/web/static/js/megaron/ui/stormname.test.mjs:29:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /Storm Skyla/. Input:
+    
+    ''
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: ''
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-storm-hex-mutants/web/static/js/megaron/ui/stormname.test.mjs:36:39)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 3
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 67.025343

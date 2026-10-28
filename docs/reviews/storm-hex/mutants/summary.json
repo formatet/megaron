@@ -1,0 +1,17 @@
+{
+  "base": "2a0ca7fd",
+  "physical_mutants": [
+    {
+      "name": "refresh-disabled",
+      "assertion": "worked water storm slot follows",
+      "exit": 1
+    },
+    {
+      "name": "poll-bypasses-refresh",
+      "assertion": "AssertionError",
+      "exit": 1
+    }
+  ],
+  "production_exact_restore": true,
+  "restored_js_exit": 0
+}
