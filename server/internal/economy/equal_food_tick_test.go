@@ -7,13 +7,13 @@ import (
 	"testing"
 )
 
-func TestFourFoodActualMealAndRetryShareOneClaim(t *testing.T) {
+func TestFoodActualMealSkipsWineAndRetryShareOneClaim(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	f := newFoodFixture(t, pool, "four-foods", 1000)
-	seedFoodStock(t, pool, f, 100, 900, 50)
-	for _, good := range []string{GoodOil, GoodWine} {
-		if _, err := pool.Exec(ctx, `INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,$2,500,0,100000,$3)`, f.settlementID, good, f.tick); err != nil {
+	seedFoodStock(t, pool, f, 100, 800, 50)
+	for good, amount := range map[string]int{GoodOil: 100, GoodWine: 500} {
+		if _, err := pool.Exec(ctx, `INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,$2,$3,0,100000,$4)`, f.settlementID, good, amount, f.tick); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -28,15 +28,15 @@ func TestFourFoodActualMealAndRetryShareOneClaim(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT food_consumed,food_consumed_tick FROM settlements WHERE id=$1`, f.settlementID).Scan(&used, &observed); err != nil {
 		t.Fatal(err)
 	}
-	if len(used) != 4 || observed != f.tick {
+	if len(used) != 3 || observed != f.tick {
 		t.Fatalf("meal=%v tick=%d", used, observed)
 	}
-	for good, want := range map[string]float64{GoodGrain: .25, GoodFish: 2.25, GoodOil: 1.25, GoodWine: 1.25} {
+	for good, want := range map[string]float64{GoodGrain: .5, GoodFish: 4, GoodOil: .5} {
 		if math.Abs(used[good]-want) > 1e-9 {
 			t.Errorf("%s used=%g want%g", good, used[good], want)
 		}
 	}
-	if got := foodStockOf(t, pool, f.settlementID, GoodGrain); got != 99.75 {
+	if got := foodStockOf(t, pool, f.settlementID, GoodGrain); got != 99.5 {
 		t.Fatal(got)
 	}
 	if got := foodStockOf(t, pool, f.settlementID, GoodLivestock); got != 50 {
@@ -57,7 +57,7 @@ func TestFourFoodActualMealAndRetryShareOneClaim(t *testing.T) {
 	if err := tx.Commit(ctx); err != nil {
 		t.Fatal(err)
 	}
-	if got := foodStockOf(t, pool, f.settlementID, GoodGrain); got != 99.75 {
+	if got := foodStockOf(t, pool, f.settlementID, GoodGrain); got != 99.5 {
 		t.Fatalf("refusal spent %g", got)
 	}
 }

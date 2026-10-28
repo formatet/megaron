@@ -362,10 +362,7 @@
       "max_level": 3,
       "purpose": "Refines a vintner's wine from the settlement's vines",
       "requires_terrain": [
-        "hills",
-        "plains",
-        "river_valley",
-        "scrub_maquis"
+        "hills"
       ],
       "type": "winery",
       "upgrade_costs": {

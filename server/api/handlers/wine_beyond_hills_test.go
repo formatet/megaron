@@ -14,14 +14,15 @@ import (
 	"github.com/google/uuid"
 )
 
-// TestGoods_WineProducibleOnPlainsOnlyCatchment is the HTTP-level half of
+// TestGoods_WineNotProducibleOnPlainsOnlyCatchment: migration 224 (Timothy
+// 2026-10-28) makes wine hills-only again; this was the HTTP-level half of
 // AK2 (server/druvor-utanfor-hills, mig 103): GET .../goods must list wine
 // as producible for a settlement whose entire 7-hex catchment is plains —
 // no hills tile anywhere. This is exactly what `keryx goods` and
 // `keryx build --list`'s underlying data reads (cmd_goods.go,
 // cmd_allocate.go both call this same endpoint). Reuses p10TestPool
 // (p10_gate_visibility_test.go, same package) for the DB connection.
-func TestGoods_WineProducibleOnPlainsOnlyCatchment(t *testing.T) {
+func TestGoods_WineNotProducibleOnPlainsOnlyCatchment(t *testing.T) {
 	pool := p10TestPool(t)
 	ctx := context.Background()
 
@@ -133,14 +134,7 @@ func TestGoods_WineProducibleOnPlainsOnlyCatchment(t *testing.T) {
 			break
 		}
 	}
-	if wine == nil {
-		t.Fatal("no wine entry in GET .../goods for a plains-only-catchment settlement " +
-			"— on unmigrated code (pre-103) wine never gets a settlement_goods row here at all")
-	}
-	if !wine.Producible {
-		t.Errorf("wine.producible = false for a plains-only-catchment settlement, want true")
-	}
-	if wine.Rate <= 0 {
-		t.Errorf("wine.rate_per_tick = %.6f for a plains-only-catchment settlement, want > 0", wine.Rate)
+	if wine != nil && (wine.Producible || wine.Rate > 0) {
+		t.Errorf("wine on a plains-only catchment = %+v, want not producible (hills only)", *wine)
 	}
 }

@@ -16,17 +16,11 @@ const (
 	HarvestBlessingTicks      = 25
 )
 
-// HarvestBlessedGoods are the goods the blessing raises: FoodGoods minus fish
-// (the sea is Poseidon's, not the fields'). The herd breeds by itself
-// (herd_births.go) and is not blessed (Timothy 2026-10-24).
+// HarvestBlessedGoods are the field harvests the blessing raises. Fish is the
+// sea's (Poseidon's, not the fields'); wine is a harvest though not food. The
+// herd breeds by itself (herd_births.go) and is not blessed (Timothy 2026-10-24).
 func HarvestBlessedGoods() []string {
-	out := make([]string, 0, len(FoodGoods))
-	for _, g := range FoodGoods {
-		if g != GoodFish {
-			out = append(out, g)
-		}
-	}
-	return out
+	return []string{GoodGrain, GoodOil, GoodWine}
 }
 
 // ApplyHarvestBlessing blesses the settlement's harvest from now for

@@ -55,17 +55,17 @@ func TestGrowthVarietyReadsActualMealNotLaterStock(t *testing.T) {
 }
 
 // Exercise the actual proportional meal and persisted outcome, not a hand-built
-// variety projection. In particular a tiny wine stock must not buy a full bonus.
+// variety projection. In particular a tiny oil stock must not buy a full bonus.
 func TestGrowthVarietyRequiresSubstantialMealShare(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	cases := []struct {
 		name        string
-		wine, grain float64
+		oil, grain float64
 		wantBonus   bool
 	}{
 		{"grain only", 0, 1000, false},
-		{"one wine among thousand grain", 1, 1000, false},
+		{"one oil among thousand grain", 1, 1000, false},
 		{"just below tenth", 99, 901, false},
 		{"exactly tenth", 100, 900, true},
 		{"three tenths", 300, 700, true},
@@ -82,7 +82,7 @@ func TestGrowthVarietyRequiresSubstantialMealShare(t *testing.T) {
 			}
 			exec(`UPDATE settlements SET population=10000, wall_level=3 WHERE id=$1`, sid)
 			exec(`UPDATE settlement_goods SET amount=0,rate=0,calc_tick=0 WHERE settlement_id=$1`, sid)
-			for good, amount := range map[string]float64{economy.GoodGrain: tc.grain, economy.GoodWine: tc.wine} {
+			for good, amount := range map[string]float64{economy.GoodGrain: tc.grain, economy.GoodOil: tc.oil} {
 				exec(`INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,$2,$3,0,100000,0) ON CONFLICT(settlement_id,good_key) DO UPDATE SET amount=$3,rate=0,cap=100000,calc_tick=0`, sid, good, amount)
 			}
 			if err := newTestFoodTickHandler(pool).Handle(ctx, events.ScheduledEvent{ID: int64(280300 + i), WorldID: wid, DueTick: 0}); err != nil {
@@ -92,11 +92,11 @@ func TestGrowthVarietyRequiresSubstantialMealShare(t *testing.T) {
 			if err := pool.QueryRow(ctx, `SELECT food_consumed FROM settlements WHERE id=$1`, sid).Scan(&meal); err != nil {
 				t.Fatal(err)
 			}
-			if tc.wine > 0 && meal[economy.GoodWine] <= 0 {
-				t.Fatalf("real wine meal absent: %v", meal)
+			if tc.oil > 0 && meal[economy.GoodOil] <= 0 {
+				t.Fatalf("real oil meal absent: %v", meal)
 			}
 			// Give every case identical subsequent stocks/rates. Only the actual meal
-			// above determines variety; later wine availability cannot affect the bonus.
+			// above determines variety; later oil availability cannot affect the bonus.
 			for _, good := range economy.FoodGoods {
 				exec(`INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,$2,2500,25,100000,0) ON CONFLICT(settlement_id,good_key) DO UPDATE SET amount=2500,rate=25,cap=100000,calc_tick=0`, sid, good)
 			}
