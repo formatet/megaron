@@ -1,6 +1,6 @@
 A Granary expands food storage and is required by wall upgrades.
 
-Build or upgrade it in **City → Buildings → Construct**, or use `keryx build --type silo`.
+Build or upgrade it in **City → Buildings → Construct**, or use `keryx build --type granary`.
 
 <!-- facts: building silo -->
 | Reference | Current rule |

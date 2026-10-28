@@ -485,7 +485,7 @@ func wallsHoldLine(popCap, walls, siloLevel float64) string {
 	}
 	line := fmt.Sprintf("Walls hold %s.", resource(popCap))
 	if walls < 3 {
-		line += fmt.Sprintf(" The next wall needs a Granary of level %.0f (yours: %.0f) — `keryx build --type silo`.", walls+1, siloLevel)
+		line += fmt.Sprintf(" The next wall needs a Granary of level %.0f (yours: %.0f) — `keryx build --type granary`.", walls+1, siloLevel)
 	}
 	return line
 }

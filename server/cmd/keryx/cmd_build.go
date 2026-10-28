@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/religion"
 	"github.com/spf13/cobra"
 )
@@ -97,6 +98,9 @@ func buildCmd() *cobra.Command {
 				}
 				prov = resolved
 			}
+			if buildingType == "granary" { // player name; the server key is silo
+				buildingType = "silo"
+			}
 			body := map[string]any{"building_type": buildingType}
 			if god != "" {
 				body["god"] = god
@@ -130,11 +134,11 @@ func buildCmd() *cobra.Command {
 				if effectLine != "" {
 					fmt.Println(effectLine)
 				}
-				fmt.Printf("Construction queued: %s @ (%s)\n", buildingType, hexFlag)
+				fmt.Printf("Construction queued: %s @ (%s)\n", province.BuildingDisplayName(buildingType), hexFlag)
 			} else if god != "" {
 				fmt.Printf("Construction queued: %s\n", religion.TempleName(god))
 			} else {
-				fmt.Printf("Construction queued: %s\n", buildingType)
+				fmt.Printf("Construction queued: %s\n", province.BuildingDisplayName(buildingType))
 			}
 			var receipt struct {
 				Duration     *float64 `json:"duration_game_days"`

@@ -113,7 +113,7 @@ func TestEpitaphLines_TellsTheFallAfterALongReign(t *testing.T) {
 
 			got := strings.Join(f.h.epitaphLines(ctx, f.player, f.world, &city), "\n")
 			name := f.cityName(city)
-			if !strings.Contains(got, "Raised farm in "+name+".") {
+			if !strings.Contains(got, "Raised Farm in "+name+".") {
 				t.Errorf("crawl lost the reign's first deed:\n%s", got)
 			}
 			if want := c.want(f.name(rival), name); !strings.Contains(got, want) {
@@ -135,7 +135,7 @@ func TestEpitaphLines_TellsEveryCityTheWanaxFounded(t *testing.T) {
 	tiryns := f.mkCity("Tiryns", f.player, 5, 10, &mycenae)
 	my, ti, ne := f.cityName(mycenae), f.cityName(tiryns), f.name(rival)
 
-	f.event(mycenae, 3, "BuildComplete", `{"building_type":"temple"}`)
+	f.event(mycenae, 3, "BuildComplete", `{"building_type":"silo"}`)
 	f.event(tiryns, 12, "TrainComplete", `{"unit_type":"spearman"}`)
 
 	// A battle at Mycenae, which this Wanax's defenders lose.
@@ -166,9 +166,9 @@ func TestEpitaphLines_TellsEveryCityTheWanaxFounded(t *testing.T) {
 	got := f.h.epitaphLines(ctx, f.player, f.world, &tiryns)
 	want := []string{
 		my + " rose on the shore of the Thalassa.",
-		"Raised temple in " + my + ".",
+		"Raised Granary in " + my + ".",
 		"Founded " + ti + ".",
-		"Mustered spearman from " + ti + ".",
+		"Mustered Spearmen from " + ti + ".",
 		"Lost a battle at " + my + ".",
 		"Wanax " + ne + " took " + my + ".",
 		"Hunger came. " + ti + " fell.",
