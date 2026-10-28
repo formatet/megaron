@@ -1,0 +1,98 @@
+{
+  "ground": {
+    "migration": {
+      "version": 217,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 5032
+      }
+    ],
+    "players": 15,
+    "settlements": 6,
+    "units": 18,
+    "goods": 102,
+    "gossip": 1120
+  },
+  "health": {
+    "commit": "3966ea6",
+    "migration": 217,
+    "status": "ok"
+  },
+  "checkout": "3966ea69249773a5281dce2fa730170daeec4036",
+  "static": {
+    "web/static/codex/battle.md": "03c2ac5fca533f2e41fb13104c15dd2decd00d22a34eab139b749d3ebb1735eb",
+    "web/static/codex/bronze.md": "bff9bef0b2b54e8cdddc3ba399510a10d4706e0003097d238edcec18f3cb08b4",
+    "web/static/codex/buildings.md": "29dae5df627c6af05958c53389d1411916ef350850284748fbfd44cddd2590f0",
+    "web/static/codex/catchment.md": "c397d6168661836c0f60bdbf82e822125b9f07775356f493fbcf9a230eddb01b",
+    "web/static/codex/city.md": "fca9b2bac566413934c846b702e2c7dcb3fbb7f16ed29525c2819fbaa9338cf2",
+    "web/static/codex/colonies.md": "89f1021761603c646efd101876cd62d787b7fa68f88c9a742c33018457216c26",
+    "web/static/codex/defence.md": "a7f0dfc27c6e33f83f3564e21a0c8518191747ee971f3a9edb6d8e1ba8f4a4af",
+    "web/static/codex/elite-infantry.md": "4e794df216497ec059d554e1d3121a5a4fdb0b9a09b1e5e007c542b77e26b2f6",
+    "web/static/codex/emporos.md": "8e8f930f6c068d2dc2be82e43992c6bf6bec7ef37e9ddb5d6088d9cbdd782c40",
+    "web/static/codex/founding.md": "eade30f18298db947de5dcac575826677d90dcbc4e42c23180960e5ab6e498d5",
+    "web/static/codex/galley.md": "d519a9d311519379097d5ec58d639b26489a51e7baae18e2b2b0d34941078a5a",
+    "web/static/codex/goods.md": "55200cd9081a04de22b02dd85fab8651e0270987266774a8bff267719a81b61d",
+    "web/static/codex/index.json": "de9def79795c292de30303f9c521d1fa4a59101224c551a606fbf8427de1c55d",
+    "web/static/codex/marching.md": "ff288581e7d05cfd517b1a7430b34001333e619ee80a06791e858bddf6b66972",
+    "web/static/codex/roads.md": "9b7f5d6c7b23b0f066715ce541efdf528d7109284a0e1263b93e28ed84349dfb",
+    "web/static/codex/rough-edges.md": "e16996ed0fe13a3646a2ad1ad16aa02a3a463a8d344cf330310f0a2342500aab",
+    "web/static/codex/routes.md": "68471d110788f2e6ed55a112c302783527b1a9cba9859b1a87129ba58700a661",
+    "web/static/codex/runners.md": "33740a3c1225c0efd7b89b1c4c3603b0a156e4a44fd6de04cae03d012a61ca89",
+    "web/static/codex/screen.md": "bf4e11e2eaafd4950235e483d056f6533bd44782e01bea7e124d52ca79db398c",
+    "web/static/codex/sea.md": "0a4db8474bb7e6bf73640a00cd1f26b6d99bd00f970627c3042477d1f6ddbdea",
+    "web/static/codex/sieges.md": "525a06098d834470bb0c906b4c9e6cce5800f50ffc070c0aee1fbee075d36ed0",
+    "web/static/codex/sight.md": "47195585093a661347fa25a52b85868327b2fe0fd39caf69e1eb46639468c1ac",
+    "web/static/codex/silver.md": "6a976e38edea32a987058d77eba64ca134627ea54e0dd287379a7b6c30d776c0",
+    "web/static/codex/spearmen.md": "46c56742ac7c1016e548cc43d8019c9e7e3403b887641dfc360a62638a23aa9a",
+    "web/static/codex/stances.md": "bb0bab9e967ad1beaac30c15ed639cdf17cd56e98736df816f4fb68da50e83cb",
+    "web/static/codex/units.md": "574dccaf20e17e8cb28bba30e842ad7611b440fdd39e82c09c21dc28c1d080ee",
+    "web/static/codex/upkeep.md": "30663c070ae3983638ac9a84ce8f87eb99dd03c8e4b32d5a17b3f86515dd2d8b",
+    "web/static/codex/war-chariot.md": "4975920dfb4881dd7dc4acf4e8de15fce8a848c9bc57976ee0419eb0930914bb",
+    "web/static/codex/war-galley.md": "974e6b34595567d29195bc9e9cd22d61f337983ecff19bf6b16f53b0d08a3dd4",
+    "web/static/js/megaron/render/map.js": "ec8a151d04021e963f2af4308110f6e746ec4915516e936f416093b4ad77020a",
+    "web/static/js/megaron/ui/actornames.js": "6a62a541ba7bf018f63c9f6ae900eb307d330d61efd13e1b3f677306fee744ef",
+    "web/static/js/megaron/ui/disband.js": "33bd52a082111896e4936c1b818172da78a71fefa79583135ec2eaad6fc15d74",
+    "web/static/js/megaron/ui/drawers/city.js": "7b9d52f11bc0af768873efa9e2f24dac582591b6c4c685607fc416e933b56b3b",
+    "web/static/js/megaron/ui/drawers/economy.js": "443903488725b696f2e70c9cdcfed72234c19f70b17472773934f3d36647efa4",
+    "web/static/js/megaron/ui/drawers/economy.test.mjs": "92f8590ae74db8989e929c65cb6e5b6cb4c20a66b2f65274153575ffcb49d57f",
+    "web/static/js/megaron/ui/drawers/war.js": "cec59d5276c7916949eb45eb0c4ed35c4efb2839e26a9999cc832cd3bbaa9fed",
+    "web/static/js/megaron/ui/forces.js": "1c7aabd0623c15bcc85ff9d552bad459d5d67a2021093f2a00f8fcc46ec177cf",
+    "web/static/js/megaron/ui/forces.test.mjs": "8594a27f1c42c99a8b9e3de2bfa424a9ecf09c7c665260aa0369f8cab81d7676",
+    "web/static/js/megaron/ui/forces_guard.test.mjs": "018c6b1b831be4d9378898e26fbe4a966720f438f1f81e5e4b3d3ebce740a32d",
+    "web/static/js/megaron/ui/format.js": "a90a6b29ec1d259624b29fa4a53700b54bd027c3382134a48b1d1aaba07ed6b6",
+    "web/static/js/megaron/ui/format.test.mjs": "d40d6289c636ff1039cb2990d2de6b49e90a3974378c7d94250729d27c1ec977",
+    "web/static/js/megaron/ui/marchctx.js": "9ead40d22d5c8c49ed83b48fb37a7f9f10f83817153ccc5cda864e98bd57928d",
+    "web/static/js/megaron/ui/misc.js": "f077d15e2a66777d19e41aaf3eda678ef4cc7021c56e502850b4cc7446d175e6",
+    "web/static/js/megaron/ui/movements.js": "a8ed4272c7a5bc765fe1303ea66775890d6b8ba27e25fbb9c26be69d3a5dc135",
+    "web/static/js/megaron/ui/recall_all.js": "cc7fe1108fbbd5d2994840430b685ce915eef8f7ced9c7627a9fcb76aa3bb1e1",
+    "web/static/js/megaron/ui/recall_all.test.mjs": "c12afb44e4502e54b5798d028a5cbdbe2413a00519a144b88a60cc27f3b3f035",
+    "web/static/js/megaron/ui/recruitment.js": "14a18a60ae4343f6ba9be70dac4f9d0205992230f92a86de36757fc317eea7c8",
+    "web/static/js/megaron/ui/war_cards.test.mjs": "582189dea3d4378d1ca85e5e8c793c272119f5dfcafe565cf9956fb4ca0e6ed2",
+    "web/static/showcase-units.html": "d2a251fa15d9560cace5d0a65fc689b704b5d89316fd47c302e2eb82761ff71d",
+    "web/static/wireframe_sprint1.html": "c44528eeda140360515e559dfb67555bc6b05f04e2dc2735884baf74a387b7db"
+  },
+  "forces_anonymous_status": 401,
+  "expected": "3966ea69249773a5281dce2fa730170daeec4036",
+  "before": {
+    "migration": {
+      "version": 217,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 5029
+      }
+    ],
+    "players": 15,
+    "settlements": 6,
+    "units": 18,
+    "goods": 102,
+    "gossip": 1120
+  }
+}

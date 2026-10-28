@@ -2,7 +2,7 @@
 
 Forces ersätter spelarordet Units; War visar Forces, Recruit och Marches. Land Forces och Ships har tillstånd per rad, People visas bara med Nomadic Host. Bronze Guard och Chariot har samma interna typer och regler som tidigare. Automatiserad frakt samlas i Economy → Routes & cargo; route-bound skepp visar sitt riktiga rutt-ID och ruttnamn i Forces. **Bevisar kedjegrinden** genom begriplig rekrytering och läsbar fysisk logistik.
 
-Baslinje `c1c871a8`, produktionskod `d3653d6a`. Order: `.agents/order-forces-taxonomi-20261025.md`. Spelarord ändras på server/Keryx/webb/Codex; API-fält, artikel-ID och DB behålls. Gamla rekryteringsnamn och units-kommandot är alias. Inga migrationer eller ändrade eventtolkningar.
+Baslinje `c1c871a8`, produktionskod `d3653d6a`, verifierad LIVE-process `3966ea69` (ren217, bevarade grundantal,50 byte-exakta assets). Order: `.agents/order-forces-taxonomi-20261025.md`. Spelarord ändras på server/Keryx/webb/Codex; API-fält, artikel-ID och DB behålls. Gamla rekryteringsnamn och units-kommandot är alias. Inga migrationer eller ändrade eventtolkningar.
 
 | Grind | Bevis |
 |---|---|
