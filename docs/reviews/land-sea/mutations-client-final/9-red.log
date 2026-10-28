@@ -1,0 +1,6 @@
+--- FAIL: TestRouteAndTradeOfferPersistSelectedMode (0.00s)
+    --- FAIL: TestRouteAndTradeOfferPersistSelectedMode/trade-offer (0.00s)
+        transport_choice_test.go:104: wrong by map[by:sea kind:buy offer_silver:3 want_good:grain want_qty:2]
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.004s
+FAIL

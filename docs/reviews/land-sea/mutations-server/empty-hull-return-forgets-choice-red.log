@@ -1,0 +1,15 @@
+2026/10/28 05:39:01 INFO player registered id=c6ce3b03-1914-44ba-92db-bc1a3ba39d33 username=sailor-86237a56-95c6-4682-8ec5-790d88ed67d8
+2026/10/28 05:39:01 INFO player registered id=9c839596-4b27-4abf-95aa-c357a4c574fe username=sailor-7246dbcb-026c-476e-8d09-478ee5de098d
+2026/10/28 05:39:01 INFO trade delivery destination=476af5c6-9342-41a1-8ac1-097f8a520c25 good=grain qty=10
+2026/10/28 05:39:01 INFO player registered id=479c2b29-44fb-4447-b781-18a3267bd249 username=sailor-0dfe8619-b6c5-4f57-ba74-e0dab535fada
+2026/10/28 05:39:01 INFO player registered id=aee17256-c5df-4a50-81be-b43e6ee1c6c7 username=sailor-ab3979be-b310-42cf-ab59-b73368e741f4
+2026/10/28 05:39:01 INFO player registered id=fa162075-cdb7-42cf-a2c8-e4faa3eead0c username=sailor-4ce1269b-a975-4cc2-a825-62af2c1d3629
+2026/10/28 05:39:01 INFO player registered id=c1079458-d22d-4da3-8b20-30acf66ee429 username=sailor-799ecaca-077e-4ec7-a7a6-e10234116a5b
+2026/10/28 05:39:01 INFO player registered id=78631cb0-2f17-4ad3-9711-2d25eb791a3e username=sailor-a8133401-5418-4a78-b574-7c05f39f9b72
+--- FAIL: TestTransferChoiceStrictnessAndPersistence (0.52s)
+    --- FAIL: TestTransferChoiceStrictnessAndPersistence/by_sea_ship_true_land_true (0.09s)
+        transport_choice_test.go:98: empty hull return lost selectedsea "" err<nil>
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.522s
+FAIL
+» färsk DB på migration 218 · commit 44977132+ändringar

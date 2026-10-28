@@ -1,0 +1,12 @@
+2026/10/28 05:37:46 INFO player registered id=e1efa006-7772-4585-a549-ddb97519531d username=sailor-530ab431-1d6b-40c8-b9d0-06be475c5570
+2026/10/28 05:37:46 INFO player registered id=bfdfeec5-6cc4-4949-8f02-bb3d95c0fda2 username=sailor-ffb285ac-bd4f-46f8-83ac-c30dd1b8baab
+2026/10/28 05:37:46 INFO player registered id=13210214-0b6d-4152-8500-81c3cf420cfe username=sailor-8bae0c2b-8b77-4a44-afe9-ef306aa9f672
+2026/10/28 05:37:46 INFO player registered id=d5113786-eac6-4304-9257-59ef03437661 username=sailor-428d6f03-bb7e-453a-8171-0cf57c6ff36f
+2026/10/28 05:37:46 INFO player registered id=1704b4d8-75de-4a6a-a056-f6628db6446b username=sailor-91c2caeb-42aa-44b7-b927-c53ae0c9f77b
+--- FAIL: TestStandingOrderChoiceCreateListAndUnavailableReject (0.35s)
+    --- FAIL: TestStandingOrderChoiceCreateListAndUnavailableReject/by_land_ship_true_land_true (0.07s)
+        standing_order_choice_test.go:39: create 500 want201 map[error:could not create standing order]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.355s
+FAIL
+» färsk DB på migration 218 · commit 44977132+ändringar

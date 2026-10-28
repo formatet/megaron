@@ -1,0 +1,4 @@
+ok  	formatet/megaron/server/api/handlers	1.718s
+ok  	formatet/megaron/server/internal/combat	0.111s
+ok  	formatet/megaron/server/internal/transport	0.052s
+» färsk DB på migration 218 · commit 44977132

@@ -1,0 +1,4 @@
+land [selected]: 8 game days · about 479.99999999088334 minutes · arrives 2026-10-28T13:41:19.517212+01:00 · Interception · A passable land route
+sea: 2 game days · about 119.99999999093333 minutes · arrives 2026-10-28T07:41:19.519418+01:00 · Storms and interception · Coastal access or a harbour at both cities; A free galley or Emporos with cargo space at the origin; Voyage provisions, checked at dispatch
+Land caravan · Cargo 1 — no cargo limit
+Transfer dispatched: 1 stone → 32249ed4-6ea0-45c6-858a-ef74a54fbeb5 · arrives ≈ today 13:41 (journey: 8 game days · about 8 hours)

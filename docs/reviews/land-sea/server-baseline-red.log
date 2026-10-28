@@ -1,0 +1,7 @@
+» färsk DB på migration 217 · commit 0f26d0af+ändringar
+2026/10/28 05:22:32 INFO player registered id=5ca61f0d-2234-47e5-9fc8-e5cf9c4d1dc8 username=sailor-7e196564-10fb-4cd8-bd01-9c26d1307401
+--- FAIL: TestTransferExplicitLandDoesNotChooseAvailableSea (0.08s)
+    transport_choice_test.go:30: explicit land silently chose naval
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.080s
+FAIL

@@ -1,0 +1,7 @@
+2026/10/28 05:38:13 INFO player registered id=588c6ec2-2c94-4527-892e-b79138b4ab3c username=sailor-24001886-5262-4106-8d0e-4c3993d1819f
+--- FAIL: TestTransportOptionsBothModesAnchoredAndReadOnly (0.07s)
+    transport_options_test.go:65: preview clock drift {By:land Available:true Ticks:7 Seconds:25199.999999327 At:2026-10-28 05:38:13.763060673 +0100 CET Requirements:[A passable land route] Risk:Interception} want2026-10-28 12:38:13.763060673 +0100 CET m=+25200.051410704
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.073s
+FAIL
+» färsk DB på migration 218 · commit 44977132+ändringar

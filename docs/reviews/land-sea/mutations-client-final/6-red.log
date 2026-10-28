@@ -1,0 +1,93 @@
+TAP version 13
+# Subtest: drawer has exactly Letters and Runners and one state per Wanax
+ok 1 - drawer has exactly Letters and Runners and one state per Wanax
+  ---
+  duration_ms: 14.830127
+  type: 'test'
+  ...
+# Subtest: person exchange opens newest letter and places same-runner reply below it
+ok 2 - person exchange opens newest letter and places same-runner reply below it
+  ---
+  duration_ms: 9.880198
+  type: 'test'
+  ...
+# Subtest: first letter and both trade directions use same dispatch endpoint without subjects
+ok 3 - first letter and both trade directions use same dispatch endpoint without subjects
+  ---
+  duration_ms: 5.309495
+  type: 'test'
+  ...
+# Subtest: unreachable destination does not open composer or dispatch
+ok 4 - unreachable destination does not open composer or dispatch
+  ---
+  duration_ms: 0.34794
+  type: 'test'
+  ...
+# Subtest: late response cannot overwrite a replacement world
+ok 5 - late response cannot overwrite a replacement world
+  ---
+  duration_ms: 0.324768
+  type: 'test'
+  ...
+# Subtest: state words distinguish whose turn it is
+ok 6 - state words distinguish whose turn it is
+  ---
+  duration_ms: 0.08399
+  type: 'test'
+  ...
+# Subtest: accepted terms persist, only supplied actions render, gifts carry no trade controls
+ok 7 - accepted terms persist, only supplied actions render, gifts carry no trade controls
+  ---
+  duration_ms: 0.474426
+  type: 'test'
+  ...
+# Subtest: expired windows suppress reply and trade actions without a refresh button
+ok 8 - expired windows suppress reply and trade actions without a refresh button
+  ---
+  duration_ms: 0.106681
+  type: 'test'
+  ...
+# Subtest: local draft survives server failure, a retry and successful dispatch clears saved copy
+ok 9 - local draft survives server failure, a retry and successful dispatch clears saved copy
+  ---
+  duration_ms: 2.305979
+  type: 'test'
+  ...
+# Subtest: an unavailable thread retains a local reply when the server recovers
+ok 10 - an unavailable thread retains a local reply when the server recovers
+  ---
+  duration_ms: 1.5307
+  type: 'test'
+  ...
+# Subtest: trade offer sends selected goods mode and cannot auto-fallback from unavailable choice
+not ok 11 - trade offer sends selected goods mode and cannot auto-fallback from unavailable choice
+  ---
+  duration_ms: 1.409732
+  type: 'test'
+  location: '/tmp/megaron-land-sea-client-mutants/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:40:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    'land' !== 'sea'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'sea'
+  actual: 'land'
+  operator: 'strictEqual'
+  stack: |-
+    file:///tmp/megaron-land-sea-client-mutants/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:43:63
+    async rig (file:///tmp/megaron-land-sea-client-mutants/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:14:6)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 10
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 86.825266

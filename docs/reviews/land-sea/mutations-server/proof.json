@@ -1,0 +1,184 @@
+{
+  "commit": "449771320446d59dc3a10a5335707b50396b5019",
+  "mutations": [
+    {
+      "name": "schema-land-choice",
+      "file": "server/db/migrations/218_transport_route_choice.up.sql",
+      "old": "CHECK(route_mode IN ('','land','sea'))",
+      "new": "CHECK(route_mode IN ('','sea'))",
+      "occurrence": 1,
+      "package": "./api/handlers/",
+      "named_test": "TestStandingOrderChoiceCreateListAndUnavailableReject",
+      "assertion_red": true,
+      "port": 36055
+    },
+    {
+      "name": "resolver-forgets-explicit-mode",
+      "file": "server/internal/province/trade_route.go",
+      "old": "if by == \"\" {",
+      "new": "if true {",
+      "occurrence": 1,
+      "package": "./api/handlers/",
+      "named_test": "TestTransferExplicitLandDoesNotChooseAvailableSea",
+      "assertion_red": true,
+      "port": 46195
+    },
+    {
+      "name": "transport-forgets-choice",
+      "file": "server/internal/transport/transport.go",
+      "old": "raw, p.DepartedTick, p.By,",
+      "new": "raw, p.DepartedTick, \"\",",
+      "occurrence": 1,
+      "package": "./api/handlers/",
+      "named_test": "TestTransferChoiceStrictnessAndPersistence",
+      "assertion_red": true,
+      "port": 49851
+    },
+    {
+      "name": "transport-allows-category-substitution",
+      "file": "server/internal/transport/transport.go",
+      "old": "if (p.By == \"land\" && p.Category != \"land\") || (p.By == \"sea\" && p.Category != \"naval\") {",
+      "new": "if false {",
+      "occurrence": 1,
+      "package": "./internal/transport/",
+      "named_test": "TestDispatchExplicitChoiceRejectsCategorySubstitution",
+      "assertion_red": true,
+      "port": 34077
+    },
+    {
+      "name": "transfer-ignores-choice",
+      "file": "server/api/handlers/province.go",
+      "old": "province.MapPosition{Q: destQ, R: destR}, req.By,",
+      "new": "province.MapPosition{Q: destQ, R: destR}, \"\",",
+      "occurrence": 1,
+      "package": "./api/handlers/",
+      "named_test": "TestTransferExplicitLandDoesNotChooseAvailableSea",
+      "assertion_red": true,
+      "port": 50381
+    },
+    {
+      "name": "preview-wrong-wall-clock",
+      "file": "server/api/handlers/trade_preview.go",
+      "old": "o[\"arrives_at\"] = at",
+      "new": "o[\"arrives_at\"] = now",
+      "occurrence": 1,
+      "package": "./api/handlers/",
+      "named_test": "TestTransportOptionsBothModesAnchoredAndReadOnly",
+      "assertion_red": true,
+      "port": 52321
+    },
+    {
+      "name": "preview-consumes-prayer",
+      "file": "server/api/handlers/trade_preview.go",
+      "old": "defer tx.Rollback(r.Context())",
+      "new": "defer tx.Commit(r.Context())",
+      "occurrence": 1,
+      "package": "./api/handlers/",
+      "named_test": "TestTransportOptionsBothModesAnchoredAndReadOnly",
+      "assertion_red": true,
+      "port": 44079
+    },
+    {
+      "name": "offer-forgets-choice",
+      "file": "server/api/handlers/messenger.go",
+      "old": "\"by\":          req.TradeOffer.By,",
+      "new": "\"by\":          \"\",",
+      "occurrence": 1,
+      "package": "./api/handlers/",
+      "named_test": "TestAgreementChoicePersistsAndControlsAcceptedDispatch",
+      "assertion_red": true,
+      "port": 49623
+    },
+    {
+      "name": "accept-falls-back-on-selected-sea",
+      "file": "server/api/handlers/messenger.go",
+      "old": "if routeBy == \"sea\" {",
+      "new": "if routeBy == \"land\" {",
+      "occurrence": 1,
+      "package": "./api/handlers/",
+      "named_test": "TestAgreementExplicitSeaNeverFallsBackAtAccept",
+      "assertion_red": true,
+      "port": 48501
+    },
+    {
+      "name": "standing-create-forgets-choice",
+      "file": "server/api/handlers/standing_order.go",
+      "old": "req.CrewedBySettlement, req.By,",
+      "new": "req.CrewedBySettlement, \"\",",
+      "occurrence": 1,
+      "package": "./api/handlers/",
+      "named_test": "TestStandingOrderChoiceCreateListAndUnavailableReject",
+      "assertion_red": true,
+      "port": 56943
+    },
+    {
+      "name": "standing-create-skips-selected-path",
+      "file": "server/api/handlers/standing_order.go",
+      "old": "if req.By != \"\" {",
+      "new": "if false {",
+      "occurrence": 1,
+      "package": "./api/handlers/",
+      "named_test": "TestStandingOrderChoiceCreateListAndUnavailableReject",
+      "assertion_red": true,
+      "port": 45863
+    },
+    {
+      "name": "standing-outbound-ignores-choice",
+      "file": "server/internal/combat/standing_orders.go",
+      "old": "province.MapPosition{Q: toQ, R: toR}, o.by)",
+      "new": "province.MapPosition{Q: toQ, R: toR}, \"\")",
+      "occurrence": 1,
+      "package": "./internal/combat/",
+      "named_test": "TestStandingOrderExplicitChoiceControlsSweepWithoutFallback",
+      "assertion_red": true,
+      "port": 55825
+    },
+    {
+      "name": "standing-return-forgets-choice",
+      "file": "server/internal/combat/standing_orders.go",
+      "old": "transport.DispatchParams{By: o.by,",
+      "new": "transport.DispatchParams{By: \"\",",
+      "occurrence": 2,
+      "package": "./internal/combat/",
+      "named_test": "TestStandingOrderExplicitChoiceControlsSweepWithoutFallback",
+      "assertion_red": true,
+      "port": 58131
+    },
+    {
+      "name": "agreement-return-forgets-choice",
+      "file": "server/internal/economy/trade.go",
+      "old": "leg2ShipUnitID, saved, departure, leg1By,",
+      "new": "leg2ShipUnitID, saved, departure, \"\",",
+      "occurrence": 1,
+      "package": "./api/handlers/",
+      "named_test": "TestAgreementChoicePersistsAndControlsAcceptedDispatch",
+      "assertion_red": true,
+      "port": 54781
+    },
+    {
+      "name": "empty-hull-return-forgets-choice",
+      "file": "server/internal/economy/trade.go",
+      "old": "*shipUnitID, raw, currentTick, routeBy,",
+      "new": "*shipUnitID, raw, currentTick, \"\",",
+      "occurrence": 1,
+      "package": "./api/handlers/",
+      "named_test": "TestTransferChoiceStrictnessAndPersistence",
+      "assertion_red": true,
+      "port": 47899
+    }
+  ],
+  "source_sha256": {
+    "server/db/migrations/218_transport_route_choice.up.sql": "fe0b972aa6ddf20848f7831fe2138bd73cf77f1ddf359f37aeb851ee42fee5ef",
+    "server/internal/province/trade_route.go": "9409fde908a878b93fc230290d8e1f2cb716027fed0a5f539da05c987bcfc789",
+    "server/internal/transport/transport.go": "499ee640733843e87efa1e682c4dc1b268ab0768a5db4f1ea29be42571244dfd",
+    "server/api/handlers/province.go": "23af4290a9b15e5241cb3aa219f2814cd2c6a6557783cf4f4676752961d7204c",
+    "server/api/handlers/trade_preview.go": "ca1eaddb97d3714b6f935ff5d6fc1239b4de0178822fb8fc2202fa9bdb679408",
+    "server/api/handlers/messenger.go": "3ffef8bc5ed94616f1e4b8280d35b9adfcbf540559e329e86d3a2761d40137b2",
+    "server/api/handlers/standing_order.go": "68c216236aa94523a8f220c11a567d5d41fc716bad3b08ac6a034a2766b135a9",
+    "server/internal/combat/standing_orders.go": "118bd3cf535e2ff208a0e94f7daab36baac5dc0152d658e723628840e9eeb072",
+    "server/internal/economy/trade.go": "960c68777860194258dcc2a240f8d2a6c943695d3347d67932e8268befb8bcb8"
+  },
+  "byte_identical_restore": true,
+  "fresh_restored_green": true,
+  "green_port": 50291
+}

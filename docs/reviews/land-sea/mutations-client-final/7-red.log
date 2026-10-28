@@ -1,0 +1,6 @@
+--- FAIL: TestTransferCarriesExplicitModeToPreviewAndDispatch (0.00s)
+    --- FAIL: TestTransferCarriesExplicitModeToPreviewAndDispatch/sea (0.00s)
+        transport_choice_test.go:57: dispatch by=land
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.003s
+FAIL

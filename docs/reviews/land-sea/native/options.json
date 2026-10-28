@@ -1,0 +1,91 @@
+{
+  "both": {
+    "arrives_at": "2026-10-28T07:41:01.999271+01:00",
+    "cargo_capacity": 120,
+    "category": "naval",
+    "options": [
+      {
+        "arrives_at": "2026-10-28T13:41:01.996412+01:00",
+        "available": true,
+        "by": "land",
+        "cargo_capacity": null,
+        "category": "land",
+        "reason": "",
+        "requirements": [
+          "A passable land route"
+        ],
+        "risk": "Interception",
+        "travel_seconds": 28799.99999925,
+        "travel_ticks": 8
+      },
+      {
+        "arrives_at": "2026-10-28T07:41:01.999271+01:00",
+        "available": true,
+        "by": "sea",
+        "cargo_capacity": 120,
+        "category": "naval",
+        "reason": "",
+        "requirements": [
+          "Coastal access or a harbour at both cities",
+          "A free galley or Emporos with cargo space at the origin",
+          "Voyage provisions, checked at dispatch"
+        ],
+        "risk": "Storms and interception",
+        "ship_id": "0101ecd5-a3a8-4e69-863e-ccafaea8aee7",
+        "ship_name": "Cargo 0, Emporos of Lato",
+        "ship_type": "merchantman",
+        "travel_seconds": 7199.999999056,
+        "travel_ticks": 2
+      }
+    ],
+    "selected_by": "sea",
+    "ship_id": "0101ecd5-a3a8-4e69-863e-ccafaea8aee7",
+    "ship_name": "Cargo 0, Emporos of Lato",
+    "ship_type": "merchantman",
+    "travel_seconds": 7199.999999056,
+    "travel_ticks": 2
+  },
+  "sea_only": {
+    "arrives_at": "2026-10-28T11:41:02.00527+01:00",
+    "cargo_capacity": 120,
+    "category": "naval",
+    "options": [
+      {
+        "available": false,
+        "by": "land",
+        "cargo_capacity": null,
+        "category": "land",
+        "reason": "No passable land route between these cities",
+        "requirements": [
+          "A passable land route"
+        ],
+        "risk": "Interception"
+      },
+      {
+        "arrives_at": "2026-10-28T11:41:02.00527+01:00",
+        "available": true,
+        "by": "sea",
+        "cargo_capacity": 120,
+        "category": "naval",
+        "reason": "",
+        "requirements": [
+          "Coastal access or a harbour at both cities",
+          "A free galley or Emporos with cargo space at the origin",
+          "Voyage provisions, checked at dispatch"
+        ],
+        "risk": "Storms and interception",
+        "ship_id": "0101ecd5-a3a8-4e69-863e-ccafaea8aee7",
+        "ship_name": "Cargo 0, Emporos of Lato",
+        "ship_type": "merchantman",
+        "travel_seconds": 21599.999999071,
+        "travel_ticks": 6
+      }
+    ],
+    "selected_by": "sea",
+    "ship_id": "0101ecd5-a3a8-4e69-863e-ccafaea8aee7",
+    "ship_name": "Cargo 0, Emporos of Lato",
+    "ship_type": "merchantman",
+    "travel_seconds": 21599.999999071,
+    "travel_ticks": 6
+  }
+}

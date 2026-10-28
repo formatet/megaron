@@ -1,0 +1,24 @@
+Error: --by must be land or sea
+Usage:
+  transfer [flags]
+
+Examples:
+  keryx transfer --good grain --qty 50 --dest Korinth
+  keryx transfer --good grain --qty 12 --good timber --qty 8 --dest Korinth
+  keryx transfer --from <colony> --good grain --qty 50 --dest Korinth   # pull a colony's surplus home
+
+Flags:
+      --by string          goods route: land or sea (omitted: automatic)
+  -d, --dest string        destination settlement name
+      --from string        alias for --province
+  -g, --good stringArray   good key; repeat with matching --qty for each item
+  -h, --help               help for transfer
+      --province string    source province/settlement (default: your selected city; see status)
+  -q, --qty stringArray    quantity to send; repeat once for each --good
+
+--- FAIL: TestTransferCarriesExplicitModeToPreviewAndDispatch (0.00s)
+    --- FAIL: TestTransferCarriesExplicitModeToPreviewAndDispatch/sea (0.00s)
+        transport_choice_test.go:69: --by must be land or sea
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.003s
+FAIL

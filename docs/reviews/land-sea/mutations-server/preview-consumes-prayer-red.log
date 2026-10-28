@@ -1,0 +1,7 @@
+2026/10/28 05:38:18 INFO player registered id=05fe4ad1-5a88-40b1-9c8f-9ba5e824a74d username=sailor-3844cdcd-1300-400d-be49-dcc5f5a95b2c
+--- FAIL: TestTransportOptionsBothModesAnchoredAndReadOnly (0.07s)
+    transport_options_test.go:70: preview consumed prayer pendingfalse err<nil>
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.077s
+FAIL
+» färsk DB på migration 218 · commit 44977132+ändringar

@@ -1,0 +1,14 @@
+2026/10/28 05:38:34 INFO player registered id=88b0b970-08f7-4209-bd4c-87f17e08d50f username=sailor-b28ef520-aada-4fba-933d-6075be76173d
+2026/10/28 05:38:34 INFO player registered id=9acc4ed4-2d14-473b-b126-c6269e13caa3 username=sailor-de88c708-791d-43ad-99c0-6087d6e1c3be
+2026/10/28 05:38:34 INFO player registered id=8f3968a3-675e-402c-9e47-4642f46b5798 username=sailor-081d4966-64ef-4e4d-be02-29cc8a60edfc
+2026/10/28 05:38:34 INFO player registered id=cc6aba93-f1d9-4341-adf8-877ac4e59101 username=sailor-12471bb5-2dc3-411c-b3ed-f15cecbdb47e
+2026/10/28 05:38:35 INFO player registered id=ccc030ff-612c-4fa8-ab39-a3d29e97ccfc username=sailor-4b69ba66-4c8c-4b6a-8528-966d1a1b121d
+--- FAIL: TestStandingOrderChoiceCreateListAndUnavailableReject (0.34s)
+    --- FAIL: TestStandingOrderChoiceCreateListAndUnavailableReject/by_land_ship_true_land_true (0.07s)
+        standing_order_choice_test.go:61: choice not exposed [{By: ID:5fb9ade9-0fa5-4aba-b024-ccef5ef9132a FromID:4304502b-61b0-407a-bcf1-d60d653bfcce FromName:Origin ToID:aac61cb1-cbe3-4aac-8e82-e260e688fbf4 ToName:Destination CrewedByID:4304502b-61b0-407a-bcf1-d60d653bfcce Status:active PauseReason:<nil> Outbound:[{GoodKey:grain Threshold:100}] Return:[] ShipID:<nil> ShipName:}] responsemap[by:land id:5fb9ade9-0fa5-4aba-b024-ccef5ef9132a status:active]
+    --- FAIL: TestStandingOrderChoiceCreateListAndUnavailableReject/by_sea_ship_true_land_true (0.07s)
+        standing_order_choice_test.go:61: choice not exposed [{By: ID:2580a3e9-a546-4ec3-9564-a2caaa4ac973 FromID:ba60e681-c640-4984-a4aa-9c03aee14ffe FromName:Origin ToID:4023a8f4-f313-42f3-bd50-4dc9b503222f ToName:Destination CrewedByID:ba60e681-c640-4984-a4aa-9c03aee14ffe Status:active PauseReason:<nil> Outbound:[{GoodKey:grain Threshold:100}] Return:[] ShipID:<nil> ShipName:}] responsemap[by:sea id:2580a3e9-a546-4ec3-9564-a2caaa4ac973 status:active]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.342s
+FAIL
+» färsk DB på migration 218 · commit 44977132+ändringar

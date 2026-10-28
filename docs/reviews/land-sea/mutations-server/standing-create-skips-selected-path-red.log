@@ -1,0 +1,14 @@
+2026/10/28 05:38:40 INFO player registered id=765f7bad-9541-49ab-b212-3b40b8fbef5c username=sailor-97458403-65f4-4456-b619-64e59fa350d3
+2026/10/28 05:38:40 INFO player registered id=58ec1bd2-a146-4736-b128-58c1c81a7c0d username=sailor-5a113f6f-3a6c-4294-a244-ce6daffbf29a
+2026/10/28 05:38:40 INFO player registered id=b9612f18-b742-4f0a-9ce1-2dfe5ef30f0b username=sailor-3da79a30-b1d7-4a92-8e0c-54054ee9b48f
+2026/10/28 05:38:40 INFO player registered id=be827202-da4d-4e01-bddd-351c61bdfa04 username=sailor-8fedb90f-ddde-4a98-9136-265f4faa9a83
+2026/10/28 05:38:40 INFO player registered id=3a7a35c5-c544-400f-822e-45d6045d6e5b username=sailor-2ad47f92-dd2c-46ea-b10e-858c9a7acce4
+--- FAIL: TestStandingOrderChoiceCreateListAndUnavailableReject (0.33s)
+    --- FAIL: TestStandingOrderChoiceCreateListAndUnavailableReject/by_sea_ship_false_land_true (0.07s)
+        standing_order_choice_test.go:39: create 201 want422 map[by:sea id:dd1b9735-3b3a-4adb-8721-68626978bf8b status:active]
+    --- FAIL: TestStandingOrderChoiceCreateListAndUnavailableReject/by_land_ship_true_land_false (0.06s)
+        standing_order_choice_test.go:39: create 201 want422 map[by:land id:4f520597-253e-4529-a2e1-4fe8d53c7016 status:active]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.337s
+FAIL
+» färsk DB på migration 218 · commit 44977132+ändringar

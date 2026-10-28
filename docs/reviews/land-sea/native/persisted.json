@@ -1,0 +1,94 @@
+{
+  "transports": [
+    {
+      "route_mode": "land",
+      "category": "land",
+      "count": 5
+    },
+    {
+      "route_mode": "sea",
+      "category": "naval",
+      "count": 9
+    }
+  ],
+  "orders": [
+    {
+      "by": "land",
+      "id": "08d5931b-22ad-40cc-a713-741d415e6635",
+      "from_settlement_id": "104dc873-d61b-4c40-bbf3-0c8a1b9e1341",
+      "from_name": "Lato",
+      "to_settlement_id": "32249ed4-6ea0-45c6-858a-ef74a54fbeb5",
+      "to_name": "Petras",
+      "crewed_by_settlement_id": "104dc873-d61b-4c40-bbf3-0c8a1b9e1341",
+      "status": "active",
+      "outbound": [
+        {
+          "good_key": "grain",
+          "threshold": 20
+        }
+      ],
+      "return": null
+    },
+    {
+      "by": "land",
+      "id": "3e13e124-2cce-4349-9b20-4ef958ba81b0",
+      "from_settlement_id": "104dc873-d61b-4c40-bbf3-0c8a1b9e1341",
+      "from_name": "Lato",
+      "to_settlement_id": "32249ed4-6ea0-45c6-858a-ef74a54fbeb5",
+      "to_name": "Petras",
+      "crewed_by_settlement_id": "104dc873-d61b-4c40-bbf3-0c8a1b9e1341",
+      "status": "active",
+      "outbound": [
+        {
+          "good_key": "grain",
+          "threshold": 20
+        }
+      ],
+      "return": null
+    },
+    {
+      "by": "land",
+      "id": "676dd06e-44ef-4eac-914e-ec24f239e94e",
+      "from_settlement_id": "104dc873-d61b-4c40-bbf3-0c8a1b9e1341",
+      "from_name": "Lato",
+      "to_settlement_id": "32249ed4-6ea0-45c6-858a-ef74a54fbeb5",
+      "to_name": "Petras",
+      "crewed_by_settlement_id": "104dc873-d61b-4c40-bbf3-0c8a1b9e1341",
+      "status": "active",
+      "outbound": [
+        {
+          "good_key": "grain",
+          "threshold": 20
+        }
+      ],
+      "return": null
+    },
+    {
+      "by": "land",
+      "id": "d325e06e-0dc3-4dbe-abd9-f0a6e394e628",
+      "from_settlement_id": "104dc873-d61b-4c40-bbf3-0c8a1b9e1341",
+      "from_name": "Lato",
+      "to_settlement_id": "32249ed4-6ea0-45c6-858a-ef74a54fbeb5",
+      "to_name": "Petras",
+      "crewed_by_settlement_id": "104dc873-d61b-4c40-bbf3-0c8a1b9e1341",
+      "status": "active",
+      "outbound": [
+        {
+          "good_key": "grain",
+          "threshold": 20
+        }
+      ],
+      "return": null
+    }
+  ],
+  "offers": [
+    {
+      "by": "sea",
+      "kind": "buy",
+      "status": "pending",
+      "want_qty": 1,
+      "want_good": "grain",
+      "offer_silver": 1
+    }
+  ]
+}

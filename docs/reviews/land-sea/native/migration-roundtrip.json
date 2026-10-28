@@ -1,0 +1,15 @@
+{
+  "path": "218\u2192217\u2192218",
+  "preserved_ground_hashes": {
+    "worlds": "1:6b879da2e3149564747fafee27924e72",
+    "players": "2:9dd94b3fd4065bb7d53f0ba4e3798fe9",
+    "settlements": "5:1d77d296c13e529e03055c7ca8abcefe",
+    "units": "16:7aa5e0411fdcba41cff2bfb0b3791e61",
+    "settlement_goods": "90:0dc0ecd8c4614e93c650aab0c5e3be83",
+    "transports": "14:f005283326752c043b7f7e200ae73aef",
+    "standing_orders": "4:7c1df08c28b2b910181b46b45c7b6b4c",
+    "trade_routes": "14:a1a6a14839d9132a3ecb84184b49a9cb",
+    "messengers": "1:66cdfc81a7a2ad7249b19085f7553373"
+  },
+  "explicit_choice_metadata_removed_on_down": true
+}

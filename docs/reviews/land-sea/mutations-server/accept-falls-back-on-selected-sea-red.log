@@ -1,0 +1,8 @@
+2026/10/28 05:38:29 INFO player registered id=5bc09221-64de-462d-bdf0-53d26cf8eb10 username=initiator-231a4f44-5bdf-4011-b311-1cea53355b8a
+2026/10/28 05:38:29 INFO player registered id=88d4ff13-420e-4db6-9f26-270b50f04d16 username=counterparty-f5c20fec-5812-487a-a2fd-7c6071c13781
+--- FAIL: TestAgreementExplicitSeaNeverFallsBackAtAccept (0.13s)
+    transport_agreement_choice_test.go:120: explicitsea accepted fallback 500 map[error:could not dispatch goods caravan]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.137s
+FAIL
+» färsk DB på migration 218 · commit 44977132+ändringar

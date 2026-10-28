@@ -1,0 +1,46 @@
+--- FAIL: TestTransportChoiceFlagsRejectInvalidBeforeNetwork (0.00s)
+    transport_choice_test.go:14: transfer missing --by land|sea
+    transport_choice_test.go:14: route missing --by land|sea
+    transport_choice_test.go:14: trade-offer missing --by land|sea
+Error: unknown flag: --by
+Usage:
+  transfer [flags]
+
+Examples:
+  keryx transfer --good grain --qty 50 --dest Korinth
+  keryx transfer --good grain --qty 12 --good timber --qty 8 --dest Korinth
+  keryx transfer --from <colony> --good grain --qty 50 --dest Korinth   # pull a colony's surplus home
+
+Flags:
+  -d, --dest string        destination settlement name
+      --from string        alias for --province
+  -g, --good stringArray   good key; repeat with matching --qty for each item
+  -h, --help               help for transfer
+      --province string    source province/settlement (default: your selected city; see status)
+  -q, --qty stringArray    quantity to send; repeat once for each --good
+
+Error: unknown flag: --by
+Usage:
+  transfer [flags]
+
+Examples:
+  keryx transfer --good grain --qty 50 --dest Korinth
+  keryx transfer --good grain --qty 12 --good timber --qty 8 --dest Korinth
+  keryx transfer --from <colony> --good grain --qty 50 --dest Korinth   # pull a colony's surplus home
+
+Flags:
+  -d, --dest string        destination settlement name
+      --from string        alias for --province
+  -g, --good stringArray   good key; repeat with matching --qty for each item
+  -h, --help               help for transfer
+      --province string    source province/settlement (default: your selected city; see status)
+  -q, --qty stringArray    quantity to send; repeat once for each --good
+
+--- FAIL: TestTransferCarriesExplicitModeToPreviewAndDispatch (0.00s)
+    --- FAIL: TestTransferCarriesExplicitModeToPreviewAndDispatch/land (0.00s)
+        transport_choice_test.go:31: unknown flag: --by
+    --- FAIL: TestTransferCarriesExplicitModeToPreviewAndDispatch/sea (0.00s)
+        transport_choice_test.go:31: unknown flag: --by
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.004s
+FAIL

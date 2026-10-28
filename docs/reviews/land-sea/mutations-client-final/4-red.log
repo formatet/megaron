@@ -1,0 +1,75 @@
+TAP version 13
+# Subtest: N: actual POST preserves multiple outbound goods, return floor zero, decimals and destination crew
+ok 1 - N: actual POST preserves multiple outbound goods, return floor zero, decimals and destination crew
+  ---
+  duration_ms: 16.109576
+  type: 'test'
+  ...
+# Subtest: N: blank optional rows leave an empty return array and source crew intact
+ok 2 - N: blank optional rows leave an empty return array and source crew intact
+  ---
+  duration_ms: 1.220278
+  type: 'test'
+  ...
+# Subtest: N: drawer keeps three tabs and crew choices, replaces both CSV inputs with addable goods rows
+ok 3 - N: drawer keeps three tabs and crew choices, replaces both CSV inputs with addable goods rows
+  ---
+  duration_ms: 14.761321
+  type: 'test'
+  ...
+# Subtest: N: same-city and missing-outbound rows still cannot dispatch
+ok 4 - N: same-city and missing-outbound rows still cannot dispatch
+  ---
+  duration_ms: 0.207382
+  type: 'test'
+  ...
+# Subtest: N: failed goods fetch sends no form, reopening Automation retries full inventory
+ok 5 - N: failed goods fetch sends no form, reopening Automation retries full inventory
+  ---
+  duration_ms: 3.12094
+  type: 'test'
+  ...
+# Subtest: land/sea choice reaches standing order POST and missing choice blocks actual form
+ok 6 - land/sea choice reaches standing order POST and missing choice blocks actual form
+  ---
+  duration_ms: 0.457502
+  type: 'test'
+  ...
+# Subtest: transfer sends selected sea mode and no unavailable-route fallback
+not ok 7 - transfer sends selected sea mode and no unavailable-route fallback
+  ---
+  duration_ms: 2.130433
+  type: 'test'
+  location: '/tmp/megaron-land-sea-client-mutants/web/static/js/megaron/ui/drawers/economy_rows.test.mjs:76:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    'land' !== 'sea'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'sea'
+  actual: 'land'
+  operator: 'strictEqual'
+  stack: |-
+    file:///tmp/megaron-land-sea-client-mutants/web/static/js/megaron/ui/drawers/economy_rows.test.mjs:79:89
+    async rig (file:///tmp/megaron-land-sea-client-mutants/web/static/js/megaron/ui/drawers/economy_rows.test.mjs:19:7)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: changing transfer destination clears old route choices until fresh preview arrives
+ok 8 - changing transfer destination clears old route choices until fresh preview arrives
+  ---
+  duration_ms: 1.075869
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 7
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 84.608184

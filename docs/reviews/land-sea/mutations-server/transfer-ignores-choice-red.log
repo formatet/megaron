@@ -1,0 +1,7 @@
+2026/10/28 05:38:08 INFO player registered id=151e324b-e605-4837-8a68-7afd2b4bb88e username=sailor-32dbca3c-f803-466f-8b56-f52ae593012e
+--- FAIL: TestTransferExplicitLandDoesNotChooseAvailableSea (0.07s)
+    transport_choice_test.go:25: dispatch 500 map[error:could not dispatch transfer caravan]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.075s
+FAIL
+» färsk DB på migration 218 · commit 44977132+ändringar

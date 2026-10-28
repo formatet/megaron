@@ -1,0 +1,83 @@
+{
+  "health": {
+    "commit": "673addd6+land-sea",
+    "migration": 218,
+    "status": "ok"
+  },
+  "shots": [
+    {
+      "file": "1-both-land-1280.png"
+    },
+    {
+      "file": "1-sent-sea-1280.png"
+    },
+    {
+      "file": "1-sea-only-1280.png"
+    },
+    {
+      "file": "1-land-only-1280.png"
+    },
+    {
+      "file": "1-standing-1280.png"
+    },
+    {
+      "file": "1-trade-1280.png"
+    },
+    {
+      "file": "1-both-land-390.png"
+    },
+    {
+      "file": "1-sent-sea-390.png"
+    },
+    {
+      "file": "1-sea-only-390.png"
+    },
+    {
+      "file": "1-land-only-390.png"
+    },
+    {
+      "file": "1-standing-390.png"
+    },
+    {
+      "file": "1-trade-390.png"
+    },
+    {
+      "file": "2-both-land-1280.png"
+    },
+    {
+      "file": "2-sent-sea-1280.png"
+    },
+    {
+      "file": "2-sea-only-1280.png"
+    },
+    {
+      "file": "2-land-only-1280.png"
+    },
+    {
+      "file": "2-standing-1280.png"
+    },
+    {
+      "file": "2-trade-1280.png"
+    },
+    {
+      "file": "2-both-land-390.png"
+    },
+    {
+      "file": "2-sent-sea-390.png"
+    },
+    {
+      "file": "2-sea-only-390.png"
+    },
+    {
+      "file": "2-land-only-390.png"
+    },
+    {
+      "file": "2-standing-390.png"
+    },
+    {
+      "file": "2-trade-390.png"
+    }
+  ],
+  "source_unchanged": true,
+  "fixture": "Fresh owned PG/Redis/server; explicit island, force roster/cities/stocks/contact. Real register/found, native two1280/390 rounds choosing land then sea, unavailable alternatives and standing routes; CLI both modes, persisted transport and standing route choice."
+}

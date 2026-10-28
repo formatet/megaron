@@ -1,0 +1,19 @@
+2026/10/28 05:38:23 INFO player registered id=af270a45-9243-416e-a8e9-e5c49c911840 username=initiator-4668a4ff-2af2-4486-a954-27ba666ad164
+2026/10/28 05:38:24 INFO player registered id=a9047465-3109-45e3-a0cb-8c27c175347c username=counterparty-4df8f79c-e081-4905-a916-5cf6a709d600
+2026/10/28 05:38:24 INFO player registered id=ca212dba-7f40-4de1-bcb7-240111d0eaa3 username=initiator-34b40b66-6ce9-424a-913c-4350b65dd424
+2026/10/28 05:38:24 INFO player registered id=7e0bc494-b7a0-4b0b-9c38-9c5c509cc57e username=counterparty-622722ea-3033-4e19-ba7f-e568191c0122
+2026/10/28 05:38:24 INFO player registered id=09b2673b-ad75-466c-a9c2-51ebd349b64b username=initiator-c050ebba-9015-4b4b-b24f-8a8c02a52605
+2026/10/28 05:38:24 INFO player registered id=d677fb2f-082d-4832-af0d-79e2f742925d username=counterparty-6ee651b3-b404-40b8-8bbb-624385833ae6
+2026/10/28 05:38:24 INFO trade delivery destination=cef7bdb5-35a2-4ade-85c9-b5397e3737a2 good=silver qty=20
+2026/10/28 05:38:24 INFO player registered id=cfee7c4a-5fae-4d1e-a1be-4df25d92277d username=initiator-28260124-683c-422f-8af8-d103494544c7
+2026/10/28 05:38:24 INFO player registered id=a306406d-1db3-40da-8c82-9a25ba8639d2 username=counterparty-6e1258d5-f7fe-4442-a61a-801668577372
+2026/10/28 05:38:24 INFO trade delivery destination=a12bfb94-040a-4ce9-85b7-452541977644 good=silver qty=20
+--- FAIL: TestAgreementChoicePersistsAndControlsAcceptedDispatch (0.55s)
+    --- FAIL: TestAgreementChoicePersistsAndControlsAcceptedDispatch/sell_land (0.13s)
+        transport_agreement_choice_test.go:51: saved choice"" err<nil>
+    --- FAIL: TestAgreementChoicePersistsAndControlsAcceptedDispatch/sell_sea (0.13s)
+        transport_agreement_choice_test.go:51: saved choice"" err<nil>
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.551s
+FAIL
+» färsk DB på migration 218 · commit 44977132+ändringar

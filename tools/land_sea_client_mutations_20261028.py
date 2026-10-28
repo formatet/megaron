@@ -3,6 +3,7 @@ from pathlib import Path
 import subprocess,sys,json
 root=Path(sys.argv[1]).resolve();out=Path(sys.argv[2]).resolve();out.mkdir(parents=True,exist_ok=True)
 cases=[
+ ('web/static/js/megaron/ui/drawers/economy.js',"if(routePicker)routePicker.textContent=","if(false&&routePicker)routePicker.textContent=",['node','--test','web/static/js/megaron/ui/drawers/economy_rows.test.mjs'],'changing transfer destination clears'),
  ('server/cmd/keryx/cmd_gossip.go','"by":           by,','"by":           "sea",',['go','-C','server','test','./cmd/keryx','-run','TestRouteAndTradeOffer','-count=1'],'TestRouteAndTradeOffer'),
  ('web/static/js/megaron/ui/transport_choice.js',"o.available?'':' disabled'","true?'':' disabled'",['node','--test','web/static/js/megaron/ui/transport_choice.test.mjs'],'transport choices show both routes'),
  ('web/static/js/megaron/ui/transport_choice.js','[preferred,data.selected_by,','[data.selected_by,preferred,',['node','--test','web/static/js/megaron/ui/transport_choice.test.mjs'],'transport choices preserve explicit'),

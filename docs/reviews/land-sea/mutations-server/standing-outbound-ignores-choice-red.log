@@ -1,0 +1,12 @@
+2026/10/28 05:38:44 ERROR standing order tick: order failed order=417f133d-35db-4f93-9758-54daa98eb0c1 err="dispatch outbound leg: selected land transport cannot use naval route"
+2026/10/28 05:38:44 INFO standing order paused order=a4c61796-2f62-482d-aa85-87575d6ecb7b reason="selected sea route requires a free galley or Emporos at the origin"
+2026/10/28 05:38:44 ERROR standing order tick: order failed order=64bf0c41-dcd5-4068-8539-5cc49d4bd255 err="dispatch outbound leg: selected land transport cannot use naval route"
+--- FAIL: TestStandingOrderExplicitChoiceControlsSweepWithoutFallback (0.11s)
+    --- FAIL: TestStandingOrderExplicitChoiceControlsSweepWithoutFallback/by_land_ship_true_land_true (0.03s)
+        standing_orders_choice_test.go:45: read transport category: no rows in result set
+    --- FAIL: TestStandingOrderExplicitChoiceControlsSweepWithoutFallback/by_land_ship_true_land_false (0.01s)
+        standing_orders_choice_test.go:41: explicit fallback status"active" reason<nil> movers0
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.108s
+FAIL
+» färsk DB på migration 218 · commit 44977132+ändringar

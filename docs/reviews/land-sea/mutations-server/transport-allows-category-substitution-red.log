@@ -1,0 +1,7 @@
+--- FAIL: TestDispatchExplicitChoiceRejectsCategorySubstitution (0.01s)
+    --- FAIL: TestDispatchExplicitChoiceRejectsCategorySubstitution/sea (0.00s)
+        route_choice_test.go:22: explicit sea silently used land
+FAIL
+FAIL	formatet/megaron/server/internal/transport	0.017s
+FAIL
+» färsk DB på migration 218 · commit 44977132+ändringar

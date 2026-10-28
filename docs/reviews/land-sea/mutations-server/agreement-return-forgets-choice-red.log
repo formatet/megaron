@@ -1,0 +1,25 @@
+2026/10/28 05:38:54 INFO player registered id=3e2a5e05-0592-44a3-a7d4-4f015ee43d85 username=initiator-17502258-e697-4d1f-87d8-1eb00a12daad
+2026/10/28 05:38:54 INFO player registered id=f113a7d0-e07e-4dd4-9334-69b08ff764b2 username=counterparty-eeb9d6ce-adb5-4f56-a12a-036292fb3b8c
+2026/10/28 05:38:54 INFO trade delivery destination=b2c2b24f-d5d3-42dd-a8ca-aaadcab9a7bf good=copper qty=10
+2026/10/28 05:38:54 INFO player registered id=bcfbb7a3-6723-4ac1-9f5b-50266a369129 username=initiator-03722542-9601-4f7d-a74b-b0e4b34f7a20
+2026/10/28 05:38:54 INFO player registered id=d542dec5-ac41-43dc-bd7d-cf7a705d60de username=counterparty-0107d644-3e33-4475-adf4-449f6b233ba3
+2026/10/28 05:38:55 INFO trade delivery destination=74004343-5847-4c5f-b3bd-3b4855b94330 good=copper qty=10
+2026/10/28 05:38:55 INFO player registered id=c57cbe02-596f-4b78-b9db-118f94e2c05a username=initiator-048f20c0-c735-40a9-b4a6-4d1d496af878
+2026/10/28 05:38:55 INFO player registered id=8479c9af-1696-4855-b550-2f06d7488d55 username=counterparty-8cbba463-2bd3-49b8-a716-e152a1ff02a0
+2026/10/28 05:38:55 INFO trade delivery destination=2263cd51-1d1a-4861-aa72-85fb157954e4 good=silver qty=20
+2026/10/28 05:38:55 INFO player registered id=02ab54a3-9d08-40f7-9eda-b3ada8c24cc8 username=initiator-daaa818b-e309-4c8e-9816-0411bc22d331
+2026/10/28 05:38:55 INFO player registered id=281764e1-e574-4c42-809a-366ff6ab40eb username=counterparty-2044e1b5-81d2-42a4-8223-63c29314a38e
+2026/10/28 05:38:55 INFO trade delivery destination=e34c0ed4-e2b4-49cd-9735-185452b66cb0 good=silver qty=20
+--- FAIL: TestAgreementChoicePersistsAndControlsAcceptedDispatch (0.57s)
+    --- FAIL: TestAgreementChoicePersistsAndControlsAcceptedDispatch/sell_land (0.14s)
+        transport_agreement_choice_test.go:87: chained return lost selection mode"" category"land"
+    --- FAIL: TestAgreementChoicePersistsAndControlsAcceptedDispatch/sell_sea (0.15s)
+        transport_agreement_choice_test.go:87: chained return lost selection mode"" category"naval"
+    --- FAIL: TestAgreementChoicePersistsAndControlsAcceptedDispatch/buy_land (0.14s)
+        transport_agreement_choice_test.go:87: chained return lost selection mode"" category"land"
+    --- FAIL: TestAgreementChoicePersistsAndControlsAcceptedDispatch/buy_sea (0.15s)
+        transport_agreement_choice_test.go:87: chained return lost selection mode"" category"naval"
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.575s
+FAIL
+» färsk DB på migration 218 · commit 44977132+ändringar

@@ -1,0 +1,16 @@
+2026/10/28 05:37:59 INFO player registered id=8f2efd09-0077-4561-8ffa-40f74423fd06 username=sailor-ba3d7d82-668c-4fdb-879a-3c362f3aa5c5
+2026/10/28 05:37:59 INFO player registered id=1f11f8f0-5da6-4be3-aedd-1d04ccd7d79a username=sailor-6cda9ff0-a3a3-4114-892b-6c99032f2b43
+2026/10/28 05:37:59 INFO player registered id=421d8c49-cc00-4347-9392-d304cb98db79 username=sailor-b4e73b36-da2e-4736-ace9-f98997d9e850
+2026/10/28 05:38:00 INFO player registered id=90133f4e-8da7-4d43-878f-2d7370eb9e70 username=sailor-e1a64eb1-2837-4ce0-a36a-5ecf6f18c946
+2026/10/28 05:38:00 INFO player registered id=5e16ddc8-a9f6-4be3-925a-edc3ab5c4358 username=sailor-6a5edf47-7ba9-4033-9c54-a96a1a0a43e7
+2026/10/28 05:38:00 INFO player registered id=17428281-3be1-41cb-96ba-9b553f0a8456 username=sailor-bdd00e64-7b26-4edc-ba5d-5ab96b11bf7b
+2026/10/28 05:38:00 INFO player registered id=8f5b8688-0b20-40bc-943f-f31c9ef3473d username=sailor-f7b49205-a1c6-4430-b89e-a02d5c80a0ad
+--- FAIL: TestTransferChoiceStrictnessAndPersistence (0.51s)
+    --- FAIL: TestTransferChoiceStrictnessAndPersistence/by_land_ship_true_land_true (0.08s)
+        transport_choice_test.go:89: choice not persisted category"land" by"" route"land" responsemap[arrival_tick:9 arrives_at:2026-10-28T14:37:59.839804+01:00 by:land cargo_capacity:<nil> cargo_quantity:10 category:land delivered_qty:10 departure_tick:0 dispatch_offset_milli:0 distance:6 items:[map[good_key:grain quantity:10]] kind:transfer route_id:b273ccae-5988-4dee-8b88-02d5352548e2 route_version:2 transport_id:c9fa7d3a-2d7e-4c15-9fb2-62900e402a88 travel_min:540 travel_ticks:9]
+    --- FAIL: TestTransferChoiceStrictnessAndPersistence/by_sea_ship_true_land_true (0.08s)
+        transport_choice_test.go:89: choice not persisted category"naval" by"" route"sea" responsemap[arrival_tick:1 arrives_at:2026-10-28T06:37:59.915007+01:00 by:sea cargo_capacity:120 cargo_quantity:10 category:naval delivered_qty:10 departure_tick:0 dispatch_offset_milli:0 distance:3 items:[map[good_key:grain quantity:10]] kind:transfer route_id:e40b9f88-699e-49d4-a32d-339a5c4d83c4 route_version:2 ship_id:44421fab-8a40-48b8-af89-36fd5c790a8a ship_name:Emporos of Origin ship_type:merchantman transport_id:6ccecbf0-2fd8-4fc7-a2e7-180cf7a9a193 travel_min:60 travel_ticks:1]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.510s
+FAIL
+» färsk DB på migration 218 · commit 44977132+ändringar

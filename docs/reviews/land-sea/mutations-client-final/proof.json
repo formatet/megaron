@@ -1,0 +1,163 @@
+{
+  "mutants": [
+    {
+      "file": "web/static/js/megaron/ui/drawers/economy.js",
+      "old": "if(routePicker)routePicker.textContent=",
+      "new": "if(false&&routePicker)routePicker.textContent=",
+      "command": [
+        "node",
+        "--test",
+        "web/static/js/megaron/ui/drawers/economy_rows.test.mjs"
+      ],
+      "assertion": "changing transfer destination clears",
+      "red": true
+    },
+    {
+      "file": "server/cmd/keryx/cmd_gossip.go",
+      "old": "\"by\":           by,",
+      "new": "\"by\":           \"sea\",",
+      "command": [
+        "go",
+        "-C",
+        "server",
+        "test",
+        "./cmd/keryx",
+        "-run",
+        "TestRouteAndTradeOffer",
+        "-count=1"
+      ],
+      "assertion": "TestRouteAndTradeOffer",
+      "red": true
+    },
+    {
+      "file": "web/static/js/megaron/ui/transport_choice.js",
+      "old": "o.available?'':' disabled'",
+      "new": "true?'':' disabled'",
+      "command": [
+        "node",
+        "--test",
+        "web/static/js/megaron/ui/transport_choice.test.mjs"
+      ],
+      "assertion": "transport choices show both routes",
+      "red": true
+    },
+    {
+      "file": "web/static/js/megaron/ui/transport_choice.js",
+      "old": "[preferred,data.selected_by,",
+      "new": "[data.selected_by,preferred,",
+      "command": [
+        "node",
+        "--test",
+        "web/static/js/megaron/ui/transport_choice.test.mjs"
+      ],
+      "assertion": "transport choices preserve explicit",
+      "red": true
+    },
+    {
+      "file": "web/static/js/megaron/ui/drawers/economy.js",
+      "old": "{by:selectedTransportBy('ec-tr-route')}",
+      "new": "{by:'land'}",
+      "command": [
+        "node",
+        "--test",
+        "web/static/js/megaron/ui/drawers/economy_rows.test.mjs"
+      ],
+      "assertion": "transfer sends selected sea",
+      "red": true
+    },
+    {
+      "file": "web/static/js/megaron/ui/drawers/economy.js",
+      "old": "{by:selectedTransportBy('ec-so-route')}",
+      "new": "{by:'sea'}",
+      "command": [
+        "node",
+        "--test",
+        "web/static/js/megaron/ui/drawers/economy_rows.test.mjs"
+      ],
+      "assertion": "land/sea choice reaches standing",
+      "red": true
+    },
+    {
+      "file": "web/static/js/megaron/ui/drawers/diplomacy.js",
+      "old": "body.trade_offer.by=by",
+      "new": "body.trade_offer.by='land'",
+      "command": [
+        "node",
+        "--test",
+        "web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs"
+      ],
+      "assertion": "trade offer sends selected goods mode",
+      "red": true
+    },
+    {
+      "file": "server/cmd/keryx/cmd_goods.go",
+      "old": "payload[\"by\"] = by",
+      "new": "payload[\"by\"] = \"land\"",
+      "command": [
+        "go",
+        "-C",
+        "server",
+        "test",
+        "./cmd/keryx",
+        "-run",
+        "TestTransferCarriesExplicit",
+        "-count=1"
+      ],
+      "assertion": "TestTransferCarriesExplicit",
+      "red": true
+    },
+    {
+      "file": "server/cmd/keryx/cmd_route.go",
+      "old": "\"by\":                      by,",
+      "new": "\"by\":                      \"sea\",",
+      "command": [
+        "go",
+        "-C",
+        "server",
+        "test",
+        "./cmd/keryx",
+        "-run",
+        "TestRouteAndTradeOffer",
+        "-count=1"
+      ],
+      "assertion": "TestRouteAndTradeOffer",
+      "red": true
+    },
+    {
+      "file": "server/cmd/keryx/cmd_messenger_split.go",
+      "old": "tradeOffer[\"by\"] = by",
+      "new": "tradeOffer[\"by\"] = \"sea\"",
+      "command": [
+        "go",
+        "-C",
+        "server",
+        "test",
+        "./cmd/keryx",
+        "-run",
+        "TestRouteAndTradeOffer",
+        "-count=1"
+      ],
+      "assertion": "TestRouteAndTradeOffer",
+      "red": true
+    },
+    {
+      "file": "server/cmd/keryx/transport_choice.go",
+      "old": "by != \"\" && by != \"land\" && by != \"sea\"",
+      "new": "by != \"\" && by != \"land\"",
+      "command": [
+        "go",
+        "-C",
+        "server",
+        "test",
+        "./cmd/keryx",
+        "-run",
+        "TestTransferCarriesExplicit",
+        "-count=1"
+      ],
+      "assertion": "TestTransferCarriesExplicit",
+      "red": true
+    }
+  ],
+  "exact_restore": true,
+  "restored_full_js_and_cli_green": true
+}

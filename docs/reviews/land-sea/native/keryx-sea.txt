@@ -1,0 +1,5 @@
+land: 8 game days · about 479.9999999836834 minutes · arrives 2026-10-28T13:41:19.531+01:00 · Interception · A passable land route
+sea [selected]: 2 game days · about 119.99999998371666 minutes · arrives 2026-10-28T07:41:19.533532+01:00 · Storms and interception · Coastal access or a harbour at both cities; A free galley or Emporos with cargo space at the origin; Voyage provisions, checked at dispatch
+Cargo 8, Emporos of Lato · Cargo 1 / 120
+Transfer dispatched: 1 stone → 32249ed4-6ea0-45c6-858a-ef74a54fbeb5 · arrives ≈ today 07:41 (journey: 2 game days · about 2 hours)
+  ⛵ carried by Cargo 8, Emporos of Lato — the ship sails home empty afterward and isn't free again until it does
