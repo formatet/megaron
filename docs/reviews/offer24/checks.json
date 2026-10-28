@@ -1,0 +1,17 @@
+{
+  "production": "738fb362",
+  "fresh_go_exit": 0,
+  "world_seconds": 144.052,
+  "javascript": 827,
+  "vet_exit": 0,
+  "day_guards": [
+    "web",
+    "keryx",
+    "codex",
+    "server"
+  ],
+  "physical_mutants": 3,
+  "native_screenshots": 8,
+  "new_buy_sell_arrival_plus_ticks": 24,
+  "legacy_deadline_ticks": 168
+}

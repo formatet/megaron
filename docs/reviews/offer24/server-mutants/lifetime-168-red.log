@@ -1,0 +1,17 @@
+» färsk DB på migration 218 · commit 738fb362+ändringar
+--- FAIL: TestNewSeaOfferDeadlineIsResolvedArrivalPlus24 (0.02s)
+    offer_deadline_test.go:38: resolved sea expiry must equal arrival+24: due=675 wall=168h0m0s
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.025s
+2026/10/28 10:36:41 INFO player registered id=bc43af50-2d5b-40b4-be9b-121b2f99fa4d username=initiator-b64df617-3a53-4fd8-a693-8aba2a1f34b9
+2026/10/28 10:36:41 INFO player registered id=ff1d71fe-e44b-4d48-95d7-5a1e0b08d0a0 username=counterparty-4a914643-cf21-4f2e-95d8-936870a29ec6
+2026/10/28 10:36:41 INFO player registered id=92a37f76-73e7-4cf2-8f7f-115dd505278d username=initiator-137a871a-12a3-4512-81a8-a951fe74fcee
+2026/10/28 10:36:41 INFO player registered id=d5182b56-a590-4513-b255-b0e05ff95e70 username=counterparty-1b8f3b54-3db6-407c-8ba1-e31f88bfacda
+--- FAIL: TestNewTradeOfferDeadlineIsActualArrivalPlus24 (0.26s)
+    --- FAIL: TestNewTradeOfferDeadlineIsActualArrivalPlus24/buy (0.13s)
+        messenger_offer_deadline_test.go:47: new offer expiry must equal actual arrival+24: arrival=2 expiry=170 wall=168h0m0s
+    --- FAIL: TestNewTradeOfferDeadlineIsActualArrivalPlus24/sell (0.12s)
+        messenger_offer_deadline_test.go:47: new offer expiry must equal actual arrival+24: arrival=2 expiry=170 wall=168h0m0s
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.261s
+FAIL

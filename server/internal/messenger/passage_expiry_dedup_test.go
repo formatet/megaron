@@ -45,8 +45,13 @@ func TestScheduleCompletionSameArrivalRetainsOfferExpiry(t *testing.T) {
 	if generation != 2 {
 		t.Fatalf("generation=%d, want2", generation)
 	}
-	// A genuinely changed arrival must retain its own later expiry, rather
-	// than reusing any timer merely because it belongs to this messenger.
+	// Once scheduled, the offer deadline is frozen even if a later carrier
+	// resolution changes arrival. Reuse the timer and preserve expires_at.
+	before := f.loadScheduledEvent(t, "OfferExpiry", id)
+	var expiresBefore time.Time
+	if err := f.pool.QueryRow(ctx, `SELECT expires_at FROM messengers WHERE id=$1`, id).Scan(&expiresBefore); err != nil {
+		t.Fatal(err)
+	}
 	tx, err := f.pool.Begin(ctx)
 	if err != nil {
 		t.Fatal(err)
@@ -58,8 +63,16 @@ func TestScheduleCompletionSameArrivalRetainsOfferExpiry(t *testing.T) {
 	if err := tx.Commit(ctx); err != nil {
 		t.Fatal(err)
 	}
-	if n := f.countScheduled(t, string(events.ScheduledOfferExpiry), id); n != 2 {
-		t.Fatalf("changed deadline has%d timers,want2", n)
+	if n := f.countScheduled(t, string(events.ScheduledOfferExpiry), id); n != 1 {
+		t.Fatalf("replanned offer has%d timers,want1 immutable timer", n)
+	}
+	after := f.loadScheduledEvent(t, "OfferExpiry", id)
+	var expiresAfter time.Time
+	if err := f.pool.QueryRow(ctx, `SELECT expires_at FROM messengers WHERE id=$1`, id).Scan(&expiresAfter); err != nil {
+		t.Fatal(err)
+	}
+	if after.ID != before.ID || after.DueTick != before.DueTick || !expiresAfter.Equal(expiresBefore) {
+		t.Fatalf("replanning changed frozen deadline: before=%+v after=%+v wall=%v -> %v", before, after, expiresBefore, expiresAfter)
 	}
 
 }

@@ -1,0 +1,29 @@
+[
+  {
+    "mutant": "lifetime-168",
+    "file": "server/internal/messenger/handler.go",
+    "assertion": "TestNewSeaOfferDeadlineIsResolvedArrivalPlus24",
+    "red_message": "arrival+24",
+    "assertion_red": true,
+    "exact_restored_sha256": "485954c12f33c37f53103603467eb7bccbf264d91bc762b3781ca9b691217430",
+    "fresh_restore_green": true
+  },
+  {
+    "mutant": "arrival-ignores-saved-expiry",
+    "file": "server/internal/messenger/handler.go",
+    "assertion": "TestExistingOfferArrivalKeepsPersisted168Deadline",
+    "red_message": "must retain persisted deadline",
+    "assertion_red": true,
+    "exact_restored_sha256": "485954c12f33c37f53103603467eb7bccbf264d91bc762b3781ca9b691217430",
+    "fresh_restore_green": true
+  },
+  {
+    "mutant": "passage-ignores-saved-expiry",
+    "file": "server/internal/messenger/passage.go",
+    "assertion": "TestExistingSeaOfferReplanKeepsScheduled168Deadline",
+    "red_message": "replan changed existing168 expiry",
+    "assertion_red": true,
+    "exact_restored_sha256": "8ad4de706c749604306a161552901140c0dfe6cc8cedd0fe9095c5ff2b1b6c65",
+    "fresh_restore_green": true
+  }
+]

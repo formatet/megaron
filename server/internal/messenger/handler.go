@@ -34,15 +34,15 @@ type ReturnPayload struct {
 // How long a messenger waits at its destination before heading home unanswered.
 //
 // A plain message waits ReplyStayTicks. A messenger carrying a trade offer waits
-// OfferExpiryTicks — the same number the offer's expiry is scheduled on, because
+// its saved expiry deadline (OfferExpiryTicks after arrival for new offers), because
 // the two are one thing: the offer can only be read or accepted while its bearer
 // is standing there (the inbox and both trade-accept paths require
 // status='delivered'). When the bearer left after 48 ticks while the offer stayed
 // pending for 168, the offer spent 120 ticks visible to nobody and acceptable by
 // nobody, with the sender's escrow locked the whole time.
 const (
-	ReplyStayTicks   = 2   // delivery tick and the following tick; depart at A+2
-	OfferExpiryTicks = 168 // 168 ticks
+	ReplyStayTicks   = 2  // delivery tick and the following tick; depart at A+2
+	OfferExpiryTicks = 24 // new offers: 24 ticks after arrival
 )
 
 // stayTicks returns how long a messenger waits at its destination.
@@ -150,7 +150,8 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 	// (megaron_plan_ordna_passage.md 3b-2 R1) — StartReturnLeg does the actual
 	// turning, on whichever of Reply or ScheduledMessengerStayEnd gets there
 	// first; the other is then a no-op (status no longer 'delivered').
-	// An offer-bearing messenger stays as long as its offer lives — see stayTicks.
+	// An offer-bearing messenger stays until its saved expiry; older scheduled
+	// deadlines retain their original lifetime across balance changes.
 	// This MUST commit atomically with the flip above — see the doc comment.
 	// Plain-letter return post starts at the delivery transaction's tick read,
 	// not at a past scheduled arrival that a delayed worker has just caught up.
@@ -165,8 +166,18 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 			stayStartTick = receivedTick
 		}
 	}
+	stayDueTick := stayStartTick + stayTicks(carriesOffer)
+	if carriesOffer {
+		deadline, err := pendingOfferExpiryTick(ctx, tx, payload.MessengerID)
+		if err != nil {
+			return fmt.Errorf("load saved offer deadline: %w", err)
+		}
+		if deadline != nil {
+			stayDueTick = *deadline
+		}
+	}
 	if err := h.scheduler.EnqueueTickTx(ctx, tx, e.WorldID, events.ScheduledMessengerStayEnd,
-		StayEndPayload{MessengerID: payload.MessengerID}, stayStartTick+stayTicks(carriesOffer),
+		StayEndPayload{MessengerID: payload.MessengerID}, stayDueTick,
 	); err != nil {
 		return fmt.Errorf("schedule messenger stay end: %w", err)
 	}
