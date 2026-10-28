@@ -1,0 +1,7 @@
+» färsk DB på migration 220 · commit 22316792+ändringar
+--- FAIL: TestDispatchLandChoiceRejectsOtherwiseValidNavalTransport (0.05s)
+    --- FAIL: TestDispatchLandChoiceRejectsOtherwiseValidNavalTransport/land (0.03s)
+        route_choice_test.go:72: explicit land choice dispatched a naval transport
+FAIL
+FAIL	formatet/megaron/server/internal/transport	0.054s
+FAIL

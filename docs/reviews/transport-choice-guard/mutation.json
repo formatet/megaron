@@ -1,0 +1,10 @@
+{
+  "base": "223167928db6006ade835c2aba96211659db45ad",
+  "mutation": "prepareJourney explicit By/category guard replaced with if false",
+  "test": "TestDispatchLandChoiceRejectsOtherwiseValidNavalTransport/land",
+  "assertion": "explicit land choice dispatched a naval transport",
+  "red_exit": 1,
+  "restored_exit": 0,
+  "exact_restored_sha256": "499ee640733843e87efa1e682c4dc1b268ab0768a5db4f1ea29be42571244dfd",
+  "fresh_db_each_arm": true
+}
