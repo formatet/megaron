@@ -1,0 +1,75 @@
+{
+  "ground": {
+    "map_ground_hash": "e15a3fcc7d9982a332cbde9caf6c5d3c",
+    "migration": {
+      "version": 221,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 5727
+      }
+    ],
+    "players": 16,
+    "settlements": 7,
+    "units": 22,
+    "goods": 119,
+    "gossip": 1296,
+    "river_metadata": [
+      32,
+      32,
+      32
+    ]
+  },
+  "health": {
+    "commit": "1843878",
+    "migration": 221,
+    "status": "ok"
+  },
+  "checkout": "1843878f3e1881bd2aaf4e19789ca3f146eee307",
+  "static": {
+    "web/static/codex/articles.json": "1bbc684273ee010bd46ee43e77535b230f9d10eaf98cbede01d56cfb158875d3",
+    "web/static/codex/cedar-forest.md": "9f29391bff83cf41a459333bc4325701e461a7f3a50620501d7b2331b760c44c",
+    "web/static/codex/coastal-sea.md": "a9a11c74957c33fad5a2d0680137cbea842348a91ae882e190c134a43286d7cd",
+    "web/static/codex/deep-sea.md": "8b8c1ac2d668e93f15a39d06c6180682c4ac814d5ef022e9c93fe1de8b245709",
+    "web/static/codex/hills.md": "60619ca1061cef442399fc02e898bdd6d95c0d3b99c70f7de36c4c006b80ad25",
+    "web/static/codex/limestone-mountains.md": "5055910169f4db18769f26ffcf2afdfcd56c315e60a9923f35eec117bbf17ee2",
+    "web/static/codex/maquis.md": "2a4b7abde996c6b39f01d956fb0d172413c3cf9ba3bb87819052d2497fcffb7b",
+    "web/static/codex/olive-grove.md": "16a887780e2089de37c5037b2de076bc825e397e0a5b2e512d1d721ed72ff3d1",
+    "web/static/codex/plains.md": "3c800b60b79c4116f50b8fea19627cec22ea4272674e04eb51a993b44bbccfc1",
+    "web/static/codex/red-mountains.md": "29b8e32a09acc51dabc3658c9fcfbdfbe245d90c3ffe00bbfe0cc86ee2718311",
+    "web/static/codex/river-delta.md": "afe0fbb02ab4343e29095e3aeb74f060a5abf1703895d0b9994a3aff364e73cb",
+    "web/static/codex/river-ford.md": "b5c72583f85d3e7021d9eec605528a663f45c7b125b55b0cefa8e3fbeddaf105",
+    "web/static/codex/river-valley.md": "64b995bbf26ddd0dfcf163b027c208a0f7f362804c7ab8b7f08714ff3e739b73",
+    "web/static/codex/rivers.md": "7194ae5f12c3add9b266c56cd8e6f2b9677b06ab86e0437b7fb6b4e70b9a7d44",
+    "web/static/codex/semi-desert.md": "5b467141ce28f2c4b9b650347592d6315ace98d5ccc7fbd6452429808fff4b4e",
+    "web/static/js/megaron/render/map.js": "12d69b6b5a5ca29615ce470d7e39613250e0fe39c5e97400bc44417b9cee7cdb",
+    "web/static/js/megaron/render/map.test.mjs": "f7533be26e5f71fdd0a8b5d674c8688b890e8973829098b636fb40ef5b63dc94",
+    "web/static/js/megaron/render/markraster.js": "090158696412ca07b6fb665a9a6f1403d634004d213a2bac05ab7fba4a1eb29b",
+    "web/static/js/megaron/ui/river_flow.js": "a9669bcf22ae3b347fea42cc77196902d94fb22d125bcc74cede465be21a7e9b",
+    "web/static/js/megaron/ui/river_flow.test.mjs": "2c9d876c199060652b9c5a446d359f54f66a56125db1ceb003cafb08aa707ca6",
+    "web/static/megaron.css": "e6184f21fe6e86cf5e32826394dca7144bd2258c099136441afece86516200c6"
+  },
+  "expected": "1843878f3e1881bd2aaf4e19789ca3f146eee307",
+  "before": {
+    "map_ground_hash": "e15a3fcc7d9982a332cbde9caf6c5d3c",
+    "migration": {
+      "version": 220,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 5723
+      }
+    ],
+    "players": 16,
+    "settlements": 7,
+    "units": 22,
+    "goods": 119,
+    "gossip": 1296
+  }
+}
