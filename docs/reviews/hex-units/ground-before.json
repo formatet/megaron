@@ -1,0 +1,19 @@
+{
+  "map_ground_hash": "e15a3fcc7d9982a332cbde9caf6c5d3c",
+  "migration": {
+    "version": 221,
+    "dirty": false
+  },
+  "worlds": [
+    {
+      "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+      "status": "active",
+      "tick": 5741
+    }
+  ],
+  "players": 16,
+  "settlements": 7,
+  "units": 22,
+  "goods": 119,
+  "gossip": 1301
+}

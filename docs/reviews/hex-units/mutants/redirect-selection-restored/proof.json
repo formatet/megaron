@@ -1,0 +1,60 @@
+{
+  "health": {
+    "commit": "b39f0b64+hex-units",
+    "migration": 221,
+    "status": "ok"
+  },
+  "shots": [
+    {
+      "file": "2-march-1280.png"
+    }
+  ],
+  "source_unchanged": true,
+  "scenes": [
+    [
+      "own-ship",
+      9,
+      24
+    ],
+    [
+      "march",
+      10,
+      27
+    ],
+    [
+      "foreign",
+      11,
+      24
+    ],
+    [
+      "three",
+      13,
+      24
+    ]
+  ],
+  "actions": [
+    {
+      "redirect_selected": "d5869fdc-1055-461c-b101-1a59a3028bce",
+      "orders_after_recall": [
+        {
+          "following_unit": true,
+          "pursuit_legs": 0,
+          "following_wait": false,
+          "verb": "redirect",
+          "target_q": 5,
+          "target_r": 25,
+          "arrives_at": "2026-10-28T21:07:23.203118+01:00"
+        },
+        {
+          "following_unit": true,
+          "pursuit_legs": 0,
+          "following_wait": false,
+          "verb": "recall",
+          "arrives_at": "2026-10-28T21:07:23.296832+01:00"
+        }
+      ],
+      "original_target_unchanged": true
+    }
+  ],
+  "fixture": "Owned fresh world; actual API, native Firefox twice1280/390; no replaced DOM/responses."
+}

@@ -91,10 +91,10 @@ try:
   outputs=[];observations=[]
   with sync_playwright() as pw:
    browser=pw.firefox.launch()
-   for cycle in [1,2]:
-    for code,q,r in scenes:
+   for cycle in ([2] if os.environ.get('HEX_ACTION_ONLY') else [1,2]):
+    for code,q,r in ([(c,q,r) for c,q,r in scenes if c=='march'] if os.environ.get('HEX_ACTION_ONLY') else scenes):
      outputs.append({'scene':code,'output':run(str(tmp/'keryx'),'hex',f'{q},{r}',env=clienv)})
-     for width,height in [(1280,900),(390,844)]:
+     for width,height in ([(1280,900)] if os.environ.get('HEX_ACTION_ONLY') else [(1280,900),(390,844)]):
       ctx,page,errors=browser_page(browser,width,height)
       page.evaluate("async ([q,r])=>{(await import('/static/js/megaron/render/map.js')).focusDispatchHex(q,r)}",[q,r]);page.wait_for_selector('#ip-foot .hex-force')
       if width==390:

@@ -154,7 +154,7 @@ export function renderUnitCard(u, options = {}) {
   // damaged (hull < 5); a pristine ship (hull omitted or 5) shows nothing,
   // same "don't clutter the common case" posture as crewBadge above.
   const hullBadge = isNaval && u.hull != null && (hex || u.hull < 5)
-    ? '<span style="font-size:.6rem;color:var(--accent-war);margin-left:.3rem">hull ' + fmtNum(u.hull) + '/5</span>'
+    ? '<span style="font-size:.6rem;color:var(' + (u.hull < 5 ? '--accent-war' : '--text-dim') + ');margin-left:.3rem">hull ' + fmtNum(u.hull) + '/5</span>'
     : '';
 
   // Matmätaren (megaron_plan_skeppsproviant.md §7, Timothy 2026-08-26). Dygn,
@@ -369,7 +369,7 @@ function forceGoodsHTML(u) {
 export function renderForeignUnitCard(u) {
  const cargo=u.cargo ? esc(unitTypeLabel(u.cargo.type))+' ×'+fmtNum(u.cargo.size)+(u.cargo.units>1?' in '+fmtNum(u.cargo.units)+' cohorts':'') : 'unknown';
  const apparent=u.toward ? '<p>Seems bound toward '+esc(u.toward.name)+' — if so, '+arrivalHTML(u.toward.eta_at)+'</p>' : '';
- return '<div class="force-card foreign-force-card"><div class="force-card-title">'+esc(actorName(u))+'</div><p>'+esc(u.owner||'unknown')+' · '+esc(unitTypeLabel(u.type))+' ×'+fmtNum(u.size)+' · '+esc(unitStatusLabel(u))+'</p>'
+ return '<div class="force-card foreign-force-card"><div class="force-card-title">'+esc(u.name||actorName(u))+'</div><p>'+esc(u.owner||'unknown')+' · '+esc(unitTypeLabel(u.type))+' ×'+fmtNum(u.size)+' · '+esc(unitStatusLabel(u))+'</p>'
   +(u.crew!=null?'<p>Crew '+fmtNum(u.crew)+'</p>':'')+(u.stance?'<p>Stance: '+esc(u.stance)+'</p>':'')
   +(u.heading?'<p>Heading '+esc(u.heading)+'</p>':'')+apparent
   +(u.category==='naval'?'<p>Hull: unknown · Provisions: unknown</p><p>Passengers: '+cargo+'</p>':'')

@@ -1,0 +1,34 @@
+[
+  {
+    "scene": "own-ship",
+    "output": "Hex (9,24): coastal_sea\n  White Dolphin, Emporos of Lato [7a32c1db-e987-4911-b06c-d6ed8ada874d] \u00b7 merchantman \u00d71 \u00b7 positioned\n    hex (9,24)\n    Hull 5/5 \u00b7 crew 10 \u00b7 food for 90 game days\n    Passengers: Spearmen of Lato \u00d7100\n    Provisions: fish 100"
+  },
+  {
+    "scene": "march",
+    "output": "Hex (10,27): plains\n  3rd Spearmen of Lato [68e1ad3b-a494-4a08-b77b-4108f9eeff50] \u00b7 spearman \u00d7100 \u00b7 marching\n    (7,27)\u2192(11,27), now at (10,27) ETA \u2248 today 19:08\n    A messenger carries the order: keryx unit redirect --unit 68e1ad3b-a494-4a08-b77b-4108f9eeff50 --target <q,r>; keryx unit recall --unit 68e1ad3b-a494-4a08-b77b-4108f9eeff50"
+  },
+  {
+    "scene": "foreign",
+    "output": "Hex (11,24): coastal_sea\n  Red Sail, Galley \u00b7 Foreign-fdc80b93's galley \u00d71 \u00b7 positioned\n    Hull: unknown \u00b7 Provisions: unknown\n    Passengers: unknown\n    Orders and destination: unknown"
+  },
+  {
+    "scene": "three",
+    "output": "Hex (13,24): coastal_sea\n  Blue Dolphin, Galley of Lato [1f625009-477a-4928-babd-5598b7b9c360] \u00b7 galley \u00d71 \u00b7 positioned\n    hex (13,24)\n    Hull 4/5 \u00b7 crew 30 \u00b7 food for 0 game days\n  Bronze Sail, Galley of Lato [dc384e30-9768-4e36-8d54-bde3b26981a6] \u00b7 galley \u00d71 \u00b7 positioned\n    hex (13,24)\n    Hull 4/5 \u00b7 crew 30 \u00b7 food for 0 game days\n  Third Sail, Emporos [5cf8a561-82b5-42db-8142-8cc674918eeb] \u00b7 merchantman \u00d71 \u00b7 positioned\n    hex (13,24)\n    Hull 5/5 \u00b7 crew 10 \u00b7 food for 0 game days"
+  },
+  {
+    "scene": "own-ship",
+    "output": "Hex (9,24): coastal_sea\n  White Dolphin, Emporos of Lato [7a32c1db-e987-4911-b06c-d6ed8ada874d] \u00b7 merchantman \u00d71 \u00b7 positioned\n    hex (9,24)\n    Hull 5/5 \u00b7 crew 10 \u00b7 food for 90 game days\n    Passengers: Spearmen of Lato \u00d7100\n    Provisions: fish 100"
+  },
+  {
+    "scene": "march",
+    "output": "Hex (10,27): plains\n  3rd Spearmen of Lato [68e1ad3b-a494-4a08-b77b-4108f9eeff50] \u00b7 spearman \u00d7100 \u00b7 marching\n    (7,27)\u2192(11,27), now at (10,27) ETA \u2248 today 19:08\n    A messenger carries the order: keryx unit redirect --unit 68e1ad3b-a494-4a08-b77b-4108f9eeff50 --target <q,r>; keryx unit recall --unit 68e1ad3b-a494-4a08-b77b-4108f9eeff50"
+  },
+  {
+    "scene": "foreign",
+    "output": "Hex (11,24): coastal_sea\n  Red Sail, Galley \u00b7 Foreign-fdc80b93's galley \u00d71 \u00b7 positioned\n    Hull: unknown \u00b7 Provisions: unknown\n    Passengers: unknown\n    Orders and destination: unknown"
+  },
+  {
+    "scene": "three",
+    "output": "Hex (13,24): coastal_sea\n  Blue Dolphin, Galley of Lato [1f625009-477a-4928-babd-5598b7b9c360] \u00b7 galley \u00d71 \u00b7 positioned\n    hex (13,24)\n    Hull 4/5 \u00b7 crew 30 \u00b7 food for 0 game days\n  Bronze Sail, Galley of Lato [dc384e30-9768-4e36-8d54-bde3b26981a6] \u00b7 galley \u00d71 \u00b7 positioned\n    hex (13,24)\n    Hull 4/5 \u00b7 crew 30 \u00b7 food for 0 game days\n  Third Sail, Emporos [5cf8a561-82b5-42db-8142-8cc674918eeb] \u00b7 merchantman \u00d71 \u00b7 positioned\n    hex (13,24)\n    Hull 5/5 \u00b7 crew 10 \u00b7 food for 0 game days"
+  }
+]

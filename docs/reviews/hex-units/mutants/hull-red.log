@@ -1,0 +1,58 @@
+TAP version 13
+# Subtest: hex own card exposes hull, order, cargo and direct messenger actions
+not ok 1 - hex own card exposes hull, order, cargo and direct messenger actions
+  ---
+  duration_ms: 12.592872
+  type: 'test'
+  location: '/tmp/megaron-hex-units-mutants/web/static/js/megaron/ui/hex_forces.test.mjs:13:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /hull 5\/5/. Input:
+    
+    '<section class="hex-forces"><div class="ir-label">Forces here</div><details class="hex-force"><summary>First Spearmen · at sea</summary><div class="force-card" id="hex-ucard-u" style="padding:.3rem .2rem;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap"><button class="force-name-link" data-unit-id="u">View in Forces →</button><a class="cx-link force-codex-name" href="#" data-cx-kind="unit" data-cx-key="merchantman">First Spearmen</a><span style="font-size:.6rem;margin-left:.3rem;color:var(--text-dim)">food for 4 game days</span><span style="font-size:.6rem;color:var(--accent-city-text);margin-left:.3rem">Passengers 1 / 1: Passengers Lato (100)</span><span style="font-size:.68rem;color:var(--text-dim);margin-left:auto">at sea</span></div><p class="force-strength">Emporos ×100</p><div style="font-size:.65rem;color:var(--text-dim)">→ (8,3) arrives <span title="Wed, Oct 28, 2026, 23:00 GMT+1">≈ today 23:00</span></div><div style="margin-top:.2rem;font-size:.65rem;color:var(--text-dim)">On its mission — returns to port automatically, no orders reach it at sea.</div><div id="hex-uorder-u" style="font-size:.65rem;color:var(--text-dim);margin-top:.15rem"></div></div></details></section>'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: '<section class="hex-forces"><div class="ir-label">Forces here</div><details class="hex-force"><summary>First Spearmen · at sea</summary><div class="force-card" id="hex-ucard-u" style="padding:.3rem .2rem;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap"><button class="force-name-link" data-unit-id="u">View in Forces →</button><a class="cx-link force-codex-name" href="#" data-cx-kind="unit" data-cx-key="merchantman">First Spearmen</a><span style="font-size:.6rem;margin-left:.3rem;color:var(--text-dim)">food for 4 game days</span><span style="font-size:.6rem;color:var(--accent-city-text);margin-left:.3rem">Passengers 1 / 1: Passengers Lato (100)</span><span style="font-size:.68rem;color:var(--text-dim);margin-left:auto">at sea</span></div><p class="force-strength">Emporos ×100</p><div style="font-size:.65rem;color:var(--text-dim)">→ (8,3) arrives <span title="Wed, Oct 28, 2026, 23:00 GMT+1">≈ today 23:00</span></div><div style="margin-top:.2rem;font-size:.65rem;color:var(--text-dim)">On its mission — returns to port automatically, no orders reach it at sea.</div><div id="hex-uorder-u" style="font-size:.65rem;color:var(--text-dim);margin-top:.15rem"></div></div></details></section>'
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-hex-units-mutants/web/static/js/megaron/ui/hex_forces.test.mjs:16:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: hex foreign card uses only the existing public projection
+ok 2 - hex foreign card uses only the existing public projection
+  ---
+  duration_ms: 0.405243
+  type: 'test'
+  ...
+# Subtest: hex marching selection follows the physical route rather than its origin
+ok 3 - hex marching selection follows the physical route rather than its origin
+  ---
+  duration_ms: 0.594586
+  type: 'test'
+  ...
+# Subtest: hex own card reads real cargo fields, pending runner and mobile collapse without duplicate order ids
+ok 4 - hex own card reads real cargo fields, pending runner and mobile collapse without duplicate order ids
+  ---
+  duration_ms: 0.512973
+  type: 'test'
+  ...
+# Subtest: freight hull follows its own caravan and never guesses the departure port
+ok 5 - freight hull follows its own caravan and never guesses the departure port
+  ---
+  duration_ms: 0.262035
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 4
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 80.499291

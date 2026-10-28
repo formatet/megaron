@@ -1,0 +1,105 @@
+{
+  "health": {
+    "commit": "b39f0b64+hex-units",
+    "migration": 221,
+    "status": "ok"
+  },
+  "shots": [
+    {
+      "file": "1-own-ship-1280.png"
+    },
+    {
+      "file": "1-own-ship-390.png"
+    },
+    {
+      "file": "1-march-1280.png"
+    },
+    {
+      "file": "1-march-390.png"
+    },
+    {
+      "file": "1-foreign-1280.png"
+    },
+    {
+      "file": "1-foreign-390.png"
+    },
+    {
+      "file": "1-three-1280.png"
+    },
+    {
+      "file": "1-three-390.png"
+    },
+    {
+      "file": "2-own-ship-1280.png"
+    },
+    {
+      "file": "2-own-ship-390.png"
+    },
+    {
+      "file": "2-march-1280.png"
+    },
+    {
+      "file": "2-march-390.png"
+    },
+    {
+      "file": "2-foreign-1280.png"
+    },
+    {
+      "file": "2-foreign-390.png"
+    },
+    {
+      "file": "2-three-1280.png"
+    },
+    {
+      "file": "2-three-390.png"
+    }
+  ],
+  "source_unchanged": true,
+  "scenes": [
+    [
+      "own-ship",
+      9,
+      24
+    ],
+    [
+      "march",
+      10,
+      27
+    ],
+    [
+      "foreign",
+      11,
+      24
+    ],
+    [
+      "three",
+      13,
+      24
+    ]
+  ],
+  "actions": [
+    {
+      "redirect_selected": "68e1ad3b-a494-4a08-b77b-4108f9eeff50",
+      "orders_after_recall": [
+        {
+          "following_unit": true,
+          "pursuit_legs": 0,
+          "following_wait": false,
+          "verb": "redirect",
+          "target_q": 5,
+          "target_r": 25,
+          "arrives_at": "2026-10-28T21:08:34.140073+01:00"
+        },
+        {
+          "following_unit": true,
+          "pursuit_legs": 0,
+          "following_wait": false,
+          "verb": "recall",
+          "arrives_at": "2026-10-28T21:08:34.221759+01:00"
+        }
+      ],
+      "original_target_unchanged": true
+    }
+  ],
+  "fixture": "Owned fresh world; actual API, native Firefox twice1280/390; no replaced DOM/responses."
+}

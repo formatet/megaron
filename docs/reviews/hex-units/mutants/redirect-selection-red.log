@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/tmp/megaron-hex-units-mutants/tools/hex_units_bild_20261028.py", line 114, in <module>
+    selected=page.evaluate("async()=> (await import('/static/js/megaron/state.js')).State.marchCtxUnitID");assert selected==march,selected
+                                                                                                                  ^^^^^^^^^^^^^^^
+AssertionError: None

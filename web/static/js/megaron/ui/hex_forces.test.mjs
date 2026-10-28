@@ -19,7 +19,7 @@ test('hex own card exposes hull, order, cargo and direct messenger actions',()=>
 });
 test('hex foreign card uses only the existing public projection',()=>{
  const html=unitListHTML([],[{id:'foreign',type:'galley',category:'naval',name:'Visible ship',owner:'Other',size:1,status:'marching',heading:'south',hull:3,provisions_by_good:{grain:999},target_q:999,target_r:999,cargo:{type:'spearman',size:100,units:1}}]);
- assert.match(html,/Visible ship/);assert.match(html,/Other/);assert.match(html,/spearman|Spearmen/);assert.match(html,/hull.*unknown/i);assert.doesNotMatch(html,/999|hull 3|unitRecall|unitRedirect/);
+ assert.match(html,/Visible ship/);assert.match(html,/Other/);assert.match(html,/spearman|Spearmen/);assert.match(html,/Hull: unknown/);assert.doesNotMatch(html,/999|hull:?\s*3|unitRecall|unitRedirect/i);
 });
 test('hex marching selection follows the physical route rather than its origin',()=>{
  const now=Date.now();State.founderPhase=null;State.unitsData=[unit({q:0,r:0,status:'marching',target_q:4,target_r:0,path:[[0,0],[1,0],[2,0],[3,0],[4,0]],departs_at:new Date(now-5000).toISOString(),arrives_at:new Date(now+5000).toISOString()})];

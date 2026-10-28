@@ -3357,7 +3357,7 @@ function producesText(tile) {
 // act on).
 export function unitListHTML(units, foreignUnits = []) {
  const expanded = typeof window === 'undefined' || window.innerWidth > 600;
- const card = (u,own) => '<details class="hex-force"'+(expanded?' open':'')+'><summary>'+esc(actorName(u))+' · '+esc(unitStatusLabel(u))+'</summary>'+(own?renderUnitCard(u,{context:'hex'}):renderForeignUnitCard(u))+'</details>';
+ const card = (u,own) => '<details class="hex-force"'+(expanded?' open':'')+'><summary>'+esc(own?actorName(u):(u.name||actorName(u)))+' · '+esc(unitStatusLabel(u))+'</summary>'+(own?renderUnitCard(u,{context:'hex'}):renderForeignUnitCard(u))+'</details>';
  return (units.length?'<section class="hex-forces"><div class="ir-label">Forces here</div>'+units.map(u=>card(u,true)).join('')+'</section>':'')
   +(foreignUnits.length?'<section class="hex-forces"><div class="ir-label">Foreign forces here</div>'+foreignUnits.map(u=>card(u,false)).join('')+'</section>':'');
 }
