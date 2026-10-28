@@ -55,7 +55,7 @@ import {
 import { loadKultDrawer, okRite, bringOffering, cancelOffering } from './ui/drawers/kult.js';
 import {
   loadDiplomacyDrawer, openLettersWith, refreshDiplomacyLetters, dipToggleKind, dipToggleThread, dipSendInThread,
-  dipCancel, dipAccept, dipDecline, dipReply, dipWrite,
+  dipCancel, dipAccept, dipDecline, dipReply, dipWrite, dipCounter, dipCancelCounter, dipSendCounter,
   dipArrangePassage, dipCallBack,
 } from './ui/drawers/diplomacy.js';
 import { loadNotifDrawer, notifShowKind } from './ui/drawers/notif.js';
@@ -197,6 +197,7 @@ Object.assign(window, {
   dipWrite,
   refreshDiplomacyLetters,
   dipSendInThread,
+  dipCounter, dipCancelCounter, dipSendCounter,
   dipToggleKind,
   dipToggleThread,
   dismissAllChips,

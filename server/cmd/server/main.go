@@ -564,6 +564,7 @@ func main() {
 			r.Post("/worlds/{worldID}/messengers/{messengerID}/reply", mh.Reply)
 			r.Post("/worlds/{worldID}/messengers/{messengerID}/trade-accept", mh.TradeAccept)
 			r.Post("/worlds/{worldID}/messengers/{messengerID}/trade-decline", mh.TradeDecline)
+			r.Post("/worlds/{worldID}/messengers/{messengerID}/trade-counter", mh.TradeCounter)
 			r.Post("/worlds/{worldID}/messengers/{messengerID}/trade-cancel", mh.CancelOffer)
 			r.Post("/worlds/{worldID}/messengers/{messengerID}/passage", pah.Arrange)
 			r.Post("/worlds/{worldID}/messengers/{messengerID}/call-back", pah.CallBack)

@@ -1,3 +1,4 @@
+import {counterOfferDefaults,canCounterOffer,counterScopeMatches} from '../counter_offer.js';
 import {loadTransportChoices, selectedTransportBy} from '../transport_choice.js';
 import { readDiplomacyLetters } from '../diplomacy_reads.js';
 import { showInlineResult } from '../inline_result.js';
@@ -46,6 +47,8 @@ export function goodsSelectDisabledAttr(goods) {
 }
 
 let currentPerson = null;
+let threadLetters = [];
+const counters = new Map(), counterSending = new Set();
 let draftDestination = null;
 let requestGeneration = 0;
 const drafts = new Map();
@@ -62,19 +65,19 @@ export function lettersListHTML(page) {
 }
 export function letterActions(m) {
   const actions = Array.isArray(m.actions) ? m.actions : [];
-  return actions.filter(a => !(a === 'reply' && (m.reply_window_closed || (m.reply_before && Date.parse(m.reply_before) <= serverNow()))) && !(['trade_accept','trade_decline'].includes(a) && m.expires_at && Date.parse(m.expires_at) <= serverNow()));
+  return actions.filter(a => !(a === 'reply' && (m.reply_window_closed || (m.reply_before && Date.parse(m.reply_before) <= serverNow()))) && !(['trade_accept','trade_decline','trade_counter'].includes(a) && m.expires_at && Date.parse(m.expires_at) <= serverNow()));
 }
 export function offerLine(m) {
   const o=m.trade_offer;if(!o)return '';
   const terms=o.kind==='sell' ? `${String(o.offer_qty)} ${o.offer_good} for ${String(o.want_silver)} silver` : `${String(o.want_qty)} ${o.want_good} for ${String(o.offer_silver)} silver`;
   const state=m.offer_state || o.status;
-  return (['accepted','returned'].includes(state) ? 'Agreed: ' : state==='pending' ? 'Offer: ' : state==='expired' ? 'Expired without answer: ' : `${state || 'Trade'}: `)+terms+(o.by?` · by ${o.by}`:'');
+  return (o.counter_offer_id ? 'Counter-offer · ' : '') + (['accepted','returned'].includes(state) ? 'Agreed: ' : state==='pending' ? 'Offer: ' : state==='expired' ? 'Expired without answer: ' : `${state || 'Trade'}: `)+terms+(o.by?` · by ${o.by}`:'');
 }
 export function lettersThreadHTML(page) {
   const rows=page.items || [];
   return rows.map((m,i)=>{
     const actions=letterActions(m);
-    const controls=actions.includes('trade_accept') || actions.includes('trade_decline') || actions.includes('trade_cancel') ? `<div id="dip-trade-${esc(m.id)}">${actions.includes('trade_accept') ? `<button class="btn-small" onclick="dipAccept('${esc(m.id)}',this)">Accept</button>` : ''}${actions.includes('trade_decline') ? `<button class="btn-small" onclick="dipDecline('${esc(m.id)}',this)">Decline</button>` : ''}${actions.includes('trade_cancel') ? `<button class="btn-small" onclick="dipCancel('${esc(m.id)}',this)">Cancel offer</button>` : ''}</div>` : '';
+    const controls=actions.includes('trade_accept') || actions.includes('trade_decline') || actions.includes('trade_counter') || actions.includes('trade_cancel') ? `<div id="dip-trade-${esc(m.id)}">${actions.includes('trade_accept') ? `<button class="btn-small" onclick="dipAccept('${esc(m.id)}',this)">Accept</button>` : ''}${actions.includes('trade_counter') ? `<button class="btn-small" onclick="dipCounter('${esc(m.id)}')">Counter-offer</button>` : ''}${actions.includes('trade_decline') ? `<button class="btn-small" onclick="dipDecline('${esc(m.id)}',this)">Decline</button>` : ''}${actions.includes('trade_cancel') ? `<button class="btn-small" onclick="dipCancel('${esc(m.id)}',this)">Cancel offer</button>` : ''}${actions.includes('trade_counter') ? `<div id="dip-counter-${esc(m.id)}"></div>` : ''}</div>` : '';
     return `<details class="letter-entry" data-letter="${esc(m.id)}"${i===rows.length-1?' open':''}><summary>${esc(m.direction==='outgoing'?'You':m.sender_name || page.counterpart_name)} · ${fmtAgo(m.sent_at)}${m.kind==='gift'?' · Gift':''}</summary><p class="dip-msg-text">${esc(m.message || '')}${m.kind==='gift'&&m.goods ? ': '+esc(Object.entries(m.goods).map(([good,qty])=>String(qty)+' '+good).join(', ')) : ''}</p>${m.reply_text ? `<p class="dip-msg-text">${m.direction==='incoming'?'Your reply':'Reply'}: ${esc(m.reply_text)}</p>` : ''}${m.trade_offer ? `<p>${esc(offerLine(m))}</p>` : ''}${m.missing_payment ? `<p>${esc(m.missing_payment)}</p>` : ''}${controls}</details>`;
   }).join('');
 }
@@ -170,6 +173,7 @@ async function loadDipThreads() {
   try {
     const response=await fetchAuth(`/api/v1/worlds/${world}/letters${person?'/'+encodeURIComponent(person):''}`);if(!response.ok)throw Error();const page=await response.json();if(!Array.isArray(page.items))throw Error();if(!alive())return;
     if(!person){el.innerHTML='<div class="letters-toolbar"><strong>Letters</strong><button class="btn-small" data-write-list>Write</button></div>'+lettersListHTML(page);bindToolbar(el);el.querySelectorAll('[data-person]').forEach(b=>b.addEventListener('click',()=>openLetters(b.dataset.person)));return;}
+    threadLetters=page.items;
     const reply=[...page.items].reverse().find(m=>m.direction==='incoming'&&letterActions(m).includes('reply'));
     const city=writableCities().find(p=>p.owner_id===person || personName(p)===page.counterpart_name);
     const goods=reply||!city?[]:await getTradeableGoods();if(!alive())return;
@@ -350,4 +354,45 @@ export function tradeScheduleText(offer) {
   if (Number.isInteger(offer.goods_arrival_tick)) legs.push(`goods scheduled ${fmtTickTime(offer.route_version===2?null:offer.goods_arrival_tick,offer.goods_arrives_at)}`);
   if (Number.isInteger(offer.silver_arrival_tick)) legs.push(`silver scheduled ${fmtTickTime(offer.route_version===2?null:offer.silver_arrival_tick,offer.silver_arrives_at)}`);
   return legs.length ? ' · ' + legs.join(' · ') : '';
+}
+
+// A counter-offer is one line on the offer card: the same good, roles reversed,
+// new numbers. It is a new offer that needs its own consent, never an acceptance.
+export function dipCounter(id) {
+  const letter=threadLetters.find(m=>m.id===id), box=document.getElementById('dip-counter-'+id);
+  if(!box||!canCounterOffer(letter,serverNow()))return;
+  const terms=counterOfferDefaults(letter.trade_offer), sell=terms.kind==='sell';
+  counters.set(id,{terms,world:State.WORLD_ID,player:State.MY_PLAYER_ID,person:currentPerson,id});
+  box.innerHTML=`<div class="counter-offer-row">${sell?'Sell':'Buy'} <input id="dip-counter-qty-${esc(id)}" type="number" min="0.1" step="0.1" aria-label="Quantity"> ${esc(sell?terms.offer_good:terms.want_good)} for <input id="dip-counter-silver-${esc(id)}" type="number" min="1" aria-label="Silver"> silver <button class="btn-small btn-primary" onclick="dipSendCounter('${esc(id)}',this)">Send</button><button class="btn-small" onclick="dipCancelCounter('${esc(id)}')">Cancel</button><span id="dip-counter-status-${esc(id)}" role="status"></span></div>`;
+  document.getElementById('dip-counter-qty-'+id).value=String(sell?terms.offer_qty:terms.want_qty);
+  document.getElementById('dip-counter-silver-'+id).value=String(sell?terms.want_silver:terms.offer_silver);
+}
+export function dipCancelCounter(id) {
+  counters.delete(id);const box=document.getElementById('dip-counter-'+id);if(box)box.innerHTML='';
+}
+export async function dipSendCounter(id,button) {
+  const c=counters.get(id);
+  if(!c||counterSending.has(id)||!counterScopeMatches(c,State.WORLD_ID,State.MY_PLAYER_ID,currentPerson,id))return;
+  const status=document.getElementById('dip-counter-status-'+id);
+  const tell=(text,ok)=>{if(status){status.style.color=ok?'var(--safe-text)':'var(--accent)';status.textContent=text;}};
+  const qty=parseFloat(document.getElementById('dip-counter-qty-'+id)?.value||'0'), silver=parseFloat(document.getElementById('dip-counter-silver-'+id)?.value||'0');
+  if(!(qty>0)||!(silver>0)){tell('Enter a quantity and the silver.',false);return;}
+  const offer=c.terms.kind==='sell'
+    ? {kind:'sell',offer_good:c.terms.offer_good,offer_qty:qty,want_silver:silver}
+    : {kind:'buy',want_good:c.terms.want_good,want_qty:qty,offer_silver:silver};
+  if(c.terms.by)offer.by=c.terms.by;
+  counterSending.add(id);if(button)button.disabled=true;
+  try {
+    const response=await fetchAuth('/api/v1/worlds/'+c.world+'/messengers/'+id+'/trade-counter',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:'Counter-offer.',trade_offer:offer})});
+    const data=await response.json().catch(()=>({}));
+    if(counters.get(id)!==c||State.WORLD_ID!==c.world)return;
+    if(!response.ok){tell(formatApiError(data,'Not sent')+' The original offer still stands.',false);return;}
+    counters.delete(id);
+    tell('Counter-offer sent · arrives '+fmtArrival(data.arrives_at)+passageNote(data)+'. They must agree to the new terms.',true);
+    document.getElementById('dip-counter-'+id)?.querySelectorAll?.('input,button').forEach(el=>el.disabled=true);
+  } catch(_) {
+    if(counters.get(id)===c)tell('Could not confirm the counter-offer. Check Letters before sending again.',false);
+  } finally {
+    counterSending.delete(id);if(button&&counters.get(id)===c)button.disabled=false;
+  }
 }

@@ -1,0 +1,1 @@
+DROP INDEX messengers_one_counter_offer;

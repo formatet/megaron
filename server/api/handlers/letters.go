@@ -125,10 +125,7 @@ func (h *MessengerHandler) loadPersonLetters(ctx context.Context, tx pgx.Tx, wor
  m.sender_id=$2,m.message_text,
  CASE WHEN m.sender_id<>$2 OR m.status='arrived' THEN m.reply_text ELSE NULL END,
  m.sent_at,CASE WHEN m.sender_id=$2 AND m.status NOT IN('arrived','lost') THEN 'outbound' ELSE m.status END,
- CASE WHEN m.sender_id=$2 AND m.status<>'arrived' AND m.trade_offer IS NOT NULL THEN
- (SELECT COALESCE(jsonb_object_agg(f.key,f.value),'{}'::jsonb) FROM jsonb_each(m.trade_offer) f WHERE f.key IN('kind','want_good','want_qty','offer_silver','offer_good','offer_qty','want_silver'))
- ||jsonb_build_object('status',CASE WHEN m.trade_offer->>'status'='cancelled' THEN 'cancelled' ELSE 'pending' END)
- ELSE m.trade_offer END,
+ `+pendingOfferViewSQL+`,
  m.expires_at,m.read_at,
  CASE WHEN m.sender_id=$2 OR m.trade_offer IS NULL THEN NULL ELSE COALESCE((SELECT settled(sg.amount,sg.rate,sg.calc_tick)>=
  CASE WHEN COALESCE(m.trade_offer->>'kind','buy')='buy' THEN (m.trade_offer->>'want_qty')::float ELSE (m.trade_offer->>'want_silver')::float END

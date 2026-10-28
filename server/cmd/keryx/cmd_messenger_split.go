@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/spf13/cobra"
 )
 
@@ -114,7 +115,7 @@ func messageCmd() *cobra.Command {
 func tradeOfferCmd() *cobra.Command {
 	var destName, wantGood, offerGood, msgText, fromName string
 	var wantQty, offerSilver, offerQty, wantSilver float64
-	var by string
+	var by, counterID string
 
 	cmd := &cobra.Command{
 		Use:   "trade-offer",
@@ -132,24 +133,38 @@ func tradeOfferCmd() *cobra.Command {
 				return fmt.Errorf("specify either a buy offer (--want-good --want-qty --offer-silver) OR a sell offer (--offer-good --offer-qty --want-silver), not both/incomplete")
 			}
 
+			if counterID != "" {
+				if _, err := uuid.Parse(counterID); err != nil {
+					return fmt.Errorf("--counter requires the exact original messenger UUID")
+				}
+				if destName != "" || fromName != "" {
+					return fmt.Errorf("--counter binds the original cities; omit --to and --from")
+				}
+			} else if destName == "" {
+				return fmt.Errorf("provide --to or --counter")
+			}
 			c := newClient(cfg)
 
-			provinces, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces", cfg.WorldID))
-			if err != nil {
-				return err
-			}
-			var markers []map[string]any
-			if err := json.Unmarshal(provinces, &markers); err != nil {
-				return err
-			}
-			var wanaxes []map[string]any
-			if wdata, werr := c.get(fmt.Sprintf("/api/v1/worlds/%s/wanaxes", cfg.WorldID)); werr == nil {
-				_ = json.Unmarshal(wdata, &wanaxes)
-			}
+			var destID, resolvedName, ownSettlementID string
+			if counterID == "" {
+				provinces, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces", cfg.WorldID))
+				if err != nil {
+					return err
+				}
+				var markers []map[string]any
+				if err := json.Unmarshal(provinces, &markers); err != nil {
+					return err
+				}
+				var wanaxes []map[string]any
+				if wdata, werr := c.get(fmt.Sprintf("/api/v1/worlds/%s/wanaxes", cfg.WorldID)); werr == nil {
+					_ = json.Unmarshal(wdata, &wanaxes)
+				}
 
-			destID, resolvedName, ownSettlementID, err := resolveMessengerDest(markers, wanaxes, destName, fromName)
-			if err != nil {
-				return err
+				destID, resolvedName, ownSettlementID, err = resolveMessengerDest(markers, wanaxes, destName, fromName)
+				if err != nil {
+					return err
+				}
+
 			}
 
 			var tradeOffer map[string]any
@@ -179,18 +194,24 @@ func tradeOfferCmd() *cobra.Command {
 			if sellSet {
 				quantity = max(offerQty, wantSilver)
 			}
-			if err := previewTransportOptions(c, ownSettlementID, destID, by, quantity); err != nil {
+			if err := func() error {
+				if counterID != "" {
+					return nil
+				}
+				return previewTransportOptions(c, ownSettlementID, destID, by, quantity)
+			}(); err != nil {
 				return err
 			}
 			if by != "" {
 				tradeOffer["by"] = by
 			}
 			path := fmt.Sprintf("/api/v1/worlds/%s/settlements/%s/messengers", cfg.WorldID, ownSettlementID)
-			data, err := c.post(path, map[string]any{
-				"destination_id": destID,
-				"message":        msgText,
-				"trade_offer":    tradeOffer,
-			})
+			body := map[string]any{"destination_id": destID, "message": msgText, "trade_offer": tradeOffer}
+			if counterID != "" {
+				path = fmt.Sprintf("/api/v1/worlds/%s/messengers/%s/trade-counter", cfg.WorldID, counterID)
+				delete(body, "destination_id")
+			}
+			data, err := c.post(path, body)
 			if err != nil {
 				return err
 			}
@@ -201,7 +222,9 @@ func tradeOfferCmd() *cobra.Command {
 			var resp map[string]any
 			json.Unmarshal(data, &resp)
 			arrivesAt, _ := resp["arrives_at"].(string)
-			if buySet {
+			if counterID != "" {
+				fmt.Printf("Counter-offer dispatched · arrives %s. A new agreement is needed.\n", arrivalETA(c, arrivesAt))
+			} else if buySet {
 				fmt.Printf("Trade offer dispatched to %s (want %.0f %s, offer %.0f silver) · arrives %s\n",
 					resolvedName, wantQty, wantGood, offerSilver, arrivalETA(c, arrivesAt))
 			} else {
@@ -223,6 +246,6 @@ func tradeOfferCmd() *cobra.Command {
 	cmd.Flags().Float64Var(&wantSilver, "want-silver", 0, "silver to request in exchange (sell mode)")
 	cmd.Flags().StringVar(&fromName, "from", "", "your city to send/pay from (default: capital)")
 	cmd.Flags().StringVarP(&msgText, "message", "m", "", "optional message text (auto-generated if omitted)")
-	_ = cmd.MarkFlagRequired("to")
+	cmd.Flags().StringVar(&counterID, "counter", "", "counter a delivered offer by its exact messenger UUID; omit --to/--from")
 	return cmd
 }

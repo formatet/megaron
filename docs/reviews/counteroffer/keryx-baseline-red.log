@@ -1,0 +1,27 @@
+» färsk DB på migration 221 · commit 740de66e
+Error: unknown flag: --counter
+Usage:
+  trade-offer [flags]
+
+Examples:
+  keryx trade-offer --to Korinth --want-good grain --want-qty 100 --offer-silver 80
+  keryx trade-offer --to Athenai --offer-good copper --offer-qty 50 --want-silver 120
+
+Flags:
+      --by string            goods route: land or sea (omitted: automatic)
+      --from string          your city to send/pay from (default: capital)
+  -h, --help                 help for trade-offer
+  -m, --message string       optional message text (auto-generated if omitted)
+      --offer-good string    good key to sell — must be a tradeable good (GET /api/v1/goods lists them; an unknown key is rejected with the full list) (sell mode)
+      --offer-qty float      quantity of good to sell (sell mode)
+      --offer-silver float   silver to offer in exchange (buy mode)
+  -t, --to string            destination settlement name (required)
+      --want-good string     good key to request — must be a tradeable good (GET /api/v1/goods lists them; an unknown key is rejected with the full list) (buy mode)
+      --want-qty float       quantity of good to request (buy mode)
+      --want-silver float    silver to request in exchange (sell mode)
+
+--- FAIL: TestCounterOfferUsesOneAtomicDispatch (0.00s)
+    cmd_counteroffer_test.go:10: unknown flag: --counter
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL

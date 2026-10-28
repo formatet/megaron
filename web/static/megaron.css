@@ -1847,6 +1847,21 @@ body:has(.auth-page) main {
 }
 .transport-choice fieldset { min-width: 0; }
 .transport-choice input[type="radio"] { width: auto; }
+.counter-offer-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.3rem;
+  font-size: var(--fs-sm);
+}
+.counter-offer-row input {
+  width: 5em;
+  background: var(--warm-white);
+  border: 1px solid var(--border);
+  padding: 0.2rem 0.3rem;
+  font-size: var(--fs-sm);
+}
 .dip-inline-compose-row {
   display: flex;
   align-items: center;
