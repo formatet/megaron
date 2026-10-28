@@ -23,12 +23,11 @@ import (
 type OfferExpiryHandler struct {
 	pool      *pgxpool.Pool
 	scheduler *events.Scheduler
-	hub       Broadcaster // nil-guarded; carries OfferExpired to the offer's originator
 }
 
 // NewOfferExpiryHandler creates an OfferExpiryHandler.
-func NewOfferExpiryHandler(pool *pgxpool.Pool, sched *events.Scheduler, hub Broadcaster) *OfferExpiryHandler {
-	return &OfferExpiryHandler{pool: pool, scheduler: sched, hub: hub}
+func NewOfferExpiryHandler(pool *pgxpool.Pool, sched *events.Scheduler) *OfferExpiryHandler {
+	return &OfferExpiryHandler{pool: pool, scheduler: sched}
 }
 
 // Handle processes a ScheduledOfferExpiry event. Idempotent: does nothing if the
@@ -112,30 +111,8 @@ func (h *OfferExpiryHandler) Handle(ctx context.Context, e events.ScheduledEvent
 		slog.Info("trade offer expired, silver refunded", "messenger", messengerID, "silver", offerSilver)
 	}
 
-	// OfferExpired — the offer's originator gets an immediate decision notice
-	// instead of only learning via the delayed TradeReturn on escrow arrival.
-	// Fires only on the real transition above (RowsAffected>0 guarded the early
-	// return), never on the idempotent no-op.
-	// trade_offer fields are kind-dependent (buy: want_*/offer_silver · sell:
-	// offer_*/want_silver) — pick per kind, mirroring OfferAccepted.
-	if h.hub != nil {
-		notifGood, notifQty, notifSilver := wantGood, wantQty, offerSilver
-		if kind == "sell" {
-			notifGood, notifQty, notifSilver = offerGood, offerQty, wantSilver
-		}
-		var ownerID uuid.UUID
-		_ = h.pool.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id = $1`, originID).Scan(&ownerID)
-		_ = h.hub.NotifyPlayer(ctx, e.WorldID, ownerID, "OfferExpired", 3, map[string]any{
-			"messenger_id":    messengerID,
-			"settlement_id":   originID,
-			"counterparty_id": destID,
-			"kind":            kind,
-			"good_key":        notifGood,
-			"quantity":        notifQty,
-			"silver":          notifSilver,
-			"resolution":      "expired",
-		})
-	}
+	// No notice (Timothy 2026-10-28): everyone knows an offer lapses after its
+	// window and the escrow is released. The outcome is the messenger's status.
 	return nil
 }
 
