@@ -27,6 +27,7 @@ const coverage = {
   'reinforce': ['reinforce'], 'repair': ['repair'], 'lay-up': ['lay-up'], 'fit-out': ['fit-out'], 'load / unload': ['load', 'unload'],
   'join': ['join'], 'rise / leave': ['rise', 'leave'], 'founding settle': ['founding settle'], 'message / reply': ['message', 'reply'],
   'trade offer/accept/decline/cancel': ['trade-offer', 'trade-accept', 'trade-decline', 'trade-cancel'],
+  'trade counter (K6, LIVE `0ca70074` 2026-10-28)': ['trade-counter'],
   'arrange passage (skepp för ett väntande bud)': ['arrange passage'],
   'fetch by ship (hämta hem en fältenhet)': ['fetch by ship'],
   'call back (väntande bud i egen hamn)': ['call back'],

@@ -62,10 +62,10 @@ test('civilian hunger prose reports the actual meal, and ownership closure never
 
 test('equal food: new notices say food while historical grain outcomes retain meaning',()=>{
  const start=notifText('GarrisonStarvationStarted',{name:'Coast',food_category:true});
- assert.match(start,/Soldiers share the city's grain, fish, oil and wine/);
+ assert.match(start,/Soldiers share the city's grain, fish and oil\./);
  assert.doesNotMatch(start,/need grain even when/);
  assert.match(notifText('GarrisonStarvationStarted',{name:'Coast'}),/Soldiers need grain even when/);
- assert.match(notifText('CivilianStarvationStarted',{unmet:0.03,food_category:true}),/&lt;0.1 food.*grain, fish, oil or wine/);
+ assert.match(notifText('CivilianStarvationStarted',{unmet:0.03,food_category:true}),/&lt;0.1 food.*grain, fish or oil,/);
  assert.match(notifText('CivilianStarvationStarted',{unmet:0.03}),/&lt;0.1 grain/);
  assert.match(notifText('UnitAttrition',{reason:'food_shortage',disbanded:true}),/no food/);
  assert.match(notifText('UnitAttrition',{reason:'grain_shortage',disbanded:true}),/no grain/);

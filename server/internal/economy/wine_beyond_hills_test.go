@@ -17,7 +17,9 @@ import (
 // (wrong terrain/building) would produce.
 const wineRateEps = 1e-9
 
-// Regression + proof suite for migration 103 (server/druvor-utanfor-hills,
+// Migration 224 (Timothy 2026-10-28) reverses the suite below: wine is hills-only
+// again and is no longer food or temple upkeep. Historical context:
+// regression + proof suite for migration 103 (server/druvor-utanfor-hills,
 // Timothy 2026-07-28: "vi får nog acceptera att det går att odla druvor
 // överallt"). Before this migration, wine's ONLY production_rules rows were
 // on terrain_type='hills' (mig 008 + 019) — a settlement whose 7-hex
@@ -74,45 +76,12 @@ func TestProductionRules_HillsWineRatesUnchanged(t *testing.T) {
 	}
 }
 
-// TestProductionRules_WineBeyondHills is the migration's core claim: plains
-// (half of hills' rate — the fertile plain bears grapes worse than the
-// slope) and scrub_maquis (marginal land, no farm row — nobody plows a
-// field in the maquis) now carry their own wine rows. This is the red
-// baseline the contract calls for: on unmigrated code (only through 102)
-// this map is empty and the test fails — see the process report for that
-// failing run's captured output.
-func TestProductionRules_WineBeyondHills(t *testing.T) {
-	plains := wineRulesFor(t, "plains")
-	// mig 155: per gubbe, farm row gone.
-	wantPlains := map[string]float64{"": 0.5, "winery": 1.5}
-	if len(plains) != len(wantPlains) {
-		t.Fatalf("plains wine rules = %v, want %v", plains, wantPlains)
-	}
-	for bt, rate := range wantPlains {
-		if math.Abs(plains[bt]-rate) > wineRateEps {
-			t.Errorf("plains/%q wine rate = %.4f, want %.4f", bt, plains[bt], rate)
-		}
-	}
-
-	scrub := wineRulesFor(t, "scrub_maquis")
-	// mig 155: 9.6/24.0 ÷ 14.4 (mig 136) ÷ 2 (per gubbe)
-	wantScrub := map[string]float64{"": 9.6 / 14.4 / 2, "winery": 24.0 / 14.4 / 2}
-	if len(scrub) != len(wantScrub) {
-		t.Fatalf("scrub_maquis wine rules = %v, want %v", scrub, wantScrub)
-	}
-	for bt, rate := range wantScrub {
-		if math.Abs(scrub[bt]-rate) > wineRateEps {
-			t.Errorf("scrub_maquis/%q wine rate = %.4f, want %.4f", bt, scrub[bt], rate)
-		}
-	}
-
-	// No wine anywhere else — sea, rivers, deltas, mountains, semi-desert or
-	// either forest. The contract was explicit that only three terrains bore
-	// grapes as of migration 103; migration 105 (Timothy 2026-08-02) added a
-	// fourth, river_valley — see TestProductionRules_WineInRiverValley. river
-	// and river_delta stay in this negative list: only the valley itself
-	// bears wine, not the river channel or its delta.
+// TestProductionRules_WineOnlyOnHills: migration 224 (Timothy 2026-10-28, H1)
+// undoes migrations 103/105 — wine grows only on hills again, so it is worth
+// trading ("nånting som produceras överallt kommer aldrig att handlas").
+func TestProductionRules_WineOnlyOnHills(t *testing.T) {
 	for _, terrain := range []string{
+		"plains", "river_valley", "scrub_maquis",
 		"semi_desert", "forest_olive_grove", "forest_cedar",
 		"mountain_limestone", "mountain_red", "coastal_sea", "deep_sea",
 		"river", "river_delta", "coast_beach",
@@ -123,21 +92,26 @@ func TestProductionRules_WineBeyondHills(t *testing.T) {
 	}
 }
 
-// TestProductionRules_WineInRiverValley is migration 105's core claim:
-// river_valley bears wine at the same level as plains (Timothy 2026-08-02 —
-// hills keeps the overhand, the floodplain sits at the plain's level, not
-// the marginal scrub_maquis level). Exactly three rows, same shape as
-// TestProductionRules_WineBeyondHills's plains assertion.
-func TestProductionRules_WineInRiverValley(t *testing.T) {
-	got := wineRulesFor(t, "river_valley")
-	// mig 155: per gubbe, farm row gone.
-	want := map[string]float64{"": 0.5, "winery": 1.5}
-	if len(got) != len(want) {
-		t.Fatalf("river_valley wine rules = %v, want %v", got, want)
-	}
-	for bt, rate := range want {
-		if math.Abs(got[bt]-rate) > wineRateEps {
-			t.Errorf("river_valley/%q wine rate = %.4f, want %.4f", bt, got[bt], rate)
+// TestProductionRules_OilOutsideGroveIsAThird: migration 224 (Timothy
+// 2026-10-28, "samma som med virke") — oil outside the olive grove is a third
+// of the grove's, field and press alike; the grove itself is untouched.
+func TestProductionRules_OilOutsideGroveIsAThird(t *testing.T) {
+	pool := testPool(t)
+	for _, c := range []struct {
+		terrain, building string
+		want              float64
+	}{
+		{"forest_olive_grove", "", 1}, {"forest_olive_grove", "olive_press", 5.0 / 3},
+		{"plains", "", 0.33}, {"plains", "olive_press", 0.55},
+		{"hills", "", 0.33}, {"hills", "olive_press", 0.55},
+	} {
+		var got float64
+		if err := pool.QueryRow(context.Background(), `SELECT rate_per_tick FROM production_rules
+ WHERE good_key='oil' AND terrain_type=$1 AND COALESCE(building_type,'')=$2`, c.terrain, c.building).Scan(&got); err != nil {
+			t.Fatalf("%s/%q: %v", c.terrain, c.building, err)
+		}
+		if math.Abs(got-c.want) > 1e-9 {
+			t.Errorf("%s/%q oil rate = %.4f, want %.4f", c.terrain, c.building, got, c.want)
 		}
 	}
 }
@@ -275,77 +249,36 @@ func riverValleyCatchmentFixture(t *testing.T, currentTick, pop int) (settlement
 	return settlementID
 }
 
-// TestRecomputeProduction_WineOnRiverValleyOnlyCatchment is migration 105's
-// end-to-end proof: a city whose entire 7-hex catchment is river_valley —
-// no hills or plains tile anywhere — must produce wine at a positive rate
-// after RecomputeProduction. This proves the chain migration → rule →
-// actual production holds, not just that a production_rules row exists.
-func TestRecomputeProduction_WineOnRiverValleyOnlyCatchment(t *testing.T) {
+// TestRecomputeProduction_NoWineOnRiverValleyOnlyCatchment: since migration 224 a
+// city with no hills in reach makes no wine, even with a gubbe set on it.
+func TestRecomputeProduction_NoWineOnRiverValleyOnlyCatchment(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
-
-	settlementID := riverValleyCatchmentFixture(t /*tick*/, 100 /*pop*/, 100)
-	// P4: production follows PLACEMENT, not an auto-seeded weight — place a
-	// gubbe on one of the fixture's seeded river_valley neighbour hexes.
+	settlementID := riverValleyCatchmentFixture(t, 100, 100)
 	placeHexGubbe(t, pool, settlementID, 1, hexgrid.Coord{Q: 1, R: 0}, "wine")
-
 	if err := RecomputeProduction(ctx, pool, settlementID); err != nil {
 		t.Fatalf("RecomputeProduction: %v", err)
 	}
-
 	var wineRate float64
-	var found bool
-	err := pool.QueryRow(ctx,
-		`SELECT rate FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'wine'`,
-		settlementID,
-	).Scan(&wineRate)
-	if err == nil {
-		found = true
-	}
-	if !found {
-		t.Fatalf("no wine row written for a river_valley-only-catchment settlement after RecomputeProduction " +
-			"— migration 105 should have given river_valley a wine production_rules row")
-	}
-	if wineRate <= 0 {
-		t.Errorf("wine rate for a river_valley-only-catchment settlement = %.6f, want > 0", wineRate)
+	_ = pool.QueryRow(ctx, `SELECT rate FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'wine'`, settlementID).Scan(&wineRate)
+	if wineRate != 0 {
+		t.Errorf("wine rate without hills = %.6f, want 0", wineRate)
 	}
 }
 
-// TestRecomputeProduction_WineOnPlainsOnlyCatchment is AK2's core claim: a
-// city whose entire 7-hex catchment is plains — no hills tile anywhere —
-// must produce wine at a positive rate after RecomputeProduction, and the
-// good must land in settlement_goods as producible (bp > 0), which is what
-// the GET .../goods handler and `keryx goods`/`keryx build --list` surface
-// (see api/handlers/wine_beyond_hills_test.go for the HTTP-level half of
-// this proof).
-func TestRecomputeProduction_WineOnPlainsOnlyCatchment(t *testing.T) {
+// TestRecomputeProduction_NoWineOnPlainsOnlyCatchment: since migration 224 a
+// city with no hills in reach makes no wine, even with a gubbe set on it.
+func TestRecomputeProduction_NoWineOnPlainsOnlyCatchment(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
-
-	settlementID := plainsCatchmentFixture(t /*tick*/, 100 /*pop*/, 100)
-	// P4: production follows PLACEMENT, not an auto-seeded weight — place a
-	// gubbe on one of the fixture's seeded plains neighbour hexes.
+	settlementID := plainsCatchmentFixture(t, 100, 100)
 	placeHexGubbe(t, pool, settlementID, 1, hexgrid.Coord{Q: 1, R: 0}, "wine")
-
 	if err := RecomputeProduction(ctx, pool, settlementID); err != nil {
 		t.Fatalf("RecomputeProduction: %v", err)
 	}
-
 	var wineRate float64
-	var found bool
-	err := pool.QueryRow(ctx,
-		`SELECT rate FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'wine'`,
-		settlementID,
-	).Scan(&wineRate)
-	if err == nil {
-		found = true
-	}
-	if !found {
-		t.Fatalf("no wine row written for a plains-only-catchment settlement after RecomputeProduction " +
-			"— on unmigrated code (pre-103) this is exactly the bug: wine had no production_rules row " +
-			"off hills, so RecomputeProduction never wrote one")
-	}
-	if wineRate <= 0 {
-		t.Errorf("wine rate for a plains-only-catchment settlement = %.6f, want > 0", wineRate)
+	_ = pool.QueryRow(ctx, `SELECT rate FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'wine'`, settlementID).Scan(&wineRate)
+	if wineRate != 0 {
+		t.Errorf("wine rate without hills = %.6f, want 0", wineRate)
 	}
 }

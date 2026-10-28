@@ -1,5 +1,5 @@
 1. **Food** — a [[food|shortfall]] kills people every game day it lasts.
-2. **Pay and bread** — [[upkeep]] warnings mean soldiers need silver or food. Soldiers share grain, fish, oil and wine with the people, but their meals are itemized separately. Produce more food or send a [[transfers|transfer]]. A notice marks when garrison hunger starts and when it ends.
+2. **Pay and bread** — [[upkeep]] warnings mean soldiers need silver or food. Soldiers share grain, fish and oil with the people, but their meals are itemized separately. Produce more food or send a [[transfers|transfer]]. A notice marks when garrison hunger starts and when it ends.
 3. **Foreign marches** — someone is coming, and you know roughly when. See [[defence]].
 4. **Sieges and occupation** — a clock is running on a city. See [[sieges]] and [[occupation]].
 

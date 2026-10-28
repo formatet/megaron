@@ -303,7 +303,7 @@ func hexBuildSitesFrom(resp *placementOptionsResp) *hexBuildSites {
 //     These are independent upper-bound sink capacities, not a forecast of
 //     the actual proportional meal. Livestock covers only civilian emergency
 //     meals, converted via livestockFoodValue. Army food adds capacity for
-//     grain, fish, oil and wine, never livestock.
+//     grain, fish and oil, never livestock. Wine is not food (mig 224).
 //
 // Refining recipes (internal/economy/recipe.go) are NOT sized here — a
 // recipe ingredient's real constraint is scarcity of the OTHER input, not
@@ -312,7 +312,7 @@ func hexBuildSitesFrom(resp *placementOptionsResp) *hexBuildSites {
 func sinkCapacities(ctx sinkContext) map[string]float64 {
 	cap := remainingBuildingCosts(ctx.buildingLevels, ctx.wallLevel, ctx.hexSites)
 
-	for _, good := range foodDisplayGoods[:4] {
+	for _, good := range foodDisplayGoods[:3] {
 		cap[good] += ctx.armyUpkeepGrain * productionHorizonTicks
 	}
 	cap["silver"] += ctx.armyUpkeepSilver * productionHorizonTicks
@@ -322,7 +322,7 @@ func sinkCapacities(ctx sinkContext) map[string]float64 {
 	}
 
 	foodDemand := ctx.population * grainConsumptionPerCitizenPerTick * productionHorizonTicks
-	for _, good := range foodDisplayGoods[:4] {
+	for _, good := range foodDisplayGoods[:3] {
 		cap[good] += foodDemand
 	}
 	cap["livestock"] += foodDemand / livestockFoodValue
@@ -821,7 +821,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 						food, _ := sett["food"].(map[string]any)
 						stocks, _ := food["goods"].(map[string]any)
 						stock := 0.0
-						for _, good := range foodDisplayGoods[:4] {
+						for _, good := range foodDisplayGoods[:3] {
 							amount, _ := stocks[good].(float64)
 							stock += amount
 						}

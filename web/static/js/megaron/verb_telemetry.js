@@ -48,6 +48,7 @@ export const VERB_EVENTS = [
   {"verb": "trade-accept", "method": "POST", "route": "/api/v1/worlds/:world/messengers/:messenger/trade-accept", "event": "trade_accepted"},
   {"verb": "trade-decline", "method": "POST", "route": "/api/v1/worlds/:world/messengers/:messenger/trade-decline", "event": "trade_declined"},
   {"verb": "trade-cancel", "method": "POST", "route": "/api/v1/worlds/:world/messengers/:messenger/trade-cancel", "event": "trade_cancelled"},
+  {"verb": "trade-counter", "method": "POST", "route": "/api/v1/worlds/:world/messengers/:messenger/trade-counter", "event": "trade_countered"},
   {"verb": "arrange passage", "method": "POST", "route": "/api/v1/worlds/:world/messengers/:messenger/passage", "event": "passage_arranged"},
   {"verb": "fetch by ship", "method": "POST", "route": "/api/v1/worlds/:world/units/:unit/pickup", "event": "pickup_sent"},
   {"verb": "call back", "method": "POST", "route": "/api/v1/worlds/:world/messengers/:messenger/call-back", "event": "runner_called_back"},

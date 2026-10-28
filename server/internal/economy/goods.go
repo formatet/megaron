@@ -34,7 +34,8 @@ const (
 
 // FoodGoods is the sole ordinary food category: equal food value, proportional
 // meals, production/growth and coverage. Civilian emergency herd is separate.
-var FoodGoods = []string{GoodGrain, GoodFish, GoodOil, GoodWine}
+// Wine is not food (Timothy 2026-10-28, H1): the gods' and the feast's drink.
+var FoodGoods = []string{GoodGrain, GoodFish, GoodOil}
 
 // Good is the catalog entry for a tradeable good.
 type Good struct {

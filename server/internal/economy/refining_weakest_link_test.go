@@ -236,6 +236,10 @@ func TestRecomputeProduction_WineWineryBoostRequiresPlacedWorker(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	settlementID := plainsCatchmentFixture(t, 100, 100)
+	// Wine grows only on hills (mig 224): turn the worked neighbour into one.
+	if _, err := pool.Exec(ctx, `UPDATE map_tiles SET terrain='hills' WHERE q=1 AND r=0 AND world_id=(SELECT world_id FROM settlements WHERE id=$1)`, settlementID); err != nil {
+		t.Fatal(err)
+	}
 	placeHexGubbe(t, pool, settlementID, 1, hexgrid.Coord{Q: 1, R: 0}, GoodWine)
 	if _, err := pool.Exec(ctx,
 		`INSERT INTO buildings (settlement_id, building_type, level, hex_q, hex_r) VALUES ($1, 'farm', 1, 1, 0), ($1, 'winery', 1, NULL, NULL)`,
@@ -248,9 +252,9 @@ func TestRecomputeProduction_WineWineryBoostRequiresPlacedWorker(t *testing.T) {
 		t.Fatalf("RecomputeProduction: %v", err)
 	}
 
-	// plains wine (mig 155): base rate per gubbe 0.5 (was 1.0 per hex / fallback
-	// cap 2), 1 placed -> 0.5. The winery's boost is 0 (unstaffed).
-	want := 0.5
+	// hills wine (mig 155): base rate per gubbe 1.0, 1 placed -> 1.0. The
+	// winery's boost is 0 (unstaffed).
+	want := 1.0
 	if got := goodRate(t, settlementID, GoodWine); math.Abs(got-want) > weakestLinkEps {
 		t.Errorf("wine rate with unstaffed winery = %.6f, want %.6f "+
 			"(winery's boost must not apply without a vinmakare)", got, want)
@@ -263,6 +267,10 @@ func TestRecomputeProduction_WineWineryBoostRealizedWhenStaffed(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	settlementID := plainsCatchmentFixture(t, 100, 100)
+	// Wine grows only on hills (mig 224): turn the worked neighbour into one.
+	if _, err := pool.Exec(ctx, `UPDATE map_tiles SET terrain='hills' WHERE q=1 AND r=0 AND world_id=(SELECT world_id FROM settlements WHERE id=$1)`, settlementID); err != nil {
+		t.Fatal(err)
+	}
 	placeHexGubbe(t, pool, settlementID, 1, hexgrid.Coord{Q: 1, R: 0}, GoodWine)
 	if _, err := pool.Exec(ctx,
 		`INSERT INTO buildings (settlement_id, building_type, level, hex_q, hex_r) VALUES ($1, 'farm', 1, 1, 0), ($1, 'winery', 1, NULL, NULL)`,
@@ -276,10 +284,10 @@ func TestRecomputeProduction_WineWineryBoostRealizedWhenStaffed(t *testing.T) {
 		t.Fatalf("RecomputeProduction: %v", err)
 	}
 
-	// baseline 0.5 (as above). winery boost per gubbe 1.5 (mig 155), 1 placed
-	// -> potential 1.5; refiningCapacity 72.0/14.4 = 5.0 (level 1, 1 slot);
-	// realized = min(1.5, 5.0) = 1.5 -> total 2.0.
-	want := 0.5 + 1.5
+	// baseline 1.0 (as above). hills winery boost per gubbe 2.5 (mig 155), 1
+	// placed -> potential 2.5; refiningCapacity 72.0/14.4 = 5.0 (level 1, 1 slot);
+	// realized = min(2.5, 5.0) = 2.5 -> total 3.5.
+	want := 1.0 + 2.5
 	if got := goodRate(t, settlementID, GoodWine); math.Abs(got-want) > weakestLinkEps {
 		t.Errorf("wine rate with staffed winery = %.6f, want %.6f", got, want)
 	}

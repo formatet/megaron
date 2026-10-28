@@ -30,7 +30,7 @@ func TestApplyDecay_GrowthGateMatchesFoodNet(t *testing.T) {
 		{"mixed balanced", map[string]float64{economy.GoodGrain: need / 2, economy.GoodFish: need / 2}, false},
 		{"mixed surplus", map[string]float64{economy.GoodGrain: need / 2, economy.GoodFish: need/2 + 0.25}, true},
 		{"livestock is emergency food", map[string]float64{economy.GoodLivestock: need * 10}, false},
-		{"wine feeds growth", map[string]float64{economy.GoodWine: need * 10}, true},
+		{"wine is not food (mig 224)", map[string]float64{economy.GoodWine: need * 10}, false},
 		{"oil feeds growth", map[string]float64{economy.GoodOil: need * 10}, true},
 		{"stocked food without production", nil, false},
 	}

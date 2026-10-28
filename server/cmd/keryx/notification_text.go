@@ -106,7 +106,7 @@ func printNotificationSummary(c *Client, n notificationItem) {
 		switch n.Kind {
 		case "GarrisonStarvationStarted":
 			if b.FoodCategory {
-				fmt.Printf("      %s: the garrison is losing men to hunger. Soldiers share the city’s grain, fish, oil and wine. Produce or transfer more food here (`keryx transfer`).\n", b.Name)
+				fmt.Printf("      %s: the garrison is losing men to hunger. Soldiers share the city’s grain, fish and oil. Produce or transfer more food here (`keryx transfer`).\n", b.Name)
 				break
 			}
 			fmt.Printf("      %s: the garrison is losing men to hunger. Soldiers need grain even when the city has a food surplus. Place citizens on grain (`keryx place`) or transfer grain here (`keryx transfer`).\n", b.Name)
@@ -121,7 +121,7 @@ func printNotificationSummary(c *Client, n notificationItem) {
 				}
 			}
 			if b.FoodCategory {
-				fmt.Printf("      %s: people are going hungry — the meal fell short by %s food. Produce grain, fish, oil or wine, or transfer food here (`keryx transfer`).\n", b.Name, amount)
+				fmt.Printf("      %s: people are going hungry — the meal fell short by %s food. Produce grain, fish or oil, or transfer food here (`keryx transfer`).\n", b.Name, amount)
 				break
 			}
 			fmt.Printf("      %s: people are going hungry — the meal fell short by %s grain. Place citizens on grain or fish (`keryx place`), or transfer food here (`keryx transfer`).\n", b.Name, amount)
