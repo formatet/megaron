@@ -1,1 +1,13 @@
-**Incense is the smoke the gods like best, and it grows in very few places.** It is a rare religious good: no building makes it, no recipe needs it, and nothing in your city fails without it. What it does is make an offering count for more.
+**Incense is the smoke [[gods|the gods]] like best, and it grows in very few places.** It is a rare religious good: no building makes it, no recipe needs it, and nothing in your city fails without it. What it does is make an offering count for more.
+
+## Incense sources {#incense-where-it-comes-from}
+
+Incense is found only on marked hexes of dry scrub ([[maquis|maquis]]) and [[semi-desert|semi-desert]] — the ground that gives almost nothing else. A marked hex shows a small amber drop on the map and the word **Incense** in its inspect panel. [[rites|Potnia's Vision]] can mark an incense source you neither see nor remember; it creates memory, never living eyes. `keryx cities` includes incense among the deposits of known cities. A deposit in your [[catchment]] needs no building: **two citizens** placed on the hex ([[citizens]]) gather it. There are about ten such places in a world of the usual size, scattered over both halves of the map and more of them in the east. Most Wanaxes will have none, which is why it is carried and traded ([[trade]]).
+
+## Incense at the altar {#incense-what-it-does-at-the-altar}
+
+Any good can be offered, and [[wine|wine]] and [[oil|oil]] are offerings too ([[rites]]) — oil is also food, so a hungry city should keep it. For everyday prayers, incense can help meet the offering requirement, but more offering never improves the answer. For older prayers with uncertain answers, **a gift made mostly of incense can please the gods further than any other gift**: it raises the limit on what a larger offering can achieve. It never replaces your standing with the gods ([[kharis]]) — a god who does not hear you is not bought — but it is the best use of what you carry. Each god's taste is shown in the Offer row and in `keryx rite --list`; the gods of sight and omens love it most.
+
+## Frankincense and myrrh {#incense-some-history}
+
+[[bronze|Bronze]] Age temples burned resin, not one perfume. Around the east of the Mediterranean the common kind was the sap of the terebinth tree (*Pistacia*), gathered on the dry [[hills|hills]] of Kna'an and Cyprus and shipped in jars. The wreck at Uluburun, sunk off the south coast of Anatolia at the end of the thirteenth century before our era, carried about a hundred and fifty such jars among its [[copper|copper]] and [[tin|tin]]. Amphorae from Kna'an turn up in Egypt with traces of the same resin. The rarer frankincense and myrrh came to Egypt from Punt, far down the Red Sea, in small and precious loads; labdanum, scraped from the rock-rose shrubs of Crete, was the Minoan smell. Here they are all one good, **Incense**.

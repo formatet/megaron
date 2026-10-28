@@ -1,4 +1,4 @@
-A Mine works the mineral deposit on one chosen catchment hex.
+A Mine works the mineral deposit on one chosen [[catchment|catchment]] hex.
 
 Build or upgrade it in **City → Buildings → Construct**, or use `keryx build --type mine` with `--hex` to choose its catchment hex.
 
@@ -18,4 +18,4 @@ See [[buildings]] and [[citizens]].
 
 | Building | What it is for |
 |---|---|
-| **Mine** | Stands on an ore deposit hex and extracts whatever it holds — copper, tin or silver. |
+| **Mine** | Stands on an ore deposit hex and extracts whatever it holds — [[copper|copper]], [[tin|tin]] or [[silver|silver]]. |

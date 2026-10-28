@@ -4,9 +4,9 @@
 
 **Contact** — the permanent right to write to and trade with a city, earned by reaching it. See [[contact]].
 
-**Emporos** — a merchant ship. See [[sea]].
+**[[emporos]]** — a merchant ship. See [[sea]].
 
-**Kharis** — your realm’s standing with the gods. A new Wanax starts at 40; it fades from the start, with a daily cost that grows with your active cities and their residents. See [[kharis]].
+**Kharis** — your realm’s standing with [[gods|the gods]]. A new Wanax starts at 40; it fades from the start, with a daily cost that grows with your active cities and their residents. See [[kharis]].
 
 **Kult** — the drawer for the gods and the temple.
 
@@ -16,11 +16,11 @@
 
 **Runner** — the person who carries your order to a unit in the field. See [[runners]].
 
-**Sentry** — the watch stance; also how a siege is laid. See [[stances]].
+**Sentry** — the watch stance; also how a [[sieges|siege]] is laid. See [[stances]].
 
-**Food coverage** — how long the city’s grain, fish and oil stocks last at current consumption. See [[food]].
+**Food coverage** — how long the city’s [[grain|grain]], [[fish|fish]] and [[oil|oil]] stocks last at current consumption. See [[food]].
 
-**Standing order** — a caravan route that runs by itself. See [[routes]].
+**Standing order** — a [[transfers|caravan]] route that runs by itself. See [[routes]].
 
 **The Thalassa** — the sea. See [[sea]].
 

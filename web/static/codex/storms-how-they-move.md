@@ -1,1 +1,0 @@
-Each game day a storm takes **two steps**. In each step, one of its three hexes moves to a neighbouring sea hex, and the storm stays in one piece. So a storm crawls: slowly, and a little more each game day in the direction it has been drifting, now and then turning. It never crosses land.

@@ -1,8 +1,8 @@
-The **Chariot** is the hardest hitter on open ground: horses, a driver and a warrior, built with cedar and bronze.
+The **Chariot** is the hardest hitter on open ground: horses, a driver and a warrior, built with [[cedar|cedar]] and bronze.
 
 | | |
 |---|---|
-| **Built at** | Stable |
+| **Built at** | [[stable]] |
 | **Cost for one cohort** | 40 grain · 8 timber (or cedar) · 8 cedar · 20 [[bronze]] · 50 silver |
 | **Size** | 100 chariots |
 | **Training** | 3 game days |

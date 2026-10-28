@@ -1,4 +1,4 @@
-A Stable enables chariot recruitment.
+A Stable enables [[war-chariot|chariot]] recruitment.
 
 Build or upgrade it in **City → Buildings → Construct**, or use `keryx build --type stable`.
 

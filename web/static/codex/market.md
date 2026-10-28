@@ -1,4 +1,4 @@
-A Market enables trade offers and updates market prices without employing workers.
+A Market enables [[trade|trade offers]] and updates market prices without employing workers.
 
 Build or upgrade it in **City → Buildings → Construct**, or use `keryx build --type market`.
 

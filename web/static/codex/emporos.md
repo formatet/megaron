@@ -1,8 +1,8 @@
-The **Emporos** is the merchant hull: broad, slow, cedar-built, made to carry.
+The **Emporos** is the merchant hull: broad, slow, [[cedar|cedar]]-built, made to carry.
 
 | | |
 |---|---|
-| **Built at** | Shipyard |
+| **Built at** | [[shipyard|Shipyard]] |
 | **Cost for one ship** | 90 cedar · no timber, no silver |
 | **Crew** | 10 rowers, drafted from the city |
 | **Build time** | 4 game days |
@@ -12,6 +12,6 @@ The **Emporos** is the merchant hull: broad, slow, cedar-built, made to carry.
 | **Troops** | up to three land forces at once — passengers, not fighters: they roll no dice at sea and drown if she founders |
 | **Speed** | slowest ship — 1.4 times a galley's travel time |
 | **Hull** | 5; repaired with cedar |
-| **In battle** | 1 die per round, like a [[galley]] — it is no warship |
+| **In [[battle|battle]]** | 1 die per round, like a [[galley]] — it is no [[war-galley|warship]] |
 
 When a shipment is too heavy for a [[galley]], the Emporos takes it; freight picks an Emporos before a galley when both stand in port. It needs cedar, which not every coast has ([[goods]]). See [[units|Forces]], [[sea]] and [[trade]].

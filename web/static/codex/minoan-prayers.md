@@ -1,3 +1,0 @@
-- **Potnia's Vision** — offer 10 grain + 3 silver. Potnia marks one source of copper, tin, silver or incense you neither see nor remember, and unknown ground within two hexes, as grey memory. It creates no living eyes and shows no moving activity. Potnia waits 24 game days after answering.
-- **Mistress of the Walls** — offer 8 grain + 4 timber. Potnia strengthens your own garrison defending this city by a quarter for 6 game days. It helps neither an attacking army nor soldiers away from that city. It shares Vision's wait.
-- **Green Shoots** — offer 15 grain + 2 silver. Velchanos raises grain, oil and wine yield by a quarter for 25 game days. Fish and the herd are unchanged. He waits 25 game days after answering.

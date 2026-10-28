@@ -1,4 +1,4 @@
-Mistress of the Walls is a prayer to Potnia.
+Mistress of the Walls is a prayer to [[potnia]].
 
 Your own garrison defending this city fights a quarter stronger for 6 game days.
 

@@ -1,3 +1,0 @@
-- **A plain march only reaches ground your people have already seen.** Right-click an unseen hex and the order menu offers **Explore** instead — the unit explores the surrounding area and returns home with a report ([[sight]]).
-- Crossing the sea needs ships ([[sea]]).
-- A march that cannot go on — its path blocked, or impossible — stalls, and you are told why.

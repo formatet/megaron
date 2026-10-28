@@ -1,5 +1,0 @@
-With automatic routing, when both ends are coastal or harboured and a sea lane connects them, a transfer sails instead of walking — **if you have a free Galley or Emporos waiting in the sending port** ([[sea]]). No free hull there, and no land road either, and the transfer is refused with the reason why; build one at a Shipyard, or wait for one to come home.
-
-The ship is bound to the round trip: it cannot be given any other order until it has sailed back and unloaded, empty, at its own port. What it can carry is limited by the hull's own capacity — a shipment above the limit is refused before any goods leave your stock. **One good takes one cargo place**, whether grain, stone or silver: **Galley 20, Emporos 120 goods of any kind**. The form shows the ready hull and a live **Cargo used / capacity** meter; an overload tells you how much to remove. Land caravans have no cargo limit.
-
-A laden ship caught at sea does not always lose the same way a caravan does. One of three things happens, and you are told which:

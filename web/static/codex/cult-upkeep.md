@@ -1,3 +1,0 @@
-Daily upkeep is **0.1 base + 0.2 per city beyond the first + 0.1 per 1,000 residents**. It counts all your active cities, including your capital, whether or not they have temples. Sunk, collapsed and razed cities do not count. Residents are the actual population in those cities, including people short of a whole citizen; armies and crews away from the population are not counted a second time. This is the upkeep of the cult, rather than an extra penalty that accelerates as your realm grows.
-
-For **three cities with 2,500 residents altogether**, upkeep is **0.1 + 0.4 + 0.25 = 0.75 kharis per game day**. A realm without a city has the base cost only.

@@ -1,5 +1,0 @@
-With exactly one active world, commands select and save it automatically. To choose explicitly, run `keryx worlds` and then `keryx worlds --select <world-id>`. City rows show both the placement number and `(q,r)`; use those coordinates with `build --hex q,r`.
-
-Use a city name or province ID either positionally or with `--province` in `city`, `placements`, `status` and `build`. For placement: `keryx place Knossos fish 13 -1` or `keryx place --province Knossos fish 13 -1`. Put flags before the good when using a negative delta. If no citizens work that good on the chosen hex, the result lists where they do work it. `founding settle --yes` skips the question. Travel estimates use game days; if an arrival cannot be calculated it is reported as unavailable.
-
-Hex selection accepts the ordinal shown by City, with or without `#`: `build --type lumbermill --hex 6` or `--hex '#6'`. Placement can use `place fish 6 +1`, `place fish '#6' +1`, or `place --hex 6 fish +1`; `--hex q,r` also works. Put flags before the good when giving a negative delta. `staff` is for city workplaces; hex-bound buildings are worked with `place` on their hex.

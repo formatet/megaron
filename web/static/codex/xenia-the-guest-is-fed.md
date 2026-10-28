@@ -1,1 +1,0 @@
-When a ship reaches a city, its own or another Wanax's, the city gives it food for the voyage home. It is free and needs no consent. The port first keeps enough for its own people's daily meal and gives only what it can spare. See [[ship-food-return]].

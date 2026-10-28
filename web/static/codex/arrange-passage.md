@@ -1,3 +1,0 @@
-Waiting for a ship to happen to sail the right way is not your only choice. From your **outbox** (Diplomacy, or `keryx outbox`), a runner waiting for passage shows an **Arrange passage** button (or `keryx passage`) whenever one of your own ships qualifies — the choice of ship is always yours to make, but only real, eligible ships are ever offered: a Galley or Emporos (never a War Galley), standing free in port with no mission of its own.
-
-- **Sending one out:** the ship must stand in the SAME port the runner is waiting in. It sails straight for the runner's destination, boards it the moment it leaves, and puts it ashore there — no different from boarding any ship that happened to be going that way, except this one you chose yourself.

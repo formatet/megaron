@@ -1,6 +1,6 @@
-Potnia's Vision is a prayer to Potnia.
+Potnia's Vision is a prayer to [[potnia]].
 
-Marks an unseen source of copper, tin, silver or incense and the unknown ground within two hexes as memory; no live activity.
+Marks an unseen source of [[copper|copper]], [[tin|tin]], [[silver|silver]] or [[incense|incense]] and the unknown ground within two hexes as memory; no live activity.
 
 <!-- facts: prayer minoan_potnia_vision_v2 -->
 | Reference | Current rule |

@@ -1,3 +1,0 @@
-If your forces defend a hex, or you own the city there, you receive a dispatch when battle begins: *"Idomeneus — battle has begun at Petras"*, with its clock time. It names the opposing Wanax and the place you can already see; it reveals no march route or home city. Select **Take me there** to see the hex. With sound on, you hear the same clash as for a battle's outcome.
-
-Each defending Wanax receives one notice per battle, even with several forces. Reinforcements do not repeat it; a new defending Wanax receives a first notice when their forces join. You can mute the dispatch and still find it in **Notifications**.

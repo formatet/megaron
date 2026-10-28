@@ -1,6 +1,6 @@
-A Stone Quarry improves stone production on one chosen land hex.
+A Stone Quarry improves [[stone|stone]] production on one chosen land hex.
 
-Build or upgrade it in **City → Buildings → Construct**, or use `keryx build --type stonequarry` with `--hex` to choose its catchment hex.
+Build or upgrade it in **City → Buildings → Construct**, or use `keryx build --type stonequarry` with `--hex` to choose its [[catchment|catchment]] hex.
 
 <!-- facts: building stonequarry -->
 | Reference | Current rule |
@@ -17,4 +17,4 @@ See [[buildings]] and [[citizens]].
 
 | Building | What it is for |
 |---|---|
-| **Stone Quarry** | Stands on a land hex you choose and works the stone there — far more on hills and limestone. |
+| **Stone Quarry** | Stands on a land hex you choose and works the stone there — far more on [[hills|hills]] and limestone. |

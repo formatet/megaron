@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Trained at** | Barracks |
+| **Trained at** | [[barracks]] |
 | **Cost for one cohort** | 12 grain · no silver |
 | **Size** | 100 men, drafted from the city |
 | **Training** | 1 game day |
@@ -10,4 +10,4 @@
 | **Pay** | none |
 | **In battle** | 50 dice per round for 100 active men — half the men, rounded up |
 
-Spearmen hold walls, escort colonists and form the mass of a field army. Against [[elite-infantry|Bronze Guard]] and [[war-chariot|chariots]] they lose man for man, but they cost no [[bronze]] and no silver. See [[units|Forces]], [[marching]] and [[battle]].
+Spearmen hold walls, escort colonists and form the mass of a field army. Against [[elite-infantry|Bronze Guard]] and [[war-chariot|chariots]] they lose man for man, but they cost no [[bronze]] and no [[silver|silver]]. See [[units|Forces]], [[marching]] and [[battle]].

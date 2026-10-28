@@ -1,1 +1,0 @@
-Because orders move at walking pace, **a defender who is offline is not helpless.** An attacker has to cross ground you can see, and your answer usually has less ground to cross than his army does. Distance is the defender's ally. See [[defence]].

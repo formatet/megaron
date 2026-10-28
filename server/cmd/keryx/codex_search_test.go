@@ -34,3 +34,29 @@ func TestCodexSearchTitleAliasBodyOrderAndSafeResolution(t *testing.T) {
 		t.Fatal("path resolved")
 	}
 }
+
+// An old fragment id is a section now: keryx resolves it to the section and
+// prints only that part of its article.
+func TestCodexSectionIDResolvesAndPrintsOnlyItsSection(t *testing.T) {
+	var idx codexIndex
+	if err := json.Unmarshal([]byte(`{"articles":[{"id":"colonies","title":"Colonies","sections":[{"id":"colonies-abandoning-a-colony","title":"Abandoning a colony","aliases":["abandon"]}]}]}`), &idx); err != nil {
+		t.Fatal(err)
+	}
+	for _, input := range []string{"colonies-abandoning-a-colony", "Abandoning a colony", "abandon"} {
+		a, ok := resolveCodexArticle(idx, input)
+		if !ok || a.ID != "colonies-abandoning-a-colony" || a.Parent != "colonies" {
+			t.Errorf("resolve %q = %+v %v", input, a, ok)
+		}
+	}
+	body := "Intro.\n\n## Founding {#f}\n\nFound.\n\n## Abandoning a colony {#colonies-abandoning-a-colony}\n\nLeave it.\n\n### Detail\n\nMore.\n\n## Next {#n}\n\nOther."
+	if got := codexSectionText(body, "colonies-abandoning-a-colony"); got != "Leave it.\n\n### Detail\n\nMore." {
+		t.Errorf("section text %q", got)
+	}
+	if got := codexSectionText(body, ""); got != "Intro." {
+		t.Errorf("intro %q", got)
+	}
+	hits := searchCodexArticles("leave it", idx, map[string]string{"colonies": body})
+	if len(hits) != 1 || hits[0].ID != "colonies-abandoning-a-colony" {
+		t.Errorf("body hit should name the section: %+v", hits)
+	}
+}

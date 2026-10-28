@@ -1,4 +1,4 @@
-A Temple is a workplace dedicated to one god, opening that god’s prayers and maintaining Kharis.
+A Temple is a workplace dedicated to one god, opening that god’s prayers and maintaining [[kharis]].
 
 Build or upgrade it in **City → Buildings → Construct**, or use `keryx build --type temple --god potnia` (choose the god in Construct).
 

@@ -6,9 +6,9 @@ The drawer has three tabs: **Production**, **Buildings** and **Garrison**. If yo
 
 Three sections show the essentials:
 
-- **Population** — whole citizen groups, those free to work, and livestock. One citizen represents 100 people; fewer than 100 remaining people do not make a free worker. The exact population is under **More**.
-- **Catchment & workplaces** — the placement grid, where you put people to work. See [[citizens]].
-- **Food** — how many game days the city’s current grain, fish and oil stocks last at current consumption, whether stocks are growing, and whether the fields can feed everyone. See [[food]].
+- **Population** — whole citizen groups, those free to work, and [[livestock|livestock]]. One citizen represents 100 people; fewer than 100 remaining people do not make a free worker. The exact population is under **More**.
+- **[[catchment]] & workplaces** — the placement grid, where you put people to work. See [[citizens]].
+- **Food** — how many game days the city’s current [[grain|grain]], [[fish|fish]] and [[oil|oil]] stocks last at current consumption, whether stocks are growing, and whether the fields can feed everyone. See [[food]].
 
 Open **More** for people in service and the labour pool, **Devotion** ([[temples]]), **Food details** ([[food]]), **Last game day**, and **Daily history → Show recent game days**. These details and controls remain available while the main view stays short.
 

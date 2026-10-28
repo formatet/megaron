@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -39,6 +40,8 @@ func TestCodexRoadsArticleMatchesCode(t *testing.T) {
 		}
 		md += "\n" + string(raw)
 	}
+	// A labelled link reads as its label: "[[war-chariot|Chariots]]" is "Chariots" to the player.
+	md = regexp.MustCompile(`\[\[[a-z0-9-]+\|([^\]]+)\]\]`).ReplaceAllString(md, "$1")
 	rows := []struct{ label, terrain string }{
 		{"Plains, river valley, delta", "plains"},
 		{"Olive grove, maquis", "forest_olive_grove"},

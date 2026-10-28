@@ -27,9 +27,24 @@ def write(path,text):
   changed.append(str(path.relative_to(ROOT)))
   if not check:path.write_text(text)
 index=json.loads((D/'index.json').read_text());bodies={}
+def summary(article):
+ # One line for a hub list: the index's `summary`, else the article's first prose sentence.
+ if article.get('summary'):return article['summary']
+ text=re.sub(r'<!--[\s\S]*?-->','',(D/(article['id']+'.md')).read_text())
+ para=next((p.strip() for p in text.split('\n\n') if p.strip() and not p.strip().startswith(('|','#','-','>'))),'')
+ para=re.sub(r'\[\[[^\]|]+\|([^\]]+)\]\]',r'\1',para);para=re.sub(r'\[\[([^\]]+)\]\]',r'\1',para).replace('**','')
+ m=re.match(r'(.+?[.!?])(\s|$)',para);return m[1] if m else para
+def members(kind,keys):
+ out=[a for a in index['articles'] if not a.get('future') and any(e['kind']==kind and (not keys or e['key'] in keys) for e in a.get('entities',[]))]
+ if keys:out.sort(key=lambda a:min(keys.index(e['key']) for e in a['entities'] if e['key'] in keys))
+ return out
+def hub_list(kind,keys):
+ # A hub lists every member of its family, so no unit, building or good is ever left unlinked.
+ return '| Name | In short |\n|---|---|\n'+'\n'.join('| [['+a['id']+']] | '+summary(a).replace('|','/')+' |' for a in members(kind,keys))
 for article in index['articles']:
  path=D/(article['id']+'.md');text=path.read_text()
  text=re.sub(r'<!-- facts: (building|prayer) ([a-z0-9_]+) -->[\s\S]*?<!-- /facts -->',lambda m:'<!-- facts: '+m[1]+' '+m[2]+' -->\n'+block(m[1],m[2])+'\n<!-- /facts -->',text)
+ text=re.sub(r'<!-- list: ([a-z]+)((?: [a-z0-9_]+)*) -->[\s\S]*?<!-- /list -->',lambda m:'<!-- list: '+m[1]+m[2]+' -->\n'+hub_list(m[1],m[2].split())+'\n<!-- /list -->',text)
  for entity in article.get('entities',[]):
   if entity['kind']!='unit' or entity['key'] not in units:continue
   key=entity['key'];x=units[key];price=costs(x['costs'],True)

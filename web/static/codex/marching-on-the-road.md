@@ -1,3 +1,0 @@
-A journey starts when the unit receives its order. It stays on its starting hex until it reaches the next one, then advances hex by hex along its saved route. Terrain sets the relative time between steps; the total journey keeps its rounded duration. The map and **Keryx → unit list** show the hex it has reached and its planned arrival time. Sight opens as your people advance, and storms or enemies can stop them on the way.
-
-A marching army eats more than one in garrison and cannot forage ([[upkeep]]). It is seen by anyone whose [[sight]] it passes through, and an enemy on watch may stop it — and a [[battle]] begins by itself. **There is no declaration of war.**

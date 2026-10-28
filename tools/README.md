@@ -705,3 +705,8 @@ then `python3 tools/codex_facts.py`. Review the reference and article diff toget
 `python3 tools/codex_facts.py --check` is read-only; normal Go/JS tests reject catalogue drift,
 missing current entities and stale article bundles. Historical migration scripts ending
 `20261028` document the one-time split; do not rerun them over maintained articles.
+`fold_codex_sections_20261028.py` folded that split back into topic articles; old ids live on as
+section ids (`## Title {#old-id}` + `sections` in index.json), so links, notifications and keryx still land.
+After writing Codex prose, run `node tools/codex_links.mjs` (links the first mention of anything with its
+own page, from each article's `terms`), then `python3 tools/codex_facts.py` (fact tables, hub lists
+`<!-- list: kind [keys] -->`, bundle). `codex.test.mjs` fails on an unlinked mention or a hub missing a member.

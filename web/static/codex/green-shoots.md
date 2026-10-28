@@ -1,6 +1,6 @@
-Green Shoots is a prayer to Velchanos.
+Green Shoots is a prayer to [[velchanos]].
 
-Grain, oil and wine yield a quarter more for 25 game days; fish and the herd are unchanged.
+[[grain]], [[oil|oil]] and [[wine|wine]] yield a quarter more for 25 game days; [[fish|fish]] and the herd are unchanged.
 
 <!-- facts: prayer minoan_velchanos_green_shoots -->
 | Reference | Current rule |

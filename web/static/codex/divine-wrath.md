@@ -1,1 +1,0 @@
-The gods may punish a realm **below 15 kharis**, with or without a [[temples|temple]]. Each game day brings a **3% chance**. At exactly 15 there is no risk. A punishment chooses one of your active cities that has something it can take.

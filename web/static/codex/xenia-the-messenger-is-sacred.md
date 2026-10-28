@@ -1,1 +1,0 @@
-A herald cannot be attacked. No army, raider or Wanax can intercept a messenger, on the way out or on the way home. A letter always reaches its city unless the sea itself takes the runner. See [[messengers]].

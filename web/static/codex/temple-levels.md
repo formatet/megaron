@@ -1,3 +1,0 @@
-With full devotion and its daily gift, a level-1 temple can raise kharis in a small realm. Compare its gain with the cost of all your active cities and residents in **Kult → Upkeep of the cult** and the projected net. A temple does not cancel city costs, but it does not protect low standing from [[divine-wrath|divine wrath]]. Higher-level temples can employ more devotion and make it grow faster when staffed and fed.
-
-**Your best temple sets your kharis ceiling:** no temple 40, level 1 50, level 2 75, level 3 100. Everyday prayers work at a level-1 temple. Spontaneous blessings need 60 kharis and a maintained temple. Only a level-2 temple or higher lets kharis grow that far. Kharis retained above a lowered ceiling still counts. Levelling a temple further needs cedar.

@@ -1,1 +1,72 @@
-A **Temple** ([[buildings]]) is how you keep the gods' favour ([[kharis]]). Every temple is dedicated to **one god**: Potnia, Velchanos, Asterion or the Sea Daimons of Stillness. A city may hold several temples, but **at most one per god**. They are named by their god: Temple of Potnia, Temple of Velchanos, and so on. Each temple needs two things from you.
+A **[[temple]]** ([[buildings]]) is how you keep [[gods|the gods]]' favour ([[kharis]]). Every temple is dedicated to **one god**: [[potnia]], [[velchanos]], [[asterion]] or the [[sea-daimons|Sea Daimons]] of Stillness. A city may hold several temples, but **at most one per god**. They are named by their god: Temple of Potnia, Temple of Velchanos, and so on. Each temple needs two things from you.
+
+## Building and upgrading temples {#temples-building-one}
+
+Choose the god when you build. On the web, **City → Construct** lists one row per god; in Keryx, `keryx build --type temple --god potnia`. Building the same god's temple again raises that temple's level. Each prayer is said at its own god's temple ([[rites]]): Potnia's two prayers at Potnia's, [[green-shoots]] at Velchanos's, [[the-thread-shows-a-path]] at Asterion's, [[favourable-passage]] at the Sea Daimons'. Every prayer works from a level-1 temple. Demolishing a temple frees only its own workers.
+
+## Temple workers {#temple-workers}
+
+**City → [[catchment]] & workplaces → Temple**: place or remove whole [[citizens]] with the same controls as other workplaces. In Keryx, use `staff temple +1` or `staff temple -1`; `roster` includes them. When a city has several temples, name the god: `keryx staff temple +1 --god velchanos`. The web shows one card per temple.
+
+Each temple level provides **2 workplaces**: level 1 holds 2, level 2 holds 4 and level 3 holds 6. A worker stands at one temple only. These people leave the idle pool, and cannot work another job at the same time. An empty temple has no devotion gain. Founding a city grants no automatic temple staffing.
+
+Each placed temple worker earns **1.05 kharis per game day** before the offering factor, scarcity and realm decay. A fully staffed level-1 temple earns **2.1** before these adjustments. Kult shows local staffing and the projected realm net. <!-- src: server/internal/kharis/tick.go KharisPerTempleWorker -->
+
+## A temple’s daily offering {#daily-offerings}
+
+Each temple has its own daily reference gift of **0.25 [[grain|grain]]**, taken only from its own city's stock. When a city holds several temples, they are planned in god-ID order — Asterion, Potnia, the Sea Daimons of Stillness, Velchanos — each against what the earlier ones left in the store. A temple's workers earn kharis only on game days that temple was fed. Kharis stays one pool for the whole realm. [[fish]], [[timber|timber]] and [[silver|silver]] can replace grain at the same divine value; a gift may combine goods. The amount of a substitute can change with the world's divine values. <!-- src: server/internal/kharis/temple_offering.go TempleOfferingGrain -->
+
+The temple uses **grain first, then fish, then timber, and silver last**. Silver is never required. [[oil]] and [[wine|wine]] are not used for this standing gift; [[rites|prayers]] keep their own offerings.
+
+### Planning temple offerings {#daily-offerings-2}
+
+**Kult → Temple offerings** and `keryx status` show one row per temple with the reference, equivalent alternatives, the stock it would find after earlier temples, and the planned next gift, with a ✓ or ✗. If the city cannot fund the whole gift, nothing is taken and that temple earns no offering gain for the game day. Devotion and the daily decay still determine your net kharis change.
+
+## Temple levels and the Kharis ceiling {#temple-levels}
+
+With full devotion and its daily gift, a level-1 temple can raise kharis in a small realm. Compare its gain with the cost of all your active cities and residents in **Kult → [[upkeep|Upkeep]] of the cult** and the projected net. A temple does not cancel city costs, but it does not protect low standing from [[divine-wrath|divine wrath]]. Higher-level temples can employ more devotion and make it grow faster when staffed and fed.
+
+**Your best temple sets your kharis ceiling:** no temple 40, level 1 50, level 2 75, level 3 100. Everyday prayers work at a level-1 temple. Spontaneous blessings need 60 kharis and a maintained temple. Only a level-2 temple or higher lets kharis grow that far. Kharis retained above a lowered ceiling still counts. Levelling a temple further needs [[cedar|cedar]].
+
+### Temple demolition and realm temple lists {#temple-levels-2}
+
+Demolishing a temple voluntarily costs **10 kharis per level**, with a floor of **1**; plundering causes no such debt. The demolition loss is immediate. A lower ceiling takes no additional kharis; above it, daily cult upkeep lowers kharis and temple workers and offerings do not raise it. The confirmation shows the loss and any ceiling change. See [[temple-demolition]].
+
+## Finding your temples {#temples-find-your-temples}
+
+**Kult → Temples** lists every standing temple in your realm, with its city, god,
+level, workers and next daily offering. **Manage in City** opens that temple's
+city for staffing or building. Demolition asks for confirmation and shows the
+current kharis loss and new ceiling. Temples you have not built are listed last.
+
+**Kult → Prayers** lists prayers across your cities, with the temple and city
+where each can be offered. Prayers you can prepare now come first; prayers
+whose temples are missing come last. Each Offer uses that row's city and stock.
+Gods' waiting times still apply across your realm. **Kult → Kharis** explains your
+realm's standing, daily change and current divine risk; see [[kharis]].
+
+`keryx status` lists all your temples. `keryx rite --list` lists prayers across
+your realm with the `--settlement` to use for each; add `--settlement <id>` to
+filter the list to one city.
+
+## Daily upkeep of the cult {#cult-upkeep}
+
+Daily upkeep is **0.1 base + 0.2 per city beyond the first + 0.1 per 1,000 residents**. It counts all your active cities, including your capital, whether or not they have temples. Sunk, collapsed and razed cities do not count. Residents are the actual population in those cities, including people short of a whole citizen; armies and crews away from the population are not counted a second time. This is the upkeep of the cult, rather than an extra penalty that accelerates as your realm grows.
+
+For **three cities with 2,500 residents altogether**, upkeep is **0.1 + 0.4 + 0.25 = 0.75 kharis per game day**. A realm without a city has the base cost only.
+
+### Temple production and punishment risk {#cult-upkeep-2}
+
+**Kult → Upkeep of the cult** and `keryx status` show the base, cities and residents separately, alongside projected temple production and net. One more fed temple worker gives **at least +1.05 kharis per game day**, and more when the cult’s reference offering of grain is scarce in the world. This describes the extra worker's yield: employing one also requires a free citizen, an available temple workplace and that temple's daily offering. A temple earns favour; it does not remove its city's cost.
+
+Below **15 Kharis**, there is a 3% chance of punishment each game day **with or without a temple**. An actual punishment gives **seven game days of protection**. A game day follows this world's pace; Kult and `keryx status` show the protection's end in your local clock. Nothing taken means no new protection. See [[divine-wrath]]. A punishment chooses a random eligible city of yours with something it can take; it need not strike the capital.
+
+## Demolishing a temple {#temple-demolition}
+
+Voluntarily demolishing a [[temples|temple]] angers its god. Your realm loses **10 kharis per temple level**, down to a **floor of 1**. This is an immediate consequence of your own demolition, separate from the daily chance of [[divine-wrath|divine punishment]]. It does not grant punishment protection.
+
+Before you confirm, **City → Demolish** and `keryx demolish --type temple --god potnia` show the actual kharis loss, standing afterward and the ceiling before and after. Keryx asks for confirmation; non-interactive or `--json` use without `--yes` previews the consequences without demolishing. Run again with `--yes` to confirm. The result and the **god is angered** notification record what actually happened. Nothing is refunded, and only that temple's workers become idle.
+
+Your best remaining temple determines the ceiling: no temple **40**, level 1 **50**, level 2 **75**, level 3 **100**. Another equally high temple can keep the ceiling unchanged. **Demolition costs kharis immediately; the lower ceiling takes no additional kharis.** Standing above it declines by ordinary daily cult upkeep; temple gains do not offset this decline. Once standing is at or below the ceiling, ordinary gain and upkeep apply again. The voluntary demolition loss still applies.
+
+A temple destroyed by **plundering** creates **no demolition debt** for its owner. Its loss can lower the ceiling and remove its production. Cancelling construction is not demolition and does not incur the kharis loss.

@@ -1,1 +1,0 @@
-The *next citizen would add* figure is all you need for a good decision. A citizen placed past a hex's limit produces nothing, which is why the row says **full** instead of letting you find out slowly. Every good has a limit on that hex; a relevant building adds four places and raises each worker's output.

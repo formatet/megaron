@@ -1,3 +1,0 @@
-A new world's clock is frozen until enough Wanaxes have joined (see [[getting-in]]). You can look around while you wait, but no orders: building, recruiting, placing people, marching, founding your city, sending messengers — each is refused with *"The world has not begun"* and a count of how many Wanaxes have arrived. Give them once the world starts.
-
-Beside a planned duration, details show about how many real hours it takes at this world’s current pace and the estimated local completion time. Dense rate tables use **per game day**. The same number of game days may take a different amount of real time in another world or after its pace changes; the live estimate uses this world’s clock.

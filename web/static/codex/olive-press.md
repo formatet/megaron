@@ -1,4 +1,4 @@
-An Olive Press refines oil from the city’s groves.
+An Olive Press refines [[oil|oil]] from the city’s groves.
 
 Build or upgrade it in **City → Buildings → Construct**, or use `keryx build --type olive_press`.
 

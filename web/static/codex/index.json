@@ -19,12 +19,35 @@
         "OpeningDispatch"
       ],
       "related": [
-        "welcome-your-opening-dispatch",
-        "welcome-three-rules-that-explain-almost-everything",
-        "welcome-where-to-begin",
+        "how-do-i",
         "time",
         "runners",
         "coming-back"
+      ],
+      "sections": [
+        {
+          "id": "welcome-your-opening-dispatch",
+          "title": "The opening dispatch"
+        },
+        {
+          "id": "welcome-three-rules-that-explain-almost-everything",
+          "title": "Physical world rules"
+        },
+        {
+          "id": "welcome-where-to-begin",
+          "title": "First steps"
+        }
+      ]
+    },
+    {
+      "id": "how-do-i",
+      "title": "How do I…?",
+      "category": "Start here",
+      "aliases": [
+        "how to",
+        "help",
+        "tasks",
+        "guide"
       ]
     },
     {
@@ -42,11 +65,22 @@
       "title": "Getting in",
       "category": "Start here",
       "related": [
-        "getting-in-details",
-        "getting-in-a-world-that-has-not-begun",
-        "getting-in-if-you-are-signed-out",
         "time",
         "horde"
+      ],
+      "sections": [
+        {
+          "id": "getting-in-details",
+          "title": "Joining a world"
+        },
+        {
+          "id": "getting-in-a-world-that-has-not-begun",
+          "title": "Waiting for a world to begin"
+        },
+        {
+          "id": "getting-in-if-you-are-signed-out",
+          "title": "Signing in again"
+        }
       ]
     },
     {
@@ -54,15 +88,26 @@
       "title": "game days and the clock",
       "category": "Start here",
       "related": [
-        "time-game-days-and-the-clock",
-        "time-the-world-does-not-wait-for-you",
-        "time-before-the-world-begins",
         "welcome",
         "coming-back"
       ],
       "aliases": [
         "game day",
         "game days"
+      ],
+      "sections": [
+        {
+          "id": "time-game-days-and-the-clock",
+          "title": "Game days and real time"
+        },
+        {
+          "id": "time-the-world-does-not-wait-for-you",
+          "title": "A world that keeps running"
+        },
+        {
+          "id": "time-before-the-world-begins",
+          "title": "Orders before world start"
+        }
       ]
     },
     {
@@ -70,12 +115,27 @@
       "title": "The screen",
       "category": "Start here",
       "related": [
-        "screen-top-bar",
-        "screen-bottom-bar-the-drawers",
-        "screen-the-map",
         "screen-the-map-2",
         "coming-back",
         "report"
+      ],
+      "sections": [
+        {
+          "id": "screen-top-bar",
+          "title": "The top bar"
+        },
+        {
+          "id": "screen-bottom-bar-the-drawers",
+          "title": "The drawer bar"
+        },
+        {
+          "id": "screen-the-map",
+          "title": "Map controls"
+        },
+        {
+          "id": "screen-the-map-2",
+          "title": "Sound and mobile windows"
+        }
       ]
     },
     {
@@ -88,16 +148,112 @@
         "UnitRedirected"
       ],
       "related": [
-        "runners-details",
-        "runners-why-this-is-good-for-you",
-        "runners-when-an-order-fails",
-        "runners-catching-up-with-a-moving-unit",
         "runners-catching-up-with-a-moving-unit-2",
-        "runners-crossing-the-sea",
-        "runners-the-runners-tab",
-        "runners-runner-speed",
         "marching",
         "defence"
+      ],
+      "sections": [
+        {
+          "id": "runners-details",
+          "title": "How orders travel"
+        },
+        {
+          "id": "runners-why-this-is-good-for-you",
+          "title": "Order travel and warning time"
+        },
+        {
+          "id": "runners-when-an-order-fails",
+          "title": "Failed orders"
+        },
+        {
+          "id": "runners-catching-up-with-a-moving-unit",
+          "title": "Catching a moving force"
+        },
+        {
+          "id": "runners-catching-up-with-a-moving-unit-2",
+          "title": "Sacred letters and order Runners"
+        },
+        {
+          "id": "runners-crossing-the-sea",
+          "title": "Runners crossing water"
+        },
+        {
+          "id": "runners-the-runners-tab",
+          "title": "The Runners tab"
+        },
+        {
+          "id": "runners-runner-speed",
+          "title": "Runner speed"
+        },
+        {
+          "id": "arrange-passage",
+          "title": "Arranging a ship for a Runner"
+        },
+        {
+          "id": "arrange-passage-2",
+          "title": "Fetching a waiting Runner home"
+        },
+        {
+          "id": "runner-lost-at-sea",
+          "title": "A runner lost at sea",
+          "kinds": [
+            "MessengerLostAtSea"
+          ]
+        },
+        {
+          "id": "runner-lost-at-sea-details",
+          "title": "The lost Runner’s sealed contents"
+        },
+        {
+          "id": "runner-lost-at-sea-details-2",
+          "title": "Reading a Runner loss report"
+        },
+        {
+          "id": "runner-passage",
+          "title": "Passage aboard a ship"
+        },
+        {
+          "id": "runner-passage-2",
+          "title": "Boarding any suitable ship"
+        },
+        {
+          "id": "runner-passage-3",
+          "title": "Waiting for a sailing"
+        },
+        {
+          "id": "runner-passage-on-map",
+          "title": "Passage markers on the map"
+        },
+        {
+          "id": "runner-rescued-at-sea",
+          "title": "A runner rescued at sea",
+          "kinds": [
+            "MessengerRescuedAtSea"
+          ]
+        },
+        {
+          "id": "runner-rescued-at-sea-details",
+          "title": "Rescue and the next physical port"
+        },
+        {
+          "id": "runner-return",
+          "title": "Calling a Runner home",
+          "aliases": [
+            "call-back",
+            "call back",
+            "recall runner"
+          ]
+        },
+        {
+          "id": "runner-waiting",
+          "title": "A Runner awaiting passage"
+        }
+      ],
+      "terms": [
+        "Runner",
+        "Runners",
+        "runner",
+        "runners"
       ]
     },
     {
@@ -106,13 +262,28 @@
       "category": "Start here",
       "drawer": "notif",
       "related": [
-        "coming-back-open-the-notifications-archive",
         "coming-back-open-the-notifications-archive-2",
-        "coming-back-what-to-act-on-first",
-        "coming-back-making-the-next-absence-easier",
         "time",
         "routes",
         "defence"
+      ],
+      "sections": [
+        {
+          "id": "coming-back-open-the-notifications-archive",
+          "title": "The Notifications archive"
+        },
+        {
+          "id": "coming-back-open-the-notifications-archive-2",
+          "title": "Following a dispatch to its place"
+        },
+        {
+          "id": "coming-back-what-to-act-on-first",
+          "title": "Priorities after time away"
+        },
+        {
+          "id": "coming-back-making-the-next-absence-easier",
+          "title": "Preparing to leave your realm"
+        }
       ]
     },
     {
@@ -120,10 +291,6 @@
       "title": "The Nomadic Host",
       "category": "Founding",
       "related": [
-        "horde-what-the-host-is",
-        "horde-walking",
-        "horde-where-you-are",
-        "horde-reserves-for-founding",
         "founding",
         "sight"
       ],
@@ -136,7 +303,29 @@
       "aliases": [
         "nomadic host",
         "horde"
-      ]
+      ],
+      "sections": [
+        {
+          "id": "horde-what-the-host-is",
+          "title": "The Host’s people and escort"
+        },
+        {
+          "id": "horde-walking",
+          "title": "Moving the Nomadic Host"
+        },
+        {
+          "id": "horde-where-you-are",
+          "title": "Inspecting the Host’s current ground"
+        },
+        {
+          "id": "horde-reserves-for-founding",
+          "title": "The Host’s founding reserves"
+        }
+      ],
+      "terms": [
+        "Nomadic Host"
+      ],
+      "summary": "The Nomadic Host is the people you lead before you have a city: a band on the move, looking for the place to found one."
     },
     {
       "id": "founding",
@@ -146,16 +335,43 @@
         "MetropolisFounded"
       ],
       "related": [
-        "founding-read-the-ground-first",
         "founding-read-the-ground-first-2",
-        "founding-where-you-cannot-found",
-        "founding-settling",
         "founding-settling-2",
         "founding-settling-3",
         "founding-settling-4",
         "catchment",
         "horde",
         "food"
+      ],
+      "sections": [
+        {
+          "id": "founding-read-the-ground-first",
+          "title": "Choosing founding ground"
+        },
+        {
+          "id": "founding-read-the-ground-first-2",
+          "title": "Founding deposits and food risk"
+        },
+        {
+          "id": "founding-where-you-cannot-found",
+          "title": "Where founding is forbidden"
+        },
+        {
+          "id": "founding-settling",
+          "title": "Settling the Nomadic Host"
+        },
+        {
+          "id": "founding-settling-2",
+          "title": "A new city’s starting stores"
+        },
+        {
+          "id": "founding-settling-3",
+          "title": "Founding food and timber forecasts"
+        },
+        {
+          "id": "founding-settling-4",
+          "title": "Farms on grain-bearing hills"
+        }
       ]
     },
     {
@@ -163,11 +379,19 @@
       "title": "When your last city falls",
       "category": "Founding",
       "related": [
-        "last-city-gather-the-survivors",
-        "last-city-leave-this-world",
         "horde",
         "founding",
         "occupation"
+      ],
+      "sections": [
+        {
+          "id": "last-city-gather-the-survivors",
+          "title": "Refounding after losing your last city"
+        },
+        {
+          "id": "last-city-leave-this-world",
+          "title": "Leaving a world"
+        }
       ]
     },
     {
@@ -186,12 +410,28 @@
       "title": "Catchment",
       "category": "Your city",
       "related": [
-        "catchment-details",
-        "catchment-what-it-means-for-you",
         "catchment-what-it-means-for-you-2",
         "citizens",
         "founding",
         "sieges"
+      ],
+      "sections": [
+        {
+          "id": "catchment-details",
+          "title": "Catchment reach and shared ground"
+        },
+        {
+          "id": "catchment-what-it-means-for-you",
+          "title": "Catchment resources and blockades"
+        },
+        {
+          "id": "catchment-what-it-means-for-you-2",
+          "title": "Unscouted and shared workplaces"
+        }
+      ],
+      "terms": [
+        "catchment",
+        "Catchment"
       ]
     },
     {
@@ -199,13 +439,32 @@
       "title": "Citizens and placement",
       "category": "Your city",
       "related": [
-        "citizens-placing-people",
-        "citizens-the-one-number-that-matters",
-        "free-citizens",
         "free-citizens-2",
         "catchment",
         "buildings",
         "surplus"
+      ],
+      "sections": [
+        {
+          "id": "citizens-placing-people",
+          "title": "Placing citizens"
+        },
+        {
+          "id": "citizens-the-one-number-that-matters",
+          "title": "The next citizen’s production"
+        },
+        {
+          "id": "free-citizens",
+          "title": "Free citizens and new population"
+        },
+        {
+          "id": "free-citizens-2",
+          "title": "Food from fractional citizens"
+        }
+      ],
+      "terms": [
+        "citizen",
+        "citizens"
       ]
     },
     {
@@ -223,14 +482,34 @@
         "SitosFundLow"
       ],
       "related": [
-        "food-when-there-is-not-enough",
         "food-when-there-is-not-enough-2",
-        "food-the-herd-and-the-pen",
-        "food-what-to-do-about-it",
         "citizens",
         "growth",
         "upkeep",
         "fishing"
+      ],
+      "sections": [
+        {
+          "id": "food-when-there-is-not-enough",
+          "title": "Civilian hunger"
+        },
+        {
+          "id": "food-when-there-is-not-enough-2",
+          "title": "Civilian and garrison hunger warnings"
+        },
+        {
+          "id": "food-the-herd-and-the-pen",
+          "title": "Herds and emergency food"
+        },
+        {
+          "id": "food-what-to-do-about-it",
+          "title": "Responding to a food shortage"
+        }
+      ],
+      "terms": [
+        "hunger",
+        "starve",
+        "starving"
       ]
     },
     {
@@ -238,10 +517,22 @@
       "title": "Fishing",
       "category": "Your city",
       "related": [
-        "fishing-details",
         "food",
         "harbour",
         "citizens"
+      ],
+      "sections": [
+        {
+          "id": "fishing-details",
+          "title": "Fishing places, bays and storms"
+        },
+        {
+          "id": "deep-water-fishing",
+          "title": "Deep-water fishing",
+          "aliases": [
+            "harbour fishing"
+          ]
+        }
       ]
     },
     {
@@ -252,8 +543,7 @@
         "buildings",
         "citizens",
         "units",
-        "sea",
-        "shipyard-workers"
+        "sea"
       ],
       "entities": [
         {
@@ -263,7 +553,18 @@
       ],
       "aliases": [
         "shipyard"
-      ]
+      ],
+      "sections": [
+        {
+          "id": "shipyard-workers",
+          "title": "Shipyard workers"
+        }
+      ],
+      "terms": [
+        "Shipyard",
+        "Shipyards"
+      ],
+      "parent": "buildings"
     },
     {
       "id": "harbour",
@@ -285,18 +586,35 @@
         "harbour",
         "harbor",
         "port"
-      ]
+      ],
+      "terms": [
+        "Harbour",
+        "Harbours"
+      ],
+      "parent": "buildings"
     },
     {
       "id": "growth",
       "title": "Growth",
       "category": "Your city",
       "related": [
-        "growth-details",
         "growth-details-2",
-        "growth-next-citizen",
         "food",
         "citizens"
+      ],
+      "sections": [
+        {
+          "id": "growth-details",
+          "title": "Growth from food surplus"
+        },
+        {
+          "id": "growth-details-2",
+          "title": "When population growth stops"
+        },
+        {
+          "id": "growth-next-citizen",
+          "title": "The next free citizen"
+        }
       ]
     },
     {
@@ -308,14 +626,9 @@
         "GoodsCrafted"
       ],
       "related": [
-        "buildings-details",
         "buildings-details-3",
-        "hex-buildings",
         "hex-buildings-2",
-        "hex-production-buildings",
-        "building-levels",
         "building-levels-2",
-        "demolition",
         "demolition-2",
         "citizens",
         "goods",
@@ -336,6 +649,44 @@
         "winery",
         "pen",
         "granary"
+      ],
+      "sections": [
+        {
+          "id": "buildings-details",
+          "title": "All buildings"
+        },
+        {
+          "id": "buildings-details-3",
+          "title": "Walls, population and coastal access"
+        },
+        {
+          "id": "hex-buildings",
+          "title": "Buildings on catchment hexes"
+        },
+        {
+          "id": "hex-buildings-2",
+          "title": "City buildings and Harbour reach"
+        },
+        {
+          "id": "hex-production-buildings",
+          "title": "Hex building production"
+        },
+        {
+          "id": "building-levels",
+          "title": "Building upgrades and materials"
+        },
+        {
+          "id": "building-levels-2",
+          "title": "Construction queues and hex selectors"
+        },
+        {
+          "id": "demolition",
+          "title": "Demolishing a finished building"
+        },
+        {
+          "id": "demolition-2",
+          "title": "Cancelling builds and finding completed sites"
+        }
       ]
     },
     {
@@ -348,10 +699,6 @@
       "category": "Goods and trade",
       "drawer": "economy",
       "related": [
-        "goods-details",
-        "goods-the-three-tabs",
-        "goods-offerings-and-trade",
-        "goods-storage-capacity",
         "goods-storage-capacity-2",
         "surplus",
         "silver",
@@ -369,6 +716,28 @@
         "timber",
         "tin",
         "wine"
+      ],
+      "sections": [
+        {
+          "id": "goods-details",
+          "title": "All goods"
+        },
+        {
+          "id": "goods-the-three-tabs",
+          "title": "Economy tabs"
+        },
+        {
+          "id": "goods-offerings-and-trade",
+          "title": "Goods for offerings and trade"
+        },
+        {
+          "id": "goods-storage-capacity",
+          "title": "Storage capacity and forecasts"
+        },
+        {
+          "id": "goods-storage-capacity-2",
+          "title": "Goods lost to full storage"
+        }
       ]
     },
     {
@@ -388,16 +757,18 @@
       ],
       "aliases": [
         "silver"
-      ]
+      ],
+      "terms": [
+        "silver",
+        "Silver"
+      ],
+      "parent": "goods"
     },
     {
       "id": "incense",
       "title": "Incense",
       "category": "Goods and trade",
       "related": [
-        "incense-where-it-comes-from",
-        "incense-what-it-does-at-the-altar",
-        "incense-some-history",
         "goods",
         "rites",
         "trade"
@@ -410,7 +781,26 @@
       ],
       "aliases": [
         "incense"
-      ]
+      ],
+      "sections": [
+        {
+          "id": "incense-where-it-comes-from",
+          "title": "Incense sources"
+        },
+        {
+          "id": "incense-what-it-does-at-the-altar",
+          "title": "Incense at the altar"
+        },
+        {
+          "id": "incense-some-history",
+          "title": "Frankincense and myrrh"
+        }
+      ],
+      "terms": [
+        "incense",
+        "Incense"
+      ],
+      "parent": "goods"
     },
     {
       "id": "surplus",
@@ -434,11 +824,22 @@
         "GiftLostV2"
       ],
       "related": [
-        "gifts-on-the-road",
-        "gifts-at-the-destination",
         "transfers",
         "contact",
         "silver"
+      ],
+      "sections": [
+        {
+          "id": "gifts-on-the-road",
+          "title": "Gifts in transit"
+        },
+        {
+          "id": "gifts-at-the-destination",
+          "title": "Receiving gifts"
+        }
+      ],
+      "terms": [
+        "tribute"
       ]
     },
     {
@@ -453,15 +854,46 @@
         "CaravanSeized"
       ],
       "related": [
-        "transfers-cargo-is-physical",
-        "transfers-sending-it-by-sea",
         "transfers-sending-it-by-sea-2",
-        "transfers-route-and-journey-time",
         "transfers-route-and-journey-time-2",
-        "transfers-choose-land-or-sea",
         "transfers-choose-land-or-sea-2",
         "routes",
         "trade"
+      ],
+      "sections": [
+        {
+          "id": "transfers-cargo-is-physical",
+          "title": "Physical cargo"
+        },
+        {
+          "id": "transfers-sending-it-by-sea",
+          "title": "Naval transfer requirements"
+        },
+        {
+          "id": "transfers-sending-it-by-sea-2",
+          "title": "Capture, damage and loss of cargo"
+        },
+        {
+          "id": "transfers-route-and-journey-time",
+          "title": "Cargo routes and travel time"
+        },
+        {
+          "id": "transfers-route-and-journey-time-2",
+          "title": "Port approaches and mixed cargo"
+        },
+        {
+          "id": "transfers-choose-land-or-sea",
+          "title": "Choosing land or sea"
+        },
+        {
+          "id": "transfers-choose-land-or-sea-2",
+          "title": "Land and sea choice in Keryx"
+        }
+      ],
+      "terms": [
+        "transfers",
+        "caravan",
+        "caravans"
       ]
     },
     {
@@ -473,15 +905,40 @@
         "StandingOrderPaused"
       ],
       "related": [
-        "routes-details",
         "routes-details-2",
-        "routes-what-to-use-it-for",
-        "routes-sea-routes",
-        "routes-route-and-journey-time",
-        "routes-follow-your-cargo",
         "transfers",
         "coming-back",
         "colonies"
+      ],
+      "sections": [
+        {
+          "id": "routes-details",
+          "title": "Standing route stock targets"
+        },
+        {
+          "id": "routes-details-2",
+          "title": "Managing standing routes"
+        },
+        {
+          "id": "routes-what-to-use-it-for",
+          "title": "Uses for standing routes"
+        },
+        {
+          "id": "routes-sea-routes",
+          "title": "Standing sea routes"
+        },
+        {
+          "id": "routes-route-and-journey-time",
+          "title": "Standing route journey times"
+        },
+        {
+          "id": "routes-follow-your-cargo",
+          "title": "Following a route’s cargo"
+        }
+      ],
+      "terms": [
+        "standing order",
+        "standing orders"
       ]
     },
     {
@@ -497,16 +954,68 @@
         "TradeReturn"
       ],
       "related": [
-        "trade-making-an-offer",
-        "trade-answering-an-offer",
-        "trade-delivery",
         "trade-delivery-2",
-        "trade-finding-partners",
-        "trade-route-and-journey-time",
         "trade-route-and-journey-time-2",
         "messengers",
         "contact",
         "silver"
+      ],
+      "sections": [
+        {
+          "id": "trade-making-an-offer",
+          "title": "Making a trade offer"
+        },
+        {
+          "id": "trade-answering-an-offer",
+          "title": "Accepting or declining an offer"
+        },
+        {
+          "id": "trade-delivery",
+          "title": "Delivering a trade agreement"
+        },
+        {
+          "id": "trade-delivery-2",
+          "title": "Returning damaged trade cargo"
+        },
+        {
+          "id": "trade-finding-partners",
+          "title": "Finding trade partners"
+        },
+        {
+          "id": "trade-route-and-journey-time",
+          "title": "Trade agreement routes"
+        },
+        {
+          "id": "trade-route-and-journey-time-2",
+          "title": "A trade agreement’s land or sea choice"
+        },
+        {
+          "id": "trade-offer-expiry",
+          "title": "Trade offer expiry",
+          "aliases": [
+            "offer deadline",
+            "escrow",
+            "reply window"
+          ]
+        }
+      ],
+      "terms": [
+        "trade offer",
+        "trade offers",
+        "Trade offers"
+      ]
+    },
+    {
+      "id": "terrain",
+      "title": "Terrain",
+      "category": "The wider world",
+      "aliases": [
+        "terrain",
+        "ground",
+        "landscape"
+      ],
+      "terms": [
+        "terrain"
       ]
     },
     {
@@ -520,10 +1029,7 @@
         "ExpeditionReport"
       ],
       "related": [
-        "live-sight",
         "live-sight-2",
-        "map-memory",
-        "map-actors",
         "exploration",
         "exploration-2",
         "exploration-3",
@@ -545,6 +1051,29 @@
         "maquis",
         "semi-desert",
         "cedar-forest"
+      ],
+      "sections": [
+        {
+          "id": "live-sight",
+          "title": "Live sight"
+        },
+        {
+          "id": "live-sight-2",
+          "title": "Seeing shorelines from ships"
+        },
+        {
+          "id": "map-memory",
+          "title": "Map memory"
+        },
+        {
+          "id": "map-actors",
+          "title": "Moving actors on the map"
+        }
+      ],
+      "terms": [
+        "fog",
+        "Map memory",
+        "map memory"
       ]
     },
     {
@@ -552,15 +1081,36 @@
       "title": "Xenia and the sacred",
       "category": "The wider world",
       "related": [
-        "xenia-themis-what-the-gods-hold",
-        "xenia-the-messenger-is-sacred",
-        "xenia-we-carry-each-other-s-messengers",
-        "xenia-the-guest-is-fed",
-        "xenia-the-suppliant-hiketeia",
         "messengers",
         "runners",
         "ship-food-return",
         "last-city"
+      ],
+      "sections": [
+        {
+          "id": "xenia-themis-what-the-gods-hold",
+          "title": "Themis"
+        },
+        {
+          "id": "xenia-the-messenger-is-sacred",
+          "title": "The sacred messenger"
+        },
+        {
+          "id": "xenia-we-carry-each-other-s-messengers",
+          "title": "A herald’s right of passage"
+        },
+        {
+          "id": "xenia-the-guest-is-fed",
+          "title": "Hospitality for ships"
+        },
+        {
+          "id": "xenia-the-suppliant-hiketeia",
+          "title": "Hiketeia: protection for survivors"
+        }
+      ],
+      "terms": [
+        "xenia",
+        "Xenia"
       ]
     },
     {
@@ -568,40 +1118,20 @@
       "title": "Contact",
       "category": "The wider world",
       "related": [
-        "contact-details",
         "contact-details-2",
         "messengers",
         "trade",
         "gossip"
-      ]
-    },
-    {
-      "id": "runner-lost-at-sea",
-      "title": "A runner lost at sea",
-      "category": "The wider world",
-      "kinds": [
-        "MessengerLostAtSea"
       ],
-      "related": [
-        "runner-lost-at-sea-details",
-        "runner-lost-at-sea-details-2",
-        "messengers",
-        "sea",
-        "runner-rescued-at-sea"
-      ]
-    },
-    {
-      "id": "runner-rescued-at-sea",
-      "title": "A runner rescued at sea",
-      "category": "The wider world",
-      "kinds": [
-        "MessengerRescuedAtSea"
-      ],
-      "related": [
-        "runner-rescued-at-sea-details",
-        "messengers",
-        "sea",
-        "runner-lost-at-sea"
+      "sections": [
+        {
+          "id": "contact-details",
+          "title": "Permanent contact with a city"
+        },
+        {
+          "id": "contact-details-2",
+          "title": "Keeping and reading received letters"
+        }
       ]
     },
     {
@@ -614,15 +1144,43 @@
         "MessengerReturned"
       ],
       "related": [
-        "messengers-your-letters",
         "messengers-your-letters-2",
-        "messengers-letters-take-time",
         "messengers-letters-take-time-2",
-        "messengers-messengers-are-sacred",
-        "messengers-crossing-the-sea",
         "contact",
         "trade",
         "runners"
+      ],
+      "sections": [
+        {
+          "id": "messengers-your-letters",
+          "title": "Letters between Wanaxes"
+        },
+        {
+          "id": "messengers-your-letters-2",
+          "title": "Replying with their Runner"
+        },
+        {
+          "id": "messengers-letters-take-time",
+          "title": "The journey of a letter"
+        },
+        {
+          "id": "messengers-letters-take-time-2",
+          "title": "A Runner’s stay at court"
+        },
+        {
+          "id": "messengers-messengers-are-sacred",
+          "title": "Safety and return of letters"
+        },
+        {
+          "id": "messengers-crossing-the-sea",
+          "title": "Letters crossing water"
+        }
+      ],
+      "terms": [
+        "messenger",
+        "messengers",
+        "Messenger",
+        "Messengers"
       ]
     },
     {
@@ -631,10 +1189,31 @@
       "category": "The wider world",
       "drawer": "notif",
       "related": [
-        "gossip-details",
-        "gossip-divine-omens",
         "contact",
         "sight"
+      ],
+      "sections": [
+        {
+          "id": "gossip-details",
+          "title": "Discovering and passing rumours"
+        },
+        {
+          "id": "gossip-how-rumours-spread",
+          "title": "What becomes news, and how far it travels",
+          "aliases": [
+            "rumour",
+            "rumor",
+            "news"
+          ]
+        },
+        {
+          "id": "gossip-divine-omens",
+          "title": "True divine omens"
+        }
+      ],
+      "terms": [
+        "gossip",
+        "Gossip"
       ]
     },
     {
@@ -664,7 +1243,6 @@
         "ship-missions",
         "ship-missions-2",
         "ship-missions-3",
-        "sea-storm-risks",
         "sea-storm-risks-2",
         "ship-loss",
         "runner-passage",
@@ -684,6 +1262,19 @@
         "transfers",
         "storms",
         "shipyard"
+      ],
+      "sections": [
+        {
+          "id": "sea-storm-risks",
+          "title": "Sea storms and ship damage"
+        },
+        {
+          "id": "sea-storm-risks-2",
+          "title": "Damage from entering a storm"
+        }
+      ],
+      "terms": [
+        "Thalassa"
       ]
     },
     {
@@ -694,13 +1285,28 @@
         "PlaceFirstReached"
       ],
       "related": [
-        "naming-the-land-details",
-        "naming-the-land-give-it-a-name",
-        "naming-the-land-keryx",
         "sight",
         "marching",
         "storms",
         "keryx"
+      ],
+      "sections": [
+        {
+          "id": "naming-the-land-details",
+          "title": "Naming known land"
+        },
+        {
+          "id": "naming-the-land-give-it-a-name",
+          "title": "Giving a place a name"
+        },
+        {
+          "id": "naming-the-land-keryx",
+          "title": "Naming places in Keryx"
+        }
+      ],
+      "terms": [
+        "naming right",
+        "name it"
       ]
     },
     {
@@ -708,13 +1314,33 @@
       "title": "Storms",
       "category": "The wider world",
       "related": [
-        "storms-how-they-move",
-        "storms-what-they-do",
-        "storms-what-you-see",
-        "storms-naming-a-storm",
         "sea",
         "sight",
         "keryx"
+      ],
+      "sections": [
+        {
+          "id": "storms-how-they-move",
+          "title": "How storms move"
+        },
+        {
+          "id": "storms-what-they-do",
+          "title": "Storm effects"
+        },
+        {
+          "id": "storms-what-you-see",
+          "title": "Seeing and remembering storms"
+        },
+        {
+          "id": "storms-naming-a-storm",
+          "title": "Naming a storm"
+        }
+      ],
+      "terms": [
+        "storms",
+        "Storms",
+        "sea storm",
+        "sea storms"
       ]
     },
     {
@@ -726,14 +1352,10 @@
         "TrainComplete"
       ],
       "related": [
-        "units-recruiting",
         "units-recruiting-2",
-        "units-recruits-are-your-own-people",
         "units-recruits-are-your-own-people-2",
         "units-recruits-are-your-own-people-3",
-        "units-the-forces-tab",
         "units-the-forces-tab-2",
-        "units-forces-and-marches",
         "marching",
         "upkeep",
         "battle",
@@ -750,6 +1372,40 @@
         "units",
         "army",
         "forces"
+      ],
+      "sections": [
+        {
+          "id": "units-recruiting",
+          "title": "Recruitment costs and requirements"
+        },
+        {
+          "id": "units-recruiting-2",
+          "title": "Cohort training and readiness"
+        },
+        {
+          "id": "units-recruits-are-your-own-people",
+          "title": "Drafting and supporting forces"
+        },
+        {
+          "id": "units-recruits-are-your-own-people-2",
+          "title": "Disbanding and supporting city stores"
+        },
+        {
+          "id": "units-recruits-are-your-own-people-3",
+          "title": "Laying up and fitting out crews"
+        },
+        {
+          "id": "units-the-forces-tab",
+          "title": "Reading the Forces roster"
+        },
+        {
+          "id": "units-the-forces-tab-2",
+          "title": "Cancelling training and cargo capacity"
+        },
+        {
+          "id": "units-forces-and-marches",
+          "title": "Forces, Marches and commerce"
+        }
       ]
     },
     {
@@ -769,14 +1425,20 @@
         "galley",
         "ship",
         "boat"
-      ]
+      ],
+      "terms": [
+        "Galley",
+        "Galleys",
+        "galley",
+        "galleys"
+      ],
+      "parent": "ship-types"
     },
     {
       "id": "war-galley",
       "title": "War Galley",
       "category": "War",
       "related": [
-        "war-galley-why-it-is-dangerous",
         "units"
       ],
       "entities": [
@@ -789,7 +1451,22 @@
         "war galley",
         "ship",
         "boat"
-      ]
+      ],
+      "sections": [
+        {
+          "id": "war-galley-why-it-is-dangerous",
+          "title": "War Galley combat power"
+        }
+      ],
+      "terms": [
+        "War Galley",
+        "War Galleys",
+        "war galley",
+        "war galleys",
+        "warship",
+        "warships"
+      ],
+      "parent": "ship-types"
     },
     {
       "id": "emporos",
@@ -809,7 +1486,12 @@
         "ship",
         "boat",
         "merchant ship"
-      ]
+      ],
+      "terms": [
+        "Emporos",
+        "Emporoi"
+      ],
+      "parent": "ship-types"
     },
     {
       "id": "spearmen",
@@ -826,7 +1508,12 @@
       ],
       "aliases": [
         "spearman"
-      ]
+      ],
+      "terms": [
+        "Spearmen",
+        "spearmen"
+      ],
+      "parent": "units"
     },
     {
       "id": "elite-infantry",
@@ -844,7 +1531,11 @@
       "aliases": [
         "elite infantry",
         "bronze guard"
-      ]
+      ],
+      "terms": [
+        "Bronze Guard"
+      ],
+      "parent": "units"
     },
     {
       "id": "war-chariot",
@@ -862,7 +1553,14 @@
       "aliases": [
         "war chariot",
         "chariot"
-      ]
+      ],
+      "terms": [
+        "Chariot",
+        "Chariots",
+        "chariot",
+        "chariots"
+      ],
+      "parent": "units"
     },
     {
       "id": "marching",
@@ -874,23 +1572,70 @@
         "MarchStalled"
       ],
       "related": [
-        "marching-giving-a-march-order",
         "marching-giving-a-march-order-2",
         "marching-giving-a-march-order-3",
-        "marching-a-marching-unit-is-still-reachable",
-        "marching-orders-to-forces-already-in-the-field-travel-by-runner",
         "marching-orders-to-forces-already-in-the-field-travel-by-runner-2",
-        "marching-where-you-can-march",
-        "marching-on-the-road",
-        "marching-exploring-an-area",
         "marching-exploring-an-area-2",
-        "marching-terrain-and-journey-time",
         "marching-terrain-and-journey-time-2",
         "marching-terrain-and-journey-time-3",
         "runners",
         "stances",
         "sight",
         "roads"
+      ],
+      "sections": [
+        {
+          "id": "marching-giving-a-march-order",
+          "title": "Selecting forces for a march"
+        },
+        {
+          "id": "marching-giving-a-march-order-2",
+          "title": "March forecasts and city destinations"
+        },
+        {
+          "id": "marching-giving-a-march-order-3",
+          "title": "City destinations in Keryx"
+        },
+        {
+          "id": "marching-a-marching-unit-is-still-reachable",
+          "title": "Redirecting a moving force"
+        },
+        {
+          "id": "marching-orders-to-forces-already-in-the-field-travel-by-runner",
+          "title": "Recall and Redirect by Runner"
+        },
+        {
+          "id": "marching-orders-to-forces-already-in-the-field-travel-by-runner-2",
+          "title": "Recalling all and keeping failed orders"
+        },
+        {
+          "id": "marching-where-you-can-march",
+          "title": "Passable destinations"
+        },
+        {
+          "id": "marching-on-the-road",
+          "title": "Forces travelling on a route"
+        },
+        {
+          "id": "marching-exploring-an-area",
+          "title": "Ordering an expedition"
+        },
+        {
+          "id": "marching-exploring-an-area-2",
+          "title": "Expedition destinations and duration"
+        },
+        {
+          "id": "marching-terrain-and-journey-time",
+          "title": "Land terrain and travel time"
+        },
+        {
+          "id": "marching-terrain-and-journey-time-2",
+          "title": "Ship speed and expedition forecasts"
+        },
+        {
+          "id": "marching-terrain-and-journey-time-3",
+          "title": "Expedition budget and superseded orders"
+        }
       ]
     },
     {
@@ -901,13 +1646,32 @@
         "RoadEdgeBuilt"
       ],
       "related": [
-        "roads-what-a-road-does",
-        "roads-building-one",
-        "roads-when-it-goes-wrong",
-        "roads-seeing-roads",
         "marching",
         "transfers",
         "runners"
+      ],
+      "sections": [
+        {
+          "id": "roads-what-a-road-does",
+          "title": "Road movement costs"
+        },
+        {
+          "id": "roads-building-one",
+          "title": "Building a road"
+        },
+        {
+          "id": "roads-when-it-goes-wrong",
+          "title": "Interrupted road construction"
+        },
+        {
+          "id": "roads-seeing-roads",
+          "title": "Seeing roads"
+        }
+      ],
+      "terms": [
+        "Roads",
+        "built road",
+        "built roads"
       ]
     },
     {
@@ -918,15 +1682,39 @@
         "SentryAlerted"
       ],
       "related": [
-        "stances-details",
-        "stances-a-unit-already-on-the-march",
-        "stances-taking-a-shared-hex",
-        "stances-sentry-is-a-siege",
-        "stances-a-watch-is-not-free",
-        "stances-when-to-retreat",
         "sieges",
         "defence",
         "battle"
+      ],
+      "sections": [
+        {
+          "id": "stances-details",
+          "title": "Choosing a stance"
+        },
+        {
+          "id": "stances-a-unit-already-on-the-march",
+          "title": "Changing stance by Runner"
+        },
+        {
+          "id": "stances-taking-a-shared-hex",
+          "title": "Taking a shared catchment hex"
+        },
+        {
+          "id": "stances-sentry-is-a-siege",
+          "title": "Sentry and sieges"
+        },
+        {
+          "id": "stances-a-watch-is-not-free",
+          "title": "The cost of a watch"
+        },
+        {
+          "id": "stances-when-to-retreat",
+          "title": "Battle retreat orders"
+        }
+      ],
+      "terms": [
+        "stance",
+        "stances"
       ]
     },
     {
@@ -938,12 +1726,23 @@
         "ForeignMarchSightedV2"
       ],
       "related": [
-        "defence-you-are-told-when-something-comes",
-        "defence-why-the-defender-has-time",
-        "defence-buying-warning-time",
         "runners",
         "stances",
         "sight"
+      ],
+      "sections": [
+        {
+          "id": "defence-you-are-told-when-something-comes",
+          "title": "Incoming march warnings"
+        },
+        {
+          "id": "defence-why-the-defender-has-time",
+          "title": "Physical warning time"
+        },
+        {
+          "id": "defence-buying-warning-time",
+          "title": "Buying time to defend"
+        }
       ]
     },
     {
@@ -957,11 +1756,27 @@
         "SettlementDefended"
       ],
       "related": [
-        "battle-when-battle-begins",
-        "battle-how-a-battle-runs",
-        "battle-after-the-battle",
         "units",
         "stances"
+      ],
+      "sections": [
+        {
+          "id": "battle-when-battle-begins",
+          "title": "When battle begins"
+        },
+        {
+          "id": "battle-how-a-battle-runs",
+          "title": "Battle rounds"
+        },
+        {
+          "id": "battle-after-the-battle",
+          "title": "Battle reports and survivors"
+        }
+      ],
+      "terms": [
+        "battle",
+        "battles",
+        "Battle"
       ]
     },
     {
@@ -976,13 +1791,32 @@
         "HexTaken"
       ],
       "related": [
-        "sieges-starving-a-city-out",
-        "sieges-blockaded-hexes",
-        "sieges-taking-a-hex",
-        "sieges-when-it-happens-to-you",
         "occupation",
         "stances",
         "catchment"
+      ],
+      "sections": [
+        {
+          "id": "sieges-starving-a-city-out",
+          "title": "Starving a city out"
+        },
+        {
+          "id": "sieges-blockaded-hexes",
+          "title": "Blockaded catchment hexes"
+        },
+        {
+          "id": "sieges-taking-a-hex",
+          "title": "Taking a catchment hex"
+        },
+        {
+          "id": "sieges-when-it-happens-to-you",
+          "title": "Responding to a siege"
+        }
+      ],
+      "terms": [
+        "siege",
+        "sieges",
+        "blockade"
       ]
     },
     {
@@ -1000,24 +1834,32 @@
         "OutpostCaptured"
       ],
       "related": [
-        "occupation-when-the-occupation-ripens",
-        "occupation-when-it-happens-to-you",
         "sieges",
         "battle",
         "rough-edges"
-      ]
-    },
-    {
-      "id": "ship-food-return",
-      "title": "Home with food for the way back",
-      "category": "War",
-      "kinds": [
-        "ShipCameHomeForFood"
       ],
-      "related": [
-        "sea",
-        "food",
-        "upkeep"
+      "sections": [
+        {
+          "id": "occupation-when-the-occupation-ripens",
+          "title": "Completing an occupation"
+        },
+        {
+          "id": "occupation-when-it-happens-to-you",
+          "title": "Relieving an occupied city"
+        },
+        {
+          "id": "occupation-capital-succession",
+          "title": "Losing your capital",
+          "aliases": [
+            "capital",
+            "succession"
+          ]
+        }
+      ],
+      "terms": [
+        "occupation",
+        "occupied",
+        "Occupation"
       ]
     },
     {
@@ -1033,47 +1875,55 @@
         "UnitReturnedStarving"
       ],
       "related": [
-        "military-pay",
         "military-pay-2",
-        "military-food",
         "military-food-2",
-        "upkeep-before-you-settle",
-        "upkeep-the-rule-of-thumb",
         "silver",
         "food",
         "units"
+      ],
+      "sections": [
+        {
+          "id": "military-pay",
+          "title": "Soldiers’ and crews’ pay"
+        },
+        {
+          "id": "military-pay-2",
+          "title": "Unpaid forces and laid-up crews"
+        },
+        {
+          "id": "military-food",
+          "title": "Food for soldiers and rowers"
+        },
+        {
+          "id": "military-food-2",
+          "title": "Military hunger and early ship returns"
+        },
+        {
+          "id": "upkeep-before-you-settle",
+          "title": "Escort upkeep before founding"
+        },
+        {
+          "id": "upkeep-the-rule-of-thumb",
+          "title": "Keeping forces affordable"
+        }
+      ],
+      "terms": [
+        "upkeep",
+        "Upkeep"
       ]
     },
     {
-      "id": "temple-demolition",
-      "title": "Demolishing a temple",
+      "id": "gods",
+      "title": "The gods",
       "category": "The gods",
-      "drawer": "kult",
-      "kinds": [
-        "TempleDemolitionWrath"
+      "aliases": [
+        "gods",
+        "god",
+        "pantheon"
       ],
-      "related": [
-        "kharis",
-        "temples",
-        "buildings",
-        "divine-wrath"
-      ]
-    },
-    {
-      "id": "divine-wrath",
-      "title": "Divine wrath",
-      "category": "The gods",
-      "drawer": "kult",
-      "kinds": [
-        "KharisDeclining"
-      ],
-      "related": [
-        "divine-wrath-warning-before-danger",
-        "divine-wrath-seven-game-days-after-punishment",
-        "divine-wrath-temple-levels",
-        "kharis",
-        "temples",
-        "rites"
+      "terms": [
+        "the gods",
+        "gods"
       ]
     },
     {
@@ -1087,11 +1937,9 @@
         "DivinePunishment"
       ],
       "related": [
-        "kharis-details",
         "kharis-details-2",
         "cult-upkeep",
         "cult-upkeep-2",
-        "raising-kharis",
         "raising-kharis-2",
         "raising-kharis-3",
         "temples",
@@ -1100,6 +1948,51 @@
       "aliases": [
         "mana",
         "divine standing"
+      ],
+      "sections": [
+        {
+          "id": "kharis-details",
+          "title": "Divine moods"
+        },
+        {
+          "id": "kharis-details-2",
+          "title": "Starting standing and true omens"
+        },
+        {
+          "id": "raising-kharis",
+          "title": "Maintaining divine standing"
+        },
+        {
+          "id": "raising-kharis-2",
+          "title": "The Kharis ceiling and offerings"
+        },
+        {
+          "id": "raising-kharis-3",
+          "title": "Kult tabs and changes in standing"
+        },
+        {
+          "id": "divine-wrath",
+          "title": "Divine wrath",
+          "kinds": [
+            "KharisDeclining"
+          ]
+        },
+        {
+          "id": "divine-wrath-warning-before-danger",
+          "title": "Warnings of divine wrath"
+        },
+        {
+          "id": "divine-wrath-seven-game-days-after-punishment",
+          "title": "Protection after punishment"
+        },
+        {
+          "id": "divine-wrath-temple-levels",
+          "title": "Temples and divine punishment"
+        }
+      ],
+      "terms": [
+        "Kharis",
+        "kharis"
       ]
     },
     {
@@ -1107,19 +2000,59 @@
       "title": "Temples and devotion",
       "category": "The gods",
       "related": [
-        "temples-building-one",
-        "temple-workers",
-        "daily-offerings",
         "daily-offerings-2",
-        "temple-levels",
         "temple-levels-2",
-        "temples-find-your-temples",
         "kharis",
         "buildings",
         "potnia",
         "velchanos",
         "asterion",
         "sea-daimons"
+      ],
+      "sections": [
+        {
+          "id": "temples-building-one",
+          "title": "Building and upgrading temples"
+        },
+        {
+          "id": "temple-workers",
+          "title": "Temple workers"
+        },
+        {
+          "id": "daily-offerings",
+          "title": "A temple’s daily offering"
+        },
+        {
+          "id": "daily-offerings-2",
+          "title": "Planning temple offerings"
+        },
+        {
+          "id": "temple-levels",
+          "title": "Temple levels and the Kharis ceiling"
+        },
+        {
+          "id": "temple-levels-2",
+          "title": "Temple demolition and realm temple lists"
+        },
+        {
+          "id": "temples-find-your-temples",
+          "title": "Finding your temples"
+        },
+        {
+          "id": "cult-upkeep",
+          "title": "Daily upkeep of the cult"
+        },
+        {
+          "id": "cult-upkeep-2",
+          "title": "Temple production and punishment risk"
+        },
+        {
+          "id": "temple-demolition",
+          "title": "Demolishing a temple",
+          "kinds": [
+            "TempleDemolitionWrath"
+          ]
+        }
       ]
     },
     {
@@ -1130,14 +2063,9 @@
         "RiteAnswered"
       ],
       "related": [
-        "rites-details",
-        "prayer-requirements",
         "prayer-requirements-2",
-        "rites-the-prayers",
-        "minoan-prayers",
         "minoan-prayers-2",
         "minoan-prayers-3",
-        "offerings",
         "kharis",
         "bronze",
         "potnias-vision",
@@ -1145,6 +2073,40 @@
         "green-shoots",
         "the-thread-shows-a-path",
         "favourable-passage"
+      ],
+      "sections": [
+        {
+          "id": "rites-details",
+          "title": "Temples required by prayers"
+        },
+        {
+          "id": "prayer-requirements",
+          "title": "Standing and offerings for prayers"
+        },
+        {
+          "id": "prayer-requirements-2",
+          "title": "Waiting between prayers"
+        },
+        {
+          "id": "rites-the-prayers",
+          "title": "Prayer answers and active blessings"
+        },
+        {
+          "id": "minoan-prayers",
+          "title": "The current Minoan prayers"
+        },
+        {
+          "id": "minoan-prayers-2",
+          "title": "Departure prayers"
+        },
+        {
+          "id": "minoan-prayers-3",
+          "title": "Gifts awaiting departure"
+        },
+        {
+          "id": "offerings",
+          "title": "The value of an offering"
+        }
       ]
     },
     {
@@ -1156,12 +2118,36 @@
         "OutpostEstablished"
       ],
       "related": [
-        "colonies-founding-a-colony",
         "colonies-founding-a-colony-2",
-        "colonies-colonies-are-not-metropolises",
-        "colonies-abandoning-a-colony",
         "routes",
         "founding"
+      ],
+      "sections": [
+        {
+          "id": "colonies-founding-a-colony",
+          "title": "Founding a colony"
+        },
+        {
+          "id": "colonies-founding-a-colony-2",
+          "title": "Reaching a new colony"
+        },
+        {
+          "id": "colonies-colonies-are-not-metropolises",
+          "title": "Colonies and metropolises"
+        },
+        {
+          "id": "colonies-abandoning-a-colony",
+          "title": "Abandoning a colony",
+          "aliases": [
+            "abandon",
+            "abandon colony"
+          ]
+        }
+      ],
+      "terms": [
+        "colony",
+        "colonies",
+        "Colonies"
       ]
     },
     {
@@ -1181,7 +2167,13 @@
       ],
       "aliases": [
         "bronze"
-      ]
+      ],
+      "terms": [
+        "bronze",
+        "Bronze"
+      ],
+      "summary": "Bronze is copper and tin smelted together in a Foundry, and the two never lie close: the scarcity that shapes the whole world.",
+      "parent": "goods"
     },
     {
       "id": "report",
@@ -1208,12 +2200,31 @@
       "title": "Keryx, the command line",
       "category": "Reference",
       "related": [
-        "keryx-getting-started",
-        "keryx-a-few-useful-commands",
         "keryx-a-few-useful-commands-2",
-        "keryx-argument-reminders",
         "keryx-argument-reminders-2",
         "rough-edges"
+      ],
+      "sections": [
+        {
+          "id": "keryx-getting-started",
+          "title": "Setting up Keryx"
+        },
+        {
+          "id": "keryx-a-few-useful-commands",
+          "title": "Common Keryx commands"
+        },
+        {
+          "id": "keryx-a-few-useful-commands-2",
+          "title": "World and city selectors in Keryx"
+        },
+        {
+          "id": "keryx-argument-reminders",
+          "title": "Keryx argument syntax"
+        },
+        {
+          "id": "keryx-argument-reminders-2",
+          "title": "Keryx staffing and labour commands"
+        }
       ]
     },
     {
@@ -1224,11 +2235,19 @@
         "agora_ready"
       ],
       "related": [
-        "community-chat-your-chat-account",
-        "community-chat-chat-rules-and-privacy",
         "report",
         "keryx",
         "messengers"
+      ],
+      "sections": [
+        {
+          "id": "community-chat-your-chat-account",
+          "title": "The Agora chat account"
+        },
+        {
+          "id": "community-chat-chat-rules-and-privacy",
+          "title": "Agora rules and privacy"
+        }
       ]
     },
     {
@@ -1252,7 +2271,12 @@
       ],
       "aliases": [
         "farm"
-      ]
+      ],
+      "terms": [
+        "Farm",
+        "Farms"
+      ],
+      "parent": "buildings"
     },
     {
       "id": "barracks",
@@ -1267,7 +2291,11 @@
       ],
       "aliases": [
         "barracks"
-      ]
+      ],
+      "terms": [
+        "Barracks"
+      ],
+      "parent": "buildings"
     },
     {
       "id": "mine",
@@ -1282,7 +2310,12 @@
       ],
       "aliases": [
         "mine"
-      ]
+      ],
+      "terms": [
+        "Mine",
+        "Mines"
+      ],
+      "parent": "buildings"
     },
     {
       "id": "lumbermill",
@@ -1297,7 +2330,11 @@
       ],
       "aliases": [
         "lumbermill"
-      ]
+      ],
+      "terms": [
+        "Lumbermill"
+      ],
+      "parent": "buildings"
     },
     {
       "id": "stone-quarry",
@@ -1312,7 +2349,12 @@
       ],
       "aliases": [
         "stonequarry"
-      ]
+      ],
+      "terms": [
+        "Stone Quarry",
+        "Quarry"
+      ],
+      "parent": "buildings"
     },
     {
       "id": "market",
@@ -1327,7 +2369,11 @@
       ],
       "aliases": [
         "market"
-      ]
+      ],
+      "terms": [
+        "Market"
+      ],
+      "parent": "buildings"
     },
     {
       "id": "walls",
@@ -1342,7 +2388,12 @@
       ],
       "aliases": [
         "wall"
-      ]
+      ],
+      "terms": [
+        "Wall",
+        "Walls"
+      ],
+      "parent": "buildings"
     },
     {
       "id": "foundry",
@@ -1357,7 +2408,11 @@
       ],
       "aliases": [
         "foundry"
-      ]
+      ],
+      "terms": [
+        "Foundry"
+      ],
+      "parent": "buildings"
     },
     {
       "id": "stable",
@@ -1372,7 +2427,11 @@
       ],
       "aliases": [
         "stable"
-      ]
+      ],
+      "terms": [
+        "Stable"
+      ],
+      "parent": "buildings"
     },
     {
       "id": "temple",
@@ -1387,7 +2446,12 @@
       ],
       "aliases": [
         "temple"
-      ]
+      ],
+      "terms": [
+        "Temple",
+        "Temples"
+      ],
+      "parent": "buildings"
     },
     {
       "id": "olive-press",
@@ -1402,7 +2466,11 @@
       ],
       "aliases": [
         "olive press"
-      ]
+      ],
+      "terms": [
+        "Olive Press"
+      ],
+      "parent": "buildings"
     },
     {
       "id": "winery",
@@ -1417,7 +2485,11 @@
       ],
       "aliases": [
         "winery"
-      ]
+      ],
+      "terms": [
+        "Winery"
+      ],
+      "parent": "buildings"
     },
     {
       "id": "pen",
@@ -1432,7 +2504,11 @@
       ],
       "aliases": [
         "pen"
-      ]
+      ],
+      "terms": [
+        "Pen"
+      ],
+      "parent": "buildings"
     },
     {
       "id": "granary",
@@ -1447,7 +2523,11 @@
       ],
       "aliases": [
         "silo"
-      ]
+      ],
+      "terms": [
+        "Granary"
+      ],
+      "parent": "buildings"
     },
     {
       "id": "plains",
@@ -1462,7 +2542,12 @@
       ],
       "aliases": [
         "plains"
-      ]
+      ],
+      "terms": [
+        "plains",
+        "Plains"
+      ],
+      "parent": "terrain"
     },
     {
       "id": "olive-grove",
@@ -1477,7 +2562,13 @@
       ],
       "aliases": [
         "forest olive grove"
-      ]
+      ],
+      "terms": [
+        "olive grove",
+        "Olive Grove",
+        "olive groves"
+      ],
+      "parent": "terrain"
     },
     {
       "id": "hills",
@@ -1492,7 +2583,12 @@
       ],
       "aliases": [
         "hills"
-      ]
+      ],
+      "terms": [
+        "hills",
+        "Hills"
+      ],
+      "parent": "terrain"
     },
     {
       "id": "limestone-mountains",
@@ -1507,7 +2603,12 @@
       ],
       "aliases": [
         "mountain limestone"
-      ]
+      ],
+      "terms": [
+        "Limestone Mountains",
+        "limestone mountains"
+      ],
+      "parent": "terrain"
     },
     {
       "id": "red-mountains",
@@ -1522,7 +2623,12 @@
       ],
       "aliases": [
         "mountain red"
-      ]
+      ],
+      "terms": [
+        "Red Mountains",
+        "red mountains"
+      ],
+      "parent": "terrain"
     },
     {
       "id": "coastal-sea",
@@ -1537,7 +2643,14 @@
       ],
       "aliases": [
         "coastal sea"
-      ]
+      ],
+      "terms": [
+        "coastal sea",
+        "Coastal Sea",
+        "coastal water",
+        "coastal waters"
+      ],
+      "parent": "terrain"
     },
     {
       "id": "deep-sea",
@@ -1552,7 +2665,12 @@
       ],
       "aliases": [
         "deep sea"
-      ]
+      ],
+      "terms": [
+        "deep sea",
+        "Deep Sea"
+      ],
+      "parent": "terrain"
     },
     {
       "id": "rivers",
@@ -1567,7 +2685,14 @@
       ],
       "aliases": [
         "river"
-      ]
+      ],
+      "terms": [
+        "river",
+        "rivers",
+        "River"
+      ],
+      "summary": "A river carries ships: downstream in half the time, upstream in twice. The first ruler whose people reach one may name it.",
+      "parent": "terrain"
     },
     {
       "id": "river-valley",
@@ -1582,7 +2707,12 @@
       ],
       "aliases": [
         "river valley"
-      ]
+      ],
+      "terms": [
+        "river valley",
+        "River Valley"
+      ],
+      "parent": "terrain"
     },
     {
       "id": "river-delta",
@@ -1597,7 +2727,13 @@
       ],
       "aliases": [
         "river delta"
-      ]
+      ],
+      "terms": [
+        "river delta",
+        "River Delta",
+        "delta"
+      ],
+      "parent": "terrain"
     },
     {
       "id": "river-ford",
@@ -1612,7 +2748,13 @@
       ],
       "aliases": [
         "river ford"
-      ]
+      ],
+      "terms": [
+        "ford",
+        "fords",
+        "River Ford"
+      ],
+      "parent": "terrain"
     },
     {
       "id": "maquis",
@@ -1627,7 +2769,12 @@
       ],
       "aliases": [
         "scrub maquis"
-      ]
+      ],
+      "terms": [
+        "maquis",
+        "Maquis"
+      ],
+      "parent": "terrain"
     },
     {
       "id": "semi-desert",
@@ -1642,7 +2789,13 @@
       ],
       "aliases": [
         "semi desert"
-      ]
+      ],
+      "terms": [
+        "semi-desert",
+        "Semi-Desert",
+        "desert"
+      ],
+      "parent": "terrain"
     },
     {
       "id": "cedar-forest",
@@ -1657,7 +2810,13 @@
       ],
       "aliases": [
         "forest cedar"
-      ]
+      ],
+      "terms": [
+        "cedar forest",
+        "Cedar Forest",
+        "cedar forests"
+      ],
+      "parent": "terrain"
     },
     {
       "id": "potnia",
@@ -1672,7 +2831,12 @@
       ],
       "aliases": [
         "potnia"
-      ]
+      ],
+      "terms": [
+        "Potnia"
+      ],
+      "summary": "Potnia, the Mistress: mother of animals and of the sea.",
+      "parent": "gods"
     },
     {
       "id": "velchanos",
@@ -1687,7 +2851,12 @@
       ],
       "aliases": [
         "velchanos"
-      ]
+      ],
+      "terms": [
+        "Velchanos"
+      ],
+      "summary": "Velchanos, the young god: the bull, the seasons, death and rebirth. He brings the fields back.",
+      "parent": "gods"
     },
     {
       "id": "asterion",
@@ -1702,7 +2871,12 @@
       ],
       "aliases": [
         "asterion"
-      ]
+      ],
+      "terms": [
+        "Asterion"
+      ],
+      "summary": "Asterion, lord of the labyrinth.",
+      "parent": "gods"
     },
     {
       "id": "sea-daimons",
@@ -1717,7 +2891,12 @@
       ],
       "aliases": [
         "sea daimons stillness"
-      ]
+      ],
+      "terms": [
+        "Sea Daimons"
+      ],
+      "summary": "The Sea Daimons of Stillness: not persons but forces, wind, wave and the deep.",
+      "parent": "gods"
     },
     {
       "id": "potnias-vision",
@@ -1732,7 +2911,13 @@
       ],
       "aliases": [
         "minoan potnia vision v2"
-      ]
+      ],
+      "terms": [
+        "Potnia's Vision",
+        "Potnia’s Vision"
+      ],
+      "summary": "Potnia's Vision: Potnia shows you an unseen source of metal or incense.",
+      "parent": "rites"
     },
     {
       "id": "mistress-of-the-walls",
@@ -1747,7 +2932,12 @@
       ],
       "aliases": [
         "minoan potnia walls"
-      ]
+      ],
+      "terms": [
+        "Mistress of the Walls"
+      ],
+      "summary": "Mistress of the Walls: Potnia makes a city’s defending garrison fight a quarter stronger for a few game days.",
+      "parent": "rites"
     },
     {
       "id": "green-shoots",
@@ -1762,7 +2952,12 @@
       ],
       "aliases": [
         "minoan velchanos green shoots"
-      ]
+      ],
+      "terms": [
+        "Green Shoots"
+      ],
+      "summary": "Green Shoots: Velchanos makes grain, oil and wine yield a quarter more for a while.",
+      "parent": "rites"
     },
     {
       "id": "the-thread-shows-a-path",
@@ -1777,7 +2972,13 @@
       ],
       "aliases": [
         "minoan asterion thread"
-      ]
+      ],
+      "terms": [
+        "The Thread Shows a Path",
+        "Thread Shows a Path"
+      ],
+      "summary": "The Thread Shows a Path: Asterion speeds your next caravan or Runner from a city and makes the caravan harder to catch.",
+      "parent": "rites"
     },
     {
       "id": "favourable-passage",
@@ -1792,7 +2993,12 @@
       ],
       "aliases": [
         "minoan stillness passage"
-      ]
+      ],
+      "terms": [
+        "Favourable Passage"
+      ],
+      "summary": "Favourable Passage: the Sea Daimons speed your next ship out of port and keep storms off its outward leg.",
+      "parent": "rites"
     },
     {
       "id": "cedar",
@@ -1807,7 +3013,12 @@
       ],
       "aliases": [
         "cedar"
-      ]
+      ],
+      "terms": [
+        "cedar",
+        "Cedar"
+      ],
+      "parent": "goods"
     },
     {
       "id": "copper",
@@ -1822,7 +3033,12 @@
       ],
       "aliases": [
         "copper"
-      ]
+      ],
+      "terms": [
+        "copper",
+        "Copper"
+      ],
+      "parent": "goods"
     },
     {
       "id": "devotion",
@@ -1837,7 +3053,8 @@
       ],
       "aliases": [
         "cult"
-      ]
+      ],
+      "parent": "goods"
     },
     {
       "id": "fish",
@@ -1852,7 +3069,12 @@
       ],
       "aliases": [
         "fish"
-      ]
+      ],
+      "terms": [
+        "fish",
+        "Fish"
+      ],
+      "parent": "goods"
     },
     {
       "id": "grain",
@@ -1867,7 +3089,12 @@
       ],
       "aliases": [
         "grain"
-      ]
+      ],
+      "terms": [
+        "grain",
+        "Grain"
+      ],
+      "parent": "goods"
     },
     {
       "id": "livestock",
@@ -1882,7 +3109,12 @@
       ],
       "aliases": [
         "livestock"
-      ]
+      ],
+      "terms": [
+        "livestock",
+        "Livestock"
+      ],
+      "parent": "goods"
     },
     {
       "id": "oil",
@@ -1897,7 +3129,12 @@
       ],
       "aliases": [
         "oil"
-      ]
+      ],
+      "terms": [
+        "oil",
+        "Oil"
+      ],
+      "parent": "goods"
     },
     {
       "id": "shipbuilding",
@@ -1912,7 +3149,8 @@
       ],
       "aliases": [
         "shipbuilding"
-      ]
+      ],
+      "parent": "goods"
     },
     {
       "id": "stone",
@@ -1927,7 +3165,12 @@
       ],
       "aliases": [
         "stone"
-      ]
+      ],
+      "terms": [
+        "stone",
+        "Stone"
+      ],
+      "parent": "goods"
     },
     {
       "id": "timber",
@@ -1942,7 +3185,12 @@
       ],
       "aliases": [
         "timber"
-      ]
+      ],
+      "terms": [
+        "timber",
+        "Timber"
+      ],
+      "parent": "goods"
     },
     {
       "id": "tin",
@@ -1957,7 +3205,12 @@
       ],
       "aliases": [
         "tin"
-      ]
+      ],
+      "terms": [
+        "tin",
+        "Tin"
+      ],
+      "parent": "goods"
     },
     {
       "id": "wine",
@@ -1972,776 +3225,12 @@
       ],
       "aliases": [
         "wine"
-      ]
-    },
-    {
-      "id": "welcome-your-opening-dispatch",
-      "title": "The opening dispatch",
-      "category": "Start here",
-      "related": [
-        "welcome"
-      ]
-    },
-    {
-      "id": "welcome-three-rules-that-explain-almost-everything",
-      "title": "Physical world rules",
-      "category": "Start here",
-      "related": [
-        "welcome"
-      ]
-    },
-    {
-      "id": "welcome-where-to-begin",
-      "title": "First steps",
-      "category": "Start here",
-      "related": [
-        "welcome"
-      ]
-    },
-    {
-      "id": "getting-in-details",
-      "title": "Joining a world",
-      "category": "Start here",
-      "related": [
-        "getting-in"
-      ]
-    },
-    {
-      "id": "getting-in-a-world-that-has-not-begun",
-      "title": "Waiting for a world to begin",
-      "category": "Start here",
-      "related": [
-        "getting-in"
-      ]
-    },
-    {
-      "id": "getting-in-if-you-are-signed-out",
-      "title": "Signing in again",
-      "category": "Start here",
-      "related": [
-        "getting-in"
-      ]
-    },
-    {
-      "id": "time-game-days-and-the-clock",
-      "title": "Game days and real time",
-      "category": "Start here",
-      "related": [
-        "time"
-      ]
-    },
-    {
-      "id": "time-the-world-does-not-wait-for-you",
-      "title": "A world that keeps running",
-      "category": "Start here",
-      "related": [
-        "time"
-      ]
-    },
-    {
-      "id": "time-before-the-world-begins",
-      "title": "Orders before world start",
-      "category": "Start here",
-      "related": [
-        "time"
-      ]
-    },
-    {
-      "id": "screen-top-bar",
-      "title": "The top bar",
-      "category": "Start here",
-      "related": [
-        "screen"
-      ]
-    },
-    {
-      "id": "screen-bottom-bar-the-drawers",
-      "title": "The drawer bar",
-      "category": "Start here",
-      "related": [
-        "screen"
-      ]
-    },
-    {
-      "id": "screen-the-map",
-      "title": "Map controls",
-      "category": "Start here",
-      "related": [
-        "screen"
-      ]
-    },
-    {
-      "id": "screen-the-map-2",
-      "title": "Sound and mobile windows",
-      "category": "Start here",
-      "related": [
-        "screen"
-      ]
-    },
-    {
-      "id": "runners-details",
-      "title": "How orders travel",
-      "category": "Start here",
-      "related": [
-        "runners"
-      ]
-    },
-    {
-      "id": "runners-why-this-is-good-for-you",
-      "title": "Order travel and warning time",
-      "category": "Start here",
-      "related": [
-        "runners"
-      ]
-    },
-    {
-      "id": "runners-when-an-order-fails",
-      "title": "Failed orders",
-      "category": "Start here",
-      "related": [
-        "runners"
-      ]
-    },
-    {
-      "id": "runners-catching-up-with-a-moving-unit",
-      "title": "Catching a moving force",
-      "category": "Start here",
-      "related": [
-        "runners"
-      ]
-    },
-    {
-      "id": "runners-catching-up-with-a-moving-unit-2",
-      "title": "Sacred letters and order Runners",
-      "category": "Start here",
-      "related": [
-        "runners"
-      ]
-    },
-    {
-      "id": "runners-crossing-the-sea",
-      "title": "Runners crossing water",
-      "category": "Start here",
-      "related": [
-        "runners"
-      ]
-    },
-    {
-      "id": "runners-the-runners-tab",
-      "title": "The Runners tab",
-      "category": "Start here",
-      "related": [
-        "runners"
-      ]
-    },
-    {
-      "id": "runners-runner-speed",
-      "title": "Runner speed",
-      "category": "Start here",
-      "related": [
-        "runners"
-      ]
-    },
-    {
-      "id": "coming-back-open-the-notifications-archive",
-      "title": "The Notifications archive",
-      "category": "Start here",
-      "related": [
-        "coming-back"
-      ]
-    },
-    {
-      "id": "coming-back-open-the-notifications-archive-2",
-      "title": "Following a dispatch to its place",
-      "category": "Start here",
-      "related": [
-        "coming-back"
-      ]
-    },
-    {
-      "id": "coming-back-what-to-act-on-first",
-      "title": "Priorities after time away",
-      "category": "Start here",
-      "related": [
-        "coming-back"
-      ]
-    },
-    {
-      "id": "coming-back-making-the-next-absence-easier",
-      "title": "Preparing to leave your realm",
-      "category": "Start here",
-      "related": [
-        "coming-back"
-      ]
-    },
-    {
-      "id": "horde-what-the-host-is",
-      "title": "The Host’s people and escort",
-      "category": "Founding",
-      "related": [
-        "horde"
-      ]
-    },
-    {
-      "id": "horde-walking",
-      "title": "Moving the Nomadic Host",
-      "category": "Founding",
-      "related": [
-        "horde"
-      ]
-    },
-    {
-      "id": "horde-where-you-are",
-      "title": "Inspecting the Host’s current ground",
-      "category": "Founding",
-      "related": [
-        "horde"
-      ]
-    },
-    {
-      "id": "horde-reserves-for-founding",
-      "title": "The Host’s founding reserves",
-      "category": "Founding",
-      "related": [
-        "horde"
-      ]
-    },
-    {
-      "id": "founding-read-the-ground-first",
-      "title": "Choosing founding ground",
-      "category": "Founding",
-      "related": [
-        "founding"
-      ]
-    },
-    {
-      "id": "founding-read-the-ground-first-2",
-      "title": "Founding deposits and food risk",
-      "category": "Founding",
-      "related": [
-        "founding"
-      ]
-    },
-    {
-      "id": "founding-where-you-cannot-found",
-      "title": "Where founding is forbidden",
-      "category": "Founding",
-      "related": [
-        "founding"
-      ]
-    },
-    {
-      "id": "founding-settling",
-      "title": "Settling the Nomadic Host",
-      "category": "Founding",
-      "related": [
-        "founding"
-      ]
-    },
-    {
-      "id": "founding-settling-2",
-      "title": "A new city’s starting stores",
-      "category": "Founding",
-      "related": [
-        "founding"
-      ]
-    },
-    {
-      "id": "founding-settling-3",
-      "title": "Founding food and timber forecasts",
-      "category": "Founding",
-      "related": [
-        "founding"
-      ]
-    },
-    {
-      "id": "founding-settling-4",
-      "title": "Farms on grain-bearing hills",
-      "category": "Founding",
-      "related": [
-        "founding"
-      ]
-    },
-    {
-      "id": "last-city-gather-the-survivors",
-      "title": "Refounding after losing your last city",
-      "category": "Founding",
-      "related": [
-        "last-city"
-      ]
-    },
-    {
-      "id": "last-city-leave-this-world",
-      "title": "Leaving a world",
-      "category": "Founding",
-      "related": [
-        "last-city"
-      ]
-    },
-    {
-      "id": "catchment-details",
-      "title": "Catchment reach and shared ground",
-      "category": "Your city",
-      "related": [
-        "catchment"
-      ]
-    },
-    {
-      "id": "catchment-what-it-means-for-you",
-      "title": "Catchment resources and blockades",
-      "category": "Your city",
-      "related": [
-        "catchment"
-      ]
-    },
-    {
-      "id": "catchment-what-it-means-for-you-2",
-      "title": "Unscouted and shared workplaces",
-      "category": "Your city",
-      "related": [
-        "catchment"
-      ]
-    },
-    {
-      "id": "citizens-placing-people",
-      "title": "Placing citizens",
-      "category": "Your city",
-      "related": [
-        "citizens"
-      ]
-    },
-    {
-      "id": "citizens-the-one-number-that-matters",
-      "title": "The next citizen’s production",
-      "category": "Your city",
-      "related": [
-        "citizens"
-      ]
-    },
-    {
-      "id": "free-citizens",
-      "title": "Free citizens and new population",
-      "category": "Your city",
-      "related": [
-        "citizens"
-      ]
-    },
-    {
-      "id": "free-citizens-2",
-      "title": "Food from fractional citizens",
-      "category": "Your city",
-      "related": [
-        "citizens"
-      ]
-    },
-    {
-      "id": "food-when-there-is-not-enough",
-      "title": "Civilian hunger",
-      "category": "Your city",
-      "related": [
-        "food"
-      ]
-    },
-    {
-      "id": "food-when-there-is-not-enough-2",
-      "title": "Civilian and garrison hunger warnings",
-      "category": "Your city",
-      "related": [
-        "food"
-      ]
-    },
-    {
-      "id": "food-the-herd-and-the-pen",
-      "title": "Herds and emergency food",
-      "category": "Your city",
-      "related": [
-        "food"
-      ]
-    },
-    {
-      "id": "food-what-to-do-about-it",
-      "title": "Responding to a food shortage",
-      "category": "Your city",
-      "related": [
-        "food"
-      ]
-    },
-    {
-      "id": "fishing-details",
-      "title": "Fishing places, bays and storms",
-      "category": "Your city",
-      "related": [
-        "fishing"
-      ]
-    },
-    {
-      "id": "growth-details",
-      "title": "Growth from food surplus",
-      "category": "Your city",
-      "related": [
-        "growth"
-      ]
-    },
-    {
-      "id": "growth-details-2",
-      "title": "When population growth stops",
-      "category": "Your city",
-      "related": [
-        "growth"
-      ]
-    },
-    {
-      "id": "growth-next-citizen",
-      "title": "The next free citizen",
-      "category": "Your city",
-      "related": [
-        "growth"
-      ]
-    },
-    {
-      "id": "buildings-details",
-      "title": "Building purposes",
-      "category": "Your city",
-      "related": [
-        "buildings"
-      ]
-    },
-    {
-      "id": "buildings-details-3",
-      "title": "Walls, population and coastal access",
-      "category": "Your city",
-      "related": [
-        "buildings"
-      ]
-    },
-    {
-      "id": "hex-buildings",
-      "title": "Buildings on catchment hexes",
-      "category": "Your city",
-      "related": [
-        "buildings"
-      ]
-    },
-    {
-      "id": "hex-buildings-2",
-      "title": "City buildings and Harbour reach",
-      "category": "Your city",
-      "related": [
-        "buildings"
-      ]
-    },
-    {
-      "id": "hex-production-buildings",
-      "title": "Hex building production",
-      "category": "Your city",
-      "related": [
-        "buildings"
-      ]
-    },
-    {
-      "id": "building-levels",
-      "title": "Building upgrades and materials",
-      "category": "Your city",
-      "related": [
-        "buildings"
-      ]
-    },
-    {
-      "id": "building-levels-2",
-      "title": "Construction queues and hex selectors",
-      "category": "Your city",
-      "related": [
-        "buildings"
-      ]
-    },
-    {
-      "id": "demolition",
-      "title": "Demolishing a finished building",
-      "category": "Your city",
-      "related": [
-        "buildings"
-      ]
-    },
-    {
-      "id": "demolition-2",
-      "title": "Cancelling builds and finding completed sites",
-      "category": "Your city",
-      "related": [
-        "buildings"
-      ]
-    },
-    {
-      "id": "goods-details",
-      "title": "Goods and their uses",
-      "category": "Goods and trade",
-      "related": [
-        "goods"
-      ]
-    },
-    {
-      "id": "goods-the-three-tabs",
-      "title": "Economy tabs",
-      "category": "Goods and trade",
-      "related": [
-        "goods"
-      ]
-    },
-    {
-      "id": "goods-offerings-and-trade",
-      "title": "Goods for offerings and trade",
-      "category": "Goods and trade",
-      "related": [
-        "goods"
-      ]
-    },
-    {
-      "id": "goods-storage-capacity",
-      "title": "Storage capacity and forecasts",
-      "category": "Goods and trade",
-      "related": [
-        "goods"
-      ]
-    },
-    {
-      "id": "goods-storage-capacity-2",
-      "title": "Goods lost to full storage",
-      "category": "Goods and trade",
-      "related": [
-        "goods"
-      ]
-    },
-    {
-      "id": "incense-where-it-comes-from",
-      "title": "Incense sources",
-      "category": "Goods and trade",
-      "related": [
-        "incense"
-      ]
-    },
-    {
-      "id": "incense-what-it-does-at-the-altar",
-      "title": "Incense at the altar",
-      "category": "Goods and trade",
-      "related": [
-        "incense"
-      ]
-    },
-    {
-      "id": "incense-some-history",
-      "title": "Frankincense and myrrh",
-      "category": "Goods and trade",
-      "related": [
-        "incense"
-      ]
-    },
-    {
-      "id": "gifts-on-the-road",
-      "title": "Gifts in transit",
-      "category": "Goods and trade",
-      "related": [
-        "gifts"
-      ]
-    },
-    {
-      "id": "gifts-at-the-destination",
-      "title": "Receiving gifts",
-      "category": "Goods and trade",
-      "related": [
-        "gifts"
-      ]
-    },
-    {
-      "id": "transfers-cargo-is-physical",
-      "title": "Physical cargo",
-      "category": "Goods and trade",
-      "related": [
-        "transfers"
-      ]
-    },
-    {
-      "id": "transfers-sending-it-by-sea",
-      "title": "Naval transfer requirements",
-      "category": "Goods and trade",
-      "related": [
-        "transfers"
-      ]
-    },
-    {
-      "id": "transfers-sending-it-by-sea-2",
-      "title": "Capture, damage and loss of cargo",
-      "category": "Goods and trade",
-      "related": [
-        "transfers"
-      ]
-    },
-    {
-      "id": "transfers-route-and-journey-time",
-      "title": "Cargo routes and travel time",
-      "category": "Goods and trade",
-      "related": [
-        "transfers"
-      ]
-    },
-    {
-      "id": "transfers-route-and-journey-time-2",
-      "title": "Port approaches and mixed cargo",
-      "category": "Goods and trade",
-      "related": [
-        "transfers"
-      ]
-    },
-    {
-      "id": "transfers-choose-land-or-sea",
-      "title": "Choosing land or sea",
-      "category": "Goods and trade",
-      "related": [
-        "transfers"
-      ]
-    },
-    {
-      "id": "transfers-choose-land-or-sea-2",
-      "title": "Land and sea choice in Keryx",
-      "category": "Goods and trade",
-      "related": [
-        "transfers"
-      ]
-    },
-    {
-      "id": "routes-details",
-      "title": "Standing route stock targets",
-      "category": "Goods and trade",
-      "related": [
-        "routes"
-      ]
-    },
-    {
-      "id": "routes-details-2",
-      "title": "Managing standing routes",
-      "category": "Goods and trade",
-      "related": [
-        "routes"
-      ]
-    },
-    {
-      "id": "routes-what-to-use-it-for",
-      "title": "Uses for standing routes",
-      "category": "Goods and trade",
-      "related": [
-        "routes"
-      ]
-    },
-    {
-      "id": "routes-sea-routes",
-      "title": "Standing sea routes",
-      "category": "Goods and trade",
-      "related": [
-        "routes"
-      ]
-    },
-    {
-      "id": "routes-route-and-journey-time",
-      "title": "Standing route journey times",
-      "category": "Goods and trade",
-      "related": [
-        "routes"
-      ]
-    },
-    {
-      "id": "routes-follow-your-cargo",
-      "title": "Following a route’s cargo",
-      "category": "Goods and trade",
-      "related": [
-        "routes"
-      ]
-    },
-    {
-      "id": "trade-making-an-offer",
-      "title": "Making a trade offer",
-      "category": "Goods and trade",
-      "related": [
-        "trade"
-      ]
-    },
-    {
-      "id": "trade-answering-an-offer",
-      "title": "Accepting or declining an offer",
-      "category": "Goods and trade",
-      "related": [
-        "trade",
-        "trade-offer-expiry"
-      ]
-    },
-    {
-      "id": "trade-delivery",
-      "title": "Delivering a trade agreement",
-      "category": "Goods and trade",
-      "related": [
-        "trade"
-      ]
-    },
-    {
-      "id": "trade-delivery-2",
-      "title": "Returning damaged trade cargo",
-      "category": "Goods and trade",
-      "related": [
-        "trade"
-      ]
-    },
-    {
-      "id": "trade-finding-partners",
-      "title": "Finding trade partners",
-      "category": "Goods and trade",
-      "related": [
-        "trade"
-      ]
-    },
-    {
-      "id": "trade-route-and-journey-time",
-      "title": "Trade agreement routes",
-      "category": "Goods and trade",
-      "related": [
-        "trade"
-      ]
-    },
-    {
-      "id": "trade-route-and-journey-time-2",
-      "title": "A trade agreement’s land or sea choice",
-      "category": "Goods and trade",
-      "related": [
-        "trade"
-      ]
-    },
-    {
-      "id": "live-sight",
-      "title": "Live sight",
-      "category": "The wider world",
-      "related": [
-        "sight"
-      ]
-    },
-    {
-      "id": "live-sight-2",
-      "title": "Seeing shorelines from ships",
-      "category": "The wider world",
-      "related": [
-        "sight"
-      ]
-    },
-    {
-      "id": "map-memory",
-      "title": "Map memory",
-      "category": "The wider world",
-      "related": [
-        "sight"
-      ]
-    },
-    {
-      "id": "map-actors",
-      "title": "Moving actors on the map",
-      "category": "The wider world",
-      "related": [
-        "sight"
-      ]
+      ],
+      "terms": [
+        "wine",
+        "Wine"
+      ],
+      "parent": "goods"
     },
     {
       "id": "exploration",
@@ -2749,1087 +3238,82 @@
       "category": "The wider world",
       "related": [
         "sight"
-      ]
-    },
-    {
-      "id": "exploration-2",
-      "title": "An expedition’s return budget",
-      "category": "The wider world",
-      "related": [
-        "sight"
-      ]
-    },
-    {
-      "id": "exploration-3",
-      "title": "Recalling an expedition",
-      "category": "The wider world",
-      "related": [
-        "sight"
-      ]
-    },
-    {
-      "id": "xenia-themis-what-the-gods-hold",
-      "title": "Themis",
-      "category": "The wider world",
-      "related": [
-        "xenia"
-      ]
-    },
-    {
-      "id": "xenia-the-messenger-is-sacred",
-      "title": "The sacred messenger",
-      "category": "The wider world",
-      "related": [
-        "xenia"
-      ]
-    },
-    {
-      "id": "xenia-we-carry-each-other-s-messengers",
-      "title": "A herald’s right of passage",
-      "category": "The wider world",
-      "related": [
-        "xenia"
-      ]
-    },
-    {
-      "id": "xenia-the-guest-is-fed",
-      "title": "Hospitality for ships",
-      "category": "The wider world",
-      "related": [
-        "xenia"
-      ]
-    },
-    {
-      "id": "xenia-the-suppliant-hiketeia",
-      "title": "Hiketeia: protection for survivors",
-      "category": "The wider world",
-      "related": [
-        "xenia"
-      ]
-    },
-    {
-      "id": "contact-details",
-      "title": "Permanent contact with a city",
-      "category": "The wider world",
-      "related": [
-        "contact"
-      ]
-    },
-    {
-      "id": "contact-details-2",
-      "title": "Keeping and reading received letters",
-      "category": "The wider world",
-      "related": [
-        "contact"
-      ]
-    },
-    {
-      "id": "runner-lost-at-sea-details",
-      "title": "The lost Runner’s sealed contents",
-      "category": "The wider world",
-      "related": [
-        "runner-lost-at-sea"
-      ]
-    },
-    {
-      "id": "runner-lost-at-sea-details-2",
-      "title": "Reading a Runner loss report",
-      "category": "The wider world",
-      "related": [
-        "runner-lost-at-sea"
-      ]
-    },
-    {
-      "id": "runner-rescued-at-sea-details",
-      "title": "Rescue and the next physical port",
-      "category": "The wider world",
-      "related": [
-        "runner-rescued-at-sea"
-      ]
-    },
-    {
-      "id": "messengers-your-letters",
-      "title": "Letters between Wanaxes",
-      "category": "The wider world",
-      "related": [
-        "messengers"
-      ]
-    },
-    {
-      "id": "messengers-your-letters-2",
-      "title": "Replying with their Runner",
-      "category": "The wider world",
-      "related": [
-        "messengers"
-      ]
-    },
-    {
-      "id": "messengers-letters-take-time",
-      "title": "The journey of a letter",
-      "category": "The wider world",
-      "related": [
-        "messengers"
-      ]
-    },
-    {
-      "id": "messengers-letters-take-time-2",
-      "title": "A Runner’s stay at court",
-      "category": "The wider world",
-      "related": [
-        "messengers"
-      ]
-    },
-    {
-      "id": "messengers-messengers-are-sacred",
-      "title": "Safety and return of letters",
-      "category": "The wider world",
-      "related": [
-        "messengers"
-      ]
-    },
-    {
-      "id": "messengers-crossing-the-sea",
-      "title": "Letters crossing water",
-      "category": "The wider world",
-      "related": [
-        "messengers"
-      ]
-    },
-    {
-      "id": "gossip-details",
-      "title": "Discovering and passing rumours",
-      "category": "The wider world",
-      "related": [
-        "gossip"
-      ]
-    },
-    {
-      "id": "gossip-divine-omens",
-      "title": "True divine omens",
-      "category": "The wider world",
-      "related": [
-        "gossip"
+      ],
+      "sections": [
+        {
+          "id": "exploration-2",
+          "title": "An expedition’s return budget"
+        },
+        {
+          "id": "exploration-3",
+          "title": "Recalling an expedition"
+        }
+      ],
+      "terms": [
+        "explore",
+        "exploring"
       ]
     },
     {
       "id": "ship-types",
-      "title": "Types of ship",
-      "category": "The wider world",
-      "related": [
-        "sea"
-      ]
-    },
-    {
-      "id": "ship-types-2",
-      "title": "Laying up and fitting out a ship",
-      "category": "The wider world",
-      "related": [
-        "sea"
-      ]
-    },
-    {
-      "id": "landing-in-own-city",
-      "title": "Docking in your own city",
-      "category": "The wider world",
-      "related": [
-        "sea"
-      ]
-    },
-    {
-      "id": "landing-in-own-city-2",
-      "title": "Landing on open ground",
-      "category": "The wider world",
-      "related": [
-        "sea"
-      ]
-    },
-    {
-      "id": "ship-missions",
-      "title": "Giving a ship its whole mission",
-      "category": "The wider world",
-      "related": [
-        "sea"
-      ]
-    },
-    {
-      "id": "ship-missions-2",
-      "title": "Commands at sea and crew pay",
-      "category": "The wider world",
-      "related": [
-        "sea"
-      ]
-    },
-    {
-      "id": "ship-missions-3",
-      "title": "Voyage provisions",
-      "category": "The wider world",
-      "related": [
-        "sea"
-      ]
-    },
-    {
-      "id": "sea-storm-risks",
-      "title": "Sea storms and ship damage",
-      "category": "The wider world",
-      "related": [
-        "sea"
-      ]
-    },
-    {
-      "id": "sea-storm-risks-2",
-      "title": "Damage from entering a storm",
-      "category": "The wider world",
-      "related": [
-        "sea"
-      ]
-    },
-    {
-      "id": "ship-loss",
-      "title": "Capture and loss of ships",
-      "category": "The wider world",
-      "related": [
-        "sea"
-      ]
-    },
-    {
-      "id": "runner-passage",
-      "title": "Passage aboard a ship",
-      "category": "The wider world",
-      "related": [
-        "sea"
-      ]
-    },
-    {
-      "id": "runner-passage-2",
-      "title": "Boarding any suitable ship",
-      "category": "The wider world",
-      "related": [
-        "sea"
-      ]
-    },
-    {
-      "id": "runner-passage-3",
-      "title": "Waiting for a sailing",
-      "category": "The wider world",
-      "related": [
-        "sea"
-      ]
-    },
-    {
-      "id": "runner-passage-on-map",
-      "title": "Passage markers on the map",
-      "category": "The wider world",
-      "related": [
-        "sea"
-      ]
-    },
-    {
-      "id": "runner-waiting",
-      "title": "A Runner awaiting passage",
-      "category": "The wider world",
-      "related": [
-        "sea"
-      ]
-    },
-    {
-      "id": "runner-return",
-      "title": "Calling a Runner home",
+      "title": "Ships",
       "category": "The wider world",
       "related": [
         "sea"
       ],
-      "aliases": [
-        "call-back",
-        "call back",
-        "recall runner"
-      ]
-    },
-    {
-      "id": "arrange-passage",
-      "title": "Arranging a ship for a Runner",
-      "category": "The wider world",
-      "related": [
-        "sea"
-      ]
-    },
-    {
-      "id": "arrange-passage-2",
-      "title": "Fetching a waiting Runner home",
-      "category": "The wider world",
-      "related": [
-        "sea"
-      ]
-    },
-    {
-      "id": "fetch-by-ship",
-      "title": "Fetching a land force by ship",
-      "category": "The wider world",
-      "related": [
-        "sea"
-      ]
-    },
-    {
-      "id": "fetch-by-ship-2",
-      "title": "Pickup waiting time and capacity",
-      "category": "The wider world",
-      "related": [
-        "sea"
-      ]
-    },
-    {
-      "id": "sailing-time",
-      "title": "Sailing time",
-      "category": "The wider world",
-      "related": [
-        "sea"
-      ]
-    },
-    {
-      "id": "naming-the-land-details",
-      "title": "Naming known land",
-      "category": "The wider world",
-      "related": [
-        "naming-the-land"
-      ]
-    },
-    {
-      "id": "naming-the-land-give-it-a-name",
-      "title": "Giving a place a name",
-      "category": "The wider world",
-      "related": [
-        "naming-the-land"
-      ]
-    },
-    {
-      "id": "naming-the-land-keryx",
-      "title": "Naming places in Keryx",
-      "category": "The wider world",
-      "related": [
-        "naming-the-land"
-      ]
-    },
-    {
-      "id": "storms-how-they-move",
-      "title": "How storms move",
-      "category": "The wider world",
-      "related": [
-        "storms"
-      ]
-    },
-    {
-      "id": "storms-what-they-do",
-      "title": "Storm effects",
-      "category": "The wider world",
-      "related": [
-        "storms"
-      ]
-    },
-    {
-      "id": "storms-what-you-see",
-      "title": "Seeing and remembering storms",
-      "category": "The wider world",
-      "related": [
-        "storms"
-      ]
-    },
-    {
-      "id": "storms-naming-a-storm",
-      "title": "Naming a storm",
-      "category": "The wider world",
-      "related": [
-        "storms"
-      ]
-    },
-    {
-      "id": "units-recruiting",
-      "title": "Recruitment costs and requirements",
-      "category": "War",
-      "related": [
-        "units"
-      ]
-    },
-    {
-      "id": "units-recruiting-2",
-      "title": "Cohort training and readiness",
-      "category": "War",
-      "related": [
-        "units"
-      ]
-    },
-    {
-      "id": "units-recruits-are-your-own-people",
-      "title": "Drafting and supporting forces",
-      "category": "War",
-      "related": [
-        "units"
-      ]
-    },
-    {
-      "id": "units-recruits-are-your-own-people-2",
-      "title": "Disbanding and supporting city stores",
-      "category": "War",
-      "related": [
-        "units"
-      ]
-    },
-    {
-      "id": "units-recruits-are-your-own-people-3",
-      "title": "Laying up and fitting out crews",
-      "category": "War",
-      "related": [
-        "units"
-      ]
-    },
-    {
-      "id": "units-the-forces-tab",
-      "title": "Reading the Forces roster",
-      "category": "War",
-      "related": [
-        "units"
-      ]
-    },
-    {
-      "id": "units-the-forces-tab-2",
-      "title": "Cancelling training and cargo capacity",
-      "category": "War",
-      "related": [
-        "units"
-      ]
-    },
-    {
-      "id": "units-forces-and-marches",
-      "title": "Forces, Marches and commerce",
-      "category": "War",
-      "related": [
-        "units"
-      ]
-    },
-    {
-      "id": "war-galley-why-it-is-dangerous",
-      "title": "War Galley combat power",
-      "category": "War",
-      "related": [
-        "war-galley"
-      ]
-    },
-    {
-      "id": "marching-giving-a-march-order",
-      "title": "Selecting forces for a march",
-      "category": "War",
-      "related": [
-        "marching"
-      ]
-    },
-    {
-      "id": "marching-giving-a-march-order-2",
-      "title": "March forecasts and city destinations",
-      "category": "War",
-      "related": [
-        "marching"
-      ]
-    },
-    {
-      "id": "marching-giving-a-march-order-3",
-      "title": "City destinations in Keryx",
-      "category": "War",
-      "related": [
-        "marching"
-      ]
-    },
-    {
-      "id": "marching-a-marching-unit-is-still-reachable",
-      "title": "Redirecting a moving force",
-      "category": "War",
-      "related": [
-        "marching"
-      ]
-    },
-    {
-      "id": "marching-orders-to-forces-already-in-the-field-travel-by-runner",
-      "title": "Recall and Redirect by Runner",
-      "category": "War",
-      "related": [
-        "marching"
-      ]
-    },
-    {
-      "id": "marching-orders-to-forces-already-in-the-field-travel-by-runner-2",
-      "title": "Recalling all and keeping failed orders",
-      "category": "War",
-      "related": [
-        "marching"
-      ]
-    },
-    {
-      "id": "marching-where-you-can-march",
-      "title": "Passable destinations",
-      "category": "War",
-      "related": [
-        "marching"
-      ]
-    },
-    {
-      "id": "marching-on-the-road",
-      "title": "Forces travelling on a route",
-      "category": "War",
-      "related": [
-        "marching"
-      ]
-    },
-    {
-      "id": "marching-exploring-an-area",
-      "title": "Ordering an expedition",
-      "category": "War",
-      "related": [
-        "marching"
-      ]
-    },
-    {
-      "id": "marching-exploring-an-area-2",
-      "title": "Expedition destinations and duration",
-      "category": "War",
-      "related": [
-        "marching"
-      ]
-    },
-    {
-      "id": "marching-terrain-and-journey-time",
-      "title": "Land terrain and travel time",
-      "category": "War",
-      "related": [
-        "marching"
-      ]
-    },
-    {
-      "id": "marching-terrain-and-journey-time-2",
-      "title": "Ship speed and expedition forecasts",
-      "category": "War",
-      "related": [
-        "marching"
-      ]
-    },
-    {
-      "id": "marching-terrain-and-journey-time-3",
-      "title": "Expedition budget and superseded orders",
-      "category": "War",
-      "related": [
-        "marching"
-      ]
-    },
-    {
-      "id": "roads-what-a-road-does",
-      "title": "Road movement costs",
-      "category": "War",
-      "related": [
-        "roads"
-      ]
-    },
-    {
-      "id": "roads-building-one",
-      "title": "Building a road",
-      "category": "War",
-      "related": [
-        "roads"
-      ]
-    },
-    {
-      "id": "roads-when-it-goes-wrong",
-      "title": "Interrupted road construction",
-      "category": "War",
-      "related": [
-        "roads"
-      ]
-    },
-    {
-      "id": "roads-seeing-roads",
-      "title": "Seeing roads",
-      "category": "War",
-      "related": [
-        "roads"
-      ]
-    },
-    {
-      "id": "stances-details",
-      "title": "Choosing a stance",
-      "category": "War",
-      "related": [
-        "stances"
-      ]
-    },
-    {
-      "id": "stances-a-unit-already-on-the-march",
-      "title": "Changing stance by Runner",
-      "category": "War",
-      "related": [
-        "stances"
-      ]
-    },
-    {
-      "id": "stances-taking-a-shared-hex",
-      "title": "Taking a shared catchment hex",
-      "category": "War",
-      "related": [
-        "stances"
-      ]
-    },
-    {
-      "id": "stances-sentry-is-a-siege",
-      "title": "Sentry and sieges",
-      "category": "War",
-      "related": [
-        "stances"
-      ]
-    },
-    {
-      "id": "stances-a-watch-is-not-free",
-      "title": "The cost of a watch",
-      "category": "War",
-      "related": [
-        "stances"
-      ]
-    },
-    {
-      "id": "stances-when-to-retreat",
-      "title": "Battle retreat orders",
-      "category": "War",
-      "related": [
-        "stances"
-      ]
-    },
-    {
-      "id": "defence-you-are-told-when-something-comes",
-      "title": "Incoming march warnings",
-      "category": "War",
-      "related": [
-        "defence"
-      ]
-    },
-    {
-      "id": "defence-why-the-defender-has-time",
-      "title": "Physical warning time",
-      "category": "War",
-      "related": [
-        "defence"
-      ]
-    },
-    {
-      "id": "defence-buying-warning-time",
-      "title": "Buying time to defend",
-      "category": "War",
-      "related": [
-        "defence"
-      ]
-    },
-    {
-      "id": "battle-when-battle-begins",
-      "title": "When battle begins",
-      "category": "War",
-      "related": [
-        "battle"
-      ]
-    },
-    {
-      "id": "battle-how-a-battle-runs",
-      "title": "Battle rounds",
-      "category": "War",
-      "related": [
-        "battle"
-      ]
-    },
-    {
-      "id": "battle-after-the-battle",
-      "title": "Battle reports and survivors",
-      "category": "War",
-      "related": [
-        "battle"
-      ]
-    },
-    {
-      "id": "sieges-starving-a-city-out",
-      "title": "Starving a city out",
-      "category": "War",
-      "related": [
-        "sieges"
-      ]
-    },
-    {
-      "id": "sieges-blockaded-hexes",
-      "title": "Blockaded catchment hexes",
-      "category": "War",
-      "related": [
-        "sieges"
-      ]
-    },
-    {
-      "id": "sieges-taking-a-hex",
-      "title": "Taking a catchment hex",
-      "category": "War",
-      "related": [
-        "sieges"
-      ]
-    },
-    {
-      "id": "sieges-when-it-happens-to-you",
-      "title": "Responding to a siege",
-      "category": "War",
-      "related": [
-        "sieges"
-      ]
-    },
-    {
-      "id": "occupation-when-the-occupation-ripens",
-      "title": "Completing an occupation",
-      "category": "War",
-      "related": [
-        "occupation"
-      ]
-    },
-    {
-      "id": "occupation-when-it-happens-to-you",
-      "title": "Relieving an occupied city",
-      "category": "War",
-      "related": [
-        "occupation"
-      ]
-    },
-    {
-      "id": "military-pay",
-      "title": "Soldiers’ and crews’ pay",
-      "category": "War",
-      "related": [
-        "upkeep"
-      ]
-    },
-    {
-      "id": "military-pay-2",
-      "title": "Unpaid forces and laid-up crews",
-      "category": "War",
-      "related": [
-        "upkeep"
-      ]
-    },
-    {
-      "id": "military-food",
-      "title": "Food for soldiers and rowers",
-      "category": "War",
-      "related": [
-        "upkeep"
-      ]
-    },
-    {
-      "id": "military-food-2",
-      "title": "Military hunger and early ship returns",
-      "category": "War",
-      "related": [
-        "upkeep"
-      ]
-    },
-    {
-      "id": "upkeep-before-you-settle",
-      "title": "Escort upkeep before founding",
-      "category": "War",
-      "related": [
-        "upkeep"
-      ]
-    },
-    {
-      "id": "upkeep-the-rule-of-thumb",
-      "title": "Keeping forces affordable",
-      "category": "War",
-      "related": [
-        "upkeep"
-      ]
-    },
-    {
-      "id": "divine-wrath-warning-before-danger",
-      "title": "Warnings of divine wrath",
-      "category": "The gods",
-      "related": [
-        "divine-wrath"
-      ]
-    },
-    {
-      "id": "divine-wrath-seven-game-days-after-punishment",
-      "title": "Protection after punishment",
-      "category": "The gods",
-      "related": [
-        "divine-wrath"
-      ]
-    },
-    {
-      "id": "divine-wrath-temple-levels",
-      "title": "Temples and divine punishment",
-      "category": "The gods",
-      "related": [
-        "divine-wrath"
-      ]
-    },
-    {
-      "id": "kharis-details",
-      "title": "Divine moods",
-      "category": "The gods",
-      "related": [
-        "kharis"
-      ]
-    },
-    {
-      "id": "kharis-details-2",
-      "title": "Starting standing and true omens",
-      "category": "The gods",
-      "related": [
-        "kharis"
-      ]
-    },
-    {
-      "id": "cult-upkeep",
-      "title": "Daily upkeep of the cult",
-      "category": "The gods",
-      "related": [
-        "kharis"
-      ]
-    },
-    {
-      "id": "cult-upkeep-2",
-      "title": "Temple production and punishment risk",
-      "category": "The gods",
-      "related": [
-        "kharis"
-      ]
-    },
-    {
-      "id": "raising-kharis",
-      "title": "Maintaining divine standing",
-      "category": "The gods",
-      "related": [
-        "kharis"
-      ]
-    },
-    {
-      "id": "raising-kharis-2",
-      "title": "The Kharis ceiling and offerings",
-      "category": "The gods",
-      "related": [
-        "kharis"
-      ]
-    },
-    {
-      "id": "raising-kharis-3",
-      "title": "Kult tabs and changes in standing",
-      "category": "The gods",
-      "related": [
-        "kharis"
-      ]
-    },
-    {
-      "id": "temples-building-one",
-      "title": "Building and upgrading temples",
-      "category": "The gods",
-      "related": [
-        "temples"
-      ]
-    },
-    {
-      "id": "temple-workers",
-      "title": "Temple workers",
-      "category": "The gods",
-      "related": [
-        "temples"
-      ]
-    },
-    {
-      "id": "daily-offerings",
-      "title": "A temple’s daily offering",
-      "category": "The gods",
-      "related": [
-        "temples"
-      ]
-    },
-    {
-      "id": "daily-offerings-2",
-      "title": "Planning temple offerings",
-      "category": "The gods",
-      "related": [
-        "temples"
-      ]
-    },
-    {
-      "id": "temple-levels",
-      "title": "Temple levels and the Kharis ceiling",
-      "category": "The gods",
-      "related": [
-        "temples"
-      ]
-    },
-    {
-      "id": "temple-levels-2",
-      "title": "Temple demolition and realm temple lists",
-      "category": "The gods",
-      "related": [
-        "temples"
-      ]
-    },
-    {
-      "id": "temples-find-your-temples",
-      "title": "Finding your temples",
-      "category": "The gods",
-      "related": [
-        "temples"
-      ]
-    },
-    {
-      "id": "rites-details",
-      "title": "Temples required by prayers",
-      "category": "The gods",
-      "related": [
-        "rites"
-      ]
-    },
-    {
-      "id": "prayer-requirements",
-      "title": "Standing and offerings for prayers",
-      "category": "The gods",
-      "related": [
-        "rites"
-      ]
-    },
-    {
-      "id": "prayer-requirements-2",
-      "title": "Waiting between prayers",
-      "category": "The gods",
-      "related": [
-        "rites"
-      ]
-    },
-    {
-      "id": "rites-the-prayers",
-      "title": "Prayer answers and active blessings",
-      "category": "The gods",
-      "related": [
-        "rites"
-      ]
-    },
-    {
-      "id": "minoan-prayers",
-      "title": "The current Minoan prayers",
-      "category": "The gods",
-      "related": [
-        "rites"
-      ]
-    },
-    {
-      "id": "minoan-prayers-2",
-      "title": "Departure prayers",
-      "category": "The gods",
-      "related": [
-        "rites"
-      ]
-    },
-    {
-      "id": "minoan-prayers-3",
-      "title": "Gifts awaiting departure",
-      "category": "The gods",
-      "related": [
-        "rites"
-      ]
-    },
-    {
-      "id": "offerings",
-      "title": "The value of an offering",
-      "category": "The gods",
-      "related": [
-        "rites"
-      ]
-    },
-    {
-      "id": "colonies-founding-a-colony",
-      "title": "Founding a colony",
-      "category": "Growing",
-      "related": [
-        "colonies"
-      ]
-    },
-    {
-      "id": "colonies-founding-a-colony-2",
-      "title": "Reaching a new colony",
-      "category": "Growing",
-      "related": [
-        "colonies"
-      ]
-    },
-    {
-      "id": "colonies-colonies-are-not-metropolises",
-      "title": "Colonies and metropolises",
-      "category": "Growing",
-      "related": [
-        "colonies"
-      ]
-    },
-    {
-      "id": "colonies-abandoning-a-colony",
-      "title": "Abandoning a colony",
-      "category": "Growing",
-      "related": [
-        "colonies"
+      "sections": [
+        {
+          "id": "fetch-by-ship",
+          "title": "Fetching a land force by ship"
+        },
+        {
+          "id": "fetch-by-ship-2",
+          "title": "Pickup waiting time and capacity"
+        },
+        {
+          "id": "landing-in-own-city",
+          "title": "Docking in your own city"
+        },
+        {
+          "id": "landing-in-own-city-2",
+          "title": "Landing on open ground"
+        },
+        {
+          "id": "sailing-time",
+          "title": "Sailing time"
+        },
+        {
+          "id": "ship-food-return",
+          "title": "Home with food for the way back",
+          "kinds": [
+            "ShipCameHomeForFood"
+          ]
+        },
+        {
+          "id": "ship-loss",
+          "title": "Capture and loss of ships"
+        },
+        {
+          "id": "ship-missions",
+          "title": "Giving a ship its whole mission"
+        },
+        {
+          "id": "ship-missions-2",
+          "title": "Commands at sea and crew pay"
+        },
+        {
+          "id": "ship-missions-3",
+          "title": "Voyage provisions"
+        },
+        {
+          "id": "ship-types-2",
+          "title": "Laying up and fitting out a ship"
+        }
       ],
       "aliases": [
-        "abandon",
-        "abandon colony"
-      ]
-    },
-    {
-      "id": "keryx-getting-started",
-      "title": "Setting up Keryx",
-      "category": "Reference",
-      "related": [
-        "keryx"
-      ]
-    },
-    {
-      "id": "keryx-a-few-useful-commands",
-      "title": "Common Keryx commands",
-      "category": "Reference",
-      "related": [
-        "keryx"
-      ]
-    },
-    {
-      "id": "keryx-a-few-useful-commands-2",
-      "title": "World and city selectors in Keryx",
-      "category": "Reference",
-      "related": [
-        "keryx"
-      ]
-    },
-    {
-      "id": "keryx-argument-reminders",
-      "title": "Keryx argument syntax",
-      "category": "Reference",
-      "related": [
-        "keryx"
-      ]
-    },
-    {
-      "id": "keryx-argument-reminders-2",
-      "title": "Keryx staffing and labour commands",
-      "category": "Reference",
-      "related": [
-        "keryx"
-      ]
-    },
-    {
-      "id": "community-chat-your-chat-account",
-      "title": "The Agora chat account",
-      "category": "Reference",
-      "related": [
-        "community-chat"
-      ]
-    },
-    {
-      "id": "community-chat-chat-rules-and-privacy",
-      "title": "Agora rules and privacy",
-      "category": "Reference",
-      "related": [
-        "community-chat"
+        "ships",
+        "types of ship",
+        "fleet"
       ]
     },
     {
@@ -3848,44 +3332,6 @@
         "messengers",
         "trade",
         "xenia"
-      ]
-    },
-    {
-      "id": "deep-water-fishing",
-      "title": "Deep-water fishing",
-      "category": "Your city",
-      "related": [
-        "harbour",
-        "fishing",
-        "deep-sea"
-      ],
-      "aliases": [
-        "harbour fishing"
-      ]
-    },
-    {
-      "id": "shipyard-workers",
-      "title": "Shipyard workers",
-      "category": "Your city",
-      "related": [
-        "shipyard",
-        "citizens",
-        "units"
-      ]
-    },
-    {
-      "id": "trade-offer-expiry",
-      "title": "Trade offer expiry",
-      "category": "Goods and trade",
-      "related": [
-        "trade-answering-an-offer",
-        "trade",
-        "runner-return"
-      ],
-      "aliases": [
-        "offer deadline",
-        "escrow",
-        "reply window"
       ]
     }
   ]

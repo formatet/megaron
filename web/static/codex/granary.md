@@ -16,4 +16,4 @@ See [[buildings]] and [[citizens]].
 
 | Building | What it is for |
 |---|---|
-| **Granary** | A city stores 2 000 of each food — grain, fish and oil, not the herd or wine. Granary level 1 to 3 raises that to 4 000, 10 000 and 20 000. A wall of level N needs a Granary of level N. Works inside the city. |
+| **Granary** | A city stores 2 000 of each food — [[grain|grain]], [[fish|fish]] and [[oil|oil]], not the herd or [[wine|wine]]. Granary level 1 to 3 raises that to 4 000, 10 000 and 20 000. A wall of level N needs a Granary of level N. Works inside the city. |

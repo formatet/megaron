@@ -1,6 +1,6 @@
-Velchanos is a god whose temple opens prayers for your cities.
+Velchanos is **the young god**: the bull, the seasons, death and rebirth. His temple opens the prayer that brings the fields back.
 
-Build a temple for this god in **City → Buildings → Construct** or use `keryx build --type temple --god velchanos`. Temple workers and daily offerings maintain realm-wide [[kharis]].
+Build a temple for this god in **City → Buildings → Construct** or use `keryx build --type temple --god velchanos`. [[temple]] workers and daily offerings maintain realm-wide [[kharis]].
 
 Prayers: [[green-shoots]].
 

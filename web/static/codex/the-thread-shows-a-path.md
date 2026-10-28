@@ -1,6 +1,6 @@
-The Thread Shows a Path is a prayer to Asterion.
+The Thread Shows a Path is a prayer to [[asterion]].
 
-Your next land caravan or Runner from this city travels faster; the caravan is harder to intercept.
+Your next land [[transfers|caravan]] or [[runners|Runner]] from this city travels faster; the caravan is harder to intercept.
 
 <!-- facts: prayer minoan_asterion_thread -->
 | Reference | Current rule |

@@ -1,3 +1,0 @@
-- The stone caravan is a physical caravan and **can be intercepted** ([[transfers]]). Then the road is not finished and the stone is lost.
-- A **new order** to the army cancels its unfinished road. The army being destroyed or drawn into a [[battle]] before the edge is done ends it too. **Stone is never refunded.**
-- A road still waiting for its stone or its army stays listed — `keryx roads` shows what each is waiting for.

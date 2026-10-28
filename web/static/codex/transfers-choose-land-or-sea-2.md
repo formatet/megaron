@@ -1,1 +1,0 @@
-Keryx: `transfer --by land --good grain --qty 50 --dest Petras`, or `--by sea`. The same flag works with `trade-offer` and `route`. Omit it for the existing automatic choice; the preview lists alternatives. For trade, the agreed choice covers the physical goods and payment legs, not the runner carrying the offer.

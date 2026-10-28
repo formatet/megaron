@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import {
   renderMarkdown, extractLinks, articleForKind, articleForDrawer, articleForEntity, backlinksTo, searchArticles,
+  resolveCodexId, codexTitles, splitSections, articleContents, unlinkedMentions, linkFirstMentions,
 } from './codex.js';
 
 // The Codex's promises (megaron_plan_kodex.md acceptance 4) are FUNCTION, so
@@ -20,6 +21,15 @@ const index = JSON.parse(readFileSync(join(codexDir, 'index.json'), 'utf8'));
 const ids = index.articles.map(a => a.id);
 const bodies = Object.fromEntries(ids.map(id => [id, readFileSync(join(codexDir, id + '.md'), 'utf8')]));
 
+// Every id a link may name: articles and their sections.
+const addressable = Object.keys(codexTitles(index));
+// text returns an article's body, or just its section for a section id.
+function text(id) {
+  const r = resolveCodexId(id, index);
+  if (!r) return '';
+  if (!r.section) return bodies[id];
+  return splitSections(bodies[r.article.id]).filter(p => p.id === id).map(p => p.text).join('');
+}
 function topicBody(id) { const a=index.articles.find(a=>a.id===id);return [id,...(a?.related||[])].map(id=>bodies[id]||'').join('\n'); }
 
 // Every kind format.js knows: the notifIcon keys and the notifText case arms.
@@ -47,8 +57,8 @@ test('codex: every index entry has a file and every file has an index entry', ()
 
 test('codex: every [[link]] and related entry resolves to an article', () => {
   for (const a of index.articles) {
-    for (const l of extractLinks(bodies[a.id])) assert.ok(ids.includes(l), `${a.id}.md links to missing [[${l}]]`);
-    for (const r of a.related || []) assert.ok(ids.includes(r), `${a.id}: related ${r} missing`);
+    for (const l of extractLinks(bodies[a.id])) assert.ok(addressable.includes(l), `${a.id}.md links to missing [[${l}]]`);
+    for (const r of a.related || []) assert.ok(addressable.includes(r), `${a.id}: related ${r} missing`);
   }
 });
 
@@ -57,9 +67,9 @@ test('codex: every notification kind the client shows maps to exactly one articl
   assert.ok(kinds.length > 30, `parsed only ${kinds.length} kinds from format.js — parser broken?`);
   for (const k of kinds) assert.ok(articleForKind(k, index), `notification kind ${k} has no Codex article`);
   const seen = new Map();
-  for (const a of index.articles) for (const k of a.kinds || []) {
-    assert.ok(!seen.has(k), `${k} mapped twice (${seen.get(k)}, ${a.id})`);
-    seen.set(k, a.id);
+  for (const a of index.articles) for (const owner of [a, ...(a.sections || [])]) for (const k of owner.kinds || []) {
+    assert.ok(!seen.has(k), `${k} mapped twice (${seen.get(k)}, ${owner.id})`);
+    seen.set(k, owner.id);
   }
 });
 
@@ -99,7 +109,7 @@ test('renderMarkdown: headings, lists, tables, code and comments', () => {
   ].join('\n');
   const html = renderMarkdown(md);
   assert.doesNotMatch(html, /somewhere/);
-  assert.match(html, /<h3 class="cx-h">Head<\/h3>/);
+  assert.match(html, /<h3 class="cx-h" id="cx-s-h-head">Head<\/h3>/);
   assert.match(html, /<li>one <strong>bold<\/strong><\/li>/);
   assert.match(html, /<code>a\*b\*c<\/code>/);
   assert.match(html, /<th>A<\/th><th>B<\/th>/);
@@ -169,7 +179,7 @@ test('codex search finds the specific colony abandonment and Runner return artic
 });
 
 test('codex: game days name the world unit and clock/date names wall time', () => {
-  assert.match(index.articles.find(a=>a.id==='time-game-days-and-the-clock').title,/Game days and real time/);
+  assert.match(codexTitles(index)['time-game-days-and-the-clock'],/Game days and real time/);
   assert.match(topicBody('time'), /one \*\*game day\*\* at a time/);
   assert.doesNotMatch(bodies.time + bodies.welcome + bodies['coming-back'], /game[ -]game\b|\bticks?\b|nine hours/i);
   assert.match(bodies['coming-back'], /While you were away, the world kept moving/);
@@ -185,8 +195,8 @@ test('historical food-reserve notifications open the current food article', () =
 
 test('temple demolition notice opens the loss and lowered-ceiling rules', () => {
   assert.equal(articleForKind('TempleDemolitionWrath', index), 'temple-demolition');
-  const text = bodies['temple-demolition'].replaceAll('**', '');
-  for (const pattern of [/10 kharis per temple level/, /floor of 1/, /lower ceiling takes no additional kharis/, /plundering/, /no demolition debt/]) assert.match(text, pattern);
+  const plain = text('temple-demolition').replaceAll('**', '');
+  for (const pattern of [/10 kharis per temple level/, /floor of 1/, /lower ceiling takes no additional kharis/, /plundering/, /no demolition debt/]) assert.match(plain, pattern);
 });
 
 test('Codex search ranks titles before aliases before content and normalises separators',()=>{
@@ -226,6 +236,65 @@ test('Codex tables keep labelled wiki links in one cell',()=>{
 test('Codex offer lifetime follows its server owner and distinguishes existing deadlines',()=>{
  const owner=readFileSync(join(here,'../../../../../server/internal/messenger/handler.go'),'utf8');
  const ticks=Number(/OfferExpiryTicks\s*=\s*(\d+)/.exec(owner)[1]);
- assert.ok(bodies['trade-offer-expiry'].includes('**'+ticks+' game days after arrival**'));
- assert.match(bodies['trade-offer-expiry'],/already sent keep their recorded deadline/);
+ assert.ok(text('trade-offer-expiry').includes('**'+ticks+' game days after arrival**'));
+ assert.match(text('trade-offer-expiry'),/already sent keep their recorded deadline/);
+});
+
+test('codex: every section heading anchor matches its index entry, and ids are unique across articles and sections', () => {
+  const seen = new Set();
+  for (const a of index.articles) {
+    for (const id of [a.id, ...(a.sections || []).map(s => s.id)]) {
+      assert.ok(!seen.has(id), `${id} is used twice`);
+      seen.add(id);
+    }
+    const anchors = splitSections(bodies[a.id]).slice(1).map(p => p.id);
+    for (const s of a.sections || []) assert.ok(anchors.includes(s.id) || /\{#[a-z0-9-]+\}/.test(bodies[a.id]) && bodies[a.id].includes('{#' + s.id + '}'), `${a.id}: section ${s.id} has no heading {#${s.id}}`);
+    for (const m of bodies[a.id].matchAll(/\{#([a-z0-9-]+)\}/g)) assert.ok((a.sections || []).some(s => s.id === m[1]), `${a.id}: heading {#${m[1]}} is not listed under sections`);
+  }
+});
+
+test('codex: an old fragment id opens its article at the section, and links to it render as links', () => {
+  const r = resolveCodexId('colonies-abandoning-a-colony', index);
+  assert.equal(r.article.id, 'colonies');
+  assert.equal(r.section.id, 'colonies-abandoning-a-colony');
+  const html = renderMarkdown('See [[colonies-abandoning-a-colony]].', codexTitles(index));
+  assert.match(html, /data-cx="colonies-abandoning-a-colony">Abandoning a colony</);
+  assert.match(renderMarkdown('## Abandoning a colony {#colonies-abandoning-a-colony}'), /<h3 class="cx-h" id="cx-s-colonies-abandoning-a-colony">Abandoning a colony<\/h3>/);
+  assert.ok(backlinksTo('colonies', { colonies: '', other: 'see [[colonies-abandoning-a-colony]]' }, index).includes('other'));
+});
+
+test('codex: a long article opens with its contents, a short one does not', () => {
+  assert.match(articleContents(bodies.runners), /data-cx-section="runner-return"/);
+  assert.equal(articleContents('intro\n\n## One {#a}\n\nx'), '');
+});
+
+test('codex search finds a rule inside a long article as its section', () => {
+  const hits = searchArticles('sailing time', index, bodies);
+  assert.equal(hits[0].id, 'sailing-time');
+  assert.match(hits[0].title, /›/);
+});
+
+test('codex: every article links the first mention of each thing that has its own page', () => {
+  for (const a of index.articles) {
+    const missing = unlinkedMentions(bodies[a.id], a.id, index);
+    assert.deepEqual(missing.map(m => m.term + ' → ' + m.id), [], `${a.id} mentions without a link (run node tools/codex_links.mjs)`);
+  }
+});
+
+test('linkFirstMentions links the first unlinked mention only, and leaves links, code, headings and generated tables alone', () => {
+  const idx = { articles: [{ id: 'war-galley', title: 'War Galley', terms: ['War Galley'] }, { id: 'galley', title: 'Galley', terms: ['Galley'] }, { id: 'grain', title: 'Grain', terms: ['grain'] }] };
+  const md = '## Galley\n\nA War Galley and a Galley. Another Galley. `grain`\n<!-- facts: unit x -->\n| grain |\n<!-- /facts -->';
+  assert.equal(linkFirstMentions(md, 'self', idx), '## Galley\n\nA [[war-galley]] and a [[galley]]. Another Galley. `grain`\n<!-- facts: unit x -->\n| grain |\n<!-- /facts -->');
+  assert.deepEqual(unlinkedMentions('See [[galley|the ship]]. A Galley.', 'self', idx), []);
+  assert.deepEqual(unlinkedMentions('A Galley.', 'galley', idx), [], 'an article does not link to itself');
+});
+
+test('codex: every member page names a hub that exists and lists it', () => {
+  for (const a of index.articles.filter(a => a.parent)) {
+    const hub = resolveCodexId(a.parent, index);
+    assert.ok(hub && !hub.section, `${a.id}: parent ${a.parent} is not an article`);
+    assert.ok(extractLinks(bodies[a.parent]).includes(a.id), `${a.parent} does not list ${a.id}`);
+  }
+  assert.equal(index.articles.find(a => a.id === 'war-galley').parent, 'ship-types');
+  assert.match(bodies['ship-types'], /\[\[galley\]\][\s\S]*\[\[war-galley\]\][\s\S]*\[\[emporos\]\]/);
 });

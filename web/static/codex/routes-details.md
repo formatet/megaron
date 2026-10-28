@@ -1,2 +1,0 @@
-- **Keep at destination** — choose a good and the stock to keep there, for example two hundred grain and fifty fish. Use **Add a good** for another row and **Remove** to drop a row. The caravan keeps those goods topped up to that level at the destination.
-- **Bring home** — choose a good and the stock to leave at the destination, for example twenty stone. Zero means bring home everything available. Leave the rows empty for no return cargo. On the way back it brings home anything above that floor.

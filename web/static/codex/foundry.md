@@ -1,4 +1,4 @@
-A Foundry turns copper and tin into bronze.
+A Foundry turns [[copper|copper]] and [[tin|tin]] into bronze.
 
 Build or upgrade it in **City → Buildings → Construct**, or use `keryx build --type foundry`.
 
@@ -15,4 +15,4 @@ See [[buildings]] and [[citizens]].
 
 | Building | What it is for |
 |---|---|
-| **Foundry** | Smelts copper and tin into bronze ([[bronze]]). The gate to elite soldiers and war galleys. |
+| **Foundry** | Smelts copper and tin into bronze ([[bronze]]). The gate to elite soldiers and [[war-galley|war galleys]]. |

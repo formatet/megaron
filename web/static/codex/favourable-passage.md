@@ -1,6 +1,6 @@
-Favourable Passage is a prayer to The Sea Daimons of Stillness.
+Favourable Passage is a prayer to The [[sea-daimons|Sea Daimons]] of Stillness.
 
-The next ship leaving this port sails faster and takes no storm damage on its outward leg.
+The next ship leaving this port sails faster and takes no [[storms|storm]] damage on its outward leg.
 
 <!-- facts: prayer minoan_stillness_passage -->
 | Reference | Current rule |

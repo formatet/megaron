@@ -1,3 +1,0 @@
-- **Each storm costs the ship two points of hull** (of five), once, however many game days it spends inside that storm. Three storms sink a ship that began with full hull. You are told where it struck and how much hull is left.
-- **At hull 0 the ship founders.** It goes down with everything aboard: its crew, any troops it carries, and any cargo. You are told where, and what was lost with her.
-- A battered ship keeps sailing. Bring it home and **Repair** it at a Shipyard before its next long voyage.

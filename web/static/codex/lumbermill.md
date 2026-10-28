@@ -1,4 +1,4 @@
-A Lumbermill improves wood production on one chosen catchment hex.
+A Lumbermill improves wood production on one chosen [[catchment|catchment]] hex.
 
 Build or upgrade it in **City → Buildings → Construct**, or use `keryx build --type lumbermill` with `--hex` to choose its catchment hex.
 
@@ -17,4 +17,4 @@ See [[buildings]] and [[citizens]].
 
 | Building | What it is for |
 |---|---|
-| **Lumbermill** | Stands on olive groves, cedar forest, maquis, hills or river valleys and raises their wood production. |
+| **Lumbermill** | Stands on [[olive-grove|olive groves]], [[cedar-forest|cedar forest]], [[maquis|maquis]], [[hills|hills]] or [[rivers|river]] valleys and raises their wood production. |

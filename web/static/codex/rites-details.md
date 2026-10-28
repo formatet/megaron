@@ -1,1 +1,0 @@
-Each prayer names its god, the minimum standing it needs, and its traditional offering. Press **Offer**: a row opens with a field for each good, filled with the prayer's recipe. Bring it as it stands, or change the numbers first.

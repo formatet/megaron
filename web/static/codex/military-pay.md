@@ -1,5 +1,0 @@
-**Field pay starts at 1 silver per 100 people per game day**, the wage of a worker. Spearmen draw **0 silver**. A full hundred-man Bronze Guard cohort draws **1.5 silver in the field and 0.75 at home**; a full chariot cohort draws **4 in the field and 2 at home**. Remaining men determine the bill, so a half-strength cohort draws half the pay.
-
-**Home pay is always half field pay.** Garrison, repairs and fitting out count as home. Marching, posted troops, freight missions and soldiers embarked aboard a ship count as field service. Soldiers’ pay does not flow back into the city: the stated silver bill is what the city loses.
-
-**Only War Galley rowers draw silver pay**, per surviving crew member at 1 silver per hundred in the field and half at home. A full War Galley (50 rowers) draws **0.5 silver in the field / 0.25 at home**. Galleys and Emporoi draw **0 silver**, in port and at sea, and cannot desert for lack of silver. Carried soldiers draw their own field pay in addition to their ship’s crew.

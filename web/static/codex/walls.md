@@ -14,4 +14,4 @@ See [[buildings]] and [[citizens]].
 
 | Building | What it is for |
 |---|---|
-| **Wall** | Palisade, then Stone Wall, then Bronze Wall. Absorbs damage in [[battle]], and **the walls set how many people the city holds** (see below). |
+| **Wall** | Palisade, then [[stone]] Wall, then [[bronze|Bronze]] Wall. Absorbs damage in [[battle]], and **the walls set how many people the city holds** (see below). |

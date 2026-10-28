@@ -1,1 +1,0 @@
-A farm, mine, lumbermill or stonequarry makes **space for four more workers** on its hex. Each of these buildings multiplies the hex's own **production** per worker: ×1.7 at level 1, ×2.4 at level 2, ×3.1 at level 3. Silver can only be mined with a mine — without one a silver deposit gives nothing. Olive press, winery and foundry work inside the city as before.

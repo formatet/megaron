@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -20,6 +21,9 @@ type codexArticleEntry struct {
 	Related  []string `json:"related"`
 	Aliases  []string `json:"aliases"`
 	Future   bool     `json:"future"`
+	Sections []codexArticleEntry `json:"sections"`
+	// Parent is set on a section: the article that holds it. Not in the JSON.
+	Parent string `json:"-"`
 }
 type codexIndex struct {
 	Categories []string            `json:"categories"`
@@ -57,6 +61,11 @@ func codexCmd() *cobra.Command {
 					return err
 				}
 				hits := searchCodexArticles(query, idx, bodies)
+				for i := range hits {
+					if hits[i].Parent != "" {
+						hits[i].Title = codexTitle(idx, hits[i].Parent) + " › " + hits[i].Title
+					}
+				}
 				if jsonMode {
 					data, _ := json.Marshal(hits)
 					printRawJSON(data)
@@ -80,15 +89,22 @@ func codexCmd() *cobra.Command {
 			}
 			input := strings.TrimSuffix(args[0], ".md")
 			article, ok := resolveCodexArticle(idx, input)
-			id, title, related := article.ID, article.Title, article.Related
 			if !ok {
 				return fmt.Errorf("no Codex article %q — run `keryx codex --search QUERY` or `keryx codex` for the list", args[0])
 			}
-			body, err := c.get("/static/codex/" + id + ".md")
-			if err != nil {
-				return fmt.Errorf("could not load Codex article %q: %w", id, err)
+			file, title, related := article.ID, article.Title, article.Related
+			if article.Parent != "" {
+				file, title = article.Parent, codexTitle(idx, article.Parent)+" › "+article.Title
 			}
-			fmt.Printf("%s\n\n%s\n", title, strings.TrimSpace(string(body)))
+			body, err := c.get("/static/codex/" + file + ".md")
+			if err != nil {
+				return fmt.Errorf("could not load Codex article %q: %w", file, err)
+			}
+			text := string(body)
+			if article.Parent != "" {
+				text = codexSectionText(text, article.ID) + "\n\n(Part of `keryx codex " + article.Parent + "`.)"
+			}
+			fmt.Printf("%s\n\n%s\n", title, codexAnchors.ReplaceAllString(strings.TrimSpace(text), ""))
 			if len(related) > 0 {
 				fmt.Printf("\nRelated: %s  (keryx codex <id>)\n", strings.Join(related, ", "))
 			}
@@ -128,18 +144,67 @@ func codexArticle(idx codexIndex, id string) (title string, related []string, ok
 	return "", nil, false
 }
 
+// codexAnchors matches the `{#id}` that names a section heading; it is an
+// address, not text, so keryx drops it when printing.
+var codexAnchors = regexp.MustCompile(` \{#[a-z0-9-]+\}`)
+
+// codexEntries lists every addressable entry: each article, then its sections
+// (old ids from the 2026-10-28 split live on as section ids).
+func codexEntries(idx codexIndex) []codexArticleEntry {
+	var out []codexArticleEntry
+	for _, a := range idx.Articles {
+		out = append(out, a)
+		for _, s := range a.Sections {
+			s.Parent = a.ID
+			s.Future = a.Future
+			out = append(out, s)
+		}
+	}
+	return out
+}
+
+func codexTitle(idx codexIndex, id string) string {
+	for _, a := range idx.Articles {
+		if a.ID == id {
+			return a.Title
+		}
+	}
+	return id
+}
+
+// codexSectionText returns one `## Title {#id}` section of an article body, up
+// to the next ## heading; with id "" it returns the intro before the first.
+func codexSectionText(body, id string) string {
+	var b strings.Builder
+	in := id == ""
+	for _, line := range strings.Split(body, "\n") {
+		if strings.HasPrefix(line, "## ") {
+			if in {
+				break
+			}
+			in = strings.HasSuffix(strings.TrimSpace(line), "{#"+id+"}")
+			continue
+		}
+		if in {
+			b.WriteString(line + "\n")
+		}
+	}
+	return strings.TrimSpace(b.String())
+}
+
 func normaliseCodexSearch(value string) string {
 	return strings.Join(strings.Fields(strings.NewReplacer("_", " ", "-", " ").Replace(strings.ToLower(value))), " ")
 }
 func resolveCodexArticle(idx codexIndex, input string) (codexArticleEntry, bool) {
 	needle := normaliseCodexSearch(input)
-	for _, a := range idx.Articles {
+	entries := codexEntries(idx)
+	for _, a := range entries {
 		if normaliseCodexSearch(a.ID) == needle || normaliseCodexSearch(a.Title) == needle {
 			return a, true
 		}
 	}
 	var found codexArticleEntry
-	for _, a := range idx.Articles {
+	for _, a := range entries {
 		for _, alias := range a.Aliases {
 			if normaliseCodexSearch(alias) == needle {
 				if found.ID != "" && found.ID != a.ID {
@@ -165,7 +230,7 @@ func searchCodexArticles(query string, idx codexIndex, bodies map[string]string)
 	if needle == "" {
 		return []codexArticleEntry{}
 	}
-	for _, a := range idx.Articles {
+	for _, a := range codexEntries(idx) {
 		title := normaliseCodexSearch(a.Title)
 		score := 4
 		if title == needle {
@@ -179,7 +244,11 @@ func searchCodexArticles(query string, idx codexIndex, bodies map[string]string)
 					break
 				}
 			}
-			if score == 4 && strings.Contains(normaliseCodexSearch(bodies[a.ID]), needle) {
+			body := codexSectionText(bodies[a.ID], "")
+			if a.Parent != "" {
+				body = codexSectionText(bodies[a.Parent], a.ID)
+			}
+			if score == 4 && strings.Contains(normaliseCodexSearch(body), needle) {
 				score = 3
 			}
 		}

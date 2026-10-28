@@ -1,1 +1,0 @@
-If nobody replies, your messenger does not wait forever in that city's court. After a while he gives up and turns around on his own, walking home just as he would with an answer in hand — the same road, taking the same time. You are still told the moment he is back, only without a reply riding along.

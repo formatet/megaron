@@ -14,4 +14,4 @@ See [[buildings]] and [[citizens]].
 
 | Building | What it is for |
 |---|---|
-| **Barracks** | Enables recruiting Spearmen and Bronze Guard ([[units|Forces]]); Chariots require a Stable. |
+| **Barracks** | Enables recruiting [[spearmen]] and [[elite-infantry]] ([[units|Forces]]); [[war-chariot|Chariots]] require a [[stable]]. |

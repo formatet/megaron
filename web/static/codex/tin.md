@@ -1,4 +1,4 @@
-Tin is the scarce ore needed with copper to make bronze.
+Tin is the scarce ore needed with [[copper|copper]] to make [[bronze|bronze]].
 
 Use **Economy → Goods** or `keryx goods` to inspect actual stocks and flow. Send available cargo through Transfer or `keryx transfer --good tin --qty AMOUNT --dest CITY`.
 

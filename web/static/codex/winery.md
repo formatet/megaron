@@ -1,4 +1,4 @@
-A Winery refines wine from the city’s vines, which grow only on hills — without a hill in the city's reach it makes nothing.
+A Winery refines [[wine|wine]] from the city’s vines, which grow only on [[hills|hills]] — without a hill in the city's reach it makes nothing.
 
 Build or upgrade it in **City → Buildings → Construct**, or use `keryx build --type winery`.
 
