@@ -1,0 +1,5 @@
+Each good has its own storage capacity in each city. A city stores **2 000 of each food** — grain, fish, oil and wine — and a [[buildings|Granary]] raises that to 4 000, 10 000 and 20 000. The herd has its own pens. A city that already held more food when this ceiling came in keeps it and can eat it, but it never fills back above the ceiling. **StorageCapacityWarning** is an advance dispatch when the server forecasts a stock nearing its cap. Keryx status and the City drawer show the good, stored amount, capacity and **full in N game days**. The estimate uses the current net rate and deliveries on the way; it is a forecast, so changing production or orders can change it.
+
+The forecast counts your own transports and accepted trade deliveries that you know about. An unsolicited gift from another Wanax is known only when it arrives, so it is not included beforehand.
+
+Send goods away by [[transfers|transfer]] or use them in [[trade]]. Warehouse construction and storage-pool expansion are not available yet.

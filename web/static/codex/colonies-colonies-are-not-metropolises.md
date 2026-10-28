@@ -1,0 +1,3 @@
+There is no free starter Farm. If the ground cannot feed them, you must — by [[transfers|transfer]] or a [[routes|standing order]] — until they stand on their own. A colony on a rich mineral site with no farmland is a real strategy, but only if you have already built the grain route that keeps it alive.
+
+Every active city, including your capital, counts toward [[kharis|upkeep of the cult]], even with a temple. Daily upkeep is 0.1 base + 0.2 per city beyond the first + 0.1 per 1,000 residents across those cities. This supplies the realm's cult; it is not an accelerating expansion penalty. Sunk, collapsed and razed cities do not count. Check the realm breakdown in **Kult** or `keryx status` before expanding.

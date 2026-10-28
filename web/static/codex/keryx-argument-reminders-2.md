@@ -1,0 +1,1 @@
+Temple workers use the same citizen pool as other jobs. Use `keryx staff temple +1` to assign one, `staff temple -1` to free one (with several temples, add `--god <god>`), and `roster` to see their assignments. See [[temples]].

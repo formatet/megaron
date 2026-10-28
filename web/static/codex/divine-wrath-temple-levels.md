@@ -1,0 +1,1 @@
+Everyday prayers work at a level-1 temple. Spontaneous blessings need **60 kharis** and a maintained temple. Only a level-2 temple or higher lets kharis grow that far. Kharis retained above a lowered ceiling still counts. The ceilings remain **50 / 75 / 100** for temple levels 1 / 2 / 3. See [[kharis]] and [[rites]].

@@ -1,10 +1,11 @@
+import {execFileSync} from 'node:child_process';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import {
-  renderMarkdown, extractLinks, articleForKind, articleForDrawer, backlinksTo, searchArticles,
+  renderMarkdown, extractLinks, articleForKind, articleForDrawer, articleForEntity, backlinksTo, searchArticles,
 } from './codex.js';
 
 // The Codex's promises (megaron_plan_kodex.md acceptance 4) are FUNCTION, so
@@ -18,6 +19,8 @@ const codexDir = join(here, '../../../codex');
 const index = JSON.parse(readFileSync(join(codexDir, 'index.json'), 'utf8'));
 const ids = index.articles.map(a => a.id);
 const bodies = Object.fromEntries(ids.map(id => [id, readFileSync(join(codexDir, id + '.md'), 'utf8')]));
+
+function topicBody(id) { const a=index.articles.find(a=>a.id===id);return [id,...(a?.related||[])].map(id=>bodies[id]||'').join('\n'); }
 
 // Every kind format.js knows: the notifIcon keys and the notifText case arms.
 function clientKinds() {
@@ -139,7 +142,7 @@ test('codex: lowercase agora_ready is mapped and community rules match alpha pol
 ];
   assert.equal(lines.length, 4);
   translations.forEach(([english, invitation], i) => {
-    assert.ok(bodies['community-chat'].includes(english), `Codex policy drift: ${english}`);
+    assert.ok(topicBody('community-chat').includes(english), `Codex policy drift: ${english}`);
     assert.equal(lines[i], invitation, `Alpha invitation policy drift: ${invitation}`);
   });
   const privacy = /<p class="alpha-note">(.*?)<\/p>/.exec(policy)[1];
@@ -154,20 +157,20 @@ test('codex: lowercase agora_ready is mapped and community rules match alpha pol
     ["Your Wanax name stays in other players' letters and chronicles", "Your Wanax name remains in other players' letters and chronicles"],
   ];
   for (const [english, invitation] of privacyClaims) {
-    assert.ok(bodies['community-chat'].includes(english), `Codex privacy drift: ${english}`);
+    assert.ok(topicBody('community-chat').includes(english), `Codex privacy drift: ${english}`);
     assert.ok(privacy.includes(invitation), `Alpha invitation privacy drift: ${invitation}`);
   }
   assert.ok(!alpha.includes('register with the code'));
 });
 
-test('codex search finds abandon in Colonies and call-back in Sea', () => {
-  assert.ok(searchArticles('abandon', index, bodies).some(a => a.id === 'colonies'), 'abandon must lead to the colony instructions');
-  assert.ok(searchArticles('call-back', index, bodies).some(a => a.id === 'sea'), 'CLI call-back must lead to the passage instructions');
+test('codex search finds the specific colony abandonment and Runner return articles', () => {
+  assert.ok(searchArticles('abandon', index, bodies).some(a => a.id === 'colonies-abandoning-a-colony'), 'abandon must lead to the colony instructions');
+  assert.ok(searchArticles('call-back', index, bodies).some(a => a.id === 'runner-return'), 'CLI call-back must lead to the passage instructions');
 });
 
 test('codex: game days name the world unit and clock/date names wall time', () => {
-  assert.match(bodies.time, /## Game days and the clock/);
-  assert.match(bodies.time, /one \*\*game day\*\* at a time/);
+  assert.match(index.articles.find(a=>a.id==='time-game-days-and-the-clock').title,/Game days and real time/);
+  assert.match(topicBody('time'), /one \*\*game day\*\* at a time/);
   assert.doesNotMatch(bodies.time + bodies.welcome + bodies['coming-back'], /game[ -]game\b|\bticks?\b|nine hours/i);
   assert.match(bodies['coming-back'], /While you were away, the world kept moving/);
 });
@@ -184,4 +187,37 @@ test('temple demolition notice opens the loss and lowered-ceiling rules', () => 
   assert.equal(articleForKind('TempleDemolitionWrath', index), 'temple-demolition');
   const text = bodies['temple-demolition'].replaceAll('**', '');
   for (const pattern of [/10 kharis per temple level/, /floor of 1/, /lower ceiling takes no additional kharis/, /plundering/, /no demolition debt/]) assert.match(text, pattern);
+});
+
+test('Codex search ranks titles before aliases before content and normalises separators',()=>{
+ const idx={articles:[{id:'sea',title:'Sea',aliases:['ship'],search:'Galley carrier'},{id:'galley',title:'Galley',aliases:['ship'],search:'Timber'},{id:'timber',title:'Timber',search:'A galley needs wood'},{id:'kharis',title:'Kharis',aliases:['mana']}]};
+ assert.deepEqual(searchArticles('galley',idx,{}).map(a=>a.id),['galley','sea','timber']);
+ assert.deepEqual(searchArticles('SHIP',idx,{}).map(a=>a.id),['galley','sea']);
+ assert.deepEqual(searchArticles('mana',idx,{}).map(a=>a.id),['kharis']);
+ assert.deepEqual(searchArticles('bronze_guard',{articles:[{id:'elite-infantry',title:'Bronze Guard'}]},{}).map(a=>a.id),['elite-infantry']);
+});
+
+
+test('current catalogue objects resolve to their individual Codex article',()=>{
+ assert.equal(articleForEntity('unit','merchantman',index),'emporos');
+ assert.equal(articleForEntity('building','silo',index),'granary');
+ assert.equal(articleForEntity('terrain','hills',index),'hills');
+ assert.equal(articleForEntity('unit','trireme',index),null);
+ assert.equal(articleForEntity('kingdom','oikos',index),null);
+});
+test('article bundle matches every Markdown source exactly',()=>{
+ const bundle=JSON.parse(readFileSync(join(codexDir,'articles.json'),'utf8'));
+ assert.deepEqual(Object.keys(bundle).sort(),[...ids].sort());
+ for(const id of ids)assert.equal(bundle[id],bodies[id],id+' has a stale bundled article; run python3 tools/codex_facts.py');
+});
+
+test('generated Codex facts are current with their reference catalogue',()=>{
+ execFileSync('python3',[join(here,'../../../../../tools/codex_facts.py'),'--check'],{stdio:'pipe'});
+});
+
+
+test('Codex tables keep labelled wiki links in one cell',()=>{
+ const html=renderMarkdown('| Unit | Role |\n|---|---|\n| [[elite-infantry|Bronze Guard]] | Infantry |',{'elite-infantry':'Bronze Guard'});
+ assert.equal((html.match(/<td>/g)||[]).length,2);
+ assert.match(html,/<td><a[^>]*data-cx="elite-infantry">Bronze Guard<\/a><\/td>/);
 });

@@ -1,0 +1,1 @@
+The ship is not free for anything else until it is home — outbound and return both count, same [[transfers|three fates]] (captured, damaged, sunk) as any other cargo at sea. A **Damaged** outcome on the way home still gets half the cargo back to you, never to the other side.

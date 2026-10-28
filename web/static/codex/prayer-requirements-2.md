@@ -1,0 +1,3 @@
+An answered prayer starts that god's waiting time across all your cities. **Kult** and `keryx rite --list` show the remaining wait, an active gift or a gift awaiting departure. Missing temples and insufficient kharis are named as separate requirements. Potnia's two prayers share her 24-game day wait. An active gift cannot be renewed before it ends. A gift awaiting departure cannot be renewed before it is used.
+
+Older prayers outside the current Minoan catalogue retain their uncertain answer and offering multiplier. Their offering is spent even on a silent answer, but kharis is never spent. Old recorded outcomes remain as they happened.

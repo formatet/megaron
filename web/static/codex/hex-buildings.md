@@ -1,0 +1,3 @@
+**Farm, Mine, Lumbermill and Stone Quarry stand on a hex, not in the city.** When you build one of these four, you choose which hex in your [[catchment]] it goes on, and it only ever helps that one hex. You may build more than one of the same kind — two Farms on two different grain hexes each raise their own hex's cap, independently. A Mine's hex decides what it produces: build it on a copper, tin or silver deposit and it works that deposit; there is no separate building for silver.
+
+**One building per hex.** A hex that already has one of these four — yours, or a neighbouring city's on a hex you share — cannot take another. Building the same kind again on its own hex raises its level.

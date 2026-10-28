@@ -1,0 +1,3 @@
+Ships are damaged in [[battle]] and by storms. A damaged ship can be **Repaired** at a Shipyard (**War → Forces → Repair**); you are notified when the work is done. Ships can also be lost at sea outright — and the gods, when angry, sometimes take one from the harbour ([[kharis]]).
+
+A ship caught carrying cargo (see [[transfers]]) can also be **captured outright** — it changes hands on the spot and sails to the raider's nearest port under its new flag. If your own trade route's home port is gone by the time a ship comes back — burned, occupied, abandoned — it docks at your next-nearest settlement instead; with none left anywhere, it sits **stranded** wherever it made landfall until you give it a fresh order.

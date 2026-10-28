@@ -1,0 +1,1 @@
+Attach a trade offer in Letters and choose **Land** or **Sea** for the goods and payment. The runner still follows its own physical route. The choice stays with the agreement and is checked again on acceptance; Keryx uses `trade-offer --by land` or `--by sea`. See [[transfers|route requirements and risks]].

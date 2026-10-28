@@ -738,7 +738,7 @@ export function renderUnitCard(u) {
 
   return '<div id="ucard-' + u.id + '" style="padding:.3rem .2rem;border-bottom:1px solid var(--border)">'
     + '<div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap">'
-    + '<span style="font-size:.8rem;font-weight:bold">' + lbl + '</span>'
+    + '<a class="cx-link force-codex-name" href="#" data-cx-kind="unit" data-cx-key="'+esc(u.type)+'">' + lbl + '</a>'
     + stanceBadge + crewBadge + hullBadge + foodBadge + cargoBadge
     + '<span style="font-size:.68rem;color:var(--text-dim);margin-left:auto">' + esc(unitStatusLabel(u)) + '</span>'
     + '</div>'

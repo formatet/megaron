@@ -1,0 +1,3 @@
+The Host's marker, sight and founding place follow the Province it physically occupies, including during a march. Its hover and panel say **Marching**, **Waiting** (with the reason this ground cannot be settled), or **Can found here**. Click the marker's current hex to open the Host panel. Keryx `founding status` and `status` show the same position and state.
+
+You can found on valid ground while the Host is marching. The city rises where the Host stands when you confirm, and the Host disappears. If it has moved from the place you confirmed, the order is refused; reopen its panel and read the new site before founding.

@@ -1,0 +1,5 @@
+If a messenger must first deliver the order, or the destination is unexplored, the forecast says why arrival is not yet known. Redirects also wait for a messenger; their current course continues until delivery. The **Sold** line shows the selected forces’ silver drain at home and in the field, and how long their paying city’s treasury lasts after departure; with several paying cities, it shows the shortest treasury duration; spearmen show **0 → 0**. No forecast sends an order.
+
+In Keryx, use `march --unit <id> --target q,r --preview` (or `unit march` with the same flags). Add `--json` for the server forecast. Omit `--preview` when you are ready to send. `--unit` also accepts an exact unit name, for example `--unit "3rd Spearmen of Tylissos"`; names are case-insensitive and an ambiguous name is refused.
+
+**Choose a city quickly:** the order menu's **Destination city** list offers your own cities first, followed by cities you have actually seen, remembered or contacted. Selecting one fills the destination; you can still choose a hex on the map. A city known only through rumours is not a destination yet. The confirmation names the city.

@@ -1,6 +1,7 @@
 package province
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -11,11 +12,33 @@ import (
 // factor table must say what the code charges and applies. A tuned number that
 // forgets the article goes red here.
 func TestCodexRoadsArticleMatchesCode(t *testing.T) {
-	raw, err := os.ReadFile("../../../web/static/codex/roads.md")
+	raw, err := os.ReadFile("../../../web/static/codex/index.json")
 	if err != nil {
-		t.Fatalf("read codex article: %v", err)
+		t.Fatal(err)
 	}
-	md := string(raw)
+	var idx struct {
+		Articles []struct {
+			ID      string   `json:"id"`
+			Related []string `json:"related"`
+		} `json:"articles"`
+	}
+	if err := json.Unmarshal(raw, &idx); err != nil {
+		t.Fatal(err)
+	}
+	ids := []string{"roads"}
+	for _, a := range idx.Articles {
+		if a.ID == "roads" {
+			ids = append(ids, a.Related...)
+		}
+	}
+	md := ""
+	for _, id := range ids {
+		raw, err := os.ReadFile("../../../web/static/codex/" + id + ".md")
+		if err != nil {
+			t.Fatal(err)
+		}
+		md += "\n" + string(raw)
+	}
 	rows := []struct{ label, terrain string }{
 		{"Plains, river valley, delta", "plains"},
 		{"Olive grove, maquis", "forest_olive_grove"},

@@ -1,0 +1,3 @@
+Rivers begin unnamed. The first Wanax whose own physical unit reaches a river earns the right to name it; seeing it gives no right. The river, its fords and connected delta share the chosen name. A named river appears in its known hex panels, map label and Keryx catchment rows. Unexplored hexes reveal no name or naming right; remembered ground keeps its name visible. See [[naming-the-land]] for the naming action and the other kinds of land.
+
+When an expedition turns home, its dispatch says **Mission complete** and gives an estimated local clock arrival. The estimate follows the current world clock; the expedition report preserves its findings.

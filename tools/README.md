@@ -697,3 +697,11 @@ checks process/ground/assets. Contract/evidence: `docs/reviews/rutthex-synminne/
 ### Realm Kult proof
 
 `python3 tools/kult_tabs_bild_20261027.py OUTPUT` exercises realm Kult in a fresh owned server: three cities/temples/two gods, real staffing, Keryx, native Firefox tabs1280/390 twice, colony navigation, exact-city offering and confirmed temple demolition. `kult_tabs_server_mutations_20261027.py CHECKOUT OUTPUT` and `kult_tabs_client_mutations_20261027.py CHECKOUT OUTPUT` require an isolated checkout and prove named red/exact restore/fresh green. `kult_tabs_deploy_verify_20261027.py --before` captures read-only ground state; omit the flag after deploy. Evidence: `docs/reviews/kult-flikar/`.
+
+
+Codex catalogue facts: after changing a unit, building, current rite or goods catalogue, run
+`tools/gotest.sh ./api/handlers -run '^TestCodexReferenceMatchesAuthoritativeCatalogues$' -args -update-codex-reference`,
+then `python3 tools/codex_facts.py`. Review the reference and article diff together.
+`python3 tools/codex_facts.py --check` is read-only; normal Go/JS tests reject catalogue drift,
+missing current entities and stale article bundles. Historical migration scripts ending
+`20261028` document the one-time split; do not rerun them over maintained articles.

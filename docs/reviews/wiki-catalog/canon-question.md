@@ -1,6 +1,6 @@
 # Kanonfråga: varifrån kommer nästa sjöavgångs proviant?
 
-Status: skickad direkt till Timothy2026-10-28, väntar svar. Inga spelregler eller artiklar ändrade i denna slice. Bas `f9926f57`.
+Status: BESVARAD av Timothy2026-10-28: ”båtar avgångshamnen, alltid hamnen de ligger i”. Missionsproviant rättad och verifierad LIVE `d09a74af`; support/upkeepankare behålls. Nedanstående inventering är den historiska frågan före beslutet. Inga spelregler eller artiklar ändrade i denna slice. Bas `f9926f57`.
 
 Efter att ett skepp dockat i en annan egen stad har det fysisk hamn där men behåller sin tidigare försörjningsstad.
 

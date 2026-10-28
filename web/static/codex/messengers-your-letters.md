@@ -1,0 +1,3 @@
+**Letters** has one row per Wanax: their name, the last line of the latest letter, and **Waiting on you**, **Waiting on them** or **Done**. Letters awaiting your answer come first, with the nearest deadline first. An unanswered offer remains actionable even when you cannot afford its payment.
+
+Open a Wanax to read your exchange, oldest first. The newest letter is open; expand an older letter to read it. Opening a letter marks it read. Reading never accepts a trade or sends an answer. Offers have **Accept** and **Decline** buttons. An accepted offer remains in the exchange as **Agreed**, with its exact terms; agreement does not prove the goods have arrived.

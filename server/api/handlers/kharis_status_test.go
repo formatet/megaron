@@ -7,7 +7,6 @@ import (
 	"math"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -76,11 +75,7 @@ func TestProvinceRealmKharisProjection(t *testing.T) {
 }
 
 func TestKharisPlayerRulesSourceParity(t *testing.T) {
-	raw, err := os.ReadFile("../../../web/static/codex/kharis.md")
-	if err != nil {
-		t.Fatal(err)
-	}
-	article := string(raw)
+	article := codexArticleTextWithRelated(t, "kharis")
 	for _, want := range []string{
 		fmt.Sprintf("**%g Kharis**", kharis.StartingKharis),
 		fmt.Sprintf("no temple **%g**", kharis.EffectiveKharisCap(100, 0)),
