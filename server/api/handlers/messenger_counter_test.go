@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -306,5 +307,28 @@ func TestCounterOfferTxRechecksOriginalSenderOwnershipAndExactPair(t *testing.T)
 				t.Fatal("locked counter accepted a changed original party or city pair")
 			}
 		})
+	}
+}
+
+// The replacement step must refuse an original that is no longer pending even
+// if a caller skipped lockCounterOfferTx: the guarded UPDATE is the backstop.
+func TestCounterOfferFinishRefusesNonPendingOriginal(t *testing.T) {
+	f, sched, store := counterFixture(t)
+	old, caseID, _ := integrationSendOffer(t, f, store, sched, "buy", "Already answered")
+	ctx := context.Background()
+	oldID := uuid.MustParse(old)
+	caseUUID, _ := uuid.Parse(caseID)
+	h := NewMessengerHandler(f.pool, sched, clock.NewTestClock(time.Now()), nil)
+	tx, err := f.pool.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback(ctx)
+	if _, err = tx.Exec(ctx, `UPDATE messengers SET trade_offer=trade_offer||'{"status":"accepted"}'::jsonb WHERE id=$1`, oldID); err != nil {
+		t.Fatal(err)
+	}
+	err = h.finishCounterOfferTx(ctx, tx, f.worldID, oldID, uuid.New(), f.receiverID, f.destID, f.originID, caseUUID, []byte(`{}`))
+	if !errors.Is(err, errCounterUnavailable) {
+		t.Fatalf("finish replaced an original that was no longer pending: %v", err)
 	}
 }
