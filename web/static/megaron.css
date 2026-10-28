@@ -2145,3 +2145,14 @@ h4.cx-h { font-size: var(--fs-base); }
 .citizen-progress-text { grid-column:1 / -1; color:var(--text-dim); }
 
 .river-flow-info { font-size:.75rem; margin:.35rem 0; color:var(--text); }
+
+/* The hex inspector consumes the same force card as the Forces drawer. */
+.hex-forces { margin-block: .5rem; }
+.hex-force { margin-block: .35rem; border: 1px solid var(--border); }
+.hex-force > summary { padding: .4rem; cursor: pointer; font-size: .75rem; overflow-wrap: anywhere; }
+.hex-force .force-card { padding: .4rem; font-size: .75rem; overflow-wrap: anywhere; }
+.hex-force .force-card p { margin-block: .3rem; }
+.hex-force button { padding: .25rem .4rem; border: 1px solid var(--border); background: var(--bg-raised); color: var(--text); cursor: pointer; }
+.force-name-link { text-decoration: underline; }
+.force-order-note, .force-cargo { font-size: .7rem; color: var(--text-dim); }
+@media (max-width: 600px) { .hex-force > summary { min-height: 2.5rem; } }

@@ -75,6 +75,7 @@ func newRootCommand() *cobra.Command {
 		leaveCmd(),
 		statusCmd(),
 		mapCmd(),
+		hexCmd(),
 		stormsCmd(),
 		placesCmd(),
 		sightingsCmd(),

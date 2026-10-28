@@ -1,3 +1,4 @@
+import {renderUnitCard,renderForeignUnitCard,unitStatusLabel} from '../ui/force_card.js';
 import {riverFlowLines,drawRiverFlow} from '../ui/river_flow.js';
 import { openMobilePanel, closeMobilePanel } from '../ui/mobile_panels.js';
 import { physicalHostState, hostStatusText } from '../ui/host_state.js';
@@ -3354,35 +3355,26 @@ function producesText(tile) {
 // fow/frammande-enheter) — listed below the player's own, tagged with the
 // owner's name, and with no "Show →" button (there is nothing of theirs to
 // act on).
-function unitListHTML(units, foreignUnits) {
-  let html = '';
-  if (units.length) {
-    const rows = units.map(u => {
-      const lbl = actorName(u);
-      return '<div style="display:flex;justify-content:space-between;align-items:center;gap:.4rem;padding:.2rem 0">'
-        + '<span>' + lbl + ' <span style="color:var(--text-dim)">(' + u.status + ')</span></span>'
-        + '<button data-unit-id="' + u.id + '" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Show →</button>'
-        + '</div>';
-    }).join('');
-    html += '<div style="margin-bottom:.5rem"><div class="ir-label" style="margin-bottom:.2rem">Forces here</div>' + rows + '</div>';
-  }
-  if (foreignUnits && foreignUnits.length) {
-    const rows = foreignUnits.map(u => {
-      const lbl = actorName(u);
-      const owner = u.owner || '—';
-      return '<div style="display:flex;justify-content:space-between;align-items:center;gap:.4rem;padding:.2rem 0">'
-        + '<span>' + lbl + ' ×' + u.size + ' <span style="color:var(--text-dim)">(' + owner + ', ' + u.status + ')</span></span>'
-        + '</div>';
-    }).join('');
-    html += '<div style="margin-bottom:.5rem"><div class="ir-label" style="margin-bottom:.2rem">Foreign forces here</div>' + rows + '</div>';
-  }
-  return html;
+export function unitListHTML(units, foreignUnits = []) {
+ const expanded = typeof window === 'undefined' || window.innerWidth > 600;
+ const card = (u,own) => '<details class="hex-force"'+(expanded?' open':'')+'><summary>'+esc(actorName(u))+' · '+esc(unitStatusLabel(u))+'</summary>'+(own?renderUnitCard(u,{context:'hex'}):renderForeignUnitCard(u))+'</details>';
+ return (units.length?'<section class="hex-forces"><div class="ir-label">Forces here</div>'+units.map(u=>card(u,true)).join('')+'</section>':'')
+  +(foreignUnits.length?'<section class="hex-forces"><div class="ir-label">Foreign forces here</div>'+foreignUnits.map(u=>card(u,false)).join('')+'</section>':'');
 }
 
 function bindUnitButtons(foot) {
-  foot.querySelectorAll('[data-unit-id]').forEach(b => {
-    b.addEventListener('click', () => window.warFocusUnit(b.dataset.unitId));
-  });
+ foot.querySelectorAll('[data-unit-id]').forEach(b=>b.addEventListener('click',()=>window.warFocusUnit(b.dataset.unitId)));
+ for (const verb of ['march','redirect']) foot.querySelectorAll('[data-hex-'+verb+']').forEach(b=>b.addEventListener('click',async()=>{
+  const {chooseMarchTarget}=await import('../ui/marchctx.js');
+  closeInspect();chooseMarchTarget(b.dataset[verb==='march'?'hexMarch':'hexRedirect']);
+ }));
+ foot.querySelectorAll('[data-hex-recall]').forEach(b=>b.addEventListener('click',async()=>{
+  if(b.disabled)return;b.disabled=true;
+  const status=foot.querySelector('#hex-uorder-'+CSS.escape(b.dataset.hexRecall));
+  try { const {unitRecall}=await import('../ui/drawers/war.js');await unitRecall(b.dataset.hexRecall,status); }
+  catch (_) {if(status)status.textContent='Could not confirm recall. Check orders before retrying.';}
+  finally {if(b.isConnected)b.disabled=false;}
+ }));
 }
 
 const MARCH_BTN_STYLE = 'display:block;width:100%;text-align:center;padding:.3rem;background:var(--bg-raised);border:1px solid var(--border);color:var(--text);font-size:.8rem;cursor:pointer;margin-top:.3rem;';
@@ -3864,8 +3856,7 @@ function openHexPanel(h) {
     return;
   }
 
-  const units = (State.unitsData || []).filter(u =>
-    u.q === h.q && u.r === h.r && (u.status === 'positioned' || u.status === 'marching'));
+  const units = ownUnitsAtHex(h);
   // Foreign (non-owned) units on this same hex (GET /foreign-units,
   // fow/frammande-enheter) — listed under the player's own, owner-tagged,
   // no action button (see unitListHTML).
@@ -4155,4 +4146,13 @@ export function focusDispatchHex(q,r) {
   window.centreOn?.(q,r);
   openHexPanel({q,r});
   State.dirty=true;
+}
+
+export function ownUnitsAtHex(h) {
+ return (State.unitsData||[]).filter(u=>{
+  if(!['positioned','marching','freighting'].includes(u.status))return false;
+  const trade=u.status==='freighting'&&(State.tradeData||[]).find(t=>t.mine===true&&t.ship_unit_id===u.id);
+  if(u.status==='freighting'&&!trade)return false;
+  const at=trade?transportPixelNow(trade):unitHexNow(u);return at?.q===h.q&&at?.r===h.r;
+ });
 }
