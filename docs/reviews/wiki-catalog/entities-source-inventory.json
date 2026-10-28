@@ -1,0 +1,303 @@
+{
+  "units": [
+    {
+      "id": "spearman",
+      "name": "Spearmen",
+      "recruitable": true
+    },
+    {
+      "id": "elite_infantry",
+      "name": "Bronze Guard",
+      "recruitable": true
+    },
+    {
+      "id": "war_chariot",
+      "name": "Chariot",
+      "recruitable": true
+    },
+    {
+      "id": "galley",
+      "name": "Galley",
+      "recruitable": true
+    },
+    {
+      "id": "war_galley",
+      "name": "War Galley",
+      "recruitable": true
+    },
+    {
+      "id": "merchantman",
+      "name": "Emporos",
+      "recruitable": true
+    },
+    {
+      "id": "nomadic_host",
+      "name": "Nomadic Host",
+      "recruitable": false
+    }
+  ],
+  "buildings": [
+    {
+      "id": "farm",
+      "name": "Farm"
+    },
+    {
+      "id": "barracks",
+      "name": "Barracks"
+    },
+    {
+      "id": "mine",
+      "name": "Mine"
+    },
+    {
+      "id": "lumbermill",
+      "name": "Lumbermill"
+    },
+    {
+      "id": "stonequarry",
+      "name": "Stone Quarry"
+    },
+    {
+      "id": "market",
+      "name": "Market"
+    },
+    {
+      "id": "wall",
+      "name": "Wall"
+    },
+    {
+      "id": "harbour",
+      "name": "Harbour"
+    },
+    {
+      "id": "shipyard",
+      "name": "Shipyard"
+    },
+    {
+      "id": "foundry",
+      "name": "Foundry"
+    },
+    {
+      "id": "stable",
+      "name": "Stable"
+    },
+    {
+      "id": "temple",
+      "name": "Temple"
+    },
+    {
+      "id": "olive_press",
+      "name": "Olive Press"
+    },
+    {
+      "id": "winery",
+      "name": "Winery"
+    },
+    {
+      "id": "pen",
+      "name": "Pen"
+    },
+    {
+      "id": "silo",
+      "name": "Granary"
+    }
+  ],
+  "terrains": [
+    {
+      "id": "plains",
+      "name": "Plains"
+    },
+    {
+      "id": "forest_olive_grove",
+      "name": "Olive Grove"
+    },
+    {
+      "id": "hills",
+      "name": "Hills"
+    },
+    {
+      "id": "mountain_limestone",
+      "name": "Limestone Mountains"
+    },
+    {
+      "id": "mountain_red",
+      "name": "Red Mountains"
+    },
+    {
+      "id": "coastal_sea",
+      "name": "Coastal Sea"
+    },
+    {
+      "id": "deep_sea",
+      "name": "Deep Sea"
+    },
+    {
+      "id": "river",
+      "name": "River"
+    },
+    {
+      "id": "river_valley",
+      "name": "River Valley"
+    },
+    {
+      "id": "river_delta",
+      "name": "River Delta"
+    },
+    {
+      "id": "river_ford",
+      "name": "River Ford"
+    },
+    {
+      "id": "scrub_maquis",
+      "name": "Maquis Scrub"
+    },
+    {
+      "id": "semi_desert",
+      "name": "Semi-Desert"
+    },
+    {
+      "id": "forest_cedar",
+      "name": "Cedar Forest"
+    }
+  ],
+  "gods": [
+    {
+      "id": "potnia",
+      "name": "Potnia"
+    },
+    {
+      "id": "velchanos",
+      "name": "Velchanos"
+    },
+    {
+      "id": "asterion",
+      "name": "Asterion"
+    },
+    {
+      "id": "sea_daimons_stillness",
+      "name": "the Sea Daimons of Stillness"
+    }
+  ],
+  "prayers": [
+    {
+      "id": "akhaier_oracle_deposits",
+      "name": "Apollon's Sight",
+      "status": "retained_not_current_mvp"
+    },
+    {
+      "id": "akhaier_harvest_blessing",
+      "name": "Demeter's Bounty",
+      "status": "retained_not_current_mvp"
+    },
+    {
+      "id": "akhaier_battle_frenzy",
+      "name": "Ares' Fury",
+      "status": "retained_not_current_mvp"
+    },
+    {
+      "id": "khemetiu_oracle_deposits",
+      "name": "Thoth's Revelation",
+      "status": "retained_not_current_mvp"
+    },
+    {
+      "id": "khemetiu_harvest_blessing",
+      "name": "Osiris' Flood",
+      "status": "retained_not_current_mvp"
+    },
+    {
+      "id": "khemetiu_battle_frenzy",
+      "name": "Sekhmet's Wrath",
+      "status": "retained_not_current_mvp"
+    },
+    {
+      "id": "knaani_oracle_deposits",
+      "name": "El's Oracle",
+      "status": "retained_not_current_mvp"
+    },
+    {
+      "id": "knaani_harvest_blessing",
+      "name": "Baal's Rain",
+      "status": "retained_not_current_mvp"
+    },
+    {
+      "id": "knaani_battle_frenzy",
+      "name": "Anat's Rage",
+      "status": "retained_not_current_mvp"
+    },
+    {
+      "id": "thrakes_oracle_deposits",
+      "name": "Sabazios' Dream",
+      "status": "retained_not_current_mvp"
+    },
+    {
+      "id": "thrakes_harvest_blessing",
+      "name": "Bendis' Harvest",
+      "status": "retained_not_current_mvp"
+    },
+    {
+      "id": "thrakes_battle_frenzy",
+      "name": "Thrakian Battle Rage",
+      "status": "retained_not_current_mvp"
+    },
+    {
+      "id": "minoan_oracle_deposits",
+      "name": "Potnia's Vision",
+      "status": "retained_not_current_mvp"
+    },
+    {
+      "id": "minoan_harvest_blessing",
+      "name": "Britomartis' Gift",
+      "status": "retained_not_current_mvp"
+    },
+    {
+      "id": "minoan_battle_frenzy",
+      "name": "Poseidon's Storm",
+      "status": "retained_not_current_mvp"
+    },
+    {
+      "id": "hatti_oracle_deposits",
+      "name": "Hepat's Counsel",
+      "status": "retained_not_current_mvp"
+    },
+    {
+      "id": "hatti_harvest_blessing",
+      "name": "Telipinu's Return",
+      "status": "retained_not_current_mvp"
+    },
+    {
+      "id": "hatti_battle_frenzy",
+      "name": "Teshub's Thunder",
+      "status": "retained_not_current_mvp"
+    },
+    {
+      "id": "minoan_potnia_vision_v2",
+      "name": "Potnia's Vision",
+      "status": "current_mvp"
+    },
+    {
+      "id": "minoan_potnia_walls",
+      "name": "Mistress of the Walls",
+      "status": "current_mvp"
+    },
+    {
+      "id": "minoan_velchanos_green_shoots",
+      "name": "Green Shoots",
+      "status": "current_mvp"
+    },
+    {
+      "id": "minoan_asterion_thread",
+      "name": "The Thread Shows a Path",
+      "status": "current_mvp"
+    },
+    {
+      "id": "minoan_stillness_passage",
+      "name": "Favourable Passage",
+      "status": "current_mvp"
+    }
+  ],
+  "concepts": {
+    "exhaustive_catalog": false,
+    "capability_checkers": 34,
+    "kingdom_checkers_gated": 8
+  }
+}
