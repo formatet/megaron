@@ -33,15 +33,14 @@ read from code or vault on demand. A `≥3` beside the word "invariant" makes an
   Format `(YYYY-MM-DD HH:MM)`.
 - **Codex may be working in this repo at the same time** — rules in `AGENTS.md`. If `.agents/codex-thread`
   exists, arm a Monitor at session start: `tail -n0 -F .agents/chat.log | grep --line-buffered "codex→claude"`
-  (re-arm on expiry), read the log's tail, and message Codex with `tools/agent-say.sh codex "…"`.
-  (Codex drove progress alone 2026-10-25 17:55 → 2026-10-28 16:00; its unreviewed merges are queued under
-  VERIFIERING in `megaron_todo.md`. The roles below apply again.)
-  **Roles (Timothy 2026-10-04, reaffirmed 2026-10-14):** Claude leads — gives Codex work orders (one branch per slice),
-  reviews the core diff itself, runs its own mutation check, merges, pushes, deploys, keeps todo/vault, and takes
-  BILD/TEXT gates to Timothy. Codex builds, tests and proposes architecture, and hands over hash + STOP.
-  Use Codex fully for implementation instead of doing it inline. If Codex's quota runs out, Claude builds itself or
-  waits. (Codex self-integration was a temporary arrangement 2026-10-13 07:10 → 2026-10-14 while Claude's compute was
-  low; it applies only where Timothy says so.) Timothy has delegated approval of the owner map
+  (re-arm on expiry) and read the log's tail. `tools/agent-say.sh codex "…"` only for a short pointer once the thread is verified.
+  **Roles (Timothy 2026-10-28, replaces 10-04/10-14): Codex drives progress itself** — builds, tests with its own mutant,
+  merges, pushes, deploys, verifies hash + ground state, keeps todo/vault; canon and BILD go straight to Timothy.
+  **Claude reviews in batches** every few days (cross-slice/lifecycle invariants, own mutants on core guards, live ground
+  state, vault vs code), takes design talks with Timothy, and builds itself when Codex is out of quota. Orders and review
+  findings go to Codex as files in `.agents/` + a line in todo NU — not via `agent-say` (dead threads lost orders 10-28).
+  Why: the 10-25→10-28 solo window held up (78 commits, 1 real bug, found by batch review); the load belongs on Codex,
+  whose weekly quota resets within a day. Timothy has delegated approval of the owner map
   (`megaron_arkitekturprogram` steps 3/5) to Claude; canon still goes to him.
 - Vault rights: read/write `~/Dokument/myltavault` freely without asking.
 - **Loose design dumps** are an inbox, not a home: triage every point into a todo line, a vault update or a

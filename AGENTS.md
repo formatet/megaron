@@ -8,13 +8,11 @@ deploy steps all apply to you. Where it says "Claude", read "the agent". Its mem
 
 ## Two agents share this repo (Codex + Claude Code)
 
-**⚠️ Until Wed 2026-10-28 16:00 (Timothy 2026-10-25): you drive progress ALONE** — review your own core diff with a mutant, merge to
+**Roles (Timothy 2026-10-28, replaces 10-04): you drive progress yourself** — review your own core diff with a mutant, merge to
 master, push, deploy (`ssh root@10.0.1.92 "cd /opt/poleia && git pull"`), verify hash + ground state, keep `megaron_todo.md` and the vault.
-Canon and BILD go straight to Timothy; do not wait for Claude. After that time the roles below apply again.
-
-**Roles (Timothy 2026-10-04):** Claude leads and integrates — it sends you work orders, reviews and merges your
-branches, pushes and deploys. You build, test, analyse and propose architecture. Don't merge, push or deploy
-yourself; hand over branch + commits + test results + a mutation check via `tools/agent-say.sh claude`.
+Canon and BILD go straight to Timothy; do not wait for Claude. Claude reviews your merged work in batches every few days and
+builds when you are out of quota; its findings and orders arrive as files in `.agents/` plus a line in todo NU — check both at
+session start. Before merging a migration, check `server/db/migrations` on master for the next free number.
 Never check out a branch in the main tree `~/Projects/megaron` — it stays on `master`; work in your own worktree.
 
 Timothy runs Codex and Claude Code on the same machine, often at the same time. Rules:
