@@ -113,11 +113,12 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req struct {
-		CaseID        string `json:"case_id,omitempty"`
-		Subject       string `json:"subject,omitempty"`
-		DestinationID string `json:"destination_id"`
-		Message       string `json:"message"`
-		TradeOffer    *struct {
+		CaseID         string `json:"case_id,omitempty"`
+		CounterOfferID string `json:"counter_offer_id,omitempty"`
+		Subject        string `json:"subject,omitempty"`
+		DestinationID  string `json:"destination_id"`
+		Message        string `json:"message"`
+		TradeOffer     *struct {
 			By          string  `json:"by"`
 			Kind        string  `json:"kind"`
 			WantGood    string  `json:"want_good"`
@@ -131,6 +132,14 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
 		return
+	}
+	var counterID uuid.UUID
+	if req.CounterOfferID != "" {
+		counterID, err = uuid.Parse(req.CounterOfferID)
+		if err != nil || req.TradeOffer == nil {
+			writeError(w, 400, "counter_offer_id requires a valid offer ID and trade_offer")
+			return
+		}
 	}
 	destID, err := uuid.Parse(req.DestinationID)
 	if err != nil {
@@ -405,6 +414,13 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer tx.Rollback(r.Context())
+	if counterID != uuid.Nil {
+		req.CaseID, err = lockCounterOfferTx(r.Context(), tx, worldID, counterID, playerID, originID, destID, req.CaseID, h.clk.Now())
+		if err != nil {
+			writeError(w, http.StatusConflict, errCounterUnavailable.Error())
+			return
+		}
+	}
 	arrivesAt, msgArrivalDueTick, err = messenger.BlessRunner(r.Context(), tx, worldID, playerID, originID, now, msgSendCurrentTick, msgArrivalDueTick)
 	if err != nil {
 		writeError(w, 500, "could not prepare Runner departure")
@@ -435,6 +451,12 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 				"by":           req.TradeOffer.By,
 			})
 		}
+	}
+	if counterID != uuid.Nil {
+		var terms map[string]any
+		_ = json.Unmarshal(tradeOfferJSON, &terms)
+		terms["counter_offer_id"] = counterID
+		tradeOfferJSON, _ = json.Marshal(terms)
 	}
 	// New trade offers expire offerExpiryTicks ticks after arrival (so inactive offers clean up automatically).
 	// Non-trade messages have no expiry.
@@ -562,6 +584,16 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if counterID != uuid.Nil {
+		if err = h.finishCounterOfferTx(r.Context(), tx, worldID, counterID, messengerID, playerID, originID, destID, caseID, tradeOfferJSON); err != nil {
+			if errors.Is(err, errCounterUnavailable) {
+				writeError(w, 409, err.Error())
+			} else {
+				writeError(w, 500, "could not complete atomic counteroffer")
+			}
+			return
+		}
+	}
 	if err = tx.Commit(r.Context()); err != nil {
 		writeError(w, 500, "could not commit Runner departure")
 		return
@@ -824,7 +856,7 @@ func (h *MessengerHandler) ListSent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT m.id, m.destination_id, s.name, m.message_text, CASE WHEN secret.no_word THEN 'outbound' ELSE m.status END, CASE WHEN secret.no_word OR (m.status<>'arrived' AND EXISTS(SELECT 1 FROM correspondence_letters a WHERE a.id=m.id)) THEN NULL ELSE m.reply_text END, m.sent_at, m.arrives_at, m.trade_offer, m.expires_at,
+		`SELECT m.id, m.destination_id, s.name, m.message_text, CASE WHEN secret.no_word THEN 'outbound' ELSE m.status END, CASE WHEN secret.no_word OR (m.status<>'arrived' AND EXISTS(SELECT 1 FROM correspondence_letters a WHERE a.id=m.id)) THEN NULL ELSE m.reply_text END, m.sent_at, m.arrives_at, `+pendingOfferViewSQL+`, m.expires_at,
 		        CASE WHEN secret.no_word THEN 'unknown' ELSE m.passage_status END, CASE WHEN secret.no_word THEN NULL ELSE pps.id END, CASE WHEN secret.no_word THEN NULL ELSE pps.name END, CASE WHEN secret.no_word THEN NULL ELSE pps.owner_id END, CASE WHEN secret.no_word THEN NULL ELSE m.carrier_name END
 		 FROM messengers m
  CROSS JOIN LATERAL (SELECT m.status NOT IN ('arrived','lost') AND EXISTS(SELECT 1 FROM events e WHERE e.stream_id=m.id AND e.event_type='CarrierPassengerRescuedV1') AS no_word) secret

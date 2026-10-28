@@ -209,7 +209,7 @@ func (m *correspondenceItem) describe(now time.Time) error {
 		return nil
 	}
 	m.Group = "waiting_you"
-	m.Actions = append(m.Actions, "trade_decline")
+	m.Actions = append(m.Actions, "trade_decline", "trade_counter")
 	if m.Affordable != nil && *m.Affordable {
 		m.Actions = append(m.Actions, "trade_accept")
 	} else {
