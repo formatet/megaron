@@ -1,0 +1,99 @@
+Your hex: (5,25) · radius 18 · 70 known hexes (68 live, 2 remembered; 25 sea, 5 river, 0 ford, 0 coastal land):
+
+  (  5, 25) d0      plains               [settled]
+  (  4, 25) d1  NW  coastal_sea         [sea]
+  (  4, 26) d1  SW  coastal_sea         [sea]
+  (  5, 26) d1  S   plains              
+  (  6, 25) d1  SE  plains              
+  (  6, 24) d1  NE  plains              
+  (  5, 27) d2  S   plains              
+  (  6, 26) d2  SE  plains              
+  (  7, 24) d2  E   plains              
+  (  4, 27) d2  SW  coastal_sea         [sea]
+  (  3, 26) d2  W   coastal_sea         [sea]
+  (  3, 27) d2  SW  coastal_sea         [sea]
+  (  7, 25) d2  SE  plains              
+  (  4, 28) d3  S   coastal_sea         [sea]
+  (  2, 28) d3  SW  coastal_sea         [sea]
+  (  3, 28) d3  SW  coastal_sea         [sea]
+  (  6, 27) d3  S   plains              
+  (  5, 28) d3  S   plains               +copper
+  (  2, 26) d3  W   coastal_sea         [sea]
+  (  7, 26) d3  SE  plains              
+  (  2, 27) d3  W   coastal_sea         [sea]
+  (  8, 25) d3  SE  plains              
+  (  8, 24) d3  E   plains              
+  (  8, 23) d3  E   plains              
+  (  3, 29) d4  SW  coastal_sea         [sea]
+  (  8, 26) d4  SE  plains              
+  (  4, 29) d4  S   coastal_sea         [sea]
+  (  9, 25) d4  SE  coastal_sea         [sea]
+  (  1, 29) d4  SW  coastal_sea         [sea]
+  (  1, 28) d4  W   coastal_sea         [sea]
+  (  1, 27) d4  W   coastal_sea         [sea]
+  (  2, 29) d4  SW  coastal_sea         [sea]
+  (  6, 28) d4  S   plains               +copper
+  (  7, 27) d4  SE  plains              
+  (  8, 27) d5  SE  plains              
+  (  0, 29) d5  W   coastal_sea         [sea]
+  (  7, 28) d5  SE  plains              
+  (  0, 27) d5  W   coastal_sea         [sea]
+  ( 10, 25) d5  SE  river               [river] · flows from north-west toward south-east · continues into fog toward south-east · connections south-east: river; north-west: coastal water
+  (  0, 28) d5  W   coastal_sea         [sea]
+  (  6, 29) d5  S   coastal_sea         [sea]
+  (  9, 26) d5  SE  plains              
+  ( 10, 26) d6  SE  plains              
+  (  7, 29) d6  S   coastal_sea         [sea]
+  (  8, 28) d6  SE  plains              
+  (  9, 27) d6  SE  plains               +silver
+  (  8, 29) d7  SE  coastal_sea         [sea]
+  (  9, 28) d7  SE  plains              
+  ( 10, 27) d7  SE  plains              
+  ( 13, 26) d9  SE  plains              
+  ( 14, 25) d9  SE  river               [river] · flows from north-west toward south-east · continues into fog toward north-west · connections south-east: river; north-west: ford
+  ( 13, 27) d10 SE  plains              
+  ( 15, 24) d10 SE  plains              
+  ( 14, 26) d10 SE  plains              
+  ( 15, 25) d10 SE  river               [river] · flows from north-west toward south-east · connections south-east: river; north-west: river
+  ( 13, 28) d11 SE  plains              
+  ( 14, 27) d11 SE  plains              
+  ( 16, 25) d11 SE  river               [river] · flows from north-west toward south-east · connections south-east: river; north-west: river
+  ( 15, 26) d11 SE  plains              
+  ( 16, 24) d11 SE  plains              
+  ( 16, 26) d12 SE  plains              
+  ( 17, 24) d12 SE  plains              
+  ( 14, 28) d12 SE  plains              
+  ( 15, 27) d12 SE  plains              
+  ( 17, 25) d12 SE  river               [river] · flows from north-west toward south-east and north-east · connections south-east: coastal water; north-west: river; north-east: coastal water
+  ( 16, 27) d13 SE  plains              
+  ( 17, 26) d13 SE  river_delta         
+  ( 15, 28) d13 SE  plains              
+  ( 18, 24) d13 SE  coastal_sea         [sea] [remembered]
+  ( 18, 25) d13 SE  coastal_sea         [sea] [remembered]
+
+Frontier — unexplored hexes bordering the known world (38, nearest first):
+  (  5, 29) d4  S  
+  (  9, 24) d4  E  
+  (  9, 23) d4  E  
+  (  5, 30) d5  S  
+  (  4, 30) d5  S  
+  (  3, 30) d5  SW 
+  (  2, 30) d5  SW 
+  (  0, 30) d5  SW 
+  ( 10, 24) d5  E  
+  (  1, 30) d5  SW 
+  (  6, 30) d6  S  
+  ( 11, 25) d6  SE 
+  ( 11, 24) d6  E  
+  (  7, 30) d7  S  
+  ( 11, 26) d7  SE 
+  … and 23 more
+
+To act on a hex, march a land unit there (find unit IDs with `keryx unit list`):
+  keryx unit march --unit <id> --q <Q> --r <R>
+  keryx unit march --unit <id> --q <Q> --r <R> --intent colonize --name <name>
+Intent: colonize — founds a colony when the unit arrives on an empty hex.
+Note: ore on mountain terrain is impassable — colonize an ADJACENT passable hex
+      so the deposit falls in the new colony's catchment.
+To explore: march a unit toward a frontier hex above — the route is revealed
+      and remembered on arrival, pushing the frontier outward.

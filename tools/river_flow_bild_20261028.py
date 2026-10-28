@@ -100,7 +100,7 @@ try:
       assert not errors,errors;ctx.close()
    browser.close()
   assert before==hashes(),'production sources changed during capture'
-  (OUT/'proof.json').write_text(json.dumps({'health':health,'shots':shots,'source_unchanged':True,'initial_generated_metadata':initial_metadata,'scenes':api_proofs,'fixture':'Fresh register/join/found; logged source lake, river/ford and sea+delta mouth. Remembered source/middle/mouth windows with actual API FOW; native map panel and Keryx map, twice1280/390. Camera focus uses existing game function, no substituted DOM or API.'},indent=2))
+  (OUT/'proof.json').write_text(json.dumps({'health':health,'shots':shots,'source_unchanged':True,'initial_generated_metadata':initial_metadata,'scenes':api_proofs,'fixture':'Fresh register/join/found; logged source lake, river/ford and sea+delta mouth. Real own scout on upstream bank supplies live sight, with remembered source/mouth windows; downstream neighbour stays fog. Actual API FOW, native map panel and Keryx map, twice1280/390. Camera focus uses existing game function, no substituted DOM or API.'},indent=2))
   print('PASS source, fog-edge and mouth API/CLI/native, two desktop/mobile cycles',flush=True)
 finally:
  if proc is not None:proc.terminate();proc.wait(timeout=15)

@@ -1,0 +1,7 @@
+» färsk DB på migration 221 · commit 78a4be43+ändringar
+2026/10/28 16:46:53 INFO player registered id=4db4db85-87d9-49cd-b9f7-53df9ea5204e username=river-direction-viewer-8dff0c5a-8aab-4e0a-a792-d3579e8b4074
+--- FAIL: TestMapRiverFlowUsesFullSavedGeographyButOnlyExposesKnownTile (0.12s)
+    river_edges_test.go:196: FOV read recalculated saved direction: map[fertility:0.5 mineral:0.5 place_id:2,7 place_kind:river q:3 r:7 river_connections:[map[edge:0 terrain:river] map[edge:1 terrain:river]] river_downstream_edges:[0] river_edges:[0 1] river_flow_known:true river_upstream_edges:[1] terrain:river tier:remembered visible:true]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.126s
+FAIL

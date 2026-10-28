@@ -1,0 +1,317 @@
+{
+  "health": {
+    "commit": "8b0eda57+river-flow",
+    "migration": 221,
+    "status": "ok"
+  },
+  "shots": [
+    {
+      "file": "1-source-map-1280.png"
+    },
+    {
+      "file": "1-source-1280.png"
+    },
+    {
+      "file": "1-source-map-390.png"
+    },
+    {
+      "file": "1-source-390.png"
+    },
+    {
+      "file": "1-fog-edge-map-1280.png"
+    },
+    {
+      "file": "1-fog-edge-1280.png"
+    },
+    {
+      "file": "1-fog-edge-map-390.png"
+    },
+    {
+      "file": "1-fog-edge-390.png"
+    },
+    {
+      "file": "1-mouth-map-1280.png"
+    },
+    {
+      "file": "1-mouth-1280.png"
+    },
+    {
+      "file": "1-mouth-map-390.png"
+    },
+    {
+      "file": "1-mouth-390.png"
+    },
+    {
+      "file": "2-source-map-1280.png"
+    },
+    {
+      "file": "2-source-1280.png"
+    },
+    {
+      "file": "2-source-map-390.png"
+    },
+    {
+      "file": "2-source-390.png"
+    },
+    {
+      "file": "2-fog-edge-map-1280.png"
+    },
+    {
+      "file": "2-fog-edge-1280.png"
+    },
+    {
+      "file": "2-fog-edge-map-390.png"
+    },
+    {
+      "file": "2-fog-edge-390.png"
+    },
+    {
+      "file": "2-mouth-map-1280.png"
+    },
+    {
+      "file": "2-mouth-1280.png"
+    },
+    {
+      "file": "2-mouth-map-390.png"
+    },
+    {
+      "file": "2-mouth-390.png"
+    }
+  ],
+  "source_unchanged": true,
+  "initial_generated_metadata": {
+    "rivers": 14,
+    "missing": 0
+  },
+  "scenes": [
+    {
+      "cycle": 1,
+      "scene": "source",
+      "tile": {
+        "river_connections": [
+          {
+            "edge": 0,
+            "terrain": "river"
+          },
+          {
+            "edge": 1,
+            "terrain": "coastal_sea"
+          }
+        ],
+        "river_edges": [
+          0,
+          1
+        ],
+        "river_flow_known": true,
+        "river_upstream_edges": [
+          1
+        ],
+        "river_downstream_edges": [
+          0
+        ],
+        "place_kind": "river",
+        "place_id": "10,25",
+        "q": 10,
+        "r": 25,
+        "terrain": "river",
+        "visible": true,
+        "tier": "live",
+        "fertility": 0.4514423087508983,
+        "mineral": 0.5820488972158797
+      }
+    },
+    {
+      "cycle": 1,
+      "scene": "fog-edge",
+      "tile": {
+        "river_connections": [
+          {
+            "edge": 0,
+            "terrain": "river"
+          },
+          {
+            "edge": 1,
+            "terrain": "river"
+          }
+        ],
+        "river_edges": [
+          0,
+          1
+        ],
+        "river_flow_known": true,
+        "river_upstream_edges": [
+          1
+        ],
+        "river_downstream_edges": [
+          0
+        ],
+        "place_kind": "river",
+        "place_id": "10,25",
+        "q": 13,
+        "r": 25,
+        "terrain": "river_ford",
+        "visible": true,
+        "tier": "live",
+        "fertility": 0.49135820739579605,
+        "mineral": 0.25808081640488123
+      }
+    },
+    {
+      "cycle": 1,
+      "scene": "mouth",
+      "tile": {
+        "river_connections": [
+          {
+            "edge": 0,
+            "terrain": "coastal_sea"
+          },
+          {
+            "edge": 1,
+            "terrain": "river"
+          },
+          {
+            "edge": 4,
+            "terrain": "coastal_sea"
+          }
+        ],
+        "river_edges": [
+          0,
+          1,
+          4
+        ],
+        "river_flow_known": true,
+        "river_upstream_edges": [
+          1
+        ],
+        "river_downstream_edges": [
+          0,
+          4
+        ],
+        "place_kind": "river",
+        "place_id": "10,25",
+        "q": 17,
+        "r": 25,
+        "terrain": "river",
+        "visible": true,
+        "tier": "live",
+        "fertility": 0.8703191864182431,
+        "mineral": 0.21499806748312583
+      }
+    },
+    {
+      "cycle": 2,
+      "scene": "source",
+      "tile": {
+        "river_connections": [
+          {
+            "edge": 0,
+            "terrain": "river"
+          },
+          {
+            "edge": 1,
+            "terrain": "coastal_sea"
+          }
+        ],
+        "river_edges": [
+          0,
+          1
+        ],
+        "river_flow_known": true,
+        "river_upstream_edges": [
+          1
+        ],
+        "river_downstream_edges": [
+          0
+        ],
+        "place_kind": "river",
+        "place_id": "10,25",
+        "q": 10,
+        "r": 25,
+        "terrain": "river",
+        "visible": true,
+        "tier": "live",
+        "fertility": 0.4514423087508983,
+        "mineral": 0.5820488972158797
+      }
+    },
+    {
+      "cycle": 2,
+      "scene": "fog-edge",
+      "tile": {
+        "river_connections": [
+          {
+            "edge": 0,
+            "terrain": "river"
+          },
+          {
+            "edge": 1,
+            "terrain": "river"
+          }
+        ],
+        "river_edges": [
+          0,
+          1
+        ],
+        "river_flow_known": true,
+        "river_upstream_edges": [
+          1
+        ],
+        "river_downstream_edges": [
+          0
+        ],
+        "place_kind": "river",
+        "place_id": "10,25",
+        "q": 13,
+        "r": 25,
+        "terrain": "river_ford",
+        "visible": true,
+        "tier": "live",
+        "fertility": 0.49135820739579605,
+        "mineral": 0.25808081640488123
+      }
+    },
+    {
+      "cycle": 2,
+      "scene": "mouth",
+      "tile": {
+        "river_connections": [
+          {
+            "edge": 0,
+            "terrain": "coastal_sea"
+          },
+          {
+            "edge": 1,
+            "terrain": "river"
+          },
+          {
+            "edge": 4,
+            "terrain": "coastal_sea"
+          }
+        ],
+        "river_edges": [
+          0,
+          1,
+          4
+        ],
+        "river_flow_known": true,
+        "river_upstream_edges": [
+          1
+        ],
+        "river_downstream_edges": [
+          0,
+          4
+        ],
+        "place_kind": "river",
+        "place_id": "10,25",
+        "q": 17,
+        "r": 25,
+        "terrain": "river",
+        "visible": true,
+        "tier": "live",
+        "fertility": 0.8703191864182431,
+        "mineral": 0.21499806748312583
+      }
+    }
+  ],
+  "fixture": "Fresh owned PG/Redis/register/join/found; logged lake, river/ford and sea+delta mouth. Real own scout on upstream bank supplies live sight, next downstream neighbour stays fog. Existing camera/panel functions; no substituted DOM or API. Two native 1280/390 cycles plus real Keryx."
+}
