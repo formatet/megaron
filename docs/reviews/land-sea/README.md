@@ -2,7 +2,7 @@
 
 Spelaren kunde inte välja färdsätt när båda vägarna fanns. Nu jämför Transfer, stående rutter och handelsbrev land/sjö med verklig restid, risk, krav och hinder; Keryx har `--by land|sea`. Valet sparas och omkontrolleras vid avfärd/accept/retur. **Bevisar kedjegrinden:** varor kan skickas på den väg spelaren avser utan att försvinna bakom automatiken.
 
-Bas `0f26d0af`, slutlig produktionskod `673addd6`. Order `.agents/order-land-eller-hav-20261025.md`, kanon [[temenos_ekonomi]] §Transportval och [[megaron_transportrisk]]. `by` är valfri metadata; tomt bevarar äldre automatik. Migration218 lägger `route_mode` på standing_orders/transports/trade_routes; handelsbrev bär `trade_offer.by`. Befintliga eventtyper och sparade resor behåller sin tolkning. Inga nya risker, kostnader eller hamnkrav.
+Bas `0f26d0af`, slutlig produktionskod `673addd6`, verifierad LIVE-process `08d8ffcc` (ren218, bevarade grundantal och10 byte-exakta assets). Order `.agents/order-land-eller-hav-20261025.md`, kanon [[temenos_ekonomi]] §Transportval och [[megaron_transportrisk]]. `by` är valfri metadata; tomt bevarar äldre automatik. Migration218 lägger `route_mode` på standing_orders/transports/trade_routes; handelsbrev bär `trade_offer.by`. Befintliga eventtyper och sparade resor behåller sin tolkning. Inga nya risker, kostnader eller hamnkrav.
 
 | Grind | Bevis |
 |---|---|

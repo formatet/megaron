@@ -1,0 +1,58 @@
+{
+  "ground": {
+    "migration": {
+      "version": 218,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 5055
+      }
+    ],
+    "players": 15,
+    "settlements": 6,
+    "units": 18,
+    "goods": 102,
+    "gossip": 1127
+  },
+  "health": {
+    "commit": "08d8ffc",
+    "migration": 218,
+    "status": "ok"
+  },
+  "checkout": "08d8ffcc0e65209b0cb8e15f79d50048490f74ce",
+  "static": {
+    "web/static/codex/routes.md": "fc8f53914ef3e8f6fbcc477afc84bd4344845fb2fe27450a8f8f99e1ec4b59be",
+    "web/static/codex/trade.md": "f77e00a3ffcc4f222ffbbc5b17b3a1b30ce307461ab9fb1d2acca3572217a78e",
+    "web/static/codex/transfers.md": "6d557665122f28cd86c011229ef702f080084b433169763bb64f79e70735dd48",
+    "web/static/js/megaron/ui/drawers/diplomacy.js": "d67890e374d7b21826bc77c9d95778946dcd7e1bddaddda7bdb5f47f709b91d1",
+    "web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs": "a7fd4d2723e1174255084ebf414dafe93af427bbdad6f12f44abc2b870f1b91c",
+    "web/static/js/megaron/ui/drawers/economy.js": "a76f6ba3bff74550f54cd72e515a0f6ef9d699ebf8dbd770b31863658a48432a",
+    "web/static/js/megaron/ui/drawers/economy_rows.test.mjs": "9aecc7623414d7dfe5cf6c97af0ab265c4d74c2f26c2af0e1136f03aeeae3c4f",
+    "web/static/js/megaron/ui/transport_choice.js": "3102ea76af628ead25a1e65f2a02231ff3a0f8c04436dd699aa9560b8a936131",
+    "web/static/js/megaron/ui/transport_choice.test.mjs": "e3639bc48fcd3ce8e571e5ecabda9b91fa5c70fcbc8067bbc5f8a4f9bbd81a22",
+    "web/static/megaron.css": "64920749861bd66264e33775ea6675d4a70deead39e90b9d330e685b3ffaa224"
+  },
+  "transport_options_anonymous_status": 401,
+  "expected": "08d8ffcc0e65209b0cb8e15f79d50048490f74ce",
+  "before": {
+    "migration": {
+      "version": 217,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 5045
+      }
+    ],
+    "players": 15,
+    "settlements": 6,
+    "units": 18,
+    "goods": 102,
+    "gossip": 1124
+  }
+}
