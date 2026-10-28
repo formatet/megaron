@@ -91,8 +91,10 @@ func TestRecallExpeditionLaterLegHome(t *testing.T) {
 			if status != "garrison" || sid == nil || *sid != f.capitalID || home != nil {
 				t.Fatalf("arrival status=%s settlement=%v home=%v, want home garrison", status, sid, home)
 			}
-			if q != homeQ || r != homeR {
-				t.Fatalf("arrival=(%d,%d), want (%d,%d)", q, r, homeQ, homeR)
+			// It sails for the sea neighbour, but once in harbour it stands on
+			// its city's hex (Timothy 2026-10-28).
+			if q != 0 || r != 0 {
+				t.Fatalf("arrival=(%d,%d), want home city hex (0,0)", q, r)
 			}
 			if err := pool.QueryRow(ctx, `SELECT count(*) FROM unit_expeditions WHERE unit_id=$1`, f.unitID).Scan(&rows); err != nil {
 				t.Fatal(err)
