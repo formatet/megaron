@@ -154,7 +154,8 @@ function bindTradeTransport(destination) {
  const preview=()=>{
   const n=id=>Number(document.getElementById('letter-compose-'+id)?.value)||0;
   const sell=document.querySelector('input[name="letter-compose-kind"]:checked')?.value==='sell';
-  return loadTransportChoices('letter-compose-route',State.MY_SETTLEMENT_ID,destination,sell?Math.max(n('offer-qty'),n('want-silver')):Math.max(n('qty'),n('silver')));
+  const saved=drafts.get(draftKey());const preferred=saved?.['letter-compose-route-sea']?'sea':saved?.['letter-compose-route-land']?'land':'';
+  return loadTransportChoices('letter-compose-route',State.MY_SETTLEMENT_ID,destination,sell?Math.max(n('offer-qty'),n('want-silver')):Math.max(n('qty'),n('silver')),preferred);
  };
  composer.addEventListener('change',e=>{if(!e.target?.closest?.('#letter-compose-route'))preview();});
  preview();

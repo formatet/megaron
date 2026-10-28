@@ -264,8 +264,9 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 	// still owe an EMPTY voyage home, or is the counterpart's ThenReturn leg 2
 	// its way home instead? Read once, before either branch below decides.
 	var leg1ShipUnitID *uuid.UUID
+	var leg1By string
 	if p.TransportID != (uuid.UUID{}) {
-		if err := tx.QueryRow(ctx, `SELECT ship_unit_id FROM transports WHERE id=$1`, p.TransportID).Scan(&leg1ShipUnitID); err != nil {
+		if err := tx.QueryRow(ctx, `SELECT ship_unit_id,route_mode FROM transports WHERE id=$1`, p.TransportID).Scan(&leg1ShipUnitID, &leg1By); err != nil {
 			return fmt.Errorf("read delivery ship: %w", err)
 		}
 	}
@@ -380,11 +381,11 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 			if scanErr := tx.QueryRow(ctx,
 				`INSERT INTO transports
 				   (world_id, owner_id, kind, origin_id, dest_id, category,
-				    origin_q, origin_r, dest_q, dest_r, departs_at, arrives_at, due_tick, interceptable, ship_unit_id, journey, departed_tick)
-                VALUES ($1,$2,'trade_return',$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,true,$13,$14,$15)
+				    origin_q, origin_r, dest_q, dest_r, departs_at, arrives_at, due_tick, interceptable, ship_unit_id, journey, departed_tick,route_mode)
+                VALUES ($1,$2,'trade_return',$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,true,$13,$14,$15,$16)
 				 RETURNING id`,
 				e.WorldID, retOwner, p.DestinationID, retDest, leg2Category,
-				ret.OriginQ, ret.OriginR, ret.DestQ, ret.DestR, departsAt, arrivesAt, currentTick+travelTicks, leg2ShipUnitID, saved, departure,
+				ret.OriginQ, ret.OriginR, ret.DestQ, ret.DestR, departsAt, arrivesAt, currentTick+travelTicks, leg2ShipUnitID, saved, departure, leg1By,
 			).Scan(&leg2ID); scanErr != nil {
 				return fmt.Errorf("insert return transport: %w", scanErr)
 			}
@@ -517,10 +518,11 @@ func dispatchShipReturnLeg(ctx context.Context, tx pgx.Tx, sched *events.Schedul
 	var homeID, actualArrivalID *uuid.UUID
 	var ownerID uuid.UUID
 	var homeQ, homeR, arriveQ, arriveR int
+	var routeBy string
 	if err := tx.QueryRow(ctx,
-		`SELECT ship_unit_id, origin_id, dest_id, owner_id, origin_q, origin_r, dest_q, dest_r
+		`SELECT ship_unit_id, origin_id, dest_id, owner_id, origin_q, origin_r, dest_q, dest_r,route_mode
 		 FROM transports WHERE id = $1`, transportID,
-	).Scan(&shipUnitID, &homeID, &actualArrivalID, &ownerID, &homeQ, &homeR, &arriveQ, &arriveR); err != nil {
+	).Scan(&shipUnitID, &homeID, &actualArrivalID, &ownerID, &homeQ, &homeR, &arriveQ, &arriveR, &routeBy); err != nil {
 		return fmt.Errorf("load outbound leg: %w", err)
 	}
 	if shipUnitID == nil {
@@ -554,11 +556,11 @@ func dispatchShipReturnLeg(ctx context.Context, tx pgx.Tx, sched *events.Schedul
 		`INSERT INTO transports
 		   (world_id, owner_id, kind, origin_id, dest_id, category,
 		    origin_q, origin_r, dest_q, dest_r, departs_at, arrives_at, due_tick,
-		    interceptable, ship_unit_id, journey, departed_tick)
-         VALUES ($1,$2,'ship_return',$3,$4,'naval',$5,$6,$7,$8,$9,$10,$11,true,$12,$13,$14)
+		    interceptable, ship_unit_id, journey, departed_tick,route_mode)
+         VALUES ($1,$2,'ship_return',$3,$4,'naval',$5,$6,$7,$8,$9,$10,$11,true,$12,$13,$14,$15)
 		 RETURNING id`,
 		worldID, ownerID, actualArrivalID, homeID,
-		arriveQ, arriveR, homeQ, homeR, departsAt, arrivesAt, currentTick+journey.TravelTicks, *shipUnitID, raw, currentTick,
+		arriveQ, arriveR, homeQ, homeR, departsAt, arrivesAt, currentTick+journey.TravelTicks, *shipUnitID, raw, currentTick, routeBy,
 	).Scan(&returnID); err != nil {
 		return fmt.Errorf("insert ship return leg: %w", err)
 	}

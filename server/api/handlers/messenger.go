@@ -118,6 +118,7 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 		DestinationID string `json:"destination_id"`
 		Message       string `json:"message"`
 		TradeOffer    *struct {
+			By          string  `json:"by"`
 			Kind        string  `json:"kind"`
 			WantGood    string  `json:"want_good"`
 			WantQty     float64 `json:"want_qty"`
@@ -145,6 +146,10 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if req.TradeOffer != nil {
+		if err := province.ValidateTransportBy(req.TradeOffer.By); err != nil {
+			writeError(w, 400, err.Error())
+			return
+		}
 		// Normalize kind: missing or empty → "buy" (backward-compatible).
 		if req.TradeOffer.Kind == "" {
 			req.TradeOffer.Kind = "buy"
@@ -319,9 +324,9 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusInternalServerError, "could not check destination harbour")
 			return
 		}
-		category, _, rerr := province.ResolveTradeRoute(r.Context(), h.pool, worldID,
+		category, _, rerr := province.ResolveTradeRouteBy(r.Context(), h.pool, worldID,
 			originCoastal || originHarboured, destCoastal || destHarboured,
-			province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR})
+			province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR}, req.TradeOffer.By)
 		if rerr != nil {
 			writeTradeJourneyError(w, rerr)
 			return
@@ -349,6 +354,10 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			if !found {
+				if req.TradeOffer.By == "sea" {
+					writeError(w, 422, "selected sea trade requires a free galley or Emporos at the origin")
+					return
+				}
 				_, _, landOK, lerr := province.FindPath(r.Context(), h.pool, worldID,
 					province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR}, "land")
 				if lerr != nil {
@@ -414,6 +423,7 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 				"offer_qty":   req.TradeOffer.OfferQty,
 				"want_silver": req.TradeOffer.WantSilver,
 				"status":      "pending",
+				"by":          req.TradeOffer.By,
 			})
 		} else {
 			tradeOfferJSON, _ = json.Marshal(map[string]any{
@@ -422,6 +432,7 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 				"want_qty":     req.TradeOffer.WantQty,
 				"offer_silver": req.TradeOffer.OfferSilver,
 				"status":       "pending",
+				"by":           req.TradeOffer.By,
 			})
 		}
 	}
@@ -1121,7 +1132,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 	// Load messenger + trade_offer; verify it's delivered to this player's settlement.
 	// We fetch all fields for both buy and sell kinds; unused fields will be zero/empty.
 	var destID, originID uuid.UUID
-	var kind, wantGood, offerGood, offerStatus string
+	var kind, wantGood, offerGood, offerStatus, routeBy string
 	var wantQty, offerSilver, offerQty, wantSilver float64
 	var offerExpiresAt *time.Time
 	err = tx.QueryRow(r.Context(),
@@ -1133,19 +1144,23 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		        COALESCE(m.trade_offer->>'offer_good', ''),
 		        COALESCE((m.trade_offer->>'offer_qty')::float, 0),
 		        COALESCE((m.trade_offer->>'want_silver')::float, 0),
-		        m.trade_offer->>'status', m.expires_at
+		        m.trade_offer->>'status',COALESCE(m.trade_offer->>'by',''), m.expires_at
 		 FROM messengers m
 		 JOIN settlements ds ON ds.id = m.destination_id
 		 WHERE m.id = $1 AND m.world_id = $2 AND ds.owner_id = $3 AND correspondence_recipient(m.id,$3)
 		   AND m.status = 'delivered' AND m.trade_offer IS NOT NULL FOR UPDATE OF m, ds`,
 		messengerID, worldID, playerID,
-	).Scan(&destID, &originID, &kind, &wantGood, &wantQty, &offerSilver, &offerGood, &offerQty, &wantSilver, &offerStatus, &offerExpiresAt)
+	).Scan(&destID, &originID, &kind, &wantGood, &wantQty, &offerSilver, &offerGood, &offerQty, &wantSilver, &offerStatus, &routeBy, &offerExpiresAt)
 	if err != nil {
 		if ended := endedOfferStatus(r.Context(), tx, messengerID, worldID, playerID); ended != "" {
 			writeError(w, http.StatusConflict, "trade offer already "+ended)
 			return
 		}
 		writeError(w, http.StatusNotFound, "trade offer not found or not available to you")
+		return
+	}
+	if err := province.ValidateTransportBy(routeBy); err != nil {
+		writeError(w, 422, err.Error())
 		return
 	}
 	if offerStatus != "pending" {
@@ -1200,9 +1215,9 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "could not check destination harbour")
 		return
 	}
-	category, _, rerr := province.ResolveTradeRoute(r.Context(), tx, worldID,
+	category, _, rerr := province.ResolveTradeRouteBy(r.Context(), tx, worldID,
 		originCoastal || originHarboured, destCoastal || destHarboured,
-		province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR})
+		province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR}, routeBy)
 	if rerr != nil {
 		writeTradeJourneyError(w, rerr)
 		return
@@ -1227,6 +1242,10 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if !found {
+			if routeBy == "sea" {
+				writeError(w, 422, "selected sea trade requires a free galley or Emporos at the origin")
+				return
+			}
 			category = "land"
 			if _, lerr := province.PlanTradeJourney(r.Context(), tx, worldID,
 				province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR}, category); lerr != nil {
@@ -1333,7 +1352,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		// Step 3: dispatch leg 1 as a PHYSICAL caravan (goods seller→buyer), then chain
 		// the silver return (leg 2) on arrival. The shadow transport row carries map
 		// position + interceptability; the trade delivery event drives crediting.
-		leg1ID, tErr := transport.CreateShadow(r.Context(), tx, transport.DispatchParams{
+		leg1ID, tErr := transport.CreateShadow(r.Context(), tx, transport.DispatchParams{By: routeBy,
 			WorldID: worldID, OwnerID: originOwner, Kind: "trade",
 			OriginID: originID, DestID: destID, Category: category,
 			OriginQ: oQ, OriginR: oR, DestQ: dQ, DestR: dR,
@@ -1381,7 +1400,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		sellResp := map[string]any{
+		sellResp := map[string]any{"by": routeBy,
 			"good_key":          offerGood,
 			"quantity":          offerQty,
 			"silver_paid":       wantSilver,
@@ -1449,7 +1468,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 
 		// Step 3: dispatch leg 1 as a PHYSICAL caravan (silver buyer→seller), then chain
 		// the goods return (leg 2) on arrival. Shadow row = position + interceptability.
-		leg1ID, tErr := transport.CreateShadow(r.Context(), tx, transport.DispatchParams{
+		leg1ID, tErr := transport.CreateShadow(r.Context(), tx, transport.DispatchParams{By: routeBy,
 			WorldID: worldID, OwnerID: originOwner, Kind: "trade",
 			OriginID: originID, DestID: destID, Category: category,
 			OriginQ: oQ, OriginR: oR, DestQ: dQ, DestR: dR,
@@ -1497,7 +1516,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		buyResp := map[string]any{
+		buyResp := map[string]any{"by": routeBy,
 			"good_key":          wantGood,
 			"quantity":          wantQty,
 			"silver_paid":       offerSilver,

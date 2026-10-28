@@ -18,9 +18,9 @@ export function transportChoicesHTML(data,id,preferred='') {
 export function selectedTransportBy(id) {return document.getElementById(id)?.querySelector?.('input:checked')?.value||'';}
 let sequence=0;
 const requests=new WeakMap();
-export async function loadTransportChoices(id,origin,destination,quantity=0) {
+export async function loadTransportChoices(id,origin,destination,quantity=0,preferredBy='') {
  const el=document.getElementById(id);if(!el)return;
- const seq=++sequence,world=State.WORLD_ID,preferred=selectedTransportBy(id);requests.set(el,seq);
+ const seq=++sequence,world=State.WORLD_ID,preferred=selectedTransportBy(id)||preferredBy;requests.set(el,seq);
  el.textContent='Checking land and sea routes…';
  if(!origin||!destination||origin===destination){el.textContent='Choose two different cities to compare routes.';return;}
  try{

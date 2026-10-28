@@ -69,7 +69,7 @@ try:
   home=api(wp+'/founding/settle','POST',{'name':'Lato'},token)['settlement_id'];hp=sql(f"SELECT province_id FROM settlements WHERE id='{home}'")
   sql(f"UPDATE provinces SET coastal=true WHERE id='{hp}'; UPDATE settlements SET population=4000 WHERE id='{home}'; INSERT INTO buildings(settlement_id,building_type,level) VALUES('{home}','harbour',1) ON CONFLICT DO NOTHING; UPDATE units SET settlement_id='{home}',support_settlement_id='{home}',status='garrison',q=NULL,r=NULL WHERE world_id='{world}' AND owner_id='{pid}' AND type<>'nomadic_host' AND status<>'disbanded';",True)
   cities=[]
-  for name,q,r,coastal in [('Petras',hq+5,hr,True),('Amnissos',hq+13,hr,True),('Inland',hq+2,hr+3,False)]:
+  for name,q,r,coastal in [('Petras',hq+5,hr,True),('Amnissos',hq+13,hr,True),('Inland',hq+2,hr+3,False),('Kyme',hq+5,hr+3,True)]:
    prov=sql(f"SELECT id FROM provinces WHERE world_id='{world}' AND map_q={q} AND map_r={r}")
    if not prov:prov=sql(f"INSERT INTO provinces(world_id,map_q,map_r,terrain_type,coastal) VALUES('{world}',{q},{r},'plains',{str(coastal).lower()}) RETURNING id;",True).splitlines()[0]
    sql(f"UPDATE provinces SET terrain_type='plains',coastal={str(coastal).lower()} WHERE id='{prov}';",True)
@@ -82,11 +82,11 @@ try:
   # A separately registered neighbour, explicitly contacted in this fresh fixture.
   other_token=api('/api/v1/auth/register','POST',{'username':'Neighbour-'+secrets.token_hex(4),'password':secrets.token_urlsafe(30)})['access_token']
   other=api('/api/v1/auth/me',token=other_token)['id']
-  foreign=cities[1]
-  sql(f"UPDATE settlements SET owner_id='{other}' WHERE id='{foreign['id']}'; INSERT INTO player_scouted_tiles(world_id,player_id,q,r) VALUES('{world}','{pid}',{hq+13},{hr}) ON CONFLICT DO NOTHING;",True)
+  foreign=cities[3]
+  sql(f"UPDATE settlements SET owner_id='{other}' WHERE id='{foreign['id']}'; INSERT INTO player_scouted_tiles(world_id,player_id,q,r) VALUES('{world}','{pid}',{hq+5},{hr+3}) ON CONFLICT DO NOTHING;",True)
   options=api(wp+'/settlements/'+home+'/transport-options?destination_id='+cities[0]['id'],token=token)
   assert {o['by'] for o in options['options'] if o['available']}=={'land','sea'},options
-  isolated=api(wp+'/settlements/'+home+'/transport-options?destination_id='+foreign['id'],token=token)
+  isolated=api(wp+'/settlements/'+home+'/transport-options?destination_id='+cities[1]['id'],token=token)
   assert any(o['by']=='land' and not o['available'] and o['reason'] for o in isolated['options']),isolated
   (OUT/'options.json').write_text(json.dumps({'both':options,'sea_only':isolated},indent=2))
   with sync_playwright() as pw:
@@ -102,9 +102,9 @@ try:
      page.locator('#ec-tr-send').click();page.wait_for_function("document.getElementById('ec-tr-result').textContent.includes('sent')");page.wait_for_function("!document.getElementById('ec-tr-send').disabled")
      page.locator('#ec-tr-route input[value="sea"]').check();page.locator('#ec-tr-send').click();page.wait_for_function("document.getElementById('ec-tr-result').textContent.includes('aboard')")
      shot(page,f'{cycle}-sent-sea-{width}')
-     page.locator('#ec-tr-to').select_option(foreign['id']);page.wait_for_function("document.querySelector('#ec-tr-route input[value=land]')?.disabled")
+     page.locator('#ec-tr-to').select_option(cities[1]['id']);page.wait_for_function("document.querySelector('#ec-tr-route input[value=land]')?.disabled")
      page.locator('#ec-tr-route').scroll_into_view_if_needed();shot(page,f'{cycle}-sea-only-{width}')
-     page.locator('#ec-tr-route input[value="sea"]').check();page.locator('#ec-tr-send').click();page.wait_for_function("document.getElementById('ec-tr-result').textContent.startsWith('Gift:')")
+     page.locator('#ec-tr-to').select_option(foreign['id']);page.wait_for_function("document.querySelector('#ec-tr-route input[value=sea]')&&!document.querySelector('#ec-tr-route input[value=sea]').disabled");page.locator('#ec-tr-route input[value="sea"]').check();page.locator('#ec-tr-send').click();page.wait_for_function("document.getElementById('ec-tr-result').textContent.startsWith('Gift:')")
      page.locator('#ec-tr-to').select_option(cities[2]['id']);page.wait_for_function("document.querySelector('#ec-tr-route input[value=sea]')?.disabled")
      shot(page,f'{cycle}-land-only-{width}')
      page.locator('#economy-body [data-tab="automation"]').click();page.wait_for_selector('#ec-so-route input[value="land"]')

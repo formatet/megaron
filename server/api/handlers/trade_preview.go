@@ -1,13 +1,17 @@
 package handlers
 
 import (
+	"errors"
 	"formatet/megaron/server/internal/auth"
+	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/transport"
 	"formatet/megaron/server/internal/unit"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"math"
 	"net/http"
+	"strconv"
 )
 
 // TradePreview reports the current route and available hull. Dispatch rechecks
@@ -18,7 +22,13 @@ func (h *ProvinceHandler) TradePreview(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid world ID")
 		return
 	}
-	provinceID, err := uuid.Parse(chi.URLParam(r, "provinceID"))
+	originColumn := "s.province_id"
+	originText := chi.URLParam(r, "provinceID")
+	if sid := chi.URLParam(r, "settlementID"); sid != "" {
+		originText = sid
+		originColumn = "s.id"
+	}
+	provinceID, err := uuid.Parse(originText)
 	if err != nil {
 		writeError(w, http.StatusBadRequest, "invalid province ID")
 		return
@@ -42,9 +52,8 @@ func (h *ProvinceHandler) TradePreview(w http.ResponseWriter, r *http.Request) {
 	var originCoastal bool
 	err = h.pool.QueryRow(r.Context(),
 		`SELECT s.id, s.name, prov.map_q, prov.map_r, COALESCE(prov.coastal, false)
-		 FROM settlements s
-		 JOIN provinces prov ON prov.id = s.province_id
-		 WHERE s.province_id = $1 AND s.world_id = $2 AND s.owner_id = $3`,
+         FROM settlements s JOIN provinces prov ON prov.id=s.province_id
+         WHERE `+originColumn+`=$1 AND s.world_id=$2 AND s.owner_id=$3`,
 		provinceID, worldID, playerID,
 	).Scan(&originID, &originName, &originQ, &originR, &originCoastal)
 	if err != nil {
@@ -89,45 +98,123 @@ func (h *ProvinceHandler) TradePreview(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "could not check destination harbour")
 		return
 	}
-	category, _, err := province.ResolveTradeRoute(r.Context(), h.pool, worldID,
-		originCoastal || originHarboured, destCoastal || destHarboured,
-		province.MapPosition{Q: originQ, R: originR},
-		province.MapPosition{Q: destQ, R: destR},
-	)
-	if err != nil {
-		writeTradeJourneyError(w, err)
+
+	selectedBy := r.URL.Query().Get("by")
+	if err := province.ValidateTransportBy(selectedBy); err != nil {
+		writeError(w, 400, err.Error())
 		return
 	}
-
+	quantity := 0.0
+	if q := r.URL.Query().Get("quantity"); q != "" {
+		quantity, err = strconv.ParseFloat(q, 64)
+		if err != nil || math.IsNaN(quantity) || math.IsInf(quantity, 0) || quantity < 0 {
+			writeError(w, 400, "invalid cargo quantity")
+			return
+		}
+	}
 	tx, err := h.pool.Begin(r.Context())
 	if err != nil {
 		writeError(w, 500, "transaction error")
 		return
 	}
 	defer tx.Rollback(r.Context())
-	resp := map[string]any{"category": category, "cargo_capacity": nil}
-	if category == "naval" {
-		ship, found, err := transport.FindFreeShip(r.Context(), tx, worldID, playerID, originID)
-		if err != nil {
-			writeError(w, 500, "could not look for free ship")
-			return
+	options := []map[string]any{}
+	var selected map[string]any
+	for _, by := range []string{"land", "sea"} {
+		category := "land"
+		risk := "Interception"
+		requirements := []string{"A passable land route"}
+		if by == "sea" {
+			category = "naval"
+			risk = "Storms and interception"
+			requirements = []string{"Coastal access or a harbour at both cities", "A free galley or Emporos with cargo space at the origin", "Voyage provisions, checked at dispatch"}
 		}
-		if found {
-			resp["ship_id"] = ship.ID
-			resp["ship_type"] = ship.Type
-			resp["cargo_capacity"] = ship.Capacity
-			name := ""
-			if ship.Name != nil {
-				name = *ship.Name
-			}
-			resp["ship_name"] = unit.ShipDisplayName(ship.Type, name, originName).DisplayName
-		} else {
-			if _, err := province.PlanTradeJourney(r.Context(), tx, worldID, province.MapPosition{Q: originQ, R: originR}, province.MapPosition{Q: destQ, R: destR}, "land"); err != nil {
-				writeError(w, 422, "no free galley or merchantman and no land route")
+		o := map[string]any{"by": by, "available": true, "reason": "", "risk": risk, "requirements": requirements, "category": category, "cargo_capacity": nil}
+		_, _, routeErr := province.ResolveTradeRouteBy(r.Context(), tx, worldID, originCoastal || originHarboured, destCoastal || destHarboured, province.MapPosition{Q: originQ, R: originR}, province.MapPosition{Q: destQ, R: destR}, by)
+		if routeErr != nil {
+			if !errors.Is(routeErr, province.ErrNoTradePath) {
+				writeTradeJourneyError(w, routeErr)
 				return
 			}
-			resp["category"] = "land"
+			o["available"] = false
+			o["reason"] = "No passable " + by + " route between these cities"
+		} else {
+			j, jerr := province.PlanTradeJourney(r.Context(), tx, worldID, province.MapPosition{Q: originQ, R: originR}, province.MapPosition{Q: destQ, R: destR}, category)
+			if jerr != nil {
+				writeTradeJourneyError(w, jerr)
+				return
+			}
+			// This entire transaction is rolled back: a preview cannot consume a rite.
+			if err := transport.BlessDeparture(r.Context(), tx, worldID, playerID, originID, &j, true); err != nil {
+				writeError(w, 500, "could not preview departure")
+				return
+			}
+			now := h.clk.Now()
+			if err := economy.ClockTradeJourney(r.Context(), tx, worldID, &j, now); err != nil {
+				writeError(w, 500, "could not anchor preview")
+				return
+			}
+			at := j.Route(0, 0).WallAt(int64(j.Clock.EndTick)*1000 + j.Clock.OffsetMilli)
+			o["travel_ticks"] = j.TravelTicks
+			o["travel_seconds"] = at.Sub(now).Seconds()
+			o["arrives_at"] = at
+			if by == "sea" {
+				ship, found, err := transport.FindFreeShip(r.Context(), tx, worldID, playerID, originID)
+				if err != nil {
+					writeError(w, 500, "could not look for free ship")
+					return
+				}
+				if !found {
+					o["available"] = false
+					o["reason"] = "Sea travel requires a free galley or Emporos at the origin"
+				} else {
+					o["ship_id"] = ship.ID
+					o["ship_type"] = ship.Type
+					o["cargo_capacity"] = ship.Capacity
+					name := ""
+					if ship.Name != nil {
+						name = *ship.Name
+					}
+					o["ship_name"] = unit.ShipDisplayName(ship.Type, name, originName).DisplayName
+					if quantity > ship.Capacity {
+						o["available"] = false
+						o["reason"] = "Cargo exceeds the free ship's capacity"
+					}
+				}
+			}
+		}
+		options = append(options, o)
+		if selectedBy == by {
+			selected = o
+		}
+	}
+	// Omitted choices retain the historic sea preference when a free hull exists.
+	if selectedBy == "" {
+		for _, by := range []string{"sea", "land"} {
+			for _, o := range options {
+				if o["by"] == by && o["available"] == true {
+					selected = o
+					selectedBy = by
+					break
+				}
+			}
+			if selected != nil {
+				break
+			}
+		}
+	}
+	resp := map[string]any{"options": options, "selected_by": selectedBy, "category": "", "cargo_capacity": nil}
+	if selected != nil {
+		for _, key := range []string{"category", "ship_id", "ship_type", "ship_name", "cargo_capacity", "travel_ticks", "travel_seconds", "arrives_at"} {
+			if value, ok := selected[key]; ok {
+				resp[key] = value
+			}
 		}
 	}
 	writeJSON(w, 200, resp)
+}
+
+// TransportOptions is the settlement-addressed form shared by all cargo clients.
+func (h *ProvinceHandler) TransportOptions(w http.ResponseWriter, r *http.Request) {
+	h.TradePreview(w, r)
 }

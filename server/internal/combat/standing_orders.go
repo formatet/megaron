@@ -102,6 +102,7 @@ func settlementCoastalOrHarboured(ctx context.Context, tx pgx.Tx, settlementID u
 
 // standingOrderRow is one route as read by the sweep.
 type standingOrderRow struct {
+	by         string
 	id         uuid.UUID
 	worldID    uuid.UUID
 	ownerID    uuid.UUID
@@ -155,7 +156,7 @@ func NewStandingOrderTickHandler(pool *pgxpool.Pool, sched *events.Scheduler, cl
 // Handle processes one ScheduledStandingOrderTick event for a world.
 func (h *StandingOrderTickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
 	rows, err := h.pool.Query(ctx,
-		`SELECT id, world_id, owner_id, from_settlement_id, to_settlement_id, crewed_by_settlement_id, status, ship_unit_id
+		`SELECT id, world_id, owner_id, from_settlement_id, to_settlement_id, crewed_by_settlement_id, status, ship_unit_id,route_mode
 		 FROM standing_orders WHERE world_id = $1`,
 		e.WorldID,
 	)
@@ -165,7 +166,7 @@ func (h *StandingOrderTickHandler) Handle(ctx context.Context, e events.Schedule
 	var orders []standingOrderRow
 	for rows.Next() {
 		var o standingOrderRow
-		if err := rows.Scan(&o.id, &o.worldID, &o.ownerID, &o.fromID, &o.toID, &o.crewID, &o.status, &o.shipUnitID); err == nil {
+		if err := rows.Scan(&o.id, &o.worldID, &o.ownerID, &o.fromID, &o.toID, &o.crewID, &o.status, &o.shipUnitID, &o.by); err == nil {
 			orders = append(orders, o)
 		}
 	}
@@ -301,8 +302,8 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 	if err != nil {
 		return fmt.Errorf("check destination coastal: %w", err)
 	}
-	category, _, err := province.ResolveTradeRoute(ctx, tx, o.worldID, fromCoastal, toCoastal,
-		province.MapPosition{Q: fromQ, R: fromR}, province.MapPosition{Q: toQ, R: toR})
+	category, _, err := province.ResolveTradeRouteBy(ctx, tx, o.worldID, fromCoastal, toCoastal,
+		province.MapPosition{Q: fromQ, R: fromR}, province.MapPosition{Q: toQ, R: toR}, o.by)
 	if err != nil {
 		if errors.Is(err, province.ErrNoTradePath) {
 			return h.pauseOrder(ctx, tx, o, "no passable caravan route between these settlements")
@@ -325,6 +326,9 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 		if resolved != nil {
 			shipID, shipCapacity = resolved, capacity
 		} else {
+			if o.by == "sea" {
+				return h.pauseOrder(ctx, tx, o, "selected sea route requires a free galley or Emporos at the origin")
+			}
 			// No usable ship — fall back to a real land route if one exists,
 			// exactly like the single-shot Trade handler (R3); pause with an
 			// actionable reason if there is genuinely no way to send this.
@@ -499,7 +503,7 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 	travelTicks = journey.TravelTicks
 	arrivesAt = departsAt.Add(tick.RealUntil(travelTicks, 0))
 	orderID := o.id
-	if _, err := transport.Dispatch(ctx, tx, h.scheduler, transport.DispatchParams{
+	if _, err := transport.Dispatch(ctx, tx, h.scheduler, transport.DispatchParams{By: o.by,
 		WorldID: o.worldID, OwnerID: o.ownerID, Kind: "standing_order_out",
 		OriginID: o.fromID, DestID: o.toID, Category: category,
 		OriginQ: fromQ, OriginR: fromR, DestQ: toQ, DestR: toR,
@@ -600,12 +604,15 @@ func (h *StandingOrderTickHandler) dispatchReturn(ctx context.Context, tx pgx.Tx
 	if err != nil {
 		return fmt.Errorf("check source coastal: %w", err)
 	}
-	category, _, err := province.ResolveTradeRoute(ctx, tx, o.worldID, toCoastal, fromCoastal,
-		province.MapPosition{Q: toQ, R: toR}, province.MapPosition{Q: fromQ, R: fromR})
+	category, _, err := province.ResolveTradeRouteBy(ctx, tx, o.worldID, toCoastal, fromCoastal,
+		province.MapPosition{Q: toQ, R: toR}, province.MapPosition{Q: fromQ, R: fromR}, o.by)
 	if err != nil {
 		return fmt.Errorf("resolve return trade route: %w", err)
 	}
 	if o.shipUnitID == nil {
+		if o.by == "sea" {
+			return h.pauseOrder(ctx, tx, o, "selected sea return requires its bound ship")
+		}
 		category = "land"
 	}
 	journey, err := province.PlanTradeJourney(ctx, tx, o.worldID, province.MapPosition{Q: toQ, R: toR}, province.MapPosition{Q: fromQ, R: fromR}, category)
@@ -686,7 +693,7 @@ func (h *StandingOrderTickHandler) dispatchReturn(ctx context.Context, tx pgx.Tx
 	travelTicks = journey.TravelTicks
 	arrivesAt = departsAt.Add(tick.RealUntil(travelTicks, 0))
 	orderID := o.id
-	if _, err := transport.Dispatch(ctx, tx, h.scheduler, transport.DispatchParams{
+	if _, err := transport.Dispatch(ctx, tx, h.scheduler, transport.DispatchParams{By: o.by,
 		WorldID: o.worldID, OwnerID: o.ownerID, Kind: "standing_order_return",
 		OriginID: o.toID, DestID: o.fromID, Category: category,
 		OriginQ: toQ, OriginR: toR, DestQ: fromQ, DestR: fromR,

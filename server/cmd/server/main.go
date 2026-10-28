@@ -464,6 +464,7 @@ func main() {
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/trade", ph.TradeRoutes)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/trade", ph.Trade)
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/trade/preview", ph.TradePreview)
+			r.Get("/worlds/{worldID}/settlements/{settlementID}/transport-options", ph.TransportOptions)
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/trade/destinations", ph.TransferDestinations)
 			r.Get("/worlds/{worldID}/gifts", ph.GiftHistory)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/disband", ph.Disband)

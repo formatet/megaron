@@ -14,6 +14,7 @@ import (
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/economy"
+	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/transport"
 	"formatet/megaron/server/internal/unit"
 	"github.com/go-chi/chi/v5"
@@ -68,6 +69,7 @@ func (h *StandingOrderHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req struct {
+		By                 string          `json:"by"`
 		FromSettlementID   uuid.UUID       `json:"from_settlement_id"`
 		ToSettlementID     uuid.UUID       `json:"to_settlement_id"`
 		CrewedBySettlement uuid.UUID       `json:"crewed_by_settlement_id"`
@@ -76,6 +78,10 @@ func (h *StandingOrderHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
+		return
+	}
+	if err := province.ValidateTransportBy(req.By); err != nil {
+		writeError(w, 400, err.Error())
 		return
 	}
 	if req.FromSettlementID == req.ToSettlementID {
@@ -118,11 +124,53 @@ func (h *StandingOrderHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 
+	// Explicit choices are validated now without reserving a ship; the sweep
+	// rechecks before dispatch. Empty preserves legacy future-route creation.
+	if req.By != "" {
+		var from, to province.MapPosition
+		var fromCoastal, toCoastal bool
+		for _, endpoint := range []struct {
+			id      uuid.UUID
+			pos     *province.MapPosition
+			coastal *bool
+		}{{req.FromSettlementID, &from, &fromCoastal}, {req.ToSettlementID, &to, &toCoastal}} {
+			if err := tx.QueryRow(r.Context(), `SELECT p.map_q,p.map_r,COALESCE(p.coastal,false) FROM settlements s JOIN provinces p ON p.id=s.province_id WHERE s.id=$1 AND s.world_id=$2 AND s.owner_id=$3 FOR SHARE OF s`, endpoint.id, worldID, playerID).Scan(&endpoint.pos.Q, &endpoint.pos.R, endpoint.coastal); err != nil {
+				writeError(w, 403, "settlement ownership changed")
+				return
+			}
+			harbour, err := settlementHasHarbour(r.Context(), tx, endpoint.id)
+			if err != nil {
+				writeError(w, 500, "could not check harbour")
+				return
+			}
+			*endpoint.coastal = *endpoint.coastal || harbour
+		}
+		category, _, err := province.ResolveTradeRouteBy(r.Context(), tx, worldID, fromCoastal, toCoastal, from, to, req.By)
+		if err != nil {
+			writeTradeJourneyError(w, err)
+			return
+		}
+		if _, err := province.PlanTradeJourney(r.Context(), tx, worldID, to, from, category); err != nil {
+			writeTradeJourneyError(w, err)
+			return
+		}
+		if req.By == "sea" {
+			_, found, err := transport.FindFreeShip(r.Context(), tx, worldID, playerID, req.FromSettlementID)
+			if err != nil {
+				writeError(w, 500, "could not look for a free ship")
+				return
+			}
+			if !found {
+				writeError(w, 422, "selected sea route requires a free galley or Emporos at the origin")
+				return
+			}
+		}
+	}
 	var orderID uuid.UUID
 	if err := tx.QueryRow(r.Context(),
-		`INSERT INTO standing_orders (world_id, owner_id, from_settlement_id, to_settlement_id, crewed_by_settlement_id)
-		 VALUES ($1,$2,$3,$4,$5) RETURNING id`,
-		worldID, playerID, req.FromSettlementID, req.ToSettlementID, req.CrewedBySettlement,
+		`INSERT INTO standing_orders (world_id, owner_id, from_settlement_id, to_settlement_id, crewed_by_settlement_id,route_mode)
+		 VALUES ($1,$2,$3,$4,$5,$6) RETURNING id`,
+		worldID, playerID, req.FromSettlementID, req.ToSettlementID, req.CrewedBySettlement, req.By,
 	).Scan(&orderID); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not create standing order")
 		return
@@ -150,10 +198,11 @@ func (h *StandingOrderHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusCreated, map[string]any{"id": orderID, "status": "active"})
+	writeJSON(w, http.StatusCreated, map[string]any{"id": orderID, "status": "active", "by": req.By})
 }
 
 type standingOrderOut struct {
+	By          string          `json:"by"`
 	ID          uuid.UUID       `json:"id"`
 	FromID      uuid.UUID       `json:"from_settlement_id"`
 	FromName    string          `json:"from_name"`
@@ -191,7 +240,7 @@ func (h *StandingOrderHandler) List(w http.ResponseWriter, r *http.Request) {
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT so.id, so.from_settlement_id, sf.name, so.to_settlement_id, st.name,
 		        so.crewed_by_settlement_id, so.status, so.pause_reason,
-		        so.ship_unit_id, u.name, u.type
+		        so.ship_unit_id, u.name, u.type,so.route_mode
 		 FROM standing_orders so
 		 JOIN settlements sf ON sf.id = so.from_settlement_id
 		 JOIN settlements st ON st.id = so.to_settlement_id
@@ -210,7 +259,7 @@ func (h *StandingOrderHandler) List(w http.ResponseWriter, r *http.Request) {
 		var shipOwnName *string
 		var shipType *string
 		if err := rows.Scan(&o.ID, &o.FromID, &o.FromName, &o.ToID, &o.ToName,
-			&o.CrewedByID, &o.Status, &o.PauseReason, &o.ShipID, &shipOwnName, &shipType); err != nil {
+			&o.CrewedByID, &o.Status, &o.PauseReason, &o.ShipID, &shipOwnName, &shipType, &o.By); err != nil {
 			rows.Close()
 			writeError(w, http.StatusInternalServerError, "could not read standing order")
 			return

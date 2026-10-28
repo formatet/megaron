@@ -34,6 +34,7 @@ type Manifest map[string]float64
 // deducted the manifest goods from the source in the same transaction — Dispatch
 // only creates the mover and schedules its arrival.
 type DispatchParams struct {
+	By string // optional explicit land/sea; empty retains legacy automatic choice
 	// Journey is planned before the caller mutates goods or binds its ship.
 	Journey       *province.TradeJourney
 	DepartedTick  int
@@ -119,12 +120,12 @@ func insertRow(ctx context.Context, tx pgx.Tx, p DispatchParams) (uuid.UUID, err
 		`INSERT INTO transports
 		   (world_id, owner_id, kind, origin_id, dest_id, category,
 		    origin_q, origin_r, dest_q, dest_r, departs_at, arrives_at, due_tick, interceptable,
-		    standing_order_id, ship_unit_id, journey, departed_tick)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+		    standing_order_id, ship_unit_id, journey, departed_tick, route_mode)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
 		 RETURNING id`,
 		p.WorldID, p.OwnerID, p.Kind, p.OriginID, destID, p.Category,
 		p.OriginQ, p.OriginR, p.DestQ, p.DestR, p.DepartsAt, p.ArrivesAt, p.DueTick, p.Interceptable,
-		p.StandingOrderID, p.ShipUnitID, raw, p.DepartedTick,
+		p.StandingOrderID, p.ShipUnitID, raw, p.DepartedTick, p.By,
 	).Scan(&id); err != nil {
 		return uuid.Nil, fmt.Errorf("insert transport: %w", err)
 	}
@@ -160,6 +161,12 @@ func CurrentPosition(
 // prepareJourney makes new writers fail closed even when a caller omitted its
 // plan. Normal consumers pass the plan they used for their preflight decision.
 func prepareJourney(ctx context.Context, tx pgx.Tx, p DispatchParams) (DispatchParams, error) {
+	if err := province.ValidateTransportBy(p.By); err != nil {
+		return p, err
+	}
+	if (p.By == "land" && p.Category != "land") || (p.By == "sea" && p.Category != "naval") {
+		return p, fmt.Errorf("selected %s transport cannot use %s route", p.By, p.Category)
+	}
 	if p.Category == "naval" && p.ShipUnitID == nil {
 		return p, fmt.Errorf("naval transport requires a real ship")
 	}

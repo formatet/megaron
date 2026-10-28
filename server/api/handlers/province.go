@@ -3215,6 +3215,7 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req struct {
+		By            string              `json:"by"`
 		DestinationID uuid.UUID           `json:"destination_id"`
 		GoodKey       string              `json:"good_key"`
 		Quantity      float64             `json:"quantity"`
@@ -3222,6 +3223,10 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
+		return
+	}
+	if err := province.ValidateTransportBy(req.By); err != nil {
+		writeError(w, 400, err.Error())
 		return
 	}
 	listRequest := req.Items != nil
@@ -3308,10 +3313,10 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "could not check destination harbour")
 		return
 	}
-	category, _, err := province.ResolveTradeRoute(r.Context(), h.pool, worldID,
+	category, _, err := province.ResolveTradeRouteBy(r.Context(), h.pool, worldID,
 		originCoastal || originHarboured, destCoastal || destHarboured,
 		province.MapPosition{Q: originQ, R: originR},
-		province.MapPosition{Q: destQ, R: destR},
+		province.MapPosition{Q: destQ, R: destR}, req.By,
 	)
 	if err != nil {
 		writeTradeJourneyError(w, err)
@@ -3373,6 +3378,10 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 			}
 			shipName = unit.ShipDisplayName(ship.Type, shipOwnName, originName).DisplayName
 		} else {
+			if req.By == "sea" {
+				writeError(w, 422, "selected sea route requires a free galley or Emporos at the origin")
+				return
+			}
 			// No free galley/merchantman — fall back to a real land route if
 			// one actually exists (a resolved-naval pair may have NO land
 			// connection at all, e.g. two islands); otherwise there is
@@ -3431,9 +3440,9 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 
 	var routeID uuid.UUID
 	err = tx.QueryRow(r.Context(),
-		`INSERT INTO trade_routes (world_id, origin_id, destination_id, good_key, quantity, arrives_at)
-		 VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-		worldID, originID, req.DestinationID, req.GoodKey, req.Quantity, arrivesAt,
+		`INSERT INTO trade_routes (world_id, origin_id, destination_id, good_key, quantity, arrives_at, route_mode)
+		 VALUES ($1, $2, $3, $4, $5, $6,$7) RETURNING id`,
+		worldID, originID, req.DestinationID, req.GoodKey, req.Quantity, arrivesAt, req.By,
 	).Scan(&routeID)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not create trade route")
@@ -3449,7 +3458,7 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	if isGift {
 		transportKind = "gift"
 	}
-	transportID, err := transport.CreateShadow(r.Context(), tx, transport.DispatchParams{
+	transportID, err := transport.CreateShadow(r.Context(), tx, transport.DispatchParams{By: req.By,
 		WorldID:      worldID,
 		OwnerID:      playerID,
 		Kind:         transportKind,
@@ -3541,6 +3550,7 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	}
 	resp := map[string]any{
 		"route_id":              routeID,
+		"by":                    req.By,
 		"kind":                  transportKind,
 		"arrives_at":            arrivesAt,
 		"distance":              journey.Distance,
