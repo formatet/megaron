@@ -1,0 +1,53 @@
+{
+  "ground": {
+    "migration": {
+      "version": 220,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 5691
+      }
+    ],
+    "players": 16,
+    "settlements": 7,
+    "units": 22,
+    "goods": 119,
+    "gossip": 1287
+  },
+  "health": {
+    "commit": "960c3f4",
+    "migration": 220,
+    "status": "ok"
+  },
+  "checkout": "960c3f42333e0fe3beb3621b5cfd14ca44b1d4a1",
+  "static": {
+    "web/static/codex/articles.json": "3d1e5e1bda9d514f1f63e17185ee92b49ea228950468fb4cd0700e7e9fce5eaa",
+    "web/static/codex/storms.md": "03eae0897f623d489d9626accc7be093ba66d198e4551f7011341f158eae8134",
+    "web/static/js/megaron/render/map.js": "fc0ab22cb36cc0cfb34f5030dc893a7dfd05ab969c396a08e8f79529a8fd8db3",
+    "web/static/js/megaron/ui/citygrid.js": "85c0b31dd2884b0d56a77a0ea5fceed842d6decc0fc2bac34df6d4ece86652e6",
+    "web/static/js/megaron/ui/stormname.js": "30ee1d1325ce548de193ca73bfb66427066e84521f9da9afc14763bdde765b0a",
+    "web/static/js/megaron/ui/stormname.test.mjs": "48a87aea9e9cddd42733ce655174bb96bd69e6804ce5a9fa08511d2562e4c2f0"
+  },
+  "expected": "960c3f42333e0fe3beb3621b5cfd14ca44b1d4a1",
+  "before": {
+    "migration": {
+      "version": 220,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 5689
+      }
+    ],
+    "players": 16,
+    "settlements": 7,
+    "units": 22,
+    "goods": 119,
+    "gossip": 1287
+  }
+}
