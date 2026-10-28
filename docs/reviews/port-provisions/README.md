@@ -12,10 +12,18 @@ Acceptans: faktisk hamn minskar, gammal support oförändrad; lokal matbrist avv
 
 Bevisplan: assertion-röd baslinje på färsk218, riktiga DB-prov, fysisk kärnmutant med exakt återställning, full färsk Go/vet/JS/tidsvakter, native flytt till egen stad och nästa avgång med DB-lagerdelta, ny process/ren218/bevarat grundläge och assets efter deploy. Bevisar kedjegrinden genom fysisk läsbar försörjning.
 
-## Checkpoint efter compute-gräns
+## Verifierat beteende
 
-Kod `c6769bb9`, serverprov `0f13616d`. Native/Keryx: lokal matbrist avvisad utan lager-/skepps-/jobbdeltan; därefter fem riktiga avgångar tar enbart fisk i Petras, Latos mat och supportankaret orörda. Fyra Firefoxbilder, två1280/390rundor, stabila produktionshashar.820JS/vet/tidsvakter gröna. Fem fysiska servermutanter med exakt återställning och färsk grön återkontroll: `mutations-server/summary.json`.
+Slutlig hel färsk Go,820JS,vet och fyra tidsvakter gröna. Native4bilder/Keryx5verkliga avgångar och5mutanter med färsk återkontroll gröna.
 
-Hela färska Go-sviten hittade EN ytterligare äldre fixtur utan mat i fysisk avgångshamn: `TestArrangePassage_Pickup_ShipFetchesFromDifferentOwnPort`. Endast fixturen har fyllts med lokal mat; riktat färskt prov är grönt (`passage-target-green.log`,0.171s). Slutlig fullsvit måste köras om efter denna teständring. Ingen merge/push/deploy ännu.
+Kod `c6769bb9`, serverprov `0f13616d`, sista passagefixtur `97f926cb`. Native/Keryx på samma produktionsbytes: lokal matbrist avvisas utan lager-/skepps-/jobbdeltan; därefter fem riktiga avgångar tar enbart fisk i Petras, Latos mat och supportankaret orörda. Fyra Firefoxbilder från två1280/390rundor, stabila produktionshashar.820JS/vet/tidsvakter gröna. Fem fysiska servermutanter med exakt återställning och färsk grön återkontroll: `mutations-server/summary.json`.
 
-Nästa: riktat prov grönt → full färsk Go → granska diff/manifest → merge/push/deploy och hash/grundläge → återuppta inventerade wikin6a774405 med ny proviantkanon. Därefter handelsbud24 → flodfortsättning → K6 → notiskategorier enligt kön.
+Första helsviten fångade en ytterligare äldre APIpickupfixtur utan mat i avgångshamnen. Fixturen rättades; färskt riktat prov grönt0.171s, och hela färska Go-sviten är nu grön (world146.992s; `full-go-green.log`). Den första röda helsviten ligger kvar som underkänt försök, inte som slutbevis.
+
+Kärngranskning: economy äger fysisk hamnåtkomst; samma ShipDeparturePort används för förhandsvisning och faktisk avgång. Garrison kräver en aktiv egen stad i samma värld och, om koordinater finns, samma faktiska position. Legacy NULL-koordinater behåller settlement-dockningsbeviset. Frakt använder sin befintliga fysiska benägare. Ingen ny hamnbyggnad krävs. Både lokalt lageruttag och ombordmat ändras i befintlig avgångstransaktion; inget fjärrlager används när support saknas eller pekar annanstans. Silver/underhåll och stödankare är oförändrade. Se `server-audit.md` för samtliga skrivvägar.
+
+Reproduktion: `tools/gotest.sh`; `python3 tools/port_provisions_bild_20261028.py OUTPUT`; `python3 tools/port_provisions_mutations_20261028.py CHECKOUT OUTPUT` i separat arbetskopia. Native har riktig registrering/join/founding, uttrycklig lokal Petras/skepps-/lagerfixtur och normala CLI-/UI-order. Dockningsresans föregående ankomst täcks av domänprovet, inte av nativefixturen. `python3 tools/port_provisions_deploy_verify_20261028.py --before` fångar driftsläge; utan flagga verifierar den ny process innan migrationsläsning och kontrollerar grundläge/assets.
+
+Avgränsningar: ingen datamigrering eller retroaktiv påfyllning av pågående resor. Redan lastad mat, gästfrihet och returmat följer tidigare regler. Same-world/active-filter granskat och testat i helperns positiva läsning, men har ingen egen enskild mutant. Native provar tom hamn och fem tomma Emporosavgångar; lastade kohorter/ranson prövas i domänsviten, inte som nytt lastscenario i Firefox.
+
+Metodisk lärdom: fysisk plats och ekonomiskt ankare är skilda fält. Preview och avgång måste läsa samma plats. Äldre testfixturer som fick gratis avgång via nil support måste få verklig lokal mat.

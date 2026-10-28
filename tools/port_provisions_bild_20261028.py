@@ -106,7 +106,7 @@ try:
      page.locator('#trig-war').click();page.wait_for_selector('#ucard-'+uid)
      page.locator('#war-body button[onclick^="unitMarch("][onclick*="'+uid+'"]').click()
      page.wait_for_function("!document.querySelector('#mctx-city')?.disabled")
-     page.locator('#mctx-city').select_option(home);page.wait_for_function("!document.querySelector('#mctx-eta')?.textContent.includes('Estimating arrival')")
+     page.locator('#mctx-city').select_option(home);page.wait_for_function("document.querySelector('#mctx-eta')?.textContent.includes('Arrives in')")
      assert 'provisions from this harbour' in page.locator('#mctx-hint').inner_text()
      page.screenshot(path=str(OUT/f'{cycle}-departure-{width}.png'));shots.append({'file':f'{cycle}-departure-{width}.png'})
      local_before=stocks(dest);old_before=stocks(home)

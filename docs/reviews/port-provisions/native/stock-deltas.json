@@ -1,6 +1,6 @@
 {
-  "physical_port": "7af7961f-7176-4e47-9320-b07e2b4dd1cf",
-  "support": "562f7017-08b3-4414-9a43-3cee6ebac93b",
+  "physical_port": "2543dd1d-91f2-4e13-9d29-f7be824f9b14",
+  "support": "263a16e1-d2bf-4521-b87e-9d0d68e25dc3",
   "refused_order_atomic": true,
   "departures": [
     {
@@ -39,7 +39,7 @@
       "ship": {
         "status": "marching",
         "settlement_id": null,
-        "support_settlement_id": "562f7017-08b3-4414-9a43-3cee6ebac93b",
+        "support_settlement_id": "263a16e1-d2bf-4521-b87e-9d0d68e25dc3",
         "provisions": 1.6,
         "provision_goods": {
           "oil": 0,
@@ -149,7 +149,7 @@
           "version": 2,
           "end_tick": 8,
           "start_tick": 0,
-          "departure_at": "2026-10-28T07:10:55.656452+01:00",
+          "departure_at": "2026-10-28T09:36:27.290821+01:00",
           "offset_milli": 1,
           "tick_nanoseconds": 3600000000000
         }
@@ -175,7 +175,7 @@
       "ship": {
         "status": "marching",
         "settlement_id": null,
-        "support_settlement_id": "562f7017-08b3-4414-9a43-3cee6ebac93b",
+        "support_settlement_id": "263a16e1-d2bf-4521-b87e-9d0d68e25dc3",
         "provisions": 1.6,
         "provision_goods": {
           "oil": 0,
@@ -285,7 +285,7 @@
           "version": 2,
           "end_tick": 8,
           "start_tick": 0,
-          "departure_at": "2026-10-28T07:10:55.656452+01:00",
+          "departure_at": "2026-10-28T09:36:27.290821+01:00",
           "offset_milli": 1,
           "tick_nanoseconds": 3600000000000
         }
@@ -311,7 +311,7 @@
       "ship": {
         "status": "marching",
         "settlement_id": null,
-        "support_settlement_id": "562f7017-08b3-4414-9a43-3cee6ebac93b",
+        "support_settlement_id": "263a16e1-d2bf-4521-b87e-9d0d68e25dc3",
         "provisions": 1.6,
         "provision_goods": {
           "oil": 0,
@@ -421,8 +421,8 @@
           "version": 2,
           "end_tick": 8,
           "start_tick": 0,
-          "departure_at": "2026-10-28T07:10:55.656452+01:00",
-          "offset_milli": 1,
+          "departure_at": "2026-10-28T09:36:30.890821+01:00",
+          "offset_milli": 2,
           "tick_nanoseconds": 3600000000000
         }
       }
@@ -447,7 +447,7 @@
       "ship": {
         "status": "marching",
         "settlement_id": null,
-        "support_settlement_id": "562f7017-08b3-4414-9a43-3cee6ebac93b",
+        "support_settlement_id": "263a16e1-d2bf-4521-b87e-9d0d68e25dc3",
         "provisions": 1.6,
         "provision_goods": {
           "oil": 0,
@@ -557,7 +557,7 @@
           "version": 2,
           "end_tick": 8,
           "start_tick": 0,
-          "departure_at": "2026-10-28T07:10:59.256452+01:00",
+          "departure_at": "2026-10-28T09:36:30.890821+01:00",
           "offset_milli": 2,
           "tick_nanoseconds": 3600000000000
         }
