@@ -221,3 +221,11 @@ test('Codex tables keep labelled wiki links in one cell',()=>{
  assert.equal((html.match(/<td>/g)||[]).length,2);
  assert.match(html,/<td><a[^>]*data-cx="elite-infantry">Bronze Guard<\/a><\/td>/);
 });
+
+
+test('Codex offer lifetime follows its server owner and distinguishes existing deadlines',()=>{
+ const owner=readFileSync(join(here,'../../../../../server/internal/messenger/handler.go'),'utf8');
+ const ticks=Number(/OfferExpiryTicks\s*=\s*(\d+)/.exec(owner)[1]);
+ assert.ok(bodies['trade-offer-expiry'].includes('**'+ticks+' game days after arrival**'));
+ assert.match(bodies['trade-offer-expiry'],/already sent keep their recorded deadline/);
+});

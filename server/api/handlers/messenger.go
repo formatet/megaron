@@ -436,7 +436,7 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 			})
 		}
 	}
-	// Trade offers expire 7 in-game days after arrival (so inactive offers clean up automatically).
+	// New trade offers expire offerExpiryTicks ticks after arrival (so inactive offers clean up automatically).
 	// Non-trade messages have no expiry.
 	//
 	// The deadline is offerExpiryTicks *ticks* away, so convert through
@@ -517,7 +517,7 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 				writeError(w, http.StatusInternalServerError, "could not schedule arrival")
 				return
 			}
-			// Offer expiry: 7 in-game days (offerExpiryTicks) after arrival.
+			// Offer expiry: offerExpiryTicks after arrival.
 			if err = h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledOfferExpiry,
 				map[string]any{"messenger_id": messengerID.String()}, msgArrivalDueTick+offerExpiryTicks); err != nil {
 				writeError(w, http.StatusInternalServerError, "could not schedule offer expiry")

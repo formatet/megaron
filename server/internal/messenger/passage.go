@@ -1371,6 +1371,15 @@ func scheduleCompletion(ctx context.Context, tx pgx.Tx, sched *events.Scheduler,
 	if !hasOffer {
 		return nil
 	}
+	// A resolved offer's existing expiry is frozen, including legacy lifetimes.
+	// Only the first resolution of an unscheduled offer creates a deadline.
+	deadline, err := pendingOfferExpiryTick(ctx, tx, messengerID)
+	if err != nil {
+		return fmt.Errorf("schedule completion: read saved offer expiry: %w", err)
+	}
+	if deadline != nil {
+		return nil
+	}
 	expiresAt := arrivesAt.Add(tick.RealUntil(OfferExpiryTicks, 0))
 	if _, err := tx.Exec(ctx,
 		`UPDATE messengers SET expires_at = $2 WHERE id = $1`, messengerID, expiresAt,

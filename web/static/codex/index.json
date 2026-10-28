@@ -2667,7 +2667,8 @@
       "title": "Accepting or declining an offer",
       "category": "Goods and trade",
       "related": [
-        "trade"
+        "trade",
+        "trade-offer-expiry"
       ]
     },
     {
@@ -3870,6 +3871,21 @@
         "shipyard",
         "citizens",
         "units"
+      ]
+    },
+    {
+      "id": "trade-offer-expiry",
+      "title": "Trade offer expiry",
+      "category": "Goods and trade",
+      "related": [
+        "trade-answering-an-offer",
+        "trade",
+        "runner-return"
+      ],
+      "aliases": [
+        "offer deadline",
+        "escrow",
+        "reply window"
       ]
     }
   ]
