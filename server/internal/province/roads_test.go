@@ -14,9 +14,9 @@ import (
 )
 
 func roadsOf(edges ...[2]MapPosition) RoadSet {
-	r := RoadSet{}
+	r := NewRoadSet()
 	for _, e := range edges {
-		r[roadKey(e[0], e[1])] = struct{}{}
+		r.AddRoad(e[0], e[1])
 	}
 	return r
 }
@@ -197,12 +197,12 @@ func TestAStarStaysOptimalWithRoads(t *testing.T) {
 				tiles[[2]int{q, r}] = terrains[rng.Intn(len(terrains))]
 			}
 		}
-		roads := RoadSet{}
+		roads := NewRoadSet()
 		for q := 0; q < W; q++ {
 			for r := 0; r < W; r++ {
 				for _, d := range axialDirs {
 					if rng.Intn(100) < 55 {
-						roads[roadKey(MapPosition{Q: q, R: r}, MapPosition{Q: q + d[0], R: r + d[1]})] = struct{}{}
+						roads.AddRoad(MapPosition{Q: q, R: r}, MapPosition{Q: q + d[0], R: r + d[1]})
 					}
 				}
 			}
@@ -241,7 +241,7 @@ func TestNoRoadsIsIdenticalToTerrainPricing(t *testing.T) {
 			o := MapPosition{Q: rng.Intn(W), R: rng.Intn(W)}
 			tg := MapPosition{Q: rng.Intn(W), R: rng.Intn(W)}
 			p1, c1, ok1 := findPath(tiles, o, tg, cat)
-			p2, c2, ok2 := findPathRoads(tiles, o, tg, cat, RoadSet{})
+			p2, c2, ok2 := findPathRoads(tiles, o, tg, cat, NewRoadSet())
 			if ok1 != ok2 || c1 != c2 || !reflect.DeepEqual(p1, p2) {
 				t.Fatalf("%s %v->%v: nil vs empty RoadSet differ: %v %v %v / %v %v %v", cat, o, tg, p1, c1, ok1, p2, c2, ok2)
 			}
@@ -322,7 +322,7 @@ func TestRoadEdgesTableAndLoad(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(roads) != 2 || !roads.Has(MapPosition{Q: 1, R: 0}, MapPosition{Q: 0, R: 0}) || !roads.Has(MapPosition{Q: 1, R: 0}, MapPosition{Q: 2, R: 0}) {
+	if roads.RoadCount() != 2 || !roads.Has(MapPosition{Q: 1, R: 0}, MapPosition{Q: 0, R: 0}) || !roads.Has(MapPosition{Q: 1, R: 0}, MapPosition{Q: 2, R: 0}) {
 		t.Fatalf("loaded %v", roads)
 	}
 

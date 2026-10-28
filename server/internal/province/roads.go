@@ -61,8 +61,21 @@ func TradePricingCategory(category string) string {
 // IsRoadableTerrain is the exported form for the order validator.
 func IsRoadableTerrain(terrain string) bool { return roadableTerrain(terrain) }
 
-// RoadSet holds a world's finished road edges under their canonical key.
-type RoadSet map[[4]int]struct{}
+// RoadSet is a world's edge modifiers: finished road edges under their
+// canonical key, and the river current on directed water steps. A nil set has
+// neither, so callers that pass nil price plain terrain.
+type RoadSet = *EdgeSet
+
+// EdgeSet is what RoadSet points to. Build it with NewRoadSet or LoadWorldGraph.
+type EdgeSet struct {
+	roads map[[4]int]struct{}
+	flow  map[[4]int]int8 // directed from→to: +1 downstream, −1 upstream
+}
+
+// NewRoadSet returns an empty edge set.
+func NewRoadSet() RoadSet {
+	return &EdgeSet{roads: map[[4]int]struct{}{}, flow: map[[4]int]int8{}}
+}
 
 // roadKey is the canonical (sorted by q, then r) key of the unordered edge a-b (F6).
 func roadKey(a, b MapPosition) [4]int {
@@ -75,13 +88,48 @@ func roadKey(a, b MapPosition) [4]int {
 // RoadKey exposes the canonical key for writers (the INSERT must store it sorted).
 func RoadKey(a, b MapPosition) [4]int { return roadKey(a, b) }
 
+// AddRoad records a finished road edge a-b.
+func (r *EdgeSet) AddRoad(a, b MapPosition) { r.roads[roadKey(a, b)] = struct{}{} }
+
 // Has reports whether the edge a-b is a finished road. A nil set has none.
-func (r RoadSet) Has(a, b MapPosition) bool {
-	if len(r) == 0 {
+func (r *EdgeSet) Has(a, b MapPosition) bool {
+	if r == nil || len(r.roads) == 0 {
 		return false
 	}
-	_, ok := r[roadKey(a, b)]
+	_, ok := r.roads[roadKey(a, b)]
 	return ok
+}
+
+// RoadCount is the number of finished road edges.
+func (r *EdgeSet) RoadCount() int {
+	if r == nil {
+		return 0
+	}
+	return len(r.roads)
+}
+
+// Current reports the river current on the step from→to: +1 with it
+// (downstream), −1 against it (upstream), 0 across or unknown.
+func (r *EdgeSet) Current(from, to MapPosition) int8 {
+	if r == nil {
+		return 0
+	}
+	return r.flow[[4]int{from.Q, from.R, to.Q, to.R}]
+}
+
+// addCurrent records that water at `at` flows out through edge i (dir +1,
+// downstream) or comes in through it (dir −1, upstream): stepping from `at`
+// across edge i goes with the current when dir is +1, and the reverse step
+// goes the other way. Edge indices follow axialDirs (= world.RiverEdgeDelta).
+func (r *EdgeSet) addCurrent(at MapPosition, mask int16, dir int8) {
+	for i, d := range axialDirs {
+		if mask&(1<<i) == 0 {
+			continue
+		}
+		n := MapPosition{Q: at.Q + d[0], R: at.R + d[1]}
+		r.flow[[4]int{at.Q, at.R, n.Q, n.R}] = dir
+		r.flow[[4]int{n.Q, n.R, at.Q, at.R}] = -dir
+	}
 }
 
 // LoadRoadSet loads every finished road edge of a world.
@@ -92,18 +140,40 @@ func LoadRoadSet(ctx context.Context, db Queryer, worldID uuid.UUID) (RoadSet, e
 		return nil, err
 	}
 	defer rows.Close()
-	roads := RoadSet{}
+	roads := NewRoadSet()
 	for rows.Next() {
 		var k [4]int
 		if scanErr := rows.Scan(&k[0], &k[1], &k[2], &k[3]); scanErr != nil {
 			return nil, scanErr
 		}
-		roads[k] = struct{}{}
+		roads.roads[k] = struct{}{}
 	}
 	return roads, rows.Err()
 }
 
-// LoadWorldGraph loads terrain and roads together — what every pricing caller needs.
+// loadRiverCurrent adds the saved river direction (mig 221) to roads. Only
+// tiles whose flow is known carry it; the rest stay across/unknown.
+func loadRiverCurrent(ctx context.Context, db Queryer, worldID uuid.UUID, roads RoadSet) error {
+	rows, err := db.Query(ctx,
+		`SELECT q, r, river_upstream_edges, river_downstream_edges FROM map_tiles
+		 WHERE world_id = $1 AND river_flow_known`, worldID)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var at MapPosition
+		var up, down int16
+		if scanErr := rows.Scan(&at.Q, &at.R, &up, &down); scanErr != nil {
+			return scanErr
+		}
+		roads.addCurrent(at, up, -1)
+		roads.addCurrent(at, down, +1)
+	}
+	return rows.Err()
+}
+
+// LoadWorldGraph loads terrain, roads and river current together — what every pricing caller needs.
 func LoadWorldGraph(ctx context.Context, db Queryer, worldID uuid.UUID) (TileGraph, RoadSet, error) {
 	g, err := LoadTileGraph(ctx, db, worldID)
 	if err != nil {
@@ -113,21 +183,40 @@ func LoadWorldGraph(ctx context.Context, db Queryer, worldID uuid.UUID) (TileGra
 	if err != nil {
 		return nil, nil, err
 	}
+	if err := loadRiverCurrent(ctx, db, worldID, roads); err != nil {
+		return nil, nil, err
+	}
 	return g, roads, nil
 }
+
+// Ships go with a river's current in half the time and against it in twice
+// the time (Timothy 2026-10-28). Runners, armies and caravans are unaffected.
+const (
+	downstreamFactor = 0.5
+	upstreamFactor   = 2.0
+)
 
 // EdgeCost is the cost in ticks of stepping from -> to (entering `to`): the
 // category's terrain cost for the target hex, or — when a finished road edge
 // joins the two hexes, both ends are roadable terrain and the category uses
-// roads — the category's flat road time instead. TestRoadIsNeverSlowerThanTerrain
+// roads — the category's flat road time instead. A ship entering a river or
+// ford hex is scaled by the current on that step. TestRoadIsNeverSlowerThanTerrain
 // pins that every road time beats every roadable terrain for its category.
 // It is the ONE place movement is priced (F2): A*, StepHours and every frozen
 // route go through it.
 func EdgeCost(from, to MapPosition, fromTerrain, toTerrain, category string, roads RoadSet) float64 {
 	cost := moveHoursFor(toTerrain, category)
-	if len(roads) != 0 && roadableTerrain(fromTerrain) && roadableTerrain(toTerrain) && roads.Has(from, to) {
+	if roads.RoadCount() != 0 && roadableTerrain(fromTerrain) && roadableTerrain(toTerrain) && roads.Has(from, to) {
 		if rt, ok := RoadTicks(category); ok {
 			cost = rt
+		}
+	}
+	if category == "naval" && (toTerrain == "river" || toTerrain == "river_ford") {
+		switch roads.Current(from, to) {
+		case +1:
+			cost *= downstreamFactor
+		case -1:
+			cost *= upstreamFactor
 		}
 	}
 	return cost
