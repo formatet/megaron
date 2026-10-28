@@ -1,0 +1,17 @@
+{
+  "production": "c87e750d",
+  "fresh_go_exit": 0,
+  "world_seconds": 143.433,
+  "javascript": 826,
+  "vet_exit": 0,
+  "day_guards": [
+    "web",
+    "keryx",
+    "codex",
+    "server"
+  ],
+  "physical_mutants": 10,
+  "native_screenshots": 28,
+  "facts_matched": 687,
+  "facts_missing": 0
+}
