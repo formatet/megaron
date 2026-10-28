@@ -1,0 +1,55 @@
+{
+  "ground": {
+    "migration": {
+      "version": 218,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 5354
+      }
+    ],
+    "players": 15,
+    "settlements": 6,
+    "units": 18,
+    "goods": 102,
+    "gossip": 1202,
+    "offer_deadlines": null
+  },
+  "health": {
+    "commit": "acc042f",
+    "migration": 218,
+    "status": "ok"
+  },
+  "checkout": "acc042f408bcccfac3e80d82cbc6a41c4b8b74c4",
+  "static": {
+    "web/static/codex/articles.json": "2b1ee9c5c4c4208ecb37d18933e2f0761a26d04dbdf028bd3c0e1d344652dcda",
+    "web/static/codex/index.json": "5fcefc238dbdcb347cdbb1ed807d63774bc1aaac2cd6cfb45838872e6407c6e0",
+    "web/static/codex/trade-answering-an-offer.md": "9a309ae2c714dcf50b260ce05dce4a387a7ba587cf21ad7194ddf8eb0cadc26f",
+    "web/static/codex/trade-offer-expiry.md": "1f7a066391d5bba5167cc71d75feb4c54e3691638c0b2fc87735525e955cfc29",
+    "web/static/js/megaron/ui/codex.test.mjs": "2ddd5efb59e047315555e9ae6d940f88b40ee909daf455ecc6af295660bec15d",
+    "web/static/js/megaron/ui/drawers/diplomacy_goods_select.test.mjs": "9937ae48be4c66473d54ca481215003a260577fa2bcd5b5d0ecad9ccf0474957"
+  },
+  "expected": "acc042f408bcccfac3e80d82cbc6a41c4b8b74c4",
+  "before": {
+    "migration": {
+      "version": 218,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 5351
+      }
+    ],
+    "players": 15,
+    "settlements": 6,
+    "units": 18,
+    "goods": 102,
+    "gossip": 1201,
+    "offer_deadlines": null
+  }
+}

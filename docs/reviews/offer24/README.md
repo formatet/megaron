@@ -9,3 +9,5 @@ Fyra ytor: server24+bevarade sparade deadlines; webb Letters visar den faktiska 
 Acceptans `738fb362`: två verkliga Keryx-köp/säljbud i ny isolerad värld, sparad deadline exakt24ticks/24timmar vid3600s/tick, därefter faktisk Arrival-worker och stay==expiry. In-/outbox och Letters deadline/Accept/Decline på1280/390 två gånger; BILD [index.html](index.html), oförändrad produktionskälla med hashlista. Timerproven täcker även gamla168deadlines vid sen ankomst och ändrad passage. Tre fysiska mutanter fångar168återställning, ignorerad sparad väntan och ignorerad sparad expiry, var och en med färskt grönt efter byte-exakt restore.
 
 Kod: full färsk Go +827JS +vet +fyra dayguards. Första nativeförsöket behövde stöd för nuvarande MessengerArrivalV2 i provfrågan; nästa behövde räkna även knappen i hopfälld brevpost. Produktionskoden ändrades inte för dessa riggfel. Slutbeviset i native/proof.json kommer från komplett ren omkörning. Ingen ny API-yta eller händelsetyp.
+
+LIVE `acc042f4`: ny processhash och clean218 verifierade; oförändrade schemalagda offertdeadlines/grunddata samt6byte-lika statiska filer. Kvitto `deploy-proof.json`.
