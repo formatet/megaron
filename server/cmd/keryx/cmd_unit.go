@@ -846,7 +846,8 @@ To sail to your own coastal city or harbour, use --to "City name" without an
 explore intent. The ship docks and stays there. Everyone aboard disembarks
 into that city's garrison, including all three cohorts carried by an Emporos.
 No separate Unload order is needed. An empty ship can make the same journey.
-Its existing home city still pays its upkeep and provisions its next voyage.
+Its existing home city still pays its upkeep. The harbour where the ship is
+docked supplies provisions for its next voyage.
 
 --intent land also accepts your own coastal city: it lands everyone aboard
 and leaves the ship docked there. For open, unclaimed land, --q/--r is the

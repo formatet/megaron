@@ -953,12 +953,19 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		// (GPT19: a landing previewed at 17 days, then the order was refused
 		// for 35 grain the port did not hold).
 		if unit.CategoryOf(u.Type) == unit.CategoryNaval && !colonizeInPlace &&
-			u.Status == unit.StatusGarrison && u.SupportSettlementID != nil {
+			u.Status == unit.StatusGarrison {
+			port, err := economy.ShipDeparturePort(ctx, pool, o.UnitID)
+			if err != nil {
+				return nil, reject(http.StatusInternalServerError, "could not resolve the departure port")
+			}
+			if port == nil {
+				return nil, reject(http.StatusUnprocessableEntity, "ship is not in an owned active departure port")
+			}
 			ration, need, stationTicks := voyageNeed(ctx, pool, u, o.Intent, expeditionPlan, travelTicks)
 			if need > 0 {
-				stock, err := economy.LoadFood(ctx, pool, *u.SupportSettlementID, false)
+				stock, err := economy.LoadFood(ctx, pool, *port, false)
 				if err != nil {
-					return nil, reject(http.StatusInternalServerError, "could not read the home port's food")
+					return nil, reject(http.StatusInternalServerError, "could not read the departure port's food")
 				}
 				have := economy.FoodAmount(stock)
 				if !province.GoodsAffordable(have, need) {
@@ -1062,15 +1069,22 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	// det det har; tar det slut gäller undantagsgrenen i upkeep.
 	var provisions float64
 	if unit.CategoryOf(u.Type) == unit.CategoryNaval && !colonizeInPlace &&
-		unit.Status(currentStatus) == unit.StatusGarrison && u.SupportSettlementID != nil {
+		unit.Status(currentStatus) == unit.StatusGarrison {
+		port, err := economy.ShipDeparturePort(ctx, tx, o.UnitID)
+		if err != nil {
+			return nil, reject(http.StatusInternalServerError, "could not resolve the departure port")
+		}
+		if port == nil {
+			return nil, reject(http.StatusUnprocessableEntity, "ship is not in an owned active departure port")
+		}
 		var ration float64
 		var stationTicks int
 		ration, provisions, stationTicks = voyageNeed(ctx, tx, u, o.Intent, expeditionPlan, travelTicks)
 
 		if provisions > 0 {
-			meal, err := economy.TakeFood(ctx, tx, *u.SupportSettlementID, provisions, false, true)
+			meal, err := economy.TakeFood(ctx, tx, *port, provisions, false, true)
 			if err != nil {
-				return nil, reject(http.StatusInternalServerError, "could not load the home port's food")
+				return nil, reject(http.StatusInternalServerError, "could not load the departure port's food")
 			}
 			if meal.Unmet > 0 {
 				return nil, provisionsShort(provisions-meal.Unmet, provisions, ration, 2*travelTicks+stationTicks)
@@ -1442,11 +1456,11 @@ func voyageNeed(ctx context.Context, db interface {
 	return ration, VoyageProvisions(ration, travelTicks, stationTicks), stationTicks
 }
 
-// provisionsShort is the refusal when the home port cannot provision a voyage.
+// provisionsShort is the refusal when the departure port cannot provision a voyage.
 // Båda talen med flit: en ärlig brist säger hur stor den är, så spelaren vet
 // om hon ska vänta en dag eller bygga en åker.
 func provisionsShort(have, need, ration float64, days int) *OrderReject {
-	return reject(http.StatusUnprocessableEntity, "not enough food to provision the voyage — the home port holds %.0f, "+
+	return reject(http.StatusUnprocessableEntity, "not enough food to provision the voyage — the departure port holds %.0f, "+
 		"the voyage needs %.0f (%.1f per game day for %s out, on station and home again)", have, need, ration, tick.FormatDays(days))
 }
 

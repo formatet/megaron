@@ -16,7 +16,7 @@ A [[transfers|transfer]] or [[routes|standing order]] that goes by sea needs a f
 
 In **War → Forces**, use **Load** for each cohort you want aboard, then **March** and choose your own coastal city or harbour on the map or in **Destination city**. A Galley or War Galley takes one land unit; an Emporos takes up to three.
 
-The ship sails to the city and docks there. **Everyone aboard joins that city's garrison automatically**, and **the ship stays in its harbour**. You do not need a second Unload order. An empty ship can sail to the same city and stay there. The ship and troops keep their existing supporting city; docking does not transfer who pays their upkeep, and that city still supplies the ship's next voyage.
+The ship sails to the city and docks there. **Everyone aboard joins that city's garrison automatically**, and **the ship stays in its harbour**. You do not need a second Unload order. An empty ship can sail to the same city and stay there. The ship and troops keep their existing supporting city; docking does not transfer who pays their upkeep. **The ship takes provisions for its next voyage from the harbour where it is actually docked**, for ordinary missions as well as freight. A distant supporting city's food cannot supply this departure.
 
 Keryx: `unit march --unit <ship-id> --to "Petras"`. A laden ship can also use `--intent land` for your own city. For a foreign coastal city, an ordinary march by a laden ship uses the existing amphibious assault; Land does not attack a foreign city. **Land on open, unclaimed ground** still puts everyone ashore and sends the ship home, with optional colony founding. Ships take these orders before departure from port.
 

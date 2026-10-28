@@ -424,7 +424,7 @@ export async function openMarchCtx(dest, screenX, screenY) {
   let hint;
   if (unknown)                hint = 'Travel here first, then explore nearby and return home.';
   else if (dest.isSea)        hint = 'Explore reachable sea nearby, then sail home.';
-  else if (ownPortDestination(dest)) hint = 'Sail ships here to dock and stay. Everyone aboard joins this city’s garrison; land forces reinforce it.';
+  else if (ownPortDestination(dest)) hint = 'Sail ships here to dock and stay. Everyone aboard joins this city’s garrison; land forces reinforce it. Ships take their next voyage’s provisions from this harbour.';
   else if (dest.isSettlement) hint = dest.allied ? 'March land forces here to reinforce the garrison on arrival.' : 'March land forces here, or send a laden ship to assault this coastal city on arrival.';
   else                        hint = 'March land forces to this hex, found a new settlement here, or explore and return home.';
   document.getElementById('mctx-hint').textContent = hint;
@@ -474,7 +474,7 @@ export async function openMarchCtx(dest, screenX, screenY) {
   const landing = landingSelected();
   if (landing) {
     document.getElementById('mctx-hint').textContent = ownPortDestination(dest)
-      ? 'Land everyone aboard in this city’s garrison. The ship docks and stays here.'
+      ? 'Land everyone aboard in this city’s garrison. The ship docks and stays here. Its next voyage takes provisions from this harbour.'
       : 'Land the troops here. The ship then sails home.';
     if (exploreRow) exploreRow.style.display = 'none';
   }

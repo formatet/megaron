@@ -22,3 +22,26 @@ func FreightPort(ctx context.Context, db interface {
 	}
 	return port, err
 }
+
+// ShipDeparturePort resolves food access from physical location, never the
+// support/upkeep anchor. Garrison settlement_id is a docking witness; freight
+// uses the latest completed physical leg through the existing freight owner.
+// No harbour building is required: ordinary coastal docking already permits
+// departure. At-sea ships have no port and sail on food already aboard.
+func ShipDeparturePort(ctx context.Context, db interface {
+	QueryRow(context.Context, string, ...any) pgx.Row
+}, ship uuid.UUID) (*uuid.UUID, error) {
+	port, err := FreightPort(ctx, db, ship)
+	if err != nil || port != nil {
+		return port, err
+	}
+	err = db.QueryRow(ctx, `SELECT s.id FROM units u
+ JOIN settlements s ON s.id=u.settlement_id AND s.world_id=u.world_id AND s.owner_id=u.owner_id AND s.state='active'
+ JOIN provinces p ON p.id=s.province_id AND p.world_id=u.world_id
+ WHERE u.id=$1 AND u.category='naval' AND u.status='garrison'
+ AND (u.q IS NULL OR u.q=p.map_q) AND (u.r IS NULL OR u.r=p.map_r)`, ship).Scan(&port)
+	if err == pgx.ErrNoRows {
+		return nil, nil
+	}
+	return port, err
+}
