@@ -1,0 +1,15 @@
+<!doctype html><meta charset="utf-8"><title>River current · three pixel alternatives</title>
+<style>body{background:#f3ebd4;color:#1c1c1c;font:16px serif;margin:24px}section{display:inline-block;vertical-align:top;margin:0 24px 24px 0}canvas{image-rendering:pixelated;border:1px solid #615d56}p{max-width:280px}</style>
+<h1>River current</h1><p>Same known river and opaque fog; only the downstream marker changes.</p>
+<script type="module">
+import {createMarkRenderer} from '../../../web/static/js/megaron/render/markraster.js';
+import {drawRiverFlow} from '../../../web/static/js/megaron/ui/river_flow.js';
+const tiles=[];for(let q=-3;q<=3;q++)for(let r=-3;r<=3;r++)tiles.push({q,r,terrain:q===0&&r===0?'river':q===-1&&r===0?'river':q===1&&r===0?'fog':'river_valley',tier:q===1&&r===0?'fog':'live',...(q===0&&r===0?{river_edges:[0,1],river_flow_known:true,river_upstream_edges:[1],river_downstream_edges:[0]}:{})});
+for(const [variant,title,description] of [['chevron','A · one current mark','Small downstream chevron, with directions in the hex panel.'],['double','B · two current marks','Two chevrons make the current more prominent.'],['text','C · panel text','The channel reaches the fog edge; direction is given only in the panel.']]){
+ const section=document.createElement('section');section.innerHTML='<h2>'+title+'</h2><canvas width="280" height="240"></canvas><p>'+description+'</p>';document.body.append(section);const canvas=section.querySelector('canvas'),ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;ctx.translate(140,120);ctx.scale(2,2);
+ const scene={WORLD_ID:'River current alternatives',tileData:tiles,provinceData:[],camera:{zoom:1}},ground=createMarkRenderer(scene,()=>document.createElement('canvas'));
+ for(let iy=-1;iy<=0;iy++)for(let ix=-1;ix<=0;ix++){const c=ground.bakeChunk(ix,iy);ctx.drawImage(c.img,c.X0,c.Y0);}
+ drawRiverFlow(ctx,0,0,tiles.find(t=>t.q===0&&t.r===0),ground.SURF_FOAM,variant);
+}
+window.variantsReady=true;
+</script>

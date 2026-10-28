@@ -213,11 +213,13 @@ export function createMarkRenderer(scene, createCanvas, markraster = true) {
   let tileIndex = new Map();
 
   let tileIndexFor;
+  let riverEdgeIndex = new Map();
 
   function terrainAt(q, r) {
     if (tileIndexFor !== scene.tileData) {
       tileIndexFor = scene.tileData;
       tileIndex = new Map(scene.tileData.map(t => [tileKey(t.q, t.r), t.terrain]));
+      riverEdgeIndex = new Map(scene.tileData.filter(t => Array.isArray(t.river_edges)).map(t => [tileKey(t.q,t.r),t.river_edges]));
     }
     return tileIndex.get(tileKey(q, r));
   }
@@ -853,7 +855,7 @@ export function createMarkRenderer(scene, createCanvas, markraster = true) {
   // definition en kedja — men en isolerad flodhex i en riggfixtur får inte
   // krascha renderaren, så fallet har ett svar.
   function riverAxis(q, r) {
-    const wd = neighborDirs(q, r, isWaterTerrain);
+    const wd = riverEdges(q, r);
     let ax, ay;
     if (wd.length >= 2) { ax = DIR_NX[wd[0]] - DIR_NX[wd[1]]; ay = DIR_NY[wd[0]] - DIR_NY[wd[1]]; }
     else if (wd.length === 1) { ax = DIR_NX[wd[0]]; ay = DIR_NY[wd[0]]; }
@@ -878,15 +880,24 @@ export function createMarkRenderer(scene, createCanvas, markraster = true) {
   // Vadstället (`river_ford`) är samma flod, grundare: ljusare vatten och en
   // rad stenar tvärs fåran — en passage som syns från kartan.
   const isChainTerrain = t => isWaterTerrain(t) || t === 'river_ford';
+  // The server permits only these connection edges to cross the knowledge boundary.
+  // Reading an edge never changes the neighbour's terrain or its fog mask.
+  function riverEdges(q,r) {
+    terrainAt(q,r);
+    const declared=riverEdgeIndex.get(tileKey(q,r));
+    if(declared)return [...new Set(declared.filter(i=>Number.isInteger(i)&&i>=0&&i<6))];
+    return neighborDirs(q,r,isChainTerrain);
+  }
+  function hasRiverEdges(q,r) { terrainAt(q,r);return riverEdgeIndex.has(tileKey(q,r)); }
 
   function riverCurves(q, r) {
-    const dirs = [];
-    for (let i = 0; i < 6; i++) if (isChainTerrain(terrainAt(q + HEX_DIRS[i][0], r + HEX_DIRS[i][1]))) dirs.push(i);
-    if (!dirs.length) dirs.push(0, 3);
+    const dirs = riverEdges(q,r);
+    if (!dirs.length && !hasRiverEdges(q,r)) dirs.push(0, 3);
     let [axx, axy] = riverAxis(q, r);
     const m = (rnd(q, r, 2490) - 0.5) * 7;          // meander, px tvärs flödet
     const ccx = -axy * m, ccy = axx * m;
     const k = R_IN * 0.5;
+    if(!dirs.length)return [[[ccx,ccy],[ccx,ccy]]];
     return dirs.map(i => {
       const nx = DIR_NX[i], ny = DIR_NY[i];
       const sgn = (nx * axx + ny * axy) >= 0 ? 1 : -1;
@@ -995,14 +1006,10 @@ export function createMarkRenderer(scene, createCanvas, markraster = true) {
     // vatten — en osedd granne ger alltså aldrig något segment, och fårans form
     // kan inte avslöja terräng spelaren inte sett.
     const segs = [];
-    for (let i = 0; i < 6; i++) {
-      if (isWaterTerrain(terrainAt(q + HEX_DIRS[i][0], r + HEX_DIRS[i][1]))) {
-        segs.push([DIR_NX[i] * R_IN, DIR_NY[i] * R_IN]);
-      }
-    }
+    for (const i of riverEdges(q,r)) segs.push([DIR_NX[i]*R_IN,DIR_NY[i]*R_IN]);
     // En flodhex utan vattengrannar kan inte finnas — en flod ÄR en kedja — men
     // en ensam flodhex i en riggfixtur får inte bli en solid vasslapp.
-    if (!segs.length) segs.push([R_IN, 0], [-R_IN, 0]);
+    if (!segs.length) { if(hasRiverEdges(q,r))segs.push([0,0]);else segs.push([R_IN, 0], [-R_IN, 0]); }
     const [axx, axy] = riverAxis(q, r);
 
     const STEP = 2;
@@ -1319,8 +1326,9 @@ export function createMarkRenderer(scene, createCanvas, markraster = true) {
 
   function riverInkAt(q, r, wx, wy) {
     const t = markTerrainAt(wx, wy);
-    if (t === undefined || t === 'fog' || isSeaTerrain(t)) return false;
     const [eq, er] = hexAtWorld(wx, wy);
+    if (eq === q && er === r && t === 'fog' && hasRiverEdges(q,r) && riverEdges(q,r).length) return true;
+    if (t === undefined || t === 'fog' || isSeaTerrain(t)) return false;
     if (eq === q && er === r) return true;
     return HEX_DIRS.some(([dq, dr]) => eq === q + dq && er === r + dr && isSeaTerrain(terrainAt(eq, er)));
   }

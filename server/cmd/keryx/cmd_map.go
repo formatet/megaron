@@ -126,6 +126,7 @@ func mapCmd() *cobra.Command {
 				return err
 			}
 			var tiles []struct {
+				riverMapInfo
 				Q              int    `json:"q"`
 				R              int    `json:"r"`
 				Terrain        string `json:"terrain"`
@@ -141,6 +142,13 @@ func mapCmd() *cobra.Command {
 				IncenseDeposit bool   `json:"incense_deposit"`
 			}
 			_ = json.Unmarshal(mapData, &tiles)
+
+			knownRiverGround := map[[2]int]bool{}
+			for _, t := range tiles {
+				if t.Visible && t.Terrain != "fog" {
+					knownRiverGround[[2]int{t.Q, t.R}] = true
+				}
+			}
 
 			// 3. Settled provinces → occupied set.
 			provData, _ := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces", cfg.WorldID))
@@ -165,6 +173,7 @@ func mapCmd() *cobra.Command {
 			// fog (frontier only — the edge of the known world). Sea tiles are
 			// included in live/remembered so the player can see where the coast is.
 			type cand struct {
+				riverMapInfo
 				Q              int    `json:"q"`
 				R              int    `json:"r"`
 				Terrain        string `json:"terrain"`
@@ -200,7 +209,7 @@ func mapCmd() *cobra.Command {
 				if tier == "" {
 					tier = "live" // back-compat with servers predating the tier field
 				}
-				out = append(out, cand{
+				out = append(out, cand{riverMapInfo: t.riverMapInfo,
 					Q: t.Q, R: t.R, Terrain: t.Terrain, RiverName: t.RiverName, Coastal: t.Coastal, Distance: d, Tier: tier,
 					Occupied:      occupied[[2]int{t.Q, t.R}],
 					CopperDeposit: t.CopperDeposit, TinDeposit: t.TinDeposit,
@@ -258,13 +267,13 @@ func mapCmd() *cobra.Command {
 				}
 				if t.Terrain == "river" {
 					// River: its own glyph — a wall for land units, a lane for ships.
-					fmt.Printf("  (%3d,%3d) d%-2d %-3s %-20s[river]%s\n", t.Q, t.R, t.Distance, bearing, namedRiverTerrain(t.Terrain, t.RiverName), dim)
+					fmt.Printf("  (%3d,%3d) d%-2d %-3s %-20s[river]%s%s\n", t.Q, t.R, t.Distance, bearing, namedRiverTerrain(t.Terrain, t.RiverName), dim, riverMapSummary(t.riverMapInfo, t.Q, t.R, knownRiverGround))
 					continue
 				}
 				if t.Terrain == "river_ford" {
 					// Ford: the river's port — crossable AND sailable, unlike plain
 					// river (megaron_plan_flodbudget_och_vadstalle.md).
-					fmt.Printf("  (%3d,%3d) d%-2d %-3s %-20s[ford]%s\n", t.Q, t.R, t.Distance, bearing, namedRiverTerrain(t.Terrain, t.RiverName), dim)
+					fmt.Printf("  (%3d,%3d) d%-2d %-3s %-20s[ford]%s%s\n", t.Q, t.R, t.Distance, bearing, namedRiverTerrain(t.Terrain, t.RiverName), dim, riverMapSummary(t.riverMapInfo, t.Q, t.R, knownRiverGround))
 					continue
 				}
 				tag := ""

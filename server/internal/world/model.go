@@ -69,6 +69,12 @@ const (
 
 // MapTile is a single hex in the world map.
 type MapTile struct {
+ // Static geography, populated once after generation or legacy backfill.
+ RiverMetadataReady bool
+ RiverEdgesMask int16
+ RiverUpstreamMask int16
+ RiverDownstreamMask int16
+ RiverFlowKnown bool
 	WorldID        uuid.UUID
 	Q              int
 	R              int

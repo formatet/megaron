@@ -349,25 +349,29 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type tileView struct {
-		RiverName      string  `json:"river_name,omitempty"`
-		PlaceName      string  `json:"place_name,omitempty"`
-		PlaceKind      string  `json:"place_kind,omitempty"`
-		PlaceID        string  `json:"place_id,omitempty"`
-		CanName        bool    `json:"can_name,omitempty"`
-		Q              int     `json:"q"`
-		R              int     `json:"r"`
-		Terrain        string  `json:"terrain"`
-		Coastal        bool    `json:"coastal,omitempty"`
-		Visible        bool    `json:"visible"`
-		Tier           string  `json:"tier"` // "live" | "remembered" | "fog"
-		Frontier       bool    `json:"frontier,omitempty"`
-		F              float64 `json:"fertility,omitempty"`
-		M              float64 `json:"mineral,omitempty"`
-		CopperDeposit  bool    `json:"copper_deposit,omitempty"`
-		TinDeposit     bool    `json:"tin_deposit,omitempty"`
-		CedarDeposit   bool    `json:"cedar_deposit,omitempty"`
-		SilverDeposit  bool    `json:"silver_deposit,omitempty"`
-		IncenseDeposit bool    `json:"incense_deposit,omitempty"`
+		RiverName            string  `json:"river_name,omitempty"`
+		RiverEdges           *[]int  `json:"river_edges,omitempty"`
+		RiverFlowKnown       *bool   `json:"river_flow_known,omitempty"`
+		RiverUpstreamEdges   *[]int  `json:"river_upstream_edges,omitempty"`
+		RiverDownstreamEdges *[]int  `json:"river_downstream_edges,omitempty"`
+		PlaceName            string  `json:"place_name,omitempty"`
+		PlaceKind            string  `json:"place_kind,omitempty"`
+		PlaceID              string  `json:"place_id,omitempty"`
+		CanName              bool    `json:"can_name,omitempty"`
+		Q                    int     `json:"q"`
+		R                    int     `json:"r"`
+		Terrain              string  `json:"terrain"`
+		Coastal              bool    `json:"coastal,omitempty"`
+		Visible              bool    `json:"visible"`
+		Tier                 string  `json:"tier"` // "live" | "remembered" | "fog"
+		Frontier             bool    `json:"frontier,omitempty"`
+		F                    float64 `json:"fertility,omitempty"`
+		M                    float64 `json:"mineral,omitempty"`
+		CopperDeposit        bool    `json:"copper_deposit,omitempty"`
+		TinDeposit           bool    `json:"tin_deposit,omitempty"`
+		CedarDeposit         bool    `json:"cedar_deposit,omitempty"`
+		SilverDeposit        bool    `json:"silver_deposit,omitempty"`
+		IncenseDeposit       bool    `json:"incense_deposit,omitempty"`
 	}
 	var fullMap []world.MapTile
 	var tiles []tileView
@@ -414,6 +418,13 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 		writeError(w, 500, "could not load place names")
 		return
 	}
+	var mapWidth, mapHeight int
+	if err := h.pool.QueryRow(r.Context(), `SELECT map_width,map_height FROM worlds WHERE id=$1`, worldID).Scan(&mapWidth, &mapHeight); err != nil {
+		writeError(w, 500, "could not load river geography")
+		return
+	}
+	riverFlows := world.RiverFlows(fullMap, mapWidth, mapHeight)
+	riverEdges := world.RiverEdges(fullMap)
 	byHex := map[[2]int]world.Place{}
 	for _, p := range world.Places(fullMap) {
 		for _, xy := range p.Hexes {
@@ -423,6 +434,13 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 	for i := range tiles {
 		if !tiles[i].Visible {
 			continue
+		}
+		if edges, ok := riverEdges[[2]int{tiles[i].Q, tiles[i].R}]; ok {
+			tiles[i].RiverEdges = &edges
+			flow := riverFlows[[2]int{tiles[i].Q, tiles[i].R}]
+			tiles[i].RiverFlowKnown = &flow.Known
+			tiles[i].RiverUpstreamEdges = &flow.Upstream
+			tiles[i].RiverDownstreamEdges = &flow.Downstream
 		}
 		p, ok := byHex[[2]int{tiles[i].Q, tiles[i].R}]
 		if !ok {

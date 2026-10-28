@@ -303,3 +303,16 @@ test('naval cargo paints its carrying galley rather than a caravan', async () =>
     assert.deepEqual(painted(ctx=>drawTransportActor(ctx,{category:'land'},20,30,0)),caravan);
   } finally {State.unitsData=before;}
 });
+
+
+test('known river metadata carries the channel to a fog edge without revealing the neighbour',()=>{
+ State.tileData=[{q:0,r:0,terrain:'river',river_edges:[0]},{q:1,r:0,terrain:'fog'}];
+ const curves=riverCurves(0,0);
+ assert.equal(curves.length,1,'one server-approved branch, no synthetic opposite branch');
+ assert.ok(curves[0][0][0]>0);
+ assert.equal(terrain(1,0),'fog');
+});
+test('a declared source without connecting edges has no invented through-channel',()=>{
+ State.tileData=[{q:0,r:0,terrain:'river',river_edges:[]}];
+ for(const curve of riverCurves(0,0))assert.ok(Math.hypot(...curve[0])<10,'isolated source is a pool, not a through-channel');
+});
