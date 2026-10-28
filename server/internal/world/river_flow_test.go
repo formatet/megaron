@@ -38,7 +38,11 @@ func TestRiverFlowUsesSeaDeltaMouthNotSourceWater(t *testing.T) {
 			if q == 7 {
 				wantDown = []int{0, 4}
 			}
-			if !f.Known || !reflect.DeepEqual(f.Upstream, []int{1}) || !reflect.DeepEqual(f.Downstream, wantDown) {
+			wantUp := []int{1}
+			if sourceOpen && q == 2 {
+				wantUp = []int{}
+			}
+			if !f.Known || !reflect.DeepEqual(f.Upstream, wantUp) || !reflect.DeepEqual(f.Downstream, wantDown) {
 				t.Errorf("q%d sourceOpen%v flow=%+v want upstream1/downstream0", q, sourceOpen, f)
 			}
 		}

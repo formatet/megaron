@@ -1,0 +1,7 @@
+✓ World created: af43f122-e926-49fb-8d83-29b17457d3f6
+✓ Map: 40x30 (1200 tiles)
+✓ Tin deposits: 4
+2026/10/28 16:35:50 WARN mapgen: invalid map, reseeding world=af43f122-e926-49fb-8d83-29b17457d3f6 seed=1793201750654928531 width=40 height=30 err="invalid map: productive tin = 1 (want >= 2)"
+2026/10/28 16:35:50 WARN mapgen: invalid map, reseeding world=af43f122-e926-49fb-8d83-29b17457d3f6 seed=1793201750654928532 width=40 height=30 err="invalid map: productive tin = 1 (want >= 2); landmass 6 (77 tiles) has 0 rivers (want 1-2)"
+2026/10/28 16:35:50 WARN mapgen: invalid map, reseeding world=af43f122-e926-49fb-8d83-29b17457d3f6 seed=1793201750654928533 width=40 height=30 err="invalid map: productive tin = 1 (want >= 2); forest fraction = 0.308 (want 0.22..0.30); landmass 1 (93 tiles) has 0 rivers (want 1-2)"
+2026/10/28 16:35:50 WARN mapgen: invalid map, reseeding world=af43f122-e926-49fb-8d83-29b17457d3f6 seed=1793201750654928534 width=40 height=30 err="invalid map: productive copper = 1 (want >= 2); no buildable west tile (q <= maxQ/2) has copper in its 6-hex catchment; landmass 8 (156 tiles) has 0 rivers (want 1-2)"

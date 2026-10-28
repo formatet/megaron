@@ -19,7 +19,7 @@ func TestMapShowsRiverFlowAndFogContinuationFromKnownHex(t *testing.T) {
 		case strings.HasSuffix(r.URL.Path, "/provinces"):
 			json.NewEncoder(w).Encode([]any{})
 		case strings.HasSuffix(r.URL.Path, "/map"):
-			w.Write([]byte(`[{"q":0,"r":0,"terrain":"river","visible":true,"tier":"remembered","river_edges":[0,1],"river_flow_known":true,"river_upstream_edges":[1],"river_downstream_edges":[0]},{"q":1,"r":0,"terrain":"fog","visible":false},{"q":-1,"r":0,"terrain":"river","visible":true}]`))
+			w.Write([]byte(`[{"q":0,"r":0,"terrain":"river","visible":true,"tier":"remembered","river_connections":[{"edge":0,"terrain":"river_ford"}],"river_edges":[0,1],"river_flow_known":true,"river_upstream_edges":[1],"river_downstream_edges":[0]},{"q":1,"r":0,"terrain":"fog","visible":false},{"q":-1,"r":0,"terrain":"river","visible":true}]`))
 		default:
 			t.Errorf("unexpected %s", r.URL.Path)
 		}
@@ -34,7 +34,7 @@ func TestMapShowsRiverFlowAndFogContinuationFromKnownHex(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, s := range []string{"flows from north-west toward south-east", "continues into fog toward south-east"} {
+	for _, s := range []string{"flows from north-west toward south-east", "continues into fog toward south-east", "connections south-east: ford"} {
 		if !strings.Contains(out, s) {
 			t.Errorf("missing %q in %s", s, out)
 		}

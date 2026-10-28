@@ -1,0 +1,17 @@
+{
+  "schema": {
+    "version": 221,
+    "dirty": false
+  },
+  "seed": 1793201750654928535,
+  "tiles": 1200,
+  "rivers": 15,
+  "missing": 0,
+  "known": 15,
+  "nonriver_metadata": 0,
+  "schema_roundtrip": "221\u2192220\u2192221 + actual CompleteRiverMetadata",
+  "static_map_hash": "5e88b750326487959d13e70569a8bd5c",
+  "roundtrip_preserves_map": true,
+  "commit": "9760649aac238305735eed22e993a9faa1f45905",
+  "owned_disposable_database": true
+}

@@ -26,3 +26,11 @@ func RiverEdges(tiles []MapTile) map[[2]int][]int {
 	}
 	return out
 }
+
+// RiverEdgeDelta is the geometry contract shared by persisted masks and API edge references.
+func RiverEdgeDelta(edge int) (dq, dr int, ok bool) {
+	if edge < 0 || edge >= len(riverDirs) {
+		return 0, 0, false
+	}
+	return riverDirs[edge][0], riverDirs[edge][1], true
+}

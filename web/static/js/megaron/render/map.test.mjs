@@ -316,3 +316,21 @@ test('a declared source without connecting edges has no invented through-channel
  State.tileData=[{q:0,r:0,terrain:'river',river_edges:[]}];
  for(const curve of riverCurves(0,0))assert.ok(Math.hypot(...curve[0])<10,'isolated source is a pool, not a through-channel');
 });
+
+test('an approved river branch survives fog overlap only inside its known physical hex',()=>{
+ State.WORLD_ID='river-fog-edge-proof';State.tileData=[];
+ for(let q=-2;q<=2;q++)for(let r=-2;r<=2;r++)State.tileData.push({q,r,terrain:q===0&&r===0?'river':'fog',...(q===0&&r===0?{river_edges:[0]}:{})});
+ let allowed=0,blocked=0;
+ for(let x=-30;x<=30;x++)for(let y=-30;y<=30;y++) {
+  const wx=x+.5,wy=y+.5;if(terrain(...markHexAt(wx,wy))!=='fog')continue;
+  const own=hexAtWorld(wx,wy).every(v=>v===0);
+  assert.equal(riverInkAt(0,0,wx,wy),own);
+  if(own)allowed++;else blocked++;
+ }
+ assert.ok(allowed>0&&blocked>0);
+});
+test('changed saved river edges invalidate the terrain lookup for a fresh scene',()=>{
+ State.tileData=[{q:0,r:0,terrain:'river',river_edges:[0]}];const east=riverCurves(0,0)[0][0][0];
+ State.tileData=[{q:0,r:0,terrain:'river',river_edges:[1]}];const west=riverCurves(0,0)[0][0][0];
+ assert.ok(east>0&&west<0);
+});
