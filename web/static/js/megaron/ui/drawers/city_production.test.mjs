@@ -123,14 +123,14 @@ test('equal food: four stocks and actual meal use server totals, never grain-onl
   food:{coverage_ticks:12.5,production_per_tick:10,consumption_per_tick:3,food_net_per_tick:7,
    goods:{grain:100,fish:900,oil:40,wine:60},consumed:{grain:0.3,fish:2.7},consumed_tick:42}});
  assert.match(foodSummaryHTML(data),/Food for 12.5 game days/);
- assert.match(foodSummaryHTML(data),/100 grain, 900 fish, 40 oil, 60 wine/);
+ assert.match(foodSummaryHTML(data),/100 grain, 900 fish, 40 oil\./);
  const detail=foodDetailsHTML(data);
  assert.match(detail,/production 10 − people eat 3 = 7 net before army/);
  assert.match(detail,/eats 2 food per game day → food net 5 after army/);
  assert.match(detail,new RegExp('Last meal.*0.3 grain, 2.7 fish.*'+testTickTime(42)));
  assert.doesNotMatch(detail,/999|army needs grain/);
  data.food.goods={grain:0,fish:0.008,oil:0.0000001,wine:0.1};
- assert.match(foodSummaryHTML(data),/0 grain, under 0.1 fish, under 0.1 oil, 0.1 wine/);
+ assert.match(foodSummaryHTML(data),/0 grain, under 0.1 fish, under 0.1 oil\./);
  data.food.consumed={grain:0,fish:0.008,oil:0.0000001};
  assert.match(foodDetailsHTML(data),/Last meal.*0 grain, under 0.1 fish, under 0.1 oil/);
  data.food.consumed_tick=null;

@@ -44,7 +44,7 @@ func buildCmd() *cobra.Command {
   keryx build --type farm --hex 3,-1          # farm/mine/lumbermill/stonequarry are hex-bound: pick a catchment hex
   keryx build --type harbour          # requires coastal (adjacent sea hex)
   keryx build --type mine --hex 5,2 --province <province-id>   # build in a colony
-  keryx build --type winery           # produces nothing unless a hills/plains/scrub_maquis tile is in catchment
+  keryx build --type winery           # produces nothing unless a hills tile is in catchment
   keryx build --queue                 # see what's already queued, with cancel-build IDs`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

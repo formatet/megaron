@@ -62,7 +62,7 @@ func offerFoodText(offering, food map[string]float64, eat float64, city string) 
 	}
 	var parts []string
 	var taken, total float64
-	for _, g := range []string{"grain", "fish", "oil", "wine"} {
+	for _, g := range []string{"grain", "fish", "oil"} {
 		total += food[g]
 		if n := offering[g]; n > 0 {
 			taken += n

@@ -12,7 +12,7 @@ func TestEqualFoodCityUsesServerTotalsAndGoods(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, text := range []string{"Food for 12.5 game days", "100 grain, 900 fish, 40 oil, 60 wine"} {
+	for _, text := range []string{"Food for 12.5 game days", "100 grain, 900 fish, 40 oil"} {
 		if !strings.Contains(cityFoodLine(sett), text) {
 			t.Fatal(cityFoodLine(sett))
 		}
@@ -25,7 +25,7 @@ func TestEqualFoodCityUsesServerTotalsAndGoods(t *testing.T) {
 	}
 	food := sett["food"].(map[string]any)
 	food["goods"] = map[string]any{"grain": 0.0, "fish": 0.0000001, "oil": 0.008, "wine": 0.0001}
-	if got := cityFoodLine(sett); !strings.Contains(got, "0 grain, <0.0001 fish, 0.008 oil, 0.0001 wine") {
+	if got := cityFoodLine(sett); !strings.Contains(got, "0 grain, <0.0001 fish, 0.008 oil") {
 		t.Fatal(got)
 	}
 	if got := cityFoodLine(map[string]any{}); got != "Food stores not reported." {
@@ -42,13 +42,13 @@ func TestEqualFoodRosterPrefersAuthoritativeFoodAndKeepsManifest(t *testing.T) {
 		t.Fatal(got)
 	}
 	got := formatSize(nil, u)
-	for _, want := range []string{"food for 7 game days", "1 grain, 9 fish, 2 oil, 3 wine"} {
+	for _, want := range []string{"food for 7 game days", "1 grain, 9 fish, 2 oil"} {
 		if !strings.Contains(got, want) {
 			t.Fatal(got)
 		}
 	}
 	u.ProvisionsByGood = map[string]float64{"grain": 0, "fish": 0.0000001, "oil": 0.008, "wine": 0.0001}
-	if got := formatSize(nil, u); !strings.Contains(got, "0 grain, <0.0001 fish, 0.008 oil, 0.0001 wine") {
+	if got := formatSize(nil, u); !strings.Contains(got, "0 grain, <0.0001 fish, 0.008 oil") {
 		t.Fatal(got)
 	}
 }

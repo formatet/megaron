@@ -6,7 +6,7 @@ import (
 )
 
 // Food quantities and durations come from the server; this only orders labels.
-var foodDisplayGoods = []string{"grain", "fish", "oil", "wine", "livestock"}
+var foodDisplayGoods = []string{"grain", "fish", "oil", "livestock"}
 
 func foodGoodsText(goods map[string]any) string {
 	parts := []string{}

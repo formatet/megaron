@@ -2,7 +2,8 @@ Everything your cities make, eat and trade is a **good**. The **Economy (⚖)** 
 
 | Good | What it is for |
 |---|---|
-| **Grain, fish, oil, wine** | Equal food goods, eaten in proportion to availability ([[food]]). Oil and wine also serve as offerings for [[rites|prayers]]. |
+| **Grain, fish, oil** | Equal food goods, eaten in proportion to availability ([[food]]). Oil also serves as an offering for [[rites|prayers]]. |
+| **Wine** | Not food. Grown only on hills; the drink of the gods and the feast, offered in [[rites|prayers]] ([[wine]]). |
 
 | Good | What it is for |
 |---|---|

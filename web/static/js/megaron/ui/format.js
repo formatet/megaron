@@ -333,7 +333,7 @@ export function notifText(kind, body) {
     case 'StorageOverflow':
       return `${esc(body.name || 'Your city')}: storage full — lost ${body.lost_quantity == null ? 'an unknown amount of' : fmtNum(body.lost_quantity)} ${esc(body.good_key || 'goods')} from ${storageReason(body.reason)} (capacity ${fmtNum(body.cap)}). Send goods away or trade.`;
     case 'GarrisonStarvationStarted': return body.food_category === true
-      ? `${esc(body.name || 'Your city')}: the garrison is losing men to hunger. Soldiers share the city's grain, fish, oil and wine. Produce or transfer more food here.`
+      ? `${esc(body.name || 'Your city')}: the garrison is losing men to hunger. Soldiers share the city's grain, fish and oil. Produce or transfer more food here.`
       : `${esc(body.name || 'Your city')}: the garrison is losing men to hunger. Soldiers need grain even when the city has a food surplus. Place citizens on grain or transfer grain here.`;
     case 'GarrisonStarvationEnded': return `${esc(body.name || 'Your city')}: the garrison is no longer losing men to hunger.`;
     case 'TempleDemolitionWrath': return demolitionKharisText(body);
@@ -873,7 +873,7 @@ export function notifText(kind, body) {
     }
     case 'CivilianStarvationStarted': {
       const amount = body.unmet > 0 && body.unmet < 0.1 ? '&lt;0.1' : fmtNum(body.unmet);
-      return `${esc(body.name || 'Your city')}: people are going hungry — the meal fell short by ${amount} ${body.food_category === true ? 'food' : 'grain'}. ${body.food_category === true ? 'Produce grain, fish, oil or wine' : 'Place citizens on grain or fish'}, or transfer food here.`;
+      return `${esc(body.name || 'Your city')}: people are going hungry — the meal fell short by ${amount} ${body.food_category === true ? 'food' : 'grain'}. ${body.food_category === true ? 'Produce grain, fish or oil' : 'Place citizens on grain or fish'}, or transfer food here.`;
     }
     case 'CivilianStarvationEnded':
       return body.reason === 'no_longer_owned_or_active'
