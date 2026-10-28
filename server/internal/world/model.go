@@ -69,16 +69,22 @@ const (
 
 // MapTile is a single hex in the world map.
 type MapTile struct {
-	WorldID        uuid.UUID
-	Q              int
-	R              int
-	Terrain        Terrain
-	Coastal        bool // true = land tile adjacent to coastal_sea (coastal property, not terrain type)
-	Fertility      float64
-	Mineral        float64
-	CopperDeposit  bool
-	TinDeposit     bool
-	SilverDeposit  bool
-	CedarDeposit   bool
-	IncenseDeposit bool
+	// Static geography, populated once after generation or legacy backfill.
+	RiverMetadataReady  bool
+	RiverEdgesMask      int16
+	RiverUpstreamMask   int16
+	RiverDownstreamMask int16
+	RiverFlowKnown      bool
+	WorldID             uuid.UUID
+	Q                   int
+	R                   int
+	Terrain             Terrain
+	Coastal             bool // true = land tile adjacent to coastal_sea (coastal property, not terrain type)
+	Fertility           float64
+	Mineral             float64
+	CopperDeposit       bool
+	TinDeposit          bool
+	SilverDeposit       bool
+	CedarDeposit        bool
+	IncenseDeposit      bool
 }

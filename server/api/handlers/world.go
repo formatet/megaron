@@ -331,7 +331,8 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT q, r, terrain, coastal, fertility, mineral, copper_deposit, tin_deposit,
-		        COALESCE(cedar_deposit,false), COALESCE(silver_deposit,false), COALESCE(incense_deposit,false)
+		        COALESCE(cedar_deposit,false), COALESCE(silver_deposit,false), COALESCE(incense_deposit,false),
+ river_edges,river_upstream_edges,river_downstream_edges,river_flow_known
 		 FROM map_tiles WHERE world_id = $1`,
 		worldID,
 	)
@@ -348,26 +349,39 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 		remembered = loadRememberedTiles(r.Context(), h.pool, worldID, playerID)
 	}
 
+	type riverConnection struct {
+		Edge    int    `json:"edge"`
+		Terrain string `json:"terrain"`
+	}
 	type tileView struct {
-		RiverName      string  `json:"river_name,omitempty"`
-		PlaceName      string  `json:"place_name,omitempty"`
-		PlaceKind      string  `json:"place_kind,omitempty"`
-		PlaceID        string  `json:"place_id,omitempty"`
-		CanName        bool    `json:"can_name,omitempty"`
-		Q              int     `json:"q"`
-		R              int     `json:"r"`
-		Terrain        string  `json:"terrain"`
-		Coastal        bool    `json:"coastal,omitempty"`
-		Visible        bool    `json:"visible"`
-		Tier           string  `json:"tier"` // "live" | "remembered" | "fog"
-		Frontier       bool    `json:"frontier,omitempty"`
-		F              float64 `json:"fertility,omitempty"`
-		M              float64 `json:"mineral,omitempty"`
-		CopperDeposit  bool    `json:"copper_deposit,omitempty"`
-		TinDeposit     bool    `json:"tin_deposit,omitempty"`
-		CedarDeposit   bool    `json:"cedar_deposit,omitempty"`
-		SilverDeposit  bool    `json:"silver_deposit,omitempty"`
-		IncenseDeposit bool    `json:"incense_deposit,omitempty"`
+		savedRiverEdges      *int16
+		savedRiverUp         *int16
+		savedRiverDown       *int16
+		savedRiverKnown      *bool
+		RiverConnections     []riverConnection `json:"river_connections,omitempty"`
+		RiverName            string            `json:"river_name,omitempty"`
+		RiverEdges           *[]int            `json:"river_edges,omitempty"`
+		RiverFlowKnown       *bool             `json:"river_flow_known,omitempty"`
+		RiverUpstreamEdges   *[]int            `json:"river_upstream_edges,omitempty"`
+		RiverDownstreamEdges *[]int            `json:"river_downstream_edges,omitempty"`
+		PlaceName            string            `json:"place_name,omitempty"`
+		PlaceKind            string            `json:"place_kind,omitempty"`
+		PlaceID              string            `json:"place_id,omitempty"`
+		CanName              bool              `json:"can_name,omitempty"`
+		Q                    int               `json:"q"`
+		R                    int               `json:"r"`
+		Terrain              string            `json:"terrain"`
+		Coastal              bool              `json:"coastal,omitempty"`
+		Visible              bool              `json:"visible"`
+		Tier                 string            `json:"tier"` // "live" | "remembered" | "fog"
+		Frontier             bool              `json:"frontier,omitempty"`
+		F                    float64           `json:"fertility,omitempty"`
+		M                    float64           `json:"mineral,omitempty"`
+		CopperDeposit        bool              `json:"copper_deposit,omitempty"`
+		TinDeposit           bool              `json:"tin_deposit,omitempty"`
+		CedarDeposit         bool              `json:"cedar_deposit,omitempty"`
+		SilverDeposit        bool              `json:"silver_deposit,omitempty"`
+		IncenseDeposit       bool              `json:"incense_deposit,omitempty"`
 	}
 	var fullMap []world.MapTile
 	var tiles []tileView
@@ -376,7 +390,7 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var t tileView
 		if err := rows.Scan(&t.Q, &t.R, &t.Terrain, &t.Coastal, &t.F, &t.M, &t.CopperDeposit, &t.TinDeposit,
-			&t.CedarDeposit, &t.SilverDeposit, &t.IncenseDeposit); err != nil {
+			&t.CedarDeposit, &t.SilverDeposit, &t.IncenseDeposit, &t.savedRiverEdges, &t.savedRiverUp, &t.savedRiverDown, &t.savedRiverKnown); err != nil {
 			continue
 		}
 		fullMap = append(fullMap, world.MapTile{Q: t.Q, R: t.R, Terrain: world.Terrain(t.Terrain)})
@@ -414,6 +428,10 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 		writeError(w, 500, "could not load place names")
 		return
 	}
+	savedTerrain := map[[2]int]string{}
+	for _, tile := range fullMap {
+		savedTerrain[[2]int{tile.Q, tile.R}] = string(tile.Terrain)
+	}
 	byHex := map[[2]int]world.Place{}
 	for _, p := range world.Places(fullMap) {
 		for _, xy := range p.Hexes {
@@ -424,6 +442,20 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 		if !tiles[i].Visible {
 			continue
 		}
+		t := &tiles[i]
+		if t.savedRiverEdges != nil && (t.Terrain == "river" || t.Terrain == "river_ford") {
+			edges, up, down := world.RiverEdgeIndices(*t.savedRiverEdges), world.RiverEdgeIndices(*t.savedRiverUp), world.RiverEdgeIndices(*t.savedRiverDown)
+			t.RiverEdges = &edges
+			t.RiverUpstreamEdges = &up
+			t.RiverDownstreamEdges = &down
+			t.RiverFlowKnown = t.savedRiverKnown
+			for _, edge := range edges {
+				dq, dr, _ := world.RiverEdgeDelta(edge)
+				kind := savedTerrain[[2]int{t.Q + dq, t.R + dr}]
+				t.RiverConnections = append(t.RiverConnections, riverConnection{edge, kind})
+			}
+		}
+
 		p, ok := byHex[[2]int{tiles[i].Q, tiles[i].R}]
 		if !ok {
 			continue
@@ -1869,15 +1901,16 @@ func (h *WorldHandler) storeTiles(ctx context.Context, worldID uuid.UUID, tiles 
 	comp := world.LandComponents(tiles)
 	batch := &pgx.Batch{}
 	for _, t := range tiles {
+		riverEdges, riverUp, riverDown, riverKnown := t.RiverMetadataValues()
 		var landmassID *int
 		if id, ok := comp[[2]int{t.Q, t.R}]; ok {
 			landmassID = &id
 		}
 		batch.Queue(
-			`INSERT INTO map_tiles (world_id, q, r, terrain, coastal, fertility, mineral, copper_deposit, tin_deposit, silver_deposit, cedar_deposit, incense_deposit, landmass_id)
-			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+			`INSERT INTO map_tiles (world_id, q, r, terrain, coastal, fertility, mineral, copper_deposit, tin_deposit, silver_deposit, cedar_deposit, incense_deposit, landmass_id, river_edges, river_upstream_edges, river_downstream_edges, river_flow_known)
+			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
 			 ON CONFLICT (world_id, q, r) DO NOTHING`,
-			worldID, t.Q, t.R, string(t.Terrain), t.Coastal, t.Fertility, t.Mineral, t.CopperDeposit, t.TinDeposit, t.SilverDeposit, t.CedarDeposit, t.IncenseDeposit, landmassID,
+			worldID, t.Q, t.R, string(t.Terrain), t.Coastal, t.Fertility, t.Mineral, t.CopperDeposit, t.TinDeposit, t.SilverDeposit, t.CedarDeposit, t.IncenseDeposit, landmassID, riverEdges, riverUp, riverDown, riverKnown,
 		)
 	}
 	br := h.pool.SendBatch(ctx, batch)

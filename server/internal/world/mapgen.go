@@ -714,6 +714,7 @@ func GenerateMap(worldID interface{ String() string }, seed int64, width, height
 		}
 		addTinSources(tiles, eff, width, height)
 		AddIncenseSources(tiles, eff, width, height)
+		PopulateRiverMetadata(tiles, width, height)
 		return tiles, eff
 	}
 	// A broken map must never host a world — fail loud rather than serve a

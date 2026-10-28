@@ -1,0 +1,11 @@
+» färsk DB på migration 221 · commit 78a4be43+ändringar
+--- FAIL: TestRiverFlowUsesSeaDeltaMouthNotSourceWater (0.00s)
+    river_flow_test.go:46: q2 sourceOpentrue flow={Known:false Upstream:[] Downstream:[]} want upstream1/downstream0
+    river_flow_test.go:46: q3 sourceOpentrue flow={Known:false Upstream:[] Downstream:[]} want upstream1/downstream0
+    river_flow_test.go:46: q4 sourceOpentrue flow={Known:false Upstream:[] Downstream:[]} want upstream1/downstream0
+    river_flow_test.go:46: q5 sourceOpentrue flow={Known:false Upstream:[] Downstream:[]} want upstream1/downstream0
+    river_flow_test.go:46: q6 sourceOpentrue flow={Known:false Upstream:[] Downstream:[]} want upstream1/downstream0
+    river_flow_test.go:46: q7 sourceOpentrue flow={Known:false Upstream:[] Downstream:[]} want upstream1/downstream0
+FAIL
+FAIL	formatet/megaron/server/internal/world	0.002s
+FAIL

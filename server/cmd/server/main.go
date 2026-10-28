@@ -75,6 +75,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err := world.CompleteRiverMetadata(ctx, pool); err != nil {
+		slog.Error("complete saved river geography", "err", err)
+		os.Exit(1)
+	}
+
 	if err := economy.CompleteFishingRuleTransition(ctx, pool); err != nil {
 		slog.Error("complete fishing rule transition", "err", err)
 		os.Exit(1)
@@ -907,16 +912,17 @@ func ensureWorld(ctx context.Context, pool *pgxpool.Pool, clk *clock.WallClock) 
 	// computed once for the whole world; sea tiles insert NULL.
 	comp := world.LandComponents(tiles)
 	for _, t := range tiles {
+		riverEdges, riverUp, riverDown, riverKnown := t.RiverMetadataValues()
 		var landmassID *int
 		if lid, ok := comp[[2]int{t.Q, t.R}]; ok {
 			landmassID = &lid
 		}
 		if _, err := pool.Exec(ctx,
 			`INSERT INTO map_tiles (world_id, q, r, terrain, coastal, fertility, mineral,
-			                        copper_deposit, tin_deposit, silver_deposit, cedar_deposit, incense_deposit, landmass_id)
-			 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) ON CONFLICT (world_id, q, r) DO NOTHING`,
+			                        copper_deposit, tin_deposit, silver_deposit, cedar_deposit, incense_deposit, landmass_id, river_edges, river_upstream_edges, river_downstream_edges, river_flow_known)
+			 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17) ON CONFLICT (world_id, q, r) DO NOTHING`,
 			id, t.Q, t.R, string(t.Terrain), t.Coastal, t.Fertility, t.Mineral,
-			t.CopperDeposit, t.TinDeposit, t.SilverDeposit, t.CedarDeposit, t.IncenseDeposit, landmassID,
+			t.CopperDeposit, t.TinDeposit, t.SilverDeposit, t.CedarDeposit, t.IncenseDeposit, landmassID, riverEdges, riverUp, riverDown, riverKnown,
 		); err != nil {
 			return uuid.Nil, fmt.Errorf("store map tile: %w", err)
 		}

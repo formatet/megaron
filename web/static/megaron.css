@@ -2143,3 +2143,5 @@ h4.cx-h { font-size: var(--fs-base); }
 .citizen-step { display:block; width:10px; height:8px; border:1px solid var(--text-dim); background:var(--warm-white); }
 .citizen-step.filled { border-color:var(--text); background:var(--text); }
 .citizen-progress-text { grid-column:1 / -1; color:var(--text-dim); }
+
+.river-flow-info { font-size:.75rem; margin:.35rem 0; color:var(--text); }

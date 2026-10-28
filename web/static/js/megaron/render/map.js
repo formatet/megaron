@@ -1,3 +1,4 @@
+import {riverFlowLines,drawRiverFlow} from '../ui/river_flow.js';
 import { openMobilePanel, closeMobilePanel } from '../ui/mobile_panels.js';
 import { physicalHostState, hostStatusText } from '../ui/host_state.js';
 import { State, ownCapital, activeCitySettlement } from '../state.js';
@@ -1089,7 +1090,7 @@ function chunkSig(ix, iy) {
     };
     for (const t of State.tileData) {
       const { x, y } = hexPx(t.q, t.r);
-      add(x, y, SIG_REACH, `${t.q},${t.r}:${t.terrain}:${t.tier}`);
+      add(x, y, SIG_REACH, `${t.q},${t.r}:${t.terrain}:${t.tier}:${JSON.stringify(t.river_edges)}`);
     }
     for (const [x, y] of cult) add(x, y, CULT_REACH, `c${x},${y}`);
     chunkSigs = new Map([...parts].map(([k, a]) => [k, a.join('|')]));
@@ -1136,7 +1137,7 @@ function updateChunks() {
     workerSceneTiles = State.tileData; workerSceneCult = cult; workerSceneWorld = State.WORLD_ID;
     // Send only the bake inputs; no units, names, rosters or other live State.
     chunkWorker.setScene({ WORLD_ID: State.WORLD_ID,
-      tileData: State.tileData.map(({ q, r, terrain, tier }) => ({ q, r, terrain, tier })),
+      tileData: State.tileData.map(({ q, r, terrain, tier, river_edges }) => ({ q, r, terrain, tier, river_edges })),
       provinceData: (State.provinceData || []).map(({ q, r }) => ({ q, r })),
     });
   }
@@ -2700,6 +2701,7 @@ export function render() {
   }
   drawSwellField(ctx, State.animFrame >> 5);
   pass('sea');
+  for(const t of vis) { const {x,y}=hexPx(t.q,t.r);drawRiverFlow(ctx,x,y,t,SURF_FOAM); }
 
   // 1a4. Kullarnas kroppar — efter all mark, före lövverket. Efter marken av
   // samma skäl som bergen: en kropp som ska SKYMMA får inte målas över av
@@ -3549,7 +3551,7 @@ function openTerrainPanel(h, tile, isMountain, isSea, units, foreignUnits) {
   fillTerrainFields(tile);
 
   const foot = document.getElementById('ip-foot');
-  let footHtml = placePanelHTML(tile) + workersHereHTML(h) + unitListHTML(units, foreignUnits);
+  let footHtml = riverFlowLines(tile,State.tileData).map(line=>'<p class="river-flow-info">'+esc(line)+'</p>').join('') + placePanelHTML(tile) + workersHereHTML(h) + unitListHTML(units, foreignUnits);
   if (isSea) footHtml += stormHexPanelHTML(h.q,h.r);
 
   if (isMountain) {
@@ -3651,6 +3653,7 @@ function openRuralPanel(h, tile, rural, units, foreignUnits) {
   const foot = document.getElementById('ip-foot');
   const buildingLabel = RURAL_LABELS[rural.building_type] || rural.building_type;
   let footHtml = `<p class="empty-state">${buildingLabel} — part of ${rural.name}'s hinterland, worked from here.</p>`;
+  footHtml += riverFlowLines(tile,State.tileData).map(line=>'<p class="river-flow-info">'+esc(line)+'</p>').join('');
   footHtml += placePanelHTML(tile);
   footHtml += workersHereHTML(h);
   footHtml += unitListHTML(units, foreignUnits);

@@ -1,0 +1,1 @@
+Read-only full saved map, existing world: 4096 tiles; 32 river/ford tiles in seven components. Actual Go RiverFlows owner: known=32 totalriver=32. No hidden live map, seed or coordinates are published.

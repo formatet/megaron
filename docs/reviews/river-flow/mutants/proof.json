@@ -1,0 +1,42 @@
+[
+  {
+    "mutant": "saved-values",
+    "red": 1,
+    "restored": 0
+  },
+  {
+    "mutant": "delta-mouth",
+    "red": 1,
+    "restored": 0
+  },
+  {
+    "mutant": "writer",
+    "red": 1,
+    "restored": 0
+  },
+  {
+    "mutant": "fog",
+    "red": 1,
+    "restored": 0
+  },
+  {
+    "mutant": "edge",
+    "red": 1,
+    "restored": 0
+  },
+  {
+    "mutant": "ink",
+    "red": 1,
+    "restored": 0
+  },
+  {
+    "mutant": "direction",
+    "red": 1,
+    "restored": 0
+  },
+  {
+    "mutant": "read-recalculates",
+    "red": 1,
+    "restored": 0
+  }
+]

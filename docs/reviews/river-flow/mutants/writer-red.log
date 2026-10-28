@@ -1,0 +1,11 @@
+» färsk DB på migration 221 · commit 78a4be43+ändringar
+2026/10/28 16:46:19 WARN mapgen: invalid map, reseeding world=99a8dde7-9edf-443a-8cc3-bdf17fe17c83 seed=12345 width=40 height=30 err="invalid map: productive tin = 1 (want >= 2); largest landmass = 18.9% of map area (want <= 15%)"
+2026/10/28 16:46:19 WARN mapgen: invalid map, reseeding world=99a8dde7-9edf-443a-8cc3-bdf17fe17c83 seed=12346 width=40 height=30 err="invalid map: productive copper = 1 (want >= 2); productive tin = 1 (want >= 2); forest fraction = 0.334 (want 0.22..0.30); no buildable east tile (q > maxQ/2) has tin in its 6-hex catchment"
+2026/10/28 16:46:19 WARN mapgen: invalid map, reseeding world=99a8dde7-9edf-443a-8cc3-bdf17fe17c83 seed=12347 width=40 height=30 err="invalid map: landmass 0 (95 tiles) has 0 rivers (want 1-2)"
+2026/10/28 16:46:19 WARN mapgen: invalid map, reseeding world=99a8dde7-9edf-443a-8cc3-bdf17fe17c83 seed=12348 width=40 height=30 err="invalid map: productive tin = 1 (want >= 2)"
+2026/10/28 16:46:19 WARN mapgen: invalid map, reseeding world=99a8dde7-9edf-443a-8cc3-bdf17fe17c83 seed=12349 width=40 height=30 err="invalid map: productive copper = 1 (want >= 2); productive tin = 1 (want >= 2)"
+--- FAIL: TestStoreTilesPersistsGeneratedRiverGeography (0.13s)
+    river_edges_test.go:231: writer saved 1200/1200 tiles and 0/2 river records
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.135s
+FAIL

@@ -1,0 +1,6 @@
+» färsk DB på migration 221 · commit 78a4be43+ändringar
+--- FAIL: TestRiverMetadataBackfillIsAtomicAndPreservesSavedValues (0.06s)
+    river_metadata_store_test.go:81: startup rewrote saved direction: 2/1
+FAIL
+FAIL	formatet/megaron/server/internal/world	0.061s
+FAIL
