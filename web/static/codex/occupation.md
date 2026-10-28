@@ -1,6 +1,6 @@
 Winning at a city — by [[battle]] or by [[sieges|siege]] — does not make it yours. It becomes **occupied**: still owned by its Wanax, garrisoned by the victor's survivors, its production frozen.
 
-**Hold it for 30 game days without a fight and you may annex it.** This is a deliberately contestable window: **any new fighting at the city starts the count again.** Both sides are told so plainly; the defender learns that the city is *not lost yet — a relief force resets the enemy's countdown.*
+**Hold it for 30 game days without a fight and you may annex it.** **Any new fighting at the city starts the count again.** The defender can send a relief force.
 
 ## Completing an occupation {#occupation-when-the-occupation-ripens}
 
@@ -13,7 +13,7 @@ After **30 game days unchallenged** you are told the city is ripe, and you may a
 
 - **annex** it — keep it as your own. It becomes one of your cities, never your capital. Ships in its harbour change hands with it.
 
-Doing nothing leaves it occupied, which is the safe and reversible choice.
+Until you choose, the city remains occupied.
 
 Make the choice from the dispatch that told you about it — sack/burn/annex are buttons right
 there, no need to leave the browser — or from the command line with `keryx occupation` ([[keryx]]).

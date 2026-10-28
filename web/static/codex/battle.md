@@ -2,13 +2,11 @@
 
 ## When battle begins {#battle-when-battle-begins}
 
-If your forces defend a hex, or you own the city there, you receive a dispatch when battle begins: *"Idomeneus — battle has begun at Petras"*, with its clock time. It names the opposing Wanax and the place you can already see; it reveals no march route or home city. Select **Take me there** to see the hex. With sound on, you hear the same clash as for a battle's outcome.
-
-Each defending Wanax receives one notice per battle, even with several forces. Reinforcements do not repeat it; a new defending Wanax receives a first notice when their forces join. You can mute the dispatch and still find it in **Notifications**.
+If your forces or city come under attack, a dispatch names the opponent and place. Choose **Take me there** to see it. Muted dispatches remain in **Notifications**.
 
 ## Battle rounds {#battle-how-a-battle-runs}
 
-**A battle lasts several game days.** Each game day the two sides clash three times. In every clash, 90% of each side's men take part and roll twelve-sided dice. **A 12 is a hit**, and every hit costs the enemy one man, one chariot, or a blow to a ship's hull. Losses are shared among a side's forces in proportion to their size.
+**A battle can last several game days.** Each game day the two sides clash three times. In every clash, 90% of each side's men take part and roll twelve-sided dice. **A 12 is a hit**, and every hit costs the enemy one man, one chariot, or a blow to a ship's hull. Losses are shared among a side's forces in proportion to their size.
 
 | | Dice in each clash |
 |---|---|

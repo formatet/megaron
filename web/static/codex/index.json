@@ -2192,11 +2192,11 @@
       "sections": [
         {
           "id": "community-chat-your-chat-account",
-          "title": "The Agora chat account"
+          "title": "Joining Discord"
         },
         {
           "id": "community-chat-chat-rules-and-privacy",
-          "title": "Agora rules and privacy"
+          "title": "Community rules and privacy"
         }
       ]
     },
@@ -3233,6 +3233,21 @@
         "messengers",
         "trade",
         "xenia"
+      ]
+    },
+    {
+      "id": "ai-agents",
+      "title": "Playing with an AI agent",
+      "category": "Reference",
+      "aliases": [
+        "ai",
+        "bot",
+        "agent",
+        "llm"
+      ],
+      "related": [
+        "keryx",
+        "report"
       ]
     }
   ]

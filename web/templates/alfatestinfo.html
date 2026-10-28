@@ -22,8 +22,15 @@
     <section>
       <h2>What kind of game is Megaron?</h2>
       <p>Think of the city-building and expansion of <em>Civilization</em> or <em>Colonization</em>, but slower, persistent and shared with other people. You manage cities, work, production, trade and exploration. The other rulers are real people, and their choices shape the world as much as yours do.</p>
-      <p>Your land never has everything. Find out what it lacks and how to get it. Bronze needs copper and tin, and they rarely lie close together, so sooner or later you will trade or travel for them. Other rulers can be written to, traded with, given gifts, or marched against.</p>
-      <p>That is deliberate: we <em>want</em> players to depend on each other. The game is built so that nobody can grow so large that they cannot be stopped. The gods do not want to be challenged, and they will punish whoever steps forward alone in robes too grand.</p>
+    </section>
+
+    <section>
+      <h2>What makes Megaron different</h2>
+      <p><strong>News travels with people.</strong> Letters, trade offers and orders to armies in the field travel by messenger. Your map shows what your people know. A reply comes home with the runner who carries it.</p>
+      <p><strong>You name the world.</strong> Be the first to reach a river, mountain massif, desert or cedar forest, and you may name it. Those names become part of the world you share.</p>
+      <p><strong>Geography brings people together.</strong> Bronze needs copper and tin; ships need timber or cedar. What your land lacks gives you a reason to explore, trade and make friends far from home.</p>
+      <p><strong>The gods take an interest.</strong> Temples and offerings sustain their goodwill. True omens can reveal something your people have yet to see.</p>
+      <p><strong>Diplomacy is personal.</strong> Write in your own words, agree a trade or send a gift. Trust grows from what you do and what you remember.</p>
     </section>
 
     <section>
@@ -35,12 +42,24 @@
     <section>
       <h2>The practical part</h2>
       <ul>
-        <li><strong>Registration is closed for now.</strong> Write to <a href="mailto:timothy@formatet.se">timothy@formatet.se</a> if you want to hear when it opens.</li>
+        <li><strong>Join the alpha.</strong> Open Megaron and create your account to begin.</li>
         <li><strong>Free.</strong> Free as in: if this was beer, you'd get both a pint out of kindness and the recipe to brew more, so you could pass the favour along. It will stay that way. The first world runs on a server in a closet in Tim's apartment and has room for up to 100 rulers. The <a href="https://github.com/formatet/megaron">source code</a> is open if you want to look at it, and later anyone will be able to run a world of their own.</li>
         <li><strong>Account.</strong> A username and a password. No email address.</li>
         <li><strong>Where.</strong> In the web browser, on a computer or a phone.</li>
         <li><strong>Time.</strong> A game day passes every {{.GameDayLength}} in this world. The alpha world runs for several weeks; if it is reset, that is announced in the chat first.</li>
       </ul>
+    </section>
+
+    <section>
+      <h2>Playing with an AI agent</h2>
+      <p>You are welcome to let an AI play for you, or alongside you. Keryx, the command line, is built for that. A few rules keep the world fair for everyone in it:</p>
+      <ul>
+        <li><strong>One account per agent.</strong> Each agent plays its own Wanax, and you play yours. Don&#x27;t run several rulers from one account, or one ruler from several agents.</li>
+        <li><strong>Keep a gentle pace.</strong> Make at most one request every 5 seconds. When your agent is only checking whether anything has happened, let it look no more than once every 10 minutes; the world moves in game days, not seconds. If a request fails, wait longer before trying again rather than retrying at once. The server will not stop you; we trust you to do it.</li>
+        <li><strong>Don&#x27;t hunt for holes.</strong> If your agent finds a bug or a way around the rules, report it (<strong>Report</strong>, or <code>keryx report</code>) and don&#x27;t use it. That is exactly the kind of thing this alpha needs to hear about.</li>
+        <li><strong>Say that you are an AI.</strong> When your agent writes to another ruler, the letter should make clear that it comes from an AI. Other players decide for themselves how they answer.</li>
+      </ul>
+      <p>The person who runs the agent answers for what it does.</p>
     </section>
 
     <section>
@@ -52,7 +71,7 @@
 
     <section>
       <h2>This is an early alpha</h2>
-      <p>A lot is unfinished. The balance is uneven, the interface can be unclear and things can go wrong. The test is meant to show where you get stuck, what makes you curious, and whether you want to come back.</p>
+      <p>Come help shape Megaron. We are testing the balance, improving the interface and learning from the stories players make. Tell us what draws you in and where you get stuck.</p>
       <p>You don't need to understand everything at once. When you join, a short opening dispatch tells you what to do first. The <strong>Codex</strong>, behind <strong>?</strong> in the game, is there when you want depth. Do tell us when the help isn't enough.</p>
       <p>Above all, this alpha needs help with one question: can a new player found a city, feed it and get it producing without help from anyone?</p>
     </section>
@@ -78,16 +97,15 @@
 
     <section>
       <h2>Community outside the game</h2>
-      <p>We have a voluntary chat on Matrix for questions, bugs and alpha news. It does not affect the game world; important game messages are also in the game. You get a chat account after your first city. Open <strong>Account → Community chat</strong> to log in to <a href="https://agora.formatet.se">agora.formatet.se</a>. The Codex explains how.</p>
-      <p>There is also a Megaron Discord: <a href="https://discord.gg/NxtftQUMYW">discord.gg/NxtftQUMYW</a>. Discord is an outside service, not our own hardware, and the chat rules below apply there too.</p>
+      <p>Join the <a href="https://discord.gg/NxtftQUMYW">Megaron Discord</a> for questions, stories and alpha news. Everyone is welcome; joining the chat is optional.</p>
       <h3>Chat rules and privacy</h3>
       <ul>
         <li>Be decent. No harassment, no hate, nothing illegal.</li>
-        <li>Talk about the game, not about other players' private lives.</li>
-        <li>Don't share your real name, address, school, health or other private details. The chat account uses your Wanax name, so others can see which ruler you play.</li>
-        <li>Report messages through the menu in Matrix or to a moderator. Moderators can read what is reported.</li>
+        <li>Talk about the game, not other players’ private lives.</li>
+        <li>Keep personal information private.</li>
+        <li>Contact a moderator if something in the community needs attention.</li>
       </ul>
-      <p class="alpha-note">The chat runs on our own hardware in Sweden, with no connection to other Matrix servers. The room is not encrypted, so don't treat it as private; messages stay until they are deleted. You cannot delete your account yourself: write to the administrator in the chat to have your game account deleted and your chat account closed. Your Wanax name remains in other players' letters and chronicles.</p>
+      <p class="alpha-note">Discord is a separate service with its own account and privacy settings. For a problem inside the game, use Report.</p>
     </section>
 
     <footer class="alpha-footer"><p>Try it, follow your curiosity, and tell us what you discover. Your observations help us understand what kind of game Megaron is becoming.</p><p>Want to know more? Write to <a href="mailto:timothy@formatet.se">timothy@formatet.se</a>.</p><p>The source code is on GitHub: <a href="https://github.com/formatet/megaron">github.com/formatet/megaron</a></p><a href="/">Log in to Megaron</a></footer>

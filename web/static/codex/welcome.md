@@ -4,17 +4,15 @@ This Codex is the world's book of knowledge. Every article links onward — foll
 
 ## The opening dispatch {#welcome-your-opening-dispatch}
 
-Joining a world brings a private **Your people await you** dispatch. Rising again after losing your realm brings **Begin again** for your new Host. Open it from the dispatch strip or the **Notifications** drawer; the archive keeps the same text for you to revisit.
+Open **Your people await you** in Notifications for your first steps, starting supplies and the world's pace. If you begin again after losing your realm, look for **Begin again**.
 
-It explains the world's game day length, movement, your Host's reserves, food, [[gods|the gods]], travelling orders and the path to bronze. Its amounts come from the rules when that Host begins. Your Host lives on subsistence before founding, so its reserves do not drain while you search for a home. When you begin again, your standing with the gods is kept.
-
-The dispatch is a record of that beginning; use this Codex and the current city and army views as your situation changes.
+Your [[horde|Host]] lives on subsistence while you search for a home. Once you found a city, put people to work producing [[food]].
 
 ## Physical world rules {#welcome-three-rules-that-explain-almost-everything}
 
 **Game days belong to the world.** The world advances one game day at a time, and every duration the game shows you counts in game days. See [[time]].
 
-**The world runs without you.** Nobody pauses. Fields are worked, soldiers are paid and granaries fill and empty while you sleep. You do not win by being online more; you win by leaving good [[routes|standing orders]] and by reading [[coming-back|what happened while you were gone]].
+**The world runs without you.** Nobody pauses. Fields are worked, soldiers are paid and granaries fill and empty while you sleep. Plan your supplies and read [[coming-back|what happened while you were gone]].
 
 **Command is never instant.** An order to an army in the field travels by Runner, a person who has to walk there. Until he arrives, the army does what it was last told. See [[runners]].
 
@@ -22,10 +20,10 @@ The dispatch is a record of that beginning; use this Codex and the current city 
 
 1. [[getting-in]] — joining a world.
 2. [[horde]] — you start as a people on the move, not as a city.
-3. [[founding]] — the one decision you cannot undo.
+3. [[founding]] — choosing a home.
 4. [[screen]] — what every button on the screen does.
 5. [[city]] and [[citizens]] — putting your people to work.
-6. [[food]] — the thing that kills young cities.
+6. [[food]] — keeping your city fed.
 
 Unfamiliar words are explained in the [[glossary]].
 

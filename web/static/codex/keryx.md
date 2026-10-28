@@ -1,6 +1,6 @@
 **Keryx** is Megaron's command-line client — the herald. It talks to the same server as the browser and can do everything a Wanax can do, including a few things the browser cannot do yet ([[rough-edges]]).
 
-You do not need it to play. It exists for players who prefer a terminal, for automation, and for AI players.
+You do not need it to play. It exists for players who prefer a terminal, for automation, and for AI players. See [[ai-agents]] for the play rules.
 
 ## Setting up Keryx {#keryx-getting-started}
 
@@ -40,9 +40,9 @@ Orders given through Keryx obey the same rules as in the browser: they travel by
 
 With exactly one active world, commands select and save it automatically. To choose explicitly, run `keryx worlds` and then `keryx worlds --select <world-id>`. City rows show both the placement number and `(q,r)`; use those coordinates with `build --hex q,r`.
 
-Use a city name or province ID either positionally or with `--province` in `city`, `placements`, `status` and `build`. For placement: `keryx place Knossos fish 13 -1` or `keryx place --province Knossos fish 13 -1`. Put flags before the good when using a negative [[river-delta|delta]]. If no [[citizens|citizens]] work that good on the chosen hex, the result lists where they do work it. `founding settle --yes` skips the question. Travel estimates use game days; if an arrival cannot be calculated it is reported as unavailable.
+Use a city name or province ID either positionally or with `--province` in `city`, `placements`, `status` and `build`. For placement: `keryx place Knossos fish 13 -1` or `keryx place --province Knossos fish 13 -1`. Put flags before the good when using a negative amount. If no [[citizens|citizens]] work that good on the chosen hex, the result lists where they do work it. `founding settle --yes` skips the question. Travel estimates use game days; if an arrival cannot be calculated it is reported as unavailable.
 
-Hex selection accepts the ordinal shown by City, with or without `#`: `build --type lumbermill --hex 6` or `--hex '#6'`. Placement can use `place fish 6 +1`, `place fish '#6' +1`, or `place --hex 6 fish +1`; `--hex q,r` also works. Put flags before the good when giving a negative delta. `staff` is for city workplaces; hex-bound buildings are worked with `place` on their hex.
+Hex selection accepts the ordinal shown by City, with or without `#`: `build --type lumbermill --hex 6` or `--hex '#6'`. Placement can use `place fish 6 +1`, `place fish '#6' +1`, or `place --hex 6 fish +1`; `--hex q,r` also works. Put flags before the good when giving a negative amount. `staff` is for city workplaces; hex-bound buildings are worked with `place` on their hex.
 
 ## Keryx argument syntax {#keryx-argument-reminders}
 
