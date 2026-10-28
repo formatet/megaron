@@ -19,3 +19,13 @@ test('a known river exposes its connection kind through fog, with no neighbour d
  assert.ok(lines.includes('Connections: south-east — ford; north-west — coastal water.'));
  assert.ok(!lines.join(' ').includes('SECRET'));
 });
+
+test('every current glyph points toward its declared downstream edge',()=>{
+ const offsets=[[1,0],[-1,0],[0,1],[0,-1],[1,-1],[-1,1]];
+ for(let i=0;i<6;i++) {
+  const points=[],ctx={save(){},restore(){},fillRect(x,y){points.push([x,y]);}};
+  drawRiverFlow(ctx,0,0,{...river,river_downstream_edges:[i]},'water');
+  const [dq,dr]=offsets[i],x=1.5*dq,y=Math.sqrt(3)*(dr+dq/2),length=Math.hypot(x,y);
+  assert.ok(Math.max(...points.map(([px,py])=>(px*x+py*y)/length))>=5,'glyph must point downstream for edge '+i);
+ }
+});
