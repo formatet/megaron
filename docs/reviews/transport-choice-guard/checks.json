@@ -1,0 +1,12 @@
+{
+  "tested_commit": "223167928db6006ade835c2aba96211659db45ad",
+  "base": "06b72997",
+  "migration": 220,
+  "direct_dispatch_exit": 0,
+  "physical_mutant_assertion_red": true,
+  "restored_fresh_db_exit": 0,
+  "full_fresh_go_exit": 0,
+  "world_seconds": 148.476,
+  "vet_transport_exit": 0,
+  "production_changes": false
+}
