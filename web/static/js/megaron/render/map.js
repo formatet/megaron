@@ -27,7 +27,7 @@ import { confirmInline, showInlineResult } from '../ui/inline_result.js';
 import { unitHoverLines } from '../ui/hover.js';
 import { drawStorm, STORM_FRAMES } from './storms.js';
 import { roadSegments, plannedSegments, drawRoads } from './roads.js';
-import { stormPanelHTML } from '../ui/stormname.js';
+import { stormHexPanelHTML, updateStormData } from '../ui/stormname.js';
 import { placePanelHTML } from '../ui/placename.js';
 import { incomingTargetKeys } from '../ui/movements.js';
 import { namedPlaceTerrain, placeLabelLayout, PLACE_LABEL_STYLE, drawPlaceLabel } from './place_names.js';
@@ -3220,7 +3220,7 @@ export async function loadMap() {
     State.workedHexes = workedHexesFromRoster(await rosterRes.json());
   }
   if (stormsRes.ok) {
-    State.stormData = (await stormsRes.json()).storms || [];
+    updateStormData((await stormsRes.json()).storms || []);
   }
   if (roadsRes.ok) {
     State.roadEdges = (await roadsRes.json()).edges || [];
@@ -3550,7 +3550,7 @@ function openTerrainPanel(h, tile, isMountain, isSea, units, foreignUnits) {
 
   const foot = document.getElementById('ip-foot');
   let footHtml = placePanelHTML(tile) + workersHereHTML(h) + unitListHTML(units, foreignUnits);
-  if (isSea) footHtml += stormPanelHTML((State.stormData || []).filter(st => st.hexes.some(sh => sh.q === h.q && sh.r === h.r)));
+  if (isSea) footHtml += stormHexPanelHTML(h.q,h.r);
 
   if (isMountain) {
     footHtml += '<p class="empty-state">Impassable — armies cannot go here.</p>';
@@ -4114,7 +4114,7 @@ export function initMap() {
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/rural-projections`).then(r => r.ok && r.json().then(d => { State.ruralData = d; State.dirty = true; }));
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/foreign-units`).then(r => r.ok && r.json().then(d => { State.foreignUnitData = d; State.dirty = true; }));
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/settlements/placement-roster`).then(r => r.ok && r.json().then(d => { State.workedHexes = workedHexesFromRoster(d); State.dirty = true; }));
-    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/storms`).then(r => r.ok && r.json().then(d => { State.stormData = d.storms || []; State.dirty = true; }));
+    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/storms`).then(r => r.ok && r.json().then(d => { updateStormData(d.storms || []); }));
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/roads`).then(r => r.ok && r.json().then(d => { State.roadEdges = d.edges || []; State.dirty = true; }));
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/road-sites`).then(r => r.ok && r.json().then(d => { State.roadSites = d.sites || []; State.dirty = true; }));
   }, 30000);
