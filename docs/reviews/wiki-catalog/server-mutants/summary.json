@@ -1,0 +1,38 @@
+[
+  {
+    "mutant": "inferred-enum-addition",
+    "file": "server/internal/unit/model.go",
+    "assertion": "TestCodexEntityCoverageFromRuntimeCatalogues",
+    "red_message": "current catalogue entities without article",
+    "assertion_red": true,
+    "exact_restored_sha256": "5129587bde15e0593d57560d556c3c3da5a22255081ef1df868fcc9d431fd40c",
+    "fresh_restore_green": true
+  },
+  {
+    "mutant": "missing-index-entity",
+    "file": "web/static/codex/index.json",
+    "assertion": "TestCodexEntityCoverageFromRuntimeCatalogues",
+    "red_message": "building:farm",
+    "assertion_red": true,
+    "exact_restored_sha256": "1eafe3446040afb4ef816d11e74e1f1f70477ec6edd55cf80817c674bad0ba8a",
+    "fresh_restore_green": true
+  },
+  {
+    "mutant": "canonical-unit-rename",
+    "file": "server/internal/unit/model.go",
+    "assertion": "TestCodexEntityCoverageFromRuntimeCatalogues",
+    "red_message": "omit canonical unit name",
+    "assertion_red": true,
+    "exact_restored_sha256": "5129587bde15e0593d57560d556c3c3da5a22255081ef1df868fcc9d431fd40c",
+    "fresh_restore_green": true
+  },
+  {
+    "mutant": "runtime-building-cost",
+    "file": "server/internal/province/building.go",
+    "assertion": "TestCodexReferenceMatchesAuthoritativeCatalogues",
+    "red_message": "Codex reference drifted",
+    "assertion_red": true,
+    "exact_restored_sha256": "6391acd713c4b70a9f4ac0ddbf7365122efb0ac17d2a868b3c0e5c8bbde214a7",
+    "fresh_restore_green": true
+  }
+]

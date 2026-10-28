@@ -82,10 +82,12 @@ try:
      ctx,page,errors=browser_page(browser,width,height)
      page.locator('#trig-war').click();page.locator('#war-body [data-cx-key="merchantman"]').first.click()
      page.wait_for_function("document.querySelector('#codex-title')?.textContent==='Emporos'")
-     for query,article,title in [('mana','kharis','Kharis'),('Granary','granary','Granary'),('Hills','hills','Hills'),('Oikos','oikos','Oikos')]:
+     for query,article,title in [('mana','kharis','Kharis'),('ship','galley','Galley'),('Granary','granary','Granary'),('Hills','hills','Hills'),('Oikos','oikos','Oikos')]:
       page.locator('#codex-panel .drawer-close').click();page.locator('#gt-codex-btn').click()
       page.locator('#codex-search').fill(query)
       result=page.locator('#codex-results [data-cx="'+article+'"]');result.wait_for()
+      if query in ('mana','ship'):
+       page.screenshot(path=str(OUT/f'{cycle}-search-{query}-{width}.png'));shots.append({'file':f'{cycle}-search-{query}-{width}.png'})
       if article=='oikos':assert '(future)' in result.inner_text()
       result.click();page.wait_for_function("document.querySelector('#codex-title')?.textContent==="+json.dumps(title))
       articlebox=page.locator('.cx-article');assert articlebox.inner_text().strip()

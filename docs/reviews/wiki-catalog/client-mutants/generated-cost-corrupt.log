@@ -1,0 +1,213 @@
+TAP version 13
+# Subtest: codex: index ids are unique and every category is declared
+ok 1 - codex: index ids are unique and every category is declared
+  ---
+  duration_ms: 0.905904
+  type: 'test'
+  ...
+# Subtest: codex: every index entry has a file and every file has an index entry
+ok 2 - codex: every index entry has a file and every file has an index entry
+  ---
+  duration_ms: 0.961167
+  type: 'test'
+  ...
+# Subtest: codex: every [[link]] and related entry resolves to an article
+ok 3 - codex: every [[link]] and related entry resolves to an article
+  ---
+  duration_ms: 0.968881
+  type: 'test'
+  ...
+# Subtest: codex: every notification kind the client shows maps to exactly one article
+ok 4 - codex: every notification kind the client shows maps to exactly one article
+  ---
+  duration_ms: 0.795174
+  type: 'test'
+  ...
+# Subtest: codex: every drawer with a ? button has an article
+ok 5 - codex: every drawer with a ? button has an article
+  ---
+  duration_ms: 0.281298
+  type: 'test'
+  ...
+# Subtest: codex: every article is reachable — linked from another article or listed as related
+ok 6 - codex: every article is reachable — linked from another article or listed as related
+  ---
+  duration_ms: 1.244992
+  type: 'test'
+  ...
+# Subtest: renderMarkdown: escapes HTML and renders links, known and missing
+ok 7 - renderMarkdown: escapes HTML and renders links, known and missing
+  ---
+  duration_ms: 0.698779
+  type: 'test'
+  ...
+# Subtest: renderMarkdown: headings, lists, tables, code and comments
+ok 8 - renderMarkdown: headings, lists, tables, code and comments
+  ---
+  duration_ms: 0.47045
+  type: 'test'
+  ...
+# Subtest: backlinksTo and searchArticles
+ok 9 - backlinksTo and searchArticles
+  ---
+  duration_ms: 0.623727
+  type: 'test'
+  ...
+# Subtest: codex: lowercase agora_ready is mapped and community rules match alpha policy
+ok 10 - codex: lowercase agora_ready is mapped and community rules match alpha policy
+  ---
+  duration_ms: 1.11486
+  type: 'test'
+  ...
+# Subtest: codex search finds the specific colony abandonment and Runner return articles
+ok 11 - codex search finds the specific colony abandonment and Runner return articles
+  ---
+  duration_ms: 11.101486
+  type: 'test'
+  ...
+# Subtest: codex: game days name the world unit and clock/date names wall time
+ok 12 - codex: game days name the world unit and clock/date names wall time
+  ---
+  duration_ms: 0.220815
+  type: 'test'
+  ...
+# Subtest: historical food-reserve notifications open the current food article
+ok 13 - historical food-reserve notifications open the current food article
+  ---
+  duration_ms: 0.098249
+  type: 'test'
+  ...
+# Subtest: temple demolition notice opens the loss and lowered-ceiling rules
+ok 14 - temple demolition notice opens the loss and lowered-ceiling rules
+  ---
+  duration_ms: 0.099238
+  type: 'test'
+  ...
+# Subtest: Codex search ranks titles before aliases before content and normalises separators
+ok 15 - Codex search ranks titles before aliases before content and normalises separators
+  ---
+  duration_ms: 5.181143
+  type: 'test'
+  ...
+# Subtest: current catalogue objects resolve to their individual Codex article
+ok 16 - current catalogue objects resolve to their individual Codex article
+  ---
+  duration_ms: 0.381476
+  type: 'test'
+  ...
+# Subtest: article bundle matches every Markdown source exactly
+not ok 17 - article bundle matches every Markdown source exactly
+  ---
+  duration_ms: 1.967831
+  type: 'test'
+  location: '/tmp/megaron-wiki-client-mutants/web/static/js/megaron/ui/codex.test.mjs:208:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    granary has a stale bundled article; run python3 tools/codex_facts.py
+    + actual - expected
+    
+      'A Granary expands food storage and is required by wall upgrades.\n' +
+        '\n' +
+        'Build or upgrade it in **City → Buildings → Construct**, or use `keryx build --type silo`.\n' +
+        '\n' +
+        '<!-- facts: building silo -->\n' +
+        '| Reference | Current rule |\n' +
+        '|---|---|\n' +
+    +   '| Cost, level 1 | 12 timber (or cedar) · 8 stone |\n' +
+    -   '| Cost, level 1 | 13 timber (or cedar) · 8 stone |\n' +
+        '| Build time, level 1 | 8 game days |\n' +
+        '| Maximum level | 3 |\n' +
+        '| Cost to level 2 | 24 timber (or cedar) · 16 stone |\n' +
+        '| Cost to level 3 | 48 timber (or cedar) · 32 stone · 8 bronze |\n' +
+        '<!-- /facts -->\n' +
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: |-
+    A Granary expands food storage and is required by wall upgrades.
+    
+    Build or upgrade it in **City → Buildings → Construct**, or use `keryx build --type silo`.
+    
+    <!-- facts: building silo -->
+    | Reference | Current rule |
+    |---|---|
+    | Cost, level 1 | 13 timber (or cedar) · 8 stone |
+    | Build time, level 1 | 8 game days |
+    | Maximum level | 3 |
+    | Cost to level 2 | 24 timber (or cedar) · 16 stone |
+    | Cost to level 3 | 48 timber (or cedar) · 32 stone · 8 bronze |
+    <!-- /facts -->
+    
+    See [[buildings]] and [[citizens]].
+    
+    | Building | What it is for |
+    |---|---|
+    | **Granary** | A city stores 2 000 of each food — grain, fish, oil and wine, not the herd. Granary level 1 to 3 raises that to 4 000, 10 000 and 20 000. A wall of level N needs a Granary of level N. Works inside the city. |
+    
+  actual: |-
+    A Granary expands food storage and is required by wall upgrades.
+    
+    Build or upgrade it in **City → Buildings → Construct**, or use `keryx build --type silo`.
+    
+    <!-- facts: building silo -->
+    | Reference | Current rule |
+    |---|---|
+    | Cost, level 1 | 12 timber (or cedar) · 8 stone |
+    | Build time, level 1 | 8 game days |
+    | Maximum level | 3 |
+    | Cost to level 2 | 24 timber (or cedar) · 16 stone |
+    | Cost to level 3 | 48 timber (or cedar) · 32 stone · 8 bronze |
+    <!-- /facts -->
+    
+    See [[buildings]] and [[citizens]].
+    
+    | Building | What it is for |
+    |---|---|
+    | **Granary** | A city stores 2 000 of each food — grain, fish, oil and wine, not the herd. Granary level 1 to 3 raises that to 4 000, 10 000 and 20 000. A wall of level N needs a Granary of level N. Works inside the city. |
+    
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-wiki-client-mutants/web/static/js/megaron/ui/codex.test.mjs:211:29)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: generated Codex facts are current with their reference catalogue
+not ok 18 - generated Codex facts are current with their reference catalogue
+  ---
+  duration_ms: 32.285352
+  type: 'test'
+  location: '/tmp/megaron-wiki-client-mutants/web/static/js/megaron/ui/codex.test.mjs:214:1'
+  failureType: 'testCodeFailure'
+  error: 'Command failed: python3 /tmp/megaron-wiki-client-mutants/tools/codex_facts.py --check'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    genericNodeError (node:internal/errors:983:15)
+    wrappedFn (node:internal/errors:537:14)
+    checkExecSyncError (node:child_process:916:11)
+    execFileSync (node:child_process:952:15)
+    TestContext.<anonymous> (file:///tmp/megaron-wiki-client-mutants/web/static/js/megaron/ui/codex.test.mjs:215:2)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  ...
+# Subtest: Codex tables keep labelled wiki links in one cell
+ok 19 - Codex tables keep labelled wiki links in one cell
+  ---
+  duration_ms: 0.215187
+  type: 'test'
+  ...
+1..19
+# tests 19
+# suites 0
+# pass 17
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 111.829336

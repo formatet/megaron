@@ -1,9 +1,5 @@
 [
   {
-    "id": "shipyard",
-    "words": 239
-  },
-  {
     "id": "city",
     "words": 225
   },
@@ -244,6 +240,10 @@
     "words": 160
   },
   {
+    "id": "shipyard-workers",
+    "words": 159
+  },
+  {
     "id": "exploration-2",
     "words": 159
   },
@@ -445,6 +445,10 @@
   },
   {
     "id": "ship-types",
+    "words": 134
+  },
+  {
+    "id": "shipyard",
     "words": 134
   },
   {

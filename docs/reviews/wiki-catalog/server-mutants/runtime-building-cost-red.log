@@ -1,0 +1,6 @@
+» färsk DB på migration 218 · commit c87e750d+ändringar
+--- FAIL: TestCodexReferenceMatchesAuthoritativeCatalogues (0.01s)
+    codex_catalog_test.go:289: Codex reference drifted: regenerate from authoritative catalogues with -update-codex-reference
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.011s
+FAIL
