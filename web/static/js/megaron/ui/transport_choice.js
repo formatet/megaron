@@ -7,7 +7,7 @@ import {fmtTickTime} from './fmt_clock.js';
 export function transportChoicesHTML(data,id,preferred='') {
  const options=data.options||[];
  const selected=[preferred,data.selected_by,...options.map(o=>o.by)].find(by=>options.some(o=>o.by===by&&o.available));
- return '<fieldset><legend>Send goods by</legend>'+options.map(o=>{
+ return '<fieldset><legend>Send goods by</legend><small>Times assume departure now.</small>'+options.map(o=>{
   const seconds=Number(o.travel_seconds)||0,minutes=Math.ceil(seconds/60);
   const wall=minutes>=60?`${Math.floor(minutes/60)}h ${minutes%60}m`:`${minutes}m`;
   const time=o.available?`${fmtDays(o.travel_ticks)} · about ${wall}${o.arrives_at?' · arrives '+fmtTickTime(null,o.arrives_at):''}`:o.reason||'Unavailable';
