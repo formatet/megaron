@@ -34,8 +34,8 @@ read from code or vault on demand. A `≥3` beside the word "invariant" makes an
 - **Codex may be working in this repo at the same time** — rules in `AGENTS.md`. If `.agents/codex-thread`
   exists, arm a Monitor at session start: `tail -n0 -F .agents/chat.log | grep --line-buffered "codex→claude"`
   (re-arm on expiry), read the log's tail, and message Codex with `tools/agent-say.sh codex "…"`.
-  **⚠️ Until Wed 2026-10-28 16:00 (Timothy 2026-10-25): Codex drives progress ALONE** — reviews, merges, pushes, deploys, keeps
-  todo/vault; canon and BILD go straight to Timothy. Claude does not lead Codex in that window (too little compute). After it, the roles below apply again.
+  (Codex drove progress alone 2026-10-25 17:55 → 2026-10-28 16:00; its unreviewed merges are queued under
+  VERIFIERING in `megaron_todo.md`. The roles below apply again.)
   **Roles (Timothy 2026-10-04, reaffirmed 2026-10-14):** Claude leads — gives Codex work orders (one branch per slice),
   reviews the core diff itself, runs its own mutation check, merges, pushes, deploys, keeps todo/vault, and takes
   BILD/TEXT gates to Timothy. Codex builds, tests and proposes architecture, and hands over hash + STOP.
@@ -49,9 +49,9 @@ read from code or vault on demand. A `≥3` beside the word "invariant" makes an
 
 **How work is done → `megaron_arbetssatt.md`** — standing instruction, takes precedence over local habits.
 Read it before a slice. Core: contract before code · one slice = one thing · baseline first · judge visuals
-at 1:1 · four gates (code/visual/**semantic**/**user**) · **BILD before merge, TEXT in playtest** (⚠️ Timothy 2026-10-22: BILD no longer blocks merge — merge, then show the picture; he corrects after)
-(rewritten 2026-08-28 — sort the check first: a picture needs Timothy's eye on the branch and blocks
-merge; a text line is judged by someone who does NOT already know what it should say, i.e. a
+at 1:1 · four gates (code/visual/**semantic**/**user**) · **BILD after merge, TEXT in playtest** (Timothy 2026-10-22: merge, then show the picture; he corrects after)
+(rewritten 2026-08-28 — sort the check first: a picture needs Timothy's eye (no longer
+blocking merge); a text line is judged by someone who does NOT already know what it should say, i.e. a
 playtester; a function is a test and is never judged by eye. `megaron_ogonkoll` is split §A/§B/§C
 accordingly — never file a row there without saying which sort it is) · deploy is
 reproduction, not discovery · follow a data invariant through the whole lifecycle · substrate before sibling ·
