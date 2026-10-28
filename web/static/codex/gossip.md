@@ -16,7 +16,7 @@ Use gossip to decide where to send a [[messengers|messenger]] or a scout; use [[
 
 **Great events** — a city [[occupation|occupied]], annexed, sacked, burned, starved into surrender or collapsed — become rumours that the rulers nearby hear. **Small events** — a mine opened, a [[colonies|colony]] founded, goods flowing between two cities — are told only by those who saw them.
 
-News moves with people. When your [[messengers|messenger]] reaches another ruler's city, you hear what that ruler has heard. Great news passes from ruler to ruler, at most **four** tellings from where it happened. Small news passes only from the eyewitness, once; whoever hears it second-hand does not pass it on. You hear each rumour at most once, however many ways it reaches you, and old news stops travelling. <!-- src: server/internal/gossip/gossip.go PropagateOnContact, maxMajorHops -->
+News moves with people. When your [[messengers|messenger]] reaches another ruler's city, you hear what that ruler has heard. Great news passes from ruler to ruler, at most **four** tellings from where it happened. Small news passes only from the eyewitness, once; whoever hears it second-hand does not pass it on. You hear each rumour at most once, however many ways it reaches you, and old news stops travelling. News received more than 72 real hours ago is no longer passed on. <!-- src: server/internal/gossip/gossip.go PropagateOnContact, maxMajorHops -->
 
 ## True divine omens {#gossip-divine-omens}
 
