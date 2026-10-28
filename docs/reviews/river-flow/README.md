@@ -22,6 +22,6 @@ Webben använder samma kantlista i raster/fallback/worker; explicit tom lista ge
 - [Tre bildalternativ](variants.html), [samlad bildgranskning](index.html). Implementerat A; Timothy kan korrigera efter merge.
 - [Verklig create-world och221→220→221](cli-writer/proof.json):15/15 floder med sparade värden; noll på annan terräng; gammal kartdata bytehash-oförändrad. API-writer provas direkt och serverns ensureWorld av native-riggens kontroll före fixtur.
 - [Åtta fysiska mutationer](mutants/proof.json): startup skriver över sparat värde; mynning utan delta; writer tappar metadata; FOW-filter borttaget; renderer tappar godkänd dimkant; klippning döljer godkänd fåra; pil pekar uppströms; FOV räknar om sparad riktning. Samtliga assertion-röda och återställt gröna på färsk DB där relevant. Varje arm har separat logg.
-- [836 JS](js.log), Go vet och fyra tidsvakter samt Forces-vakt gröna. Hel Go-svit och liveverifiering tillförs före avslut.
+- [836 JS](js.log), Go vet och fyra tidsvakter samt Forces-vakt gröna. [Hel färsk Go-svit221](go-full-fresh.log) grön, inklusive world156,246s; liveverifiering tillförs efter deploy.
 
 En helkörning hittade jämförelseprovet för rökelse: förväntad karta behövde samma nya metadata-pass för att fortsatt bevisa att enbart rökelseflaggan ändras. Nästa helkörnings databas dödades externt (Docker kill/die137); den räknas inte som produktfel eller grönt bevis och ersätts av en helt ny körning.
