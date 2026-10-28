@@ -115,6 +115,11 @@ func messengerCmd() *cobra.Command {
 				"message":        message,
 			}
 			if wantGood != "" && wantQty > 0 && offerSilver > 0 {
+				if by != "" {
+					if err := previewTransportOptions(c, ownSettlementID, destID, by, max(wantQty, offerSilver)); err != nil {
+						return err
+					}
+				}
 				body["trade_offer"] = map[string]any{
 					"by":           by,
 					"want_good":    wantGood,

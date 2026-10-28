@@ -134,6 +134,18 @@ try:
   offers=json.loads(sql(f"SELECT json_agg(trade_offer) FROM messengers WHERE world_id='{world}' AND sender_id='{pid}' AND trade_offer IS NOT NULL"));assert any(o.get('by')=='sea' for o in offers),offers
   orders=api(wp+'/standing-orders',token=token);assert len(orders)==4 and all(o['by']=='land' for o in orders),orders
   (OUT/'persisted.json').write_text(json.dumps({'transports':modes,'orders':orders,'offers':offers},indent=2))
+  # Additive migration is exercised only on this owned, stopped acceptance world.
+  proc.terminate();proc.wait(timeout=15);proc=None
+  def ground_hash():
+   return {table:sql("SELECT count(*)||':'||md5(COALESCE(string_agg(j::text,'' ORDER BY j::text),'')) FROM(SELECT to_jsonb(t)-'route_mode' j FROM "+table+" t)x") for table in ['worlds','players','settlements','units','settlement_goods','transports','standing_orders','trade_routes','messengers']}
+  ground=ground_hash()
+  run('migrate','-path',str(ROOT/'server/db/migrations'),'-database',env['DATABASE_URL'],'down','1')
+  assert sql("SELECT version||':'||dirty FROM schema_migrations")=='217:false'
+  assert ground==ground_hash(),'migration down changed existing ground'
+  run('migrate','-path',str(ROOT/'server/db/migrations'),'-database',env['DATABASE_URL'],'up')
+  assert sql("SELECT version||':'||dirty FROM schema_migrations")=='218:false'
+  assert ground==ground_hash(),'migration up changed existing ground'
+  (OUT/'migration-roundtrip.json').write_text(json.dumps({'path':'218→217→218','preserved_ground_hashes':ground,'explicit_choice_metadata_removed_on_down':True},indent=2))
   assert before==hashes(),'production sources changed during capture'
   (OUT/'proof.json').write_text(json.dumps({'health':health,'shots':shots,'source_unchanged':True,'fixture':'Fresh owned PG/Redis/server; explicit island, force roster/cities/stocks/contact. Real register/found, native two1280/390 rounds choosing land then sea, unavailable alternatives and standing routes; CLI both modes, persisted transport and standing route choice.'},indent=2))
   print('PASS land/sea native transfer, unavailable alternatives, standing order and CLI persistence',flush=True)

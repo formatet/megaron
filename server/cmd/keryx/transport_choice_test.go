@@ -76,7 +76,7 @@ func TestTransferCarriesExplicitModeToPreviewAndDispatch(t *testing.T) {
 }
 
 func TestRouteAndTradeOfferPersistSelectedMode(t *testing.T) {
-	for _, verb := range []string{"route", "trade-offer"} {
+	for _, verb := range []string{"route", "trade-offer", "messenger"} {
 		t.Run(verb, func(t *testing.T) {
 			posted := false
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -97,7 +97,7 @@ func TestRouteAndTradeOfferPersistSelectedMode(t *testing.T) {
 					posted = true
 					var body map[string]any
 					json.NewDecoder(r.Body).Decode(&body)
-					if verb == "trade-offer" {
+					if verb != "route" {
 						body = body["trade_offer"].(map[string]any)
 					}
 					if body["by"] != "land" {
@@ -119,12 +119,16 @@ func TestRouteAndTradeOfferPersistSelectedMode(t *testing.T) {
 				cmd = tradeOfferCmd()
 				args = []string{"--by", "land", "--to", "Petras", "--want-good", "grain", "--want-qty", "2", "--offer-silver", "3"}
 			}
+			if verb == "messenger" {
+				cmd = messengerCmd()
+				args = []string{"--by", "land", "--to", "Petras", "--want-good", "grain", "--want-qty", "2", "--offer-silver", "3", "--message", "Trade"}
+			}
 			cmd.SetArgs(args)
 			out, err := captureStdout(t, cmd.Execute)
 			if err != nil {
 				t.Fatal(err)
 			}
-			if !posted || !strings.Contains(out, "No free ship") || !strings.Contains(out, "3 game days") {
+			if !posted || (verb != "messenger" && (!strings.Contains(out, "No free ship") || !strings.Contains(out, "3 game days"))) {
 				t.Fatalf("posted=%v output=%s", posted, out)
 			}
 		})
