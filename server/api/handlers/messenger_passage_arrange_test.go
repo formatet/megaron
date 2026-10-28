@@ -592,6 +592,10 @@ func TestArrangePassage_Pickup_ShipFetchesFromDifferentOwnPort(t *testing.T) {
 		f.mapTile(t, q, 0, "coastal_sea")
 	}
 	fetchShipID := f.ship(t, secondPortID, f.initiatorID, "merchantman")
+	// Pickup loads food where the fetching ship is physically docked.
+	if _, err := f.pool.Exec(context.Background(), `INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,'grain',1000,0,10000,0) ON CONFLICT(settlement_id,good_key) DO UPDATE SET amount=1000,rate=0`, secondPortID); err != nil {
+		t.Fatal(err)
+	}
 
 	// The runner already delivered its message and is standing 'returning',
 	// awaiting_passage, in the FOREIGN port — the state a normal Reply/

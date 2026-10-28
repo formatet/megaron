@@ -1,0 +1,567 @@
+{
+  "physical_port": "7af7961f-7176-4e47-9320-b07e2b4dd1cf",
+  "support": "562f7017-08b3-4414-9a43-3cee6ebac93b",
+  "refused_order_atomic": true,
+  "departures": [
+    {
+      "surface": "keryx",
+      "before": {
+        "fish": 1000,
+        "grain": 0,
+        "oil": 0,
+        "wine": 0
+      },
+      "after": {
+        "fish": 998.4,
+        "grain": 0,
+        "oil": 0,
+        "wine": 0
+      },
+      "support_stock_unchanged": true
+    },
+    {
+      "surface": "Firefox",
+      "cycle": 1,
+      "width": 1280,
+      "before": {
+        "fish": 998.4,
+        "grain": 0,
+        "oil": 0,
+        "wine": 0
+      },
+      "after": {
+        "fish": 996.8,
+        "grain": 0,
+        "oil": 0,
+        "wine": 0
+      },
+      "support_stock_unchanged": true,
+      "ship": {
+        "status": "marching",
+        "settlement_id": null,
+        "support_settlement_id": "562f7017-08b3-4414-9a43-3cee6ebac93b",
+        "provisions": 1.6,
+        "provision_goods": {
+          "oil": 0,
+          "fish": 1.6,
+          "wine": 0,
+          "grain": 0
+        },
+        "march_route": {
+          "costs": [
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333
+          ],
+          "hexes": [
+            [
+              10,
+              24
+            ],
+            [
+              11,
+              24
+            ],
+            [
+              12,
+              24
+            ],
+            [
+              12,
+              25
+            ],
+            [
+              12,
+              26
+            ],
+            [
+              12,
+              27
+            ],
+            [
+              12,
+              28
+            ],
+            [
+              11,
+              29
+            ],
+            [
+              10,
+              29
+            ],
+            [
+              9,
+              29
+            ],
+            [
+              8,
+              29
+            ],
+            [
+              7,
+              29
+            ],
+            [
+              6,
+              29
+            ],
+            [
+              5,
+              29
+            ],
+            [
+              4,
+              29
+            ],
+            [
+              4,
+              28
+            ],
+            [
+              4,
+              27
+            ],
+            [
+              4,
+              26
+            ],
+            [
+              4,
+              25
+            ]
+          ],
+          "version": 2,
+          "end_tick": 8,
+          "start_tick": 0,
+          "departure_at": "2026-10-28T07:10:55.656452+01:00",
+          "offset_milli": 1,
+          "tick_nanoseconds": 3600000000000
+        }
+      }
+    },
+    {
+      "surface": "Firefox",
+      "cycle": 1,
+      "width": 390,
+      "before": {
+        "fish": 996.8,
+        "grain": 0,
+        "oil": 0,
+        "wine": 0
+      },
+      "after": {
+        "fish": 995.1999999999999,
+        "grain": 0,
+        "oil": 0,
+        "wine": 0
+      },
+      "support_stock_unchanged": true,
+      "ship": {
+        "status": "marching",
+        "settlement_id": null,
+        "support_settlement_id": "562f7017-08b3-4414-9a43-3cee6ebac93b",
+        "provisions": 1.6,
+        "provision_goods": {
+          "oil": 0,
+          "fish": 1.6,
+          "wine": 0,
+          "grain": 0
+        },
+        "march_route": {
+          "costs": [
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333
+          ],
+          "hexes": [
+            [
+              10,
+              24
+            ],
+            [
+              11,
+              24
+            ],
+            [
+              12,
+              24
+            ],
+            [
+              12,
+              25
+            ],
+            [
+              12,
+              26
+            ],
+            [
+              12,
+              27
+            ],
+            [
+              12,
+              28
+            ],
+            [
+              11,
+              29
+            ],
+            [
+              10,
+              29
+            ],
+            [
+              9,
+              29
+            ],
+            [
+              8,
+              29
+            ],
+            [
+              7,
+              29
+            ],
+            [
+              6,
+              29
+            ],
+            [
+              5,
+              29
+            ],
+            [
+              4,
+              29
+            ],
+            [
+              4,
+              28
+            ],
+            [
+              4,
+              27
+            ],
+            [
+              4,
+              26
+            ],
+            [
+              4,
+              25
+            ]
+          ],
+          "version": 2,
+          "end_tick": 8,
+          "start_tick": 0,
+          "departure_at": "2026-10-28T07:10:55.656452+01:00",
+          "offset_milli": 1,
+          "tick_nanoseconds": 3600000000000
+        }
+      }
+    },
+    {
+      "surface": "Firefox",
+      "cycle": 2,
+      "width": 1280,
+      "before": {
+        "fish": 995.1999999999999,
+        "grain": 0,
+        "oil": 0,
+        "wine": 0
+      },
+      "after": {
+        "fish": 993.5999999999999,
+        "grain": 0,
+        "oil": 0,
+        "wine": 0
+      },
+      "support_stock_unchanged": true,
+      "ship": {
+        "status": "marching",
+        "settlement_id": null,
+        "support_settlement_id": "562f7017-08b3-4414-9a43-3cee6ebac93b",
+        "provisions": 1.6,
+        "provision_goods": {
+          "oil": 0,
+          "fish": 1.6,
+          "wine": 0,
+          "grain": 0
+        },
+        "march_route": {
+          "costs": [
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333
+          ],
+          "hexes": [
+            [
+              10,
+              24
+            ],
+            [
+              11,
+              24
+            ],
+            [
+              12,
+              24
+            ],
+            [
+              12,
+              25
+            ],
+            [
+              12,
+              26
+            ],
+            [
+              12,
+              27
+            ],
+            [
+              12,
+              28
+            ],
+            [
+              11,
+              29
+            ],
+            [
+              10,
+              29
+            ],
+            [
+              9,
+              29
+            ],
+            [
+              8,
+              29
+            ],
+            [
+              7,
+              29
+            ],
+            [
+              6,
+              29
+            ],
+            [
+              5,
+              29
+            ],
+            [
+              4,
+              29
+            ],
+            [
+              4,
+              28
+            ],
+            [
+              4,
+              27
+            ],
+            [
+              4,
+              26
+            ],
+            [
+              4,
+              25
+            ]
+          ],
+          "version": 2,
+          "end_tick": 8,
+          "start_tick": 0,
+          "departure_at": "2026-10-28T07:10:55.656452+01:00",
+          "offset_milli": 1,
+          "tick_nanoseconds": 3600000000000
+        }
+      }
+    },
+    {
+      "surface": "Firefox",
+      "cycle": 2,
+      "width": 390,
+      "before": {
+        "fish": 993.5999999999999,
+        "grain": 0,
+        "oil": 0,
+        "wine": 0
+      },
+      "after": {
+        "fish": 991.9999999999999,
+        "grain": 0,
+        "oil": 0,
+        "wine": 0
+      },
+      "support_stock_unchanged": true,
+      "ship": {
+        "status": "marching",
+        "settlement_id": null,
+        "support_settlement_id": "562f7017-08b3-4414-9a43-3cee6ebac93b",
+        "provisions": 1.6,
+        "provision_goods": {
+          "oil": 0,
+          "fish": 1.6,
+          "wine": 0,
+          "grain": 0
+        },
+        "march_route": {
+          "costs": [
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333,
+            333
+          ],
+          "hexes": [
+            [
+              10,
+              24
+            ],
+            [
+              11,
+              24
+            ],
+            [
+              12,
+              24
+            ],
+            [
+              12,
+              25
+            ],
+            [
+              12,
+              26
+            ],
+            [
+              12,
+              27
+            ],
+            [
+              12,
+              28
+            ],
+            [
+              11,
+              29
+            ],
+            [
+              10,
+              29
+            ],
+            [
+              9,
+              29
+            ],
+            [
+              8,
+              29
+            ],
+            [
+              7,
+              29
+            ],
+            [
+              6,
+              29
+            ],
+            [
+              5,
+              29
+            ],
+            [
+              4,
+              29
+            ],
+            [
+              4,
+              28
+            ],
+            [
+              4,
+              27
+            ],
+            [
+              4,
+              26
+            ],
+            [
+              4,
+              25
+            ]
+          ],
+          "version": 2,
+          "end_tick": 8,
+          "start_tick": 0,
+          "departure_at": "2026-10-28T07:10:59.256452+01:00",
+          "offset_milli": 2,
+          "tick_nanoseconds": 3600000000000
+        }
+      }
+    }
+  ]
+}

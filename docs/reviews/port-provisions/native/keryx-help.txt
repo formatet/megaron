@@ -1,0 +1,107 @@
+Order a unit to march to a target hex (q,r coordinates).
+
+Use --preview to estimate arrival without sending an order. The estimate uses
+the current state; courier orders and unknown routes cannot promise an arrival.
+
+Terrain passability:
+  Impassable (all forces):  mountain_limestone, mountain_red
+  Land forces only:         plains, hills, forest_olive_grove, forest_cedar,
+                           scrub_maquis, semi_desert, river_valley, river_delta
+  Naval forces only:        coastal_sea, deep_sea, river
+  Both land AND naval:     river_ford (the river's port — steep move cost for
+                           either, but the one hex where a land unit can
+                           cross and a ship can still sail through)
+  (Land forces cannot enter sea or river. Ships can dock at your coastal cities
+  or harbours; other land remains impassable to naval forces.
+  river is impassable to land forces — it is a wall, not a crossing. Every
+  ~10 hexes of a river's length carries one river_ford instead.)
+
+A newly recruited land cohort must finish gathering men and training before
+it can march. Once ready, a cohort can still march after losing men; it does
+not need to recover to 100 first.
+A unit in fortify stance must be cleared (stance none) before marching.
+
+Exploring: an explore order first travels to the exact selected hex, even
+if it is already seen, then explores unseen reachable ground around it.
+It records what the unit sees along its route.
+Run 'keryx map' to see the frontier coordinates. Fog on the map does not
+guarantee a route for this unit. If the chosen hex cannot be reached,
+the order is refused; try another hex or a unit departing from elsewhere.
+
+--intent explore goes first to the chosen hex, then explores around it for --ticks game days.
+It turns home by half the duration and reports what it saw on return. It needs
+a reachable city of yours to return to. A land unit in the field receives the
+order by Runner; a ship must be commanded in port. Works for land or naval
+forces. Omit --ticks for the server default. Before sending, the read-only forecast
+validates the duration and return budget; an invalid expedition sends no Runner.
+
+To sail to your own coastal city or harbour, use --to "City name" without an
+explore intent. The ship docks and stays there. Everyone aboard disembarks
+into that city's garrison, including all three cohorts carried by an Emporos.
+No separate Unload order is needed. An empty ship can make the same journey.
+Its existing home city still pays its upkeep. The harbour where the ship is
+docked supplies provisions for its next voyage.
+
+--intent land also accepts your own coastal city: it lands everyone aboard
+and leaves the ship docked there. For open, unclaimed land, --q/--r is the
+chosen LAND hex: the ship sails offshore, lands everyone aboard, then sails
+home by itself. Add --colonize to found a colony on open ground with no
+further order (--name to name it). Give the order from a ship in port.
+For a foreign coastal city, use an ordinary march by a laden ship for the
+existing amphibious assault; --intent land does not attack a foreign city.
+A ship at sea takes no new orders — give its whole mission before departure.
+
+Ore on mountain terrain (copper, tin, silver):
+  Mountains are impassable — you cannot colonize the mountain hex itself.
+  Instead, colonize an ADJACENT passable hex: the ore deposit will fall in
+  the new colony's catchment and can be mined from there.
+  Use 'keryx map' to see which adjacent hexes are passable.
+
+Conquest choice (--mode, only matters when the target is an enemy settlement):
+  sack (default) — loot goods (silver + a share of the rest, weighted by
+    portability) and raze the settlement; the loot is carried home as a
+    physical, interceptable caravan. annex — keep today's behaviour: take
+    the settlement outright (a captured capital becomes an ordinary colony).
+
+Usage:
+  keryx unit march [flags]
+
+Examples:
+  keryx unit march --unit <id> --q 5 --r -3
+  keryx unit march --unit <id> --target 5,-3
+  keryx unit march --unit <id> --q 5 --r -3 --stance fortify
+  keryx unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos --yes
+  # Colonize the hex the unit already stands on (no coords needed):
+  keryx unit march --unit <id> --intent colonize --name Thapsos --yes
+  # Any march reveals fog along its route toward a frontier coordinate:
+  keryx unit march --unit <id> --q 12 --r -8
+  # Explore an area for 12 game days, then automatically return home
+  keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12
+  # Dock in your city, disembark everyone aboard, and leave the ship there:
+  keryx unit march --unit <ship-id> --to "Petras"
+  # Land troops on open ground, then sail home on its own:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land
+  # ...and found a colony there with no further order:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land --colonize --name Thapsos
+  # Attack an enemy settlement and annex it instead of the sack default:
+  keryx unit march --unit <id> --q 5 --r -3 --mode annex
+
+Flags:
+      --colonize        with --intent land: found a colony on arrival with no further order (use --name to name it)
+      --confirm         send the order after the hiketeia warning (attacking a fallen Wanax's risen host)
+  -h, --help            help for march
+      --intent string   arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (first to the selected hex, then explores around it; turns home by half the chosen duration) | land (land everyone aboard in your own coastal city and stay docked, or on open ground and sail home; add --colonize only on open ground)
+      --mode string     conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)
+      --name string     colony name (with --intent colonize, or --intent land --colonize)
+      --preview         estimate arrival without sending an order
+      --q int           target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --r int           target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --stance string   stance on arrival: fortify|storm|sentry
+      --target string   target hex as q,r — alternative to --q/--r (e.g. 5,-3)
+      --ticks int       explore duration in game days (omit for server default)
+      --to string       known city name as destination — alternative to --q/--r or --target
+      --unit string     exact unit name or UUID prefix (required)
+      --yes             skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)
+
+Global Flags:
+  -j, --json   output as JSON (for scripts and MCP)

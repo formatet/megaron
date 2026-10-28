@@ -1,0 +1,42 @@
+[
+  {
+    "mutant": "preview-remote",
+    "file": "server/internal/combat/march_start.go",
+    "assertion": "TestCityLandingAllPassengersStayAndSupportUnchanged",
+    "red": true,
+    "exact_restored_sha256": "e5ec53b1dc024050a7fcc0dd88564712a9988634e4cbf7a9c6f91367c55aac75",
+    "fresh_restored_green": true
+  },
+  {
+    "mutant": "dispatch-remote",
+    "file": "server/internal/combat/march_start.go",
+    "assertion": "TestCityLandingAllPassengersStayAndSupportUnchanged",
+    "red": true,
+    "exact_restored_sha256": "e5ec53b1dc024050a7fcc0dd88564712a9988634e4cbf7a9c6f91367c55aac75",
+    "fresh_restored_green": true
+  },
+  {
+    "mutant": "port-foreign-owner",
+    "file": "server/internal/economy/ship_port.go",
+    "assertion": "TestShipDeparturePortRequiresPhysicalOwnedActiveCity",
+    "red": true,
+    "exact_restored_sha256": "203aa5842f68613cb38d70dd3e36bf0ee4f16091dfe7e3bfeb94105e511f7b61",
+    "fresh_restored_green": true
+  },
+  {
+    "mutant": "port-position",
+    "file": "server/internal/economy/ship_port.go",
+    "assertion": "TestShipDeparturePortRequiresPhysicalOwnedActiveCity",
+    "red": true,
+    "exact_restored_sha256": "203aa5842f68613cb38d70dd3e36bf0ee4f16091dfe7e3bfeb94105e511f7b61",
+    "fresh_restored_green": true
+  },
+  {
+    "mutant": "nil-support-skip",
+    "file": "server/internal/combat/march_start.go",
+    "assertion": "TestCityLandingAllPassengersStayAndSupportUnchanged",
+    "red": true,
+    "exact_restored_sha256": "e5ec53b1dc024050a7fcc0dd88564712a9988634e4cbf7a9c6f91367c55aac75",
+    "fresh_restored_green": true
+  }
+]

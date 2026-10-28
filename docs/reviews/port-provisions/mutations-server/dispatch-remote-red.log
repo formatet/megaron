@@ -1,0 +1,14 @@
+» färsk DB på migration 218 · commit 0f13616d+ändringar
+2026/10/28 07:12:31 INFO unit arrived (garrison) unit=4b4df70d-1722-4810-b019-f44bb9d101e1 q=10 r=0 status=garrison
+2026/10/28 07:12:32 INFO unit arrived (garrison) unit=8d4552b1-3832-42c9-b041-66f10e2ae1f8 q=10 r=0 status=garrison
+2026/10/28 07:12:32 INFO unit arrived (garrison) unit=37a29d4b-f70c-4f96-a5a1-92a3ba428bfa q=10 r=0 status=garrison
+--- FAIL: TestCityLandingAllPassengersStayAndSupportUnchanged (0.19s)
+    --- FAIL: TestCityLandingAllPassengersStayAndSupportUnchanged/intent=land (0.06s)
+        land_city_test.go:132: empty physical departure port must reject (preview=false) despite rich support city
+    --- FAIL: TestCityLandingAllPassengersStayAndSupportUnchanged/intent= (0.06s)
+        land_city_test.go:132: empty physical departure port must reject (preview=false) despite rich support city
+    --- FAIL: TestCityLandingAllPassengersStayAndSupportUnchanged/intent=empty (0.06s)
+        land_city_test.go:132: empty physical departure port must reject (preview=false) despite rich support city
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.188s
+FAIL

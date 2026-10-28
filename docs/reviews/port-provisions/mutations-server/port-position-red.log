@@ -1,0 +1,6 @@
+» färsk DB på migration 218 · commit 0f13616d+ändringar
+--- FAIL: TestShipDeparturePortRequiresPhysicalOwnedActiveCity (0.02s)
+    land_city_test.go:262: invalid docking witness received food access after UPDATE units SET q=9,r=0 WHERE id=$1
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.022s
+FAIL
