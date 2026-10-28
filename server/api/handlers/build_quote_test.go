@@ -95,3 +95,17 @@ func TestBuildQuotesMatchEveryLevelledSpec(t *testing.T) {
 		}
 	}
 }
+
+// Timothy 2026-10-28 (Phaistos): "Building Silo at level 1 needs stone" —
+// the refusal must use the player name, never the DB key.
+func TestBuildRefusalNamesGranaryNotSilo(t *testing.T) {
+	f := buildHexFixture(t)
+	if _, err := f.pool.Exec(context.Background(), `UPDATE settlement_goods SET amount=0,rate=0 WHERE settlement_id=$1 AND good_key='stone'`, f.settlementID); err != nil {
+		t.Fatal(err)
+	}
+	code, resp := f.do(t, http.MethodPost, f.buildPath(), map[string]any{"building_type": "silo"})
+	msg, _ := resp["message"].(string)
+	if code != 422 || !strings.Contains(msg, "Building Granary at level 1 needs stone") || strings.Contains(strings.ToLower(msg), "silo") {
+		t.Fatalf("%d %q %v", code, msg, resp)
+	}
+}

@@ -129,10 +129,7 @@ func (b buildErrorContext) label() string {
 	if b.Name != "" {
 		return b.Name
 	}
-	label := strings.ReplaceAll(b.Type, "_", " ")
-	if len(label) > 0 {
-		label = strings.ToUpper(label[:1]) + label[1:]
-	}
+	label := province.BuildingDisplayName(b.Type)
 	if b.HexQ != nil && b.HexR != nil {
 		label += fmt.Sprintf(" at (%d,%d)", *b.HexQ, *b.HexR)
 	}

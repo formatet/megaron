@@ -55,7 +55,7 @@ func NeedsWaterNeighbour(bt BuildingType) bool {
 
 // InlandBuildRefusal is the 422 text for a harbour/shipyard at a city that fails the rule.
 func InlandBuildRefusal(bt BuildingType) string {
-	return string(bt) + " requires a coastal, sea, river or river ford tile on an adjacent hex — this city is inland; found a colony on the coast to build ships."
+	return BuildingDisplayName(string(bt)) + " requires a coastal, sea, river or river ford tile on an adjacent hex — this city is inland; found a colony on the coast to build ships."
 }
 
 // BuildingSpecs is the canonical catalogue of all constructable buildings.
