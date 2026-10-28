@@ -1,0 +1,178 @@
+TAP version 13
+# Subtest: CG1: a refused +1 carries the server's own reason, and does NOT count as a change
+ok 1 - CG1: a refused +1 carries the server's own reason, and does NOT count as a change
+  ---
+  duration_ms: 0.956894
+  type: 'test'
+  ...
+# Subtest: CG2: each distinct server refusal surfaces as itself — not one generic line
+ok 2 - CG2: each distinct server refusal surfaces as itself — not one generic line
+  ---
+  duration_ms: 0.823319
+  type: 'test'
+  ...
+# Subtest: CG3: a successful +1 reports a change and says nothing
+ok 3 - CG3: a successful +1 reports a change and says nothing
+  ---
+  duration_ms: 0.163586
+  type: 'test'
+  ...
+# Subtest: CG4: Fill that places nothing at all explains why (the old code broke out silently)
+ok 4 - CG4: Fill that places nothing at all explains why (the old code broke out silently)
+  ---
+  duration_ms: 0.168305
+  type: 'test'
+  ...
+# Subtest: CG5: Fill that places some then hits the cap stays quiet — the pips moved, that IS the feedback
+ok 5 - CG5: Fill that places some then hits the cap stays quiet — the pips moved, that IS the feedback
+  ---
+  duration_ms: 0.287102
+  type: 'test'
+  ...
+# Subtest: CG6: Fill respects cap as its loop guard
+ok 6 - CG6: Fill respects cap as its loop guard
+  ---
+  duration_ms: 0.174578
+  type: 'test'
+  ...
+# Subtest: CG7: −1 deletes the matching ordinal and reports a change
+ok 7 - CG7: −1 deletes the matching ordinal and reports a change
+  ---
+  duration_ms: 0.246073
+  type: 'test'
+  ...
+# Subtest: CG8: −1 with no matching citizen says so and refreshes instead of doing nothing
+ok 8 - CG8: −1 with no matching citizen says so and refreshes instead of doing nothing
+  ---
+  duration_ms: 0.208436
+  type: 'test'
+  ...
+# Subtest: CG9: a failed DELETE is reported, not swallowed
+ok 9 - CG9: a failed DELETE is reported, not swallowed
+  ---
+  duration_ms: 0.277134
+  type: 'test'
+  ...
+# Subtest: CG10: an empty or non-JSON error body still produces a line, never blank silence
+ok 10 - CG10: an empty or non-JSON error body still produces a line, never blank silence
+  ---
+  duration_ms: 0.355249
+  type: 'test'
+  ...
+# Subtest: CG11: an expired session reads as the server's own sentence, not "error 401"
+ok 11 - CG11: an expired session reads as the server's own sentence, not "error 401"
+  ---
+  duration_ms: 0.18236
+  type: 'test'
+  ...
+# Subtest: CG12: the city centre and a hex are never confused for one another
+ok 12 - CG12: the city centre and a hex are never confused for one another
+  ---
+  duration_ms: 0.089691
+  type: 'test'
+  ...
+# Subtest: CG13: two different hexes get different keys — a restore must not land on the wrong one
+ok 13 - CG13: two different hexes get different keys — a restore must not land on the wrong one
+  ---
+  duration_ms: 0.073774
+  type: 'test'
+  ...
+# Subtest: CG14: the key survives a round trip through a re-rendered element with the same identity
+ok 14 - CG14: the key survives a round trip through a re-rendered element with the same identity
+  ---
+  duration_ms: 0.060731
+  type: 'test'
+  ...
+# Subtest: CG15: a missing or dataset-less element yields null, so nothing is restored rather than throwing
+ok 15 - CG15: a missing or dataset-less element yields null, so nothing is restored rather than throwing
+  ---
+  duration_ms: 0.047507
+  type: 'test'
+  ...
+# Subtest: CG11: insufficient_goods is delegated to formatApiError, the same helper every other surface uses
+ok 16 - CG11: insufficient_goods is delegated to formatApiError, the same helper every other surface uses
+  ---
+  duration_ms: 0.128472
+  type: 'test'
+  ...
+# Subtest: takeLabel says what taking does, building part only when one stands there
+ok 17 - takeLabel says what taking does, building part only when one stands there
+  ---
+  duration_ms: 9.549472
+  type: 'test'
+  ...
+# Subtest: CG16: −1 is disabled on a held hex where none of the gubbar are yours
+ok 18 - CG16: −1 is disabled on a held hex where none of the gubbar are yours
+  ---
+  duration_ms: 0.329064
+  type: 'test'
+  ...
+# Subtest: CG fishing: zero places disables adding; coast, bay and harbour capacities and yields are server values
+ok 19 - CG fishing: zero places disables adding; coast, bay and harbour capacities and yields are server values
+  ---
+  duration_ms: 0.494325
+  type: 'test'
+  ...
+# Subtest: ORDER15: two temples are two named cards and each staffing target carries its god
+ok 20 - ORDER15: two temples are two named cards and each staffing target carries its god
+  ---
+  duration_ms: 0.344792
+  type: 'test'
+  ...
+# Subtest: ORDER15: staffing posts god and -1 removes a worker at that god's temple only
+ok 21 - ORDER15: staffing posts god and -1 removes a worker at that god's temple only
+  ---
+  duration_ms: 0.21254
+  type: 'test'
+  ...
+# Subtest: ORDER28: shipyard staffing shows binary pace and preserves temple labels
+ok 22 - ORDER28: shipyard staffing shows binary pace and preserves temple labels
+  ---
+  duration_ms: 0.284855
+  type: 'test'
+  ...
+# Subtest: ORDER30: server workplace options without market render only assignable workplaces
+ok 23 - ORDER30: server workplace options without market render only assignable workplaces
+  ---
+  duration_ms: 0.234165
+  type: 'test'
+  ...
+# Subtest: a dispatch selects the actual reached build-site ordinal, never an arbitrary hex or capital
+ok 24 - a dispatch selects the actual reached build-site ordinal, never an arbitrary hex or capital
+  ---
+  duration_ms: 0.106863
+  type: 'test'
+  ...
+# Subtest: stormPanelHTML: nothing without a storm; a named storm shows its name and no form
+ok 25 - stormPanelHTML: nothing without a storm; a named storm shows its name and no form
+  ---
+  duration_ms: 0.711052
+  type: 'test'
+  ...
+# Subtest: stormPanelHTML: only a storm you may name carries the form; names are escaped
+ok 26 - stormPanelHTML: only a storm you may name carries the form; names are escaped
+  ---
+  duration_ms: 9.908563
+  type: 'test'
+  ...
+# Subtest: hover: a named storm is called by its name
+ok 27 - hover: a named storm is called by its name
+  ---
+  duration_ms: 0.785002
+  type: 'test'
+  ...
+# Subtest: worked water storm slot follows incoming and departing weather without rebuilding other controls
+ok 28 - worked water storm slot follows incoming and departing weather without rebuilding other controls
+  ---
+  duration_ms: 0.589677
+  type: 'test'
+  ...
+1..28
+# tests 28
+# suites 0
+# pass 28
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 77.010308

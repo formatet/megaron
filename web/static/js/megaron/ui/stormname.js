@@ -22,6 +22,24 @@ export function stormPanelHTML(storms) {
   }).join('');
 }
 
+// A stable slot lets weather refresh without rebuilding worker/order controls.
+function stormsAtHex(q,r,storms) { return storms.filter(st=>(st.hexes||[]).some(h=>h.q===q&&h.r===r)); }
+function stormSignature(storms) { return JSON.stringify(storms.map(st=>[st.id,st.tier,st.name,st.can_name,st.tier==='live'?null:st.seen_tick])); }
+export function stormHexPanelHTML(q,r,storms=State.stormData||[]) {
+ const here=stormsAtHex(q,r,storms);
+ return `<div class="hex-storm-info" data-storm-q="${Number(q)}" data-storm-r="${Number(r)}" data-storm-signature="${esc(stormSignature(here))}">${stormPanelHTML(here)}</div>`;
+}
+export function updateStormData(storms,root=globalThis.document) {
+ State.stormData=storms||[];State.dirty=true;
+ for(const el of root?.querySelectorAll?.('[data-storm-q][data-storm-r]')||[]) {
+  const here=stormsAtHex(Number(el.dataset.stormQ),Number(el.dataset.stormR),State.stormData),signature=stormSignature(here);
+  if(el.dataset.stormSignature===signature)continue;
+  const drafts=[...(el.querySelectorAll?.('input')||[])].map(input=>[input.id,input.value]);
+  el.innerHTML=stormPanelHTML(here);el.dataset.stormSignature=signature;
+  for(const [id,value] of drafts){const input=root.getElementById?.(id);if(input)input.value=value;}
+ }
+}
+
 export async function nameStorm(stormID) {
   const input = document.getElementById('storm-name-' + stormID);
   const err = document.getElementById('storm-name-err-' + stormID);
@@ -36,6 +54,5 @@ export async function nameStorm(stormID) {
     return;
   }
   const list = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/storms`);
-  if (list.ok) { State.stormData = (await list.json()).storms || []; State.dirty = true; }
-  if (window.reopenSelectedHex) window.reopenSelectedHex();
+  if (list.ok) updateStormData((await list.json()).storms || []);
 }
