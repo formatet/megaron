@@ -1,3 +1,4 @@
+import {loadTransportChoices, selectedTransportBy} from '../transport_choice.js';
 import { readDiplomacyLetters } from '../diplomacy_reads.js';
 import { showInlineResult } from '../inline_result.js';
 import { State } from '../../state.js';
@@ -67,7 +68,7 @@ export function offerLine(m) {
   const o=m.trade_offer;if(!o)return '';
   const terms=o.kind==='sell' ? `${String(o.offer_qty)} ${o.offer_good} for ${String(o.want_silver)} silver` : `${String(o.want_qty)} ${o.want_good} for ${String(o.offer_silver)} silver`;
   const state=m.offer_state || o.status;
-  return (['accepted','returned'].includes(state) ? 'Agreed: ' : state==='pending' ? 'Offer: ' : state==='expired' ? 'Expired without answer: ' : `${state || 'Trade'}: `)+terms;
+  return (['accepted','returned'].includes(state) ? 'Agreed: ' : state==='pending' ? 'Offer: ' : state==='expired' ? 'Expired without answer: ' : `${state || 'Trade'}: `)+terms+(o.by?` · by ${o.by}`:'');
 }
 export function lettersThreadHTML(page) {
   const rows=page.items || [];
@@ -146,7 +147,17 @@ async function openLetters(id) {
 function composerHTML(reply,destination,goods) {
   if(reply)return `<div class="dip-inline-compose" id="letter-compose"><div id="dip-reply-row-${esc(reply.id)}"><textarea id="dip-reply-${esc(reply.id)}" maxlength="1000" aria-label="Reply"></textarea><button class="btn-small btn-primary" onclick="dipReply('${esc(reply.id)}')">Send with their runner${reply.reply_before ? ' (leaves '+esc(fmtTickTime(undefined,reply.reply_before))+')' : ''}</button></div></div>`;
   if(!destination||!State.MY_SETTLEMENT_ID)return '';
-  return `<div class="dip-inline-compose" id="letter-compose"><textarea id="letter-compose-text" maxlength="1000" aria-label="New letter" placeholder="Write a letter…"></textarea><details><summary>Attach trade offer</summary><div class="dip-inline-trade"><label><input id="letter-compose-buy" type="radio" name="letter-compose-kind" value="buy" checked onchange="dipToggleKind('letter-compose')"> Buy</label><label><input id="letter-compose-sell" type="radio" name="letter-compose-kind" value="sell" onchange="dipToggleKind('letter-compose')"> Sell</label><div id="letter-compose-buy-fields"><label>Want good<select id="letter-compose-good"${goodsSelectDisabledAttr(goods)}>${goodsOptionsHTML(goods)}</select></label><label>Quantity<input id="letter-compose-qty" type="number" min="0.1" step="0.1"></label><label>Offer silver<input id="letter-compose-silver" type="number" min="1"></label></div><div id="letter-compose-sell-fields" hidden><label>Offer good<select id="letter-compose-offer-good"${goodsSelectDisabledAttr(goods)}>${goodsOptionsHTML(goods)}</select></label><label>Quantity<input id="letter-compose-offer-qty" type="number" min="0.1" step="0.1"></label><label>Want silver<input id="letter-compose-want-silver" type="number" min="1"></label></div></div></details><div class="dip-inline-compose-row"><button class="btn-small btn-primary" onclick="dipSendInThread('letter-compose','${esc(destination.settlement_id)}')">Send a runner</button><span id="letter-compose-status" role="status"></span></div></div>`;
+  return `<div class="dip-inline-compose" id="letter-compose"><textarea id="letter-compose-text" maxlength="1000" aria-label="New letter" placeholder="Write a letter…"></textarea><details><summary>Attach trade offer</summary><div class="dip-inline-trade"><label><input id="letter-compose-buy" type="radio" name="letter-compose-kind" value="buy" checked onchange="dipToggleKind('letter-compose')"> Buy</label><label><input id="letter-compose-sell" type="radio" name="letter-compose-kind" value="sell" onchange="dipToggleKind('letter-compose')"> Sell</label><div id="letter-compose-buy-fields"><label>Want good<select id="letter-compose-good"${goodsSelectDisabledAttr(goods)}>${goodsOptionsHTML(goods)}</select></label><label>Quantity<input id="letter-compose-qty" type="number" min="0.1" step="0.1"></label><label>Offer silver<input id="letter-compose-silver" type="number" min="1"></label></div><div id="letter-compose-sell-fields" hidden><label>Offer good<select id="letter-compose-offer-good"${goodsSelectDisabledAttr(goods)}>${goodsOptionsHTML(goods)}</select></label><label>Quantity<input id="letter-compose-offer-qty" type="number" min="0.1" step="0.1"></label><label>Want silver<input id="letter-compose-want-silver" type="number" min="1"></label></div><div id="letter-compose-route" data-transport-choice></div></div></details><div class="dip-inline-compose-row"><button class="btn-small btn-primary" onclick="dipSendInThread('letter-compose','${esc(destination.settlement_id)}')">Send a runner</button><span id="letter-compose-status" role="status"></span></div></div>`;
+}
+function bindTradeTransport(destination) {
+ const composer=document.getElementById('letter-compose');if(!composer)return;
+ const preview=()=>{
+  const n=id=>Number(document.getElementById('letter-compose-'+id)?.value)||0;
+  const sell=document.querySelector('input[name="letter-compose-kind"]:checked')?.value==='sell';
+  return loadTransportChoices('letter-compose-route',State.MY_SETTLEMENT_ID,destination,sell?Math.max(n('offer-qty'),n('want-silver')):Math.max(n('qty'),n('silver')));
+ };
+ composer.addEventListener('change',e=>{if(!e.target?.closest?.('#letter-compose-route'))preview();});
+ preview();
 }
 async function loadDipThreads() {
   const el=lettersRoot();if(!el)return;
@@ -154,14 +165,14 @@ async function loadDipThreads() {
   const person=currentPerson,destination=draftDestination;
   const alive=()=>generation===requestGeneration&&State.WORLD_ID===world&&lettersRoot()===el;
   el.innerHTML='<div class="loading">Loading…</div>';
-  if(destination){const goods=await getTradeableGoods();if(!alive())return;el.innerHTML=toolbar(personName(destination))+composerHTML(null,destination,goods);bindToolbar(el);restoreDraft();return;}
+  if(destination){const goods=await getTradeableGoods();if(!alive())return;el.innerHTML=toolbar(personName(destination))+composerHTML(null,destination,goods);bindToolbar(el);restoreDraft();bindTradeTransport(destination.settlement_id);return;}
   try {
     const response=await fetchAuth(`/api/v1/worlds/${world}/letters${person?'/'+encodeURIComponent(person):''}`);if(!response.ok)throw Error();const page=await response.json();if(!Array.isArray(page.items))throw Error();if(!alive())return;
     if(!person){el.innerHTML='<div class="letters-toolbar"><strong>Letters</strong><button class="btn-small" data-write-list>Write</button></div>'+lettersListHTML(page);bindToolbar(el);el.querySelectorAll('[data-person]').forEach(b=>b.addEventListener('click',()=>openLetters(b.dataset.person)));return;}
     const reply=[...page.items].reverse().find(m=>m.direction==='incoming'&&letterActions(m).includes('reply'));
     const city=writableCities().find(p=>p.owner_id===person || personName(p)===page.counterpart_name);
     const goods=reply||!city?[]:await getTradeableGoods();if(!alive())return;
-    el.innerHTML=toolbar(page.counterpart_name)+lettersThreadHTML(page)+composerHTML(reply,city,goods);bindToolbar(el);restoreDraft();
+    el.innerHTML=toolbar(page.counterpart_name)+lettersThreadHTML(page)+composerHTML(reply,city,goods);bindToolbar(el);restoreDraft();if(!reply&&city)bindTradeTransport(city.settlement_id);
     const mark=details=>{if(details.open){const m=page.items.find(m=>m.id===details.dataset.letter);if(m?.direction==='incoming'&&m.kind!=='gift'&&!m.read_at)readDiplomacyLetters([m.id]);}};
     el.querySelectorAll('[data-letter]').forEach(d=>{d.addEventListener('toggle',()=>mark(d));mark(d);});
   }catch(_){if(alive()){el.innerHTML=toolbar()+'<p class="empty-state">Could not load letters.</p>';bindToolbar(el);}}
@@ -201,6 +212,7 @@ export async function dipSendInThread(cid, destId) {
     const silver = parseFloat(document.getElementById(cid + '-silver')?.value || '0');
     if (good && qty > 0 && silver > 0) body.trade_offer = { kind: 'buy', want_good: good, want_qty: qty, offer_silver: silver };
   }
+  if(body.trade_offer){const by=selectedTransportBy(cid+'-route');if(document.getElementById(cid+'-route')?.hasAttribute?.('data-transport-choice')&&!by){showStatus('Choose an available goods route.',false);return;}if(by)body.trade_offer.by=by;}
   const res = await fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/settlements/' + State.MY_SETTLEMENT_ID + '/messengers', {
     method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body),
   });

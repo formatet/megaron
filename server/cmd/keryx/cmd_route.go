@@ -72,6 +72,7 @@ func resolveOwnSettlement(c *Client, worldID, nameOrID string) (string, error) {
 
 func routeCreateCmd() *cobra.Command {
 	var fromName, toName, crewSide, outSpec, homeSpec string
+	var by string
 	cmd := &cobra.Command{
 		Use:   "route",
 		Short: "Create a standing order — a caravan that keeps a destination's stock topped up on its own",
@@ -79,6 +80,9 @@ func routeCreateCmd() *cobra.Command {
   keryx route --from Petras --to Colony --out grain:200,fish:50 --home silver:0,stone:20 --crew from`,
 		Args: noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			if err := validateTransportBy(by); err != nil {
+				return err
+			}
 			c := newClient(cfg)
 			fromID, err := resolveOwnSettlement(c, cfg.WorldID, fromName)
 			if err != nil {
@@ -116,11 +120,15 @@ func routeCreateCmd() *cobra.Command {
 				ret = append(ret, map[string]any{"good_key": p.Good, "floor": p.Amount})
 			}
 
+			if err := previewTransportOptions(c, fromID, toID, by, 0); err != nil {
+				return err
+			}
 			path := fmt.Sprintf("/api/v1/worlds/%s/standing-orders", cfg.WorldID)
 			data, err := c.post(path, map[string]any{
 				"from_settlement_id":      fromID,
 				"to_settlement_id":        toID,
 				"crewed_by_settlement_id": crewID,
+				"by":                      by,
 				"outbound":                outbound,
 				"return":                  ret,
 			})
@@ -139,6 +147,8 @@ func routeCreateCmd() *cobra.Command {
 			return nil
 		},
 	}
+	cmd.Flags().StringVar(&by, "by", "", "goods route: land or sea (omitted: automatic)")
+
 	cmd.Flags().SortFlags = false
 	cmd.Flags().StringVar(&fromName, "from", "", "source settlement name (default: your capital)")
 	cmd.Flags().StringVar(&toName, "to", "", "destination settlement name")
@@ -195,6 +205,9 @@ func routesCmd() *cobra.Command {
 			}
 			for _, o := range orders {
 				status, _ := o["status"].(string)
+				if by, _ := o["by"].(string); by != "" {
+					status += " · by " + by
+				}
 				line := fmt.Sprintf("%v  %v → %v  [%s]", o["id"], o["from_name"], o["to_name"], status)
 				// Sjöhandel kräver skepp (megaron_plan_sjohandel_kraver_skepp.md
 				// R4): a naval route locks a real ship for its whole lifetime —

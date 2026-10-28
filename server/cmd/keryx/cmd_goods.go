@@ -169,6 +169,7 @@ func transferCmd() *cobra.Command {
 	var goods, quantities []string
 	var destName string
 	var provinceID string
+	var by string
 
 	cmd := &cobra.Command{
 		Use:   "transfer",
@@ -180,6 +181,9 @@ func transferCmd() *cobra.Command {
 		// obvious guess for a stray positional.
 		Args: noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			if err := validateTransportBy(by); err != nil {
+				return err
+			}
 			items, err := parseTransferItems(goods, quantities)
 			if err != nil {
 				return err
@@ -200,7 +204,7 @@ func transferCmd() *cobra.Command {
 				return fmt.Errorf("resolve destination %q: %w", destName, err)
 			}
 			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/trade", cfg.WorldID, src)
-			previewData, err := c.get(path + "/preview?destination_id=" + url.QueryEscape(destID))
+			previewData, err := c.get(path + "/preview?destination_id=" + url.QueryEscape(destID) + "&by=" + url.QueryEscape(by))
 			if err != nil {
 				return err
 			}
@@ -209,9 +213,13 @@ func transferCmd() *cobra.Command {
 				return err
 			}
 			if !jsonMode {
+				printTransportOptions(preview.Options, by)
 				fmt.Println(transferCargoLine(items, preview))
 			}
 			payload := map[string]any{"destination_id": destID, "items": items}
+			if by != "" {
+				payload["by"] = by
+			}
 			data, err := c.post(path, payload)
 			if err != nil {
 				return err
@@ -240,6 +248,8 @@ func transferCmd() *cobra.Command {
 		},
 	}
 
+	cmd.Flags().StringVar(&by, "by", "", "goods route: land or sea (omitted: automatic)")
+
 	cmd.Flags().StringArrayVarP(&goods, "good", "g", nil, "good key; repeat with matching --qty for each item")
 	cmd.Flags().StringArrayVarP(&quantities, "qty", "q", nil, "quantity to send; repeat once for each --good")
 	cmd.Flags().StringVarP(&destName, "dest", "d", "", "destination settlement name")
@@ -256,10 +266,11 @@ type transferItem struct {
 	Quantity float64 `json:"quantity"`
 }
 type cargoPreview struct {
-	Category string   `json:"category"`
-	ShipName string   `json:"ship_name"`
-	ShipType string   `json:"ship_type"`
-	Capacity *float64 `json:"cargo_capacity"`
+	Category string            `json:"category"`
+	ShipName string            `json:"ship_name"`
+	ShipType string            `json:"ship_type"`
+	Capacity *float64          `json:"cargo_capacity"`
+	Options  []transportOption `json:"options"`
 }
 
 func parseTransferItems(goods, quantities []string) ([]transferItem, error) {

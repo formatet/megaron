@@ -1,3 +1,4 @@
+import {transportChoicesHTML, selectedTransportBy, loadTransportChoices} from '../transport_choice.js';
 import { fmtNum, fmtDays } from '../fmt_num.js';
 import { fmtTickTime } from '../fmt_clock.js';
 import { State } from '../../state.js';
@@ -252,6 +253,7 @@ async function loadEconomyTransfer(mySettlements) {
         <label>To <select id="ec-tr-to" onchange="loadTransferPreview()" style="${inputStyle}">${toOpts}</select></label>
         <div id="ec-tr-items">Loading goods…</div>
         <button id="ec-tr-add" class="btn-small" onclick="addTransferGood()" type="button">+ Add good</button>
+        <div id="ec-tr-route" data-transport-choice></div>
         <div id="ec-tr-capacity" class="transfer-capacity" role="status" aria-live="polite">Checking cargo route…</div>
         <button id="ec-tr-send" class="btn-primary btn-small" onclick="startTransfer()">Send →</button>
         <div id="ec-tr-result" class="action-result"></div>
@@ -386,8 +388,13 @@ export async function loadTransferPreview() {
     const data = await r.json();
     if (seq !== transferPreviewSeq || world !== State.WORLD_ID || document.getElementById('ec-tr-capacity') !== el) return;
     if (!r.ok) { el.textContent = data.error || 'Could not check cargo route.'; return; }
-    transferPreview = data;
-    updateTransferCargo();
+    const picker=document.getElementById('ec-tr-route');
+    if(picker&&data.options){
+      picker.innerHTML=transportChoicesHTML(data,'ec-tr-route',selectedTransportBy('ec-tr-route'));
+      const select=()=>{const by=selectedTransportBy('ec-tr-route');transferPreview=data.options.find(o=>o.by===by&&o.available);if(transferPreview)transferPreview={...transferPreview,category:by==='sea'?'naval':'land'};updateTransferCargo();};
+      picker.onchange=select;
+      select();
+    }else{transferPreview=data;updateTransferCargo();}
   } catch {
     if (seq === transferPreviewSeq && document.getElementById('ec-tr-capacity') === el) el.textContent = 'Could not check cargo route.';
   }
@@ -429,10 +436,11 @@ export async function startTransfer() {
   if (!resultEl) return;
   if (!from || !to || from === to) { resultEl.style.color = 'var(--accent)'; resultEl.textContent = 'Pick two different settlements.'; return; }
   if (!items.length) { resultEl.style.color = 'var(--accent)'; resultEl.textContent = 'Good and quantity required.'; return; }
+  if(document.getElementById('ec-tr-route')?.hasAttribute?.('data-transport-choice')&&!selectedTransportBy('ec-tr-route')){resultEl.textContent='Choose an available land or sea route.';return;}
   resultEl.textContent = '';
   const r = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${from}/trade`, {
     method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ destination_id: to, items }),
+    body: JSON.stringify({ destination_id: to, items, ...(selectedTransportBy('ec-tr-route')?{by:selectedTransportBy('ec-tr-route')}:{}) }),
   });
   const d = await r.json().catch(() => ({}));
   if (document.getElementById('ec-tr-result') !== resultEl) return;
@@ -548,7 +556,7 @@ async function loadEconomyAutomation(mySettlements) {
           <div id="ec-so-home"></div>
           <button id="ec-so-home-add" class="btn-small" type="button">Add a good</button>
         </div>
-        <button class="btn-primary btn-small" onclick="createStandingOrder()">Create route</button>
+        <div id="ec-so-route" data-transport-choice></div><button class="btn-primary btn-small" onclick="createStandingOrder()">Create route</button>
         <div id="ec-so-result" class="action-result"></div>
       </div>
     </div>
@@ -560,7 +568,10 @@ async function loadEconomyAutomation(mySettlements) {
   if (toSel && mySettlements.length > 1) toSel.selectedIndex = 1;
   bindStandingGoodsRows('out', goods);
   bindStandingGoodsRows('home', goods);
-  await refreshStandingOrders();
+  const preview=()=>loadTransportChoices('ec-so-route',document.getElementById('ec-so-from')?.value,document.getElementById('ec-so-to')?.value);
+  document.getElementById('ec-so-from')?.addEventListener('change',preview);
+  toSel?.addEventListener('change',preview);
+  await Promise.all([refreshStandingOrders(),preview()]);
 }
 
 // renderStandingOrdersHTML is pure (list in, markup out) for the same
@@ -588,7 +599,7 @@ export function renderStandingOrdersHTML(orders, trades, nowMs = 0) {
       const outbound = (o.outbound || []).map(g => `${esc(g.good_key)} ${stockAmount(g.threshold)}`).join(', ');
       const returning = (o.return || []).map(g => `${esc(g.good_key)} ${stockAmount(g.floor)}`).join(', ');
       const travelling = trades === undefined ? '' : trades === null ? '<p class="empty-state">Could not load cargo.</p>' : routeCargoHTML(trades.filter(t => t.standing_order_id === o.id), nowMs);
-      const settings = `<div class="standing-order-config">Keep at destination: ${outbound || 'not available'}</div>`
+      const settings = (o.by?`<div class="standing-order-config">By ${esc(o.by)}</div>`: "") + `<div class="standing-order-config">Keep at destination: ${outbound || 'not available'}</div>`
         + `<div class="standing-order-config">${returning ? 'Bring home above: ' + returning : 'Return cargo: none'}</div>` + travelling;
       return `<tr id="standing-order-${esc(o.id)}">
         <td>${esc(o.from_name)} → ${esc(o.to_name)}${shipNote}${settings}</td>
@@ -631,11 +642,12 @@ export async function createStandingOrder() {
   const outbound = readStandingGoodsRows('out').map(p => ({ good_key: p.good_key, threshold: p.amount }));
   if (!outbound.length) { resultEl.style.color = 'var(--accent)'; resultEl.textContent = 'Choose at least one good and the stock to keep at the destination.'; return; }
   const ret = readStandingGoodsRows('home').map(p => ({ good_key: p.good_key, floor: p.amount }));
+  if(document.getElementById('ec-so-route')?.hasAttribute?.('data-transport-choice')&&!selectedTransportBy('ec-so-route')){resultEl.textContent='Choose an available land or sea route.';return;}
   const crewedBy = crew === 'to' ? to : from;
   resultEl.textContent = '';
   const r = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/standing-orders`, {
     method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ from_settlement_id: from, to_settlement_id: to, crewed_by_settlement_id: crewedBy, outbound, return: ret }),
+    body: JSON.stringify({ from_settlement_id: from, to_settlement_id: to, crewed_by_settlement_id: crewedBy, outbound, return: ret, ...(selectedTransportBy('ec-so-route')?{by:selectedTransportBy('ec-so-route')}:{}) }),
   });
   const d = await r.json().catch(() => ({}));
   if (r.ok) {

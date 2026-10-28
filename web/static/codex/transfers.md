@@ -50,3 +50,14 @@ Choose several goods in the same form to send them together in **one shipment**:
 one caravan or one ship, one arrival, one shared fate if intercepted or sunk.
 Keryx accepts paired flags: `keryx transfer --dest Mallia --good grain --qty 12 --good timber --qty 8`.
 Keryx shows the same cargo total and hull capacity before dispatch.
+
+
+## Choose land or sea
+
+Economy → Transfer compares **Land** and **Sea** before you send a transfer or gift. Both show the journey in game days and real time, its arrival estimate, risk and requirements. An unavailable alternative explains why: a missing connected path, no departure/arrival coast or harbour, or no free ship with cargo space. A preview reserves nothing; sending checks again.
+
+Land cargo can be intercepted. Sea cargo can be intercepted and the ship can meet storms; the same risks apply to your own goods, gifts, trade and standing routes. Sea needs your available Galley or Emporos at departure, enough cargo space and the existing voyage provisions.
+
+Your selection is saved. An explicitly chosen land route never turns into a sea voyage, or vice versa, when conditions change. A standing route waits or pauses according to its existing rules if it cannot use the chosen mode. Older orders without a selection keep automatic routing.
+
+Keryx: `transfer --by land --good grain --qty 50 --dest Petras`, or `--by sea`. The same flag works with `trade-offer` and `route`. Omit it for the existing automatic choice; the preview lists alternatives. For trade, the agreed choice covers the physical goods and payment legs, not the runner carrying the offer.

@@ -7,7 +7,7 @@ import * as economy from './economy.js';
 async function rig(run) {
   const saved={document:globalThis.document,fetch:globalThis.fetch,localStorage:globalThis.localStorage};
   const nodes=new Map(),calls=[];
-  function node(id){if(!nodes.has(id))nodes.set(id,{id,value:'',innerHTML:'',textContent:'',insertAdjacentHTML(_position,html){this.innerHTML+=html;},style:{},classList:{add(){},remove(){}},dataset:{},rows:[],querySelectorAll(){return this.rows;},addEventListener(_,fn){this.listener=fn;}});return nodes.get(id);}
+  function node(id){if(!nodes.has(id))nodes.set(id,{id,value:'',innerHTML:'',textContent:'',insertAdjacentHTML(_position,html){this.innerHTML+=html;},style:{},classList:{add(){},remove(){},toggle(){}},dataset:{},rows:[],querySelectorAll(){return this.rows;},addEventListener(_,fn){this.listener=fn;}});return nodes.get(id);}
   const body=node('economy-body');
   body.querySelectorAll=sel=>sel==='.dtab'?['goods','transfer','automation'].map(name=>{const t=node('tab-'+name);t.dataset.tab=name;return t;}):[];
   globalThis.document={getElementById:id=>id==='net-status'?null:node(id)};
@@ -65,4 +65,17 @@ test('N: failed goods fetch sends no form, reopening Automation retries full inv
   globalThis.fetch=fetch;await node('tab-automation').listener.call(node('tab-automation'));
   for(let i=0;i<10;i++)await new Promise(resolve=>setImmediate(resolve));
   assert.match(node('ectab-automation').innerHTML,/Create route/);assert.match(node('ec-so-home').innerHTML,/value="silver"/);
+}));
+
+test('land/sea choice reaches standing order POST and missing choice blocks actual form',()=>rig(async({node,rows,calls})=>{
+ rows('out',[['grain','200']]);const picker=node('ec-so-route');picker.hasAttribute=()=>true;picker.querySelector=()=>({value:'land'});
+ await economy.createStandingOrder();assert.equal(JSON.parse(calls.find(c=>c.opts.method==='POST').opts.body).by,'land');
+ calls.length=0;picker.querySelector=()=>null;await economy.createStandingOrder();assert.equal(calls.filter(c=>c.opts.method==='POST').length,0);assert.match(node('ec-so-result').textContent,/Choose an available/);
+}));
+
+test('transfer sends selected sea mode and no unavailable-route fallback',()=>rig(async({node,calls})=>{
+ node('ec-tr-from').value='province-a';node('ec-tr-to').value='city-b';node('ec-tr-route').querySelector=()=>({value:'sea'});node('ec-tr-route').hasAttribute=()=>true;
+ document.querySelectorAll=()=>[{dataset:{good:'grain'},value:'2'}];
+ await economy.startTransfer();await new Promise(resolve=>setImmediate(resolve));assert.equal(JSON.parse(calls.find(c=>c.opts.method==='POST').opts.body).by,'sea');
+ calls.length=0;node('ec-tr-route').querySelector=()=>null;await economy.startTransfer();assert.equal(calls.filter(c=>c.opts.method==='POST').length,0);assert.match(node('ec-tr-result').textContent,/Choose an available/);
 }));

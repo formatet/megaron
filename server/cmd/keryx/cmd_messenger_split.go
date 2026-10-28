@@ -114,6 +114,7 @@ func messageCmd() *cobra.Command {
 func tradeOfferCmd() *cobra.Command {
 	var destName, wantGood, offerGood, msgText, fromName string
 	var wantQty, offerSilver, offerQty, wantSilver float64
+	var by string
 
 	cmd := &cobra.Command{
 		Use:   "trade-offer",
@@ -122,6 +123,9 @@ func tradeOfferCmd() *cobra.Command {
   keryx trade-offer --to Athenai --offer-good copper --offer-qty 50 --want-silver 120`,
 		Args: rejectPositionalArgs("to"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			if err := validateTransportBy(by); err != nil {
+				return err
+			}
 			buySet := wantGood != "" && wantQty > 0 && offerSilver > 0
 			sellSet := offerGood != "" && offerQty > 0 && wantSilver > 0
 			if buySet == sellSet {
@@ -171,6 +175,16 @@ func tradeOfferCmd() *cobra.Command {
 				}
 			}
 
+			quantity := max(wantQty, offerSilver)
+			if sellSet {
+				quantity = max(offerQty, wantSilver)
+			}
+			if err := previewTransportOptions(c, ownSettlementID, destID, by, quantity); err != nil {
+				return err
+			}
+			if by != "" {
+				tradeOffer["by"] = by
+			}
 			path := fmt.Sprintf("/api/v1/worlds/%s/settlements/%s/messengers", cfg.WorldID, ownSettlementID)
 			data, err := c.post(path, map[string]any{
 				"destination_id": destID,
@@ -198,6 +212,8 @@ func tradeOfferCmd() *cobra.Command {
 			return nil
 		},
 	}
+	cmd.Flags().StringVar(&by, "by", "", "goods route: land or sea (omitted: automatic)")
+
 	cmd.Flags().StringVarP(&destName, "to", "t", "", "destination settlement name (required)")
 	cmd.Flags().StringVar(&wantGood, "want-good", "", "good key to request — must be a tradeable good (GET /api/v1/goods lists them; an unknown key is rejected with the full list) (buy mode)")
 	cmd.Flags().Float64Var(&wantQty, "want-qty", 0, "quantity of good to request (buy mode)")

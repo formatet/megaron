@@ -36,3 +36,10 @@ test('an unavailable thread retains a local reply when the server recovers',()=>
  const real=globalThis.fetch;globalThis.fetch=async()=>new Response('{}',{status:403});await dip.refreshDiplomacyLetters();assert.match(node('dtab-letters').innerHTML,/Could not load letters/);
  globalThis.fetch=real;await dip.refreshDiplomacyLetters();assert.equal(node('dip-reply-incoming').value,'Do not lose this reply');
 }));
+
+test('trade offer sends selected goods mode and cannot auto-fallback from unavailable choice',()=>rig(async({node,calls})=>{
+ await dip.loadDiplomacyDrawer();await dip.dipWrite('contact');node('letter-compose-text').value='Sea trade';node('letter-compose-good').value='grain';node('letter-compose-qty').value='1';node('letter-compose-silver').value='2';
+ const picker=node('letter-compose-route');picker.hasAttribute=()=>true;picker.querySelector=()=>({value:'sea'});
+ await dip.dipSendInThread('letter-compose','contact');assert.equal(JSON.parse(calls.filter(c=>c.opts.method==='POST').at(-1).opts.body).trade_offer.by,'sea');
+ calls.length=0;node('letter-compose-text').value='Keep';picker.querySelector=()=>null;await dip.dipSendInThread('letter-compose','contact');assert.equal(calls.filter(c=>c.opts.method==='POST').length,0);assert.match(node('letter-compose-status').textContent,/Choose an available/);
+}));

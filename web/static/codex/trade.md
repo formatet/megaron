@@ -19,7 +19,7 @@ The runner who carried your offer waits at the other city only while the offer i
 
 ## Delivery
 
-An accepted trade is carried by caravan. It arrives as a *Trade delivered* notification. On land nothing is lost by chance; like any [[transfers|cargo]] it can be raided. At sea every ship risks [[sea|storms]].
+An accepted trade is carried along its agreed land or sea route. It arrives as a *Trade delivered* notification. On land nothing is lost by chance; like any [[transfers|cargo]] it can be raided. At sea every ship risks [[sea|storms]].
 
 ### When it goes by sea
 
@@ -51,3 +51,5 @@ interception can prevent that delivery.
 The seller receives the full agreed silver payment when it arrives. Temples take no share of religious-goods sales.
 
 Cargo follows its planned road or sea route one province at a time. The map and `keryx cargo` show its current province and arrival time. A province is reached only after its share of the full journey; the final province is reached at the announced arrival time.
+
+Attach a trade offer in Letters and choose **Land** or **Sea** for the goods and payment. The runner still follows its own physical route. The choice stays with the agreement and is checked again on acceptance; Keryx uses `trade-offer --by land` or `--by sea`. See [[transfers|route requirements and risks]].

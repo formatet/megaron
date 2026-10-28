@@ -73,6 +73,7 @@ func plural(n int) string {
 func messengerCmd() *cobra.Command {
 	var destName, message, wantGood, fromName string
 	var wantQty, offerSilver float64
+	var by string
 	cmd := &cobra.Command{
 		Use:   "messenger",
 		Short: "Send a messenger to another settlement",
@@ -80,6 +81,12 @@ func messengerCmd() *cobra.Command {
   keryx messenger --to Korinth --message "Buy grain offer" --want-good grain --want-qty 100 --offer-silver 80`,
 		Args: rejectPositionalArgs("to"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			if err := validateTransportBy(by); err != nil {
+				return err
+			}
+			if by != "" && !(wantGood != "" && wantQty > 0 && offerSilver > 0) {
+				return fmt.Errorf("--by applies to a complete trade offer; the runner follows its own route")
+			}
 			c := newClient(cfg)
 
 			// Load visible provinces to resolve own settlement ID and destination.
@@ -109,6 +116,7 @@ func messengerCmd() *cobra.Command {
 			}
 			if wantGood != "" && wantQty > 0 && offerSilver > 0 {
 				body["trade_offer"] = map[string]any{
+					"by":           by,
 					"want_good":    wantGood,
 					"want_qty":     wantQty,
 					"offer_silver": offerSilver,
@@ -136,6 +144,7 @@ func messengerCmd() *cobra.Command {
 			return nil
 		},
 	}
+	cmd.Flags().StringVar(&by, "by", "", "goods route for attached trade offer: land or sea")
 	cmd.Flags().StringVarP(&destName, "to", "t", "", "destination settlement name (required)")
 	cmd.Flags().StringVarP(&message, "message", "m", "", "message text (required)")
 	cmd.Flags().StringVar(&fromName, "from", "", "your city to send from (default: capital — the silver hub)")
