@@ -299,6 +299,17 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 				return
 			}
 		}
+		// Timothy 2026-10-28: a ship in harbour stands on its city's hex; the
+		// adjacent sea hex is only where it puts out and lands. Embarked
+		// cohorts stay with their ship. UnitArrived keeps the sea hex it reached.
+		if port != nil {
+			if _, err := tx.Exec(ctx, `UPDATE units u SET q=p.map_q, r=p.map_r
+			 FROM settlements s JOIN provinces p ON p.id=s.province_id
+			 WHERE s.id=$2 AND (u.id=$1 OR (u.carried_by_ship_id=$1 AND u.status='embarked'))`, u.id, *port); err != nil {
+				result = fmt.Errorf("move docked ship into its port: %w", err)
+				return
+			}
+		}
 		if port == nil && u.marchIntent != nil && (*u.marchIntent == "passage" || *u.marchIntent == "land" || *u.marchIntent == "pickup") && u.landTargetQ != nil && u.landTargetR != nil {
 			err := tx.QueryRow(ctx, `SELECT s.id FROM settlements s JOIN provinces p ON p.id=s.province_id WHERE s.world_id=$1 AND p.map_q=$2 AND p.map_r=$3 AND s.state='active' AND (p.coastal OR EXISTS(SELECT 1 FROM buildings b WHERE b.settlement_id=s.id AND b.building_type='harbour'))`, worldID, *u.landTargetQ, *u.landTargetR).Scan(&port)
 			if err != nil && err != pgx.ErrNoRows {

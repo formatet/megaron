@@ -1,0 +1,2 @@
+-- Data correction only. Do not move harbour ships back onto the sea hex or
+-- delete the append-only correction outcome when rolling application code back.

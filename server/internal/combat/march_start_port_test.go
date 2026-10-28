@@ -221,4 +221,21 @@ func TestStartMarch_NavalPlainMarchToFriendlyPortDocks(t *testing.T) {
 	if settlementID == nil || *settlementID != destID {
 		t.Errorf("ship settlement_id = %v, want %v (the destination port)", settlementID, destID)
 	}
+
+	// Timothy 2026-10-28: a ship in harbour stands on its city's hex, and a
+	// ship that sailed in must be able to put out again from there.
+	var q, r *int
+	if err := pool.QueryRow(ctx, `SELECT q, r FROM units WHERE id = $1`, shipID).Scan(&q, &r); err != nil {
+		t.Fatalf("load docked ship position: %v", err)
+	}
+	if q == nil || r == nil || *q != 2 || *r != 0 {
+		t.Errorf("docked ship at (%v,%v), want the port city's hex (2,0)", q, r)
+	}
+	seedDepartureFood(t, pool, destID)
+	if _, err := StartMarch(ctx, pool, scheduler, eventStore, clk, MarchOrder{
+		WorldID: worldID, PlayerID: ownerID, UnitID: shipID,
+		TargetQ: 0, TargetR: 0,
+	}, nil); err != nil {
+		t.Fatalf("a ship that docked by sailing in could not put out again: %v", err)
+	}
 }
