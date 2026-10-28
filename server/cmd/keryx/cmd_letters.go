@@ -94,13 +94,14 @@ func lettersCmd() *cobra.Command {
 				Missing     string             `json:"missing_payment"`
 				Goods       map[string]float64 `json:"goods"`
 				Offer       *struct {
-					Kind        string  `json:"kind"`
-					OfferGood   string  `json:"offer_good"`
-					OfferQty    float64 `json:"offer_qty"`
-					WantGood    string  `json:"want_good"`
-					WantQty     float64 `json:"want_qty"`
-					WantSilver  float64 `json:"want_silver"`
-					OfferSilver float64 `json:"offer_silver"`
+					CounterOfferID string  `json:"counter_offer_id"`
+					Kind           string  `json:"kind"`
+					OfferGood      string  `json:"offer_good"`
+					OfferQty       float64 `json:"offer_qty"`
+					WantGood       string  `json:"want_good"`
+					WantQty        float64 `json:"want_qty"`
+					WantSilver     float64 `json:"want_silver"`
+					OfferSilver    float64 `json:"offer_silver"`
 				} `json:"trade_offer"`
 			} `json:"items"`
 		}
@@ -127,6 +128,9 @@ func lettersCmd() *cobra.Command {
 			}
 			if o := m.Offer; o != nil {
 				prefix := "Offer"
+				if o.CounterOfferID != "" {
+					fmt.Printf("Counter-offer to %s\n", o.CounterOfferID)
+				}
 				if m.State == "accepted" || m.State == "returned" {
 					prefix = "Agreed"
 				} else if m.State != "pending" && m.State != "" {
@@ -151,6 +155,14 @@ func lettersCmd() *cobra.Command {
 					fmt.Printf(": keryx reply --id %s --text \"...\"\n", m.ID)
 				case "trade_accept":
 					fmt.Printf("Accept: keryx trade-accept --id %s\n", m.ID)
+				case "trade_counter":
+					if m.Offer != nil {
+						if m.Offer.Kind == "sell" {
+							fmt.Printf("Counter-offer: keryx trade-offer --counter %s --want-good %s --want-qty %g --offer-silver %g\n", m.ID, m.Offer.OfferGood, m.Offer.OfferQty, m.Offer.WantSilver)
+						} else {
+							fmt.Printf("Counter-offer: keryx trade-offer --counter %s --offer-good %s --offer-qty %g --want-silver %g\n", m.ID, m.Offer.WantGood, m.Offer.WantQty, m.Offer.OfferSilver)
+						}
+					}
 				case "trade_decline":
 					fmt.Printf("Decline: keryx trade-decline --id %s\n", m.ID)
 				case "trade_cancel":
