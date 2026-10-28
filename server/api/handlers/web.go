@@ -13,6 +13,7 @@ import (
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/unit"
 	"github.com/go-chi/chi/v5"
@@ -463,12 +464,12 @@ func epitaphLine(eventType string, payload []byte, city string, wanaxName func(s
 		}
 	case "BuildComplete":
 		if b := str("building_type"); b != "" {
-			return "Raised " + b + " in " + city + "."
+			return "Raised " + province.BuildingDisplayName(b) + " in " + city + "."
 		}
 		return "A building was raised in " + city + "."
 	case "TrainComplete":
 		if u := str("unit_type"); u != "" {
-			return "Mustered " + u + " from " + city + "."
+			return "Mustered " + unit.DisplayName(u) + " from " + city + "."
 		}
 		return "Mustered a host from " + city + "."
 	case "CombatResolved", "UnitCombatResolved":

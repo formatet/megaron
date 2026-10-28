@@ -349,7 +349,12 @@ func renderSummary(e events.SinkEvent, actor, subject string) string {
 
 	switch e.EventType {
 	case "BuildComplete":
-		return fmt.Sprintf("%s completed construction of %s in %s", a, str(p, "building_type"), s)
+		// building_name is the player name (silo → Granary); older events carry only the key.
+		b := str(p, "building_name")
+		if b == "" {
+			b = str(p, "building_type")
+		}
+		return fmt.Sprintf("%s completed construction of %s in %s", a, b, s)
 	case "TrainComplete":
 		return fmt.Sprintf("%s recruited %v %s in %s", a, p["count"], str(p, "unit_type"), s)
 	case "TradeDelivery":
