@@ -187,6 +187,12 @@ func TestStartMarch_NavalPlainMarchToFriendlyPortDocks(t *testing.T) {
 		t.Fatalf("create garrisoned ship: %v", err)
 	}
 
+	var passengerID uuid.UUID
+	if err := pool.QueryRow(ctx, `INSERT INTO units(world_id,owner_id,type,category,size,status,carried_by_ship_id,settlement_id,q,r)
+	 VALUES($1,$2,'spearman','land',100,'embarked',$3,$4,-1,0) RETURNING id`, worldID, ownerID, shipID, homeID).Scan(&passengerID); err != nil {
+		t.Fatal(err)
+	}
+
 	clk := clock.NewTestClock(time.Now())
 	scheduler := events.NewScheduler(pool, clk)
 	eventStore := events.NewStore(pool)
@@ -231,6 +237,16 @@ func TestStartMarch_NavalPlainMarchToFriendlyPortDocks(t *testing.T) {
 	if q == nil || r == nil || *q != 2 || *r != 0 {
 		t.Errorf("docked ship at (%v,%v), want the port city's hex (2,0)", q, r)
 	}
+	var passengerStatus string
+	var carrierID, passengerPort uuid.UUID
+	var passengerQ, passengerR int
+	if err := pool.QueryRow(ctx, `SELECT status,carried_by_ship_id,settlement_id,q,r FROM units WHERE id=$1`, passengerID).Scan(&passengerStatus, &carrierID, &passengerPort, &passengerQ, &passengerR); err != nil {
+		t.Fatal(err)
+	}
+	if passengerStatus != "embarked" || carrierID != shipID || passengerPort != destID || passengerQ != 2 || passengerR != 0 {
+		t.Fatalf("docked passenger: status=%s carrier=%s port=%s position=(%d,%d); want embarked on original ship at destination city (2,0)", passengerStatus, carrierID, passengerPort, passengerQ, passengerR)
+	}
+
 	seedDepartureFood(t, pool, destID)
 	if _, err := StartMarch(ctx, pool, scheduler, eventStore, clk, MarchOrder{
 		WorldID: worldID, PlayerID: ownerID, UnitID: shipID,
