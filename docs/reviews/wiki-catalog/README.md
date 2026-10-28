@@ -1,6 +1,6 @@
 # Codex: en artikel per sak
 
-Långa ämneskapitel gjorde en enskild regel svår att hitta. Nu har348korta artiklar egna titlar, alias och länkar; aktuella katalogobjekt täcks från kod och färska varurader. Webb och Keryx söker titel före alias före innehåll. Forces-namnet öppnar rätt enhet. Oikos är uttryckligen framtida. Produktion `c87e750d`, deploykvitto i `deploy-proof.json` efter integration.
+Långa ämneskapitel gjorde en enskild regel svår att hitta. Nu har348korta artiklar egna titlar, alias och länkar; aktuella katalogobjekt täcks från kod och färska varurader. Webb och Keryx söker titel före alias före innehåll. Forces-namnet öppnar rätt enhet. Oikos är uttryckligen framtida. Produktion `c87e750d`, mergad och LIVE `ecd224bd`. Ny processhash, clean218, bevarad grunddata och341byte-lika statiska filer verifierade i `deploy-proof.json`.
 
 Inventeringen omfattar65gamla artiklar/634faktablock. Historisk atomisering hittar687faktadelar,0saknade och8källbelagda korrigeringar. `fact-inventory.*`, `fact-migration.json` och `fact-preservation-proof.json` visar källor, rad/hash och aktuella hem. Täckningskontrollen var assertion-röd innan katalogmappningen fanns.
 
