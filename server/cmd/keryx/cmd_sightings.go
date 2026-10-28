@@ -13,6 +13,8 @@ import (
 // server/api/handlers/foreign_units.go), plus the distance/bearing keryx
 // derives locally — same pattern as mapCmd's `cand` type.
 type sightingUnit struct {
+	ID       string `json:"id"`
+	Crew     int    `json:"crew,omitempty"`
 	Name     string `json:"name"`
 	Owner    string `json:"owner"`
 	Type     string `json:"type"`
@@ -45,8 +47,9 @@ type sightingToward struct {
 
 // sightingCargo mirrors foreignCargo (server/api/handlers/foreign_units.go).
 type sightingCargo struct {
-	Type string `json:"type"`
-	Size int    `json:"size"`
+	Units int    `json:"units"`
+	Type  string `json:"type"`
+	Size  int    `json:"size"`
 }
 
 // sightingGarrison mirrors the fields of a /provinces marker relevant to a

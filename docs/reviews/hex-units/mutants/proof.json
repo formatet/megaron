@@ -1,0 +1,37 @@
+[
+  {
+    "mutant": "origin",
+    "red": true,
+    "restored_green": true
+  },
+  {
+    "mutant": "private-hull",
+    "red": true,
+    "restored_green": true
+  },
+  {
+    "mutant": "hull",
+    "red": true,
+    "restored_green": true
+  },
+  {
+    "mutant": "goods",
+    "red": true,
+    "restored_green": true
+  },
+  {
+    "mutant": "pending",
+    "red": true,
+    "restored_green": true
+  },
+  {
+    "mutant": "cli-origin",
+    "red": true,
+    "restored_green": true
+  },
+  {
+    "mutant": "redirect-selection-native",
+    "red": true,
+    "restored_green": true
+  }
+]

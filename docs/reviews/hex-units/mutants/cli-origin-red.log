@@ -1,0 +1,36 @@
+» färsk DB på migration 221 · commit b39f0b64+ändringar
+--- FAIL: TestHexInspectsPhysicalOwnAndOnlyPublicForeignFields (0.00s)
+    cmd_hex_test.go:42: missing "Marching force": Hex (2,0): plains
+          Own ship [ship] · merchantman ×1 · positioned
+            hex (2,0)
+            Hull 5/5 · crew 0 · food for 4 game days
+            Passengers: Aboard force ×100
+          Seen ship · Other's galley ×1 · marching
+            Heading south
+            Hull: unknown · Provisions: unknown
+            Passengers: spearman ×100
+            Orders and destination: unknown
+    cmd_hex_test.go:42: missing "keryx unit redirect": Hex (2,0): plains
+          Own ship [ship] · merchantman ×1 · positioned
+            hex (2,0)
+            Hull 5/5 · crew 0 · food for 4 game days
+            Passengers: Aboard force ×100
+          Seen ship · Other's galley ×1 · marching
+            Heading south
+            Hull: unknown · Provisions: unknown
+            Passengers: spearman ×100
+            Orders and destination: unknown
+    cmd_hex_test.go:42: missing "messenger": Hex (2,0): plains
+          Own ship [ship] · merchantman ×1 · positioned
+            hex (2,0)
+            Hull 5/5 · crew 0 · food for 4 game days
+            Passengers: Aboard force ×100
+          Seen ship · Other's galley ×1 · marching
+            Heading south
+            Hull: unknown · Provisions: unknown
+            Passengers: spearman ×100
+            Orders and destination: unknown
+    cmd_hex_test.go:70: march matched origin instead of current position
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.003s
+FAIL

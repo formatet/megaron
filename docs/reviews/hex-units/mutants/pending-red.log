@@ -1,0 +1,60 @@
+TAP version 13
+# Subtest: hex own card exposes hull, order, cargo and direct messenger actions
+ok 1 - hex own card exposes hull, order, cargo and direct messenger actions
+  ---
+  duration_ms: 11.794625
+  type: 'test'
+  ...
+# Subtest: hex foreign card uses only the existing public projection
+ok 2 - hex foreign card uses only the existing public projection
+  ---
+  duration_ms: 0.322885
+  type: 'test'
+  ...
+# Subtest: hex marching selection follows the physical route rather than its origin
+ok 3 - hex marching selection follows the physical route rather than its origin
+  ---
+  duration_ms: 0.417793
+  type: 'test'
+  ...
+# Subtest: hex own card reads real cargo fields, pending runner and mobile collapse without duplicate order ids
+not ok 4 - hex own card reads real cargo fields, pending runner and mobile collapse without duplicate order ids
+  ---
+  duration_ms: 0.72165
+  type: 'test'
+  location: '/tmp/megaron-hex-units-mutants/web/static/js/megaron/ui/hex_forces.test.mjs:29:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /Messenger carrying redirect/. Input:
+    
+    '<section class="hex-forces"><div class="ir-label">Forces here</div><details class="hex-force"><summary>First Spearmen · carrying goods</summary><div class="force-card" id="hex-ucard-u" style="padding:.3rem .2rem;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap"><button class="force-name-link" data-unit-id="u">View in Forces →</button><a class="cx-link force-codex-name" href="#" data-cx-kind="unit" data-cx-key="spearman">First Spearmen</a><span style="font-size:.6rem;margin-left:.3rem;color:var(--text-dim)">food for 4 game days (4 fish)</span><span style="font-size:.68rem;color:var(--text-dim);margin-left:auto">carrying goods</span></div><p class="force-strength">Spearmen ×100</p><div style="font-size:.65rem;color:var(--text-dim)">Carrying goods — bound to a sea route</div><p class="force-cargo">Goods: tin 12</p><div id="hex-uorder-u" style="font-size:.65rem;color:var(--text-dim);margin-top:.15rem"></div></div></details></section>'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: '<section class="hex-forces"><div class="ir-label">Forces here</div><details class="hex-force"><summary>First Spearmen · carrying goods</summary><div class="force-card" id="hex-ucard-u" style="padding:.3rem .2rem;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap"><button class="force-name-link" data-unit-id="u">View in Forces →</button><a class="cx-link force-codex-name" href="#" data-cx-kind="unit" data-cx-key="spearman">First Spearmen</a><span style="font-size:.6rem;margin-left:.3rem;color:var(--text-dim)">food for 4 game days (4 fish)</span><span style="font-size:.68rem;color:var(--text-dim);margin-left:auto">carrying goods</span></div><p class="force-strength">Spearmen ×100</p><div style="font-size:.65rem;color:var(--text-dim)">Carrying goods — bound to a sea route</div><p class="force-cargo">Goods: tin 12</p><div id="hex-uorder-u" style="font-size:.65rem;color:var(--text-dim);margin-top:.15rem"></div></div></details></section>'
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-hex-units-mutants/web/static/js/megaron/ui/hex_forces.test.mjs:34:38)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: freight hull follows its own caravan and never guesses the departure port
+ok 5 - freight hull follows its own caravan and never guesses the departure port
+  ---
+  duration_ms: 0.229035
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 4
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 76.905872
