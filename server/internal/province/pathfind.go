@@ -328,7 +328,7 @@ func NearestSettlementNeighbor(ctx context.Context, db Queryer, worldID uuid.UUI
 // overestimate and A* would silently return non-optimal routes.
 func minPassableCost(category string, roads RoadSet) float64 {
 	c := minTerrainCost(category)
-	if len(roads) != 0 {
+	if roads.RoadCount() != 0 {
 		if rt, ok := RoadTicks(category); ok && rt < c {
 			c = rt
 		}

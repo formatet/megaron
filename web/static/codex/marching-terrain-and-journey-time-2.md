@@ -1,5 +1,5 @@
 A fully crewed Galley sails **3 coastal hexes per game day** or **5 deep-sea hexes per
-game day**, **2 river hexes per game day**, and takes **1 game day** through a ford. A War Galley
+game day**, **2 river hexes per game day**, and takes **1 game day** through a ford — half that with the current, twice it against it. A War Galley
 needs 60% of the Galley's time; an Emporos needs 140%. A short crew or a carried
 land unit slows a marching ship. Runners aboard follow their carrier's journey.
 Cargo journeys use the separate [[routes|caravan rule]]: 1.5 times the base route
