@@ -88,6 +88,11 @@ func setupLandMission(t *testing.T) (pool *pgxpool.Pool, worldID, ownerID, shipI
 		t.Fatalf("create home settlement: %v", err)
 	}
 
+	// Every actual port departure now loads food here, even with no support anchor.
+	if _, err := pool.Exec(ctx, `INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,'grain',10000,0,20000,0)`, homeID); err != nil {
+		t.Fatal(err)
+	}
+
 	if err := pool.QueryRow(ctx,
 		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, settlement_id)
 		 VALUES ($1, $2, 'galley', 'naval', 1, 20, 'garrison', $3) RETURNING id`,

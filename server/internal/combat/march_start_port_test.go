@@ -161,6 +161,7 @@ func TestStartMarch_NavalPlainMarchToFriendlyPortDocks(t *testing.T) {
 	).Scan(&homeID); err != nil {
 		t.Fatalf("create home settlement: %v", err)
 	}
+	seedDepartureFood(t, pool, homeID)
 	var destProvinceID uuid.UUID
 	if err := pool.QueryRow(ctx,
 		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type) VALUES ($1, 2, 0, 'plains') RETURNING id`,

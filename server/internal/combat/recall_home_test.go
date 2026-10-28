@@ -29,6 +29,9 @@ func TestRecallExpeditionLaterLegHome(t *testing.T) {
 					t.Fatal(err)
 				}
 			}
+			if naval {
+				seedDepartureFoodForShip(t, pool, f.unitID)
+			}
 			// Reach the selected hex and leave time for a later outward leg.
 			f.start(t, 9, 0, 40)
 			if err := f.h.Handle(ctx, f.nextArrival(t)); err != nil {

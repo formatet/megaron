@@ -87,6 +87,7 @@ func TestBetaShipDepartureSpeedLatePrayerAndActualReturn(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	seedDepartureFood(t, pool, city)
 	order := MarchOrder{WorldID: world, PlayerID: owner, UnitID: ship, TargetQ: 12, Intent: "patrol"}
 	preview, err := PreviewMarch(ctx, pool, clk, order, nil)
 	if err != nil {

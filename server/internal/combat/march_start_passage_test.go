@@ -106,6 +106,7 @@ func setupPassageMission(t *testing.T) (pool *pgxpool.Pool, worldID, ownerID, sh
 	).Scan(&sID); err != nil {
 		t.Fatalf("create garrisoned ship: %v", err)
 	}
+	seedDepartureFood(t, pool, hID)
 	return pool, wID, oID, sID, 6, 0, hID
 }
 

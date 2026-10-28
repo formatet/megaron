@@ -81,6 +81,7 @@ func TestStartMarch_SentryIsADeprecatedAliasForPatrol(t *testing.T) {
 		t.Fatalf("create capital settlement: %v", err)
 	}
 
+	seedDepartureFood(t, pool, capitalID)
 	clk := clock.NewTestClock(time.Now())
 	scheduler := events.NewScheduler(pool, clk)
 	eventStore := events.NewStore(pool)
