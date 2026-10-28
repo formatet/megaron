@@ -90,13 +90,13 @@ try:
   offers=[]
   for i,terms in enumerate([['--want-good','grain','--want-qty','1','--offer-silver','2'],['--offer-good','grain','--offer-qty','1','--want-silver','2']]):
    text=run(str(tmp/'keryx'),'trade-offer','--by','land','--to',foreign['id'],*terms,'--message','Offer expiry proof '+str(i),env=clienv);(OUT/f'cli-send-{i}.txt').write_text(text)
-  records=json.loads(sql(f"SELECT json_agg(t) FROM(SELECT m.id,m.arrives_at,m.expires_at,a.due_tick arrival,e.due_tick expiry FROM messengers m JOIN scheduled_events a ON a.payload->>'messenger_id'=m.id::text AND a.event_type='MessengerArrival' JOIN scheduled_events e ON e.payload->>'messenger_id'=m.id::text AND e.event_type='OfferExpiry' WHERE m.world_id='{world}' AND m.sender_id='{pid}' ORDER BY m.id)t"))
+  records=json.loads(sql(f"SELECT json_agg(t) FROM(SELECT m.id,m.arrives_at,m.expires_at,a.due_tick arrival,e.due_tick expiry FROM messengers m JOIN scheduled_events a ON a.payload->>'messenger_id'=m.id::text AND a.event_type IN('MessengerArrival','MessengerArrivalV2') JOIN scheduled_events e ON e.payload->>'messenger_id'=m.id::text AND e.event_type='OfferExpiry' WHERE m.world_id='{world}' AND m.sender_id='{pid}' ORDER BY m.id)t"))
   from datetime import datetime
   for row in records:
    assert row['expiry']-row['arrival']==24,row
    assert (datetime.fromisoformat(row['expires_at'])-datetime.fromisoformat(row['arrives_at'])).total_seconds()==24*3600,row
   current=max(r['arrival'] for r in records)
-  sql(f"UPDATE worlds SET current_tick={current},last_tick_at=now() WHERE id='{world}'; UPDATE scheduled_events SET process_after=now() WHERE world_id='{world}' AND event_type='MessengerArrival';",True)
+  sql(f"UPDATE worlds SET current_tick={current},last_tick_at=now() WHERE id='{world}'; UPDATE scheduled_events SET process_after=now() WHERE world_id='{world}' AND event_type IN('MessengerArrival','MessengerArrivalV2');",True)
   for _ in range(200):
    statuses=sql(f"SELECT string_agg(status,',') FROM messengers WHERE world_id='{world}' AND sender_id='{pid}'")
    if statuses=='delivered,delivered':break
@@ -112,7 +112,7 @@ try:
    browser=pw.firefox.launch()
    for cycle in [1,2]:
     for width,height in [(1280,900),(390,844)]:
-     ctx,page,errors=browser_page(browser,width,height);page.locator('#trig-diplomacy').click();person=page.locator('[data-person="'+pid+'"]');person.wait_for();assert 'before' in person.inner_text();shot(page,f'{cycle}-deadline-{width}');person.click();page.wait_for_selector('[data-letter]');assert page.locator('#dtab-letters').get_by_role('button',name='Accept',exact=True).count()==2;shot(page,f'{cycle}-offers-{width}');assert not errors,errors;ctx.close()
+     ctx,page,errors=browser_page(browser,width,height);page.locator('#trig-diplomacy').click();person=page.locator('[data-person="'+pid+'"]');person.wait_for();assert 'before' in person.inner_text();shot(page,f'{cycle}-deadline-{width}');person.click();page.wait_for_selector('[data-letter]');assert page.locator('#dtab-letters button[onclick^="dipAccept("]').count()==2;shot(page,f'{cycle}-offers-{width}');assert not errors,errors;ctx.close()
    browser.close()
   assert before==hashes(),'production sources changed during capture'
   (OUT/'proof.json').write_text(json.dumps({'health':health,'shots':shots,'source_unchanged':True,'offers':records,'stays':stays,'fixture':'Fresh world, explicit contacted neighbour/cities/stocks; two real CLI buy/sell orders, saved24tick/wall deadlines, tick advance fixture and actual Arrival worker, real Keryx outbox/inbox, receiver Letters deadline and Accept/Decline in two Firefox desktop/mobile rounds.'},indent=2))

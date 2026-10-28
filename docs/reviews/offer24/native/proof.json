@@ -1,0 +1,63 @@
+{
+  "health": {
+    "commit": "738fb362+offer24",
+    "migration": 218,
+    "status": "ok"
+  },
+  "shots": [
+    {
+      "file": "1-deadline-1280.png"
+    },
+    {
+      "file": "1-offers-1280.png"
+    },
+    {
+      "file": "1-deadline-390.png"
+    },
+    {
+      "file": "1-offers-390.png"
+    },
+    {
+      "file": "2-deadline-1280.png"
+    },
+    {
+      "file": "2-offers-1280.png"
+    },
+    {
+      "file": "2-deadline-390.png"
+    },
+    {
+      "file": "2-offers-390.png"
+    }
+  ],
+  "source_unchanged": true,
+  "offers": [
+    {
+      "id": "9d92dde6-19ea-491d-8249-305d7ec7aebb",
+      "arrives_at": "2026-10-28T13:36:37.803488+00:00",
+      "expires_at": "2026-10-29T13:36:37.803488+00:00",
+      "arrival": 4,
+      "expiry": 28
+    },
+    {
+      "id": "a53a10a3-f118-40f6-8192-5a9e333f39ca",
+      "arrives_at": "2026-10-28T13:36:37.770817+00:00",
+      "expires_at": "2026-10-29T13:36:37.770817+00:00",
+      "arrival": 4,
+      "expiry": 28
+    }
+  ],
+  "stays": [
+    {
+      "id": "9d92dde6-19ea-491d-8249-305d7ec7aebb",
+      "stay": 28,
+      "expiry": 28
+    },
+    {
+      "id": "a53a10a3-f118-40f6-8192-5a9e333f39ca",
+      "stay": 28,
+      "expiry": 28
+    }
+  ],
+  "fixture": "Fresh world, explicit contacted neighbour/cities/stocks; two real CLI buy/sell orders, saved24tick/wall deadlines, tick advance fixture and actual Arrival worker, real Keryx outbox/inbox, receiver Letters deadline and Accept/Decline in two Firefox desktop/mobile rounds."
+}

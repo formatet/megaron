@@ -1,0 +1,6 @@
+» färsk DB på migration 218 · commit 738fb362+ändringar
+--- FAIL: TestExistingSeaOfferReplanKeepsScheduled168Deadline (0.02s)
+    offer_deadline_test.go:96: replan changed existing168 expiry: before={ID:1 WorldID:4fec5a4a-9746-4673-b37d-de95c901c2bc EventType:OfferExpiry Payload:{"messenger_id": "20c3315e-242c-48f8-8b75-93df8843bc3c"} ProcessAfter:0001-01-01 00:00:00 +0000 UTC ProcessedAt:<nil> FailedAt:<nil> Attempts:0 DueTick:668 Priority:0} after={ID:3 WorldID:4fec5a4a-9746-4673-b37d-de95c901c2bc EventType:OfferExpiry Payload:{"messenger_id": "20c3315e-242c-48f8-8b75-93df8843bc3c"} ProcessAfter:0001-01-01 00:00:00 +0000 UTC ProcessedAt:<nil> FailedAt:<nil> Attempts:0 DueTick:531 Priority:0} wall=2026-10-29 20:00:00 +0100 CET
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.023s
+FAIL

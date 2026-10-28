@@ -1,0 +1,3 @@
+land [selected]: 12 game days · about 719.9999999940833 minutes · arrives 2026-10-28T22:36:37.761736+01:00 · Interception · A passable land route
+sea: 4 game days · about 239.99999998541668 minutes · arrives 2026-10-28T14:36:37.764425+01:00 · Storms and interception · Coastal access or a harbour at both cities; A free galley or Emporos with cargo space at the origin; Voyage provisions, checked at dispatch
+Trade offer dispatched to Kyme (want 1 grain, offer 2 silver) · arrives ≈ today 14:36

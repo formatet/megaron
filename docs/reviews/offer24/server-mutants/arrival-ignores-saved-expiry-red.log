@@ -1,0 +1,7 @@
+» färsk DB på migration 218 · commit 738fb362+ändringar
+2026/10/28 10:36:50 INFO messenger delivered id=a45602e3-2b14-4c37-ab72-20fdbb530446 destination=131d26ac-f99d-4ca4-9d80-16a0530e0ed2
+--- FAIL: TestExistingOfferArrivalKeepsPersisted168Deadline (0.02s)
+    offer_deadline_test.go:57: existing offer stay=524 must retain persisted deadline=668
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.022s
+FAIL

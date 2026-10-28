@@ -1,0 +1,15 @@
+From: Anokwotas  (today 14:36)
+  "Offer expiry proof 1"
+  ⇄ TRADE OFFER — they want to sell 1 grain, asking 2 silver
+    → you BUY 1 grain and pay 2 silver
+    accept:  keryx trade-accept --id 9d92dde6-19ea-491d-8249-305d7ec7aebb
+    decline: keryx trade-decline --id 9d92dde6-19ea-491d-8249-305d7ec7aebb
+    expires ≈ tomorrow 14:36 (escrow refunds if left unanswered)
+
+From: Anokwotas  (today 14:36)
+  "Offer expiry proof 0"
+  ⇄ TRADE OFFER — they want to buy 1 grain, paying 2 silver
+    → you SELL 1 grain and receive 2 silver
+    accept:  keryx trade-accept --id a53a10a3-f118-40f6-8192-5a9e333f39ca
+    decline: keryx trade-decline --id a53a10a3-f118-40f6-8192-5a9e333f39ca
+    expires ≈ tomorrow 14:36 (escrow refunds if left unanswered)

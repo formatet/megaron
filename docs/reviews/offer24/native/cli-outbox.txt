@@ -1,0 +1,3 @@
+→ Kyme  [delivered]  (today 10:36)  id:9d92dde6-19ea-491d-8249-305d7ec7aebb  trade: sell 1 grain for 2 silver [pending]  (1 grain escrowed — cancel with: keryx trade-cancel --id 9d92dde6-19ea-491d-8249-305d7ec7aebb)  waiting on a reply from Kyme  expires ≈ tomorrow 14:36
+→ Kyme  [delivered]  (today 10:36)  id:a53a10a3-f118-40f6-8192-5a9e333f39ca  trade: want 1 grain for 2 silver [pending]  (2 silver escrowed — cancel with: keryx trade-cancel --id a53a10a3-f118-40f6-8192-5a9e333f39ca)  waiting on a reply from Kyme  expires ≈ tomorrow 14:36
+⚠ Escrow exposure: 2 silver + 1 grain locked across 2 pending offers
