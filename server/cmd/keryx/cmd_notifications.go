@@ -126,6 +126,21 @@ func printNotificationDetail(c *Client, n notificationItem) {
 			fmt.Printf("      Your %s is the first to reach this %s — you may name it. `keryx places name %s %s \"<name>\"`\n", name, placeKindLabel(body.Kind), body.Kind, body.PlaceID)
 		}
 	}
+	if n.Kind == "PlaceTold" {
+		var body struct {
+			From  string `json:"from"`
+			Place string `json:"place"`
+			Kind  string `json:"place_kind"`
+			Hexes int    `json:"hexes"`
+		}
+		if json.Unmarshal(n.Body, &body) == nil {
+			label := placeKindLabel(body.Kind)
+			if body.Kind == "city" {
+				label = "city"
+			}
+			fmt.Printf("      %s tells you of the %s %s — %d hexes now on your map as they saw them. Its cities are as they last saw them; trade needs your own people there. `keryx places`\n", body.From, label, body.Place, body.Hexes)
+		}
+	}
 	if n.Kind == "MessengerLostAtSea" || n.Kind == "MessengerRescuedAtSea" {
 		printMessengerFateLine(n, c)
 	}

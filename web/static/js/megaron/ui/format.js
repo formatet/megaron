@@ -165,7 +165,7 @@ export function notifDomain(kind) {
     StandingOrderDispatched: 'trade', StandingOrderPaused: 'trade',
     OfferAccepted: 'trade', OfferDeclined: 'trade', OfferExpired: 'trade',
     // Diplomacy — the messenger channel.
-    MessengerLostAtSea: 'diplomacy', MessengerRescuedAtSea: 'diplomacy', MessengerArrival: 'diplomacy', MessengerReturned: 'diplomacy', PassageStalled: 'diplomacy',
+    MessengerLostAtSea: 'diplomacy', MessengerRescuedAtSea: 'diplomacy', MessengerArrival: 'diplomacy', MessengerReturned: 'diplomacy', PlaceTold: 'diplomacy', PassageStalled: 'diplomacy',
     // Kult — the gods answering.
     RiteAnswered: 'kult', TempleDemolitionWrath: 'kult', KharisDeclining: 'kult', KharisBandChanged: 'kult', DivinePunishment: 'kult', DivineBlessing: 'kult', KharisEvent: 'kult',
   };
@@ -191,6 +191,7 @@ export function notifIcon(kind) {
     TradeLost:          '🌊',
     TradeReturn:        '🐂',
     MessengerArrival:   '✉',
+    PlaceTold:          '✉',
     MessengerLostAtSea: '🌊',
     MessengerRescuedAtSea: '📜',
     MessengerReturned:  '📜',
@@ -383,6 +384,10 @@ export function notifText(kind, body) {
     case 'GiftLost': return giftText(kind, body);
     case 'TradeLost':          return `Caravan lost to ${body.reason || 'misfortune'}`;
     case 'TradeReturn':        return `Trade returned: ${Math.floor(body.quantity || 0)} ${body.good_key || ''}`;
+    case 'PlaceTold': {
+      const place = { river: 'river', massif: 'mountain massif', desert: 'desert', forest: 'cedar forest', city: 'city' }[body.place_kind] || 'place';
+      return `${esc(body.from || 'A Wanax')} tells you of the ${place} ${esc(body.place || '')} — ${body.hexes || 0} hexes now on your map as they saw them. Its cities are as they last saw them; you cannot trade there until your own people arrive.`;
+    }
     case 'MessengerArrival': {
       // A messenger standing in your court (messenger/handler.go
       // notifyDelivered). Names the sender by Wanax name and the city it

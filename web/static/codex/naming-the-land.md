@@ -22,4 +22,6 @@ After naming, the name appears in the hexpanel and on the map at readable zoom. 
 
 Administrators can change or remove unsuitable names with `keryx places rename <kind> <q,r> "<name>"` or `keryx places unname <kind> <q,r>` and their admin key. Removing a name leaves the naming right spent.
 
+Once a place has a name, anyone who has seen it can tell others of it in a letter. See [[telling-of-places]].
+
 Storms follow their own rule: the first ship struck by a storm earns its naming right. See [[storms]].

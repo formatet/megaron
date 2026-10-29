@@ -128,6 +128,7 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 			OfferQty    float64 `json:"offer_qty"`
 			WantSilver  float64 `json:"want_silver"`
 		} `json:"trade_offer,omitempty"`
+		TellPlace *tellPlaceRequest `json:"tell_place,omitempty"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
@@ -323,6 +324,24 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 	if dist == 0 {
 		writeError(w, http.StatusBadRequest, "settlements are on the same province")
 		return
+	}
+
+	// A letter may tell of a place (megaron_plan_vagbeskrivningar v1), frozen
+	// now: what the writer has seen at the moment the Runner leaves.
+	var storyJSON []byte
+	if req.TellPlace != nil {
+		var destOwner *uuid.UUID
+		_ = h.pool.QueryRow(r.Context(), `SELECT owner_id FROM settlements WHERE id = $1`, destID).Scan(&destOwner)
+		if destOwner == nil || *destOwner == playerID {
+			writeError(w, http.StatusUnprocessableEntity, "a story is told to another Wanax — this city has no other ruler to hear it")
+			return
+		}
+		story, err := h.buildStory(r.Context(), worldID, playerID, *req.TellPlace)
+		if err != nil {
+			writeStoryError(w, err)
+			return
+		}
+		storyJSON, _ = json.Marshal(story)
 	}
 
 	// R1/R2 (megaron_plan_sjohandel_mellan_spelare.md): a trade offer between
@@ -592,6 +611,12 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 	if caseErr != nil {
 		writeError(w, http.StatusBadRequest, caseErr.Error())
 		return
+	}
+	if storyJSON != nil {
+		if _, err = tx.Exec(r.Context(), `UPDATE messengers SET told_place = $2::jsonb WHERE id = $1`, messengerID, storyJSON); err != nil {
+			writeError(w, 500, "could not attach the story")
+			return
+		}
 	}
 
 	if counterID != uuid.Nil {

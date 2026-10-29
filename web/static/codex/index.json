@@ -1122,7 +1122,8 @@
       "related": [
         "contact",
         "trade",
-        "runners"
+        "runners",
+        "telling-of-places"
       ],
       "sections": [
         {
@@ -1261,7 +1262,8 @@
         "sight",
         "marching",
         "storms",
-        "keryx"
+        "keryx",
+        "telling-of-places"
       ],
       "sections": [
         {
@@ -1280,6 +1282,35 @@
       "terms": [
         "naming right",
         "name it"
+      ]
+    },
+    {
+      "id": "telling-of-places",
+      "title": "Telling of places",
+      "category": "The wider world",
+      "drawer": "diplomacy",
+      "kinds": [
+        "PlaceTold"
+      ],
+      "related": [
+        "naming-the-land",
+        "messengers",
+        "sight",
+        "contact"
+      ],
+      "sections": [
+        {
+          "id": "telling-of-places-what",
+          "title": "What a story carries"
+        },
+        {
+          "id": "telling-of-places-reader",
+          "title": "What the reader gets"
+        },
+        {
+          "id": "telling-of-places-how",
+          "title": "Telling of places"
+        }
       ]
     },
     {

@@ -344,9 +344,15 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 
 	var eyes []province.Eye
 	var remembered map[[2]int]bool
+	toldBy := map[[2]int]string{}
 	if authenticated {
 		eyes = loadLiveEyes(r.Context(), h.pool, worldID, playerID, h.clk.Now())
 		remembered = loadRememberedTiles(r.Context(), h.pool, worldID, playerID)
+		for k, name := range loadToldBy(r.Context(), h.pool, worldID, playerID) {
+			if !remembered[k] {
+				toldBy[k] = name // known only from the story, not first-hand
+			}
+		}
 		// Hexes known by word are drawn as memory here, and only here and in
 		// the city list — never in the gates that read loadRememberedTiles.
 		for k := range loadHeardTiles(r.Context(), h.pool, worldID, playerID) {
@@ -373,6 +379,7 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 		PlaceKind            string            `json:"place_kind,omitempty"`
 		PlaceID              string            `json:"place_id,omitempty"`
 		CanName              bool              `json:"can_name,omitempty"`
+		ToldBy               string            `json:"told_by,omitempty"`
 		Q                    int               `json:"q"`
 		R                    int               `json:"r"`
 		Terrain              string            `json:"terrain"`
@@ -408,6 +415,7 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 			liveTiles = append(liveTiles, pos)
 		case remembered[[2]int{t.Q, t.R}]:
 			t.Tier = "remembered"
+			t.ToldBy = toldBy[[2]int{t.Q, t.R}]
 		default:
 			t.Tier = "fog"
 		}
@@ -1008,8 +1016,10 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 	var seen map[uuid.UUID]seenCity
 	var liveCityHexes []province.MapPosition
 	anchor, anchorErr := tick.LoadAnchor(r.Context(), h.pool, worldID)
+	var heard map[[2]int]bool
 	if authenticated {
 		seen = loadSeenSettlements(r.Context(), h.pool, worldID, playerID)
+		heard = loadHeardTiles(r.Context(), h.pool, worldID, playerID)
 	}
 	var markers []provinceMarker
 	for rows.Next() {
@@ -1022,6 +1032,11 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 		m.SizeTier = settlement.SizeTier(population)
 		pos := province.MapPosition{Q: m.Q, R: m.R}
 		m.Visible = !authenticated || knownToPlayer(eyes, remembered, pos, terrain)
+		if !m.Visible && heard[[2]int{m.Q, m.R}] {
+			// Known by word: a told city is drawn from the story's snapshot
+			// below, like memory (megaron_plan_vagbeskrivningar v1).
+			_, m.Visible = seen[m.SettlementID]
+		}
 		if authenticated {
 			m.Own = ownSettlements[m.ID]
 			m.IsCapital = m.ID == ownProvinceID
@@ -2189,8 +2204,17 @@ func (h *WorldHandler) loadCities(ctx context.Context, worldID, playerID uuid.UU
 			if !heard[[2]int{q, r}] {
 				continue
 			}
-			// Known by word (a market board read from afar): letters, not trade.
+			// Known by word (a market board read from afar, or a story told
+			// in a letter): letters, not trade. A told city reads as the
+			// teller last saw it.
 			knowledge = "heard"
+			if snap, ok := seen[uuid.MustParse(e.SettlementID)]; ok {
+				e.Name, e.Owner, e.IsCapital, ownerID, state = snap.Name, snap.OwnerName, snap.IsCapital, snap.OwnerID, snap.State
+				if anchorErr == nil {
+					at, ago := lastSeen(snap.SeenTick, anchor)
+					e.LastSeenAt, e.SeenGameDaysAgo = &at, &ago
+				}
+			}
 		}
 		if ownerID == nil || state == "sunk" {
 			continue // the directory lists ruled cities only
