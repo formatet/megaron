@@ -1311,13 +1311,18 @@ func (h *SettlementHandler) applyOracleRevealDeposits(
 		return nil, "", fmt.Errorf("oracle: read revealed tiles: %w", err)
 	}
 	revealedTiles := []map[string]any{}
+	var revealedHexes []province.MapPosition
 	for rows.Next() {
 		var q, r int
 		if scanErr := rows.Scan(&q, &r); scanErr == nil {
 			revealedTiles = append(revealedTiles, map[string]any{"q": q, "r": r})
+			revealedHexes = append(revealedHexes, province.MapPosition{Q: q, R: r})
 		}
 	}
 	rows.Close()
+	if err := province.RecordSeenSettlements(ctx, tx, worldID, playerID, revealedHexes); err != nil {
+		return nil, "", fmt.Errorf("oracle: record seen cities: %w", err)
+	}
 	if rowsErr := rows.Err(); rowsErr != nil {
 		return nil, "", fmt.Errorf("oracle: read revealed tiles: %w", rowsErr)
 	}

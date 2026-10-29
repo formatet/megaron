@@ -27,6 +27,7 @@ import { zoomStep, clampPan } from './camera.js';
 import { bindMapInput } from './map_input.js';
 import { confirmInline, showInlineResult } from '../ui/inline_result.js';
 import { readingHTML } from '../ui/market_board.js';
+import { fmtTickTime } from '../ui/fmt_clock.js';
 import { unitHoverLines } from '../ui/hover.js';
 import { drawStorm, STORM_FRAMES } from './storms.js';
 import { roadSegments, plannedSegments, drawRoads } from './roads.js';
@@ -3489,6 +3490,8 @@ function openCityPanel(h, tile, marker, units, foreignUnits) {
 
   let ownerText = marker.owner || '(unoccupied)';
   if (marker.allied) ownerText += ' (allied)';
+  // Remembered city: shown as last seen, never as it is now (§S0).
+  if (marker.last_seen_at) ownerText += ` · as last seen ${fmtTickTime(null, marker.last_seen_at)}`;
   document.getElementById('ip-owner').textContent = ownerText;
   const defence = document.getElementById('ip-defence');
   // Coarsen only the walls and land defenders this panel already exposed.

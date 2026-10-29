@@ -368,6 +368,9 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 					slog.Warn("FOW sweep insert failed", "unit", unitID, "q", tile.Q, "r", tile.R, "err", insErr)
 				}
 			}
+			if seenErr := province.RecordSeenSettlements(ctx, tx, worldID, u.ownerID, path); seenErr != nil {
+				slog.Warn("FOW sweep seen-cities failed", "unit", unitID, "err", seenErr)
+			}
 		}
 
 	}

@@ -23,6 +23,8 @@ The open horizon belongs to whoever stands at the water, and it reaches only acr
 
 The map shows **colour for live sight, grayscale for remembered ground, and black for places never seen**. Remembered ground keeps its [[terrain|terrain]] details, frozen as you last saw it. It can be wrong, and it will not tell you so.
 
+**A city on remembered ground is shown as you last saw it**: its name, its ruler, its walls and its size, with the time you saw it. If it has changed hands or burned since then, you will not know until someone sees it again. A city founded on ground you saw while it was empty does not appear in your memory, because you remember the empty ground. A [[messengers|messenger]] that reaches a city also lets you see it at that moment. <!-- src: server/internal/province/seen_settlements.go RecordSeenSettlements -->
+
 **Foreign forces are drawn only on ground you can see live**, never on remembered ground. They are drawn with a blinking outline.
 
 ## Moving actors on the map {#map-actors}

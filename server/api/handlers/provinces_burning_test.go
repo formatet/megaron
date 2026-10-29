@@ -13,6 +13,7 @@ import (
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/province"
 )
 
 // TestProvinces_BurningOneTickLiveOnly: a city sacked and burned this tick
@@ -68,6 +69,9 @@ func TestProvinces_BurningOneTickLiveOnly(t *testing.T) {
 		worldID, viewerID,
 	); err != nil {
 		t.Fatalf("mark (6,0) remembered: %v", err)
+	}
+	if err := province.RecordSeenSettlements(ctx, pool, worldID, viewerID, []province.MapPosition{{Q: 6, R: 0}}); err != nil {
+		t.Fatalf("record seen (6,0): %v", err)
 	}
 
 	wh := NewWorldHandler(pool, authSvc, clock.NewTestClock(time.Now()))

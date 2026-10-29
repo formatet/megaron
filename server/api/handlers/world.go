@@ -508,6 +508,7 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 		}
 		br := h.pool.SendBatch(r.Context(), batch)
 		_ = br.Close()
+		_ = province.RecordSeenSettlements(r.Context(), h.pool, worldID, playerID, liveTiles)
 	}
 
 	writeJSON(w, http.StatusOK, tiles)
@@ -999,6 +1000,16 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 		// map draws the fire for that one game day, then the ruin. Live sight
 		// only — a fire is activity, and memory carries none.
 		Burning bool `json:"burning,omitempty"`
+		// A city on a memory-only hex is drawn as it was last seen
+		// (megaron_plan_vagbeskrivningar §S0): when that was.
+		LastSeenAt      *time.Time `json:"last_seen_at,omitempty"`
+		SeenGameDaysAgo *int       `json:"seen_game_days_ago,omitempty"`
+	}
+	var seen map[uuid.UUID]seenCity
+	var liveCityHexes []province.MapPosition
+	anchor, anchorErr := tick.LoadAnchor(r.Context(), h.pool, worldID)
+	if authenticated {
+		seen = loadSeenSettlements(r.Context(), h.pool, worldID, playerID)
 	}
 	var markers []provinceMarker
 	for rows.Next() {
@@ -1025,7 +1036,23 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 			// carries no activity. m.Visible above is knownToPlayer (live ∪
 			// remembered), so it alone would leak a garrison out of a
 			// remembered city; AnyEyeSees narrows this branch to live only.
-			if !province.AnyEyeSees(eyes, pos, terrain) {
+			if province.AnyEyeSees(eyes, pos, terrain) {
+				liveCityHexes = append(liveCityHexes, pos)
+			} else {
+				// Memory shows the city as last seen, or not at all if the
+				// hex was remembered before the city stood there.
+				if authenticated {
+					snap, ok := seen[m.SettlementID]
+					if !ok || snap.State == "sunk" {
+						continue
+					}
+					m.Name, m.Owner, m.State, m.Walls = snap.Name, snap.OwnerName, snap.State, snap.Walls
+					m.SizeTier = settlement.SizeTier(snap.Population)
+					if anchorErr == nil {
+						at, ago := lastSeen(snap.SeenTick, anchor)
+						m.LastSeenAt, m.SeenGameDaysAgo = &at, &ago
+					}
+				}
 				m.ArmyTotal = 0
 				m.Burning = false
 				m.Besieged = false
@@ -1045,6 +1072,9 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 	}
 	if markers == nil {
 		markers = []provinceMarker{}
+	}
+	if authenticated {
+		_ = province.RecordSeenSettlements(r.Context(), h.pool, worldID, playerID, liveCityHexes)
 	}
 
 	writeJSON(w, http.StatusOK, markers)
@@ -1960,14 +1990,15 @@ func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 		        COALESCE(prov.map_q, 0),
 		        COALESCE(prov.map_r, 0),
 		        COALESCE(prov.id::text, ''),
-		        s.is_capital
+		        s.is_capital, s.state
 		 FROM settlements s
 		 LEFT JOIN players p ON p.id = s.owner_id
 		 LEFT JOIN provinces prov ON prov.id = s.province_id
-		 WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'
+		 WHERE s.world_id = $1
 		 ORDER BY s.name`,
 		worldID,
 	)
+	seen := loadSeenSettlements(r.Context(), h.pool, worldID, playerID)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "db error")
 		return
@@ -1997,10 +2028,11 @@ func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 		var kingdom *string
 		var terrain *string
 		var q, r int
+		var state string
 		if err := rows.Scan(&e.SettlementID, &e.Name, &e.Owner, &e.Culture, &terrain, &kingdom,
 			&ownerID,
 			&e.CopperDeposit, &e.TinDeposit, &e.SilverDeposit, &e.CedarDeposit, &e.IncenseDeposit,
-			&q, &r, &e.ProvinceID, &e.IsCapital); err != nil {
+			&q, &r, &e.ProvinceID, &e.IsCapital, &state); err != nil {
 			continue
 		}
 		terrainStr := ""
@@ -2008,17 +2040,28 @@ func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 			terrainStr = *terrain
 		}
 		// FOW gate: skip settlements the player doesn't actually know (same
-		// tier-1 ∪ tier-2 knowledge as /map — see knownToPlayer).
-		if !knownToPlayer(eyes, remembered, province.MapPosition{Q: q, R: r}, terrainStr) {
+		// tier-1 ∪ tier-2 knowledge as /map — see knownToPlayer). Memory-only
+		// cities read as last seen (megaron_plan_vagbeskrivningar §S0).
+		pos := province.MapPosition{Q: q, R: r}
+		if !knownToPlayer(eyes, remembered, pos, terrainStr) {
+			continue
+		}
+		own := ownerID != nil && *ownerID == playerID
+		if !own && !province.AnyEyeSees(eyes, pos, terrainStr) {
+			snap, ok := seen[uuid.MustParse(e.SettlementID)]
+			if !ok {
+				continue
+			}
+			e.Name, e.Owner, e.IsCapital, ownerID, state = snap.Name, snap.OwnerName, snap.IsCapital, snap.OwnerID, snap.State
+		}
+		if ownerID == nil || state == "sunk" {
 			continue
 		}
 		if kingdom != nil {
 			e.Kingdom = *kingdom
 		}
 		e.Terrain = terrainStr
-		if ownerID != nil && *ownerID == playerID {
-			e.Own = true
-		}
+		e.Own = own
 		result = append(result, e)
 	}
 	if result == nil {
@@ -2056,6 +2099,9 @@ type cityEntry struct {
 	IndustryHint   string `json:"industry_hint,omitempty"`
 	Note           string `json:"note,omitempty"`
 	MarketBoard    map[string]any `json:"market_board,omitempty"`
+	// Memory-only city: shown as last seen (megaron_plan_vagbeskrivningar §S0).
+	LastSeenAt      *time.Time `json:"last_seen_at,omitempty"`
+	SeenGameDaysAgo *int       `json:"seen_game_days_ago,omitempty"`
 }
 
 // loadCities builds the combined known + rumour-known directory for playerID:
@@ -2072,6 +2118,7 @@ func (h *WorldHandler) loadCities(ctx context.Context, worldID, playerID uuid.UU
 	heard := loadHeardTiles(ctx, h.pool, worldID, playerID)
 	readings, _ := economy.LoadBoardReadings(ctx, h.pool, worldID, playerID)
 	anchor, anchorErr := tick.LoadAnchor(ctx, h.pool, worldID)
+	seen := loadSeenSettlements(ctx, h.pool, worldID, playerID)
 
 	rows, err := h.pool.Query(ctx,
 		`SELECT s.id, s.name, COALESCE(p.wanax_name, p.username), s.culture_id, prov.terrain_type,
@@ -2088,11 +2135,12 @@ func (h *WorldHandler) loadCities(ctx context.Context, worldID, playerID uuid.UU
 		        COALESCE(prov.map_r, 0),
 		        COALESCE(prov.id::text, ''),
 		        s.is_capital, COALESCE(prov.coastal,false),
- (s.owner_id=$2 AND EXISTS(SELECT 1 FROM buildings b WHERE b.settlement_id=s.id AND b.building_type='harbour'))
+ (s.owner_id=$2 AND EXISTS(SELECT 1 FROM buildings b WHERE b.settlement_id=s.id AND b.building_type='harbour')),
+		        s.state
 		 FROM settlements s
 		 LEFT JOIN players p ON p.id = s.owner_id
 		 LEFT JOIN provinces prov ON prov.id = s.province_id
-		 WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'
+		 WHERE s.world_id = $1
 		 ORDER BY s.name`,
 		worldID, playerID,
 	)
@@ -2109,10 +2157,11 @@ func (h *WorldHandler) loadCities(ctx context.Context, worldID, playerID uuid.UU
 		var kingdom *string
 		var terrain *string
 		var q, r int
+		var state string
 		if err := rows.Scan(&e.SettlementID, &e.Name, &e.Owner, &e.Culture, &terrain, &kingdom,
 			&ownerID,
 			&e.CopperDeposit, &e.TinDeposit, &e.SilverDeposit, &e.CedarDeposit, &e.IncenseDeposit,
-			&q, &r, &e.ProvinceID, &e.IsCapital, &e.Coastal, &e.HasHarbour); err != nil {
+			&q, &r, &e.ProvinceID, &e.IsCapital, &e.Coastal, &e.HasHarbour, &state); err != nil {
 			continue
 		}
 		terrainStr := ""
@@ -2120,25 +2169,38 @@ func (h *WorldHandler) loadCities(ctx context.Context, worldID, playerID uuid.UU
 			terrainStr = *terrain
 		}
 		// FOW gate: skip settlements the player doesn't actually know (same
-		// tier-1 ∪ tier-2 knowledge as /map — see knownToPlayer).
+		// tier-1 ∪ tier-2 knowledge as /map — see knownToPlayer). A city on a
+		// memory-only hex reads as last seen (§S0), or not at all if the hex
+		// was remembered before it stood there.
 		knowledge := "known"
-		if !knownToPlayer(eyes, remembered, province.MapPosition{Q: q, R: r}, terrainStr) {
+		pos := province.MapPosition{Q: q, R: r}
+		own := ownerID != nil && *ownerID == playerID
+		if !own && !province.AnyEyeSees(eyes, pos, terrainStr) && remembered[[2]int{q, r}] {
+			snap, ok := seen[uuid.MustParse(e.SettlementID)]
+			if !ok {
+				continue
+			}
+			e.Name, e.Owner, e.IsCapital, ownerID, state = snap.Name, snap.OwnerName, snap.IsCapital, snap.OwnerID, snap.State
+			if anchorErr == nil {
+				at, ago := lastSeen(snap.SeenTick, anchor)
+				e.LastSeenAt, e.SeenGameDaysAgo = &at, &ago
+			}
+		} else if !knownToPlayer(eyes, remembered, pos, terrainStr) {
 			if !heard[[2]int{q, r}] {
 				continue
 			}
 			// Known by word (a market board read from afar): letters, not trade.
 			knowledge = "heard"
 		}
+		if ownerID == nil || state == "sunk" {
+			continue // the directory lists ruled cities only
+		}
 		if kingdom != nil {
 			e.Kingdom = *kingdom
 		}
 		e.Terrain = terrainStr
-		if ownerID != nil {
-			e.OwnerID = ownerID.String()
-			if *ownerID == playerID {
-				e.Own = true
-			}
-		}
+		e.OwnerID = ownerID.String()
+		e.Own = own // ownership is live: a remembered owner never makes a city yours
 		e.Knowledge = knowledge
 		if knowledge == "heard" {
 			e.Note = "known by word only — you can write, but your own people must reach it before you can trade"
