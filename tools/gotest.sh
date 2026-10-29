@@ -52,4 +52,4 @@ args=("$@")
 [ ${#args[@]} -eq 0 ] && args=(./...)
 cd "$ROOT/server"
 env -i HOME="$HOME" PATH="$PATH" GOPATH="${GOPATH:-$HOME/go}" GOCACHE="${GOCACHE:-$HOME/.cache/go-build}" \
-  DATABASE_URL="$DSN" go test -count=1 -p 1 "${args[@]}"
+  GOTMPDIR="${GOTMPDIR:-}" DATABASE_URL="$DSN" go test -count=1 -p 1 "${args[@]}"
