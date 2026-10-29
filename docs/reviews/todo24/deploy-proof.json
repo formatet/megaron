@@ -1,0 +1,56 @@
+{
+  "ground": {
+    "migration": {
+      "version": 228,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 6730
+      }
+    ],
+    "players": 16,
+    "settlements": 7,
+    "units": 24,
+    "goods": 119,
+    "gossip": 1533
+  },
+  "health": {
+    "commit": "061eeec",
+    "migration": 228,
+    "status": "ok"
+  },
+  "checkout": "4e4922545a07f6a6ff2e6e3aa3322664b7e3a42c",
+  "static": {
+    "web/static/codex/articles.json": "36eaf5c11ad725897d063affe8fedb6d5c15c6787471464d2d25a4e735512797",
+    "web/static/codex/coastal-sea.md": "77c5bdded6ab08e838ba5c80d886d1e284aad26a2d986d9f2e104d0677d8c31f",
+    "web/static/codex/deep-sea.md": "bbb0999079323770b0b78077df750f27d2b37f7d3b7b25c56d28b666d815bc6a",
+    "web/static/codex/limestone-mountains.md": "496dcc084110fe32ee85e553f2a6621953fe44bd55e349884b40d3a38dfc6d88",
+    "web/static/codex/maquis.md": "713b6f1382cf8e6d53ff84baded14498a2b3a5f8870cf597937b94cfa4f6f9e7",
+    "web/static/codex/red-mountains.md": "8490030ebba40f5c2dc614a06ee7c2cf3d1f450fdb55d1c63a20f2fcc90be655",
+    "web/static/codex/river-ford.md": "2788d34eb803428c6c7dcd7d7d93da043ff677ba8e0e9b93c2a1e42d42f92d83",
+    "web/static/codex/rivers.md": "1518c89d43827a5fb57a760af0e30edecf3f0a5a0493be7e1210f213941b3b2b",
+    "web/static/codex/semi-desert.md": "e29f4a7bd132eaaf03d38b4571102c02031a10a308609019512dec5f532534a0"
+  },
+  "expected": "4e4922545a07f6a6ff2e6e3aa3322664b7e3a42c",
+  "before": {
+    "migration": {
+      "version": 228,
+      "dirty": false
+    },
+    "worlds": [
+      {
+        "id": "8d1f34f1-96d8-4487-87dc-805948d86428",
+        "status": "active",
+        "tick": 6722
+      }
+    ],
+    "players": 16,
+    "settlements": 7,
+    "units": 24,
+    "goods": 119,
+    "gossip": 1530
+  }
+}
