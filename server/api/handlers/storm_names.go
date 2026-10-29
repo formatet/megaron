@@ -85,6 +85,7 @@ func (h *WorldHandler) NameStorm(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
+	name, coarseWords := cleanName(name)
 	ctx := r.Context()
 	var claimedBy *uuid.UUID
 	var namedTick *int
@@ -104,7 +105,13 @@ func (h *WorldHandler) NameStorm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// named_tick IS NULL in the WHERE keeps two racing requests to a single winner.
-	tag, err := h.pool.Exec(ctx,
+	tx, err := h.pool.Begin(ctx)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "transaction error")
+		return
+	}
+	defer tx.Rollback(ctx)
+	tag, err := tx.Exec(ctx,
 		`UPDATE sea_storms SET name = $2, named_tick = $3 WHERE id = $1 AND named_tick IS NULL`, stormID, name, tick)
 	if err != nil {
 		if isUniqueViolation(err) {
@@ -118,7 +125,20 @@ func (h *WorldHandler) NameStorm(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusConflict, "this storm has already been named")
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"storm_id": stormID, "name": name})
+	wrath, err := angerGodsTx(ctx, tx, nil, worldID, playerID, coarseWords, "name")
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not record the gods' anger")
+		return
+	}
+	if err := tx.Commit(ctx); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not name the storm")
+		return
+	}
+	resp := map[string]any{"storm_id": stormID, "name": name}
+	if wrath != nil {
+		resp["gods_angered"] = wrath.body
+	}
+	writeJSON(w, http.StatusOK, resp)
 }
 
 // AdminNameStorm handles PUT /admin/worlds/{worldID}/storms/{stormID}/name (X-Admin-Key):

@@ -21,7 +21,7 @@ const architectureModule = "formatet/megaron/server"
 // Every internal package, including subpackages, must be named explicitly.
 // Test-only imports are intentionally excluded; changing an edge is a design decision.
 var g1Allowed = map[string][]string{
-	"agora": {}, "ai": {}, "auth": {}, "clock": {}, "gossip": {}, "hexgrid": {},
+	"agora": {}, "ai": {}, "auth": {}, "clock": {}, "gossip": {}, "hexgrid": {}, "textfilter": {},
 	"movement": {}, "notify": {}, "religion": {}, "unit": {},
 	"unit/shipnames": {}, "world": {},
 	"province": {"hexgrid", "movement"},

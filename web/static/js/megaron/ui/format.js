@@ -21,6 +21,12 @@ export function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '
 // real ship — there is no other way across (megaron_plan_ordna_passage.md
 // 3b-4: the old instant abstract-boat crossing is gone). '' for the ordinary,
 // unaffected land case (the server omits the field entirely then).
+// Fula ord (Timothy 2026-10-29): a coarse word in a letter or a name costs kharis.
+export function godsAngeredText(body = {}) {
+  const lost = Number(body.kharis_lost) || 0;
+  return 'The gods heard what was written in your name.' +
+    (lost > 0 ? ` Your realm loses ${fmtNum(lost)} kharis.` : ' Your realm\'s kharis is already at its floor.');
+}
 export function supersededOrderNote(data) {
   const n = Array.isArray(data?.superseded_messenger_ids) ? data.superseded_messenger_ids.length : 0;
   return n ? ` · ${n} earlier unboarded ${n === 1 ? 'order' : 'orders'} withdrawn; ${n === 1 ? 'its Runner is' : 'their Runners are'} walking home` : '';
@@ -167,7 +173,7 @@ export function notifDomain(kind) {
     // Diplomacy — the messenger channel.
     MessengerLostAtSea: 'diplomacy', MessengerRescuedAtSea: 'diplomacy', MessengerArrival: 'diplomacy', MessengerReturned: 'diplomacy', PlaceTold: 'diplomacy', PassageStalled: 'diplomacy',
     // Kult — the gods answering.
-    RiteAnswered: 'kult', TempleDemolitionWrath: 'kult', KharisDeclining: 'kult', KharisBandChanged: 'kult', DivinePunishment: 'kult', DivineBlessing: 'kult', KharisEvent: 'kult',
+    RiteAnswered: 'kult', TempleDemolitionWrath: 'kult', GodsAngered: 'kult', KharisDeclining: 'kult', KharisBandChanged: 'kult', DivinePunishment: 'kult', DivineBlessing: 'kult', KharisEvent: 'kult',
   };
   return domains[kind] || 'system';
 }
@@ -202,7 +208,7 @@ export function notifIcon(kind) {
     ForeignMarchSighted: '🛡',
     ForeignMarchSightedV2: '🛡',
     SubsistenceWarning: '🌾',
-    GarrisonStarvationStarted: '🌾', GarrisonStarvationEnded: '🌾', TempleDemolitionWrath: '🏛', KharisDeclining: '🏛', KharisBandChanged: '🏛',
+    GarrisonStarvationStarted: '🌾', GarrisonStarvationEnded: '🌾', TempleDemolitionWrath: '🏛', GodsAngered: '🏛', KharisDeclining: '🏛', KharisBandChanged: '🏛',
     OfferAccepted:      '🤝',
     OfferDeclined:      '🚫',
     OfferExpired:       '⏳',
@@ -338,6 +344,7 @@ export function notifText(kind, body) {
       : `${esc(body.name || 'Your city')}: the garrison is losing men to hunger. Soldiers need grain even when the city has a food surplus. Place citizens on grain or transfer grain here.`;
     case 'GarrisonStarvationEnded': return `${esc(body.name || 'Your city')}: the garrison is no longer losing men to hunger.`;
     case 'TempleDemolitionWrath': return demolitionKharisText(body);
+    case 'GodsAngered': return godsAngeredText(body);
     case 'KharisDeclining': return `${esc(body.kharis_standing?.summary || '')}${body.kharis_standing?.summary ? '. ' : ''}Kharis is falling (${fmtNum(body.kharis || 0)}, net ${fmtNum(body.net_per_tick || 0)} per game day). At this rate it reaches ${body.wrath_threshold || 15} in ${fmtDays(body.days_to_15 || 0)}. Below that, the gods may punish you, with or without a temple. Staff and feed your temples.`;
     case 'KharisBandChanged': return `${esc(body.kharis_standing?.summary || '')}${body.kharis_standing?.summary ? '. ' : ''}Kharis: ${esc(body.from_band || '?')} → ${esc(body.to_band || '?')} (${fmtNum(body.kharis || 0)}). Check Kult for decay and temple support; staff and feed your temples.`;
 

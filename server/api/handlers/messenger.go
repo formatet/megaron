@@ -155,6 +155,10 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "message must be 1–1000 characters")
 		return
 	}
+	var coarseWords, n int
+	req.Message, coarseWords = cleanLetter(req.Message)
+	req.Subject, n = cleanLetter(req.Subject)
+	coarseWords += n
 	if req.TradeOffer != nil {
 		if err := province.ValidateTransportBy(req.TradeOffer.By); err != nil {
 			writeError(w, 400, err.Error())
@@ -629,16 +633,25 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	wrath, err := angerGodsTx(r.Context(), tx, nil, worldID, playerID, coarseWords, "letter")
+	if err != nil {
+		writeError(w, 500, "could not record the gods' anger")
+		return
+	}
 	if err = tx.Commit(r.Context()); err != nil {
 		writeError(w, 500, "could not commit Runner departure")
 		return
 	}
+	wrath.deliver(r.Context(), nil, h.hub)
 
 	resp := map[string]any{
 		"id":         messengerID,
 		"case_id":    caseID,
 		"arrives_at": arrivesAt,
 		"distance":   dist,
+	}
+	if wrath != nil {
+		resp["gods_angered"] = wrath.body
 	}
 	if passage != nil {
 		resp["passage_status"] = "awaiting_passage"
@@ -691,6 +704,10 @@ func (h *MessengerHandler) SendFromHost(w http.ResponseWriter, r *http.Request) 
 		writeError(w, http.StatusBadRequest, "message must be 1–1000 characters")
 		return
 	}
+	var coarseWords, n int
+	req.Message, coarseWords = cleanLetter(req.Message)
+	req.Subject, n = cleanLetter(req.Subject)
+	coarseWords += n
 
 	// The sender: an active founder phase with the host still on the map. The
 	// host's CURRENT position (interpolated while marching — a marching unit's
@@ -793,15 +810,24 @@ func (h *MessengerHandler) SendFromHost(w http.ResponseWriter, r *http.Request) 
 		writeError(w, 400, caseErr.Error())
 		return
 	}
+	wrath, err := angerGodsTx(r.Context(), tx, nil, worldID, playerID, coarseWords, "letter")
+	if err != nil {
+		writeError(w, 500, "could not record the gods' anger")
+		return
+	}
 	if err = tx.Commit(r.Context()); err != nil {
 		writeError(w, 500, "could not commit departure")
 		return
 	}
+	wrath.deliver(r.Context(), nil, h.hub)
 	resp := map[string]any{
 		"id":         messengerID,
 		"case_id":    caseID,
 		"arrives_at": arrivesAt,
 		"distance":   dist,
+	}
+	if wrath != nil {
+		resp["gods_angered"] = wrath.body
 	}
 	if passage != nil {
 		resp["passage_status"] = "awaiting_passage"
@@ -1105,6 +1131,8 @@ func (h *MessengerHandler) Reply(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "reply must be at most 1000 characters")
 		return
 	}
+	var coarseWords int
+	req.Reply, coarseWords = cleanLetter(req.Reply)
 
 	// Hold recipient ownership and the physical bearer through the reply TX.
 	tx, err := h.pool.Begin(r.Context())
@@ -1162,14 +1190,23 @@ func (h *MessengerHandler) Reply(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	wrath, err := angerGodsTx(r.Context(), tx, nil, worldID, playerID, coarseWords, "letter")
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not record the gods' anger")
+		return
+	}
 	if err := tx.Commit(r.Context()); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not dispatch reply")
 		return
 	}
+	wrath.deliver(r.Context(), nil, h.hub)
 
 	resp := map[string]any{
 		"returns_at": result.ReturnsAt,
 		"distance":   result.Distance,
+	}
+	if wrath != nil {
+		resp["gods_angered"] = wrath.body
 	}
 	if result.PassageAwaiting {
 		resp["passage_status"] = "awaiting_passage"

@@ -105,6 +105,7 @@ func (h *WorldHandler) NamePlace(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
+	name, coarseWords := cleanName(name)
 	ctx := r.Context()
 	var claimedBy *uuid.UUID
 	var namedTick *int
@@ -124,7 +125,13 @@ func (h *WorldHandler) NamePlace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// named_tick IS NULL in the WHERE keeps two racing requests to a single winner.
-	tag, err := h.pool.Exec(ctx,
+	tx, err := h.pool.Begin(ctx)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "transaction error")
+		return
+	}
+	defer tx.Rollback(ctx)
+	tag, err := tx.Exec(ctx,
 		`UPDATE place_names SET name = $5, named_tick = $6 WHERE anchor_q = $1 AND anchor_r = $2 AND world_id=$3 AND kind=$4 AND named_tick IS NULL AND claimed_by=$7`, anchor[0], anchor[1], worldID, kind, name, tick, playerID)
 	if err != nil {
 		if isUniqueViolation(err) {
@@ -138,7 +145,20 @@ func (h *WorldHandler) NamePlace(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusConflict, "this place has already been named")
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"kind": kind, "place_id": fmt.Sprintf("%d,%d", anchor[0], anchor[1]), "name": name})
+	wrath, err := angerGodsTx(ctx, tx, nil, worldID, playerID, coarseWords, "name")
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not record the gods' anger")
+		return
+	}
+	if err := tx.Commit(ctx); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not name the place")
+		return
+	}
+	resp := map[string]any{"kind": kind, "place_id": fmt.Sprintf("%d,%d", anchor[0], anchor[1]), "name": name}
+	if wrath != nil {
+		resp["gods_angered"] = wrath.body
+	}
+	writeJSON(w, http.StatusOK, resp)
 }
 
 // AdminNamePlace handles PUT /admin/worlds/{worldID}/places/{anchor}/name (X-Admin-Key):

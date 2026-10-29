@@ -1,0 +1,28 @@
+# Svenska. Utgår från LDNOOBW sv (CC-BY-4.0), handplockad ned till grovt:
+# könsord, sexuellt grova ord, slurs och hatord (Timothy 2026-10-29).
+# Milda svordomar (fan, jävla, helvete, skit) är medvetet borta.
+# ord = helt ord · ord* = ord som börjar så · *ord* = var som helst i ordet
+*fitta*
+*fittor*
+*fitthor*
+kuk*
+*kuksug*
+*knull*
+runka*
+*rövhål*
+*rövknull*
+hora
+horor
+horan
+*horunge*
+subba*
+slyna*
+neger
+negern
+negrer*
+blatte*
+svartskall*
+mongo
+mongon
+mongot
+cpbarn*

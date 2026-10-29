@@ -2094,6 +2094,24 @@
       ]
     },
     {
+      "id": "gods-angered",
+      "title": "The gods hear what you write",
+      "category": "The gods",
+      "drawer": "kult",
+      "kinds": [
+        "GodsAngered"
+      ],
+      "related": [
+        "kharis",
+        "messengers"
+      ],
+      "aliases": [
+        "profanity",
+        "swearing",
+        "coarse words"
+      ]
+    },
+    {
       "id": "colonies",
       "title": "Colonies",
       "category": "Growing",

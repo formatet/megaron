@@ -2072,6 +2072,8 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
 		return
 	}
+	var coarseWords int
+	req.Name, coarseWords = cleanName(req.Name)
 
 	// Normalize legacy/alias unit-type strings ("ship"/"trireme"→"galley",
 	// "chariot"→"war_chariot") so old clients (web, cached CLI) that still send
@@ -2644,6 +2646,11 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	wrath, err := angerGodsTx(r.Context(), tx, h.eventStore, worldID, playerID, coarseWords, "name")
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not record the gods' anger")
+		return
+	}
 	if err := tx.Commit(r.Context()); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not complete recruitment")
 		return
@@ -2651,6 +2658,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 	for _, e := range committedEvents {
 		h.eventStore.RecordCommitted(r.Context(), e)
 	}
+	wrath.deliver(r.Context(), h.eventStore, h.hub)
 
 	menForResponse := req.Men
 	if cat == unit.CategoryNaval {
@@ -2722,6 +2730,9 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		resp["complete_at"] = work.CompleteAt
 		resp["shipyard_waiting"] = work.Waiting
 		resp["shipyard_work_remaining"] = work.Remaining
+	}
+	if wrath != nil {
+		resp["gods_angered"] = wrath.body
 	}
 
 	writeJSON(w, http.StatusCreated, resp)

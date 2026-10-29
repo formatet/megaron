@@ -378,6 +378,8 @@ func (h *JoinHandler) Settle(w http.ResponseWriter, r *http.Request) {
 	req.Culture = province.NormaliseCulture(req.Culture)
 	// Names are the address every other Wanax uses — unique per world. Generated
 	// names skip what is taken; a chosen duplicate is refused, not altered.
+	var coarseWords int
+	req.Name, coarseWords = cleanName(req.Name)
 	if req.Name == "" {
 		req.Name = province.UniqueSettlementName(r.Context(), tx, worldID, req.Culture)
 	} else if taken, terr := province.SettlementNameIsTaken(r.Context(), tx, worldID, req.Name); terr == nil && taken {
@@ -442,10 +444,16 @@ func (h *JoinHandler) Settle(w http.ResponseWriter, r *http.Request) {
 	_ = tx.QueryRow(r.Context(), `SELECT COALESCE(SUM(rate),0) FROM settlement_goods WHERE settlement_id=$1 AND good_key=ANY($2)`, founded.SettlementID, economy.FoodGoods).Scan(&foodRate)
 	foodNet := economy.FoodNet(foodRate, openingPopulation)
 
+	wrath, err := angerGodsTx(r.Context(), tx, h.eventStore, worldID, playerID, coarseWords, "name")
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not record the gods' anger")
+		return
+	}
 	if err := tx.Commit(r.Context()); err != nil {
 		writeError(w, http.StatusInternalServerError, "commit failed")
 		return
 	}
+	wrath.deliver(r.Context(), h.eventStore, h.hub)
 
 	// MetropolisFounded — the design's founding notice (grain balance, carried
 	// stock, known/unknown catchment, Poseidon status). Sent only after a

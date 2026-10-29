@@ -3,7 +3,7 @@ import { buildingLabel } from './building_names.js';
 
 const STAFFABLE=new Set(['farm','mine','lumbermill','stonequarry','olive_press','winery','foundry','temple','shipyard']);
 const UNIT_KINDS=new Set(['TrainComplete','OrderFailed','MarchStalled','UnitArrived','UnitFetched','UnitRecalled','UnitRedirected','UnitExploreReturned','ExpeditionTurnedHome','ShipRepaired','ShipDamaged','ShipStormDamaged','ShipStranded','ShipSweptFromSea','ShipCameHomeForFood','PickupWaiting','PickupTimedOut']);
-const CULT_KINDS=new Set(['Omen','DivineBlessing','DivinePunishment','KharisBandChanged','KharisDeclining','RiteAnswered','TempleDemolitionWrath']);
+const CULT_KINDS=new Set(['Omen','DivineBlessing','DivinePunishment','KharisBandChanged','KharisDeclining','RiteAnswered','TempleDemolitionWrath','GodsAngered']);
 const CARGO_KINDS=new Set(['TradeDelivery','TradeReturn','TradeLost','GiftDispatchedV2','GiftDelivered','GiftDeliveredV2','GiftLost','GiftLostV2','TransferDelivered','TransferDeliveredV2','TransferLostV2','CaravanRaided','CaravanSeized']);
 const LETTER_KINDS=new Set(['MessengerArrival','MessengerReturned','OfferAccepted','OfferDeclined','OfferExpired']);
 const finitePoint=(q,r)=>Number.isFinite(q)&&Number.isFinite(r)?{q,r}:null;

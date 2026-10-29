@@ -97,6 +97,8 @@ func (h *KingdomHandler) Found(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "kingdom name required")
 		return
 	}
+	var coarseWords int
+	req.Name, coarseWords = cleanName(req.Name)
 
 	// Verify player has a capital settlement and is not already in a kingdom.
 	var settlementID uuid.UUID
@@ -124,6 +126,7 @@ func (h *KingdomHandler) Found(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusConflict, "kingdom name already taken")
 		return
 	}
+	angerGodsOwnTx(r.Context(), h.pool, nil, nil, worldID, playerID, coarseWords, "name")
 
 	_, err = h.pool.Exec(r.Context(),
 		`INSERT INTO kingdom_members (kingdom_id, player_id, role) VALUES ($1, $2, 'basileus')`,

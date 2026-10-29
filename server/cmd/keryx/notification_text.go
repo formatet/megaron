@@ -6,6 +6,7 @@ import (
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/unit"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -42,6 +43,15 @@ func printNotificationSummary(c *Client, n notificationItem) {
 		}
 		fmt.Printf("      %s — %s at %s · %s\n", b.Opponent, action, b.Place, b.At)
 		return
+	}
+	if n.Kind == "GodsAngered" {
+		var b struct {
+			KharisLost float64 `json:"kharis_lost"`
+		}
+		if json.Unmarshal(n.Body, &b) == nil {
+			fmt.Printf("      %s\n", godsAngeredText(b.KharisLost))
+			return
+		}
 	}
 	if n.Kind == "TempleDemolitionWrath" {
 		var b demolitionKharis
@@ -494,4 +504,12 @@ func printLetterReplyHint(n notificationItem) {
 	if id != "" {
 		fmt.Printf("      Read and reply: keryx letters %s\n", id)
 	}
+}
+
+// godsAngeredText matches the web's GodsAngered line (Timothy 2026-10-29).
+func godsAngeredText(lost float64) string {
+	if lost > 0 {
+		return fmt.Sprintf("The gods heard what was written in your name. Your realm loses %s kharis.", strconv.FormatFloat(lost, 'f', -1, 64))
+	}
+	return "The gods heard what was written in your name. Your realm's kharis is already at its floor."
 }

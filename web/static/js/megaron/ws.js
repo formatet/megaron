@@ -66,7 +66,7 @@ function coalesce(key, fn, ms = 2000) {
 // drawer showing that data should rebuild after them.
 const DATA_KINDS = new Set([
   'StorageCapacityWarning','StorageOverflow',
-  'GarrisonStarvationStarted','GarrisonStarvationEnded','CivilianStarvationStarted','CivilianStarvationEnded','KharisBandChanged','KharisDeclining','TempleDemolitionWrath',
+  'GarrisonStarvationStarted','GarrisonStarvationEnded','CivilianStarvationStarted','CivilianStarvationEnded','KharisBandChanged','KharisDeclining','TempleDemolitionWrath','GodsAngered',
   'ArmyArrival','BuildComplete','GoodsCrafted','TrainComplete','MessengerArrival',
   'GiftDelivered','GiftLost','TradeCaravanArrival','UnitAttrition','UnitDeserted','UnitArrived','UnitExploreReturned',
   'RoadEdgeBuilt','UnitReturnedStarving','ShipCameHomeForFood','ExpeditionTurnedHome','ExpeditionReport',

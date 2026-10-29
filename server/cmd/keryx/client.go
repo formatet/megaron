@@ -7,6 +7,7 @@ import (
 	"io"
 	"math"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -80,6 +81,7 @@ func (c *Client) doWithHeal(method, path string, body any, allowHeal bool) ([]by
 	if err != nil {
 		return data, resp.StatusCode, err
 	}
+	warnGodsAngered(data)
 
 	// Self-heal a stale province_id: after a respawn the player's capital moves to a
 	// new province, but the local config still points at the lost one, so every
@@ -299,4 +301,17 @@ func (c *Client) WorldTickETA(arrival int) (time.Time, bool) {
 		return time.Time{}, false
 	}
 	return c.tickAnchor.Add(time.Duration(float64(arrival-*c.worldTick) * cadence * float64(time.Second))), true
+}
+
+// warnGodsAngered tells the writer at once, on stderr so --json stays clean,
+// when a letter or name they sent cost kharis (Timothy 2026-10-29).
+func warnGodsAngered(data []byte) {
+	var r struct {
+		GodsAngered *struct {
+			KharisLost float64 `json:"kharis_lost"`
+		} `json:"gods_angered"`
+	}
+	if json.Unmarshal(data, &r) == nil && r.GodsAngered != nil {
+		fmt.Fprintln(os.Stderr, godsAngeredText(r.GodsAngered.KharisLost))
+	}
 }

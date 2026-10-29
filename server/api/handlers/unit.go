@@ -114,6 +114,18 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
 		return
 	}
+	// The colony name rides inside the order to several commit points; the
+	// gods are angered once one of them has accepted it.
+	var coarseWords int
+	if req.Name, coarseWords = cleanName(req.Name); coarseWords > 0 {
+		sw := &statusWriter{ResponseWriter: w}
+		w = sw
+		defer func() {
+			if sw.status < 300 {
+				angerGodsOwnTx(r.Context(), h.pool, h.eventStore, nil, worldID, playerID, coarseWords, "name")
+			}
+		}()
+	}
 	// Hiketeia (Timothy 2026-10-24): an order against a risen host you can
 	// see is warned before it leaves; the price is taken only if a battle
 	// actually starts (combat.breakHiketeiaTx).
