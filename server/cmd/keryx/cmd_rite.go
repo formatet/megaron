@@ -109,7 +109,7 @@ func stdinIsTerminal() bool {
 }
 
 func riteCmd() *cobra.Command {
-	var settlementID string
+	var settlementID, provinceArg string
 	var prayerID string
 	var targetID string
 	var list bool
@@ -122,13 +122,27 @@ func riteCmd() *cobra.Command {
 		Short: "Perform a cultural prayer at your settlement (requires temple + offering)",
 		Example: `  keryx rite --list
   keryx rite --prayer <prayer-id>
-  keryx rite --prayer <prayer-id> --settlement <settlement-uuid>
+  keryx rite --prayer <prayer-id> --province Knossos
   keryx rite --prayer <prayer-id> --offer grain=10,silver=3
   keryx rite --prayer <prayer-id> --yes
   keryx rite --json`,
 		Args: rejectPositionalArgs("prayer"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
+			if provinceArg != "" {
+				if settlementID != "" {
+					return fmt.Errorf("give --province or --settlement, not both")
+				}
+				provs, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces", cfg.WorldID))
+				if err != nil {
+					return err
+				}
+				var all []map[string]any
+				_ = json.Unmarshal(provs, &all)
+				if settlementID = riteSettlementByProvince(all, provinceArg); settlementID == "" {
+					return fmt.Errorf("no city of yours called or numbered %q — see keryx status", provinceArg)
+				}
+			}
 
 			// --list: show this culture's available prayers (id + affordability) from
 			// the province status endpoint, which exposes `available_prayers`. Works for
@@ -242,7 +256,8 @@ func riteCmd() *cobra.Command {
 	}
 
 	cmd.Flags().BoolVar(&list, "list", false, "list this culture's available prayers (id + affordability) and exit")
-	cmd.Flags().StringVar(&settlementID, "settlement", "", "settlement UUID (defaults to your capital)")
+	cmd.Flags().StringVar(&provinceArg, "province", "", "city name or province ID, like status/place/build (default: your capital)")
+	cmd.Flags().StringVar(&settlementID, "settlement", "", "settlement UUID (same as --province, kept for old scripts)")
 	cmd.Flags().StringVar(&prayerID, "prayer", "", "prayer ID (run --list to see your culture's prayers; defaults to the culture's listed default prayer)")
 	cmd.Flags().StringVar(&targetID, "target", "", "target province UUID (for future targeted prayers)")
 	cmd.Flags().BoolVar(&yes, "yes", false, "skip the pre-cast confirmation (required for non-interactive/agent use)")
@@ -481,4 +496,22 @@ func prayerPaymentText(prayer riteAvailablePrayer) string {
 		return "Kharis is a requirement, not spent. When the requirements are met the god answers; more offering will not improve the answer."
 	}
 	return "The offering is consumed even if the gods stay silent; kharis is a requirement, not spent."
+}
+
+// riteSettlementByProvince resolves --province the way the other city verbs
+// read it — city name, province ID or settlement ID — to one of your own
+// settlements (GPT-player logs 2026-10-24: rite alone took --settlement).
+func riteSettlementByProvince(markers []map[string]any, arg string) string {
+	for _, m := range markers {
+		if own, _ := m["own"].(bool); !own {
+			continue
+		}
+		name, _ := m["name"].(string)
+		pid, _ := m["id"].(string)
+		sid, _ := m["settlement_id"].(string)
+		if strings.EqualFold(name, arg) || pid == arg || sid == arg {
+			return sid
+		}
+	}
+	return ""
 }
