@@ -7,7 +7,7 @@
 # (sjöslagstestets "flake", mätt 2026-09-23). Därför: färsk DB varje gång och alltid -p 1.
 #
 # Användning:
-#   tools/gotest.sh                          # hela sviten (./...)
+#   tools/gotest.sh                          # hela sviten (./... + webbtester, tools/test-web.sh)
 #   tools/gotest.sh ./internal/combat/       # ett paket
 #   tools/gotest.sh ./api/handlers/ -run TestX -count=5
 #   GOTEST_KEEP=1 tools/gotest.sh ...        # låt containern stå kvar efteråt (felsökning)
@@ -49,7 +49,15 @@ fi
 echo "» färsk DB på migration $latest · commit $(git -C "$ROOT" rev-parse --short HEAD)$(git -C "$ROOT" diff --quiet || echo '+ändringar')" >&2
 
 args=("$@")
-[ ${#args[@]} -eq 0 ] && args=(./...)
+whole=0
+[ ${#args[@]} -eq 0 ] && { args=(./...); whole=1; }
 cd "$ROOT/server"
+status=0
 env -i HOME="$HOME" PATH="$PATH" GOPATH="${GOPATH:-$HOME/go}" GOCACHE="${GOCACHE:-$HOME/.cache/go-build}" \
-  GOTMPDIR="${GOTMPDIR:-}" DATABASE_URL="$DSN" go test -count=1 -p 1 "${args[@]}"
+  GOTMPDIR="${GOTMPDIR:-}" DATABASE_URL="$DSN" go test -count=1 -p 1 "${args[@]}" || status=$?
+# Hela sviten = Go + webb. Webbtesterna körs även om Go föll, så båda utfallen syns.
+if [ "$whole" = 1 ]; then
+  echo "» webbtester (tools/test-web.sh)" >&2
+  "$ROOT/tools/test-web.sh" || status=$?
+fi
+exit "$status"
