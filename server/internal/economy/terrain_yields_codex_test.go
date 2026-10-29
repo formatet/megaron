@@ -27,7 +27,7 @@ func TestCodexTerrainProduction(t *testing.T) {
 			const start = "<!-- terrain-production -->"
 			const end = "<!-- /terrain-production -->"
 			if !strings.Contains(string(raw), start) && *updateTerrainArticle != row.slug {
-				return
+				t.Fatal("missing production table")
 			}
 			tx, err := pool.Begin(ctx)
 			if err != nil {
