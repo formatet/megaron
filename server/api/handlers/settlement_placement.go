@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -801,7 +802,7 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		if opt == nil || opt.RatePerGood[req.GoodKey] <= 0 {
-			writeError(w, http.StatusUnprocessableEntity, "this hex has no production option for that good")
+			writeError(w, http.StatusUnprocessableEntity, hexNoOptionMessage(opt, req.GoodKey))
 			return
 		}
 		// Form B (megaron_plan_byggnadsniva_takt.md, 2026-08-24): the write-time
@@ -1038,4 +1039,24 @@ func (h *ProvinceHandler) BackfillPlacements(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"settlements_backfilled": n})
+}
+
+// hexNoOptionMessage says what the hex DOES yield when the asked-for good is
+// not on it — a player placing timber on cedar learned only "no production
+// option" (GPT-player logs 2026-10-24).
+func hexNoOptionMessage(opt *economy.HexOption, asked string) string {
+	if opt == nil {
+		return "this hex has no production option for that good"
+	}
+	var goods []string
+	for g, rate := range opt.RatePerGood {
+		if rate > 0 {
+			goods = append(goods, g)
+		}
+	}
+	if len(goods) == 0 {
+		return "this hex has no production option for that good"
+	}
+	sort.Strings(goods)
+	return fmt.Sprintf("this hex gives no %s — it yields %s", asked, strings.Join(goods, ", "))
 }
