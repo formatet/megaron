@@ -23,7 +23,7 @@ import { acceptMapTiles } from '../map_data.js';
 import { drawFire, FIRE_FRAMES } from './doomfire.js';
 import { drawCityMass, citySprite, cityTop, cityFoot } from './citysprites.js';
 import { cityIcon, drawCityIcon, drawStamp, ACTIVITY_ICONS, CITY_ICON_PALETTE } from './cityicons.js';
-import { zoomStep, clampPan } from './camera.js';
+import { zoomStep, clampPan, visibleWidth } from './camera.js';
 import { bindMapInput } from './map_input.js';
 import { confirmInline, showInlineResult } from '../ui/inline_result.js';
 import { readingHTML } from '../ui/market_board.js';
@@ -104,9 +104,11 @@ function worldPanBounds() {
 // the one site outside this file) — because a bound enforced at six of seven
 // sites is not a bound.
 export function clampCamera() {
+  const drawer = document.querySelector('.drawer.open');
+  const coverLeft = drawer ? drawer.getBoundingClientRect().left : null;
   const next = clampPan(
     State.camera, SCALE,
-    { w: canvas.width, h: canvas.height },
+    { w: visibleWidth(canvas.getBoundingClientRect().left, canvas.width, coverLeft), h: canvas.height },
     worldPanBounds(), PAN_MARGIN,
   );
   State.camera.x = next.x;

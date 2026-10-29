@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { clampZoom, zoomStep, clampPan } from './camera.js';
+import { clampZoom, zoomStep, clampPan, visibleWidth } from './camera.js';
 import { ZOOM_MIN, ZOOM_MAX } from '../config.js';
 
 test('AK1: at ZOOM_MIN, a further zoom-out step leaves camera bit-identical', () => {
@@ -109,4 +109,19 @@ test('PAN6: an unloaded world (null bounds) leaves the camera untouched', () => 
 test('PAN7: both axes are clamped — a bound on x only is not a bound', () => {
   const out = clampPan({ x: 5000, y: 5000, zoom: 1 }, SCALE, VIEW, BIG, M);
   assert.notEqual(out.y, 5000, 'the vertical axis must be clamped as well');
+});
+
+// ── visibleWidth: an open drawer covers the canvas's right side ─────────────
+test('visibleWidth: the world right edge can reach the open drawer, not the canvas edge', () => {
+  assert.equal(visibleWidth(0, 1280, 860), 860);
+  const world = { minX: 0, minY: 0, maxX: 2000, maxY: 1000 };
+  const full = clampPan({ x: -99999, y: 0, zoom: 1 }, 1, { w: 1280, h: 720 }, world, 0);
+  const covered = clampPan({ x: -99999, y: 0, zoom: 1 }, 1, { w: visibleWidth(0, 1280, 860), h: 720 }, world, 0);
+  assert.equal(full.x + 2000, 1280, 'without the drawer the right edge stops at the canvas edge');
+  assert.equal(covered.x + 2000, 860, 'with the drawer open the right edge is pulled out to the drawer');
+});
+test('visibleWidth: no drawer, or a full-width (mobile) panel, leaves the canvas width', () => {
+  assert.equal(visibleWidth(0, 1280, null), 1280);
+  assert.equal(visibleWidth(0, 390, 0), 390);
+  assert.equal(visibleWidth(0, 1280, 1400), 1280);
 });
