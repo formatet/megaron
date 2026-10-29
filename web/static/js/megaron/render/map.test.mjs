@@ -343,3 +343,18 @@ test('the per-frame render loop looks tiles up by index, never by a linear find'
   assert.ok(start >= 0 && body.length > 1000, 'render() not found');
   assert.doesNotMatch(body, /tileData\.find\(/, 'a tileData.find in render() scans the whole map once per hex per frame');
 });
+
+test('sea bounds for the swell are computed once per map, not once per frame', async () => {
+  const { seaBounds } = await import('./map.js');
+  const before = State.tileData;
+  try {
+    State.tileData = [{q:0,r:0,terrain:'plains'}];
+    assert.equal(seaBounds(), null, 'no known sea, no swell');
+    State.tileData = [{q:0,r:0,terrain:'deep_sea'},{q:3,r:1,terrain:'coastal_sea'},{q:9,r:9,terrain:'plains'}];
+    const a = hexPx(0,0), b = hexPx(3,1), first = seaBounds();
+    assert.deepEqual(first, {minX:Math.min(a.x,b.x),minY:Math.min(a.y,b.y),maxX:Math.max(a.x,b.x),maxY:Math.max(a.y,b.y)});
+    assert.equal(seaBounds(), first, 'same map array reuses the bounds');
+    State.tileData = [...State.tileData, {q:20,r:0,terrain:'deep_sea'}];
+    assert.ok(seaBounds().maxX > first.maxX, 'a new map array recomputes them');
+  } finally { State.tileData = before; }
+});

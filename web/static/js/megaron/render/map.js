@@ -1267,15 +1267,28 @@ function visibleTiles() {
 }
 
 const SWELL_CELL = 13;
-function drawSwellField(ctx, seaTick) {
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-  for (const t of State.tileData) {
-    if (!isSeaTerrain(t.terrain)) continue;
-    const { x, y } = hexPx(t.q, t.r);
-    if (x < minX) minX = x; if (x > maxX) maxX = x;
-    if (y < minY) minY = y; if (y > maxY) maxY = y;
+// World-pixel bounds of all known sea, memoised on the tileData array's
+// identity — the swell pass used to rescan the whole world every frame.
+let seaBoundsSrc = null, seaBoundsVal = null;
+export function seaBounds() {
+  if (State.tileData !== seaBoundsSrc) {
+    seaBoundsSrc = State.tileData;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const t of State.tileData || []) {
+      if (!isSeaTerrain(t.terrain)) continue;
+      const { x, y } = hexPx(t.q, t.r);
+      if (x < minX) minX = x; if (x > maxX) maxX = x;
+      if (y < minY) minY = y; if (y > maxY) maxY = y;
+    }
+    seaBoundsVal = minX === Infinity ? null : { minX, minY, maxX, maxY };
   }
-  if (minX === Infinity) return;
+  return seaBoundsVal;
+}
+
+function drawSwellField(ctx, seaTick) {
+  const sea = seaBounds();
+  if (!sea) return;
+  let { minX, minY, maxX, maxY } = sea;
   // Rastret klipps mot det som syns. Det är inte viewport-culling som slice
   // (den gäller alla pass och mäts för sig) — det är att ett pass som itererar
   // ett VÄRLDSRASTER inte har någon anledning att besöka celler utanför duken.
