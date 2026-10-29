@@ -301,7 +301,7 @@ func (h *WorldHandler) Get(w http.ResponseWriter, r *http.Request) {
 		tickAnchor = &utc
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
+	writeJSONETag(w, r, map[string]any{
 		"id":             wld.ID,
 		"name":           wld.Name,
 		"state":          wld.State,
@@ -1092,7 +1092,7 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 		_ = province.RecordSeenSettlements(r.Context(), h.pool, worldID, playerID, liveCityHexes)
 	}
 
-	writeJSON(w, http.StatusOK, markers)
+	writeJSONETag(w, r, markers)
 }
 
 // loadVisibleOrigins is the package-level implementation of the KNOWN-set query
@@ -1286,7 +1286,7 @@ func (h *WorldHandler) Marches(w http.ResponseWriter, r *http.Request) {
 			markers[i].Path = marchPathWaypoints(g, roads, markers[i].OriginQ, markers[i].OriginR, markers[i].TargetQ, markers[i].TargetR, cat)
 		}
 	}
-	writeJSON(w, http.StatusOK, markers)
+	writeJSONETag(w, r, markers)
 }
 
 // marchPathWaypoints returns the A* route as [[q,r],...] (origin+target included)
@@ -1560,7 +1560,7 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 	if markers == nil {
 		markers = []any{}
 	}
-	writeJSON(w, http.StatusOK, markers)
+	writeJSONETag(w, r, markers)
 }
 
 // MapMessengers handles GET /worlds/:worldID/messengers — outbound messengers visible
@@ -1941,7 +1941,7 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 	if markers == nil {
 		markers = []any{}
 	}
-	writeJSON(w, http.StatusOK, markers)
+	writeJSONETag(w, r, markers)
 }
 
 func (h *WorldHandler) storeTiles(ctx context.Context, worldID uuid.UUID, tiles []world.MapTile) error {

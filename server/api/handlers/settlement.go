@@ -418,7 +418,7 @@ func (h *SettlementHandler) PlacementRoster(w http.ResponseWriter, r *http.Reque
 			Assignments: assigns,
 		})
 	}
-	writeJSON(w, http.StatusOK, result)
+	writeJSONETag(w, r, result)
 }
 
 // Get handles GET /worlds/:worldID/settlements/:settlementID.

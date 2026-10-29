@@ -181,7 +181,7 @@ func (h *UnitHandler) Roads(w http.ResponseWriter, r *http.Request) {
 	out := []edge{}
 	playerID, authenticated := auth.PlayerIDFromContext(r.Context())
 	if !authenticated {
-		writeJSON(w, http.StatusOK, map[string]any{"edges": out})
+		writeJSONETag(w, r, map[string]any{"edges": out})
 		return
 	}
 	ctx := r.Context()
@@ -202,7 +202,7 @@ func (h *UnitHandler) Roads(w http.ResponseWriter, r *http.Request) {
 	}
 	rows.Close()
 	if len(all) == 0 {
-		writeJSON(w, http.StatusOK, map[string]any{"edges": out})
+		writeJSONETag(w, r, map[string]any{"edges": out})
 		return
 	}
 	g, err := province.LoadTileGraph(ctx, h.pool, worldID)
@@ -224,7 +224,7 @@ func (h *UnitHandler) Roads(w http.ResponseWriter, r *http.Request) {
 			out = append(out, e)
 		}
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"edges": out})
+	writeJSONETag(w, r, map[string]any{"edges": out})
 }
 
 // RoadSites handles GET /worlds/{worldID}/road-sites — the caller's own unfinished
@@ -294,5 +294,5 @@ func (h *UnitHandler) RoadSites(w http.ResponseWriter, r *http.Request) {
 		}
 		out = append(out, s)
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"sites": out})
+	writeJSONETag(w, r, map[string]any{"sites": out})
 }

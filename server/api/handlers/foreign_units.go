@@ -221,7 +221,7 @@ func (h *WorldHandler) ForeignUnits(w http.ResponseWriter, r *http.Request) {
 	if out == nil {
 		out = []foreignUnit{}
 	}
-	writeJSON(w, http.StatusOK, out)
+	writeJSONETag(w, r, out)
 }
 
 // ownCity is one of the caller's settlements with its catchment, for testing

@@ -180,7 +180,7 @@ func (h *WorldHandler) Storms(w http.ResponseWriter, r *http.Request) {
 		out = append(out, stormView{ID: id, Tier: "remembered", Hexes: m.hexes, SeenTick: m.seen, LastKnown: true})
 	}
 	h.nameStorms(ctx, worldID, playerID, out)
-	writeJSON(w, http.StatusOK, map[string]any{"tick": tick, "storms": out})
+	writeJSONETag(w, r, map[string]any{"tick": tick, "storms": out})
 }
 
 func (h *WorldHandler) rememberStorm(ctx context.Context, playerID, stormID uuid.UUID, tick int, hexes []stormHexView) {

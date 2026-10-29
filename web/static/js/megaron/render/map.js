@@ -3,7 +3,7 @@ import {riverFlowLines,drawRiverFlow} from '../ui/river_flow.js';
 import { openMobilePanel, closeMobilePanel } from '../ui/mobile_panels.js';
 import { physicalHostState, hostStatusText } from '../ui/host_state.js';
 import { State, ownCapital, activeCitySettlement } from '../state.js';
-import { fetchAuth } from '../api.js';
+import { fetchAuth, pollJSON } from '../api.js';
 import { serverNow } from '../clock.js';
 import { anchorWorldTime, movementTickNow } from '../world_time.js';
 import { routePosition, routeProgress, actorRoute, foreignArrow, drawMovement } from './routes.js';
@@ -4158,17 +4158,17 @@ export function initMap() {
   setInterval(() => {
     if (document.hidden) return;
     refreshTiles();
-    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => { State.provinceData = d; State.dirty = true; window.MusicPlayer.update(); }));
-    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/marches`).then(r => r.ok && r.json().then(d => { State.marchData = d; State.dirty = true; window.MusicPlayer.update(); }));
-    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; }));
-    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/trades`).then(r => r.ok && r.json().then(d => { State.tradeData = d; State.dirty = true; }));
-    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; }));
-    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/rural-projections`).then(r => r.ok && r.json().then(d => { State.ruralData = d; State.dirty = true; }));
-    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/foreign-units`).then(r => r.ok && r.json().then(d => { State.foreignUnitData = d; State.dirty = true; }));
-    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/settlements/placement-roster`).then(r => r.ok && r.json().then(d => { State.workedHexes = workedHexesFromRoster(d); State.dirty = true; }));
-    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/storms`).then(r => r.ok && r.json().then(d => { updateStormData(d.storms || []); }));
-    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/roads`).then(r => r.ok && r.json().then(d => { State.roadEdges = d.edges || []; State.dirty = true; }));
-    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/road-sites`).then(r => r.ok && r.json().then(d => { State.roadSites = d.sites || []; State.dirty = true; }));
+    pollJSON(`/api/v1/worlds/${State.WORLD_ID}/provinces`).then(d => { if (!d) return; State.provinceData = d; State.dirty = true; window.MusicPlayer.update(); });
+    pollJSON(`/api/v1/worlds/${State.WORLD_ID}/marches`).then(d => { if (!d) return; State.marchData = d; State.dirty = true; window.MusicPlayer.update(); });
+    pollJSON(`/api/v1/worlds/${State.WORLD_ID}/messengers`).then(d => { if (!d) return; State.messengerData = d; State.dirty = true; });
+    pollJSON(`/api/v1/worlds/${State.WORLD_ID}/trades`).then(d => { if (!d) return; State.tradeData = d; State.dirty = true; });
+    pollJSON(`/api/v1/worlds/${State.WORLD_ID}/units`).then(d => { if (!d) return; State.unitsData = d.units || []; State.dirty = true; });
+    pollJSON(`/api/v1/worlds/${State.WORLD_ID}/rural-projections`).then(d => { if (!d) return; State.ruralData = d; State.dirty = true; });
+    pollJSON(`/api/v1/worlds/${State.WORLD_ID}/foreign-units`).then(d => { if (!d) return; State.foreignUnitData = d; State.dirty = true; });
+    pollJSON(`/api/v1/worlds/${State.WORLD_ID}/settlements/placement-roster`).then(d => { if (!d) return; State.workedHexes = workedHexesFromRoster(d); State.dirty = true; });
+    pollJSON(`/api/v1/worlds/${State.WORLD_ID}/storms`).then(d => { if (!d) return; updateStormData(d.storms || []); });
+    pollJSON(`/api/v1/worlds/${State.WORLD_ID}/roads`).then(d => { if (!d) return; State.roadEdges = d.edges || []; State.dirty = true; });
+    pollJSON(`/api/v1/worlds/${State.WORLD_ID}/road-sites`).then(d => { if (!d) return; State.roadSites = d.sites || []; State.dirty = true; });
   }, 30000);
 
   // While any own unit is marching, refresh units + fog fast so the fog visibly
@@ -4187,15 +4187,15 @@ export function initMap() {
     const civilianMoving=State.tradeData.length>0||State.messengerData.some(m=>!m.own&&m.heading);
     if (!State.unitsData.some(u => u.status === 'marching') && !courierOut && !foreignMoving && !civilianMoving) return;
     refreshTiles();
-    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; }));
-    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/foreign-units`).then(r => r.ok && r.json().then(d => { State.foreignUnitData = d; State.dirty = true; }));
+    pollJSON(`/api/v1/worlds/${State.WORLD_ID}/units`).then(d => { if (!d) return; State.unitsData = d.units || []; State.dirty = true; });
+    pollJSON(`/api/v1/worlds/${State.WORLD_ID}/foreign-units`).then(d => { if (!d) return; State.foreignUnitData = d; State.dirty = true; });
     // A Runner en route needs the same fast cadence: its delivery flips
     // the unit to marching (or applies a stance) server-side — poll messengers
     // so the runner vanishes and the unit moves without waiting for the 30s tick.
-    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}`).then(r=>r.ok&&r.json().then(d=>anchorWorldTime(d)));
-    if(State.tradeData.length)fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/trades`).then(r=>r.ok&&r.json().then(d=>{State.tradeData=d;State.dirty=true;}));
+    pollJSON(`/api/v1/worlds/${State.WORLD_ID}`).then(d => d && anchorWorldTime(d));
+    if(State.tradeData.length)pollJSON(`/api/v1/worlds/${State.WORLD_ID}/trades`).then(d => {if (!d) return; State.tradeData=d;State.dirty=true;});
     if (courierOut || civilianMoving) {
-      fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; }));
+      pollJSON(`/api/v1/worlds/${State.WORLD_ID}/messengers`).then(d => { if (!d) return; State.messengerData = d; State.dirty = true; });
     }
   }, 3000);
 }

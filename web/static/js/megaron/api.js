@@ -73,6 +73,22 @@ export async function fetchAuth(url, opts = {}) {
   }
 }
 
+// Conditional GET for the map polls. The server answers an unchanged body with
+// 304 and the last parsed body is handed back — the same object, so the caller
+// re-applies what the server just confirmed is current, without a reparse.
+// Undefined when the request fails, as `r.ok && r.json()` was before.
+const polled = new Map();
+export async function pollJSON(url) {
+  const held = polled.get(url);
+  const res = await fetchAuth(url, held ? { headers: { 'If-None-Match': held.etag } } : {});
+  if (res.status === 304 && held) return held.data;
+  if (!res.ok) return undefined;
+  const data = await res.json();
+  const etag = res.headers.get('ETag');
+  if (etag) polled.set(url, { etag, data }); else polled.delete(url);
+  return data;
+}
+
 // Account-level chat endpoints; secrets bypass error-body diagnostics and caches.
 export const getAgoraAccount = () => fetchAuth('/api/v1/agora', { cache: 'no-store' });
 export const requestAgoraPassword = () => fetchAuth('/api/v1/agora/password', {

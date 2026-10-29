@@ -2143,8 +2143,7 @@ func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {
 	attachRecruitCancelNotes(r.Context(), h.pool, worldID, playerID, summaries)
 	attachShipPortActions(r.Context(), h.pool, worldID, playerID, summaries)
 
-	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(map[string]any{"units": summaries, "expedition_rules": expeditionRulesJSON()})
+	writeJSONETag(w, r, map[string]any{"units": summaries, "expedition_rules": expeditionRulesJSON()})
 }
 
 // settlementNames ger id → namn för spelarens städer, så namnstandarden kan
