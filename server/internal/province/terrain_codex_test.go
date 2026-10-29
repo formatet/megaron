@@ -30,3 +30,20 @@ func TestCodexTerrainTravel(t *testing.T) {
 		}
 	}
 }
+
+func TestCodexWaterTravel(t *testing.T) {
+	for _, row := range []struct{ article, terrain string }{{"coastal-sea", "coastal_sea"}, {"deep-sea", "deep_sea"}, {"rivers", "river"}, {"river-ford", "river_ford"}} {
+		raw, err := os.ReadFile("../../../web/static/codex/" + row.article + ".md")
+		if err != nil {
+			t.Fatal(err)
+		}
+		unit := "hexes"
+		if row.terrain == "river_ford" {
+			unit = "hex"
+		}
+		want := fmt.Sprintf("Galley base speed: %g %s per game day", 1/TerrainMoveTicksFor(row.terrain, "naval"), unit)
+		if !strings.Contains(regexp.MustCompile(`\[\[[^|\]]+\|([^\]]+)\]\]`).ReplaceAllString(string(raw), "$1"), want) {
+			t.Errorf("%s missing %s", row.article, want)
+		}
+	}
+}
