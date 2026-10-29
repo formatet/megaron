@@ -1,0 +1,17 @@
+[Unit]
+Description=Six Megaron Luna-low players (60s/tick playtest)
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/.local/state/megaron-luna
+Environment="PATH=%h/.npm-global/bin:%h/.local/bin:/usr/local/bin:/usr/bin:/bin"
+ExecStart=/usr/bin/python3 %h/.local/share/megaron-luna/luna_fleet.py run
+Restart=on-failure
+RestartSec=20
+KillMode=control-group
+TimeoutStopSec=20
+UMask=0077
+
+[Install]
+WantedBy=default.target

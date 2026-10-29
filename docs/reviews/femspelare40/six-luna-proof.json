@@ -1,0 +1,238 @@
+{
+  "checked_at": "2026-10-20T19:31:43.237390+02:00",
+  "players": {
+    "hephaistos": {
+      "current": {
+        "player": "hephaistos",
+        "round": 3,
+        "begin_tick": 41,
+        "next_tick": 46,
+        "state": "waiting",
+        "model": "gpt-6-luna",
+        "reasoning": "low",
+        "started": 1792517415.0281,
+        "exit_code": 0,
+        "commands": 14,
+        "successful_commands": 13,
+        "failures": 0,
+        "finished": 1792517434.1506126
+      },
+      "completed_successful_rounds": [
+        {
+          "round": 1,
+          "commands": 21,
+          "successful_commands": 18,
+          "audit_sha256": "4d9620387ac69436d01e1060ba53969c815338c1d649e9274c71d6f01fe1d6be"
+        },
+        {
+          "round": 2,
+          "commands": 15,
+          "successful_commands": 14,
+          "audit_sha256": "34e975168a858c65ca4949314630fa064cbc49aff492e6de1fa12381966480c5"
+        },
+        {
+          "round": 3,
+          "commands": 14,
+          "successful_commands": 13,
+          "audit_sha256": "b0476506aa85231bc60f590a5a83065d0b09f180655f4ba18b976bf5688c6232"
+        }
+      ]
+    },
+    "talthybios": {
+      "current": {
+        "player": "talthybios",
+        "round": 2,
+        "begin_tick": 38,
+        "next_tick": 43,
+        "state": "waiting",
+        "model": "gpt-6-luna",
+        "reasoning": "low",
+        "started": 1792517238.3067307,
+        "exit_code": 0,
+        "commands": 22,
+        "successful_commands": 18,
+        "failures": 0,
+        "finished": 1792517266.2506614
+      },
+      "completed_successful_rounds": [
+        {
+          "round": 1,
+          "commands": 23,
+          "successful_commands": 17,
+          "audit_sha256": "9128ecdb0713689255ff1b30721bae7215ef18262064bdb281bf0ef9db605b6b"
+        },
+        {
+          "round": 2,
+          "commands": 22,
+          "successful_commands": 18,
+          "audit_sha256": "c155bafbb517fc50c6b3a651bf699d5e617090aa285e8c33fe8ac5a83442d75e"
+        }
+      ]
+    },
+    "pheidon": {
+      "current": {
+        "player": "pheidon",
+        "round": 2,
+        "begin_tick": 38,
+        "next_tick": 43,
+        "state": "waiting",
+        "model": "gpt-6-luna",
+        "reasoning": "low",
+        "started": 1792517238.3074567,
+        "exit_code": 0,
+        "commands": 24,
+        "successful_commands": 21,
+        "failures": 0,
+        "finished": 1792517268.25618
+      },
+      "completed_successful_rounds": [
+        {
+          "round": 1,
+          "commands": 13,
+          "successful_commands": 9,
+          "audit_sha256": "ae487ac6c843c31f9864678f7e084414d7c43174462dc4589125929333362e1c"
+        },
+        {
+          "round": 2,
+          "commands": 24,
+          "successful_commands": 21,
+          "audit_sha256": "0c8d87a2762f762d913d18f899adc467dffb3fc9b79976f66ed82e582cca7ba2"
+        }
+      ]
+    },
+    "gpt-damon": {
+      "current": {
+        "player": "gpt-damon",
+        "round": 4,
+        "begin_tick": 41,
+        "next_tick": 46,
+        "state": "waiting",
+        "model": "gpt-6-luna",
+        "reasoning": "low",
+        "started": 1792517414.0984356,
+        "exit_code": 0,
+        "commands": 18,
+        "successful_commands": 18,
+        "failures": 0,
+        "finished": 1792517437.4800076
+      },
+      "completed_successful_rounds": [
+        {
+          "round": 2,
+          "commands": 14,
+          "successful_commands": 14,
+          "audit_sha256": "ed3d51099530fb51bd2c72d34beb99b82e36792ee234fc8d9d8b6e9d99a6d8f5"
+        },
+        {
+          "round": 4,
+          "commands": 18,
+          "successful_commands": 18,
+          "audit_sha256": "e418f91d140093191ed1846f227d4cb548a4c4f79709fbad355f61f605aef352"
+        }
+      ]
+    },
+    "gpt-kleio": {
+      "current": {
+        "player": "gpt-kleio",
+        "round": 2,
+        "begin_tick": 39,
+        "next_tick": 44,
+        "state": "waiting",
+        "model": "gpt-6-luna",
+        "reasoning": "low",
+        "started": 1792517298.3541207,
+        "exit_code": 0,
+        "commands": 22,
+        "successful_commands": 20,
+        "failures": 0,
+        "finished": 1792517330.9120462
+      },
+      "completed_successful_rounds": [
+        {
+          "round": 1,
+          "commands": 21,
+          "successful_commands": 18,
+          "audit_sha256": "64cd0cc649bcc0dc0b57281f410de3791e8f709bdf4b5c2a29dee57a8dafe78f"
+        },
+        {
+          "round": 2,
+          "commands": 22,
+          "successful_commands": 20,
+          "audit_sha256": "6a981e9db0cb6e42d6710440f01b2ad1aecd5765a9e20b990753463112d9ba72"
+        }
+      ]
+    },
+    "gpt-lykon": {
+      "current": {
+        "player": "gpt-lykon",
+        "round": 2,
+        "begin_tick": 39,
+        "next_tick": 44,
+        "state": "waiting",
+        "model": "gpt-6-luna",
+        "reasoning": "low",
+        "started": 1792517298.3534825,
+        "exit_code": 0,
+        "commands": 24,
+        "successful_commands": 22,
+        "failures": 0,
+        "finished": 1792517315.117013
+      },
+      "completed_successful_rounds": [
+        {
+          "round": 1,
+          "commands": 15,
+          "successful_commands": 10,
+          "audit_sha256": "7490ee3a2adc3a0dadf3e1839567626b1aa316b5823d4c411b3bcc44d399f893"
+        },
+        {
+          "round": 2,
+          "commands": 24,
+          "successful_commands": 22,
+          "audit_sha256": "d27b29d810fb7508c16ba9557a6943cde3c26dd5a10a6e261868a3a310b27a65"
+        }
+      ]
+    }
+  },
+  "runtime_sha256": {
+    "luna_command.py": "b38f5e2e3a4956fb9d5eaa235810de646036a13ad37d0bea1809367d42117c34",
+    "luna_fleet.py": "4f5b18439c1804d70c0bd0fd874f81890abd26ae8598c911c9bb4bfa17cabcde",
+    "luna_prompt.md": "a8cba4d26b354bf1a893674c0bcd51f1c11dc133c6bb1932c354aa7164dafa95"
+  },
+  "world": {
+    "created_at": "2026-10-20T16:19:02.590806+02:00",
+    "current_tick": 42,
+    "era_number": 1,
+    "era_started_at": "2026-10-20T16:19:02.590806+02:00",
+    "id": "2178e795-1303-4cc3-865a-6386847d68d1",
+    "name": "Megaron fresh reseed",
+    "state": "active",
+    "tick_anchor_at": "2026-10-20T17:30:51.198658Z",
+    "tick_seconds": 60,
+    "wanaxes_joined": 6,
+    "wanaxes_needed": 4
+  },
+  "tests_passed": 9,
+  "mutations": [
+    "account guard removal -> named RED",
+    "refresh rotation removal -> named RED"
+  ],
+  "real_token_refresh_and_cli": "PASS",
+  "registration_status": 403,
+  "service": {
+    "active": true,
+    "enabled": true,
+    "linger": true,
+    "max_parallel_rounds": 2,
+    "round_delay_ticks": 5,
+    "round_command_limit": 24
+  },
+  "cities": {
+    "Hephaistos": "Kydonia",
+    "Talthybios": "Gournia",
+    "Pheidon": "Amnissos",
+    "gpt-damon": "Damon",
+    "gpt-kleio": "Petras",
+    "gpt-lykon": "Zakros"
+  }
+}

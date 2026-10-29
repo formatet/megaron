@@ -1,0 +1,147 @@
+{
+  "hephaistos": {
+    "pid": 3872861,
+    "running": true,
+    "model_plans": [
+      {
+        "status": "ACT",
+        "ok": 3,
+        "cli_errors": 0
+      },
+      {
+        "status": "ACT",
+        "ok": 3,
+        "cli_errors": 0
+      },
+      {
+        "status": "ACT",
+        "ok": 3,
+        "cli_errors": 0
+      },
+      {
+        "status": "ACT",
+        "ok": 2,
+        "cli_errors": 0
+      }
+    ],
+    "valid_act_turns": 4,
+    "auth_errors": 0,
+    "parse_errors": 0,
+    "cli_errors": 3
+  },
+  "talthybios": {
+    "pid": 3875876,
+    "running": true,
+    "model_plans": [
+      {
+        "status": "ACT",
+        "ok": 3,
+        "cli_errors": 0
+      },
+      {
+        "status": "ACT",
+        "ok": 2,
+        "cli_errors": 0
+      },
+      {
+        "status": "ACT",
+        "ok": 2,
+        "cli_errors": 0
+      }
+    ],
+    "valid_act_turns": 3,
+    "auth_errors": 0,
+    "parse_errors": 0,
+    "cli_errors": 3
+  },
+  "pheidon": {
+    "pid": 3875923,
+    "running": true,
+    "model_plans": [
+      {
+        "status": "ACT",
+        "ok": 3,
+        "cli_errors": 0
+      },
+      {
+        "status": "ACT",
+        "ok": 3,
+        "cli_errors": 0
+      },
+      {
+        "status": "ACT",
+        "ok": 2,
+        "cli_errors": 0
+      }
+    ],
+    "valid_act_turns": 3,
+    "auth_errors": 0,
+    "parse_errors": 0,
+    "cli_errors": 3
+  },
+  "llama": {
+    "prompt_tokens": [
+      3387,
+      3223,
+      3348,
+      3404,
+      3267,
+      3153,
+      3261,
+      3215,
+      3275,
+      3133
+    ],
+    "truncated_nonzero": 0,
+    "context_shift": 0
+  },
+  "runtime_source_sha256": {
+    "agent.py": "bcd6a3d708369a128339c14b2f71a1a808348b7413b4f58399a07ea4c525f274",
+    "agents.sh": "84213055775b721cbff6a58517d2a85870bf90c4275742d4aadb1b5a12f554fc",
+    "register-agents.sh": "48ae00c0ff78982582cb1816c8824655dd8b1dfc221f92d91cf8b808320b5ee3"
+  },
+  "world": {
+    "id": "2178e795-1303-4cc3-865a-6386847d68d1",
+    "width": 40,
+    "height": 40,
+    "tiles": 1600,
+    "land": 391,
+    "cities": {
+      "Hephaistos": "Kydonia",
+      "Talthybios": "Gournia",
+      "Pheidon": "Amnissos",
+      "gpt-damon": "Damon",
+      "gpt-kleio": "Petras"
+    },
+    "observed_tick": 2,
+    "process_commit": "3146067",
+    "migration": 193,
+    "dirty": false
+  },
+  "cloud_rounds": {
+    "gpt-damon": {
+      "commands": 24,
+      "exit0": 24,
+      "nonzero": 0,
+      "raw_sha256": "54e711b63856fa7c67a4cb64817be85109e7a0c905ad341aef9d2c8792e98127"
+    },
+    "gpt-damon-runda2": {
+      "commands": 14,
+      "exit0": 14,
+      "nonzero": 0,
+      "raw_sha256": "f6d600de63beef04bf64c4318cc3449739f2e97f46694c234cce35adcdc8cdf8"
+    },
+    "gpt-kleio": {
+      "commands": 11,
+      "exit0": 11,
+      "nonzero": 0,
+      "raw_sha256": "3c7f920ee36a3a3276ee63b3c55e0e27cf1a45f47288517efa1c89bce17ef9fe"
+    },
+    "gpt-kleio-runda2": {
+      "commands": 19,
+      "exit0": 18,
+      "nonzero": 1,
+      "raw_sha256": "3697d6b41ab166123f8a41520309ae53370fb9c7afc6f9ad8860f626baff0de5"
+    }
+  }
+}
