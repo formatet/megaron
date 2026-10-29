@@ -8,7 +8,7 @@ Open a Wanax to read your exchange, oldest first. The newest letter is open; exp
 
 ### Replying with their Runner {#messengers-your-letters-2}
 
-The reply box sits below the exchange. **Send with their runner** uses the bearer waiting for your answer and shows when he leaves. **Send a runner** sends a new letter to a city you have contacted. **Write** lists the Wanax you can reach, with their contacted cities beneath. A rumour does not open a route. You can also write from a known city's Inspect panel. Unsent text stays in the box in this browser while you use the drawer; it is not saved to the server.
+The reply box sits below the exchange. **Send with their runner** uses the bearer waiting for your answer and shows when he leaves. **Send a runner** sends a new letter to a city you have contacted. **Write** lists the Wanax you can reach, with their contacted cities beneath. A rumour does not open a route. You can also write from a known city's Inspect panel. A letter written there can also **tell of a place** your people have seen; see [[telling-of-places]]. Unsent text stays in the box in this browser while you use the drawer; it is not saved to the server.
 
 Keryx: `letters` lists your correspondents; `letters "Myrine"` reads your exchange with that Wanax. `--json` returns the same data. `reply --id <letter-id> --text "..."` answers with the waiting bearer. `message --to <city> --text "..."` sends a new runner; `trade-offer` attaches structured trade terms. `inbox` remains available for received letters and marks those displayed as read.
 

@@ -12,17 +12,21 @@ import (
 // No goods — pure diplomatic communication. FOW-gated on the server.
 // This is SB8 verb #1: distinct from trade-offer and transfer.
 func messageCmd() *cobra.Command {
-	var destName, text, fromName string
+	var destName, text, fromName, tellPlace string
 	var fromHost bool
 	cmd := &cobra.Command{
 		Use:   "message",
 		Short: "Send a free-text message to another Wanax (no goods)",
 		Example: `  keryx message --to Korinth --text "Greetings, neighbour"
-  keryx message --from-host --to Korinth --text "A people seeks passage"`,
+  keryx message --from-host --to Korinth --text "A people seeks passage"
+  keryx message --to Korinth --text "Hear of this wood" --tell-place "Dark Wood"`,
 		Args: rejectPositionalArgs("to"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if fromHost && fromName != "" {
 				return fmt.Errorf("--from and --from-host cannot be combined — the host IS the sender")
+			}
+			if fromHost && tellPlace != "" {
+				return fmt.Errorf("--tell-place goes with a letter from a city, not from the host")
 			}
 			c := newClient(cfg)
 
@@ -75,11 +79,19 @@ func messageCmd() *cobra.Command {
 			}
 
 			path = fmt.Sprintf("/api/v1/worlds/%s/settlements/%s/messengers", cfg.WorldID, ownSettlementID)
-			data, err := c.post(path, map[string]any{
+			body := map[string]any{
 				"destination_id": destID,
 				"message":        text,
 				// No trade_offer — pure message
-			})
+			}
+			if tellPlace != "" {
+				story, err := resolveTellPlace(c, markers, tellPlace)
+				if err != nil {
+					return err
+				}
+				body["tell_place"] = story
+			}
+			data, err := c.post(path, body)
 			if err != nil {
 				return err
 			}
@@ -91,6 +103,9 @@ func messageCmd() *cobra.Command {
 			json.Unmarshal(data, &resp)
 			arrivesAt, _ := resp["arrives_at"].(string)
 			fmt.Printf("Message dispatched to %s · arrives %s\n", destName, arrivalETA(c, arrivesAt))
+			if tellPlace != "" {
+				fmt.Printf("It tells of %s — what your people had seen of it as the Runner left.\n", tellPlace)
+			}
 			printPassageNote(resp)
 			return nil
 		},
@@ -99,6 +114,7 @@ func messageCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&text, "text", "x", "", "message text (required)")
 	cmd.Flags().StringVar(&fromName, "from", "", "your city to send from (default: capital)")
 	cmd.Flags().BoolVar(&fromHost, "from-host", false, "send from your wandering Nomadic Host (founder phase) instead of a city")
+	cmd.Flags().StringVar(&tellPlace, "tell-place", "", "tell of a named place or a city your people have seen (see keryx places)")
 	_ = cmd.MarkFlagRequired("to")
 	_ = cmd.MarkFlagRequired("text")
 	return cmd

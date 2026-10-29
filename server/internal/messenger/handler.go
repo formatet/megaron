@@ -148,6 +148,20 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 			return fmt.Errorf("record seen destination: %w", err)
 		}
 	}
+	// A letter that tells of a place hands its story to the city's ruler now
+	// (megaron_plan_vagbeskrivningar v1); the status flip above makes it once.
+	var recipientID uuid.UUID
+	var recipientOwner *uuid.UUID
+	if err := tx.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id = $1`, destinationID).Scan(&recipientOwner); err != nil {
+		return fmt.Errorf("load story recipient: %w", err)
+	}
+	if recipientOwner != nil {
+		recipientID = *recipientOwner
+	}
+	story, err := deliverStoryTx(ctx, tx, e.WorldID, payload.MessengerID, senderID, recipientID)
+	if err != nil {
+		return err
+	}
 
 	// Gossip mechanism: contact spreads any rumors the destination's owner is
 	// carrying (temenos_gossip.md PASS 2b — detailed market knowledge stays
@@ -215,9 +229,31 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 		map[string]any{"messenger_id": payload.MessengerID}, e.WorldID, nil)
 
 	h.notifyDelivered(ctx, e.WorldID, payload.MessengerID)
+	if story != nil {
+		_, _ = h.store.Append(ctx, destinationID, events.StreamProvince, "PlaceToldV1",
+			map[string]any{"from": senderID, "to": recipientID, "place_kind": story.Kind,
+				"anchor": [2]int{story.AnchorQ, story.AnchorR}, "hexes": story.Hexes}, e.WorldID, nil)
+		h.notifyPlaceTold(ctx, e.WorldID, senderID, recipientID, story)
+	}
 
 	slog.Info("messenger delivered", "id", payload.MessengerID, "destination", destinationID)
 	return nil
+}
+
+// notifyPlaceTold tells the recipient what the letter told of. Same
+// best-effort, post-commit placement as notifyDelivered.
+func (h *ArrivalHandler) notifyPlaceTold(ctx context.Context, worldID, tellerID, recipientID uuid.UUID, s *Story) {
+	if h.hub == nil {
+		return
+	}
+	var teller string
+	if err := h.pool.QueryRow(ctx, `SELECT COALESCE(wanax_name, username) FROM players WHERE id = $1`, tellerID).Scan(&teller); err != nil {
+		return
+	}
+	_ = h.hub.NotifyPlayer(ctx, worldID, recipientID, "PlaceTold", 3, map[string]any{
+		"from": teller, "sender_id": tellerID, "place": s.Name, "place_kind": s.Kind,
+		"q": s.Hexes[0][0], "r": s.Hexes[0][1], "hexes": len(s.Hexes),
+	})
 }
 
 // notifyDelivered tells the recipient a messenger is standing in their court.

@@ -39,6 +39,7 @@ export const VERB_EVENTS = [
   {"verb": "rise", "method": "POST", "route": "/api/v1/worlds/:world/rise", "event": "wanax_rose"},
   {"verb": "leave", "method": "POST", "route": "/api/v1/worlds/:world/leave", "event": "world_left"},
   {"verb": "founding settle", "method": "POST", "route": "/api/v1/worlds/:world/founding/settle", "event": "settle"},
+  {"verb": "tell-place", "method": "POST", "route": "/api/v1/worlds/:world/settlements/:settlement/messengers", "event": "place_told"},
   {"verb": "message", "method": "POST", "route": "/api/v1/worlds/:world/settlements/:settlement/messengers", "event": "messenger_sent"},
   {"verb": "trade-offer", "method": "POST", "route": "/api/v1/worlds/:world/settlements/:settlement/messengers", "event": "trade_offer"},
   {"verb": "message", "method": "POST", "route": "/api/v1/worlds/:world/founding/messengers", "event": "messenger_sent"},
@@ -98,6 +99,7 @@ export function verbForRequest(url, opts = {}) {
     && (entry.verb !== 'recall' || !redirected(body))
     && (entry.verb !== 'trade-offer' || !!body.trade_offer)
     && (entry.verb !== 'message' || !body.trade_offer)
+    && (entry.verb !== 'tell-place' || (!!body.tell_place && !body.trade_offer))
     && entry.verb !== 'gift/tribute') || null;
 }
 

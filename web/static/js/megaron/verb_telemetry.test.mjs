@@ -83,6 +83,7 @@ function bodyFor(verb) {
   if (verb === 'staff') return { target_kind: 'building', building_type: 'foundry', good_key: 'bronze' };
   if (verb === 'place') return { target_kind: 'hex', hex_ordinal: 7, good_key: 'grain' };
   if (verb === 'trade-offer') return { trade_offer: { kind: 'sell', offer_good: 'tin' } };
+  if (verb === 'tell-place') return { tell_place: { kind: 'forest', anchor_q: 1, anchor_r: 2 } };
   if (verb === 'redirect') return { target_q: 9, target_r: 4 };
   return {};
 }

@@ -63,6 +63,12 @@ func formatPlaces(data []byte) (string, error) {
 				Q int `json:"q"`
 				R int `json:"r"`
 			} `json:"hexes"`
+			ToldHexes []struct {
+				Q int `json:"q"`
+				R int `json:"r"`
+			} `json:"told_hexes"`
+			ToldBy   []string `json:"told_by"`
+			Tellable bool     `json:"tellable"`
 		} `json:"places"`
 	}
 	if err := json.Unmarshal(data, &resp); err != nil {
@@ -82,8 +88,14 @@ func formatPlaces(data []byte) (string, error) {
 			hexes = append(hexes, fmt.Sprintf("(%d,%d)", h.Q, h.R))
 		}
 		fmt.Fprintf(&out, "%s: %s [%s %s] — known hexes: %s", placeKindLabel(p.Kind), name, p.Kind, p.ID, strings.Join(hexes, " "))
+		if len(p.ToldHexes) > 0 {
+			fmt.Fprintf(&out, " — %d more hexes told by %s", len(p.ToldHexes), strings.Join(p.ToldBy, ", "))
+		}
 		if p.CanName {
 			fmt.Fprintf(&out, " — you were first to reach it: keryx places name %s %s \"<name>\"", p.Kind, p.ID)
+		}
+		if p.Tellable {
+			fmt.Fprintf(&out, " — tell of it: keryx message --to <city> --text \"…\" --tell-place %q", p.Name)
 		}
 		out.WriteByte('\n')
 	}
@@ -165,4 +177,42 @@ func placesAdminCmd(method string) *cobra.Command {
 	}}
 	cmd.Flags().StringVar(&key, "key", "", "admin key (overrides POLEIA_ADMIN_KEY env var)")
 	return cmd
+}
+
+// resolveTellPlace finds what --tell-place names: a tellable named place
+// from /places, else a city on the map (megaron_plan_vagbeskrivningar v1).
+func resolveTellPlace(c *Client, markers []map[string]any, name string) (map[string]any, error) {
+	data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/places", cfg.WorldID))
+	if err != nil {
+		return nil, err
+	}
+	var resp struct {
+		Places []struct {
+			Kind     string `json:"kind"`
+			ID       string `json:"id"`
+			Name     string `json:"name"`
+			Tellable bool   `json:"tellable"`
+		} `json:"places"`
+	}
+	if err := json.Unmarshal(data, &resp); err != nil {
+		return nil, err
+	}
+	for _, p := range resp.Places {
+		if strings.EqualFold(p.Name, name) {
+			if !p.Tellable {
+				return nil, fmt.Errorf("you know %s only from what others told you — you can tell only of what your own people saw", p.Name)
+			}
+			var q, r int
+			fmt.Sscanf(p.ID, "%d,%d", &q, &r)
+			return map[string]any{"kind": p.Kind, "anchor_q": q, "anchor_r": r}, nil
+		}
+	}
+	for _, m := range markers {
+		if n, _ := m["name"].(string); strings.EqualFold(n, name) {
+			q, _ := m["q"].(float64)
+			r, _ := m["r"].(float64)
+			return map[string]any{"kind": "city", "anchor_q": int(q), "anchor_r": int(r)}, nil
+		}
+	}
+	return nil, fmt.Errorf("no place or city called %q that you know — see keryx places and keryx cities", name)
 }

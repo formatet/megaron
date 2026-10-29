@@ -3516,6 +3516,7 @@ function openCityPanel(h, tile, marker, units, foreignUnits) {
   if ((State.MY_SETTLEMENT_ID || State.founderPhase) && marker.settlement_id) {
     footHtml += `
       <textarea id="ip-msg-text" class="msg-textarea" placeholder="Write message…" maxlength="1000" rows="3"></textarea>
+      ${State.MY_SETTLEMENT_ID ? '<label class="msg-tell">Tell of a place: <select id="ip-msg-tell"><option value="">—</option></select></label>' : ''}
       <div class="msg-foot">
         <button class="msg-send" onclick="sendMessengerFromInspect('${marker.settlement_id}')">Send Messenger</button>
         <span class="msg-err" id="ip-msg-err"></span>
@@ -3523,6 +3524,7 @@ function openCityPanel(h, tile, marker, units, foreignUnits) {
   }
   footHtml += '<button id="ip-march-btn" style="' + MARCH_BTN_STYLE + '">March here →</button>';
   foot.innerHTML = footHtml;
+  fillTellOptions(document.getElementById('ip-msg-tell'), marker.settlement_id);
   bindUnitButtons(foot);
   bindMarchButton(document.getElementById('ip-march-btn'), destFromHex(h, tile, marker), 'land');
 
@@ -3905,6 +3907,31 @@ export function closeInspect() {
   State.dirty = true;
 }
 
+// A letter may tell of a named place or a city your own people have seen
+// (megaron_plan_vagbeskrivningar v1). Places come from /places (tellable:
+// named and seen first-hand); cities from the known markers. The server
+// checks again and freezes what you had seen when the Runner leaves.
+async function fillTellOptions(select, destSettlementID) {
+  if (!select) return;
+  const r = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/places`).catch(() => null);
+  const places = r && r.ok ? (await r.json()).places || [] : [];
+  const opts = places.filter(p => p.tellable).map(p => [`${p.kind}|${p.id}`, p.name]);
+  for (const m of State.provinceData || []) {
+    if (m.settlement_id && m.settlement_id !== destSettlementID && m.name) opts.push([`city|${m.q},${m.r}`, m.name]);
+  }
+  for (const [value, label] of opts) {
+    const o = document.createElement('option');
+    o.value = value; o.textContent = label;
+    select.appendChild(o);
+  }
+}
+
+function tellPlaceValue() {
+  const v = document.getElementById('ip-msg-tell')?.value || '';
+  const m = /^(river|massif|desert|forest|city)\|(-?\d+),(-?\d+)$/.exec(v);
+  return m ? { kind: m[1], anchor_q: Number(m[2]), anchor_r: Number(m[3]) } : null;
+}
+
 export async function sendMessengerFromInspect(destSettlementID) {
   const textEl = document.getElementById('ip-msg-text');
   const errEl  = document.getElementById('ip-msg-err');
@@ -3918,7 +3945,8 @@ export async function sendMessengerFromInspect(destSettlementID) {
   const res = await fetchAuth(sendPath, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-    body: JSON.stringify({ destination_id: destSettlementID, message: text }),
+    body: JSON.stringify({ destination_id: destSettlementID, message: text,
+      ...(State.MY_SETTLEMENT_ID && tellPlaceValue() ? { tell_place: tellPlaceValue() } : {}) }),
   });
   if (res.ok) {
     textEl.value = '';

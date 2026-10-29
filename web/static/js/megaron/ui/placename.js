@@ -7,6 +7,17 @@ import { esc } from './format.js';
 export const PLACE_LABELS = { river: 'river', massif: 'mountain massif', desert: 'desert', forest: 'cedar forest' };
 
 export function placePanelHTML(tile, { showName = false } = {}) {
+  return toldByHTML(tile) + placeNameHTML(tile, showName);
+}
+
+// Ground known only from a story told in a letter (megaron_plan_vagbeskrivningar v1).
+function toldByHTML(tile) {
+  return tile.told_by && tile.tier === 'remembered'
+    ? `<div class="place-note" style="font-size:.73rem;border-top:1px solid var(--border);padding:.4rem 0">Told by ${esc(tile.told_by)} — as they saw it, not seen by your own people</div>`
+    : '';
+}
+
+function placeNameHTML(tile, showName) {
   const kind = tile.place_kind, id = tile.place_id;
   if (!Object.hasOwn(PLACE_LABELS, kind) || !/^-?\d+,-?\d+$/.test(id || '') ||
       tile.terrain === 'fog' || tile.tier === 'fog' || tile.visible === false) return '';
