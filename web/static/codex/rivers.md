@@ -6,3 +6,15 @@ When an expedition turns home, its dispatch says **Mission complete** and gives 
 A known river’s channel reaches the correct edge even when its next hex is in [[sight|fog]]. Ships go with the current in half the time and against it in twice the time; [[runners|runners]], armies and [[transfers|caravans]] are not affected. A small current mark points downstream; select the hex to read the upstream/downstream directions and where it continues into fog. Keryx `map` reports the same directions. A known river also shows the kind of its connecting water hexes, including through fog: river, ford or sea. The unexplored hex’s name, resources and forces stay hidden.
 
 **[[galley|Galley]] base speed: 2 hexes per game day**, with a full crew and no soldiers aboard. River current, crew, carried troops and ship type can change the travel time; check the forecast. See [[ship-types]].
+
+## Base production
+
+Per hex, without buildings or mineral deposits. Each worker is one [[citizens|citizen]] group. The places shown are limits for each good; a worker does one job.
+
+<!-- terrain-production -->
+| Good | Worker places | Per worker per game day |
+|---|---|---|
+| [[fish]] | 1 | 0.5 |
+<!-- /terrain-production -->
+
+Buildings, deposits and refining can change these values. Check City production for this hex's actual output. See [[hex-production-buildings]].

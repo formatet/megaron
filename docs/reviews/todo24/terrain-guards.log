@@ -1,0 +1,184 @@
+TAP version 13
+# Subtest: codex: index ids are unique and every category is declared
+ok 1 - codex: index ids are unique and every category is declared
+  ---
+  duration_ms: 0.944044
+  type: 'test'
+  ...
+# Subtest: codex: every index entry has a file and every file has an index entry
+ok 2 - codex: every index entry has a file and every file has an index entry
+  ---
+  duration_ms: 0.707019
+  type: 'test'
+  ...
+# Subtest: codex: every [[link]] and related entry resolves to an article
+ok 3 - codex: every [[link]] and related entry resolves to an article
+  ---
+  duration_ms: 1.116702
+  type: 'test'
+  ...
+# Subtest: codex: every notification kind the client shows maps to exactly one article
+ok 4 - codex: every notification kind the client shows maps to exactly one article
+  ---
+  duration_ms: 1.685017
+  type: 'test'
+  ...
+# Subtest: codex: every drawer with a ? button has an article
+ok 5 - codex: every drawer with a ? button has an article
+  ---
+  duration_ms: 0.264482
+  type: 'test'
+  ...
+# Subtest: codex: every article is reachable — linked from another article or listed as related
+ok 6 - codex: every article is reachable — linked from another article or listed as related
+  ---
+  duration_ms: 0.698161
+  type: 'test'
+  ...
+# Subtest: renderMarkdown: escapes HTML and renders links, known and missing
+ok 7 - renderMarkdown: escapes HTML and renders links, known and missing
+  ---
+  duration_ms: 0.549156
+  type: 'test'
+  ...
+# Subtest: renderMarkdown: headings, lists, tables, code and comments
+ok 8 - renderMarkdown: headings, lists, tables, code and comments
+  ---
+  duration_ms: 0.529024
+  type: 'test'
+  ...
+# Subtest: backlinksTo and searchArticles
+ok 9 - backlinksTo and searchArticles
+  ---
+  duration_ms: 0.59718
+  type: 'test'
+  ...
+# Subtest: codex: lowercase agora_ready is mapped and community rules match alpha policy
+ok 10 - codex: lowercase agora_ready is mapped and community rules match alpha policy
+  ---
+  duration_ms: 0.603928
+  type: 'test'
+  ...
+# Subtest: codex search finds the specific colony abandonment and Runner return articles
+ok 11 - codex search finds the specific colony abandonment and Runner return articles
+  ---
+  duration_ms: 11.010165
+  type: 'test'
+  ...
+# Subtest: codex: game days name the world unit and clock/date names wall time
+ok 12 - codex: game days name the world unit and clock/date names wall time
+  ---
+  duration_ms: 0.273655
+  type: 'test'
+  ...
+# Subtest: historical food-reserve notifications open the current food article
+ok 13 - historical food-reserve notifications open the current food article
+  ---
+  duration_ms: 0.098687
+  type: 'test'
+  ...
+# Subtest: temple demolition notice opens the loss and lowered-ceiling rules
+ok 14 - temple demolition notice opens the loss and lowered-ceiling rules
+  ---
+  duration_ms: 0.215231
+  type: 'test'
+  ...
+# Subtest: Codex search ranks titles before aliases before content and normalises separators
+ok 15 - Codex search ranks titles before aliases before content and normalises separators
+  ---
+  duration_ms: 5.240687
+  type: 'test'
+  ...
+# Subtest: current catalogue objects resolve to their individual Codex article
+ok 16 - current catalogue objects resolve to their individual Codex article
+  ---
+  duration_ms: 0.222915
+  type: 'test'
+  ...
+# Subtest: article bundle matches every Markdown source exactly
+ok 17 - article bundle matches every Markdown source exactly
+  ---
+  duration_ms: 1.074478
+  type: 'test'
+  ...
+# Subtest: generated Codex facts are current with their reference catalogue
+ok 18 - generated Codex facts are current with their reference catalogue
+  ---
+  duration_ms: 29.116658
+  type: 'test'
+  ...
+# Subtest: Codex tables keep labelled wiki links in one cell
+ok 19 - Codex tables keep labelled wiki links in one cell
+  ---
+  duration_ms: 0.252841
+  type: 'test'
+  ...
+# Subtest: Codex offer lifetime follows its server owner and distinguishes existing deadlines
+ok 20 - Codex offer lifetime follows its server owner and distinguishes existing deadlines
+  ---
+  duration_ms: 0.617975
+  type: 'test'
+  ...
+# Subtest: codex: every section heading anchor matches its index entry, and ids are unique across articles and sections
+ok 21 - codex: every section heading anchor matches its index entry, and ids are unique across articles and sections
+  ---
+  duration_ms: 1.194765
+  type: 'test'
+  ...
+# Subtest: codex: an old fragment id opens its article at the section, and links to it render as links
+ok 22 - codex: an old fragment id opens its article at the section, and links to it render as links
+  ---
+  duration_ms: 0.224717
+  type: 'test'
+  ...
+# Subtest: codex: a long article opens with its contents, a short one does not
+ok 23 - codex: a long article opens with its contents, a short one does not
+  ---
+  duration_ms: 0.125334
+  type: 'test'
+  ...
+# Subtest: codex search finds a rule inside a long article as its section
+ok 24 - codex search finds a rule inside a long article as its section
+  ---
+  duration_ms: 4.592557
+  type: 'test'
+  ...
+# Subtest: codex: every article links the first mention of each thing that has its own page
+ok 25 - codex: every article links the first mention of each thing that has its own page
+  ---
+  duration_ms: 17.055586
+  type: 'test'
+  ...
+# Subtest: linkFirstMentions links the first unlinked mention only, and leaves links, code, headings and generated tables alone
+ok 26 - linkFirstMentions links the first unlinked mention only, and leaves links, code, headings and generated tables alone
+  ---
+  duration_ms: 0.307415
+  type: 'test'
+  ...
+# Subtest: codex: every member page names a hub that exists and lists it
+ok 27 - codex: every member page names a hub that exists and lists it
+  ---
+  duration_ms: 0.67725
+  type: 'test'
+  ...
+# Subtest: Day guard web: player units and wall clock stay distinct
+ok 28 - Day guard web: player units and wall clock stay distinct
+  ---
+  duration_ms: 284.176522
+  type: 'test'
+  ...
+# Subtest: Day guard codex: player units and wall clock stay distinct
+ok 29 - Day guard codex: player units and wall clock stay distinct
+  ---
+  duration_ms: 135.471094
+  type: 'test'
+  ...
+1..29
+# tests 29
+# suites 0
+# pass 29
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 458.034782

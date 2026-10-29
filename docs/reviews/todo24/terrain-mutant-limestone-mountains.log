@@ -1,0 +1,7 @@
+» färsk DB på migration 228 · commit 061eeecc+ändringar
+--- FAIL: TestCodexTerrainProduction (0.01s)
+    --- FAIL: TestCodexTerrainProduction/limestone-mountains (0.01s)
+        terrain_yields_codex_test.go:82: limestone-mountains production table differs from city rules; regenerate with -update-terrain-article=limestone-mountains
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.010s
+FAIL

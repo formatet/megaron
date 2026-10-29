@@ -710,3 +710,7 @@ section ids (`## Title {#old-id}` + `sections` in index.json), so links, notific
 After writing Codex prose, run `node tools/codex_links.mjs` (links the first mention of anything with its
 own page, from each article's `terms`), then `python3 tools/codex_facts.py` (fact tables, hub lists
 `<!-- list: kind [keys] -->`, bundle). `codex.test.mjs` fails on an unlinked mention or a hub missing a member.
+
+`python3 tools/terrain_article_mutations.py` corrupts each added terrain production table, requires its named DB-backed assertion, and restores exact bytes. Proof: `docs/reviews/todo24/`.
+`python3 tools/todo24_deploy_verify.py --before` captures read-only process/ground state for this static-only pass; without the flag it checks deployed checkout, unchanged process, clean schema 228 and exact static bytes.
+`python3 tools/terrain_article_cli.py` reads all eight new terrain articles through the installed Keryx against an isolated static HTTP server; no world changes or authentication required.

@@ -1,0 +1,7 @@
+» färsk DB på migration 228 · commit 061eeecc+ändringar
+--- FAIL: TestCodexTerrainProduction (0.01s)
+    --- FAIL: TestCodexTerrainProduction/coastal-sea (0.01s)
+        terrain_yields_codex_test.go:82: coastal-sea production table differs from city rules; regenerate with -update-terrain-article=coastal-sea
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.009s
+FAIL

@@ -12,3 +12,16 @@ See [[catchment]], [[citizens]] and [[marching]].
 | [[war-chariot|Chariots]] | 2 |
 
 Before roads and journey rounding. Check the march preview for your arrival time. See [[marching]].
+
+## Base production
+
+Per hex, without buildings or mineral deposits. Each worker is one citizen group. The places shown are limits for each good; a worker does one job.
+
+<!-- terrain-production -->
+| Good | Worker places | Per worker per game day |
+|---|---|---|
+| [[stone]] | 1 | 0.5 |
+| [[timber]] | 1 | 0.33 |
+<!-- /terrain-production -->
+
+Buildings, deposits and refining can change these values. Check City production for this hex's actual output. See [[hex-production-buildings]].

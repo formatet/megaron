@@ -12,12 +12,12 @@ import (
 	"testing"
 )
 
-var updateTerrainArticle = flag.String("update-terrain-article", "", "Regenerate one Codex terrain's base production table from the city production owner")
+var updateTerrainArticle = flag.String("update-terrain-article", "", "Regenerate one terrain (or all) from the city production owner")
 
 func TestCodexTerrainProduction(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
-	for _, row := range []struct{ slug, terrain string }{{"plains", "plains"}, {"river-valley", "river_valley"}, {"river-delta", "river_delta"}, {"hills", "hills"}, {"olive-grove", "forest_olive_grove"}, {"cedar-forest", "forest_cedar"}} {
+	for _, row := range []struct{ slug, terrain string }{{"plains", "plains"}, {"river-valley", "river_valley"}, {"river-delta", "river_delta"}, {"hills", "hills"}, {"olive-grove", "forest_olive_grove"}, {"cedar-forest", "forest_cedar"}, {"limestone-mountains", "mountain_limestone"}, {"red-mountains", "mountain_red"}, {"maquis", "scrub_maquis"}, {"semi-desert", "semi_desert"}, {"coastal-sea", "coastal_sea"}, {"deep-sea", "deep_sea"}, {"rivers", "river"}, {"river-ford", "river_ford"}} {
 		t.Run(row.slug, func(t *testing.T) {
 			path := "../../../web/static/codex/" + row.slug + ".md"
 			raw, err := os.ReadFile(path)
@@ -26,7 +26,7 @@ func TestCodexTerrainProduction(t *testing.T) {
 			}
 			const start = "<!-- terrain-production -->"
 			const end = "<!-- /terrain-production -->"
-			if !strings.Contains(string(raw), start) && *updateTerrainArticle != row.slug {
+			if !strings.Contains(string(raw), start) && *updateTerrainArticle != row.slug && *updateTerrainArticle != "all" {
 				t.Fatal("missing production table")
 			}
 			tx, err := pool.Begin(ctx)
@@ -60,9 +60,12 @@ func TestCodexTerrainProduction(t *testing.T) {
 			for _, good := range keys {
 				table += fmt.Sprintf("| [[%s]] | %d | %.3g |\n", good, opt.PlaceCapPerGood[good], hexYield(opt.RatePerGood[good], opt.PlaceCapPerGood[good], opt.MultPerGood[good], 1))
 			}
+			if len(keys) == 0 {
+				table += "| No workplaces without a building | — | — |\n"
+			}
 			table += end
 			text := string(raw)
-			if *updateTerrainArticle == row.slug {
+			if *updateTerrainArticle == row.slug || *updateTerrainArticle == "all" {
 				if a := strings.Index(text, start); a >= 0 {
 					b := strings.Index(text[a:], end)
 					if b < 0 {

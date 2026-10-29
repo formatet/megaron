@@ -1,0 +1,67 @@
+» färsk DB på migration 228 · commit 061eeecc+ändringar
+ok  	formatet/megaron/server/api/handlers	70.505s
+ok  	formatet/megaron/server/cmd/backfill-route-sight	0.050s
+?   	formatet/megaron/server/cmd/create-world	[no test files]
+ok  	formatet/megaron/server/cmd/erase-player	0.040s
+ok  	formatet/megaron/server/cmd/keryx	0.444s
+?   	formatet/megaron/server/cmd/mapgen-debug	[no test files]
+?   	formatet/megaron/server/cmd/material-measure	[no test files]
+ok  	formatet/megaron/server/cmd/recompute-all	0.048s
+ok  	formatet/megaron/server/cmd/seed-incense	1.436s
+ok  	formatet/megaron/server/cmd/server	5.895s
+ok  	formatet/megaron/server/internal/agora	0.042s
+ok  	formatet/megaron/server/internal/ai	0.042s
+ok  	formatet/megaron/server/internal/auth	1.092s
+ok  	formatet/megaron/server/internal/capabilities	0.659s
+?   	formatet/megaron/server/internal/carrier	[no test files]
+?   	formatet/megaron/server/internal/chronicle	[no test files]
+?   	formatet/megaron/server/internal/clock	[no test files]
+# formatet/megaron/server/internal/combat.test
+/usr/lib/go/pkg/tool/linux_amd64/link: mapping output file failed: disk quota exceeded
+FAIL	formatet/megaron/server/internal/combat [build failed]
+# formatet/megaron/server/internal/economy.test
+/usr/lib/go/pkg/tool/linux_amd64/link: mapping output file failed: disk quota exceeded
+FAIL	formatet/megaron/server/internal/economy [build failed]
+# formatet/megaron/server/internal/events.test
+/usr/lib/go/pkg/tool/linux_amd64/link: mapping output file failed: disk quota exceeded
+FAIL	formatet/megaron/server/internal/events [build failed]
+# formatet/megaron/server/internal/gossip.test
+/usr/lib/go/pkg/tool/linux_amd64/link: mapping output file failed: disk quota exceeded
+FAIL	formatet/megaron/server/internal/gossip [build failed]
+# formatet/megaron/server/internal/hexgrid.test
+/usr/lib/go/pkg/tool/linux_amd64/link: mapping output file failed: disk quota exceeded
+FAIL	formatet/megaron/server/internal/hexgrid [build failed]
+# formatet/megaron/server/internal/kharis [formatet/megaron/server/internal/kharis.test]
+compile: writing output: write $WORK/b385/_pkg_.a: disk quota exceeded
+FAIL	formatet/megaron/server/internal/kharis [build failed]
+# formatet/megaron/server/internal/messenger [formatet/megaron/server/internal/messenger.test]
+compile: writing output: write $WORK/b387/_pkg_.a: disk quota exceeded
+FAIL	formatet/megaron/server/internal/messenger [build failed]
+# formatet/megaron/server/internal/movement [formatet/megaron/server/internal/movement.test]
+compile: writing output: write $WORK/b389/_pkg_.a: disk quota exceeded
+FAIL	formatet/megaron/server/internal/movement [build failed]
+# formatet/megaron/server/internal/notify [formatet/megaron/server/internal/notify.test]
+compile: writing output: write $WORK/b391/_pkg_.a: disk quota exceeded
+FAIL	formatet/megaron/server/internal/notify [build failed]
+# formatet/megaron/server/internal/province [formatet/megaron/server/internal/province.test]
+compile: writing output: write $WORK/b393/_pkg_.a: disk quota exceeded
+FAIL	formatet/megaron/server/internal/province [build failed]
+# formatet/megaron/server/internal/religion [formatet/megaron/server/internal/religion.test]
+compile: writing output: write $WORK/b395/_pkg_.a: disk quota exceeded
+FAIL	formatet/megaron/server/internal/religion [build failed]
+# formatet/megaron/server/internal/settlement [formatet/megaron/server/internal/settlement.test]
+compile: writing output: write $WORK/b397/_pkg_.a: disk quota exceeded
+FAIL	formatet/megaron/server/internal/settlement [build failed]
+# formatet/megaron/server/internal/tick [formatet/megaron/server/internal/tick.test]
+compile: writing output: write $WORK/b399/_pkg_.a: disk quota exceeded
+FAIL	formatet/megaron/server/internal/tick [build failed]
+formatet/megaron/server/internal/transport: write /tmp/go-build1333180554/b401/importcfg: disk quota exceeded
+FAIL	formatet/megaron/server/internal/transport [build failed]
+# formatet/megaron/server/internal/unit [formatet/megaron/server/internal/unit.test]
+compile: writing output: write $WORK/b403/_pkg_.a: disk quota exceeded
+FAIL	formatet/megaron/server/internal/unit [build failed]
+?   	formatet/megaron/server/internal/unit/shipnames	[no test files]
+# formatet/megaron/server/internal/world [formatet/megaron/server/internal/world.test]
+compile: writing output: write $WORK/b406/_pkg_.a: disk quota exceeded
+FAIL	formatet/megaron/server/internal/world [build failed]
+FAIL
