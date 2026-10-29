@@ -24,7 +24,13 @@ A laden ship caught at sea does not always lose the same way a caravan does. One
 - **Damaged** — half of every good is lost overboard in the fight; the ship limps home with the rest.
 - **Sunk** — the cargo and the ship are both gone.
 
-Of every ten ships caught, about four are captured, four limp home damaged and two are sunk. <!-- src: server/internal/transport/intercept.go rollNavalSeizureOutcome -->
+For a laden ship caught at sea:
+
+| Outcome | Chance |
+|---|---|
+| Captured | 40% |
+| Returns damaged | 40% |
+| Sunk | 20% | <!-- src: server/internal/transport/intercept.go rollNavalSeizureOutcome -->
 
 Sending to another Wanax is a [[gifts|gift or tribute]], with nothing requested in return.
 
