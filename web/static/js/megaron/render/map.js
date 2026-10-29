@@ -19,7 +19,7 @@ import { drawActor, spriteRuns, FOREIGN_ACCENT, FOREIGN_OUTLINE } from './actors
 import { eyeSees } from './sight.js';
 import { drawRemembered } from './memory.js';
 import { omenOverlay, drawOmen, beginOmen, omenMap } from './omen.js';
-import { acceptMapTiles } from '../map_data.js';
+import { acceptMapTiles, pollMapTiles } from '../map_data.js';
 import { drawFire, FIRE_FRAMES } from './doomfire.js';
 import { drawCityMass, citySprite, cityTop, cityFoot } from './citysprites.js';
 import { cityIcon, drawCityIcon, drawStamp, ACTIVITY_ICONS, CITY_ICON_PALETTE } from './cityicons.js';
@@ -3197,7 +3197,7 @@ export async function loadMap() {
   ]);
 
   if (tilesRes.ok) {
-    acceptMapTiles(await tilesRes.json());
+    acceptMapTiles(await tilesRes.json(), tilesRes.headers.get('ETag'));
   }
   if (provRes.ok) {
     // Must land before centreCamera() below — homePosition() reads the
@@ -3278,10 +3278,7 @@ function centreCamera() {
 // otherwise the canvas keeps the fog it had at page load and exploration looks
 // like it did nothing.
 export function refreshTiles() {
-  const world = State.WORLD_ID;
-  return fetchAuth(`/api/v1/worlds/${world}/map`).then(r => r.ok && r.json()).then(d => {
-    if (d && State.WORLD_ID === world) acceptMapTiles(d);
-  });
+  return pollMapTiles(State.WORLD_ID);
 }
 
 // Reserve the pre-prayer fog before requesting its revealed map. Polls share
@@ -3291,11 +3288,12 @@ export function startOmen(tiles, find) {
   const world = State.WORLD_ID;
   const reveal = beginOmen(State.tileData, tiles, find, Infinity);
   State.omen = reveal;
-  return fetchAuth(`/api/v1/worlds/${world}/map`).then(r => r.ok && r.json()).then(d => {
+  let etag = null;
+  return fetchAuth(`/api/v1/worlds/${world}/map`).then(r => r.ok && (etag = r.headers.get('ETag'), r.json())).then(d => {
     if (State.WORLD_ID !== world || State.omen !== reveal) return;
     if (!d) { State.omen = null; return; }
     reveal.start = performance.now();
-    acceptMapTiles(d);
+    acceptMapTiles(d, etag);
     if (!reveal.tiles.length) { State.omen = null; return; }
     if (State.camera.zoom < 1) zoom(1 / State.camera.zoom);
     if (find && Number.isInteger(find.q) && Number.isInteger(find.r)) window.centreOn(find.q, find.r);
@@ -4142,7 +4140,9 @@ export function initMap() {
   }
 
   // Reload provinces, marches, messengers and trades every 30s
+  // A hidden tab polls nothing; main.js resyncs everything when it returns.
   setInterval(() => {
+    if (document.hidden) return;
     refreshTiles();
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => { State.provinceData = d; State.dirty = true; window.MusicPlayer.update(); }));
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/marches`).then(r => r.ok && r.json().then(d => { State.marchData = d; State.dirty = true; window.MusicPlayer.update(); }));
@@ -4162,6 +4162,7 @@ export function initMap() {
   // already interpolates every frame; this is only needed so server-computed fog
   // keeps up). Idle — and cheap — whenever nothing is moving.
   setInterval(() => {
+    if (document.hidden) return;
     const courierOut = State.messengerData.some(m => m.own);
     // A foreign march in live vision needs the same fast cadence as our own.
     // The guard used to ask only "is anything of MINE moving?", so a Wanax

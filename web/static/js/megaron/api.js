@@ -51,7 +51,7 @@ export async function fetchAuth(url, opts = {}) {
       // nothing happened" carries the actual reason. Cloned BEFORE returning so
       // the caller's own res.json() still has an unread body, and deliberately
       // not awaited — a diagnostic must never sit in the path of the UI.
-      if (!res.ok && !sensitive) {
+      if (!res.ok && res.status !== 304 && !sensitive) {
         try {
           res.clone().text().then(body => {
             recordApiFailure({ path: telemetryPath(url), status: res.status, body });

@@ -519,7 +519,7 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 		_ = province.RecordSeenSettlements(r.Context(), h.pool, worldID, playerID, liveTiles)
 	}
 
-	writeJSON(w, http.StatusOK, tiles)
+	writeJSONETag(w, r, tiles)
 }
 
 // ColonizePreview handles GET /worlds/:worldID/colonize-preview?q=&r= — a

@@ -49,7 +49,7 @@ export async function namePlace(kind, placeID) {
     // Refresh the authoritative FOW map before reopening: known hexes acquire
     // the name and spent right together, while unseen hexes stay hidden.
     const map = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/map`);
-    if (map.ok) acceptMapTiles(await map.json());
+    if (map.ok) acceptMapTiles(await map.json(), map.headers.get('ETag'));
     // Opening a drawer clears selectedHex. An owned-city naming form therefore
     // refreshes its current drawer rather than attempting to reopen a hex.
     if (State.activeDrawer === 'city' && window.openDrawer) window.openDrawer('city');

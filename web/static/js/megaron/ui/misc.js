@@ -555,7 +555,7 @@ export function initCelestial() {
   const intervalMs = State.TICK_SECONDS
     ? Math.min(3000, State.TICK_SECONDS * 1000 / 20)
     : 3000;
-  setInterval(updateCelestial, intervalMs);
+  setInterval(() => { if (!document.hidden) updateCelestial(); }, intervalMs);
 }
 
 // ── Locked-verb hints — server-authoritative (GET .../actions) ────────────
