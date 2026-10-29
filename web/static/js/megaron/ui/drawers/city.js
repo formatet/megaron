@@ -14,6 +14,7 @@ import { startCityAnim } from '../../render/city.js';
 import { renderGubbeGrid, terrainLabel } from '../citygrid.js';
 import { productionSectionsHTML, populationHTML, foodSummaryHTML, foodDetailsHTML, storageWarningsHTML } from './city_production.js';
 import { fmtNum, fmtDays, fmtDuration } from '../fmt_num.js';
+import { ownBoardSection } from '../market_board.js';
 
 // The settlement the City drawer currently shows: cycle via the drawer's
 // prev/next arrows. Defaults to the capital (activeCitySettlement, state.js).
@@ -558,6 +559,7 @@ async function refreshCityBuildings(provinceID) {
             `</tr>`).join('')
         }</table><div id="city-demolish-res"></div>`
       : '<p class="empty-state">No buildings yet.</p>';
+    if (pd.market_board) h2 += await ownBoardSection(pd.market_board, pd.id);
     if (pd.build_queue_max != null) h2 += `<p class="empty-state">Queue: ${bq.length}/${pd.build_queue_max} slots used — fixed limit; population and buildings do not add slots. Finish or cancel a build.</p>`;
     if (bq.length) h2 += `<div class="dsec-title" style="margin-top:.8rem">Build queue</div><table class="goods-mini">${
       // A building finishes, it doesn't arrive — say "ready" (matches the

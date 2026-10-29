@@ -10,7 +10,7 @@ Contact is earned by walking, and once earned it never lapses. Sending a messeng
 
 **Rumour is not contact.** [[gossip|Gossip]] tells you that a city exists and roughly where, deliberately blurred, but it does not open the door. Seeing a city on the map ([[sight]]) does not either.
 
-Cities you have contacted appear in **Diplomacy → Letters → Write**. Choose **Write** to ask their Wanax what they need or can spare; market knowledge comes through [[messengers|correspondence]].
+Cities you have contacted appear in **Diplomacy → Letters → Write**. Choose **Write** to ask their Wanax what they need or can spare; market knowledge comes through [[messengers|correspondence]]. A city's [[market|market board]] tells you whom to ask.
 
 Contact reveals that city’s location, not the surrounding land or its current activity.
 

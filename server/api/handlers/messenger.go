@@ -304,9 +304,19 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 	// A player can only contact cities they have scouted or previously messaged.
 	origins := loadVisibleOrigins(r.Context(), h.pool, worldID, playerID)
 	if !province.VisibleFrom(province.MapPosition{Q: dQ, R: dR}, origins, 6) {
-		writeError(w, http.StatusForbidden,
-			"destination is not within your scouted range — send a scout or march closer before contacting this city")
-		return
+		// A city known only by word (a market board read from afar) takes a
+		// letter, never a trade offer (Timothy 2026-10-28 20:53).
+		heard := loadHeardTiles(r.Context(), h.pool, worldID, playerID)[[2]int{dQ, dR}]
+		if heard && req.TradeOffer != nil {
+			writeError(w, http.StatusForbidden,
+				"you know this city only by word — your own people must reach it before you can send it a trade offer; a plain letter can go")
+			return
+		}
+		if !heard {
+			writeError(w, http.StatusForbidden,
+				"destination is not within your scouted range — send a scout or march closer before contacting this city")
+			return
+		}
 	}
 
 	dist := province.HexDistance(province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR})
@@ -685,9 +695,17 @@ func (h *MessengerHandler) SendFromHost(w http.ResponseWriter, r *http.Request) 
 	// city (the host's own march-swept tiles feed the known set).
 	origins := loadVisibleOrigins(r.Context(), h.pool, worldID, playerID)
 	if !province.VisibleFrom(province.MapPosition{Q: dQ, R: dR}, origins, 6) {
-		writeError(w, http.StatusForbidden,
-			"destination is not within your scouted range — wander closer before contacting this city")
-		return
+		heard := loadHeardTiles(r.Context(), h.pool, worldID, playerID)[[2]int{dQ, dR}]
+		if heard && len(req.TradeOffer) > 0 && string(req.TradeOffer) != "null" {
+			writeError(w, http.StatusForbidden,
+				"you know this city only by word — your own people must reach it before you can send it a trade offer; a plain letter can go")
+			return
+		}
+		if !heard {
+			writeError(w, http.StatusForbidden,
+				"destination is not within your scouted range — wander closer before contacting this city")
+			return
+		}
 	}
 
 	dist := province.HexDistance(province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR})

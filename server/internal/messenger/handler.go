@@ -182,20 +182,25 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 		return fmt.Errorf("schedule messenger stay end: %w", err)
 	}
 
+	// The bearer stands in the market: the sender learns the board as it is
+	// now, in the delivery's own transaction (megaron_plan_marknadstavlan).
+	if board, err := economy.LoadMarketBoard(ctx, tx, e.WorldID, destinationID); err != nil {
+		return fmt.Errorf("load market board at delivery: %w", err)
+	} else if board != nil && board.OwnerID != senderID {
+		if err := economy.RecordBoardReading(ctx, tx, e.WorldID, senderID, *board, stayStartTick); err != nil {
+			return fmt.Errorf("record market board reading: %w", err)
+		}
+	}
+
 	if err := tx.Commit(ctx); err != nil {
 		return fmt.Errorf("commit messenger arrival: %w", err)
 	}
 
 	// Best-effort, after commit — events.Store holds a *pgxpool.Pool (no AppendTx,
-	// greppverifierat 2026-09-01) and RecordMarketSnapshot takes a *pgxpool.Pool
-	// (called from several other sites; widening its signature is its own,
-	// larger change — non-scope). Both are revision/notice, not mechanics: losing
-	// either to a post-commit crash costs the player nothing structural.
+	// greppverifierat 2026-09-01). Revision/notice, not mechanics: losing it to a
+	// post-commit crash costs the player nothing structural.
 	_, _ = h.store.Append(ctx, destinationID, events.StreamProvince, "MessengerArrived",
 		map[string]any{"messenger_id": payload.MessengerID}, e.WorldID, nil)
-	if snapErr := economy.RecordMarketSnapshot(ctx, h.pool, senderID, destinationID); snapErr != nil {
-		slog.Error("market snapshot on messenger arrival", "err", snapErr)
-	}
 
 	h.notifyDelivered(ctx, e.WorldID, payload.MessengerID)
 

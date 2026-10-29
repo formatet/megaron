@@ -749,6 +749,13 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				"consumption": lastTickCons,
 			},
 		}
+		// Own board as it stands; a visitor sees only their last reading.
+		if viewer, ok := auth.PlayerIDFromContext(r.Context()); ok {
+			own := sett.OwnerID != nil && viewer == *sett.OwnerID
+			if board := marketBoardView(r.Context(), h.pool, worldID, sett.ID, viewer, own); board != nil {
+				resp["settlement"].(map[string]any)["market_board"] = board
+			}
+		}
 		// The population term and total/net can reveal residents in cities the
 		// visitor has never seen. Cult upkeep is private, like local altar stocks.
 		if !ownCult {

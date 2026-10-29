@@ -546,6 +546,7 @@ func main() {
 			// overview above — realm-wide gubbe roster (report 19ed51f1).
 			r.Get("/worlds/{worldID}/settlements/placement-roster", sh.PlacementRoster)
 			r.Get("/worlds/{worldID}/settlements/{settlementID}", sh.Get)
+			r.Put("/worlds/{worldID}/settlements/{settlementID}/market-board", sh.MarketBoard)
 			r.Post("/worlds/{worldID}/settlements/{settlementID}/occupation-order", uh.OccupationOrder)
 			r.Post("/worlds/{worldID}/settlements/{settlementID}/gift", sh.Gift)
 			registerReturnArmyRoute(r, sh.ReturnArmy)

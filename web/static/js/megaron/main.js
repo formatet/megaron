@@ -40,6 +40,7 @@ import {
   loadTicklog, cancelBuild, demolishBuilding,
   onCityBuildTypeChange,
 } from './ui/drawers/city.js';
+import { saveMarketBoard } from './ui/market_board.js';
 import {
   loadWarDrawer, warRecruitFromUI, warRecruitShip, warDisband, warAbandon,
   unitRecall, unitRecallAll, unitRedirect, unitRedirectToggle, unitRedirectTypedToggle, unitMarch,
@@ -222,6 +223,7 @@ Object.assign(window, {
   pauseStandingOrder,
   resetView,
   resumeStandingOrder,
+  saveMarketBoard,
   saveRetreatDefault,
   sendMarch,
   sendMessengerFromInspect,

@@ -108,7 +108,7 @@
       },
       "duration_game_days": 8,
       "max_level": 3,
-      "purpose": "Enables trade offers and updates market price snapshots; no workers needed",
+      "purpose": "Puts up the city's market board, read by other rulers passing within reach; no workers needed",
       "type": "market",
       "upgrade_costs": {
         "2": {
