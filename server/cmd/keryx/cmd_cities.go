@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -16,7 +17,8 @@ func citiesCmd() *cobra.Command {
 		Long: `List known and rumour-known settlements.
 
 "known" rows (seen, remembered, or contacted) show exact terrain/deposit/position
-and are safe to trade or send a messenger to. A row marked "known by word only"
+and are safe to trade or send a messenger to. A remembered city you cannot see
+now is shown as you last saw it ("as last seen …"): its ruler may have changed. A row marked "known by word only"
 was learnt from a market board read from afar: it takes letters, not trade
 offers, until your own people reach it. A "market board" line is what that
 city's board said when your people last read it.
@@ -78,6 +80,9 @@ there (march/colonize) to turn a rumour into a real contact.`,
 
 				fmt.Printf("%s%-21s %-16s %-8s %-10s %-12s  %-7s  %s\n",
 					marker, name, owner, terrain, culture, kingdom, deposit, sid)
+				if seenAt, _ := e["last_seen_at"].(string); seenAt != "" {
+					fmt.Println("    as last seen " + describeSeenAt(seenAt) + " — it may have changed since")
+				}
 				if knowledge, _ := e["knowledge"].(string); knowledge == "heard" {
 					fmt.Println("    known by word only: you can write, but your own people must reach it before you can trade")
 				}
@@ -106,4 +111,14 @@ there (march/colonize) to turn a rumour into a real contact.`,
 			return nil
 		},
 	}
+}
+
+// describeSeenAt renders a memory snapshot's last_seen_at as wall clock
+// (megaron_plan_vagbeskrivningar §S0).
+func describeSeenAt(raw string) string {
+	at, err := time.Parse(time.RFC3339, raw)
+	if err != nil {
+		return raw
+	}
+	return clockTime(at)
 }

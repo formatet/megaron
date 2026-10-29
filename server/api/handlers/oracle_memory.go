@@ -64,6 +64,9 @@ func (h *SettlementHandler) applyOracleMemory(ctx context.Context, tx pgx.Tx, wo
 		if tag.RowsAffected() > 0 {
 			revealed = append(revealed, map[string]any{"q": p.Q, "r": p.R})
 		}
+		if err = province.RecordSeenSettlements(ctx, tx, worldID, playerID, []province.MapPosition{p}); err != nil {
+			return nil, "", err
+		}
 	}
 	source := "a vein of " + c.ore
 	if c.ore == "incense" {

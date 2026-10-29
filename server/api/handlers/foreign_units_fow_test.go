@@ -23,6 +23,7 @@ import (
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/province"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
@@ -229,6 +230,9 @@ func TestForeignUnits_RememberedTileDoesNotRevealUnit(t *testing.T) {
 		worldID, viewerID,
 	); err != nil {
 		t.Fatalf("mark (6,0) remembered: %v", err)
+	}
+	if err := province.RecordSeenSettlements(ctx, pool, worldID, viewerID, []province.MapPosition{{Q: 6, R: 0}}); err != nil {
+		t.Fatalf("record seen (6,0): %v", err)
 	}
 	if _, err := pool.Exec(ctx,
 		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, q, r)
@@ -684,6 +688,9 @@ func TestForeignUnits_GarrisonRevealedLiveHiddenRemembered(t *testing.T) {
 		worldID, viewerID,
 	); err != nil {
 		t.Fatalf("mark (6,0) remembered: %v", err)
+	}
+	if err := province.RecordSeenSettlements(ctx, pool, worldID, viewerID, []province.MapPosition{{Q: 6, R: 0}}); err != nil {
+		t.Fatalf("record seen (6,0): %v", err)
 	}
 
 	clk := clock.NewTestClock(time.Now())

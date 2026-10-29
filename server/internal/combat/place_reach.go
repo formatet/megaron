@@ -303,6 +303,9 @@ func recordPlaceEntriesTx(ctx context.Context, tx pgx.Tx, store *events.Store, w
 			} else if _, err = tx.Exec(ctx, `INSERT INTO player_scouted_tiles(world_id,player_id,q,r) VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING`, worldID, v.owner, entry.hex[0], entry.hex[1]); err != nil {
 				return nil, err
 			}
+			if err = province.RecordSeenSettlements(ctx, tx, worldID, v.owner, []province.MapPosition{{Q: entry.hex[0], R: entry.hex[1]}}); err != nil {
+				return nil, err
+			}
 		}
 		// Every entered hex, the departure step included, passes the market
 		// boards in reach (megaron_plan_marknadstavlan).
@@ -330,10 +333,16 @@ func recordPlaceEntriesTx(ctx context.Context, tx pgx.Tx, store *events.Store, w
 			if _, err = tx.Exec(ctx, `INSERT INTO player_scouted_tiles(world_id,player_id,q,r) VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING`, worldID, v.owner, entry.hex[0], entry.hex[1]); err != nil {
 				return nil, err
 			}
+			if err = province.RecordSeenSettlements(ctx, tx, worldID, v.owner, []province.MapPosition{{Q: entry.hex[0], R: entry.hex[1]}}); err != nil {
+				return nil, err
+			}
 			if target.hex != entry.hex {
 				// Adjacent mountains are visible from this physical border step.
 				// Retain only this witness, never the unseen rest of the massif.
 				if _, err = tx.Exec(ctx, `INSERT INTO player_scouted_tiles(world_id,player_id,q,r) VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING`, worldID, v.owner, target.hex[0], target.hex[1]); err != nil {
+					return nil, err
+				}
+				if err = province.RecordSeenSettlements(ctx, tx, worldID, v.owner, []province.MapPosition{{Q: target.hex[0], R: target.hex[1]}}); err != nil {
 					return nil, err
 				}
 			}

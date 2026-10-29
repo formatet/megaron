@@ -169,6 +169,9 @@ func TestCitiesRumourKnownIsNotContactable(t *testing.T) {
 	if _, err := pool.Exec(ctx, `INSERT INTO player_scouted_tiles(world_id,player_id,q,r) VALUES($1,$2,40,40)`, worldID, viewerID); err != nil {
 		t.Fatal(err)
 	}
+	if err := province.RecordSeenSettlements(ctx, pool, worldID, viewerID, []province.MapPosition{{Q: 40, R: 40}}); err != nil {
+		t.Fatal(err)
+	}
 	foundKnown := false
 	for _, city := range h.loadCities(ctx, worldID, viewerID) {
 		if city.SettlementID == subjectSettlementID.String() && city.Knowledge == "known" && city.Q != nil && *city.Q == 40 && city.R != nil && *city.R == 40 {

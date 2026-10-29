@@ -457,6 +457,9 @@ func SweepLiveRadiusAlong(ctx context.Context, db interface {
 	); err != nil {
 		return nil, err
 	}
+	if err := RecordSeenSettlements(ctx, db, worldID, playerID, seen); err != nil {
+		return nil, err
+	}
 	return seen, nil
 }
 

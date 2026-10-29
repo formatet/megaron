@@ -11,6 +11,7 @@ import (
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/gossip"
+	"formatet/megaron/server/internal/province"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -135,6 +136,17 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 		payload.MessengerID,
 	); err != nil {
 		return fmt.Errorf("mark messenger delivered: %w", err)
+	}
+	// The bearer stood at the city: it is now contacted, so the sender's memory
+	// holds it as it was at this delivery (megaron_plan_vagbeskrivningar §S0).
+	var destHex province.MapPosition
+	if err := tx.QueryRow(ctx,
+		`SELECT p.map_q, p.map_r FROM settlements s JOIN provinces p ON p.id = s.province_id WHERE s.id = $1`,
+		destinationID,
+	).Scan(&destHex.Q, &destHex.R); err == nil {
+		if err := province.RecordSeenSettlements(ctx, tx, e.WorldID, senderID, []province.MapPosition{destHex}); err != nil {
+			return fmt.Errorf("record seen destination: %w", err)
+		}
 	}
 
 	// Gossip mechanism: contact spreads any rumors the destination's owner is
