@@ -335,13 +335,24 @@ test('changed saved river edges invalidate the terrain lookup for a fresh scene'
  assert.ok(east>0&&west<0);
 });
 
-test('the per-frame render loop looks tiles up by index, never by a linear find', async () => {
+test('map.js looks tiles up by index, never by a linear find', async () => {
   const { readFile } = await import('node:fs/promises');
   const src = await readFile(new URL('./map.js', import.meta.url), 'utf8');
-  const start = src.indexOf('export function render()');
-  const body = src.slice(start, src.indexOf('\n}\n', start));
-  assert.ok(start >= 0 && body.length > 1000, 'render() not found');
-  assert.doesNotMatch(body, /tileData\.find\(/, 'a tileData.find in render() scans the whole map once per hex per frame');
+  assert.doesNotMatch(src, /tileData\.find\(/, 'a tileData.find scans the whole map per lookup — per hex per frame in render(), per mouse move in hover');
+});
+
+test('tileAt finds the tile and follows a new map array', async () => {
+  const { tileAt } = await import('./map.js');
+  const before = State.tileData;
+  try {
+    const a = {q:2,r:3,terrain:'hills'};
+    State.tileData = [{q:0,r:0,terrain:'fog'}, a];
+    assert.equal(tileAt(2,3), a);
+    assert.equal(tileAt(9,9), undefined);
+    const b = {q:2,r:3,terrain:'plains'};
+    State.tileData = [b];
+    assert.equal(tileAt(2,3), b, 'a new map array is reindexed');
+  } finally { State.tileData = before; }
 });
 
 test('sea bounds for the swell are computed once per map, not once per frame', async () => {

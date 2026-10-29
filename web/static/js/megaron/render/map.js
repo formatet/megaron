@@ -152,16 +152,22 @@ function hexDist(q1, r1, q2, r2) {
   return (Math.abs(q1-q2) + Math.abs(q1+r1-q2-r2) + Math.abs(r1-r2)) / 2;
 }
 
-// (q,r) → terrain over State.tileData for the FOV preview's sightline, memoised
-// on the tileData array's identity (same pattern as panBounds above).
-let terrainLookupSrc = null, terrainLookup = null;
-function tileTerrainLookup() {
-  if (State.tileData !== terrainLookupSrc) {
-    terrainLookupSrc = State.tileData;
-    const m = new Map();
-    for (const t of State.tileData || []) m.set(`${t.q},${t.r}`, t.terrain);
-    terrainLookup = (q, r) => m.get(`${q},${r}`);
+// (q,r) → tile over State.tileData, memoised on the tileData array's identity
+// (same pattern as panBounds above). Render, sightline and pointer handlers
+// share it instead of scanning the whole map per lookup.
+let tileIndexSrc = null, tileIndex = new Map();
+function indexedTiles() {
+  if (State.tileData !== tileIndexSrc) {
+    tileIndexSrc = State.tileData;
+    tileIndex = new Map();
+    for (const t of State.tileData || []) tileIndex.set(`${t.q},${t.r}`, t);
   }
+  return tileIndex;
+}
+export const tileAt = (q, r) => indexedTiles().get(`${q},${r}`);
+const terrainLookup = (q, r) => tileAt(q, r)?.terrain;
+function tileTerrainLookup() {
+  indexedTiles();
   return terrainLookup;
 }
 
@@ -3865,7 +3871,7 @@ function openHexPanel(h) {
   document.getElementById('ip-body-extra').innerHTML = '';
   document.getElementById('ip-produces-row').style.display = '';
 
-  const tile = State.tileData.find(t => t.q === h.q && t.r === h.r);
+  const tile = tileAt(h.q, h.r);
   const prov = State.provinceData.find(p => p.q === h.q && p.r === h.r);
 
   if (!tile || tile.terrain === 'fog') { openFogPanel(h); return; }
@@ -4021,7 +4027,7 @@ export function initMap() {
       const rect = canvas.getBoundingClientRect();
       const h = hexAtScreen(clientX - rect.left, clientY - rect.top);
       if (State.marchCtxUnitID) {
-        const tile = State.tileData.find(t => t.q === h.q && t.r === h.r);
+        const tile = tileAt(h.q, h.r);
         const target = State.provinceData.find(p => p.q === h.q && p.r === h.r);
         if (tile) window.openMarchCtx(destFromHex(h, tile, target), clientX, clientY);
       } else openHexPanel(h);
@@ -4031,7 +4037,7 @@ export function initMap() {
     hover(clientX, clientY) {
       const rect = canvas.getBoundingClientRect();
       const h = hexAtScreen(clientX - rect.left, clientY - rect.top);
-      const tile = State.tileData.find(t => t.q === h.q && t.r === h.r);
+      const tile = tileAt(h.q, h.r);
       const prov = State.provinceData.find(p => p.q === h.q && p.r === h.r);
       if (tile && tile.terrain !== 'fog') {
         tooltip.style.display = 'block';
@@ -4110,7 +4116,7 @@ export function initMap() {
     const rect = canvas.getBoundingClientRect();
     const h = hexAtScreen(clientX - rect.left, clientY - rect.top);
     const target = State.provinceData.find(p => p.q === h.q && p.r === h.r);
-    const tile = State.tileData.find(t => t.q === h.q && t.r === h.r);
+    const tile = tileAt(h.q, h.r);
     if (!tile) { window.closeMarchCtx(); return; }
     if (State.marchCtxUnitID) {
       window.openMarchCtx(destFromHex(h, tile, target), clientX, clientY);
