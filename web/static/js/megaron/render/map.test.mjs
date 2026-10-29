@@ -334,3 +334,12 @@ test('changed saved river edges invalidate the terrain lookup for a fresh scene'
  State.tileData=[{q:0,r:0,terrain:'river',river_edges:[1]}];const west=riverCurves(0,0)[0][0][0];
  assert.ok(east>0&&west<0);
 });
+
+test('the per-frame render loop looks tiles up by index, never by a linear find', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const src = await readFile(new URL('./map.js', import.meta.url), 'utf8');
+  const start = src.indexOf('export function render()');
+  const body = src.slice(start, src.indexOf('\n}\n', start));
+  assert.ok(start >= 0 && body.length > 1000, 'render() not found');
+  assert.doesNotMatch(body, /tileData\.find\(/, 'a tileData.find in render() scans the whole map once per hex per frame');
+});

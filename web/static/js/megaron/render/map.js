@@ -2797,6 +2797,8 @@ export function render() {
   }
   pass('roads');
 
+  // One (q,r)→terrain index per tileData identity, not a linear find per hex per frame.
+  const terrainAt = tileTerrainLookup();
   // 2.5 Catchment zone — subtle gold tint on the 19 catchment tiles of own
   // cities (the city's own hex + the radius-2 disc). [0,0] = the settlement's
   // own hex. See CATCHMENT_OFFSETS. Only for the city in focus (Timothy
@@ -2809,8 +2811,8 @@ export function render() {
         if (dq !== 0 || dr !== 0) {
           if (State.provinceData.find(x => x.q === nq && x.r === nr)) continue;
         }
-        const t = State.tileData.find(t => t.q === nq && t.r === nr);
-        if (!t || t.terrain === 'fog') continue;
+        const terrain = terrainAt(nq, nr);
+        if (!terrain || terrain === 'fog') continue;
         const {x, y} = hexPx(nq, nr);
         const pts = hexPts(x, y);
         ctx.save();
@@ -2835,8 +2837,8 @@ export function render() {
     for (const rp of State.ruralData) {
       const sprite = RURAL_SPRITES[rp.building_type];
       if (!sprite) continue;
-      const t = State.tileData.find(t => t.q === rp.q && t.r === rp.r);
-      if (!t || t.terrain === 'fog') continue;
+      const terrain = terrainAt(rp.q, rp.r);
+      if (!terrain || terrain === 'fog') continue;
       const { x, y } = hexPx(rp.q, rp.r);
       ctx.save();
       sprite(ctx, x, y);
@@ -2846,8 +2848,8 @@ export function render() {
     // (report 54f2b747). Same LOCAL register as rural projections: "who works
     // here" is a local question. Skip any hex gone to fog since the last fetch.
     for (const wh of State.workedHexes) {
-      const t = State.tileData.find(t => t.q === wh.q && t.r === wh.r);
-      if (!t || t.terrain === 'fog') continue;
+      const terrain = terrainAt(wh.q, wh.r);
+      if (!terrain || terrain === 'fog') continue;
       const { x, y } = hexPx(wh.q, wh.r);
       drawWorkerMarker(ctx, x, y);
     }
@@ -2902,7 +2904,6 @@ export function render() {
   // the band shape; a fog hex on the line also blocks the sea horizon.
   if (State.fovPreview) {
     const { q: fq, r: fr, kind } = State.fovPreview;
-    const terrainAt = tileTerrainLookup();
     for (const t of State.tileData) {
       if (!eyeSees(kind, fq, fr, t.q, t.r, terrainAt)) continue;
       const {x, y} = hexPx(t.q, t.r);
@@ -2930,8 +2931,8 @@ export function render() {
     const { q: cq, r: cr } = State.catchmentPreview;
     for (const [dq, dr] of CATCHMENT_OFFSETS) {
       const nq = cq + dq, nr = cr + dr;
-      const t = State.tileData.find(t => t.q === nq && t.r === nr);
-      if (!t || t.terrain === 'fog') continue;
+      const terrain = terrainAt(nq, nr);
+      if (!terrain || terrain === 'fog') continue;
       const {x, y} = hexPx(nq, nr);
       const pts = hexPts(x, y);
       ctx.save();
