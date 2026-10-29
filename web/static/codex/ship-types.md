@@ -26,7 +26,7 @@ A land [[units|unit]] stranded on another shore — landed there, or marched off
 
 - **Home is the end of the errand.** The moment the ship docks, the fetched unit steps off straight into that city's garrison — no separate Unload needed.
 
-None of this reaches a ship already at sea (ships take no orders once they sail — see "At sea" above): a pickup is a whole mission, given from port, same as Land, Patrol or Explore.
+Give a pickup mission while the ship is in port. Ships already at sea cannot receive new orders.
 
 ## Docking in your own city {#landing-in-own-city}
 
@@ -67,11 +67,23 @@ A ship caught carrying cargo (see [[transfers]]) can also be **captured outright
 
 ## Giving a ship its whole mission {#ship-missions}
 
-- **A ship is given its whole mission in port, then sails alone.** From **War → Forces**, **Load** a land unit onto a ship standing with it (a Galley or War Galley takes one, an [[emporos|Emporos]] up to three), then send it on a **mission**: **Land** puts everyone aboard ashore on open ground and sails home again on its own — select "…and found a colony" to settle right there, no further order needed; the unit loaded first founds it and the others stand beside it. The port pays the colonists' silver the moment the ship sails, as it would for a column on foot ([[colonies]]); if the colony cannot be founded, or you unload them at home, the silver comes back with them. **Patrol** and **Explore** return home by themselves. For **Explore**, choose an area and duration in game days: the port loads provisions for the whole expedition, and the ship turns home by half the duration ([[sight]]). **Passage** is a fourth mission, empty of cargo, given to carry a [[messengers|letter]] or [[runners|order]] — see "Arrange passage" below.
+Choose the mission in **War → Forces** before the ship leaves port. Use **Load** first if it will carry soldiers: one land unit on a Galley or War Galley, up to three on an [[emporos|Emporos]].
+
+| Mission | What happens |
+|---|---|
+| **March to your city** | Docks there and unloads the soldiers; the ship stays. |
+| **Land** | Unloads on open ground, then sails home. Select **…and found a colony** to settle there. |
+| **Patrol** | Patrols, then returns home. |
+| **Explore** | Explores your chosen area and returns; choose a duration in game days. |
+| **Passage** | Carries a [[messengers|letter]] or [[runners|order]], without goods cargo. |
+
+When founding, the first loaded unit settles and the others stand beside it. The departure port supplies the colonists' silver; if founding fails or they unload at home, they bring it back. See [[colonies]].
+
+For Explore, the port loads food for the whole expedition. The ship turns home by half the chosen duration. See [[sight]].
 
 ### Commands at sea and crew pay {#ship-missions-2}
 
-- **Once it sails, a ship takes no more orders.** March, Recall, Redirect, Stance, Load, Unload — none of them reach a ship that isn't standing in its own port. This is the messenger pillar taken to its edge: nothing reaches a ship at sea, not even you. Give the whole mission before it leaves; its mission determines whether it comes home or stays docked in your destination city.
+- **Once it sails, a ship takes no more orders.** March, Recall, Redirect, Stance, Load, Unload — none of them reach a ship that isn't standing in its own port. Give the whole mission before it leaves; its mission determines whether it comes home or stays docked in your destination city.
 
 - **Sight.** A ship reads the open sea out to four hexes but sees only one hex inland.
 
@@ -79,7 +91,12 @@ A ship caught carrying cargo (see [[transfers]]) can also be **captured outright
 
 ### Voyage provisions {#ship-missions-3}
 
-- **Supplies.** Rowers eat the same per-person ration as [[spearmen|spearmen]], doubled while marching, posted or freighting ([[upkeep]]). The actual surviving crew determines the ration, and any carried soldiers need their own field rations too. A crew eats grain, fish and oil, with the same proportional sharing as the city; [[wine|wine]] is not food. The port loads food for the voyage from these three goods; [[livestock|livestock]] is not ship provision. War → Forces shows food for N game days and the goods aboard, including ships carrying goods on a freight route and waiting between its legs. Keryx `unit list` shows the same supply. Unused provisions come home as the goods that were loaded, so fish does not turn into grain. A ship turns home before its food runs too low for the voyage back, unless it can reach a city for provisions. You hear why when it reaches home; see [[ship-food-return]]. Ports feed visiting ships as guests; see [[xenia]]. At sea it eats only what was loaded aboard, never from a city's granary. The food gauge counts whole game days; "less than a game day" means the last ration is being eaten, "out of food" means nothing is left.
+The departure port loads **grain, fish and oil**. [[wine|Wine]] and [[livestock]] are not provisions. At sea, the ship eats only what it carries.
+
+- **Rations:** rowers eat at the same per-person rate as [[spearmen]], doubled while marching, posted or freighting. Carried soldiers need their own field rations. See [[upkeep]].
+- **Check supplies:** **War → Forces** or `keryx unit list` shows food for N game days and the goods aboard, including during freight waits. “Less than a game day” means the last ration; “out of food” means none remains.
+- **Return:** the ship turns home before it lacks food for the return, unless it can reach a city for provisions. See [[ship-food-return]].
+- **At port:** visiting ships receive food under [[xenia]]. Unused provisions return as the same goods, not converted to grain. Meals use available food goods proportionally, as in a city.
 
 ## Laying up and fitting out a ship {#ship-types-2}
 

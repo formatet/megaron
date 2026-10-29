@@ -1,4 +1,4 @@
-A march moves selected forces along a physical route to a destination.
+**Right-click a destination**, select your forces and check the forecast before sending. Use **Explore** for unknown ground. Orders to forces in the field travel by Runner; ships must receive their whole mission in port ([[ship-types]]).
 
 ## Selecting forces for a march {#marching-giving-a-march-order}
 
@@ -46,7 +46,7 @@ Recall and redirect need a passable route from the unit’s current position. If
 
 ## Forces travelling on a route {#marching-on-the-road}
 
-A journey starts when the unit receives its order. It stays on its starting hex until it reaches the next one, then advances hex by hex along its saved route. Terrain sets the relative time between steps; the total journey keeps its rounded duration. The map and **Keryx → unit list** show the hex it has reached and its planned arrival time. Sight opens as your people advance, and [[storms|storms]] or enemies can stop them on the way.
+The unit moves hex by hex once it receives its order. The map and `keryx unit list` show its reached hex and estimated arrival. Sight opens along the way; [[storms]] and enemies can interrupt the journey.
 
 A marching army eats more than one in garrison and cannot forage ([[upkeep]]). It is seen by anyone whose [[sight]] it passes through, and an enemy on watch may stop it — and a [[battle]] begins by itself. **There is no declaration of war.**
 
@@ -83,8 +83,7 @@ Cargo journeys use the separate [[routes|caravan rule]]: 1.5 times the base rout
 time, including at sea; cargo does not change their speed.
 
 These are base costs before rounding the whole journey to at least one game day.
-The route and its costs are fixed at departure. A journey already underway keeps
-its recorded costs and arrival game day when the movement rules change. A finished
+Travel time is fixed at departure; later rule changes do not recalculate a journey already underway. A finished
 [[roads|road]] shortens the hex it leads into for everyone who walks it.
 
 An expedition preview shows its planned length. For a unit in garrison it can also show the planned homecoming **if it departed immediately**. The order may still need physical delivery. The preview names the selected first destination; its route and arrival time remain undisclosed.
