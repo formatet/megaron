@@ -488,8 +488,13 @@ func (h *SettlementHandler) Get(w http.ResponseWriter, r *http.Request) {
 		"updated_at":          sett.UpdatedAt,
 	}
 
+	own := sett.OwnerID != nil && *sett.OwnerID == playerID
+	if board := marketBoardView(r.Context(), h.pool, worldID, sett.ID, playerID, own); board != nil {
+		resp["market_board"] = board
+	}
+
 	// Only owner sees the full resources; others see limited info.
-	if sett.OwnerID == nil || *sett.OwnerID != playerID {
+	if !own {
 		delete(resp, "resources")
 		delete(resp, "army")
 		resp["owner_id"] = sett.OwnerID

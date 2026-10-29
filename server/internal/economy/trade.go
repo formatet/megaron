@@ -436,20 +436,11 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 	}
 	deliverTradeNotice(ctx, h.hub, e.WorldID, recipient, noticeID, "TradeDelivery", notice)
 
-	// Record market snapshot: the caravan owner now knows the destination's prices.
-	// (Fix: origin_id is the settlement UUID, not owner_id — owner_id doesn't exist in trade_routes)
 	var originSettlementID uuid.UUID
 	if err := h.pool.QueryRow(ctx,
 		`SELECT origin_id FROM trade_routes WHERE id = $1`, p.TradeRouteID,
-	).Scan(&originSettlementID); err == nil {
-		var ownerID uuid.UUID
-		if err := h.pool.QueryRow(ctx,
-			`SELECT owner_id FROM settlements WHERE id = $1`, originSettlementID,
-		).Scan(&ownerID); err == nil {
-			if snapErr := RecordMarketSnapshot(ctx, h.pool, ownerID, p.DestinationID); snapErr != nil {
-				slog.Error("market snapshot on delivery", "err", snapErr)
-			}
-		}
+	).Scan(&originSettlementID); err != nil {
+		originSettlementID = uuid.Nil
 	}
 
 	// Rumor: a completed delivery is minor news — witnessed only by nearby owners

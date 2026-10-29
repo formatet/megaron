@@ -1,4 +1,4 @@
-**A trade offer travels attached to a letter.** There is no market screen and no public listings. You write to a specific city and pin an offer to the message — so you can only trade with cities you have [[contact|contacted]].
+**A trade offer travels attached to a letter.** There is no market screen and no public listings. You write to a specific city and pin an offer to the message — so you can only trade with cities you have [[contact|contacted]]. A [[market|market board]] tells you what a city says it buys and sells, so you know whom to ask.
 
 The **[[market]]** needs no workers. It has no staffing places; trade does not depend on assigning [[citizens|citizens]] to it.
 

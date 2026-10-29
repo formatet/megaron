@@ -26,6 +26,7 @@ import { cityIcon, drawCityIcon, drawStamp, ACTIVITY_ICONS, CITY_ICON_PALETTE } 
 import { zoomStep, clampPan } from './camera.js';
 import { bindMapInput } from './map_input.js';
 import { confirmInline, showInlineResult } from '../ui/inline_result.js';
+import { readingHTML } from '../ui/market_board.js';
 import { unitHoverLines } from '../ui/hover.js';
 import { drawStorm, STORM_FRAMES } from './storms.js';
 import { roadSegments, plannedSegments, drawRoads } from './roads.js';
@@ -3505,7 +3506,7 @@ function openCityPanel(h, tile, marker, units, foreignUnits) {
     .catch(() => showDefence(null));
 
   const foot = document.getElementById('ip-foot');
-  let footHtml = placePanelHTML(tile) + unitListHTML(units, foreignUnits);
+  let footHtml = '<div id="ip-board"></div>' + placePanelHTML(tile) + unitListHTML(units, foreignUnits);
   // A settlement OR a wandering host can send — the host's first contact with a
   // met city is one of its designed uses (mig 087; sendMessengerFromInspect
   // picks the endpoint).
@@ -3521,6 +3522,16 @@ function openCityPanel(h, tile, marker, units, foreignUnits) {
   foot.innerHTML = footHtml;
   bindUnitButtons(foot);
   bindMarchButton(document.getElementById('ip-march-btn'), destFromHex(h, tile, marker), 'land');
+
+  // The market board as your people last read it — the server sends only
+  // your own reading, never the board as it stands.
+  fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${marker.id}`)
+    .then(r => r.ok ? r.json() : null)
+    .then(p => {
+      const box = document.getElementById('ip-board');
+      if (box && State.selectedHex?.q === h.q && State.selectedHex?.r === h.r) box.innerHTML = readingHTML(p?.settlement?.market_board);
+    })
+    .catch(() => {});
 
   openMobilePanel(document.getElementById('inspect-panel'), closeInspect);
   document.getElementById('inspect-panel').style.display = 'flex';

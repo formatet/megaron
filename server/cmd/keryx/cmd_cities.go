@@ -16,7 +16,10 @@ func citiesCmd() *cobra.Command {
 		Long: `List known and rumour-known settlements.
 
 "known" rows (seen, remembered, or contacted) show exact terrain/deposit/position
-and are safe to trade or send a messenger to.
+and are safe to trade or send a messenger to. A row marked "known by word only"
+was learnt from a market board read from afar: it takes letters, not trade
+offers, until your own people reach it. A "market board" line is what that
+city's board said when your people last read it.
 
 "rumour" rows were only heard OF through gossip — a fuzzy bearing and a coarse
 industry hint, never exact coordinates. They are NOT contactable yet: explore
@@ -75,6 +78,12 @@ there (march/colonize) to turn a rumour into a real contact.`,
 
 				fmt.Printf("%s%-21s %-16s %-8s %-10s %-12s  %-7s  %s\n",
 					marker, name, owner, terrain, culture, kingdom, deposit, sid)
+				if knowledge, _ := e["knowledge"].(string); knowledge == "heard" {
+					fmt.Println("    known by word only: you can write, but your own people must reach it before you can trade")
+				}
+				if board, ok := e["market_board"].(map[string]any); ok {
+					fmt.Println("    market board: " + describeReading(board))
+				}
 			}
 			if len(entries)-len(rumours) <= 1 {
 				fmt.Println("\nNo other settlements within your vision — this directory is FOW-gated, not global.")

@@ -2181,3 +2181,9 @@ h4.cx-h { font-size: var(--fs-base); }
 .force-name-link { text-decoration: underline; }
 .force-order-note, .force-cargo { font-size: .7rem; color: var(--text-dim); }
 @media (max-width: 600px) { .hex-force > summary { min-height: 2.5rem; } }
+
+/* Market board (megaron_plan_marknadstavlan): the ruler's own line, and the editor. */
+.market-board-reading { margin: .2rem 0; font-weight: 600; color: var(--text); }
+.market-board-line { display: flex; align-items: center; gap: .3rem; margin: .25rem 0; }
+.market-board-line > span { min-width: 3.2rem; font-size: .75rem; color: var(--text-dim); }
+.market-board-select { flex: 1; min-width: 0; }

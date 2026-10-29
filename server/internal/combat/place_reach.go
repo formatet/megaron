@@ -12,6 +12,7 @@ import (
 	"sort"
 	"time"
 
+	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/province"
@@ -237,6 +238,10 @@ func recordPlaceEntriesTx(ctx context.Context, tx pgx.Tx, store *events.Store, w
 	if err != nil {
 		return nil, err
 	}
+	boards, err := economy.LoadMarketBoards(ctx, tx, worldID)
+	if err != nil {
+		return nil, err
+	}
 	var deployTick int
 	var appliedAt *time.Time
 	err = tx.QueryRow(ctx, `SELECT first_tick,applied_at FROM place_reach_epoch WHERE world_id=$1`, worldID).Scan(&deployTick, &appliedAt)
@@ -296,6 +301,13 @@ func recordPlaceEntriesTx(ctx context.Context, tx pgx.Tx, store *events.Store, w
 					return nil, err
 				}
 			} else if _, err = tx.Exec(ctx, `INSERT INTO player_scouted_tiles(world_id,player_id,q,r) VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING`, worldID, v.owner, entry.hex[0], entry.hex[1]); err != nil {
+				return nil, err
+			}
+		}
+		// Every entered hex, the departure step included, passes the market
+		// boards in reach (megaron_plan_marknadstavlan).
+		if len(boards) > 0 {
+			if err = economy.ReadBoardsAt(ctx, tx, worldID, v.owner, boards, province.MapPosition{Q: entry.hex[0], R: entry.hex[1]}, int(entry.milli/1000)); err != nil {
 				return nil, err
 			}
 		}

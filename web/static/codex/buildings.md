@@ -14,7 +14,7 @@ Open **City → Buildings**. The tab shows what is **built** (and its level), th
 | [[mine]] | A Mine works the mineral deposit on one chosen catchment hex. |
 | [[lumbermill]] | A Lumbermill improves wood production on one chosen catchment hex. |
 | [[stone-quarry]] | A Stone Quarry improves stone production on one chosen land hex. |
-| [[market]] | A Market enables trade offers and updates market prices without employing workers. |
+| [[market]] | A Market gives your city a market board: one line saying what the city buys and one saying what it sells, up to three goods each. |
 | [[walls]] | Walls defend the city and determine its population ceiling. |
 | [[foundry]] | A Foundry turns copper and tin into bronze. |
 | [[stable]] | A Stable enables chariot recruitment. |

@@ -347,6 +347,11 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 	if authenticated {
 		eyes = loadLiveEyes(r.Context(), h.pool, worldID, playerID, h.clk.Now())
 		remembered = loadRememberedTiles(r.Context(), h.pool, worldID, playerID)
+		// Hexes known by word are drawn as memory here, and only here and in
+		// the city list — never in the gates that read loadRememberedTiles.
+		for k := range loadHeardTiles(r.Context(), h.pool, worldID, playerID) {
+			remembered[k] = true
+		}
 	}
 
 	type riverConnection struct {
@@ -2050,6 +2055,7 @@ type cityEntry struct {
 	Bearing        string `json:"bearing,omitempty"`
 	IndustryHint   string `json:"industry_hint,omitempty"`
 	Note           string `json:"note,omitempty"`
+	MarketBoard    map[string]any `json:"market_board,omitempty"`
 }
 
 // loadCities builds the combined known + rumour-known directory for playerID:
@@ -2063,6 +2069,9 @@ type cityEntry struct {
 func (h *WorldHandler) loadCities(ctx context.Context, worldID, playerID uuid.UUID) []cityEntry {
 	eyes := loadLiveEyes(ctx, h.pool, worldID, playerID, h.clk.Now())
 	remembered := loadRememberedTiles(ctx, h.pool, worldID, playerID)
+	heard := loadHeardTiles(ctx, h.pool, worldID, playerID)
+	readings, _ := economy.LoadBoardReadings(ctx, h.pool, worldID, playerID)
+	anchor, anchorErr := tick.LoadAnchor(ctx, h.pool, worldID)
 
 	rows, err := h.pool.Query(ctx,
 		`SELECT s.id, s.name, COALESCE(p.wanax_name, p.username), s.culture_id, prov.terrain_type,
@@ -2112,8 +2121,13 @@ func (h *WorldHandler) loadCities(ctx context.Context, worldID, playerID uuid.UU
 		}
 		// FOW gate: skip settlements the player doesn't actually know (same
 		// tier-1 ∪ tier-2 knowledge as /map — see knownToPlayer).
+		knowledge := "known"
 		if !knownToPlayer(eyes, remembered, province.MapPosition{Q: q, R: r}, terrainStr) {
-			continue
+			if !heard[[2]int{q, r}] {
+				continue
+			}
+			// Known by word (a market board read from afar): letters, not trade.
+			knowledge = "heard"
 		}
 		if kingdom != nil {
 			e.Kingdom = *kingdom
@@ -2125,7 +2139,13 @@ func (h *WorldHandler) loadCities(ctx context.Context, worldID, playerID uuid.UU
 				e.Own = true
 			}
 		}
-		e.Knowledge = "known"
+		e.Knowledge = knowledge
+		if knowledge == "heard" {
+			e.Note = "known by word only — you can write, but your own people must reach it before you can trade"
+		}
+		if reading, ok := readings[uuid.MustParse(e.SettlementID)]; ok && !e.Own && anchorErr == nil {
+			e.MarketBoard = boardReadingJSON(reading, anchor)
+		}
 		qCopy, rCopy := q, r
 		e.Q, e.R = &qCopy, &rCopy
 		result = append(result, e)

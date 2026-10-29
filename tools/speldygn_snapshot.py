@@ -90,7 +90,7 @@ SELECT w.current_tick, pl.username, s.name, s.population,
        COALESCE((SELECT max(b.level) FROM buildings b
                   WHERE b.settlement_id=s.id AND b.building_type='temple'),0),
        (SELECT count(*) FROM known_settlements ks WHERE ks.player_id=pl.id),
-       (SELECT count(DISTINCT settlement_id) FROM market_snapshots ms WHERE ms.player_id=pl.id)
+       (SELECT count(*) FROM market_board_readings mr WHERE mr.player_id=pl.id)
 FROM settlements s
 JOIN players pl ON pl.id = s.owner_id
 CROSS JOIN w
@@ -105,7 +105,7 @@ SETTLEMENT_HEADER = [
     "gubbar_placed", "buildings",
     "cohorts", "men", "max_unpaid_periods", "refilling",
     "kharis", "kharis_cap", "kharis_mood", "temple_level",
-    "known_settlements", "contacted_markets",
+    "known_settlements", "boards_read",
 ]
 
 FOUNDER_SQL = """
