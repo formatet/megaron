@@ -87,3 +87,17 @@ func TestOfferingPreviewPreservesChosenDecimalAmounts(t *testing.T) {
 		t.Fatalf("traditional display changed: %s", got)
 	}
 }
+
+// rite takes --province like status/place/build: city name, province ID or
+// settlement ID, own cities only (GPT-player logs 2026-10-24).
+func TestRiteSettlementByProvince(t *testing.T) {
+	markers := []map[string]any{
+		{"id": "p-own", "settlement_id": "s-own", "name": "Knossos", "own": true},
+		{"id": "p-far", "settlement_id": "s-far", "name": "Pylos", "own": false},
+	}
+	for arg, want := range map[string]string{"knossos": "s-own", "p-own": "s-own", "s-own": "s-own", "Pylos": "", "p-far": ""} {
+		if got := riteSettlementByProvince(markers, arg); got != want {
+			t.Errorf("riteSettlementByProvince(%q) = %q, want %q", arg, got, want)
+		}
+	}
+}

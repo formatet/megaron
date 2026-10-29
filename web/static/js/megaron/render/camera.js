@@ -47,6 +47,17 @@ function clampAxis(cam, k, viewport, min, max, margin) {
   return Math.min(-lo, Math.max(viewport - hi, cam));
 }
 
+// visibleWidth is the canvas width a player can actually see when a panel
+// covers its right side: the pan clamp must let the world's right edge reach
+// the panel's left edge, or a city at the map's east edge hides under the
+// open drawer (Timothy 2026-10-24, Tylissos at 61,27). A panel covering the
+// whole canvas (mobile full-screen) is not a side panel and changes nothing.
+export function visibleWidth(canvasLeft, canvasWidth, coverLeft) {
+  if (coverLeft == null || !Number.isFinite(coverLeft)) return canvasWidth;
+  const w = coverLeft - canvasLeft;
+  return w > 0 && w < canvasWidth ? w : canvasWidth;
+}
+
 // clampPan returns {x, y} for a camera, given the canvas size in px, the world's
 // bounding box in world units, and a margin in world units. `world` may be null
 // (tiles not loaded yet) — then the camera is returned untouched, because a
