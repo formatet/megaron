@@ -13,4 +13,4 @@ See [[catchment]], [[citizens]] and [[marching]].
 
 Before roads and journey rounding. Check the march preview for your arrival time. See [[marching]].
 
-**[[galley]] base speed: 1 hex per game day**, with a full crew and no soldiers aboard. River current, crew, carried troops and ship type can change the travel time; check the forecast. See [[ship-types]].
+**[[galley|Galley]] base speed: 1 hex per game day**, with a full crew and no soldiers aboard. [[rivers|River]] current, crew, carried troops and ship type can change the travel time; check the forecast. See [[ship-types]].

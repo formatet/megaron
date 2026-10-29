@@ -4,4 +4,4 @@ Select a known hex to inspect its ground and available production. City placemen
 
 See [[catchment]], [[citizens]] and [[marching]].
 
-**[[galley]] base speed: 3 hexes per game day**, with a full crew and no soldiers aboard. [[rivers]] current, crew, carried troops and ship type can change the travel time; check the forecast. See [[ship-types]].
+**[[galley|Galley]] base speed: 3 hexes per game day**, with a full crew and no soldiers aboard. [[rivers|River]] current, crew, carried troops and ship type can change the travel time; check the forecast. See [[ship-types]].
