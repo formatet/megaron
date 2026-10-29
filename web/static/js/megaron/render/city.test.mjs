@@ -120,3 +120,22 @@ test('siege of an unfortified city never invents a closed wall gate', () => {
   assert.ok(count(s.status) > 0);
   assert.equal(s.status[62 * 160 + 80], null);
 });
+
+test('the city animation repaints only when the smoke phase changes', async () => {
+  const { startCityAnim, stopCityAnim, drawCityFrame } = await import('./city.js');
+  const recorder = () => { const ops = []; return { ops, ctx: { set fillStyle(c) { ops.push(c); }, fillRect(...r) { ops.push(r.join()); } } }; };
+  const live = recorder(), queued = [];
+  const saved = [globalThis.requestAnimationFrame, globalThis.cancelAnimationFrame];
+  globalThis.requestAnimationFrame = f => queued.push(f);
+  globalThis.cancelAnimationFrame = () => {};
+  try {
+    startCityAnim({ getContext: () => live.ctx }, { terrain: 'hills' }, buildings, [], { population: 4500, walls: 1, food: { growth_state: 'growing' } });
+    const opsAt = ts => { const before = live.ops.length; queued.shift()(ts); return live.ops.slice(before); };
+    assert.ok(live.ops.length > 0, 'first frame is painted at once');
+    for (const ts of [1000, 1016, 1200, 1399]) assert.equal(opsAt(ts).length, 0, `no repaint at ${ts} within phase 0`);
+    const s = buildCityScene({ terrain: 'hills' }, buildings, [], { population: 4500, walls: 1, food: { growth_state: 'growing' } });
+    const want = recorder(); drawCityFrame(want.ctx, s, 1);
+    assert.deepEqual(opsAt(1400), want.ops, 'phase 1 paints exactly the old per-frame picture');
+    assert.equal(opsAt(1500).length, 0);
+  } finally { stopCityAnim(); [globalThis.requestAnimationFrame, globalThis.cancelAnimationFrame] = saved; }
+});

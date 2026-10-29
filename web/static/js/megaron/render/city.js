@@ -820,11 +820,13 @@ export function startCityAnim(canvas, tile, buildings, buildQueue, sett) {
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
   const scene = buildCityScene(tile, buildings, buildQueue, sett);
-  let epoch = null;
+  let epoch = null, shown = 0;
   drawCityFrame(ctx, scene);
   function frame(ts) {
     if (epoch === null) epoch = ts;
-    drawCityFrame(ctx, scene, Math.floor((ts - epoch) / 400) % 6);
+    // The scene is fixed; only the smoke moves, one phase per 400 ms.
+    const phase = Math.floor((ts - epoch) / 400) % 6;
+    if (phase !== shown) drawCityFrame(ctx, scene, (shown = phase));
     animId = requestAnimationFrame(frame);
   }
   animId = requestAnimationFrame(frame);
