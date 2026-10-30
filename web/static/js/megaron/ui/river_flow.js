@@ -12,7 +12,7 @@ export function riverFlowLines(tile,tiles=[]) {
  } else if(tile.river_flow_known===false)lines.push('Flow direction unavailable.');
  const fog=valid(tile.river_edges).filter(i=>{const [dq,dr]=RIVER_OFFSETS[i];const n=tiles.find(t=>t.q===tile.q+dq&&t.r===tile.r+dr);return !n||n.terrain==='fog';});
  if(fog.length)lines.push('Continues into the fog toward '+directions(fog)+'.');
- const kinds={river:'river',river_ford:'ford',coastal_sea:'coastal water',deep_sea:'deep sea'};
+ const kinds={river:'river',river_ford:'ford',coastal_sea:'coastal water',deep_sea:'deep sea',lake:'lake'};
  const connections=(tile.river_connections||[]).filter(c=>valid(tile.river_edges).includes(c.edge)&&kinds[c.terrain]);
  if(connections.length)lines.push('Connections: '+connections.map(c=>names[c.edge]+' — '+kinds[c.terrain]).join('; ')+'.');
  if(Array.isArray(tile.river_edges)&&tile.river_edges.length===0)lines.push('The river ends here.');

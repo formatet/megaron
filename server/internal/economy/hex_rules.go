@@ -76,7 +76,8 @@ func hexRules(terrain string, copperDep, tinDep, silverDep, incenseDep bool) []h
 		out = append(out, fieldStone, hexRule{"timber", 1, "lumbermill", 0})
 	case "semi_desert", "mountain_red":
 		out = append(out, fieldStone)
-	case "coastal_sea":
+	case "coastal_sea", "lake":
+		// A lake fishes like coastal water but never as a bay (Timothy 2026-10-30): rulesWithLandNeighbors doubles coastal_sea only.
 		out = append(out, hexRule{"fish", 2, "", 0}) // 2 places: fisket ska kunna ge mycket mat (Timothy 2026-10-01); rate stays 1,0 — the dagsverkesskala
 	case "deep_sea":
 		out = append(out, hexRule{"fish", 0, "harbour", 0})
@@ -221,7 +222,7 @@ func HexYieldPerWorker(rate, mult float64) float64 { return rate * mult }
 
 // ruleTerrains lists every terrain hexRules has a row for.
 var ruleTerrains = []string{"plains", "hills", "mountain_limestone", "river_valley", "river_delta",
-	"forest_olive_grove", "forest_cedar", "scrub_maquis", "semi_desert", "mountain_red", "coastal_sea", "river", "river_ford", "deep_sea"}
+	"forest_olive_grove", "forest_cedar", "scrub_maquis", "semi_desert", "mountain_red", "coastal_sea", "river", "river_ford", "deep_sea", "lake"}
 
 // RuleBuildingTypes are the buildings the rule table ties to hexes.
 var RuleBuildingTypes = []string{"farm", "mine", "lumbermill", "stonequarry", "harbour"}

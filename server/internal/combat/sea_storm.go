@@ -121,7 +121,7 @@ type seaVoyage struct {
 	arriveTick  int
 }
 
-func isSeaTerrain(t string) bool { return province.IsSea(t) }
+func isSeaTerrain(t string) bool { return province.IsThalassa(t) }
 
 func (h *SeaStormScanHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
 	graph, err := province.LoadTileGraph(ctx, h.pool, e.WorldID)

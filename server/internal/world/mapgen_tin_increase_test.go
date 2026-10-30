@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"reflect"
 	"testing"
 
 	"github.com/google/uuid"
@@ -65,6 +66,18 @@ func TestGenerateMap_TinIncreasePreservesGeography(t *testing.T) {
 			if err := validateMap(tiles, tc.Size, tc.Size); err != nil {
 				t.Fatal(err)
 			}
+			// The golden predates lakes (insjöar slice 2): hash the map before
+			// MarkLakes relabels enclosed sea, and prove that is the only step.
+			pre := generateMapOnce(stubID{}, eff, tc.Size, tc.Size)
+			addTinSources(pre, eff, tc.Size, tc.Size)
+			AddIncenseSources(pre, eff, tc.Size, tc.Size)
+			PopulateRiverMetadata(pre, tc.Size, tc.Size)
+			relabelled := append([]MapTile(nil), pre...)
+			MarkLakes(relabelled, tc.Size, tc.Size)
+			if !reflect.DeepEqual(relabelled, tiles) {
+				t.Fatal("GenerateMap differs from the pre-lake map beyond MarkLakes")
+			}
+			tiles = pre
 			h := sha256.New()
 			enc := json.NewEncoder(h)
 			tin := map[[2]int]bool{}

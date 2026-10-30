@@ -3359,6 +3359,7 @@ const TERRAIN_GOODS = {
   forest_olive_grove: 'oil, timber',
   forest_cedar:       'cedar, timber',
   coastal_sea:        'fish',
+  lake:               'fish',
   deep_sea:           'fish',
   river:              'fish',
   // river_ford (megaron_plan_flodbudget_och_vadstalle.md): same fish rate as
@@ -3431,7 +3432,7 @@ const TERRAIN_LABELS = {
   river: 'River', forest_cedar: 'Cedar Forest',
   coastal_sea: 'Coastal Sea', deep_sea: 'Deep Sea',
   mountain_limestone: 'Limestone Mountains', mountain_red: 'Red Mountains',
-  river_ford: 'River Ford',
+  river_ford: 'River Ford', lake: 'Lake',
 };
 
 // The own cities whose catchment tint is shown: the one the City drawer is
@@ -3578,7 +3579,7 @@ function workersHereHTML(h) {
 // absence of affordances; sea gets galleys; empty land gets march + colonize.
 function openTerrainPanel(h, tile, isMountain, isSea, units, foreignUnits) {
   document.getElementById('ip-name').textContent =
-    isSeaTerrain(tile.terrain) ? `Sea (${h.q},${h.r})` : `${namedPlaceTerrain(tile, isMountain ? 'Mountains' : terrainLabel(tile.terrain))} (${h.q},${h.r})`;
+    isSeaTerrain(tile.terrain) && tile.terrain !== 'lake' ? `Sea (${h.q},${h.r})` : `${namedPlaceTerrain(tile, isMountain ? 'Mountains' : terrainLabel(tile.terrain))} (${h.q},${h.r})`;
   setCityFieldsVisible(false);
   fillTerrainFields(tile);
 

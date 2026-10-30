@@ -7,7 +7,7 @@ func TerrainMoveTicks(terrain string) float64 {
 	switch terrain {
 	case "plains", "river_valley", "river_delta":
 		return 1
-	case "coastal_sea":
+	case "coastal_sea", "lake":
 		return 1.0 / 3
 	case "deep_sea":
 		return 1.0 / 5

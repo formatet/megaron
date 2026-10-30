@@ -78,13 +78,14 @@ type Eye struct {
 // SeaSightline. Tunable, not an invariant.
 const SeaHorizonRadius = 4
 
-// IsSea reports whether terrain is open water: coastal_sea or deep_sea.
+// IsSea reports whether terrain is open water: coastal_sea, deep_sea or lake
+// (a lake gives the sea's horizon, Timothy 2026-10-30). Storms ask IsThalassa.
 // Deliberately NOT river: the horizon comes from open water, and a 1-hex-wide
 // river between tall banks opens none (megaron_floden_plan.md §5, Timothy
 // 2026-07-29). Nor map_tiles.coastal, which migration 101 widened to mean
 // "adjacent to any water, river included".
 func IsSea(terrain string) bool {
-	return terrain == "coastal_sea" || terrain == "deep_sea"
+	return IsThalassa(terrain) || terrain == "lake"
 }
 
 // LiveRadius returns the ordinary live-vision radius for an eye of eyeKind looking

@@ -715,6 +715,7 @@ func GenerateMap(worldID interface{ String() string }, seed int64, width, height
 		addTinSources(tiles, eff, width, height)
 		AddIncenseSources(tiles, eff, width, height)
 		PopulateRiverMetadata(tiles, width, height)
+		MarkLakes(tiles, width, height)
 		return tiles, eff
 	}
 	// A broken map must never host a world — fail loud rather than serve a
@@ -1024,7 +1025,7 @@ func validateMap(tiles []MapTile, width, height int) error {
 	dirs6 := [6][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
 	isBuildable := func(t MapTile) bool {
 		switch t.Terrain {
-		case TerrainCoastalSea, TerrainDeepSea, TerrainRiver, TerrainRiverFord,
+		case TerrainCoastalSea, TerrainDeepSea, TerrainLake, TerrainRiver, TerrainRiverFord,
 			TerrainMountainLimestone, TerrainMountainRed, TerrainSemiDesert:
 			return false
 		}
@@ -3939,7 +3940,7 @@ func hexNeighbours(c cell, w, h int) []cell {
 }
 
 func isSea(t Terrain) bool {
-	return t == TerrainDeepSea || t == TerrainCoastalSea
+	return t == TerrainDeepSea || t == TerrainCoastalSea || t == TerrainLake
 }
 
 // hasLandNeighbour reports whether a sea tile borders any land tile.
@@ -4039,7 +4040,7 @@ func buildableWithinMineableRadius(c cell, w, h int, buildableAt func(cell) bool
 // name is the whole story of what the flag now means.
 func hasWaterNeighbour(grid map[cell]Terrain, c cell, w, h int) bool {
 	for _, n := range hexNeighbours(c, w, h) {
-		if grid[n] == TerrainCoastalSea || grid[n] == TerrainRiver || grid[n] == TerrainRiverFord {
+		if grid[n] == TerrainCoastalSea || grid[n] == TerrainLake || grid[n] == TerrainRiver || grid[n] == TerrainRiverFord {
 			return true
 		}
 	}

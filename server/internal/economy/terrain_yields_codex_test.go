@@ -17,7 +17,7 @@ var updateTerrainArticle = flag.String("update-terrain-article", "", "Regenerate
 func TestCodexTerrainProduction(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
-	for _, row := range []struct{ slug, terrain string }{{"plains", "plains"}, {"river-valley", "river_valley"}, {"river-delta", "river_delta"}, {"hills", "hills"}, {"olive-grove", "forest_olive_grove"}, {"cedar-forest", "forest_cedar"}, {"limestone-mountains", "mountain_limestone"}, {"red-mountains", "mountain_red"}, {"maquis", "scrub_maquis"}, {"semi-desert", "semi_desert"}, {"coastal-sea", "coastal_sea"}, {"deep-sea", "deep_sea"}, {"rivers", "river"}, {"river-ford", "river_ford"}} {
+	for _, row := range []struct{ slug, terrain string }{{"plains", "plains"}, {"river-valley", "river_valley"}, {"river-delta", "river_delta"}, {"hills", "hills"}, {"olive-grove", "forest_olive_grove"}, {"cedar-forest", "forest_cedar"}, {"limestone-mountains", "mountain_limestone"}, {"red-mountains", "mountain_red"}, {"maquis", "scrub_maquis"}, {"semi-desert", "semi_desert"}, {"coastal-sea", "coastal_sea"}, {"lake", "lake"}, {"deep-sea", "deep_sea"}, {"rivers", "river"}, {"river-ford", "river_ford"}} {
 		t.Run(row.slug, func(t *testing.T) {
 			path := "../../../web/static/codex/" + row.slug + ".md"
 			raw, err := os.ReadFile(path)

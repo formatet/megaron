@@ -4,6 +4,7 @@
 |---|---|---|
 | Coastal water | 2 | 1 |
 | Bay | 2 | 2 |
+| [[lake|Lake]] | 2 | 1 |
 | Deep water | 0, 1, 2 or 4 at harbour levels 0, 1, 2 or 3 | 1 |
 
 ## Fishing places, bays and storms {#fishing-details}

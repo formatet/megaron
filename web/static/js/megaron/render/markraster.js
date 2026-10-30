@@ -1,6 +1,6 @@
 // Shared terrain renderer: explicit scene input, private per-instance caches.
 // No DOM, global game State or worker dependency. Both canvas kinds run this code.
-import { isSea, isWaterBarrier } from '../terrain.js';
+import { isSea, isShallowWater, isWaterBarrier } from '../terrain.js';
 
 export function createMarkRenderer(scene, createCanvas, markraster = true) {
 
@@ -89,6 +89,8 @@ export function createMarkRenderer(scene, createCanvas, markraster = true) {
     forest_cedar:       {c0:'#4E5C3C', c1:'#3E4A30'},
     fog:                {c0:'#1C1C1C', c1:'#252018'},
   };
+  // En sjö är kustvatten utan väg till Thalassa: samma ton tills BILD säger annat.
+  TERRAIN_BASE.lake = TERRAIN_BASE.coastal_sea;
 
   // ── Hex geometry ─────────────────────────────────────────────────────────
   const S = 22;    // hex size in logical pixels — Settlers 2 scale
@@ -1272,7 +1274,7 @@ export function createMarkRenderer(scene, createCanvas, markraster = true) {
   function markCode(t) {
     if (t === undefined) return 0;
     if (t === 'fog') return 1;
-    if (t === 'coastal_sea') return 3;
+    if (isShallowWater(t)) return 3;
     if (t === 'deep_sea') return 4;
     if (isRiverTerrain(t)) return 5;
     return 2;
@@ -1779,6 +1781,7 @@ export function createMarkRenderer(scene, createCanvas, markraster = true) {
       }
       case 'coastal_sea':
       case 'deep_sea':
+      case 'lake':
         // Havet ritas inte här. Dyning och bränning är egna OKLIPPTA pass
         // (render() 1a3) — en havsyta vars enda märken slutar vid hexkanten
         // ritar hexkanten. Se drawSwell/drawSurf.

@@ -48,6 +48,10 @@ const (
 	HarbourRuleCoastal = "Coastal: a city here can build a harbour and ships."
 )
 
+// ShipyardLakeRefusal is the 422 text for a shipyard whose water never reaches
+// the Thalassa — a closed lake (Timothy 2026-10-30). A harbour is still allowed there.
+const ShipyardLakeRefusal = "Shipyard: this lake has no waterway to the Thalassa — a ship built here could never leave it."
+
 // NeedsWaterNeighbour reports whether the harbour rule gates this building type.
 func NeedsWaterNeighbour(bt BuildingType) bool {
 	return bt == BuildingHarbour || bt == BuildingShipyard

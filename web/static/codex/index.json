@@ -1021,6 +1021,7 @@
         "limestone-mountains",
         "red-mountains",
         "coastal-sea",
+        "lake",
         "deep-sea",
         "river-valley",
         "river-delta",
@@ -2658,6 +2659,27 @@
         "Coastal Sea",
         "coastal water",
         "coastal waters"
+      ],
+      "parent": "terrain"
+    },
+    {
+      "id": "lake",
+      "title": "Lake",
+      "category": "The wider world",
+      "entities": [
+        {
+          "kind": "terrain",
+          "key": "lake"
+        }
+      ],
+      "aliases": [
+        "lake"
+      ],
+      "terms": [
+        "lake",
+        "Lake",
+        "lakes",
+        "inland water"
       ],
       "parent": "terrain"
     },

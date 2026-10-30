@@ -228,3 +228,14 @@ func TestReconcilePlacements_TrimsOverCapAndDropsBuildingPlacements(t *testing.T
 		t.Errorf("second run removed %d (err %v), want 0", r2, err)
 	}
 }
+
+// A lake fishes like coastal water — two places, rate 1 — but is never a bay,
+// however much land surrounds it (Timothy 2026-10-30).
+func TestRuleTable_LakeFishesLikeCoastNeverBay(t *testing.T) {
+	for _, land := range []int{0, 4, 6} {
+		rules := rulesWithLandNeighbors("lake", false, false, false, false, land)
+		if len(rules) != 1 || rules[0].good != "fish" || rules[0].basePlaces != 2 || rules[0].rateMult > 1 {
+			t.Fatalf("lake with %d land neighbours = %+v, want one fish rule, 2 places, no multiplier", land, rules)
+		}
+	}
+}
