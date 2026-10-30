@@ -347,7 +347,13 @@ export function notifText(kind, body) {
     case 'TempleDemolitionWrath': return demolitionKharisText(body);
     case 'GodsAngered': return godsAngeredText(body);
     case 'ReligionRuleChangedV2': return `The gods ask ${fmtNum(body.demand)} of your realm; your temples give ${fmtNum(body.given_weight)}. Temple tithes now depend on level. You are protected from divine punishment for ${fmtDays(body.protection_ticks)} while you adjust your temples.`;
-    case 'KharisDeclining': return `${esc(body.kharis_standing?.summary || '')}${body.kharis_standing?.summary ? '. ' : ''}Kharis is falling (${fmtNum(body.kharis || 0)}, net ${fmtNum(body.net_per_tick || 0)} per game day). At this rate it reaches ${body.wrath_threshold || 15} in ${fmtDays(body.days_to_15 || 0)}. Below that, the gods may punish you, with or without a temple. Staff and feed your temples.`;
+    case 'KharisDeclining': if (Number.isFinite(body.days_to_wrathful)) {
+      // R2 (2026-10-30): the crossing below 30 is where risk begins; the countdown is to Wrathful.
+      return `${esc(body.kharis_standing?.summary || '')}${body.kharis_standing?.summary ? '. ' : ''}Kharis is falling (${fmtNum(body.kharis || 0)}, net ${fmtNum(body.net_per_tick || 0)} per game day). ` +
+        `Below ${body.wrath_threshold} the gods may punish you, with or without a temple: about ${Math.round((body.wrath_probability || 0) * 100)}% each game day, ` +
+        `${Math.round((body.wrathful_probability || 0) * 100)}% below ${body.wrathful_threshold}. At this rate it falls below ${body.wrathful_threshold} in ${fmtDays(body.days_to_wrathful)}. Staff and feed your temples.`;
+    }
+    return `${esc(body.kharis_standing?.summary || '')}${body.kharis_standing?.summary ? '. ' : ''}Kharis is falling (${fmtNum(body.kharis || 0)}, net ${fmtNum(body.net_per_tick || 0)} per game day). At this rate it reaches ${body.wrath_threshold || 15} in ${fmtDays(body.days_to_15 || 0)}. Below that, the gods may punish you, with or without a temple. Staff and feed your temples.`;
     case 'KharisBandChanged': return `${esc(body.kharis_standing?.summary || '')}${body.kharis_standing?.summary ? '. ' : ''}Kharis: ${esc(body.from_band || '?')} → ${esc(body.to_band || '?')} (${fmtNum(body.kharis || 0)}). Check Kult for decay and temple support; staff and feed your temples.`;
 
     case 'OpeningDispatch': return esc(body.title || 'Opening dispatch');

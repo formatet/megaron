@@ -10,7 +10,7 @@ import (
 
 func TestWrathThresholdDoesNotDependOnTemple(t *testing.T) {
 	for _, temple := range []bool{false, true} {
-		for _, tc := range []struct{ k, want float64 }{{1, .03}, {14.999, .03}, {15, 0}, {29.9, 0}, {30, 0}} {
+		for _, tc := range []struct{ k, want float64 }{{1, .04}, {4.999, .04}, {5, .02}, {15, .02}, {29.9, .02}, {30, 0}} {
 			if got := PunishmentProbability(tc.k, temple); got != tc.want {
 				t.Errorf("k%g temple%v probability%g want%g", tc.k, temple, got, tc.want)
 			}
@@ -64,10 +64,11 @@ func TestWrathDeclineNoticeOnceAndNoPositiveNetWarning(t *testing.T) {
 	}
 	var net float64
 	var days int
-	if err := pool.QueryRow(ctx, `SELECT (body_json->>'net_per_tick')::float8,(body_json->>'days_to_15')::int FROM notifications WHERE world_id=$1 AND kind='KharisDeclining'`, wid).Scan(&net, &days); err != nil {
+	if err := pool.QueryRow(ctx, `SELECT (body_json->>'net_per_tick')::float8,(body_json->>'days_to_wrathful')::int FROM notifications WHERE world_id=$1 AND kind='KharisDeclining'`, wid).Scan(&net, &days); err != nil {
 		t.Fatal(err)
 	}
-	if math.Abs(net+1.2) > 1e-9 || days != 12 {
+	// 30.1 − 1.2 = 28.9: risk has begun; (28.9 − 5) / 1.2 → 20 game days to Wrathful.
+	if math.Abs(net+1.2) > 1e-9 || days != 20 {
 		t.Fatalf("forecast net%g game days%d", net, days)
 	}
 

@@ -49,3 +49,16 @@ func TestPrintBattleReportLine_GodsHand(t *testing.T) {
 		}
 	}
 }
+
+func TestKharisDecliningLine_PunishmentCurve(t *testing.T) {
+	out, _ := captureStdout(t, func() error {
+		printNotificationSummary(nil, notificationItem{Kind: "KharisDeclining", Body: []byte(`{"kharis":28.9,"net_per_tick":-1.2,"wrath_threshold":30,"wrath_probability":0.02,"days_to_wrathful":20,"wrathful_threshold":5,"wrathful_probability":0.04}`)})
+		printNotificationSummary(nil, notificationItem{Kind: "KharisDeclining", Body: []byte(`{"kharis":28.9,"net_per_tick":-1.2,"days_to_15":12,"wrath_threshold":15}`)})
+		return nil
+	})
+	for _, want := range []string{"Below 30 the gods may punish you, with or without a temple: about 2% each game day, 4% below 5. At this rate it falls below 5 in 20", "At this rate it reaches 15 in 12"} {
+		if !strings.Contains(out, want) {
+			t.Fatalf("keryx = %q, want %q", out, want)
+		}
+	}
+}

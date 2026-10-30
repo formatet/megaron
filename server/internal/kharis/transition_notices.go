@@ -184,9 +184,13 @@ func (h *TickHandler) observeKharisBand(ctx context.Context, w wanaxSnap, world 
 	days := 0
 	if net < 0 {
 		kind = "KharisDeclining"
-		days = int(math.Max(0, math.Ceil((amount-WrathThreshold)/(-net))))
+		days = int(math.Max(0, math.Ceil((amount-WrathfulThreshold)/(-net))))
 	}
-	warningBody := map[string]any{"settlement_id": sid, "name": name, "province_id": pid, "q": q, "r": r, "kharis": amount, "net_per_tick": net, "days_to_15": days, "wrath_threshold": WrathThreshold, "kharis_standing": standing}
+	// Since R2 (2026-10-30) the crossing below WrathThreshold is where risk begins;
+	// the countdown is to Wrathful. Older notices carry days_to_15 instead.
+	warningBody := map[string]any{"settlement_id": sid, "name": name, "province_id": pid, "q": q, "r": r, "kharis": amount, "net_per_tick": net,
+		"wrath_threshold": WrathThreshold, "wrath_probability": WrathDailyProbability,
+		"days_to_wrathful": days, "wrathful_threshold": WrathfulThreshold, "wrathful_probability": WrathfulDailyProbability, "kharis_standing": standing}
 	// Record both directions, but announce only a downward crossing with negative net.
 	if declineState(amount) != "below" {
 		kind = ""
