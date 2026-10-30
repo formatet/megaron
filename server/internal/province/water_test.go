@@ -79,11 +79,11 @@ var (
 	waterLiteral = regexp.MustCompile(`["'](coastal_sea|deep_sea|river|river_ford)["']`)
 )
 
-// waterListAllowed: the owners, and per-terrain tables that are not a
-// classification (keyed by path, value = text the allowed line contains).
+// waterListAllowed: the owners (whole file, "") and per-terrain tables that are
+// not a classification (keyed by path, value = text the allowed line contains).
 var waterListAllowed = map[string]string{
-	"server/internal/province/hex.go":         "func IsSea",
-	"web/static/js/megaron/terrain.js":        "export function isSea",
+	"server/internal/province/hex.go":         "",
+	"web/static/js/megaron/terrain.js":        "",
 	"server/api/handlers/opening_dispatch.go": "TerrainMoveTicksFor(\"deep_sea\"",
 	"server/internal/economy/hex_rules.go":    "\"scrub_maquis\"",
 	"server/cmd/keryx/river_flow.go":          "\"coastal water\"",
