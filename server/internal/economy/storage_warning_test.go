@@ -173,3 +173,45 @@ func TestStorageRealizedProductionLossAndNoticeAreOneOutcome(t *testing.T) {
 		t.Fatal("delivery job resurrected archived notice")
 	}
 }
+
+// A store that refills to its cap every few ticks is one ongoing loss: one notice,
+// every outcome still written. A quiet spell longer than the window starts a new one.
+func TestStorageOverflowProductionNoticeOncePerOngoingLoss(t *testing.T) {
+	pool, wid, sid, owner := storageFixture(t, 60)
+	ctx := context.Background()
+	overflowAt := func(tick int) {
+		t.Helper()
+		if _, err := pool.Exec(ctx, `UPDATE worlds SET current_tick=$2 WHERE id=$1`, wid, tick); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := pool.Exec(ctx, `SELECT storage_capped($1,'silver',100,60,'production')`, sid); err != nil {
+			t.Fatal(err)
+		}
+	}
+	counts := func() (notices, audits int) {
+		t.Helper()
+		if err := pool.QueryRow(ctx, `SELECT count(*) FROM notifications WHERE player_id=$1 AND kind='StorageOverflow'`, owner).Scan(&notices); err != nil {
+			t.Fatal(err)
+		}
+		if err := pool.QueryRow(ctx, `SELECT count(*) FROM events WHERE stream_id=$1 AND event_type='StorageOverflow'`, sid).Scan(&audits); err != nil {
+			t.Fatal(err)
+		}
+		return
+	}
+	last := 0
+	for tick := 10; tick <= 60; tick += 5 { // the fish pattern seen live
+		overflowAt(tick)
+		last = tick
+	}
+	if n, a := counts(); n != 1 || a != 11 {
+		t.Fatalf("5-tick refills: notices %d audits %d, want 1/11", n, a)
+	}
+	overflowAt(last + 23) // 23 ticks later: still the same loss
+	if n, _ := counts(); n != 1 {
+		t.Fatalf("inside the quiet window: notices %d, want 1", n)
+	}
+	overflowAt(last + 23 + 24) // 24 quiet ticks: a new loss
+	if n, a := counts(); n != 2 || a != 13 {
+		t.Fatalf("after a quiet spell: notices %d audits %d, want 2/13", n, a)
+	}
+}
