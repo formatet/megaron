@@ -25,3 +25,10 @@ Mutation: not applicable to prose-only changes; no executable guard or algorithm
 Visual layout unchanged; comprehension is TEXT for playtest, not claimed as human-tested.
 No Go production changes or database changes; a full database test run is not relevant here.
 Live baseline ground counts: 16 players, 7 settlements, 24 units; migration 228.
+
+## Deployment
+Production checkout: `45b2aa982c66525845badbdb5bd7e27077751721`.
+HTTP-served stable.md, war-chariot.md and articles.json exactly match the committed bytes.
+The unchanged Go process reports `2e550ac`, health ok, migration 228 clean; static files
+are served from disk and need no restart. Ground counts remain 16 players, 7 settlements,
+24 units. Todo S1/H1 closed; H1 comprehension retained for playtest.
