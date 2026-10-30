@@ -149,7 +149,7 @@ export function notifDomain(kind) {
     UnitRecalled: 'war', UnitRedirected: 'war', MarchStalled: 'war', OrderFailed: 'war',
     GarrisonStarvationStarted: 'war', GarrisonStarvationEnded: 'war', UpkeepUnpaid: 'war', ShipDamaged: 'war', ShipRepaired: 'war',
     PlaceFirstReached: 'war',
-    ShipStormDamaged: 'war', ShipFoundered: 'war',
+    ShipStormDamaged: 'war', ShipStormSpared: 'war', ShipFoundered: 'war',
     ShipCaptured: 'war', ShipLost: 'war', ShipStranded: 'war',
     SiegeStarted: 'war', SiegeLifted: 'war',
     CityOccupied: 'war', OccupationDefended: 'war', CityAnnexReady: 'war',
@@ -222,6 +222,7 @@ export function notifIcon(kind) {
     ShipDamaged:        '⛵',
     PlaceFirstReached: '🌊',
     ShipStormDamaged:   '🌊',
+    ShipStormSpared:    '🌊',
     ShipFoundered:      '🌊',
     ShipRepaired:       '🔨',
     ShipCaptured:       '⛵',
@@ -621,6 +622,7 @@ export function notifText(kind, body) {
         : `${subject} took damage (${hull}) but holds its orders`;
     }
     case 'ShipStormDamaged':
+    case 'ShipStormSpared':
     case 'ShipFoundered': {
       // Payload per combat.SeaStormPayload (slice T): one storm, rolled once
       // when the ship entered sea hex (q,r); hull is the value after it.
@@ -629,7 +631,9 @@ export function notifText(kind, body) {
       // A named storm is called by its name; the first Wanax to meet an unnamed one may name it.
       const storm = body.storm_name ? `the storm ${body.storm_name}` : 'a storm';
       const first = body.first_to_meet ? '. You were the first to meet this storm — click it on the map to name it.' : '';
-      if (kind === 'ShipStormDamaged') return `${subject} was battered by ${storm} ${at} — hull ${body.hull ?? '?'}/${body.hull_max ?? 5}${first}`;
+      if (kind === 'ShipStormSpared') return `Poseidon held back the waves: ${subject.charAt(0).toLowerCase() + subject.slice(1)} met ${storm} ${at} unharmed — hull ${body.hull ?? '?'}/${body.hull_max ?? 5}${first}`;
+      const wrath = body.divine === 'wrath' ? ' — the gods\' wrath struck harder' : '';
+      if (kind === 'ShipStormDamaged') return `${subject} was battered by ${storm} ${at} — hull ${body.hull ?? '?'}/${body.hull_max ?? 5}${wrath}${first}`;
       const lost = [];
       for (const c of body.cargo || []) lost.push(`${fmtNum(c.quantity)} ${c.good_key}`);
       for (const t of [body.troops, ...(body.more_troops || [])]) if (t) lost.push(`${t.size} ${t.unit_type}`);

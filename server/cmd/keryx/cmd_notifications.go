@@ -180,7 +180,7 @@ func printNotificationDetail(c *Client, n notificationItem) {
 	if n.Kind == "ShipRepaired" {
 		printShipRepairedLine(n)
 	}
-	if n.Kind == "ShipStormDamaged" || n.Kind == "ShipFoundered" {
+	if n.Kind == "ShipStormDamaged" || n.Kind == "ShipStormSpared" || n.Kind == "ShipFoundered" {
 		printSeaStormLine(n)
 	}
 	if n.Kind == "ForeignMarchSighted" {
@@ -615,6 +615,7 @@ func printSeaStormLine(n notificationItem) {
 		R        int    `json:"r"`
 		Hull     int    `json:"hull"`
 		HullMax  int    `json:"hull_max"`
+		Divine   string `json:"divine"`
 		Cargo    []struct {
 			GoodKey  string  `json:"good_key"`
 			Quantity float64 `json:"quantity"`
@@ -635,8 +636,16 @@ func printSeaStormLine(n notificationItem) {
 	if name == "" {
 		name = body.ShipType
 	}
+	if n.Kind == "ShipStormSpared" {
+		fmt.Printf("      Storm at (%d,%d): Poseidon held back the waves — your %s sails on unharmed, hull %d/%d.\n", body.Q, body.R, name, body.Hull, body.HullMax)
+		return
+	}
 	if n.Kind == "ShipStormDamaged" {
-		fmt.Printf("      Storm at (%d,%d): your %s keeps sailing, hull %d/%d. Repair at a shipyard.\n", body.Q, body.R, name, body.Hull, body.HullMax)
+		wrath := ""
+		if body.Divine == "wrath" {
+			wrath = " The gods' wrath: the storm struck harder."
+		}
+		fmt.Printf("      Storm at (%d,%d): your %s keeps sailing, hull %d/%d.%s Repair at a shipyard.\n", body.Q, body.R, name, body.Hull, body.HullMax, wrath)
 		return
 	}
 	var lost []string

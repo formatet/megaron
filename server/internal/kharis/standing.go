@@ -1,6 +1,10 @@
 package kharis
 
-import "fmt"
+import (
+	"fmt"
+
+	"formatet/megaron/server/internal/religion"
+)
 
 // BlessingProbability is shared by the tick and owner-private standing displays.
 // A maintained tick means at least one standing temple, independent of offerings.
@@ -15,6 +19,10 @@ type Standing struct {
 	Band                  string  `json:"band"`
 	PunishmentProbability float64 `json:"punishment_probability"`
 	BlessingProbability   float64 `json:"blessing_probability"`
+	// The gods' hand at sea (religion.StormTilt): chance a storm spares a ship,
+	// chance it takes one more hull.
+	StormSpareProbability float64 `json:"storm_spare_probability"`
+	StormWrathProbability float64 `json:"storm_wrath_probability"`
 	Summary               string  `json:"summary"`
 }
 
@@ -39,5 +47,12 @@ func DescribeStanding(amount float64, maintained bool, protectionTicks int) Stan
 		effect = "a standing temple is required for spontaneous blessings"
 	}
 	s.Summary = fmt.Sprintf("Kharis %.1f (%s) · %s", amount, s.Band, effect)
+	s.StormSpareProbability, s.StormWrathProbability = religion.StormTilt(amount)
+	if s.StormSpareProbability > 0 {
+		s.Summary += fmt.Sprintf(" · at sea, about %.0f%% chance Poseidon holds back a storm's blow", s.StormSpareProbability*100)
+	}
+	if s.StormWrathProbability > 0 {
+		s.Summary += fmt.Sprintf(" · at sea, about %.0f%% chance a storm takes %d more hull", s.StormWrathProbability*100, religion.StormWrathExtraHull)
+	}
 	return s
 }

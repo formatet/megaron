@@ -34,6 +34,7 @@ import (
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -49,7 +50,10 @@ const StormDamage = 2
 
 const (
 	EventShipStormDamaged = "ShipStormDamaged"
-	EventShipFoundered    = "ShipFoundered"
+	// EventShipStormSpared: the ship met a storm and the gods held back its blow
+	// (R2, religion.StormTilt). Hull unchanged; never a ShipStormDamaged with 0.
+	EventShipStormSpared = "ShipStormSpared"
+	EventShipFoundered   = "ShipFoundered"
 )
 
 // SeaStormCargo is one good lost with a foundered transport ship.
@@ -68,22 +72,25 @@ type SeaStormTroops struct {
 // SeaStormPayload is the stored outcome of one storm (event and notice body).
 // OwnerID is the Wanax whose ship it was (principle 10: a Wanax's fortunes).
 type SeaStormPayload struct {
-	WorldID     uuid.UUID       `json:"world_id"`
-	ShipID      uuid.UUID       `json:"ship_id"`
-	OwnerID     uuid.UUID       `json:"owner_id"`
-	ShipType    string          `json:"ship_type"`
-	Name        string          `json:"name"`
-	Q           int             `json:"q"`
-	R           int             `json:"r"`
-	Tick        int             `json:"tick"`
-	HullBefore  int             `json:"hull_before"`
-	Hull        int             `json:"hull"`
-	HullMax     int             `json:"hull_max"`
-	StormID     uuid.UUID       `json:"storm_id"`
-	StormName   string          `json:"storm_name"`    // the storm's name when it has one
-	FirstToMeet bool            `json:"first_to_meet"` // this blow gave the owner the right to name the storm
-	Damage      int             `json:"damage"`        // hull lost to this storm (absent on events before 2026-10-10: 1)
-	Foundered   bool            `json:"foundered"`
+	WorldID     uuid.UUID `json:"world_id"`
+	ShipID      uuid.UUID `json:"ship_id"`
+	OwnerID     uuid.UUID `json:"owner_id"`
+	ShipType    string    `json:"ship_type"`
+	Name        string    `json:"name"`
+	Q           int       `json:"q"`
+	R           int       `json:"r"`
+	Tick        int       `json:"tick"`
+	HullBefore  int       `json:"hull_before"`
+	Hull        int       `json:"hull"`
+	HullMax     int       `json:"hull_max"`
+	StormID     uuid.UUID `json:"storm_id"`
+	StormName   string    `json:"storm_name"`    // the storm's name when it has one
+	FirstToMeet bool      `json:"first_to_meet"` // this blow gave the owner the right to name the storm
+	Damage      int       `json:"damage"`        // hull lost to this storm (absent on events before 2026-10-10: 1)
+	Foundered   bool      `json:"foundered"`
+	// Divine names the gods' hand in this outcome: "spared" (ShipStormSpared) or
+	// "wrath" (StormWrathExtraHull more lost). Empty: the storm alone.
+	Divine      string          `json:"divine,omitempty"`
 	Errand      string          `json:"errand"` // "march" or the transport kind
 	TransportID *uuid.UUID      `json:"transport_id,omitempty"`
 	Cargo       []SeaStormCargo `json:"cargo,omitempty"`
@@ -101,10 +108,12 @@ type SeaStormScanHandler struct {
 	hub        Broadcaster
 	// Dice is the weather seam (creating storms, their steps); defaults to economy.NewWallDice().
 	Dice economy.Dice
+	// GodDice rolls the gods' hand per storm met (religion.StormTilt); defaults to economy.NewWallDice().
+	GodDice economy.Dice
 }
 
 func NewSeaStormScanHandler(pool *pgxpool.Pool, sched *events.Scheduler, store *events.Store, hub Broadcaster) *SeaStormScanHandler {
-	return &SeaStormScanHandler{pool: pool, scheduler: sched, eventStore: store, hub: hub, Dice: economy.NewWallDice()}
+	return &SeaStormScanHandler{pool: pool, scheduler: sched, eventStore: store, hub: hub, Dice: economy.NewWallDice(), GodDice: economy.NewWallDice()}
 }
 
 // seaVoyage is one ship's current passage along a saved route.
@@ -318,10 +327,30 @@ func (h *SeaStormScanHandler) sail(ctx context.Context, worldID uuid.UUID, dueTi
 		encounters = stormEncounters(v.route, enter, graph, occupied, last, dueTick)
 	}
 	var storms []SeaStormPayload
-	if !protected {
+	if !protected && len(encounters) > 0 {
+		// No realm record: no standing with the gods, so no tilt (never "kharis 0").
+		var spare, wrath float64
+		var kharis float64
+		err := tx.QueryRow(ctx, `SELECT settled(kharis_amount,kharis_rate,kharis_calc_tick) FROM player_world_records WHERE world_id=$1 AND player_id=$2`,
+			worldID, v.owner).Scan(&kharis)
+		if err == nil {
+			spare, wrath = religion.StormTilt(kharis)
+		} else if err != pgx.ErrNoRows {
+			return err
+		}
 		for _, encounter := range encounters {
+			// The roll happens once, here; the outcome is what is stored.
+			divine, damage := "", StormDamage
+			if spare > 0 || wrath > 0 {
+				roll := h.GodDice.Float64()
+				if roll < spare {
+					divine, damage = "spared", 0
+				} else if roll < wrath {
+					divine, damage = "wrath", StormDamage+religion.StormWrathExtraHull
+				}
+			}
 			before := hull
-			hull -= StormDamage
+			hull -= damage
 			if hull < 0 {
 				hull = 0
 			}
@@ -329,6 +358,7 @@ func (h *SeaStormScanHandler) sail(ctx context.Context, worldID uuid.UUID, dueTi
 				WorldID: worldID, ShipID: v.shipID, OwnerID: v.owner, ShipType: v.shipType,
 				Q: encounter.hex[0], R: encounter.hex[1], Tick: encounter.tick, HullBefore: before, Hull: hull, HullMax: hullMax,
 				Damage: before - hull, StormID: encounter.id, Foundered: hull <= 0, Errand: v.errand, TransportID: v.transportID,
+				Divine: divine,
 			})
 			if hull <= 0 {
 				break
@@ -377,6 +407,8 @@ func (h *SeaStormScanHandler) sail(ctx context.Context, worldID uuid.UUID, dueTi
 		kind := EventShipStormDamaged
 		if s.Foundered {
 			kind = EventShipFoundered
+		} else if s.Divine == "spared" {
+			kind = EventShipStormSpared
 		}
 		ev, err := h.eventStore.AppendTx(ctx, tx, v.shipID, events.StreamType(unit.StreamUnit), kind, s, worldID, nil)
 		if err != nil {
@@ -397,6 +429,8 @@ func (h *SeaStormScanHandler) sail(ctx context.Context, worldID uuid.UUID, dueTi
 		kind, level := EventShipStormDamaged, 3
 		if s.Foundered {
 			kind, level = EventShipFoundered, 4
+		} else if s.Divine == "spared" {
+			kind, level = EventShipStormSpared, 2
 		}
 		if err := h.hub.NotifyPlayer(ctx, worldID, v.owner, kind, level, s); err != nil {
 			slog.Warn("sea storm scan: notify failed", "ship", v.shipID, "err", err)

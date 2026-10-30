@@ -1229,6 +1229,7 @@
       "kinds": [
         "ShipDamaged",
         "ShipStormDamaged",
+        "ShipStormSpared",
         "ShipFoundered",
         "ShipRepaired",
         "UnitLostAtSea",

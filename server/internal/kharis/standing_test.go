@@ -30,3 +30,16 @@ func TestStandingCurrentConsequences(t *testing.T) {
 		}
 	}
 }
+
+// R2 storm, mild: the standing tells the sea's tilt before a ship sails.
+func TestStandingNamesTheGodsHandAtSea(t *testing.T) {
+	if s := DescribeStanding(60, true, 0); s.StormSpareProbability != .15 || !strings.Contains(s.Summary, "15% chance Poseidon holds back a storm's blow") {
+		t.Fatalf("favorable: %+v", s)
+	}
+	if s := DescribeStanding(4.9, true, 0); s.StormWrathProbability != .15 || !strings.Contains(s.Summary, "15% chance a storm takes 1 more hull") {
+		t.Fatalf("wrathful: %+v", s)
+	}
+	if s := DescribeStanding(30, true, 0); s.StormSpareProbability != 0 || s.StormWrathProbability != 0 || strings.Contains(s.Summary, "at sea") {
+		t.Fatalf("indifferent: %+v", s)
+	}
+}
