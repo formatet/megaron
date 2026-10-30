@@ -10,7 +10,7 @@ import (
 )
 
 // ProjectDailyNet computes, read-only, the kharis a Wanax would net on the NEXT
-// maintained day: workers at fed temples × KharisPerTempleWorker × scarcity −
+// maintained day: effective temple weight × KharisPerTempleWeight × scarcity −
 // dailyDecay below the ceiling. Above it, only ordinary decay applies;
 // offerings cannot offset that drift. This matches processMaintenance, with the same
 // feeding rule (early grain reference or local substitutions to the same divine worth).
@@ -53,9 +53,7 @@ func ProjectDailyNet(ctx context.Context, pool *pgxpool.Pool, playerID, worldID 
 	if serr != nil {
 		return 0, false, 0, 0, serr
 	}
-	workers := map[uuid.UUID]int{}
 	for _, t := range temples {
-		workers[t.BuildingID] = t.Staffed
 		devotionSum += float64(t.Staffed)
 		devotionCapacity += float64(t.Capacity)
 	}
@@ -72,7 +70,7 @@ func ProjectDailyNet(ctx context.Context, pool *pgxpool.Pool, playerID, worldID 
 		return 0, false, 0, 0, berr
 	}
 	scarcity := scarcityFromValues(values, baseValues, verr)
-	fedWorkers := projectFedWorkers(ctx, pool, playerID, worldID, values, workers)
+	effectiveWeight := projectEffectiveWeight(ctx, pool, playerID, worldID, values)
 
 	// Read current standing and ceiling using the same realm temples as the tick.
 	var amount, recordCap float64
@@ -86,7 +84,7 @@ func ProjectDailyNet(ctx context.Context, pool *pgxpool.Pool, playerID, worldID 
 	if amount > EffectiveKharisCap(recordCap, maxLevel) {
 		return -dailyDecay, true, devotionSum, devotionCapacity, nil
 	}
-	gain := fedWorkers * KharisPerTempleWorker * scarcity
+	gain := effectiveWeight * KharisPerTempleWeight * scarcity
 	return gain - dailyDecay, true, devotionSum, devotionCapacity, nil
 }
 
@@ -108,19 +106,15 @@ func scarcityFromValues(values, baseValues map[string]float64, err error) float6
 	return clampTempleScarcity(divine / base)
 }
 
-// projectFedTemples uses the same local gift plan as maintenance and status.
-// projectFedWorkers counts the workers at temples whose own gift is planned
-// in full — the tick's rule, read-only.
-func projectFedWorkers(ctx context.Context, pool *pgxpool.Pool, playerID, worldID uuid.UUID, values map[string]float64, workers map[uuid.UUID]int) float64 {
+// projectEffectiveWeight sums the same per-part tithe and staffing plan as the tick.
+func projectEffectiveWeight(ctx context.Context, pool *pgxpool.Pool, playerID, worldID uuid.UUID, values map[string]float64) float64 {
 	offers, err := loadTempleOffers(ctx, pool, playerID, worldID, values)
 	if err != nil {
 		return 0
 	}
 	var fed float64
 	for _, o := range offers {
-		if o.Fed {
-			fed += float64(workers[o.BuildingID])
-		}
+		fed += o.EffectiveWeight
 	}
 	return fed
 }
@@ -140,9 +134,18 @@ func ProjectDecay(ctx context.Context, pool *pgxpool.Pool, playerID, worldID uui
 	if err != nil {
 		return d, err
 	}
-	d.Base = decayBas
+	d.Base = 0
 	d.Cities = cityDecay(d.CityCount)
 	d.Residents = populationDecay(d.Population)
 	d.Total = computeDailyDecay(d.CityCount, d.Population)
 	return d, nil
+}
+
+// GivenWeight is the sum of the server-planned, locally funded temple weights.
+func GivenWeight(offers []TempleOffer) float64 {
+	var sum float64
+	for _, o := range offers {
+		sum += o.EffectiveWeight
+	}
+	return sum
 }

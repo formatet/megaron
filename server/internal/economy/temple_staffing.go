@@ -5,10 +5,18 @@ import (
 	"github.com/google/uuid"
 )
 
-// TempleWorkersPerLevel is physical capacity, not a population share.
-const TempleWorkersPerLevel = 2
-
-func TempleWorkplaces(level int) int { return max(0, level) * TempleWorkersPerLevel }
+// TempleWorkplaces is physical capacity, not a population share.
+func TempleWorkplaces(level int) int {
+	switch level {
+	case 1:
+		return 2
+	case 2:
+		return 4
+	case 3:
+		return 8
+	}
+	return 0
+}
 
 // TempleStaffing is a city's temple service: the sum over its temples, and
 // each temple on its own (ORDER 15 — one temple per god, workers stand at one).

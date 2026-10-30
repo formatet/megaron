@@ -189,6 +189,12 @@ func printNotificationDetail(c *Client, n notificationItem) {
 	if n.Kind == "ForeignMarchSightedV2" {
 		printForeignMarchSightedV2Line(n, c)
 	}
+	if n.Kind == "ReligionRuleChangedV2" {
+		var body map[string]any
+		_ = json.Unmarshal(n.Body, &body)
+		fmt.Printf("The gods ask %v of your realm; your temples give %v. Temple tithes now depend on level. Protected from divine punishment for %v game days.\n", body["demand"], body["given_weight"], body["protection_ticks"])
+		return
+	}
 	if n.Kind == "DivinePunishment" {
 		printDivinePunishmentLine(n)
 	}

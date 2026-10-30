@@ -3298,6 +3298,18 @@
         "keryx",
         "report"
       ]
+    },
+    {
+      "id": "religion-rule-change",
+      "title": "The new temple rule",
+      "category": "The gods",
+      "kinds": [
+        "ReligionRuleChangedV2"
+      ],
+      "related": [
+        "temples",
+        "kharis"
+      ]
     }
   ]
 }

@@ -76,6 +76,7 @@ func listRealmPrayers(c *Client, settlement string) error {
 	if standing, ok := view.Kharis["kharis_standing"].(map[string]any); ok {
 		fmt.Println(standing["summary"])
 	}
+	fmt.Println(kharisDecayLine(view.Kharis))
 	printDivineValues(cultDivineValues(view.Kharis))
 	fmt.Println("Prayers across your realm — ready prayers first")
 	for _, p := range view.Prayers {

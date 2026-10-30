@@ -94,6 +94,10 @@ func main() {
 		slog.Error("complete shipyard work transition", "err", err)
 		os.Exit(1)
 	}
+	if err := kharis.CompleteReligionTransition(ctx, pool); err != nil {
+		slog.Error("complete religion v2 transition", "err", err)
+		os.Exit(1)
+	}
 	redisURL := mustEnv("REDIS_URL")
 	rdb := redis.NewClient(&redis.Options{Addr: redisURL})
 	if err := rdb.Ping(ctx).Err(); err != nil {

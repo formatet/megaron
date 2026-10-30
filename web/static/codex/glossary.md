@@ -6,7 +6,7 @@
 
 **[[emporos]]** — a merchant ship. See [[sea]].
 
-**Kharis** — your realm’s standing with [[gods|the gods]]. A new Wanax starts at 40; it fades from the start, with a daily cost that grows with your active cities and their residents. See [[kharis]].
+**Kharis** — your realm’s standing with [[gods|the gods]]. A new Wanax starts at 40; it fades from the start, with a daily cost that grows with the square of your active city count. See [[kharis]].
 
 **Kult** — the drawer for the gods and the temple.
 

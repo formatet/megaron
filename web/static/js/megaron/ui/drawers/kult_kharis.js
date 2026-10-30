@@ -11,6 +11,10 @@ import { fmtClock } from '../fmt_clock.js';
 // Missing data stays unavailable; this formatter never derives the city formula.
 
 export function kharisDecayHTML(pd) {
+  if (Number.isFinite(pd?.kharis_demand) && Number.isFinite(pd?.kharis_given_weight)) {
+    return '<p class="empty-state">The gods ask ' + pd.kharis_demand + ' of your realm; your temples give ' + Number(pd.kharis_given_weight.toFixed(2)) + '.</p>';
+  }
+
   const values = ['kharis_city_count', 'kharis_population', 'kharis_base_decay', 'kharis_city_decay', 'kharis_population_decay', 'kharis_daily_decay'];
   if (!pd || !values.every(key => Number.isFinite(pd[key]))) return '<p class="empty-state">Cult upkeep not reported.</p>';
   const count = pd.kharis_city_count;
@@ -67,4 +71,10 @@ export function kharisRulesHTML(pd) {
   }
  }
  return html;
+}
+
+export function templeTitheHTML(offer) {
+ if (!offer?.parts) return '';
+ const parts=offer.parts.map(p=>esc(p.good)+': '+(p.paid?'paid':'missing')).join(' · ');
+ return '<br>Weight '+esc(String(offer.weight))+' · gives '+esc(String(Number(offer.effective_weight.toFixed(2))))+'<br>'+parts+' — '+Math.round(offer.paid_fraction*100)+'% of tithe';
 }

@@ -24,8 +24,8 @@ A new Wanax starts at **40 Kharis**, before founding. Rising again keeps your st
 Three things must be true, every game day:
 
 1. **You have a temple.** Without one, kharis decays. Each temple belongs to one god, a city may hold one per god, and kharis is still one pool for the realm.
-2. **People serve in it** — placed temple workers, 2 workplaces per level in each temple. Each earns 1.05 kharis per game day before the offering factor, scarcity and decay. See [[temples]].
-3. **The temple is fed** — each temple's own daily reference gift of 0.25 [[grain|grain]], with local fish, [[timber|timber]] or [[silver|silver]] as substitutes of equal divine value. See [[temples]] for the selection order and planned gift.
+2. **People serve in it** — levels 1/2/3 have 2/4/8 workplaces and weights 1/4/9. Staffing scales the weight; see [[temples]].
+3. **The tithe is paid** — [[grain|grain]] at every level, [[silver|silver]] from level 2, [[incense|incense]] at level 3. Each paid part adds its share of effect; see [[daily-offerings]].
 
 In a small realm, a fully staffed, fed level-1 temple can earn more favour than the realm loses each game day. Compare the projected net; a larger realm may need more temples or higher levels. Larger temples can employ more devotion and raise kharis faster when staffed and fed.
 
@@ -33,7 +33,7 @@ In a small realm, a fully staffed, fed level-1 temple can earn more favour than 
 
 **Your best temple sets your ceiling:** no temple **40**, level 1 **50**, level 2 **75**, level 3 **100**. Everyday prayers work at a level-1 temple. Spontaneous blessings need **60 kharis** and a maintained temple. Only a level-2 temple or higher lets kharis grow that far. Kharis retained above a lowered ceiling still counts.
 
-Kharis decays every game day regardless. Additional cities and residents increase cult [[upkeep|upkeep]] even when every city has a temple ([[colonies]]).
+Kharis changes by **2.1 × effective temple weight × scarcity − 1.2 × active cities²** per game day. Population does not contribute. The floor and temple ceiling still apply; above a lowered ceiling, [[upkeep|upkeep]] continues without temple gain offsetting it.
 
 Kharis is a requirement for [[rites|prayers]], never spent. Everyday prayers answer when their requirements are met; they cost goods and waiting time.
 
@@ -74,3 +74,5 @@ If there is nothing to take, there is no punishment and no new protection. Prote
 ### Temples and divine punishment {#divine-wrath-temple-levels}
 
 Everyday prayers work at a level-1 temple. Spontaneous blessings need **60 kharis** and a maintained temple. Only a level-2 temple or higher lets kharis grow that far. Kharis retained above a lowered ceiling still counts. The ceilings remain **50 / 75 / 100** for temple levels 1 / 2 / 3. See [[kharis]] and [[rites]].
+
+See [[religion-rule-change]] for the one-time transition protection.

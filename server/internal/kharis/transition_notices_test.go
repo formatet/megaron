@@ -209,7 +209,7 @@ func TestKharisBandNoticeBoundariesAndExternalChanges(t *testing.T) {
 		amount   float64
 		from, to string
 		level    int
-	}{{5, "Suspicious", "Suspicious", 2}, {4.999, "Suspicious", "Wrathful", 2}, {30, "Wrathful", "Indifferent", 3}, {60, "Indifferent", "Favorable", 3}, {59.999, "Favorable", "Indifferent", 3}, {29.999, "Indifferent", "Suspicious", 2}, {5, "Suspicious", "Suspicious", 2}, {4.999, "Suspicious", "Wrathful", 2}} {
+	}{{5, "Suspicious", "Suspicious", 2}, {4.999, "Suspicious", "Wrathful", 2}, {30, "Wrathful", "Indifferent", 3}, {60, "Indifferent", "Favorable", 3}, {59.999, "Favorable", "Indifferent", 3}, {28.899, "Indifferent", "Suspicious", 2}, {5, "Suspicious", "Suspicious", 2}, {4.999, "Suspicious", "Wrathful", 2}} {
 		if _, err := pool.Exec(ctx, `UPDATE worlds SET current_tick=$2 WHERE id=$1`, wid, i+1); err != nil {
 			t.Fatal(err)
 		}
@@ -294,8 +294,8 @@ func TestTransitionNoticeFailureRollsBackAndRetries(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT kharis_amount FROM player_world_records WHERE world_id=$1 AND player_id=$2`, wid, owner).Scan(&amount); err != nil {
 		t.Fatal(err)
 	}
-	if amount != 29.9 {
-		t.Fatalf("maintenance amount%g want29.9", amount)
+	if amount != 28.8 {
+		t.Fatalf("maintenance amount%g want28.8", amount)
 	}
 	exec(`ALTER TABLE notifications DROP CONSTRAINT test_transition_notice_failure`)
 	for i := 0; i < 2; i++ {
@@ -317,7 +317,7 @@ func TestTransitionNoticeFailureRollsBackAndRetries(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT kharis_amount FROM player_world_records WHERE world_id=$1 AND player_id=$2`, wid, owner).Scan(&amount); err != nil {
 		t.Fatal(err)
 	}
-	if amount != 29.9 {
+	if amount != 28.8 {
 		t.Fatalf("retry charged maintenance twice: %g", amount)
 	}
 	// A stale observation cannot reset a newer condition or create a notice.
