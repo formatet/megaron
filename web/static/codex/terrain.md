@@ -13,6 +13,7 @@ Every hex of the world has one kind of ground. The ground decides what your [[ci
 | [[limestone-mountains]] | Limestone mountains are difficult ground with strong stone-quarrying potential. |
 | [[red-mountains]] | Red mountains are difficult ground that may contain strategic ore deposits. |
 | [[coastal-sea]] | Coastal sea is navigable water beside land, with fishing places. |
+| [[lake]] | A lake is still water inland, cut off from the Thalassa; its fish feed the cities on its shore. |
 | [[deep-sea]] | Deep sea is open navigable water; fishing there requires a Harbour. |
 | [[rivers]] | A river carries ships: downstream in half the time, upstream in twice. The first ruler whose people reach one may name it. |
 | [[river-valley]] | A river valley is land beside a river, suitable for settlement and production. |

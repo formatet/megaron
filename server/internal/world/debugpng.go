@@ -24,6 +24,7 @@ const debugTilePx = 8
 var debugTerrainColor = map[Terrain]color.RGBA{
 	TerrainDeepSea:           {0x15, 0x38, 0x5C, 0xFF}, // dark blue
 	TerrainCoastalSea:        {0x4E, 0x86, 0xB4, 0xFF}, // light blue
+	TerrainLake:              {0x4E, 0x86, 0xB4, 0xFF}, // as coastal water
 	TerrainPlains:            {0x9D, 0xBB, 0x6E, 0xFF}, // light green
 	TerrainHills:             {0x8A, 0x8A, 0x50, 0xFF}, // olive
 	TerrainScrubMaquis:       {0xAD, 0xB8, 0x64, 0xFF}, // yellow-green
@@ -225,7 +226,7 @@ func ExportDebugOverlayPNG(tiles []MapTile, width, height int, path string) erro
 // target for game logic.
 func spawnBuildable(t Terrain) bool {
 	switch t {
-	case TerrainCoastalSea, TerrainDeepSea, TerrainRiver, TerrainRiverFord,
+	case TerrainCoastalSea, TerrainDeepSea, TerrainLake, TerrainRiver, TerrainRiverFord,
 		TerrainMountainLimestone, TerrainMountainRed, TerrainSemiDesert:
 		return false
 	}

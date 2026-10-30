@@ -65,6 +65,10 @@ const (
 	// All cedar production comes from this terrain; CedarDeposit mirrors it
 	// 1:1 (set once, in mapgen.go's tile-build loop).
 	TerrainForestCedar Terrain = "forest_cedar"
+	// TerrainLake is sea terrain that does not reach the world's edge through
+	// sea (Timothy 2026-10-30, temenos_terrain.md §Insjöar). Mapgen labels it
+	// last (MarkLakes); a river may still carry a ship out of it.
+	TerrainLake Terrain = "lake"
 )
 
 // MapTile is a single hex in the world map.

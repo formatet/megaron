@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { isSea, isNavigable, isWaterBarrier } from './terrain.js';
+import { isSea, isThalassa, isShallowWater, isNavigable, isWaterBarrier } from './terrain.js';
 
 // Mirrors server/internal/province/water_test.go waterClasses.
 const classes = [
@@ -11,6 +11,7 @@ const classes = [
   ['plains', false, false, false],
   ['mountain_red', false, false, false],
   ['river_valley', false, false, false],
+  ['lake', true, true, true],
   [undefined, false, false, false],
 ];
 
@@ -19,5 +20,7 @@ test('water classes match the server owner', () => {
     assert.equal(isSea(t), sea, `isSea(${t})`);
     assert.equal(isNavigable(t), nav, `isNavigable(${t})`);
     assert.equal(isWaterBarrier(t), wall, `isWaterBarrier(${t})`);
+    assert.equal(isThalassa(t), sea && t !== 'lake', `isThalassa(${t})`);
+    assert.equal(isShallowWater(t), t === 'coastal_sea' || t === 'lake', `isShallowWater(${t})`);
   }
 });

@@ -57,7 +57,7 @@ func riverMapSummary(meta riverMapInfo, q, r int, known map[[2]int]bool) string 
 	if len(fog) > 0 {
 		lines = append(lines, "continues into fog toward "+riverDirections(fog))
 	}
-	kinds := map[string]string{"river": "river", "river_ford": "ford", "coastal_sea": "coastal water", "deep_sea": "deep sea"}
+	kinds := map[string]string{"river": "river", "river_ford": "ford", "coastal_sea": "coastal water", "deep_sea": "deep sea", "lake": "lake"}
 	connections := []string{}
 	for _, connection := range meta.RiverConnections {
 		if kind, ok := kinds[connection.Terrain]; ok && connection.Edge >= 0 && connection.Edge < len(riverCompass) {

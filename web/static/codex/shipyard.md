@@ -1,4 +1,4 @@
-A Shipyard builds ships and repairs damaged hulls in a coastal city. It must have a worker to run its jobs; see [[shipyard-workers]] for staffing, pauses and paid work.
+A Shipyard builds ships and repairs damaged hulls in a coastal city. Its water must lead to the Thalassa: on a [[lake]] with no river or sea way out, it is refused. It must have a worker to run its jobs; see [[shipyard-workers]] for staffing, pauses and paid work.
 
 Build it through **City → Buildings → Construct**, or `keryx build --type shipyard`. Recruit ships in **War → Recruit**. The [[harbour]] is a separate building.
 

@@ -31,6 +31,7 @@ var waterClasses = []struct {
 	{"mountain_red", false, false, false},
 	{"river_valley", false, false, false},
 	{"river_delta", false, false, false},
+	{"lake", true, true, true},
 	{"", false, false, false},
 }
 
@@ -41,6 +42,12 @@ func TestWaterClassesPinned(t *testing.T) {
 		}
 		if got := IsNavigable(c.terrain); got != c.navigable {
 			t.Errorf("IsNavigable(%q) = %v, want %v", c.terrain, got, c.navigable)
+		}
+		if got := IsThalassa(c.terrain); got != (c.sea && c.terrain != "lake") {
+			t.Errorf("IsThalassa(%q) = %v", c.terrain, got)
+		}
+		if got := IsShallowWater(c.terrain); got != (c.terrain == "coastal_sea" || c.terrain == "lake") {
+			t.Errorf("IsShallowWater(%q) = %v", c.terrain, got)
 		}
 		if got := IsWaterBarrier(c.terrain); got != c.landWall {
 			t.Errorf("IsWaterBarrier(%q) = %v, want %v", c.terrain, got, c.landWall)
@@ -54,9 +61,12 @@ func TestWaterSQLMatchesGo(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	for _, c := range waterClasses {
-		var sea, nav bool
-		if err := pool.QueryRow(ctx, `SELECT terrain_is_sea($1), terrain_is_navigable($1)`, c.terrain).Scan(&sea, &nav); err != nil {
+		var sea, nav, thalassa bool
+		if err := pool.QueryRow(ctx, `SELECT terrain_is_sea($1), terrain_is_navigable($1), terrain_is_thalassa($1)`, c.terrain).Scan(&sea, &nav, &thalassa); err != nil {
 			t.Fatal(err)
+		}
+		if thalassa != IsThalassa(c.terrain) {
+			t.Errorf("%q: SQL thalassa=%v, Go %v", c.terrain, thalassa, IsThalassa(c.terrain))
 		}
 		if sea != IsSea(c.terrain) || nav != IsNavigable(c.terrain) {
 			t.Errorf("%q: SQL sea=%v navigable=%v, Go sea=%v navigable=%v", c.terrain, sea, nav, IsSea(c.terrain), IsNavigable(c.terrain))
@@ -75,18 +85,30 @@ func TestWaterSQLMatchesGo(t *testing.T) {
 // as quoted literals — a hand-written water list. (River-only checks such as
 // `t == "river" || t == "river_ford"` ask "is this a river?", not "is this water?".)
 var (
-	seaLiteral   = regexp.MustCompile(`["'](coastal_sea|deep_sea)["']`)
-	waterLiteral = regexp.MustCompile(`["'](coastal_sea|deep_sea|river|river_ford)["']`)
+	seaLiteral   = regexp.MustCompile(`["'](coastal_sea|deep_sea|lake)["']`)
+	waterLiteral = regexp.MustCompile(`["'](coastal_sea|deep_sea|lake|river|river_ford)["']`)
 )
 
 // waterListAllowed: the owners (whole file, "") and per-terrain tables that are
 // not a classification (keyed by path, value = text the allowed line contains).
-var waterListAllowed = map[string]string{
-	"server/internal/province/hex.go":         "",
-	"web/static/js/megaron/terrain.js":        "",
-	"server/api/handlers/opening_dispatch.go": "TerrainMoveTicksFor(\"deep_sea\"",
-	"server/internal/economy/hex_rules.go":    "\"scrub_maquis\"",
-	"server/cmd/keryx/river_flow.go":          "\"coastal water\"",
+var waterListAllowed = map[string][]string{
+	"server/internal/province/hex.go":         {""},
+	"server/internal/province/water.go":       {""},
+	"web/static/js/megaron/terrain.js":        {""},
+	"server/api/handlers/opening_dispatch.go": {"TerrainMoveTicksFor(\"deep_sea\""},
+	"server/internal/economy/hex_rules.go":    {"\"scrub_maquis\"", "case \"coastal_sea\", \"lake\":"},
+	"server/internal/province/movement.go":    {"case \"coastal_sea\", \"lake\":"},
+	"server/cmd/keryx/river_flow.go":          {"\"coastal water\""},
+	"web/static/js/megaron/ui/river_flow.js":  {"coastal_sea:'coastal water'"},
+}
+
+func allowedWaterLine(rel, line string) bool {
+	for _, allow := range waterListAllowed[rel] {
+		if strings.Contains(line, allow) {
+			return true
+		}
+	}
+	return false
 }
 
 // TestNoHardcodedWaterLists fails on a new hand-written water list outside the
@@ -122,7 +144,7 @@ func TestNoHardcodedWaterLists(t *testing.T) {
 				if names := waterLiteral.FindAllString(line, -1); len(names) < 2 {
 					continue
 				}
-				if allow, ok := waterListAllowed[rel]; ok && strings.Contains(line, allow) {
+				if allowedWaterLine(rel, line) {
 					continue
 				}
 				t.Errorf("%s:%d hardcodes a water list — use province.IsSea/IsNavigable/IsWaterBarrier, "+

@@ -734,9 +734,9 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		// Deliberately NOT "|| destTerrain == river": patrol is a sea patrol. A
 		// patrol standing in a 1-hex-wide river is not a patrol — there's no
 		// water to project over (megaron_floden_plan.md §3, Timothy 2026-07-29).
-		if destTerrain != "coastal_sea" {
+		if !province.IsShallowWater(destTerrain) {
 			return nil, reject(http.StatusUnprocessableEntity,
-				"patrol can only cover shallow coastal water (coastal_sea)")
+				"patrol can only cover shallow water: coastal water or a lake")
 		}
 	}
 	if o.Intent == "colonize" {
