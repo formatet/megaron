@@ -9,6 +9,7 @@ import (
 )
 
 func TestIncenseSourceTarget(t *testing.T) {
+	t.Parallel()
 	for _, tc := range []struct{ w, h, want, east int }{
 		{16, 16, 3, 2}, // floor
 		{64, 64, 10, 6},
@@ -27,6 +28,7 @@ func TestIncenseSourceTarget(t *testing.T) {
 // semi_desert, spaced like silver, spread over both halves, deterministic per
 // seed, and no other field of the map moves.
 func TestGenerateMapIncenseSources64x64(t *testing.T) {
+	t.Parallel()
 	for i := int64(1); i <= 20; i++ {
 		seed := 1009 * i
 		t.Run(fmt.Sprintf("seed_%d", seed), func(t *testing.T) {
@@ -90,6 +92,7 @@ func TestGenerateMapIncenseSources64x64(t *testing.T) {
 
 // AddIncenseSources is idempotent: the seed tool may be run twice.
 func TestAddIncenseSourcesIsIdempotent(t *testing.T) {
+	t.Parallel()
 	tiles, eff := GenerateMap(uuid.Nil, 1009, 64, 64)
 	snapshot := make([]MapTile, len(tiles))
 	copy(snapshot, tiles)

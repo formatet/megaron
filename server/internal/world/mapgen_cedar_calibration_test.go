@@ -27,6 +27,7 @@ import "testing"
 // tredjedel av kostnaden. Bandet är verifierat på båda storlekarna plus
 // 120×120 innan det pinnades här.
 func TestGenerateMap_CedarCalibrationBandAndStandShape(t *testing.T) {
+	t.Parallel()
 	if testing.Short() {
 		t.Skip("genererar åtta 160×160-kartor")
 	}

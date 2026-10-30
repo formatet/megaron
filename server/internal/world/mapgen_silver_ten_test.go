@@ -8,6 +8,7 @@ import (
 )
 
 func TestSilverSourceTargetScalesWithMapArea(t *testing.T) {
+	t.Parallel()
 	for _, tc := range []struct{ width, height, want int }{
 		{16, 16, 4}, // existing small-map floor
 		{56, 40, 5},
@@ -29,6 +30,7 @@ func TestSilverSourceTargetScalesWithMapArea(t *testing.T) {
 // This pins the twenty requested calibration maps, not every possible seed
 // or a spawn-coverage guarantee. GenerateMap's existing validation stays in use.
 func TestGenerateMapTenSilverSourcesOn64x64(t *testing.T) {
+	t.Parallel()
 	seen := map[int64]bool{}
 	for i := int64(1); i <= 20; i++ {
 		t.Run(fmt.Sprintf("seed_%d", 1009*i), func(t *testing.T) {

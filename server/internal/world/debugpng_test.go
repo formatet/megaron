@@ -50,6 +50,7 @@ func syntheticBlobMap() []MapTile {
 }
 
 func TestComputeMapMetrics_SyntheticHexBlob(t *testing.T) {
+	t.Parallel()
 	tiles := syntheticBlobMap()
 	m := ComputeMapMetrics(tiles, 9, 9)
 
@@ -106,6 +107,7 @@ func TestComputeMapMetrics_SyntheticHexBlob(t *testing.T) {
 }
 
 func TestComputeMapMetrics_SingleDeltaTile(t *testing.T) {
+	t.Parallel()
 	const w, h = 5, 5
 	var tiles []MapTile
 	centre := cell{2, rowOrigin(2, w) + 2}
@@ -140,6 +142,7 @@ func TestComputeMapMetrics_SingleDeltaTile(t *testing.T) {
 // → byte-identical PNGs, overlays and metrics. This is what makes debug
 // artifacts comparable across machines and runs.
 func TestDebugExport_Deterministic(t *testing.T) {
+	t.Parallel()
 	const seed, w, h = int64(7), 30, 20
 	tiles := genTiles(seed, w, h)
 	dir := t.TempDir()

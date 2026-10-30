@@ -22,6 +22,7 @@ func riverFlowFixture(changes map[[2]int]Terrain) []MapTile {
 	return tiles
 }
 func TestRiverFlowUsesSeaDeltaMouthNotSourceWater(t *testing.T) {
+	t.Parallel()
 	changes := map[[2]int]Terrain{{1, 7}: TerrainCoastalSea, {7, 8}: TerrainRiverDelta}
 	for q := 2; q <= 7; q++ {
 		changes[[2]int{q, 7}] = TerrainRiver
@@ -49,6 +50,7 @@ func TestRiverFlowUsesSeaDeltaMouthNotSourceWater(t *testing.T) {
 	}
 }
 func TestRiverFlowTreeForkPointsTowardBothMouths(t *testing.T) {
+	t.Parallel()
 	changes := map[[2]int]Terrain{{1, 7}: TerrainCoastalSea, {7, 5}: TerrainRiverDelta, {3, 10}: TerrainRiverDelta, {4, 10}: TerrainCoastalSea}
 	for _, xy := range [][2]int{{2, 7}, {3, 7}, {4, 7}, {5, 6}, {6, 5}, {7, 4}, {4, 8}, {4, 9}} {
 		changes[xy] = TerrainRiver
@@ -65,6 +67,7 @@ func TestRiverFlowTreeForkPointsTowardBothMouths(t *testing.T) {
 	}
 }
 func TestRiverFlowSingletonConnectsLakeToSeaAndUnsupportedGraphStaysUnknown(t *testing.T) {
+	t.Parallel()
 	tiles := riverFlowFixture(map[[2]int]Terrain{{7, 7}: TerrainRiver, {6, 7}: TerrainCoastalSea, {7, 8}: TerrainRiverDelta})
 	f := RiverFlows(tiles, 9, 9)[[2]int{7, 7}]
 	if !f.Known || !reflect.DeepEqual(f.Upstream, []int{1}) || !reflect.DeepEqual(f.Downstream, []int{0, 4}) {

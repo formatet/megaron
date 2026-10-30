@@ -6,6 +6,7 @@ import (
 )
 
 func TestRiverEdgesUseSavedWaterGeometryAndWebDirectionOrder(t *testing.T) {
+	t.Parallel()
 	tiles := []MapTile{{Q: 0, R: 0, Terrain: TerrainRiver}}
 	// Six distinct water neighbours exercise the protocol's full index order.
 	offsets := [][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}

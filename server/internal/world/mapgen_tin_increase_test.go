@@ -11,6 +11,7 @@ import (
 )
 
 func TestTinAdditionalBudgetScalesWithArea(t *testing.T) {
+	t.Parallel()
 	for _, tc := range []struct{ w, h, want int }{{32, 32, 1}, {56, 40, 1}, {64, 64, 2}, {128, 128, 8}, {230, 230, 26}} {
 		if got := tinAdditionalSourceTarget(tc.w, tc.h); got != tc.want {
 			t.Fatalf("%dx%d additional source budget=%d want%d", tc.w, tc.h, got, tc.want)
@@ -35,6 +36,7 @@ type legacyTile struct {
 // isolated source copies BEFORE implementation. This checks geography rather
 // than comparing two calls through the same new helper.
 func TestGenerateMap_TinIncreasePreservesGeography(t *testing.T) {
+	t.Parallel()
 	raw, err := os.ReadFile("testdata/tin-increase-2be784c2.json")
 	if err != nil {
 		t.Fatal(err)

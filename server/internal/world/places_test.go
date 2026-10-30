@@ -6,6 +6,7 @@ import (
 )
 
 func TestPlacesKindsMinimumAndCanonicalAnchor(t *testing.T) {
+	t.Parallel()
 	tiles := nameFixture()
 	for i := 0; i < 5; i++ {
 		terrain := TerrainMountainLimestone

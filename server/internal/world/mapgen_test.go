@@ -5,6 +5,11 @@ import (
 	"testing"
 )
 
+// Pure tests in this package run in parallel: generators own their RNG and tile
+// data, and package-level lookup tables are read-only. Keep DB/schema tests in
+// river_metadata_store_test.go sequential; keep subtests sequential within each
+// parent so existing fixture lifetimes and seed loops remain unchanged.
+
 // stubID satisfies the worldID parameter of GenerateMap.
 type stubID struct{}
 
@@ -19,6 +24,7 @@ func genTiles(seed int64, w, h int) []MapTile {
 }
 
 func TestGenerateMap_TileCountAndBounds(t *testing.T) {
+	t.Parallel()
 	w, h := 40, 30
 	tiles := genTiles(12345, w, h)
 	if len(tiles) != w*h {
@@ -41,6 +47,7 @@ func TestGenerateMap_TileCountAndBounds(t *testing.T) {
 }
 
 func TestGenerateMap_Deterministic(t *testing.T) {
+	t.Parallel()
 	a := genTiles(999, 40, 30)
 	b := genTiles(999, 40, 30)
 	if len(a) != len(b) {
@@ -56,6 +63,7 @@ func TestGenerateMap_Deterministic(t *testing.T) {
 // Deposits must sit on terrain that has a matching production rule, otherwise
 // they are dead (copper rule = hills, tin rule = mountain_limestone).
 func TestGenerateMap_DepositsOnProductiveTerrain(t *testing.T) {
+	t.Parallel()
 	for seed := int64(0); seed < 20; seed++ {
 		tiles := genTiles(seed, 40, 30)
 		copper, tin, cedar := 0, 0, 0
@@ -103,6 +111,7 @@ func TestGenerateMap_DepositsOnProductiveTerrain(t *testing.T) {
 // stand of size 1), and CedarDeposit must mirror the terrain exactly in both
 // directions (never set on a non-forest_cedar tile, never absent on one).
 func TestGenerateMap_CedarFormsContiguousStands(t *testing.T) {
+	t.Parallel()
 	for seed := int64(0); seed < 20; seed++ {
 		tiles := genTiles(seed, 40, 30)
 		terrain := make(map[[2]int]Terrain, len(tiles))
@@ -139,6 +148,7 @@ func TestGenerateMap_CedarFormsContiguousStands(t *testing.T) {
 
 // Bronze must require sea trade: no land component may hold both copper and tin.
 func TestGenerateMap_CopperTinSeaSeparated(t *testing.T) {
+	t.Parallel()
 	for seed := int64(0); seed < 20; seed++ {
 		tiles := genTiles(seed, 40, 30)
 		comp := landComponents(tiles)
@@ -165,6 +175,7 @@ func TestGenerateMap_CopperTinSeaSeparated(t *testing.T) {
 // map that passes validateMap for every seed AND every map size — including the
 // production 56×40 that the unit suite never covered before the 0620 incident.
 func TestGenerateMap_InvariantsEnforcedAcrossSizesAndSeeds(t *testing.T) {
+	t.Parallel()
 	sizes := [][2]int{{40, 30}, {56, 40}, {30, 20}}
 	for _, sz := range sizes {
 		w, h := sz[0], sz[1]
@@ -189,6 +200,7 @@ func TestGenerateMap_InvariantsEnforcedAcrossSizesAndSeeds(t *testing.T) {
 // path produced that, the guarantee now holds: this exact seed/size must yield a
 // map with a real tin pole (>= 2 productive tin) reachable from the wrapper.
 func TestGenerateMap_RegressionTinPole_0620(t *testing.T) {
+	t.Parallel()
 	const seed, w, h = int64(1781944573308082963), 56, 40
 
 	tiles, _ := GenerateMap(stubID{}, seed, w, h)
@@ -212,6 +224,7 @@ func TestGenerateMap_RegressionTinPole_0620(t *testing.T) {
 // ore from turn 1, so the cross-sea bronze trade can be demonstrated without
 // depending on the oracle (which was broken until Fas 1b).
 func TestGenerateMap_OreCatchmentInBothHemispheres(t *testing.T) {
+	t.Parallel()
 	sizes := [][2]int{{40, 30}, {56, 40}}
 	for _, sz := range sizes {
 		w, h := sz[0], sz[1]
@@ -291,6 +304,7 @@ func checkOreCatchmentInvariants(tiles []MapTile) error {
 // (search map_tiles instead of provinces) would find tin where the old
 // provinces-join never could (which searched only the provinces table).
 func TestOracleReveal_EastTileFindsTinCatchment(t *testing.T) {
+	t.Parallel()
 	const oracleRadius = 8
 	tiles := genTiles(42, 56, 40)
 
@@ -396,6 +410,7 @@ func TestOracleReveal_EastTileFindsTinCatchment(t *testing.T) {
 // The test builds a minimal synthetic tile set (no DB) so it is fast and
 // deterministic. Each sub-test names the exact scenario it exercises.
 func TestSpawnOreCatchmentScore_BiasSelection(t *testing.T) {
+	t.Parallel()
 	halfQ := 10 // arbitrary midpoint; west = q<=10, east = q>10
 
 	// Helper: build a tileMap from a slice.
@@ -460,6 +475,7 @@ func TestSpawnOreCatchmentScore_BiasSelection(t *testing.T) {
 // actually usable when the world map is generated. This links the pure-function
 // contract above to real mapgen output.
 func TestSpawnOreCatchmentScore_RealMap(t *testing.T) {
+	t.Parallel()
 	tiles := genTiles(42, 56, 40)
 	tileMap := make(map[[2]int]MapTile, len(tiles))
 	maxQ := 0
@@ -522,6 +538,7 @@ func TestSpawnOreCatchmentScore_RealMap(t *testing.T) {
 // Sizes/seed counts mirror the plan's verification ask (20 seeds at 56×40, a
 // few at 120×84 and 230×230 — kept small there so `go test` stays fast).
 func TestGenerateMap_EveryRiverReachesDelta(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		w, h, seeds int
 	}{
@@ -615,6 +632,7 @@ func TestGenerateMap_EveryRiverReachesDelta(t *testing.T) {
 // carve, or the giant-island failure mode this slice's own development hit
 // and fixed).
 func TestGenerateMap_DeltaForks(t *testing.T) {
+	t.Parallel()
 	w, h := 230, 230
 	seeds := []int64{200, 500, 900, 1400}
 	forkedSeeds := 0
@@ -640,6 +658,7 @@ func TestGenerateMap_DeltaForks(t *testing.T) {
 
 // It is an archipelago: many distinct landmasses separated by sea.
 func TestGenerateMap_IsArchipelago(t *testing.T) {
+	t.Parallel()
 	for seed := int64(0); seed < 20; seed++ {
 		tiles := genTiles(seed, 40, 30)
 		comp := landComponents(tiles)
@@ -676,6 +695,7 @@ func TestGenerateMap_IsArchipelago(t *testing.T) {
 // bara ihop en landmassa: acceptera + logga, validateMap avgör" — so that
 // case is skipped, not failed.
 func TestGenerateMap_TinCapAndSpread(t *testing.T) {
+	t.Parallel()
 	sizes := [][2]int{{56, 40}, {120, 84}, {230, 230}}
 	for _, sz := range sizes {
 		w, h := sz[0], sz[1]
@@ -740,6 +760,7 @@ func TestGenerateMap_TinCapAndSpread(t *testing.T) {
 // zero buildable neighbour (up to 4 of 8-11 on some seeds). This test
 // demands zero, across all three plan sizes.
 func TestGenerateMap_TinAndSilverDepositsAreReachable(t *testing.T) {
+	t.Parallel()
 	sizes := [][2]int{{56, 40}, {120, 84}, {230, 230}}
 	for _, sz := range sizes {
 		w, h := sz[0], sz[1]

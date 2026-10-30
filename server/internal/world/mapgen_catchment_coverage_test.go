@@ -195,6 +195,7 @@ func distinctSeeds(t *testing.T, w, h int, want int, fn func(seed int64, tiles [
 // city. Reachability on the map (TestGenerateMap_TinAndSilverDepositsAreReachable)
 // is necessary but not sufficient — see this file's header.
 func TestGenerateMap_SilverReachesEnoughCities(t *testing.T) {
+	t.Parallel()
 	for _, sz := range coverageSizes {
 		w, h := sz[0], sz[1]
 		players := playersFor(w, h)
@@ -233,6 +234,7 @@ func TestGenerateMap_SilverReachesEnoughCities(t *testing.T) {
 // rule (megaron_dagsverkesskalan.md §3c): the two halves of bronze never meet
 // inside one catchment, so every bronze chain needs two cities.
 func TestGenerateMap_NoCityCanHoldBothCopperAndTin(t *testing.T) {
+	t.Parallel()
 	for _, sz := range coverageSizes {
 		w, h := sz[0], sz[1]
 		distinctSeeds(t, w, h, 3, func(seed int64, tiles []MapTile) {
@@ -253,6 +255,7 @@ func TestGenerateMap_NoCityCanHoldBothCopperAndTin(t *testing.T) {
 // above assert on. Run with -v; it asserts nothing on purpose (arbetssätt §4:
 // the tool that produced the baseline lives in the repo, not in a scratchpad).
 func TestReport_CatchmentDepositCoverage(t *testing.T) {
+	t.Parallel()
 	for _, sz := range coverageSizes {
 		w, h := sz[0], sz[1]
 		players := playersFor(w, h)

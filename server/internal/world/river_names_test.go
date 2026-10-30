@@ -9,6 +9,7 @@ func nameFixture() []MapTile {
 	return []MapTile{{Q: 0, Terrain: TerrainRiver}, {Q: 1, Terrain: TerrainRiverFord}, {Q: 2, Terrain: TerrainRiver}, {Q: 3, Terrain: TerrainRiverDelta}, {Q: 4, Terrain: TerrainRiverDelta}, {Q: 10, Terrain: TerrainRiver}, {Q: 11, Terrain: TerrainRiver}, {Q: 12, Terrain: TerrainRiverDelta}, {Q: 20, Terrain: TerrainPlains}}
 }
 func TestRiverAnchorsStableAndDeltaInheritance(t *testing.T) {
+	t.Parallel()
 	ts := nameFixture()
 	want := RiverAnchors(ts)
 	for i, j := 0, len(ts)-1; i < j; i, j = i+1, j-1 {
