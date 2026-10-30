@@ -82,6 +82,10 @@ func TestReligionV2TransitionShieldNoticeAndReplay(t *testing.T) {
 	}
 	t.Cleanup(func() { pool.Exec(ctx, `UPDATE religion_v2_transition SET completed=false`) })
 	staffTestTemple(t, pool, sid, 2)
+	if _, err := pool.Exec(ctx, `INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,'grain',100,0,4000,current_world_tick())
+ ON CONFLICT (settlement_id,good_key) DO UPDATE SET amount=100,rate=0,calc_tick=current_world_tick()`, sid); err != nil {
+		t.Fatal(err)
+	}
 	for i := 0; i < 2; i++ {
 		if err := CompleteReligionTransition(ctx, pool); err != nil {
 			t.Fatal(err)

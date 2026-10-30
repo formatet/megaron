@@ -21,7 +21,7 @@ func TestTempleUsesRealWorkforceAndActualLevelCapacity(t *testing.T) {
 				t.Fatal(err)
 			}
 			body := map[string]any{"target_kind": "building", "building_type": "temple", "good_key": "cult"}
-			for n := 1; n <= 2*level; n++ {
+			for n := 1; n <= economy.TempleWorkplaces(level); n++ {
 				code, resp := f.do(t, http.MethodPost, f.placementsPath(), body)
 				if code != 201 {
 					t.Fatalf("worker%d: %d %v", n, code, resp)
@@ -32,11 +32,11 @@ func TestTempleUsesRealWorkforceAndActualLevelCapacity(t *testing.T) {
 				t.Fatalf("over capacity %d %v", code, resp)
 			}
 			_, list := f.do(t, http.MethodGet, f.placementsPath(), nil)
-			if list["pool_size"] != float64(10-2*level) {
+			if list["pool_size"] != float64(10-economy.TempleWorkplaces(level)) {
 				t.Fatalf("additive worker pool: %v", list)
 			}
 			staff, err := economy.LoadTempleStaffing(ctx, pool, f.settlementID)
-			if err != nil || staff.Staffed != 2*level || staff.Capacity != 2*level {
+			if err != nil || staff.Staffed != economy.TempleWorkplaces(level) || staff.Capacity != economy.TempleWorkplaces(level) {
 				t.Fatalf("staff %+v %v", staff, err)
 			}
 			code, resp = f.do(t, http.MethodDelete, f.placementsPath()+"/1", nil)
@@ -44,7 +44,7 @@ func TestTempleUsesRealWorkforceAndActualLevelCapacity(t *testing.T) {
 				t.Fatalf("remove %d %v", code, resp)
 			}
 			staff, err = economy.LoadTempleStaffing(ctx, pool, f.settlementID)
-			if err != nil || staff.Staffed != 2*level-1 {
+			if err != nil || staff.Staffed != economy.TempleWorkplaces(level)-1 {
 				t.Fatalf("remove staffing %+v %v", staff, err)
 			}
 			var count int

@@ -72,7 +72,9 @@ func TestEarlyTempleStatusPlanAndOwnerPrivacy(t *testing.T) {
 				}
 				return
 			}
-			if len(offers) != 1 || !offers[0].Fed || offers[0].Offering["silver"] != .25 || offers[0].Stock["silver"] != .25 || offers[0].Required["grain"] != .25 {
+			// Religion v2 (2026-10-30): silver never stands in for the grain part.
+			_, silverAlt := offers[0].Alternatives["silver"]
+			if len(offers) != 1 || offers[0].Fed || offers[0].PaidFraction != 0 || offers[0].Offering["silver"] != 0 || silverAlt || offers[0].Stock["silver"] != .25 || offers[0].Required["grain"] != .25 {
 				t.Fatalf("actual API plan %+v", offers)
 			}
 		})
