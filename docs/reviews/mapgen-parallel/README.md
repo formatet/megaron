@@ -28,3 +28,6 @@ Full fresh-DB race run passed in 120.451 s: all 38 top-level tests passed, no fa
 
 ## Final suite
 `tools/gotest.sh` passed on another fresh migration-228 database: all Go packages and 875/875 web tests green. World package time was 34.719 s, corroborating the isolated 34.500 s run. Baseline, timing, race and full-suite arms used separate fresh databases.
+
+## Deploy
+Merged/pushed/pulled `be249327c8d2d1e24d3d9e96d87f42eea72941b6` on CT126 (2026-10-30 10:10). Remote HEAD matched; clean checkout; 36 Parallel calls and zero in the DB file verified on server. Service active, health ok, migration 228. Running executable remains `5f51906`, as before: only test files changed, so no runtime restart was needed. Todo and vault now point to E5.
