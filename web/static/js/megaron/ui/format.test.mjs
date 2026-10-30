@@ -697,6 +697,15 @@ test('storm notices: the gods\' hand is named in the outcome (R2)', () => {
     "Your Galley was battered by a storm at (6,0) — hull 2/5 — the gods' wrath struck harder");
 });
 
+test('battle notices: the gods\' hand is named in the outcome (R2)', () => {
+  const body = { role: 'attacker', outcome: 'attacker_wins', opponent_name: 'Nestor', place: 'Pylos',
+    own_unit: { type: 'spearman', size_before: 100, size_after: 80, pop_lost: 20 }, enemy_unit: { type: 'spearman', size_before: 50, size_after: 0 } };
+  assert.equal(notifText('BattleWon', { ...body, divine: 'favor' }),
+    "Victory at Pylos — your spearman (100→80, −20 dead) vs Nestor's spearman (50→0). The field was taken. The gods stood with your men.");
+  assert.match(notifText('BattleLost', { ...body, role: 'defender', divine: 'wrath' }), /The field was lost\. The gods' wrath weighed on your men\.$/);
+  assert.doesNotMatch(notifText('BattleWon', body), /gods/);
+});
+
 test('playtest: internal delivery has a neutral delivery name and UUID founding gift remains readable', () => {
   assert.equal(notifText('TradeDelivery', {quantity: 20, good_key: 'grain'}), 'Delivery arrived: 20 grain');
   assert.match(notifText('MetropolisFounded', {name: 'Knossos', poseidon_gift: 'de291886-44cb-4f4e-8b52-6d488f8fd053'}), /Knossos.*Poseidon grants a Galley/);

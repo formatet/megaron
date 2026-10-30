@@ -43,3 +43,18 @@ func TestStandingNamesTheGodsHandAtSea(t *testing.T) {
 		t.Fatalf("indifferent: %+v", s)
 	}
 }
+
+// R2 battle, mild: the standing tells the battle tilt before a march.
+func TestStandingNamesTheGodsHandInBattle(t *testing.T) {
+	if s := DescribeStanding(60, true, 0); s.BattleStrengthFactor != 1.05 || !strings.Contains(s.Summary, "in battle, your men fight about 5% stronger") {
+		t.Fatalf("favorable: %+v", s)
+	}
+	if s := DescribeStanding(4.9, true, 0); s.BattleStrengthFactor != 0.95 || !strings.Contains(s.Summary, "in battle, your men fight about 5% weaker") {
+		t.Fatalf("wrathful: %+v", s)
+	}
+	for _, k := range []float64{5, 30, 59.9} {
+		if s := DescribeStanding(k, true, 0); s.BattleStrengthFactor != 1 || strings.Contains(s.Summary, "in battle") {
+			t.Fatalf("kharis %g: %+v", k, s)
+		}
+	}
+}

@@ -24,6 +24,8 @@ So 100 spearmen put 90 men in a clash, roll 45 dice and can expect about 4 hits;
 
 **Reinforcements** that reach a battle already under way join it.
 
+**The [[gods|gods]]' hand.** Your [[kharis]] goes into battle with your men. **Favorable:** they roll about **5% more dice**. **Wrathful:** about **5% fewer**. Indifferent and Suspicious change nothing. The mood is fixed when a force enters the battle: a change in Kharis during the fight does not reach men already fighting, but it does reach reinforcements that join later. The **Kult (⛩)** drawer and Keryx `cult` show it before you march, and the battle report says when the gods stood with you or against you. <!-- src: server/internal/religion/battle.go BattleFavorFactor, BattleWrathFactor -->
+
 <!-- src: server/internal/combat/battle.go battleRoundsPerTick, combatParticipation, battleDiceSides, battleDiceMultiplier, wallAbsorbPerLevel, stormWallAbsorbDivisor, stormAttackerLossMultiplier; resolver.go combatRoutFraction -->
 
 ## Battle reports and survivors {#battle-after-the-battle}

@@ -23,7 +23,10 @@ type Standing struct {
 	// chance it takes one more hull.
 	StormSpareProbability float64 `json:"storm_spare_probability"`
 	StormWrathProbability float64 `json:"storm_wrath_probability"`
-	Summary               string  `json:"summary"`
+	// The gods' hand in battle (religion.BattleDivine): strength multiplier a
+	// unit entering a battle now would carry; 1 is none.
+	BattleStrengthFactor float64 `json:"battle_strength_factor"`
+	Summary              string  `json:"summary"`
 }
 
 // DescribeStanding describes today's rules, not tomorrow's projected kharis.
@@ -53,6 +56,13 @@ func DescribeStanding(amount float64, maintained bool, protectionTicks int) Stan
 	}
 	if s.StormWrathProbability > 0 {
 		s.Summary += fmt.Sprintf(" · at sea, about %.0f%% chance a storm takes %d more hull", s.StormWrathProbability*100, religion.StormWrathExtraHull)
+	}
+	s.BattleStrengthFactor = religion.BattleFactor(religion.BattleDivine(amount))
+	if s.BattleStrengthFactor > 1 {
+		s.Summary += fmt.Sprintf(" · in battle, your men fight about %.0f%% stronger", (s.BattleStrengthFactor-1)*100)
+	}
+	if s.BattleStrengthFactor < 1 {
+		s.Summary += fmt.Sprintf(" · in battle, your men fight about %.0f%% weaker", (1-s.BattleStrengthFactor)*100)
 	}
 	return s
 }

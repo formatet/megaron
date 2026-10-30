@@ -36,3 +36,16 @@ func TestPrintSeaStormLine_GodsHand(t *testing.T) {
 		}
 	}
 }
+
+func TestPrintBattleReportLine_GodsHand(t *testing.T) {
+	out, _ := captureStdout(t, func() error {
+		printBattleReportLine(notificationItem{Kind: "BattleWon", Body: []byte(`{"role":"attacker","outcome":"attacker_wins","opponent_name":"Nestor","place":"Pylos","divine":"favor"}`)})
+		printBattleReportLine(notificationItem{Kind: "BattleLost", Body: []byte(`{"role":"defender","outcome":"attacker_wins","opponent_name":"Nestor","place":"Pylos","divine":"wrath"}`)})
+		return nil
+	})
+	for _, want := range []string{"The field was taken. The gods stood with your men.", "The field fell. The gods' wrath weighed on your men."} {
+		if !strings.Contains(out, want) {
+			t.Fatalf("keryx = %q, want %q", out, want)
+		}
+	}
+}

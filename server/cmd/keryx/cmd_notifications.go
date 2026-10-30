@@ -547,9 +547,10 @@ func printBattleReportLine(n notificationItem) {
 			SizeBefore int    `json:"size_before"`
 			SizeAfter  int    `json:"size_after"`
 		} `json:"enemy_unit"`
-		Q     int     `json:"q"`
-		R     int     `json:"r"`
-		Place *string `json:"place"`
+		Q      int     `json:"q"`
+		R      int     `json:"r"`
+		Place  *string `json:"place"`
+		Divine string  `json:"divine"` // R2: the gods' hand the owner's men carried
 	}
 	if err := json.Unmarshal(n.Body, &body); err != nil {
 		return
@@ -574,6 +575,12 @@ func printBattleReportLine(n notificationItem) {
 		trailer = " The field held."
 	case body.Outcome == "defender_holds" && body.Role == "attacker":
 		trailer = " The attack was repelled."
+	}
+	switch body.Divine {
+	case "favor":
+		trailer += " The gods stood with your men."
+	case "wrath":
+		trailer += " The gods' wrath weighed on your men."
 	}
 	fmt.Printf("      %s against %s at %s — your %s (%d→%d, −%d dead) vs their %s (%d→%d).%s\n",
 		outcomeWord, firstNotificationText(body.Opponent, "an enemy"), place, body.OwnUnit.Type, body.OwnUnit.SizeBefore, body.OwnUnit.SizeAfter, body.OwnUnit.PopLost, body.EnemyUnit.Type, body.EnemyUnit.SizeBefore, body.EnemyUnit.SizeAfter, trailer)
