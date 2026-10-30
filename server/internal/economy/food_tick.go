@@ -215,7 +215,7 @@ func herdBirths(ctx context.Context, tx pgx.Tx, sid uuid.UUID, tick int) (born, 
 	if err != nil {
 		return 0, 0, err
 	}
-	born, fed = HerdBirths(stock[GoodLivestock], stock[GoodGrain], tick)
+	born, fed = HerdBirths(stock[GoodLivestock], stock[GoodGrain], HerdCap(PenLevel(ctx, tx, sid)), tick)
 	if born == 0 {
 		return 0, 0, nil
 	}

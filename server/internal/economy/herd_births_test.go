@@ -30,18 +30,24 @@ func TestHerdBirthsRule(t *testing.T) {
 		herd, grain float64
 		tick        int
 		born, fed   int
+		cap         float64
 	}{
-		{40, 100, 4005, 4, 4}, // fed: every 5th tick
-		{40, 100, 4001, 0, 0}, // off-beat
-		{40, 0, 4005, 0, 0},   // no grain: not on the 5-beat
-		{40, 0, 4020, 4, 0},   // no grain: the 20-beat
-		{40, 2, 4005, 2, 2},   // grain short: only the fed are born on the 5-beat
-		{40, 2, 4020, 4, 2},   // the rest follow the 20-beat
-		{9, 100, 4020, 0, 0},  // under ten animals: none
-		{55, 100, 4000, 5, 5},
+		{40, 100, 4005, 4, 4, 1000}, // fed: every 5th tick
+		{40, 100, 4001, 0, 0, 1000}, // off-beat
+		{40, 0, 4005, 0, 0, 1000},   // no grain: not on the 5-beat
+		{40, 0, 4020, 4, 0, 1000},   // no grain: the 20-beat
+		{40, 2, 4005, 2, 2, 1000},   // grain short: only the fed are born on the 5-beat
+		{40, 2, 4020, 4, 2, 1000},   // the rest follow the 20-beat
+		{9, 100, 4020, 0, 0, 1000},  // under ten animals: none
+		{55, 100, 4000, 5, 5, 1000},
+		// Grain buys no calf the pen cannot hold (Timothy 2026-10-30).
+		{48, 100, 4005, 2, 2, 50}, // room for 2 of 4
+		{50, 100, 4005, 0, 0, 50}, // pen full: no bought calves
+		{50, 100, 4020, 5, 0, 50}, // pasture calves still come; none paid
+		{60, 100, 4020, 6, 0, 50}, // over the cap: nothing bought
 	}
 	for _, c := range cases {
-		born, fed := HerdBirths(c.herd, c.grain, c.tick)
+		born, fed := HerdBirths(c.herd, c.grain, c.cap, c.tick)
 		if born != c.born || fed != c.fed {
 			t.Errorf("HerdBirths(%g,%g,%d)=%d,%d want %d,%d", c.herd, c.grain, c.tick, born, fed, c.born, c.fed)
 		}
@@ -88,17 +94,17 @@ func TestFoodTick_UnfedHerdBirthsOnlyOnTheTwentiethTick(t *testing.T) {
 	}
 }
 
-func TestFoodTick_CalvesOverTheCapAreEatenFirst(t *testing.T) {
+func TestFoodTick_FullPenBuysNoCalves(t *testing.T) {
 	pool := testPool(t)
 	f := newFoodFixture(t, pool, "births-cap", 3000) // demand 15
 	seedFoodStock(t, pool, f, 100, 0, 50)
 	herdBirthsTick(t, pool, f, 283004, 4005)
-	// 5 calves (5 grain), the 5 over the cap are the 15 food of the meal.
+	// Pen full (50/50): grain buys no calves (Timothy 2026-10-30); the meal of 15 is grain.
 	if got := foodStockOf(t, pool, f.settlementID, GoodLivestock); got != 50 {
 		t.Fatalf("herd=%g want 50", got)
 	}
-	if got := foodStockOf(t, pool, f.settlementID, GoodGrain); math.Abs(got-95) > 1e-6 {
-		t.Fatalf("grain=%g want 95", got)
+	if got := foodStockOf(t, pool, f.settlementID, GoodGrain); math.Abs(got-85) > 1e-6 {
+		t.Fatalf("grain=%g want 85", got)
 	}
 	var n int
 	if err := pool.QueryRow(context.Background(), `SELECT COUNT(*) FROM events WHERE stream_id=$1 AND event_type=$2`, f.settlementID, EventHerdLost).Scan(&n); err != nil || n != 0 {
