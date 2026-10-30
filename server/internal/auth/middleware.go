@@ -107,3 +107,9 @@ func PlayerIDFromContext(ctx context.Context) (uuid.UUID, bool) {
 	id, ok := ctx.Value(contextKeyPlayerID).(uuid.UUID)
 	return id, ok
 }
+
+// ContextWithPlayer returns ctx as the auth middleware leaves it for playerID.
+// For handler tests that mount a handler without the middleware.
+func ContextWithPlayer(ctx context.Context, playerID uuid.UUID) context.Context {
+	return context.WithValue(ctx, contextKeyPlayerID, playerID)
+}

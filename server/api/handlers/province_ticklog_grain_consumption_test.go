@@ -111,8 +111,8 @@ func TestTicklog_GrainConsumptionShownEvenWhenNetRateIsPositive(t *testing.T) {
 	ph := NewProvinceHandler(pool, nil, clk, nil, nil)
 
 	r := chi.NewRouter()
-	r.Get("/worlds/{worldID}/provinces/{provinceID}", ph.Get)
-	r.Get("/worlds/{worldID}/provinces/{provinceID}/ticklog", ph.Ticklog)
+	r.Get("/worlds/{worldID}/provinces/{provinceID}", asPlayer(ownerID, ph.Get))
+	r.Get("/worlds/{worldID}/provinces/{provinceID}/ticklog", asPlayer(ownerID, ph.Ticklog))
 
 	// keryx status's own net rate (grain_prod_rate - grain_consum_rate, the
 	// economy.GrainBalance-D6 split) — the "two surfaces, one truth" half of

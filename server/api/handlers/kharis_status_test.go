@@ -122,6 +122,11 @@ func TestProvinceCultUpkeepDoesNotRevealForeignRealm(t *testing.T) {
 	req.Header.Set("Authorization", "Bearer "+token)
 	rec := httptest.NewRecorder()
 	r.ServeHTTP(rec, req)
+	// An unknown foreign city is a 404 (megaron_kontrakt_frammande_stad); a
+	// known one must still hide these fields.
+	if rec.Code == http.StatusNotFound {
+		return
+	}
 	if rec.Code != 200 {
 		t.Fatalf("visitor %d %s", rec.Code, rec.Body.String())
 	}
