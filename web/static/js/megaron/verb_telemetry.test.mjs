@@ -25,7 +25,7 @@ const coverage = {
   'march': ['march'], 'recall / redirect': ['recall', 'redirect'], 'build-road': ['build-road'], 'stance': ['stance'],
   'retreat-order': ['retreat-order'], 'retreat-default': ['retreat-default'],
   'reinforce': ['reinforce'], 'repair': ['repair'], 'lay-up': ['lay-up'], 'fit-out': ['fit-out'], 'load / unload': ['load', 'unload'],
-  'join': ['join'], 'rise / leave': ['rise', 'leave'], 'founding settle': ['founding settle'], 'message / reply': ['message', 'reply'], 'tell of a place': ['tell-place'],
+  'join': ['join'], 'rise / leave': ['rise', 'leave'], 'founding settle': ['founding settle'], 'message / reply': ['message', 'reply'], 'tell of a place': ['tell-place'], 'market board': ['market-board'],
   'trade offer/accept/decline/cancel': ['trade-offer', 'trade-accept', 'trade-decline', 'trade-cancel'],
   'trade counter (K6, LIVE `0ca70074` 2026-10-28)': ['trade-counter'],
   'arrange passage (skepp för ett väntande bud)': ['arrange passage'],

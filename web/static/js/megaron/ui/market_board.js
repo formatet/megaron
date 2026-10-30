@@ -5,7 +5,6 @@ import { State } from '../state.js';
 import { fetchAuth } from '../api.js';
 import { esc, formatApiError } from './format.js';
 import { showInlineResult } from './inline_result.js';
-import { track } from '../telemetry.js';
 import { fmtTickTime } from './fmt_clock.js';
 
 let _goods = null;
@@ -73,6 +72,5 @@ export async function saveMarketBoard(settlementID) {
   });
   const data = await r.json().catch(() => ({}));
   if (!r.ok) { showInlineResult(res, formatApiError(data, 'Could not put up the board.'), true); return; }
-  track('market_board_set', {});
   showInlineResult(res, 'The board now says: ' + boardLine(data));
 }

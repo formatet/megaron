@@ -39,6 +39,7 @@ export const VERB_EVENTS = [
   {"verb": "rise", "method": "POST", "route": "/api/v1/worlds/:world/rise", "event": "wanax_rose"},
   {"verb": "leave", "method": "POST", "route": "/api/v1/worlds/:world/leave", "event": "world_left"},
   {"verb": "founding settle", "method": "POST", "route": "/api/v1/worlds/:world/founding/settle", "event": "settle"},
+  {"verb": "market-board", "method": "PUT", "route": "/api/v1/worlds/:world/settlements/:settlement/market-board", "event": "market_board_set"},
   {"verb": "tell-place", "method": "POST", "route": "/api/v1/worlds/:world/settlements/:settlement/messengers", "event": "place_told"},
   {"verb": "message", "method": "POST", "route": "/api/v1/worlds/:world/settlements/:settlement/messengers", "event": "messenger_sent"},
   {"verb": "trade-offer", "method": "POST", "route": "/api/v1/worlds/:world/settlements/:settlement/messengers", "event": "trade_offer"},
