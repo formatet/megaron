@@ -18,13 +18,3 @@ func PopulationCap(wallLevel int) int {
 	}
 	return populationCaps[wallLevel]
 }
-
-// PopulationCaps is the whole table indexed by wall level, for SQL that looks the
-// cap up per settlement: (ARRAY[...])[wall_level+1].
-func PopulationCaps() []int32 {
-	out := make([]int32, len(populationCaps))
-	for i, c := range populationCaps {
-		out[i] = int32(c)
-	}
-	return out
-}

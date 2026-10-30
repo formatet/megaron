@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/kharis"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/settlement"
@@ -123,72 +122,6 @@ type KharisState struct {
 	// (kharis.EffectiveKharisCap), so surfaces can explain a ceiling short of 100
 	// instead of leaving a Wanax wondering why devotion stopped paying.
 	MaxTempleLevel int
-}
-
-// loadLaborCapacities returns, per good, the share of a settlement's population
-// that can actually be employed producing it, plus the summed level of the
-// buildings that produce it (levels is informational display only — capacity
-// itself is driven by economy.WorkplaceSlots' (P2) and economy.LoadHexCapacity's
-// (P3) absolute headcounts). Allocation beyond the capacity produces nothing
-// (economy.LaborCapacity), so every surface that shows or accepts a labor
-// weight needs this to avoid being silently wrong.
-func loadLaborCapacities(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID, laborPool int) (capacities map[string]float64, levels map[string]int) {
-	capacities = make(map[string]float64)
-	levels = make(map[string]int)
-
-	// The universe of goods to report a capacity for — every good with ANY
-	// production_rule, not just ones this settlement's catchment currently
-	// matches (a Wanax can still see "0% capacity" for a good their city
-	// cannot yet work) — plus, per good, whether ANY terrain-only rule exists
-	// at all. hasFieldPath only feeds economy.GoodLaborTerrainBase's fallback
-	// for goods §8.3 doesn't cover yet (oil/wine/stone) — see LaborCapacity.
-	allGoods := make(map[string]bool)
-	fieldPath := make(map[string]bool)
-	grows, _ := pool.Query(ctx,
-		`SELECT good_key, bool_or(building_type IS NULL) FROM production_rules GROUP BY good_key`)
-	if grows != nil {
-		for grows.Next() {
-			var k string
-			var f bool
-			if grows.Scan(&k, &f) == nil {
-				allGoods[k] = true
-				fieldPath[k] = f
-			}
-		}
-		grows.Close()
-	}
-
-	// DISTINCT is on (good_key, b.id) — see economy.LoadWorkplaceSlots' doc
-	// comment (recompute.go) for why b.id, not just (good_key, building_type,
-	// level): a hex-bound type (farm/mine/lumbermill/stonequarry) can now
-	// have several same-level rows on different hexes, and the old
-	// DISTINCT-without-id would have collapsed them into one, undercounting
-	// this purely-informational level sum.
-	lrows, _ := pool.Query(ctx,
-		`SELECT good_key, SUM(level)::int FROM (
-		     SELECT DISTINCT pr.good_key, b.id, b.level
-		     FROM production_rules pr
-		     JOIN buildings b ON b.settlement_id = $1 AND b.building_type = pr.building_type
-		 ) t GROUP BY good_key`,
-		settlementID)
-	if lrows != nil {
-		for lrows.Next() {
-			var k string
-			var lvl int
-			if lrows.Scan(&k, &lvl) == nil {
-				levels[k] = lvl
-			}
-		}
-		lrows.Close()
-	}
-
-	buildingSlots, _ := economy.LoadWorkplaceSlots(ctx, pool, settlementID)
-	hexSlots, _ := economy.LoadHexCapacity(ctx, pool, settlementID)
-
-	for good := range allGoods {
-		capacities[good] = economy.LaborCapacity(good, fieldPath[good], hexSlots[good], buildingSlots[good], laborPool)
-	}
-	return capacities, levels
 }
 
 // loadPlayerKharis reads the current kharis pool for a player in a world.

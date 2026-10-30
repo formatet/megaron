@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -237,31 +236,6 @@ see current occupancy. A market has no workplaces and needs no workers. An unsta
 	// signed-number positional.
 	cmd.Flags().SetInterspersed(false)
 	return cmd
-}
-
-// fetchBuiltBuildingLevel checks the settlement's real building list (GET
-// .../buildings — every built row, unlike placement-options which only lists
-// buildings with a production_rules row) for buildingType. Best-effort: any
-// transport or decode error reads as "not built" rather than surfacing a
-// second error on top of the one staffCmd is already constructing.
-func fetchBuiltBuildingLevel(c *Client, worldID, provinceID, buildingType string) (level int, built bool) {
-	data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/buildings", worldID, provinceID))
-	if err != nil {
-		return 0, false
-	}
-	var rows []struct {
-		Type  string `json:"type"`
-		Level int    `json:"level"`
-	}
-	if err := json.Unmarshal(data, &rows); err != nil {
-		return 0, false
-	}
-	for _, r := range rows {
-		if r.Type == buildingType {
-			return r.Level, true
-		}
-	}
-	return 0, false
 }
 
 func hexBuildingGood(building, good string) bool {

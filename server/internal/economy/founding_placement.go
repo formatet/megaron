@@ -93,20 +93,6 @@ func rankedFoodSlotsWithOptions(ctx context.Context, tx Tx, settlementID uuid.UU
 	return rankSlotsFromOptions(free, center), center, hexOptions, nil
 }
 
-// rankedFoodSlotsAt is rankedFoodSlots' settlement-free sibling — the same
-// ranking over an explicit (worldID, center, BuildingSet) triple instead
-// of a settlementID, so FoundingGrainNetPerTick can rank a hypothetical
-// catchment before any settlement row exists
-// (megaron_plan_grundningsprognosen.md §3). reachable is the FOW gate (see
-// LoadHexProductionOptionsAt) — nil for the ordinary unfiltered catchment.
-func rankedFoodSlotsAt(ctx context.Context, tx Tx, worldID uuid.UUID, center hexgrid.Coord, bs BuildingSet, reachable map[hexgrid.Coord]bool) ([]foodSlot, error) {
-	hexOptions, err := LoadHexProductionOptionsAt(ctx, tx, worldID, center, bs, reachable)
-	if err != nil {
-		return nil, fmt.Errorf("ranked food slots at: %w", err)
-	}
-	return rankSlotsFromOptions(hexOptions, center), nil
-}
-
 // rankSlotsFromOptions turns a catchment's per-hex production menu into the
 // ranked (highest marginal yield first, lowest ring-ordinal breaks ties)
 // grain/fish placement list — shared by rankedFoodSlots (settlement-scoped)

@@ -4,7 +4,6 @@ import (
 	"context"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
-	"formatet/megaron/server/internal/tick"
 	"github.com/google/uuid"
 	"sort"
 )
@@ -47,22 +46,6 @@ func timedStormContacts(r StoredRoute, enter []int64, graph province.TileGraph, 
 		previous = id
 	}
 	return out, previous
-}
-
-// BeforeTimedArrival catches up the existing storm batch to the saved deadline
-// before the route can disappear. There are no individual hex jobs.
-func (h *SeaStormScanHandler) BeforeTimedArrival(next events.Handler) events.Handler {
-	return func(ctx context.Context, e events.ScheduledEvent) error {
-		a, err := tick.LoadAnchor(ctx, h.pool, e.WorldID)
-		if err != nil {
-			return err
-		}
-		at := a.ExactMilliAt(h.scheduler.Clock().Now())
-		if err = h.advanceTimedAt(ctx, e, at); err != nil {
-			return err
-		}
-		return next(ctx, e)
-	}
 }
 
 func (h *SeaStormScanHandler) advanceTimedAt(ctx context.Context, e events.ScheduledEvent, at int64) error {

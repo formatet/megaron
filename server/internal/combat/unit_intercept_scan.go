@@ -371,11 +371,3 @@ func (h *UnitInterceptScanHandler) Handle(ctx context.Context, e events.Schedule
 	}
 	return h.scheduler.EnqueueTickRecurring(ctx, e.WorldID, events.ScheduledUnitInterceptScan, struct{}{}, e.DueTick, UnitInterceptScanIntervalTicks)
 }
-func (h *UnitInterceptScanHandler) BeforeTimedArrival(next events.Handler) events.Handler {
-	return func(ctx context.Context, e events.ScheduledEvent) error {
-		if err := h.scan(ctx, e); err != nil {
-			return err
-		}
-		return next(ctx, e)
-	}
-}

@@ -22,15 +22,6 @@ func CargoCapacity(kind Type) int {
 	return 0
 }
 
-// FirstCargoSQL is a compatibility projection, never an alternative owner.
-// Consumers needing a troop outcome must use CargoIDs rather than this scalar.
-func FirstCargoSQL(alias string) string {
-	if !regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*$`).MatchString(alias) {
-		panic("invalid trusted unit alias")
-	}
-	return `(SELECT passenger.id FROM units passenger WHERE passenger.carried_by_ship_id=` + alias + `.id ORDER BY passenger.created_at,passenger.id LIMIT 1)`
-}
-
 type CargoReader interface {
 	Query(context.Context, string, ...any) (pgx.Rows, error)
 }

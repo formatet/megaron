@@ -349,7 +349,6 @@ type Worker struct {
 	pool            *pgxpool.Pool
 	clock           clock.Clock
 	handlers        map[ScheduledEventType]Handler
-	timeouts        map[ScheduledEventType]time.Duration
 	deadLetterHooks map[ScheduledEventType]Handler
 	pollInterval    time.Duration
 }
@@ -365,7 +364,6 @@ func NewWorker(pool *pgxpool.Pool, clk clock.Clock) *Worker {
 		pool:            pool,
 		clock:           clk,
 		handlers:        make(map[ScheduledEventType]Handler),
-		timeouts:        make(map[ScheduledEventType]time.Duration),
 		deadLetterHooks: make(map[ScheduledEventType]Handler),
 		pollInterval:    defaultWorkerPoll,
 	}
@@ -386,12 +384,6 @@ func (w *Worker) SetPollInterval(d time.Duration) {
 // Register binds a handler to a scheduled event type using the default timeout.
 func (w *Worker) Register(t ScheduledEventType, h Handler) {
 	w.handlers[t] = h
-}
-
-// RegisterWithTimeout binds a handler and overrides the per-call context timeout.
-func (w *Worker) RegisterWithTimeout(t ScheduledEventType, h Handler, timeout time.Duration) {
-	w.handlers[t] = h
-	w.timeouts[t] = timeout
 }
 
 // RegisterDeadLetterHook binds a best-effort callback invoked when an event of
@@ -508,12 +500,7 @@ func (w *Worker) dispatch(ctx context.Context, e ScheduledEvent) {
 		return
 	}
 
-	timeout := DefaultHandlerTimeout
-	if t, ok := w.timeouts[e.EventType]; ok {
-		timeout = t
-	}
-
-	hCtx, cancel := context.WithTimeout(ctx, timeout)
+	hCtx, cancel := context.WithTimeout(ctx, DefaultHandlerTimeout)
 	defer cancel()
 
 	if err := h(hCtx, e); err != nil {

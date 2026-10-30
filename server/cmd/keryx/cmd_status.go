@@ -391,16 +391,6 @@ func capitalize(s string) string {
 	return strings.ToUpper(s[:1]) + s[1:]
 }
 
-// localDone parses an RFC3339 (UTC) completion timestamp and formats it in the
-// player's local time, matching `unit march`'s ETA display — a raw UTC string
-// like "2026-07-02T04:37:52Z" otherwise forces manual timezone math.
-func localDone(iso string) string {
-	if t, err := time.Parse(time.RFC3339, iso); err == nil {
-		return t.Local().Format("15:04 Jan 2")
-	}
-	return iso
-}
-
 // buildQueueETA formats a build-queue entry's completion. A row STILL in the
 // queue whose complete_at has already passed is not usable yet — the
 // BuildComplete event (which inserts the buildings row and removes the queue

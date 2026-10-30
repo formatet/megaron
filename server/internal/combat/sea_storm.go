@@ -467,8 +467,6 @@ func (h *SeaStormScanHandler) founder(ctx context.Context, tx pgx.Tx, v seaVoyag
 // stormOccupancy is "which hexes a storm covers at which tick", read from the stored tracks.
 type stormOccupancy map[int]map[[2]int]uuid.UUID
 
-func (o stormOccupancy) at(tick int, hx [2]int) bool { _, ok := o[tick][hx]; return ok }
-
 // hexesOf lists the hexes storm id covers at tick (for the first-meeting memory).
 func (o stormOccupancy) hexesOf(tick int, id uuid.UUID) [][2]int {
 	var out [][2]int

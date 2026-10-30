@@ -27,11 +27,6 @@ func printRawJSON(data []byte) {
 	printJSON(v)
 }
 
-func die(msg string, args ...any) {
-	fmt.Fprintf(os.Stderr, "error: "+msg+"\n", args...)
-	os.Exit(1)
-}
-
 func resource(v float64) string {
 	if v >= 1000 {
 		return fmt.Sprintf("%.1fk", v/1000)
@@ -143,18 +138,6 @@ func clockTimeAt(t, now time.Time) string {
 	return t.Format("2 Jan 15:04")
 }
 func wallClock(t time.Time) string { return "≈ " + clockTime(t) }
-
-// countdown formats the time remaining until t (e.g. a pending trade offer's
-// escrow expires_at) as a short human string, for inbox/outbox display —
-// without this, a pending offer's silver/goods stayed locked with no visible
-// deadline (Fas 2b).
-func countdown(t time.Time) string {
-	remaining := time.Until(t)
-	if remaining <= 0 {
-		return "any moment"
-	}
-	return wallClock(t)
-}
 
 // keryxTZ is the timezone every keryx ETA's wall-clock support renders in —
 // Sweden, never the machine's local zone and never UTC (feedback_timezone:

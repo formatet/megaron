@@ -148,16 +148,3 @@ func (h *MarchEncounterHandler) timedEncounters(ctx context.Context, e events.Sc
 	}
 	return fmt.Errorf("timed encounter candidate bound exceeded")
 }
-
-func (h *MarchEncounterHandler) BeforeTimedArrival(next events.Handler) events.Handler {
-	return func(ctx context.Context, e events.ScheduledEvent) error {
-		a, err := tick.LoadAnchor(ctx, h.pool, e.WorldID)
-		if err != nil {
-			return err
-		}
-		if err = h.timedEncounters(ctx, e, a.MilliAt(h.clk.Now())); err != nil {
-			return err
-		}
-		return next(ctx, e)
-	}
-}
