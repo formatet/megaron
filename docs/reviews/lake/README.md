@@ -29,3 +29,17 @@ Four surfaces: temenos (above), keryx (map glyph via `IsSea`, river-flow label, 
 refusal text), Codex (`lake.md`, terrain list, fishing, storms, shipyard).
 
 Out of scope: lake names and epitaph (slice 3).
+
+## Proof
+
+- Baseline: master `445cb3af` green (slice 1 proof, same morning). Slice: full suite green on a fresh DB
+  (Go all packages + 880 web tests) after three test updates: the landmass test knows lake as sea; the incense
+  test's "nothing else moved" includes `MarkLakes`; the tin golden hashes the pre-lake map and proves
+  `GenerateMap == MarkLakes(pre-lake map)`.
+- Mutants (fresh detached worktree each), all killed: storms allowed on lakes → `water_test.go:47,69`;
+  `MarkLakes` no-op → `lake_test.go:28,34`; shipyard gate off → `shipyard_lake_test.go:22`; lake as bay →
+  `hex_rules_test.go:238`; SQL navigable without lake → `water_test.go:72`; JS `isSea` without lake →
+  `terrain.test.mjs`.
+- Migration on a copy of the live map (world `8d1f34f1`, 4096 tiles, read-only export): 0.68 s, 27 hexes → `lake`,
+  identical to the read-only survey and to Go `MarkLakes` on the same tiles; `coastal` counts unchanged; production rule
+  `lake/fish/1` copied. Shipyard waterway per lake: only the closed 5-hex lake at (29,24) is refused — matches the inventory.
