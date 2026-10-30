@@ -668,7 +668,7 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		// River is water too, a wall for land units (megaron_floden_plan.md, Timothy 2026-07-29).
-		isSea := destTerrain == "coastal_sea" || destTerrain == "deep_sea" || destTerrain == "river"
+		isSea := province.IsWaterBarrier(destTerrain)
 		if unit.CategoryOf(u.Type) == unit.CategoryLand && isSea {
 			writeError(w, http.StatusUnprocessableEntity, "land forces cannot enter sea terrain")
 			return

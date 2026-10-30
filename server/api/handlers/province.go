@@ -158,7 +158,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		 FROM map_tiles mt
 		 JOIN unnest($2::int[], $3::int[]) AS catchment(q, r) ON mt.q = catchment.q AND mt.r = catchment.r
 		 WHERE mt.world_id = $1
-		   AND mt.terrain NOT IN ('deep_sea','coastal_sea','river','river_ford')`,
+		   AND NOT terrain_is_navigable(mt.terrain)`,
 		worldID, catchQ, catchR,
 	)
 	if cdrows != nil {
@@ -1208,7 +1208,7 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 			       ($2,$3+1), ($2,$3-1),
 			       ($2+1,$3-1), ($2-1,$3+1)
 			     )
-			     AND terrain IN ('coastal_sea','deep_sea','river','river_ford')
+			     AND terrain_is_navigable(terrain)
 			 )`,
 			worldID, pq, pr,
 		).Scan(&coastNeighbour)
@@ -2892,7 +2892,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		 JOIN production_rules pr ON
 		     (pr.terrain_type IS NULL OR pr.terrain_type = mt.terrain)
 		     AND (NOT pr.requires_coastal OR mt.coastal)
-		     AND (mt.terrain NOT IN ('deep_sea','coastal_sea','river','river_ford') OR pr.terrain_type = mt.terrain)
+		     AND (NOT terrain_is_navigable(mt.terrain) OR pr.terrain_type = mt.terrain)
 		     AND (pr.building_type IS NULL OR EXISTS (
 		             SELECT 1 FROM buildings b WHERE b.settlement_id = s.id AND b.building_type = pr.building_type))
 		     AND (pr.requires_deposit IS NULL

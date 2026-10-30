@@ -229,23 +229,12 @@ func LoadBesiegers(ctx context.Context, tx Tx, worldID, settlementOwner uuid.UUI
 // catchment query treats as fish-only tiles (recompute.go's NOT IN list) —
 // worked directly from the settlement's own shore, never via a land path.
 func isSeaCatchmentTerrain(terrain string) bool {
-	switch terrain {
-	case "coastal_sea", "deep_sea", "river", "river_ford":
-		return true
-	}
-	return false
+	return province.IsNavigable(terrain)
 }
 
-// isLandPassableTerrain mirrors province.isPassable's "land" branch (that
-// function is unexported; economy cannot call it directly, and duplicating
-// just this predicate is cheaper than exporting a province internal used
-// nowhere else outside pathfinding) — river is a wall for land units
-// (megaron_floden_plan.md), river_ford is the one deliberate gap in it, and
-// coastal_sea/deep_sea/the two mountain terrains are impassable.
+// isLandPassableTerrain mirrors province.isPassable's "land" branch: water
+// barriers (province.IsWaterBarrier — the ford is the gap) and the two
+// mountain terrains are impassable.
 func isLandPassableTerrain(terrain string) bool {
-	switch terrain {
-	case "coastal_sea", "deep_sea", "river", "mountain_limestone", "mountain_red":
-		return false
-	}
-	return true
+	return !province.IsWaterBarrier(terrain) && terrain != "mountain_limestone" && terrain != "mountain_red"
 }

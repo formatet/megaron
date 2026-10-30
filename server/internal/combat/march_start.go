@@ -420,7 +420,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		}
 		// Same "ofri mark" criteria as province.NearestUnclaimedLandNeighbor —
 		// applied to the chosen hex directly rather than a neighbour of it.
-		isSea := landTerrain == "coastal_sea" || landTerrain == "deep_sea" || landTerrain == "river" || landTerrain == "river_ford"
+		isSea := province.IsNavigable(landTerrain)
 		isMountain := landTerrain == "mountain_limestone" || landTerrain == "mountain_red"
 		_, ownCity, cityErr := ownPortAt(ctx, pool, o.WorldID, o.PlayerID, landTargetQ, landTargetR)
 		if cityErr != nil {
@@ -499,7 +499,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		).Scan(&passageTerrain); err != nil {
 			return nil, reject(http.StatusNotFound, "disembark hex not found")
 		}
-		isSea := passageTerrain == "coastal_sea" || passageTerrain == "deep_sea" || passageTerrain == "river" || passageTerrain == "river_ford"
+		isSea := province.IsNavigable(passageTerrain)
 		isMountain := passageTerrain == "mountain_limestone" || passageTerrain == "mountain_red"
 		if isSea || isMountain {
 			return nil, reject(http.StatusUnprocessableEntity,
@@ -546,7 +546,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		).Scan(&pickupTerrain); err != nil {
 			return nil, reject(http.StatusNotFound, "shore hex not found")
 		}
-		isSea := pickupTerrain == "coastal_sea" || pickupTerrain == "deep_sea" || pickupTerrain == "river" || pickupTerrain == "river_ford"
+		isSea := province.IsNavigable(pickupTerrain)
 		isMountain := pickupTerrain == "mountain_limestone" || pickupTerrain == "mountain_red"
 		if isSea || isMountain {
 			return nil, reject(http.StatusUnprocessableEntity,
@@ -776,7 +776,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 
 	// Land units cannot enter sea hexes — river is water too, a wall for land units
 	// (megaron_floden_plan.md, Timothy 2026-07-29).
-	isSea := destTerrain == "coastal_sea" || destTerrain == "deep_sea" || destTerrain == "river"
+	isSea := province.IsWaterBarrier(destTerrain)
 	if unit.CategoryOf(u.Type) == unit.CategoryLand && isSea {
 		return nil, reject(http.StatusUnprocessableEntity, "land forces cannot enter sea terrain")
 	}

@@ -2,10 +2,7 @@
 // LiveRadius, Eye.Sees, SeaSightline, hexLine) for the FOV preview band in
 // render/map.js. The server is the truth; this only previews it. Pure — no DOM.
 import { LIVE_RADIUS_SEA, LIVE_RADIUS_BASE, LIVE_RADIUS_MOUNTAIN_BONUS } from '../config.js';
-
-export function isSea(terrain) {
-  return terrain === 'coastal_sea' || terrain === 'deep_sea';
-}
+import { isSea } from '../terrain.js';
 
 export function hexDist(q1, r1, q2, r2) {
   return (Math.abs(q1 - q2) + Math.abs(q1 + r1 - q2 - r2) + Math.abs(r1 - r2)) / 2;

@@ -1,5 +1,7 @@
 // Shared terrain renderer: explicit scene input, private per-instance caches.
 // No DOM, global game State or worker dependency. Both canvas kinds run this code.
+import { isSea, isWaterBarrier } from '../terrain.js';
+
 export function createMarkRenderer(scene, createCanvas, markraster = true) {
 
   // ── Palette — Settlers 2 warmth, Mediterranean olive country ─────────────
@@ -240,7 +242,7 @@ export function createMarkRenderer(scene, createCanvas, markraster = true) {
     return dirs;
   }
 
-  const isSeaTerrain = t => t === 'deep_sea' || t === 'coastal_sea';
+  const isSeaTerrain = isSea;
 
   // Havet och floden är båda vatten, men de är INTE utbytbara i renderaren, och
   // skillnaden är kontrastbudgeten (princip 6): strandbandets ljusa sand är
@@ -249,7 +251,7 @@ export function createMarkRenderer(scene, createCanvas, markraster = true) {
   // unik. `isSeaTerrain` styr därför strand, bränning, dyning och djupbryt och
   // får ALDRIG innehålla floden; `isWaterTerrain` är den bredare frågan "är det
   // här vatten?" som flodens egen kedja och tooltipen ställer.
-  const isWaterTerrain = t => t === 'deep_sea' || t === 'coastal_sea' || t === 'river';
+  const isWaterTerrain = isWaterBarrier;
 
   // Directions from this hex where the woodland ends. Fog and off-map count as
   // "unknown", NOT as open ground: the player has not seen those tiles, and
@@ -906,7 +908,7 @@ export function createMarkRenderer(scene, createCanvas, markraster = true) {
       // alltid i sin egen region (WARP_AMP < R_IN).
       let reach = R_IN;
       const nt = terrainAt(q + HEX_DIRS[i][0], r + HEX_DIRS[i][1]);
-      if (nt === 'coastal_sea' || nt === 'deep_sea') {
+      if (isSeaTerrain(nt)) {
         const { x, y } = hexPx(q, r);
         while (reach < 2 * R_IN && !isSeaTerrain(markTerrainAt(x + nx * reach, y + ny * reach))) reach++;
       }

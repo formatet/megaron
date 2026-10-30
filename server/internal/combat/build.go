@@ -124,7 +124,7 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 		 JOIN settlements s ON s.id = $1
 		 JOIN unnest($3::int[], $4::int[]) AS catchment(q, r) ON true
 		 JOIN map_tiles mt ON mt.world_id = s.world_id AND mt.q = catchment.q AND mt.r = catchment.r
-		     AND (mt.terrain NOT IN ('deep_sea','coastal_sea','river','river_ford') OR pr.terrain_type = mt.terrain)
+		     AND (NOT terrain_is_navigable(mt.terrain) OR pr.terrain_type = mt.terrain)
 		 JOIN goods g ON g.key = pr.good_key AND g.status = 'active'
 		 WHERE pr.building_type = $2
 		   AND (pr.terrain_type IS NULL OR pr.terrain_type = mt.terrain)

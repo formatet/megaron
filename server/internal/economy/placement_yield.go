@@ -235,7 +235,7 @@ func loadHexOptionsForHexes(ctx context.Context, tx Tx, worldID uuid.UUID, ring 
 		          OR (pr.requires_deposit = 'incense' AND COALESCE(mt.incense_deposit, false))
 		          OR (pr.requires_deposit = 'cedar'  AND COALESCE(mt.cedar_deposit, false)))
 		 JOIN goods g ON g.key = pr.good_key AND g.status = 'active'
-		 WHERE mt.terrain NOT IN ('deep_sea','coastal_sea','river','river_ford')
+		 WHERE NOT terrain_is_navigable(mt.terrain)
 		        OR pr.terrain_type = mt.terrain`,
 		worldID, catchQ, catchR, builtTypes,
 	)

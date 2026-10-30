@@ -453,24 +453,13 @@ func resolvePickupShore(ctx context.Context, pool *pgxpool.Pool, worldID, shipPo
 // them anyway — see march_start.go's passageMission branch) — the same two
 // exclusions "land mission" applies to its own chosen target.
 func isDryLandTerrain(terrain string) bool {
-	switch terrain {
-	case "coastal_sea", "deep_sea", "river", "river_ford",
-		"mountain_limestone", "mountain_red":
-		return false
-	}
-	return true
+	return !province.IsNavigable(terrain) && terrain != "mountain_limestone" && terrain != "mountain_red"
 }
 
-// isSeaOrRiverTerrain matches province.NearestSeaNeighbor's own definition of
-// "water a ship can float on" — duplicated here (not exported there) so the
-// ring search can test it against an in-memory TileGraph instead of paying a
-// DB round trip per candidate hex.
+// isSeaOrRiverTerrain is "water a ship can float on" (province.IsNavigable),
+// tested against an in-memory TileGraph without a DB round trip.
 func isSeaOrRiverTerrain(terrain string) bool {
-	switch terrain {
-	case "coastal_sea", "deep_sea", "river", "river_ford":
-		return true
-	}
-	return false
+	return province.IsNavigable(terrain)
 }
 
 // graphNearestSeaNeighbor is province.NearestSeaNeighbor against an

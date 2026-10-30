@@ -362,7 +362,7 @@ func pickSpawnTile(ctx context.Context, pool *pgxpool.Pool, worldID uuid.UUID, h
 		   AND p.id IS NULL
 		   -- A rising Wanax is a refugee: never back on the landmass that fell ($4).
 		   AND ($4::int IS NULL OR mt.landmass_id IS DISTINCT FROM $4::int)
-		   AND mt.terrain NOT IN ('coastal_sea','deep_sea','river','river_ford','mountain_limestone','mountain_red','semi_desert')
+		   AND NOT terrain_is_navigable(mt.terrain) AND mt.terrain NOT IN ('mountain_limestone','mountain_red','semi_desert')
 		   -- A world generated before mig 124 has landmass_id NULL everywhere; let
 		   -- those candidates through rather than declare the whole world full.
 		   AND (mt.landmass_id IS NULL OR mt.landmass_id IN (SELECT landmass_id FROM viable_landmasses))
