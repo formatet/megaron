@@ -30,3 +30,11 @@ Proof: fresh DB baseline, targeted regression/mutation tests, full Go/JS suite, 
   update expected mechanics while preserving the tested lifecycle and transactional guarantees.
 
 No production edits precede this inventory commit. Baseline master f33d1533, schema 228.
+
+## Proof (Claude took over 2026-10-30 after Codex hit its weekly quota)
+- Codex WIP secured as `e27139c2`; four tests still asserted old rules → aligned in `70fe1907`
+  (silver never replaces the grain part, 2/4/8 places, the Codex formula line, a funded transition fixture).
+- Full Go + web suite on the branch: only those four + two web parity tests (vault market-board row; fixed on master `2f4d6d54`).
+- Mutants, each a named red: demand linear (`decay_test.go:16`) · weight = level (`religion_v2_test.go:26`) ·
+  silver substitutes grain (`religion_v2_test.go:59`) · a partly paid part counts (`religion_v2_test.go:59`, "no partial silver") ·
+  transition shield omitted (`religion_v2_test.go:103`) · population back in decay (`decay_test.go:16`).
