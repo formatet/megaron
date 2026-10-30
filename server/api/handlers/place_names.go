@@ -25,6 +25,9 @@ func cleanPlaceName(raw string) (string, string) {
 	return name, ""
 }
 
+// isPlaceKind: placeIDs shadows the world package with its return value.
+var isPlaceKind = world.IsPlaceKind
+
 func placeIDs(w http.ResponseWriter, r *http.Request) (world uuid.UUID, kind string, anchor [2]int, ok bool) {
 	world, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	kind = chi.URLParam(r, "kind")
@@ -37,7 +40,7 @@ func placeIDs(w http.ResponseWriter, r *http.Request) (world uuid.UUID, kind str
 	if err == nil {
 		anchor[1], err = strconv.Atoi(parts[1])
 	}
-	if err != nil || !(kind == "river" || kind == "massif" || kind == "desert" || kind == "forest") {
+	if err != nil || !isPlaceKind(kind) {
 		writeError(w, 400, "invalid place kind or anchor")
 		return
 	}

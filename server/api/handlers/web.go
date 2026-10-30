@@ -13,9 +13,11 @@ import (
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/unit"
+	"formatet/megaron/server/internal/world"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -354,9 +356,9 @@ func (h *WebHandler) epitaphLines(ctx context.Context, playerID, worldID uuid.UU
 
 	rows, err := h.pool.Query(ctx,
 		`WITH founded AS (
-		     SELECT id, name, COALESCE(founded_tick, 0) AS ft, founded_from IS NOT NULL AS colony
-		     FROM settlements
-		     WHERE world_id = $2 AND (founder_id = $1 OR (founder_id IS NULL AND id = $3))
+		     SELECT s.id, s.name, COALESCE(s.founded_tick, 0) AS ft, s.founded_from IS NOT NULL AS colony, p.map_q, p.map_r
+		     FROM settlements s LEFT JOIN provinces p ON p.id = s.province_id
+		     WHERE s.world_id = $2 AND (s.founder_id = $1 OR (s.founder_id IS NULL AND s.id = $3))
 		 ),
 		 held_until AS (
 		     SELECT f.id, min(e.id) AS end_id
@@ -372,7 +374,7 @@ func (h *WebHandler) epitaphLines(ctx context.Context, playerID, worldID uuid.UU
 		 )
 		 SELECT kind, payload, city FROM (
 		     SELECT f.ft AS tick, 0::bigint AS seq, 'EpitaphFounded' AS kind,
-		            jsonb_build_object('colony', f.colony) AS payload, f.name AS city
+		            jsonb_build_object('colony', f.colony, 'q', f.map_q, 'r', f.map_r) AS payload, f.name AS city
 		     FROM founded f
 		   UNION ALL
 		     SELECT e.world_tick, e.id, e.event_type, e.payload, f.name
@@ -410,6 +412,9 @@ func (h *WebHandler) epitaphLines(ctx context.Context, playerID, worldID uuid.UU
 			if rows.Scan(&kind, &payload, &city) != nil {
 				continue
 			}
+			if kind == "EpitaphFounded" {
+				payload = h.withLakeShore(ctx, worldID, payload)
+			}
 			if line := epitaphLine(kind, payload, city, wanaxName); line != "" {
 				lines = append(lines, line)
 			}
@@ -420,6 +425,58 @@ func (h *WebHandler) epitaphLines(ctx context.Context, playerID, worldID uuid.UU
 	}
 	lines = append(lines, "So ended a Wanax's reign.")
 	return lines
+}
+
+// withLakeShore adds "shore" to a founding payload when the city lies on a named
+// lake and not on the Thalassa (insjöar slice 3, Timothy 2026-10-30). An unnamed
+// lake keeps the old line until someone names it.
+func (h *WebHandler) withLakeShore(ctx context.Context, worldID uuid.UUID, payload []byte) []byte {
+	var p map[string]any
+	if json.Unmarshal(payload, &p) != nil || p["colony"] == true {
+		return payload
+	}
+	q, okQ := p["q"].(float64)
+	r, okR := p["r"].(float64)
+	if !okQ || !okR {
+		return payload
+	}
+	tiles, err := loadGeography(ctx, h.pool, worldID)
+	if err != nil {
+		return payload
+	}
+	terrain := make(map[[2]int]string, len(tiles))
+	for _, t := range tiles {
+		terrain[[2]int{t.Q, t.R}] = string(t.Terrain)
+	}
+	lakeHex := map[[2]int][2]int{}
+	for _, pl := range world.Places(tiles) {
+		if pl.Kind == "lake" {
+			for _, xy := range pl.Hexes {
+				lakeHex[xy] = pl.Anchor
+			}
+		}
+	}
+	var anchor *[2]int
+	for _, n := range hexgrid.Neighbors(hexgrid.Coord{Q: int(q), R: int(r)}) {
+		xy := [2]int{n.Q, n.R}
+		if province.IsThalassa(terrain[xy]) {
+			return payload
+		}
+		if a, ok := lakeHex[xy]; ok && anchor == nil {
+			anchor = &a
+		}
+	}
+	if anchor == nil {
+		return payload
+	}
+	var name string
+	if h.pool.QueryRow(ctx, `SELECT name FROM place_names WHERE world_id=$1 AND kind='lake' AND anchor_q=$2 AND anchor_r=$3 AND name IS NOT NULL`,
+		worldID, anchor[0], anchor[1]).Scan(&name) != nil {
+		return payload
+	}
+	p["shore"] = name
+	out, _ := json.Marshal(p)
+	return out
 }
 
 // epitaphEventTypes are the event types epitaphLine renders; epitaphLines reads
@@ -447,6 +504,9 @@ func epitaphLine(eventType string, payload []byte, city string, wanaxName func(s
 	case "EpitaphFounded":
 		if p["colony"] == true {
 			return "Founded " + city + "."
+		}
+		if shore := str("shore"); shore != "" {
+			return city + " rose on the shore of " + shore + "."
 		}
 		return city + " rose on the shore of the Thalassa."
 	case "EpitaphBattle":

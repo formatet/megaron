@@ -4,7 +4,7 @@ import { State } from '../state.js';
 import { fetchAuth } from '../api.js';
 import { esc } from './format.js';
 
-export const PLACE_LABELS = { river: 'river', massif: 'mountain massif', desert: 'desert', forest: 'cedar forest' };
+export const PLACE_LABELS = { river: 'river', massif: 'mountain massif', desert: 'desert', forest: 'cedar forest', lake: 'lake' };
 
 export function placePanelHTML(tile, { showName = false } = {}) {
   return toldByHTML(tile) + placeNameHTML(tile, showName);

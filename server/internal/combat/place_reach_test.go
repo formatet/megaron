@@ -588,3 +588,28 @@ func TestPlaceReachMassifBorderEntry(t *testing.T) {
 		})
 	}
 }
+
+// The first ship to sail onto a lake gains the right to name it (insjöar slice 3).
+func TestPlaceReachShipFirstOnLakeClaims(t *testing.T) {
+	f := reachWorld(t)
+	ctx := context.Background()
+	if _, err := f.pool.Exec(ctx, `UPDATE map_tiles SET terrain='lake' WHERE world_id=$1`, f.world); err != nil {
+		t.Fatal(err)
+	}
+	f.mover(t, "galley", f.owner, reachRoute(0, 5, 0, 5))
+	f.scan(t, 2)
+	var owner uuid.UUID
+	if err := f.pool.QueryRow(ctx, `SELECT claimed_by FROM place_names WHERE world_id=$1 AND kind='lake' AND anchor_q=0`, f.world).Scan(&owner); err != nil {
+		t.Fatalf("ship on the lake did not claim it: %v", err)
+	}
+	if owner != f.owner {
+		t.Fatal("wrong first owner of the lake")
+	}
+	var notices int
+	if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM notifications WHERE world_id=$1 AND kind='PlaceFirstReached' AND body_json->>'kind'='lake'`, f.world).Scan(&notices); err != nil {
+		t.Fatal(err)
+	}
+	if notices != 1 {
+		t.Fatalf("want one lake naming notice, got %d", notices)
+	}
+}

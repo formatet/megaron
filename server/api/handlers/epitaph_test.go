@@ -178,3 +178,32 @@ func TestEpitaphLines_TellsEveryCityTheWanaxFounded(t *testing.T) {
 		t.Errorf("crawl =\n%s\n\nwant\n%s", strings.Join(got, "\n"), strings.Join(want, "\n"))
 	}
 }
+
+// A metropolis on a named lake rose on that lake's shore, not the Thalassa's
+// (insjöar slice 3, Timothy 2026-10-30). Unnamed lake or a sea neighbour: old line.
+func TestEpitaphLines_LakeCityRoseOnTheLakeShore(t *testing.T) {
+	ctx := context.Background()
+	f := newEpitaphFixture(t)
+	city := f.mkCity("Orchomenos", f.player, 1, 0, nil)
+	for q, terrain := range map[int]string{0: "plains", 1: "plains", 2: "lake"} {
+		if _, err := f.h.pool.Exec(ctx, `INSERT INTO map_tiles(world_id,q,r,terrain) VALUES($1,$2,0,$3)`, f.world, q, terrain); err != nil {
+			t.Fatal(err)
+		}
+	}
+	or := f.cityName(city)
+	if got := f.h.epitaphLines(ctx, f.player, f.world, &city); got[0] != or+" rose on the shore of the Thalassa." {
+		t.Fatalf("unnamed lake: %q", got[0])
+	}
+	if _, err := f.h.pool.Exec(ctx, `INSERT INTO place_names(world_id,kind,anchor_q,anchor_r,name,named_tick) VALUES($1,'lake',2,0,'Kopais',1)`, f.world); err != nil {
+		t.Fatal(err)
+	}
+	if got := f.h.epitaphLines(ctx, f.player, f.world, &city); got[0] != or+" rose on the shore of Kopais." {
+		t.Fatalf("named lake: %q", got[0])
+	}
+	if _, err := f.h.pool.Exec(ctx, `UPDATE map_tiles SET terrain='coastal_sea' WHERE world_id=$1 AND q=0`, f.world); err != nil {
+		t.Fatal(err)
+	}
+	if got := f.h.epitaphLines(ctx, f.player, f.world, &city); got[0] != or+" rose on the shore of the Thalassa." {
+		t.Fatalf("city on both lake and sea: %q", got[0])
+	}
+}

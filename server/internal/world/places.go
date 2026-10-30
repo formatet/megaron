@@ -13,8 +13,8 @@ type Place struct {
 	Hexes  [][2]int
 }
 
-// Places owns every nameable terrain component. Rivers have no minimum;
-// mixed limestone/red mountains, semi-desert and cedar forest need five hexes.
+// Places owns every nameable terrain component. Rivers and lakes have no
+// minimum; mixed limestone/red mountains, semi-desert and cedar forest need five hexes.
 // Olive groves are cultivated land and never nameable forest.
 func Places(tiles []MapTile) []Place {
 	var out []Place
@@ -34,15 +34,17 @@ func Places(tiles []MapTile) []Place {
 	}
 	specs := []struct {
 		kind   string
+		min    int
 		accept func(Terrain) bool
 	}{
-		{"massif", func(t Terrain) bool { return t == TerrainMountainLimestone || t == TerrainMountainRed }},
-		{"desert", func(t Terrain) bool { return t == TerrainSemiDesert }},
-		{"forest", func(t Terrain) bool { return t == TerrainForestCedar }},
+		{"massif", 5, func(t Terrain) bool { return t == TerrainMountainLimestone || t == TerrainMountainRed }},
+		{"desert", 5, func(t Terrain) bool { return t == TerrainSemiDesert }},
+		{"forest", 5, func(t Terrain) bool { return t == TerrainForestCedar }},
+		{"lake", 1, func(t Terrain) bool { return t == TerrainLake }},
 	}
 	for _, s := range specs {
 		for _, chain := range terrainComponents(tiles, s.accept) {
-			if len(chain) < 5 {
+			if len(chain) < s.min {
 				continue
 			}
 			p := Place{Kind: s.kind, Anchor: [2]int{chain[0].q, chain[0].r}}
@@ -59,5 +61,14 @@ func Places(tiles []MapTile) []Place {
 		})
 	}
 	return out
+}
+
+// IsPlaceKind reports whether kind names a Places kind.
+func IsPlaceKind(kind string) bool {
+	switch kind {
+	case "river", "massif", "desert", "forest", "lake":
+		return true
+	}
+	return false
 }
 func fmtAnchor(a [2]int) string { return fmt.Sprintf("%d,%d", a[0], a[1]) }

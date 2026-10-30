@@ -3953,7 +3953,7 @@ async function fillTellOptions(select, destSettlementID) {
 
 function tellPlaceValue() {
   const v = document.getElementById('ip-msg-tell')?.value || '';
-  const m = /^(river|massif|desert|forest|city)\|(-?\d+),(-?\d+)$/.exec(v);
+  const m = /^(river|massif|desert|forest|lake|city)\|(-?\d+),(-?\d+)$/.exec(v);
   return m ? { kind: m[1], anchor_q: Number(m[2]), anchor_r: Number(m[3]) } : null;
 }
 
