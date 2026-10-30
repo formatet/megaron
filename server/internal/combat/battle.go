@@ -69,6 +69,7 @@ import (
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -197,6 +198,24 @@ type battleParticipant struct {
 	// land unit riding it, if any. Same "only resolveTick's own query
 	// populates this" scope as hull above.
 	cargoUnitID *uuid.UUID
+	// divine is the gods' hand this unit carries in this battle
+	// (religion.BattleDivine), fixed at join in battle_participants.divine.
+	divine string
+}
+
+// battleDivine reads the owner's standing when a unit enters a battle. No realm
+// record: no standing with the gods, so no hand (never read as kharis 0).
+func battleDivine(ctx context.Context, tx pgx.Tx, worldID, ownerID uuid.UUID) (string, error) {
+	var kharis float64
+	err := tx.QueryRow(ctx, `SELECT settled(kharis_amount,kharis_rate,kharis_calc_tick) FROM player_world_records WHERE world_id=$1 AND player_id=$2`,
+		worldID, ownerID).Scan(&kharis)
+	if err == pgx.ErrNoRows {
+		return "", nil
+	}
+	if err != nil {
+		return "", fmt.Errorf("battle divine: %w", err)
+	}
+	return religion.BattleDivine(kharis), nil
 }
 
 // initiateOrJoinBattle is the KR3 replacement for the old one-shot combat
@@ -270,10 +289,14 @@ func (h *UnitArrivalHandler) startBattle(
 	all := append([]battleParticipant{arriving}, defenders...)
 	var attackerRefs, defenderRefs []BattleParticipantRef
 	for _, p := range all {
+		divine, err := battleDivine(ctx, tx, worldID, p.ownerID)
+		if err != nil {
+			return err
+		}
 		if _, err := tx.Exec(ctx,
-			`INSERT INTO battle_participants (battle_id, unit_id, owner_id, side, joined_tick, initial_size, current_size, standing_orders)
-			 VALUES ($1,$2,$3,$4,$5,$6,$6, `+seedStandingOrdersSQL+`)`,
-			battleID, p.unitID, p.ownerID, p.side, currentTick, p.currentSize, worldID,
+			`INSERT INTO battle_participants (battle_id, unit_id, owner_id, side, joined_tick, initial_size, current_size, standing_orders, divine)
+			 VALUES ($1,$2,$3,$4,$5,$6,$6, `+seedStandingOrdersSQL+`, NULLIF($8,''))`,
+			battleID, p.unitID, p.ownerID, p.side, currentTick, p.currentSize, worldID, divine,
 		); err != nil {
 			return fmt.Errorf("start battle: insert participant %s: %w", p.unitID, err)
 		}
@@ -314,11 +337,15 @@ func (h *UnitArrivalHandler) startBattle(
 func (h *UnitArrivalHandler) joinBattle(
 	ctx context.Context, tx pgx.Tx, worldID, battleID uuid.UUID, currentTick int, arriving battleParticipant,
 ) error {
+	divine, err := battleDivine(ctx, tx, worldID, arriving.ownerID)
+	if err != nil {
+		return err
+	}
 	tag, err := tx.Exec(ctx,
-		`INSERT INTO battle_participants (battle_id, unit_id, owner_id, side, joined_tick, initial_size, current_size, standing_orders)
-		 VALUES ($1,$2,$3,$4,$5,$6,$6, `+seedStandingOrdersSQL+`)
+		`INSERT INTO battle_participants (battle_id, unit_id, owner_id, side, joined_tick, initial_size, current_size, standing_orders, divine)
+		 VALUES ($1,$2,$3,$4,$5,$6,$6, `+seedStandingOrdersSQL+`, NULLIF($8,''))
 		 ON CONFLICT (battle_id, unit_id) DO NOTHING`,
-		battleID, arriving.unitID, arriving.ownerID, arriving.side, currentTick, arriving.currentSize, worldID,
+		battleID, arriving.unitID, arriving.ownerID, arriving.side, currentTick, arriving.currentSize, worldID, divine,
 	)
 	if err != nil {
 		return fmt.Errorf("join battle: insert participant: %w", err)
@@ -443,7 +470,7 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 		return false, err
 	}
 	rows, err := tx.Query(ctx,
-		`SELECT bp.unit_id, bp.owner_id, bp.side, bp.current_size, bp.initial_size, bp.standing_orders, u.type, u.hull, (SELECT cargo.id FROM units cargo WHERE cargo.carried_by_ship_id=u.id ORDER BY cargo.created_at,cargo.id LIMIT 1),
+		`SELECT bp.unit_id, bp.owner_id, bp.side, bp.current_size, bp.initial_size, bp.standing_orders, COALESCE(bp.divine,''), u.type, u.hull, (SELECT cargo.id FROM units cargo WHERE cargo.carried_by_ship_id=u.id ORDER BY cargo.created_at,cargo.id LIMIT 1),
  COALESCE((SELECT s.garrison_defense_until_tick > $2 AND s.garrison_defense_owner_id=u.owner_id AND s.owner_id=u.owner_id
  FROM settlements s JOIN provinces sp ON sp.id=s.province_id
  WHERE s.id=u.settlement_id AND s.state='active' AND bp.side='defender' AND sp.world_id=$3 AND sp.map_q=$4 AND sp.map_r=$5),false)
@@ -463,7 +490,7 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 	var loaded []row
 	for rows.Next() {
 		var rr row
-		if scanErr := rows.Scan(&rr.p.unitID, &rr.p.ownerID, &rr.p.side, &rr.p.currentSize, &rr.initialSize, &rr.standingOrders, &rr.p.utype, &rr.p.hull, &rr.p.cargoUnitID, &rr.p.defenseBoost); scanErr != nil {
+		if scanErr := rows.Scan(&rr.p.unitID, &rr.p.ownerID, &rr.p.side, &rr.p.currentSize, &rr.initialSize, &rr.standingOrders, &rr.p.divine, &rr.p.utype, &rr.p.hull, &rr.p.cargoUnitID, &rr.p.defenseBoost); scanErr != nil {
 			rows.Close()
 			return false, fmt.Errorf("battle tick: scan participant: %w", scanErr)
 		}
@@ -803,6 +830,7 @@ type battleParticipantSummary struct {
 	utype       string
 	initialSize int
 	currentSize int
+	divine      string
 }
 
 // notifyBattleEnded is stridsrapport's S1 (megaron_plan_stridsrapport.md),
@@ -824,7 +852,7 @@ func (h *BattleTickHandler) notifyBattleEnded(ctx context.Context, tx pgx.Tx, ba
 	}
 
 	rows, err := tx.Query(ctx,
-		`SELECT bp.owner_id, bp.side, u.type, bp.initial_size, bp.current_size
+		`SELECT bp.owner_id, bp.side, u.type, bp.initial_size, bp.current_size, COALESCE(bp.divine,'')
 		 FROM battle_participants bp JOIN units u ON u.id = bp.unit_id
 		 WHERE bp.battle_id = $1
 		 ORDER BY bp.joined_tick, bp.unit_id`,
@@ -837,7 +865,7 @@ func (h *BattleTickHandler) notifyBattleEnded(ctx context.Context, tx pgx.Tx, ba
 	var summaries []battleParticipantSummary
 	for rows.Next() {
 		var s battleParticipantSummary
-		if scanErr := rows.Scan(&s.ownerID, &s.side, &s.utype, &s.initialSize, &s.currentSize); scanErr == nil {
+		if scanErr := rows.Scan(&s.ownerID, &s.side, &s.utype, &s.initialSize, &s.currentSize, &s.divine); scanErr == nil {
 			summaries = append(summaries, s)
 		}
 	}
@@ -848,6 +876,7 @@ func (h *BattleTickHandler) notifyBattleEnded(ctx context.Context, tx pgx.Tx, ba
 
 	type ownerAgg struct {
 		types      map[string]bool
+		divine     map[string]bool
 		sizeBefore int
 		sizeAfter  int
 	}
@@ -872,13 +901,14 @@ func (h *BattleTickHandler) notifyBattleEnded(ctx context.Context, tx pgx.Tx, ba
 		side.types[s.utype] = true
 		agg, ok := side.byOwner[s.ownerID]
 		if !ok {
-			agg = &ownerAgg{types: map[string]bool{}}
+			agg = &ownerAgg{types: map[string]bool{}, divine: map[string]bool{}}
 			side.byOwner[s.ownerID] = agg
 			side.ownerOrder = append(side.ownerOrder, s.ownerID)
 		}
 		agg.sizeBefore += s.initialSize
 		agg.sizeAfter += s.currentSize
 		agg.types[s.utype] = true
+		agg.divine[s.divine] = true
 	}
 
 	typeLabel := func(types map[string]bool) string {
@@ -934,6 +964,15 @@ func (h *BattleTickHandler) notifyBattleEnded(ctx context.Context, tx pgx.Tx, ba
 			}
 			if place != nil {
 				payload["place"] = *place
+			}
+			// The gods' hand this owner's men carried (R2); named only when
+			// every unit of theirs carried the same one.
+			if len(own.divine) == 1 {
+				for d := range own.divine {
+					if d != "" {
+						payload["divine"] = d
+					}
+				}
 			}
 			if err := h.hub.NotifyPlayer(ctx, worldID, ownerID, kind, level, payload); err != nil {
 				slog.Warn("notify battle ended", "battle", battleID, "owner", ownerID, "err", err)
@@ -1101,6 +1140,15 @@ func rollSide(participants []battleParticipant, sizes []int, idx []int, part flo
 		}
 		if unit.CategoryOf(unit.Type(participants[i].utype)) == unit.CategoryNaval {
 			diceCount = int(math.Round(float64(diceCount) * float64(participants[i].hull) / float64(hullMax)))
+		}
+		// The gods' hand (R2): scale the dice, rounding the fraction by a roll so
+		// a small force keeps its expected tilt. No hand: no roll drawn.
+		if f := religion.BattleFactor(participants[i].divine); f != 1 && diceCount > 0 {
+			scaled := float64(diceCount) * f
+			diceCount = int(scaled)
+			if dice.Float64() < scaled-float64(diceCount) {
+				diceCount++
+			}
 		}
 		diceTotal += diceCount
 		for d := 0; d < diceCount; d++ {

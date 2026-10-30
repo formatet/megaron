@@ -602,6 +602,9 @@ export function notifText(kind, body) {
       else if (body.outcome === 'attacker_wins' && body.role === 'defender') trailer = ' The field was lost.';
       else if (body.outcome === 'defender_holds' && body.role === 'defender') trailer = ' The field held.';
       else if (body.outcome === 'defender_holds' && body.role === 'attacker') trailer = ' The attack was repelled.';
+      // R2: the gods' hand this owner's men carried into the battle.
+      if (body.divine === 'favor') trailer += ' The gods stood with your men.';
+      else if (body.divine === 'wrath') trailer += " The gods' wrath weighed on your men.";
       return `${outcomeWord} at ${place} — your ${own.type || 'unit'} (${own.size_before ?? '?'}→${own.size_after ?? '?'}, ` +
              `−${own.pop_lost ?? 0} dead) vs ${body.opponent_name || 'an enemy'}'s ${enemy.type || 'unit'} ` +
              `(${enemy.size_before ?? '?'}→${enemy.size_after ?? '?'}).${trailer}`;

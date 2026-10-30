@@ -13,7 +13,8 @@ import (
 )
 
 // Exercise the real tick handler and persisted participation, including fortify
-// and different realm balances. Neither city nor realm state scales commitment.
+// and different realm balances. Neither city nor realm state scales commitment;
+// the realm's standing tilts only the dice (R2 battle).
 func TestBattleParticipationFixedAcrossCityAndKharis(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
@@ -46,8 +47,14 @@ func TestBattleParticipationFixedAcrossCityAndKharis(t *testing.T) {
 			if err := json.Unmarshal(raw, &result); err != nil {
 				t.Fatal(err)
 			}
-			if result.ActiveCombatants != 90 || result.DiceRolled != 45 {
-				t.Errorf("first round kharis%d result=%+v want90 active and45 dice", balance, result)
+			// Commitment stays fixed; the dice carry the gods' hand (R2 battle,
+			// 2026-10-30): 45 × 0.95 Wrathful, 45 × 1.05 Favorable, fraction by a roll.
+			lo, hi := 42, 43
+			if balance == 100 {
+				lo, hi = 47, 48
+			}
+			if result.ActiveCombatants != 90 || result.DiceRolled < lo || result.DiceRolled > hi {
+				t.Errorf("first round kharis%d result=%+v want 90 active and %d–%d dice", balance, result, lo, hi)
 			}
 		}
 		rows, err := pool.Query(ctx, `SELECT side,last_participation FROM battle_participants WHERE battle_id=$1`, battle)
