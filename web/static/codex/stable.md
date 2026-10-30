@@ -1,5 +1,7 @@
 A Stable enables [[war-chariot|chariot]] recruitment.
 
+Chariots require a [[stable|Stable]] and [[bronze|bronze]]. Horses are not currently a good you produce, store or trade; you do not need to acquire horses to recruit chariots.
+
 Build or upgrade it in **City → Buildings → Construct**, or use `keryx build --type stable`.
 
 <!-- facts: building stable -->

@@ -1,5 +1,7 @@
 The **Chariot** is the hardest hitter on open ground: horses, a driver and a warrior, built with [[cedar|cedar]] and bronze.
 
+Chariots require a [[stable|Stable]] and [[bronze|bronze]]. Horses are not currently a good you produce, store or trade; you do not need to acquire horses to recruit chariots.
+
 | | |
 |---|---|
 | **Built at** | [[stable]] |
