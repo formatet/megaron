@@ -6,6 +6,7 @@ package combat
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 
 	"github.com/google/uuid"
@@ -89,6 +90,14 @@ func TestBattle_GodsHandFixedAtJoinAndNamedInOutcome(t *testing.T) {
 	runBattleToEnd(t, pool, NewBattleTickHandler(pool, h.eventStore, h.scheduler, fb, h.clk), f.worldID, battleID, 50)
 	if got := divineOf(f.attacker); got != "favor" {
 		t.Fatalf("attacker divine after kharis change = %q, want favor", got)
+	}
+	// …and their dice still carry it: 200 spearmen → 180 active → 90 dice → ×1.05.
+	var first BattleSideRoundResult
+	if err := json.Unmarshal(loadBattleRounds(t, pool, battleID)[0].attacker, &first); err != nil {
+		t.Fatal(err)
+	}
+	if first.DiceRolled < 94 || first.DiceRolled > 95 {
+		t.Fatalf("attacker first-round dice = %d, want 94–95 (favor frozen at join)", first.DiceRolled)
 	}
 
 	want := map[string]string{"BattleWon": "favor", "BattleLost": "wrath"}
