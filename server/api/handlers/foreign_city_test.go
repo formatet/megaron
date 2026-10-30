@@ -288,6 +288,28 @@ func TestForeignCity_LevelsAndWhitelist(t *testing.T) {
 		}
 	})
 
+	t.Run("deposits around a foreign city only on hexes the viewer knows", func(t *testing.T) {
+		if _, err := pool.Exec(ctx,
+			`INSERT INTO map_tiles (world_id, q, r, terrain, copper_deposit, tin_deposit) VALUES ($1, 9, 0, 'plains', true, false), ($1, 7, 0, 'plains', false, true)`,
+			worldID); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := pool.Exec(ctx,
+			`INSERT INTO player_scouted_tiles (world_id, player_id, q, r) VALUES ($1, $2, 7, 0)`, worldID, viewerID); err != nil {
+			t.Fatal(err)
+		}
+		_, body := raw("/provinces/" + remembered.province.String())
+		var p struct {
+			Catchment []string `json:"catchment_deposits"`
+		}
+		if err := json.Unmarshal([]byte(body), &p); err != nil {
+			t.Fatal(err)
+		}
+		if len(p.Catchment) != 1 || p.Catchment[0] != "tin" {
+			t.Fatalf("catchment deposits = %v, want only tin (the remembered hex), never the unseen copper", p.Catchment)
+		}
+	})
+
 	t.Run("market board: only the viewer's own last reading", func(t *testing.T) {
 		if _, err := pool.Exec(ctx, `INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, 'market', 1)`, marketon.settlement); err != nil {
 			t.Fatal(err)
