@@ -26,3 +26,13 @@ it anyway. Per-terrain tables (move costs, fishing rules, palettes, labels) are 
 
 Proof: full suite green before and after (fresh DB each), a guard test that fails on a new hardcoded list,
 a test that the SQL functions agree with Go for every terrain, mutants (drop a terrain from each owner → named red tests).
+
+## Result (LIVE `445cb3af`, mig 231, 2026-10-30)
+
+- Suite: baseline `01d2dc5f` green; slice green (Go all packages + 880 web tests), fresh DB each.
+- Mutants (fresh detached worktree each): Go `IsNavigable` without ford → `pathfind_ford_test.go:77`, `river_current_test.go:70`,
+  `water_test.go:43`; Go `IsWaterBarrier` without river → `chariot_test.go:40`, `courier_pathfind_test.go:41`,
+  `pathfind_test.go:161`, `place_reach_test.go:563` …; SQL navigable without river → `water_test.go:62` (only the
+  agreement test — production SQL coverage of river catchment is thin, the agreement test carries it); JS barrier
+  without river → `terrain.test.mjs` + "river march: real map destination…".
+- Live ground state: `terrain_is_sea`/`terrain_is_navigable` over `map_tiles` give sea=coastal/deep, navigable=+river/ford; no errors in journal.
