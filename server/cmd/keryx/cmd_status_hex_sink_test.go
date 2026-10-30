@@ -95,7 +95,7 @@ func TestStatusBuildSinkUsesAllPlacementHexes(t *testing.T) {
 			if placementCalls != 1 {
 				t.Fatalf("placement-options calls=%d want 1", placementCalls)
 			}
-			warns := strings.Contains(out, "produces with no receiver (`keryx place`)")
+			warns := strings.Contains(out, "makes more than known sinks absorb")
 			want := stock > 3*fullFarm
 			if warns != want {
 				t.Fatalf("stock=%g full sink=%g warning=%t want %t; output:\n%s", stock, 3*fullFarm, warns, want, out)
