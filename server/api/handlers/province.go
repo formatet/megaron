@@ -106,9 +106,12 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// ID is expected — check for that before giving a bare 404.
 		var sName string
 		var sProvinceID uuid.UUID
+		// Own settlements only: for another ruler's id the hint would confirm
+		// the city exists (megaron_kontrakt_frammande_stad, level 0).
+		viewer, _ := auth.PlayerIDFromContext(r.Context())
 		if sErr := h.pool.QueryRow(r.Context(),
-			`SELECT name, province_id FROM settlements WHERE id = $1 AND world_id = $2`,
-			provinceID, worldID,
+			`SELECT name, province_id FROM settlements WHERE id = $1 AND world_id = $2 AND owner_id = $3`,
+			provinceID, worldID, viewer,
 		).Scan(&sName, &sProvinceID); sErr == nil {
 			writeError(w, http.StatusUnprocessableEntity,
 				fmt.Sprintf("that is a settlement ID, not a province ID — settlement %q sits in province %s; retry with --province %s (or just the settlement name)",
@@ -119,14 +122,34 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Another ruler's city is answered from a whitelist (foreign_city.go),
+	// before anything of the owner's body is computed.
+	var known func(q, r int, terrain string) bool
+	var foreign map[string]any
+	if sett, serr := loadSettlementByProvince(r.Context(), h.pool, provinceID, worldID); serr == nil {
+		if viewer, ok := auth.PlayerIDFromContext(r.Context()); !ok || sett.OwnerID == nil || viewer != *sett.OwnerID {
+			body, knownHex, ferr := h.foreignCityView(r.Context(), worldID, viewer, prov, sett)
+			if ferr != nil {
+				writeError(w, http.StatusInternalServerError, "could not load settlement")
+				return
+			}
+			if body == nil {
+				writeError(w, http.StatusNotFound, "province not found")
+				return
+			}
+			foreign, known = body, knownHex
+		}
+	}
+
 	// Collect deposit types present in the productive catchment ring
 	// (hexgrid.CatchmentRadius around the settlement's own hex, P1 — the own
 	// hex is excluded, same as every production query) so clients/agents can
-	// decide whether building a mine is worthwhile.
+	// decide whether building a mine is worthwhile. Around another ruler's
+	// city only hexes the viewer sees or remembers count.
 	var catchmentDeposits []string
 	catchQ, catchR := hexgrid.QRArrays(hexgrid.Ring(hexgrid.Coord{Q: prov.MapTile.Q, R: prov.MapTile.R}, hexgrid.CatchmentRadius))
 	cdrows, _ := h.pool.Query(r.Context(),
-		`SELECT DISTINCT
+		`SELECT mt.q, mt.r, mt.terrain,
 		    CASE WHEN copper_deposit THEN 'copper' END,
 		    CASE WHEN tin_deposit    THEN 'tin'    END,
 		    CASE WHEN COALESCE(silver_deposit,false) THEN 'silver' END,
@@ -141,8 +164,13 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 	if cdrows != nil {
 		seen := make(map[string]bool)
 		for cdrows.Next() {
+			var q, rr int
+			var terrain string
 			var copper, tin, silver, cedar, incense *string
-			_ = cdrows.Scan(&copper, &tin, &silver, &cedar, &incense)
+			_ = cdrows.Scan(&q, &rr, &terrain, &copper, &tin, &silver, &cedar, &incense)
+			if known != nil && !known(q, rr, terrain) {
+				continue
+			}
 			for _, v := range []*string{copper, tin, silver, cedar, incense} {
 				if v != nil && !seen[*v] {
 					seen[*v] = true
@@ -169,6 +197,18 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		"cedar_deposit":      prov.CedarDeposit,
 		"incense_deposit":    prov.IncenseDeposit,
 		"catchment_deposits": catchmentDeposits,
+	}
+	if foreign != nil {
+		// The city hex's own deposits only if the hex itself is in sight or memory
+		// (a board read from afar gives contact without the hex).
+		if !known(prov.MapTile.Q, prov.MapTile.R, prov.TerrainType) {
+			for _, k := range []string{"copper_deposit", "tin_deposit", "silver_deposit", "cedar_deposit", "incense_deposit"} {
+				delete(resp, k)
+			}
+		}
+		resp["settlement"] = foreign
+		writeJSON(w, http.StatusOK, resp)
+		return
 	}
 
 	sett, err := loadSettlementByProvince(r.Context(), h.pool, provinceID, worldID)
@@ -1044,7 +1084,8 @@ func (h *ProvinceHandler) GetArmy(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sett, err := loadSettlementByProvince(r.Context(), h.pool, provinceID, worldID)
-	if err != nil {
+	if err != nil || !h.isOwnSettlement(r, sett.ID) && !h.cityInLiveSight(r, worldID, provinceID) {
+		// A garrison is seen on the same terms as the map's: live sight only.
 		writeError(w, http.StatusNotFound, "no settlement in province")
 		return
 	}
@@ -1598,7 +1639,9 @@ func (h *ProvinceHandler) Buildings(w http.ResponseWriter, r *http.Request) {
 	}
 
 	settlementID, err := resolveSettlementID(r.Context(), h.pool, provinceID, worldID)
-	if err != nil {
+	if err != nil || !h.isOwnSettlement(r, settlementID) {
+		// Another ruler's city answers as if no city stood here
+		// (megaron_kontrakt_frammande_stad: "allt annat döljs").
 		writeJSON(w, http.StatusOK, []any{})
 		return
 	}
@@ -2812,7 +2855,9 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	}
 
 	settlementID, err := resolveSettlementID(r.Context(), h.pool, provinceID, worldID)
-	if err != nil {
+	if err != nil || !h.isOwnSettlement(r, settlementID) {
+		// Another ruler's city answers as if no city stood here
+		// (megaron_kontrakt_frammande_stad: "allt annat döljs").
 		writeJSON(w, http.StatusOK, []any{})
 		return
 	}
@@ -3071,7 +3116,7 @@ func (h *ProvinceHandler) Ticklog(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	sett, err := loadSettlementByProvince(r.Context(), h.pool, provinceID, worldID)
-	if err != nil {
+	if err != nil || !h.isOwnSettlement(r, sett.ID) {
 		writeError(w, http.StatusNotFound, "no settlement here")
 		return
 	}

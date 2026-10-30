@@ -114,12 +114,15 @@ func RecordBoardReading(ctx context.Context, db boardDB, worldID, readerID uuid.
 // ruler's board within reach. A board read from beyond the city hex also makes
 // the city's hex known by word (player_heard_tiles): reader can write there,
 // but heard hexes never open trade offers (Timothy 2026-10-28 20:53).
-func ReadBoardsAt(ctx context.Context, db boardDB, worldID, readerID uuid.UUID, boards []MarketBoard, pos province.MapPosition, tick int) error {
+func ReadBoardsAt(ctx context.Context, db contactDB, worldID, readerID uuid.UUID, boards []MarketBoard, pos province.MapPosition, tick int) error {
 	for _, b := range boards {
 		if b.OwnerID == readerID || province.HexDistance(b.Pos, pos) > BoardReach(b.Level) {
 			continue
 		}
 		if err := RecordBoardReading(ctx, db, worldID, readerID, b, tick); err != nil {
+			return err
+		}
+		if err := RecordContact(ctx, db, worldID, readerID, b.SettlementID, ContactMarketBoard, tick); err != nil {
 			return err
 		}
 		if _, err := db.Exec(ctx,

@@ -27,6 +27,7 @@ import { zoomStep, clampPan, visibleWidth } from './camera.js';
 import { bindMapInput } from './map_input.js';
 import { confirmInline, showInlineResult } from '../ui/inline_result.js';
 import { readingHTML } from '../ui/market_board.js';
+import { foreignIntelHTML } from '../ui/foreign_city.js';
 import { fmtTickTime } from '../ui/fmt_clock.js';
 import { unitHoverLines } from '../ui/hover.js';
 import { drawStorm, STORM_FRAMES } from './storms.js';
@@ -3529,7 +3530,7 @@ function openCityPanel(h, tile, marker, units, foreignUnits) {
     .catch(() => showDefence(null));
 
   const foot = document.getElementById('ip-foot');
-  let footHtml = '<div id="ip-board"></div>' + placePanelHTML(tile) + unitListHTML(units, foreignUnits);
+  let footHtml = '<div id="ip-intel"></div><div id="ip-board"></div>' + placePanelHTML(tile) + unitListHTML(units, foreignUnits);
   // A settlement OR a wandering host can send — the host's first contact with a
   // met city is one of its designed uses (mig 087; sendMessengerFromInspect
   // picks the endpoint).
@@ -3548,13 +3549,16 @@ function openCityPanel(h, tile, marker, units, foreignUnits) {
   bindUnitButtons(foot);
   bindMarchButton(document.getElementById('ip-march-btn'), destFromHex(h, tile, marker), 'land');
 
-  // The market board as your people last read it — the server sends only
-  // your own reading, never the board as it stands.
+  // What you know of the city (when, from whom) and its market board as your
+  // people last read it — the server sends only that, never the city as it stands.
   fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${marker.id}`)
     .then(r => r.ok ? r.json() : null)
     .then(p => {
+      if (State.selectedHex?.q !== h.q || State.selectedHex?.r !== h.r) return;
+      const intel = document.getElementById('ip-intel');
+      if (intel) intel.innerHTML = foreignIntelHTML(p?.settlement);
       const box = document.getElementById('ip-board');
-      if (box && State.selectedHex?.q === h.q && State.selectedHex?.r === h.r) box.innerHTML = readingHTML(p?.settlement?.market_board);
+      if (box) box.innerHTML = readingHTML(p?.settlement?.market_board);
     })
     .catch(() => {});
 

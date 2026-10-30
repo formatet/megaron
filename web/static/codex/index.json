@@ -1111,6 +1111,36 @@
       ]
     },
     {
+      "id": "foreign-cities",
+      "title": "Other rulers' cities",
+      "category": "The wider world",
+      "related": [
+        "contact",
+        "sight",
+        "messengers",
+        "market"
+      ],
+      "sections": [
+        {
+          "id": "foreign-cities-three-levels",
+          "title": "Three ways of knowing"
+        },
+        {
+          "id": "foreign-cities-hidden",
+          "title": "What stays hidden"
+        },
+        {
+          "id": "foreign-cities-learning-more",
+          "title": "Learning more"
+        }
+      ],
+      "terms": [
+        "foreign city",
+        "other cities",
+        "intel"
+      ]
+    },
+    {
       "id": "messengers",
       "title": "Messengers and letters",
       "category": "The wider world",

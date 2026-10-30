@@ -12,7 +12,7 @@ Contact is earned by walking, and once earned it never lapses. Sending a messeng
 
 Cities you have contacted appear in **Diplomacy → Letters → Write**. Choose **Write** to ask their Wanax what they need or can spare; market knowledge comes through [[messengers|correspondence]]. A city's [[market|market board]] tells you whom to ask.
 
-Contact reveals that city’s location, not the surrounding land or its current activity.
+Contact reveals that city’s location, not the surrounding land or its current activity. What your people saw inside it is described in [[foreign-cities]].
 
 **A letter you receive tells you who wrote, not where they live.** It opens no contact and puts nothing on your map. You can still answer it — your reply goes home with the same [[runners|runner]] while it waits.
 
