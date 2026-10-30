@@ -210,22 +210,6 @@ body:has(.auth-page) main {
   pointer-events: none;
 }
 
-/* tagline — subtle, sits just above the login overlay */
-.auth-hero {
-  position: absolute;
-  bottom: 13rem;
-  left: 0; right: 0;
-  text-align: center;
-  pointer-events: none;
-}
-.tagline {
-  color: var(--text-light);
-  font-style: italic;
-  font-size: var(--fs-base);
-  letter-spacing: 0.05em;
-  text-shadow: 0 1px 4px rgba(15,14,13,0.9), 0 0 20px rgba(15,14,13,0.7);
-}
-
 /* ── Auth form panel — overlay at bottom-center of artwork ── */
 .auth-forms {
   position: absolute;
@@ -277,27 +261,6 @@ body:has(.auth-page) main {
 .inline-fields { display: flex; gap: 0.5rem; align-items: center; }
 .inline-fields label { white-space: nowrap; }
 
-.unit-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-.unit-row label {
-  font-size: var(--fs-sm);
-  color: var(--text-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-.unit-row input {
-  width: 100%;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  color: var(--text-light);
-  padding: 0.3rem 0.5rem;
-  font-family: var(--mono);
-}
-
 /* ── Buttons ────────────────────────────────────────────────── */
 /* NES-discipline: no rounded corners, no gradients, no drop shadows */
 .btn-primary, .btn-secondary, .btn-danger, .btn-small {
@@ -321,13 +284,8 @@ body:has(.auth-page) main {
 .btn-danger          { background: var(--bg-panel);  border-color: var(--danger);   color: var(--danger); }
 .btn-danger:hover    { background: var(--danger);    border-color: var(--text);     color: var(--bg-panel); }
 .btn-small { padding: 0.25rem 0.8rem; font-size: var(--fs-sm); width: auto; margin-top: 0; }
-.btn-join        { background: var(--bg-panel); border-color: var(--sea);      color: var(--deep-sea); }
-.btn-join:hover  { background: var(--sea);      border-color: var(--deep-sea); color: var(--bg-panel); }
 
 .form-error { color: var(--danger); font-size: var(--fs-sm); min-height: 1.2em; margin-bottom: 0.5rem; }
-
-.worlds-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-.worlds-header h2 { margin-bottom: 0; }
 
 .create-panel { max-width: 500px; margin-bottom: 1.5rem; }
 
@@ -347,15 +305,6 @@ body:has(.auth-page) main {
 .state-active     { border-color: var(--safe);     color: var(--safe-text); }
 .state-collapsing { border-color: var(--danger);   color: var(--danger); }
 .state-ended      { border-color: var(--border-in);color: var(--border-in); }
-
-.culture-tag, .kingdom-tag {
-  display: inline-block;
-  padding: 0.1rem 0.5rem;
-  font-size: var(--fs-sm);
-  color: var(--text-dim);
-  border: 1px solid var(--border);
-  margin-left: 0.5rem;
-}
 
 /* ── Panels — papyrus scroll on fired-clay tablet ─────────────── */
 .panel {
@@ -379,7 +328,7 @@ body:has(.auth-page) main {
 .ucard-focus { outline: 2px solid var(--accent-war); outline-offset: -2px; background: var(--bg-raised); }
 
 /* ── Worlds page ────────────────────────────────────────────── */
-.page-worlds h2 { margin-bottom: 1.5rem; }
+
 .world-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
 .world-card {
   display: block;
@@ -396,36 +345,9 @@ body:has(.auth-page) main {
 .world-date { font-size: var(--fs-sm); color: var(--text-dim); }
 
 /* ── Province page ──────────────────────────────────────────── */
-.province-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
-}
-.province-stats { display: flex; gap: 1rem; font-size: var(--fs-base); }
-
-.province-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-@media (max-width: 700px) { .province-grid { grid-template-columns: 1fr; } }
 
 /* Resource bar — Settlers 2 style */
-.resource-bar {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  background: var(--bg-panel);
-  border-bottom: 2px solid var(--border);
-  height: 40px; /* was 34px — .res-info stacks --fs-xs + --fs-base at line-height:1.1;
-                   the bigger typography scale left ~1px of headroom at 34px, bumped for safety */
-  flex-shrink: 0;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  margin-bottom: 1rem;
-}
+
 .res {
   display: flex;
   align-items: center;
@@ -436,61 +358,19 @@ body:has(.auth-page) main {
   white-space: nowrap;
   flex-shrink: 0;
 }
-.res-icon { width: 18px; height: 18px; image-rendering: pixelated; flex-shrink: 0; }
-.res-info  { display: flex; flex-direction: column; line-height: 1.1; }
-.res-name  { font-size: var(--fs-xs); color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; font-family: var(--mono); }
-.res-val   { font-size: var(--fs-base); font-weight: bold; color: var(--accent); font-family: var(--mono); }
-.res-rate  { font-size: var(--fs-xs); color: var(--border-in); font-family: var(--mono); }
-.res-mood  { font-size: var(--fs-sm); color: var(--gold); }
-
-/* Army table */
-.army-table { width: 100%; border-collapse: collapse; }
-.army-table td { padding: 0.25rem 0; font-size: var(--fs-base); }
-.army-table td.num { text-align: right; font-family: var(--mono); color: var(--gold); }
 
 /* Build queue */
 .build-queue { list-style: none; }
 .build-queue li { display: flex; justify-content: space-between; padding: 0.3rem 0; border-bottom: 1px solid var(--border); font-size: var(--fs-sm); }
-.building-type { text-transform: capitalize; }
-.complete-at { color: var(--text-dim); font-family: var(--mono); font-size: var(--fs-sm); }
 
 /* March list */
-.march-list { list-style: none; }
-.march-list li { padding: 0.3rem 0; border-bottom: 1px solid var(--border); font-size: var(--fs-sm); }
-.intent-tag {
-  display: inline-block;
-  padding: 0 0.4rem;
-  font-size: var(--fs-sm);
-  border: 1px solid;
-  text-transform: uppercase;
-  margin-right: 0.3rem;
-}
-.march-attack   .intent-tag, .intent-tag.attack    { border-color: var(--danger); color: var(--danger); }
-.march-support  .intent-tag, .intent-tag.support   { border-color: var(--safe);   color: var(--safe-text); }
-.march-reinforce .intent-tag, .intent-tag.reinforce { border-color: var(--gold);   color: var(--gold); }
+
 .arrives { color: var(--text-dim); font-size: var(--fs-sm); margin-left: 0.5rem; }
 
 /* ── Map page ───────────────────────────────────────────────── */
 .map-page { display: flex; flex-direction: column; gap: 0.8rem; }
-.map-toolbar { display: flex; align-items: center; gap: 1rem; }
-.map-container {
-  overflow: auto;
-  border: 1px solid var(--border);
-  background: #0a0e18;
-  max-height: 70vh;
-}
-#hex-map { display: block; }
 
-.map-legend { display: flex; gap: 1rem; flex-wrap: wrap; font-size: var(--fs-sm); }
-.legend-item { display: flex; align-items: center; gap: 0.3rem; }
-.legend-item::before { content: '■'; font-size: var(--fs-base); }
-.terrain-plains::before   { color: #c8b97a; }
-.terrain-forest::before   { color: #4a7c59; }
-.terrain-hills::before    { color: #a08050; }
-.terrain-mountain::before { color: #7a7a7a; }
-.terrain-coast::before    { color: #d4b483; }
-.terrain-sea::before      { color: #2e5f8a; }
-.terrain-fog::before      { color: #1a1a2e; }
+#hex-map { display: block; }
 
 .tile-tooltip {
   position: fixed;
@@ -504,167 +384,29 @@ body:has(.auth-page) main {
 }
 
 /* ── Province page panels ───────────────────────────────────── */
-.province-page { display:flex; flex-direction:column; gap:.8rem; }
-.province-header { display:flex; justify-content:space-between; align-items:center; }
-.ph-left { display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; }
-.ph-name { color:var(--accent); margin:0; font-size:var(--fs-lg); }
-.ph-right { display:flex; gap:.5rem; }
-.stat-chip { background:var(--bg-panel); border:1px solid var(--border); padding:.15rem .5rem; font-size:var(--fs-sm); color:var(--text); font-family:var(--mono); }
-.stat-chip strong { color:var(--accent); }
-.deposit-chip { color:var(--safe-text); border-color:var(--safe); }
-.msg-chip { color:var(--gold); border-color:var(--gold); text-decoration:none; cursor:pointer; }
-
-/* Settlement switcher (shown when player owns multiple settlements) */
-.sett-switcher { display:flex; gap:.3rem; flex-wrap:wrap; }
-.sett-switch-link { background:var(--bg-panel); border:1px solid var(--border); padding:.2rem .7rem; font-size:var(--fs-sm); font-family:var(--mono); color:var(--text-dim); text-decoration:none; }
-.sett-switch-link.active { background:var(--accent); color:var(--text-light); border-color:var(--border-in); }
-.sett-switch-link:hover:not(.active) { background:var(--bg-raised); color:var(--text); }
 
 /* Incoming attack banner */
 .attack-warn { background:var(--blood); color:var(--bg-raised); padding:.6rem .9rem; border:2px solid var(--border-in); }
-.aw-title  { font-size:var(--fs-sm); text-transform:uppercase; letter-spacing:.15em; color:var(--gold); font-family:var(--mono); margin-bottom:.2rem; }
-.aw-name   { font-size:var(--fs-base); font-weight:bold; }
-.aw-detail { font-size:var(--fs-sm); color:var(--bg-raised); margin-top:.2rem; }
-.aw-detail strong { color:var(--warm-white); }
-
-.province-grid {
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr;
-  gap:.8rem;
-}
-@media(max-width:900px) { .province-grid { grid-template-columns:1fr 1fr; } }
-@media(max-width:600px) { .province-grid { grid-template-columns:1fr; } }
-
-/* Army */
-.army-table { width:100%; border-collapse:collapse; font-size:var(--fs-base); }
-.army-table td { padding:.2rem 0; vertical-align:middle; }
-.army-table td.num { text-align:right; color:var(--accent); font-family:var(--mono); font-weight:bold; }
-.unit-icon { image-rendering:pixelated; vertical-align:middle; margin-right:4px; }
-.army-dp-row { display:flex; justify-content:space-between; margin-top:.4rem; padding-top:.3rem; border-top:1px solid var(--bg-raised); font-size:var(--fs-sm); }
-.army-dp-label { color:var(--text-dim); text-transform:uppercase; letter-spacing:.06em; }
-.army-dp-val { color:var(--safe-text); font-family:var(--mono); font-weight:bold; }
-
-/* Recruit */
-.recruit-grid { display:flex; flex-direction:column; gap:.4rem; }
-.recruit-row { display:flex; align-items:center; gap:.4rem; cursor:default; }
-.recruit-label { width:60px; font-size:var(--fs-sm); color:var(--text); }
-.recruit-cost  { flex:1; font-size:var(--fs-sm); color:var(--text-dim); font-family:var(--mono); }
-.recruit-count { width:48px; background:var(--warm-white); border:1px solid var(--border); padding:.2rem; font-size:var(--fs-sm); text-align:center; }
-.unit-unavailable { opacity:.35; pointer-events:none; }
-.unit-unavailable .recruit-cost { color:var(--text-dim); font-style:italic; }
-/* Affordability — can build but lacks resources */
-.unit-unaffordable { opacity:.55; }
-.unit-unaffordable .recruit-cost { color:var(--danger); font-style:italic; }
-
-/* Build queue */
-.bq-list { display:flex; flex-direction:column; gap:.5rem; margin-bottom:.6rem; }
-.bq-row  { display:flex; justify-content:space-between; font-size:var(--fs-sm); margin-bottom:2px; }
-.bq-name { font-family:var(--mono); color:var(--accent); text-transform:uppercase; letter-spacing:.08em; font-weight:bold; }
-.bq-time { color:var(--border-in); font-family:var(--mono); }
-.bq-bar-wrap { background:var(--bg-raised); border:1px solid var(--border); height:6px; }
-.bq-bar { height:100%; background:var(--accent); transition:width 1s linear; }
-
-/* Buildings */
-.bldg-section { margin:.6rem 0; }
-.lp-title { font-size:var(--fs-sm); color:var(--text-dim); text-transform:uppercase; letter-spacing:.15em; margin-bottom:.3rem; font-family:var(--mono); }
-.bldg-wrap { display:flex; flex-wrap:wrap; gap:3px; }
-.bldg-tag    { background:var(--accent);    color:var(--bg-raised); padding:2px 6px; font-size:var(--fs-sm); letter-spacing:.05em; font-family:var(--mono); }
-.bldg-tag.l2 { background:var(--text-dim); }
-.bldg-tag.l3 { background:var(--border-in); }
 
 /* Build form */
-.build-form-wrap { margin-top:.8rem; border-top:1px solid var(--border); padding-top:.8rem; }
+
 .build-select { width:100%; background:var(--warm-white); border:2px solid var(--border); color:var(--text); padding:.4rem; font-size:var(--fs-sm); margin-bottom:0; font-family:var(--mono); }
 
 /* March */
-.march-list { list-style:none; display:flex; flex-direction:column; gap:.3rem; }
-.march-item { display:flex; align-items:center; gap:.4rem; font-size:var(--fs-sm); }
-.intent-badge { font-family:var(--mono); font-size:var(--fs-sm); padding:.1rem .3rem; text-transform:uppercase; letter-spacing:.05em; }
-.intent-attack    { background:var(--blood);   color:var(--bg-raised); }
-.intent-support   { background:var(--safe);    color:var(--text); }
-.intent-reinforce { background:var(--sea);     color:var(--bg-panel); }
-.march-target { color:var(--border-in); font-size:var(--fs-sm); font-family:var(--mono); flex:1; overflow:hidden; text-overflow:ellipsis; }
-.march-time   { color:var(--text-dim); font-size:var(--fs-sm); white-space:nowrap; }
-.march-recall { margin-left:auto; padding:.1rem .35rem; font-size:var(--fs-sm); opacity:.6; }
-.march-recall:hover { opacity:1; }
-.march-units  { color:var(--border-in); font-size:var(--fs-sm); }
+
 .incoming-header { color:var(--accent); font-size:var(--fs-sm); text-transform:uppercase; letter-spacing:.1em; margin:.6rem 0 .3rem; }
 .incoming-list { border-top:1px solid var(--border); padding-top:.3rem; }
 
-/* Goods */
-.goods-table { width:100%; border-collapse:collapse; font-size:var(--fs-sm); }
-.goods-table th { text-align:left; font-size:var(--fs-sm); color:var(--text-dim); text-transform:uppercase; letter-spacing:.08em; font-family:var(--mono); border-bottom:1px solid var(--border); padding:.15rem 0; }
-.goods-table td { padding:.2rem 0; border-bottom:1px solid var(--bg-raised); vertical-align:middle; }
-.goods-table tr:last-child td { border-bottom:none; }
-.g-name { color:var(--text); }
-.g-num  { text-align:right; font-family:var(--mono); color:var(--accent); padding-left:.4rem; }
-.g-cat  { font-size:var(--fs-sm); color:var(--text-dim); font-family:var(--mono); }
-
-/* Temple / cult level */
-.cult-mood-chip { display:inline-block; padding:.2rem .7rem; font-family:var(--mono); font-size:var(--fs-sm); letter-spacing:.07em; background:var(--gold); color:var(--text); border:1px solid var(--safe); margin-bottom:.3rem; }
-.lp-label { font-size:var(--fs-sm); color:var(--text-dim); font-family:var(--mono); }
-
 /* Trade quantity input — small inline number field */
 .trade-qty-input { width:100%; background:var(--warm-white); border:1px solid var(--border); color:var(--text); padding:.3rem; font-size:var(--fs-sm); margin:.2rem 0; font-family:var(--mono); }
-
-/* Battle log */
-.battle-entry { margin-bottom:.6rem; border-bottom:1px solid var(--bg-raised); padding-bottom:.5rem; }
-.battle-entry:last-child { border-bottom:none; }
-.battle-meta { display:flex; gap:.5rem; align-items:center; margin-bottom:.25rem; }
-.be-intent { font-family:var(--mono); font-size:var(--fs-sm); letter-spacing:.08em; text-transform:uppercase;
-  padding:.1rem .35rem; border:1px solid; }
-.be-intent-attack    { color:var(--blood); border-color:var(--blood); }
-.be-intent-reinforce { color:var(--sea); border-color:var(--sea); }
-.be-intent-support   { color:var(--safe-text); border-color:var(--safe); }
-.be-when { font-size:var(--fs-sm); color:var(--text-dim); font-family:var(--mono); }
-.be-dir     { font-family:var(--mono); font-size:var(--fs-sm); letter-spacing:.06em; padding:.1rem .3rem; }
-.be-dir-out { color:var(--safe-text); }
-.be-dir-in  { color:var(--danger); }
-.battle-report { font-family:var(--mono); font-size:var(--fs-sm); white-space:pre-wrap; line-height:1.5;
-  background:var(--bg); color:var(--text-light); padding:.4rem .5rem; margin:0; border:1px solid var(--border-in); }
 
 /* Trade routes en-route list */
 .trade-routes-list { margin-top:.3rem; display:flex; flex-direction:column; gap:.25rem; }
 .trade-route-row { display:flex; align-items:center; gap:.3rem; font-size:var(--fs-sm); font-family:var(--mono); padding:.15rem 0; border-bottom:1px solid var(--bg-raised); }
 .trade-route-row:last-child { border-bottom:none; }
-.tr-good { color:var(--text-dim); text-transform:uppercase; font-size:var(--fs-sm); letter-spacing:.06em; flex:1.2; }
-.tr-qty  { color:var(--text); }
-.tr-bonus { color:var(--safe-text); font-size:var(--fs-sm); }
-.tr-arrow { color:var(--text-dim); }
-.tr-dest { color:var(--text); flex:1.5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.tr-eta  { color:var(--safe-text); font-size:var(--fs-sm); margin-left:auto; }
-
-/* Foundry / craft panel */
-.recipe-line { font-size:var(--fs-sm); font-family:var(--mono); color:var(--text-dim); margin:.2rem 0; }
-
-/* Gossip / rumours list */
-.gossip-list { margin-top:.3rem; display:flex; flex-direction:column; gap:.4rem; }
-.gossip-entry { font-size:var(--fs-sm); border-bottom:1px solid var(--bg-raised); padding-bottom:.4rem; }
-.gossip-entry:last-child { border-bottom:none; }
-.ge-region { display:block; font-size:var(--fs-sm); text-transform:uppercase; letter-spacing:.07em; color:var(--text-dim); }
-.ge-text { display:block; color:var(--text); margin:.1rem 0; font-style:italic; }
-.ge-time { display:block; font-size:var(--fs-sm); color:var(--text-dim); }
-.ge-cat-divine_favour .ge-text { color:var(--gold); }
-.ge-cat-divine_favour .ge-region { color:var(--gold); }
-.ge-cat-divine_wrath .ge-text { color:var(--danger); }
-.ge-cat-divine_wrath .ge-region { color:var(--danger); }
-.ge-cat-battle .ge-text { color:var(--blood); }
-.ge-cat-battle .ge-region { color:var(--blood); }
 
 /* Shared action result line */
 .action-result { margin-top:.4rem; font-size:var(--fs-sm); min-height:1em; color:var(--accent); font-family:var(--mono); }
-
-/* ── Kingdom page ───────────────────────────────────────────── */
-.kingdom-header { margin-bottom: 1.5rem; }
-.kingdom-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
-.no-kingdom { max-width: 400px; }
-.no-kingdom h2 { margin-bottom: 0.5rem; }
-.no-kingdom p { color: var(--text-dim); margin-bottom: 1.5rem; }
-
-/* ── Dispossessed page ──────────────────────────────────────── */
-.dispossessed-page { text-align: center; padding: 4rem 2rem; }
-.dispossessed-page h2 { margin-bottom: 1rem; }
-.dispossessed-page p { color: var(--text-dim); margin-bottom: 2rem; }
 
 /* ── Loading state ──────────────────────────────────────────── */
 .loading { color: var(--text-dim); font-style: italic; font-size: var(--fs-sm); }
@@ -672,191 +414,12 @@ body:has(.auth-page) main {
 .htmx-request .htmx-indicator { display: inline; }
 
 /* ── Wanaxes (standings) page ──────────────────────────────────── */
-.wanaxes-page { padding: 1rem 0; }
-.wanaxes-page h2 { margin-bottom: 1rem; }
+
 .wanax-table { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); }
 .wanax-table th { text-align: left; padding: .4rem .6rem; background: var(--bg-panel); border-bottom: 2px solid var(--border); color: var(--text-dim); font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: .05em; }
 .wanax-table td { padding: .35rem .6rem; border-bottom: 1px solid var(--bg-raised); color: var(--text); }
-.wanax-table .num-col { text-align: right; font-family: var(--mono); }
-.wanax-table .walls-col { font-family: var(--mono); }
-.wanax-table .settle-name { font-weight: bold; color: var(--accent); }
-.wanax-table .own-row td { background: color-mix(in srgb, var(--bg-raised) 30%, transparent); }
+
 .wanax-table .dim { color: var(--text-dim); }
-.culture-tag.small { font-size: var(--fs-sm); padding: .05rem .3rem; }
-
-/* ── Kingdom page extras ────────────────────────────────────── */
-.treasury-balance { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:.3rem; }
-.tr-bal-label { font-size:var(--fs-sm); text-transform:uppercase; letter-spacing:.12em; color:var(--text-dim); font-family:var(--mono); }
-.tr-bal-val   { font-size:var(--fs-md); font-family:var(--mono); color:var(--gold); }
-.tr-tribute   { font-size:var(--fs-sm); color:var(--text-dim); font-family:var(--mono); }
-.tr-tribute-val { color:var(--safe-text); }
-
-.borrowed-panel { grid-column: 2 / -1; }
-.borrow-form-panel { grid-column: 1 / 2; }
-.unit-row input { background:var(--warm-white); border:1px solid var(--border); padding:.25rem .4rem; font-family:var(--mono); font-size:var(--fs-sm); width:100%; }
-
-/* ── Megaron (hub page) ─────────────────────────────────────── */
-.megaron-page { display: flex; flex-direction: column; gap: 1.5rem; }
-
-.megaron-hero {
-  background: var(--bg-panel);
-  border: 2px solid var(--border);
-  box-shadow: inset 1px 1px 0 var(--bg-raised), inset -1px -1px 0 var(--border-in);
-  padding: 1.2rem 1.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-.mh-title { display: flex; flex-direction: column; gap: .2rem; }
-.mh-name  { font-size: var(--fs-xl); letter-spacing: .08em; color: var(--accent); margin: 0; }
-.mh-world { font-size: var(--fs-sm); font-family: var(--mono); color: var(--text-dim); letter-spacing: .1em; }
-
-.mh-stats { display: flex; gap: 1.2rem; flex-wrap: wrap; align-items: flex-end; }
-.mh-stat {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  border-left: 1px solid var(--border);
-  padding-left: 1rem;
-}
-.mh-stat:first-child { border-left: none; padding-left: 0; }
-.mhs-label { font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: .12em; color: var(--text-dim); font-family: var(--mono); }
-.mhs-val   { font-size: var(--fs-md); font-family: var(--mono); color: var(--accent); line-height: 1.2; }
-.mhs-rate  { font-size: var(--fs-sm); font-family: var(--mono); color: var(--safe-text); }
-
-.mood-Favorable  { color: var(--safe-text) !important; }
-.mood-Indifferent{ color: var(--gold) !important; }
-.mood-Suspicious { color: var(--border) !important; }
-.mood-Wrathful   { color: var(--danger) !important; }
-
-/* Room grid — 3 columns on wide, 2 on medium, 1 on narrow */
-.room-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-}
-@media (max-width: 900px) { .room-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 580px) { .room-grid { grid-template-columns: 1fr; } }
-
-.room-card {
-  display: flex;
-  flex-direction: column;
-  gap: .7rem;
-  background: var(--bg-panel);
-  border: 2px solid var(--border);
-  box-shadow: inset 1px 1px 0 var(--bg-raised), inset -1px -1px 0 var(--border-in);
-  padding: 1.1rem 1.2rem 1rem;
-  text-decoration: none;
-  color: var(--text);
-  transition: border-color .12s, background .12s;
-  cursor: pointer;
-  min-height: 130px;
-}
-.room-card:hover { border-color: var(--accent); background: var(--bg-raised); text-decoration: none; }
-.room-card--alert { border-color: var(--gold); }
-.room-card--alert:hover { border-color: var(--accent); }
-
-.room-lintel {
-  display: flex;
-  align-items: center;
-  gap: .6rem;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: .6rem;
-}
-.room-glyph {
-  font-size: var(--fs-lg);
-  color: var(--text-dim);
-  line-height: 1;
-  width: 1.8rem;
-  text-align: center;
-}
-.room-name {
-  font-size: var(--fs-sm);
-  text-transform: uppercase;
-  letter-spacing: .2em;
-  color: var(--accent);
-  font-family: var(--mono);
-}
-
-.room-status {
-  display: flex;
-  flex-direction: column;
-  gap: .2rem;
-  font-size: var(--fs-sm);
-  color: var(--text-dim);
-  font-family: var(--mono);
-  flex: 1;
-}
-.rs-alert { color: var(--gold); }
-.rs-dim   { color: var(--text-dim); font-style: italic; }
-
-.room-enter {
-  font-size: var(--fs-sm);
-  font-family: var(--mono);
-  letter-spacing: .1em;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  margin-top: auto;
-}
-.room-card:hover .room-enter { color: var(--accent); }
-
-/* Nav badge for unread count */
-.nav-badge {
-  display: inline-block;
-  background: var(--accent);
-  color: var(--bg-raised);
-  font-size: var(--fs-xs);
-  font-family: var(--mono);
-  padding: .05rem .3rem;
-  line-height: 1.4;
-  vertical-align: middle;
-}
-
-/* ── Labor allocation panel ─────────────────────────────────────────── */
-.labor-hint {
-  font-size: var(--fs-sm);
-  color: var(--text-dim);
-  margin: .2rem 0 .5rem;
-  line-height: 1.4;
-}
-.labor-pool-line {
-  font-family: var(--mono);
-  font-size: var(--fs-sm);
-  color: var(--accent);
-  margin-bottom: .6rem;
-}
-.labor-pool-line span { font-weight: bold; }
-.labor-row {
-  margin-bottom: .7rem;
-  padding-bottom: .5rem;
-  border-bottom: 1px solid var(--border);
-}
-.labor-row:last-of-type { border-bottom: none; }
-.labor-row-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: .2rem;
-}
-.labor-good { font-size: var(--fs-sm); color: var(--text); }
-.labor-pct {
-  font-family: var(--mono);
-  font-size: var(--fs-sm);
-  color: var(--accent);
-  font-weight: bold;
-}
-.labor-slider {
-  width: 100%;
-  accent-color: var(--accent);
-}
-.labor-yield {
-  font-size: var(--fs-sm);
-  color: var(--text-dim);
-  font-family: var(--mono);
-  margin-top: .15rem;
-}
 
 /* ── Sprint 2: Map-first game shell ─────────────────────────────────────── */
 
@@ -1377,8 +940,7 @@ body:has(.auth-page) main {
   position: relative;
   transition: border-color 0.1s;
 }
-.obj-card.clickable { cursor: pointer; }
-.obj-card.clickable:hover { border-color: var(--accent); }
+
 .obj-icon  { font-size: var(--fs-base); flex-shrink: 0; width: 1.4rem; text-align: center; }
 .obj-info  { flex: 1; min-width: 0; }
 .obj-name  { font-size: var(--fs-sm); color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -1709,8 +1271,6 @@ body:has(.auth-page) main {
   flex-shrink: 0;
 }
 .city-tab { /* padding comes from .drawer-body */ }
-.stat-row-strong .sr-label { color: var(--text); font-weight: bold; }
-.stat-row-strong .sr-val   { color: var(--accent); font-size: var(--fs-sm); }
 
 /* Food stock direction and server-reported hunger in the settlement overview. */
 .food-state-growing  { color: var(--safe-text); }
@@ -1725,78 +1285,8 @@ body:has(.auth-page) main {
 }
 
 /* ── Diplomacy threads ───────────────────────────────────────────────────── */
-.dip-thread { border-bottom: 1px solid var(--border); }
-
-.dip-thread-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  padding: 0.5rem 0.6rem;
-  cursor: pointer;
-  background: var(--bg-panel);
-  user-select: none;
-}
-.dip-thread-header:hover { background: var(--bg-raised); }
-
-.dip-thread-expand-hint {
-  font-size: var(--fs-xs);
-  color: var(--text-dim);
-  margin-left: 0.3rem;
-}
-
-.dip-thread-preview {
-  padding: 0 0.6rem 0.35rem;
-  font-size: var(--fs-sm);
-  color: var(--text-dim);
-  font-style: italic;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  cursor: pointer;
-}
-.dip-thread-preview:hover { color: var(--text); }
-
-.dip-thread-body {
-  padding: 0.2rem 0.6rem 0.5rem;
-  display: none;
-}
-.dip-thread[data-open] .dip-thread-body { display: block; }
 
 /* Chat bubbles: received left, sent right */
-.dip-msg-row {
-  display: flex;
-  margin: 0.3rem 0;
-}
-.dip-msg-row-in  { justify-content: flex-start; }
-.dip-msg-row-out { justify-content: flex-end; }
-
-.dip-bubble {
-  max-width: 82%;
-  padding: 0.3rem 0.5rem;
-  border-radius: 0;
-  font-size: var(--fs-sm);
-  overflow-wrap: break-word;
-  word-break: break-word;
-  white-space: pre-wrap;
-}
-.dip-bubble-in {
-  background: var(--bg-raised);
-  border: 1px solid var(--border);
-  color: var(--text);
-}
-.dip-bubble-out {
-  background: var(--sandstone);
-  border: 1px solid var(--border-in);
-  color: var(--text);
-  text-align: right;
-}
-
-.dip-bubble-meta {
-  font-size: var(--fs-xs);
-  color: var(--text-dim);
-  margin-bottom: 0.15rem;
-}
-.dip-bubble-meta-out { text-align: right; }
 
 .dip-msg-text {
   font-size: var(--fs-sm);
@@ -1866,10 +1356,6 @@ body:has(.auth-page) main {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-}
-.dip-compose-status {
-  font-size: var(--fs-sm);
-  min-height: 1rem;
 }
 
 /* ── Codex — the player's wiki (ui/codex.js, megaron_plan_kodex.md) ────────
