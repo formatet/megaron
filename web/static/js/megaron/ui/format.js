@@ -254,7 +254,7 @@ export function notifIcon(kind) {
 // how long and how far, how much it saw, and what of value — deposits grouped
 // by kind, then foreign cities by name. "Nothing of value" is a real report,
 // never an empty one (same rule as ScoutReport).
-export function expeditionReportText(body) {
+function expeditionReportText(body) {
   const subject = body.name || 'The expedition';
   const finds = body.finds || [];
   const byKind = {};
@@ -995,7 +995,7 @@ export function messengerEnvelopeText(body) {
 }
 
 // Person first: these are sealed, frozen identities, never account logins.
-export function messengerEnvelopeParties(e) {
+function messengerEnvelopeParties(e) {
   const from = 'you' + (e.origin?.name ? `, at ${e.origin.name},` : '');
   const d = e.destination || {};
   if (e.kind === 'order' && d.own_unit) {

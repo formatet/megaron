@@ -17,7 +17,7 @@ import { openMobilePanel, closeMobilePanel } from './mobile_panels.js';
 
 // The name on the surface is terminology, and terminology is Timothy's call
 // (megaron_beslut_infor_playtest.md P6) — one constant so it changes in one place.
-export const CODEX_NAME = 'Codex';
+const CODEX_NAME = 'Codex';
 
 const BASE = '/static/codex/';
 
@@ -105,7 +105,7 @@ export function articleForDrawer(drawer, idx = index) {
 export function articleForEntity(kind,key,idx=index) {
  return idx?.articles.find(a=>!a.future&&(a.entities||[]).some(e=>e.kind===kind&&e.key===key))?.id||null;
 }
-export async function openCodexForEntity(kind,key) {
+async function openCodexForEntity(kind,key) {
  await ensureLoaded();const id=articleForEntity(kind,key);if(id)await openCodex(id);
 }
 
@@ -369,7 +369,7 @@ export function codexBack() {
   if (prev) renderArticle(prev); else renderIndex();
 }
 
-export function codexSearch(q) {
+function codexSearch(q) {
   const out = document.getElementById('codex-results');
   if (!out) return;
   if (!q.trim()) { out.innerHTML = ''; return; }

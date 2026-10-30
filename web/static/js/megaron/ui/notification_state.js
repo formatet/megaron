@@ -1,6 +1,6 @@
 import { fmtTickTime } from './fmt_clock.js';
 // Registered game time takes priority over a notification's delivery timestamp.
-export function notificationTick(n) {
+function notificationTick(n) {
   const body = typeof n.body === 'string' ? JSON.parse(n.body) : (n.body || n.payload || {});
   const tick = n.world_tick ?? body.world_tick;
   return Number.isInteger(tick) && tick >= 0 ? tick : null;
@@ -9,10 +9,10 @@ export function notificationDay(n) {
   const tick = notificationTick(n);
   return fmtTickTime(tick);
 }
-export function notificationBody(n) {
+function notificationBody(n) {
   return typeof n.body === 'string' ? JSON.parse(n.body) : (n.body || {});
 }
-export function compareNotifications(a, b) {
+function compareNotifications(a, b) {
   const at = notificationTick(a), bt = notificationTick(b);
   if (at != null && bt != null && at !== bt) return bt - at;
   return (Date.parse(b.created_at) || 0) - (Date.parse(a.created_at) || 0);

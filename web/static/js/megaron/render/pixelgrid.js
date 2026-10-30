@@ -263,14 +263,6 @@ export function toRuns(g) {
   return { runs, w: g.w, h: g.h };
 }
 
-/** Ritar en runs-siluett med övre vänstra hörnet i (ox, oy). */
-export function blitRuns(ctx, sprite, ox, oy, scale = 1) {
-  for (const r of sprite.runs) {
-    ctx.fillStyle = CITY_PALETTE[r.ch];
-    ctx.fillRect(ox + r.x * scale, oy + r.y * scale, r.n * scale, scale);
-  }
-}
-
 
 // ── Inhägnaden ───────────────────────────────────────────────────────────
 // En stad är inte en byggnadsklump — den är ett OMRÅDE. Referensbilden

@@ -24,7 +24,7 @@ function andList(xs) {
   return xs.length < 2 ? xs.join('') : xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1];
 }
 
-export function favouredText(god, favours) {
+function favouredText(god, favours) {
   const liked = Object.entries(favours || {}).filter(([, w]) => w > 1)
     .sort(([, a], [, b]) => b - a).map(([g]) => g);
   if (!liked.length) return '';

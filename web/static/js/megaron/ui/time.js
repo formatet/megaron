@@ -20,7 +20,7 @@ export { fmtClock } from './fmt_clock.js';
 // self-correcting across tempo shifts and downtime every time the anchor is
 // refreshed (bootstrap + WS reconnect). ISO path: plain diff against server
 // time (clock.js skew-anchored).
-export function msUntil(iso, arrivalTick) {
+function msUntil(iso, arrivalTick) {
   const tickMs = msUntilWorldTick(arrivalTick);
   if (Number.isFinite(tickMs)) return tickMs;
   if (iso == null || iso === '') return NaN;

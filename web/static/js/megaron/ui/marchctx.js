@@ -566,7 +566,7 @@ export function selectedMarchPicks(groups,selected) {
  return picks;
 }
 
-export function renderMarchUnitList() {
+function renderMarchUnitList() {
   const el = document.getElementById('mctx-units');
   const stanceRow = document.getElementById('mctx-stance-row');
   State.marchCtxGroups = [];

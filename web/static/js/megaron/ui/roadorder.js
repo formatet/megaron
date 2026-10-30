@@ -7,7 +7,7 @@ import { esc } from './format.js';
 
 // Terrain a road edge may touch at BOTH ends (server: province.IsRoadableTerrain).
 // Rivers, fords, sea and mountains never carry a road.
-export const ROADABLE_TERRAIN = [
+const ROADABLE_TERRAIN = [
   'plains', 'river_valley', 'river_delta', 'forest_olive_grove',
   'scrub_maquis', 'hills', 'forest_cedar', 'semi_desert',
 ];
@@ -36,7 +36,7 @@ export function roadNeighbours(from, tiles, edges) {
   return out;
 }
 
-export function terrainWords(t) { return String(t || '').replace(/_/g, ' '); }
+function terrainWords(t) { return String(t || '').replace(/_/g, ' '); }
 
 // roadPanelHTML is the hidden order row under a unit card. `from` is the hex the
 // army builds from (its field hex, or its city's hex).

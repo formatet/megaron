@@ -21,7 +21,7 @@
 // Iterera med `node tools/actorsheet.mjs` — den ritar hela tabellen förstorad
 // mot de tre terrängerna, utan browser, deploy eller server.
 
-export const ACTOR_PALETTE = {
+const ACTOR_PALETTE = {
   K: '#1F1A14',  // charcoal-kontur
   G: '#3B3325',  // djup skugga, ben, hjuleker
   W: '#6B5334',  // trä — skaft, vagn, skrov
@@ -254,7 +254,7 @@ export function spriteRuns(rows) {
   return { runs, w, h: rows.length };
 }
 
-export const ACTOR_SPRITES = {
+const ACTOR_SPRITES = {
   spearman:       spriteRuns(SPEARMAN),
   elite_infantry: spriteRuns(ELITE),
   war_chariot:    spriteRuns(CHARIOT),
@@ -276,7 +276,7 @@ export const INTENT_ACCENT = {
   scout:     '#7D6608',
   explore:   '#0E7490',
 };
-export const NEUTRAL_ACCENT = '#6A6252';
+const NEUTRAL_ACCENT = '#6A6252';
 
 // Foreign (non-owned) unit accent — violettgrå, Timothy 2026-08-03 efter
 // ögonkoll vid 1:1 i showcase-units.

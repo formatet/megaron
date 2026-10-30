@@ -2,7 +2,7 @@
 // fixed loss threshold; players choose a mode, never a percentage.
 import { esc } from './format.js';
 
-export const WHEN_LOSING_LABEL = 'Retreat when it goes badly';
+const WHEN_LOSING_LABEL = 'Retreat when it goes badly';
 export const RETREAT_PRESETS = [
   { value: 'when_losing', label: WHEN_LOSING_LABEL },
   { value: 'hold', label: 'Hold to the last man' },

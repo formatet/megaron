@@ -29,14 +29,6 @@ const ALIASES = {
   ship: 'galley', trireme: 'galley', chariot: 'war_chariot',
 };
 
-// Systemaktörer som inte bor i units-tabellen men som spelaren ser på kartan.
-// Budbäraren heter **Runner** (Timothy 2026-07-26) — inte messenger, inte
-// hemerodromos, inte keryx (Keryx är CLI-verktyget och skulle krocka).
-const ACTOR_LABELS = {
-  runner:  'Runner',
-  caravan: 'Caravan',
-};
-
 /** Kanonisk units.type för en nyckel som kan vara CamelCase eller legacy. */
 export function canonicalUnitType(type) {
   return ALIASES[type] || type;
@@ -46,11 +38,6 @@ export function canonicalUnitType(type) {
 export function unitTypeLabel(type) {
   const key = canonicalUnitType(type);
   return UNIT_LABELS[key] || type;
-}
-
-/** Spelarvänt namn för en systemaktör (Runner, karavan). */
-export function actorLabel(actor) {
-  return ACTOR_LABELS[actor] || actor;
 }
 
 /**

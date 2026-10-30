@@ -8,7 +8,7 @@
 
 export const ROAD_DUST = '#CDB67E';
 export const ROAD_SHADOW = '#4A3A24';
-export const ROAD_PLANNED = '#E3D3A4';
+const ROAD_PLANNED = '#E3D3A4';
 
 // Bresenham over whole pixels, endpoints included.
 export function linePixels(ax, ay, bx, by) {

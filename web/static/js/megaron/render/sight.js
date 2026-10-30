@@ -13,7 +13,7 @@ export function hexDist(q1, r1, q2, r2) {
 
 // Ordinary vantage: eye kind's base radius, +bonus for mountains. A sea hex is
 // read at this same vantage unless the open-water sightline reaches it.
-export function liveRadius(kind, terrain) {
+function liveRadius(kind, terrain) {
   let base = LIVE_RADIUS_BASE[kind] ?? LIVE_RADIUS_BASE.land;
   if (terrain === 'mountain_limestone' || terrain === 'mountain_red') base += LIVE_RADIUS_MOUNTAIN_BONUS;
   return base;

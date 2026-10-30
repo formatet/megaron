@@ -184,7 +184,7 @@ export function splitBuildValue(value) {
   const [type, god] = String(value).split(':');
   return { type, god: god || '' };
 }
-export function templeName(god) { return `Temple of ${TEMPLE_GODS[god] || god}`; }
+function templeName(god) { return `Temple of ${TEMPLE_GODS[god] || god}`; }
 
 export async function startBuild() {
   const world = State.WORLD_ID;

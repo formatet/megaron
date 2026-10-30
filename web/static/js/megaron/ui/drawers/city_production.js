@@ -25,7 +25,7 @@ export function productionSectionsHTML(city) {
 
 // Same sentence as keryx `status` (growthLine in cmd_status.go). growth_state
 // and food_net_per_tick come from the server's growth gate; '' if not reported.
-export function growthLineText(pd, includePopulation = true) {
+function growthLineText(pd, includePopulation = true) {
   const s = pd?.food;
   if (!s || !s.growth_state) return '';
   const prefix = includePopulation ? `Population ${n(pd.population)} — ` : '';
@@ -71,7 +71,7 @@ export function populationHTML(pd, idle, livestock, provinceID) {
     row('Livestock', n(Math.floor(livestock)));
 }
 
-export function harvestBlessingHTML(pd) {
+function harvestBlessingHTML(pd) {
   const b = pd?.harvest_blessing;
   if (!b || !(b.remaining_ticks > 0) || !(b.yield_bonus > 0) || !b.goods?.length) return '';
   const percent = Number((b.yield_bonus * 100).toFixed(6));
@@ -105,7 +105,7 @@ function calvesText(h) {
 }
 
 // The herd and its pen: count / cap. A full pen eats, then loses, new animals.
-export function herdHTML(h) {
+function herdHTML(h) {
   if (!h || !Number.isFinite(Number(h.count)) || !Number.isFinite(Number(h.cap))) return '';
   const full = Number(h.count) >= Number(h.cap);
   return `<p${full ? ' class="stat-warn"' : ''} title="A Pen raises the herd cap. Animals above the cap are eaten as food; any still above it after the meal are lost.">Herd ${fmtNum(h.count)} / ${fmtNum(h.cap)}${full ? ' — full: new animals are eaten, then lost' : ''}${calvesText(h)}</p>`;

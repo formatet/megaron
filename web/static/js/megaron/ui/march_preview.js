@@ -27,7 +27,7 @@ export function marchSilverLine(data) {
     + ' silver per game day in the field · ' + runway;
 }
 
-export function marchExpeditionPlanLine(data) {
+function marchExpeditionPlanLine(data) {
  if (!Number.isInteger(data.planned_expedition_ticks)) return '';
  const home = Number.isInteger(data.planned_home_by_tick_if_departing_now)
   ? ` — with immediate departure, home by ${fmtTickTime(data.planned_home_by_tick_if_departing_now)}` : '';

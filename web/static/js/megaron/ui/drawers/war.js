@@ -413,7 +413,7 @@ function applyUnitFocus() {
   card.scrollIntoView({ block: 'center' });
 }
 
-export function renderForceGroups(forces) {
+function renderForceGroups(forces) {
  return forceSections(forces).map(group=>'<div class="dsec"><div class="dsec-title">'+group.name+'</div>'+ (group.forces.length?group.forces.map(renderUnitCard).join(''):'<p class="empty-state">None.</p>')+'</div>').join('');
 }
 

@@ -308,7 +308,7 @@ const TOWN = wl => build(62, 42, [
   [[52, 23, 2], [4, 24, 2], [41, 34, 3]]);
 
 /** CITY_SPRITES[led][murnivå] — 2×4, genererade en gång vid modulladdning. */
-export const CITY_SPRITES = [HAMLET, TOWN]
+const CITY_SPRITES = [HAMLET, TOWN]
   .map(make => [0, 1, 2, 3].map(wl => make(wl)));
 
 // ── Var massan sitter i hexen ────────────────────────────────────────────

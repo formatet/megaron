@@ -60,14 +60,14 @@ const personName = p => p.owner || p.owner_name || 'Wanax';
 export function lettersState(state) {
   return { waiting_you: 'Waiting on you', waiting_them: 'Waiting on them', done: 'Done' }[state] || 'Done';
 }
-export function lettersListHTML(page) {
+function lettersListHTML(page) {
   return (page.items || []).map(p => `<button class="letter-person" data-person="${esc(p.counterpart_id)}"><strong>${esc(p.counterpart_name)}</strong><span class="letter-person-state">${lettersState(p.state)}${p.reply_before ? ' · before ' + esc(fmtTickTime(undefined,p.reply_before)) : ''}</span><span class="letter-person-preview">${esc(p.preview || '')}</span></button>`).join('') || '<p class="empty-state">No letters yet.</p>';
 }
 export function letterActions(m) {
   const actions = Array.isArray(m.actions) ? m.actions : [];
   return actions.filter(a => !(a === 'reply' && (m.reply_window_closed || (m.reply_before && Date.parse(m.reply_before) <= serverNow()))) && !(['trade_accept','trade_decline','trade_counter'].includes(a) && m.expires_at && Date.parse(m.expires_at) <= serverNow()));
 }
-export function offerLine(m) {
+function offerLine(m) {
   const o=m.trade_offer;if(!o)return '';
   const terms=o.kind==='sell' ? `${String(o.offer_qty)} ${o.offer_good} for ${String(o.want_silver)} silver` : `${String(o.want_qty)} ${o.want_good} for ${String(o.offer_silver)} silver`;
   const state=m.offer_state || o.status;
@@ -109,7 +109,7 @@ export async function loadDiplomacyDrawer() {
   body.querySelectorAll('.dtab').forEach(tab=>tab.addEventListener('click',()=>switchDiplomacyTab(tab.dataset.tab)));
   await loadDipThreads();
 }
-export async function switchDiplomacyTab(name) {
+async function switchDiplomacyTab(name) {
   rememberDraft();
   if(name==='threads')name='letters';
   const body=document.getElementById('diplomacy-body');const el=document.getElementById('dtab-'+name);if(!body||!el)return;

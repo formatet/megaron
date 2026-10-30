@@ -1059,7 +1059,7 @@ const isForestTerrain = t => t === 'forest_olive_grove' || t === 'forest_cedar';
 // slätt som vandrat in över hexen. Princip 12 i ny form: stammen står i SKOG.
 function footIsForest(x, y) { return !MARKRASTER || isForestTerrain(markTerrainAt(x, y)); }
 let chunks = new Map(), chunksFor = null, chunksWorld = null, shownChunks = [];
-export const markrasterStats = { chunks: 0, bakeMs: 0, pending: 0, mode: 'budget' };
+const markrasterStats = { chunks: 0, bakeMs: 0, pending: 0, mode: 'budget' };
 // Markrastrets kod (se markCode) i en världspunkt, ur den bakade biten.
 function markCodeAt(wx, wy) {
   const ix = Math.floor(wx / CHUNK), iy = Math.floor(wy / CHUNK);
@@ -2037,7 +2037,7 @@ function drawCityBank(ctx, cx, cy, sprite) {
 // ── Province building sprite + flag ──────────────────────────────────────
 // Stadsikonerna (cityicons.js, Timothy 2026-10-10). `?stader=gamla` ger de
 // inhägnade ¾-massorna för jämförelse.
-export const CITYICONS = !(typeof location !== 'undefined' && /[?&]stader=gamla/.test(location.search));
+const CITYICONS = !(typeof location !== 'undefined' && /[?&]stader=gamla/.test(location.search));
 const provinceSeed = p => (p.settlement_id || p.id || (p.q * 131 + p.r * 7)) | 0;
 function provinceIcon(p) {
   const ruin = p.state === 'razed' || p.state === 'collapsed';

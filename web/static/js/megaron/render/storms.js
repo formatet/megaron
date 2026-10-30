@@ -10,7 +10,7 @@
 // the wall clock, so the frozen-frame rigs get the same picture every time.
 
 export const STORM_FRAMES = 40; // render frames per cloud phase; the loop wakes on a phase change
-export const STORM_PHASES = 4;
+const STORM_PHASES = 4;
 
 const CHARCOAL = '#1E232B';
 // Violet-slate, deliberately NOT the grey-blue of mountains: a storm must not read as rock.

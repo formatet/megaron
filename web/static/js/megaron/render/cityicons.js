@@ -71,7 +71,7 @@ function stamp(g, rows, x, y) {
 
 /** Stadens bild som textrader. size 0 = liten (under 800 inv.), 1 = stor.
  *  coastal: false, 'left' eller 'right' — åt vilket håll kajen går ut mot havet. */
-export function cityIconGrid(size, wall, culture, seed, coastal = false, ruin = false) {
+function cityIconGrid(size, wall, culture, seed, coastal = false, ruin = false) {
   const W = size ? 43 : 31, H = size ? 31 : 25;
   const g = Array.from({ length: H }, () => Array(W).fill('.'));
   const cit = CITADEL[CULTURE_CITADEL[culture] || 'megaron'];
@@ -168,7 +168,7 @@ export function cityIcon(size, wall, culture, seed, coastal, ruin) {
 }
 
 /** Ritar ikonen med foten FOOT px under hexmitten. Returnerar ikon + origo. */
-export const CITY_ICON_FOOT = 14;
+const CITY_ICON_FOOT = 14;
 export function drawCityIcon(ctx, ic, cx, cy) {
   const ox = Math.round(cx) - (ic.w >> 1), oy = Math.round(cy) + CITY_ICON_FOOT - ic.h;
   // Ikonen ritas EN gång till en egen duk och kopieras sedan; run för run
