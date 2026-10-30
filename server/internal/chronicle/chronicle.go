@@ -363,9 +363,9 @@ func renderSummary(e events.SinkEvent, actor, subject string) string {
 		return fmt.Sprintf("Trade lost en route to %s: %v %s (%s)", s, p["quantity"], str(p, "good_key"), str(p, "reason"))
 	case "TradeReturn":
 		return fmt.Sprintf("Trade return to %s: %v %s delivered", s, p["quantity"], str(p, "good_key"))
-	case "KharisMissedMaintenance":
+	case "KharisMissedMaintenance", "KharisMissedMaintenanceV2":
 		return fmt.Sprintf("The temple in %s was neglected — the gods' patience wanes", s)
-	case "KharisMaintained":
+	case "KharisMaintained", "KharisMaintainedV2":
 		return fmt.Sprintf("The temple in %s was properly maintained", s)
 	case "KharisLost":
 		return fmt.Sprintf("Kharis fell in %s (%v)", s, str(p, "reason"))

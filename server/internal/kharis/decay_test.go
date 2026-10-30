@@ -10,7 +10,7 @@ func TestRealmDecay_CitiesAndResidents(t *testing.T) {
 		cities, population int
 		want               float64
 	}{
-		{1, 0, .1}, {3, 2500, .75}, {10, 50000, 6.9}, {0, 0, .1}, {-1, -100, .1},
+		{1, 0, 1.2}, {1, 50000, 1.2}, {3, 2500, 10.8}, {10, 50000, 120}, {0, 0, 0}, {-1, -100, 0},
 	} {
 		if got := computeDailyDecay(tc.cities, tc.population); math.Abs(got-tc.want) > 1e-10 {
 			t.Errorf("%dcities/%dresidents got%g want%g", tc.cities, tc.population, got, tc.want)
@@ -21,10 +21,10 @@ func TestRealmKharis_OpeningAndTempleCalibration(t *testing.T) {
 	if StartingKharis != 40 || EffectiveKharisCap(100, 0) != 40 {
 		t.Fatal("start/no-temple cap must both40")
 	}
-	if got := clampKharis(40-computeDailyDecay(1, 0), EffectiveKharisCap(100, 0)); math.Abs(got-39.9) > 1e-10 {
+	if got := clampKharis(40-computeDailyDecay(1, 0), EffectiveKharisCap(100, 0)); math.Abs(got-38.8) > 1e-10 {
 		t.Fatalf("opening clipped:%g", got)
 	}
-	if net := 2*KharisPerTempleWorker - computeDailyDecay(6, 0); math.Abs(net-1) > 1e-10 {
+	if net := 2*(KharisPerTempleWeight/2) - computeDailyDecay(6, 0); math.Abs(net+41.1) > 1e-10 {
 		t.Fatalf("six-city L1 net%g", net)
 	}
 	for level, want := range []float64{40, 50, 75, 100} {

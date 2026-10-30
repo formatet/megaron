@@ -46,14 +46,14 @@ func TestRealmKharis_CountsTempledCitiesIncludingCapital(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if d.CityCount != 6 || d.Base != .1 || math.Abs(d.Cities-1) > 1e-10 || math.Abs(d.Residents-.6) > 1e-10 {
+	if d.CityCount != 6 || d.Base != 0 || math.Abs(d.Cities-43.2) > 1e-10 || math.Abs(d.Residents) > 1e-10 {
 		t.Fatalf("burden n%d base%g extra%g", d.CityCount, d.Base, d.Cities)
 	}
 	net, _, _, _, err := ProjectDailyNet(ctx, pool, pid, wid)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if math.Abs(net+1.7) > 1e-10 {
+	if math.Abs(net+43.2) > 1e-10 {
 		t.Fatalf("projected%g", net)
 	}
 	h := newTestTickHandler(pool)
@@ -64,7 +64,7 @@ func TestRealmKharis_CountsTempledCitiesIncludingCapital(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT kharis_amount FROM player_world_records WHERE player_id=$1 AND world_id=$2`, pid, wid).Scan(&amount); err != nil {
 		t.Fatal(err)
 	}
-	if math.Abs(amount-38.3) > 1e-10 {
+	if math.Abs(amount-1) > 1e-10 {
 		t.Fatalf("actual all-templed-six-city kharis%g want38.3", amount)
 	}
 }

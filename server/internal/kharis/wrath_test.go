@@ -67,7 +67,7 @@ func TestWrathDeclineNoticeOnceAndNoPositiveNetWarning(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT (body_json->>'net_per_tick')::float8,(body_json->>'days_to_15')::int FROM notifications WHERE world_id=$1 AND kind='KharisDeclining'`, wid).Scan(&net, &days); err != nil {
 		t.Fatal(err)
 	}
-	if math.Abs(net+.2) > 1e-9 || days != 75 {
+	if math.Abs(net+1.2) > 1e-9 || days != 12 {
 		t.Fatalf("forecast net%g game days%d", net, days)
 	}
 

@@ -1,3 +1,4 @@
+import { templeTitheHTML } from './kult_kharis.js';
 import { confirmInline, showInlineResult } from '../inline_result.js';
 import { State, ownCapital } from '../../state.js';
 import { fetchAuth } from '../../api.js';
@@ -82,12 +83,12 @@ export function templeOfferingsHTML(offers) {
   }
   for (const t of offers) {
     const mark = t.fed ? '<span style="color:var(--safe)">✓</span>' : '<span style="color:var(--accent)">✗</span>';
-    const next = t.fed ? templeGoodsText(t.offering, ' + ') : 'unfunded (nothing taken)';
+    const next = (t.paid_fraction > 0 || t.fed) ? templeGoodsText(t.offering, ' + ') : 'unfunded (nothing taken)';
     html += '<div class="stat-row" style="align-items:flex-start;flex-wrap:wrap"><span class="sr-label">' + esc(t.name || '') + (t.temple ? ' — ' + esc(t.temple) : '') + ': </span> ' +
       '<span class="sr-val">reference ' + templeGoodsText(t.required_goods, ' + ') + ' per game day<br>' +
       'Alternatives: ' + templeGoodsText(t.alternatives, ' or ') + '<br>' +
       'Stock: ' + templeGoodsText(t.stock, ', ') + '<br>' +
-      'Next gift: ' + next + ' ' + mark + '</span></div>';
+      'Next gift: ' + next + ' ' + mark + templeTitheHTML(t) + '</span></div>';
   }
   return html + '</div>';
 }

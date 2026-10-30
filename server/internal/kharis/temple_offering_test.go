@@ -10,7 +10,7 @@ import (
 )
 
 func TestEarlyTempleOfferingLocalGiftAndProjection(t *testing.T) {
-	for _, good := range []string{"grain", "fish", "timber", "silver"} {
+	for _, good := range []string{"grain", "fish", "timber"} {
 		t.Run(good, func(t *testing.T) {
 			pool, wid, sid := newGrowthFixture(t, [6]string{"plains", "plains", "plains", "plains", "plains", "plains"}, 1000)
 			ctx := context.Background()
@@ -33,7 +33,7 @@ func TestEarlyTempleOfferingLocalGiftAndProjection(t *testing.T) {
 				t.Fatal(err)
 			}
 			if _, err := pool.Exec(ctx, `INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick)
-			 VALUES($1,$2,.25,0,100,current_world_tick()) ON CONFLICT(settlement_id,good_key) DO UPDATE SET amount=.25,rate=0`, sid, good); err != nil {
+			 VALUES($1,$2,.75,0,100,current_world_tick()) ON CONFLICT(settlement_id,good_key) DO UPDATE SET amount=.75,rate=0`, sid, good); err != nil {
 				t.Fatal(err)
 			}
 			if _, err := pool.Exec(ctx, `INSERT INTO divine_labor_valuations(world_id,good_key,rarity_spread,rarity_volume,divine_value,calc_tick)
@@ -44,14 +44,14 @@ func TestEarlyTempleOfferingLocalGiftAndProjection(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if len(offers) != 1 || !offers[0].Fed || offers[0].Offering[good] != .25 || offers[0].Required["grain"] != .25 {
+			if len(offers) != 1 || offers[0].Fed || offers[0].PaidFraction != .75 || offers[0].Offering[good] != .75 || offers[0].Required["grain"] != .75 {
 				t.Fatalf("plan: %+v", offers)
 			}
 			net, _, _, _, err := ProjectDailyNet(ctx, pool, pid, wid)
 			if err != nil {
 				t.Fatal(err)
 			}
-			if math.Abs(net-(4*KharisPerTempleWorker-.2)) > 1e-8 {
+			if math.Abs(net-(6.3-1.2)) > 1e-8 {
 				t.Fatalf("fed staffed L2 net=%g want shared yield minus decay", net)
 			}
 			h := newTestTickHandler(pool)
@@ -70,10 +70,10 @@ func TestEarlyTempleOfferingLocalGiftAndProjection(t *testing.T) {
 			if err := pool.QueryRow(ctx, `SELECT amount FROM settlement_goods WHERE settlement_id=$1 AND good_key=$2`, sid, good).Scan(&amount); err != nil {
 				t.Fatal(err)
 			}
-			if err := pool.QueryRow(ctx, `SELECT (payload->>'kharis_gain')::float8 FROM events WHERE world_id=$1 AND event_type='KharisOffering' ORDER BY id DESC LIMIT 1`, wid).Scan(&gain); err != nil {
+			if err := pool.QueryRow(ctx, `SELECT (payload->>'kharis_gain')::float8 FROM events WHERE world_id=$1 AND event_type='KharisOfferingV2' ORDER BY id DESC LIMIT 1`, wid).Scan(&gain); err != nil {
 				t.Fatal(err)
 			}
-			if math.Abs(after-(20+net)) > 1e-8 || amount != 0 || math.Abs(gain-4*KharisPerTempleWorker) > 1e-8 {
+			if math.Abs(after-(20+net)) > 1e-8 || amount != 0 || math.Abs(gain-6.3) > 1e-8 {
 				t.Fatalf("actual after%g amount%g gain%g", after, amount, gain)
 			}
 			// A richer remote city of the same Wanax is never charged for this temple.
@@ -93,7 +93,7 @@ func TestEarlyTempleOfferingLocalGiftAndProjection(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if math.Abs(net+.41) > 1e-10 {
+			if math.Abs(net+4.8) > 1e-10 {
 				t.Fatalf("empty local temple borrowed remote goods: net%g", net)
 			}
 			fed, total, _ := h.applyTempleOffering(ctx, pid, wid)
@@ -204,7 +204,7 @@ func TestTemplePerGodOfferFeedsInOrderAndGainFollowsFedTemple(t *testing.T) {
 	}
 	h := newTestTickHandler(pool)
 	fed, total, workers := h.applyTempleOffering(ctx, pid, wid)
-	if fed != 1 || total != 2 || workers != 1 {
+	if fed != 1 || total != 2 || workers != .5 {
 		t.Fatalf("fed %d/%d workers %g, want Asterion's one worker", fed, total, workers)
 	}
 	var grain float64

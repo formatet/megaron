@@ -60,9 +60,9 @@ func TestGrowthVarietyRequiresSubstantialMealShare(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	cases := []struct {
-		name        string
+		name       string
 		oil, grain float64
-		wantBonus   bool
+		wantBonus  bool
 	}{
 		{"grain only", 0, 1000, false},
 		{"one oil among thousand grain", 1, 1000, false},

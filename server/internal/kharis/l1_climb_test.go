@@ -83,7 +83,7 @@ func TestL1TempleClimbsToFirstPrayerAndCaps(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if net != -.2 {
+			if net != -1.2 {
 				t.Fatalf("L%d unfunded net%g changed baseline decay", level, net)
 			}
 		})

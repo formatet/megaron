@@ -183,8 +183,20 @@ func templeOfferingLine(row map[string]any) string {
 	}
 	fed, _ := row["fed"].(bool)
 	mark, next := "✗", "unfunded (nothing taken)"
-	if fed {
+	if fraction, _ := row["paid_fraction"].(float64); fed || fraction > 0 {
 		mark, next = "✓", templeGoodsText(row["offering"], " + ")
+	}
+	if parts, ok := row["parts"].([]any); ok {
+		for _, raw := range parts {
+			if part, ok := raw.(map[string]any); ok {
+				state := "missing"
+				if part["paid"] == true {
+					state = "paid"
+				}
+				next += fmt.Sprintf(" · %v %s", part["good"], state)
+			}
+		}
+		next += fmt.Sprintf(" · %.0f%% of tithe · weight %v, gives %v", row["paid_fraction"].(float64)*100, row["weight"], row["effective_weight"])
 	}
 	// Each temple has its own gift; a city's temples take from one store in turn,
 	// so "stock" is what the temples before this one left.
@@ -1316,6 +1328,12 @@ func armyFoodLine(sett map[string]any) string {
 // kharisDecayLine renders the server's realm projection without a client formula.
 // Missing fields are unavailable, never an invented zero cost.
 func kharisDecayLine(sett map[string]any) string {
+	if demand, ok := sett["kharis_demand"].(float64); ok {
+		if given, ok := sett["kharis_given_weight"].(float64); ok {
+			return fmt.Sprintf("The gods ask %g of your realm; your temples give %.2f.", demand, given)
+		}
+	}
+
 	count, countOK := sett["kharis_city_count"].(float64)
 	population, popOK := sett["kharis_population"].(float64)
 	base, baseOK := sett["kharis_base_decay"].(float64)

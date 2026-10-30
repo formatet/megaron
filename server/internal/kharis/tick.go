@@ -43,26 +43,6 @@ func PunishmentProbability(kharis float64, _ bool) float64 {
 	return WrathDailyProbability
 }
 
-// KharisPerTempleWorker is the one gain coefficient per placed temple worker.
-// Timothy 2026-10-22: two workers keep full L1 gain at 2.1 before modifiers.
-const KharisPerTempleWorker = 1.05
-
-// Cult upkeep covers residents and every city beyond the first.
-// A temple supplies gain; it never exempts its city or residents from upkeep.
-const decayBas = 0.1
-
-// templeTierMultiplier is the FAS 4 hook point — DEFERRED, not built in this
-// branch (megaron_kharis_plan.md: "Kräver tempel-nivåer/upgrade-tiers som inte
-// finns än"). It depends on the city-building upgrade epic (temenos_
-// stadsbyggnad.md) and is sequenced after the kharis core (FAS 0-3). For now
-// every temple is level 1 and this always returns 1.0 (no-op multiplier) —
-// nothing in FAS 0-3 calls it yet.
-// TODO: once temple upgrade tiers exist, multiply gain (and/or effective cap)
-// by this — "coola tempel" per the design doc §4.
-func templeTierMultiplier(level int) float64 {
-	return 1.0
-}
-
 // kharisFloor is the "heligt golv" the kharis METER itself never crosses below —
 // distinct from riteFloor (api/handlers/settlement.go), which is the rite SUCCESS
 // floor. Design text: "kharis_amount ∈ [0, 100] ... aldrig exakt 0 — gudarna
@@ -245,13 +225,10 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 		struct{}{}, e.DueTick, events.MacroTickInterval)
 }
 
-// computeDailyDecay is cult upkeep: base + additional cities + residents.
-// Residents are settlements.population, not rounded workers or army size.
-func computeDailyDecay(cityCount, population int) float64 {
-	return decayBas + cityDecay(cityCount) + populationDecay(population)
-}
-func cityDecay(cityCount int) float64        { return .2 * float64(max(0, cityCount-1)) }
-func populationDecay(population int) float64 { return .1 * float64(max(0, population)) / 1000 }
+// computeDailyDecay depends only on active city count; population never contributes.
+func computeDailyDecay(cityCount, _ int) float64 { return KharisPerDemand * RealmDemand(cityCount) }
+func cityDecay(cityCount int) float64            { return computeDailyDecay(cityCount, 0) }
+func populationDecay(_ int) float64              { return 0 }
 
 // kharisCapPerTempleLevel — the grandest temple a Wanax has built sets how close
 // to the gods they can come. Ceiling = kharisCapPerTempleLevel × (1 + max temple
@@ -330,21 +307,17 @@ func computeOfferFraction(fed, total int) float64 {
 }
 
 // applyTempleOffering charges every temple its own gift, city by city, and
-// returns how many temples were fed and how many workers serve those temples.
-func (h *TickHandler) applyTempleOffering(ctx context.Context, playerID, worldID uuid.UUID) (fed, total int, fedWorkers float64) {
+// returns fully funded temple count and their combined effective weight, including partly funded temples.
+func (h *TickHandler) applyTempleOffering(ctx context.Context, playerID, worldID uuid.UUID) (fed, total int, effectiveWeight float64) {
 	values, err := religion.LoadDivineValues(ctx, h.pool, worldID)
 	if err != nil {
 		slog.Error("temple offering valuations", "err", err)
 		return 0, 0, 0
 	}
-	temples, err := economy.RealmTemples(ctx, h.pool, playerID, worldID)
+	_, err = economy.RealmTemples(ctx, h.pool, playerID, worldID)
 	if err != nil {
 		slog.Error("temple offering staffing", "err", err)
 		return 0, 0, 0
-	}
-	workers := map[uuid.UUID]int{}
-	for _, t := range temples {
-		workers[t.BuildingID] = t.Staffed
 	}
 	offers, err := loadTempleOffers(ctx, h.pool, playerID, worldID, values)
 	if err != nil {
@@ -363,12 +336,14 @@ func (h *TickHandler) applyTempleOffering(ctx context.Context, playerID, worldID
 			slog.Error("temple offering debit", "settlement", offer.SettlementID, "err", err)
 			continue
 		}
-		for id := range paid {
-			fed++
-			fedWorkers += float64(workers[id])
+		for _, offer := range paid {
+			if offer.Fed {
+				fed++
+			}
+			effectiveWeight += offer.EffectiveWeight
 		}
 	}
-	return fed, total, fedWorkers
+	return fed, total, effectiveWeight
 }
 
 func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, worldID uuid.UUID, eventID int64) error {
@@ -414,9 +389,9 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 	if maintained {
 		// Devotion counts actual workers serving the temple — read, never produced
 		// (mig 094). A temple with no one tending it is a building, not a cult.
-		devotionGain := w.devotionSum * KharisPerTempleWorker
-		var fedWorkers float64
-		offerFed, offerTotal, fedWorkers = h.applyTempleOffering(ctx, w.playerID, worldID)
+		devotionGain := w.devotionSum // staffing audit; income uses each temple's effective weight
+		var effectiveWeight float64
+		offerFed, offerTotal, effectiveWeight = h.applyTempleOffering(ctx, w.playerID, worldID)
 		offerFraction = computeOfferFraction(offerFed, offerTotal)
 
 		// The gods reckon the offering by what the WORLD can spare, not by a
@@ -425,19 +400,19 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 		// a greater gift than feeding it grain in a year of plenty, and earns more.
 		scarcity := h.templeOfferScarcity(ctx, worldID)
 		// Each temple's workers count only when that temple was fed (ORDER 15).
-		gain = fedWorkers * KharisPerTempleWorker * scarcity
+		gain = effectiveWeight * KharisPerTempleWeight * scarcity
 
-		_, _ = h.store.Append(ctx, w.settlementID, events.StreamProvince, "KharisOffering",
+		_, _ = h.store.Append(ctx, w.settlementID, events.StreamProvince, "KharisOfferingV2",
 			map[string]any{
 				"temples_fed":         offerFed,
 				"temples_total":       offerTotal,
 				"offer_fraction":      offerFraction,
 				"temple_workers":      w.devotionSum,
-				"fed_temple_workers":  fedWorkers,
+				"effective_weight":    effectiveWeight,
 				"scarcity_factor":     scarcity,
 				"valuation_version":   religion.LaborValuationVersion,
 				"offering_value_unit": religion.LaborValueUnit,
-				"gain_before_offer":   devotionGain,
+				"staffed_workers":     devotionGain,
 				"kharis_gain":         gain,
 			},
 			worldID, nil)
@@ -465,7 +440,7 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 		// rows since 094 landed. Cult is devotion — internal/economy.GoodCult
 		// doc comment and placement role, not a settlement_goods stock to
 		// consume.)
-		_, _ = h.store.Append(ctx, w.settlementID, events.StreamProvince, "KharisMaintained",
+		_, _ = h.store.Append(ctx, w.settlementID, events.StreamProvince, "KharisMaintainedV2",
 			map[string]any{
 				"temple_workers": w.devotionSum,
 				"kharis_gain":    gain,
@@ -480,9 +455,10 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 				"above_ceiling":        w.kharis > w.kharisCap,
 				"ceiling_rule_version": "retained_standing_v1",
 				"city_count":           w.cityCount,
+				"demand":               RealmDemand(w.cityCount),
 				"realm_population":     w.population,
-				"decay_rule_version":   "cult_population_v1",
-				"rule_version":         "temple_workers_v2",
+				"decay_rule_version":   "realm_demand_v2",
+				"rule_version":         "temple_weight_v2",
 				"offer_fraction":       offerFraction,
 				"temples_fed":          offerFed,
 				"temples_total":        offerTotal,
@@ -498,14 +474,14 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 		// No temple production this day — dailyDecay above is the only kharis
 		// change (gain=0). This event still means no temple production;
 		// it does not claim that punishment happened.
-		_, _ = h.store.Append(ctx, w.settlementID, events.StreamProvince, "KharisMissedMaintenance",
+		_, _ = h.store.Append(ctx, w.settlementID, events.StreamProvince, "KharisMissedMaintenanceV2",
 			map[string]any{
 				"reason":             "no_cult_production",
 				"daily_decay":        dailyDecay,
 				"city_count":         w.cityCount,
 				"realm_population":   w.population,
-				"decay_rule_version": "cult_population_v1",
-				"rule_version":       "temple_workers_v2",
+				"decay_rule_version": "realm_demand_v2",
+				"rule_version":       "temple_weight_v2",
 				"founding_grace":     false, // legacy outcome field: no grace under this rule
 			},
 			worldID, nil)

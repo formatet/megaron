@@ -8,29 +8,35 @@ Choose the god when you build. On the web, **City → Construct** lists one row 
 
 **City → [[catchment]] & workplaces → Temple**: place or remove whole [[citizens]] with the same controls as other workplaces. In Keryx, use `staff temple +1` or `staff temple -1`; `roster` includes them. When a city has several temples, name the god: `keryx staff temple +1 --god velchanos`. The web shows one card per temple.
 
-Each temple level provides **2 workplaces**: level 1 holds 2, level 2 holds 4 and level 3 holds 6. A worker stands at one temple only. These people leave the idle pool, and cannot work another job at the same time. An empty temple has no devotion gain. Founding a city grants no automatic temple staffing.
+Temple levels 1/2/3 provide **2/4/8 workplaces**. A worker stands at one temple only and cannot work another job at the same time. Founding grants no automatic temple staffing.
 
-Each placed temple worker earns **1.05 kharis per game day** before the offering factor, scarcity and realm decay. A fully staffed level-1 temple earns **2.1** before these adjustments. Kult shows local staffing and the projected realm net. <!-- src: server/internal/kharis/tick.go KharisPerTempleWorker -->
+Temple levels 1/2/3 have **weight 1/4/9**. Effective weight is temple weight × staffed fraction × paid tithe fraction. Each effective weight produces **2.1 kharis per game day**, multiplied by the existing scarcity factor of 1–2. An empty temple gives nothing.
 
 ## A temple’s daily offering {#daily-offerings}
 
-Each temple has its own daily reference gift of **0.25 [[grain|grain]]**, taken only from its own city's stock. When a city holds several temples, they are planned in god-ID order — Asterion, Potnia, the Sea Daimons of Stillness, Velchanos — each against what the earlier ones left in the store. A temple's workers earn kharis only on game days that temple was fed. Kharis stays one pool for the whole realm. [[fish]], [[timber|timber]] and [[silver|silver]] can replace grain at the same divine value; a gift may combine goods. The amount of a substitute can change with the world's divine values. <!-- src: server/internal/kharis/temple_offering.go TempleOfferingGrain -->
+Each temple pays its daily tithe from its own city. Temples in the same city draw in god order (Asterion, Potnia, Stillness, Velchanos), each against what the earlier temples left. Kharis remains one pool for the realm.
 
-The temple uses **grain first, then fish, then timber, and silver last**. Silver is never required. [[oil]] and [[wine|wine]] are not used for this standing gift; [[rites|prayers]] keep their own offerings.
+| Level | [[grain]] part | [[silver]] part | [[incense]] part | Effect shares |
+|---|---|---|---|---|
+| 1 | 0.25 grain | — | — | 100% |
+| 2 | 0.75 grain | 0.1 silver | — | 75% / 25% |
+| 3 | 1.75 grain | 0.25 silver | 0.1 incense | 70% / 20% / 10% |
+
+The grain part uses **grain first, then [[fish|fish]], then [[timber|timber]]**, at equal divine value. Silver never replaces grain. Each part is paid separately: a part that cannot be paid in full takes nothing. No part replaces another. A level-2 temple without silver still receives 75% effect if its grain part is paid; a level-3 temple with only its grain part receives 70%. [[rites|Prayers]] keep their own offerings.
 
 ### Planning temple offerings {#daily-offerings-2}
 
-**Kult → Temple offerings** and `keryx status` show one row per temple with the reference, equivalent alternatives, the stock it would find after earlier temples, and the planned next gift, with a ✓ or ✗. If the city cannot fund the whole gift, nothing is taken and that temple earns no offering gain for the game day. Devotion and the daily decay still determine your net kharis change.
+**Kult → Temples** and `keryx status` show the next tithe, each paid or missing part, staffing, weight and effective contribution. These are forecasts against current local stocks; the next service charges what it can actually pay.
 
 ## Temple levels and the Kharis ceiling {#temple-levels}
 
-With full devotion and its daily gift, a level-1 temple can raise kharis in a small realm. Compare its gain with the cost of all your active cities and residents in **Kult → [[upkeep|Upkeep]] of the cult** and the projected net. A temple does not cancel city costs, but it does not protect low standing from [[divine-wrath|divine wrath]]. Higher-level temples can employ more devotion and make it grow faster when staffed and fed.
+With full staffing and tithe, a level-1 temple raises kharis in a one-city realm by **0.9 per game day** before scarcity. Compare your realm demand and given weight in **Kult → Kharis**. A temple does not remove its city from the demand, nor protect low standing from [[divine-wrath|divine wrath]].
 
 **Your best temple sets your kharis ceiling:** no temple 40, level 1 50, level 2 75, level 3 100. Everyday prayers work at a level-1 temple. Spontaneous blessings need 60 kharis and a maintained temple. Only a level-2 temple or higher lets kharis grow that far. Kharis retained above a lowered ceiling still counts. Levelling a temple further needs [[cedar|cedar]].
 
 ### Temple demolition and realm temple lists {#temple-levels-2}
 
-Demolishing a temple voluntarily costs **10 kharis per level**, with a floor of **1**; plundering causes no such debt. The demolition loss is immediate. A lower ceiling takes no additional kharis; above it, daily cult upkeep lowers kharis and temple workers and offerings do not raise it. The confirmation shows the loss and any ceiling change. See [[temple-demolition]].
+Demolishing a temple voluntarily costs **10 kharis per level**, with a floor of **1**; plundering causes no such debt. The demolition loss is immediate. A lower ceiling takes no additional kharis; above it, daily cult [[upkeep|upkeep]] lowers kharis and temple workers and offerings do not raise it. The confirmation shows the loss and any ceiling change. See [[temple-demolition]].
 
 ## Finding your temples {#temples-find-your-temples}
 
@@ -51,13 +57,13 @@ filter the list to one city.
 
 ## Daily upkeep of the cult {#cult-upkeep}
 
-Daily upkeep is **0.1 base + 0.2 per city beyond the first + 0.1 per 1,000 residents**. It counts all your active cities, including your capital, whether or not they have temples. Sunk, collapsed and razed cities do not count. Residents are the actual population in those cities, including people short of a whole citizen; armies and crews away from the population are not counted a second time. This is the upkeep of the cult, rather than an extra penalty that accelerates as your realm grows.
+Realm demand is **the number of active cities squared**. All active cities count, including the capital, with or without temples. Sunk, collapsed and razed cities do not count. Population, armies and crews do not change demand. Cult upkeep is **1.2 × demand per game day**.
 
-For **three cities with 2,500 residents altogether**, upkeep is **0.1 + 0.4 + 0.25 = 0.75 kharis per game day**. A realm without a city has the base cost only.
+One, two, three and four cities demand **1, 4, 9 and 16** respectively. Four fully staffed level-1 temples in a four-city realm give 4 weight: **8.4 income − 19.2 upkeep = −10.8 kharis per game day**, before scarcity. A realm with no active city has zero demand.
 
 ### Temple production and punishment risk {#cult-upkeep-2}
 
-**Kult → Upkeep of the cult** and `keryx status` show the base, cities and residents separately, alongside projected temple production and net. One more fed temple worker gives **at least +1.05 kharis per game day**, and more when the cult’s reference offering of grain is scarce in the world. This describes the extra worker's yield: employing one also requires a free citizen, an available temple workplace and that temple's daily offering. A temple earns favour; it does not remove its city's cost.
+**Kult → Kharis** and `keryx status` show: “The gods ask 16 of your realm; your temples give 7.” Staffing and paid tithe both multiply temple weight. Improve either to raise its contribution; raising the temple level increases weight and tithe requirements.
 
 Below **15 Kharis**, there is a 3% chance of punishment each game day **with or without a temple**. An actual punishment gives **seven game days of protection**. A game day follows this world's pace; Kult and `keryx status` show the protection's end in your local clock. Nothing taken means no new protection. See [[divine-wrath]]. A punishment chooses a random eligible city of yours with something it can take; it need not strike the capital.
 

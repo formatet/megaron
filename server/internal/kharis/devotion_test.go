@@ -8,12 +8,12 @@ import (
 // Mig 094 replaced a summed `cult` STOCK with temple state read directly:
 // presence × devotion × fed. The numbers moved; the SHAPE must not. This test
 // locks the shape the design states — "skött tempel ≈ långsam klättring,
-// försummelse = fade" — so a future tuner who changes KharisPerTempleWorker or
+// försummelse = fade" — so a future tuner who changes (KharisPerTempleWeight / 2) or
 // decayBas sees immediately which invariant they broke.
 
 // dayNet models one maintained day: what devotion earns, minus the day's decay.
 func dayNet(devotionSum float64, offerFraction, scarcity float64, cityCount int) float64 {
-	gain := devotionSum * KharisPerTempleWorker * offerFraction * scarcity
+	gain := devotionSum * (KharisPerTempleWeight / 2) * offerFraction * scarcity
 	return gain - computeDailyDecay(cityCount, 0)
 }
 
@@ -27,13 +27,13 @@ func TestDevotionCalibration_ModestClimbsGrandClimbsFaster(t *testing.T) {
 	}
 
 	// Unfed, however well staffed: fades harder still.
-	if unfed := dayNet(l1, 0, 1.0, 0); unfed >= net {
+	if unfed := dayNet(l1, 0, 1.0, 1); unfed >= net {
 		t.Errorf("an unfed temple must lose more ground than a fed one, got %+.2f/game day vs fed %+.2f/game day", unfed, net)
 	}
 
 	// A larger temple employs more of the city and climbs faster: it must
 	// climb outright in ordinary times — the whole reason to raise one.
-	l2 := dayNet(float64(economy.TempleWorkplaces(2)), 1.0, 1.0, 0)
+	l2 := dayNet(float64(economy.TempleWorkplaces(2)), 1.0, 1.0, 1)
 	if l2 <= 0 {
 		t.Errorf("a level-2 temple must climb in ordinary times, got %+.2f/game day", l2)
 	}
@@ -43,7 +43,7 @@ func TestDevotionCalibration_ModestClimbsGrandClimbsFaster(t *testing.T) {
 
 	// Several tended temples are the other way up: their devotion sums, so enough
 	// modest shrines also climb.
-	if many := dayNet(3*l1, 1.0, 1.0, 0); many <= 0 {
+	if many := dayNet(3*l1, 1.0, 1.0, 1); many <= 0 {
 		t.Errorf("three tended temples' devotion should sum past the decay and climb, got %+.2f/game day", many)
 	}
 }
@@ -51,18 +51,18 @@ func TestDevotionCalibration_ModestClimbsGrandClimbsFaster(t *testing.T) {
 // Feeding is a gate on the whole gain, not a bonus beside it: an unfed temple
 // earns nothing however devoted its people are.
 func TestDevotionCalibration_UnfedTempleEarnsNothing(t *testing.T) {
-	gain := 5.0 * KharisPerTempleWorker * 0.0 * 1.0
+	gain := 5.0 * (KharisPerTempleWeight / 2) * 0.0 * 1.0
 	if gain != 0 {
 		t.Fatalf("an unfed temple must earn nothing, got %.2f", gain)
 	}
-	if net := dayNet(5.0, 0, 1.0, 0); net >= 0 {
+	if net := dayNet(5.0, 0, 1.0, 1); net >= 0 {
 		t.Errorf("unfed temples must lose ground to decay, got %+.2f/game day", net)
 	}
 }
 
 // A shortage may make devotion worth more, but it can never mint kharis.
 func TestTempleScarcity_BoundedAndNeverPunishing(t *testing.T) {
-	plenty := dayNet(1.0, 1.0, 1.0, 0)
+	plenty := dayNet(1.0, 1.0, 1.0, 1)
 	shortage := dayNet(1.0, 1.0, templeScarcityCeil, 0)
 	if shortage <= plenty {
 		t.Error("burning scarce oil on the altar must be worth more than burning cheap oil")
@@ -78,7 +78,7 @@ func TestTempleScarcity_BoundedAndNeverPunishing(t *testing.T) {
 
 // Expansion still costs when the same temples supply gain.
 func TestDevotionCalibration_TemplelessColoniesStillBite(t *testing.T) {
-	tended := dayNet(1.0, 1.0, 1.0, 0)
+	tended := dayNet(1.0, 1.0, 1.0, 1)
 	sprawling := dayNet(1.0, 1.0, 1.0, 7)
 	if sprawling >= tended {
 		t.Error("additional cities must still drag kharis down")

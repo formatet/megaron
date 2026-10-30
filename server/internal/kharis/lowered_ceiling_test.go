@@ -13,7 +13,7 @@ func TestLoweredCeilingDriftsWithoutCliffAndForecastMatches(t *testing.T) {
 		start float64
 		staff int
 		want  float64
-	}{{80, 2, 79.8}, {80, 0, 79.8}, {50.1, 2, 49.9}, {49, 2, 50}} {
+	}{{80, 2, 78.8}, {80, 0, 78.8}, {50.1, 2, 48.9}, {49, 2, 49.9}} {
 		pool, wid, sid := newGrowthFixture(t, [6]string{"plains", "plains", "plains", "plains", "plains", "plains"}, 1000)
 		ctx := context.Background()
 		var pid uuid.UUID
@@ -31,8 +31,8 @@ func TestLoweredCeilingDriftsWithoutCliffAndForecastMatches(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if tc.start > 50 && math.Abs(net+.2) > 1e-9 {
-			t.Errorf("above ceiling forecast %g want-.2", net)
+		if tc.start > 50 && math.Abs(net+1.2) > 1e-9 {
+			t.Errorf("above ceiling forecast %g want-1.2", net)
 		}
 		h := newTestTickHandler(pool)
 		w := wanaxSnap{playerID: pid, settlementID: sid, kharis: tc.start, kharisCap: 50, cityCount: 1, population: 1000, templeCities: 1, maxTempleLevel: 1, devotionSum: dev}
@@ -48,7 +48,7 @@ func TestLoweredCeilingDriftsWithoutCliffAndForecastMatches(t *testing.T) {
 		}
 
 		var recorded float64
-		if err := pool.QueryRow(ctx, `SELECT (payload->>'applied_net')::float8 FROM events WHERE world_id=$1 AND stream_id=$2 AND event_type='KharisMaintained' ORDER BY id DESC LIMIT 1`, wid, sid).Scan(&recorded); err != nil {
+		if err := pool.QueryRow(ctx, `SELECT (payload->>'applied_net')::float8 FROM events WHERE world_id=$1 AND stream_id=$2 AND event_type='KharisMaintainedV2' ORDER BY id DESC LIMIT 1`, wid, sid).Scan(&recorded); err != nil {
 			t.Fatal(err)
 		}
 		if math.Abs(recorded-(got-tc.start)) > 1e-9 {

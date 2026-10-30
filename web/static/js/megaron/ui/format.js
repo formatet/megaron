@@ -173,7 +173,7 @@ export function notifDomain(kind) {
     // Diplomacy — the messenger channel.
     MessengerLostAtSea: 'diplomacy', MessengerRescuedAtSea: 'diplomacy', MessengerArrival: 'diplomacy', MessengerReturned: 'diplomacy', PlaceTold: 'diplomacy', PassageStalled: 'diplomacy',
     // Kult — the gods answering.
-    RiteAnswered: 'kult', TempleDemolitionWrath: 'kult', GodsAngered: 'kult', KharisDeclining: 'kult', KharisBandChanged: 'kult', DivinePunishment: 'kult', DivineBlessing: 'kult', KharisEvent: 'kult',
+    ReligionRuleChangedV2: 'kult', RiteAnswered: 'kult', TempleDemolitionWrath: 'kult', GodsAngered: 'kult', KharisDeclining: 'kult', KharisBandChanged: 'kult', DivinePunishment: 'kult', DivineBlessing: 'kult', KharisEvent: 'kult',
   };
   return domains[kind] || 'system';
 }
@@ -345,6 +345,7 @@ export function notifText(kind, body) {
     case 'GarrisonStarvationEnded': return `${esc(body.name || 'Your city')}: the garrison is no longer losing men to hunger.`;
     case 'TempleDemolitionWrath': return demolitionKharisText(body);
     case 'GodsAngered': return godsAngeredText(body);
+    case 'ReligionRuleChangedV2': return `The gods ask ${fmtNum(body.demand)} of your realm; your temples give ${fmtNum(body.given_weight)}. Temple tithes now depend on level. You are protected from divine punishment for ${fmtDays(body.protection_ticks)} while you adjust your temples.`;
     case 'KharisDeclining': return `${esc(body.kharis_standing?.summary || '')}${body.kharis_standing?.summary ? '. ' : ''}Kharis is falling (${fmtNum(body.kharis || 0)}, net ${fmtNum(body.net_per_tick || 0)} per game day). At this rate it reaches ${body.wrath_threshold || 15} in ${fmtDays(body.days_to_15 || 0)}. Below that, the gods may punish you, with or without a temple. Staff and feed your temples.`;
     case 'KharisBandChanged': return `${esc(body.kharis_standing?.summary || '')}${body.kharis_standing?.summary ? '. ' : ''}Kharis: ${esc(body.from_band || '?')} → ${esc(body.to_band || '?')} (${fmtNum(body.kharis || 0)}). Check Kult for decay and temple support; staff and feed your temples.`;
 

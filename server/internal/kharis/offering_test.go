@@ -39,7 +39,7 @@ func TestGainScaling_NetDriftDownWithoutOffer(t *testing.T) {
 	const cultGain = 10.0 // whatever cult labor would have produced
 	offerFraction := computeOfferFraction(0, 2)
 	gain := cultGain * offerFraction
-	dailyDecay := computeDailyDecay(0, 0)
+	dailyDecay := computeDailyDecay(1, 0)
 	net := gain - dailyDecay
 	if net >= 0 {
 		t.Errorf("net = %v, want < 0 (unfed temples: depreciation must win)", net)
