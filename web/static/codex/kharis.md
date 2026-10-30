@@ -6,8 +6,8 @@
 |---|---|
 | **Favorable** (60 and above) | The gods may bless you: a blessed harvest (a quarter more food for 25 game days, [[fish|fish]] excepted) or unexpected recruits. At sea, a 15% chance that Poseidon holds back a [[storms|storm]]'s blow. In [[battle]], your men roll about 5% more dice. |
 | **Indifferent** (30 to below 60) | They have noticed you and do nothing. |
-| **Suspicious** (5 to below 30) | Below 15, a 3% chance of punishment each game day, with or without a temple; recent punishment gives seven game days of protection. |
-| **Wrathful** (below 5) | The same risk below 15, except during protection: [[war-chariot|chariots]] break, ships are lost, food rots or plague takes a garrison. At sea, a 15% chance that a [[storms|storm]] takes one more hull. In [[battle]], your men roll about 5% fewer dice. |
+| **Suspicious** (5 to below 30) | A 2% chance of punishment each game day, with or without a temple; recent punishment gives seven game days of protection. |
+| **Wrathful** (below 5) | A 4% chance of punishment each game day, except during protection: [[war-chariot|chariots]] break, ships are lost, food rots or plague takes a garrison. At sea, a 15% chance that a [[storms|storm]] takes one more hull. In [[battle]], your men roll about 5% fewer dice. |
 
 A standing temple and at least **60 kharis** give a **15% chance of a spontaneous blessing each game day**. This is separate from a prayer: kharis is a requirement for prayers, never spent. The number is your standing, not a percentage. Protection temporarily removes punishment risk; a favorable mood without a standing temple cannot bring spontaneous blessings. These are dice rolls, not promises.
 
@@ -57,17 +57,17 @@ shared; an offering still comes from the city named in its prayer row. See
 
 ## Divine wrath {#divine-wrath}
 
-The gods may punish a realm **below 15 kharis**, with or without a [[temples|temple]]. Each game day brings a **3% chance**. At exactly 15 there is no risk. A punishment chooses one of your active cities that has something it can take.
+The gods may punish a realm **below 30 kharis**, with or without a [[temples|temple]]. While it is **Suspicious** (5 to below 30), each game day brings a **2% chance**; once it is **Wrathful** (below 5), a **4% chance**. At exactly 30 there is no risk. A punishment chooses one of your active cities that has something it can take.
 
 ### Warnings of divine wrath {#divine-wrath-warning-before-danger}
 
-When your standing crosses **30 downward** and the projected net is negative, a warning tells you your kharis, net per game day and how many game days it would take to reach 15 at that rate. It is sent once per downward crossing. A positive or zero net gives no warning. Further decline below 30 does not repeat it; recovery above 30 allows a new downward crossing to warn again.
+When your standing crosses **30 downward** and the projected net is negative, a warning tells you that the risk has begun, your kharis, net per game day and how many game days it would take to become Wrathful (5) at that rate. It is sent once per downward crossing. A positive or zero net gives no warning. Further decline below 30 does not repeat it; recovery above 30 allows a new downward crossing to warn again.
 
 The estimate assumes that net continues. Staff and feed your temples, then check **Kult** or `keryx status`. A mood change still has its own notice.
 
 ### Protection after punishment {#divine-wrath-seven-game-days-after-punishment}
 
-An actual loss gives your whole realm **seven game days of protection from further divine punishment**. A game day follows this world's pace; **Kult**, `keryx status` and the punishment notice show the protection's end in your local clock. Repeated processing does not extend it. At the end, the ordinary risk resumes if kharis is still below 15. The protection follows the Wanax, across their cities and temples.
+An actual loss gives your whole realm **seven game days of protection from further divine punishment**. A game day follows this world's pace; **Kult**, `keryx status` and the punishment notice show the protection's end in your local clock. Repeated processing does not extend it. At the end, the ordinary risk resumes if kharis is still below 30. The protection follows the Wanax, across their cities and temples.
 
 If there is nothing to take, there is no punishment and no new protection. Protection does not stop cult upkeep or prevent losses from [[food|hunger]], [[battle|battle]] or weather.
 

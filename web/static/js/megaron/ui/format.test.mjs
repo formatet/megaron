@@ -697,6 +697,12 @@ test('storm notices: the gods\' hand is named in the outcome (R2)', () => {
     "Your Galley was battered by a storm at (6,0) — hull 2/5 — the gods' wrath struck harder");
 });
 
+test('kharis decline warning: risk begins at 30, countdown to Wrathful (R2); old notices keep their text', () => {
+  assert.equal(notifText('KharisDeclining', { kharis: 28.9, net_per_tick: -1.2, wrath_threshold: 30, wrath_probability: .02, days_to_wrathful: 20, wrathful_threshold: 5, wrathful_probability: .04 }),
+    'Kharis is falling (28.9, net -1.2 per game day). Below 30 the gods may punish you, with or without a temple: about 2% each game day, 4% below 5. At this rate it falls below 5 in 20 game days. Staff and feed your temples.');
+  assert.match(notifText('KharisDeclining', { kharis: 28.9, net_per_tick: -1.2, days_to_15: 12, wrath_threshold: 15 }), /At this rate it reaches 15 in 12 game days/);
+});
+
 test('battle notices: the gods\' hand is named in the outcome (R2)', () => {
   const body = { role: 'attacker', outcome: 'attacker_wins', opponent_name: 'Nestor', place: 'Pylos',
     own_unit: { type: 'spearman', size_before: 100, size_after: 80, pop_lost: 20 }, enemy_unit: { type: 'spearman', size_before: 50, size_after: 0 } };

@@ -65,7 +65,8 @@ export function kharisRulesHTML(pd) {
  let html='<p class="empty-state">Everyday prayers work at a level-1 temple. Spontaneous blessings need ' + threshold + ' kharis and a maintained temple. Only a level-2 temple or higher lets kharis grow that far. Kharis retained above a lowered ceiling still counts.</p>';
  const wrath=pd?.kharis_wrath;
  if (wrath && Number.isFinite(wrath.threshold) && Number.isFinite(wrath.daily_probability)) {
-  html+='<p class="empty-state">Below ' + wrath.threshold + ' kharis, there is a ' + Math.round(wrath.daily_probability*100) + '% chance of divine punishment each game day, with or without a temple.</p>';
+  const wrathful=Number.isFinite(wrath.wrathful_threshold) && Number.isFinite(wrath.wrathful_probability) ? ' (' + Math.round(wrath.wrathful_probability*100) + '% below ' + wrath.wrathful_threshold + ')' : '';
+  html+='<p class="empty-state">Below ' + wrath.threshold + ' kharis, there is a ' + Math.round(wrath.daily_probability*100) + '% chance of divine punishment each game day' + wrathful + ', with or without a temple.</p>';
   if (wrath.protection_remaining_days>0 && wrath.protection_until) {
    html+='<div class="stat-row"><span class="sr-label">Protected from divine punishment</span><span class="sr-val">' + fmtDuration(wrath.protection_remaining_days) + ' · until ' + fmtClock(wrath.protection_until) + '</span></div>';
   }

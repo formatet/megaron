@@ -14,10 +14,10 @@ func TestStandingCurrentConsequences(t *testing.T) {
 		punish, bless float64
 		text          string
 	}{
-		{4, false, 0, "Wrathful", .03, 0, "3%"},
-		{5, true, 0, "Suspicious", .03, 0, "3%"},
+		{4, false, 0, "Wrathful", .04, 0, "4% chance of divine punishment"},
+		{5, true, 0, "Suspicious", .02, 0, "2% chance of divine punishment"},
 		{14.9, false, 1, "Suspicious", 0, 0, "protected"},
-		{15, true, 0, "Suspicious", 0, 0, "no spontaneous"},
+		{29.9, true, 0, "Suspicious", .02, 0, "2% chance of divine punishment"},
 		{30, true, 0, "Indifferent", 0, 0, "no spontaneous"},
 		{59.9, true, 0, "Indifferent", 0, 0, "no spontaneous"},
 		{60, true, 0, "Favorable", 0, .15, "15%"},

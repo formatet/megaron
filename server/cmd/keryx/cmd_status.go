@@ -1005,7 +1005,12 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			if wrath, ok := sett["kharis_wrath"].(map[string]any); ok {
 				threshold, _ := wrath["threshold"].(float64)
 				probability, _ := wrath["daily_probability"].(float64)
-				fmt.Printf("  Below %.0f kharis: %.0f%% chance of divine punishment per game day, with or without a temple.\n", threshold, probability*100)
+				wrathful := ""
+				if wt, ok := wrath["wrathful_threshold"].(float64); ok {
+					wp, _ := wrath["wrathful_probability"].(float64)
+					wrathful = fmt.Sprintf(" (%.0f%% below %.0f)", wp*100, wt)
+				}
+				fmt.Printf("  Below %.0f kharis: %.0f%% chance of divine punishment per game day%s, with or without a temple.\n", threshold, probability*100, wrathful)
 				if remaining, _ := wrath["protection_remaining_days"].(float64); remaining > 0 {
 					if iso, ok := wrath["protection_until"].(string); ok {
 						if at, err := time.Parse(time.RFC3339Nano, iso); err == nil {

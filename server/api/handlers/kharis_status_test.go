@@ -153,7 +153,7 @@ func TestOwnerWrathExpiryUsesWorldAnchorAndStaysPrivate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if status.ProtectionRemainingDays != 7 || status.ProtectionUntil == nil || status.Threshold != 15 || status.DailyProbability != .03 {
+	if status.ProtectionRemainingDays != 7 || status.ProtectionUntil == nil || status.Threshold != 30 || status.DailyProbability != .02 || status.WrathfulThreshold != 5 || status.WrathfulProbability != .04 {
 		t.Fatalf("bad owner shield %+v", status)
 	}
 	if _, err := f.pool.Exec(ctx, `UPDATE worlds SET current_tick=107 WHERE id=$1`, f.world); err != nil {

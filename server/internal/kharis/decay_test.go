@@ -38,7 +38,7 @@ func TestRealmPunishment_BandBoundaries(t *testing.T) {
 		k      float64
 		temple bool
 		p      float64
-	}{{1, false, .03}, {14.999, false, .03}, {15, false, 0}, {30, false, 0}, {40, false, 0}, {1, true, .03}, {29.999, true, 0}} {
+	}{{1, false, .04}, {4.999, false, .04}, {5, false, .02}, {29.999, false, .02}, {30, false, 0}, {40, false, 0}, {1, true, .04}, {29.999, true, .02}} {
 		if got := PunishmentProbability(tc.k, tc.temple); got != tc.p {
 			t.Fatalf("k%g temple%v probability%g want%g", tc.k, tc.temple, got, tc.p)
 		}

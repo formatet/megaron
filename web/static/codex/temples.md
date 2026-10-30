@@ -65,7 +65,7 @@ One, two, three and four cities demand **1, 4, 9 and 16** respectively. Four ful
 
 **Kult → Kharis** and `keryx status` show: “The gods ask 16 of your realm; your temples give 7.” Staffing and paid tithe both multiply temple weight. Improve either to raise its contribution; raising the temple level increases weight and tithe requirements.
 
-Below **15 Kharis**, there is a 3% chance of punishment each game day **with or without a temple**. An actual punishment gives **seven game days of protection**. A game day follows this world's pace; Kult and `keryx status` show the protection's end in your local clock. Nothing taken means no new protection. See [[divine-wrath]]. A punishment chooses a random eligible city of yours with something it can take; it need not strike the capital.
+Below **30 Kharis**, there is a 2% chance of punishment each game day, 4% below 5, **with or without a temple**. An actual punishment gives **seven game days of protection**. A game day follows this world's pace; Kult and `keryx status` show the protection's end in your local clock. Nothing taken means no new protection. See [[divine-wrath]]. A punishment chooses a random eligible city of yours with something it can take; it need not strike the capital.
 
 ## Demolishing a temple {#temple-demolition}
 

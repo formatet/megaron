@@ -37,10 +37,13 @@ const StartingKharis = 40.0
 // PunishmentProbability is independent of temple presence (R5).
 // Protection after an actual punishment is checked separately against realm state.
 func PunishmentProbability(kharis float64, _ bool) float64 {
-	if kharis >= WrathThreshold {
-		return 0
+	switch {
+	case kharis < WrathfulThreshold:
+		return WrathfulDailyProbability
+	case kharis < WrathThreshold:
+		return WrathDailyProbability
 	}
-	return WrathDailyProbability
+	return 0
 }
 
 // kharisFloor is the "heligt golv" the kharis METER itself never crosses below —

@@ -76,6 +76,12 @@ test('R3/R5: everyday prayers work at L1, blessings need standing 60, temple doe
  assert.doesNotMatch(html,/Invalid|NaN|game day 123/);
 });
 
+test('R2 punishment curve: the Kult rules name both tiers', async () => {
+ const {kharisRulesHTML}=await import('./kult_kharis.js');
+ const html=kharisRulesHTML({kharis_blessing_threshold:60,kharis_wrath:{threshold:30,daily_probability:.02,wrathful_threshold:5,wrathful_probability:.04,protection_remaining_days:0}});
+ assert.match(html,/Below 30 kharis, there is a 2% chance of divine punishment each game day \(4% below 5\), with or without a temple\./);
+});
+
 test('above ceiling explains ignored gains and does not promise a worker can increase standing', () => {
  const view = kharisNetView({kharis:80,kharis_cap:50,kharis_net_known:true,kharis_net_per_tick:-.2,kharis_per_temple_worker:1.05});
  assert.match(view.netHtml,/Once below, temples can raise it again/);

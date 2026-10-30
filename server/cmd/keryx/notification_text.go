@@ -91,6 +91,16 @@ func printNotificationSummary(c *Client, n notificationItem) {
 			Net       float64 `json:"net_per_tick"`
 			Days      int     `json:"days_to_15"`
 			Threshold float64 `json:"wrath_threshold"`
+			// R2 (2026-10-30): risk begins at the crossing; the countdown is to Wrathful.
+			DaysToWrathful      *int    `json:"days_to_wrathful"`
+			Probability         float64 `json:"wrath_probability"`
+			WrathfulThreshold   float64 `json:"wrathful_threshold"`
+			WrathfulProbability float64 `json:"wrathful_probability"`
+		}
+		if json.Unmarshal(n.Body, &b) == nil && b.DaysToWrathful != nil {
+			fmt.Printf("      Kharis is falling (%.1f, net %+.2f per game day). Below %.0f the gods may punish you, with or without a temple: about %.0f%% each game day, %.0f%% below %.0f. At this rate it falls below %.0f in %s. Staff and feed your temples.\n",
+				b.Kharis, b.Net, b.Threshold, b.Probability*100, b.WrathfulProbability*100, b.WrathfulThreshold, b.WrathfulThreshold, formatDays(*b.DaysToWrathful))
+			return
 		}
 		if json.Unmarshal(n.Body, &b) == nil {
 			fmt.Printf("      Kharis is falling (%.1f, net %+.2f per game day). At this rate it reaches %.0f in %s. Below that the gods may punish you, with or without a temple. Staff and feed your temples.\n", b.Kharis, b.Net, b.Threshold, formatDays(b.Days))
