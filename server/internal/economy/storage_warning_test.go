@@ -179,10 +179,6 @@ func TestStorageRealizedProductionLossAndNoticeAreOneOutcome(t *testing.T) {
 func TestStorageOverflowProductionNoticeOncePerOngoingLoss(t *testing.T) {
 	pool, wid, sid, owner := storageFixture(t, 60)
 	ctx := context.Background()
-	var quiet int
-	if err := pool.QueryRow(ctx, `SELECT storage_overflow_quiet_ticks()`).Scan(&quiet); err != nil {
-		t.Fatal(err)
-	}
 	overflowAt := func(tick int) {
 		t.Helper()
 		if _, err := pool.Exec(ctx, `UPDATE worlds SET current_tick=$2 WHERE id=$1`, wid, tick); err != nil {
@@ -210,11 +206,11 @@ func TestStorageOverflowProductionNoticeOncePerOngoingLoss(t *testing.T) {
 	if n, a := counts(); n != 1 || a != 11 {
 		t.Fatalf("5-tick refills: notices %d audits %d, want 1/11", n, a)
 	}
-	overflowAt(last + quiet - 1) // still inside the window
+	overflowAt(last + 23) // 23 ticks later: still the same loss
 	if n, _ := counts(); n != 1 {
 		t.Fatalf("inside the quiet window: notices %d, want 1", n)
 	}
-	overflowAt(last + 2*quiet) // a quiet spell longer than the window
+	overflowAt(last + 23 + 24) // 24 quiet ticks: a new loss
 	if n, a := counts(); n != 2 || a != 13 {
 		t.Fatalf("after a quiet spell: notices %d audits %d, want 2/13", n, a)
 	}
