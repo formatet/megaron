@@ -116,7 +116,7 @@ func TestStoreTiles_PersistsLandmassID(t *testing.T) {
 	for _, p := range got {
 		key := [2]int{p.q, p.r}
 		wantID, isLand := wantComp[key]
-		if p.terrain == "coastal_sea" || p.terrain == "deep_sea" {
+		if p.terrain == "coastal_sea" || p.terrain == "deep_sea" || p.terrain == "lake" {
 			if isLand {
 				t.Fatalf("(%d,%d): terrain %s is sea per fixture but LandComponents says land", p.q, p.r, p.terrain)
 			}

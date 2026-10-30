@@ -78,6 +78,7 @@ func TestGenerateMapIncenseSources64x64(t *testing.T) {
 			before := generateMapOnce(uuid.Nil, eff, 64, 64)
 			addTinSources(before, eff, 64, 64)
 			PopulateRiverMetadata(before, 64, 64)
+			MarkLakes(before, 64, 64)
 			cleared := make([]MapTile, len(tiles))
 			copy(cleared, tiles)
 			for k := range cleared {
