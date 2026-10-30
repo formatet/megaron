@@ -9,6 +9,9 @@
 /server/thalassa-server
 /server/temenos
 /server/keryx
+/server/cli
+/server/poleia
+/server/cmd/keryx/keryx
 /server/server
 /server/create-world
 /server/mapgen-debug
