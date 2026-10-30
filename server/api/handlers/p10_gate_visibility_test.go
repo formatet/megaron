@@ -187,7 +187,7 @@ func TestProvinceGet_ExposesBuildQueueMax(t *testing.T) {
 
 	ph := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), nil, nil)
 	r := chi.NewRouter()
-	r.Get("/worlds/{worldID}/provinces/{provinceID}", ph.Get)
+	r.Get("/worlds/{worldID}/provinces/{provinceID}", asPlayer(ownerID, ph.Get))
 
 	req := httptest.NewRequest(http.MethodGet, "/worlds/"+worldID.String()+"/provinces/"+provinceID.String(), nil)
 	rec := httptest.NewRecorder()

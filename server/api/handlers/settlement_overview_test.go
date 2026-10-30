@@ -202,7 +202,7 @@ func TestSettlementsOverviewParity_MatchesProvinceGet(t *testing.T) {
 	sh := NewSettlementHandler(pool, nil, nil, clk)
 
 	r := chi.NewRouter()
-	r.Get("/worlds/{worldID}/provinces/{provinceID}", ph.Get)
+	r.Get("/worlds/{worldID}/provinces/{provinceID}", asPlayer(ownerID, ph.Get))
 	r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/settlements/overview", sh.SettlementsOverview)
 
 	// Resolve the settlement's province ID for the /provinces/{id} call.

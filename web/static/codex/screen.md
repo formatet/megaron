@@ -24,7 +24,7 @@ Every drawer has a **?** in its header that opens its article here.
 
 ## Map controls {#screen-the-map}
 
-- **Left-click a hex** to look at it — the inspect panel opens on the right on a wide screen, titled by its ground. On a hex your own people work it also says how many workers are there and what they produce. A foreign city shows its owner and **Defence** says **Defended** when walls or land defenders are seen, or **No defenders seen** when both are known to be absent. **Unknown** means the defence data could not be read. You can still write a message or open **March here**.
+- **Left-click a hex** to look at it — the inspect panel opens on the right on a wide screen, titled by its ground. On a hex your own people work it also says how many workers are there and what they produce. A [[foreign-cities|foreign city]] shows its owner and **Defence** says **Defended** when walls or land defenders are seen, or **No defenders seen** when both are known to be absent. **Unknown** means none of your people can see the city now, so its garrison is not known. You can still write a message or open **March here**.
 
 - **Right-click a hex** to give an order there — the march menu opens ([[marching]]).
 

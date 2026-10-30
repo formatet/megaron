@@ -171,6 +171,13 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 		return tx.Commit(ctx)
 	}
 
+	// A caravan or gift reaching another ruler's city sees it from inside —
+	// before its own goods are unloaded (megaron_kontrakt_frammande_stad).
+	// RecordContact skips the owner's own city.
+	if err := economy.RecordContact(ctx, tx, e.WorldID, ownerID, *destID, economy.ContactCaravan, e.DueTick); err != nil {
+		return fmt.Errorf("record contact: %w", err)
+	}
+
 	// Credit each manifest good to the destination. cap 1_000_000 for a brand-new
 	// row matches economy.goodCap (post-00d0722; never reintroduce the cap-1000 bug).
 	rows, err := tx.Query(ctx,

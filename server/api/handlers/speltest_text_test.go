@@ -37,7 +37,7 @@ func TestPlaytestKharis_SameRealmPoolInTwoCities(t *testing.T) {
 	}
 	ph := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), nil, nil)
 	r := chi.NewRouter()
-	r.Get("/worlds/{worldID}/provinces/{provinceID}", ph.Get)
+	r.Get("/worlds/{worldID}/provinces/{provinceID}", asPlayer(owner, ph.Get))
 	for _, id := range ids {
 		var pid uuid.UUID
 		if err := pool.QueryRow(ctx, `SELECT province_id FROM settlements WHERE id=$1`, id).Scan(&pid); err != nil {

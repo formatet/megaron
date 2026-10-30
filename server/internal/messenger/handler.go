@@ -148,6 +148,11 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 			return fmt.Errorf("record seen destination: %w", err)
 		}
 	}
+	// …and the bearer saw the city from inside: the contact snapshot
+	// (megaron_kontrakt_frammande_stad), taken at delivery, never at sending.
+	if err := economy.RecordContact(ctx, tx, e.WorldID, senderID, destinationID, economy.ContactMessenger, e.DueTick); err != nil {
+		return fmt.Errorf("record contact: %w", err)
+	}
 	// A letter that tells of a place hands its story to the city's ruler now
 	// (megaron_plan_vagbeskrivningar v1); the status flip above makes it once.
 	var recipientID uuid.UUID

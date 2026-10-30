@@ -623,6 +623,12 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				fmt.Println("No settlement here.")
 				return nil
 			}
+			if _, foreign := sett["intel"]; foreign {
+				for _, line := range foreignCityLines(sett, time.Now()) {
+					fmt.Println(line)
+				}
+				return nil
+			}
 			name, _ := sett["name"].(string)
 			culture, _ := sett["culture"].(string)
 			pop, _ := sett["population"].(float64)

@@ -206,6 +206,17 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 		}
 	}
 
+	// The leg's caravan saw the city before unloading (megaron_kontrakt_frammande_stad).
+	if p.TransportID != (uuid.UUID{}) {
+		var carrierOwner uuid.UUID
+		if err := tx.QueryRow(ctx, `SELECT owner_id FROM transports WHERE id = $1`, p.TransportID).Scan(&carrierOwner); err != nil {
+			return fmt.Errorf("load delivery carrier: %w", err)
+		}
+		if err := RecordContact(ctx, tx, e.WorldID, carrierOwner, p.DestinationID, ContactTrade, e.DueTick); err != nil {
+			return fmt.Errorf("record contact: %w", err)
+		}
+	}
+
 	// The seller receives the full silver leg; no temple share is deducted.
 	credited := delivered
 

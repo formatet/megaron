@@ -12,6 +12,7 @@ import (
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/economy"
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 )
 
 func TestProvinceHarvestBlessingStatus(t *testing.T) {
@@ -19,7 +20,8 @@ func TestProvinceHarvestBlessingStatus(t *testing.T) {
 	worldID, settID := riteHarvestFixture(t, pool, 100)
 	ctx := context.Background()
 	var provID string
-	if err := pool.QueryRow(ctx, `SELECT province_id FROM settlements WHERE id=$1`, settID).Scan(&provID); err != nil {
+	var ownerID uuid.UUID
+	if err := pool.QueryRow(ctx, `SELECT province_id, owner_id FROM settlements WHERE id=$1`, settID).Scan(&provID, &ownerID); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := pool.Exec(ctx, `UPDATE worlds SET current_tick=100 WHERE id=$1`, worldID); err != nil {
@@ -27,7 +29,7 @@ func TestProvinceHarvestBlessingStatus(t *testing.T) {
 	}
 	h := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), nil, nil)
 	r := chi.NewRouter()
-	r.Get("/worlds/{worldID}/provinces/{provinceID}", h.Get)
+	r.Get("/worlds/{worldID}/provinces/{provinceID}", asPlayer(ownerID, h.Get))
 	for _, tc := range []struct {
 		name      string
 		until     any

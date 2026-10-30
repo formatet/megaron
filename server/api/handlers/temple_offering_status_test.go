@@ -54,6 +54,9 @@ func TestEarlyTempleStatusPlanAndOwnerPrivacy(t *testing.T) {
 			req.Header.Set("Authorization", "Bearer "+tc.token)
 			rec := httptest.NewRecorder()
 			r.ServeHTTP(rec, req)
+			if !tc.own && rec.Code == http.StatusNotFound {
+				return // an unknown foreign city reveals nothing (megaron_kontrakt_frammande_stad)
+			}
 			if rec.Code != 200 {
 				t.Fatalf("GET %d %s", rec.Code, rec.Body.String())
 			}

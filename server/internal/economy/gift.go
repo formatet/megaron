@@ -110,6 +110,10 @@ func (h *DeliveryHandler) HandleGift(ctx context.Context, e events.ScheduledEven
 	case err == pgx.ErrNoRows || state != "active" || out.ActualRecipientID == nil:
 		out.Reason = "destination_fallen"
 	default:
+		// The gift's bearers saw the city before unloading (megaron_kontrakt_frammande_stad).
+		if err := RecordContact(ctx, tx, e.WorldID, p.SenderID, p.DestinationID, ContactCaravan, e.DueTick); err != nil {
+			return err
+		}
 		// Preserve the frozen gift outcome while also reporting storage loss.
 		if err := tx.QueryRow(ctx, `SELECT credit_settlement_good($1,$2,$3,'gift_delivery',$4)`, p.DestinationID, p.GoodKey, p.Quantity, province.DefaultGoodStorageCap).Scan(&out.CreditedQuantity); err != nil {
 			return err

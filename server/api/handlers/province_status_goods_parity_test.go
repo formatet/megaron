@@ -102,8 +102,8 @@ func TestStatusGoodsParity_AmountClampedToCapInBoth(t *testing.T) {
 	ph := NewProvinceHandler(pool, nil, clk, nil, nil)
 
 	r := chi.NewRouter()
-	r.Get("/worlds/{worldID}/provinces/{provinceID}", ph.Get)
-	r.Get("/worlds/{worldID}/provinces/{provinceID}/goods", ph.Goods)
+	r.Get("/worlds/{worldID}/provinces/{provinceID}", asPlayer(ownerID, ph.Get))
+	r.Get("/worlds/{worldID}/provinces/{provinceID}/goods", asPlayer(ownerID, ph.Goods))
 
 	getReq := httptest.NewRequest(http.MethodGet,
 		"/worlds/"+worldID.String()+"/provinces/"+provinceID.String(), nil)

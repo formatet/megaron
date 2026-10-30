@@ -164,6 +164,13 @@ func (h *DeliveryHandler) HandleShipmentV2(ctx context.Context, e events.Schedul
 			out.Reason = "destination_fallen"
 		}
 	}
+	// The caravan saw the city before unloading (megaron_kontrakt_frammande_stad);
+	// RecordContact skips the sender's own city, so a transfer records nothing.
+	if deliver {
+		if err := RecordContact(ctx, tx, e.WorldID, p.SenderID, p.DestinationID, ContactCaravan, e.DueTick); err != nil {
+			return err
+		}
+	}
 	var passengerEvents []*events.Event
 	creditedTotal := 0.0
 	for _, it := range items {

@@ -117,8 +117,9 @@ func TestTempleDemolitionQuoteIncludesOtherCitiesAndStaysPrivate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, leaked := fetch(tok)[0]["demolition_kharis"]; leaked {
-		t.Fatal("foreign realm standing leaked")
+	// A foreign city's building list is not served at all (megaron_kontrakt_frammande_stad).
+	if rows := fetch(tok); len(rows) != 0 {
+		t.Fatalf("foreign building list served: %v", rows)
 	}
 	code, body := f.do(t, http.MethodDelete, demolishPath(f, id), nil)
 	if code != 200 {
