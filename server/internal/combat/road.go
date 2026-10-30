@@ -65,10 +65,11 @@ func roadTerrainRefusal(t string) string {
 	switch t {
 	case "river_ford":
 		return "a road ends at a river ford — there are no bridges, you wade the ford as before"
-	case "river", "coastal_sea", "deep_sea":
-		return "a road cannot be built on water"
 	case "mountain_limestone", "mountain_red":
 		return "a road cannot be built through mountains"
+	}
+	if province.IsWaterBarrier(t) {
+		return "a road cannot be built on water"
 	}
 	return "a road cannot be built on " + terrainWords(t)
 }

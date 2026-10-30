@@ -4,6 +4,7 @@ import { fmtNum } from './fmt_num.js';
 import { State } from '../state.js';
 import { fetchAuth } from '../api.js';
 import { formatApiError, esc } from './format.js';
+import { isNavigable } from '../terrain.js';
 
 // Gubbe placement grid (P5: megaron_plan_fysisk_gubbemodell.md). Replaces the
 // old percent-per-good allocation table (DE2=B, 2026-08-07) with the P0-UI-
@@ -28,7 +29,6 @@ import { formatApiError, esc } from './format.js';
 // applied to a DOM widget instead of a sprite).
 
 const HEX_SIZE = 30; // px, centre-to-corner
-const WATER_TERRAINS = new Set(['coastal_sea', 'deep_sea', 'river', 'river_ford']);
 
 function hexCorners(cx, cy, size) {
   const pts = [];
@@ -283,7 +283,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
       </g>`;
     }
     const h = p.hex;
-    const water = WATER_TERRAINS.has(h.terrain);
+    const water = isNavigable(h.terrain);
     const anyGood = (h.goods || [])[0];
     const full = anyGood && anyGood.cap != null && (h.goods || []).every(g => g.cap == null || g.placed >= g.cap);
     const cls = ['gubbe-hex', water ? 'water' : '', full ? 'full' : '', h.held_by ? (h.takeable ? 'takeable' : 'held') : ''].filter(Boolean).join(' ');
@@ -382,7 +382,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
       if (!hex) return;
       detail.innerHTML = `
         <div class="dsec-title">(${hex.hex_q},${hex.hex_r}) — ${terrainLabel(hex.terrain)}</div>
-        ${WATER_TERRAINS.has(hex.terrain)?stormHexPanelHTML(hex.hex_q,hex.hex_r):''}
+        ${isNavigable(hex.terrain)?stormHexPanelHTML(hex.hex_q,hex.hex_r):''}
         ${hex.held_by ? `<p class="gubbe-held-note">Held by ${esc(hex.held_by)} — already worked by another city${hex.takeable ? '' : ' — stand a unit there in fortify or sentry to take it'}</p>` : ''}
         ${(hex.goods || []).length
           ? hex.goods.map(good => goodRowHTML({ target_kind: 'hex', hex_ordinal: hex.hex_ordinal }, good, takeLabel(hex))).join('')

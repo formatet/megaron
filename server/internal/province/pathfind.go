@@ -150,27 +150,15 @@ const CategoryCourierLand = "courier_land"
 //     being excluded here.
 func isPassable(terrain, category string) bool {
 	if category == "naval" {
-		return terrain == "coastal_sea" || terrain == "deep_sea" || terrain == "river" || terrain == "river_ford"
+		return IsNavigable(terrain)
 	}
 	if category == CategoryCourier {
-		switch terrain {
-		case "coastal_sea", "deep_sea", "mountain_limestone", "mountain_red":
-			return false
-		}
-		return true
+		return !IsSea(terrain) && terrain != "mountain_limestone" && terrain != "mountain_red"
 	}
 	if category == CategoryCourierLand {
-		switch terrain {
-		case "coastal_sea", "deep_sea", "river", "mountain_limestone", "mountain_red":
-			return false
-		}
-		return true
+		return !IsWaterBarrier(terrain) && terrain != "mountain_limestone" && terrain != "mountain_red"
 	}
-	switch terrain {
-	case "coastal_sea", "deep_sea", "river", "mountain_limestone", "mountain_red":
-		return false
-	}
-	return true
+	return !IsWaterBarrier(terrain) && terrain != "mountain_limestone" && terrain != "mountain_red"
 }
 
 // IsPassable reports whether a unit of category may stand on terrain — the
@@ -223,7 +211,7 @@ func NearestSeaNeighbor(ctx context.Context, db Queryer, worldID uuid.UUID, q, r
 			}
 		}
 		rows.Close()
-		if hasRow && (terrain == "coastal_sea" || terrain == "deep_sea" || terrain == "river" || terrain == "river_ford") {
+		if hasRow && IsNavigable(terrain) {
 			return nq, nr, true, nil
 		}
 	}
@@ -273,7 +261,7 @@ func NearestUnclaimedLandNeighbor(ctx context.Context, db Queryer, worldID uuid.
 		// but water), not the dry unclaimed land this helper is looking for —
 		// same reasoning as spawnBuildable's exclusion (megaron_plan_
 		// flodbudget_och_vadstalle.md).
-		isSea := terrain == "coastal_sea" || terrain == "deep_sea" || terrain == "river" || terrain == "river_ford"
+		isSea := IsNavigable(terrain)
 		isMountain := terrain == "mountain_limestone" || terrain == "mountain_red"
 		if hasRow && !isSea && !isMountain && !settled {
 			return nq, nr, true, nil

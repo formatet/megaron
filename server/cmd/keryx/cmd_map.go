@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"formatet/megaron/server/internal/hexgrid"
+	"formatet/megaron/server/internal/province"
 )
 
 // hexDist returns the axial hex distance between two coordinates.
@@ -242,7 +243,7 @@ func mapCmd() *cobra.Command {
 					liveCount++
 				}
 				switch {
-				case t.Terrain == "deep_sea" || t.Terrain == "coastal_sea":
+				case province.IsSea(t.Terrain):
 					seaCount++
 				case t.Terrain == "river":
 					riverCount++
@@ -260,7 +261,7 @@ func mapCmd() *cobra.Command {
 					dim = " [remembered]"
 				}
 				bearing := compassDirection(oq, or, t.Q, t.R)
-				if t.Terrain == "deep_sea" || t.Terrain == "coastal_sea" {
+				if province.IsSea(t.Terrain) {
 					// Sea hexes: no deposit/occupied tags, just label
 					fmt.Printf("  (%3d,%3d) d%-2d %-3s %-20s[sea]%s\n", t.Q, t.R, t.Distance, bearing, namedRiverTerrain(t.Terrain, t.RiverName), dim)
 					continue

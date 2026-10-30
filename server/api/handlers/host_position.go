@@ -73,7 +73,7 @@ func loadFoundingSite(ctx context.Context, db hostPositionDB, worldID, playerID 
  COALESCE(mt.silver_deposit,false),COALESCE(mt.cedar_deposit,false),COALESCE(mt.incense_deposit,false),COALESCE(mt.coastal,false)
  FROM map_tiles mt LEFT JOIN provinces p ON p.world_id=mt.world_id AND p.map_q=mt.q AND p.map_r=mt.r
  WHERE mt.world_id=$1 AND mt.q=$2 AND mt.r=$3 AND p.id IS NULL
- AND mt.terrain NOT IN ('coastal_sea','deep_sea','river','river_ford','mountain_limestone','mountain_red','semi_desert')`, worldID, q, r).Scan(&site.terrain, &site.copper, &site.tin, &site.silver, &site.cedar, &site.incense, &site.coastal)
+ AND NOT terrain_is_navigable(mt.terrain) AND mt.terrain NOT IN ('mountain_limestone','mountain_red','semi_desert')`, worldID, q, r).Scan(&site.terrain, &site.copper, &site.tin, &site.silver, &site.cedar, &site.incense, &site.coastal)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return site, errHexNotSettlable
 	}

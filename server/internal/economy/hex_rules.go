@@ -117,7 +117,7 @@ func loadHexRuleTiles(ctx context.Context, tx Tx, worldID uuid.UUID, coords []he
  COALESCE(mt.tin_deposit,false),COALESCE(mt.silver_deposit,false),COALESCE(mt.incense_deposit,false),
  CASE WHEN mt.terrain='coastal_sea' THEN (SELECT count(*) FROM unnest($4::int[],$5::int[]) d(q,r)
  JOIN map_tiles n ON n.world_id=mt.world_id AND n.q=mt.q+d.q AND n.r=mt.r+d.r
- WHERE n.terrain NOT IN ('sea','coastal_sea','deep_sea')) ELSE 0 END
+ WHERE NOT terrain_is_sea(n.terrain)) ELSE 0 END
  FROM unnest($2::int[],$3::int[]) wanted(q,r)
  JOIN map_tiles mt ON mt.world_id=$1 AND mt.q=wanted.q AND mt.r=wanted.r`, worldID, qs, rs, dqs, drs)
 	if err != nil {
