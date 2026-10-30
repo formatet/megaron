@@ -13,6 +13,8 @@ A ship that **sails into a storm** takes two points of hull damage (of five) —
 
 Every sea hex a ship crosses is checked, even when it crosses several in one game day. Two different storms crossed that game day each strike; staying inside the same storm gives no extra blow. A storm can also drift onto a slow ship. [[rites|Favourable Passage]] still protects the ship on its outward leg.
 
+**The [[gods|gods]]' hand.** Your [[kharis]] tilts each storm your ship meets. **Favorable:** a 15% chance that the storm does no harm — the notice says *Poseidon held back the waves*. **Wrathful:** a 15% chance that it takes one more hull, three instead of two. Indifferent and Suspicious change nothing. The **Kult (⛩)** drawer and Keryx `cult` show the chance before you sail. A ship that is spared still met the storm, so it can still earn the right to name it.
+
 A storm standing on a city's fishing hex stops the fishing there until it moves on ([[fishing]]).
 
 ## Seeing and remembering storms {#storms-what-you-see}

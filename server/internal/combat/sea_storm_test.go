@@ -9,6 +9,7 @@ import (
 
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/religion"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -486,5 +487,61 @@ func TestSeaStorm_ShipSunkInFirstBlowStillClaimsAndRemembers(t *testing.T) {
 	_ = pool.QueryRow(context.Background(), `SELECT count(*) FROM player_storm_sightings WHERE player_id = $1 AND storm_id = $2`, owner, stormID).Scan(&n)
 	if n != 1 {
 		t.Fatalf("sightings for the claimant = %d, want 1 (the memory lets a sunk ship's owner find the storm)", n)
+	}
+}
+
+type godRoll float64
+
+func (g godRoll) Float64() float64 { return float64(g) }
+func (g godRoll) Intn(int) int     { return 0 }
+
+// R2 storm, mild: the owner's kharis tilts one roll per storm met. Favorable may be
+// spared (own event kind, hull kept); Wrathful may lose one more hull (divine "wrath").
+func TestSeaStorm_GodsHandTiltsTheBlow(t *testing.T) {
+	for _, c := range []struct {
+		name   string
+		kharis float64
+		roll   godRoll
+		hull   int
+		kind   string
+		divine string
+	}{
+		{"favorable spared", 80, 0.10, 5, EventShipStormSpared, "spared"},
+		{"favorable unlucky", 80, 0.20, 5 - StormDamage, EventShipStormDamaged, ""},
+		{"wrathful wrath", 2, 0.10, 5 - StormDamage - religion.StormWrathExtraHull, EventShipStormDamaged, "wrath"},
+		{"wrathful lucky", 2, 0.20, 5 - StormDamage, EventShipStormDamaged, ""},
+		{"indifferent untouched", 30, 0, 5 - StormDamage, EventShipStormDamaged, ""},
+		{"no realm record untouched", -1, 0, 5 - StormDamage, EventShipStormDamaged, ""},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			pool, worldID, owner, route := seaStormWorld(t)
+			ship, _ := mkStormFleet(t, pool, worldID, owner, route)
+			if c.kharis < 0 {
+				if _, err := pool.Exec(context.Background(), `DELETE FROM player_world_records WHERE player_id=$1 AND world_id=$2`, owner, worldID); err != nil {
+					t.Fatal(err)
+				}
+			} else if _, err := pool.Exec(context.Background(),
+				`INSERT INTO player_world_records(player_id,world_id,kharis_amount,kharis_rate,kharis_calc_tick) VALUES($1,$2,$3,0,0)
+				 ON CONFLICT (player_id,world_id) DO UPDATE SET kharis_amount=$3,kharis_rate=0,kharis_calc_tick=0`, owner, worldID, c.kharis); err != nil {
+				t.Fatal(err)
+			}
+			stormsOverHexes(t, pool, worldID, 4, 5, 6, 7, 8)
+			h := NewSeaStormScanHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), nil)
+			h.Dice, h.GodDice = newStormDice(1), c.roll
+			for day := 0; day <= 7; day++ {
+				runStormDay(t, h, worldID, day)
+			}
+			if _, hull := shipState(t, pool, ship); hull != c.hull {
+				t.Fatalf("hull=%d, want %d", hull, c.hull)
+			}
+			var divine string
+			if err := pool.QueryRow(context.Background(), `SELECT COALESCE(payload->>'divine','') FROM events WHERE stream_id=$1 AND event_type IN ($2,$3)`,
+				ship, EventShipStormDamaged, EventShipStormSpared).Scan(&divine); err != nil {
+				t.Fatal(err)
+			}
+			if n := countShipEvents(t, pool, ship, c.kind); n != 1 || divine != c.divine {
+				t.Fatalf("%s events=%d divine=%q, want 1 %q", c.kind, n, divine, c.divine)
+			}
+		})
 	}
 }

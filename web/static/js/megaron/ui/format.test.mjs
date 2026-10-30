@@ -689,6 +689,14 @@ test('storm notices: a named storm is called by name; the first to meet an unnam
   assert.match(notifText('ShipFoundered', { ...foundered, first_to_meet: true }), /lost with her: 40 silver\. You were the first to meet this storm/);
 });
 
+test('storm notices: the gods\' hand is named in the outcome (R2)', () => {
+  const hit = { ...foundered, foundered: false, cargo: undefined };
+  assert.equal(notifText('ShipStormSpared', { ...hit, hull: 5, hull_before: 5, divine: 'spared' }),
+    'Poseidon held back the waves: your Galley met a storm at (6,0) unharmed — hull 5/5');
+  assert.equal(notifText('ShipStormDamaged', { ...hit, hull: 2, hull_before: 5, divine: 'wrath' }),
+    "Your Galley was battered by a storm at (6,0) — hull 2/5 — the gods' wrath struck harder");
+});
+
 test('playtest: internal delivery has a neutral delivery name and UUID founding gift remains readable', () => {
   assert.equal(notifText('TradeDelivery', {quantity: 20, good_key: 'grain'}), 'Delivery arrived: 20 grain');
   assert.match(notifText('MetropolisFounded', {name: 'Knossos', poseidon_gift: 'de291886-44cb-4f4e-8b52-6d488f8fd053'}), /Knossos.*Poseidon grants a Galley/);

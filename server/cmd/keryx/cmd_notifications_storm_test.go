@@ -23,3 +23,16 @@ func TestPrintSeaStormLine_FounderedNamesCargo(t *testing.T) {
 		t.Fatalf("keryx line = %q, want it to contain %q", out, want)
 	}
 }
+
+func TestPrintSeaStormLine_GodsHand(t *testing.T) {
+	out, _ := captureStdout(t, func() error {
+		printSeaStormLine(notificationItem{Kind: "ShipStormSpared", Body: []byte(`{"name":"Ariadne","q":6,"r":0,"hull":5,"hull_max":5,"divine":"spared"}`)})
+		printSeaStormLine(notificationItem{Kind: "ShipStormDamaged", Body: []byte(`{"name":"Ariadne","q":6,"r":0,"hull":2,"hull_max":5,"divine":"wrath"}`)})
+		return nil
+	})
+	for _, want := range []string{"Poseidon held back the waves — your Ariadne sails on unharmed, hull 5/5", "hull 2/5. The gods' wrath: the storm struck harder."} {
+		if !strings.Contains(out, want) {
+			t.Fatalf("keryx = %q, want %q", out, want)
+		}
+	}
+}
