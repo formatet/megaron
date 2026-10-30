@@ -8,6 +8,7 @@ export function namedPlaceTerrain(tile,fallback){
  if(tile.place_kind==='massif')return 'Mountains';
  if(tile.place_kind==='desert')return 'Desert';
  if(tile.place_kind==='forest')return 'Cedar Forest';
+ if(tile.place_kind==='lake')return 'Lake';
  return namedRiverTerrain(tile,fallback);
 }
 export const PLACE_LABEL_STYLE={font:'italic 7px serif',height:9};

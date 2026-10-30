@@ -370,7 +370,7 @@ export function notifText(kind, body) {
              (from ? ` from ${from}` : '');
     }
     case 'PlaceFirstReached': {
-      const place = { river: 'river', massif: 'mountain massif', desert: 'desert', forest: 'cedar forest' }[body.kind] || 'place';
+      const place = { river: 'river', massif: 'mountain massif', desert: 'desert', forest: 'cedar forest', lake: 'lake' }[body.kind] || 'place';
       return `Your ${esc(body.unit_name || unitTypeLabel(body.unit_type) || 'unit')} is the first to reach this ${place} — you may name it. Click it at (${body.q},${body.r}) on the map.`;
     }
     case 'TrainComplete': return `${esc(body.unit_name || unitTypeLabel(body.unit_type))} ready in ${esc(body.settlement_name || 'your city')}`;
@@ -393,7 +393,7 @@ export function notifText(kind, body) {
     case 'TradeLost':          return `Caravan lost to ${body.reason || 'misfortune'}`;
     case 'TradeReturn':        return `Trade returned: ${Math.floor(body.quantity || 0)} ${body.good_key || ''}`;
     case 'PlaceTold': {
-      const place = { river: 'river', massif: 'mountain massif', desert: 'desert', forest: 'cedar forest', city: 'city' }[body.place_kind] || 'place';
+      const place = { river: 'river', massif: 'mountain massif', desert: 'desert', forest: 'cedar forest', lake: 'lake', city: 'city' }[body.place_kind] || 'place';
       return `${esc(body.from || 'A Wanax')} tells you of the ${place} ${esc(body.place || '')} — ${body.hexes || 0} hexes now on your map as they saw them. Its cities are as they last saw them; you cannot trade there until your own people arrive.`;
     }
     case 'MessengerArrival': {

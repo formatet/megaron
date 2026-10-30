@@ -100,6 +100,10 @@ var waterListAllowed = map[string][]string{
 	"server/internal/province/movement.go":    {"case \"coastal_sea\", \"lake\":"},
 	"server/cmd/keryx/river_flow.go":          {"\"coastal water\""},
 	"web/static/js/megaron/ui/river_flow.js":  {"coastal_sea:'coastal water'"},
+	// Place kinds (world.Places), not terrain: river and lake are both nameable places.
+	"server/cmd/keryx/cmd_places.go":        {"\"massif\""},
+	"web/static/js/megaron/ui/format.js":    {"massif: 'mountain massif'"},
+	"web/static/js/megaron/ui/placename.js": {"massif: 'mountain massif'"},
 }
 
 func allowedWaterLine(rel, line string) bool {

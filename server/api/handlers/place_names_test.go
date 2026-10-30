@@ -233,3 +233,27 @@ func TestPlaceMassifPhysicalBorderClaimCanBeNamedThroughAPI(t *testing.T) {
 		t.Fatalf("massif right reused: HTTP%d", got.Code)
 	}
 }
+
+// A lake is a place kind the API names (insjöar slice 3, mig 233 CHECK).
+func TestPlaceLakeCanBeNamed(t *testing.T) {
+	n := newPlaceRig(t)
+	ctx := context.Background()
+	for _, q := range []int{40, 41} {
+		if _, err := n.pool.Exec(ctx, `INSERT INTO map_tiles(world_id,q,r,terrain) VALUES($1,$2,0,'lake')`, n.world, q); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := n.pool.Exec(ctx, `INSERT INTO player_scouted_tiles(world_id,player_id,q,r) VALUES($1,$2,$3,0)`, n.world, n.viewer, q); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, err := n.pool.Exec(ctx, `INSERT INTO place_names(world_id,kind,anchor_q,anchor_r,claimed_by,claimed_tick) VALUES($1,'lake',40,0,$2,7)`, n.world, n.viewer); err != nil {
+		t.Fatal(err)
+	}
+	if got := n.do("POST", "lake", "40,0", `{"name":"Kopais"}`, n.token, ""); got.Code != 200 {
+		t.Fatalf("lake claimant cannot name it: HTTP%d %s", got.Code, got.Body)
+	}
+	got := n.do("GET", "", "", "", n.token, "")
+	if got.Code != 200 || !strings.Contains(got.Body.String(), `"kind":"lake","id":"40,0","name":"Kopais"`) {
+		t.Fatalf("named lake missing from catalogue: HTTP%d %s", got.Code, got.Body)
+	}
+}

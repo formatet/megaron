@@ -1,10 +1,10 @@
-The first Wanax whose **own physical unit reaches** a [[rivers|river]], mountain massif, [[semi-desert|desert]] or [[cedar-forest|cedar forest]] gains the right to name it. Seeing the place nearby gives no right. You receive a notice naming the unit that reached it first.
+The first Wanax whose **own physical unit reaches** a [[rivers|river]], [[lake]], mountain massif, [[semi-desert|desert]] or [[cedar-forest|cedar forest]] gains the right to name it. Seeing the place nearby gives no right. You receive a notice naming the unit that reached it first.
 
-For a river, desert or cedar forest, your unit must enter one of its hexes. For a mountain massif, your unit must enter **land directly bordering the mountains**. Mountains remain impassable. If that land borders two separate massifs, you gain the right to name both. Simply seeing mountains from farther away gives no naming right.
+For a river, lake, desert or cedar forest, your unit must enter one of its hexes. Only a ship can sail onto a lake. For a mountain massif, your unit must enter **land directly bordering the mountains**. Mountains remain impassable. If that land borders two separate massifs, you gain the right to name both. Simply seeing mountains from farther away gives no naming right.
 
 ## Naming known land {#naming-the-land-details}
 
-A river includes its [[river-ford|fords]] and connected [[river-delta|delta]]. A mountain massif joins neighbouring limestone and [[red-mountains|red mountains]]; a desert joins neighbouring desert hexes; a cedar forest joins neighbouring [[cedar|cedar]] woodland. Massifs, deserts and cedar forests must cover at least five hexes to be named. Olive groves are cultivated land and cannot be named this way.
+A river includes its [[river-ford|fords]] and connected [[river-delta|delta]]. A mountain massif joins neighbouring limestone and [[red-mountains|red mountains]]; a desert joins neighbouring desert hexes; a cedar forest joins neighbouring [[cedar|cedar]] woodland. Massifs, deserts and cedar forests must cover at least five hexes to be named. A lake is named at any size, even a single hex. Olive groves are cultivated land and cannot be named this way.
 
 ## Giving a place a name {#naming-the-land-give-it-a-name}
 
@@ -18,7 +18,7 @@ After naming, the name appears in the hexpanel and on the map at readable zoom. 
 
 `keryx places` lists known places, their kind and anchor id (`q,r`), their known hexes, and whether you may name them.
 
-`keryx places name river 6,79 "Alpheios"` names a river. Use `massif`, `desert` or `forest` for the other kinds, with the id shown in your list. Add `--json` for the complete API reply. If an anchor starts with a minus sign, put `--` before the positional arguments: `keryx places name -- river -6,79 "Alpheios"`.
+`keryx places name river 6,79 "Alpheios"` names a river. Use `lake`, `massif`, `desert` or `forest` for the other kinds, with the id shown in your list. Add `--json` for the complete API reply. If an anchor starts with a minus sign, put `--` before the positional arguments: `keryx places name -- river -6,79 "Alpheios"`.
 
 Administrators can change or remove unsuitable names with `keryx places rename <kind> <q,r> "<name>"` or `keryx places unname <kind> <q,r>` and their admin key. Removing a name leaves the naming right spent.
 

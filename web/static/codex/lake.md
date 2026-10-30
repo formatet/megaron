@@ -4,6 +4,8 @@ A lake is water the open sea does not reach. Many lakes still have a [[rivers|ri
 
 A city beside a lake counts as coastal: it may build a [[harbour]]. A [[shipyard]] needs a waterway to the Thalassa — lake, river or [[river-ford|ford]] all the way to the sea. On a lake with no such way out, the shipyard is refused: *this lake has no waterway to the Thalassa*.
 
+Every lake can be named, even a single hex. The first ship to sail onto it earns the right ([[naming-the-land]]).
+
 **[[galley|Galley]] base speed: 3 hexes per game day**, as on coastal water. See [[ship-types]].
 
 ## Base production

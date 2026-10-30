@@ -37,3 +37,25 @@ func TestPlacesKindsMinimumAndCanonicalAnchor(t *testing.T) {
 		t.Fatal("SQL order changes place identities")
 	}
 }
+
+// Lakes are nameable at every size, like rivers (insjöar slice 3, Timothy 2026-10-30).
+func TestPlacesLakeEverySize(t *testing.T) {
+	t.Parallel()
+	tiles := []MapTile{
+		{Q: 0, Terrain: TerrainLake},
+		{Q: 5, Terrain: TerrainLake}, {Q: 6, Terrain: TerrainLake}, {Q: 7, Terrain: TerrainLake},
+		{Q: 10, Terrain: TerrainCoastalSea},
+	}
+	var lakes []Place
+	for _, p := range Places(tiles) {
+		if p.Kind == "lake" {
+			lakes = append(lakes, p)
+		}
+	}
+	if len(lakes) != 2 || len(lakes[0].Hexes)+len(lakes[1].Hexes) != 4 {
+		t.Fatalf("want a one-hex and a three-hex lake, coastal water excluded; got %+v", lakes)
+	}
+	if !IsPlaceKind("lake") || IsPlaceKind("sea") {
+		t.Fatal("place kind owner disagrees with Places")
+	}
+}
