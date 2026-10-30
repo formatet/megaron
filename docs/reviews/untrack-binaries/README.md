@@ -27,3 +27,6 @@ The full suite exposed an existing stale text assertion in `TestStatusBuildSinkU
 
 ## Final checks
 Fresh migration-228 full suite: every Go package except the separately reproduced/repaired Keryx assertion passed; corrected Keryx package passed on a fresh database. All 875 web tests passed. Build, vet, diff checks and ignore mutation passed. No gameplay, assets, or schema changes.
+
+## Deploy
+Production change `69b6c7cc` pushed to master and pulled on CT126. Remote HEAD matched the full commit, `git ls-files` returned none of the three paths, and `git check-ignore` confirmed all three. Worktree clean; service active; runtime executable present; `/healthz` still reports the unchanged running build `5f51906`, migration 228, status ok. No restart was needed for this repository-only change. Todo and efficiency inventory updated; E4 is the proposed next slice.
