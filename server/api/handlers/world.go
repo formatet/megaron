@@ -445,9 +445,10 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 	for _, tile := range fullMap {
 		savedTerrain[[2]int{tile.Q, tile.R}] = string(tile.Terrain)
 	}
-	byHex := smallestPlaceByHex(world.Places(fullMap))
+	places := world.Places(fullMap)
+	byHex := smallestPlaceByHex(places)
 	riverByHex := map[[2]int]world.Place{}
-	for _, p := range world.Places(fullMap) {
+	for _, p := range places {
 		if p.Kind == "river" {
 			for _, xy := range p.Hexes {
 				riverByHex[xy] = p
