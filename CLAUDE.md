@@ -93,7 +93,7 @@ Go (minimum version in `server/go.mod`) · chi · PostgreSQL 16 (pgx/v5) · Redi
   may hold a `*clock.WallClock`.
 - **Sanctioned wall-clock exceptions** (non-game time, deliberately outside `clock.Clock`): WS I/O deadlines
   (`internal/notify/hub.go`) · auth token/cookie expiry and authenticated-contact telemetry (`internal/auth`, `api/handlers/auth.go`) ·
-  `internal/chronicle` · `cmd/create-world` seed · CLI display in `cmd/keryx`.
+  `internal/chronicle` · `cmd/create-world` seed · CLI display in `cmd/keryx` · the client-version cache (`cmd/server/webversion.go`).
   **No new exceptions without updating this list.**
 
 ### Events
