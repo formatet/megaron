@@ -45,7 +45,7 @@ import {
   loadWarDrawer, warRecruitFromUI, warRecruitShip, warDisband, warAbandon,
   unitRecall, unitRecallAll, unitRedirect, unitRedirectToggle, unitRedirectTypedToggle, unitMarch,
   unitStance, unitReinforce, unitLoadPrompt, unitUnload, unitRepair, unitLayUp, unitFitOut, unitCancelTraining,
-  unitRetreatOrder, saveRetreatDefault, warFocusUnit, unitPickup, unitPickupToggle,
+  unitRetreatOrder, saveRetreatDefault, warFocusUnit, warOpenRecruit, unitPickup, unitPickupToggle,
   unitRoadToggle, unitBuildRoad,
 } from './ui/drawers/war.js';
 import {
@@ -280,6 +280,7 @@ Object.assign(window, {
   renderColonizePreviewHTML,
   updateNotifBadge,
   warFocusUnit,
+  warOpenRecruit,
 });
 
 // ── Bootstrap — fetch what the Go-template used to inline ─────────────────
