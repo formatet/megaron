@@ -933,7 +933,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	}
 	// Composed offering (Timothy 2026-07-22): the Wanax may bring whatever they
 	// judge worthy instead of the prayer's inherited recipe. What it is worth is
-	// the world's scarcity (divine_valuations, repriced daily by the kharis tick)
+	// the gods' fixed price list (religion.FixedDivineValues, 2026-10-31)
 	// times this god's taste — and it is weighed against the SAME god's
 	// traditional recipe valued the same way, so bringing exactly the old recipe
 	// still lands on offerMod 0. Omitting `offering` keeps the old

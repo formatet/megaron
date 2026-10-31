@@ -10,7 +10,7 @@ import (
 )
 
 // ProjectDailyNet computes, read-only, the kharis a Wanax would net on the NEXT
-// maintained day: effective temple weight × KharisPerTempleWeight × scarcity −
+// maintained day: effective temple weight × KharisPerTempleWeight × scarcity (locked 1) −
 // dailyDecay below the ceiling. Above it, only ordinary decay applies;
 // offerings cannot offset that drift. This matches processMaintenance, with the same
 // feeding rule (early grain reference or local substitutions to the same divine worth).
@@ -64,12 +64,8 @@ func ProjectDailyNet(ctx context.Context, pool *pgxpool.Pool, playerID, worldID 
 		return -dailyDecay, false, devotionSum, devotionCapacity, nil
 	}
 
-	values, verr := religion.LoadDivineValues(ctx, pool, worldID)
-	baseValues, berr := religion.LoadLaborValues(ctx, pool)
-	if berr != nil {
-		return 0, false, 0, 0, berr
-	}
-	scarcity := scarcityFromValues(values, baseValues, verr)
+	values, _ := religion.LoadDivineValues(ctx, pool, worldID)
+	scarcity := lockedTempleScarcity // same factor as the tick (templeOfferScarcity)
 	effectiveWeight := projectEffectiveWeight(ctx, pool, playerID, worldID, values)
 
 	// Read current standing and ceiling using the same realm temples as the tick.
@@ -88,8 +84,9 @@ func ProjectDailyNet(ctx context.Context, pool *pgxpool.Pool, playerID, worldID 
 	return gain - dailyDecay, true, devotionSum, devotionCapacity, nil
 }
 
-// scarcityFromValues mirrors templeOfferScarcity without a TickHandler receiver,
-// so both the tick and this projection read the same number.
+// scarcityFromValues is the parked scarcity-derived temple factor (before
+// 2026-10-31 both the tick and this projection read it). Unused until the
+// scarcity price list returns (todo SENARE [C]).
 func scarcityFromValues(values, baseValues map[string]float64, err error) float64 {
 	if err != nil || len(values) == 0 {
 		return 1.0

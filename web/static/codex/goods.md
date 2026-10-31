@@ -41,7 +41,7 @@ To learn what another city needs or can spare, ask its Wanax in a [[messengers|l
 
 ## Goods for offerings and trade {#goods-offerings-and-trade}
 
-The gods weigh goods differently: bronze can count for far more than grain. **Kult**, at the temple, and `keryx rite --list` show their current reckoning before each god's preferences. What the world can spare and what the god favours both matter ([[rites]]). Wanaxes agree their own trade prices.
+The gods weigh goods differently: one bronze counts for 33 grain. The fixed table is in [[rites]]; a god values the goods it favours higher still. Wanaxes agree their own trade prices.
 
 Production per game day is output before meals and other uses. Food net combines grain, fish and oil production minus population demand. The city has one stock of each good; food coverage counts these three goods together. Shortfall waiting estimates assume current production continues, before other use.
 

@@ -6,6 +6,7 @@ import (
 	"sync/atomic"
 	"testing"
 
+	"formatet/megaron/server/internal/religion"
 	"github.com/google/uuid"
 )
 
@@ -44,7 +45,10 @@ func TestEarlyTempleOfferingLocalGiftAndProjection(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if len(offers) != 1 || offers[0].Fed || offers[0].PaidFraction != .75 || offers[0].Offering[good] != .75 || offers[0].Required["grain"] != .75 {
+			// Fish and timber stand in for grain at their fixed divine value
+			// (religion.FixedDivineValues): worth 2, so half as much is given.
+			need := .75 * religion.FixedDivineValues["grain"] / religion.FixedDivineValues[good]
+			if len(offers) != 1 || offers[0].Fed || offers[0].PaidFraction != .75 || offers[0].Offering[good] != need || offers[0].Required["grain"] != .75 {
 				t.Fatalf("plan: %+v", offers)
 			}
 			net, _, _, _, err := ProjectDailyNet(ctx, pool, pid, wid)
@@ -73,10 +77,14 @@ func TestEarlyTempleOfferingLocalGiftAndProjection(t *testing.T) {
 			if err := pool.QueryRow(ctx, `SELECT (payload->>'kharis_gain')::float8 FROM events WHERE world_id=$1 AND event_type='KharisOfferingV2' ORDER BY id DESC LIMIT 1`, wid).Scan(&gain); err != nil {
 				t.Fatal(err)
 			}
-			if math.Abs(after-(20+net)) > 1e-8 || amount != 0 || math.Abs(gain-6.3) > 1e-8 {
+			if math.Abs(after-(20+net)) > 1e-8 || math.Abs(amount-(.75-need)) > 1e-9 || math.Abs(gain-6.3) > 1e-8 {
 				t.Fatalf("actual after%g amount%g gain%g", after, amount, gain)
 			}
 			// A richer remote city of the same Wanax is never charged for this temple.
+			// Empty the local store first: fish/timber leave a remainder now.
+			if _, err := pool.Exec(ctx, `UPDATE settlement_goods SET amount=0,rate=0 WHERE settlement_id=$1`, sid); err != nil {
+				t.Fatal(err)
+			}
 			var other uuid.UUID
 			var otherProvince uuid.UUID
 			if err := pool.QueryRow(ctx, `INSERT INTO provinces(world_id,map_q,map_r,terrain_type) VALUES($1,8,8,'plains') RETURNING id`, wid).Scan(&otherProvince); err != nil {
