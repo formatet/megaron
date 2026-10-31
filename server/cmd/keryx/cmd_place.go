@@ -22,7 +22,7 @@ func placeCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "place [city] <good> <ordinal> [+n|-n]",
 		Short: "Place or remove citizens on catchment hex <ordinal> doing <roll> (good)",
-		Long: `<roll> is a good key (grain, timber, fish, ...) and <ordinal> is the hex
+		Long: `<roll> is a good key (fish, grain, timber, ...) and <ordinal> is the hex
 number (1..18) from ` + "`keryx city`" + `. Rejected if the hex has no such production
 option, is already full for that good, or hasn't been
 scouted yet.

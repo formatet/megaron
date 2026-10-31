@@ -858,7 +858,7 @@ For a foreign coastal city, use an ordinary march by a laden ship for the
 existing amphibious assault; --intent land does not attack a foreign city.
 A ship at sea takes no new orders — give its whole mission before departure.
 
-Ore on mountain terrain (copper, tin, silver):
+Ore on mountain terrain (copper, silver, tin):
   Mountains are impassable — you cannot colonize the mountain hex itself.
   Instead, colonize an ADJACENT passable hex: the ore deposit will fall in
   the new colony's catchment and can be mined from there.
@@ -1316,7 +1316,7 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 			dep["incense"] = true
 		}
 	}
-	for _, d := range []string{"copper", "tin", "silver", "cedar", "incense"} {
+	for _, d := range []string{"cedar", "copper", "incense", "silver", "tin"} {
 		if dep[d] {
 			extras = append(extras, d+"-deposit ✓")
 		}

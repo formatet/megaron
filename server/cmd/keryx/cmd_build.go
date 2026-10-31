@@ -42,7 +42,7 @@ func buildCmd() *cobra.Command {
 		Use:   "build [city]",
 		Short: "Start construction of a building (--list for options, --queue to see what's queued; defaults to capital)",
 		Example: `  keryx build --list
-  keryx build --type farm --hex 3,-1          # farm/mine/lumbermill/stonequarry are hex-bound: pick a catchment hex
+  keryx build --type farm --hex 3,-1          # farm/lumbermill/mine/stonequarry are hex-bound: pick a catchment hex
   keryx build --type harbour          # requires coastal (adjacent sea hex)
   keryx build --type mine --hex 5,2 --province <province-id>   # build in a colony
   keryx build --type winery           # produces nothing unless a hills tile is in catchment

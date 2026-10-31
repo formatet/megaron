@@ -62,3 +62,14 @@ meaning are kept. Inventory made before any change; SORT = changed, KEEP = left.
 | `notification_text.go:129,144,147`, `cmd_status.go:1075`, `cmd_gubbe.go:257`, `cmd_place.go:25`, `cmd_demolish.go:20` | prose lists | SORT |
 | `cmd_actions.go categoryOrder` | locked taxonomy synced with the server registry | KEEP (ask Timothy) |
 | server payloads, events, DB order | | KEEP |
+
+## Outcome
+
+Everything marked SORT was changed; tests updated to the alphabetical order.
+Keryx: `foodDisplayGoods` keeps its semantic order (callers slice `[:3]` for the real
+foods); the new `foodListGoods` is what the player sees.
+
+Kept, ask Timothy: `how-do-i.md` task groups, prayers list in `rites.md`, `sight.md`
+table, `cmd_actions.go categoryOrder`, the Codex index order in "Start here" and
+"Founding" (reading sequences), `keryx.md` example commands, `screen.md` drawer table
+(mirrors the screen).

@@ -17,7 +17,7 @@ func demolishCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "demolish [city]",
 		Short: "Tear down a finished building so the hex/slot is free to rebuild (no refund; its workers become idle)",
-		Example: `  keryx demolish --hex 3,-1                 # the farm/mine/lumbermill/stonequarry standing on that hex
+		Example: `  keryx demolish --hex 3,-1                 # the farm/lumbermill/mine/stonequarry standing on that hex
   keryx demolish --type market               # a city building
   keryx demolish --hex 5,2 --province <province-id>`,
 		Args: cobra.MaximumNArgs(1),
