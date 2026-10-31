@@ -193,6 +193,16 @@ func mapCmd() *cobra.Command {
 			type frontierHex struct {
 				Q, R     int
 				Distance int
+				// SeaNeighbours counts KNOWN sea hexes touching this fogged hex. The
+				// hex's own terrain is hidden by fog of war, so this is the only
+				// honest hint that it may be sea (land forces cannot enter sea).
+				SeaNeighbours int `json:"borders_known_sea_hexes,omitempty"`
+			}
+			knownSea := map[[2]int]bool{}
+			for _, t := range tiles {
+				if t.Visible && province.IsSea(t.Terrain) {
+					knownSea[[2]int{t.Q, t.R}] = true
+				}
 			}
 			var frontier []frontierHex
 			for _, t := range tiles {
@@ -202,7 +212,13 @@ func mapCmd() *cobra.Command {
 				}
 				if !t.Visible || t.Terrain == "fog" {
 					if t.Frontier {
-						frontier = append(frontier, frontierHex{Q: t.Q, R: t.R, Distance: d})
+						sea := 0
+						for _, off := range [][2]int{{1, 0}, {1, -1}, {0, -1}, {-1, 0}, {-1, 1}, {0, 1}} {
+							if knownSea[[2]int{t.Q + off[0], t.R + off[1]}] {
+								sea++
+							}
+						}
+						frontier = append(frontier, frontierHex{Q: t.Q, R: t.R, Distance: d, SeaNeighbours: sea})
 					}
 					continue
 				}
@@ -305,13 +321,17 @@ func mapCmd() *cobra.Command {
 				fmt.Printf("  (%3d,%3d) d%-2d %-3s %-20s%s%s%s%s\n", t.Q, t.R, t.Distance, bearing, namedRiverTerrain(t.Terrain, t.RiverName), dep, coastTag, tag, dim)
 			}
 			if len(frontier) > 0 {
-				fmt.Printf("\nFrontier — unexplored hexes bordering the known world (%d, nearest first):\n", len(frontier))
+				fmt.Printf("\nFrontier — unexplored hexes bordering the known world (%d, nearest first; terrain is hidden until explored):\n", len(frontier))
 				max := len(frontier)
 				if max > 15 {
 					max = 15
 				}
 				for _, f := range frontier[:max] {
-					fmt.Printf("  (%3d,%3d) d%-2d %-3s\n", f.Q, f.R, f.Distance, compassDirection(oq, or, f.Q, f.R))
+					seaNote := ""
+					if f.SeaNeighbours > 0 {
+						seaNote = fmt.Sprintf("  touches known sea (%d hex%s) — may be sea; land forces cannot enter sea", f.SeaNeighbours, map[bool]string{true: "", false: "es"}[f.SeaNeighbours == 1])
+					}
+					fmt.Printf("  (%3d,%3d) d%-2d %-3s%s\n", f.Q, f.R, f.Distance, compassDirection(oq, or, f.Q, f.R), seaNote)
 				}
 				if len(frontier) > max {
 					fmt.Printf("  … and %d more\n", len(frontier)-max)

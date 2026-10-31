@@ -19,7 +19,7 @@ globalThis.document ??= {
 globalThis.window ??= { addEventListener() {}, matchMedia: () => ({ matches: false, addEventListener() {} }) };
 globalThis.localStorage ??= { getItem: () => null, setItem() {}, removeItem() {} };
 
-const { placementOutcome, refusalText, selectionKey, takeLabel, goodRowHTML, cityBuildingsHTML,placementTargetKey } = await import('./citygrid.js');
+const { placementOutcome, refusalText, selectionKey, takeLabel, goodRowHTML, cityBuildingsHTML,placementTargetKey, sortGoods } = await import('./citygrid.js');
 
 // The refusal sentences below are copied verbatim from the server
 // (api/handlers/settlement_placement.go) — they are the actual bodies this
@@ -280,4 +280,14 @@ test('a dispatch selects the actual reached build-site ordinal, never an arbitra
  assert.equal(placementTargetKey(hexes,{q:1,r:7}),'hex:10');
  assert.equal(placementTargetKey(hexes,{q:999,r:7}),null);
  assert.equal(placementTargetKey(hexes,null,'city'),'city');
+});
+
+test('goods are listed alphabetically by shown label, whatever order the server sends', () => {
+  const g = k => ({ good_key: k, rate_per_tick: 1, cap: 2, placed: 0, marginal_yield: 1 });
+  const hex = { target_kind: 'hex', hex_ordinal: 1 };
+  assert.deepEqual(sortGoods([g('olive_oil'), g('fish'), g('grain'), g('barley')], hex).map(x => x.good_key),
+    ['barley', 'fish', 'grain', 'olive_oil']);
+  const html = cityBuildingsHTML([{ building_type: 'farm', level: 1, goods: [g('wine'), g('grain'), g('barley')] }]);
+  const order = [...html.matchAll(/data-good="([a-z_]+)"/g)].map(m => m[1]);
+  assert.deepEqual(order, ['barley', 'grain', 'wine']);
 });

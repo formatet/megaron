@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -14,6 +15,9 @@ func meCmd() *cobra.Command {
 			c := newClient(cfg)
 			data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/me", cfg.WorldID))
 			if err != nil {
+				if strings.Contains(err.Error(), "HTTP 404") && neverJoined(c, cfg.WorldID) {
+					return fmt.Errorf("you haven't joined this world yet — run: keryx join")
+				}
 				return err
 			}
 			if jsonMode {

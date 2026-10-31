@@ -94,7 +94,7 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 					fmt.Printf("  #%-3d (%d,%d) %-14s (no producible good)%s\n", h.HexOrdinal, h.HexQ, h.HexR, namedRiverTerrain(h.Terrain, h.RiverName), bldSuffix)
 					continue
 				}
-				for i, g := range h.Goods {
+				for i, g := range sortedGoods(h.Goods) {
 					if i == 0 {
 						fmt.Printf("  #%-3d (%d,%d) %-14s %s%s%s\n", h.HexOrdinal, h.HexQ, h.HexR, namedRiverTerrain(h.Terrain, h.RiverName), goodCell(g), "", bldSuffix)
 					} else {
@@ -106,7 +106,7 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 			if len(opts.Buildings) > 0 {
 				fmt.Println("\nBuildings:")
 				for _, b := range opts.Buildings {
-					for i, g := range b.Goods {
+					for i, g := range sortedGoods(b.Goods) {
 						if i == 0 {
 							label := b.BuildingType
 							if b.Name != "" {

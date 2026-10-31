@@ -67,6 +67,19 @@ export function takeLabel(hex) {
 // — resolved once by the caller (which already knows which hex/building this
 // row belongs to) and carried on the row as JSON, so the click handler never
 // has to re-derive it from the DOM.
+// The name the player reads on a row — the single source for both the row's
+// heading and the alphabetical order below.
+function goodLabel(target, good) {
+  const shipyard = good.staffing_only && target.building_type === 'shipyard';
+  return shipyard ? 'Shipbuilding and repairs' : good.staffing_only ? 'Devotion' : good.good_key;
+}
+
+// Goods are always listed in alphabetical order of the label shown, whatever
+// order the server sends them in (it differs per hex).
+export function sortGoods(goods, target) {
+  return [...(goods || [])].sort((a, b) => goodLabel(target, a).localeCompare(goodLabel(target, b), 'en'));
+}
+
 export function goodRowHTML(target, good, take) {
   // −1 keys off THIS city's own gubbar (placed_ordinals), never `placed` —
   // `placed` is the hex's global occupancy, and on a hex another city holds it
@@ -84,7 +97,7 @@ export function goodRowHTML(target, good, take) {
   return `
     <div class="gubbe-good-row" data-good="${good.good_key}" data-cap="${good.cap ?? ''}" data-target="${targetAttr}">
       <div>
-        <b>${shipyard ? 'Shipbuilding and repairs' : good.staffing_only ? 'Devotion' : good.good_key}</b>
+        <b>${goodLabel(target, good)}</b>
         <span style="color:var(--text-dim)"> ${good.staffing_only ? fmtNum(good.placed) + (shipyard ? ' shipyard workers' : ' temple workers') : fmtNum(Number(good.rate_per_tick.toFixed(1))) + ' per game day total'} · ${nextLabel}</span>
         <div>${pipsHTML}</div>
       </div>
@@ -101,10 +114,13 @@ export function goodRowHTML(target, good, take) {
 // One card per workplace building; a temple is one card per god and its
 // placements carry `god` so the server knows which temple the worker stands at.
 export function cityBuildingsHTML(buildings) {
-  return buildings.map(b => `
+  return buildings.map(b => {
+    const target = { target_kind: 'building', building_type: b.building_type, ...(b.god_id ? { god: b.god_id } : {}) };
+    return `
         <div class="dsec-title" data-building-type="${esc(b.building_type)}" ${b.god_id ? `data-god="${esc(b.god_id)}"` : ''}>${esc(b.name || buildingLabel(b.building_type))} L${b.level}</div>
-        ${(b.goods || []).map(good => goodRowHTML({ target_kind: 'building', building_type: b.building_type, ...(b.god_id ? { god: b.god_id } : {}) }, good)).join('')}
-      `).join('');
+        ${sortGoods(b.goods, target).map(good => goodRowHTML(target, good)).join('')}
+      `;
+  }).join('');
 }
 
 // refusalText turns a failed placement response into the line the player reads.
@@ -385,7 +401,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
         ${isNavigable(hex.terrain)?stormHexPanelHTML(hex.hex_q,hex.hex_r):''}
         ${hex.held_by ? `<p class="gubbe-held-note">Held by ${esc(hex.held_by)} — already worked by another city${hex.takeable ? '' : ' — stand a unit there in fortify or sentry to take it'}</p>` : ''}
         ${(hex.goods || []).length
-          ? hex.goods.map(good => goodRowHTML({ target_kind: 'hex', hex_ordinal: hex.hex_ordinal }, good, takeLabel(hex))).join('')
+          ? sortGoods(hex.goods, { target_kind: 'hex', hex_ordinal: hex.hex_ordinal }).map(good => goodRowHTML({ target_kind: 'hex', hex_ordinal: hex.hex_ordinal }, good, takeLabel(hex))).join('')
           : '<p class="empty-state">No producible good on this hex.</p>'}`;
     }
 

@@ -532,6 +532,34 @@ func multiCityHint(name string, settlementsUsed float64) string {
 		name, settlementsUsed)
 }
 
+// nextGameDayLine says when the next game day begins, in wall-clock terms,
+// from the world anchor the client already fetched (the anchor is the wall
+// time of the world's current tick, so the next one is current+1). Empty when
+// the anchor is unknown — no invented time. Display only: `now` is wall clock,
+// the sanctioned keryx-display exception.
+func nextGameDayLine(c *Client, now time.Time) string {
+	if c == nil {
+		return ""
+	}
+	if _, ok := c.TickSeconds(); !ok || c.worldTick == nil {
+		return ""
+	}
+	at, ok := c.WorldTickETA(*c.worldTick + 1)
+	if !ok {
+		return ""
+	}
+	left := at.Sub(now)
+	if left <= 0 {
+		return "Next game day: due now"
+	}
+	mins := int(math.Ceil(left.Minutes()))
+	in := fmt.Sprintf("%d min", mins)
+	if mins >= 60 {
+		in = fmt.Sprintf("%d h %d min", mins/60, mins%60)
+	}
+	return fmt.Sprintf("Next game day: %s (in %s)", clockTimeAt(at, now), in)
+}
+
 func statusCmd() *cobra.Command {
 	var provinceID string
 	cmd := &cobra.Command{
@@ -695,6 +723,10 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				fmt.Println(line)
 			}
 			fmt.Println()
+
+			if line := nextGameDayLine(c, time.Now()); line != "" {
+				fmt.Println(line)
+			}
 
 			// "Last tick" summary: summarizes the journal (keryx ticklog)
 			// without replacing it.

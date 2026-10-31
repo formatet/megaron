@@ -15,6 +15,14 @@ func loginCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "login",
 		Short: "Authenticate and save credentials",
+		Long: `Authenticate and save credentials.
+
+The password is read from the POLEIA_PASSWORD environment variable when it is
+set (use this in scripts and any non-interactive shell), otherwise from an
+echo-free prompt in a terminal. There is no --password flag on purpose: a flag
+value leaks into the process list and shell history.`,
+		Example: `  POLEIA_PASSWORD=... keryx login --server https://example.org --username wanax1
+  keryx login            # prompts in a terminal`,
 		// --server and --username are both plausible for a stray positional
 		// (a bare URL or a bare name) — no single one is the obvious guess.
 		Args: noPositionalArgs(),
