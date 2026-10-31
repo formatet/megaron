@@ -143,3 +143,9 @@ test('storm over a fishing ground is named in the food section (D.1)', () => {
   assert.equal(stormFishingHTML({ storm_no_fishing: 0 }), '');
   assert.equal(stormFishingHTML({}), '');
 });
+
+test('herd at the pen cap shows its overflow as a term of the food net', () => {
+ const food = surplus => ({coverage_ticks:12.5,production_per_tick:5,consumption_per_tick:5,food_net_per_tick:surplus,herd:{count:50,cap:50,surplus_rate:surplus}});
+ assert.match(foodDetailsHTML(pd({food:food(0.25)})),/production 5 \+ herd 0\.3 − people eat 5 = 0\.3 net before army/);
+ assert.doesNotMatch(foodDetailsHTML(pd({food:food(0)})),/herd/);
+});
