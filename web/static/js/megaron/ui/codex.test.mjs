@@ -263,7 +263,7 @@ test('codex: every member page names a hub that exists and lists it', () => {
     assert.ok(extractLinks(bodies[a.parent]).includes(a.id), `${a.parent} does not list ${a.id}`);
   }
   assert.equal(index.articles.find(a => a.id === 'war-galley').parent, 'ship-types');
-  assert.match(bodies['ship-types'], /\[\[galley\]\][\s\S]*\[\[war-galley\]\][\s\S]*\[\[emporos\]\]/);
+  assert.match(bodies['ship-types'], /\[\[emporos\]\][\s\S]*\[\[galley\]\][\s\S]*\[\[war-galley\]\]/);
 });
 
 test('founding article says keryx founding status shows the same forecast', () => {

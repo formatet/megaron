@@ -122,7 +122,7 @@ export function foodDetailsHTML(pd) {
   const a = pd.automatic_food;
   const automatic = a ? `<p class="empty-state">Automatic food: ${Number(a.nearjord_grain_per_tick + a.remainder_grain_per_tick).toFixed(2)} grain + ${Number(a.remainder_fish_per_tick || 0).toFixed(2)} fish per game day without placed citizens (nearby ground ${Number(a.nearjord_grain_per_tick).toFixed(2)} grain; ${a.remainder_people} people outside whole citizens: ${Number(a.remainder_grain_per_tick).toFixed(2)} grain + ${Number(a.remainder_fish_per_tick || 0).toFixed(2)} fish, a fraction of the best food worker).</p>` : '';
   const coverage = s.coverage_ticks != null && Number.isFinite(Number(s.coverage_ticks))
-    ? row('City stocks', `${fmtDuration(s.coverage_ticks)} at current consumption · ${s.goods ? foodGoodsText(s.goods) : 'grain + fish'}`)
+    ? row('City stocks', `${fmtDuration(s.coverage_ticks)} at current consumption · ${s.goods ? foodGoodsText(s.goods) : 'fish + grain'}`)
     : '<p class="empty-state">Food stores not reported.</p>';
   const eaten = s.consumed_tick != null && s.consumed ? row('Last meal', `${foodGoodsText(s.consumed) || 'none'} · ${fmtTickTime(s.consumed_tick)}`) : '';
   return grain + army + note + automatic + coverage + eaten;

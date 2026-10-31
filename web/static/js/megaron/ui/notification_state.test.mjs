@@ -50,7 +50,7 @@ test('civilian hunger and garrison hunger clear independently in the same city',
 
 test('civilian hunger prose reports the actual meal, and ownership closure never promises recovery', () => {
   const text=notifText('CivilianStarvationStarted',{name:'<Coast>',unmet:0.03});
-  assert.match(text,/&lt;Coast&gt;.*going hungry.*&lt;0.1 grain.*grain or fish.*transfer food/);
+  assert.match(text,/&lt;Coast&gt;.*going hungry.*&lt;0.1 grain.*fish or grain.*transfer food/);
   assert.match(notifText('CivilianStarvationEnded',{name:'Coast'}),/people were fed again/);
   const closed=notifText('CivilianStarvationEnded',{name:'Coast',reason:'no_longer_owned_or_active'});
   assert.match(closed,/warning closed/);assert.doesNotMatch(closed,/fed again/);
@@ -62,10 +62,10 @@ test('civilian hunger prose reports the actual meal, and ownership closure never
 
 test('equal food: new notices say food while historical grain outcomes retain meaning',()=>{
  const start=notifText('GarrisonStarvationStarted',{name:'Coast',food_category:true});
- assert.match(start,/Soldiers share the city's grain, fish and oil\./);
+ assert.match(start,/Soldiers share the city's fish, grain and oil\./);
  assert.doesNotMatch(start,/need grain even when/);
  assert.match(notifText('GarrisonStarvationStarted',{name:'Coast'}),/Soldiers need grain even when/);
- assert.match(notifText('CivilianStarvationStarted',{unmet:0.03,food_category:true}),/&lt;0.1 food.*grain, fish or oil,/);
+ assert.match(notifText('CivilianStarvationStarted',{unmet:0.03,food_category:true}),/&lt;0.1 food.*fish, grain or oil,/);
  assert.match(notifText('CivilianStarvationStarted',{unmet:0.03}),/&lt;0.1 grain/);
  assert.match(notifText('UnitAttrition',{reason:'food_shortage',disbanded:true}),/no food/);
  assert.match(notifText('UnitAttrition',{reason:'grain_shortage',disbanded:true}),/no grain/);

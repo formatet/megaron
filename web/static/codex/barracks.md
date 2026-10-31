@@ -5,7 +5,7 @@ Build or upgrade it in **City → Buildings → Construct**, or use `keryx build
 <!-- facts: building barracks -->
 | Reference | Current rule |
 |---|---|
-| Cost, level 1 | 8 timber (or cedar) · 16 stone |
+| Cost, level 1 | 16 stone · 8 timber (or cedar) |
 | Build time, level 1 | 10 game days |
 | Maximum level | 1 |
 <!-- /facts -->

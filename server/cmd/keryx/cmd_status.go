@@ -150,6 +150,7 @@ func templeGoodsText(raw any, separator string) string {
 	for key := range goods {
 		keys = append(keys, key)
 	}
+	// Tithe priority order (grain first, then fish, timber, silver) — meaningful, not alphabetical.
 	order := map[string]int{"grain": 0, "fish": 1, "timber": 2, "silver": 3}
 	sort.Slice(keys, func(i, j int) bool {
 		a, aOK := order[keys[i]]
@@ -816,7 +817,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 							}
 						}
 						if peopleFoodLine(sett) == "" {
-							fmt.Printf("  Food     grain %.1f + fish %.1f − people eat %.1f = net %s per game day (before army)\n", prodTick, fish, consumTick, formatNetPerTick(netTick))
+							fmt.Printf("  Food     fish %.1f + grain %.1f − people eat %.1f = net %s per game day (before army)\n", fish, prodTick, consumTick, formatNetPerTick(netTick))
 						}
 						line := fmt.Sprintf("  %-8s %6s  production %.1f per game day",
 							"Grain", resource(gAmt), prodTick)

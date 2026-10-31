@@ -5,11 +5,11 @@ Build or upgrade it in **City → Buildings → Construct**, or use `keryx build
 <!-- facts: building mine -->
 | Reference | Current rule |
 |---|---|
-| Cost, level 1 | 6 timber (or cedar) · 16 stone |
+| Cost, level 1 | 16 stone · 6 timber (or cedar) |
 | Build time, level 1 | 10 game days |
 | Maximum level | 3 |
-| Cost to level 2 | 12 timber (or cedar) · 32 stone |
-| Cost to level 3 | 24 timber (or cedar) · 64 stone |
+| Cost to level 2 | 32 stone · 12 timber (or cedar) |
+| Cost to level 3 | 64 stone · 24 timber (or cedar) |
 | Deposit | copper or silver or tin |
 | Location | One selected catchment hex. |
 <!-- /facts -->
@@ -18,4 +18,4 @@ See [[buildings]] and [[citizens]].
 
 | Building | What it is for |
 |---|---|
-| **Mine** | Stands on an ore deposit hex and extracts whatever it holds — [[copper|copper]], [[tin|tin]] or [[silver|silver]]. |
+| **Mine** | Stands on an ore deposit hex and extracts whatever it holds — [[copper|copper]], [[silver|silver]] or [[tin|tin]]. |

@@ -4,7 +4,7 @@ import { fmtDays } from '../fmt_num.js';
 // The Offer row under a prayer: one number field per good, pre-filled with the
 // prayer's recipe, or empty when composing an alternative. Mirrors
 // `keryx rite --offer`. Odds are never shown.
-const EDIBLE = ['grain', 'fish', 'oil', 'wine'];
+const EDIBLE = ['fish', 'grain', 'oil', 'wine'];
 
 // Goods worth a field: the recipe's, plus held goods that are edible or that
 // the god favours. Recipe goods show even at 0 in stock; others only when held.

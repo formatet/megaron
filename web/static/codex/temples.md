@@ -1,8 +1,8 @@
-A **[[temple]]** ([[buildings]]) is how you keep [[gods|the gods]]' favour ([[kharis]]). Every temple is dedicated to **one god**: [[potnia]], [[velchanos]], [[asterion]] or the [[sea-daimons|Sea Daimons]] of Stillness. A city may hold several temples, but **at most one per god**. They are named by their god: Temple of Potnia, Temple of Velchanos, and so on. Each temple needs two things from you.
+A **[[temple]]** ([[buildings]]) is how you keep [[gods|the gods]]' favour ([[kharis]]). Every temple is dedicated to **one god**: [[asterion]], [[potnia]], the [[sea-daimons|Sea Daimons]] of Stillness or [[velchanos]]. A city may hold several temples, but **at most one per god**. They are named by their god: Temple of Potnia, Temple of Velchanos, and so on. Each temple needs two things from you.
 
 ## Building and upgrading temples {#temples-building-one}
 
-Choose the god when you build. On the web, **City → Construct** lists one row per god; in Keryx, `keryx build --type temple --god potnia`. Building the same god's temple again raises that temple's level. Each prayer is said at its own god's temple ([[rites]]): Potnia's two prayers at Potnia's, [[green-shoots]] at Velchanos's, [[the-thread-shows-a-path]] at Asterion's, [[favourable-passage]] at the Sea Daimons'. Every prayer works from a level-1 temple. Demolishing a temple frees only its own workers.
+Choose the god when you build. On the web, **City → Construct** lists one row per god; in Keryx, `keryx build --type temple --god potnia`. Building the same god's temple again raises that temple's level. Each prayer is said at its own god's temple ([[rites]]): [[the-thread-shows-a-path]] at Asterion's, Potnia's two prayers at Potnia's, [[favourable-passage]] at the Sea Daimons', [[green-shoots]] at Velchanos's. Every prayer works from a level-1 temple. Demolishing a temple frees only its own workers.
 
 ## Temple workers {#temple-workers}
 

@@ -7,22 +7,22 @@ Open **City → Buildings**. The tab shows what is **built** (and its level), th
 <!-- list: building -->
 | Name | In short |
 |---|---|
-| [[shipyard]] | A Shipyard builds ships and repairs damaged hulls in a coastal city. |
-| [[harbour]] | A Harbour opens deep-water fishing places in a coastal city’s catchment. |
-| [[farm]] | A Farm expands the grain workplaces and production of one chosen catchment hex. |
 | [[barracks]] | Barracks provide facilities for recruiting land forces. |
-| [[mine]] | A Mine works the mineral deposit on one chosen catchment hex. |
-| [[lumbermill]] | A Lumbermill improves wood production on one chosen catchment hex. |
-| [[stone-quarry]] | A Stone Quarry improves stone production on one chosen land hex. |
-| [[market]] | A Market gives your city a market board: one line saying what the city buys and one saying what it sells, up to three goods each. |
-| [[walls]] | Walls defend the city and determine its population ceiling. |
+| [[farm]] | A Farm expands the grain workplaces and production of one chosen catchment hex. |
 | [[foundry]] | A Foundry turns copper and tin into bronze. |
-| [[stable]] | A Stable enables chariot recruitment. |
-| [[temple]] | A Temple is a workplace dedicated to one god, opening that god’s prayers and maintaining kharis. |
-| [[olive-press]] | An Olive Press refines oil from the city’s groves. |
-| [[winery]] | A Winery refines wine from the city’s vines, which grow only on hills — without a hill in the city's reach it makes nothing. |
-| [[pen]] | A Pen increases the herd a city can hold. |
 | [[granary]] | A Granary expands food storage and is required by wall upgrades. |
+| [[harbour]] | A Harbour opens deep-water fishing places in a coastal city’s catchment. |
+| [[lumbermill]] | A Lumbermill improves wood production on one chosen catchment hex. |
+| [[market]] | A Market gives your city a market board: one line saying what the city buys and one saying what it sells, up to three goods each. |
+| [[mine]] | A Mine works the mineral deposit on one chosen catchment hex. |
+| [[olive-press]] | An Olive Press refines oil from the city’s groves. |
+| [[pen]] | A Pen increases the herd a city can hold. |
+| [[shipyard]] | A Shipyard builds ships and repairs damaged hulls in a coastal city. |
+| [[stable]] | A Stable enables chariot recruitment. |
+| [[stone-quarry]] | A Stone Quarry improves stone production on one chosen land hex. |
+| [[temple]] | A Temple is a workplace dedicated to one god, opening that god’s prayers and maintaining kharis. |
+| [[walls]] | Walls defend the city and determine its population ceiling. |
+| [[winery]] | A Winery refines wine from the city’s vines, which grow only on hills — without a hill in the city's reach it makes nothing. |
 <!-- /list -->
 
 ### Walls, population and coastal access {#buildings-details-3}
@@ -33,7 +33,7 @@ Open **City → Buildings**. The tab shows what is **built** (and its level), th
 
 ## Buildings on catchment hexes {#hex-buildings}
 
-**[[farm]], [[mine]], [[lumbermill]] and [[stone-quarry]] stand on a hex, not in the city.** When you build one of these four, you choose which hex in your [[catchment]] it goes on, and it only ever helps that one hex. You may build more than one of the same kind — two Farms on two different [[grain|grain]] hexes each raise their own hex's cap, independently. A Mine's hex decides what it produces: build it on a [[copper|copper]], [[tin|tin]] or [[silver|silver]] deposit and it works that deposit; there is no separate building for silver.
+**[[farm]], [[lumbermill]], [[mine]] and [[stone-quarry]] stand on a hex, not in the city.** When you build one of these four, you choose which hex in your [[catchment]] it goes on, and it only ever helps that one hex. You may build more than one of the same kind — two Farms on two different [[grain|grain]] hexes each raise their own hex's cap, independently. A Mine's hex decides what it produces: build it on a [[copper|copper]], [[silver|silver]] or [[tin|tin]] deposit and it works that deposit; there is no separate building for silver.
 
 **One building per hex.** A hex that already has one of these four — yours, or a neighbouring city's on a hex you share — cannot take another. Building the same kind again on its own hex raises its level.
 
@@ -43,7 +43,7 @@ Every other building, including **Harbour**, stands in the city itself. Harbour 
 
 ## Hex building production {#hex-production-buildings}
 
-A farm, mine, lumbermill or stonequarry makes **space for four more workers** on its hex. Each of these buildings multiplies the hex's own **production** per worker: ×1.7 at level 1, ×2.4 at level 2, ×3.1 at level 3. Silver can only be mined with a mine — without one a silver deposit gives nothing. Olive press, winery and foundry work inside the city as before.
+A farm, lumbermill, mine or stonequarry makes **space for four more workers** on its hex. Each of these buildings multiplies the hex's own **production** per worker: ×1.7 at level 1, ×2.4 at level 2, ×3.1 at level 3. Silver can only be mined with a mine — without one a silver deposit gives nothing. Olive press, winery and foundry work inside the city as before.
 
 ## Building upgrades and materials {#building-levels}
 
@@ -51,7 +51,7 @@ Buildings level up to three. **A higher level makes every worker on the hex prod
 
 A temple is built for a god: Construct lists one row per god (`keryx build --type temple --god potnia`), and building that god's temple again raises it. Building the same building again raises it by one level; for a hex building, choose the same hex. **Levels 2 and 3 of a Harbour, Shipyard or [[temple]]** also need **[[cedar|cedar]]**, which is scarce and often only available by [[trade]].
 
-A building costs what it is made of: **[[timber|timber]]** for the Farm, [[market]], [[stable]], Harbour, Shipyard and Palisade; **[[stone|stone]]** for the Stone Quarry, Mine, [[barracks]], Temple and Stone Wall. The prices are shown live in Construct. If you are short of timber, your **cedar** pays the difference one for one — in buildings, ships and [[war-chariot|chariots]] alike.
+A building costs what it is made of: **[[timber|timber]]** for the Farm, Harbour, [[market]], Palisade, Shipyard and [[stable]]; **[[stone|stone]]** for the [[barracks]], Mine, Stone Quarry, Stone Wall and Temple. The prices are shown live in Construct. If you are short of timber, your **cedar** pays the difference one for one — in buildings, ships and [[war-chariot|chariots]] alike.
 
 Production workplaces need people assigned to them. The market has no workplaces and needs no workers; former market workers are free to assign elsewhere, with no population lost. Staff a workplace from the centre **City** hex of the placement grid ([[citizens]]).
 

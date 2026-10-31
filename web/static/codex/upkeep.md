@@ -1,4 +1,4 @@
-Soldiers eat **food: [[grain|grain]], [[fish|fish]] and [[oil|oil]]**, shared in proportion to the stocks available. Professionals also need **silver pay** every game day.
+Soldiers eat **food: [[fish|fish]], [[grain|grain]] and [[oil|oil]]**, shared in proportion to the stocks available. Professionals also need **silver pay** every game day.
 
 ## Soldiers’ and crews’ pay {#military-pay}
 

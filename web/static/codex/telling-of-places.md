@@ -1,4 +1,4 @@
-No one draws maps. Instead you **tell of places**. A [[runners|letter]] to another Wanax can tell of one named place, such as a [[rivers|river]], a mountain massif, a [[semi-desert|desert]] or a [[cedar-forest|cedar forest]], or of a city your people have seen. When the Runner arrives, the place appears on the reader's map in grey, as [[sight|memory]].
+No one draws maps. Instead you **tell of places**. A [[runners|letter]] to another Wanax can tell of one named place, such as a [[cedar-forest|cedar forest]], a [[semi-desert|desert]], a mountain massif or a [[rivers|river]], or of a city your people have seen. When the Runner arrives, the place appears on the reader's map in grey, as [[sight|memory]].
 
 ## What a story carries {#telling-of-places-what}
 

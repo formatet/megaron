@@ -3,8 +3,8 @@ A **stance** tells a unit how to behave where it stands. Set it in the order men
 ## Choosing a stance {#stances-details}
 
 - **fortify** — dig in and hold this ground. The unit cannot move until the stance is cleared. [[battle]] participation stays at 90%.
-- **storm** — assault posture against an adjacent city. The wall stops only half as many hits, but the defenders’ hits on your men count one and a half times ([[battle]]).
 - **sentry** — watch this ground. The unit spots marches passing **within 2 hexes** and **intercepts** enemy [[transfers|caravans]] there, checked every game day. [[messengers|Messengers]] are never stopped. You are alerted when it catches something.
+- **storm** — assault posture against an adjacent city. The wall stops only half as many hits, but the defenders’ hits on your men count one and a half times ([[battle]]).
 
 ## Changing stance by Runner {#stances-a-unit-already-on-the-march}
 

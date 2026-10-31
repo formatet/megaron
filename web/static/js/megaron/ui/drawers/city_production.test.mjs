@@ -18,7 +18,7 @@ test('Warehouse: Production no longer carries the "Food for N game days" stock l
  assert.doesNotMatch(html,/Food for|Herd|463|88\.8|stocks/,'stock line left Production');
  assert.match(html,/Food net<\/span><span class="sr-val">-2\.0 per game day/,'net production stays');
  assert.doesNotMatch(foodDetailsHTML(pd()),/Reserve|Stores above|releases below/);
- assert.match(foodDetailsHTML(pd()),/4.2 game days · about 4.2 minutes at current consumption · grain \+ fish/);
+ assert.match(foodDetailsHTML(pd()),/4.2 game days · about 4.2 minutes at current consumption · fish \+ grain/);
 });
 test('J: food-worker warning survives; missing net is honestly unavailable',()=>{
  const data=pd();data.food.food_net_per_tick=2;
@@ -113,12 +113,12 @@ test('equal food: four stocks and actual meal use server totals, never grain-onl
  const detail=foodDetailsHTML(data);
  assert.match(detail,/production 10 − people eat 3 = 7 net before army/);
  assert.match(detail,/eats 2 food per game day → food net 5 after army/);
- assert.match(detail,new RegExp('Last meal.*0.3 grain, 2.7 fish.*'+testTickTime(42)));
+ assert.match(detail,new RegExp('Last meal.*2.7 fish, 0.3 grain.*'+testTickTime(42)));
  assert.doesNotMatch(detail,/999|army needs grain/);
  data.food.goods={grain:0,fish:0.008,oil:0.0000001,wine:0.1};
- assert.match(foodDetailsHTML(data),/City stocks.*0 grain, under 0.1 fish, under 0.1 oil/);
+ assert.match(foodDetailsHTML(data),/City stocks.*under 0.1 fish, 0 grain, under 0.1 oil/);
  data.food.consumed={grain:0,fish:0.008,oil:0.0000001};
- assert.match(foodDetailsHTML(data),/Last meal.*0 grain, under 0.1 fish, under 0.1 oil/);
+ assert.match(foodDetailsHTML(data),/Last meal.*under 0.1 fish, 0 grain, under 0.1 oil/);
  data.food.consumed_tick=null;
  assert.doesNotMatch(foodDetailsHTML(data),/Last meal/,'no meal invented before first resolution');
 });

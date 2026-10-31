@@ -1,6 +1,6 @@
-A city grows when it has a **surplus of food** — when it produces more food each game day than its people eat. Growing costs no food: the surplus stays in the same city [[grain|grain]], [[fish|fish]] and [[oil|oil]] stocks that feed your people.
+A city grows when it has a **surplus of food** — when it produces more food each game day than its people eat. Growing costs no food: the surplus stays in the same city [[fish|fish]], [[grain|grain]] and [[oil|oil]] stocks that feed your people.
 
-- **Surplus, not store.** What counts is the daily balance — grain, fish and oil produced, minus what the people eat — shown as the food *net* on the city. A herd standing at its pen cap adds its overflow to that balance ([[food]]). A positive net grows the city; zero or below holds it steady, even with full stores.
+- **Surplus, not store.** What counts is the daily balance — fish, grain and oil produced, minus what the people eat — shown as the food *net* on the city. A herd standing at its pen cap adds its overflow to that balance ([[food]]). A positive net grows the city; zero or below holds it steady, even with full stores.
 
 - **Rate.** A fed city with a positive net grows by **0.5% of its people per game day** (at least one person), before the variety bonus below. A city of 1 000 gains about 5 a game day.
 

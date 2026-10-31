@@ -6,11 +6,15 @@ import (
 )
 
 // Food quantities and durations come from the server; this only orders labels.
-var foodDisplayGoods = []string{"grain", "fish", "oil", "livestock"}
+// The first three are the real foods (callers slice [:3]); livestock is the reserve.
+var foodDisplayGoods = []string{"fish", "grain", "oil", "livestock"}
+
+// foodListGoods is the order they are listed to the player: alphabetical.
+var foodListGoods = []string{"fish", "grain", "livestock", "oil"}
 
 func foodGoodsText(goods map[string]any) string {
 	parts := []string{}
-	for _, good := range foodDisplayGoods {
+	for _, good := range foodListGoods {
 		if qty, ok := goods[good].(float64); ok {
 			amount := strings.TrimRight(strings.TrimRight(fmt.Sprintf("%.4f", qty), "0"), ".")
 			if qty > 0 && qty < 0.0001 {
@@ -31,7 +35,7 @@ func cityFoodLine(sett map[string]any) string {
 	goods, _ := food["goods"].(map[string]any)
 	detail := foodGoodsText(goods)
 	if detail == "" {
-		detail = "city grain + fish stocks"
+		detail = "city fish + grain stocks"
 	}
 	return fmt.Sprintf("Food for %s at current consumption (%s)", formatDays(cov, "%.1f"), detail)
 }

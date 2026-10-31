@@ -7,8 +7,8 @@ units={x['type']:x for x in reference['units']};buildings={x['type']:x for x in 
 def amount(x):return f'{x:g}'
 def days(x):return amount(x)+' game '+('day' if x==1 else 'days')
 def costs(values,linked=False):
- order=['grain','timber','cedar','stone','bronze','copper','tin','silver']
- return ' · '.join(amount(values[k])+' '+('[[bronze]]' if linked and k=='bronze' else k)+(' (or cedar)' if k=='timber' else '') for k in [*order,*sorted(set(values)-set(order))] if k in values and values[k])
+ # Alphabetical by good: a cost is an enumeration with no inherent order.
+ return ' · '.join(amount(values[k])+' '+('[[bronze]]' if linked and k=='bronze' else k)+(' (or cedar)' if k=='timber' else '') for k in sorted(values) if values[k])
 def block(kind,key):
  if kind=='building':
   x=buildings[key];rows=[('Cost, level 1',costs(x['costs'])),('Build time, level 1',days(x['duration_game_days'])),('Maximum level',str(x['max_level']))]
@@ -37,6 +37,7 @@ def summary(article):
 def members(kind,keys):
  out=[a for a in index['articles'] if not a.get('future') and any(e['kind']==kind and (not keys or e['key'] in keys) for e in a.get('entities',[]))]
  if keys:out.sort(key=lambda a:min(keys.index(e['key']) for e in a['entities'] if e['key'] in keys))
+ else:out.sort(key=lambda a:re.sub(r'^the ','',a['title'].lower()))  # hub lists are alphabetical by displayed title
  return out
 def hub_list(kind,keys):
  # A hub lists every member of its family, so no unit, building or good is ever left unlinked.
@@ -48,7 +49,7 @@ for article in index['articles']:
  for entity in article.get('entities',[]):
   if entity['kind']!='unit' or entity['key'] not in units:continue
   key=entity['key'];x=units[key];price=costs(x['costs'],True)
-  if 'silver' not in x['costs']:price+=' · '+('no timber, no silver' if key=='merchantman' else 'no silver')
+  if 'silver' not in x['costs']:price+=' · '+('no silver, no timber' if key=='merchantman' else 'no silver')
   text=re.sub(r'^(\| \*\*Cost for one (?:cohort|ship)\*\* \| ).*?( \|)$',lambda m:m[1]+price+m[2],text,flags=re.M)
   text=re.sub(r'^(\| \*\*(?:Training|Build time)\*\* \| ).*?( \|)$',lambda m:m[1]+days(x['duration_game_days'])+m[2],text,flags=re.M)
  write(path,text);bodies[article['id']]=text

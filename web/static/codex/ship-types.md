@@ -1,11 +1,11 @@
 Every ship needs a **[[harbour|Harbour]]** and a **[[shipyard|Shipyard]]** ([[buildings]]). There are three kinds of ship, recruited like other [[units|Forces]]:
 
-<!-- list: unit galley war_galley merchantman -->
+<!-- list: unit merchantman galley war_galley -->
 | Name | In short |
 |---|---|
+| [[emporos]] | The Emporos is the merchant hull: broad, slow, cedar-built, made to carry. |
 | [[galley]] | The Galley is the ordinary ship: built of timber, rowed by twenty, the hull that carries your people and your goods across the Thalassa. |
 | [[war-galley]] | The War Galley is the warship: cedar-built, fifty at the oars, fast and dangerous. |
-| [[emporos]] | The Emporos is the merchant hull: broad, slow, cedar-built, made to carry. |
 <!-- /list -->
 
 The Galley is cheap [[timber|timber]] and no [[silver|silver]]; the War Galley needs [[cedar|cedar]] and a [[foundry]] and never carries cargo; the Emporos is 90 cedar and carries the most. How the sea itself works (storms, sea lanes, the open deep) is in [[sea]].
@@ -55,7 +55,7 @@ A ship at sea **turns home early** when its food is only enough for the voyage h
 
 ### Hospitality
 
-When a ship reaches a city, **its own or another Wanax’s**, the city gives it food for the voyage home. This applies to messenger passage, trade and freight. The port uses [[grain|grain]], [[fish|fish]] and [[oil|oil]] from its stores, **after keeping enough for its own people’s daily meal**. It gives only what it can spare; an empty port cannot supply food. Hospitality takes no silver and needs no consent. The host gets no notice naming the visiting ship or its owner; the provisions appear as ordinary food use.
+When a ship reaches a city, **its own or another Wanax’s**, the city gives it food for the voyage home. This applies to messenger passage, trade and freight. The port uses [[fish|fish]], [[grain|grain]] and [[oil|oil]] from its stores, **after keeping enough for its own people’s daily meal**. It gives only what it can spare; an empty port cannot supply food. Hospitality takes no silver and needs no consent. The host gets no notice naming the visiting ship or its owner; the provisions appear as ordinary food use.
 
 At sea, a ship eats the food carried aboard. See [[sea]], [[food]] and [[upkeep]].
 
@@ -71,11 +71,11 @@ Choose the mission in **War → Forces** before the ship leaves port. Use **Load
 
 | Mission | What happens |
 |---|---|
-| **March to your city** | Docks there and unloads the soldiers; the ship stays. |
-| **Land** | Unloads on open ground, then sails home. Select **…and found a colony** to settle there. |
-| **Patrol** | Patrols, then returns home. |
 | **Explore** | Explores your chosen area and returns; choose a duration in game days. |
+| **Land** | Unloads on open ground, then sails home. Select **…and found a colony** to settle there. |
+| **March to your city** | Docks there and unloads the soldiers; the ship stays. |
 | **Passage** | Carries a [[messengers|letter]] or [[runners|order]], without goods cargo. |
+| **Patrol** | Patrols, then returns home. |
 
 When founding, the first loaded unit settles and the others stand beside it. The departure port supplies the colonists' silver; if founding fails or they unload at home, they bring it back. See [[colonies]].
 
@@ -83,7 +83,7 @@ For Explore, the port loads food for the whole expedition. The ship turns home b
 
 ### Commands at sea and crew pay {#ship-missions-2}
 
-- **Once it sails, a ship takes no more orders.** March, Recall, Redirect, Stance, Load, Unload — none of them reach a ship that isn't standing in its own port. Give the whole mission before it leaves; its mission determines whether it comes home or stays docked in your destination city.
+- **Once it sails, a ship takes no more orders.** Load, March, Recall, Redirect, Stance, Unload — none of them reach a ship that isn't standing in its own port. Give the whole mission before it leaves; its mission determines whether it comes home or stays docked in your destination city.
 
 - **Sight.** A ship reads the open sea out to four hexes but sees only one hex inland.
 
@@ -91,7 +91,7 @@ For Explore, the port loads food for the whole expedition. The ship turns home b
 
 ### Voyage provisions {#ship-missions-3}
 
-The departure port loads **grain, fish and oil**. [[wine|Wine]] and [[livestock]] are not provisions. At sea, the ship eats only what it carries.
+The departure port loads **fish, grain and oil**. [[wine|Wine]] and [[livestock]] are not provisions. At sea, the ship eats only what it carries.
 
 - **Rations:** rowers eat at the same per-person rate as [[spearmen]], doubled while marching, posted or freighting. Carried soldiers need their own field rations. See [[upkeep]].
 - **Check supplies:** **War → Forces** or `keryx unit list` shows food for N game days and the goods aboard, including during freight waits. “Less than a game day” means the last ration; “out of food” means none remains.

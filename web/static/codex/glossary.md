@@ -6,6 +6,10 @@
 
 **[[emporos]]** — a merchant ship. See [[sea]].
 
+**Food coverage** — how long the city’s [[fish|fish]], [[grain|grain]] and [[oil|oil]] stocks last at current consumption. See [[food]].
+
+**game day** — the world’s unit of time; the calendar names its date. See [[time]].
+
 **Kharis** — your realm’s standing with [[gods|the gods]]. A new Wanax starts at 40; it fades from the start, with a daily cost that grows with the square of your active city count. See [[kharis]].
 
 **Kult** — the drawer for the gods and the temple.
@@ -18,12 +22,8 @@
 
 **Sentry** — the watch stance; also how a [[sieges|siege]] is laid. See [[stances]].
 
-**Food coverage** — how long the city’s [[grain|grain]], [[fish|fish]] and [[oil|oil]] stocks last at current consumption. See [[food]].
-
 **Standing order** — a [[transfers|caravan]] route that runs by itself. See [[routes]].
 
 **The Thalassa** — the sea. See [[sea]].
-
-**game day** — the world’s unit of time; the calendar names its date. See [[time]].
 
 **Wanax** — a ruler; you. See [[welcome]].

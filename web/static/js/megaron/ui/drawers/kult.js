@@ -68,6 +68,7 @@ async function demolishCultTemple(temple){
  }catch(_){showInlineResult(host,'Could not load demolition consequences. Try again.',true);}
 }
 
+// Tithe priority order (grain first, then fish, timber, silver) — meaningful, not alphabetical.
 const TEMPLE_GOOD_ORDER = ['grain', 'fish', 'timber', 'silver'];
 function templeGoodsText(goods, separator) {
   const entries = Object.entries(goods || {}).sort(([a], [b]) => {

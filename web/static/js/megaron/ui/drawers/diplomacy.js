@@ -4,7 +4,7 @@ import { readDiplomacyLetters } from '../diplomacy_reads.js';
 import { showInlineResult } from '../inline_result.js';
 import { State } from '../../state.js';
 import { fetchAuth } from '../../api.js';
-import { esc, fmtAgo, formatApiError, passageNote } from '../format.js';
+import { esc, byGoodName, fmtAgo, formatApiError, passageNote } from '../format.js';
 import { fmtArrival, arrivalHTML } from '../time.js';
 import { fmtTickTime } from '../fmt_clock.js';
 import { serverNow } from '../../clock.js';
@@ -36,7 +36,7 @@ export function goodsOptionsHTML(goods) {
   if (goods === null) return '<option value="">Could not load goods</option>';
   if (!goods.length) return '<option value="">No tradeable goods</option>';
   return '<option value="">— choose good —</option>'
-    + goods.map(g => '<option value="' + esc(g.key) + '">' + esc(g.name || g.key) + '</option>').join('');
+    + [...goods].sort(byGoodName).map(g => '<option value="' + esc(g.key) + '">' + esc(g.name || g.key) + '</option>').join('');
 }
 
 // A failed catalogue fetch must disable the control, not just show a

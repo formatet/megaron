@@ -5,11 +5,11 @@ Build or upgrade it in **City → Buildings → Construct**, or use `keryx build
 <!-- facts: building temple -->
 | Reference | Current rule |
 |---|---|
-| Cost, level 1 | 8 timber (or cedar) · 24 stone |
+| Cost, level 1 | 24 stone · 8 timber (or cedar) |
 | Build time, level 1 | 16 game days |
 | Maximum level | 3 |
-| Cost to level 2 | 16 timber (or cedar) · 4 cedar · 48 stone |
-| Cost to level 3 | 32 timber (or cedar) · 8 cedar · 96 stone |
+| Cost to level 2 | 4 cedar · 48 stone · 16 timber (or cedar) |
+| Cost to level 3 | 8 cedar · 96 stone · 32 timber (or cedar) |
 <!-- /facts -->
 
 See [[buildings]] and [[citizens]].

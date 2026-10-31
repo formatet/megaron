@@ -72,7 +72,7 @@ func recruitCmd() *cobra.Command {
 				// Kanoniska namn bara. De retirerade (hoplites, agema) och de interna
 				// (merchantman) lever kvar som INDATA-alias ovan så äldre agenter inte
 				// bryts — men de får aldrig annonseras tillbaka till spelaren.
-				return fmt.Errorf("unknown unit %q — use: spearman, elite_infantry, war_chariot, galley, war_galley, emporos (or `keryx recruit --list`)", unit)
+				return fmt.Errorf("unknown unit %q — use: elite_infantry, emporos, galley, spearman, war_chariot, war_galley (or `keryx recruit --list`)", unit)
 			}
 			isNaval := apiUnit == "galley" || apiUnit == "war_galley" || apiUnit == "merchantman"
 			// Kohort-rekrytering (megaron_plan_rekryteringsmodell.md): a land

@@ -8,12 +8,12 @@ The **War (⚔)** drawer has three tabs: **Forces**, **Recruit** and **Marches**
 
 | Force | Needs | Notes |
 |---|---|---|
-| **[[spearmen|Spearman]]** | [[barracks]] | The levy. 12 [[grain|grain]] for one 100-man cohort; no silver. |
 | **[[elite-infantry|Bronze Guard]]** | Barracks + [[foundry]] | Costs [[bronze]]. Far harder per man. |
 | **[[war-chariot|Chariot]]** | [[stable]] | Costs bronze. The hardest hitter on the field. |
+| **[[emporos|Emporos]]** | Shipyard | 90 cedar; no silver or timber. Trade hull; carries the most goods and up to three land forces, no warship. |
 | **[[galley|Galley]]** | [[shipyard|Shipyard]] | 30 [[timber|timber]] (or [[cedar|cedar]]); no silver. Transport and sight at sea ([[sea]]). |
+| **[[spearmen|Spearman]]** | [[barracks]] | The levy. 12 [[grain|grain]] for one 100-man cohort; no silver. |
 | **[[war-galley|War Galley]]** | Shipyard + Foundry | Costs cedar. The warship. |
-| **[[emporos|Emporos]]** | Shipyard | 90 cedar; no timber or silver. Trade hull; carries the most goods and up to three land forces, no warship. |
 
 Timber costs can be paid with cedar, one for one. Timber is used first; cedar fills the shortfall. Cedar specifically required by an order must still be available before any spare cedar can cover timber.
 
@@ -25,7 +25,7 @@ Every cohort is numbered by its home city: **2nd Spearmen of Knossos**. A lost r
 
 ## Drafting and supporting forces {#units-recruits-are-your-own-people}
 
-A cohort is drafted out of your city's population and stays out of it until disbanded. Soldiers still eat. **Spearmen, Galleys and Emporoi draw 0 silver per game day**. Bronze Guard, chariots and War Galleys draw pay in [[silver]]. Home service costs half field pay: a full elite cohort draws 0.75 / 1.5 silver per game day at home / in the field, and a full chariot cohort 2 / 4. A full War Galley draws 0.25 / 0.5 ([[upkeep]]). An army bigger than your city can feed and pay is not a strong army; it is a famine with spears.
+A cohort is drafted out of your city's population and stays out of it until disbanded. Soldiers still eat. **Emporoi, Galleys and Spearmen draw 0 silver per game day**. Bronze Guard, chariots and War Galleys draw pay in [[silver]]. Home service costs half field pay: a full elite cohort draws 0.75 / 1.5 silver per game day at home / in the field, and a full chariot cohort 2 / 4. A full War Galley draws 0.25 / 0.5 ([[upkeep]]). An army bigger than your city can feed and pay is not a strong army; it is a famine with spears.
 
 In each combat round, **100 active spearmen roll 50 dice**. Half the active men roll, rounded up: one man rolls one die, three roll two. Bronze Guard rolls three dice per active man and chariots five per chariot. A **War Galley rolls 5 dice**, against a **Galley's 1** before hull damage and other [[battle|battle]] adjustments.
 

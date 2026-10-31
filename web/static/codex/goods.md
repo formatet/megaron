@@ -5,17 +5,17 @@ Everything your cities make, eat and trade is a **good**. The **Economy (⚖)** 
 <!-- list: good -->
 | Name | In short |
 |---|---|
-| [[silver]] | Silver is the currency and pays your professional forces. |
-| [[incense]] | Incense is the smoke the gods like best, and it grows in very few places. |
 | [[bronze]] | Bronze is copper and tin smelted together in a Foundry, and the two never lie close: the scarcity that shapes the whole world. |
 | [[cedar]] | Cedar is scarce wood used for ships and advanced building upgrades. |
 | [[copper]] | Copper is an ore used with tin to make bronze. |
 | [[devotion]] | Devotion is work performed by temple workers, not a stockpiled commodity. |
 | [[fish]] | Fish is a food good caught by citizens working fishing places. |
 | [[grain]] | Grain is a food good produced by citizens working suitable fields. |
+| [[incense]] | Incense is the smoke the gods like best, and it grows in very few places. |
 | [[livestock]] | Livestock is the herd kept by a city. |
 | [[oil]] | Oil is a food and offering good. |
 | [[shipbuilding]] | Shipbuilding is service work performed at a Shipyard, not cargo stored in a warehouse. |
+| [[silver]] | Silver is the currency and pays your professional forces. |
 | [[stone]] | Stone is building material quarried from land hexes. |
 | [[timber]] | Timber is building material gathered by citizens on suitable wooded ground. |
 | [[tin]] | Tin is the scarce ore needed with copper to make bronze. |
@@ -24,8 +24,8 @@ Everything your cities make, eat and trade is a **good**. The **Economy (⚖)** 
 
 ## How the goods fit together
 
-- **Food** is grain, fish and oil, eaten in proportion to what the city has ([[food]]). Wine is not food. Livestock is the emergency reserve.
-- **Timber and stone** build nearly everything. Early on, timber is almost always your bottleneck.
+- **Food** is fish, grain and oil, eaten in proportion to what the city has ([[food]]). Wine is not food. Livestock is the emergency reserve.
+- **Stone and timber** build nearly everything. Early on, timber is almost always your bottleneck.
 - **Cedar stands in for timber:** whatever a cost needs in timber and you lack, your cedar covers one for one. Cedar also levels your best buildings and builds the [[war-galley|War Galley]].
 - **Copper and tin** are the two halves of bronze, and they are never found together. Bronze arms the [[elite-infantry]], the [[war-chariot]], the War Galley and the best walls.
 - **Silver** is the currency, and the only thing that pays professional soldiers and crews.
@@ -43,13 +43,13 @@ To learn what another city needs or can spare, ask its Wanax in a [[messengers|l
 
 The gods weigh goods differently: one bronze counts for 33 grain. The fixed table is in [[rites]]; a god values the goods it favours higher still. Wanaxes agree their own trade prices.
 
-Production per game day is output before meals and other uses. Food net combines grain, fish and oil production minus population demand. The city has one stock of each good; food coverage counts these three goods together. Shortfall waiting estimates assume current production continues, before other use.
+Production per game day is output before meals and other uses. Food net combines fish, grain and oil production minus population demand. The city has one stock of each good; food coverage counts these three goods together. Shortfall waiting estimates assume current production continues, before other use.
 
-Food for people combines the three food goods minus the population’s meal. **Food after army** subtracts the food supplied by this city to its supported troops as well. The army shares grain, fish and oil in the same proportions; its silver pay is shown separately. Population growth still uses the population-only food balance.
+Food for people combines the three food goods minus the population’s meal. **Food after army** subtracts the food supplied by this city to its supported troops as well. The army shares fish, grain and oil in the same proportions; its silver pay is shown separately. Population growth still uses the population-only food balance.
 
 ## Storage capacity and forecasts {#goods-storage-capacity}
 
-Each good has its own storage capacity in each city. A city stores **2 000 of each food** — grain, fish and oil — and a [[buildings|Granary]] raises that to 4 000, 10 000 and 20 000. The herd has its own pens. A city that already held more food when this ceiling came in keeps it and can eat it, but it never fills back above the ceiling. **StorageCapacityWarning** is an advance dispatch when the server forecasts a stock nearing its cap. Keryx status and the City drawer show the good, stored amount, capacity and **full in N game days**. The estimate uses the current net rate and deliveries on the way; it is a forecast, so changing production or orders can change it.
+Each good has its own storage capacity in each city. A city stores **2 000 of each food** — fish, grain and oil — and a [[buildings|Granary]] raises that to 4 000, 10 000 and 20 000. The herd has its own pens. A city that already held more food when this ceiling came in keeps it and can eat it, but it never fills back above the ceiling. **StorageCapacityWarning** is an advance dispatch when the server forecasts a stock nearing its cap. Keryx status and the City drawer show the good, stored amount, capacity and **full in N game days**. The estimate uses the current net rate and deliveries on the way; it is a forecast, so changing production or orders can change it.
 
 The forecast counts your own transports and accepted trade deliveries that you know about. An unsolicited gift from another Wanax is known only when it arrives, so it is not included beforehand.
 

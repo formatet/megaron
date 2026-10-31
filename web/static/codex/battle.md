@@ -10,11 +10,11 @@ If your forces or city come under attack, a dispatch names the opponent and plac
 
 | | Dice in each clash |
 |---|---|
-| [[spearmen|Spearmen]] | 1 for every 2 men |
 | [[elite-infantry|Bronze Guard]] | 3 per man |
 | [[war-chariot|Chariot]] | 5 per chariot |
+| [[emporos|Emporos]], [[galley|Galley]] | 1 per ship |
+| [[spearmen|Spearmen]] | 1 for every 2 men |
 | [[war-galley|War Galley]] | 5 per ship |
-| [[galley|Galley]], [[emporos|Emporos]] | 1 per ship |
 
 So 100 spearmen put 90 men in a clash, roll 45 dice and can expect about 4 hits; 100 Bronze Guard roll 270 dice and can expect about 22. This is what [[bronze]] buys. A damaged ship rolls fewer dice, in proportion to its remaining hull.
 

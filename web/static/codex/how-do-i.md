@@ -30,7 +30,7 @@ The Codex is ordered by what things are. This page is ordered by what you want t
 ## Exploring and expanding
 
 - Explore unknown ground → [[marching-exploring-an-area]]
-- Name a [[rivers|river]], mountain, [[semi-desert|desert]] or forest → [[naming-the-land]]
+- Name a [[semi-desert|desert]], forest, mountain or [[rivers|river]] → [[naming-the-land]]
 - Found a colony → [[colonies-founding-a-colony]]
 - Build a road → [[roads-building-one]]
 

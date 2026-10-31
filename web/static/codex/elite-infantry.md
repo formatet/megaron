@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Trained at** | [[barracks]] + [[foundry]] |
-| **Cost for one cohort** | 24 grain · 16 [[bronze]] · 40 silver |
+| **Cost for one cohort** | 16 [[bronze]] · 24 grain · 40 silver |
 | **Size** | 100 men, drafted from the city |
 | **Training** | 4 game days |
 | **Food** | 0.6 per game day at home, 1.2 in the field |
