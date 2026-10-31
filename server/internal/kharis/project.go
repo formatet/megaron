@@ -10,7 +10,7 @@ import (
 )
 
 // ProjectDailyNet computes, read-only, the kharis a Wanax would net on the NEXT
-// maintained day: effective temple weight × KharisPerTempleWeight × scarcity −
+// maintained day: effective temple weight × KharisPerTempleWeight × scarcity (locked 1) −
 // dailyDecay below the ceiling. Above it, only ordinary decay applies;
 // offerings cannot offset that drift. This matches processMaintenance, with the same
 // feeding rule (early grain reference or local substitutions to the same divine worth).
