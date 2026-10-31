@@ -66,12 +66,14 @@ func HerdSurplusRate(herd float64, penLevel int) float64 {
 
 // HerdSurplusRateSQL is HerdSurplusRate for a settlements row named s: the one
 // term PopulationGrowthSQL adds to food_net. Built only from this package's constants.
-func HerdSurplusRateSQL() string {
+func HerdSurplusRateSQL() string { return herdSurplusRateSQL(livestockFoodValue) }
+
+func herdSurplusRateSQL(foodValue int) string {
 	return fmt.Sprintf(`COALESCE((SELECT CASE WHEN h.herd >= %d + %d*p.lvl
    THEN FLOOR(h.herd/%d)/%d*%d ELSE 0 END
   FROM (SELECT GREATEST(0,LEAST(sg.cap,settled(sg.amount,sg.rate,sg.calc_tick))) AS herd
         FROM settlement_goods sg WHERE sg.settlement_id=s.id AND sg.good_key='livestock') h,
        (SELECT COALESCE(MAX(b.level),0) AS lvl FROM buildings b
         WHERE b.settlement_id=s.id AND b.building_type='pen') p),0)`,
-		HerdBaseCap, HerdCapPerPenLevel, HerdPerCalf, HerdGrazeBirthEvery, livestockFoodValue)
+		HerdBaseCap, HerdCapPerPenLevel, HerdPerCalf, HerdGrazeBirthEvery, foodValue)
 }

@@ -18,7 +18,11 @@ const PopulationGrowthRatePerTick = 0.005
 // status. It correlates with a settlements row named s. SQL is built only from
 // this package's authoritative constants, never request text. Preserve PostgreSQL
 // float8 ROUND semantics, including the numeric actual-meal variety multiplier.
-func PopulationGrowthSQL() string {
+func PopulationGrowthSQL() string { return populationGrowthSQL(livestockFoodValue) }
+
+// populationGrowthSQL takes the animal's food value so tests can prove the
+// variety share is counted in food units, not animals, at a value other than 1.
+func populationGrowthSQL(foodValue int) string {
 	foods := make([]string, len(FoodGoods))
 	for i, good := range FoodGoods {
 		foods[i] = "'" + strings.ReplaceAll(good, "'", "''") + "'"
@@ -48,7 +52,7 @@ func PopulationGrowthSQL() string {
      ) AND s.food_consumed_tick=current_world_tick()
  )-1))) AS variety,
  (ARRAY[%s]::int[])[LEAST(GREATEST(s.wall_level,0),3)+1] AS pop_cap
- ) inputs`, PopulationGrowthRatePerTick, strings.Join(foods, ","), HerdSurplusRateSQL(), GrainConsumptionPerCitizenPerTick, strings.Join(foods, ","), livestockFoodValue, VarietyMinShare, livestockFoodValue, strings.Join(foods, ","), strings.Join(caps, ","))
+ ) inputs`, PopulationGrowthRatePerTick, strings.Join(foods, ","), herdSurplusRateSQL(foodValue), GrainConsumptionPerCitizenPerTick, strings.Join(foods, ","), foodValue, VarietyMinShare, foodValue, strings.Join(foods, ","), strings.Join(caps, ","))
 }
 
 type NextCitizen struct {
