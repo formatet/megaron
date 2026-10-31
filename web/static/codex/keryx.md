@@ -4,7 +4,13 @@ You do not need it to play. It exists for players who prefer a terminal, for aut
 
 ## Setting up Keryx {#keryx-getting-started}
 
-Keryx is a single program; ask whoever runs your world for a copy. Then:
+Keryx is a single program. On Linux (x86-64) download the ready-built binary:
+
+```
+curl -fsSL -o ~/kx https://github.com/formatet/megaron/releases/download/keryx-alfa30/kx && chmod +x ~/kx
+```
+
+On other systems build it from the public source with Go: `git clone https://github.com/formatet/megaron && cd megaron/server && go build -o ~/kx ./cmd/keryx`. In the examples below `keryx` means that binary (`~/kx`). Then:
 
 ```
 export POLEIA_SERVER=https://megaron.formatet.se

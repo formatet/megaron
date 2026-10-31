@@ -26,7 +26,7 @@ func TestFoundingStatus_PrintsForecastAndNearbyCoast(t *testing.T) {
 				{"q":1,"r":78,"known":true,"terrain":"plains","coastal":false},
 				{"q":0,"r":78,"known":true,"terrain":"plains","coastal":true},
 				{"q":2,"r":78,"known":true,"terrain":"plains"}],
-				"harbour_note":"Inland: a city here can never build a harbour or ships — to reach the sea you will need a coastal colony.",
+				"harbour_note":"Inland: this hex touches no water, so a city here can never build a harbour or ships. Only a city founded ON a coastal hex (one that touches sea, lake or river) gets them — move there before settling, or found a coastal colony later.",
 				"grain":{"seed":900}}`))
 		default:
 			_, _ = w.Write([]byte(`{}`))
@@ -41,7 +41,7 @@ func TestFoundingStatus_PrintsForecastAndNearbyCoast(t *testing.T) {
 	if !strings.Contains(previewQuery, "q=1") || !strings.Contains(previewQuery, "r=78") || !strings.Contains(previewQuery, "pop=3000") || !strings.Contains(previewQuery, "seed=900") {
 		t.Errorf("status must ask the preview with the settle parameters, got %q", previewQuery)
 	}
-	for _, want := range []string{"catchment forecast", "Inland: a city here can never build a harbour", "Coastal ground is 1 step away at (0,78)."} {
+	for _, want := range []string{"catchment forecast", "Inland: this hex touches no water", "Only a city founded ON a coastal hex", "Coastal ground is 1 step away at (0,78) — march the host there", "a neighbouring coast does not count"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("missing %q in:\n%s", want, out)
 		}

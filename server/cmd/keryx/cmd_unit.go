@@ -1222,7 +1222,7 @@ func coastalGroundLine(p *colonizePreview) string {
 	if best == 1 {
 		step = "step"
 	}
-	return fmt.Sprintf("Coastal ground is %d %s away at (%d,%d).", best, step, bq, br)
+	return fmt.Sprintf("Coastal ground is %d %s away at (%d,%d) — march the host there and settle on it if you want a harbour and ships; a neighbouring coast does not count.", best, step, bq, br)
 }
 
 // renderCatchmentForecast is the shared forecast body — colonization and the

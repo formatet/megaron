@@ -44,8 +44,8 @@ var BuildingPurposes = map[BuildingType]string{
 // — the same property as map_tiles.coastal. The check itself lives in
 // api/handlers/province.go (Build); these are only the words.
 const (
-	HarbourRuleInland  = "Inland: a city here can never build a harbour or ships — to reach the sea you will need a coastal colony."
-	HarbourRuleCoastal = "Coastal: a city here can build a harbour and ships."
+	HarbourRuleInland  = "Inland: this hex touches no water, so a city here can never build a harbour or ships. Only a city founded ON a coastal hex (one that touches sea, lake or river) gets them — move there before settling, or found a coastal colony later."
+	HarbourRuleCoastal = "Coastal: this hex touches water, so a city here can build a harbour and ships."
 )
 
 // ShipyardLakeRefusal is the 422 text for a shipyard whose water never reaches

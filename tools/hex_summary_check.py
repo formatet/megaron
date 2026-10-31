@@ -11,7 +11,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 server=http.server.ThreadingHTTPServer(('127.0.0.1',0),functools.partial(Handler,directory=str(ROOT/'web')));threading.Thread(target=server.serve_forever,daemon=True).start()
 url=f'http://127.0.0.1:{server.server_port}'
 html=re.sub(r'<script\b[^>]*>.*?</script>','',(ROOT/'web/static/map.html').read_text(),flags=re.S)
-forecast={'grain':{'base_per_tick':1.5,'fish_per_tick':4,'consumption_per_tick':5,'food_net_per_tick':0.5,'seed':1200},'goods':{'fish':4,'incense':1,'oil':5,'stone':4,'timber':1,'wine':5},'harbour_note':'Coastal: a city here can build a harbour and ships.','unknown_hexes':9,'catchment':[{'known':True,'terrain':'plains'}]+[{'known':False} for _ in range(9)]+[{'known':True,'terrain':'coastal_sea'} for _ in range(9)]}
+forecast={'grain':{'base_per_tick':1.5,'fish_per_tick':4,'consumption_per_tick':5,'food_net_per_tick':0.5,'seed':1200},'goods':{'fish':4,'incense':1,'oil':5,'stone':4,'timber':1,'wine':5},'harbour_note':'Coastal: this hex touches water, so a city here can build a harbour and ships.','unknown_hexes':9,'catchment':[{'known':True,'terrain':'plains'}]+[{'known':False} for _ in range(9)]+[{'known':True,'terrain':'coastal_sea'} for _ in range(9)]}
 try:
  with sync_playwright() as p:
   browser=p.chromium.launch();page=browser.new_page(viewport={'width':1280,'height':720},device_scale_factor=1)
