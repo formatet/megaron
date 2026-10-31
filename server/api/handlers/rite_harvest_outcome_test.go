@@ -97,7 +97,7 @@ func callApplyHarvestBlessing(t *testing.T, pool *pgxpool.Pool, settlementID uui
 	defer tx.Rollback(ctx)
 
 	spec := religion.PrayerSpec{ID: "minoan_harvest_blessing", EffectType: religion.EffectHarvestBlessing, God: "Poseidon"}
-	effect, message, err = h.applyHarvestBlessing(ctx, tx, settlementID, spec)
+	effect, message, err = h.applyHarvestBlessing(ctx, tx, settlementID, spec, economy.HarvestBlessingTicks)
 	if err != nil {
 		t.Fatalf("applyHarvestBlessing: %v", err)
 	}

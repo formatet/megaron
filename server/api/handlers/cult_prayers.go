@@ -3,6 +3,8 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"formatet/megaron/server/internal/combat"
+	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/settlement"
@@ -42,6 +44,15 @@ func (h *ProvinceHandler) loadPrayerRows(ctx context.Context, sett *settlement.S
 	var prayerTick int
 	if err := h.pool.QueryRow(ctx, `SELECT current_tick FROM worlds WHERE id=$1`, worldID).Scan(&prayerTick); err != nil {
 		return nil, nil, fmt.Errorf("could not read prayer time: %w", err)
+	}
+	// Each temple rests on its own (bönegrunden): read its level, servants and rest once.
+	staff, err := economy.LoadTempleStaffing(ctx, h.pool, sett.ID)
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not read temple staffing: %w", err)
+	}
+	templeByGod := map[string]economy.TempleWorkplace{}
+	for _, t := range staff.Temples {
+		templeByGod[t.GodID] = t
 	}
 	prayers := []prayerRow{}
 	for _, pid := range religion.CulturePrayers[string(sett.CultureID)] {
@@ -83,11 +94,19 @@ func (h *ProvinceHandler) loadPrayerRows(ctx context.Context, sett *settlement.S
 			}
 		}
 		activeRemainingDays := 0
+		restPaused := false
+		var templeInfo economy.TempleWorkplace
+		if spec.GodID != "" {
+			templeInfo = templeByGod[spec.GodID]
+		}
 		if spec.GodID != "" && sett.OwnerID != nil {
 			var cdErr error
-			cooldownRemainingDays, cdErr = religion.GodCooldownRemaining(ctx, h.pool, worldID, *sett.OwnerID, spec.GodID, prayerTick)
-			if cdErr != nil {
-				return nil, nil, fmt.Errorf("could not read divine waiting time: %w", cdErr)
+			if templeInfo.BuildingID != uuid.Nil {
+				cooldownRemainingDays, cdErr = religion.TempleRestRemaining(ctx, h.pool, templeInfo.BuildingID)
+				if cdErr != nil {
+					return nil, nil, fmt.Errorf("could not read the temple's rest: %w", cdErr)
+				}
+				restPaused = cooldownRemainingDays > 0 && templeInfo.Staffed < templeInfo.Capacity
 			}
 			activeRemainingDays, cdErr = religion.PrayerActiveRemaining(ctx, h.pool, sett.ID, *sett.OwnerID, spec.EffectType, prayerTick)
 			if cdErr != nil {
@@ -125,10 +144,28 @@ func (h *ProvinceHandler) loadPrayerRows(ctx context.Context, sett *settlement.S
 			Effect:    spec.Description,
 			MinKharis: spec.MinKharis, Offering: spec.Offering, Affordable: afford, UnavailableReason: reason,
 			CooldownRemainingDays: cooldownRemainingDays,
+			RestRemainingDays:     cooldownRemainingDays,
+			RestPaused:            restPaused,
+			TempleLevel:           templeInfo.Level,
+			TempleStaffed:         templeInfo.Staffed,
+			TempleCapacity:        templeInfo.Capacity,
+			BaseDurationDays:      prayerBaseDuration(spec.EffectType),
 			Favours:               religion.FavoursFor(spec),
 			OfferingBaseline:      religion.TraditionalBaseline(spec, divineValues),
 		})
 	}
 
 	return prayers, divineValues, nil
+}
+
+// prayerBaseDuration is the length (game days) a lasting prayer holds for the
+// traditional gift; 0 for prayers without a length. A larger gift lasts longer.
+func prayerBaseDuration(effect string) int {
+	switch effect {
+	case religion.EffectGarrisonDefense:
+		return combat.GarrisonDefenseTicks
+	case religion.EffectHarvestBlessing:
+		return economy.HarvestBlessingTicks
+	}
+	return 0
 }

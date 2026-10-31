@@ -175,15 +175,26 @@ async function castRite(prayerID, offering, host) {
   }
 }
 
+// The temple rests, not the god (bönegrunden): which temple, how long, and
+// whether the rest stands still for want of servants. '' when it is not resting.
+export function templeRestText(p) {
+  const days = p.rest_remaining_game_days || 0;
+  if (days <= 0) return '';
+  let text = `${p.temple || 'Temple'} rests ${fmtDays(days)}`;
+  if (p.rest_paused) text += ` — paused: ${p.temple_staffed || 0} of ${p.temple_capacity || 0} servants`;
+  return text;
+}
+
 // Server-owned waiting/active state gates the same Offer button the drawer uses.
 export function prayerStatusHTML(p, frenzyActive = false, frenzyUntil = null) {
   const waitDays = p.cooldown_remaining_game_days || 0;
+  const rest = templeRestText(p);
   if (p.can_prepare_offering && !p.affordable) {
     return `<button class="obj-cta btn-small" onclick="okRite('${p.id}')">Compose offering</button> <span class="empty-state">The traditional gift is unavailable; choose another offering.</span>`;
   }
   if (p.unavailable_reason) return `<span class="empty-state">${esc(p.unavailable_reason)}</span>`;
   if (p.departure_pending) {
-    const waiting = waitDays > 0 ? `; god waits ${esc(fmtDays(waitDays))}` : '';
+    const waiting = rest ? `; ${esc(rest)}` : waitDays > 0 ? `; god waits ${esc(fmtDays(waitDays))}` : '';
     return `<span class="empty-state">awaiting next departure${waiting}</span>`;
   }
   if (p.active_remaining_game_days > 0) {
@@ -191,6 +202,9 @@ export function prayerStatusHTML(p, frenzyActive = false, frenzyUntil = null) {
   }
   if (p.effect_type === 'battle_frenzy' && frenzyActive) {
     return `<span style="color:var(--safe-text);font-size:.72rem">active — expires ${fmtEta(frenzyUntil, undefined, 'expired')}</span>`;
+  }
+  if (rest) {
+    return `<span style="color:var(--text-dim);font-size:.72rem">${esc(rest)}</span>`;
   }
   if (waitDays > 0) {
     return `<span style="color:var(--text-dim);font-size:.72rem">on cooldown — ${esc(fmtDays(waitDays))}</span>`;

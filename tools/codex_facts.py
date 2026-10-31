@@ -19,7 +19,7 @@ def block(kind,key):
   for recipe in reference['recipes']:
    if recipe['building_type']==key:rows.append(('Recipe',' + '.join(amount(i['quantity'])+' '+i['good_key'] for i in recipe['ingredients'])+' → '+amount(recipe['output_qty'])+' '+recipe['output_key']))
  elif kind=='prayer':
-  x=reference['prayers'][key];rows=[('God',x['God']),('Minimum standing',amount(x['MinKharis'])+' Kharis'),('Traditional offering',costs(x['Offering'])),('God’s waiting time',days(x['CooldownTicks']))]
+  x=reference['prayers'][key];rows=[('God',x['God']),('Minimum standing',amount(x['MinKharis'])+' Kharis'),('Traditional offering',costs(x['Offering'])),('Temple’s rest (level 1, traditional gift)',days(x['CooldownTicks']))]
  else:raise ValueError((kind,key))
  return '| Reference | Current rule |\n|---|---|\n'+'\n'.join('| '+a+' | '+b+' |' for a,b in rows)
 def write(path,text):

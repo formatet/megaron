@@ -28,12 +28,18 @@ func HarvestBlessedGoods() []string {
 // it does not stack — and recomputes production so the bonus shows at once.
 // Returns the tick the blessing ends.
 func ApplyHarvestBlessing(ctx context.Context, tx Tx, settlementID uuid.UUID) (untilTick int, err error) {
+	return ApplyHarvestBlessingFor(ctx, tx, settlementID, HarvestBlessingTicks)
+}
+
+// ApplyHarvestBlessingFor is ApplyHarvestBlessing with a chosen span — a larger
+// gift at the temple lasts longer (bönegrunden).
+func ApplyHarvestBlessingFor(ctx context.Context, tx Tx, settlementID uuid.UUID, ticks int) (untilTick int, err error) {
 	if err := tx.QueryRow(ctx,
 		`UPDATE settlements
 		 SET harvest_blessing_until_tick = GREATEST(COALESCE(harvest_blessing_until_tick, 0), current_world_tick() + $2)
 		 WHERE id = $1
 		 RETURNING harvest_blessing_until_tick`,
-		settlementID, HarvestBlessingTicks,
+		settlementID, ticks,
 	).Scan(&untilTick); err != nil {
 		return 0, fmt.Errorf("harvest blessing: %w", err)
 	}

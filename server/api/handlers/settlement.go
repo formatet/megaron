@@ -853,14 +853,36 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// The temple rests, not the god or the Wanax (bönegrunden): the temple this
+	// prayer is said at, and only it, must be ready.
+	var templeID uuid.UUID
+	var templeLevel int
 	if spec.GodID != "" {
-		remaining, cdErr := religion.GodCooldownRemaining(r.Context(), tx, worldID, playerID, spec.GodID, nowTick)
+		if scanErr := tx.QueryRow(r.Context(),
+			`SELECT id, level FROM buildings WHERE settlement_id = $1 AND building_type = 'temple' AND god_id = $2 ORDER BY id LIMIT 1`,
+			settlementID, spec.GodID,
+		).Scan(&templeID, &templeLevel); scanErr != nil {
+			writeError(w, http.StatusInternalServerError, "could not read the temple")
+			return
+		}
+		remaining, cdErr := religion.TempleRestRemaining(r.Context(), tx, templeID)
 		if cdErr != nil {
-			writeError(w, http.StatusInternalServerError, "could not read divine waiting time")
+			writeError(w, http.StatusInternalServerError, "could not read the temple's rest")
 			return
 		}
 		if remaining > 0 {
-			writeError(w, http.StatusConflict, fmt.Sprintf("%s is on cooldown for another %s", spec.God, tick.FormatDays(remaining)))
+			staff, staffErr := economy.LoadTempleStaffing(r.Context(), tx, settlementID)
+			if staffErr != nil {
+				writeError(w, http.StatusInternalServerError, "could not read temple staffing")
+				return
+			}
+			staffed, capacity := 0, 0
+			for _, t := range staff.Temples {
+				if t.BuildingID == templeID {
+					staffed, capacity = t.Staffed, t.Capacity
+				}
+			}
+			writeError(w, http.StatusConflict, templeRestMessage(religion.TempleName(spec.GodID), remaining, staffed, capacity))
 			return
 		}
 	}
@@ -947,6 +969,12 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	if composed && !everyday {
 		offerMod, offerCap = religion.ComposedOfferMod(offering, divineValues, favours, offeringBaseline)
 	}
+	// r: how much larger than the traditional gift this one is. The gift sets
+	// how long a lasting prayer holds and how long the temple rests.
+	giftFactor := 1.0
+	if everyday && composed {
+		giftFactor = religion.GiftFactor(offeringWorth, offeringBaseline)
+	}
 	if everyday && composed && offeringWorth < offeringBaseline*(1-1e-9) {
 		writeError(w, http.StatusBadRequest,
 			fmt.Sprintf("%s asks for a gift worth at least the traditional offering (%s)", spec.God, formatOffering(spec.Offering)))
@@ -1012,6 +1040,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	// Apply effect on success.
 	effectPayload := map[string]any{}
 	var message string
+	durationTicks := 0 // set by the lasting prayers (garrison defence, harvest blessing)
 
 	if success {
 		switch spec.EffectType {
@@ -1025,16 +1054,18 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 				message = "The Sea Daimons of Stillness shelter the next ship departing this port — faster sailing and no storm damage on its outward leg."
 			}
 		case religion.EffectGarrisonDefense:
-			until := nowTick + combat.GarrisonDefenseTicks
+			durationTicks = religion.DurationTicks(combat.GarrisonDefenseTicks, giftFactor)
+			until := nowTick + durationTicks
 			_, err = tx.Exec(r.Context(), `UPDATE settlements SET garrison_defense_until_tick=$2,garrison_defense_owner_id=$3 WHERE id=$1`, settlementID, until, playerID)
-			effectPayload = map[string]any{"until_tick": until, "strength_factor": combat.GarrisonDefenseFactor}
-			message = "Potnia shelters your walls — your own garrison defends this city a quarter stronger for 6 game days."
+			effectPayload = map[string]any{"until_tick": until, "strength_factor": combat.GarrisonDefenseFactor, "duration_ticks": durationTicks}
+			message = fmt.Sprintf("Potnia shelters your walls — your own garrison defends this city a quarter stronger for %s.", tick.FormatDays(durationTicks))
 		case religion.EffectBattleFrenzy:
 			effectPayload, message, err = h.applyBattleFrenzy(r.Context(), tx, settlementID)
 		case religion.EffectOracleRevealDeposits:
 			effectPayload, message, err = h.applyOracleRevealDeposits(r.Context(), tx, settlementID, worldID, playerID, spec)
 		case religion.EffectHarvestBlessing:
-			effectPayload, message, err = h.applyHarvestBlessing(r.Context(), tx, settlementID, spec)
+			durationTicks = religion.DurationTicks(economy.HarvestBlessingTicks, giftFactor)
+			effectPayload, message, err = h.applyHarvestBlessing(r.Context(), tx, settlementID, spec, durationTicks)
 		default:
 			effectPayload = map[string]any{"type": spec.EffectType}
 			message = fmt.Sprintf("The gods accept your prayer — %s is granted.", spec.Name)
@@ -1070,10 +1101,18 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		"offer_mod":              offerMod,
 		"kharis_spent":           0.0,
 	}
+	restTicks := 0
 	if success && spec.GodID != "" {
-		if err = religion.SetGodCooldown(r.Context(), tx, worldID, playerID, spec.GodID, nowTick+spec.CooldownTicks); err != nil {
-			writeError(w, http.StatusInternalServerError, "could not record divine waiting time")
+		restTicks = religion.RestTicks(spec.CooldownTicks, giftFactor, templeLevel)
+		if err = religion.SetTempleRest(r.Context(), tx, templeID, restTicks, nowTick); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not record the temple's rest")
 			return
+		}
+		eventPayload["temple_building_id"] = templeID.String()
+		eventPayload["rest_ticks"] = restTicks
+		eventPayload["gift_factor"] = giftFactor
+		if durationTicks > 0 {
+			eventPayload["duration_ticks"] = durationTicks
 		}
 	}
 	eventPayload["god_id"] = spec.GodID
@@ -1113,7 +1152,11 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		resp["offering_expected"] = offeringBaseline
 		switch {
 		case everyday:
-			resp["offering_verdict"] = "worthy — meets the prayer's requirement; more will not improve the answer"
+			if durationTicks > 0 {
+				resp["offering_verdict"] = "worthy — a larger gift lasts longer, and the temple rests longer"
+			} else {
+				resp["offering_verdict"] = "worthy — meets the prayer's requirement; more will not improve the answer, only lengthen the temple's rest"
+			}
 		case offerMod >= offerCap:
 			resp["offering_verdict"] = "as generous as the gods will notice — more would be wasted"
 		case math.Abs(offeringWorth-offeringBaseline) < 1e-9:
@@ -1132,6 +1175,10 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	if success {
 		resp["effect_type"] = spec.EffectType
 		resp["effect"] = effectPayload
+		if restTicks > 0 {
+			resp["rest_game_days"] = restTicks
+			resp["temple_level"] = templeLevel
+		}
 	}
 	writeJSON(w, http.StatusOK, resp)
 }
@@ -1153,18 +1200,19 @@ func (h *SettlementHandler) applyBattleFrenzy(ctx context.Context, tx pgx.Tx, se
 // one-shot ×1.25 on the grain store, which gave the most to the fullest
 // food store and nothing to an empty one. Shared with the divine favour
 // (kharis/tick.go "bountiful_harvest") through economy.ApplyHarvestBlessing.
-func (h *SettlementHandler) applyHarvestBlessing(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, spec religion.PrayerSpec) (map[string]any, string, error) {
-	untilTick, err := economy.ApplyHarvestBlessing(ctx, tx, settlementID)
+func (h *SettlementHandler) applyHarvestBlessing(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, spec religion.PrayerSpec, ticks int) (map[string]any, string, error) {
+	untilTick, err := economy.ApplyHarvestBlessingFor(ctx, tx, settlementID, ticks)
 	if err != nil {
 		return nil, "", err
 	}
-	msg := fmt.Sprintf("%s smiles upon your fields — grain, oil and wine yield a quarter more for %d game days.",
-		spec.God, economy.HarvestBlessingTicks)
+	msg := fmt.Sprintf("%s smiles upon your fields — grain, oil and wine yield a quarter more for %s.",
+		spec.God, tick.FormatDays(ticks))
 	return map[string]any{
-		"goods":       economy.HarvestBlessedGoods(),
-		"yield_bonus": economy.HarvestBlessingYieldBonus,
-		"days":        economy.HarvestBlessingTicks,
-		"until_tick":  untilTick,
+		"goods":          economy.HarvestBlessedGoods(),
+		"yield_bonus":    economy.HarvestBlessingYieldBonus,
+		"days":           ticks,
+		"duration_ticks": ticks,
+		"until_tick":     untilTick,
 	}, msg, nil
 }
 
@@ -1569,4 +1617,14 @@ func formatOffering(recipe map[string]float64) string {
 		parts[i] = fmt.Sprintf("%g %s", recipe[good], good)
 	}
 	return strings.Join(parts, " + ")
+}
+
+// templeRestMessage is the 409 text for a resting temple: which temple, how
+// long, and — when it is short of servants — that the rest stands still.
+func templeRestMessage(temple string, days, staffed, capacity int) string {
+	msg := fmt.Sprintf("The %s rests for another %s", temple, tick.FormatDays(days))
+	if capacity > 0 && staffed < capacity {
+		msg += fmt.Sprintf(" — its rest stands still until it has all its servants (%d of %d servants)", staffed, capacity)
+	}
+	return msg
 }

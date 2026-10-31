@@ -8,7 +8,7 @@ Your next land [[transfers|caravan]] or [[runners|Runner]] from this city travel
 | God | Asterion |
 | Minimum standing | 5 Kharis |
 | Traditional offering | 4 timber (or cedar) · 3 silver |
-| God’s waiting time | 12 game days |
+| Temple’s rest (level 1, traditional gift) | 12 game days |
 <!-- /facts -->
 
 Offer in **Kult → Prayers** at the matching city and god, or use `keryx rite --prayer minoan_asterion_thread`. A valid composed offering can replace the traditional recipe.

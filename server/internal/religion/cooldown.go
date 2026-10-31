@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"math"
 )
 
 type PrayerDB interface {
@@ -13,21 +14,53 @@ type PrayerDB interface {
 	Exec(context.Context, string, ...any) (pgconn.CommandTag, error)
 }
 
-// GodCooldownRemaining reads the same projection as the cast transaction.
-// Cast callers already hold their Wanax's PWR lock, including across cities.
-func GodCooldownRemaining(ctx context.Context, db PrayerDB, world, player uuid.UUID, god string, nowTick int) (int, error) {
-	var until int
-	err := db.QueryRow(ctx, `SELECT COALESCE((SELECT until_tick FROM prayer_cooldowns WHERE world_id=$1 AND player_id=$2 AND god_id=$3),0)`, world, player, god).Scan(&until)
-	if err != nil {
-		return 0, fmt.Errorf("read god cooldown: %w", err)
+// MaxGiftFactor caps how much a larger gift can stretch a prayer (alpha:
+// generous, but nothing absurd). It bounds both the length and the rest.
+const MaxGiftFactor = 5.0
+
+// GiftFactor is r, the size of a gift against the traditional one: worth over
+// baseline, never below 1 (a gift under the baseline is refused) and never
+// above MaxGiftFactor. Without a reckoning (baseline 0) the gift is traditional.
+func GiftFactor(worth, baseline float64) float64 {
+	if baseline <= 0 || worth <= baseline {
+		return 1
 	}
-	return max(0, until-nowTick), nil
+	return min(MaxGiftFactor, worth/baseline)
 }
 
-// SetGodCooldown is called only after a successful answer, in the same TX as
-// the effect, sacrifice, standing and outcome event. Silent answers never wait.
-func SetGodCooldown(ctx context.Context, db PrayerDB, world, player uuid.UUID, god string, untilTick int) error {
-	_, err := db.Exec(ctx, `INSERT INTO prayer_cooldowns(world_id,player_id,god_id,until_tick) VALUES($1,$2,$3,$4) ON CONFLICT(world_id,player_id,god_id) DO UPDATE SET until_tick=EXCLUDED.until_tick`, world, player, god, untilTick)
+// DurationTicks is how long a lasting prayer holds: round(base x r). r = 1
+// gives exactly the base; r is capped at MaxGiftFactor.
+func DurationTicks(base int, r float64) int {
+	return int(math.Round(float64(base) * min(MaxGiftFactor, max(1, r))))
+}
+
+// RestTicks is how long the temple rests after an answer: the prayer's
+// cooldown grows with the gift and shrinks with the temple's level.
+func RestTicks(cooldown int, r float64, level int) int {
+	if cooldown <= 0 || level < 1 {
+		return 0
+	}
+	return int(math.Ceil(float64(cooldown) * min(MaxGiftFactor, max(1, r)) / float64(level)))
+}
+
+// TempleRestRemaining is the ticks a temple still rests (0 = ready). The row
+// is counted down by economy.AdvanceTempleRest, only while fully staffed.
+func TempleRestRemaining(ctx context.Context, db PrayerDB, building uuid.UUID) (int, error) {
+	var n int
+	if err := db.QueryRow(ctx, `SELECT COALESCE((SELECT remaining_ticks FROM temple_rest WHERE building_id=$1),0)`, building).Scan(&n); err != nil {
+		return 0, fmt.Errorf("read temple rest: %w", err)
+	}
+	return n, nil
+}
+
+// SetTempleRest is called only after a successful answer, in the same TX as
+// the effect, sacrifice and outcome event. last_tick = the cast tick so the
+// same tick's count-down does not shorten it.
+func SetTempleRest(ctx context.Context, db PrayerDB, building uuid.UUID, ticks, nowTick int) error {
+	if ticks <= 0 {
+		return nil
+	}
+	_, err := db.Exec(ctx, `INSERT INTO temple_rest(building_id,remaining_ticks,last_tick) VALUES($1,$2,$3) ON CONFLICT(building_id) DO UPDATE SET remaining_ticks=EXCLUDED.remaining_ticks,last_tick=EXCLUDED.last_tick`, building, ticks, nowTick)
 	return err
 }
 

@@ -33,6 +33,14 @@ type riteAvailablePrayer struct {
 	UnavailableReason     string             `json:"unavailable_reason"`
 	Affordable            bool               `json:"affordable"`
 	CooldownRemainingDays int                `json:"cooldown_remaining_game_days"`
+	// Bönegrunden: the temple rests, not the god.
+	Temple            string `json:"temple"`
+	RestRemainingDays int    `json:"rest_remaining_game_days"`
+	RestPaused        bool   `json:"rest_paused"`
+	TempleLevel       int    `json:"temple_level"`
+	TempleStaffed     int    `json:"temple_staffed"`
+	TempleCapacity    int    `json:"temple_capacity"`
+	BaseDurationDays  int    `json:"base_duration_game_days"`
 }
 
 // riteProvinceStatus is the slice of the province status response this file needs.
@@ -228,6 +236,7 @@ func riteCmd() *cobra.Command {
 				EffectType string         `json:"effect_type"`
 				Effect     map[string]any `json:"effect"`
 				Message    string         `json:"message"`
+				RestDays   int            `json:"rest_game_days"`
 				// What the offering achieved — separate from whether the gods
 				// answered. The odds stay hidden; whether MORE would help does not.
 				OfferingVerdict string `json:"offering_verdict"`
@@ -244,6 +253,9 @@ func riteCmd() *cobra.Command {
 				fmt.Printf("Success: %s\n", resp.Message)
 				if resp.EffectType != "" {
 					fmt.Printf("Effect: %s\n", resp.EffectType)
+				}
+				if resp.RestDays > 0 {
+					fmt.Printf("The temple rests %s.\n", formatDays(resp.RestDays))
 				}
 			} else {
 				fmt.Printf("Failed: %s\n", resp.Message)
@@ -331,6 +343,9 @@ func confirmRiteCast(c *Client, markers []map[string]any, settlementID, prayerID
 	}
 	fmt.Printf("Prayer: %s (%s)\n", chosen.Name, chosen.God)
 	fmt.Printf("Effect: %s\n", chosen.Effect)
+	if chosen.BaseDurationDays > 0 {
+		fmt.Printf("Lasts %s with the traditional gift; a larger gift lasts longer.\n", formatDays(chosen.BaseDurationDays))
+	}
 	previewGift := chosen.Offering
 	if len(composed) > 0 {
 		previewGift = composed
@@ -412,6 +427,31 @@ func favouredGoods(favours map[string]float64) string {
 	return strings.Join(parts, ", ")
 }
 
+// restText says how long the temple still rests and, when it lacks servants,
+// that the rest stands still — "Temple of Potnia rests 3 game days — paused: 2
+// of 4 servants". Without a rest field (legacy prayers) it is the plain wait.
+func restText(pr riteAvailablePrayer) string {
+	if pr.RestRemainingDays <= 0 {
+		return gameDaysRemaining(pr.CooldownRemainingDays)
+	}
+	temple := pr.Temple
+	if temple == "" {
+		temple = "Temple"
+	}
+	text := fmt.Sprintf("%s rests %s", temple, formatDays(pr.RestRemainingDays))
+	if pr.RestPaused {
+		text += fmt.Sprintf(" — paused: %d of %d servants", pr.TempleStaffed, pr.TempleCapacity)
+	}
+	return text
+}
+
+func restOrWait(pr riteAvailablePrayer) string {
+	if pr.RestRemainingDays > 0 {
+		return restText(pr)
+	}
+	return gameDaysRemaining(pr.CooldownRemainingDays) + " wait"
+}
+
 // gameDaysRemaining uses the shared Keryx unit formatter.
 func gameDaysRemaining(days int) string { return formatDays(days) + " remaining" }
 
@@ -426,19 +466,19 @@ func prayerReadiness(pr riteAvailablePrayer) (string, string) {
 	if pr.DeparturePending {
 		status := "awaiting next departure"
 		if pr.CooldownRemainingDays > 0 {
-			status += "; " + gameDaysRemaining(pr.CooldownRemainingDays) + " wait"
+			status += "; " + restOrWait(pr)
 		}
 		return "pending", status
 	}
 	if pr.ActiveRemainingDays > 0 {
 		status := gameDaysRemaining(pr.ActiveRemainingDays) + " active"
 		if pr.CooldownRemainingDays > 0 {
-			status += "; " + gameDaysRemaining(pr.CooldownRemainingDays) + " wait"
+			status += "; " + restOrWait(pr)
 		}
 		return "active", status
 	}
 	if pr.CooldownRemainingDays > 0 {
-		return "cooldown", gameDaysRemaining(pr.CooldownRemainingDays)
+		return "cooldown", restText(pr)
 	}
 	if !pr.Affordable {
 		return "no: check temple, kharis and offering", "—"
@@ -493,7 +533,7 @@ func riteSettlement(markers []map[string]any, given string) string {
 // The server's stable god key distinguishes everyday prayers from legacy ones.
 func prayerPaymentText(prayer riteAvailablePrayer) string {
 	if prayer.GodID != "" {
-		return "Kharis is a requirement, not spent. When the requirements are met the god answers; more offering will not improve the answer."
+		return "Kharis is a requirement, not spent. When the requirements are met the god answers; a larger gift lasts longer (where the prayer lasts) and makes the temple rest longer, a higher temple level shortens the rest, and only a fully staffed temple recovers."
 	}
 	return "The offering is consumed even if the gods stay silent; kharis is a requirement, not spent."
 }

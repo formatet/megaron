@@ -54,6 +54,16 @@ type prayerRow struct {
 	// true, unreadable, and in the wrong unit. Rounds UP, so a cooldown
 	// with any time left never reports 0.
 	CooldownRemainingDays int `json:"cooldown_remaining_game_days,omitempty"`
+	// Bönegrunden: the temple rests, not the god. Same number as the cooldown
+	// field (kept for older clients); paused while the temple lacks servants.
+	// BaseDurationDays is the length of a lasting prayer for the traditional
+	// gift — a larger gift lasts longer.
+	RestRemainingDays int  `json:"rest_remaining_game_days,omitempty"`
+	RestPaused        bool `json:"rest_paused,omitempty"`
+	TempleLevel       int  `json:"temple_level,omitempty"`
+	TempleStaffed     int  `json:"temple_staffed,omitempty"`
+	TempleCapacity    int  `json:"temple_capacity,omitempty"`
+	BaseDurationDays  int  `json:"base_duration_game_days,omitempty"`
 	// The temple's reading of the gods (temenos_prayers_komposition_plan.md).
 	// An offering is now composed, and its worth depends on world scarcity —
 	// data no Wanax can observe through the fog. The temple is exactly the

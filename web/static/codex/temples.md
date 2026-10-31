@@ -48,7 +48,7 @@ current kharis loss and new ceiling. Temples you have not built are listed last.
 **Kult → Prayers** lists prayers across your cities, with the temple and city
 where each can be offered. Prayers you can prepare now come first; prayers
 whose temples are missing come last. Each Offer uses that row's city and stock.
-Gods' waiting times still apply across your realm. **Kult → Kharis** explains your
+Each temple rests on its own after it answers; a higher level rests shorter, and only a fully staffed temple recovers (see [[rites]]). **Kult → Kharis** explains your
 realm's standing, daily change and current divine risk; see [[kharis]].
 
 `keryx status` lists all your temples. `keryx rite --list` lists prayers across

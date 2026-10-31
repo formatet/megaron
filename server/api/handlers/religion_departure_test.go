@@ -41,10 +41,7 @@ func TestBetaDeparturePrayerCastConsumeLateAndReturn(t *testing.T) {
 				t.Fatal(err)
 			}
 			// No renewal even after divine waiting time when the blessing is still pending.
-			_, err = f.pool.Exec(ctx, `DELETE FROM prayer_cooldowns WHERE world_id=$1`, f.world)
-			if err != nil {
-				t.Fatal(err)
-			}
+			f.clearRest(t)
 			if r := f.cast(f.cities[0], prayer); r.Code != 200 {
 				t.Fatalf("new gift %d %s", r.Code, r.Body.String())
 			}
@@ -76,7 +73,7 @@ func TestBetaDeparturePrayerCastConsumeLateAndReturn(t *testing.T) {
 			if err := tx.Commit(ctx); err != nil {
 				t.Fatal(err)
 			}
-			_, _ = f.pool.Exec(ctx, `DELETE FROM prayer_cooldowns WHERE world_id=$1`, f.world)
+			f.clearRest(t)
 			if r := f.cast(f.cities[0], prayer); r.Code != 409 {
 				t.Fatalf("renewed pending gift %d %s", r.Code, r.Body.String())
 			}

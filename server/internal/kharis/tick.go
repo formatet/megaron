@@ -213,6 +213,11 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 		}
 	}
 
+	// Temples recover from their prayers only while fully staffed.
+	if err := economy.AdvanceTempleRest(ctx, h.pool, e.WorldID, e.DueTick); err != nil {
+		slog.Error("temple rest failed", "world", e.WorldID, "err", err)
+	}
+
 	h.applyDecay(ctx, e.WorldID, e.ID)
 	h.applyStarvationWarning(ctx, e.WorldID)
 	if err := h.applyStarvation(ctx, e.WorldID); err != nil {
