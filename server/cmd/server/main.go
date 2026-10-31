@@ -285,10 +285,11 @@ func main() {
 	info, ok := debug.ReadBuildInfo()
 	commit := commitFromBuildInfo(buildCommit, info, ok)
 	slog.Info("build", "commit", commit)
+	staticDir := getEnv("STATIC_DIR", "../../web/static")
+	r.Use(newWebVersion(staticDir, commit).middleware)
 	r.Get("/healthz", healthz(pool, commit))
 
 	// Static files and HTML templates.
-	staticDir := getEnv("STATIC_DIR", "../../web/static")
 	templateDir := getEnv("TEMPLATE_DIR", "../../web/templates")
 	// no-cache: the ES modules under /static are deployed by git pull + restart
 	// with no cache-busting in their import paths, so a browser that cached them

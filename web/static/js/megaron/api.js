@@ -25,6 +25,19 @@ function setNetStatus(active) {
   if (el) el.classList.toggle('visible', active);
 }
 
+// A tab left open across a deploy runs the old modules and silently drops data
+// it does not know. The server states its version on every API reply
+// (X-Megaron-Version); when it changes, the topbar offers a reload. Never an
+// automatic reload — that would throw away whatever the player was typing.
+let seenVersion = null;
+export function noteServerVersion(v) {
+  if (!v) return;
+  if (seenVersion === null) { seenVersion = v; return; }
+  if (v === seenVersion) return;
+  const el = document.getElementById('update-notice');
+  if (el) el.classList.add('visible');
+}
+
 export async function fetchAuth(url, opts = {}) {
   const token = localStorage.getItem('poleia_token');
   const headers = Object.assign(token ? {'Authorization': 'Bearer ' + token} : {}, opts.headers || {});
@@ -39,6 +52,7 @@ export async function fetchAuth(url, opts = {}) {
     try {
       const res = await fetch(BASE + url, finalOpts);
       noteServerDate(res.headers.get('Date'));
+      noteServerVersion(res.headers.get('X-Megaron-Version'));
       if (res.status >= 500 && attempt < backoffs.length) {
         setNetStatus(true);
         track('fetch_retry', { path: telemetryPath(url), status: res.status });

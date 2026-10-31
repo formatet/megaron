@@ -482,6 +482,22 @@ body:has(.auth-page) main {
   white-space: nowrap;
 }
 .gt-netstatus.visible { display: flex; }
+/* Offered when the server's version changes under an open tab (api.js). */
+.gt-update {
+  display: none;
+  padding: 0 0.7rem;
+  font: inherit;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  color: var(--gold);
+  background: none;
+  border: none;
+  border-right: 1px solid var(--border);
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.gt-update.visible { display: flex; align-items: center; }
 
 /* Dispatch strip — chips slide in from right */
 .gt-dispatch-strip {
