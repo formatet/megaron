@@ -6,7 +6,8 @@ globalThis.window = {addEventListener(){},matchMedia:()=>({matches:false,addEven
 globalThis.localStorage = {getItem:()=>null,setItem(){}};
 const { notifDateHeader, hiddenNotifLabel } = await import('./notif.js');
 import { notifText, notifIcon } from '../format.js';
-import { lockedActionsHTML, LAWAGETAS_BRIEFS, drawerHelpHTML, dismissBrief, briefDismissed } from '../misc.js';
+import * as misc from '../misc.js';
+import { lockedActionsHTML, drawerHelpHTML } from '../misc.js';
 test('K: calendar and forming state survive without world speed',()=>{
  const cal={day:3,month:2,monthName:'Antherion',year:1};
  const html=notifDateHeader(cal,{TICK_SECONDS:360,WORLD_STATE:'forming',WANAXES_NEEDED:10,WANAXES_JOINED:7});
@@ -20,18 +21,11 @@ test('K: quiet kinds remain readable both in group and historic archive',()=>{
   assert.doesNotMatch(notifText(kind,{}),/Sitos/,'historic row must use player words');
  }
 });
-test('K: every advisory has a drawer help link; locked reasons stay authoritative in tooltip',()=>{
- for(const [name] of Object.entries(LAWAGETAS_BRIEFS)){assert.match(drawerHelpHTML(name),new RegExp("openCodexForDrawer\\('"+name+"'\\)"));}
+test('K: drawer help link is drawn; no Lawagetas brief;  locked reasons stay authoritative in tooltip',()=>{
+ for(const name of ['city','war','diplomacy','economy','kult','notif']){assert.match(drawerHelpHTML(name),new RegExp("openCodexForDrawer\\('"+name+"'\\)"));}
+ assert.equal(misc.LAWAGETAS_BRIEFS,undefined);assert.equal(misc.showLawagatasBrief,undefined);assert.equal(misc.dismissBrief,undefined);
  const html=lockedActionsHTML('trade',[{name:'trade-offer',requirements:[{satisfied:true,hint:'irrelevant'},{satisfied:false,hint:'Send a messenger <first>'}]},{name:'trade-offer',requirements:[{satisfied:false,hint:'Meet another city'}]}]);
  assert.match(html,/Unavailable: /);assert.equal((html.match(/>trade offer</g)||[]).length,1,'one label, all reasons retained');assert.match(html,/title="Send a messenger &lt;first&gt; · Meet another city"/,'keep server reason');assert.match(html,/openCodexForDrawer\('economy'\)/);assert.doesNotMatch(html,/irrelevant/);assert.equal(lockedActionsHTML('trade',[]),'');
-});
-test('a dismissed brief stays dismissed after reload (localStorage, not session)',()=>{
- const store={};const prev=globalThis.localStorage;
- globalThis.localStorage={getItem:k=>(k in store?store[k]:null),setItem:(k,v)=>{store[k]=String(v);}};
- try{assert.equal(briefDismissed('city'),false);dismissBrief('city');assert.equal(briefDismissed('city'),true);assert.equal(briefDismissed('war'),false);}
- finally{globalThis.localStorage=prev;}
- globalThis.localStorage={getItem(){throw new Error('blocked');},setItem(){throw new Error('blocked');}};
- try{assert.equal(briefDismissed('city'),false);assert.doesNotThrow(()=>dismissBrief('city'));}finally{globalThis.localStorage=prev;}
 });
 test('calendar BILD alternatives keep the date with or without month ordinal',()=>{
  const cal={day:1,month:1,monthName:'Pithoi',year:1};

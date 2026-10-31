@@ -20,22 +20,11 @@ export function offerFields(prayer, stock) {
 }
 
 // Words, not weights (Timothy 2026-10-19: "lite väl mkt siffror"): the god's
-// two dearest goods, then up to two more that also please. Never a worth or odds.
-function andList(xs) {
-  return xs.length < 2 ? xs.join('') : xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1];
-}
-
-function favouredText(god, favours) {
+// dearest goods, as a bare list (nittiotalsenkelhet 2026-10-31). Never a worth or odds.
+function favouredText(favours) {
   const liked = Object.entries(favours || {}).filter(([, w]) => w > 1)
     .sort(([, a], [, b]) => b - a).map(([g]) => g);
-  if (!liked.length) return '';
-  const name = god || 'The god';
-  let text = name + ' loves ' + andList(liked.slice(0, 2)) + '.';
-  if (liked.length > 2) {
-    const more = andList(liked.slice(2, 4));
-    text += ' ' + more[0].toUpperCase() + more.slice(1) + ' also please ' + name + '.';
-  }
-  return text + ' The traditional offering is always enough.';
+  return liked.length ? 'Favours: ' + liked.slice(0, 4).join(', ') : '';
 }
 
 export function offerRowHTML(prayer, stock) {
@@ -43,9 +32,8 @@ export function offerRowHTML(prayer, stock) {
     '<label class="offer-field">' + esc(f.good) +
     ' <input type="number" class="offer-input" min="0" step="1" data-good="' + esc(f.good) + '" value="' + esc(String(f.amount)) + '">' +
     ' <span class="offer-stock">/ ' + esc(String(Math.floor(f.stock))) + '</span></label>').join('');
-  const note = esc(favouredText(prayer.god, prayer.favours));
+  const note = esc(favouredText(prayer.favours));
   const id = esc(prayer.id);
-  const preparationNote = prayer.can_prepare_offering && !prayer.affordable ? '<p class="offer-note">Choose goods for your offering; the traditional gift is unavailable.</p>' : '';
   // The client does not value a gift (the gods' reckoning is server-side), so it
   // names the base length and says that a larger gift lasts longer.
   const length = prayer.base_duration_game_days > 0
@@ -55,7 +43,6 @@ export function offerRowHTML(prayer, stock) {
   return '<div class="offer-fields">' + fields + '</div>' +
     '<p class="offer-note" data-offer-food></p>' +
     length + restNote +
-    preparationNote +
     (note ? '<p class="offer-note">' + note + '</p>' : '') +
     '<button class="obj-cta btn-small" onclick="bringOffering(\'' + id + '\')">Bring the offering</button> ' +
     '<button class="btn-small btn-secondary" onclick="cancelOffering(\'' + id + '\')">Cancel</button>';

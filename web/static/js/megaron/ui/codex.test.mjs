@@ -269,3 +269,9 @@ test('codex: every member page names a hub that exists and lists it', () => {
 test('founding article says keryx founding status shows the same forecast', () => {
   assert.match(bodies['founding'], /keryx founding status/);
 });
+
+test('codex: ? in the Kult drawer opens rites on Prayers, temples on Temples, kharis otherwise', () => {
+  assert.equal(articleForDrawer('kult:prayers', index), 'rites');
+  assert.equal(articleForDrawer('kult:temples', index), 'temples');
+  assert.equal(articleForDrawer('kult', index), 'kharis');
+});

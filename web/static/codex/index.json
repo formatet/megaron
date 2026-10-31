@@ -2020,6 +2020,7 @@
       "id": "temples",
       "title": "Temples and devotion",
       "category": "The gods",
+      "drawer": "kult:temples",
       "related": [
         "kharis",
         "buildings",
@@ -2078,6 +2079,7 @@
       "id": "rites",
       "title": "Rites and prayers",
       "category": "The gods",
+      "drawer": "kult:prayers",
       "kinds": [
         "RiteAnswered"
       ],

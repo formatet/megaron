@@ -2,6 +2,7 @@ import { templeTitheHTML } from './kult_kharis.js';
 import { confirmInline, showInlineResult } from '../inline_result.js';
 import { State, ownCapital } from '../../state.js';
 import { fetchAuth } from '../../api.js';
+import { registerDrawerTab } from '../codex.js';
 import { esc } from '../format.js';
 import { fmtEta } from '../time.js';
 import { fmtDays } from '../fmt_num.js';
@@ -9,7 +10,6 @@ import { serverNow } from '../../clock.js';
 import { renderLockedActions } from '../misc.js';
 import { demolishPrompt, demolishResultLine } from '../demolish.js';
 import { realmKultHTML, prayerActionID } from './kult_realm.js';
-import { divineValuesHTML } from './kult_values.js';
 import { offerRowHTML, offeringFromEntries, offerFoodText } from './kult_offer.js';
 import { kharisNetView, kharisDecayHTML, kharisRulesHTML, kharisStandingHTML } from './kult_kharis.js';
 
@@ -28,6 +28,7 @@ export async function openKultFromDispatch(id){
 }
 let kultLoadSeq = 0;
 let kultTab = 'kharis';
+registerDrawerTab('kult', () => kultTab);
 export async function loadKultDrawer() {
  const seq=++kultLoadSeq, world=State.WORLD_ID;
  const el=document.getElementById('kult-body');
@@ -79,7 +80,7 @@ function templeGoodsText(goods, separator) {
 export function templeOfferingsHTML(offers) {
   let html = '<div class="dsec"><div class="dsec-title">Temple offerings</div>';
   if (!offers.length) {
-    return html + '<p class="empty-state">No temples — kharis will not climb without a temple and offerings.</p></div>';
+    return html + '<p class="empty-state">No temples</p></div>';
   }
   for (const t of offers) {
     const mark = t.fed ? '<span style="color:var(--safe)">✓</span>' : '<span style="color:var(--accent)">✗</span>';
@@ -190,7 +191,7 @@ export function prayerStatusHTML(p, frenzyActive = false, frenzyUntil = null) {
   const waitDays = p.cooldown_remaining_game_days || 0;
   const rest = templeRestText(p);
   if (p.can_prepare_offering && !p.affordable) {
-    return `<button class="obj-cta btn-small" onclick="okRite('${p.id}')">Compose offering</button> <span class="empty-state">The traditional gift is unavailable; choose another offering.</span>`;
+    return `<button class="obj-cta btn-small" onclick="okRite('${p.id}')">Compose offering</button> <span class="empty-state">Gift unavailable</span>`;
   }
   if (p.unavailable_reason) return `<span class="empty-state">${esc(p.unavailable_reason)}</span>`;
   if (p.departure_pending) {

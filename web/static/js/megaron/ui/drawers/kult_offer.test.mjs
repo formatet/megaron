@@ -22,7 +22,7 @@ test('offer row adds edible and favoured held goods at 0, skips the rest', () =>
 
 test('offer row shows the keryx taste line and no odds', () => {
   const html = offerRowHTML(prayer, stock);
-  assert.match(html, /Potnia loves wine and bronze\. The traditional offering is always enough\./);
+  assert.match(html, /Favours: wine, bronze/);assert.doesNotMatch(html, /loves|always enough/);
   assert.doesNotMatch(html, /×|worth|~\d/);
   assert.match(html, /Bring the offering/);
   assert.match(html, /Cancel/);
@@ -48,14 +48,14 @@ test('a city holding incense gets an incense field and the god is said to love i
   assert.equal(inc.amount, 0);
   const html = offerRowHTML(oracle, held);
   assert.match(html, /data-good="incense"/);
-  assert.match(html, /Potnia loves incense and wine\./);
+  assert.match(html, /Favours: incense, wine/);
   assert.doesNotMatch(html, /worth|odds|%/i);
 });
 
 test('alternative preparation starts at zero instead of silently offering missing recipe goods',()=>{
  const p={...prayer,affordable:false,can_prepare_offering:true};
  const fields=offerFields(p,stock);assert.ok(fields.length>0);assert.ok(fields.every(f=>f.amount===0));
- const html=offerRowHTML(p,stock);assert.match(html,/Choose goods for your offering/);
+ const html=offerRowHTML(p,stock);assert.doesNotMatch(html,/traditional gift is unavailable/);
 });
 
 // Lato, tick 5053: 28 grain offered out of 29, net +0.5 — the city starved

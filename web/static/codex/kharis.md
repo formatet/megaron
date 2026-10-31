@@ -27,13 +27,13 @@ Three things must be true, every game day:
 2. **People serve in it** — levels 1/2/3 have 2/4/8 workplaces and weights 1/4/9. Staffing scales the weight; see [[temples]].
 3. **The tithe is paid** — [[grain|grain]] at every level, [[silver|silver]] from level 2, [[incense|incense]] at level 3. Each paid part adds its share of effect; see [[daily-offerings]].
 
-In a small realm, a fully staffed, fed level-1 temple can earn more favour than the realm loses each game day. Compare the projected net; a larger realm may need more temples or higher levels. Larger temples can employ more devotion and raise kharis faster when staffed and fed.
+In a small realm, a fully staffed, fed level-1 temple can earn more favour than the realm loses each game day. Compare the projected net; a larger realm may need more temples or higher levels. **Kult → Kharis** shows **Per extra temple worker: +x.xx**, the least one more fed temple worker adds per game day before cult upkeep; it is more when the cult's reference offering of grain is scarce in the world, and needs a free [[citizens|citizen]], a temple workplace and its daily offering. Larger temples can employ more devotion and raise kharis faster when staffed and fed.
 
 ### The Kharis ceiling and offerings {#raising-kharis-2}
 
 **Your best temple sets your ceiling:** no temple **40**, level 1 **50**, level 2 **75**, level 3 **100**. Everyday prayers work at a level-1 temple. Spontaneous blessings need **60 kharis** and a maintained temple. Only a level-2 temple or higher lets kharis grow that far. Kharis retained above a lowered ceiling still counts.
 
-Kharis changes by **2.1 × effective temple weight × scarcity − 1.2 × active cities²** per game day. Population does not contribute. The floor and temple ceiling still apply; above a lowered ceiling, [[upkeep|upkeep]] continues without temple gain offsetting it.
+Kharis changes by **2.1 × effective temple weight × scarcity − 1.2 × active cities²** per game day. Population does not contribute. The floor and temple ceiling still apply. **Above ceiling (N)** on the Kult drawer means kharis stands over your temple's ceiling: [[upkeep|upkeep]] continues, and temple workers and offerings do not raise it until it is back at or below N, after which temples can raise it again, up to the ceiling. **Upkeep: −x.x / game day** is the realm's daily cult upkeep, and **Demand: N · Given: X** is what the gods ask of your realm against what your temples give.
 
 Kharis is a requirement for [[rites|prayers]], never spent. Everyday prayers answer when their requirements are met; they cost goods and the temple's rest.
 

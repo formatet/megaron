@@ -13,9 +13,9 @@ func TestStatusRealmKharisDecay(t *testing.T) {
 		cities, base, burden, total float64
 		want                        string
 	}{
-		{"capital without temple", 1, .1, 0, .35, "0.10 base + 1 city cost 0.00 + 2500 residents cost 0.25 = 0.35 kharis per game day"},
-		{"five cities", 5, .1, 1, 1.35, "0.10 base + 5 cities cost 1.00 + 2500 residents cost 0.25 = 1.35 kharis per game day"},
-		{"server values rather than client formula", 5, .7, 8.6, 9.55, "0.70 base + 5 cities cost 8.60 + 2500 residents cost 0.25 = 9.55 kharis per game day"},
+		{"capital without temple", 1, .1, 0, .35, "Upkeep: −0.35 / game day"},
+		{"five cities", 5, .1, 1, 1.35, "Upkeep: −1.35 / game day"},
+		{"server values rather than client formula", 5, .7, 8.6, 9.55, "Upkeep: −9.55 / game day"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			round3Client(t, func(w http.ResponseWriter, r *http.Request) {
@@ -35,7 +35,7 @@ func TestStatusRealmKharisDecay(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			for _, want := range []string{tc.want, "net -", "ceiling 40", "Temples: none", "Temple production: 2.10", "worker gives at least +1.05", "grain is scarce in the world"} {
+			for _, want := range []string{tc.want, "net -", "ceiling 40", "Temples: none", "Temple production: 2.10", "Per extra temple worker: +1.05"} {
 				if !strings.Contains(out, want) {
 					t.Fatalf("missing %q: %s", want, out)
 				}
@@ -72,7 +72,7 @@ func TestStatusDivineProtectionAndBlessingRequirement(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{"Everyday prayers work at a level-1 temple", "need 60 kharis", "Only a level-2 temple or higher", "Kharis retained above a lowered ceiling still counts", "with or without a temple", "Protected from divine punishment for 2 game days"} {
+	for _, want := range []string{"Blessings from kharis 60", "Wrath risk below 15: 3% / game day", "Protected from divine punishment for 2 game days"} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("missing %q: %s", want, out)
 		}
@@ -91,7 +91,7 @@ func TestStatusAboveCeilingIgnoresTempleGain(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{"Once below, temples can raise it again", "upkeep only above ceiling", "net -0.2"} {
+	for _, want := range []string{"Above ceiling (50)", "upkeep only above ceiling", "net -0.2"} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("missing %q: %s", want, out)
 		}

@@ -25,7 +25,7 @@ import { stopCityAnim } from './render/city.js';
 import { nameStorm } from './ui/stormname.js';
 import { namePlace } from './ui/placename.js';
 import {
-  showLawagatasBrief, dismissBrief, MusicPlayer, toggleMusic,
+  MusicPlayer, toggleMusic,
   initCelestial, initMusicAutostart, initMusicVisibility, initSoundPrefs,
   initMusicIntroHandoff,
 } from './ui/misc.js';
@@ -92,7 +92,6 @@ export function openDrawer(name) {
   State.activeDrawer = name;
   State.dirty = true; // the map's catchment tint follows the City drawer
   track('drawer_open', { name });
-  showLawagatasBrief(name);
   loadDrawerContent(name);
 }
 
@@ -202,7 +201,6 @@ Object.assign(window, {
   dipToggleKind,
   dipToggleThread,
   dismissAllChips,
-  dismissBrief,
   loadTicklog,
   loadTransferGoods,
   loadTransferDestinations,

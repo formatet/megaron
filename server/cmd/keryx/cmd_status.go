@@ -1016,8 +1016,8 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				fmt.Printf("  %-8s %6s  (%s) · %s\n", "Kharis", resource(kv), mood, netStr)
 			}
 			if standing, ok := sett["kharis_standing"].(map[string]any); ok {
-				if summary, ok := standing["summary"].(string); ok {
-					fmt.Println("  " + summary)
+				if short, ok := standing["short"].(string); ok {
+					fmt.Println("  " + short)
 				}
 			}
 			if line := kharisDecayLine(sett); line != "" {
@@ -1029,10 +1029,10 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				}
 			}
 			if worker, ok := sett["kharis_per_temple_worker"].(float64); ok && !(kcap > 0 && kv > kcap) {
-				fmt.Printf("  One more fed temple worker gives at least +%.2f kharis per game day before cult upkeep, and more when the cult’s reference offering of grain is scarce in the world. Requires a free citizen, a temple workplace and its daily offering.\n", worker)
+				fmt.Printf("  Per extra temple worker: +%.2f\n", worker)
 			}
 			if threshold, ok := sett["kharis_blessing_threshold"].(float64); ok {
-				fmt.Printf("  Everyday prayers work at a level-1 temple. Spontaneous blessings need %.0f kharis and a maintained temple. Only a level-2 temple or higher lets kharis grow that far. Kharis retained above a lowered ceiling still counts.\n", threshold)
+				fmt.Printf("  Blessings from kharis %.0f\n", threshold)
 			}
 			if wrath, ok := sett["kharis_wrath"].(map[string]any); ok {
 				threshold, _ := wrath["threshold"].(float64)
@@ -1040,9 +1040,9 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				wrathful := ""
 				if wt, ok := wrath["wrathful_threshold"].(float64); ok {
 					wp, _ := wrath["wrathful_probability"].(float64)
-					wrathful = fmt.Sprintf(" (%.0f%% below %.0f)", wp*100, wt)
+					wrathful = fmt.Sprintf(", %.0f%% below %.0f", wp*100, wt)
 				}
-				fmt.Printf("  Below %.0f kharis: %.0f%% chance of divine punishment per game day%s, with or without a temple.\n", threshold, probability*100, wrathful)
+				fmt.Printf("  Wrath risk below %.0f: %.0f%% / game day%s\n", threshold, probability*100, wrathful)
 				if remaining, _ := wrath["protection_remaining_days"].(float64); remaining > 0 {
 					if iso, ok := wrath["protection_until"].(string); ok {
 						if at, err := time.Parse(time.RFC3339Nano, iso); err == nil {
@@ -1373,24 +1373,15 @@ func armyFoodLine(sett map[string]any) string {
 func kharisDecayLine(sett map[string]any) string {
 	if demand, ok := sett["kharis_demand"].(float64); ok {
 		if given, ok := sett["kharis_given_weight"].(float64); ok {
-			return fmt.Sprintf("The gods ask %g of your realm; your temples give %.2f.", demand, given)
+			return fmt.Sprintf("Demand: %g · Given: %.2f", demand, given)
 		}
 	}
 
-	count, countOK := sett["kharis_city_count"].(float64)
-	population, popOK := sett["kharis_population"].(float64)
-	base, baseOK := sett["kharis_base_decay"].(float64)
-	cities, citiesOK := sett["kharis_city_decay"].(float64)
-	residents, residentsOK := sett["kharis_population_decay"].(float64)
 	total, totalOK := sett["kharis_daily_decay"].(float64)
-	if !countOK || !popOK || !baseOK || !citiesOK || !residentsOK || !totalOK {
+	if !totalOK {
 		return "Cult upkeep not reported"
 	}
-	cityWord := "cities"
-	if count == 1 {
-		cityWord = "city"
-	}
-	return fmt.Sprintf("Upkeep of the cult: %.2f base + %.0f %s cost %.2f + %.0f residents cost %.2f = %.2f kharis per game day", base, count, cityWord, cities, population, residents, total)
+	return fmt.Sprintf("Upkeep: −%.2f / game day", total)
 
 }
 
@@ -1405,7 +1396,7 @@ func kharisCapLine(sett map[string]any) string {
 	knet, _ := sett["kharis_net_per_tick"].(float64)
 	netKnown, _ := sett["kharis_net_known"].(bool)
 	if kcap > 0 && kv > kcap {
-		return fmt.Sprintf("  → kharis declines through daily cult upkeep; temple workers and offerings do not raise it while it is above the ceiling %.0f. Once below, temples can raise it again, up to the ceiling.\n", kcap)
+		return fmt.Sprintf("  → Above ceiling (%.0f)\n", kcap)
 	}
 	if mtl < 1 || kcap >= 100 {
 		return ""

@@ -49,7 +49,7 @@ type riteProvinceStatus struct {
 		DivineValues   map[string]float64 `json:"divine_values"`
 		Kharis         float64            `json:"kharis"`
 		KharisStanding struct {
-			Summary string `json:"summary"`
+			Short string `json:"short"`
 		} `json:"kharis_standing"`
 		KharisMood       string                `json:"kharis_mood"`
 		AvailablePrayers []riteAvailablePrayer `json:"available_prayers"`
@@ -338,8 +338,8 @@ func confirmRiteCast(c *Client, markers []map[string]any, settlementID, prayerID
 	}
 
 	fmt.Printf("The gods are %s (kharis %.0f).\n", p.Settlement.KharisMood, p.Settlement.Kharis)
-	if p.Settlement.KharisStanding.Summary != "" {
-		fmt.Println(p.Settlement.KharisStanding.Summary)
+	if p.Settlement.KharisStanding.Short != "" {
+		fmt.Println(p.Settlement.KharisStanding.Short)
 	}
 	fmt.Printf("Prayer: %s (%s)\n", chosen.Name, chosen.God)
 	fmt.Printf("Effect: %s\n", chosen.Effect)
@@ -533,9 +533,9 @@ func riteSettlement(markers []map[string]any, given string) string {
 // The server's stable god key distinguishes everyday prayers from legacy ones.
 func prayerPaymentText(prayer riteAvailablePrayer) string {
 	if prayer.GodID != "" {
-		return "Kharis is a requirement, not spent. When the requirements are met the god answers; a larger gift lasts longer (where the prayer lasts) and makes the temple rest longer, a higher temple level shortens the rest, and only a fully staffed temple recovers."
+		return fmt.Sprintf("Required kharis: %.0f", prayer.MinKharis)
 	}
-	return "The offering is consumed even if the gods stay silent; kharis is a requirement, not spent."
+	return "The offering is consumed even if the gods stay silent."
 }
 
 // riteSettlementByProvince resolves --province the way the other city verbs

@@ -31,6 +31,17 @@ func TestStandingCurrentConsequences(t *testing.T) {
 	}
 }
 
+// The panel shows band + number, not the prose (kultpanel enkel 2026-10-31).
+func TestStandingShortIsBandAndNumberOnly(t *testing.T) {
+	s := DescribeStanding(5, true, 0)
+	if s.Short != "Kharis 5.0 · Suspicious" || strings.Contains(s.Short, "chance") {
+		t.Fatalf("short: %q", s.Short)
+	}
+	if !strings.Contains(s.Summary, "chance") {
+		t.Fatalf("summary stays the long prose: %q", s.Summary)
+	}
+}
+
 // R2 storm, mild: the standing tells the sea's tilt before a ship sails.
 func TestStandingNamesTheGodsHandAtSea(t *testing.T) {
 	if s := DescribeStanding(60, true, 0); s.StormSpareProbability != .15 || !strings.Contains(s.Summary, "15% chance Poseidon holds back a storm's blow") {
