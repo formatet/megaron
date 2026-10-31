@@ -13,6 +13,7 @@ import { unitTypeLabel } from '../actornames.js';
 import { startCityAnim } from '../../render/city.js';
 import { renderGubbeGrid, terrainLabel } from '../citygrid.js';
 import { productionSectionsHTML, populationHTML, foodSummaryHTML, foodDetailsHTML, storageWarningsHTML } from './city_production.js';
+import { warehouseHTML } from './city_warehouse.js';
 import { fmtNum, fmtDays, fmtDuration } from '../fmt_num.js';
 import { ownBoardSection } from '../market_board.js';
 
@@ -61,12 +62,14 @@ export async function loadCityDrawer() {
     <div id="city-siege-banner"></div>
     <div class="drawer-tabs">
       <button class="dtab active" data-tab="produktion">Production</button>
+      <button class="dtab" data-tab="forrad">Warehouse</button>
       <button class="dtab" data-tab="byggnader">Buildings</button>
       <button class="dtab" data-tab="garnison">Garrison</button>
     </div>
     <div id="ctab-produktion" class="city-tab">
       ${productionSectionsHTML(capital)}
     </div>
+    <div id="ctab-forrad" class="city-tab" style="display:none"><div id="city-wh-sec"></div></div>
     <div id="ctab-byggnader" class="city-tab" style="display:none"><div id="city-bld-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
     <div id="ctab-garnison"  class="city-tab" style="display:none"><div id="city-gar-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>`;
 
@@ -134,6 +137,7 @@ export async function loadCityDrawer() {
     }
 
     document.getElementById('city-food-sec').innerHTML = foodSummaryHTML(pd);
+    document.getElementById('city-wh-sec').innerHTML = warehouseHTML(pd, goods);
     document.getElementById('city-food-details-sec').innerHTML = foodDetailsHTML(pd);
     if (pd && pd.last_tick) {
       const lt = pd.last_tick;
@@ -162,7 +166,7 @@ export async function loadCityDrawer() {
     // ── Garnison ────────────────────────────────────────────────────────────
     if (pd) {
       document.getElementById('city-gar-sec').innerHTML = `
-        <div class="dsec-title">Whole forces in ${esc(capital.name)}</div>
+        <div class="dsec-title">Whole forces in ${esc(capital.name)} <button class="btn-small" onclick="warOpenRecruit('${esc(capital.id)}')">Recruit</button></div>
         ${unitsResp.ok ? disbandUnitsHTML(units, capital.settlement_id || pd.id, capital.id) : '<p class="empty-state">Could not load forces. Reopen the city to try again.</p>'}
         <div id="war-disband-res" class="action-result" role="status"></div>`;
     }

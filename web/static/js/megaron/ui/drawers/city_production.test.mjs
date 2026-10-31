@@ -13,31 +13,18 @@ test('J: only three primary sections, all secondary abilities remain under close
  assert.match(more,/onclick="loadTicklog\(\)"/);assert.doesNotMatch(more,/\bopen\b/,'More starts closed');
  for (const is_capital of [true, false]) assert.doesNotMatch(productionSectionsHTML({is_capital}), /city-gift-sec|city-loyalty-sec|Loyalty log|Gift from capital/);
 });
-test('J: food game days come from authoritative mixed-food coverage, from the single city stock',()=>{
- const html=foodSummaryHTML(pd());assert.match(html,/Food for 4.2 game days/,'authoritative food game days');assert.doesNotMatch(html,/100|ticks|Coverage/);
- assert.match(foodDetailsHTML(pd()),/4.2 game days · about 4.2 minutes at current consumption · grain \+ fish/);
+test('Warehouse: Production no longer carries the "Food for N game days" stock line, herd or stock amounts',()=>{
+ const html=foodSummaryHTML(pd({food:{coverage_ticks:4.2,food_net_per_tick:-2,goods:{grain:463.9,fish:88.8},herd:{count:40,cap:50}}}));
+ assert.doesNotMatch(html,/Food for|Herd|463|88\.8|stocks/,'stock line left Production');
+ assert.match(html,/Food net<\/span><span class="sr-val">-2\.0 per game day/,'net production stays');
  assert.doesNotMatch(foodDetailsHTML(pd()),/Reserve|Stores above|releases below/);
+ assert.match(foodDetailsHTML(pd()),/4.2 game days · about 4.2 minutes at current consumption · grain \+ fish/);
 });
-test('pen: herd line shows count / cap and warns when full',()=>{
- const open=foodSummaryHTML(pd({food:{coverage_ticks:4.2,food_net_per_tick:1,herd:{count:40,cap:50}}}));
- assert.match(open,/Herd 40 \/ 50/);assert.doesNotMatch(open,/full/);
- const full=foodSummaryHTML(pd({food:{coverage_ticks:4.2,food_net_per_tick:1,herd:{count:50,cap:50}}}));
- assert.match(full,/Herd 50 \/ 50 — full: new animals are eaten, then lost/);assert.match(full,/stat-warn/);
- assert.doesNotMatch(foodSummaryHTML(pd()),/Herd/);
- const calves=foodSummaryHTML(pd({food:{coverage_ticks:4.2,food_net_per_tick:1,herd:{count:40,cap:50,births_next:4,births_in:3,births_grain:4}}}));
- assert.match(calves,/Herd 40 \/ 50 — 4 calves in 3 game days \(4 grain\)/);
- const one=foodSummaryHTML(pd({food:{coverage_ticks:4.2,food_net_per_tick:1,herd:{count:10,cap:50,births_next:1,births_in:1,births_grain:0}}}));
- assert.match(one,/1 calf in 1 game day \(0 grain\)/);
-});
-test('J: growing low stocks never say starving; food-worker warning survives',()=>{
- const data=pd();data.food.coverage_ticks=0;data.food.food_net_per_tick=2;
- assert.match(foodSummaryHTML(data),/0 game days · stocks growing/);assert.doesNotMatch(foodSummaryHTML(data),/stat-warn|starv/);
-
+test('J: food-worker warning survives; missing net is honestly unavailable',()=>{
+ const data=pd();data.food.food_net_per_tick=2;
+ assert.doesNotMatch(foodSummaryHTML(data),/stat-warn|starv/);
  data.food_self_sufficient=false;assert.match(foodSummaryHTML(data),/fields cannot feed everyone/);
- data.food.food_net_per_tick=-2;assert.doesNotMatch(foodSummaryHTML(data),/stocks growing/);
-});
-test('J: missing/invalid coverage is honestly unavailable, never zero or NaN game days',()=>{
- for(const data of [null,{},pd({food:null}),pd({food:{}}),pd({food:{coverage_ticks:NaN}})])assert.match(foodSummaryHTML(data),/not reported/);
+ for(const x of [null,{},pd({food:null}),pd({food:{}})])assert.match(foodSummaryHTML(x),/not reported/);
 });
 test('J: population keeps input-free player words; no slaughter button',()=>{
  assert.match(populationHTML(pd(),700,10,'p'),/Citizens<\/span><span class="sr-val">10</);assert.match(populationHTML(pd(),700,10,'p'),/Free to work<\/span><span class="sr-val">7</);
@@ -122,15 +109,14 @@ test('equal food: four stocks and actual meal use server totals, never grain-onl
  const data=pd({grain_prod_rate:999,grain_consum_rate:999,army_upkeep:{grain:999,food:2},food_net_per_tick_after_upkeep:5,
   food:{coverage_ticks:12.5,production_per_tick:10,consumption_per_tick:3,food_net_per_tick:7,
    goods:{grain:100,fish:900,oil:40,wine:60},consumed:{grain:0.3,fish:2.7},consumed_tick:42}});
- assert.match(foodSummaryHTML(data),/Food for 12.5 game days/);
- assert.match(foodSummaryHTML(data),/100 grain, 900 fish, 40 oil\./);
+ assert.doesNotMatch(foodSummaryHTML(data),/Food for|900 fish/,'stocks moved to Warehouse');
  const detail=foodDetailsHTML(data);
  assert.match(detail,/production 10 − people eat 3 = 7 net before army/);
  assert.match(detail,/eats 2 food per game day → food net 5 after army/);
  assert.match(detail,new RegExp('Last meal.*0.3 grain, 2.7 fish.*'+testTickTime(42)));
  assert.doesNotMatch(detail,/999|army needs grain/);
  data.food.goods={grain:0,fish:0.008,oil:0.0000001,wine:0.1};
- assert.match(foodSummaryHTML(data),/0 grain, under 0.1 fish, under 0.1 oil\./);
+ assert.match(foodDetailsHTML(data),/City stocks.*0 grain, under 0.1 fish, under 0.1 oil/);
  data.food.consumed={grain:0,fish:0.008,oil:0.0000001};
  assert.match(foodDetailsHTML(data),/Last meal.*0 grain, under 0.1 fish, under 0.1 oil/);
  data.food.consumed_tick=null;

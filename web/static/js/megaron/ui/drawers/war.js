@@ -84,15 +84,24 @@ export function recruitmentPaidText(costs) {
 // ── War drawer ────────────────────────────────────────────────────────────
 // See cityLoadSeq: an older reply must not fill the nodes a newer load built.
 let warLoadSeq = 0;
+let _recruitFocus = null;
+// City -> Garrison "Recruit": open War on the Recruit tab for that city.
+export function warOpenRecruit(provinceID) {
+  _recruitFocus = provinceID;
+  window.closeDrawer?.('city');
+  window.openDrawer('war');
+}
 export async function loadWarDrawer() {
   const seq = ++warLoadSeq;
   const body = document.getElementById('war-body');
   const capital = ownCapital();
   // Preserve recruit-city selection across reloads. Founder phase (no capital
   // yet) has no settlement to recruit at, so this stays null there.
-  const prevRecruitCity = capital ? (document.getElementById('war-recruit-city')?.value || capital.id) : null;
+  // Garrison's Recruit link (warOpenRecruit) asks for the recruit tab on one city.
+  const recruitFocus = _recruitFocus; _recruitFocus = null;
+  const prevRecruitCity = capital ? (recruitFocus || document.getElementById('war-recruit-city')?.value || capital.id) : null;
   // Preserve active tab across reloads (recruit-city switch, post-action refresh, etc).
-  const prevTab = body.querySelector('.dtab.active')?.dataset.tab || 'army';
+  const prevTab = recruitFocus ? 'recruit' : (body.querySelector('.dtab.active')?.dataset.tab || 'army');
 
   body.innerHTML = `
     <div class="drawer-tabs">

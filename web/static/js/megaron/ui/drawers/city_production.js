@@ -86,15 +86,15 @@ export function stormFishingHTML(pd) {
   return `<p class="stat-warn">Storm over ${fmtNum(n)} ${n === 1 ? 'fishing ground' : 'fishing grounds'} — its fishers stay but catch nothing while it stands.</p>`;
 }
 
-// Coverage is the server's shared food stock at current consumption, not a
-// depletion forecast including future production.
+// Production side of food only: today's net per game day. Stocks, coverage and
+// the herd live in City -> Warehouse (city_warehouse.js).
 export function foodSummaryHTML(pd) {
   const blessing = harvestBlessingHTML(pd) + stormFishingHTML(pd);
-  const s = pd?.food;
-  if (!s || s.coverage_ticks == null || !Number.isFinite(Number(s.coverage_ticks))) return blessing + '<p class="empty-state">Food stores not reported.</p>';
-  const growing = Number(pd.food_net_per_tick_after_upkeep ?? s.food_net_per_tick) > 0;
-  const warning = pd.food_self_sufficient === false ? ' · the fields cannot feed everyone' : '';
-  return blessing + `<p${warning ? ' class="stat-warn"' : ''} title="Current city food stocks at today’s consumption.">Food for ${fmtDays(s.coverage_ticks)}${growing ? ' · stocks growing' : ''}${warning}.${s.goods ? ' ' + foodGoodsText(s.goods) + '.' : ''}</p>` + herdHTML(s.herd);
+  const net = Number(pd?.food?.food_net_per_tick);
+  const warning = pd?.food_self_sufficient === false ? '<p class="stat-warn">The fields cannot feed everyone.</p>' : '';
+  if (!Number.isFinite(net)) return blessing + warning + '<p class="empty-state">Food production not reported.</p>';
+  const signed = net !== 0 && Math.abs(net) < 0.05 ? 'about even' : (net >= 0 ? '+' : '-') + Math.abs(net).toFixed(1);
+  return blessing + row('Food net', `${signed} per game day`) + warning;
 }
 
 // The next calves, from the server's herd.births_* fields: "4 calves in 3 days (4 grain)".
@@ -105,7 +105,7 @@ function calvesText(h) {
 }
 
 // The herd and its pen: count / cap. A full pen eats, then loses, new animals.
-function herdHTML(h) {
+export function herdHTML(h) {
   if (!h || !Number.isFinite(Number(h.count)) || !Number.isFinite(Number(h.cap))) return '';
   const full = Number(h.count) >= Number(h.cap);
   return `<p${full ? ' class="stat-warn"' : ''} title="A Pen raises the herd cap. Animals above the cap are eaten as food; any still above it after the meal are lost.">Herd ${fmtNum(h.count)} / ${fmtNum(h.cap)}${full ? ' — full: new animals are eaten, then lost' : ''}${calvesText(h)}</p>`;
