@@ -79,9 +79,9 @@ test('temple rows render the server reference and mixed next gift without repric
   const html = templeOfferingsHTML([templeFixture]);
   assert.match(html, /Phaistos: <\/span> <span/);
   assert.match(html, /reference 0\.375 grain per game day/);
-  assert.match(html, /Alternatives: 0\.75 fish or 0\.5 silver or 0\.125 timber/);
-  assert.match(html, /Stock: 0\.55 fish, 0\.1 grain, 3 silver, 0 timber/);
-  assert.match(html, /Next gift: 0\.55 fish \+ 0\.1 grain/);
+  assert.match(html, /Alternatives: 0\.75 fish or 0\.125 timber or 0\.5 silver/);
+  assert.match(html, /Stock: 0\.1 grain, 0\.55 fish, 0 timber, 3 silver/);
+  assert.match(html, /Next gift: 0\.1 grain \+ 0\.55 fish/);
   assert.match(html, /✓/);
   assert.doesNotMatch(html, /oil|wine/);
 });
