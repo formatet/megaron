@@ -56,7 +56,7 @@ func (h *JoinHandler) openingDispatch(hostID uuid.UUID, spec hostSpec, forming b
 		"Place citizens on olive woodland or cedar forest for timber, and on stone-bearing ground for stone; idle citizens produce nothing.",
 		"Orders travel. A Runner must reach a unit in the field before it follows your new order.",
 		"Bronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.",
-		"Rules: ? (Codex). Problems: Report. Community chat: Account.",
+		"Rules: ? (Codex). Problems: Report. Community: the Megaron Discord, linked under Account.",
 	}
 	if spec.refugee {
 		body.Paragraphs[4] = fmt.Sprintf("The gods. Your standing is kept and fades from the start. Each additional city increases the daily cost, even with a temple. A temple takes %d game days to build: staff and feed it to earn favour. Low standing risks punishment.", province.BuildingSpecs[province.BuildingTemple].DurationTicks)
