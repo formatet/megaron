@@ -130,6 +130,23 @@ func printFoundingStatus(fp *foundingStatusResp) error {
 	return nil
 }
 
+// printFoundingForecast prints the catchment forecast for the hex the host
+// STANDS on — `settle` founds here, nowhere else. Same endpoint + params as the
+// web Host panel: the metropolis's population and the host's carried grain as
+// stock. Shared by `founding status` and `founding settle`.
+func printFoundingForecast(c *Client, fp *foundingStatusResp, q, r int) {
+	seed := fp.Grain.Amount
+	if seed < 0 {
+		seed = 0
+	}
+	preview, perr := fetchColonizePreviewParams(c, cfg.WorldID, q, r, fp.Population, seed)
+	if perr != nil {
+		fmt.Printf("(could not fetch founding forecast: %v)\n", perr)
+		return
+	}
+	renderCatchmentForecast(fmt.Sprintf("Founding (%d,%d) — metropolis of %d people", q, r, fp.Population), preview)
+}
+
 func foundingCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "founding",
@@ -144,7 +161,7 @@ func foundingCmd() *cobra.Command {
 func foundingStatusCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "status",
-		Short: "Show your wandering host: people, escort stores, position",
+		Short: "Show your wandering host: people, escort stores, position, and the founding forecast for its hex",
 		Example: `  keryx founding status
   keryx founding status --json`,
 		Args: noPositionalArgs(), // no flags at all — nothing to guess
@@ -170,7 +187,14 @@ func foundingStatusCmd() *cobra.Command {
 				fmt.Println("No active founder phase — the metropolis is already founded (see: keryx status).")
 				return nil
 			}
-			return printFoundingStatus(fp)
+			if err := printFoundingStatus(fp); err != nil {
+				return err
+			}
+			if fp.Q != nil && fp.R != nil {
+				fmt.Println()
+				printFoundingForecast(c, fp, *fp.Q, *fp.R)
+			}
+			return nil
 		},
 	}
 }
@@ -191,7 +215,9 @@ is owed ONE gift: a coastal city Poseidon's galley, an inland city with
 grain land in its catchment Demeter's farm — never both.
 
 The founding forecast (same surface as colonization) is shown before the
-confirmation in interactive mode. In --json mode (machine caller) the
+confirmation. 'keryx founding status' shows the same forecast for the hex the
+host stands on, so look there first. Run without --yes in a non-interactive shell and
+settle prints the forecast and stops without founding anything. In --json mode (machine caller) the
 forecast is skipped, same convention as 'unit march --intent colonize' —
 query GET /worlds/:id/colonize-preview yourself first if you need it before
 settling. To found somewhere else: march the host there first
@@ -226,19 +252,7 @@ settling. To found somewhere else: march the host there first
 					return fmt.Errorf("--yes required in --json mode: the founding is irreversible")
 				}
 			} else {
-				// The forecast for the hex the host STANDS on — settle founds here,
-				// nowhere else. Same endpoint + params as the web Host panel: the
-				// metropolis's population and the host's carried grain as stock.
-				seed := fp.Grain.Amount
-				if seed < 0 {
-					seed = 0
-				}
-				preview, perr := fetchColonizePreviewParams(c, cfg.WorldID, q, r, fp.Population, seed)
-				if perr != nil {
-					fmt.Printf("(could not fetch founding forecast: %v)\n", perr)
-				} else {
-					renderCatchmentForecast(fmt.Sprintf("Founding (%d,%d) — metropolis of %d people", q, r, fp.Population), preview)
-				}
+				printFoundingForecast(c, fp, q, r)
 				if !yes {
 					if !stdinIsTerminal() {
 						return errNeedYes("keryx founding settle", "the irreversible founding")

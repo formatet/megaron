@@ -1110,6 +1110,7 @@ type colonizePreview struct {
 		R              int    `json:"r"`
 		Known          bool   `json:"known"`
 		Terrain        string `json:"terrain"`
+		Coastal        bool   `json:"coastal"`
 		CopperDeposit  bool   `json:"copper_deposit"`
 		TinDeposit     bool   `json:"tin_deposit"`
 		SilverDeposit  bool   `json:"silver_deposit"`
@@ -1196,6 +1197,34 @@ func renderColonizePreview(p *colonizePreview, q, r int) {
 	fmt.Println("A colony does not feed itself automatically — build a farm if the terrain supports it, otherwise arrange grain via an internal transfer (keryx transfer --good grain --qty <n> --dest <colony>).")
 }
 
+// coastalGroundLine tells a Wanax standing on inland ground that harbour
+// ground (the server's `coastal` flag — the same flag the harbour rule reads)
+// lies one or two steps away in the known catchment. The server lists the
+// centre hex first. Silent for a coastal or unknown centre, and never claims
+// a fogged hex.
+func coastalGroundLine(p *colonizePreview) string {
+	if len(p.Catchment) == 0 || !p.Catchment[0].Known || p.Catchment[0].Coastal {
+		return ""
+	}
+	cq, cr := p.Catchment[0].Q, p.Catchment[0].R
+	best, bq, br := 0, 0, 0
+	for _, h := range p.Catchment[1:] {
+		d := hexDist(cq, cr, h.Q, h.R)
+		if !h.Known || !h.Coastal || d < 1 || d > 2 || (best != 0 && d >= best) {
+			continue
+		}
+		best, bq, br = d, h.Q, h.R
+	}
+	if best == 0 {
+		return ""
+	}
+	step := "steps"
+	if best == 1 {
+		step = "step"
+	}
+	return fmt.Sprintf("Coastal ground is %d %s away at (%d,%d).", best, step, bq, br)
+}
+
 // renderCatchmentForecast is the shared forecast body — colonization and the
 // founder-phase settle print the same numbers under different headers.
 // All rates are per-tick from the server, so these print directly with no
@@ -1218,6 +1247,9 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 	}
 	if p.HarbourNote != "" {
 		fmt.Printf("  %s\n", p.HarbourNote)
+	}
+	if line := coastalGroundLine(p); line != "" {
+		fmt.Printf("  %s\n", line)
 	}
 
 	prodPerTick := p.Grain.BasePerTick
