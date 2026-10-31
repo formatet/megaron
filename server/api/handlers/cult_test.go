@@ -172,11 +172,28 @@ func TestRealmCultThreeTemplesTwoGodsAndOwnerPrivacy(t *testing.T) {
 	if len(rival.Temples) != 1 || rival.Temples[0].SettlementID != foreign || rival.Kharis["kharis"] != float64(70) {
 		t.Fatalf("caller identity override %+v", rival)
 	}
-	// Cooldown is realm-wide for Asterion but still retains both physical temples.
-	exec(`INSERT INTO prayer_cooldowns(world_id,player_id,god_id,until_tick) VALUES($1,$2,'asterion',1012)`, world, owner)
+	// Rest is per temple: Amnissos' Asterion temple rests (and, short of servants,
+	// stands still); Kommos' Asterion temple is untouched.
+	exec(`INSERT INTO temple_rest(building_id,remaining_ticks,last_tick) SELECT id,12,1000 FROM buildings WHERE settlement_id=$1 AND building_type='temple'`, cities[1])
+	restSeen, readySeen := false, false
 	for _, p := range read(token).Prayers {
-		if p.GodID == "asterion" && p.HasTemple && (p.CanPrepareOffering || p.Affordable || p.CooldownRemainingDays <= 0) {
-			t.Fatalf("cooldown omitted %+v", p)
+		if p.GodID != "asterion" || !p.HasTemple {
+			continue
 		}
+		switch p.SettlementID {
+		case cities[1]:
+			restSeen = true
+			if p.CanPrepareOffering || p.Affordable || p.CooldownRemainingDays != 12 || p.RestRemainingDays != 12 || !p.RestPaused || p.TempleLevel != 1 || p.TempleStaffed != 0 || p.TempleCapacity != 2 {
+				t.Fatalf("rest omitted %+v", p)
+			}
+		case cities[2]:
+			readySeen = true
+			if p.RestRemainingDays != 0 || p.RestPaused {
+				t.Fatalf("other city's temple rests %+v", p)
+			}
+		}
+	}
+	if !restSeen || !readySeen {
+		t.Fatalf("asterion prayers rest%v ready%v", restSeen, readySeen)
 	}
 }

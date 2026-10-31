@@ -92,6 +92,13 @@ func (f alphaFixture) cast(city uuid.UUID, prayer string) *httptest.ResponseReco
 	f.router.ServeHTTP(rec, req)
 	return rec
 }
+// clearRest ends every temple's rest in the fixture's world.
+func (f alphaFixture) clearRest(t *testing.T) {
+	t.Helper()
+	if _, err := f.pool.Exec(context.Background(), `DELETE FROM temple_rest WHERE building_id IN (SELECT b.id FROM buildings b JOIN settlements s ON s.id=b.settlement_id WHERE s.world_id=$1)`, f.world); err != nil {
+		t.Fatal(err)
+	}
+}
 func (f alphaFixture) stock(t *testing.T, city uuid.UUID, good string) float64 {
 	t.Helper()
 	var amount float64
@@ -101,7 +108,7 @@ func (f alphaFixture) stock(t *testing.T, city uuid.UUID, good string) float64 {
 	return amount
 }
 
-func TestAlphaPrayerSharedGodCooldownAndCertainAnswer(t *testing.T) {
+func TestAlphaPrayerTempleRestAndCertainAnswer(t *testing.T) {
 	f := newAlphaFixture(t)
 	ctx := context.Background()
 	f.h.RiteDice = alphaDice{99}
@@ -119,11 +126,16 @@ func TestAlphaPrayerSharedGodCooldownAndCertainAnswer(t *testing.T) {
 	if until != 106 || owner != f.player {
 		t.Fatalf("Walls outcome flag %d/%v", until, owner)
 	}
-	if r := f.cast(f.cities[1], religion.PrayerPotniaVision); r.Code != 409 {
-		t.Fatalf("Potnia prayers did not share realm cooldown: %d %s", r.Code, r.Body.String())
+	// The temple rests, not the god: the same temple refuses, with its name and
+	// its rest; a second Potnia temple in another city can pray.
+	if r := f.cast(f.cities[0], religion.PrayerPotniaVision); r.Code != 409 || !strings.Contains(r.Body.String(), "Temple of Potnia rests for another 24 game days") {
+		t.Fatalf("resting temple answered: %d %s", r.Code, r.Body.String())
 	}
-	if got := f.stock(t, f.cities[1], "grain"); got != 100 {
-		t.Fatalf("rejected cooldown debited grain %v", got)
+	if got := f.stock(t, f.cities[0], "grain"); got != 92 {
+		t.Fatalf("rejected rest debited grain %v", got)
+	}
+	if r := f.cast(f.cities[1], religion.PrayerPotniaVision); r.Code != 200 {
+		t.Fatalf("second city's Potnia temple refused: %d %s", r.Code, r.Body.String())
 	}
 	if r := f.cast(f.cities[1], religion.PrayerGreenShoots); r.Code != 200 {
 		t.Fatalf("other god rejected %d %s", r.Code, r.Body.String())
@@ -141,7 +153,7 @@ func TestAlphaGreenShootsCannotRenewActiveHarvest(t *testing.T) {
 	if until != 125 {
 		t.Fatalf("Green Shoots span %d, want125", until)
 	}
-	_, _ = f.pool.Exec(ctx, `DELETE FROM prayer_cooldowns WHERE world_id=$1`, f.world)
+	f.clearRest(t)
 	before := f.stock(t, f.cities[0], "grain")
 	if r := f.cast(f.cities[0], religion.PrayerGreenShoots); r.Code != 409 {
 		t.Fatalf("active harvest renewed: %d %s", r.Code, r.Body.String())
@@ -152,13 +164,13 @@ func TestAlphaGreenShootsCannotRenewActiveHarvest(t *testing.T) {
 }
 
 func TestAlphaPrayerConcurrentCitiesAndOutcomeRollback(t *testing.T) {
-	t.Run("same god across cities", func(t *testing.T) {
+	t.Run("same temple twice", func(t *testing.T) {
 		f := newAlphaFixture(t)
 		var wg sync.WaitGroup
 		codes := make(chan int, 2)
-		for _, city := range f.cities {
+		for i := 0; i < 2; i++ {
 			wg.Add(1)
-			go func(city uuid.UUID) { defer wg.Done(); codes <- f.cast(city, religion.PrayerPotniaWalls).Code }(city)
+			go func() { defer wg.Done(); codes <- f.cast(f.cities[0], religion.PrayerPotniaWalls).Code }()
 		}
 		wg.Wait()
 		close(codes)
@@ -173,7 +185,7 @@ func TestAlphaPrayerConcurrentCitiesAndOutcomeRollback(t *testing.T) {
 			}
 		}
 		if success != 1 || conflict != 1 {
-			t.Fatalf("concurrent god casts success%d conflict%d", success, conflict)
+			t.Fatalf("concurrent temple casts success%d conflict%d", success, conflict)
 		}
 	})
 	t.Run("event write rollback", func(t *testing.T) {
@@ -194,9 +206,9 @@ func TestAlphaPrayerConcurrentCitiesAndOutcomeRollback(t *testing.T) {
 			t.Fatal("outcome failure did not roll back offering")
 		}
 		var count int
-		_ = f.pool.QueryRow(ctx, `SELECT count(*) FROM prayer_cooldowns WHERE world_id=$1`, f.world).Scan(&count)
+		_ = f.pool.QueryRow(ctx, `SELECT count(*) FROM temple_rest tr JOIN buildings b ON b.id=tr.building_id JOIN settlements s ON s.id=b.settlement_id WHERE s.world_id=$1`, f.world).Scan(&count)
 		if count != 0 {
-			t.Fatal("outcome failure left cooldown")
+			t.Fatal("outcome failure left temple rest")
 		}
 		var until *int
 		_ = f.pool.QueryRow(ctx, `SELECT garrison_defense_until_tick FROM settlements WHERE id=$1`, f.cities[0]).Scan(&until)

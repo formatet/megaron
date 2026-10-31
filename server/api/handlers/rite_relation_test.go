@@ -117,7 +117,7 @@ func TestRelationComposedOfferingThresholdAndRollback(t *testing.T) {
 					t.Error("rejected offering debited goods")
 				}
 				var n int
-				if err := f.pool.QueryRow(context.Background(), `SELECT (SELECT count(*) FROM events WHERE world_id=$1 AND event_type='RiteCast')+(SELECT count(*) FROM prayer_cooldowns WHERE world_id=$1)`, f.world).Scan(&n); err != nil {
+				if err := f.pool.QueryRow(context.Background(), `SELECT (SELECT count(*) FROM events WHERE world_id=$1 AND event_type='RiteCast')+(SELECT count(*) FROM temple_rest tr JOIN buildings b ON b.id=tr.building_id JOIN settlements s ON s.id=b.settlement_id WHERE s.world_id=$1)`, f.world).Scan(&n); err != nil {
 					t.Fatal(err)
 				}
 				if n != 0 {
