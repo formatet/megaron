@@ -30,7 +30,7 @@ func meCmd() *cobra.Command {
 				Cities         int    `json:"cities"`
 				Population     int    `json:"population"`
 				KharisStanding struct {
-					Summary string `json:"summary"`
+					Short string `json:"short"`
 				} `json:"kharis_standing"`
 				Kharis float64 `json:"kharis"`
 			}
@@ -42,8 +42,8 @@ func meCmd() *cobra.Command {
 				founded = "Since " + formatWorldTime(c, *profile.FoundedTick)
 			}
 			fmt.Printf("Wanax: %s\nFounded: %s\nCities: %d\nPopulation: %d\nKharis: %.1f\n", profile.WanaxName, founded, profile.Cities, profile.Population, profile.Kharis)
-			if profile.KharisStanding.Summary != "" {
-				fmt.Println(profile.KharisStanding.Summary)
+			if profile.KharisStanding.Short != "" {
+				fmt.Println(profile.KharisStanding.Short)
 			}
 			return nil
 		},

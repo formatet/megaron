@@ -30,7 +30,7 @@ func TestKharisStalledHintNamesPhysicalTempleStaffing(t *testing.T) {
 
 func TestAboveCeilingHintDoesNotRecommendMoreWorkers(t *testing.T) {
 	out := kharisCapLine(map[string]any{"kharis": 80.0, "kharis_cap": 50.0, "max_temple_level": 1.0, "kharis_net_known": true, "kharis_net_per_tick": -.2, "kharis_devotion_idle": true})
-	if !strings.Contains(out, "while it is above the ceiling 50. Once below, temples can raise it again") || strings.Contains(out, "staff temple") || strings.Contains(out, "floor") {
+	if !strings.Contains(out, "Above ceiling (50)") || strings.Contains(out, "staff temple") || strings.Contains(out, "floor") {
 		t.Fatal(out)
 	}
 }

@@ -45,11 +45,11 @@ func TestRiteReadinessAfterDeparture(t *testing.T) {
 
 func TestPrayerPaymentDistinguishesEverydayFromLegacy(t *testing.T) {
 	everyday := prayerPaymentText(riteAvailablePrayer{GodID: "potnia"})
-	if !strings.Contains(everyday, "not spent") || !strings.Contains(everyday, "god answers") || strings.Contains(everyday, "silent") {
+	if everyday != "Required kharis: 0" || strings.Contains(everyday, "not spent") || strings.Contains(everyday, "silent") {
 		t.Fatal(everyday)
 	}
 	legacy := prayerPaymentText(riteAvailablePrayer{})
-	if !strings.Contains(legacy, "silent") || !strings.Contains(legacy, "not spent") {
+	if !strings.Contains(legacy, "silent") || strings.Contains(legacy, "not spent") {
 		t.Fatal(legacy)
 	}
 }

@@ -74,7 +74,7 @@ func listRealmPrayers(c *Client, settlement string) error {
 		return nil
 	}
 	if standing, ok := view.Kharis["kharis_standing"].(map[string]any); ok {
-		fmt.Println(standing["summary"])
+		fmt.Println(standing["short"])
 	}
 	fmt.Println(kharisDecayLine(view.Kharis))
 	printDivineValues(cultDivineValues(view.Kharis))
@@ -82,7 +82,7 @@ func listRealmPrayers(c *Client, settlement string) error {
 	for _, p := range view.Prayers {
 		ready, wait := prayerReadiness(p.riteAvailablePrayer)
 		fmt.Printf("%s — %s · %s\n  %s · %s · %s\n", p.Name, p.God, p.CityName, p.ID, ready, wait)
-		fmt.Printf("  Requires %.0f kharis · traditional offering %s\n  %s\n", p.MinKharis, formatOffering(p.Offering), p.Effect)
+		fmt.Printf("  Required kharis: %.0f · Offering: %s\n  %s\n", p.MinKharis, formatOffering(p.Offering), p.Effect)
 		if taste := favouredGoods(p.Favours); taste != "" {
 			fmt.Printf("  %s favours %s\n", p.God, taste)
 		}
@@ -91,7 +91,6 @@ func listRealmPrayers(c *Client, settlement string) error {
 	if len(view.Prayers) == 0 {
 		fmt.Println("No prayers available here. Found a city and build a temple.")
 	}
-	fmt.Println("Kharis is a requirement, never spent. Spontaneous blessings are separate from prayers.")
 	return nil
 }
 func cultDivineValues(m map[string]any) map[string]float64 {
