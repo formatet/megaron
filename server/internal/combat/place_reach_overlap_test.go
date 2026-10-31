@@ -34,7 +34,7 @@ func TestPlaceReachTargetsTwoPlacesOnOneHex(t *testing.T) {
 	for _, tg := range got {
 		kinds[tg.place.Kind] = true
 	}
-	if len(got) != 2 || !kinds["island"] || !kinds["hills"] {
+	if !kinds["island"] || !kinds["hills"] { // (a three-hex island's tip is also a cape)
 		t.Fatalf("hex 4,4 must reach both the island and the hills, got %+v", got)
 	}
 }

@@ -309,8 +309,9 @@ func TestPlaceReachRiverFordDeltaShareOneRight(t *testing.T) {
 	if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM notifications WHERE world_id=$1 AND kind='PlaceFirstReached'`, f.world).Scan(&notices); err != nil {
 		t.Fatal(err)
 	}
-	if rows != 1 || notices != 1 || owner != f.owner {
-		t.Fatalf("river/ford/delta must retain one first right: rows=%d notices=%d owner=%s", rows, notices, owner)
+	// The delta is also a place of its own since platstyper P1: one river right plus one delta right.
+	if rows != 2 || notices != 2 || owner != f.owner {
+		t.Fatalf("river/ford/delta must retain one river right and one delta right: rows=%d notices=%d owner=%s", rows, notices, owner)
 	}
 }
 func TestPlaceReachGenericKindsFromPhysicalSavedRoute(t *testing.T) {
