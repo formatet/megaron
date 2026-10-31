@@ -19,11 +19,11 @@ func TestPlacesKindsMinimumAndCanonicalAnchor(t *testing.T) {
 		tiles = append(tiles, MapTile{Q: 80 + i, Terrain: TerrainForestCedar}, MapTile{Q: 90 + i, Terrain: TerrainSemiDesert}, MapTile{Q: 100 + i, Terrain: TerrainMountainRed})
 	}
 	want := Places(tiles)
-	if len(want) != 5 {
-		t.Fatalf("want two rivers and one each massif/desert/cedar forest, got %+v", want)
+	if len(want) != 7 { // the fixture's two river deltas are places of their own (platstyper P1)
+		t.Fatalf("want two rivers, two deltas and one each massif/desert/cedar forest, got %+v", want)
 	}
 	for _, p := range want {
-		if p.Kind != "river" && len(p.Hexes) != 5 {
+		if p.Kind != "river" && p.Kind != "delta" && len(p.Hexes) != 5 {
 			t.Fatalf("minimum differs: %+v", p)
 		}
 		if p.Anchor != p.Hexes[0] {
