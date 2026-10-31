@@ -187,6 +187,7 @@ func LoadScarcityDivineValues(ctx context.Context, db Execer, worldID uuid.UUID)
 
 // LaborValueUnit labels the internal measure in persistent event payloads; the temple presents offering values.
 const LaborValueUnit = "worker_ticks"
+
 // Version 2 offerings were valued by the world-scarcity index; version 3 by
 // FixedDivineValues. Recorded events keep the version they were valued under.
 const LaborValuationVersion = 3

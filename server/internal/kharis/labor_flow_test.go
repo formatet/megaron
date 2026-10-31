@@ -35,14 +35,16 @@ func TestSilverCalibrationKharisFlowLeavesStalePriceClamp(t *testing.T) {
 	}
 	staffTestTemple(t, pool, sid, 2)
 	h := newTestTickHandler(pool)
-	if factor := h.templeOfferScarcity(ctx, wid); factor != 1.5 {
-		t.Fatalf("actual maintenance factor=%g want1.5, stale price denominator must be gone", factor)
+	// A scarcity row in the parked table no longer moves the standing cult:
+	// the factor is locked at 1 with the fixed price list (2026-10-31).
+	if factor := h.templeOfferScarcity(ctx, wid); factor != 1 {
+		t.Fatalf("actual maintenance factor=%g want 1 (locked)", factor)
 	}
 	net, has, dev, _, err := ProjectDailyNet(ctx, pool, pid, wid)
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := 2*(KharisPerTempleWeight/2)*1.5 - 1.2
+	want := 2*(KharisPerTempleWeight/2)*1 - 1.2
 	if !has || dev != 2 || math.Abs(net-want) > 1e-8 {
 		t.Fatalf("projection %g devotion%g has%v want%g", net, dev, has, want)
 	}

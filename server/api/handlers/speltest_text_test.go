@@ -60,8 +60,8 @@ func TestPlaytestKharis_SameRealmPoolInTwoCities(t *testing.T) {
 		if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
 			t.Fatal(err)
 		}
-		if body.Settlement.DivineValues["bronze"] != 37.5 || body.Settlement.DivineValues["grain"] != 2.5 {
-			t.Fatalf("not the live divine values: %s", rec.Body.String())
+		if body.Settlement.DivineValues["bronze"] != 33 || body.Settlement.DivineValues["grain"] != 1 {
+			t.Fatalf("not the fixed divine values: %s", rec.Body.String())
 		}
 		if len(body.Settlement.Prayers) == 0 {
 			t.Fatal("expected culture prayers")
