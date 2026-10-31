@@ -265,3 +265,7 @@ test('codex: every member page names a hub that exists and lists it', () => {
   assert.equal(index.articles.find(a => a.id === 'war-galley').parent, 'ship-types');
   assert.match(bodies['ship-types'], /\[\[galley\]\][\s\S]*\[\[war-galley\]\][\s\S]*\[\[emporos\]\]/);
 });
+
+test('founding article says keryx founding status shows the same forecast', () => {
+  assert.match(bodies['founding'], /keryx founding status/);
+});

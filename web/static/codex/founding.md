@@ -2,7 +2,7 @@ Founding your first city — the **metropolis** — is the one decision in Megar
 
 ## Choosing founding ground {#founding-read-the-ground-first}
 
-The [[horde|Host]] panel shows the [[terrain|terrain]] and four short assessments for the hex you stand on: **Feeds itself: yes/no**, **[[timber]]: yes/no**, **[[stone]]: yes/no**, and **Ships: yes / never — inland**. An inland metropolis can never build a harbour or ships ([[buildings]]). They use the existing forecast for known ground; unknown means the forecast is unavailable. The [[catchment]] you would claim glows on the map. Open **Details** for the full founding forecast, deposits, production, gifts, each catchment hex, and the Host’s people and supplies. It updates as you walk.
+The [[horde|Host]] panel shows the [[terrain|terrain]] and four short assessments for the hex you stand on: **Feeds itself: yes/no**, **[[timber]]: yes/no**, **[[stone]]: yes/no**, and **Ships: yes / never — inland**. An inland metropolis can never build a harbour or ships ([[buildings]]). They use the existing forecast for known ground; unknown means the forecast is unavailable. The [[catchment]] you would claim glows on the map. Open **Details** for the full founding forecast, deposits, production, gifts, each catchment hex, and the Host’s people and supplies. It updates as you walk. In Keryx, `keryx founding status` prints the same forecast for the hex the Host stands on, including whether the ground is coastal or inland and, when it is inland, how far away coastal ground lies; `keryx founding settle` without `--yes` prints it too and stops without founding.
 
 Under **Details**, the forecast gives the [[grain|grain]] your fields would produce against what your people would eat, and one of three verdicts:
 
