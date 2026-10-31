@@ -56,8 +56,8 @@ The gods keep a fixed reckoning: what one unit of each good is worth as an offer
 | Good | Worth |
 |---|---|
 | [[grain]] | 1 |
-| [[fish]], [[livestock]], [[timber]], [[silver]] | 2 |
-| [[stone]], [[wine]], [[oil]], [[copper]], [[tin]], [[cedar]] | 3 |
+| [[fish]], [[livestock]], [[silver]], [[timber]] | 2 |
+| [[cedar]], [[copper]], [[oil]], [[stone]], [[tin]], [[wine]] | 3 |
 | [[incense]] | 12 |
 | [[bronze]] | 33 |
 
