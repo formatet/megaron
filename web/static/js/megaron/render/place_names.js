@@ -9,6 +9,12 @@ export function namedPlaceTerrain(tile,fallback){
  if(tile.place_kind==='desert')return 'Desert';
  if(tile.place_kind==='forest')return 'Cedar Forest';
  if(tile.place_kind==='lake')return 'Lake';
+ if(tile.place_kind==='island')return 'Island';
+ if(tile.place_kind==='strait')return 'Strait';
+ if(tile.place_kind==='cape')return 'Cape';
+ if(tile.place_kind==='plain')return 'Plain';
+ if(tile.place_kind==='hills')return 'Hills';
+ if(tile.place_kind==='delta')return 'River Delta';
  return namedRiverTerrain(tile,fallback);
 }
 export const PLACE_LABEL_STYLE={font:'italic 7px serif',height:9};

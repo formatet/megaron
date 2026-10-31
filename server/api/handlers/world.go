@@ -445,10 +445,13 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 	for _, tile := range fullMap {
 		savedTerrain[[2]int{tile.Q, tile.R}] = string(tile.Terrain)
 	}
-	byHex := map[[2]int]world.Place{}
+	byHex := smallestPlaceByHex(world.Places(fullMap))
+	riverByHex := map[[2]int]world.Place{}
 	for _, p := range world.Places(fullMap) {
-		for _, xy := range p.Hexes {
-			byHex[xy] = p
+		if p.Kind == "river" {
+			for _, xy := range p.Hexes {
+				riverByHex[xy] = p
+			}
 		}
 	}
 	for i := range tiles {
@@ -478,8 +481,9 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 		tiles[i].PlaceID = fmt.Sprintf("%d,%d", p.Anchor[0], p.Anchor[1])
 		tiles[i].PlaceName = s.Name
 		tiles[i].CanName = authenticated && s.ClaimedBy != nil && *s.ClaimedBy == playerID && !s.Named
-		if p.Kind == "river" {
-			tiles[i].RiverName = s.Name
+		// A delta hex shows the delta but is still part of its river.
+		if rp, ok := riverByHex[[2]int{tiles[i].Q, tiles[i].R}]; ok {
+			tiles[i].RiverName = states[placeKey{rp.Kind, rp.Anchor}].Name
 		}
 	}
 
@@ -2412,4 +2416,19 @@ func foundingTimberWarning(goods map[string]float64, unknown int) string {
 		return "No timber on known ground — scout the remaining catchment or plan wood deliveries before building."
 	}
 	return "No timber within reach — every building needs timber. Plan wood deliveries before building."
+}
+
+// smallestPlaceByHex picks, for every hex, the place with the fewest hexes that
+// contains it (a massif on an island shows as the massif, the island's shore as
+// the island). Ties keep the earlier place in world.Places order.
+func smallestPlaceByHex(places []world.Place) map[[2]int]world.Place {
+	byHex := map[[2]int]world.Place{}
+	for _, p := range places {
+		for _, xy := range p.Hexes {
+			if old, ok := byHex[xy]; !ok || len(p.Hexes) < len(old.Hexes) {
+				byHex[xy] = p
+			}
+		}
+	}
+	return byHex
 }
