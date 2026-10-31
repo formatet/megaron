@@ -37,3 +37,16 @@ test('a failed poll is undefined and ETags are held per URL', async t => {
   await pollJSON('/w/3/storms');
   assert.equal(calls[2].opts.headers['If-None-Match'], undefined, 'another world asks unconditionally');
 });
+
+test('a changed server version offers a reload, the first one and repeats do not', async t => {
+  harness(t, []);
+  const notice = { classList: { added: [], add(c) { this.added.push(c); } } };
+  globalThis.document = { getElementById: id => id === 'update-notice' ? notice : null };
+  const { noteServerVersion } = await import('./api.js');
+  noteServerVersion(null);
+  noteServerVersion('abc.1');
+  noteServerVersion('abc.1');
+  assert.deepEqual(notice.classList.added, [], 'first seen and unchanged versions stay quiet');
+  noteServerVersion('abc.2');
+  assert.deepEqual(notice.classList.added, ['visible']);
+});
