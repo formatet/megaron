@@ -4,7 +4,7 @@ import "math"
 
 // An offering is composed, not prescribed: the Wanax decides what to carry to
 // the altar. What it is worth follows from three things multiplied together —
-// how much you brought, what the world can spare (DivineValue), and whether
+// how much you brought, its fixed divine value (FixedDivineValues), and whether
 // this particular god wants it at all (affinity).
 //
 // The god's taste is what makes composition a decision rather than arithmetic.
@@ -76,8 +76,8 @@ func IncenseShare(offering map[string]float64, divineValues map[string]float64, 
 
 // OfferingWorth values a composed offering in divine terms.
 //
-// divineValues is good_key→value from divine_valuations (world scarcity, already
-// smoothed). favours is the god's taste; goods absent from it weigh
+// divineValues is good_key→value from LoadDivineValues (the fixed list).
+// favours is the god's taste; goods absent from it weigh
 // affinityDefault. A good absent from divineValues is worth nothing to anyone —
 // it is not in the world's economy at all.
 func OfferingWorth(offering map[string]float64, divineValues map[string]float64, favours map[string]float64) float64 {

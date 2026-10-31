@@ -141,8 +141,32 @@ func RecomputeDivineValuations(ctx context.Context, db Execer, worldID uuid.UUID
 	return nil
 }
 
-// LoadDivineValues reads a world's divine price list as good_key→value.
+// FixedDivineValues is the gods' price list per unit of a good (Timothy
+// 2026-10-31: a fixed table, not the world's scarcity). The numbers are the
+// alfa world's scarcity values on 2026-10-31 rounded up to whole numbers, so
+// the switch keeps the balance players already met. Codex rites.md prints it.
+var FixedDivineValues = map[string]float64{
+	"grain": 1, "fish": 2, "livestock": 2, "timber": 2, "silver": 2,
+	"stone": 3, "wine": 3, "oil": 3, "copper": 3, "tin": 3, "cedar": 3,
+	"incense": 12, "bronze": 33,
+}
+
+// LoadDivineValues returns the divine price list as good_key→value. Every
+// consumer — prayers, temple tithe, the cult's flow, the views — reads it here.
+// The world and DB are no longer consulted; the signature stays so the
+// parked scarcity list (LoadScarcityDivineValues) can return without touching callers.
 func LoadDivineValues(ctx context.Context, db Execer, worldID uuid.UUID) (map[string]float64, error) {
+	values := make(map[string]float64, len(FixedDivineValues))
+	for k, v := range FixedDivineValues {
+		values[k] = v
+	}
+	return values, nil
+}
+
+// LoadScarcityDivineValues reads the world-scarcity price list that
+// RecomputeDivineValuations used to keep daily. Parked 2026-10-31 (todo
+// SENARE [C]): unused until Timothy decides to revive or remove it.
+func LoadScarcityDivineValues(ctx context.Context, db Execer, worldID uuid.UUID) (map[string]float64, error) {
 	rows, err := db.Query(ctx,
 		`SELECT good_key, divine_value FROM divine_labor_valuations WHERE world_id = $1`, worldID)
 	if err != nil {
@@ -163,7 +187,9 @@ func LoadDivineValues(ctx context.Context, db Execer, worldID uuid.UUID) (map[st
 
 // LaborValueUnit labels the internal measure in persistent event payloads; the temple presents offering values.
 const LaborValueUnit = "worker_ticks"
-const LaborValuationVersion = 2
+// Version 2 offerings were valued by the world-scarcity index; version 3 by
+// FixedDivineValues. Recorded events keep the version they were valued under.
+const LaborValuationVersion = 3
 
 // LoadLaborValues is the shared reference used by the index and both cult consumers.
 func LoadLaborValues(ctx context.Context, db Execer) (map[string]float64, error) {

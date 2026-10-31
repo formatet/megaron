@@ -72,7 +72,7 @@ func TestSilverCalibrationKharisFlowLeavesStalePriceClamp(t *testing.T) {
  FROM events WHERE world_id=$1 AND event_type='KharisOfferingV2' ORDER BY id DESC LIMIT 1`, wid).Scan(&unit, &version); err != nil {
 		t.Fatal(err)
 	}
-	if unit != religion.LaborValueUnit || version != 2 {
+	if unit != religion.LaborValueUnit || version != religion.LaborValuationVersion {
 		t.Fatalf("standing cult event unit%q/version%d", unit, version)
 	}
 	// Change the shared catalogue reference: both consumers must observe it.

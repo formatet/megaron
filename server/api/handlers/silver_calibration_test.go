@@ -172,7 +172,7 @@ func TestSilverCalibrationOfferWorkAndLegacyPayloadRead(t *testing.T) {
 	if newPayload["offer_mod"] != float64(0) {
 		t.Fatalf("default offering changed its chance modifier: %v", newPayload["offer_mod"])
 	}
-	if newPayload["offering_value_unit"] != "worker_ticks" || newPayload["valuation_version"] != float64(2) {
+	if newPayload["offering_value_unit"] != "worker_ticks" || newPayload["valuation_version"] != float64(3) {
 		t.Fatalf("new units absent: %s", raw)
 	}
 	read, err := store.LoadStream(ctx, f.cities[0])

@@ -212,7 +212,7 @@ func riteCmd() *cobra.Command {
 				body["offer_multiplier"] = offerMultiplier
 			}
 			// Composed offering: bring what you judge worthy instead of the
-			// prayer's inherited recipe. Worth is the world's scarcity times this
+			// prayer's inherited recipe. Worth is the fixed divine value times this
 			// god's taste, weighed against the same god's traditional recipe —
 			// so the old recipe still reads as exactly adequate.
 			if offer != "" {
