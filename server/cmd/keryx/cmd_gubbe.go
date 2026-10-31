@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -177,6 +178,23 @@ func isFoodGood(goodKey string) bool {
 // goodCell renders one good's occupancy for a table row: "grain +12.0/tick
 // (2 placed, next +12.0/tick)" for an uncapped good, or "fish 1/1 FULL" /
 // "stone 1/4 (next +6.0/tick)" for a capped one.
+// sortedGoods lists a hex's or building's goods alphabetically by the name
+// goodCell shows, whatever order the server sent (it differs per hex).
+func sortedGoods(goods []placementGood) []placementGood {
+	label := func(g placementGood) string {
+		switch {
+		case g.StaffingOnly && g.GoodKey == "shipbuilding":
+			return "shipbuilding"
+		case g.StaffingOnly:
+			return "devotion"
+		}
+		return g.GoodKey
+	}
+	out := append([]placementGood(nil), goods...)
+	sort.SliceStable(out, func(i, j int) bool { return label(out[i]) < label(out[j]) })
+	return out
+}
+
 func goodCell(g placementGood) string {
 	if g.StaffingOnly && g.GoodKey == "shipbuilding" {
 		state := "waiting for shipyard workers"
