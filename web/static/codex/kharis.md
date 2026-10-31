@@ -35,7 +35,7 @@ In a small realm, a fully staffed, fed level-1 temple can earn more favour than 
 
 Kharis changes by **2.1 × effective temple weight × scarcity − 1.2 × active cities²** per game day. Population does not contribute. The floor and temple ceiling still apply; above a lowered ceiling, [[upkeep|upkeep]] continues without temple gain offsetting it.
 
-Kharis is a requirement for [[rites|prayers]], never spent. Everyday prayers answer when their requirements are met; they cost goods and waiting time.
+Kharis is a requirement for [[rites|prayers]], never spent. Everyday prayers answer when their requirements are met; they cost goods and the temple's rest.
 
 An ongoing **blessed harvest** appears beside Food in the city drawer and in
 `keryx status` and `keryx city`, with its yield bonus, affected goods and game days left.

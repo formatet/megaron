@@ -8,7 +8,7 @@ Your own garrison defending this city fights a quarter stronger for 6 game days.
 | God | Potnia |
 | Minimum standing | 5 Kharis |
 | Traditional offering | 8 grain · 4 timber (or cedar) |
-| God’s waiting time | 24 game days |
+| Temple’s rest (level 1, traditional gift) | 24 game days |
 <!-- /facts -->
 
 Offer in **Kult → Prayers** at the matching city and god, or use `keryx rite --prayer minoan_potnia_walls`. A valid composed offering can replace the traditional recipe.

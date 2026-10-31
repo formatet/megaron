@@ -1,4 +1,5 @@
 import { esc } from '../format.js';
+import { fmtDays } from '../fmt_num.js';
 
 // The Offer row under a prayer: one number field per good, pre-filled with the
 // prayer's recipe, or empty when composing an alternative. Mirrors
@@ -45,8 +46,15 @@ export function offerRowHTML(prayer, stock) {
   const note = esc(favouredText(prayer.god, prayer.favours));
   const id = esc(prayer.id);
   const preparationNote = prayer.can_prepare_offering && !prayer.affordable ? '<p class="offer-note">Choose goods for your offering; the traditional gift is unavailable.</p>' : '';
+  // The client does not value a gift (the gods' reckoning is server-side), so it
+  // names the base length and says that a larger gift lasts longer.
+  const length = prayer.base_duration_game_days > 0
+    ? '<p class="offer-note">Lasts ' + esc(fmtDays(prayer.base_duration_game_days)) + ' with the traditional gift; a larger gift lasts longer.</p>'
+    : '';
+  const restNote = prayer.god_id ? '<p class="offer-note">A larger gift makes the temple rest longer; a higher temple level shortens the rest.</p>' : '';
   return '<div class="offer-fields">' + fields + '</div>' +
     '<p class="offer-note" data-offer-food></p>' +
+    length + restNote +
     preparationNote +
     (note ? '<p class="offer-note">' + note + '</p>' : '') +
     '<button class="obj-cta btn-small" onclick="bringOffering(\'' + id + '\')">Bring the offering</button> ' +

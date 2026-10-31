@@ -189,3 +189,11 @@ test('same god in two cities: offering from second row posts only to that city',
  await loadKultDrawer();await bringOffering('two__same-prayer');
  assert.deepEqual(posts,[['/api/v1/worlds/realm-routing/settlements/two/rite',{prayer:'same-prayer'}]]);
 });
+
+test('Bönegrund: a resting temple names itself, its rest, and the pause for want of servants', () => {
+  const p = { id: 'minoan_potnia_walls', affordable: false, temple: 'Temple of Potnia', cooldown_remaining_game_days: 3, rest_remaining_game_days: 3, rest_paused: true, temple_staffed: 2, temple_capacity: 4 };
+  const html = prayerStatusHTML(p);
+  assert.match(html, /Temple of Potnia rests 3 game days — paused: 2 of 4 servants/);
+  assert.doesNotMatch(html, /Offer|on cooldown/);
+  assert.match(prayerStatusHTML({ ...p, rest_paused: false }), /Temple of Potnia rests 3 game days<\/span>/);
+});

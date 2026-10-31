@@ -71,3 +71,10 @@ test('offer row names the food the gift takes and warns when a game day is not l
   assert.match(plenty, /takes 10 of Lato's 900 grain/);
   assert.doesNotMatch(plenty, /less than/);
 });
+
+test('Bönegrund: a lasting prayer names its base length and says a larger gift lasts longer', () => {
+  const html = offerRowHTML({ ...prayer, god_id: 'potnia', base_duration_game_days: 6 }, stock);
+  assert.match(html, /Lasts 6 game days with the traditional gift; a larger gift lasts longer\./);
+  assert.match(html, /larger gift makes the temple rest longer/);
+  assert.doesNotMatch(offerRowHTML({ ...prayer, god_id: 'potnia' }, stock), /Lasts/);
+});
