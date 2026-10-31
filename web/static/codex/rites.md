@@ -6,7 +6,7 @@ Each prayer is said at its own god's [[temples|temple]], so a city needs that te
 
 ## Temples required by prayers {#rites-details}
 
-Each prayer names its god, the minimum standing it needs, and its traditional offering. Press **Offer**: a row opens with a field for each good, filled with the prayer's recipe. Bring it as it stands, or change the numbers first.
+Each prayer row shows its temple, **Required kharis: N** (the minimum standing it needs, never spent), its effect and its **Offering** (the traditional recipe). Press **Offer**: a row opens with a field for each good, filled with the prayer's recipe. Bring it as it stands, or change the numbers first.
 
 ## Standing and offerings for prayers {#prayer-requirements}
 
@@ -51,8 +51,8 @@ In Keryx, `rite --list` shows your prayers, their effects, offerings, active gam
 
 ## The value of an offering {#offerings}
 
-[[bronze|Bronze]] can weigh far more with the gods than grain. The temple shows their current reckoning: how much each good counts before a particular god's preferences. What the world can spare and what the god favours both change an offering's meaning. **Kult** and `keryx rite --list` show these values beside your prayers.
+[[bronze|Bronze]] can weigh far more with the gods than grain. The gods keep a current reckoning: how much each good counts per unit, before a particular god's preferences. What the world can spare and what the god favours both change an offering's meaning, so the figures move and are not listed here. `keryx cult` and `keryx rite --list` print the current values (bronze can weigh many times what grain does); the web prayer row shows only what each god **Favours**.
 
-These are offering values. Wanaxes agree their own trade prices. You may compose an offering in the Offer row on the web, or in Keryx with `rite --offer good=amount,...`. Each god has a taste, and the row tells you what this god favours and roughly what it expects. The traditional recipe always suffices.
+These are offering values. Wanaxes agree their own trade prices. You may compose an offering in the Offer row on the web, or in Keryx with `rite --offer good=amount,...`. Each god has a taste: the Offer row's **Favours:** line lists the goods this god loves most, dearest first. The traditional recipe always suffices.
 
 Any good may be offered. **Wine and oil** are offerings like any other — oil is also food, so do not give up what a hungry city needs. **Incense** is a valuable gift ([[incense]]). For everyday prayers it can help meet the offering requirement; excess value does not change the answer, but a lasting prayer lasts longer and the temple rests longer.

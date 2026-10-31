@@ -23,3 +23,22 @@ test('realm workforce is labelled across the realm, not here',()=>{
  const html=realmKultHTML({kharis:{temple_staffed:3,temple_capacity:6},temples:[],prayers:[],unbuilt_temples:[]});
  assert.ok(html.includes('Temple workers across your realm'));assert.ok(!html.includes('Temple workers here'));
 });
+
+test('prayer row says "Required kharis: N" and "Offering:", never the prose; the gods-weigh-gifts table is not in the panel', () => {
+ const prayers=[{id:'p',settlement_id:'s',city_name:'Tylissos',temple:'Temple',name:'Vision',min_kharis:5,offering:{grain:10},effect:'x'}];
+ const html=realmKultHTML({prayers,temples:[],unbuilt_temples:[],kharis:{divine_values:{bronze:37.5}}},'prayers');
+ assert.match(html,/Required kharis: 5/);assert.match(html,/Offering: 10 grain/);
+ assert.doesNotMatch(html,/requirement, not spent|≥5|Traditional offering|gods weigh gifts|37\.5/);
+});
+
+test('empty realm: short "No cities" / "No temples"', () => {
+ const html=realmKultHTML({prayers:[],temples:[],unbuilt_temples:[]});
+ assert.match(html,/>No cities</);assert.match(html,/>No temples</);assert.doesNotMatch(html,/will not climb|Found a city/);
+});
+
+test('temple row: Reference/Stock/Next gift only; no Alternatives, weight or tithe prose', () => {
+ const t={id:'t',name:'Potnia',city_name:'C',province_id:'p',level:1,staffed:1,capacity:2,offer:{required_goods:{grain:1},alternatives:{fish:2},stock:{grain:5},fed:true,offering:{grain:1},weight:3,effective_weight:2.5,paid_fraction:1,parts:[{good:'grain',paid:true},{good:'silver',paid:false}]}};
+ const html=realmKultHTML({temples:[t],prayers:[],unbuilt_temples:[]},'temples');
+ assert.match(html,/Reference: 1 grain per game day/);assert.match(html,/Next gift: 1 grain/);assert.match(html,/grain: paid · silver: missing/);
+ assert.doesNotMatch(html,/Alternatives|Weight|of tithe/);
+});

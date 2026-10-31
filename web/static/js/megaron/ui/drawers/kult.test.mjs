@@ -101,7 +101,7 @@ test('unfunded temple shows all-or-nothing outcome and escapes the city name', (
 });
 
 test('realm without temples explains the missing gain', () => {
-  assert.match(templeOfferingsHTML([]), /No temples — kharis will not climb/);
+  assert.match(templeOfferingsHTML([]), /No temples</);
 });
 
 test('Kult controller renders the realm breakdown and templeless net from the province API', async t => {
@@ -124,7 +124,7 @@ test('Kult controller renders the realm breakdown and templeless net from the pr
     assert.fail('Unexpected API request '+url);
   };
   await loadKultDrawer();
-  assert.match(body.innerHTML,/0.1 base \+ 5 cities cost 1.0 \+ 2500 residents cost 0.3 = 1.1 kharis per game day/);
+  assert.match(body.innerHTML,/−1.1 \/ game day/);
   assert.match(body.innerHTML,/-1.1 kharis per game day/);
   assert.match(body.innerHTML,/No temples/);
   assert.doesNotMatch(body.innerHTML,/Passive|144|holds for/);
@@ -160,7 +160,7 @@ test('concrete temple and kharis blockers stay visible during a god wait',()=>{
 test('preparation is reachable without the traditional recipe, not a promise that payment will succeed',()=>{
  const html=prayerStatusHTML({id:'minoan_potnia_vision_v2',affordable:false,can_prepare_offering:true,unavailable_reason:'insufficient offering'});
  assert.match(html,/okRite\('minoan_potnia_vision_v2'\).*Compose offering/);
- assert.match(html,/traditional gift is unavailable/);
+ assert.match(html,/Gift unavailable/);assert.doesNotMatch(html,/traditional gift/);
 });
 
 test('dispatch cult city selection is exact and cannot fall back to the capital for another city',()=>{

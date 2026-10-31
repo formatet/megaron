@@ -3,52 +3,10 @@ import { fetchAuth } from '../api.js';
 import { esc } from './format.js';
 import { setSoundMuted } from './sfx.js';
 
-// ── Lawagetas advisory voice ──────────────────────────────────────────────
-export const LAWAGETAS_BRIEFS = {
-  city:      "Your megaron rises above all you rule, Wanax. Here your people labor — farmers, craftsmen, soldiers — each serving the palace that feeds and protects them. Assign your workers well; a foundry lets your smiths turn copper and tin into bronze. Idle hands do not fill the food stores.",
-  war:       "Bronze arms await your command, Wanax. March the army to distant lands — to raid, reinforce, or colonize. An order to recall or redirect a marching host travels by messenger, not by will alone; it takes time to arrive. In battle, numbers count, but walls and the Bronze Guard often decide the battle.",
-  diplomacy: "Letters travel with runners; your answer returns with the same bearer.",
-  economy:   "The palace scribes track every ingot and measure of grain, Wanax. Move goods between your own cities, or send goods and silver as a gift to a ruler you have contacted. A gift asks nothing in return; its caravan can be seized on the road. Watch the Wants ledger — it names what your trading partners hunger for, and where your surplus might fetch a premium.",
-  kult:      "The gods watch your megaron, Wanax. Your temple's cult level and divine mood shape what rites you may call upon — tend it, and the gods answer; neglect it, and they turn away. Each prayer asks its own offering; choose with care.",
-  notif:     "Your herald brings word from beyond the megaron walls, Wanax — arrivals, battles resolved, buildings completed. Matters that demand your attention rise here first.",
-};
-
-// A brief is read once: dismissing it hides it for good in this browser
-// (Timothy 2026-10-08). No storage (private window) means it simply returns.
-const BRIEF_KEY = name => 'lb_dismissed_' + name;
-export function briefDismissed(name) {
-  try { return localStorage.getItem(BRIEF_KEY(name)) === '1'; } catch (_) { return false; }
-}
-
 export function drawerHelpHTML(name) {
   return `<button class="btn-small" onclick="openCodexForDrawer('${name}')" title="Read the Codex" aria-label="Read the Codex">?</button>`;
 }
 
-
-export function showLawagatasBrief(name) {
-  const text = LAWAGETAS_BRIEFS[name];
-  if (!text) return;
-  if (briefDismissed(name)) return;
-  const drawer = document.getElementById('drawer-' + name);
-  if (!drawer || drawer.querySelector('.lawagetas-brief')) return;
-  const el = document.createElement('div');
-  el.className = 'lawagetas-brief';
-  el.id = 'lb-' + name;
-  el.innerHTML = '<div class="lb-head">⊛ Lawagetas</div>' + text + ' ' + drawerHelpHTML(name) +
-    '<button class="lb-dismiss" onclick="dismissBrief(\'' + name + '\')" title="Dismiss">✕</button>';
-  const header = drawer.querySelector('.drawer-header');
-  if (header && header.nextSibling) {
-    drawer.insertBefore(el, header.nextSibling);
-  } else {
-    drawer.appendChild(el);
-  }
-}
-
-export function dismissBrief(name) {
-  try { localStorage.setItem(BRIEF_KEY(name), '1'); } catch (_) { /* no storage, no memory */ }
-  const el = document.getElementById('lb-' + name);
-  if (el) el.remove();
-}
 
 // ── Music player ──────────────────────────────────────────────────────────
 // Exposed on window (main.js: window.MusicPlayer = MusicPlayer) — render/map.js

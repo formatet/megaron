@@ -353,8 +353,13 @@ export async function openCodex(id) {
   }
 }
 
+// A drawer with tabs may map each tab to its own article: the article's
+// `drawer` is "kult:prayers"; the drawer registers how to read its tab.
+const drawerTabs = {};
+export function registerDrawerTab(drawer, getTab) { drawerTabs[drawer] = getTab; }
 export function openCodexForDrawer(drawer) {
-  openCodex(articleForDrawer(drawer));
+  const tab = drawerTabs[drawer]?.();
+  openCodex((tab && articleForDrawer(drawer + ':' + tab)) || articleForDrawer(drawer));
 }
 
 export function closeCodex() {

@@ -8,7 +8,7 @@ Choose the god when you build. On the web, **City → Construct** lists one row 
 
 **City → [[catchment]] & workplaces → Temple**: place or remove whole [[citizens]] with the same controls as other workplaces. In Keryx, use `staff temple +1` or `staff temple -1`; `roster` includes them. When a city has several temples, name the god: `keryx staff temple +1 --god velchanos`. The web shows one card per temple.
 
-Temple levels 1/2/3 provide **2/4/8 workplaces**. A worker stands at one temple only and cannot work another job at the same time. Founding grants no automatic temple staffing.
+Temple levels 1/2/3 provide **2/4/8 workplaces**. A worker stands at one temple only and cannot work another job at the same time. Founding grants no automatic temple staffing. **Temple workplaces unfilled** on **Kult → Kharis** means a temple has empty places: place citizens in it from **City**.
 
 Temple levels 1/2/3 have **weight 1/4/9**. Effective weight is temple weight × staffed fraction × paid tithe fraction. Each effective weight produces **2.1 kharis per game day**, multiplied by the existing scarcity factor of 1–2. An empty temple gives nothing.
 
