@@ -39,94 +39,36 @@ function harness(t, handler) {
   return { nodes, requests, changes };
 }
 const response = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
-const ready = { enabled: true, state: 'ready', user_id: '@agamemnon:agora.test', homeserver: 'agora.test' };
 const settle = () => new Promise(resolve => setImmediate(resolve));
 
-for (const state of ['disabled', 'pending', 'provisioning']) {
-  test(`chat ${state}: no password action and no password POST`, async t => {
-    const h = harness(t, () => response(state === 'disabled' ? { enabled: false } : { enabled: true, state }));
-    openAccountWindow(); await settle();
-    assert.equal(h.nodes.has('acc-chat-get'), false);
-    assert.equal(h.nodes.get('acc-chat').hidden, state === 'disabled');
-    assert.equal(h.requests.length, 1);
-    assert.equal(h.requests[0].url, '/api/v1/agora');
-    assert.equal(h.requests[0].options.headers.Authorization, 'Bearer game-token');
-    assert.deepEqual(h.changes, []);
-  });
-}
-
-test('ready: only an explicit click requests a password; close erases it', async t => {
-  const h = harness(t, url => response(url.endsWith('/password') ? { password: 'ephemeral-one', user_id: ready.user_id } : ready));
+test('community section links Discord and requests no chat account', async t => {
+  const h = harness(t, () => response({ enabled: false }));
   openAccountWindow(); await settle();
-  assert.equal(h.requests.length, 1);
-  await h.nodes.get('acc-chat-get').click();
-  assert.equal(h.nodes.get('acc-chat-password').textContent, 'ephemeral-one');
-  assert.equal(h.requests[1].options.method, 'POST');
-  assert.equal(h.requests[1].options.cache, 'no-store');
-  assert.equal('sensitive' in h.requests[1].options, false, 'internal safety option is not sent to fetch');
-  closeAccountWindow();
-  assert.equal(h.nodes.get('acc-chat-password').textContent, '');
-  assert.equal(h.nodes.get('acc-chat-password').hidden, true);
-  assert.deepEqual(h.changes, []);
+  const html = h.nodes.get('account-window-body').innerHTML;
+  assert.match(html, /href="https:\/\/discord\.gg\/NxtftQUMYW"/);
+  assert.doesNotMatch(html, /chat password|Homeserver|acc-chat-get/i);
+  assert.ok(h.requests.every(r => !r.url.includes('/agora')));
 });
 
-test('close/reopen during password request discards the late secret', async t => {
-  let resolve;
-  const h = harness(t, url => url.endsWith('/password') ? new Promise(r => resolve = r) : response(ready));
+test('sign out clears tokens before navigation', async t => {
+  const h = harness(t, () => response({ enabled: false }));
   openAccountWindow(); await settle();
-  const request = h.nodes.get('acc-chat-get').click();
-  closeAccountWindow(); openAccountWindow(); await settle();
-  resolve(response({ password: 'late-secret' })); await request;
-  assert.equal(h.nodes.get('acc-chat-password').textContent, '');
-  assert.equal(h.nodes.get('acc-chat-password').hidden, true);
-});
-
-test('another request clears the first secret immediately; errors bypass diagnostics', async t => {
-  let calls = 0, resolve;
-  const h = harness(t, url => {
-    if (!url.endsWith('/password')) return response(ready);
-    return ++calls === 1 ? response({ password: 'first-secret' }) : new Promise(r => resolve = r);
-  });
-  openAccountWindow(); await settle(); await h.nodes.get('acc-chat-get').click();
-  const request = h.nodes.get('acc-chat-get').click();
-  assert.equal(h.nodes.get('acc-chat-password').textContent, '');
-  resolve(response({ error: 'upstream echoed private-secret' }, 503)); await request; await settle();
-  assert.equal(h.nodes.get('acc-chat-password').hidden, true);
-  assert.ok(!JSON.stringify(diagnosticsSnapshot()).includes('private-secret'));
-  assert.ok(!h.nodes.get('acc-chat-status').textContent.includes('private-secret'));
-});
-
-test('sign out clears the displayed secret before navigation', async t => {
-  const h = harness(t, url => response(url.endsWith('/password') ? { password: 'signout-secret' } : ready));
-  openAccountWindow(); await settle(); await h.nodes.get('acc-chat-get').click();
   h.nodes.get('acc-signout-btn').click();
-  assert.equal(h.nodes.get('acc-chat-password').textContent, '');
   assert.equal(window.location.href, '/logout');
   assert.deepEqual(h.changes, [['remove', 'poleia_token'], ['remove', 'poleia_refresh']]);
 });
 
 test('agora_ready dispatch opens Account rather than toggling an already open window', async t => {
-  const h = harness(t, () => response(ready));
+  const h = harness(t, () => response({ enabled: false }));
   const Node = h.nodes.get('account-window-overlay').constructor;
   h.nodes.set('dispatch-window-overlay', new Node('dispatch-window-overlay'));
   h.nodes.set('dw-body', new Node('dw-body'));
   openAccountWindow(); await settle();
-  await openDispatchWindow('agora_ready', { user_id: ready.user_id }, 'now');
+  await openDispatchWindow('agora_ready', { user_id: '@agamemnon:agora.test' }, 'now');
   assert.equal(h.nodes.get('dw-action-btn').hidden, false);
   h.nodes.get('dw-action-btn').click(); await settle();
   assert.equal(h.nodes.get('account-window-overlay').classList.contains('open'), true);
   assert.equal(h.nodes.get('dispatch-window-overlay').classList.contains('open'), false);
-  assert.ok(h.nodes.get('acc-chat-get'));
-  assert.ok(h.requests.every(r => !r.url.endsWith('/password')));
-});
-
-test('ReadyRenderedLinkUsesConfiguredHomeserver', async t => {
-  const homeserver = 'http://127.0.0.1:18100';
-  const h = harness(t, () => response({ ...ready, homeserver }));
-  openAccountWindow(); await settle();
-  assert.ok(h.nodes.get('acc-chat').innerHTML.includes(`href="${homeserver}"`));
-  assert.ok(!h.nodes.get('acc-chat').innerHTML.includes('https://agora.formatet.se'));
-  assert.ok(h.requests.every(r => !r.url.endsWith('/password')));
 });
 
 const profile = { wanax_name: 'Nestor', founded_tick: 0, cities: 2, population: 320, kharis: 4.5 };
@@ -155,25 +97,3 @@ test('profile error does not invent zero-valued statistics', async t => {
   assert.equal(h.nodes.get('acc-profile').innerHTML, '');
 });
 
-
-test('exempt account: explicit no-account text, no password button or POST', async t => {
- const h=harness(t,()=>response({enabled:true,state:'exempt'}));
- openAccountWindow(); await settle();
- assert.equal(h.nodes.get('acc-chat').hidden,false);
- assert.match(h.nodes.get('acc-chat').innerHTML,/No community chat account is provided/);
- assert.doesNotMatch(h.nodes.get('acc-chat').innerHTML,/pending|first city|Get chat password/);
- assert.equal(h.nodes.has('acc-chat-get'),false);
- assert.equal(h.requests.length,1);
-});
-
-test('newly exempt password request clears the old secret and gives no retry advice', async t=>{
- let attempts=0;
- const h=harness(t,url=>response(url.endsWith('/password') ? (++attempts===1 ? {password:'old-secret'} : {error:'exempt'}) : ready, attempts===2 ? 403 : 200));
- openAccountWindow();await settle();await h.nodes.get('acc-chat-get').click();
- assert.equal(h.nodes.get('acc-chat-password').textContent,'old-secret');
- await h.nodes.get('acc-chat-get').click();
- assert.equal(h.nodes.get('acc-chat-password').textContent,'');
- assert.equal(h.nodes.get('acc-chat-password').hidden,true);
- assert.match(h.nodes.get('acc-chat-status').textContent,/No community chat account is provided/);
- assert.doesNotMatch(h.nodes.get('acc-chat-status').textContent,/later|password shown/);
-});
