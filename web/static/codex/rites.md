@@ -51,7 +51,17 @@ In Keryx, `rite --list` shows your prayers, their effects, offerings, active gam
 
 ## The value of an offering {#offerings}
 
-[[bronze|Bronze]] can weigh far more with the gods than grain. The gods keep a current reckoning: how much each good counts per unit, before a particular god's preferences. What the world can spare and what the god favours both change an offering's meaning, so the figures move and are not listed here. `keryx cult` and `keryx rite --list` print the current values (bronze can weigh many times what grain does); the web prayer row shows only what each god **Favours**.
+The gods keep a fixed reckoning: what one unit of each good is worth as an offering, before a particular god's preferences.
+
+| Good | Worth |
+|---|---|
+| [[grain]] | 1 |
+| [[fish]], [[livestock]], [[timber]], [[silver]] | 2 |
+| [[stone]], [[wine]], [[oil]], [[copper]], [[tin]], [[cedar]] | 3 |
+| [[incense]] | 12 |
+| [[bronze]] | 33 |
+
+`keryx cult` and `keryx rite --list` print the same figures; the web prayer row shows what each god **Favours**.
 
 These are offering values. Wanaxes agree their own trade prices. You may compose an offering in the Offer row on the web, or in Keryx with `rite --offer good=amount,...`. Each god has a taste: the Offer row's **Favours:** line lists the goods this god loves most, dearest first. The traditional recipe always suffices.
 

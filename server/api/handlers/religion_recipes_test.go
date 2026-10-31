@@ -66,7 +66,7 @@ func TestAlphaOfferDebitsDecisionRecipeExactly(t *testing.T) {
 				if err := json.Unmarshal(raw, &units); err != nil {
 					t.Fatal(err)
 				}
-				if units["valuation_version"] != float64(2) || units["offering_value_unit"] != "worker_ticks" {
+				if units["valuation_version"] != float64(3) || units["offering_value_unit"] != "worker_ticks" {
 					t.Fatalf("missing explicit new measure: %s", raw)
 				}
 				if _, exists := units["offering_worth"]; exists {

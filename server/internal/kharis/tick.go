@@ -113,15 +113,9 @@ type wanaxSnap struct {
 
 // Handle processes a KharisTick scheduled event.
 func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
-	// ── 0. The gods reprice the world ──────────────────────────────────────
-	// Scarcity-driven divine valuation, recomputed once here rather than per
-	// rite — a prayer must never pay for a world-wide scan
-	// (temenos_prayers_komposition_plan.md). Best-effort: a failed reprice must
-	// not abort the day's kharis maintenance, and the previous day's valuation
-	// stays readable, so the worst case is a stale price list.
-	if err := religion.RecomputeDivineValuations(ctx, h.pool, e.WorldID); err != nil {
-		slog.Error("divine valuation reprice failed", "err", err, "world", e.WorldID)
-	}
+	// ── 0. (retired) The daily scarcity reprice stopped 2026-10-31: the gods
+	// keep a fixed price list (religion.FixedDivineValues). The scarcity code is
+	// parked, not called.
 
 	// ── 1. Kharis maintenance: one tick per player_world_record ────────────
 	rows, err := h.pool.Query(ctx,
@@ -402,10 +396,7 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 		offerFed, offerTotal, effectiveWeight = h.applyTempleOffering(ctx, w.playerID, worldID)
 		offerFraction = computeOfferFraction(offerFed, offerTotal)
 
-		// The gods reckon the offering by what the WORLD can spare, not by a
-		// fixed price (Timothy 2026-07-22: "samma sak gäller vid kult och
-		// stående gudstjänster"). Feeding a temple grain during a grain shortage is
-		// a greater gift than feeding it grain in a year of plenty, and earns more.
+		// Locked at 1 since the fixed price list (Timothy 2026-10-31).
 		scarcity := h.templeOfferScarcity(ctx, worldID)
 		// Each temple's workers count only when that temple was fed (ORDER 15).
 		gain = effectiveWeight * KharisPerTempleWeight * scarcity
@@ -1655,22 +1646,16 @@ func (h *TickHandler) addDivineGossip(ctx context.Context, settlementID, worldID
 	)
 }
 
-// templeOfferScarcity values the standing temple reference offering (grain) at the
-// gods' current reckoning against its plain base value. 1.0 in a year of plenty;
-// above it when the world is short of what the altars burn.
-//
-// This is the same principle the composed prayer offering uses, applied to the
-// standing cult — Timothy 2026-07-22: "samma sak gäller vid kult och stående
-// gudstjänster". Bounded: a shortage may double what devotion earns, never more,
-// so a scarcity spike cannot mint kharis.
+// templeOfferScarcity is locked at 1 (Timothy 2026-10-31): with the gods'
+// fixed price list there is no world scarcity left to reward, and the factor
+// would only follow grain's listed price. The old scarcity-derived factor
+// (scarcityFromValues) is parked with the scarcity price list.
 func (h *TickHandler) templeOfferScarcity(ctx context.Context, worldID uuid.UUID) float64 {
-	values, err := religion.LoadDivineValues(ctx, h.pool, worldID)
-	if err != nil || len(values) == 0 {
-		return 1.0 // never let a missing price list change the day's outcome
-	}
-	baseValues, err := religion.LoadLaborValues(ctx, h.pool)
-	return scarcityFromValues(values, baseValues, err)
+	return lockedTempleScarcity
 }
+
+// lockedTempleScarcity is the standing cult's scarcity factor since 2026-10-31.
+const lockedTempleScarcity = 1.0
 
 // clampTempleScarcity bounds what a shortage can be worth to a temple. Pure, so
 // the bound is testable without a rig: abundance never PUNISHES a tended temple
