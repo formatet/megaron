@@ -3380,14 +3380,20 @@ function producesText(tile) {
 // owner's name, and with no "Show →" button (there is nothing of theirs to
 // act on).
 export function unitListHTML(units, foreignUnits = []) {
- const expanded = typeof window === 'undefined' || window.innerWidth > 600;
- const card = (u,own) => '<details class="hex-force"'+(expanded?' open':'')+'><summary>'+esc(own?actorName(u):(u.name||actorName(u)))+' · '+esc(unitStatusLabel(u))+'</summary>'+(own?renderUnitCard(u,{context:'hex'}):renderForeignUnitCard(u))+'</details>';
+ const card = (u,own) => '<details class="hex-force"><summary>'+(own?'<button class="force-name-link" data-unit-id="'+esc(u.id)+'">'+esc(actorName(u))+'</button>':esc(u.name||actorName(u)))+' · '+esc(unitStatusLabel(u))+'</summary>'+(own?renderUnitCard(u,{context:'hex'}):renderForeignUnitCard(u))+'</details>';
  return (units.length?'<section class="hex-forces"><div class="ir-label">Forces here</div>'+units.map(u=>card(u,true)).join('')+'</section>':'')
   +(foreignUnits.length?'<section class="hex-forces"><div class="ir-label">Foreign forces here</div>'+foreignUnits.map(u=>card(u,false)).join('')+'</section>':'');
 }
 
+// Forces sit in the body right under Terrain (Timothy 2026-10-31), not in the foot.
+function fillForces(units, foreignUnits) {
+ const box=document.getElementById('ip-forces');
+ box.innerHTML=unitListHTML(units, foreignUnits);
+ bindUnitButtons(box);
+}
+
 function bindUnitButtons(foot) {
- foot.querySelectorAll('[data-unit-id]').forEach(b=>b.addEventListener('click',()=>window.warFocusUnit(b.dataset.unitId)));
+ foot.querySelectorAll('[data-unit-id]').forEach(b=>b.addEventListener('click',e=>{e.preventDefault();window.warFocusUnit(b.dataset.unitId);}));
  for (const verb of ['march','redirect']) foot.querySelectorAll('[data-hex-'+verb+']').forEach(b=>b.addEventListener('click',async()=>{
   const {chooseMarchTarget}=await import('../ui/marchctx.js');
   closeInspect();chooseMarchTarget(b.dataset[verb==='march'?'hexMarch':'hexRedirect']);
@@ -3531,7 +3537,8 @@ function openCityPanel(h, tile, marker, units, foreignUnits) {
     .catch(() => showDefence(null));
 
   const foot = document.getElementById('ip-foot');
-  let footHtml = '<div id="ip-intel"></div><div id="ip-board"></div>' + placePanelHTML(tile) + unitListHTML(units, foreignUnits);
+  let footHtml = '<div id="ip-intel"></div><div id="ip-board"></div>' + placePanelHTML(tile);
+  fillForces(units, foreignUnits);
   // A settlement OR a wandering host can send — the host's first contact with a
   // met city is one of its designed uses (mig 087; sendMessengerFromInspect
   // picks the endpoint).
@@ -3584,7 +3591,8 @@ function openTerrainPanel(h, tile, isMountain, isSea, units, foreignUnits) {
   fillTerrainFields(tile);
 
   const foot = document.getElementById('ip-foot');
-  let footHtml = riverFlowLines(tile,State.tileData).map(line=>'<p class="river-flow-info">'+esc(line)+'</p>').join('') + placePanelHTML(tile) + workersHereHTML(h) + unitListHTML(units, foreignUnits);
+  let footHtml = riverFlowLines(tile,State.tileData).map(line=>'<p class="river-flow-info">'+esc(line)+'</p>').join('') + placePanelHTML(tile) + workersHereHTML(h);
+  fillForces(units, foreignUnits);
   if (isSea) footHtml += stormHexPanelHTML(h.q,h.r);
 
   if (isMountain) {
@@ -3689,7 +3697,7 @@ function openRuralPanel(h, tile, rural, units, foreignUnits) {
   footHtml += riverFlowLines(tile,State.tileData).map(line=>'<p class="river-flow-info">'+esc(line)+'</p>').join('');
   footHtml += placePanelHTML(tile);
   footHtml += workersHereHTML(h);
-  footHtml += unitListHTML(units, foreignUnits);
+  fillForces(units, foreignUnits);
   footHtml += `<button id="ip-rural-city-btn" style="${MARCH_BTN_STYLE}">Open ${rural.name} →</button>`;
   foot.innerHTML = footHtml;
   bindUnitButtons(foot);
@@ -3874,6 +3882,7 @@ function openHexPanel(h) {
   // region gets reset. Without it the Host panel's stores would still be showing
   // after the next click on a sea hex.
   document.getElementById('ip-body-extra').innerHTML = '';
+  document.getElementById('ip-forces').replaceChildren();
   document.getElementById('ip-produces-row').style.display = '';
 
   const tile = tileAt(h.q, h.r);

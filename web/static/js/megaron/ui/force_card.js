@@ -341,7 +341,6 @@ export function renderUnitCard(u, options = {}) {
 
   return '<div class="force-card" id="' + (hex ? 'hex-' : '') + 'ucard-' + u.id + '" style="padding:.3rem .2rem;border-bottom:1px solid var(--border)">'
     + '<div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap">'
-    + (hex ? '<button class="force-name-link" data-unit-id="' + esc(u.id) + '">View in Forces →</button>' : '')
     + '<a class="cx-link force-codex-name" href="#" data-cx-kind="unit" data-cx-key="'+esc(u.type)+'">' + lbl + '</a>'
     + stanceBadge + crewBadge + hullBadge + foodBadge + cargoBadge
     + '<span style="font-size:.68rem;color:var(--text-dim);margin-left:auto">' + esc(unitStatusLabel(u)) + '</span>'

@@ -1667,6 +1667,7 @@ h4.cx-h { font-size: var(--fs-base); }
 .hex-force .force-card p { margin-block: .3rem; }
 .hex-force button { padding: .25rem .4rem; border: 1px solid var(--border); background: var(--bg-raised); color: var(--text); cursor: pointer; }
 .force-name-link { text-decoration: underline; }
+.hex-force > summary .force-name-link { border: 0; background: none; padding: 0; font: inherit; color: inherit; }
 .force-order-note, .force-cargo { font-size: .7rem; color: var(--text-dim); }
 @media (max-width: 600px) { .hex-force > summary { min-height: 2.5rem; } }
 
