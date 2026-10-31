@@ -364,8 +364,10 @@ func GrowthStateAtWall(unmet, foodNet float64, population, wallLevel int) string
 // ~8 300 grain, so no city could starve. 3 grain keeps the herd a real but
 // finite emergency reserve (50 units = 150 grain). A ratt, not a lock.
 // ⚠️ SPEGLAD i cmd/keryx/cmd_status.go — uppdatera båda.
-// Order 33 (Timothy 2026-10-19 kväll): 1 animal = 3 food — the herd breeds itself now.
-const livestockFoodValue = 3
+// Timothy 2026-10-31: 1 animal = 1 food (supersedes order 33's 3). The herd's
+// overflow now counts in food_net (HerdSurplusRate), so the animal is worth a
+// single unit like any gubbe's day of work.
+const livestockFoodValue = 1
 
 // FoundingHerdLivestock is the starting livestock stock a settlement founds
 // with — the Nomadic Host's carried herd (S1d, megaron_plan_foda_konsistens.md

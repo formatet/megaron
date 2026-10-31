@@ -250,7 +250,9 @@ func loadOmenFacts(ctx context.Context, tx pgx.Tx, world, city uuid.UUID, q, r, 
 	if err = tx.QueryRow(ctx, `SELECT COALESCE(sum(rate),0) FROM settlement_goods WHERE settlement_id=$1 AND good_key=ANY($2)`, city, economy.FoodGoods).Scan(&foodRate); err != nil {
 		return nil, err
 	}
-	net := economy.FoodNet(foodRate, pop)
+	var herd float64
+	_ = tx.QueryRow(ctx, `SELECT GREATEST(0,LEAST(cap,settled(amount,rate,calc_tick))) FROM settlement_goods WHERE settlement_id=$1 AND good_key='livestock'`, city).Scan(&herd)
+	net := economy.FoodNet(foodRate+economy.HerdSurplusRate(herd, economy.PenLevel(ctx, tx, city)), pop)
 	if math.Abs(net) > 1e-9 {
 		kind := "food_surplus"
 		if net < 0 {

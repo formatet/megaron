@@ -1,6 +1,9 @@
 package economy
 
-import "math"
+import (
+	"fmt"
+	"math"
+)
 
 // The herd breeds itself (order 33, Timothy 2026-10-19). Deterministic, no
 // dice: every tenth animal gives one calf per birth day. On a tick divisible by
@@ -45,4 +48,32 @@ func NextHerdBirth(herd, grain, herdCap float64, now int) (born, fed, at int) {
 		}
 	}
 	return 0, 0, 0
+}
+
+// HerdSurplusRate is the food the herd's overflow adds to the city's net, per
+// tick (Timothy 2026-10-31: one animal = one unit of food). A herd standing at
+// or over the pen's cap breeds calves the pen cannot hold; PlanFoodHerd eats
+// them first (or they are lost), so they count as food. The calves arrive on
+// every HerdGrazeBirthEvery-th tick (grain buys none at the cap), hence the
+// average. Under the cap the herd is still growing: no surplus.
+// Written again in SQL by HerdSurplusRateSQL; TestHerdSurplusRateSQLMatchesGo pins both.
+func HerdSurplusRate(herd float64, penLevel int) float64 {
+	if herd < HerdCap(penLevel) {
+		return 0
+	}
+	return math.Floor(herd/HerdPerCalf) / HerdGrazeBirthEvery * livestockFoodValue
+}
+
+// HerdSurplusRateSQL is HerdSurplusRate for a settlements row named s: the one
+// term PopulationGrowthSQL adds to food_net. Built only from this package's constants.
+func HerdSurplusRateSQL() string { return herdSurplusRateSQL(livestockFoodValue) }
+
+func herdSurplusRateSQL(foodValue int) string {
+	return fmt.Sprintf(`COALESCE((SELECT CASE WHEN h.herd >= %d + %d*p.lvl
+   THEN FLOOR(h.herd/%d)/%d*%d ELSE 0 END
+  FROM (SELECT GREATEST(0,LEAST(sg.cap,settled(sg.amount,sg.rate,sg.calc_tick))) AS herd
+        FROM settlement_goods sg WHERE sg.settlement_id=s.id AND sg.good_key='livestock') h,
+       (SELECT COALESCE(MAX(b.level),0) AS lvl FROM buildings b
+        WHERE b.settlement_id=s.id AND b.building_type='pen') p),0)`,
+		HerdBaseCap, HerdCapPerPenLevel, HerdPerCalf, HerdGrazeBirthEvery, foodValue)
 }

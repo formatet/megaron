@@ -10,16 +10,16 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// Order 33 (hjorden v2): 1 animal = 3 food, the herd breeds itself, no herder.
+// Order 33 (hjorden v2): the herd breeds itself, no herder. 1 animal = 1 food (Timothy 2026-10-31).
 
-func TestHerdAnimalIsWorthThreeFood(t *testing.T) {
-	// 55 animals, cap 50: the 5 over the cap are 15 food, covering a meal of 15.
-	meal := PlanFoodHerd(15, map[string]float64{GoodGrain: 100, GoodLivestock: 55}, true, HerdCap(0))
+func TestHerdAnimalIsWorthOneFood(t *testing.T) {
+	// 55 animals, cap 50: the 5 over the cap are 5 food, covering a meal of 5.
+	meal := PlanFoodHerd(5, map[string]float64{GoodGrain: 100, GoodLivestock: 55}, true, HerdCap(0))
 	if meal.Used[GoodLivestock] != 5 || meal.Used[GoodGrain] != 0 || meal.Unmet != 0 || meal.Lost != 0 {
 		t.Fatalf("%+v", meal)
 	}
-	// Emergency slaughter also pays 3 per animal.
-	em := PlanFoodHerd(9, map[string]float64{GoodLivestock: 40}, true, HerdCap(0))
+	// Emergency slaughter also pays 1 per animal.
+	em := PlanFoodHerd(3, map[string]float64{GoodLivestock: 40}, true, HerdCap(0))
 	if em.Used[GoodLivestock] != 3 || em.Unmet != 0 {
 		t.Fatalf("%+v", em)
 	}

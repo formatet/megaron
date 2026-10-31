@@ -44,7 +44,12 @@ func peopleFoodLine(sett map[string]any) string {
 	if !ok || !consOK || !netOK {
 		return ""
 	}
-	return fmt.Sprintf("  Food     production %.1f − people eat %.1f = net %s per game day (before army)", production, consumption, formatNetPerTick(net))
+	herdPart := ""
+	herd, _ := food["herd"].(map[string]any)
+	if surplus, _ := herd["surplus_rate"].(float64); surplus > 0 {
+		herdPart = fmt.Sprintf(" + herd %.2f", surplus)
+	}
+	return fmt.Sprintf("  Food     production %.1f%s − people eat %.1f = net %s per game day (before army)", production, herdPart, consumption, formatNetPerTick(net))
 }
 
 func upkeepFood(up map[string]any) (float64, string) {

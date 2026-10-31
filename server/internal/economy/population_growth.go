@@ -18,7 +18,11 @@ const PopulationGrowthRatePerTick = 0.005
 // status. It correlates with a settlements row named s. SQL is built only from
 // this package's authoritative constants, never request text. Preserve PostgreSQL
 // float8 ROUND semantics, including the numeric actual-meal variety multiplier.
-func PopulationGrowthSQL() string {
+func PopulationGrowthSQL() string { return populationGrowthSQL(livestockFoodValue) }
+
+// populationGrowthSQL takes the animal's food value so tests can prove the
+// variety share is counted in food units, not animals, at a value other than 1.
+func populationGrowthSQL(foodValue int) string {
 	foods := make([]string, len(FoodGoods))
 	for i, good := range FoodGoods {
 		foods[i] = "'" + strings.ReplaceAll(good, "'", "''") + "'"
@@ -37,17 +41,18 @@ func PopulationGrowthSQL() string {
  s.owner_id IS NOT NULL AND s.state NOT IN ('sunk','collapsed') AS can_grow,
  (SELECT COALESCE(SUM(sg.rate),0) FROM settlement_goods sg
   WHERE sg.settlement_id=s.id AND sg.good_key=ANY(ARRAY[%s]::text[]))
+  +%s
   -s.population*%g::float AS food_net,
  (1.0+0.1*LEAST(4,GREATEST(0,(
    SELECT COUNT(*) FROM jsonb_each_text(s.food_consumed) AS meal(good,qty)
    WHERE (meal.good=ANY(ARRAY[%s]::text[]) OR meal.good='livestock') AND meal.qty::numeric>0
-     AND meal.qty::numeric >= %g::numeric*(
-       SELECT SUM(part.qty::numeric) FROM jsonb_each_text(s.food_consumed) AS part(good,qty)
+     AND meal.qty::numeric*(CASE WHEN meal.good='livestock' THEN %d ELSE 1 END) >= %g::numeric*(
+       SELECT SUM(part.qty::numeric*(CASE WHEN part.good='livestock' THEN %d ELSE 1 END)) FROM jsonb_each_text(s.food_consumed) AS part(good,qty)
        WHERE (part.good=ANY(ARRAY[%s]::text[]) OR part.good='livestock') AND part.qty::numeric>0
      ) AND s.food_consumed_tick=current_world_tick()
  )-1))) AS variety,
  (ARRAY[%s]::int[])[LEAST(GREATEST(s.wall_level,0),3)+1] AS pop_cap
- ) inputs`, PopulationGrowthRatePerTick, strings.Join(foods, ","), GrainConsumptionPerCitizenPerTick, strings.Join(foods, ","), VarietyMinShare, strings.Join(foods, ","), strings.Join(caps, ","))
+ ) inputs`, PopulationGrowthRatePerTick, strings.Join(foods, ","), herdSurplusRateSQL(foodValue), GrainConsumptionPerCitizenPerTick, strings.Join(foods, ","), foodValue, VarietyMinShare, foodValue, strings.Join(foods, ","), strings.Join(caps, ","))
 }
 
 type NextCitizen struct {

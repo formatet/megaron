@@ -829,7 +829,7 @@ type FoodSummary struct {
 	Goods              map[string]float64
 	ConsumedTick       *int
 	Consumed           map[string]float64
-	Herd               map[string]int
+	Herd               map[string]float64
 	ProductionPerTick  float64
 	ConsumptionPerTick float64
 	AutomaticFood      economy.AutomaticFood
@@ -904,7 +904,12 @@ func settlementFoodSummary(ctx context.Context, pool *pgxpool.Pool, settID uuid.
 	// foodRatePerTick alone: since Utfodringsordningen D1 moved eating out of
 	// the rate, that was raw production, so every city read "+" here whether
 	// or not it fed itself.
-	foodNetPerDay := economy.FoodNet(foodRatePerTick, population)
+	// The herd's overflow at the pen cap is food too (economy.HerdSurplusRate,
+	// Timothy 2026-10-31) — the same term the growth gate adds in SQL.
+	var herdForNet float64
+	_ = pool.QueryRow(ctx, `SELECT GREATEST(0, LEAST(cap, settled(amount, rate, calc_tick))) FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'livestock'`, settID).Scan(&herdForNet)
+	herdSurplus := economy.HerdSurplusRate(herdForNet, economy.PenLevel(ctx, pool, settID))
+	foodNetPerDay := economy.FoodNet(foodRatePerTick+herdSurplus, population)
 	// The growth gate's other input: did the city eat today (FoodTick).
 	var foodUnmet float64
 	consumed := map[string]float64{}
@@ -940,15 +945,15 @@ func settlementFoodSummary(ctx context.Context, pool *pgxpool.Pool, settID uuid.
 	var herdNow float64
 	_ = pool.QueryRow(ctx, `SELECT GREATEST(0, settled(amount, rate, calc_tick)) FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'livestock'`, settID).Scan(&herdNow)
 	herdCap := economy.HerdCap(economy.PenLevel(ctx, pool, settID))
-	herd := map[string]int{"count": int(herdNow), "cap": int(herdCap)}
+	herd := map[string]float64{"count": float64(int(herdNow)), "cap": float64(int(herdCap)), "surplus_rate": herdSurplus}
 	// The next calves (order 33): how many, how many grain they cost, on which tick.
 	var grainNow float64
 	var nowTick int
 	_ = pool.QueryRow(ctx, `SELECT COALESCE((SELECT GREATEST(0, settled(amount, rate, calc_tick)) FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'grain'), 0), COALESCE(current_world_tick(), 0)`, settID).Scan(&grainNow, &nowTick)
 	born, fed, at := economy.NextHerdBirth(herdNow, grainNow, herdCap, nowTick)
-	herd["births_next"], herd["births_grain"], herd["next_birth_tick"] = born, fed, at
+	herd["births_next"], herd["births_grain"], herd["next_birth_tick"] = float64(born), float64(fed), float64(at)
 	if at > 0 {
-		herd["births_in"] = at - nowTick // days, for the player surfaces
+		herd["births_in"] = float64(at - nowTick) // days, for the player surfaces
 	}
 
 	return FoodSummary{
