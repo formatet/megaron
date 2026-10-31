@@ -1,15 +1,15 @@
-The **Chariot** is the hardest hitter on open ground: horses, a driver and a warrior, built with [[cedar|cedar]] and bronze.
+The **Chariot** is the hardest hitter on open ground: horses, a driver and a warrior, built with bronze and [[cedar|cedar]].
 
 Chariots require a [[stable|Stable]] and [[bronze|bronze]]. Horses are not currently a good you produce, store or trade; you do not need to acquire horses to recruit chariots.
 
 | | |
 |---|---|
 | **Built at** | [[stable]] |
-| **Cost for one cohort** | 40 grain · 8 timber (or cedar) · 8 cedar · 20 [[bronze]] · 50 silver |
+| **Cost for one cohort** | 20 [[bronze]] · 8 cedar · 40 grain · 50 silver · 8 timber (or cedar) |
 | **Size** | 100 chariots |
 | **Training** | 3 game days |
 | **Food** | 0.8 per game day at home, 1.6 in the field |
 | **Pay** | 2 silver per game day at home, 4 in the field ([[silver]]) |
 | **In battle** | 5 dice per chariot per round |
 
-Chariots need cedar and bronze both, and their pay is the highest in the army. See [[units|Forces]], [[upkeep]] and [[battle]].
+Chariots need bronze and cedar both, and their pay is the highest in the army. See [[units|Forces]], [[upkeep]] and [[battle]].

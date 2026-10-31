@@ -1,4 +1,4 @@
-Your people eat **[[grain|grain]], [[fish|fish]] and [[oil|oil]]** every game day. Wine is not food: it is the drink of [[gods|the gods]] and the feast ([[wine]]). One unit of each supplies one unit of food, and each person eats **0.005 food per game day**: a city of 1 000 eats 5 a game day. <!-- src: server/internal/economy/recompute.go GrainConsumptionPerCitizenPerTick --> The meal is shared in proportion to what is available, including the game day’s production: a city with 100 grain and 900 fish takes one tenth of its meal as grain and nine tenths as fish. No food good is used up first. If these three cannot feed the people, [[livestock|livestock]] remains their emergency food: each animal supplies 1 food. Armies, ships and caravans use the three food goods, not livestock.
+Your people eat **[[fish|fish]], [[grain|grain]] and [[oil|oil]]** every game day. Wine is not food: it is the drink of [[gods|the gods]] and the feast ([[wine]]). One unit of each supplies one unit of food, and each person eats **0.005 food per game day**: a city of 1 000 eats 5 a game day. <!-- src: server/internal/economy/recompute.go GrainConsumptionPerCitizenPerTick --> The meal is shared in proportion to what is available, including the game day’s production: a city with 100 grain and 900 fish takes one tenth of its meal as grain and nine tenths as fish. No food good is used up first. If these three cannot feed the people, [[livestock|livestock]] remains their emergency food: each animal supplies 1 food. Armies, ships and caravans use the three food goods, not livestock.
 
 ## Civilian hunger {#food-when-there-is-not-enough}
 
@@ -22,12 +22,12 @@ The herd breeds itself — no herder is needed. Every ten animals give one calf 
 
 ## Responding to a food shortage {#food-what-to-do-about-it}
 
-- Put more [[citizens]] on grain or fish hexes. Check the *next citizen would add* figure.
+- Put more [[citizens]] on fish or grain hexes. Check the *next citizen would add* figure.
 - Build or level a **[[farm]]** ([[buildings]]) — it raises how many people a grain hex can hold.
 - Bring food in from another of your cities by [[transfers|transfer]] or a [[routes|standing order]].
 - Buy it ([[trade]]).
 - Shrink what eats: soldiers are drafted from your people and eat like them ([[upkeep]]).
 
-Your city has food stocks: the grain, fish and oil in its [[goods|stores]]. **Food for N game days** shows those stocks at current consumption, without counting future production. **City → More → Food details** shows production, the last meal by good and army food separately. Different goods forming a real share of the meal improve [[growth|population growth]]; merely storing another food does not. Stored food buys time during a shortfall. A city under [[sieges|siege]] starves because its fields are cut off, not because it produces too little.
+Your city has food stocks: the fish, grain and oil in its [[goods|stores]]. **Food for N game days** shows those stocks at current consumption, without counting future production. **City → More → Food details** shows production, the last meal by good and army food separately. Different goods forming a real share of the meal improve [[growth|population growth]]; merely storing another food does not. Stored food buys time during a shortfall. A city under [[sieges|siege]] starves because its fields are cut off, not because it produces too little.
 
 Growth is covered in [[growth]].

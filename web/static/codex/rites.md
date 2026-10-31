@@ -32,13 +32,13 @@ The row disappears when the blessing ends; [[fish|fish]] receives no harvest bon
 
 ## The current Minoan prayers {#minoan-prayers}
 
-- **Potnia's Vision** — offer 10 [[grain|grain]] + 3 [[silver|silver]]. Potnia marks one source of [[copper|copper]], [[tin|tin]], silver or incense you neither see nor remember, and unknown ground within two hexes, as grey memory. It creates no living eyes and shows no moving activity. Her temple rests 24 game days after answering at level 1.
+- **Potnia's Vision** — offer 10 [[grain|grain]] + 3 [[silver|silver]]. Potnia marks one source of [[copper|copper]], incense, silver or [[tin|tin]] you neither see nor remember, and unknown ground within two hexes, as grey memory. It creates no living eyes and shows no moving activity. Her temple rests 24 game days after answering at level 1.
 - **Mistress of the Walls** — offer 8 grain + 4 [[timber|timber]]. Potnia strengthens your own garrison defending this city by a quarter for 6 game days with the traditional gift; a larger gift lasts longer. It helps neither an attacking army nor soldiers away from that city. It shares Vision's rest.
 - **Green Shoots** — offer 15 grain + 2 silver. Velchanos raises grain, [[oil|oil]] and [[wine|wine]] yield by a quarter for 25 game days with the traditional gift; a larger gift lasts longer. Fish and the herd are unchanged. His temple rests 25 game days after answering at level 1.
 
 ### Departure prayers {#minoan-prayers-2}
 
-- **The Thread Shows a Path** — offer 4 timber + 3 silver to Asterion. The next land [[transfers|caravan]] or [[runners|Runner]] leaving this city takes a quarter less time on its outward leg. A land caravan can be intercepted only within one hex of an enemy army, instead of two. Runners remain sacred. Asterion's temple rests 12 game days after answering at level 1.
+- **The Thread Shows a Path** — offer 3 silver + 4 timber to Asterion. The next land [[transfers|caravan]] or [[runners|Runner]] leaving this city takes a quarter less time on its outward leg. A land caravan can be intercepted only within one hex of an enemy army, instead of two. Runners remain sacred. Asterion's temple rests 12 game days after answering at level 1.
 - **Favourable Passage** — offer 6 fish + 3 silver to The Sea Daimons of Stillness. The next ship leaving this city takes a quarter less time and suffers no [[storms|storm]] damage on its outward leg. A Runner aboard travels at that ship's actual speed. Their temple rests 12 game days after answering at level 1.
 
 Vision, [[walls|Walls]] and the two departure prayers require at least 5 kharis; Green Shoots requires 30. The temple's ordinary daily offering is separate.
@@ -55,4 +55,4 @@ In Keryx, `rite --list` shows your prayers, their effects, offerings, active gam
 
 These are offering values. Wanaxes agree their own trade prices. You may compose an offering in the Offer row on the web, or in Keryx with `rite --offer good=amount,...`. Each god has a taste: the Offer row's **Favours:** line lists the goods this god loves most, dearest first. The traditional recipe always suffices.
 
-Any good may be offered. **Wine and oil** are offerings like any other — oil is also food, so do not give up what a hungry city needs. **Incense** is a valuable gift ([[incense]]). For everyday prayers it can help meet the offering requirement; excess value does not change the answer, but a lasting prayer lasts longer and the temple rests longer.
+Any good may be offered. **Oil and wine** are offerings like any other — oil is also food, so do not give up what a hungry city needs. **Incense** is a valuable gift ([[incense]]). For everyday prayers it can help meet the offering requirement; excess value does not change the answer, but a lasting prayer lasts longer and the temple rests longer.

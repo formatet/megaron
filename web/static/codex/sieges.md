@@ -20,7 +20,7 @@ You get a notification when a siege begins and when it is lifted. The City drawe
 
 What helps:
 
-- full [[food|city food stores]] — the city eats its [[grain|grain]], [[fish|fish]] and [[oil|oil]] while the fields are cut off;
+- full [[food|city food stores]] — the city eats its [[fish|fish]], [[grain|grain]] and [[oil|oil]] while the fields are cut off;
 - food brought in from outside by [[transfers|transfer]] — if it can get through;
 - a relief force that drives the besiegers off the hexes ([[battle]]).
 

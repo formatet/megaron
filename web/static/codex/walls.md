@@ -5,7 +5,7 @@ Build or upgrade it in **City → Buildings → Construct**, or use `keryx build
 <!-- facts: building wall -->
 | Reference | Current rule |
 |---|---|
-| Cost, level 1 | 12 timber (or cedar) · 4 stone |
+| Cost, level 1 | 4 stone · 12 timber (or cedar) |
 | Build time, level 1 | 6 game days |
 | Maximum level | 1 |
 <!-- /facts -->

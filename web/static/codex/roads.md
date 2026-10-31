@@ -9,15 +9,15 @@ On a road, every hex you **enter** takes the same time **whatever the ground** �
 
 | Traveller | Time per hex on a road |
 |---|---|
+| [[war-chariot|Chariots]] | 0.4 game day |
+| Caravans | 0.6 game day |
 | Foot soldiers | 0.75 game day |
 | Runners and messengers | 0.35 game day |
-| Caravans | 0.6 game day |
-| [[war-chariot|Chariots]] | 0.4 game day |
 | Ships | no effect |
 
 (Off the road a foot soldier needs 1 game day on [[plains|plains]], 2 on [[hills|hills]] and 3 in semi-desert, so a road helps most where the ground is hardest.)
 
-Roads join **land** hexes: plains, [[river-valley|river valley]], [[river-delta|river delta]], [[olive-grove|olive groves]], [[maquis|maquis]], hills, [[cedar-forest|cedar forest]] and semi-desert. They never cross water or mountains, and there are **no bridges** — a road ends at a [[rivers|river]] [[river-ford|ford]] and the ford is waded as before.
+Roads join **land** hexes: [[cedar-forest|cedar forest]], hills, [[maquis|maquis]], [[olive-grove|olive groves]], plains, [[river-delta|river delta]], [[river-valley|river valley]] and semi-desert. They never cross water or mountains, and there are **no bridges** — a road ends at a [[rivers|river]] [[river-ford|ford]] and the ford is waded as before.
 
 ## Building a road {#roads-building-one}
 
@@ -27,9 +27,9 @@ The **stone** leaves your nearest city the moment you give the order — you are
 
 | Ground the road reaches | Stone |
 |---|---|
-| Plains, river valley, delta | 8 |
-| Olive grove, maquis | 12 |
-| Hills, cedar forest | 16 |
+| Delta, plains, river valley | 8 |
+| Maquis, olive grove | 12 |
+| [[cedar-forest|Cedar forest]], hills | 16 |
 | Semi-desert | 24 |
 
 Three plains edges cost 24 stone. A hundred men build a plains edge in **1 game day** and a hill edge in **2**; fewer men take longer. When the edge is finished you get a **RoadEdgeBuilt** notice.

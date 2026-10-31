@@ -29,8 +29,8 @@ test('silver_mine is gone from the Construct label map — an unlabelled fallbac
 test('BK2: costs are read from the catalogue, not hardcoded — mutating the fixture mutates the rendered string', () => {
   const low = buildingOptionsHTML([{ type: 'farm', costs: { timber: 6, stone: 4 }, purpose: 'x' }]);
   const high = buildingOptionsHTML([{ type: 'farm', costs: { timber: 5, stone: 40 }, purpose: 'x' }]);
-  assert.match(low, /6 timber 4 stone/);
-  assert.match(high, /5 timber 40 stone/);
+  assert.match(low, /4 stone 6 timber/);
+  assert.match(high, /40 stone 5 timber/);
   assert.notEqual(low, high);
 });
 
@@ -38,7 +38,7 @@ test('BK3: cost rounding matches the CLI (%.0f per good, cmd_build.go), not the 
   // Farm cost under the recipe catalogue (byggkostnader, 6 timber 4 stone) (province/building.go BuildingSpecs) — the OLD
   // hardcoded string said "50 timber 20 stone".
   const html = buildingOptionsHTML([{ type: 'farm', costs: { timber: 6, stone: 4 }, purpose: 'x' }]);
-  assert.match(html, /6 timber 4 stone/);
+  assert.match(html, /4 stone 6 timber/);
   assert.doesNotMatch(html, /50 timber/);
 });
 
@@ -47,8 +47,8 @@ test('BK4: an option is name and price only — no purpose, no requires tail (Ti
     { type: 'mine', costs: { timber: 1, stone: 9 }, purpose: 'Extracts ore', requires_deposits: ['silver'] },
     { type: 'harbour', costs: { timber: 3, stone: 37 }, purpose: 'Enables fish production', requires_coastal: true },
   ]);
-  assert.match(html, /<option value="mine">Mine — 1 timber 9 stone<\/option>/);
-  assert.match(html, /<option value="harbour">Harbour — 3 timber 37 stone<\/option>/);
+  assert.match(html, /<option value="mine">Mine — 9 stone 1 timber<\/option>/);
+  assert.match(html, /<option value="harbour">Harbour — 37 stone 3 timber<\/option>/);
   assert.doesNotMatch(html, /requires|Extracts|Enables/);
 });
 
@@ -126,7 +126,7 @@ test('B1: the wall option shows the next rung, greyed with its reason until the 
   assert.match(locked, /Stone Wall — needs a Granary of level 2/);
   const open = wallOptionHTML(wall, { walls: 1, siloLevel: 2 });
   assert.doesNotMatch(open, /disabled/);
-  assert.match(open, /20 timber 40 stone/);
+  assert.match(open, /40 stone 20 timber/);
   assert.match(wallOptionHTML(wall, { walls: 3, siloLevel: 3 }), /highest level/);
 });
 

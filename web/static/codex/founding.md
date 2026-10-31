@@ -14,7 +14,7 @@ Under **Details**, the forecast gives the [[grain|grain]] your fields would prod
 
 The gap between *marginal* and *does not feed itself* has killed more young cities than any war. See [[food]].
 
-In **Details**, below the grain line, look for **deposits**: [[copper|copper]], [[tin|tin]], [[silver|silver]], [[cedar|cedar]]. A site with metal under it is worth walking extra game days for. A site with none is not a mistake — you can buy metal ([[trade]]) — but you will be buying it from someone who walked those game days. Read [[bronze]] before you decide.
+In **Details**, below the grain line, look for **deposits**: [[cedar|cedar]], [[copper|copper]], [[silver|silver]], [[tin|tin]]. A site with metal under it is worth walking extra game days for. A site with none is not a mistake — you can buy metal ([[trade]]) — but you will be buying it from someone who walked those game days. Read [[bronze]] before you decide.
 
 ## Where founding is forbidden {#founding-where-you-cannot-found}
 
@@ -39,12 +39,12 @@ Next: [[city]].
 
 ### Founding food and timber forecasts {#founding-settling-3}
 
-The forecast lists grain and [[fish|fish]] production separately from the population's full food consumption. A production deficit uses up carried grain before hunger begins. Fish counts as food. Hunger begins only when daily meals are not fully covered, after stored grain, fish, [[oil|oil]], [[wine|wine]] and emergency [[livestock|livestock]] have been used. A production deficit warns of future hunger once reserves run out; it does not by itself mean the population is starving.
+The forecast lists [[fish|fish]] and grain production separately from the population's full food consumption. A production deficit uses up carried grain before hunger begins. Fish counts as food. Hunger begins only when daily meals are not fully covered, after stored grain, fish, [[oil|oil]], [[wine|wine]] and emergency [[livestock|livestock]] have been used. A production deficit warns of future hunger once reserves run out; it does not by itself mean the population is starving.
 
-If the known catchment has no timber or cedar to cover timber costs, the forecast warns before you found. Unknown ground may still hold wood; scout it or plan deliveries. A fully known catchment without wood needs imports for building.
+If the known catchment has no cedar or timber to cover timber costs, the forecast warns before you found. Unknown ground may still hold wood; scout it or plan deliveries. A fully known catchment without wood needs imports for building.
 
-Place citizens on [[olive-grove|olive groves]], [[maquis|maquis]], [[hills|hills]] or river valleys for timber, or on [[cedar-forest|cedar forest]] for cedar to cover timber costs, and on stone-bearing ground for stone; idle citizens produce nothing. Maquis, hills and river valleys each have one timber place before a [[lumbermill]] is built, yielding 0.33 timber per worker per game day ([[catchment]]). The forecast says when Demeter’s farm is already included; another farm is not an extra founding gift.
+Place citizens on [[hills|hills]], [[maquis|maquis]], [[olive-grove|olive groves]] or river valleys for timber, or on [[cedar-forest|cedar forest]] for cedar to cover timber costs, and on stone-bearing ground for stone; idle citizens produce nothing. Hills, maquis and river valleys each have one timber place before a [[lumbermill]] is built, yielding 0.33 timber per worker per game day ([[catchment]]). The forecast says when Demeter’s farm is already included; another farm is not an extra founding gift.
 
 ### Farms on grain-bearing hills {#founding-settling-4}
 
-On grain-bearing hills, a Farm at level 1 makes 0.85 grain per worker per game day, with room for five workers. Plain hills give 0.5 per worker. With another grain-bearing hill in reach, six food workers can feed a new city of 1,000 people; leave the rest for timber and stone. Check the forecast for your actual site.
+On grain-bearing hills, a Farm at level 1 makes 0.85 grain per worker per game day, with room for five workers. Plain hills give 0.5 per worker. With another grain-bearing hill in reach, six food workers can feed a new city of 1,000 people; leave the rest for stone and timber. Check the forecast for your actual site.

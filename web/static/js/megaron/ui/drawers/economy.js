@@ -4,7 +4,7 @@ import { fmtTickTime } from '../fmt_clock.js';
 import { State } from '../../state.js';
 import { fetchAuth } from '../../api.js';
 import { serverNow } from '../../clock.js';
-import { esc } from '../format.js';
+import { esc, byGoodName } from '../format.js';
 import { renderLockedActions } from '../misc.js';
 
 // A good at its storage ceiling is a silent off-switch: everything produced
@@ -210,7 +210,7 @@ async function loadEconomyGoods(mySettlements) {
       if (!r.ok) continue;
       const goods = await r.json();
       const silver = goods.find(g => g.key === 'silver');
-      const others = goods.filter(g => g.key !== 'silver' && (g.amount > 0 || g.producible));
+      const others = goods.filter(g => g.key !== 'silver' && (g.amount > 0 || g.producible)).sort(byGoodName);
       html += `<div class="dsec-title" id="economy-city-${esc(s.id)}" style="margin-top:.8rem">${esc(s.name)}${s.is_capital?' ★':''}</div>`;
       if (silver) {
         html += `<div class="silver-balance">
@@ -422,7 +422,7 @@ export async function loadTransferGoods(fromProvId) {
     const r = await fetchAuth(`/api/v1/worlds/${world}/provinces/${fromProvId}/goods`);
     const goods = r.ok ? ((await r.json()) || []).filter(g => (g.amount || 0) > 0 && g.shippable === true) : [];
     if (seq !== transferGoodsSeq || world !== State.WORLD_ID || document.getElementById('ec-tr-items') !== el) return;
-    transferGoods = goods;
+    transferGoods = goods.sort(byGoodName);
     el.textContent = goods.length ? '' : 'No goods in stock';
     if (goods.length) addTransferGood();
     updateTransferCargo();
@@ -486,7 +486,7 @@ export function parseGoodAmountPairs(spec) {
 // Internal routes use the full inventory, including zero stocks, silver and
 // parked goods. The trade-offer catalogue deliberately excludes those goods.
 function standingGoodRowHTML(goods, group) {
-  const options = '<option value="">Choose a good</option>' + goods.map(g =>
+  const options = '<option value="">Choose a good</option>' + [...goods].sort(byGoodName).map(g =>
     `<option value="${esc(g.key)}">${esc(g.name || g.key)}</option>`).join('');
   return `<div class="inline-fields field" data-good-row>
     <label class="obj-info">Good<br><select>${options}</select></label>

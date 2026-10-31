@@ -7,7 +7,7 @@ The next ship leaving this port sails faster and takes no [[storms|storm]] damag
 |---|---|
 | God | The Sea Daimons of Stillness |
 | Minimum standing | 5 Kharis |
-| Traditional offering | 3 silver · 6 fish |
+| Traditional offering | 6 fish · 3 silver |
 | Temple’s rest (level 1, traditional gift) | 12 game days |
 <!-- /facts -->
 

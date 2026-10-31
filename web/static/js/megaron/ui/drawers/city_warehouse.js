@@ -7,7 +7,7 @@ import { herdHTML } from './city_production.js';
 // caps are the server's (goods endpoint `amount`/`cap`, province `food`); this
 // only lists them. Every store is the same row shape, so a new one (e.g. a
 // Storehouse) is one more row in the same list, not a new section.
-const FOOD_KEYS = ['grain', 'fish', 'oil'];
+const FOOD_KEYS = ['fish', 'grain', 'oil'];
 const NOT_GOODS = new Set([...FOOD_KEYS, 'livestock']);
 
 const stored = (amount, cap) => `${fmtNum(Math.floor(amount || 0))}${cap > 0 ? ' / ' + fmtNum(Math.floor(cap)) : ''}`;

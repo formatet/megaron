@@ -7,7 +7,7 @@ Your next land [[transfers|caravan]] or [[runners|Runner]] from this city travel
 |---|---|
 | God | Asterion |
 | Minimum standing | 5 Kharis |
-| Traditional offering | 4 timber (or cedar) · 3 silver |
+| Traditional offering | 3 silver · 4 timber (or cedar) |
 | Temple’s rest (level 1, traditional gift) | 12 game days |
 <!-- /facts -->
 

@@ -232,7 +232,7 @@ export function renderColonizePreviewHTML(p) {
     if (ce.cedar_deposit)  dep.cedar = true;
     if (ce.incense_deposit) dep.incense = true;
   });
-  const extras = ['copper', 'tin', 'silver', 'cedar', 'incense'].filter(d => dep[d]).map(d => d + '-deposit ✓');
+  const extras = ['cedar', 'copper', 'incense', 'silver', 'tin'].filter(d => dep[d]).map(d => d + '-deposit ✓');
   Object.keys(p.goods || {}).sort().forEach(gk => {
     if (gk === 'grain') return;
     const rate = p.goods[gk] || 0;

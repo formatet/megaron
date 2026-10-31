@@ -1,6 +1,6 @@
-The first Wanax whose **own physical unit reaches** a [[rivers|river]], [[lake]], mountain massif, [[semi-desert|desert]], [[cedar-forest|cedar forest]], island, strait, cape, [[plains|plain]], [[hills]] or [[river-delta|river delta]] gains the right to name it. Seeing the place nearby gives no right. You receive a notice naming the unit that reached it first.
+The first Wanax whose **own physical unit reaches** a cape, [[cedar-forest|cedar forest]], [[river-delta|river delta]], [[semi-desert|desert]], [[hills]], island, [[lake]], mountain massif, [[plains|plain]], [[rivers|river]] or strait gains the right to name it. Seeing the place nearby gives no right. You receive a notice naming the unit that reached it first.
 
-For a river, lake, desert, cedar forest, island, cape, plain, hills or delta, your unit must enter one of its hexes: an island is named by whoever first lands on it, a cape by the first unit on the cape. A strait is named by the first ship to sail into it. Only a ship can sail onto a lake or a strait. For a mountain massif, your unit must enter **land directly bordering the mountains**. Mountains remain impassable. If that land borders two separate massifs, you gain the right to name both. Simply seeing mountains from farther away gives no naming right.
+For a cape, cedar forest, delta, desert, hills, island, lake, plain or river, your unit must enter one of its hexes: an island is named by whoever first lands on it, a cape by the first unit on the cape. A strait is named by the first ship to sail into it. Only a ship can sail onto a lake or a strait. For a mountain massif, your unit must enter **land directly bordering the mountains**. Mountains remain impassable. If that land borders two separate massifs, you gain the right to name both. Simply seeing mountains from farther away gives no naming right.
 
 ## Naming known land {#naming-the-land-details}
 
@@ -18,7 +18,7 @@ After naming, the name appears in the hexpanel and on the map at readable zoom. 
 
 `keryx places` lists known places, their kind and anchor id (`q,r`), their known hexes, and whether you may name them.
 
-`keryx places name river 6,79 "Alpheios"` names a river. Use `lake`, `massif`, `desert`, `forest`, `island`, `strait`, `cape`, `plain`, `hills` or `delta` for the other kinds, with the id shown in your list. Add `--json` for the complete API reply. If an anchor starts with a minus sign, put `--` before the positional arguments: `keryx places name -- river -6,79 "Alpheios"`.
+`keryx places name river 6,79 "Alpheios"` names a river. Use `cape`, `delta`, `desert`, `forest`, `hills`, `island`, `lake`, `massif`, `plain` or `strait` for the other kinds, with the id shown in your list. Add `--json` for the complete API reply. If an anchor starts with a minus sign, put `--` before the positional arguments: `keryx places name -- river -6,79 "Alpheios"`.
 
 Administrators can change or remove unsuitable names with `keryx places rename <kind> <q,r> "<name>"` or `keryx places unname <kind> <q,r>` and their admin key. Removing a name leaves the naming right spent.
 

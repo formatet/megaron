@@ -350,25 +350,16 @@ async function getBuildingCatalogue() {
 const WALL_OPTION_HTML = '<option value="wall">Wall — upgrade (Palisade→Stone Wall→Bronze Wall)</option>';
 
 // entry.costs comes from a Go map, so its JSON key order is not stable across
-// requests — some explicit order is needed regardless of style. timber/stone
-// first (matches the old hardcoded option strings and every current
-// building's cost), anything else alphabetically after.
-const GOOD_ORDER = ['timber', 'stone'];
+// requests — some explicit order is needed regardless of style: alphabetical
+// by good, silver included.
 
 // Cost string for one catalogue entry: "1 timber 9 stone", rounded the same
 // way the CLI does (%.0f per good, cmd_build.go) so the two clients can never
 // quote different prices for the same building.
 function fmtBuildCost(entry) {
-  const parts = Object.entries(entry.costs || {})
-    .filter(([, v]) => v > 0)
-    .sort(([a], [b]) => {
-      const ia = GOOD_ORDER.indexOf(a), ib = GOOD_ORDER.indexOf(b);
-      if (ia !== -1 || ib !== -1) return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
-      return a.localeCompare(b);
-    })
-    .map(([k, v]) => `${Math.round(v)} ${k}`);
-  if (entry.cost_silver > 0) parts.push(`${Math.round(entry.cost_silver)} silver`);
-  return parts.join(' ');
+  const costs = Object.entries(entry.costs || {}).filter(([, v]) => v > 0);
+  if (entry.cost_silver > 0) costs.push(['silver', entry.cost_silver]);
+  return costs.sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => `${Math.round(v)} ${k}`).join(' ');
 }
 
 // Construct dropdown <option> list, built from the building catalogue instead

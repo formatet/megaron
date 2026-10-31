@@ -68,12 +68,8 @@ async function demolishCultTemple(temple){
  }catch(_){showInlineResult(host,'Could not load demolition consequences. Try again.',true);}
 }
 
-const TEMPLE_GOOD_ORDER = ['grain', 'fish', 'timber', 'silver'];
 function templeGoodsText(goods, separator) {
-  const entries = Object.entries(goods || {}).sort(([a], [b]) => {
-    const ai = TEMPLE_GOOD_ORDER.indexOf(a), bi = TEMPLE_GOOD_ORDER.indexOf(b);
-    return (ai < 0 ? 4 : ai) - (bi < 0 ? 4 : bi) || a.localeCompare(b);
-  });
+  const entries = Object.entries(goods || {}).sort(([a], [b]) => a.localeCompare(b));
   return entries.map(([good, amount]) => esc(String(Number(amount.toPrecision(4)))) + ' ' + esc(good)).join(separator) || '—';
 }
 

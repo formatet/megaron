@@ -5,11 +5,11 @@ Build it through **City → Buildings → Construct**, or `keryx build --type sh
 <!-- facts: building shipyard -->
 | Reference | Current rule |
 |---|---|
-| Cost, level 1 | 24 timber (or cedar) · 12 stone |
+| Cost, level 1 | 12 stone · 24 timber (or cedar) |
 | Build time, level 1 | 12 game days |
 | Maximum level | 3 |
-| Cost to level 2 | 48 timber (or cedar) · 4 cedar · 24 stone |
-| Cost to level 3 | 96 timber (or cedar) · 8 cedar · 48 stone |
+| Cost to level 2 | 4 cedar · 24 stone · 48 timber (or cedar) |
+| Cost to level 3 | 8 cedar · 48 stone · 96 timber (or cedar) |
 | Site | The city must border navigable water. |
 <!-- /facts -->
 

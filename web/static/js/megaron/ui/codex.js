@@ -389,11 +389,15 @@ function setHeader(title, canGoBack) {
   document.getElementById('codex-back').classList.toggle('hidden', !canGoBack);
 }
 
+const SEQUENCE_CATEGORIES = new Set(['Start here', 'Founding']);
+
 function renderIndex() {
   setHeader(CODEX_NAME, false);
   const body = document.getElementById('codex-body');
   const cats = index.categories.map(cat => {
     const items = index.articles.filter(a => a.category === cat);
+    // Alphabetical, except categories that are a reading sequence.
+    if (!SEQUENCE_CATEGORIES.has(cat)) items.sort((a, b) => a.title.toLowerCase().replace(/^the /, '').localeCompare(b.title.toLowerCase().replace(/^the /, ''), 'en'));
     return `<div class="cx-cat"><div class="cx-cat-title">${esc(cat)}</div>` +
       items.map(a => `<a class="cx-link cx-entry" href="#" data-cx="${a.id}">${esc(a.title)}${a.future?' <small>(future)</small>':''}</a>`).join('') +
       '</div>';
