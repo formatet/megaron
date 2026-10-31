@@ -1,6 +1,6 @@
 # Bönegrunden (bönesystem v3, slice 1) — bevis
 
-Gren `claude/bonegrund-20261031`, migration 238.
+Gren `claude/bonegrund-20261031`, migration 237.
 
 **Problem.** En gudsbön hade fast längd, och vilan låg per gud och Wanax, så fler tempel gav ingenting.
 **Lösning.** Gåvans storlek r (värde / traditionell baslinje, 1..5) styr längden på garnisonsförsvar och skördevälsignelse;
@@ -14,7 +14,7 @@ vilan ligger per tempel, växer med r, krymper med templets nivå, och räknas b
   `RiteCast`-payload (`duration_ticks`, `rest_ticks`, `temple_building_id`, `gift_factor`); verdict-texten "more will not improve" ersatt.
 - `api/handlers/cult_prayers.go` + `province.go`: `rest_remaining_game_days`, `rest_paused`, `temple_level`, `temple_staffed`, `temple_capacity`,
   `base_duration_game_days` (`cooldown_remaining_game_days` behålls = vilan, för äldre klienter).
-- Migration 238: `temple_rest`, `DROP TABLE prayer_cooldowns`.
+- Migration 237: `temple_rest`, `DROP TABLE prayer_cooldowns`.
 - keryx `rite --list` / `cult`: "Temple of Potnia rests 3 game days — paused: 2 of 4 servants"; `rite` visar längd före och vila efter.
 - Webb: Kult-lådan (`kult.js` `templeRestText`), offerraden (`kult_offer.js`: bas-längd + "a larger gift lasts longer").
 - Codex: `rites.md`, `temples.md`, `kharis.md`, fakta-raden i bönartiklarna; `tools/codex_facts.py` etikett; `articles.json` regenererad.
@@ -44,4 +44,4 @@ vilan ligger per tempel, växer med r, krymper med templets nivå, och räknas b
 - Äldre BILD-skript `tools/omen_dimma_bild_20261024.py`, `tools/byggplan_bild_20261024.py` raderar ur `prayer_cooldowns` och måste ändras om de körs igen.
 
 ## Sviter
-`tools/gotest.sh ./...` (färsk DB, mig 238): 29 paket ok, 0 FAIL. `tools/test-web.sh`: 880 pass. `day_guard_test.py`, `test_verb_parity.py`, `codex_facts.py --check`: gröna.
+`tools/gotest.sh ./...` (färsk DB, mig 237): 29 paket ok, 0 FAIL. `tools/test-web.sh`: 880 pass. `day_guard_test.py`, `test_verb_parity.py`, `codex_facts.py --check`: gröna.
