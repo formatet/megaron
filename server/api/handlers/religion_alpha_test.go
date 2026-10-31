@@ -92,6 +92,7 @@ func (f alphaFixture) cast(city uuid.UUID, prayer string) *httptest.ResponseReco
 	f.router.ServeHTTP(rec, req)
 	return rec
 }
+
 // clearRest ends every temple's rest in the fixture's world.
 func (f alphaFixture) clearRest(t *testing.T) {
 	t.Helper()

@@ -127,7 +127,7 @@ func TestRelationComposedOfferingThresholdAndRollback(t *testing.T) {
 				if f.stock(t, f.cities[0], "grain") != 100-8*tc.factor {
 					t.Error("composed offering not charged")
 				}
-				if !strings.Contains(r.Body.String(), "more will not improve") {
+				if !strings.Contains(r.Body.String(), "a larger gift lasts longer") {
 					t.Errorf("verdict implies more helps: %s", r.Body.String())
 				}
 			}

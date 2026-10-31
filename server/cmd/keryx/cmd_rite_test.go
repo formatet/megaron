@@ -101,3 +101,19 @@ func TestRiteSettlementByProvince(t *testing.T) {
 		}
 	}
 }
+
+func TestRiteReadinessNamesTempleRestAndPause(t *testing.T) {
+	var p riteAvailablePrayer
+	raw := `{"temple":"Temple of Potnia","cooldown_remaining_game_days":3,"rest_remaining_game_days":3,"rest_paused":true,"temple_staffed":2,"temple_capacity":4}`
+	if err := json.Unmarshal([]byte(raw), &p); err != nil {
+		t.Fatal(err)
+	}
+	ready, detail := prayerReadiness(p)
+	if ready != "cooldown" || detail != "Temple of Potnia rests 3 game days — paused: 2 of 4 servants" {
+		t.Fatalf("paused rest: %q/%q", ready, detail)
+	}
+	p.RestPaused = false
+	if _, detail = prayerReadiness(p); detail != "Temple of Potnia rests 3 game days" {
+		t.Fatalf("counting rest: %q", detail)
+	}
+}

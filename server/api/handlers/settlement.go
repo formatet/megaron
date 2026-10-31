@@ -1152,7 +1152,11 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		resp["offering_expected"] = offeringBaseline
 		switch {
 		case everyday:
-			resp["offering_verdict"] = "worthy — meets the prayer's requirement; more will not improve the answer"
+			if durationTicks > 0 {
+				resp["offering_verdict"] = "worthy — a larger gift lasts longer, and the temple rests longer"
+			} else {
+				resp["offering_verdict"] = "worthy — meets the prayer's requirement; more will not improve the answer, only lengthen the temple's rest"
+			}
 		case offerMod >= offerCap:
 			resp["offering_verdict"] = "as generous as the gods will notice — more would be wasted"
 		case math.Abs(offeringWorth-offeringBaseline) < 1e-9:
