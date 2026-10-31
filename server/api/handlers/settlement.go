@@ -139,7 +139,7 @@ func (h *SettlementHandler) SettlementsOverview(w http.ResponseWriter, r *http.R
 		ConsumedTick       *int               `json:"consumed_tick"`
 		Goods              map[string]float64 `json:"goods"`
 		Consumed           map[string]float64 `json:"consumed"`
-		Herd               map[string]int     `json:"herd"`
+		Herd               map[string]float64 `json:"herd"`
 		ProductionPerTick  float64            `json:"production_per_tick"`
 		ConsumptionPerTick float64            `json:"consumption_per_tick"`
 		CoverageTicks      float64            `json:"coverage_ticks"`

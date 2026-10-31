@@ -16,4 +16,4 @@ See [[buildings]] and [[citizens]].
 
 | Building | What it is for |
 |---|---|
-| **Pen** | Raises the herd cap by 100 per level (50 without one). Animals above the cap are eaten, then lost ([[food]]). Works inside the city. |
+| **Pen** | Raises the herd cap by 100 per level (50 without one). Animals above the cap are eaten as food, then lost ([[food]]); a full pen adds its overflow to the city's food net. Works inside the city. |

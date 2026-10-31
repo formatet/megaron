@@ -13,7 +13,7 @@ Everything your cities make, eat and trade is a **good**. The **Economy (⚖)** 
 | [[devotion]] | Devotion is work performed by temple workers, not a stockpiled commodity. |
 | [[fish]] | Fish is a food good caught by citizens working fishing places. |
 | [[grain]] | Grain is a food good produced by citizens working suitable fields. |
-| [[livestock]] | Livestock is the herd kept by a city and used as emergency food. |
+| [[livestock]] | Livestock is the herd kept by a city. |
 | [[oil]] | Oil is a food and offering good. |
 | [[shipbuilding]] | Shipbuilding is service work performed at a Shipyard, not cargo stored in a warehouse. |
 | [[stone]] | Stone is building material quarried from land hexes. |
