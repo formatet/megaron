@@ -11,10 +11,8 @@ import { fmtClock } from '../fmt_clock.js';
 // Missing data stays unavailable; this formatter never derives the city formula.
 
 export function kharisDecayHTML(pd) {
-  if (Number.isFinite(pd?.kharis_demand) && Number.isFinite(pd?.kharis_given_weight)) {
-    return '<p>Demand: ' + pd.kharis_demand + ' · Given: ' + Number(pd.kharis_given_weight.toFixed(2)) + '</p>';
-  }
   if (!Number.isFinite(pd?.kharis_daily_decay)) return '<p class="empty-state">Cult upkeep not reported.</p>';
+  if (pd.kharis_net_known === true) return ''; // shown inside the game-day block of kharisNetView
   return '<div class="stat-row"><span class="sr-label">Upkeep</span><span class="sr-val">−' + pd.kharis_daily_decay.toFixed(1) + ' / game day</span></div>';
 }
 
@@ -28,8 +26,11 @@ export function kharisNetView(pd, scope = 'city') {
   // devotion help". Same format as the passive row: sign + one decimal.
   if (pd.kharis_net_known === true) {
     const v = pd.kharis_net_per_tick || 0;
-    out.netHtml = (Number.isFinite(pd.kharis_production_per_tick) ? '<div class="stat-row"><span class="sr-label">Temple production</span><span class="sr-val">' + pd.kharis_production_per_tick.toFixed(2) + ' kharis per game day</span></div>' : '') + '<div class="stat-row"><span class="sr-label">Net</span><span class="sr-val">' +
-      (v >= 0 ? '+' : '') + v.toFixed(1) + ' kharis per game day</span></div>';
+    // One heading carries the unit; the rows are plain signed numbers.
+    out.netHtml = '<p>Kharis each game day</p>' +
+      (Number.isFinite(pd.kharis_production_per_tick) ? '<div class="stat-row"><span class="sr-label">Temple production</span><span class="sr-val">+' + pd.kharis_production_per_tick.toFixed(1) + '</span></div>' : '') +
+      (Number.isFinite(pd.kharis_daily_decay) ? '<div class="stat-row"><span class="sr-label">Upkeep</span><span class="sr-val">−' + pd.kharis_daily_decay.toFixed(1) + '</span></div>' : '') +
+      '<div class="stat-row"><span class="sr-label">Net</span><span class="sr-val">' + (v >= 0 ? '+' : '') + v.toFixed(1) + '</span></div>';
   }
 
   if (Number.isInteger(pd.temple_staffed) && Number.isInteger(pd.temple_capacity)) {
@@ -47,8 +48,25 @@ export function kharisNetView(pd, scope = 'city') {
   return out;
 }
 
+// What today's standing does, one short row per effect, from the server's
+// numbers. The prose summary is for notices; panels show rows.
+export function kharisEffectRows(st) {
+ if (!st) return [];
+ const pct = p => Math.round(p * 100) + '%';
+ const rows = [];
+ if (st.punishment_probability > 0) rows.push(['Divine punishment', pct(st.punishment_probability) + ' each game day']);
+ if (st.blessing_probability > 0) rows.push(['Blessing', pct(st.blessing_probability) + ' each game day']);
+ if (st.storm_spare_probability > 0) rows.push(['Storms at sea', pct(st.storm_spare_probability) + ' spared']);
+ if (st.storm_wrath_probability > 0) rows.push(['Storms at sea', pct(st.storm_wrath_probability) + ' harder']);
+ const b = st.battle_strength_factor;
+ if (Number.isFinite(b) && b !== 1) rows.push(['In battle', (b > 1 ? '+' : '−') + pct(Math.abs(b - 1))]);
+ return rows;
+}
+
 export function kharisStandingHTML(pd) {
- return pd?.kharis_standing?.short ? `<p>${esc(pd.kharis_standing.short)}</p>` : '';
+ const st = pd?.kharis_standing;
+ if (!st?.short) return '';
+ return `<p>${esc(st.short)}</p>` + kharisEffectRows(st).map(([l, v]) => '<div class="stat-row"><span class="sr-label">' + l + '</span><span class="sr-val">' + v + '</span></div>').join('');
 }
 
 export function kharisRulesHTML(pd) {

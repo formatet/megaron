@@ -5,13 +5,15 @@ import { kharisNetView, kharisDecayHTML, kharisStandingHTML } from './kult_khari
 test('AK1: kharis_net_known true draws a Net row, distinct from Passive, signed with one decimal', () => {
   const view = kharisNetView({ kharis_net_per_tick: 2.34, kharis_net_known: true, kharis_devotion_idle: false });
   assert.match(view.netHtml, /sr-label">Net</, 'label must not be "Passive" — a distinct row');
-  assert.match(view.netHtml, /\+2\.3 kharis per game day/, 'signed, one decimal, same unit as the passive row');
+  assert.match(view.netHtml, /Kharis each game day/, 'one heading carries the unit');
+  assert.match(view.netHtml, /Net<\/span><span class="sr-val">\+2\.3</, 'signed, one decimal');
+  assert.equal((view.netHtml.match(/game day/g) || []).length, 1, 'the unit is said once, not per row');
   assert.equal(view.idleHtml, '', 'idle not flagged — no warning');
 });
 
 test('AK1b: a negative net is signed with a minus, not a double sign', () => {
   const view = kharisNetView({ kharis_net_per_tick: -1.5, kharis_net_known: true });
-  assert.match(view.netHtml, /-1\.5 kharis per game day/);
+  assert.match(view.netHtml, /sr-val">-1\.5</);
   assert.doesNotMatch(view.netHtml, /\+-/);
 });
 
@@ -47,12 +49,13 @@ test('a null/undefined payload draws nothing, crashes nothing', () => {
 test('realm upkeep is one short line from the authoritative total, including templeless realms; demand/given likewise', () => {
   const pd = {kharis_city_count: 5, kharis_base_decay: 0.1, kharis_city_decay: 1, kharis_daily_decay: 1.1, kharis_population:2500, kharis_population_decay:.25,
     kharis_net_known: true, kharis_net_per_tick: -1.1, temple_offers: []};
-  assert.match(kharisDecayHTML(pd), /Upkeep<\/span><span class="sr-val">−1.1 \/ game day/);
-  assert.doesNotMatch(kharisDecayHTML(pd), /residents|base \+|loses each game day/);
-  assert.match(kharisDecayHTML({kharis_demand:5,kharis_given_weight:2.345}), /Demand: 5 · Given: 2.35/);
-  assert.match(kharisNetView(pd).netHtml, /-1.1 kharis per game day/);
+  // With a known net, upkeep sits inside the game-day block; alone it stands on its own row.
+  assert.equal(kharisDecayHTML(pd), '');
+  assert.match(kharisNetView(pd).netHtml, /Upkeep<\/span><span class="sr-val">−1.1</);
+  assert.match(kharisNetView(pd).netHtml, /Net<\/span><span class="sr-val">-1.1</);
+  assert.doesNotMatch(kharisNetView(pd).netHtml + kharisDecayHTML(pd), /residents|base \+|Demand|Given/);
   // Deliberately unlike today's rule: display values, never recalculate the formula.
-  assert.match(kharisDecayHTML({...pd, kharis_daily_decay: 9.3}), /−9.3 \/ game day/);
+  assert.match(kharisDecayHTML({kharis_daily_decay: 9.3}), /Upkeep<\/span><span class="sr-val">−9.3 \/ game day/);
 });
 
 test('missing or partial realm decay never claims zero cost', () => {
@@ -64,7 +67,7 @@ test('missing or partial realm decay never claims zero cost', () => {
 
 test('production and extra worker yield are server-owned; yield is conditional, not a staffing recommendation', () => {
  const view=kharisNetView({kharis_net_known:true,kharis_net_per_tick:1.35,kharis_production_per_tick:2.1,kharis_per_temple_worker:1.05});
- assert.match(view.netHtml,/Temple production/);assert.match(view.netHtml,/2.10 kharis per game day/);
+ assert.match(view.netHtml,/Temple production/);assert.match(view.netHtml,/Temple production<\/span><span class="sr-val">\+2.1</);
  assert.match(view.netHtml,/Per extra temple worker<\/span><span class="sr-val">\+1.05</);
  assert.doesNotMatch(view.netHtml,/Requires a free citizen|reference offering/);
 });
@@ -87,7 +90,7 @@ test('R2 punishment curve: the Kult rules name both tiers', async () => {
 test('above ceiling is a label with the ceiling; no worker yield is promised', () => {
  const view = kharisNetView({kharis:80,kharis_cap:50,kharis_net_known:true,kharis_net_per_tick:-.2,kharis_per_temple_worker:1.05});
  assert.match(view.netHtml,/Above ceiling<\/span><span class="sr-val">50</);assert.doesNotMatch(view.netHtml,/Once below|declines through/);
- assert.match(view.netHtml,/-0.2 kharis per game day/);
+ assert.match(view.netHtml,/sr-val">-0.2</);
  assert.doesNotMatch(view.netHtml,/Per extra temple worker/);
  const normal=kharisNetView({kharis:50,kharis_cap:50,kharis_per_temple_worker:1.05});
  assert.doesNotMatch(normal.netHtml,/standing drifts down/);
@@ -106,3 +109,13 @@ test('ORDER29: empty temple slots above the ceiling do not invite staffing to ra
  assert.match(html,/Kharis 4.0 · &lt;Wrathful&gt;/);assert.doesNotMatch(html,/chance/);
  assert.equal(kharisStandingHTML({kharis:90}),'');
  });
+
+test('standing effects are short rows, not prose (Timothy 2026-11-01)', async () => {
+ const {kharisEffectRows}=await import('./kult_kharis.js');
+ const st={short:'Kharis 1.0 · Wrathful',punishment_probability:.04,storm_wrath_probability:.15,battle_strength_factor:.95};
+ assert.deepEqual(kharisEffectRows(st),[['Divine punishment','4% each game day'],['Storms at sea','15% harder'],['In battle','−5%']]);
+ const html=kharisStandingHTML({kharis_standing:st});
+ assert.match(html,/Kharis 1.0 · Wrathful<\/p>/);assert.match(html,/In battle<\/span><span class="sr-val">−5%</);
+ assert.deepEqual(kharisEffectRows({short:'x',blessing_probability:.15,storm_spare_probability:.15,battle_strength_factor:1.05}),[['Blessing','15% each game day'],['Storms at sea','15% spared'],['In battle','+5%']]);
+ assert.deepEqual(kharisEffectRows({short:'x',battle_strength_factor:1}),[]);
+});

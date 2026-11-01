@@ -45,28 +45,28 @@ func DescribeStanding(amount float64, maintained bool, protectionTicks int) Stan
 		effect = "protected from divine punishment for now"
 	}
 	if s.PunishmentProbability > 0 {
-		effect = fmt.Sprintf("about %.0f%% chance of divine punishment each game day", s.PunishmentProbability*100)
+		effect = fmt.Sprintf("%.0f%% chance of divine punishment each game day", s.PunishmentProbability*100)
 	}
 	if s.BlessingProbability > 0 {
-		effect = fmt.Sprintf("about %.0f%% chance of a spontaneous blessing each game day", s.BlessingProbability*100)
+		effect = fmt.Sprintf("%.0f%% chance of a blessing each game day", s.BlessingProbability*100)
 	}
 	if amount >= blessThreshold && !maintained {
 		effect = "a standing temple is required for spontaneous blessings"
 	}
-	s.Summary = fmt.Sprintf("Kharis %.1f (%s) · %s", amount, s.Band, effect)
+	s.Summary = fmt.Sprintf("Kharis %.1f, %s: %s", amount, s.Band, effect)
 	s.StormSpareProbability, s.StormWrathProbability = religion.StormTilt(amount)
 	if s.StormSpareProbability > 0 {
-		s.Summary += fmt.Sprintf(" · at sea, about %.0f%% chance Poseidon holds back a storm's blow", s.StormSpareProbability*100)
+		s.Summary += fmt.Sprintf(" · storms %.0f%% likely to spare a ship", s.StormSpareProbability*100)
 	}
 	if s.StormWrathProbability > 0 {
-		s.Summary += fmt.Sprintf(" · at sea, about %.0f%% chance a storm takes %d more hull", s.StormWrathProbability*100, religion.StormWrathExtraHull)
+		s.Summary += fmt.Sprintf(" · storms %.0f%% likely to cost %d more hull", s.StormWrathProbability*100, religion.StormWrathExtraHull)
 	}
 	s.BattleStrengthFactor = religion.BattleFactor(religion.BattleDivine(amount))
 	if s.BattleStrengthFactor > 1 {
-		s.Summary += fmt.Sprintf(" · in battle, your men fight about %.0f%% stronger", (s.BattleStrengthFactor-1)*100)
+		s.Summary += fmt.Sprintf(" · battle +%.0f%%", (s.BattleStrengthFactor-1)*100)
 	}
 	if s.BattleStrengthFactor < 1 {
-		s.Summary += fmt.Sprintf(" · in battle, your men fight about %.0f%% weaker", (1-s.BattleStrengthFactor)*100)
+		s.Summary += fmt.Sprintf(" · battle −%.0f%%", (1-s.BattleStrengthFactor)*100)
 	}
 	return s
 }

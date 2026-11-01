@@ -124,8 +124,8 @@ test('Kult controller renders the realm breakdown and templeless net from the pr
     assert.fail('Unexpected API request '+url);
   };
   await loadKultDrawer();
-  assert.match(body.innerHTML,/−1.1 \/ game day/);
-  assert.match(body.innerHTML,/-1.1 kharis per game day/);
+  assert.match(body.innerHTML,/Upkeep<\/span><span class="sr-val">−1.1</);
+  assert.match(body.innerHTML,/Net<\/span><span class="sr-val">-1.1</);
   assert.match(body.innerHTML,/No temples/);
   assert.doesNotMatch(body.innerHTML,/Passive|144|holds for/);
   assert.equal(calls.length,2);

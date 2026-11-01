@@ -44,10 +44,10 @@ func TestStandingShortIsBandAndNumberOnly(t *testing.T) {
 
 // R2 storm, mild: the standing tells the sea's tilt before a ship sails.
 func TestStandingNamesTheGodsHandAtSea(t *testing.T) {
-	if s := DescribeStanding(60, true, 0); s.StormSpareProbability != .15 || !strings.Contains(s.Summary, "15% chance Poseidon holds back a storm's blow") {
+	if s := DescribeStanding(60, true, 0); s.StormSpareProbability != .15 || !strings.Contains(s.Summary, "storms 15% likely to spare a ship") {
 		t.Fatalf("favorable: %+v", s)
 	}
-	if s := DescribeStanding(4.9, true, 0); s.StormWrathProbability != .15 || !strings.Contains(s.Summary, "15% chance a storm takes 1 more hull") {
+	if s := DescribeStanding(4.9, true, 0); s.StormWrathProbability != .15 || !strings.Contains(s.Summary, "storms 15% likely to cost 1 more hull") {
 		t.Fatalf("wrathful: %+v", s)
 	}
 	if s := DescribeStanding(30, true, 0); s.StormSpareProbability != 0 || s.StormWrathProbability != 0 || strings.Contains(s.Summary, "at sea") {
@@ -57,14 +57,14 @@ func TestStandingNamesTheGodsHandAtSea(t *testing.T) {
 
 // R2 battle, mild: the standing tells the battle tilt before a march.
 func TestStandingNamesTheGodsHandInBattle(t *testing.T) {
-	if s := DescribeStanding(60, true, 0); s.BattleStrengthFactor != 1.05 || !strings.Contains(s.Summary, "in battle, your men fight about 5% stronger") {
+	if s := DescribeStanding(60, true, 0); s.BattleStrengthFactor != 1.05 || !strings.Contains(s.Summary, "battle +5%") {
 		t.Fatalf("favorable: %+v", s)
 	}
-	if s := DescribeStanding(4.9, true, 0); s.BattleStrengthFactor != 0.95 || !strings.Contains(s.Summary, "in battle, your men fight about 5% weaker") {
+	if s := DescribeStanding(4.9, true, 0); s.BattleStrengthFactor != 0.95 || !strings.Contains(s.Summary, "battle −5%") {
 		t.Fatalf("wrathful: %+v", s)
 	}
 	for _, k := range []float64{5, 30, 59.9} {
-		if s := DescribeStanding(k, true, 0); s.BattleStrengthFactor != 1 || strings.Contains(s.Summary, "in battle") {
+		if s := DescribeStanding(k, true, 0); s.BattleStrengthFactor != 1 || strings.Contains(s.Summary, "battle") {
 			t.Fatalf("kharis %g: %+v", k, s)
 		}
 	}

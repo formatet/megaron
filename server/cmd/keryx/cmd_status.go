@@ -1372,12 +1372,6 @@ func armyFoodLine(sett map[string]any) string {
 // kharisDecayLine renders the server's realm projection without a client formula.
 // Missing fields are unavailable, never an invented zero cost.
 func kharisDecayLine(sett map[string]any) string {
-	if demand, ok := sett["kharis_demand"].(float64); ok {
-		if given, ok := sett["kharis_given_weight"].(float64); ok {
-			return fmt.Sprintf("Demand: %g · Given: %.2f", demand, given)
-		}
-	}
-
 	total, totalOK := sett["kharis_daily_decay"].(float64)
 	if !totalOK {
 		return "Cult upkeep not reported"

@@ -33,7 +33,7 @@ In a small realm, a fully staffed, fed level-1 temple can earn more favour than 
 
 **Your best temple sets your ceiling:** no temple **40**, level 1 **50**, level 2 **75**, level 3 **100**. Everyday prayers work at a level-1 temple. Spontaneous blessings need **60 kharis** and a maintained temple. Only a level-2 temple or higher lets kharis grow that far. Kharis retained above a lowered ceiling still counts.
 
-Kharis changes by **2.1 × effective temple weight − 1.2 × active cities²** per game day. Population does not contribute. The floor and temple ceiling still apply. **Above ceiling (N)** on the Kult drawer means kharis stands over your temple's ceiling: [[upkeep|upkeep]] continues, and temple workers and offerings do not raise it until it is back at or below N, after which temples can raise it again, up to the ceiling. **Upkeep: −x.x / game day** is the realm's daily cult upkeep, and **Demand: N · Given: X** is what the gods ask of your realm against what your temples give.
+Kharis changes by **2.1 × effective temple weight − 1.2 × active cities²** per game day. Population does not contribute. The floor and temple ceiling still apply. **Above ceiling (N)** on the Kult drawer means kharis stands over your temple's ceiling: [[upkeep|upkeep]] continues, and temple workers and offerings do not raise it until it is back at or below N, after which temples can raise it again, up to the ceiling. Under **Kharis each game day** the drawer lists **Temple production**, the realm's cult **Upkeep** and the **Net** change.
 
 Kharis is a requirement for [[rites|prayers]], never spent. Everyday prayers answer when their requirements are met; they cost goods and the temple's rest.
 
