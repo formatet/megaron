@@ -4089,7 +4089,7 @@ export function initMap() {
         const namedOwn=own.map(u=>u.type==='nomadic_host'?{...u,host_state:physicalHostState(State.founderPhase,State.unitsData)}:u);
         const names = unitHoverLines({ own:namedOwn, foreign, caravans, runners, storms, placeName });
         if (prov) {
-          const parts = [prov.name, tl];
+          const parts = [`${prov.name} (${h.q},${h.r})`, tl];
           if (prov.owner) parts.push(`Wanax: ${prov.owner}`);
           if (prov.walls > 0) parts.push(`Walls L${prov.walls}`);
           if (prov.culture) parts.push(prov.culture);
