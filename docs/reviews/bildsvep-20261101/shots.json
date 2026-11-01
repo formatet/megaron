@@ -1,0 +1,786 @@
+[
+ {
+  "code": "A1",
+  "file": "A1-1280-full-live.png",
+  "width": 1280,
+  "tag": "full-live",
+  "note": "Whole window, Gournia selected (live sight)"
+ },
+ {
+  "code": "A1",
+  "file": "A1-1280-live.png",
+  "width": 1280,
+  "tag": "live",
+  "note": "Gournia, in sight now"
+ },
+ {
+  "code": "A1",
+  "file": "A1-1280-memory.png",
+  "width": 1280,
+  "tag": "memory",
+  "note": "Pylos, remembered (seen tick 40)"
+ },
+ {
+  "code": "A1",
+  "file": "A1-1280-contact.png",
+  "width": 1280,
+  "tag": "contact",
+  "note": "Kydonia, only a messenger snapshot"
+ },
+ {
+  "code": "A1",
+  "file": "A1-390-live.png",
+  "width": 390,
+  "tag": "live",
+  "note": "Gournia, in sight now"
+ },
+ {
+  "code": "A1",
+  "file": "A1-390-memory.png",
+  "width": 390,
+  "tag": "memory",
+  "note": "Pylos, remembered (seen tick 40)"
+ },
+ {
+  "code": "A1",
+  "file": "A1-390-contact.png",
+  "width": 390,
+  "tag": "contact",
+  "note": "Kydonia, only a messenger snapshot"
+ },
+ {
+  "code": "A6",
+  "file": "A6-1280-full.png",
+  "width": 1280,
+  "tag": "full",
+  "note": "City drawer, Production tab (whole window)"
+ },
+ {
+  "code": "A6",
+  "file": "A6-1280-production.png",
+  "width": 1280,
+  "tag": "production",
+  "note": "Production tab: food rows"
+ },
+ {
+  "code": "A6",
+  "file": "A6-1280-goods.png",
+  "width": 1280,
+  "tag": "goods",
+  "note": "Warehouse tab: goods list (wine listed as an ordinary good, not food)"
+ },
+ {
+  "code": "A6",
+  "file": "A6-390-full.png",
+  "width": 390,
+  "tag": "full",
+  "note": "City drawer, Production tab (whole window)"
+ },
+ {
+  "code": "A6",
+  "file": "A6-390-production.png",
+  "width": 390,
+  "tag": "production",
+  "note": "Production tab: food rows"
+ },
+ {
+  "code": "A6",
+  "file": "A6-390-goods.png",
+  "width": 390,
+  "tag": "goods",
+  "note": "Warehouse tab: goods list (wine listed as an ordinary good, not food)"
+ },
+ {
+  "code": "A9",
+  "file": "A9-1280-full.png",
+  "width": 1280,
+  "tag": "full",
+  "note": "Kult drawer on open (whole window)"
+ },
+ {
+  "code": "A9",
+  "file": "A9-1280-kharis.png",
+  "width": 1280,
+  "tag": "kharis",
+  "note": "Kult drawer, tab kharis"
+ },
+ {
+  "code": "A9",
+  "file": "A9-1280-prayers.png",
+  "width": 1280,
+  "tag": "prayers",
+  "note": "Kult drawer, tab prayers"
+ },
+ {
+  "code": "A9",
+  "file": "A9-1280-temples.png",
+  "width": 1280,
+  "tag": "temples",
+  "note": "Kult drawer, tab temples"
+ },
+ {
+  "code": "A9",
+  "file": "A9-390-full.png",
+  "width": 390,
+  "tag": "full",
+  "note": "Kult drawer on open (whole window)"
+ },
+ {
+  "code": "A9",
+  "file": "A9-390-kharis.png",
+  "width": 390,
+  "tag": "kharis",
+  "note": "Kult drawer, tab kharis"
+ },
+ {
+  "code": "A9",
+  "file": "A9-390-prayers.png",
+  "width": 390,
+  "tag": "prayers",
+  "note": "Kult drawer, tab prayers"
+ },
+ {
+  "code": "A9",
+  "file": "A9-390-temples.png",
+  "width": 390,
+  "tag": "temples",
+  "note": "Kult drawer, tab temples"
+ },
+ {
+  "code": "A17",
+  "file": "A17-1280-warehouse.png",
+  "width": 1280,
+  "tag": "warehouse",
+  "note": "Warehouse tab"
+ },
+ {
+  "code": "A17",
+  "file": "A17-1280-garrison.png",
+  "width": 1280,
+  "tag": "garrison",
+  "note": "Garrison tab with the Recruit button beside the title"
+ },
+ {
+  "code": "A17",
+  "file": "A17-1280-recruit.png",
+  "width": 1280,
+  "tag": "recruit",
+  "note": "After clicking Recruit: War drawer on the Recruit tab, this city selected"
+ },
+ {
+  "code": "A17",
+  "file": "A17-390-warehouse.png",
+  "width": 390,
+  "tag": "warehouse",
+  "note": "Warehouse tab"
+ },
+ {
+  "code": "A17",
+  "file": "A17-390-garrison.png",
+  "width": 390,
+  "tag": "garrison",
+  "note": "Garrison tab with the Recruit button beside the title"
+ },
+ {
+  "code": "A17",
+  "file": "A17-390-recruit.png",
+  "width": 390,
+  "tag": "recruit",
+  "note": "After clicking Recruit: War drawer on the Recruit tab, this city selected"
+ },
+ {
+  "code": "A8",
+  "file": "A8-1280-forces.png",
+  "width": 1280,
+  "tag": "forces",
+  "note": "War drawer, Forces tab"
+ },
+ {
+  "code": "A8",
+  "file": "A8-1280-recruit.png",
+  "width": 1280,
+  "tag": "recruit",
+  "note": "Recruit tab"
+ },
+ {
+  "code": "A8",
+  "file": "A8-1280-marches.png",
+  "width": 1280,
+  "tag": "marches",
+  "note": "Marches tab"
+ },
+ {
+  "code": "A8",
+  "file": "A8-390-forces.png",
+  "width": 390,
+  "tag": "forces",
+  "note": "War drawer, Forces tab"
+ },
+ {
+  "code": "A8",
+  "file": "A8-390-recruit.png",
+  "width": 390,
+  "tag": "recruit",
+  "note": "Recruit tab"
+ },
+ {
+  "code": "A8",
+  "file": "A8-390-marches.png",
+  "width": 390,
+  "tag": "marches",
+  "note": "Marches tab"
+ },
+ {
+  "code": "A20",
+  "file": "A20-1280-live.png",
+  "width": 1280,
+  "tag": "live",
+  "note": "Hover over Gournia: tooltip with coordinates (whole window)"
+ },
+ {
+  "code": "A20",
+  "file": "A20-1280-memory.png",
+  "width": 1280,
+  "tag": "memory",
+  "note": "Hover over Pylos: tooltip with coordinates (whole window)"
+ },
+ {
+  "code": "A20",
+  "file": "A20-390-live.png",
+  "width": 390,
+  "tag": "live",
+  "note": "Hover over Gournia: tooltip with coordinates (whole window)"
+ },
+ {
+  "code": "A20",
+  "file": "A20-390-memory.png",
+  "width": 390,
+  "tag": "memory",
+  "note": "Hover over Pylos: tooltip with coordinates (whole window)"
+ },
+ {
+  "code": "A7",
+  "file": "A7-1280-east.png",
+  "width": 1280,
+  "tag": "east",
+  "note": "Panned fully east with the Kult drawer open"
+ },
+ {
+  "code": "A7",
+  "file": "A7-1280-west.png",
+  "width": 1280,
+  "tag": "west",
+  "note": "Panned fully west (same drawer open) for comparison"
+ },
+ {
+  "code": "A11",
+  "file": "A11-1280-icon-512.png",
+  "width": 1280,
+  "tag": "icon",
+  "note": "Icon downscaled to 512 px (source is 1254x1254, 1.1 MB)"
+ },
+ {
+  "code": "A11",
+  "file": "A11-1280-icon-small.png",
+  "width": 1280,
+  "tag": "sizes",
+  "note": "128, 64, 32 and 16 px on the page background (Discord shows it around 32-128)"
+ },
+ {
+  "code": "A19",
+  "file": "A19-1280-island.png",
+  "width": 1280,
+  "tag": "island",
+  "note": "Dia (island), 5 hexes; window centred on one of its hexes"
+ },
+ {
+  "code": "A19",
+  "file": "A19-1280-strait.png",
+  "width": 1280,
+  "tag": "strait",
+  "note": "Euripos (strait), 1 hexes; window centred on one of its hexes"
+ },
+ {
+  "code": "A19",
+  "file": "A19-1280-cape.png",
+  "width": 1280,
+  "tag": "cape",
+  "note": "Sounion (cape), 1 hexes; window centred on one of its hexes"
+ },
+ {
+  "code": "A19",
+  "file": "A19-1280-plain.png",
+  "width": 1280,
+  "tag": "plain",
+  "note": "Mesara (plain), 44 hexes; window centred on one of its hexes"
+ },
+ {
+  "code": "A19",
+  "file": "A19-1280-hills.png",
+  "width": 1280,
+  "tag": "hills",
+  "note": "Ida (hills), 6 hexes; window centred on one of its hexes"
+ },
+ {
+  "code": "A19",
+  "file": "A19-1280-delta.png",
+  "width": 1280,
+  "tag": "delta",
+  "note": "Axios Mouths (delta), 1 hexes; window centred on one of its hexes"
+ },
+ {
+  "code": "A19",
+  "file": "A19-390-island.png",
+  "width": 390,
+  "tag": "island",
+  "note": "Dia (island), 5 hexes; window centred on one of its hexes"
+ },
+ {
+  "code": "A19",
+  "file": "A19-390-strait.png",
+  "width": 390,
+  "tag": "strait",
+  "note": "Euripos (strait), 1 hexes; window centred on one of its hexes"
+ },
+ {
+  "code": "A19",
+  "file": "A19-390-cape.png",
+  "width": 390,
+  "tag": "cape",
+  "note": "Sounion (cape), 1 hexes; window centred on one of its hexes"
+ },
+ {
+  "code": "A19",
+  "file": "A19-390-plain.png",
+  "width": 390,
+  "tag": "plain",
+  "note": "Mesara (plain), 44 hexes; window centred on one of its hexes"
+ },
+ {
+  "code": "A19",
+  "file": "A19-390-hills.png",
+  "width": 390,
+  "tag": "hills",
+  "note": "Ida (hills), 6 hexes; window centred on one of its hexes"
+ },
+ {
+  "code": "A19",
+  "file": "A19-390-delta.png",
+  "width": 390,
+  "tag": "delta",
+  "note": "Axios Mouths (delta), 1 hexes; window centred on one of its hexes"
+ },
+ {
+  "code": "A13",
+  "file": "A13-1280-map.png",
+  "width": 1280,
+  "tag": "map",
+  "note": "River of 4 hexes, source (22, 47), mouth None; centred on (24, 47) (Minos sees the whole map)"
+ },
+ {
+  "code": "A13",
+  "file": "A13-1280-source.png",
+  "width": 1280,
+  "tag": "source",
+  "note": "Source hex panel (22,47)"
+ },
+ {
+  "code": "A13",
+  "file": "A13-1280-middle.png",
+  "width": 1280,
+  "tag": "middle",
+  "note": "Middle hex panel (24,47)"
+ },
+ {
+  "code": "A13",
+  "file": "A13-1280-fog-map.png",
+  "width": 1280,
+  "tag": "fog-map",
+  "note": "Same river for Idomeneus, who has scouted only its upper half: it runs into the fog"
+ },
+ {
+  "code": "A13",
+  "file": "A13-1280-fog-panel.png",
+  "width": 1280,
+  "tag": "fog-panel",
+  "note": "Panel of the last known river hex (23, 47)"
+ },
+ {
+  "code": "A13",
+  "file": "A13-390-map.png",
+  "width": 390,
+  "tag": "map",
+  "note": "River of 4 hexes, source (22, 47), mouth None; centred on (24, 47) (Minos sees the whole map)"
+ },
+ {
+  "code": "A13",
+  "file": "A13-390-source.png",
+  "width": 390,
+  "tag": "source",
+  "note": "Source hex panel (22,47)"
+ },
+ {
+  "code": "A13",
+  "file": "A13-390-middle.png",
+  "width": 390,
+  "tag": "middle",
+  "note": "Middle hex panel (24,47)"
+ },
+ {
+  "code": "A13",
+  "file": "A13-390-fog-map.png",
+  "width": 390,
+  "tag": "fog-map",
+  "note": "Same river for Idomeneus, who has scouted only its upper half: it runs into the fog"
+ },
+ {
+  "code": "A13",
+  "file": "A13-390-fog-panel.png",
+  "width": 390,
+  "tag": "fog-panel",
+  "note": "Panel of the last known river hex (23, 47)"
+ },
+ {
+  "code": "A14",
+  "file": "A14-1280-lake1.png",
+  "width": 1280,
+  "tag": "lake1",
+  "note": "Lake 23,33 (4 hexes)"
+ },
+ {
+  "code": "A14",
+  "file": "A14-1280-lake2.png",
+  "width": 1280,
+  "tag": "lake2",
+  "note": "Lake 25,48 (4 hexes)"
+ },
+ {
+  "code": "A14",
+  "file": "A14-1280-panel.png",
+  "width": 1280,
+  "tag": "panel",
+  "note": "Hex panel on a lake hex"
+ },
+ {
+  "code": "A14",
+  "file": "A14-390-lake1.png",
+  "width": 390,
+  "tag": "lake1",
+  "note": "Lake 23,33 (4 hexes)"
+ },
+ {
+  "code": "A14",
+  "file": "A14-390-lake2.png",
+  "width": 390,
+  "tag": "lake2",
+  "note": "Lake 25,48 (4 hexes)"
+ },
+ {
+  "code": "A14",
+  "file": "A14-390-panel.png",
+  "width": 390,
+  "tag": "panel",
+  "note": "Hex panel on a lake hex"
+ },
+ {
+  "code": "A4",
+  "file": "A4-1280-owner.png",
+  "width": 1280,
+  "tag": "owner",
+  "note": "Pylos panel, the upper rows (Owner / Defence)"
+ },
+ {
+  "code": "A4",
+  "file": "A4-390-owner.png",
+  "width": 390,
+  "tag": "owner",
+  "note": "Pylos panel, the upper rows (Owner / Defence)"
+ },
+ {
+  "code": "A5",
+  "file": "A5-1280-buildings.png",
+  "width": 1280,
+  "tag": "buildings",
+  "note": "City drawer, Buildings tab"
+ },
+ {
+  "code": "A5",
+  "file": "A5-1280-foreign.png",
+  "width": 1280,
+  "tag": "foreign",
+  "note": "Gournia panel: the board as Idomeneus last read it"
+ },
+ {
+  "code": "A5",
+  "file": "A5-390-buildings.png",
+  "width": 390,
+  "tag": "buildings",
+  "note": "City drawer, Buildings tab"
+ },
+ {
+  "code": "A5",
+  "file": "A5-390-foreign.png",
+  "width": 390,
+  "tag": "foreign",
+  "note": "Gournia panel: the board as Idomeneus last read it"
+ },
+ {
+  "code": "A3",
+  "file": "A3-1280-tell.png",
+  "width": 1280,
+  "tag": "tell",
+  "note": "Idomeneus writes to Myrine: message form with \"Tell of a place\" set to Alpheios (a river he has seen himself)"
+ },
+ {
+  "code": "A3",
+  "file": "A3-1280-told-map.png",
+  "width": 1280,
+  "tag": "told-map",
+  "note": "Myrine's map around Alpheios (river), known only from the story"
+ },
+ {
+  "code": "A3",
+  "file": "A3-1280-told-panel.png",
+  "width": 1280,
+  "tag": "told-panel",
+  "note": "Myrine opens one of the told hexes: \"Told by Idomeneus\""
+ },
+ {
+  "code": "A3",
+  "file": "A3-390-told-map.png",
+  "width": 390,
+  "tag": "told-map",
+  "note": "Myrine's map around Alpheios (river), known only from the story"
+ },
+ {
+  "code": "A3",
+  "file": "A3-390-told-panel.png",
+  "width": 390,
+  "tag": "told-panel",
+  "note": "Myrine opens one of the told hexes: \"Told by Idomeneus\""
+ },
+ {
+  "code": "A12",
+  "file": "A12-1280-map.png",
+  "width": 1280,
+  "tag": "map",
+  "note": "Map with a storm over three water hexes south-east of Phaistos"
+ },
+ {
+  "code": "A12",
+  "file": "A12-1280-panel.png",
+  "width": 1280,
+  "tag": "panel",
+  "note": "Hex panel on a storm hex"
+ },
+ {
+  "code": "A12",
+  "file": "A12-1280-warning.png",
+  "width": 1280,
+  "tag": "warning",
+  "note": "March menu for the damaged galley Dolphin (hull 2) toward open water: preview with the storm warning"
+ },
+ {
+  "code": "A12",
+  "file": "A12-390-map.png",
+  "width": 390,
+  "tag": "map",
+  "note": "Map with a storm over three water hexes south-east of Phaistos"
+ },
+ {
+  "code": "A12",
+  "file": "A12-390-panel.png",
+  "width": 390,
+  "tag": "panel",
+  "note": "Hex panel on a storm hex"
+ },
+ {
+  "code": "A12",
+  "file": "A12-390-warning.png",
+  "width": 390,
+  "tag": "warning",
+  "note": "March menu for the damaged galley Dolphin (hull 2) toward open water: preview with the storm warning"
+ },
+ {
+  "code": "A10",
+  "file": "A10-1280-rites-top.png",
+  "width": 1280,
+  "tag": "rites-top",
+  "note": "Codex, article \"rites\", top of the article"
+ },
+ {
+  "code": "A10",
+  "file": "A10-1280-rites-table.png",
+  "width": 1280,
+  "tag": "rites-table",
+  "note": "Codex \"rites\", section \"The value of an offering\" with the price table"
+ },
+ {
+  "code": "A10",
+  "file": "A10-1280-lake-top.png",
+  "width": 1280,
+  "tag": "lake-top",
+  "note": "Codex, article \"lake\", top of the article"
+ },
+ {
+  "code": "A10",
+  "file": "A10-390-rites-top.png",
+  "width": 390,
+  "tag": "rites-top",
+  "note": "Codex, article \"rites\", top of the article"
+ },
+ {
+  "code": "A10",
+  "file": "A10-390-rites-table.png",
+  "width": 390,
+  "tag": "rites-table",
+  "note": "Codex \"rites\", section \"The value of an offering\" with the price table"
+ },
+ {
+  "code": "A10",
+  "file": "A10-390-lake-top.png",
+  "width": 390,
+  "tag": "lake-top",
+  "note": "Codex, article \"lake\", top of the article"
+ },
+ {
+  "code": "A15",
+  "file": "A15-1280-collapsed.png",
+  "width": 1280,
+  "tag": "collapsed",
+  "note": "Hex panel with forces, as it opens"
+ },
+ {
+  "code": "A15",
+  "file": "A15-1280-expanded.png",
+  "width": 1280,
+  "tag": "expanded",
+  "note": "Same panel with the force cards opened"
+ },
+ {
+  "code": "A15",
+  "file": "A15-390-collapsed.png",
+  "width": 390,
+  "tag": "collapsed",
+  "note": "Hex panel with forces, as it opens"
+ },
+ {
+  "code": "A15",
+  "file": "A15-390-expanded.png",
+  "width": 390,
+  "tag": "expanded",
+  "note": "Same panel with the force cards opened"
+ },
+ {
+  "code": "A16",
+  "file": "A16-1280-build-preview.png",
+  "width": 1280,
+  "tag": "build-preview",
+  "note": "Buildings tab: construct preview with duration"
+ },
+ {
+  "code": "A16",
+  "file": "A16-1280-build-receipt.png",
+  "width": 1280,
+  "tag": "build-receipt",
+  "note": "After + Build: the receipt line"
+ },
+ {
+  "code": "A16",
+  "file": "A16-1280-march-preview.png",
+  "width": 1280,
+  "tag": "march-preview",
+  "note": "March menu preview: arrival in game days"
+ },
+ {
+  "code": "A16",
+  "file": "A16-390-build-preview.png",
+  "width": 390,
+  "tag": "build-preview",
+  "note": "Buildings tab: construct preview with duration"
+ },
+ {
+  "code": "A16",
+  "file": "A16-390-build-receipt.png",
+  "width": 390,
+  "tag": "build-receipt",
+  "note": "After + Build: the receipt line"
+ },
+ {
+  "code": "A16",
+  "file": "A16-390-march-preview.png",
+  "width": 390,
+  "tag": "march-preview",
+  "note": "March menu preview: arrival in game days"
+ },
+ {
+  "code": "A2",
+  "file": "A2-1280-offer.png",
+  "width": 1280,
+  "tag": "offer",
+  "note": "The incoming offer in the thread, with Accept / Counter-offer / Decline"
+ },
+ {
+  "code": "A2",
+  "file": "A2-1280-counter-row.png",
+  "width": 1280,
+  "tag": "counter-row",
+  "note": "Counter-offer row opened and filled in (sell 4 timber for 18 silver)"
+ },
+ {
+  "code": "A2",
+  "file": "A2-1280-sent.png",
+  "width": 1280,
+  "tag": "sent",
+  "note": "After Send: the receipt line (arrival time, \"They must agree to the new terms\")"
+ },
+ {
+  "code": "A2",
+  "file": "A2-390-offer.png",
+  "width": 390,
+  "tag": "offer",
+  "note": "The incoming offer in the thread, with Accept / Counter-offer / Decline"
+ },
+ {
+  "code": "A2",
+  "file": "A2-390-counter-row.png",
+  "width": 390,
+  "tag": "counter-row",
+  "note": "Counter-offer row opened and filled in (sell 4 timber for 18 silver)"
+ },
+ {
+  "code": "A2",
+  "file": "A2-390-sent.png",
+  "width": 390,
+  "tag": "sent",
+  "note": "After Send: the receipt line (arrival time, \"They must agree to the new terms\")"
+ },
+ {
+  "code": "A18",
+  "file": "A18-1280-notice.png",
+  "width": 1280,
+  "tag": "notice",
+  "note": "After an API answer carrying a different X-Megaron-Version (injected by the proof rig via route); whole window"
+ },
+ {
+  "code": "A18",
+  "file": "A18-1280-crop.png",
+  "width": 1280,
+  "tag": "crop",
+  "note": "Top bar only, 1:1"
+ },
+ {
+  "code": "A18",
+  "file": "A18-390-notice.png",
+  "width": 390,
+  "tag": "notice",
+  "note": "After an API answer carrying a different X-Megaron-Version (injected by the proof rig via route); whole window"
+ },
+ {
+  "code": "A18",
+  "file": "A18-390-crop.png",
+  "width": 390,
+  "tag": "crop",
+  "note": "Top bar only, 1:1"
+ }
+]
