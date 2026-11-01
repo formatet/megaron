@@ -31,17 +31,13 @@ read from code or vault on demand. A `≥3` beside the word "invariant" makes an
 - **Timestamps:** pull the actual wall clock from plain `date`, never a guessed or remembered time.
   **Never a `TZ=` prefix** — git-for-Windows ships no zoneinfo DB, so it silently falls back to UTC.
   Format `(YYYY-MM-DD HH:MM)`.
-- **Codex may be working in this repo at the same time** — rules in `AGENTS.md`. If `.agents/codex-thread`
-  exists, arm a Monitor at session start: `tail -n0 -F .agents/chat.log | grep --line-buffered "codex→claude"`
-  (re-arm on expiry) and read the log's tail. `tools/agent-say.sh codex "…"` only for a short pointer once the thread is verified.
-  **Roles (Timothy 2026-10-28, replaces 10-04/10-14): Codex drives progress itself** — builds, tests with its own mutant,
-  merges, pushes, deploys, verifies hash + ground state, keeps todo/vault; canon and BILD go straight to Timothy.
-  **Claude reviews in batches** every few days (cross-slice/lifecycle invariants, own mutants on core guards, live ground
-  state, vault vs code), takes design talks with Timothy, and builds itself when Codex is out of quota. Orders and review
-  findings go to Codex as files in `.agents/` + a line in todo NU — not via `agent-say` (dead threads lost orders 10-28).
-  Why: the 10-25→10-28 solo window held up (78 commits, 1 real bug, found by batch review); the load belongs on Codex,
-  whose weekly quota resets within a day. Timothy has delegated approval of the owner map
-  (`megaron_arkitekturprogram` steps 3/5) to Claude; canon still goes to him.
+- **Orders live in `.agents/`** (the Codex chat channel `.agents/chat.log` / `agent-say.sh` is dead since 2026-11-01).
+  **Roles (Timothy 2026-11-01, replaces 10-28): Codex is gone** (ChatGPT Plus not renewed, ends 2026-11-04).
+  **Sonnet builds from finished order files** (`.agents/order-*.md`, self-contained: steps, paths, success criteria);
+  **Opus plans, writes orders, reviews in batches** (own mutants on core guards, live ground state, vault vs code) and takes
+  design talks with Timothy. Evaluated later — is it worth the compute? **Coding paused until Claude's compute renews
+  (Timothy: "onsdag 16" November)**; until then only plans, orders, BILD sweeps and vault. Timothy has delegated approval of the
+  owner map (`megaron_arkitekturprogram` steps 3/5) to Claude; canon still goes to him.
 - Vault rights: read/write `~/Dokument/myltavault` freely without asking.
 - **Loose design dumps** are an inbox, not a home: triage every point into a todo line, a vault update or a
   reasoned rejection — then delete the dump.
