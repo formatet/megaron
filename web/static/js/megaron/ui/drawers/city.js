@@ -478,13 +478,15 @@ export async function loadTicklog() {
     const data = await r.json();
     const ticks = data.ticks || [];
     if (!ticks.length) { el.innerHTML = '<p class="empty-state">No daily history yet.</p>'; return; }
-    el.innerHTML = `<table class="goods-mini">
-      <tr style="color:var(--text-dim);font-size:.7rem"><td>Day</td><td>Production</td><td>Consumption</td><td>Events</td></tr>
+    // Flows come from today's rates (no per-good history), so they are shown
+    // once; each past game day lists only its events (Nausikaa 2026-10-31).
+    const prod = Object.entries(ticks[0].production||{}).map(([k,v]) => `${k} +${fmtNum(Number(v.toFixed(1)))}`).join(', ');
+    const cons = Object.entries(ticks[0].consumption||{}).map(([k,v]) => `${k} -${fmtNum(Number(v.toFixed(1)))}`).join(', ');
+    el.innerHTML = `<p>Today's rate per game day: <span class="tl-prod">${prod || '—'}</span>${cons ? ' · <span class="tl-cons">' + cons + '</span>' : ''}</p>
+    <table class="goods-mini">
       ${ticks.map(t => {
-        const prod = Object.entries(t.production||{}).map(([k,v]) => `${k} +${fmtNum(Number(v.toFixed(1)))}`).join(', ');
-        const cons = Object.entries(t.consumption||{}).map(([k,v]) => `${k} -${fmtNum(Number(v.toFixed(1)))}`).join(', ');
         const evs  = (t.events||[]).map(e => e.type).join(', ');
-        return `<tr><td>#${fmtNum(t.tick)}</td><td style="color:var(--safe-text)">${prod}</td><td style="color:var(--accent)">${cons}</td><td style="color:var(--text-dim)">${evs}</td></tr>`;
+        return `<tr><td>${fmtTickTime(t.tick)}</td><td>${evs || '—'}</td></tr>`;
       }).join('')}
     </table>`;
   } catch (_) {

@@ -965,7 +965,7 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 			}
 			if intent == "explore" {
 				if _, err := fetchMarchPreview(c, path+"-preview", body); err != nil {
-					return fmt.Errorf("Nothing sent — expedition forecast refused: %w", err)
+					return fmt.Errorf("Nothing sent — expedition forecast refused: %w", alreadyMarchingHint(err, unitID, targetQ, targetR))
 				}
 			}
 			// Colonize catchment forecast (DEL A, megaron_koloni_legibilitet_plan.md):
@@ -1005,7 +1005,7 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 			}
 			data, err := c.post(path, body)
 			if err != nil {
-				return hiketeiaHint(err)
+				return hiketeiaHint(alreadyMarchingHint(err, unitID, targetQ, targetR))
 			}
 			if jsonMode {
 				printRawJSON(data)
@@ -2032,4 +2032,14 @@ func hiketeiaHint(err error) error {
 		return fmt.Errorf("%w\nNothing sent — add --confirm to march anyway", err)
 	}
 	return err
+}
+
+// alreadyMarchingHint names Keryx's verb for a unit already on the road: the
+// server's wording is surface-neutral, and "choose a new destination" read as
+// what `unit march` had just done (Kleio 2026-11-01).
+func alreadyMarchingHint(err error, unitID string, q, r int) error {
+	if err == nil || !strings.Contains(err.Error(), "already marching") {
+		return err
+	}
+	return fmt.Errorf("%w\nIn Keryx: keryx unit redirect --unit %s --q %d --r %d — a Runner carries the new course and the unit turns when it is caught", err, unitID, q, r)
 }

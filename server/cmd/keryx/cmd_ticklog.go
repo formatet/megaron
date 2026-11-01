@@ -68,10 +68,14 @@ func ticklogCmd() *cobra.Command {
 				fmt.Println("No game days to show.")
 				return nil
 			}
+			// The server derives flows from today's rates; it keeps no per-good
+			// history. Repeating them under each past game day read as "this was
+			// produced then" (Nausikaa 2026-10-31), so they are shown once.
+			fmt.Printf("Today's rate per game day — Prod: %s · Cons: %s\n", fmtFlows(resp.Ticks[0].Production), fmtFlows(resp.Ticks[0].Consumption))
+			fmt.Println("Earlier game days are not recorded per good; below are their events.")
+			fmt.Println()
 			for _, t := range resp.Ticks {
 				fmt.Printf("── %s ──\n", formatWorldTime(c, t.Tick))
-				fmt.Printf("  Prod:  %s\n", fmtFlows(t.Production))
-				fmt.Printf("  Cons:  %s\n", fmtFlows(t.Consumption))
 				if len(t.Events) == 0 {
 					fmt.Printf("  Events: —\n")
 				} else {

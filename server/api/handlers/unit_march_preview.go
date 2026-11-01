@@ -131,7 +131,7 @@ func (h *UnitHandler) MarchPreview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !known {
-		writeError(w, http.StatusUnprocessableEntity, "none of your men have ever seen that target — send a scout first")
+		writeError(w, http.StatusUnprocessableEntity, "none of your men have ever seen that target — only an explorer goes into unknown land: march there with intent \"explore\" (keryx: --intent explore)")
 		return
 	}
 	if u.Status == unit.StatusMarching {

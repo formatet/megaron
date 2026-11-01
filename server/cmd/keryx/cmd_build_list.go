@@ -100,7 +100,11 @@ func listCityBuilds(c *Client, world, prov string) error {
 					requires += "; " + fmt.Sprint(v)
 				}
 			}
-			fmt.Printf("%-15s %-12s L%-6d %-7s %-42s %-5s %s\n", q.Type, site, q.Current, next, cost, days, requires)
+			typ := q.Type
+			if typ == "silo" { // the player's word; build --type granary maps it back
+				typ = "granary"
+			}
+			fmt.Printf("%-15s %-12s L%-6d %-7s %-42s %-5s %s\n", typ, site, q.Current, next, cost, days, requires)
 		}
 	}
 	return nil

@@ -284,7 +284,7 @@ func (h *UnitHandler) dispatchMarchCourier(w http.ResponseWriter, ctx context.Co
 	if !colonizeInPlace && order.Intent != "explore" &&
 		!targetKnown(ctx, province.MapPosition{Q: order.TargetQ, R: order.TargetR}, destTerrain) {
 		writeError(w, http.StatusUnprocessableEntity,
-			fmt.Sprintf("none of your men have ever seen (%d,%d) — a march cannot be ordered into unknown land; send a scout first (march with intent \"explore\")",
+			fmt.Sprintf("none of your men have ever seen (%d,%d) — only an explorer goes into unknown land: march there with intent \"explore\" (keryx: --intent explore), and it returns home afterwards",
 				order.TargetQ, order.TargetR))
 		return
 	}

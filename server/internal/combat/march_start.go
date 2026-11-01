@@ -682,7 +682,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	if targetKnown != nil && !colonizeInPlace && o.Intent != "explore" {
 		if !targetKnown(ctx, province.MapPosition{Q: targetQ, R: targetR}, destTerrain) {
 			return nil, reject(http.StatusUnprocessableEntity,
-				"none of your men have ever seen (%d,%d) — a march cannot be ordered into unknown land; send a scout first (march with intent \"explore\")",
+				"none of your men have ever seen (%d,%d) — only an explorer goes into unknown land: march there with intent \"explore\" (keryx: --intent explore), and it returns home afterwards",
 				targetQ, targetR)
 		}
 	}

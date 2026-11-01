@@ -62,3 +62,34 @@ func TestBuildListDefaultsToCapitalAndKeepsJSONCatalogue(t *testing.T) {
 		t.Fatalf("json %s err%v", out, err)
 	}
 }
+
+// The list uses the player's word: a row reading "silo" sent AI players
+// looking for a building status calls Granary (Kleio 2026-11-01).
+func TestBuildListNamesTheGranary(t *testing.T) {
+	round3Client(t, func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/v1/worlds/world/provinces":
+			fmt.Fprint(w, `[{"id":"petras","name":"Petras"}]`)
+		case "/api/v1/worlds/world/provinces/petras":
+			fmt.Fprint(w, `{"settlement":{"name":"Petras","build_quotes":[{"type":"silo","current_level":0,"next_level":1,"costs":{"stone":8,"timber":12},"duration_game_days":8}]}}`)
+		case "/api/v1/buildings":
+			fmt.Fprint(w, `[{"type":"silo","costs":{"timber":12},"purpose":"Stores more food"}]`)
+		}
+	})
+	cmd := buildCmd()
+	cmd.SetArgs([]string{"--list", "Petras"})
+	out, err := captureStdout(t, cmd.Execute)
+	if err != nil || !strings.Contains(out, "\ngranary ") || strings.Contains(out, "silo") {
+		t.Fatalf("err%v: %s", err, out)
+	}
+}
+
+func TestAlreadyMarchingNamesRedirect(t *testing.T) {
+	err := alreadyMarchingHint(fmt.Errorf("the unit is already marching; redirect it by choosing a new destination"), "67cfc031", 56, 44)
+	if !strings.Contains(err.Error(), "keryx unit redirect --unit 67cfc031 --q 56 --r 44") {
+		t.Fatal(err)
+	}
+	if other := fmt.Errorf("no route"); alreadyMarchingHint(other, "u", 1, 2) != other {
+		t.Fatal("other errors must pass through unchanged")
+	}
+}

@@ -321,7 +321,7 @@ func mapCmd() *cobra.Command {
 				fmt.Printf("  (%3d,%3d) d%-2d %-3s %-20s%s%s%s%s\n", t.Q, t.R, t.Distance, bearing, namedRiverTerrain(t.Terrain, t.RiverName), dep, coastTag, tag, dim)
 			}
 			if len(frontier) > 0 {
-				fmt.Printf("\nFrontier — unexplored hexes bordering the known world (%d, nearest first; terrain is hidden until explored):\n", len(frontier))
+				fmt.Printf("\nFrontier — unexplored hexes bordering the known world (%d, nearest first; terrain is hidden until explored).\nReach one with `keryx unit march --unit <id> --q <Q> --r <R> --intent explore`; a plain march into unknown land is refused. A hex that touches known sea may be sea: land forces need another way in.\n", len(frontier))
 				max := len(frontier)
 				if max > 15 {
 					max = 15
