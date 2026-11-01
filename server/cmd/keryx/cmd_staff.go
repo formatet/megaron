@@ -32,9 +32,17 @@ see current occupancy. A market has no workplaces and needs no workers. An unsta
 			if len(args) == 0 {
 				return fmt.Errorf("building name is required: keryx staff <building> (see keryx city for workplaces, or keryx roster for all assignments)")
 			}
+			args, err := trailingLongFlags(cmd, args)
+			if err != nil {
+				return err
+			}
 			return cobra.RangeArgs(1, 2)(cmd, args)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			args, err := trailingLongFlags(cmd, args)
+			if err != nil {
+				return err
+			}
 			buildingType := args[0]
 			if buildingType == "market" {
 				const reason = "The market has no workplaces and needs no workers."
@@ -231,11 +239,26 @@ see current occupancy. A market has no workplaces and needs no workers. An unsta
 	// A bare "-1" delta is otherwise misparsed by pflag as an attempted
 	// shorthand flag ("unknown shorthand flag: '1' in -1"). Disabling
 	// interspersion stops flag parsing at the first positional (<byggnad>),
-	// so --province must come before it: `staff --province X foo -1`, not
-	// after — the standard cobra/pflag fix for a command that takes a
-	// signed-number positional.
+	// so trailingLongFlags reads long flags written after the delta
+	// (`staff temple +1 --god potnia`, as the help example shows).
 	cmd.Flags().SetInterspersed(false)
 	return cmd
+}
+
+// trailingLongFlags parses long flags (--name) that follow the positionals of
+// a command with interspersion disabled. A signed delta never starts with
+// "--", so "-1" stays a positional while "--god potnia" after it is a flag.
+func trailingLongFlags(cmd *cobra.Command, args []string) ([]string, error) {
+	for i, a := range args {
+		if !strings.HasPrefix(a, "--") || a == "--" {
+			continue
+		}
+		if err := cmd.Flags().Parse(args[i:]); err != nil {
+			return nil, err
+		}
+		return append(append([]string{}, args[:i]...), cmd.Flags().Args()...), nil
+	}
+	return args, nil
 }
 
 func hexBuildingGood(building, good string) bool {

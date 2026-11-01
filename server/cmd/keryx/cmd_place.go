@@ -38,6 +38,10 @@ and immediate. To move a citizen from a hex into a building:
   keryx place grain 5 +2
   keryx place grain 5 -1`,
 		Args: func(cmd *cobra.Command, args []string) error {
+			args, err := trailingLongFlags(cmd, args)
+			if err != nil {
+				return err
+			}
 			if hexFlag != "" {
 				_, rest := placeHexArgs(args)
 				return cobra.RangeArgs(1, 2)(cmd, rest)
@@ -46,6 +50,10 @@ and immediate. To move a citizen from a hex into a building:
 			return cobra.RangeArgs(2, 3)(cmd, rest)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			args, err := trailingLongFlags(cmd, args)
+			if err != nil {
+				return err
+			}
 			city, rest := placeCityArgs(args)
 			if hexFlag != "" {
 				city, rest = placeHexArgs(args)
@@ -126,8 +134,7 @@ and immediate. To move a citizen from a hex into a building:
 	// A bare "-1" delta is otherwise misparsed by pflag as an attempted
 	// shorthand flag ("unknown shorthand flag: '1' in -1"). Disabling
 	// interspersion stops flag parsing at the first positional (<roll>),
-	// so --province must come before it — the standard cobra/pflag fix for a
-	// command that takes a signed-number positional (same as `staff`).
+	// so trailingLongFlags reads long flags written after it (same as `staff`).
 	cmd.Flags().SetInterspersed(false)
 	return cmd
 }

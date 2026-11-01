@@ -38,3 +38,35 @@ func TestStaffTemplePostsPhysicalPlacement(t *testing.T) {
 		t.Fatal(out)
 	}
 }
+
+// The help example puts --god after the delta (`staff temple +1 --god potnia`);
+// flags after a signed delta must still be read (AI report 2026-11-01).
+func TestStaffTempleGodFlagAfterDelta(t *testing.T) {
+	posts := 0
+	round3Client(t, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			var body map[string]any
+			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+				t.Fatal(err)
+			}
+			if body["god"] != "potnia" {
+				t.Fatalf("placement %v", body)
+			}
+			posts++
+			w.WriteHeader(201)
+			fmt.Fprint(w, `{"ordinal":1}`)
+			return
+		}
+		fmt.Fprint(w, `{"total_gubbar":10,"pool_size":10,"hexes":[],"buildings":[`+
+			`{"building_type":"temple","god_id":"velchanos","level":1,"goods":[{"good_key":"cult","staffing_only":true,"cap":2,"placed":0,"placed_ordinals":[]}]},`+
+			`{"building_type":"temple","god_id":"potnia","level":1,"goods":[{"good_key":"cult","staffing_only":true,"cap":2,"placed":0,"placed_ordinals":[]}]}]}`)
+	})
+	for _, args := range [][]string{{"temple", "+2", "--god", "potnia"}, {"temple", "+2", "--god=potnia"}, {"--god", "potnia", "temple", "+2"}} {
+		posts = 0
+		cmd := staffCmd()
+		cmd.SetArgs(args)
+		if _, err := captureStdout(t, cmd.Execute); err != nil || posts != 2 {
+			t.Fatalf("%v: posts%d err%v", args, posts, err)
+		}
+	}
+}
