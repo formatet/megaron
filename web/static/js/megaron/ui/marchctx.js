@@ -85,14 +85,14 @@ function updateMarchPreview() {
   picks.forEach(p => { p.order = marchUnitOptions(State.marchCtxDest, p.category, options); });
   const intent = options.intent || '';
   const duration = document.getElementById('mctx-expedition');
-  const exploring = (!picks.length ? intent === 'explore' : picks.some(p => p.order.intent === 'explore' && p.mode !== 'redirect'));
+  const exploring = (!picks.length ? intent === 'explore' : picks.some(p => p.order.intent === 'explore'));
   duration.style.display = exploring ? 'block' : 'none';
   let ticks;
   try { if (exploring) ticks = expeditionTicks(document.getElementById('mctx-ticks')); }
   catch (error) { document.getElementById('mctx-mission').textContent = error.message; marchPreview.update(State.WORLD_ID, [], {}); return; }
   document.getElementById('mctx-mission').textContent = exploring
     ? 'Explore for ' + fmtDuration(ticks) + ', then return home.'
-      + (picks.some(p => p.mode === 'redirect') ? ' Only forces starting a new march take this expedition; marching forces receive a redirect and end their expedition.' : '')
+      + (picks.some(p => p.mode === 'redirect') ? ' Forces already marching turn onto it when the Runner reaches them.' : '')
     : '';
   marchPreview.update(State.WORLD_ID, picks, {
     target_q: State.marchCtxDest.q, target_r: State.marchCtxDest.r,
@@ -623,7 +623,7 @@ export async function sendMarch() {
   picks.forEach(p => { p.order = marchUnitOptions(State.marchCtxDest, p.category, options); });
   const intent = options.intent || '';
   let ticks;
-  try { if (picks.some(p => p.order.intent === 'explore' && p.mode !== 'redirect')) ticks = expeditionTicks(document.getElementById('mctx-ticks')); }
+  try { if (picks.some(p => p.order.intent === 'explore')) ticks = expeditionTicks(document.getElementById('mctx-ticks')); }
   catch (error) { document.getElementById('mctx-err').textContent = error.message; return; }
 
   marchPreview.cancel();
@@ -636,7 +636,7 @@ export async function sendMarch() {
   try {
     // A 200 unavailable ETA still validates the budget without disclosing the
     // route. A refused forecast must leave every selected unit unordered.
-    await Promise.all(picks.filter(p=>p.order.intent==='explore'&&p.mode!=='redirect').map(p=>
+    await Promise.all(picks.filter(p=>p.order.intent==='explore').map(p=>
       loadMarchPreview(world,p,{target_q:destination.q,target_r:destination.r,...p.order,ticks,unit_ids:picks.map(p=>p.id).join(',')},fetchAuth)));
   } catch(error) {
     if(selectionVersion===marchSelectionVersion&&world===State.WORLD_ID){
@@ -651,7 +651,9 @@ export async function sendMarch() {
   }
 
   const results = await Promise.all(picks.map(p => {
-    if (p.mode === 'redirect') {
+    // An expedition rides a redirect as a march order (Timothy 2026-11-01);
+    // a plain redirect keeps the /recall route.
+    if (p.mode === 'redirect' && p.order.intent !== 'explore') {
       // Already marching — a fresh /march is refused server-side
       // (march_start.go). Redirect it via the same Runner-borne /recall
       // endpoint War → Army's Redirect button uses; colonize/explore intent

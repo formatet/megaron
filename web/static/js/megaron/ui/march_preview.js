@@ -37,7 +37,8 @@ function marchExpeditionPlanLine(data) {
 }
 function marchArrivalHTML(data) {
  const plan = marchExpeditionPlanLine(data);
- return marchFirstArrivalHTML(data) + (plan ? '<div>' + esc(plan) + '</div>' : '');
+ const storm = typeof data.storm_warning === 'string' && data.storm_warning ? '<div class="stat-warn">' + esc(data.storm_warning) + '</div>' : '';
+ return marchFirstArrivalHTML(data) + (plan ? '<div>' + esc(plan) + '</div>' : '') + storm;
 }
 function marchFirstArrivalHTML(data) {
   if (data.available && Number.isInteger(data.arrival_tick)) {

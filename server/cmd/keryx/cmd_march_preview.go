@@ -25,6 +25,7 @@ func showMarchPreview(c *Client, path string, order map[string]any) error {
 		PlannedHomeByTick      *int   `json:"planned_home_by_tick_if_departing_now"`
 		Available              bool   `json:"available"`
 		Reason                 string `json:"reason"`
+		StormWarning           string `json:"storm_warning"`
 		ArrivalTick            int64  `json:"arrival_tick"`
 		DurationTicks          int64  `json:"duration_ticks"`
 		marchSilverForecast
@@ -53,6 +54,9 @@ func showMarchPreview(c *Client, path string, order map[string]any) error {
 			fmt.Printf(" — with immediate departure, home by %s", formatWorldTime(c, *forecast.PlannedHomeByTick))
 		}
 		fmt.Println(". First-leg arrival remains unknown.")
+	}
+	if forecast.StormWarning != "" {
+		fmt.Println("⚠ " + forecast.StormWarning)
 	}
 	if line := marchSilverLine(forecast.marchSilverForecast); line != "" {
 		fmt.Println(line)

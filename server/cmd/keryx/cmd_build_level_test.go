@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -91,5 +92,36 @@ func TestAlreadyMarchingNamesRedirect(t *testing.T) {
 	}
 	if other := fmt.Errorf("no route"); alreadyMarchingHint(other, "u", 1, 2) != other {
 		t.Fatal("other errors must pass through unchanged")
+	}
+}
+
+// A redirect can carry explore (Timothy 2026-11-01): it goes as a march order.
+func TestRedirectCarriesExplore(t *testing.T) {
+	const id = "11111111-2222-3333-4444-555555555555"
+	var path string
+	var body map[string]any
+	round3Client(t, func(w http.ResponseWriter, r *http.Request) {
+		if testWorldTimeResponse(w, r) {
+			return
+		}
+		if r.Method == http.MethodPost {
+			path = r.URL.Path
+			json.NewDecoder(r.Body).Decode(&body)
+			w.WriteHeader(202)
+			fmt.Fprint(w, `{"status":"order_dispatched"}`)
+		}
+	})
+	cmd := unitRedirectCmd()
+	cmd.SetArgs([]string{"--unit", id, "--q", "9", "--r", "-1", "--intent", "explore", "--ticks", "20"})
+	if _, err := captureStdout(t, cmd.Execute); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.HasSuffix(path, "/units/"+id+"/march") || body["intent"] != "explore" || body["ticks"] != float64(20) || body["target_q"] != float64(9) {
+		t.Fatalf("%s %v", path, body)
+	}
+	cmd = unitRedirectCmd()
+	cmd.SetArgs([]string{"--unit", id, "--q", "9", "--r", "-1"})
+	if _, err := captureStdout(t, cmd.Execute); err != nil || !strings.HasSuffix(path, "/recall") {
+		t.Fatalf("plain redirect left the recall path: %s %v", path, err)
 	}
 }

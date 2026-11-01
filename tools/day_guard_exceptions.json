@@ -5,7 +5,7 @@
       "ticks"
     ],
     "counts": {
-      "ticks": 4
+      "ticks": 7
     }
   },
   "server/cmd/keryx/cmd_status.go": {

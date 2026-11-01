@@ -964,8 +964,15 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 				return showMarchPreview(c, path+"-preview", body)
 			}
 			if intent == "explore" {
-				if _, err := fetchMarchPreview(c, path+"-preview", body); err != nil {
+				pdata, err := fetchMarchPreview(c, path+"-preview", body)
+				if err != nil {
 					return fmt.Errorf("Nothing sent — expedition forecast refused: %w", alreadyMarchingHint(err, unitID, targetQ, targetR))
+				}
+				var pre struct {
+					StormWarning string `json:"storm_warning"`
+				}
+				if json.Unmarshal(pdata, &pre) == nil && pre.StormWarning != "" && !jsonMode {
+					fmt.Println("⚠ " + pre.StormWarning)
 				}
 			}
 			// Colonize catchment forecast (DEL A, megaron_koloni_legibilitet_plan.md):
@@ -1064,6 +1071,9 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 				}
 			}
 			fmt.Println()
+			if warning, _ := resp["storm_warning"].(string); warning != "" {
+				fmt.Println("  ⚠ " + warning)
+			}
 			// The colonist purse (mig 107): a founding no longer mints the colony's
 			// silver, the column carries it from home. Printed at dispatch because
 			// this is the last moment the Wanax can recall the expedition and fund
@@ -1463,8 +1473,8 @@ at delivery appears in notifications with its reason.`,
 }
 
 func unitRedirectCmd() *cobra.Command {
-	var unitID, target, cityTo string
-	var q, r int
+	var unitID, target, cityTo, intent string
+	var q, r, ticks int
 
 	cmd := &cobra.Command{
 		Use:   "redirect",
@@ -1475,7 +1485,8 @@ the order's Runner physically catches up with it, then turns onto the new course
 A passable route is required; a refusal at delivery appears in notifications
 with its reason.`,
 		Example: `  keryx unit redirect --unit <id> --target 5,-3
-  keryx unit redirect --unit <id> --q 5 --r -3`,
+  keryx unit redirect --unit <id> --q 5 --r -3
+  keryx unit redirect --unit <id> --q 9 --r -1 --intent explore`,
 		Args: rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
@@ -1492,7 +1503,22 @@ with its reason.`,
 			}
 			unitID = resolvedID
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/recall", cfg.WorldID, unitID)
-			data, err := c.post(path, map[string]any{"target_q": newQ, "target_r": newR})
+			body := map[string]any{"target_q": newQ, "target_r": newR}
+			if intent != "" {
+				// A redirect that carries an intent is a march order to the
+				// marching unit; a Runner brings it (Timothy 2026-11-01).
+				if intent != "explore" {
+					return fmt.Errorf("--intent: only explore can ride a redirect")
+				}
+				path = fmt.Sprintf("/api/v1/worlds/%s/units/%s/march", cfg.WorldID, unitID)
+				body["intent"] = intent
+				if ticks > 0 {
+					body["ticks"] = ticks
+				}
+			} else if cmd.Flags().Changed("ticks") {
+				return fmt.Errorf("an expedition length belongs with --intent explore")
+			}
+			data, err := c.post(path, body)
 			if err != nil {
 				return err
 			}
@@ -1525,6 +1551,8 @@ with its reason.`,
 	cmd.Flags().IntVar(&q, "q", 0, "new target hex Q — axial coordinate, alternative to --target")
 	cmd.Flags().IntVar(&r, "r", 0, "new target hex R — axial coordinate, alternative to --target")
 	cmd.Flags().StringVar(&cityTo, "to", "", "known city name as destination — alternative to --q/--r or --target")
+	cmd.Flags().StringVar(&intent, "intent", "", "explore: turn the unit onto an expedition — first to the hex (seen or not), then around it, then home")
+	cmd.Flags().IntVar(&ticks, "ticks", 0, "with --intent explore: expedition duration in game days (omit for server default)")
 	_ = cmd.MarkFlagRequired("unit")
 	return cmd
 }
@@ -2041,5 +2069,5 @@ func alreadyMarchingHint(err error, unitID string, q, r int) error {
 	if err == nil || !strings.Contains(err.Error(), "already marching") {
 		return err
 	}
-	return fmt.Errorf("%w\nIn Keryx: keryx unit redirect --unit %s --q %d --r %d — a Runner carries the new course and the unit turns when it is caught", err, unitID, q, r)
+	return fmt.Errorf("%w\nIn Keryx: keryx unit redirect --unit %s --q %d --r %d (add --intent explore for an expedition) — a Runner carries the new course and the unit turns when it is caught", err, unitID, q, r)
 }

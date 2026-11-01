@@ -161,6 +161,31 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 	// delivery. A garrisoned unit is distance 0 (the order originates in the
 	// city it sits in) and executes immediately via StartMarch below. Marching
 	// units keep using recall/redirect (already courier-borne; Fas 3 unifies).
+	// A land unit already on the road takes a new march the same way: a
+	// redirect by Runner, which may carry any intent, explore included
+	// (Timothy 2026-11-01). Delivery reads the unit's position at the meeting.
+	if u, uErr := h.store.Get(ctx, unitID); uErr == nil &&
+		u.OwnerID == playerID && u.WorldID == worldID &&
+		u.Status == unit.StatusMarching && unit.CategoryOf(u.Type) == unit.CategoryLand &&
+		!unit.CommandedInPerson(u.Type) {
+		pos, perr := combat.CurrentUnitPosition(ctx, h.pool, h.clk, u)
+		if perr != nil {
+			var rej *combat.OrderReject
+			if errors.As(perr, &rej) {
+				writeError(w, rej.Status, rej.Reason)
+				return
+			}
+			writeError(w, http.StatusInternalServerError, "could not resolve the unit's current position")
+			return
+		}
+		h.dispatchMarchCourier(w, ctx, combat.MarchOrder{
+			WorldID: worldID, PlayerID: playerID, UnitID: unitID,
+			TargetQ: req.TargetQ, TargetR: req.TargetR,
+			Stance: req.Stance, Intent: req.Intent, Name: req.Name, Mode: req.Mode,
+			CargoIntent: req.CargoIntent, ExpeditionTicks: req.Ticks,
+		}, pos, targetKnown)
+		return
+	}
 	if u, uErr := h.store.Get(ctx, unitID); uErr == nil &&
 		u.OwnerID == playerID && u.WorldID == worldID &&
 		u.Status == unit.StatusPositioned && u.SettlementID == nil &&
@@ -212,12 +237,17 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	stormWarning := ""
+	if su, sErr := h.store.Get(ctx, unitID); sErr == nil {
+		stormWarning = stormHullWarning(su)
+	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
 	_ = json.NewEncoder(w).Encode(map[string]any{
-		"unit_id":    res.UnitID,
-		"departs_at": res.DepartsAt,
-		"arrives_at": res.ArrivesAt,
+		"storm_warning": stormWarning,
+		"unit_id":       res.UnitID,
+		"departs_at":    res.DepartsAt,
+		"arrives_at":    res.ArrivesAt,
 		// K4 tick-contract: timing expressed in world ticks (source of truth under
 		// the tick substrate), plus a derived UTC convenience. ArrivesAt is already
 		// the tick-derived instant (now + travelTicks × TickSeconds), so

@@ -174,3 +174,9 @@ test('pay forecast preserves authoritative half-home and full-field figures',()=
  assert.match(marchSilverLine({upkeep_silver_home:0.75,upkeep_silver_field:1.5,silver_runway_ticks:12}), /0.75 → 1.5 silver per game day/);
  assert.match(marchSilverLine({upkeep_silver_home:0.1,upkeep_silver_field:0.2,silver_runway_ticks:12}), /0.1 → 0.2 silver per game day/);
 });
+
+test('a ship that would sink in any storm is warned before it sails (Timothy 2026-11-01)', () => {
+  const html = marchPreviewHTML({ available: false, reason: 'unknown_terrain', storm_warning: 'Hull 1 of 5: any storm this ship meets will sink it <b>' });
+  assert.match(html, /stat-warn">Hull 1 of 5: any storm this ship meets will sink it &lt;b&gt;</);
+  assert.doesNotMatch(marchPreviewHTML({ available: false, reason: 'unknown_terrain' }), /stat-warn/);
+});

@@ -64,6 +64,9 @@ func (h *UnitHandler) MarchPreview(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+	if w := stormHullWarning(u); w != "" {
+		finance["storm_warning"] = w
+	}
 	order := combat.MarchOrder{WorldID: worldID, PlayerID: playerID, UnitID: unitID,
 		TargetQ: q, TargetR: rr, Intent: query.Get("intent"), Stance: query.Get("stance"),
 		Name: query.Get("name"), Mode: query.Get("mode"), CargoIntent: query.Get("cargo_intent")}

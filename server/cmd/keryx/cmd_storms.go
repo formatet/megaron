@@ -64,7 +64,7 @@ func formatStorms(data []byte, clients ...*Client) (string, error) {
 		return "", err
 	}
 	if len(resp.Storms) == 0 {
-		return "No storms known. A storm shows only inside your sight.\n", nil
+		return "No storms known. A storm shows only inside your sight; unseen storms may still be out at sea.\n", nil
 	}
 	hexes := func(i int) string {
 		var parts []string
