@@ -43,9 +43,9 @@ func TestCodexRoadsArticleMatchesCode(t *testing.T) {
 	// A labelled link reads as its label: "[[war-chariot|Chariots]]" is "Chariots" to the player.
 	md = regexp.MustCompile(`\[\[[a-z0-9-]+\|([^\]]+)\]\]`).ReplaceAllString(md, "$1")
 	rows := []struct{ label, terrain string }{
-		{"Plains, river valley, delta", "plains"},
-		{"Olive grove, maquis", "forest_olive_grove"},
-		{"Hills, cedar forest", "hills"},
+		{"Delta, plains, river valley", "plains"},
+		{"Maquis, olive grove", "forest_olive_grove"},
+		{"Cedar forest, hills", "hills"},
 		{"Semi-desert", "semi_desert"},
 	}
 	for _, r := range rows {

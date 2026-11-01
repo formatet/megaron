@@ -426,3 +426,55 @@ func TestOrderPursuit_UnflaggedMovingEnvelopeKeepsOldMeaning(t *testing.T) {
 		t.Fatalf("unflagged envelope changed frozen moving-meeting meaning: target%d failures%v", target, f.hub.failures)
 	}
 }
+
+// A unit marching toward the Runner is met where the Runner first reaches its
+// route: the Runner waits there for the unit instead of walking a new leg
+// toward it each time it arrives a little early (live 2026-10-31: four missed
+// meetings on a head-on redirect).
+func TestOrderPursuit_HeadOnMeetingWaitsOnRoute(t *testing.T) {
+	f := setupSingleRecall(t, "stance")
+	ctx := context.Background()
+	raw := pursuitPayload(t, f, "stance")
+	d := time.Duration(tick.TickSeconds) * time.Second
+	route := combat.StoredRoute{Version: 2, StartTick: 1, EndTick: 13, DepartureAt: f.clk.Now(), TickNanoseconds: int64(d), Hexes: [][2]int{{6, 0}, {5, 0}, {4, 0}, {3, 0}, {2, 0}, {1, 0}, {0, 0}}, Costs: []int64{2000, 2000, 2000, 2000, 2000, 2000}}
+	saved, _ := json.Marshal(route)
+	if _, err := f.pool.Exec(ctx, `UPDATE units SET status='marching',q=6,r=0,target_q=0,target_r=0,depart_tick=1,arrive_tick=13,departs_at=$2,arrives_at=$3,march_route=$4 WHERE id=$1`, f.unitID, f.clk.Now(), f.clk.Now().Add(12*d), saved); err != nil {
+		t.Fatal(err)
+	}
+	next := raw
+	var legs int
+	var stance *string
+	for tries := 0; tries < 12; tries++ {
+		if err := f.handler.Handle(ctx, events.ScheduledEvent{Payload: next}); err != nil {
+			t.Fatal(err)
+		}
+		if err := f.pool.QueryRow(ctx, `SELECT stance FROM units WHERE id=$1`, f.unitID).Scan(&stance); err != nil {
+			t.Fatal(err)
+		}
+		if stance != nil && *stance == "storm" {
+			break
+		}
+		var payload []byte
+		if err := f.pool.QueryRow(ctx, `SELECT order_payload FROM messengers WHERE id=$1`, f.messengerID).Scan(&payload); err != nil {
+			t.Fatal(err)
+		}
+		var p OrderDeliveryPayload
+		json.Unmarshal(payload, &p)
+		legs = p.PursuitLegs
+		var due time.Time
+		if err := f.pool.QueryRow(ctx, `SELECT payload,process_after FROM scheduled_events WHERE event_type='OrderDeliveryV2' AND payload->>'messenger_id'=$1 ORDER BY (payload->>'passage_generation')::int DESC, process_after DESC LIMIT 1`, f.messengerID.String()).Scan(&next, &due); err != nil {
+			t.Fatal(err)
+		}
+		f.clk.Set(due)
+		n := int(due.Sub(route.DepartureAt) / d)
+		if _, err := f.pool.Exec(ctx, `UPDATE worlds SET current_tick=$2,last_tick_at=$3 WHERE id=$1`, f.world, 1+n, route.DepartureAt.Add(time.Duration(n)*d)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if stance == nil || *stance != "storm" {
+		t.Fatalf("head-on meeting never delivered (legs %d): %v", legs, f.hub.failures)
+	}
+	if legs > 1 {
+		t.Fatalf("Runner walked %d legs toward a unit coming at it; one leg then a wait is a meeting", legs)
+	}
+}

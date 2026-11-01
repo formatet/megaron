@@ -103,6 +103,14 @@ func (h *OrderDeliveryHandler) advanceFollowingOrder(ctx context.Context, p *Ord
 			if e != nil {
 				return false, "", e
 			}
+			// A leg has brought the Runner onto the unit's road ahead of it:
+			// the unit comes to it. Wait there instead of walking a new leg
+			// toward it, which only overshoots again (live 2026-10-31).
+			if until, ahead, e := routeStayAhead(route, a, at, now); e != nil {
+				return false, "", e
+			} else if ahead && p.PursuitLegs > 0 {
+				return false, "", h.waitFollowingOrderUntilTx(ctx, tx, p, at, until, a.TickAtOrAfter(until))
+			}
 			target, intercepted, err = InterceptCourierTargetRoute(ctx, tx, p.WorldID, at, route, a, now)
 		} else if u.Q != nil && u.R != nil && u.DepartsAt != nil && u.ArrivesAt != nil {
 			target, intercepted, err = InterceptCourierTarget(ctx, tx, p.WorldID, at, province.MapPosition{Q: *u.Q, R: *u.R}, province.MapPosition{Q: *u.TargetQ, R: *u.TargetR}, unit.MoveCategory(u.Type), *u.DepartsAt, *u.ArrivesAt, now)
@@ -163,7 +171,11 @@ func (h *OrderDeliveryHandler) waitFollowingOrderTx(ctx context.Context, tx pgx.
 	if err != nil {
 		return err
 	}
-	arrival := now.Add(time.Duration(tick.TickSeconds) * time.Second)
+	return h.waitFollowingOrderUntilTx(ctx, tx, p, at, now.Add(time.Duration(tick.TickSeconds)*time.Second), a.Tick+1)
+}
+
+// waitFollowingOrderUntilTx keeps the Runner at the reached hex until arrival.
+func (h *OrderDeliveryHandler) waitFollowingOrderUntilTx(ctx context.Context, tx pgx.Tx, p *OrderDeliveryPayload, at province.MapPosition, arrival time.Time, due int) error {
 	if err := tx.QueryRow(ctx, `UPDATE messengers SET passage_generation=passage_generation+1,arrives_at=$2,hex_q=$3,hex_r=$4,
  passage_status=NULL,carrier_transport_id=NULL,carrier_unit_id=NULL,carrier_name=NULL
  WHERE id=$1 RETURNING passage_generation`, p.MessengerID, arrival, at.Q, at.R).Scan(&p.PassageGeneration); err != nil {
@@ -173,7 +185,7 @@ func (h *OrderDeliveryHandler) waitFollowingOrderTx(ctx context.Context, tx pgx.
 	if _, err := tx.Exec(ctx, `UPDATE messengers SET order_payload=$2 WHERE id=$1`, p.MessengerID, mustPursuitJSON(p)); err != nil {
 		return err
 	}
-	if err := h.scheduler.EnqueueDeadlineTx(ctx, tx, p.WorldID, events.ScheduledOrderDeliveryV2, p, a.Tick+1, arrival); err != nil {
+	if err := h.scheduler.EnqueueDeadlineTx(ctx, tx, p.WorldID, events.ScheduledOrderDeliveryV2, p, due, arrival); err != nil {
 		return fmt.Errorf("schedule following wait: %w", err)
 	}
 	return tx.Commit(ctx)

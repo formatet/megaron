@@ -244,3 +244,34 @@ func InterceptCourierTargetRoute(
 	t, ok := InterceptAlongPathRoute(g, roads, courierOrigin, path, enterAt, now)
 	return t, ok, nil
 }
+
+// routeStayAhead reports whether the marching unit has yet to reach pos on its
+// saved route, and if so the middle of its stay there — the instant a Runner
+// waiting on pos is sure to share the hex with it. The final hex has no exit,
+// so its stay begins at entry.
+func routeStayAhead(route combat.StoredRoute, anchor tick.Anchor, pos province.MapPosition, now time.Time) (time.Time, bool, error) {
+	enterMilli, err := combat.RouteEnterMilli(route)
+	if err != nil {
+		return time.Time{}, false, err
+	}
+	wall := func(m int64) time.Time {
+		if route.Version == 2 && !route.DepartureAt.IsZero() && route.TickNanoseconds > 0 {
+			return route.WallAt(m)
+		}
+		return anchor.WallAt(m)
+	}
+	for i := 1; i < len(route.Hexes) && i < len(enterMilli); i++ {
+		if route.Hexes[i] != [2]int{pos.Q, pos.R} {
+			continue
+		}
+		enter := wall(enterMilli[i])
+		if !enter.After(now) {
+			continue // already reached (or passed) — not ahead
+		}
+		if i+1 < len(enterMilli) {
+			return wall((enterMilli[i] + enterMilli[i+1]) / 2), true, nil
+		}
+		return enter, true, nil
+	}
+	return time.Time{}, false, nil
+}
