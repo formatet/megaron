@@ -3,6 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math"
+
+	"formatet/megaron/server/internal/kharis"
+	"formatet/megaron/server/internal/province"
 
 	"github.com/spf13/cobra"
 )
@@ -123,6 +127,8 @@ func printFoundingStatus(fp *foundingStatusResp) error {
 		kohort = "cohort"
 	}
 	fmt.Printf("  %d Spearmen-%s in the field · messengers free to send\n", fp.SpearmenInField, kohort)
+	fadePoints := kharis.StartingKharis - kharis.WrathThreshold
+	fmt.Printf("  Kharis: without a temple it falls about %g points in %g game days (below %g the gods may punish you); a temple takes %d game days to build\n", fadePoints, math.Round(fadePoints/kharis.KharisPerDemand), float64(kharis.WrathThreshold), province.BuildingSpecs[province.BuildingTemple].DurationTicks)
 	fmt.Println("\nNext steps:")
 	fmt.Printf("  keryx unit march --unit %s --q <q> --r <r>   # travel\n", hostID)
 	fmt.Println("  keryx founding settle                       # found the metropolis where the host stands")
