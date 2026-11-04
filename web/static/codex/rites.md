@@ -65,4 +65,16 @@ The gods keep a fixed reckoning: what one unit of each good is worth as an offer
 
 These are offering values. Wanaxes agree their own trade prices. You may compose an offering in the Offer row on the web, or in Keryx with `rite --offer good=amount,...`. Each god has a taste: the Offer row's **Favours:** line lists the goods this god loves most, dearest first. The traditional recipe always suffices.
 
+A good's worth is multiplied by the god's taste for it. A taste above 1 means the god values that good more than its worth, below 1 less. Goods not listed count at their worth.
+
+<!-- favours -->
+| Prayer | God | Favours (dearest first) |
+|---|---|---|
+| Favourable Passage | The Sea Daimons of Stillness | no preference: every good at its worth |
+| Green Shoots | Velchanos | incense ×2, wine ×2, oil ×1.6, grain ×1.3, livestock ×1.3, fish ×0.9, copper ×0.5, tin ×0.5, timber ×0.4, stone ×0.3 |
+| Mistress of the Walls | Potnia | livestock ×2, wine ×1.7, horses ×1.6, bronze ×1.5, incense ×1.5, grain ×1, pottery ×0.5, fish ×0.4, stone ×0.4 |
+| Potnia's Vision | Potnia | fish ×2.2, incense ×2.1, purple ×2, oil ×1.5, silver ×1.4, bronze ×1.3, pottery ×1.1, grain ×0.6, stone ×0.4 |
+| The Thread Shows a Path | Asterion | no preference: every good at its worth |
+<!-- /favours -->
+
 Any good may be offered. **Oil and wine** are offerings like any other — oil is also food, so do not give up what a hungry city needs. **Incense** is a valuable gift ([[incense]]). For everyday prayers it can help meet the offering requirement; excess value does not change the answer, but a lasting prayer lasts longer and the temple rests longer.

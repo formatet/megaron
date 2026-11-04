@@ -22,6 +22,14 @@ def block(kind,key):
   x=reference['prayers'][key];rows=[('God',x['God']),('Minimum standing',amount(x['MinKharis'])+' Kharis'),('Traditional offering',costs(x['Offering'])),('Temple’s rest (level 1, traditional gift)',days(x['CooldownTicks']))]
  else:raise ValueError((kind,key))
  return '| Reference | Current rule |\n|---|---|\n'+'\n'.join('| '+a+' | '+b+' |' for a,b in rows)
+def favours():
+ # Each prayer's taste from reference.json (religion.FavoursFor), dearest first; prayers alphabetical by name.
+ rows=[]
+ for x in sorted(reference['prayers'].values(),key=lambda x:x['Name']):
+  f=x.get('Favours') or {}
+  taste=', '.join(k+' ×'+amount(v) for k,v in sorted(f.items(),key=lambda kv:(-kv[1],kv[0]))) if f else 'no preference: every good at its worth'
+  rows.append('| '+x['Name']+' | '+x['God']+' | '+taste+' |')
+ return '| Prayer | God | Favours (dearest first) |\n|---|---|---|\n'+'\n'.join(rows)
 def write(path,text):
  if not path.exists() or path.read_text()!=text:
   changed.append(str(path.relative_to(ROOT)))
@@ -45,6 +53,7 @@ def hub_list(kind,keys):
 for article in index['articles']:
  path=D/(article['id']+'.md');text=path.read_text()
  text=re.sub(r'<!-- facts: (building|prayer) ([a-z0-9_]+) -->[\s\S]*?<!-- /facts -->',lambda m:'<!-- facts: '+m[1]+' '+m[2]+' -->\n'+block(m[1],m[2])+'\n<!-- /facts -->',text)
+ text=re.sub(r'<!-- favours -->[\s\S]*?<!-- /favours -->',lambda m:'<!-- favours -->\n'+favours()+'\n<!-- /favours -->',text)
  text=re.sub(r'<!-- list: ([a-z]+)((?: [a-z0-9_]+)*) -->[\s\S]*?<!-- /list -->',lambda m:'<!-- list: '+m[1]+m[2]+' -->\n'+hub_list(m[1],m[2].split())+'\n<!-- /list -->',text)
  for entity in article.get('entities',[]):
   if entity['kind']!='unit' or entity['key'] not in units:continue

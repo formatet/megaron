@@ -249,7 +249,9 @@ func TestCodexReferenceMatchesAuthoritativeCatalogues(t *testing.T) {
 	}
 	prayers := map[string]religion.PrayerSpec{}
 	for _, id := range religion.CulturePrayers[string(province.MVPCulture)] {
-		prayers[id] = religion.PrayerSpecs[id]
+		spec := religion.PrayerSpecs[id]
+		spec.Favours = religion.FavoursFor(spec) // the taste the game uses, archetype fallback included (Codex Favours table)
+		prayers[id] = spec
 	}
 	facts["prayers"] = prayers
 	var goodsRaw []byte
