@@ -5,6 +5,7 @@ import (
 	"formatet/megaron/server/internal/events"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"math"
 	"testing"
 )
 
@@ -294,8 +295,8 @@ func TestTransitionNoticeFailureRollsBackAndRetries(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT kharis_amount FROM player_world_records WHERE world_id=$1 AND player_id=$2`, wid, owner).Scan(&amount); err != nil {
 		t.Fatal(err)
 	}
-	if amount != 28.8 {
-		t.Fatalf("maintenance amount%g want28.8", amount)
+	if math.Abs(amount-(30-1.0/3)) > 1e-9 {
+		t.Fatalf("maintenance amount%g want30-1/3", amount)
 	}
 	exec(`ALTER TABLE notifications DROP CONSTRAINT test_transition_notice_failure`)
 	for i := 0; i < 2; i++ {
@@ -317,7 +318,7 @@ func TestTransitionNoticeFailureRollsBackAndRetries(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT kharis_amount FROM player_world_records WHERE world_id=$1 AND player_id=$2`, wid, owner).Scan(&amount); err != nil {
 		t.Fatal(err)
 	}
-	if amount != 28.8 {
+	if math.Abs(amount-(30-1.0/3)) > 1e-9 {
 		t.Fatalf("retry charged maintenance twice: %g", amount)
 	}
 	// A stale observation cannot reset a newer condition or create a notice.

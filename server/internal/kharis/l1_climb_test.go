@@ -38,13 +38,13 @@ func TestL1TempleClimbsToFirstPrayerAndCaps(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if net <= 0 || (level == 1 && net > 2.1) {
+			if net <= 0 || (level == 1 && net > KharisPerTempleWeight) {
 				t.Fatalf("L%d ordinary net%g want weakly positive L1", level, net)
 			}
 			h := newTestTickHandler(pool)
 			amount := Floor
 			firstPrayer, firstCap := 0, 0
-			for tick := 1; tick <= 180; tick++ {
+			for tick := 1; tick <= 260; tick++ {
 				if _, err := pool.Exec(ctx, `UPDATE worlds SET current_tick=$2 WHERE id=$1`, wid, tick); err != nil {
 					t.Fatal(err)
 				}
@@ -68,13 +68,13 @@ func TestL1TempleClimbsToFirstPrayerAndCaps(t *testing.T) {
 					firstCap = tick
 				}
 			}
-			if level == 1 && (firstPrayer == 0 || firstPrayer > 15 || cap >= religion.MoodFavorable) {
+			if level == 1 && (firstPrayer == 0 || firstPrayer > 17 || cap >= religion.MoodFavorable) {
 				t.Fatalf("L1 firstPrayer%d cap%g", firstPrayer, cap)
 			}
 			if firstCap == 0 || math.Abs(amount-cap) > 1e-8 {
 				t.Fatalf("L%d failed cap: tick%d amount%g cap%g", level, firstCap, amount, cap)
 			}
-			t.Logf("L%d net%+.3f first prayer tick%d cap%g reached tick%d; actual180ticks", level, net, firstPrayer, cap, firstCap)
+			t.Logf("L%d net%+.3f first prayer tick%d cap%g reached tick%d; actual260ticks", level, net, firstPrayer, cap, firstCap)
 			// An unfunded temple still earns zero gross and loses the same decay.
 			if _, err := pool.Exec(ctx, `UPDATE settlement_goods SET amount=0,rate=0 WHERE settlement_id=$1`, sid); err != nil {
 				t.Fatal(err)
@@ -83,7 +83,7 @@ func TestL1TempleClimbsToFirstPrayerAndCaps(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if net != -1.2 {
+			if net != -KharisPerDemand {
 				t.Fatalf("L%d unfunded net%g changed baseline decay", level, net)
 			}
 		})

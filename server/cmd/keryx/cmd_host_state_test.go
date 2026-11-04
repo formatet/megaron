@@ -21,6 +21,9 @@ func TestFoundingHostPhysicalStatusText(t *testing.T) {
 		if err != nil || !strings.Contains(out, tc.want+" · physical position (2,0)") {
 			t.Fatalf("%v %s", err, out)
 		}
+		if !strings.Contains(out, "without a temple it falls about 10 points in 30 game days (below 30 the gods may punish you); a temple takes 16 game days to build") {
+			t.Fatalf("kharis pace line missing: %s", out)
+		}
 	}
 }
 

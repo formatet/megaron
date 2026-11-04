@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/kharis"
@@ -43,6 +44,9 @@ func (h *JoinHandler) openingDispatch(hostID uuid.UUID, spec hostSpec, forming b
 		body.Title = "Begin again"
 		host = fmt.Sprintf("Your survivors gather into a new Host, with %g grain and %g silver. Your standing with the gods is kept. You live on subsistence until founding; find a new home.", float64(nomadicHostDowryGrain), spec.silver)
 	}
+	templeDays := province.BuildingSpecs[province.BuildingTemple].DurationTicks
+	fadePoints := kharis.StartingKharis - kharis.WrathThreshold
+	godsPace := fmt.Sprintf("Without a temple your Kharis falls about %g points in %g game days; below %g the gods may punish you, and each additional city raises the daily cost, even with a temple. A temple takes %d game days to build \u2014 start one early, then staff and feed it to earn favour.", fadePoints, math.Round(fadePoints/kharis.KharisPerDemand), float64(kharis.WrathThreshold), templeDays)
 	timeLine := fmt.Sprintf("Time. A game day passes every %s.", openingDayLength(tick.TickSeconds))
 	if forming {
 		timeLine += fmt.Sprintf(" Game days begin after %d Wanaxes join.", h.startWanaxes)
@@ -52,14 +56,14 @@ func (h *JoinHandler) openingDispatch(hostID uuid.UUID, spec hostSpec, forming b
 		fmt.Sprintf("Foot soldiers cross a plains hex in %g game day, olive woodland in %g, hills or cedar forest in %g, desert in %g. Chariots cross plains in %g game day but need %g in olive woodland and %g in hills, cedar forest or desert. A full-crewed galley crosses %g coastal or %g open-sea hexes a game day.", province.TerrainMoveTicks("plains"), province.TerrainMoveTicks("forest_olive_grove"), province.TerrainMoveTicks("hills"), province.TerrainMoveTicks("semi_desert"), province.TerrainMoveTicksFor("plains", province.CategoryWarChariot), province.TerrainMoveTicksFor("forest_olive_grove", province.CategoryWarChariot), province.TerrainMoveTicksFor("hills", province.CategoryWarChariot), 1/province.TerrainMoveTicksFor("coastal_sea", "naval"), 1/province.TerrainMoveTicksFor("deep_sea", "naval")),
 		host,
 		fmt.Sprintf("Food first. A city must feed itself. Starvation makes it shrink; below %d people it falls.", economy.CollapseBelowPopulation),
-		fmt.Sprintf("The gods. A new Wanax starts at %g Kharis. It fades slowly from the start; each additional city increases the daily cost, even with a temple. A temple takes %d game days to build: staff and feed it to earn favour. Low standing risks punishment.", kharis.StartingKharis, province.BuildingSpecs[province.BuildingTemple].DurationTicks),
+		fmt.Sprintf("The gods. A new Wanax starts at %g Kharis. %s", kharis.StartingKharis, godsPace),
 		"Place citizens on olive woodland or cedar forest for timber, and on stone-bearing ground for stone; idle citizens produce nothing.",
 		"Orders travel. A Runner must reach a unit in the field before it follows your new order.",
 		"Bronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.",
 		"Rules: ? (Codex). Problems: Report. Community: the Megaron Discord, linked under Account.",
 	}
 	if spec.refugee {
-		body.Paragraphs[4] = fmt.Sprintf("The gods. Your standing is kept and fades from the start. Each additional city increases the daily cost, even with a temple. A temple takes %d game days to build: staff and feed it to earn favour. Low standing risks punishment.", province.BuildingSpecs[province.BuildingTemple].DurationTicks)
+		body.Paragraphs[4] = fmt.Sprintf("The gods. Your standing is kept. %s", godsPace)
 	}
 	return body
 }

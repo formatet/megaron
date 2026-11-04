@@ -2,11 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { kharisNetView, kharisDecayHTML, kharisStandingHTML } from './kult_kharis.js';
 
-test('AK1: kharis_net_known true draws a Net row, distinct from Passive, signed with one decimal', () => {
+test('AK1: kharis_net_known true draws a Net row, distinct from Passive, signed, one decimal when exact, else two', () => {
   const view = kharisNetView({ kharis_net_per_tick: 2.34, kharis_net_known: true, kharis_devotion_idle: false });
   assert.match(view.netHtml, /sr-label">Net</, 'label must not be "Passive" — a distinct row');
   assert.match(view.netHtml, /Kharis each game day/, 'one heading carries the unit');
-  assert.match(view.netHtml, /Net<\/span><span class="sr-val">\+2\.3</, 'signed, one decimal');
+  assert.match(view.netHtml, /Net<\/span><span class="sr-val">\+2\.34</, 'signed, two decimals when one would round');
+  assert.match(kharisNetView({ kharis_net_per_tick: 0.25, kharis_net_known: true }).netHtml, /sr-val">\+0\.25</, 'L1 pace 7/12 - 1/3 stays readable');
+  assert.match(kharisNetView({ kharis_net_per_tick: 1.2, kharis_net_known: true }).netHtml, /sr-val">\+1\.2</, 'exact one decimal stays one decimal');
   assert.equal((view.netHtml.match(/game day/g) || []).length, 1, 'the unit is said once, not per row');
   assert.equal(view.idleHtml, '', 'idle not flagged — no warning');
 });

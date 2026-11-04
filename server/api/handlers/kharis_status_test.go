@@ -14,6 +14,7 @@ import (
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/kharis"
+	"formatet/megaron/server/internal/province"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
@@ -83,7 +84,7 @@ func TestKharisPlayerRulesSourceParity(t *testing.T) {
 		fmt.Sprintf("level 2 **%g**", kharis.EffectiveKharisCap(100, 2)),
 		fmt.Sprintf("level 3 **%g**", kharis.EffectiveKharisCap(100, 3)),
 		fmt.Sprintf("a %.0f%% chance", 100*kharis.PunishmentProbability(kharis.WrathThreshold-1, false)),
-		fmt.Sprintf("**%g × effective temple weight − %g × active cities²**", kharis.KharisPerTempleWeight, kharis.KharisPerDemand),
+		fmt.Sprintf("**%.2f × effective temple weight − %.2f × realm demand**", kharis.KharisPerTempleWeight, kharis.KharisPerDemand),
 		"Population does not contribute", "random eligible city",
 		"with or without a temple",
 	} {
@@ -95,6 +96,10 @@ func TestKharisPlayerRulesSourceParity(t *testing.T) {
 	for _, spec := range []hostSpec{newcomerHost, hostSpec{refugee: true}} {
 		text := strings.Join(h.openingDispatch(uuid.New(), spec, false).Paragraphs, " ")
 		if strings.Contains(text, "holds for") || strings.Contains(text, "144") || strings.Contains(text, "no punishment falls") {
+			t.Fatal(text)
+		}
+		if !strings.Contains(text, "falls about 10 points in 30 game days") || !strings.Contains(text, "below 30 the gods may punish you") || strings.Contains(text, "fades slowly") ||
+			!strings.Contains(text, fmt.Sprintf("takes %d game days to build", province.BuildingSpecs[province.BuildingTemple].DurationTicks)) {
 			t.Fatal(text)
 		}
 		if spec.refugee && (strings.Contains(text, "starts at") || !strings.Contains(text, "standing is kept")) {

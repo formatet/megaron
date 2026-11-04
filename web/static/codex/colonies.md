@@ -16,7 +16,7 @@ You are notified when the colony is founded, with how its food looks.
 
 There is no free starter [[farm]]. If the ground cannot feed them, you must — by [[transfers|transfer]] or a [[routes|standing order]] — until they stand on their own. A colony on a rich mineral site with no farmland is a real strategy, but only if you have already built the [[grain|grain]] route that keeps it alive.
 
-Every active city, including your capital, counts toward [[kharis|upkeep of the cult]], even with a temple. Realm demand is active cities squared; daily cult upkeep is 1.2 times that demand. Population does not add to it. Sunk, collapsed and razed cities do not count. Check the realm breakdown in **Kult** or `keryx status` before expanding.
+Every active city, including your capital, counts toward [[kharis|upkeep of the cult]], even with a temple. Each new city adds more demand than the last (1, 2, 3 …); daily cult upkeep is about a third (0.33) of that demand. Population does not add to it. Sunk, collapsed and razed cities do not count. Check the realm breakdown in **Kult** or `keryx status` before expanding.
 
 ## Abandoning a colony {#colonies-abandoning-a-colony}
 

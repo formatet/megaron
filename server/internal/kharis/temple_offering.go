@@ -39,10 +39,14 @@ type TithePart struct {
 }
 
 func TempleWeight(level int) float64 { return float64(level * level) }
-func RealmDemand(cities int) float64 { return float64(max(0, cities) * max(0, cities)) }
+// RealmDemand is triangular (Timothy 2026-11-04): the k-th active city adds k, so 1, 2, 3, 4 cities demand 1, 3, 6, 10.
+func RealmDemand(cities int) float64 { n := max(0, cities); return float64(n * (n + 1) / 2) }
 
-const KharisPerTempleWeight = 2.1
-const KharisPerDemand = 1.2
+// Kharis pace (Timothy 2026-11-02, margin 30 game days 2026-11-04): both rates are the old
+// 2.1 / 1.2 times 5/18, so temple vs upkeep keeps its ratio and everything moves 3.6x slower,
+// up and down. One city, no temple: 40 -> 30 in 30 game days. Full L1 temple: net +0.25/day.
+const KharisPerTempleWeight = 7.0 / 12
+const KharisPerDemand = 1.0 / 3
 
 func EffectiveTempleWeight(level, staffed, capacity int, paid float64) float64 {
 	if capacity <= 0 {

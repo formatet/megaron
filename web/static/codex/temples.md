@@ -10,7 +10,7 @@ Choose the god when you build. On the web, **City → Construct** lists one row 
 
 Temple levels 1/2/3 provide **2/4/8 workplaces**. A worker stands at one temple only and cannot work another job at the same time. Founding grants no automatic temple staffing. **Temple workplaces unfilled** on **Kult → Kharis** means a temple has empty places: place citizens in it from **City**.
 
-Temple levels 1/2/3 have **weight 1/4/9**. Effective weight is temple weight × staffed fraction × paid tithe fraction. Each effective weight produces **2.1 kharis per game day**. An empty temple gives nothing.
+Temple levels 1/2/3 have **weight 1/4/9**. Effective weight is temple weight × staffed fraction × paid tithe fraction. Each effective weight produces **about 0.58 kharis per game day**. An empty temple gives nothing.
 
 ## A temple’s daily offering {#daily-offerings}
 
@@ -30,7 +30,7 @@ The grain part uses **grain first, then [[fish|fish]], then [[timber|timber]]**,
 
 ## Temple levels and the Kharis ceiling {#temple-levels}
 
-With full staffing and tithe, a level-1 temple raises kharis in a one-city realm by **0.9 per game day**. Compare your realm demand and given weight in **Kult → Kharis**. A temple does not remove its city from the demand, nor protect low standing from [[divine-wrath|divine wrath]].
+With full staffing and tithe, a level-1 temple raises kharis in a one-city realm by **0.25 per game day**. Compare your realm demand and given weight in **Kult → Kharis**. A temple does not remove its city from the demand, nor protect low standing from [[divine-wrath|divine wrath]].
 
 **Your best temple sets your kharis ceiling:** no temple 40, level 1 50, level 2 75, level 3 100. Everyday prayers work at a level-1 temple. Spontaneous blessings need 60 kharis and a maintained temple. Only a level-2 temple or higher lets kharis grow that far. Kharis retained above a lowered ceiling still counts. Levelling a temple further needs [[cedar|cedar]].
 
@@ -57,9 +57,9 @@ filter the list to one city.
 
 ## Daily upkeep of the cult {#cult-upkeep}
 
-Realm demand is **the number of active cities squared**. All active cities count, including the capital, with or without temples. Sunk, collapsed and razed cities do not count. Population, armies and crews do not change demand. Cult upkeep is **1.2 × demand per game day**.
+Realm demand grows with each city: **the first active city demands 1, the second adds 2, the third adds 3**, and so on. All active cities count, including the capital, with or without temples. Sunk, collapsed and razed cities do not count. Population, armies and crews do not change demand. Cult upkeep is **about 0.33 × demand per game day**.
 
-One, two, three and four cities demand **1, 4, 9 and 16** respectively. Four fully staffed level-1 temples in a four-city realm give 4 weight: **8.4 income − 19.2 upkeep = −10.8 kharis per game day**. A realm with no active city has zero demand.
+One, two, three and four cities demand **1, 3, 6 and 10** respectively. Four fully staffed level-1 temples in a four-city realm give 4 weight: **about 2.33 income − 3.33 upkeep = −1 kharis per game day**. A realm with no active city has zero demand.
 
 ### Temple production and punishment risk {#cult-upkeep-2}
 
