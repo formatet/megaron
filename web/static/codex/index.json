@@ -645,7 +645,8 @@
         "olive-press",
         "winery",
         "pen",
-        "granary"
+        "granary",
+        "storehouse"
       ],
       "sections": [
         {
@@ -2564,6 +2565,31 @@
         "Granary"
       ],
       "parent": "buildings"
+    },
+    {
+      "id": "storehouse",
+      "title": "Storehouse",
+      "category": "Your city",
+      "entities": [
+        {
+          "kind": "building",
+          "key": "storehouse"
+        }
+      ],
+      "aliases": [
+        "storehouse",
+        "warehouse"
+      ],
+      "terms": [
+        "Storehouse"
+      ],
+      "parent": "buildings",
+      "sections": [
+        {
+          "id": "storehouse-fills",
+          "title": "How the shared store fills"
+        }
+      ]
     },
     {
       "id": "plains",

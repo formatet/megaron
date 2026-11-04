@@ -20,6 +20,7 @@ Open **City → Buildings**. The tab shows what is **built** (and its level), th
 | [[shipyard]] | A Shipyard builds ships and repairs damaged hulls in a coastal city. |
 | [[stable]] | A Stable enables chariot recruitment. |
 | [[stone-quarry]] | A Stone Quarry improves stone production on one chosen land hex. |
+| [[storehouse]] | A Storehouse holds everything a city keeps except food, the herd and cult. |
 | [[temple]] | A Temple is a workplace dedicated to one god, opening that god’s prayers and maintaining kharis. |
 | [[walls]] | Walls defend the city and determine its population ceiling. |
 | [[winery]] | A Winery refines wine from the city’s vines, which grow only on hills — without a hill in the city's reach it makes nothing. |
