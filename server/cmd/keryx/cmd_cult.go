@@ -115,6 +115,7 @@ func printRealmTemples(c *Client) bool {
 		fmt.Printf("  %s — %s · level %d · workers %d/%d\n", t.Name, t.CityName, t.Level, t.Staffed, t.Capacity)
 		fmt.Println(templeOfferingLine(t.Offer))
 		fmt.Printf("  Manage: keryx staff temple +1 --province %s --god %s\n", t.ProvinceID, t.GodID)
+		fmt.Printf("  Rich offering: keryx rich-offering --god %s --province %s --good <good> (or --off)\n", t.GodID, t.ProvinceID)
 		fmt.Printf("  Demolish: keryx demolish --type temple --god %s --province %s\n", t.GodID, t.ProvinceID)
 	}
 	if len(view.Temples) == 0 {
