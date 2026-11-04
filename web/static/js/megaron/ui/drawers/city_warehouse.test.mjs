@@ -61,3 +61,14 @@ test('Garrison: Recruit link opens War on the Recruit tab for that city',async()
  await loadWarDrawer().catch(()=>{});
  assert.deepEqual(active,["recruit"],"War opens on the Recruit tab");
 });
+test('Warehouse: net per game day per good, food runway from the forecast, steady food says so',()=>{
+ const fc={goods:[{good_key:'grain',net:-3.04},{good_key:'timber',net:2}],food:{days:18.2,net:-3,flows:[{label:'Army rations',amount:-2},{label:'Citizens\' meals',amount:-1}]}};
+ let html=warehouseHTML(pd({forecast:fc}),goods);
+ assert.match(html,/Food for<\/span><span class="sr-val">18.2 game days · net −3 a game day/);
+ assert.match(html,/Grain<\/span><span class="sr-val">463 \/ 2,000 · net −3 a game day/);
+ assert.match(html,/Timber<\/span><span class="sr-val">120 · net \+2 a game day/);
+ assert.match(html,/Army rations<\/span><span class="sr-val">−2/);
+ html=warehouseHTML(pd({forecast:{goods:[],food:{days:null,net:1.5,flows:[]}}}),goods);
+ assert.match(html,/Food for<\/span><span class="sr-val">not running down · net \+1.5 a game day/);
+ assert.doesNotMatch(html,/indefinitely/);
+});

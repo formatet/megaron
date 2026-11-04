@@ -801,3 +801,12 @@ test('legacy unit type fallbacks use player names across loss, pay and sentry di
   assert.doesNotMatch(text,/merchantman|war_galley|elite_infantry|\bgalley\b/,kind+' '+type);
  }
 });
+
+test('FoodRunningLow: names the city, game days, wall clock and who eats', () => {
+  const line = notifText('FoodRunningLow', { name: 'Knossos', days: 18, runs_out_tick: 100, flows: { meal: -5, army_ration: -2, 'temple_tithe:demeter': -1, production: 3 } });
+  assert.match(line, /^Food in Knossos runs out in about 18 game days/);
+  assert.match(line, /army −2\.0/);
+  assert.match(line, /temples −1\.0/);
+  assert.match(line, /citizens −5\.0/);
+  assert.match(line, /a game day\.$/);
+});

@@ -3,6 +3,7 @@ package economy
 import (
 	"context"
 	"fmt"
+	"formatet/megaron/server/internal/ledger"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"math"
@@ -36,6 +37,7 @@ func HospitalityFood(ctx context.Context, tx pgx.Tx, ship, port uuid.UUID, neede
 	if take <= 1e-9 {
 		return nil
 	}
+	_ = ledger.Reason(ctx, tx, "hospitality")
 	meal, err := TakeFood(ctx, tx, port, take, false, false)
 	if err != nil {
 		return err

@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 
+	"formatet/megaron/server/internal/ledger"
 	"formatet/megaron/server/internal/province"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -252,14 +253,14 @@ func goodsAffordableWithCedar(stock map[string]float64, costs map[string]float64
 // shortfall) is returned. The caller owns commit/rollback, so goods can be drained
 // atomically together with silver/kharis/population — closing the partial-drain
 // where goods were committed before a later currency deduction failed.
-func deductGoods(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, costs map[string]float64) error {
-	_, err := deductGoodsPaid(ctx, tx, settlementID, costs)
+func deductGoods(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, costs map[string]float64, reason string) error {
+	_, err := deductGoodsPaid(ctx, tx, settlementID, costs, reason)
 	return err
 }
 
 // deductGoodsPaid returns the actual goods debited, including cedar substitution,
 // for receipts and cancellation reservations. The caller owns the transaction.
-func deductGoodsPaid(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, costs map[string]float64) (map[string]float64, error) {
+func deductGoodsPaid(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, costs map[string]float64, reason string) (map[string]float64, error) {
 	costs, cedarSpare, err := coverTimberWithCedar(ctx, tx, settlementID, costs)
 	if err != nil {
 		return nil, err
@@ -296,6 +297,7 @@ func deductGoodsPaid(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, cos
 	}
 
 	// Pass 2: every good is affordable — deduct them all (caller commits).
+	_ = ledger.Reason(ctx, tx, reason)
 	for key, qty := range costs {
 		if qty <= 0 {
 			continue

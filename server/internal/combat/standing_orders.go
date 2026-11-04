@@ -53,6 +53,7 @@ import (
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/ledger"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/transport"
@@ -480,6 +481,7 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 		}
 	}
 	if category == "land" {
+		_ = ledger.Reason(ctx, tx, "ship_provisions")
 		meal, err := economy.TakeFood(ctx, tx, o.crewID, provisions, false, true)
 		if err != nil {
 			return fmt.Errorf("deduct provisions: %w", err)
@@ -794,6 +796,7 @@ func deductGood(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, good str
 	if qty <= 0 {
 		return nil
 	}
+	_ = ledger.Reason(ctx, tx, "standing_order_load")
 	tag, err := province.DeductGood(ctx, tx, settlementID, good, qty)
 	if err != nil {
 		return err

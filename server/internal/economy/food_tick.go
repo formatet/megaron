@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/ledger"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -159,6 +160,7 @@ func (h *FoodTickHandler) tickSettlement(ctx context.Context, settlementID, worl
 		return fmt.Errorf("herd births: %w", err)
 	}
 
+	_ = ledger.Reason(ctx, tx, "meal")
 	meal, err := TakeCivilianFood(ctx, tx, settlementID, GrainConsumptionPerTick(population))
 	if err != nil {
 		return fmt.Errorf("debit civilian meal: %w", err)
@@ -219,10 +221,12 @@ func herdBirths(ctx context.Context, tx pgx.Tx, sid uuid.UUID, tick int) (born, 
 	if born == 0 {
 		return 0, 0, nil
 	}
+	_ = ledger.Reason(ctx, tx, "herd_births")
 	if _, err := tx.Exec(ctx, `UPDATE settlement_goods SET amount=GREATEST(0,settled(amount,rate,calc_tick)+$3),calc_tick=current_world_tick() WHERE settlement_id=$1 AND good_key=$2`, sid, GoodLivestock, float64(born)); err != nil {
 		return 0, 0, err
 	}
 	if fed > 0 {
+		_ = ledger.Reason(ctx, tx, "herd_feed")
 		if _, err := tx.Exec(ctx, `UPDATE settlement_goods SET amount=GREATEST(0,settled(amount,rate,calc_tick)-$3),calc_tick=current_world_tick() WHERE settlement_id=$1 AND good_key=$2`, sid, GoodGrain, float64(fed)); err != nil {
 			return 0, 0, err
 		}

@@ -10,7 +10,7 @@ Three sections show the essentials:
 - **[[catchment]] & workplaces** — the placement grid, where you put people to work. See [[citizens]].
 - **Food** — today’s food net per game day, and whether the fields can feed everyone. See [[food]].
 
-Open **More** for people in service and the labour pool, **Devotion** ([[temples]]), **Food details** ([[food]]), **Last game day**, and **Daily history → Show recent game days**, which gives today's rate once and then the events of each recent game day (flows of earlier game days are not recorded).
+Open **More** for people in service and the labour pool, **Devotion** ([[temples]]), **Food details** ([[food]]), **Last game day**, and **Daily history → Show recent game days**, which shows the books for the last game day and then the events of each recent game day. For every good the books list what really happened to the store, one line per cause: production, citizens' meals, army rations and wages, each temple's tithe, calves, gifts and trade, goods lost because the store was full, and so on. A line called **Other** appears only when a change of the store has no cause listed; it should normally be absent.
 
 ## Warehouse
 

@@ -25,6 +25,7 @@ import (
 
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/ledger"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/transport"
 	"formatet/megaron/server/internal/unit"
@@ -229,6 +230,7 @@ func PlaceRoadSite(ctx context.Context, tx pgx.Tx, sched *events.Scheduler, clk 
 			"%s has %g of %g stone — one road edge into %s takes %g stone",
 			homeName, floorTenth(have), stone, terrainWords(toTerrain), stone)
 	}
+	_ = ledger.Reason(ctx, tx, "road_stone")
 	if _, execErr := tx.Exec(ctx,
 		`UPDATE settlement_goods
 		    SET amount = GREATEST(0, settled(amount, rate, calc_tick) - $2), calc_tick = current_world_tick()

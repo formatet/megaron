@@ -15,6 +15,7 @@ import (
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/ledger"
 	"formatet/megaron/server/internal/messenger"
 	"formatet/megaron/server/internal/notify"
 	"formatet/megaron/server/internal/province"
@@ -530,6 +531,7 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 				   FROM settlement_goods WHERE settlement_id=$1 AND good_key=$2`,
 				originID, req.TradeOffer.OfferGood,
 			).Scan(&sellerAmt)
+			_ = ledger.Reason(r.Context(), tx, "trade_escrow")
 			tag, err := province.DeductGood(r.Context(), tx, originID, req.TradeOffer.OfferGood, req.TradeOffer.OfferQty)
 			if err != nil || tag.RowsAffected() == 0 {
 				writeError(w, http.StatusUnprocessableEntity,
@@ -544,6 +546,7 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 				   FROM settlement_goods WHERE settlement_id=$1 AND good_key='silver'`,
 				originID,
 			).Scan(&buyerSilver)
+			_ = ledger.Reason(r.Context(), tx, "trade_escrow")
 			tag, err := province.DeductGood(r.Context(), tx, originID, "silver", req.TradeOffer.OfferSilver)
 			if err != nil || tag.RowsAffected() == 0 {
 				writeError(w, http.StatusUnprocessableEntity,
@@ -1421,6 +1424,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 	if kind == "sell" {
 		// Sell offer: origin=seller (escrowed goods at send), destination=buyer (acceptor).
 		// Step 1: deduct want_silver from buyer (destination). Goods already escrowed at send — do NOT deduct again.
+		_ = ledger.Reason(r.Context(), tx, "trade_pay")
 		tag, err := province.DeductGood(r.Context(), tx, destID, "silver", wantSilver)
 		if err != nil || tag.RowsAffected() == 0 {
 			// Same hint text as capabilities' trade-accept solvency
@@ -1538,6 +1542,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 	} else {
 		// Buy offer: origin=buyer (escrowed silver at send), destination=seller (acceptor).
 		// Step 1: deduct want_qty goods from seller (destination). Silver already escrowed at send.
+		_ = ledger.Reason(r.Context(), tx, "trade_pay")
 		tag, err := province.DeductGood(r.Context(), tx, destID, wantGood, wantQty)
 		if err != nil || tag.RowsAffected() == 0 {
 			// Same hint text as capabilities' trade-accept solvency

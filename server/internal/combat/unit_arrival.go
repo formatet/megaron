@@ -13,6 +13,7 @@ import (
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/gossip"
+	"formatet/megaron/server/internal/ledger"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/unit"
@@ -2039,6 +2040,7 @@ func (h *UnitArrivalHandler) foundColony(
 	// Link province back to its controlling settlement.
 	_, _ = tx.Exec(ctx, `UPDATE provinces SET controller_id=$1 WHERE id=$2`, colonyID, provinceID)
 
+	_ = ledger.Reason(ctx, tx, "founding_seed")
 	// Seed a zero/baseline row for every good (mirrors join.go), then let
 	// RecomputeProduction write real rates from the catchment + labor weights.
 	if _, err := tx.Exec(ctx,
@@ -2083,6 +2085,7 @@ func (h *UnitArrivalHandler) foundColony(
 	// insolvency. B3: silver enters only via genesis and mines.
 	//
 	// The carried purse is moved atomically, with a payroll-shaped cap.
+	_ = ledger.Reason(ctx, tx, "carried_purse")
 	if _, err := tx.Exec(ctx, `UPDATE settlement_goods
 	 SET amount=GREATEST(0,settled(amount,rate,calc_tick))+$1,
 	 cap=GREATEST($2,GREATEST(0,settled(amount,rate,calc_tick))+$1),calc_tick=current_world_tick()

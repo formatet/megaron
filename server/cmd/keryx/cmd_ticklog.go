@@ -51,6 +51,19 @@ func ticklogCmd() *cobra.Command {
 			}
 			var resp struct {
 				CurrentTick int `json:"current_tick"`
+				Ledger      struct {
+					Known bool `json:"known"`
+					Tick  int  `json:"tick"`
+					Goods []struct {
+						Good  string  `json:"good"`
+						Delta float64 `json:"delta"`
+						Other float64 `json:"other"`
+						Posts []struct {
+							Label  string  `json:"label"`
+							Amount float64 `json:"amount"`
+						} `json:"posts"`
+					} `json:"goods"`
+				} `json:"ledger"`
 				Ticks       []struct {
 					Tick        int                `json:"tick"`
 					Production  map[string]float64 `json:"production"`
@@ -68,11 +81,22 @@ func ticklogCmd() *cobra.Command {
 				fmt.Println("No game days to show.")
 				return nil
 			}
-			// The server derives flows from today's rates; it keeps no per-good
-			// history. Repeating them under each past game day read as "this was
-			// produced then" (Nausikaa 2026-10-31), so they are shown once.
-			fmt.Printf("Today's rate per game day — Prod: %s · Cons: %s\n", fmtFlows(resp.Ticks[0].Production), fmtFlows(resp.Ticks[0].Consumption))
-			fmt.Println("Earlier game days are not recorded per good; below are their events.")
+			// The booked last game day: every change of the store, post by post.
+			// "Other" is whatever no post explains, and only shows when it is not ~0.
+			if !resp.Ledger.Known {
+				fmt.Println("The books for the last game day are not ready yet (a city needs two closed game days).")
+			} else {
+				fmt.Printf("Last game day, ending %s — change in store per good:\n", formatWorldTime(c, resp.Ledger.Tick))
+				for _, g := range resp.Ledger.Goods {
+					fmt.Printf("  %s %+.1f\n", g.Good, g.Delta)
+					for _, p := range g.Posts {
+						fmt.Printf("    %-26s %+.1f\n", p.Label, p.Amount)
+					}
+					if g.Other != 0 {
+						fmt.Printf("    %-26s %+.1f\n", "Other", g.Other)
+					}
+				}
+			}
 			fmt.Println()
 			for _, t := range resp.Ticks {
 				fmt.Printf("── %s ──\n", formatWorldTime(c, t.Tick))

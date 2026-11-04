@@ -19,6 +19,7 @@ import (
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/hexgrid"
+	"formatet/megaron/server/internal/ledger"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/tick"
@@ -1009,6 +1010,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	_ = ledger.Reason(r.Context(), tx, "prayer_offering")
 	for good, need := range offering {
 		if _, err = tx.Exec(r.Context(),
 			`UPDATE settlement_goods SET

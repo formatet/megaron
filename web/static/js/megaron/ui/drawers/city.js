@@ -478,11 +478,17 @@ export async function loadTicklog() {
     const data = await r.json();
     const ticks = data.ticks || [];
     if (!ticks.length) { el.innerHTML = '<p class="empty-state">No daily history yet.</p>'; return; }
-    // Flows come from today's rates (no per-good history), so they are shown
-    // once; each past game day lists only its events (Nausikaa 2026-10-31).
-    const prod = Object.entries(ticks[0].production||{}).map(([k,v]) => `${k} +${fmtNum(Number(v.toFixed(1)))}`).join(', ');
-    const cons = Object.entries(ticks[0].consumption||{}).map(([k,v]) => `${k} -${fmtNum(Number(v.toFixed(1)))}`).join(', ');
-    el.innerHTML = `<p>Today's rate per game day: <span class="tl-prod">${prod || '—'}</span>${cons ? ' · <span class="tl-cons">' + cons + '</span>' : ''}</p>
+    // The booked last game day (server ledger): one line per post, "Other" last and
+    // only when it is not ~0. Earlier days list only their events.
+    const led = data.ledger || {};
+    const ledgerHtml = !led.known
+      ? '<p class="empty-state">The books for the last game day are not ready yet.</p>'
+      : `<p>Last game day, ending ${fmtTickTime(led.tick)}</p>` + (led.goods || []).map(g =>
+        `<table class="goods-mini ledger-table"><tr><th>${esc(g.good)}</th><th class="num">${g.delta >= 0 ? '+' : ''}${fmtNum(Number(g.delta.toFixed(1)))}</th></tr>` +
+        (g.posts || []).map(p => `<tr><td>${esc(p.label)}</td><td class="num">${p.amount >= 0 ? '+' : ''}${fmtNum(Number(p.amount.toFixed(1)))}</td></tr>`).join('') +
+        (g.other ? `<tr class="ledger-other"><td>Other</td><td class="num">${g.other >= 0 ? '+' : ''}${fmtNum(Number(g.other.toFixed(1)))}</td></tr>` : '') +
+        '</table>').join('');
+    el.innerHTML = `${ledgerHtml}
     <table class="goods-mini">
       ${ticks.map(t => {
         const evs  = (t.events||[]).map(e => e.type).join(', ');

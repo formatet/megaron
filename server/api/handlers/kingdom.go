@@ -13,6 +13,7 @@ import (
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/gossip"
+	"formatet/megaron/server/internal/ledger"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/tick"
 	"github.com/go-chi/chi/v5"
@@ -1105,6 +1106,7 @@ func (h *KingdomHandler) TreasuryDeposit(w http.ResponseWriter, r *http.Request)
 	kingdomTribDueTick := kingdomTribCurrentTick + travelTicks
 
 	// Deduct from settlement silver good row, fail if insufficient.
+	_ = ledger.Reason(r.Context(), tx, "tribute")
 	tag, err := tx.Exec(r.Context(),
 		`UPDATE settlement_goods
 		   SET amount  = settled(amount, rate, calc_tick) - $1,

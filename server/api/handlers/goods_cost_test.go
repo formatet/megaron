@@ -57,7 +57,7 @@ func TestGoodsPayment_ResidueAndRealShortage(t *testing.T) {
 				}
 				var paid bool
 				if mode == "multi" {
-					paid = deductGoods(context.Background(), tx, f.settlementID, map[string]float64{"stone": tc.need}) == nil
+					paid = deductGoods(context.Background(), tx, f.settlementID, map[string]float64{"stone": tc.need}, "build_cost") == nil
 				} else {
 					tag, e := province.DeductGood(context.Background(), tx, f.settlementID, "stone", tc.need)
 					if e != nil {

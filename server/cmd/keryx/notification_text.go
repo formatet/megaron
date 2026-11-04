@@ -110,6 +110,43 @@ func printNotificationSummary(c *Client, n notificationItem) {
 	if printStorageNotification(n) {
 		return
 	}
+	if n.Kind == "FoodRunningLow" {
+		var b struct {
+			Name  string             `json:"name"`
+			Days  float64            `json:"days"`
+			Flows map[string]float64 `json:"flows"`
+		}
+		if json.Unmarshal(n.Body, &b) == nil {
+			part := func(label string, v float64) string {
+				if v > -0.05 && v < 0.05 {
+					return ""
+				}
+				return fmt.Sprintf("%s %+.1f", label, v)
+			}
+			sum := func(match func(string) bool) float64 {
+				t := 0.0
+				for k, v := range b.Flows {
+					if match(k) {
+						t += v
+					}
+				}
+				return t
+			}
+			var parts []string
+			for _, p := range []string{
+				part("citizens", sum(func(k string) bool { return k == "meal" })),
+				part("army", sum(func(k string) bool { return k == "army_ration" })),
+				part("temples", sum(func(k string) bool { return strings.HasPrefix(k, "temple_tithe") })),
+				part("production", sum(func(k string) bool { return k == "production" || k == "herd_surplus" })),
+			} {
+				if p != "" {
+					parts = append(parts, p)
+				}
+			}
+			fmt.Printf("      Food in %s runs out in about %s: %s a game day.\n", b.Name, formatDays(b.Days), strings.Join(parts, ", "))
+			return
+		}
+	}
 	if n.Kind == "GarrisonStarvationStarted" || n.Kind == "GarrisonStarvationEnded" || n.Kind == "CivilianStarvationStarted" || n.Kind == "CivilianStarvationEnded" || n.Kind == "KharisBandChanged" {
 		var b struct {
 			FoodCategory bool     `json:"food_category"`

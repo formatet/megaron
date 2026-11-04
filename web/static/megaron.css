@@ -1700,3 +1700,10 @@ h4.cx-h { font-size: var(--fs-base); }
 /* City → Daily history: today's rate, shown once above the day rows */
 .tl-prod { color: var(--safe-text); }
 .tl-cons { color: var(--accent); }
+
+/* Booked last game day (City → Daily history) */
+.ledger-table { margin-bottom: 0.5rem; }
+.ledger-table th { text-align: left; padding: 0.18rem 0.3rem; color: var(--text); border-bottom: 1px solid var(--bg-raised); }
+.ledger-table th.num { text-align: right; font-family: var(--mono); }
+.ledger-table .ledger-other td { color: var(--danger); font-style: italic; }
+.wh-flow .sr-label { padding-left: 0.8rem; color: var(--text-dim, var(--text)); }

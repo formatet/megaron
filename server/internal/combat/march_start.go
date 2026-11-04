@@ -26,6 +26,7 @@ import (
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/ledger"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/tick"
@@ -1026,6 +1027,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 			}
 		}
 		if purse > 0 {
+			_ = ledger.Reason(ctx, tx, "colonist_purse")
 			if _, err := tx.Exec(ctx,
 				`UPDATE settlement_goods
 				    SET amount = GREATEST(0, settled(amount, rate, calc_tick) - $1),
@@ -1082,6 +1084,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		ration, provisions, stationTicks = voyageNeed(ctx, tx, u, o.Intent, expeditionPlan, travelTicks)
 
 		if provisions > 0 {
+			_ = ledger.Reason(ctx, tx, "ship_provisions")
 			meal, err := economy.TakeFood(ctx, tx, *port, provisions, false, true)
 			if err != nil {
 				return nil, reject(http.StatusInternalServerError, "could not load the departure port's food")

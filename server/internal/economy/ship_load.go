@@ -3,6 +3,7 @@ package economy
 import (
 	"context"
 	"fmt"
+	"formatet/megaron/server/internal/ledger"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -28,6 +29,7 @@ func LoadProvisions(ctx context.Context, tx pgx.Tx, ship, port uuid.UUID, need f
 	if missing <= 1e-9 {
 		return nil
 	}
+	_ = ledger.Reason(ctx, tx, "ship_provisions")
 	meal, err := TakeFood(ctx, tx, port, missing, false, true)
 	if err != nil {
 		return err

@@ -13,6 +13,7 @@ import (
 	"formatet/megaron/server/internal/ai"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/ledger"
 	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/unit"
@@ -221,6 +222,13 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 	h.applySubsistenceCritical(ctx, e.WorldID)
 	if err := h.observeStorage(ctx, e.WorldID); err != nil {
 		slog.Error("storage observation failed", "world", e.WorldID, "err", err)
+	}
+	if err := h.observeFood(ctx, e.WorldID); err != nil {
+		slog.Error("food observation failed", "world", e.WorldID, "err", err)
+	}
+	// Bokförd dagsräkning: stäng dagen sist, så att posterna ovan hamnar i den.
+	if err := ledger.CloseDay(ctx, h.pool, e.WorldID, e.ID); err != nil {
+		slog.Error("ledger close failed", "world", e.WorldID, "err", err)
 	}
 
 	return h.scheduler.EnqueueTickRecurring(ctx, e.WorldID, events.ScheduledKharisTick,
@@ -973,7 +981,7 @@ func (h *TickHandler) applyReinforcement(ctx context.Context, worldID uuid.UUID,
 				if perManCost <= 0 {
 					continue
 				}
-				if _, err := h.pool.Exec(ctx,
+				if _, err := ledger.ExecAs(ctx, h.pool, "reinforce",
 					`UPDATE settlement_goods SET
 					   amount = GREATEST(0, settled(amount, rate, calc_tick) - $1),
 					   calc_tick = current_world_tick()
@@ -1348,6 +1356,7 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 		}
 	}
 	var amount float64
+	_ = ledger.Reason(ctx, tx, "punishment")
 	if err = tx.QueryRow(ctx, p.sql, settlementID, worldID, ownerID).Scan(&amount); err != nil {
 		return fmt.Errorf("apply divine punishment: %w", err)
 	}
