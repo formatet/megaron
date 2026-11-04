@@ -9,7 +9,7 @@ import (
 )
 
 func TestReligionV2DemandWeightAndNet(t *testing.T) {
-	for cities, want := range []float64{0, 1, 4, 9, 16} {
+	for cities, want := range []float64{0, 1, 3, 6, 10, 15} {
 		if got := RealmDemand(cities); got != want {
 			t.Fatalf("cities %d demand %g want %g", cities, got, want)
 		}
@@ -29,7 +29,7 @@ func TestReligionV2DemandWeightAndNet(t *testing.T) {
 			t.Fatal("half staffing", got)
 		}
 	}
-	if got := 4*KharisPerTempleWeight - computeDailyDecay(4, 15600); math.Abs(got+3) > 1e-9 {
+	if got := 4*KharisPerTempleWeight - computeDailyDecay(4, 15600); math.Abs(got+1) > 1e-9 {
 		t.Fatal("four full L1 net", got)
 	}
 	if got := KharisPerTempleWeight - computeDailyDecay(1, 1000); math.Abs(got-.25) > 1e-9 {

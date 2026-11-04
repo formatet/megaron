@@ -39,7 +39,8 @@ type TithePart struct {
 }
 
 func TempleWeight(level int) float64 { return float64(level * level) }
-func RealmDemand(cities int) float64 { return float64(max(0, cities) * max(0, cities)) }
+// RealmDemand is triangular (Timothy 2026-11-04): the k-th active city adds k, so 1, 2, 3, 4 cities demand 1, 3, 6, 10.
+func RealmDemand(cities int) float64 { n := max(0, cities); return float64(n * (n + 1) / 2) }
 
 // Kharis pace (Timothy 2026-11-02, margin 30 game days 2026-11-04): both rates are the old
 // 2.1 / 1.2 times 5/18, so temple vs upkeep keeps its ratio and everything moves 3.6x slower,

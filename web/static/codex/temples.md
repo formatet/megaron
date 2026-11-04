@@ -57,9 +57,9 @@ filter the list to one city.
 
 ## Daily upkeep of the cult {#cult-upkeep}
 
-Realm demand is **the number of active cities squared**. All active cities count, including the capital, with or without temples. Sunk, collapsed and razed cities do not count. Population, armies and crews do not change demand. Cult upkeep is **about 0.33 × demand per game day**.
+Realm demand grows with each city: **the first active city demands 1, the second adds 2, the third adds 3**, and so on. All active cities count, including the capital, with or without temples. Sunk, collapsed and razed cities do not count. Population, armies and crews do not change demand. Cult upkeep is **about 0.33 × demand per game day**.
 
-One, two, three and four cities demand **1, 4, 9 and 16** respectively. Four fully staffed level-1 temples in a four-city realm give 4 weight: **about 2.33 income − 5.33 upkeep = −3 kharis per game day**. A realm with no active city has zero demand.
+One, two, three and four cities demand **1, 3, 6 and 10** respectively. Four fully staffed level-1 temples in a four-city realm give 4 weight: **about 2.33 income − 3.33 upkeep = −1 kharis per game day**. A realm with no active city has zero demand.
 
 ### Temple production and punishment risk {#cult-upkeep-2}
 

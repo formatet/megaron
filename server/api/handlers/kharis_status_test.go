@@ -84,7 +84,7 @@ func TestKharisPlayerRulesSourceParity(t *testing.T) {
 		fmt.Sprintf("level 2 **%g**", kharis.EffectiveKharisCap(100, 2)),
 		fmt.Sprintf("level 3 **%g**", kharis.EffectiveKharisCap(100, 3)),
 		fmt.Sprintf("a %.0f%% chance", 100*kharis.PunishmentProbability(kharis.WrathThreshold-1, false)),
-		fmt.Sprintf("**%.2f × effective temple weight − %.2f × active cities²**", kharis.KharisPerTempleWeight, kharis.KharisPerDemand),
+		fmt.Sprintf("**%.2f × effective temple weight − %.2f × realm demand**", kharis.KharisPerTempleWeight, kharis.KharisPerDemand),
 		"Population does not contribute", "random eligible city",
 		"with or without a temple",
 	} {

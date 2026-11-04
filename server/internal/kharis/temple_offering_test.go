@@ -101,7 +101,7 @@ func TestEarlyTempleOfferingLocalGiftAndProjection(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if math.Abs(net+4*KharisPerDemand) > 1e-10 {
+			if math.Abs(net+3*KharisPerDemand) > 1e-10 {
 				t.Fatalf("empty local temple borrowed remote goods: net%g", net)
 			}
 			fed, total, _ := h.applyTempleOffering(ctx, pid, wid)
