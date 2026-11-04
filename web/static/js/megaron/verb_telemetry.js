@@ -64,6 +64,8 @@ export const VERB_EVENTS = [
   {"verb": "delete notifications", "method": "DELETE", "route": "/api/v1/worlds/:world/notifications", "event": "notifications_deleted"},
   {"verb": "password", "method": "POST", "route": "/api/v1/auth/password", "event": "password_changed"},
   {"verb": "agora password", "method": "POST", "route": "/api/v1/agora/password", "event": "agora_password_changed"},
+  {"verb": "rich-offering", "method": "PUT", "route": "/api/v1/worlds/:world/temples/:temple/rich-offering", "event": "rich_offering_set"},
+  {"verb": "rich-offering", "method": "DELETE", "route": "/api/v1/worlds/:world/temples/:temple/rich-offering", "event": "rich_offering_cleared"},
   {"verb": "notification-preferences", "method": "PUT", "route": "/api/v1/notification-preferences/:kind", "event": "notification_preferences_changed"},
   {"verb": "notification-preferences", "method": "DELETE", "route": "/api/v1/notification-preferences/:kind", "event": "notification_preferences_changed"},
 ];

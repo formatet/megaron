@@ -2055,6 +2055,10 @@
           "title": "A temple’s daily offering"
         },
         {
+          "id": "rich-offering",
+          "title": "The rich offering"
+        },
+        {
           "id": "daily-offerings-2",
           "title": "Planning temple offerings"
         },

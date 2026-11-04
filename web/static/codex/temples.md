@@ -22,7 +22,13 @@ Each temple pays its daily tithe from its own city. Temples in the same city dra
 | 2 | 0.75 grain | 0.1 silver | — | 75% / 25% |
 | 3 | 1.75 grain | 0.25 silver | 0.1 incense | 70% / 20% / 10% |
 
-The grain part uses **grain first, then [[fish|fish]], then [[timber|timber]]**, at equal divine value. Silver never replaces grain. Each part is paid separately: a part that cannot be paid in full takes nothing. No part replaces another. A level-2 temple without silver still receives 75% effect if its grain part is paid; a level-3 temple with only its grain part receives 70%. [[rites|Prayers]] keep their own offerings.
+The grain part uses **grain first, then [[fish|fish]], then [[timber|timber]], then [[livestock]]**, at their divine value (livestock counts as 2). Silver never replaces grain. Each part is paid separately: a part that cannot be paid in full takes nothing. No part replaces another. A level-2 temple without silver still receives 75% effect if its grain part is paid; a level-3 temple with only its grain part receives 70%. [[rites|Prayers]] keep their own offerings.
+
+### The rich offering {#rich-offering}
+
+On top of the tithe, each temple can have a **rich offering**. Turn it on per temple and choose one good from the city's store: **Kult → Temples**, *Add rich offering*, or `keryx rich-offering --god potnia --good fish` (`--off` to stop). Each game day, after every tithe in the city is taken, the temple also receives a small amount of that good: half the tithe's grain value, divided by the good's divine value. Dearer goods mean a smaller amount.
+
+If the rich offering is paid in full, the temple's effective weight is **multiplied by 1.5**. If the good is missing, nothing is taken and there is no partial bonus. It does not raise your kharis ceiling, and it gives nothing while the tithe itself goes unpaid.
 
 ### Planning temple offerings {#daily-offerings-2}
 
