@@ -2,6 +2,7 @@ package kharis
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"maps"
 	"math"
@@ -314,4 +315,64 @@ func (h *TickHandler) chargeTempleOffering(ctx context.Context, settlementID uui
 		return nil, err
 	}
 	return fed, nil
+}
+
+// ForecastTithe is the plan the next tick will charge one city, per god and good —
+// the same planCityOffers the tick executes, read without locking or writing.
+func ForecastTithe(ctx context.Context, db religion.Execer, sid uuid.UUID) (map[string]map[string]float64, error) {
+	var owner, world uuid.UUID
+	if err := pgxRow(ctx, db, `SELECT owner_id, world_id FROM settlements WHERE id=$1 AND owner_id IS NOT NULL`, sid).Scan(&owner, &world); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	values, err := religion.LoadDivineValues(ctx, db, world)
+	if err != nil {
+		return nil, err
+	}
+	offers, err := loadTempleOffers(ctx, db, owner, world, values)
+	if err != nil {
+		return nil, err
+	}
+	out := map[string]map[string]float64{}
+	for _, o := range offers {
+		if o.SettlementID != sid || o.PaidFraction <= 0 {
+			continue
+		}
+		if out[o.GodID] == nil {
+			out[o.GodID] = map[string]float64{}
+		}
+		for good, amount := range o.Offering {
+			out[o.GodID][good] += amount
+		}
+	}
+	return out, nil
+}
+
+// pgxRow reads one row through the Query-only interface the religion package uses.
+func pgxRow(ctx context.Context, db religion.Execer, sql string, args ...any) pgx.Row {
+	return rowOf{ctx: ctx, db: db, sql: sql, args: args}
+}
+
+type rowOf struct {
+	ctx  context.Context
+	db   religion.Execer
+	sql  string
+	args []any
+}
+
+func (r rowOf) Scan(dest ...any) error {
+	rows, err := r.db.Query(r.ctx, r.sql, r.args...)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			return err
+		}
+		return pgx.ErrNoRows
+	}
+	return rows.Scan(dest...)
 }

@@ -223,6 +223,9 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 	if err := h.observeStorage(ctx, e.WorldID); err != nil {
 		slog.Error("storage observation failed", "world", e.WorldID, "err", err)
 	}
+	if err := h.observeFood(ctx, e.WorldID); err != nil {
+		slog.Error("food observation failed", "world", e.WorldID, "err", err)
+	}
 	// Bokförd dagsräkning: stäng dagen sist, så att posterna ovan hamnar i den.
 	if err := ledger.CloseDay(ctx, h.pool, e.WorldID, e.ID); err != nil {
 		slog.Error("ledger close failed", "world", e.WorldID, "err", err)

@@ -702,7 +702,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				writeError(w, 500, "could not read storage forecast")
 				return
 			}
-			storage, err = (combat.StorageForecaster{}).StorageForecast(r.Context(), tx, sett.ID)
+			storage, err = NewCityForecaster().StorageForecast(r.Context(), tx, sett.ID)
 			tx.Rollback(r.Context())
 			if err != nil {
 				writeError(w, 500, "could not read storage forecast")

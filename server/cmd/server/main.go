@@ -168,7 +168,7 @@ func main() {
 	messengerReturnH := messenger.NewReturnHandler(pool, eventStore, hub)
 	messengerStayEndH := messenger.NewStayEndHandler(pool, scheduler, gameClock)
 	kharisH := kharis.NewTickHandler(pool, scheduler, eventStore, hub)
-	kharisH.SetStorageForecaster(combat.StorageForecaster{})
+	kharisH.SetStorageForecaster(handlers.NewCityForecaster())
 
 	foodTickH := economy.NewFoodTickHandler(pool, scheduler, eventStore, hub)
 	storageNoticeH := economy.NewStorageNoticeDelivery(pool, eventStore, hub)
