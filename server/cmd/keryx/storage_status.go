@@ -67,6 +67,9 @@ func printStorageNotification(n notificationItem) bool {
 		FullIn *float64 `json:"full_in_ticks"`
 		Lost   *float64 `json:"lost_quantity"`
 		Reason string   `json:"reason"`
+		Pool   string   `json:"pool"`
+		PoolAm float64  `json:"pool_amount"`
+		PoolCp float64  `json:"pool_capacity"`
 	}
 	if json.Unmarshal(n.Body, &b) != nil {
 		return true
@@ -77,6 +80,8 @@ func printStorageNotification(n notificationItem) bool {
 			duration = "full in " + formatDays(*b.FullIn, "%g")
 		}
 		fmt.Printf("      %s: %s storage %s (capacity %s). Send goods away or trade.\n", b.Name, b.Good, duration, notificationAmount(b.Cap))
+	} else if b.Pool == "storehouse" && b.Reason == "production" {
+		fmt.Printf("      %s: Storehouse full (%s / %s) — production is being lost until space is freed. Spend or send goods away, or build a bigger Storehouse.\n", b.Name, notificationAmount(b.PoolAm), notificationAmount(b.PoolCp))
 	} else {
 		quantity := "unknown amount of"
 		if b.Lost != nil {
@@ -85,4 +90,21 @@ func printStorageNotification(n notificationItem) bool {
 		fmt.Printf("      %s: storage full — lost %s %s from %s (capacity %s). Send goods away or trade.\n", b.Name, quantity, b.Good, storageReason(b.Reason), notificationAmount(b.Cap))
 	}
 	return true
+}
+
+// storehouseLine is the status line of the shared store: "Storehouse: X / Y". The
+// server owns both numbers (settlement.storehouse); a city of a foreign Wanax has none.
+func storehouseLine(sett map[string]any) string {
+	sh, ok := sett["storehouse"].(map[string]any)
+	if !ok {
+		return ""
+	}
+	amount, _ := sh["amount"].(float64)
+	capacity, _ := sh["capacity"].(float64)
+	level, _ := sh["level"].(float64)
+	line := fmt.Sprintf("Storehouse: %s / %s", notificationAmount(amount), notificationAmount(capacity))
+	if level < 1 {
+		return line + " (no Storehouse built — `keryx build --type storehouse`)"
+	}
+	return line + fmt.Sprintf(" (level %.0f)", level)
 }

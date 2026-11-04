@@ -351,6 +351,7 @@ export function notifText(kind, body) {
       return `Food in ${esc(body.name || 'your city')} runs out in about ${fmtDays(body.days)}${Number.isInteger(body.runs_out_tick) ? ' (' + fmtTickTime(body.runs_out_tick) + ')' : ''}${parts ? ': ' + parts + ' a game day' : ''}.`;
     }
     case 'StorageOverflow':
+      if (body.pool === 'storehouse' && body.reason === 'production') return `${esc(body.name || 'Your city')}: Storehouse full (${fmtNum(body.pool_amount)} / ${fmtNum(body.pool_capacity)}) — production is being lost until space is freed. Spend or send goods away, or build a bigger Storehouse.`;
       return `${esc(body.name || 'Your city')}: storage full — lost ${body.lost_quantity == null ? 'an unknown amount of' : fmtNum(body.lost_quantity)} ${esc(body.good_key || 'goods')} from ${storageReason(body.reason)} (capacity ${fmtNum(body.cap)}). Send goods away or trade.`;
     case 'GarrisonStarvationStarted': return body.food_category === true
       ? `${esc(body.name || 'Your city')}: the garrison is losing men to hunger. Soldiers share the city's fish, grain and oil. Produce or transfer more food here.`

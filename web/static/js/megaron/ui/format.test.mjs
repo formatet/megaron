@@ -815,3 +815,10 @@ test('PlacementsLifted shows the server sentence and escapes it',()=>{
  assert.equal(notifText('PlacementsLifted',{text:'A citizen left their work in Gournia: 1 on grain at (30, 45) (men were drafted).'}),'A citizen left their work in Gournia: 1 on grain at (30, 45) (men were drafted).');
  assert.doesNotMatch(notifText('PlacementsLifted',{text:'<b>x</b>'}),/<b>/);
 });
+
+test('StorageOverflow from the Storehouse is ONE line about the store, not a good', () => {
+  const line = notifText('StorageOverflow', { name: 'Knossos', good_key: 'stone', cap: 500, lost_quantity: 12, reason: 'production', pool: 'storehouse', pool_amount: 500, pool_capacity: 500 });
+  assert.match(line, /Knossos: Storehouse full \(500 \/ 500\)/);
+  assert.doesNotMatch(line, /stone/);
+  assert.match(notifText('StorageOverflow', { name: 'Knossos', good_key: 'stone', cap: 500, lost_quantity: 12, reason: 'gift_delivery', pool: 'storehouse' }), /lost 12 stone/);
+});

@@ -3092,14 +3092,18 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type goodRow struct {
-		Shippable     bool     `json:"shippable"`
-		Key           string   `json:"key"`
-		Name          string   `json:"name"`
-		Tier          string   `json:"tier"`
-		Category      string   `json:"category"`
-		Amount        float64  `json:"amount"`
-		Rate          float64  `json:"rate_per_tick"`
-		Cap           float64  `json:"cap"`
+		Shippable bool    `json:"shippable"`
+		Key       string  `json:"key"`
+		Name      string  `json:"name"`
+		Tier      string  `json:"tier"`
+		Category  string  `json:"category"`
+		Amount    float64 `json:"amount"`
+		Rate      float64 `json:"rate_per_tick"`
+		Cap       float64 `json:"cap"`
+		// StoredIn names the shared store a good sits in ("storehouse"), or is empty
+		// for food and the herd, whose caps are their own. For a stored_in good `cap`
+		// is the SHARED ceiling, never a per-good limit.
+		StoredIn      string   `json:"stored_in,omitempty"`
 		LaborValue    *float64 `json:"labor_value"`
 		Citizens      int      `json:"citizens"`
 		Percent       float64  `json:"percent"`
@@ -3145,7 +3149,12 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		if laborPool > 0 {
 			percent = float64(employed) / float64(laborPool) * 100.0
 		}
+		storedIn := ""
+		if province.StorehouseStoredGood(key) {
+			storedIn = economy.StorehouseKey
+		}
 		result = append(result, goodRow{
+			StoredIn:      storedIn,
 			Key:           key,
 			Shippable:     shippable,
 			Name:          name,

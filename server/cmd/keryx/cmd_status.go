@@ -709,6 +709,9 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			if line := wallsHoldLine(popCap, walls, siloLevel); line != "" {
 				fmt.Println(line)
 			}
+			if line := storehouseLine(sett); line != "" {
+				fmt.Println(line)
+			}
 			if food, ok := sett["food"].(map[string]any); ok {
 				gs, _ := food["growth_state"].(string)
 				net, _ := food["food_net_per_tick"].(float64)
