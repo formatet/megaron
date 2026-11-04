@@ -2471,6 +2471,13 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "could not draft men")
 		return
 	}
+	// Posts without a man are lifted in the same transaction as the draft (S1b
+	// order: refining first, food last); the owner is told after commit.
+	liftedByDraft, err := economy.PrunePlacementsToPopulation(r.Context(), tx, settlementID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not lift placements")
+		return
+	}
 
 	// Collapse is part of the same durable action as the draft.
 	if popAfter < economy.CollapseBelowPopulation {
@@ -2750,6 +2757,18 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "could not complete recruitment")
 		return
 	}
+	var liftedCity string
+	if len(liftedByDraft) > 0 {
+		_ = h.pool.QueryRow(r.Context(), `SELECT name FROM settlements WHERE id = $1`, settlementID).Scan(&liftedCity)
+		var notifier economy.BlockadeNotifier
+		if h.hub != nil {
+			notifier = h.hub
+		}
+		economy.AnnouncePlacementsLifted(r.Context(), h.pool, h.eventStore, notifier, worldID, settlementID, economy.LiftCauseDraft, liftedByDraft, religion.TempleName)
+		if err := economy.RecomputeProduction(r.Context(), h.pool, settlementID); err != nil {
+			slog.Warn("recruit: recompute after lift failed", "settlement", settlementID, "err", err)
+		}
+	}
 	for _, e := range committedEvents {
 		h.eventStore.RecordCommitted(r.Context(), e)
 	}
@@ -2825,6 +2844,10 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		resp["complete_at"] = work.CompleteAt
 		resp["shipyard_waiting"] = work.Waiting
 		resp["shipyard_work_remaining"] = work.Remaining
+	}
+	if len(liftedByDraft) > 0 {
+		resp["workers_lifted"] = economy.LiftedToWire(liftedByDraft)
+		resp["workers_lifted_text"] = economy.PlacementsLiftedText(liftedCity, economy.LiftCauseDraft, liftedByDraft, religion.TempleName)
 	}
 	if wrath != nil {
 		resp["gods_angered"] = wrath.body

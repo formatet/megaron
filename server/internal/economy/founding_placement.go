@@ -378,14 +378,14 @@ func PlaceNextGubbeOnBestFoodHex(ctx context.Context, tx Tx, settlementID uuid.U
 // runs instead of needing hundreds of ticks. Idempotent when already within
 // the cap (returns 0, no-op). Temple workers participate in the same pruning order as every other job.
 // Caller must run RecomputeProduction afterwards in the same tick.
-func PrunePlacementsToPopulation(ctx context.Context, tx Tx, settlementID uuid.UUID) (pruned int, err error) {
+func PrunePlacementsToPopulation(ctx context.Context, tx Tx, settlementID uuid.UUID) (lifted []LiftedPlacement, err error) {
 	workTx, finish, _, err := placementWriteTx(ctx, tx, settlementID)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	defer func() { err = finish(err) }()
 	tx = workTx
-	tag, err := tx.Exec(ctx,
+	rows, err := tx.Query(ctx,
 		`DELETE FROM settlement_placement
 		 WHERE id IN (
 		     SELECT id FROM (
@@ -401,13 +401,28 @@ func PrunePlacementsToPopulation(ctx context.Context, tx Tx, settlementID uuid.U
 		         FROM settlement_placement WHERE settlement_id = $1
 		     ) ranked
 		     WHERE ranked.rn > (SELECT population / 100 FROM settlements WHERE id = $1)
-		 )`,
+		 )
+		 RETURNING gubbe_ordinal, target_kind, hex_q, hex_r, COALESCE(building_type, ''), building_id,
+		           (SELECT god_id FROM buildings b WHERE b.id = settlement_placement.building_id), good_key`,
 		settlementID, GoodGrain, GoodFish, GoodLivestock, GoodCult, GoodBronze, GoodOil, GoodWine,
 	)
 	if err != nil {
-		return 0, fmt.Errorf("prune placements to population: %w", err)
+		return nil, fmt.Errorf("prune placements to population: %w", err)
 	}
-	return int(tag.RowsAffected()), nil
+	defer rows.Close()
+	for rows.Next() {
+		var l LiftedPlacement
+		if err := rows.Scan(&l.Ordinal, &l.TargetKind, &l.HexQ, &l.HexR, &l.BuildingType, &l.BuildingID, &l.GodID, &l.GoodKey); err != nil {
+			return nil, fmt.Errorf("prune placements to population: scan: %w", err)
+		}
+		lifted = append(lifted, l)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("prune placements to population: rows: %w", err)
+	}
+	rows.Close()
+	sort.Slice(lifted, func(i, j int) bool { return lifted[i].Ordinal < lifted[j].Ordinal })
+	return lifted, nil
 }
 
 // BackfillPlacements auto-places workforce for every settlement in a world

@@ -718,8 +718,10 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 			// occupation, desertion that landed between ticks — is caught here,
 			// not just the starvation branch, and this tick's rate already
 			// reflects the pruned placement set instead of a tick-stale one.
-			if _, err := economy.PrunePlacementsToPopulation(ctx, h.pool, sid); err != nil {
+			if lifted, err := economy.PrunePlacementsToPopulation(ctx, h.pool, sid); err != nil {
 				slog.Warn("prune placements to population failed", "settlement", sid, "err", err)
+			} else {
+				economy.AnnouncePlacementsLifted(ctx, h.pool, h.store, h.hub, worldID, sid, economy.LiftCauseDecline, lifted, religion.TempleName)
 			}
 			if err := economy.RecomputeProduction(ctx, h.pool, sid); err != nil {
 				slog.Warn("recompute after pop tick failed", "settlement", sid, "err", err)
@@ -995,12 +997,18 @@ func (h *TickHandler) applyReinforcement(ctx context.Context, worldID uuid.UUID,
 			// Give back only the men actually diverted to this cohort — the rest
 			// of `budget` stays as this tick's city growth (already written by the
 			// growth UPDATE above; this only ever subtracts, never adds beyond it).
-			if _, err := h.pool.Exec(ctx,
-				`UPDATE settlements SET population = population - $1 WHERE id = $2`,
-				refill, c.id,
-			); err != nil {
+			// Debit and prune are one transaction: a man drafted into the unit
+			// leaves his post in the same instant, and the owner is told who.
+			lifted, err := h.debitReinforcement(ctx, c.id, refill)
+			if err != nil {
 				slog.Error("reinforcement: debit population growth failed", "settlement", c.id, "err", err)
 				continue
+			}
+			economy.AnnouncePlacementsLifted(ctx, h.pool, h.store, h.hub, worldID, c.id, economy.LiftCauseReinforcement, lifted, religion.TempleName)
+			if len(lifted) > 0 {
+				if err := economy.RecomputeProduction(ctx, h.pool, c.id); err != nil {
+					slog.Warn("reinforcement: recompute after lift failed", "settlement", c.id, "err", err)
+				}
 			}
 			budget -= refill
 
@@ -1016,6 +1024,24 @@ func (h *TickHandler) applyReinforcement(ctx context.Context, worldID uuid.UUID,
 			}
 		}
 	}
+}
+
+// debitReinforcement takes refill men from the settlement and lifts the placements
+// that no longer have a man, atomically. Returns the lifted rows.
+func (h *TickHandler) debitReinforcement(ctx context.Context, settlementID uuid.UUID, refill int) ([]economy.LiftedPlacement, error) {
+	tx, err := h.pool.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+	if _, err := tx.Exec(ctx, `UPDATE settlements SET population = population - $1 WHERE id = $2`, refill, settlementID); err != nil {
+		return nil, err
+	}
+	lifted, err := economy.PrunePlacementsToPopulation(ctx, tx, settlementID)
+	if err != nil {
+		return nil, err
+	}
+	return lifted, tx.Commit(ctx)
 }
 
 // affordableRefill throttles a proposed refill count down to whatever
