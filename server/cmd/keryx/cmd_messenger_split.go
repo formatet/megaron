@@ -136,6 +136,10 @@ func tradeOfferCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "trade-offer",
 		Short: "Send a trade offer (bilateral consent, FOW-gated) to another Wanax",
+		Long: `Send a trade offer to a city you have contacted. An offer is always goods for silver:
+buy a good with --want-good/--want-qty/--offer-silver, or sell one with
+--offer-good/--offer-qty/--want-silver. There is no goods-for-goods offer; to swap goods,
+sell one for silver and buy the other.`,
 		Example: `  keryx trade-offer --to Korinth --want-good grain --want-qty 100 --offer-silver 80
   keryx trade-offer --to Athenai --offer-good copper --offer-qty 50 --want-silver 120`,
 		Args: rejectPositionalArgs("to"),
