@@ -163,6 +163,9 @@ func recruitCmd() *cobra.Command {
 			// Upkeep warning (P6, soak 2026-07-18): present on either path when the
 			// server projects this unit will push the settlement into grain/silver
 			// deficit once it garrisons.
+			if line := workersLiftedLine(data); line != "" {
+				fmt.Println(line)
+			}
 			var warnResp struct {
 				UpkeepWarning string             `json:"upkeep_warning"`
 				PaidCosts     map[string]float64 `json:"paid_costs"`
@@ -426,4 +429,17 @@ func recruitmentPaidGoods(costs map[string]float64) string {
 	}
 	sort.Strings(parts)
 	return strings.Join(parts, " + ")
+}
+
+// workersLiftedLine is the draft's "who left which work" line, empty when the draft
+// took only free citizens (the server omits workers_lifted then).
+func workersLiftedLine(data []byte) string {
+	var r struct {
+		Lifted []json.RawMessage `json:"workers_lifted"`
+		Text   string            `json:"workers_lifted_text"`
+	}
+	if json.Unmarshal(data, &r) != nil || len(r.Lifted) == 0 {
+		return ""
+	}
+	return r.Text
 }

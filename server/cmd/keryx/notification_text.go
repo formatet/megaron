@@ -225,6 +225,7 @@ func printNotificationSummary(c *Client, n notificationItem) {
 		TargetQ           int                `json:"target_q"`
 		TargetR           int                `json:"target_r"`
 		Workers           int                `json:"workers"`
+		Text              string             `json:"text"`
 		Lost              int                `json:"lost"`
 		Disbanded         bool               `json:"disbanded"`
 		LastSettlement    bool               `json:"last_settlement"`
@@ -450,6 +451,8 @@ func printNotificationSummary(c *Client, n notificationItem) {
 				line += fmt.Sprintf(" — grain lasts ~%.0f game days", left)
 			}
 		}
+	case "PlacementsLifted":
+		line = firstNotificationText(b.Text, "Citizens left their work")
 	case "HexBlockaded":
 		line = fmt.Sprintf("%s's hex %s is blockaded — %d workers stopped", city, at, b.Workers)
 	case "HexUnblockaded":
