@@ -52,10 +52,16 @@ func TestMarketBoardPutRules(t *testing.T) {
 	for _, bad := range []map[string]any{
 		{"buys": []string{"tin", "copper", "wine", "oil"}},
 		{"buys": []string{"tin"}, "sells": []string{"tin"}},
-		{"buys": []string{"silver"}},
+		{"buys": []string{"cult"}},
 	} {
 		if code, resp := f.put(t, ownerToken, path, bad); code != 422 {
 			t.Fatalf("invalid board %v accepted: %d %v", bad, code, resp)
+		}
+	}
+	// Silver may be announced on either line (Timothy 2026-11-04).
+	for _, silver := range []map[string]any{{"sells": []string{"silver"}}, {"buys": []string{"silver"}}} {
+		if code, resp := f.put(t, ownerToken, path, silver); code != 200 {
+			t.Fatalf("board with silver refused: %v → %d %v", silver, code, resp)
 		}
 	}
 	if code, resp := f.put(t, ownerToken, path, map[string]any{"buys": []string{"tin"}, "sells": []string{"wine"}}); code != 200 {
@@ -65,8 +71,8 @@ func TestMarketBoardPutRules(t *testing.T) {
 	if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM events WHERE stream_id=$1 AND event_type='MarketBoardWritten'`, city).Scan(&n); err != nil {
 		t.Fatal(err)
 	}
-	if n != 1 {
-		t.Fatalf("MarketBoardWritten events = %d, want 1", n)
+	if n != 3 {
+		t.Fatalf("MarketBoardWritten events = %d, want 3 (two silver boards + one goods board)", n)
 	}
 }
 

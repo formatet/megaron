@@ -47,6 +47,11 @@ function lineSelects(line, chosen, goods, max) {
 // The owner's board with its editor: up to max_goods goods on each line.
 export function ownBoardHTML(board, goods, settlementID) {
   if (!board) return '';
+  // The trade catalogue leaves silver out (it is never the good in an offer),
+  // but a board may announce it (Timothy 2026-11-04). Kept alphabetical.
+  if (!goods.some(g => g.key === 'silver')) {
+    goods = [...goods, { key: 'silver', name: 'Silver' }].sort((a, b) => a.key.localeCompare(b.key));
+  }
   const max = board.max_goods || 3;
   return `<div class="dsec-title">Market board</div>
     <p class="market-board-reading">${esc(boardLine(board))}</p>

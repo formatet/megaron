@@ -75,6 +75,10 @@ func (h *SettlementHandler) MarketBoard(w http.ResponseWriter, r *http.Request) 
 	for _, g := range goods {
 		allowed[g.Key] = true
 	}
+	// Silver is never the good in a trade offer (it is the other side), but a
+	// board may announce it: "Sells silver" says the city pays for goods
+	// (Timothy 2026-11-04). The board is the ruler's word; nothing is checked.
+	allowed["silver"] = true
 	if err := economy.ValidateBoard(req.Buys, req.Sells, allowed); err != nil {
 		writeError(w, http.StatusUnprocessableEntity, err.Error())
 		return

@@ -18,7 +18,7 @@ func marketBoardCmd() *cobra.Command {
 		Use:   "market-board <city>",
 		Short: "Show or write what your city's market board says it buys and sells",
 		Long: `Show or write your city's market board. A city with a Market can put up a
-board naming up to three goods it buys and three it sells. Other rulers'
+board naming up to three goods it buys and three it sells (silver too). Other rulers'
 caravans, armies and messengers read it when they pass within reach of the
 market (wider at higher market levels) and remember it as it stood then.
 

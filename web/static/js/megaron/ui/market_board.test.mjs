@@ -27,3 +27,12 @@ test('the owner edits up to max_goods goods per line, current choice selected', 
   assert.match(html, /within 2 hexes/);
   assert.match(html, /saveMarketBoard\('s1'\)/);
 });
+
+test('silver can go on the board, in alphabetical place, once', () => {
+  const goods = [{ key: 'tin', name: 'Tin' }, { key: 'wine', name: 'Wine' }];
+  const html = ownBoardHTML({ buys: [], sells: ['silver'], max_goods: 1, reach: 2 }, goods, 's1');
+  assert.match(html, /<option value="silver" selected>Silver<\/option>/);
+  const buys = html.split('data-board-line="buys"')[1].split('</select>')[0];
+  assert.ok(buys.indexOf('"silver"') < buys.indexOf('"tin"'), 'silver sorts before tin');
+  assert.equal((buys.match(/value="silver"/g) || []).length, 1);
+});
