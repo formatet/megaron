@@ -4,10 +4,11 @@ globalThis.window ??= { addEventListener() {}, matchMedia: () => ({ matches: fal
 globalThis.localStorage ??= { getItem: () => null, setItem() {} };
 const { foreignIntelHTML } = await import('./foreign_city.js');
 
-test('a city seen but never entered says so and invites contact', () => {
+test('a city seen but never entered says only "No info" (the Codex explains)', () => {
   const html = foreignIntelHTML({ size: 'town', buildings: [{ name: 'Granary' }], intel: { level: 'seen', seen_at: '2026-10-30T14:20:00Z', seen_live: true } });
   assert.match(html, /Seen now: town, Granary\./);
-  assert.match(html, /Send a messenger/);
+  assert.match(html, />No info</);
+  assert.doesNotMatch(html, /No one of yours|Send a messenger/);
 });
 
 test('a contact shows its words, its source and building levels, never a number of its own making', () => {

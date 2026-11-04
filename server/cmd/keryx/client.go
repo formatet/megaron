@@ -97,7 +97,48 @@ func (c *Client) doWithHeal(method, path string, body any, allowHeal bool) ([]by
 			return c.doWithHeal(method, strings.ReplaceAll(path, oldID, newID), body, false)
 		}
 	}
+	// Expired access token: renew it once with the saved refresh token and
+	// repeat the request. Not for the refresh call itself, and not when the
+	// token came from POLEIA_TOKEN (the saved refresh token would belong to a
+	// different session). On any failure the caller sees today's 401 text.
+	if allowHeal && resp.StatusCode == http.StatusUnauthorized && c.cfg != nil &&
+		c.cfg.RefreshToken != "" && os.Getenv("POLEIA_TOKEN") == "" &&
+		!strings.HasSuffix(path, "/auth/refresh") && c.refreshSession() {
+		return c.doWithHeal(method, path, body, false)
+	}
 	return data, resp.StatusCode, err
+}
+
+// refreshSession trades the saved refresh token for a new token pair
+// (POST /auth/refresh rotates: the old refresh token dies) and persists both.
+func (c *Client) refreshSession() bool {
+	b, _ := json.Marshal(map[string]string{"refresh_token": c.cfg.RefreshToken})
+	req, err := http.NewRequest("POST", c.server+"/api/v1/auth/refresh", bytes.NewReader(b))
+	if err != nil {
+		return false
+	}
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := c.http.Do(req)
+	if err != nil {
+		return false
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return false
+	}
+	var pair struct {
+		AccessToken  string `json:"access_token"`
+		RefreshToken string `json:"refresh_token"`
+	}
+	if json.NewDecoder(resp.Body).Decode(&pair) != nil || pair.AccessToken == "" {
+		return false
+	}
+	c.token, c.cfg.Token = pair.AccessToken, pair.AccessToken
+	if pair.RefreshToken != "" {
+		c.cfg.RefreshToken = pair.RefreshToken
+	}
+	_ = saveConfig(c.cfg)
+	return true
 }
 
 // isNotYourProvince reports whether an error body is the ownership-check rejection.

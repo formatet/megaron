@@ -38,3 +38,21 @@ func TestRecruitReceiptNamesActualCedarPayment(t *testing.T) {
 		t.Fatal(got)
 	}
 }
+
+func TestRecruitGalleyReceiptPointsAtStorms(t *testing.T) {
+	round3Client(t, func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, `{"names":["Wavecutter"],"shipyard_waiting":true}`)
+	})
+	cmd := recruitCmd()
+	cmd.SetArgs([]string{"--unit", "galley"})
+	out, err := captureStdout(t, cmd.Execute)
+	if err != nil || !strings.Contains(out, "keryx storms") {
+		t.Fatalf("err %v out %q", err, out)
+	}
+}
+
+func TestMarchHelpAndActionsHelpMentionStorms(t *testing.T) {
+	if !strings.Contains(unitMarchCmd().Long, "keryx storms") || !strings.Contains(actionsCmd().Long, "keryx storms") {
+		t.Fatal("storms pointer missing from march/actions help")
+	}
+}

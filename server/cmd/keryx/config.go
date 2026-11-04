@@ -7,12 +7,16 @@ import (
 )
 
 type Config struct {
-	Server     string `json:"server"`
-	Token      string `json:"token"`
-	WorldID    string `json:"world_id"`
-	ProvinceID string `json:"province_id"`
-	PlayerID   string `json:"player_id"`
-	Username   string `json:"username"`
+	Server string `json:"server"`
+	Token  string `json:"token"`
+	// RefreshToken renews an expired access token once (client.go
+	// refreshSession). omitempty: an empty value never erases the key that
+	// saveConfig's merge may find in the file (fleet tooling writes it too).
+	RefreshToken string `json:"refresh_token,omitempty"`
+	WorldID      string `json:"world_id"`
+	ProvinceID   string `json:"province_id"`
+	PlayerID     string `json:"player_id"`
+	Username     string `json:"username"`
 }
 
 func configPath() string {

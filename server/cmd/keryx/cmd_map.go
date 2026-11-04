@@ -197,6 +197,9 @@ func mapCmd() *cobra.Command {
 				// hex's own terrain is hidden by fog of war, so this is the only
 				// honest hint that it may be sea (land forces cannot enter sea).
 				SeaNeighbours int `json:"borders_known_sea_hexes,omitempty"`
+				// NoKnownLandRoute: no known passable land hex touching this hex is
+				// connected to one of your cities over known passable land.
+				NoKnownLandRoute bool `json:"no_known_land_route,omitempty"`
 			}
 			knownSea := map[[2]int]bool{}
 			for _, t := range tiles {
@@ -204,6 +207,13 @@ func mapCmd() *cobra.Command {
 					knownSea[[2]int{t.Q, t.R}] = true
 				}
 			}
+			knownTerrain := map[[2]int]string{}
+			for _, t := range tiles {
+				if t.Visible && t.Terrain != "fog" {
+					knownTerrain[[2]int{t.Q, t.R}] = t.Terrain
+				}
+			}
+			landReach := knownLandReach(knownTerrain, oq, or, ownCities)
 			var frontier []frontierHex
 			for _, t := range tiles {
 				d := hexDist(oq, or, t.Q, t.R)
@@ -218,7 +228,7 @@ func mapCmd() *cobra.Command {
 								sea++
 							}
 						}
-						frontier = append(frontier, frontierHex{Q: t.Q, R: t.R, Distance: d, SeaNeighbours: sea})
+						frontier = append(frontier, frontierHex{Q: t.Q, R: t.R, Distance: d, SeaNeighbours: sea, NoKnownLandRoute: !touchesSet(landReach, t.Q, t.R)})
 					}
 					continue
 				}
@@ -331,6 +341,9 @@ func mapCmd() *cobra.Command {
 					if f.SeaNeighbours > 0 {
 						seaNote = fmt.Sprintf("  touches known sea (%d hex%s) — may be sea; land forces cannot enter sea", f.SeaNeighbours, map[bool]string{true: "", false: "es"}[f.SeaNeighbours == 1])
 					}
+					if f.NoKnownLandRoute {
+						seaNote += "  no known land route to it — may be unreachable by land"
+					}
 					fmt.Printf("  (%3d,%3d) d%-2d %-3s%s\n", f.Q, f.R, f.Distance, compassDirection(oq, or, f.Q, f.R), seaNote)
 				}
 				if len(frontier) > max {
@@ -352,4 +365,44 @@ func mapCmd() *cobra.Command {
 	cmd.Flags().StringVar(&provinceID, "province", "", "province to center the map on (default: your capital)")
 	cmd.Flags().IntVar(&radius, "radius", 8, "max hex distance to list")
 	return cmd
+}
+
+// knownLandReach flood-fills the known passable land hexes connected to the
+// player's cities (origin included). Only seen terrain counts; fog never does.
+func knownLandReach(terrain map[[2]int]string, oq, or int, cities []mapCity) map[[2]int]bool {
+	reach := map[[2]int]bool{}
+	var queue [][2]int
+	push := func(h [2]int) {
+		if !reach[h] {
+			reach[h] = true
+			queue = append(queue, h)
+		}
+	}
+	push([2]int{oq, or})
+	for _, c := range cities {
+		push([2]int{c.Q, c.R})
+	}
+	for len(queue) > 0 {
+		h := queue[0]
+		queue = queue[1:]
+		for _, off := range hexNeighbourOffsets {
+			n := [2]int{h[0] + off[0], h[1] + off[1]}
+			if t, ok := terrain[n]; ok && province.IsPassable(t, "land") {
+				push(n)
+			}
+		}
+	}
+	return reach
+}
+
+var hexNeighbourOffsets = [][2]int{{1, 0}, {1, -1}, {0, -1}, {-1, 0}, {-1, 1}, {0, 1}}
+
+// touchesSet reports whether any neighbour of (q,r) is in set.
+func touchesSet(set map[[2]int]bool, q, r int) bool {
+	for _, off := range hexNeighbourOffsets {
+		if set[[2]int{q + off[0], r + off[1]}] {
+			return true
+		}
+	}
+	return false
 }

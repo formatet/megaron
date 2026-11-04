@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -113,6 +114,9 @@ see current occupancy. A market has no workplaces and needs no workers. An unsta
 					}
 				}
 
+				if done := buildingUnderConstruction(c, prov, buildingType); done != "" {
+					return fmt.Errorf("the %s is still under construction — done %s", buildingType, done)
+				}
 				return fmt.Errorf("no built workplace %q here (see `keryx city` for what's built)", buildingType)
 			}
 			if len(building.Goods) == 0 {
@@ -145,6 +149,10 @@ see current occupancy. A market has no workplaces and needs no workers. An unsta
 			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/placements", cfg.WorldID, prov)
 			applied := 0
 			var stopErr error
+			where := buildingType
+			if building.GodID != "" {
+				where += " (" + building.GodID + ")"
+			}
 			if delta > 0 {
 				for ; applied < delta; applied++ {
 					body := map[string]any{"target_kind": "building", "building_type": buildingType, "good_key": good.GoodKey}
@@ -161,7 +169,7 @@ see current occupancy. A market has no workplaces and needs no workers. An unsta
 				}
 				if !jsonMode {
 					if applied == delta {
-						fmt.Printf("Placed %s on %s.\n", citizenCount(applied), buildingType)
+						fmt.Printf("Placed %s on %s.\n", citizenCount(applied), where)
 					} else {
 						fmt.Printf("Placed %d of %d requested (stopped: %v).\n", applied, delta, stopErr)
 					}
@@ -185,7 +193,7 @@ see current occupancy. A market has no workplaces and needs no workers. An unsta
 						if want < -delta {
 							fmt.Printf("Removed %s — only %d were staffed there.\n", citizenCount(removed), want)
 						} else {
-							fmt.Printf("Removed %s from %s.\n", citizenCount(removed), buildingType)
+							fmt.Printf("Removed %s from %s.\n", citizenCount(removed), where)
 						}
 					} else {
 						fmt.Printf("Removed %d of %d requested (stopped: %v).\n", removed, want, stopErr)
@@ -202,7 +210,7 @@ see current occupancy. A market has no workplaces and needs no workers. An unsta
 			}
 			var after *placementGood
 			for _, b := range opts2.Buildings {
-				if b.BuildingType != buildingType {
+				if b.BuildingType != buildingType || b.GodID != building.GodID {
 					continue
 				}
 				for i := range b.Goods {
@@ -273,4 +281,31 @@ func hexBuildingGood(building, good string) bool {
 		return good == "copper" || good == "tin" || good == "silver"
 	}
 	return false
+}
+
+// buildingUnderConstruction returns the completion time of a queued build of
+// buildingType in the province's build queue, or "" when none is queued (or
+// the queue cannot be read — the caller then gives its ordinary message).
+func buildingUnderConstruction(c *Client, prov, buildingType string) string {
+	data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces/%s", cfg.WorldID, prov))
+	if err != nil {
+		return ""
+	}
+	var p struct {
+		Settlement struct {
+			BuildQueue []struct {
+				Type       string `json:"type"`
+				CompleteAt string `json:"complete_at"`
+			} `json:"build_queue"`
+		} `json:"settlement"`
+	}
+	if json.Unmarshal(data, &p) != nil {
+		return ""
+	}
+	for _, q := range p.Settlement.BuildQueue {
+		if q.Type == buildingType {
+			return buildQueueETA(c, q.CompleteAt)
+		}
+	}
+	return ""
 }

@@ -34,7 +34,7 @@ export function readingHTML(board) {
   const age = board.read_game_days_ago != null ? `, ${board.read_game_days_ago} game days ago` : '';
   return `<div class="dsec-title">Market board</div>
     <p class="market-board-reading">${esc(boardLine(board))}</p>
-    <p class="empty-state">Read ${esc(when)}${esc(age)}. It says what its ruler chose to write, as it stood then. Ask in a letter.</p>`;
+    <p class="empty-state">Read ${esc(when)}${esc(age)}. As it stood then. Ask in a letter.</p>`;
 }
 
 function lineSelects(line, chosen, goods, max) {

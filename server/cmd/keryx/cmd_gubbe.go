@@ -21,6 +21,7 @@ type placementGood struct {
 	Placed         int     `json:"placed"`
 	PlacedOrdinals []int   `json:"placed_ordinals,omitempty"`
 	MarginalYield  float64 `json:"marginal_yield"`
+	GodID          string  `json:"-"` // set client-side from the owning temple, for display
 }
 
 // placementHexBuilding is the ONE hex-bound production building (if any)
@@ -121,6 +122,11 @@ func fetchPlacementOptions(c *Client, worldID, provinceID string) (*placementOpt
 	if err := json.Unmarshal(data, &resp); err != nil {
 		return nil, fmt.Errorf("decode placement-options: %w", err)
 	}
+	for i := range resp.Buildings {
+		for j := range resp.Buildings[i].Goods {
+			resp.Buildings[i].Goods[j].GodID = resp.Buildings[i].GodID
+		}
+	}
 	return &resp, nil
 }
 
@@ -204,6 +210,9 @@ func goodCell(g placementGood) string {
 		return fmt.Sprintf("shipbuilding %d/%d shipyard workers — %s", g.Placed, *g.Cap, state)
 	}
 	if g.StaffingOnly {
+		if g.GodID != "" {
+			return fmt.Sprintf("%-10s %d/%d temple workers (%s)", "devotion", g.Placed, *g.Cap, g.GodID)
+		}
 		return fmt.Sprintf("%-10s %d/%d temple workers", "devotion", g.Placed, *g.Cap)
 	}
 	if g.Cap == nil {

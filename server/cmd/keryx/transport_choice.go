@@ -29,9 +29,9 @@ func printTransportOptions(options []transportOption, selected string) {
 	for _, o := range options {
 		detail := o.Reason
 		if o.Available {
-			detail = fmt.Sprintf("%s · about %g minutes", formatDays(o.TravelTicks), o.TravelSeconds/60)
+			detail = fmt.Sprintf("%s · about %.0f minutes", formatDays(o.TravelTicks), o.TravelSeconds/60)
 			if o.ArrivesAt != "" {
-				detail += " · arrives " + o.ArrivesAt
+				detail += " · arrives " + arrivalETA(nil, o.ArrivesAt)
 			}
 		}
 		mark := ""

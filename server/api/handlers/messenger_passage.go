@@ -223,7 +223,13 @@ func (h *PassageHandler) Arrange(w http.ResponseWriter, r *http.Request) {
 		slog.Error("arrange passage: board runner at dispatch failed", "ship", req.ShipID, "err", err)
 	}
 
+	stormWarning := ""
+	var shipHull int
+	if h.pool.QueryRow(ctx, `SELECT hull FROM units WHERE id = $1`, req.ShipID).Scan(&shipHull) == nil {
+		stormWarning = stormShipWarning(shipType, shipHull)
+	}
 	writeJSON(w, http.StatusAccepted, map[string]any{
+		"storm_warning":  stormWarning,
 		"unit_id":        res.UnitID,
 		"messenger_id":   messengerID,
 		"departs_at":     res.DepartsAt,

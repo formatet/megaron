@@ -55,3 +55,12 @@ func TestFoundingTexts(t *testing.T) {
 		t.Fatal("errNoCityYet must fire only on an empty province ID")
 	}
 }
+
+// A store with no ticks_left has a non-negative rate (the server only sets
+// ticks_left when the rate is negative): it is not draining, not "eternal".
+func TestFoundingStoreNotDrainingWording(t *testing.T) {
+	got := foundingStoreLine("Food", foundingStore{Amount: 50}, 86400)
+	if !strings.Contains(got, "not draining") || strings.Contains(got, "indefinitely") {
+		t.Fatalf("got %q", got)
+	}
+}

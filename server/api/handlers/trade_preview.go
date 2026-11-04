@@ -176,6 +176,9 @@ func (h *ProvinceHandler) TradePreview(w http.ResponseWriter, r *http.Request) {
 						name = *ship.Name
 					}
 					o["ship_name"] = unit.ShipDisplayName(ship.Type, name, originName).DisplayName
+					if w := stormShipWarning(ship.Type, ship.Hull); w != "" {
+						o["storm_warning"] = w
+					}
 					if quantity > ship.Capacity {
 						o["available"] = false
 						o["reason"] = "Cargo exceeds the free ship's capacity"
@@ -205,7 +208,7 @@ func (h *ProvinceHandler) TradePreview(w http.ResponseWriter, r *http.Request) {
 	}
 	resp := map[string]any{"options": options, "selected_by": selectedBy, "category": "", "cargo_capacity": nil}
 	if selected != nil {
-		for _, key := range []string{"category", "ship_id", "ship_type", "ship_name", "cargo_capacity", "travel_ticks", "travel_seconds", "arrives_at"} {
+		for _, key := range []string{"category", "ship_id", "ship_type", "ship_name", "cargo_capacity", "travel_ticks", "travel_seconds", "arrives_at", "storm_warning"} {
 			if value, ok := selected[key]; ok {
 				resp[key] = value
 			}

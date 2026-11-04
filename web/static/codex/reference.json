@@ -54,7 +54,7 @@
       },
       "duration_game_days": 12,
       "max_level": 3,
-      "purpose": "Works the settlement's coastal waters and enables sea trade",
+      "purpose": "Opens deep-water fishing places in the city's catchment and takes part in sea trade",
       "requires_coastal": true,
       "requires_terrain": [
         "deep_sea"

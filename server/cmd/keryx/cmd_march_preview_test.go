@@ -129,3 +129,27 @@ func TestMarchSilverForecastRoundsCirculationArithmetic(t *testing.T) {
 		t.Fatalf("got %q, want %q", got, want)
 	}
 }
+
+// --intent colonize --preview must show the catchment forecast too, and send nothing.
+func TestMarchColonizePreviewShowsCatchmentForecast(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			t.Errorf("unexpected mutation: %s", r.Method)
+		}
+		if strings.HasSuffix(r.URL.Path, "/colonize-preview") {
+			_, _ = w.Write([]byte(`{"catchment":[{"q":0,"r":0,"known":true,"terrain":"plains"}],"grain":{"seed":900}}`))
+			return
+		}
+		_, _ = w.Write([]byte(`{}`))
+	}))
+	defer srv.Close()
+	old := cfg
+	defer func() { cfg = old }()
+	cfg = &Config{Server: srv.URL, WorldID: "world"}
+	cmd := unitMarchCmd()
+	cmd.SetArgs([]string{"--unit", "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", "--target", "0,0", "--intent", "colonize", "--preview"})
+	out, err := captureStdout(t, cmd.Execute)
+	if err != nil || !strings.Contains(out, "catchment forecast") {
+		t.Fatalf("err=%v out=%q", err, out)
+	}
+}

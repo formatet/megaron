@@ -14,6 +14,7 @@ test('a reading says how old it is and that it is only the ruler\'s word', () =>
   assert.match(html, /Buys tin/);
   assert.match(html, /3 game days ago/);
   assert.match(html, /Ask in a letter/);
+  assert.doesNotMatch(html, /chose to write/); // that sentence lives in the Codex
   assert.equal(readingHTML(null), '');
 });
 
