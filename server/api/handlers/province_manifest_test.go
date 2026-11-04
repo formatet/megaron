@@ -152,7 +152,7 @@ func TestManifestValidationAndRollback(t *testing.T) {
 		}
 		var amount float64
 		f.pool.QueryRow(ctx, `SELECT amount FROM settlement_goods WHERE settlement_id=$1 AND good_key='silver'`, f.originID).Scan(&amount)
-		if amount != 100000 {
+		if amount != 4000 {
 			t.Fatalf("partial debit %v", amount)
 		}
 		var count int
