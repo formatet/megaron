@@ -20,8 +20,39 @@ import (
 const TempleOfferingGrain = 0.25
 
 // Only food/wood may substitute for the grain part. Other parts are independent.
-var grainOfferingGoods = [...]string{"grain", "fish", "timber"}
-var templeOfferingGoods = [...]string{"grain", "fish", "timber", "silver", "incense"}
+var grainOfferingGoods = [...]string{"grain", "fish", "timber", "livestock"}
+
+// Goods the city store is read for: every good with a divine price (the rich offering may be any of them).
+var templeOfferingGoods = func() []string {
+	goods := make([]string, 0, len(religion.FixedDivineValues))
+	for good := range religion.FixedDivineValues {
+		goods = append(goods, good)
+	}
+	sort.Strings(goods)
+	return goods
+}()
+
+// RichOfferingBonus multiplies EffectiveTempleWeight when the rich offering is paid in full (Timothy 2026-11-01).
+const RichOfferingBonus = 1.5
+
+// richOfferingShare is the rich offering's cost as a share of the base grain value (0.25 x level^2).
+const richOfferingShare = 0.5
+
+// templeTaste is the god's taste for a good at the temple's rich offering. Smak per tempel has no source
+// yet (see docs/reviews/rikt-offer/README.md): this is the single place to change once Timothy decides.
+var templeTaste = func(god, good string) float64 { return 1 }
+
+// RichOfferingGood reports whether good may be a rich offering (it has a divine price).
+func RichOfferingGood(good string) bool { _, ok := religion.FixedDivineValues[good]; return ok }
+
+// richAmount is the rich offering per tick: half the base grain value, over value x taste.
+func richAmount(level int, god, good string, values map[string]float64) float64 {
+	v := values[good] * templeTaste(god, good)
+	if !positiveFinite(v) || !positiveFinite(values["grain"]) {
+		return 0
+	}
+	return richOfferingShare * TempleOfferingGrain * float64(level*level) * values["grain"] / v
+}
 
 func templeOfferingRecipe() map[string]float64 {
 	return map[string]float64{"grain": TempleOfferingGrain}
@@ -83,6 +114,9 @@ type TempleOffer struct {
 	Stock           map[string]float64 `json:"stock"`
 	Offering        map[string]float64 `json:"offering"`
 	Fed             bool               `json:"fed"`
+	RichGood        string             `json:"rich_offering_good"`
+	RichAmount      float64            `json:"rich_offering_amount"`
+	RichPaid        bool               `json:"rich_offering_paid"`
 }
 
 func positiveFinite(v float64) bool { return v > 0 && !math.IsInf(v, 0) && !math.IsNaN(v) }
@@ -163,9 +197,12 @@ type templeRef struct {
 	god     string
 	level   int
 	staffed int
+	rich    string
 }
 
 // planCityOffers plans each temple's gift in turn against one shared store.
+// Every base tithe is drawn first; only then are the rich offerings, in the same temple order,
+// so a rich offering can never starve a base tithe.
 func planCityOffers(id uuid.UUID, name string, temples []templeRef, stock, values map[string]float64) []TempleOffer {
 	left := maps.Clone(stock)
 	out := make([]TempleOffer, 0, len(temples))
@@ -181,6 +218,21 @@ func planCityOffers(id uuid.UUID, name string, temples []templeRef, stock, value
 		}
 		out = append(out, o)
 	}
+	for i, t := range temples {
+		o := &out[i]
+		if t.rich == "" || !RichOfferingGood(t.rich) {
+			continue
+		}
+		o.RichGood = t.rich
+		o.RichAmount = richAmount(o.Level, t.god, t.rich, values)
+		// All or nothing, and only while the base tithe yields anything to multiply.
+		if o.RichAmount > 0 && o.PaidFraction > 0 && left[t.rich] >= o.RichAmount {
+			o.RichPaid = true
+			o.Offering[t.rich] += o.RichAmount
+			left[t.rich] -= o.RichAmount
+			o.EffectiveWeight *= RichOfferingBonus
+		}
+	}
 	return out
 }
 
@@ -190,12 +242,13 @@ func loadTempleOffers(ctx context.Context, db religion.Execer, playerID, worldID
 	 (SELECT array_agg(b.god_id ORDER BY b.god_id) FROM buildings b WHERE b.settlement_id=s.id AND b.building_type='temple'),
 	 (SELECT array_agg(b.level ORDER BY b.god_id) FROM buildings b WHERE b.settlement_id=s.id AND b.building_type='temple'),
  (SELECT array_agg((SELECT count(*)::int FROM settlement_placement p WHERE p.building_id=b.id AND p.good_key='cult') ORDER BY b.god_id) FROM buildings b WHERE b.settlement_id=s.id AND b.building_type='temple'),
+	 (SELECT array_agg(coalesce(b.rich_offering_good,'') ORDER BY b.god_id) FROM buildings b WHERE b.settlement_id=s.id AND b.building_type='temple'),
  (SELECT coalesce(jsonb_object_agg(sg.good_key,GREATEST(0,settled(sg.amount,sg.rate,sg.calc_tick))),'{}')
 	   FROM settlement_goods sg WHERE sg.settlement_id=s.id AND sg.good_key=ANY($3::text[]))
 	 FROM settlements s
 	 WHERE s.owner_id=$1 AND s.world_id=$2 AND s.state NOT IN ('sunk','collapsed','razed')
 	 AND EXISTS(SELECT 1 FROM buildings b WHERE b.settlement_id=s.id AND b.building_type='temple')
-	 ORDER BY s.name,s.id`, playerID, worldID, templeOfferingGoods[:])
+	 ORDER BY s.name,s.id`, playerID, worldID, templeOfferingGoods)
 	if err != nil {
 		return nil, err
 	}
@@ -205,10 +258,10 @@ func loadTempleOffers(ctx context.Context, db religion.Execer, playerID, worldID
 		var id uuid.UUID
 		var name string
 		var ids []uuid.UUID
-		var gods []string
+		var gods, rich []string
 		var levels, staffed []int
 		var stored map[string]float64
-		if err := rows.Scan(&id, &name, &ids, &gods, &levels, &staffed, &stored); err != nil {
+		if err := rows.Scan(&id, &name, &ids, &gods, &levels, &staffed, &rich, &stored); err != nil {
 			return nil, err
 		}
 		stock := map[string]float64{}
@@ -217,7 +270,7 @@ func loadTempleOffers(ctx context.Context, db religion.Execer, playerID, worldID
 		}
 		temples := make([]templeRef, len(ids))
 		for i := range ids {
-			temples[i] = templeRef{id: ids[i], god: gods[i], level: levels[i], staffed: staffed[i]}
+			temples[i] = templeRef{id: ids[i], god: gods[i], level: levels[i], staffed: staffed[i], rich: rich[i]}
 		}
 		offers = append(offers, planCityOffers(id, name, temples, stock, values)...)
 	}
@@ -240,13 +293,13 @@ func (h *TickHandler) chargeTempleOffering(ctx context.Context, settlementID uui
 		return nil, err
 	}
 	var temples []templeRef
-	trows, err := tx.Query(ctx, `SELECT id,god_id,level,(SELECT count(*) FROM settlement_placement p WHERE p.building_id=buildings.id AND p.good_key='cult') FROM buildings WHERE settlement_id=$1 AND building_type='temple' ORDER BY god_id`, settlementID)
+	trows, err := tx.Query(ctx, `SELECT id,god_id,level,(SELECT count(*) FROM settlement_placement p WHERE p.building_id=buildings.id AND p.good_key='cult'),coalesce(rich_offering_good,'') FROM buildings WHERE settlement_id=$1 AND building_type='temple' ORDER BY god_id`, settlementID)
 	if err != nil {
 		return nil, err
 	}
 	for trows.Next() {
 		var t templeRef
-		if err := trows.Scan(&t.id, &t.god, &t.level, &t.staffed); err != nil {
+		if err := trows.Scan(&t.id, &t.god, &t.level, &t.staffed, &t.rich); err != nil {
 			trows.Close()
 			return nil, err
 		}
@@ -259,7 +312,7 @@ func (h *TickHandler) chargeTempleOffering(ctx context.Context, settlementID uui
 	}
 	rows, err := tx.Query(ctx, `SELECT good_key,GREATEST(0,settled(amount,rate,calc_tick))
 	 FROM settlement_goods WHERE settlement_id=$1 AND good_key=ANY($2::text[])
-	 ORDER BY good_key FOR UPDATE`, settlementID, templeOfferingGoods[:])
+	 ORDER BY good_key FOR UPDATE`, settlementID, templeOfferingGoods)
 	if err != nil {
 		return nil, err
 	}
