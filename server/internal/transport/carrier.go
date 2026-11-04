@@ -50,6 +50,7 @@ type FreeShip struct {
 	Type     string
 	Name     *string
 	Capacity float64
+	Hull     int // graded damage track, 5 = untouched (unit.Unit.Hull)
 }
 
 // FindFreeShip locks and returns the owner's best free galley/merchantman
@@ -67,7 +68,7 @@ type FreeShip struct {
 func FindFreeShip(ctx context.Context, tx pgx.Tx, worldID, ownerID, settlementID uuid.UUID) (FreeShip, bool, error) {
 	var s FreeShip
 	err := tx.QueryRow(ctx,
-		`SELECT id, type, name FROM units
+		`SELECT id, type, name, hull FROM units
 		 WHERE world_id = $1 AND owner_id = $2 AND settlement_id = $3
 		   AND status = 'garrison'
 		   AND NOT EXISTS (SELECT 1 FROM units passenger WHERE passenger.carried_by_ship_id = units.id)
@@ -76,7 +77,7 @@ func FindFreeShip(ctx context.Context, tx pgx.Tx, worldID, ownerID, settlementID
 		 LIMIT 1
 		 FOR UPDATE SKIP LOCKED`,
 		worldID, ownerID, settlementID,
-	).Scan(&s.ID, &s.Type, &s.Name)
+	).Scan(&s.ID, &s.Type, &s.Name, &s.Hull)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return FreeShip{}, false, nil
 	}

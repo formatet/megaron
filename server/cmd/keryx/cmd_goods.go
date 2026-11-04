@@ -215,6 +215,9 @@ func transferCmd() *cobra.Command {
 			if !jsonMode {
 				printTransportOptions(preview.Options, by)
 				fmt.Println(transferCargoLine(items, preview))
+				if preview.StormWarning != "" {
+					fmt.Println("⚠ " + preview.StormWarning)
+				}
 			}
 			payload := map[string]any{"destination_id": destID, "items": items}
 			if by != "" {
@@ -242,6 +245,9 @@ func transferCmd() *cobra.Command {
 			// won't be free again until it's sailed home too.
 			if shipName, _ := resp["ship_name"].(string); shipName != "" {
 				line += fmt.Sprintf("\n  ⛵ carried by %s — the ship sails home empty afterward and isn't free again until it does", shipName)
+			}
+			if w, _ := resp["storm_warning"].(string); w != "" {
+				line += "\n  ⚠ " + w
 			}
 			fmt.Println(line)
 			return nil
@@ -271,6 +277,8 @@ type cargoPreview struct {
 	ShipType string            `json:"ship_type"`
 	Capacity *float64          `json:"cargo_capacity"`
 	Options  []transportOption `json:"options"`
+	// StormWarning is the selected ship's own hull warning (empty for land or a sound hull).
+	StormWarning string `json:"storm_warning"`
 }
 
 func parseTransferItems(goods, quantities []string) ([]transferItem, error) {

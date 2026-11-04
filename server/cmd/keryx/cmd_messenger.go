@@ -195,6 +195,9 @@ func passageCmd() *cobra.Command {
 				eta = arrT
 			}
 			fmt.Printf("Passage arranged — ship %v sails, runner aboard when it departs. Arrives %v\n", resp["unit_id"], eta)
+			if w, _ := resp["storm_warning"].(string); w != "" {
+				fmt.Println("⚠ " + w)
+			}
 			return nil
 		},
 	}

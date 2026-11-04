@@ -3453,7 +3453,7 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	// held through to commit) so two concurrent transfers can never bind the
 	// same ship.
 	var shipID *uuid.UUID
-	var shipName, shipType string
+	var shipName, shipType, shipStormWarning string
 	var cargoCapacity *float64
 	if category == "naval" {
 		ship, found, ferr := transport.FindFreeShip(r.Context(), tx, worldID, playerID, originID)
@@ -3473,6 +3473,7 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			shipType = ship.Type
+			shipStormWarning = stormShipWarning(ship.Type, ship.Hull)
 			capacity := ship.Capacity
 			cargoCapacity = &capacity
 			sid := ship.ID
@@ -3684,6 +3685,9 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		resp["ship_type"] = shipType
 		resp["ship_id"] = *shipID
 		resp["ship_name"] = shipName
+		if shipStormWarning != "" {
+			resp["storm_warning"] = shipStormWarning
+		}
 	}
 	writeJSON(w, http.StatusCreated, resp)
 }
