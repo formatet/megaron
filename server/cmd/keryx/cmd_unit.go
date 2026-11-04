@@ -963,7 +963,17 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 				if !jsonMode && cityName != "" {
 					fmt.Printf("Unit %s — destination %s\n", unitID[:8], cityTargetLabel(c, targetQ, targetR, cityName))
 				}
-				return showMarchPreview(c, path+"-preview", body)
+				if err := showMarchPreview(c, path+"-preview", body); err != nil {
+					return err
+				}
+				if intent == "colonize" && !jsonMode {
+					if cp, perr := fetchColonizePreview(c, cfg.WorldID, targetQ, targetR); perr != nil {
+						fmt.Printf("Catchment forecast unavailable: %v\n", perr)
+					} else {
+						renderColonizePreview(cp, targetQ, targetR)
+					}
+				}
+				return nil
 			}
 			if intent == "explore" {
 				pdata, err := fetchMarchPreview(c, path+"-preview", body)
