@@ -106,8 +106,11 @@ BEGIN
     RETURN NEW;
 END $$;
 
+-- No WHEN filter: a write that leaves a full store at its cap in the same tick
+-- (refining credit, recompute.go) still clipped something, and the tx-local
+-- overflow must be consumed by THIS row, never leak to the next row written.
+-- Zero posts are skipped inside ledger_post, so a rate-only update posts nothing.
 CREATE TRIGGER settlement_goods_ledger_upd BEFORE UPDATE ON settlement_goods
-    FOR EACH ROW WHEN (OLD.amount IS DISTINCT FROM NEW.amount OR OLD.calc_tick IS DISTINCT FROM NEW.calc_tick)
-    EXECUTE FUNCTION settlement_goods_ledger();
+    FOR EACH ROW EXECUTE FUNCTION settlement_goods_ledger();
 CREATE TRIGGER settlement_goods_ledger_ins AFTER INSERT ON settlement_goods
     FOR EACH ROW WHEN (NEW.amount <> 0) EXECUTE FUNCTION settlement_goods_ledger();
