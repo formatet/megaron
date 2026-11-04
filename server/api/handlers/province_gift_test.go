@@ -51,8 +51,8 @@ func TestGiftContactedForeignCityDispatch(t *testing.T) {
 	if err := f.pool.QueryRow(context.Background(), `SELECT amount FROM settlement_goods WHERE settlement_id=$1 AND good_key='silver'`, f.originID).Scan(&amount); err != nil {
 		t.Fatal(err)
 	}
-	if amount != 99950 {
-		t.Fatalf("origin amount=%v, want 99950", amount)
+	if amount != 3950 {
+		t.Fatalf("origin amount=%v, want 3950", amount)
 	}
 	var interceptable bool
 	if err := f.pool.QueryRow(context.Background(), `SELECT interceptable FROM transports WHERE id=$1`, body["transport_id"]).Scan(&interceptable); err != nil {
@@ -77,7 +77,7 @@ func TestGiftHiddenForeignCityDeniedWithoutDebit(t *testing.T) {
 	if err := f.pool.QueryRow(context.Background(), `SELECT count(*) FROM transports WHERE world_id=$1`, f.worldID).Scan(&movers); err != nil {
 		t.Fatal(err)
 	}
-	if amount != 100000 || movers != 0 {
+	if amount != 4000 || movers != 0 {
 		t.Fatalf("refusal changed amount=%v movers=%d", amount, movers)
 	}
 }
@@ -471,7 +471,7 @@ func TestGiftLimpedRaidSeparatesReturnFromLoss(t *testing.T) {
 	if err := f.pool.QueryRow(ctx, `SELECT amount FROM settlement_goods WHERE settlement_id=$1 AND good_key='silver'`, f.originID).Scan(&amount); err != nil {
 		t.Fatal(err)
 	}
-	if amount != 99950 {
+	if amount != 3950 {
 		t.Fatalf("instant return minted: %v", amount)
 	}
 	var ret events.ScheduledEvent
@@ -495,8 +495,8 @@ func TestGiftLimpedRaidSeparatesReturnFromLoss(t *testing.T) {
 	if err := f.pool.QueryRow(ctx, `SELECT amount FROM settlement_goods WHERE settlement_id=$1 AND good_key='silver'`, f.originID).Scan(&amount); err != nil {
 		t.Fatal(err)
 	}
-	if amount != 99975 {
-		t.Fatalf("actual returned stock=%v want99975", amount)
+	if amount != 3975 {
+		t.Fatalf("actual returned stock=%v want3975", amount)
 	}
 }
 
@@ -555,7 +555,7 @@ func TestGiftOldRadiusHaloDoesNotRevealOrPermitDestination(t *testing.T) {
 				if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM transports WHERE world_id=$1`, f.worldID).Scan(&movers); err != nil {
 					t.Fatal(err)
 				}
-				if amount != 100000 || movers != 0 {
+				if amount != 4000 || movers != 0 {
 					t.Fatalf("refusal debited money or dispatched: amount%v movers%d", amount, movers)
 				}
 			}
@@ -602,7 +602,7 @@ func TestGiftNavalShortageRefusesWithoutDebiting(t *testing.T) {
 	if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM transports WHERE world_id=$1 AND ship_unit_id=$2`, f.worldID, ship).Scan(&movers); err != nil {
 		t.Fatal(err)
 	}
-	if silver != 100000 || fish != 0 || provisions != 0 || state != "garrison" || movers != 0 {
+	if silver != 4000 || fish != 0 || provisions != 0 || state != "garrison" || movers != 0 {
 		t.Fatalf("refusal mutated silver=%v fish=%v provisions=%v state=%s movers=%d", silver, fish, provisions, state, movers)
 	}
 }

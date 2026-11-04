@@ -13,7 +13,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// Storehouse (mig 241): one shared ceiling for every good but food, herd, horses, cult.
+// Storehouse (mig 244): one shared ceiling for every good but food, herd, horses, cult.
 
 func shPut(t *testing.T, pool *pgxpool.Pool, f foodFixture, good string, amount, rate float64) {
 	t.Helper()

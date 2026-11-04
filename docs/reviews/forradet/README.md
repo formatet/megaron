@@ -1,4 +1,4 @@
-# Förrådet (Storehouse) — inventory and design (Sonnet 2026-11-04, master 79a6d348, mig 241)
+# Förrådet (Storehouse) — inventory and design (Sonnet 2026-11-04, master 79a6d348, mig 244)
 
 Order `.agents/order-forradet-20261028.md`; allocation rule decided by Timothy 2026-10-29 (`megaron_styrande_beslut.md`): when the store fills,
 **all production stops together, the last room is split in proportion to the rates, no good goes first, ONE dispatch when it becomes full.**

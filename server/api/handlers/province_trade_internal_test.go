@@ -100,10 +100,15 @@ func setupTradeInternalFixture(t *testing.T) *tradeInternalFixture {
 
 	if _, err := pool.Exec(ctx,
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
-		 VALUES ($1, 'silver', 100000, 0, 1000000, 0)`,
+		 VALUES ($1, 'silver', 4000, 0, 1000000, 0)`,
 		originID,
 	); err != nil {
 		t.Fatalf("seed origin silver: %v", err)
+	}
+	// 4 000 silver sits in a level-3 Storehouse (5 000, mig 244): a refund or a returned
+	// gift must find room, as it did when the ceiling was a million.
+	if _, err := pool.Exec(ctx, `INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, 'storehouse', 3)`, originID); err != nil {
+		t.Fatalf("storehouse: %v", err)
 	}
 
 	if _, err := pool.Exec(ctx, `INSERT INTO map_tiles(world_id,q,r,terrain) SELECT $1,q,0,'plains' FROM generate_series(0,3) q`, worldID); err != nil {

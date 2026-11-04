@@ -15,7 +15,7 @@ func TestRecruitWarChariotCedarCancellationLandAndSpill(t *testing.T) {
 	if _, err := f.pool.Exec(ctx, `INSERT INTO buildings(settlement_id,building_type,level) VALUES($1,'stable',1) ON CONFLICT DO NOTHING`, f.settlementID); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := f.pool.Exec(ctx, `UPDATE settlement_goods SET amount=10000,rate=0 WHERE settlement_id=$1`, f.settlementID); err != nil {
+	if _, err := f.pool.Exec(ctx, `UPDATE settlement_goods SET amount=1000,rate=0 WHERE settlement_id=$1`, f.settlementID); err != nil {
 		t.Fatal(err)
 	}
 	for good, amount := range map[string]float64{"timber": 0, "cedar": 100, "bronze": 100} {

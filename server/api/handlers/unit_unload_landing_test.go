@@ -174,6 +174,9 @@ func TestUnitUnload_InPort_ReturnsCarriedPurse(t *testing.T) {
 	).Scan(&homeID); err != nil {
 		t.Fatalf("create settlement: %v", err)
 	}
+	if _, err := pool.Exec(ctx, `INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, 'storehouse', 1)`, homeID); err != nil {
+		t.Fatalf("storehouse: %v", err) // 600 silver is over the 500 of a city with none (mig 244)
+	}
 	if _, err := pool.Exec(ctx,
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
 		 VALUES ($1, 'silver', 100, 0, 1000000, current_world_tick())

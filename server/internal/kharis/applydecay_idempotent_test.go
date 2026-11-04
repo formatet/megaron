@@ -186,7 +186,7 @@ func TestApplyDecay_StoresDoNotRot(t *testing.T) {
 		return v
 	}
 
-	// Timber and cedar share the Storehouse (mig 241); a level-3 one keeps 1 000 well under the ceiling.
+	// Timber and cedar share the Storehouse (mig 244); a level-3 one keeps 1 000 well under the ceiling.
 	if _, err := pool.Exec(ctx, `INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, 'storehouse', 3)`, settlementID); err != nil {
 		t.Fatalf("storehouse: %v", err)
 	}

@@ -121,6 +121,10 @@ func setupRecruitShipFixture(t *testing.T) *recruitShipFixture {
 
 	// Goods: enough for a "ship" (crew 20 × {timber:9, silver:0.3}) and a
 	// "spearman" batch of 30 men (30 × {grain:3, silver:0.2}).
+	// Level-3 Storehouse (5 000, mig 244): the fixture holds 1 000 of several goods and a refund must find room.
+	if _, err := pool.Exec(ctx, `INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, 'storehouse', 3)`, settlementID); err != nil {
+		t.Fatalf("storehouse: %v", err)
+	}
 	goods := map[string]float64{
 		"timber": 1000,
 		"silver": 1000,

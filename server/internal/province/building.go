@@ -285,12 +285,12 @@ func FoodStorageCap(siloLevel int) float64 { return FoodStorageBase * SiloFoodSt
 
 // StorehouseBase is what a city stores in total of every good except food, the herd,
 // the parked horses and cult, with no Storehouse (Timothy 2026-10-28: 500; silver and
-// wine included). The SQL function storehouse_base (mig 241) mirrors it;
+// wine included). The SQL function storehouse_base (mig 244) mirrors it;
 // TestStorehouseSQLMirror pins the two.
 const StorehouseBase = 500.0
 
 // StorehouseStorageMult is the Storehouse ladder: the same x2/x5/x10 as the Granary.
-// SQL storehouse_mult (mig 241) mirrors it.
+// SQL storehouse_mult (mig 244) mirrors it.
 func StorehouseStorageMult(level int) float64 { return SiloFoodStorageMult(level) }
 
 // StorehouseCap is the shared ceiling of the non-food store at this Storehouse level.
@@ -298,7 +298,7 @@ func StorehouseCap(level int) float64 { return StorehouseBase * StorehouseStorag
 
 // StorehouseStoredGood reports whether a good counts against the shared Storehouse:
 // everything but food (Granary), livestock (Pen), horses (parked) and cult.
-// SQL storehouse_stored_good (mig 241) mirrors it.
+// SQL storehouse_stored_good (mig 244) mirrors it.
 func StorehouseStoredGood(good string) bool {
 	switch good {
 	case "grain", "fish", "oil", "livestock", "horses", "cult":

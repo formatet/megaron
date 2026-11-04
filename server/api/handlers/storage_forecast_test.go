@@ -37,7 +37,7 @@ func TestStorageForecastIsOnlyExposedToAuthenticatedOwner(t *testing.T) {
 	if _, err := pool.Exec(ctx, `UPDATE players SET agora_exempt=true WHERE id=$1`, own.PlayerID); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := pool.Exec(ctx, `UPDATE settlement_goods SET amount=0,rate=0,cap=60,calc_tick=0 WHERE settlement_id=$1 AND good_key='silver'`, sid); err != nil {
+	if _, err := pool.Exec(ctx, `UPDATE settlement_goods SET amount=440,rate=0,cap=1000000,calc_tick=0 WHERE settlement_id=$1 AND good_key='silver'`, sid); err != nil {
 		t.Fatal(err)
 	}
 	tid := uuid.New()
@@ -82,7 +82,7 @@ func TestStorageForecastIsOnlyExposedToAuthenticatedOwner(t *testing.T) {
 			}
 			found := false
 			for _, f := range result.Settlement.Storage {
-				if f.GoodKey == "silver" {
+				if f.GoodKey == "storehouse" { // silver sits in the shared Storehouse (mig 244)
 					found = true
 					if !f.Warning || f.Incoming != 150 || f.FullInTicks == nil || *f.FullInTicks != 20 {
 						t.Fatalf("server forecast=%+v", f)
@@ -90,7 +90,7 @@ func TestStorageForecastIsOnlyExposedToAuthenticatedOwner(t *testing.T) {
 				}
 			}
 			if !found {
-				t.Fatal("missing own silver forecast")
+				t.Fatal("missing own Storehouse forecast")
 			}
 		})
 	}
