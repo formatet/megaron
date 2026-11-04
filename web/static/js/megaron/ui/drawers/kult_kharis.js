@@ -10,10 +10,13 @@ import { fmtClock } from '../fmt_clock.js';
 // Net and decay are authoritative server projections, including templeless realms.
 // Missing data stays unavailable; this formatter never derives the city formula.
 
+// One decimal when it is exact, otherwise two: the 1/3 and 7/12 kharis pace (2026-11-04) would read 0.3/0.6.
+const kx = (x) => (Math.abs(x * 10 - Math.round(x * 10)) < 1e-9 ? x.toFixed(1) : x.toFixed(2));
+
 export function kharisDecayHTML(pd) {
   if (!Number.isFinite(pd?.kharis_daily_decay)) return '<p class="empty-state">Cult upkeep not reported.</p>';
   if (pd.kharis_net_known === true) return ''; // shown inside the game-day block of kharisNetView
-  return '<div class="stat-row"><span class="sr-label">Upkeep</span><span class="sr-val">−' + pd.kharis_daily_decay.toFixed(1) + ' / game day</span></div>';
+  return '<div class="stat-row"><span class="sr-label">Upkeep</span><span class="sr-val">−' + kx(pd.kharis_daily_decay) + ' / game day</span></div>';
 }
 
 export function kharisNetView(pd, scope = 'city') {
@@ -28,9 +31,9 @@ export function kharisNetView(pd, scope = 'city') {
     const v = pd.kharis_net_per_tick || 0;
     // One heading carries the unit; the rows are plain signed numbers.
     out.netHtml = '<p>Kharis each game day</p>' +
-      (Number.isFinite(pd.kharis_production_per_tick) ? '<div class="stat-row"><span class="sr-label">Temple production</span><span class="sr-val">+' + pd.kharis_production_per_tick.toFixed(1) + '</span></div>' : '') +
-      (Number.isFinite(pd.kharis_daily_decay) ? '<div class="stat-row"><span class="sr-label">Upkeep</span><span class="sr-val">−' + pd.kharis_daily_decay.toFixed(1) + '</span></div>' : '') +
-      '<div class="stat-row"><span class="sr-label">Net</span><span class="sr-val">' + (v >= 0 ? '+' : '') + v.toFixed(1) + '</span></div>';
+      (Number.isFinite(pd.kharis_production_per_tick) ? '<div class="stat-row"><span class="sr-label">Temple production</span><span class="sr-val">+' + kx(pd.kharis_production_per_tick) + '</span></div>' : '') +
+      (Number.isFinite(pd.kharis_daily_decay) ? '<div class="stat-row"><span class="sr-label">Upkeep</span><span class="sr-val">−' + kx(pd.kharis_daily_decay) + '</span></div>' : '') +
+      '<div class="stat-row"><span class="sr-label">Net</span><span class="sr-val">' + (v >= 0 ? '+' : '') + kx(v) + '</span></div>';
   }
 
   if (Number.isInteger(pd.temple_staffed) && Number.isInteger(pd.temple_capacity)) {
