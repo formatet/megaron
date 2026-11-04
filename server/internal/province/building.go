@@ -37,6 +37,7 @@ var BuildingPurposes = map[BuildingType]string{
 	BuildingWinery:      "Refines a vintner's wine from the settlement's vines",
 	BuildingPen:         "Holds a bigger herd; animals the pen cannot hold are eaten, then lost",
 	BuildingSilo:        "Stores more food (not the herd); a wall of level N needs a Granary of level N",
+	BuildingStorehouse:  "One shared store for every good except food, the herd and cult: stone, timber, metals, silver, wine and the rest",
 }
 
 // The ONE harbour rule, told the same on every surface: a city may build a
@@ -100,6 +101,7 @@ var BuildingSpecs = map[BuildingType]BuildingSpec{
 	BuildingWinery:      {Costs: map[string]float64{"timber": 8, "stone": 8}, DurationTicks: 8},
 	BuildingPen:         {Costs: map[string]float64{"timber": 6, "stone": 4}, DurationTicks: 4},
 	BuildingSilo:        {Costs: map[string]float64{"timber": 12, "stone": 8}, DurationTicks: 8},
+	BuildingStorehouse:  {Costs: map[string]float64{"timber": 12, "stone": 8}, DurationTicks: 8},
 }
 
 // WallLevelSpecs ger kostnad/duration för nästa murnivå (1=Palisade, 2=Stone Wall,
@@ -150,6 +152,7 @@ var LevelledBuildings = map[BuildingType]bool{
 	BuildingTemple:      true,
 	BuildingPen:         true,
 	BuildingSilo:        true,
+	BuildingStorehouse:  true,
 }
 
 // LevelCedarCost är cedar-påslaget för att bygga en arbetsplats till nivå N.
@@ -179,14 +182,15 @@ var LevelBronzeCost = map[int]float64{
 
 // LevelBronzeBuildings är byggnader vars nivåtrappa kostar brons.
 var LevelBronzeBuildings = map[BuildingType]bool{
-	BuildingFoundry: true,
-	BuildingSilo:    true,
+	BuildingFoundry:    true,
+	BuildingSilo:       true,
+	BuildingStorehouse: true,
 }
 
 // levelBronzeFrom is the first level that pays LevelBronzeCost; absent = 2. The
 // Granary pays bronze only at level 3, so Stone Wall (needs Granary 2) stays
 // reachable before the bronze age.
-var levelBronzeFrom = map[BuildingType]int{BuildingSilo: 3}
+var levelBronzeFrom = map[BuildingType]int{BuildingSilo: 3, BuildingStorehouse: 3}
 
 // LevelCedarBuildings är de byggnader vars nivåtrappa kostar ädelträ.
 //
@@ -278,6 +282,30 @@ const FoodStorageBase = 2000.0
 
 // FoodStorageCap is the store of one food good with a Granary of this level.
 func FoodStorageCap(siloLevel int) float64 { return FoodStorageBase * SiloFoodStorageMult(siloLevel) }
+
+// StorehouseBase is what a city stores in total of every good except food, the herd,
+// the parked horses and cult, with no Storehouse (Timothy 2026-10-28: 500; silver and
+// wine included). The SQL function storehouse_base (mig 241) mirrors it;
+// TestStorehouseSQLMirror pins the two.
+const StorehouseBase = 500.0
+
+// StorehouseStorageMult is the Storehouse ladder: the same x2/x5/x10 as the Granary.
+// SQL storehouse_mult (mig 241) mirrors it.
+func StorehouseStorageMult(level int) float64 { return SiloFoodStorageMult(level) }
+
+// StorehouseCap is the shared ceiling of the non-food store at this Storehouse level.
+func StorehouseCap(level int) float64 { return StorehouseBase * StorehouseStorageMult(level) }
+
+// StorehouseStoredGood reports whether a good counts against the shared Storehouse:
+// everything but food (Granary), livestock (Pen), horses (parked) and cult.
+// SQL storehouse_stored_good (mig 241) mirrors it.
+func StorehouseStoredGood(good string) bool {
+	switch good {
+	case "grain", "fish", "oil", "livestock", "horses", "cult":
+		return false
+	}
+	return true
+}
 
 // SiloLevelForWall is the Granary level a wall of nextWallLevel needs: the wall
 // may not outgrow the stores that feed the people inside it (Timothy 2026-10-21).

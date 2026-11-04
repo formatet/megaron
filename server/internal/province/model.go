@@ -123,6 +123,7 @@ const (
 	BuildingWinery      BuildingType = "winery"
 	BuildingPen         BuildingType = "pen"
 	BuildingSilo        BuildingType = "silo" // player-facing name: Granary
+	BuildingStorehouse  BuildingType = "storehouse"
 )
 
 // HexBoundBuildings is the ONE canonical list of building types placed on a
