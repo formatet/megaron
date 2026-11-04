@@ -265,7 +265,18 @@ func foundMetropolisFromNomadicHost(
 	// 8. Poseidon's gift: a coastal founding is owed exactly one galley, once.
 	// Built inline here (not via a shared starter-unit path): the founder already
 	// marched in with two spearmen, so only the galley is owed.
+	// Timothy 2026-11-01: a ship must be able to leave — a closed lake (no
+	// waterway to the Thalassa, the shipyard's own predicate) gives no galley;
+	// the harbour stays.
+	galleyOwed := false
 	if coastal {
+		var wwErr error
+		galleyOwed, wwErr = province.HasThalassaWaterway(ctx, tx, worldID, q, r)
+		if wwErr != nil {
+			return out, fmt.Errorf("check waterway for poseidon galley: %w", wwErr)
+		}
+	}
+	if galleyOwed {
 		// Ordinalen delas ut ur den monotona räknaren, aldrig ur MAX(ordinal):
 		// numret återanvänds inte ens när ett förband upplöses (§3.1 punkt 2).
 		galleyOrdinal, err := unit.AllocateOrdinal(ctx, tx, m.SettlementID, string(unit.TypeGalley))
@@ -356,6 +367,7 @@ func (h *JoinHandler) Settle(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Name      string `json:"name"`
 		Culture   string `json:"culture"`
+		Message   string `json:"message"`
 		ExpectedQ *int   `json:"expected_q"`
 		ExpectedR *int   `json:"expected_r"`
 	}
@@ -368,6 +380,16 @@ func (h *JoinHandler) Settle(w http.ResponseWriter, r *http.Request) {
 	if req.ExpectedQ != nil {
 		expected = &province.MapPosition{Q: *req.ExpectedQ, R: *req.ExpectedR}
 	}
+
+	// The founder's own words, told to every other Wanax (WanaxEntered). Same
+	// coarse-word rule as letters; too long is refused, not silently cut — the
+	// founding is irreversible.
+	enteredMsg, err := normaliseEnteredMessage(req.Message)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	enteredMsg, msgCoarse := cleanLetter(enteredMsg)
 
 	tx, err := h.pool.Begin(r.Context())
 	if err != nil {
@@ -455,11 +477,24 @@ func (h *JoinHandler) Settle(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "could not record the gods' anger")
 		return
 	}
+	msgWrath, err := angerGodsTx(r.Context(), tx, h.eventStore, worldID, playerID, msgCoarse, "letter")
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not record the gods' anger")
+		return
+	}
+	entered, err := announceWanaxEntered(r.Context(), tx, h.eventStore, worldID, playerID, enteredMsg)
+	if err != nil {
+		slog.Error("settle: announce new Wanax failed", "err", err, "player", playerID, "world", worldID)
+		writeError(w, http.StatusInternalServerError, "could not announce your arrival")
+		return
+	}
 	if err := tx.Commit(r.Context()); err != nil {
 		writeError(w, http.StatusInternalServerError, "commit failed")
 		return
 	}
 	wrath.deliver(r.Context(), h.eventStore, h.hub)
+	msgWrath.deliver(r.Context(), h.eventStore, h.hub)
+	entered.deliver(r.Context(), h.eventStore, h.hub)
 	if h.hub != nil {
 		founded.Places.Deliver(r.Context(), h.eventStore, h.hub, worldID)
 	} else if founded.Places != nil {

@@ -56,3 +56,11 @@ test('Founding actual handler: server and network errors stay inline and allow r
  const previous=globalThis.fetch;globalThis.fetch=async()=>{throw new Error('offline');};
  try{await button.events.click();await element('ip-settle-err').children[1].events.click();assert.equal(button.disabled,false);assert.match(element('ip-settle-err').querySelector().textContent,/Could not/);}finally{globalThis.fetch=previous;}
 });
+
+test('Founding sends the typed message, trimmed, and omits it when blank',async()=>{
+ await openHost();const button=element('ip-settle-btn');button.disabled=false;
+ element('ip-settle-msg').value='  Peace to all.  ';
+ const before=calls.length;await button.events.click();const sent=element('ip-settle-err').children[1].events.click();
+ assert.equal(JSON.parse(calls[before].options.body).message,'Peace to all.');
+ reply=new Response('{}');resolveRequest();await sent;
+});

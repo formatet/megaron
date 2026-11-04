@@ -1244,20 +1244,8 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		if province.BuildingType(req.BuildingType) == province.BuildingShipyard {
 			// A ship must be able to leave: some navigable water beside the city
 			// (sea, lake, river, ford) must lead to the Thalassa.
-			var reaches bool
-			if err := h.pool.QueryRow(r.Context(), `
-				WITH RECURSIVE water AS (
-				  SELECT q, r, terrain FROM map_tiles
-				   WHERE world_id = $1 AND terrain_is_navigable(terrain)
-				     AND (q, r) IN (($2+1,$3), ($2-1,$3), ($2,$3+1), ($2,$3-1), ($2+1,$3-1), ($2-1,$3+1))
-				  UNION
-				  SELECT n.q, n.r, n.terrain FROM water w
-				    JOIN map_tiles n ON n.world_id = $1 AND terrain_is_navigable(n.terrain)
-				     AND (n.q, n.r) IN ((w.q+1,w.r), (w.q-1,w.r), (w.q,w.r+1), (w.q,w.r-1), (w.q+1,w.r-1), (w.q-1,w.r+1))
-				)
-				SELECT EXISTS (SELECT 1 FROM water WHERE terrain_is_thalassa(terrain))`,
-				worldID, pq, pr,
-			).Scan(&reaches); err != nil {
+			reaches, err := province.HasThalassaWaterway(r.Context(), h.pool, worldID, pq, pr)
+			if err != nil {
 				writeError(w, http.StatusInternalServerError, "could not check the waterway")
 				return
 			}

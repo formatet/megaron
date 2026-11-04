@@ -815,7 +815,17 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 	// like everything else here: unknown_hexes already tells the reader the
 	// forecast is partial.
 	if starterFarm {
-		resp["founding_gifts"] = foundingGifts(farmGift, coastalCentre)
+		// A closed lake has no waterway to the Thalassa: harbour yes, galley no
+		// (the same predicate the settle and the shipyard use).
+		galleyGift := false
+		if coastalCentre {
+			galleyGift, err = province.HasThalassaWaterway(ctx, h.pool, worldID, center.Q, center.R)
+			if err != nil {
+				writeError(w, http.StatusInternalServerError, "could not check the waterway")
+				return
+			}
+		}
+		resp["founding_gifts"] = foundingGifts(farmGift, coastalCentre, galleyGift)
 	}
 	// The harbour rule, told before the irreversible step (only when the centre
 	// hex is known — a fogged centre must not leak its coast).
@@ -842,7 +852,7 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 // coastal (foundMetropolisFromNomadicHost) — so the forecast cannot promise
 // what the settle will not deliver. Colonies are owed neither; the caller
 // gates on ?starter_farm=1.
-func foundingGifts(farmGift bool, coastalCentre bool) []map[string]string {
+func foundingGifts(farmGift, coastalCentre, galleyGift bool) []map[string]string {
 	gifts := []map[string]string{}
 	if farmGift && !coastalCentre {
 		gifts = append(gifts, map[string]string{
@@ -851,7 +861,7 @@ func foundingGifts(farmGift bool, coastalCentre bool) []map[string]string {
 			"detail": "an inland site whose catchment bears grain, so the city is founded with a farm already standing",
 		})
 	}
-	if coastalCentre {
+	if coastalCentre && galleyGift {
 		gifts = append(gifts, map[string]string{
 			"key":    "poseidon_galley",
 			"label":  "Poseidon's galley",

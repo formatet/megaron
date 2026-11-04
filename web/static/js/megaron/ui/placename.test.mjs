@@ -92,3 +92,9 @@ test('PlacesInNewCity names the kinds once, in plain words, with counts for repe
   assert.match(notifText('PlacesInNewCity',{settlement_name:'Iolkos',places:[{kind:'river'},{kind:'river'},{kind:'island'}]}), /2 rivers and an island\./);
   assert.match(notifText('PlacesInNewCity',{settlement_name:'<b>',places}), /^&lt;b&gt; lies/);
 });
+
+test('WanaxEntered says who and what they say, escaped, and has nothing to say about a place', () => {
+  assert.equal(notifText('WanaxEntered',{wanax_name:'Minos',message:'Peace.'}), 'A new Wanax has entered the Thalassa: Minos. They say: “Peace.”');
+  assert.equal(notifText('WanaxEntered',{wanax_name:'Minos',message:''}), 'A new Wanax has entered the Thalassa: Minos.');
+  assert.match(notifText('WanaxEntered',{wanax_name:'<b>',message:'<i>'}), /&lt;b&gt;.*&lt;i&gt;/);
+});

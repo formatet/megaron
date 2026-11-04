@@ -368,6 +368,20 @@
       ]
     },
     {
+      "id": "a-new-wanax",
+      "title": "A new Wanax enters the Thalassa",
+      "category": "The wider world",
+      "kinds": [
+        "WanaxEntered"
+      ],
+      "related": [
+        "founding",
+        "messengers",
+        "contact",
+        "sight"
+      ]
+    },
+    {
       "id": "last-city",
       "title": "When your last city falls",
       "category": "Founding",

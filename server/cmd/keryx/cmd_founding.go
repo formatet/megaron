@@ -208,7 +208,7 @@ func foundingStatusCmd() *cobra.Command {
 // ---- founding settle -------------------------------------------------------
 
 func foundingSettleCmd() *cobra.Command {
-	var name, culture string
+	var name, culture, message string
 	var yes bool
 
 	cmd := &cobra.Command{
@@ -217,7 +217,7 @@ func foundingSettleCmd() *cobra.Command {
 		Long: `Turn the wandering host into your first and only city — a metropolis — on
 the hex it currently occupies. The host dissolves permanently in the act; its
 remaining grain and silver are carried into the city's stores. The founding
-is owed ONE gift: a coastal city Poseidon's galley, an inland city with
+is owed ONE gift: a coastal city Poseidon's galley (none on a lake with no way out to the Thalassa), an inland city with
 grain land in its catchment Demeter's farm — never both.
 
 The founding forecast (same surface as colonization) is shown before the
@@ -227,9 +227,13 @@ settle prints the forecast and stops without founding anything. In --json mode (
 forecast is skipped, same convention as 'unit march --intent colonize' —
 query GET /worlds/:id/colonize-preview yourself first if you need it before
 settling. To found somewhere else: march the host there first
-(keryx unit march), then settle.`,
+(keryx unit march), then settle.
+
+Founding your FIRST city tells every other Wanax that you have entered the Thalassa:
+your name and, if you give one, --message. Never where the city stands.`,
 		Example: `  keryx founding settle
-  keryx founding settle --name Thapsos --yes`,
+  keryx founding settle --name Thapsos --yes
+  keryx founding settle --yes --message "Peace to all who sail these waters."`,
 		Args: rejectPositionalArgs("name"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
@@ -281,6 +285,9 @@ settling. To found somewhere else: march the host there first
 			if culture != "" {
 				body["culture"] = culture
 			}
+			if message != "" {
+				body["message"] = message
+			}
 			body["expected_q"], body["expected_r"] = q, r
 			data, err := c.post(fmt.Sprintf("/api/v1/worlds/%s/founding/settle", cfg.WorldID), body)
 			if err != nil {
@@ -325,6 +332,7 @@ settling. To found somewhere else: march the host there first
 
 	cmd.Flags().StringVar(&name, "name", "", "metropolis name (default: culture-appropriate)")
 	cmd.Flags().StringVar(&culture, "culture", "", "culture (MVP: minoan only)")
+	cmd.Flags().StringVar(&message, "message", "", "your words to every other Wanax (max 280 characters); they learn your name and this, never where you settled")
 	cmd.Flags().BoolVar(&yes, "yes", false, "skip the interactive confirmation (required for non-interactive/agent use); the forecast is only printed in non-json mode")
 	return cmd
 }
