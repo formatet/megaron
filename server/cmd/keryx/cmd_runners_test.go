@@ -46,3 +46,19 @@ func TestRenderRunnersEmpty(t *testing.T) {
 		t.Errorf("empty: %q %v", out, err)
 	}
 }
+
+func TestRenderRunnersAboardNamelessShipAndStatus(t *testing.T) {
+	out, err := renderRunners([]byte(`{"own":[{"id":"a1","group":"aboard","to_city":"Thapsos","ship_name":"","ship_wanax":"Idomas","boarded_at":"2026-10-21T10:00:00Z","lands_at":"2026-10-22T01:30:00Z","arrives_at":"2026-10-22T03:00:00Z"},
+ {"id":"a2","group":"aboard","to_city":"Thapsos","ship_name":"Gull","ship_wanax":"Idomas","boarded_at":"2099-10-21T10:00:00Z","lands_at":"2099-10-22T01:30:00Z","arrives_at":"2099-10-22T03:00:00Z"}],"foreign":[]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"aboard a ship of Wanax Idomas — landfall made", "runner ashore", "aboard Wanax Idomas' Gull — still at sea"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("lacks %q:\n%s", want, out)
+		}
+	}
+	if strings.Contains(out, "Idomas' ,") {
+		t.Errorf("empty ship name leaked: %s", out)
+	}
+}

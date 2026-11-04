@@ -78,6 +78,14 @@ func possessive(name string) string {
 	return name + "'s"
 }
 
+func runnerParse(s *string) time.Time {
+	if s == nil {
+		return time.Time{}
+	}
+	t, _ := time.Parse(time.RFC3339, *s)
+	return t
+}
+
 func runnerTime(s *string) string {
 	if s == nil {
 		return ""
@@ -138,8 +146,20 @@ func renderRunners(data []byte) (string, error) {
 					fmt.Fprintf(&b, "    keryx call-back --id %s\n", m.ID)
 				}
 			case "aboard":
-				fmt.Fprintf(&b, "  %s  aboard Wanax %s %s, since %s; the ship makes landfall %s; arrives %s\n", to,
-					possessive(m.ShipWanax), m.ShipName, runnerTime(m.BoardedAt), runnerTime(m.LandsAt), runnerTime(m.ArrivesAt))
+				ship := m.ShipName
+				if ship == "" {
+					ship = "a ship"
+				}
+				aboard := fmt.Sprintf("aboard Wanax %s %s", possessive(m.ShipWanax), ship)
+				if m.ShipName == "" {
+					aboard = fmt.Sprintf("aboard a ship of Wanax %s", m.ShipWanax)
+				}
+				if landed := runnerParse(m.LandsAt); !landed.IsZero() && landed.Before(time.Now()) {
+					fmt.Fprintf(&b, "  %s  %s — landfall made %s, runner ashore and on the road; arrives %s\n", to, aboard, runnerTime(m.LandsAt), runnerTime(m.ArrivesAt))
+				} else {
+					fmt.Fprintf(&b, "  %s  %s — still at sea since %s; the ship makes landfall %s; arrives %s\n", to,
+						aboard, runnerTime(m.BoardedAt), runnerTime(m.LandsAt), runnerTime(m.ArrivesAt))
+				}
 			case "awaiting_answer":
 				line := fmt.Sprintf("  %s  since %s", to, runnerTime(m.WaitingSince))
 				if m.LeavesAt != nil {
@@ -177,7 +197,11 @@ func renderRunners(data []byte) (string, error) {
 				}
 				fmt.Fprintf(&b, "  %s in %s, %s\n", who, m.Where, wait)
 			} else {
-				line := fmt.Sprintf("  %s aboard %s, landfall %s", who, m.ShipName, runnerTime(m.LandsAt))
+				shipName := m.ShipName
+				if shipName == "" {
+					shipName = "a ship"
+				}
+				line := fmt.Sprintf("  %s aboard %s, landfall %s", who, shipName, runnerTime(m.LandsAt))
 				if m.HeadingTo != "" {
 					line += " at " + m.HeadingTo
 				}
