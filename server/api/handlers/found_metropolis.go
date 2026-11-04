@@ -367,6 +367,7 @@ func (h *JoinHandler) Settle(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Name      string `json:"name"`
 		Culture   string `json:"culture"`
+		Message   string `json:"message"`
 		ExpectedQ *int   `json:"expected_q"`
 		ExpectedR *int   `json:"expected_r"`
 	}
@@ -379,6 +380,16 @@ func (h *JoinHandler) Settle(w http.ResponseWriter, r *http.Request) {
 	if req.ExpectedQ != nil {
 		expected = &province.MapPosition{Q: *req.ExpectedQ, R: *req.ExpectedR}
 	}
+
+	// The founder's own words, told to every other Wanax (WanaxEntered). Same
+	// coarse-word rule as letters; too long is refused, not silently cut — the
+	// founding is irreversible.
+	enteredMsg, err := normaliseEnteredMessage(req.Message)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	enteredMsg, msgCoarse := cleanLetter(enteredMsg)
 
 	tx, err := h.pool.Begin(r.Context())
 	if err != nil {
@@ -466,11 +477,24 @@ func (h *JoinHandler) Settle(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "could not record the gods' anger")
 		return
 	}
+	msgWrath, err := angerGodsTx(r.Context(), tx, h.eventStore, worldID, playerID, msgCoarse, "letter")
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not record the gods' anger")
+		return
+	}
+	entered, err := announceWanaxEntered(r.Context(), tx, h.eventStore, worldID, playerID, enteredMsg)
+	if err != nil {
+		slog.Error("settle: announce new Wanax failed", "err", err, "player", playerID, "world", worldID)
+		writeError(w, http.StatusInternalServerError, "could not announce your arrival")
+		return
+	}
 	if err := tx.Commit(r.Context()); err != nil {
 		writeError(w, http.StatusInternalServerError, "commit failed")
 		return
 	}
 	wrath.deliver(r.Context(), h.eventStore, h.hub)
+	msgWrath.deliver(r.Context(), h.eventStore, h.hub)
+	entered.deliver(r.Context(), h.eventStore, h.hub)
 	if h.hub != nil {
 		founded.Places.Deliver(r.Context(), h.eventStore, h.hub, worldID)
 	} else if founded.Places != nil {
