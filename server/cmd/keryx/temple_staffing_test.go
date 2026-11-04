@@ -70,3 +70,26 @@ func TestStaffTempleGodFlagAfterDelta(t *testing.T) {
 		}
 	}
 }
+
+// staff --god X must read back temple X, not the first temple in the list.
+func TestStaffGodReadbackMatchesGod(t *testing.T) {
+	round3Client(t, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			w.WriteHeader(201)
+			fmt.Fprint(w, `{"ordinal":1}`)
+			return
+		}
+		fmt.Fprint(w, `{"total_gubbar":10,"pool_size":8,"hexes":[],"buildings":[`+
+			`{"building_type":"temple","god_id":"potnia","level":1,"goods":[{"good_key":"cult","staffing_only":true,"cap":2,"placed":2,"placed_ordinals":[1,2]}]},`+
+			`{"building_type":"temple","god_id":"velchanos","level":1,"goods":[{"good_key":"cult","staffing_only":true,"cap":2,"placed":0,"placed_ordinals":[]}]}]}`)
+	})
+	cmd := staffCmd()
+	cmd.SetArgs([]string{"--god", "potnia", "temple", "+1"})
+	out, err := captureStdout(t, cmd.Execute)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(out, "2/2 temple workers (potnia)") || strings.Contains(out, "0/2") || !strings.Contains(out, "on temple (potnia)") {
+		t.Fatal(out)
+	}
+}

@@ -145,6 +145,10 @@ see current occupancy. A market has no workplaces and needs no workers. An unsta
 			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/placements", cfg.WorldID, prov)
 			applied := 0
 			var stopErr error
+			where := buildingType
+			if building.GodID != "" {
+				where += " (" + building.GodID + ")"
+			}
 			if delta > 0 {
 				for ; applied < delta; applied++ {
 					body := map[string]any{"target_kind": "building", "building_type": buildingType, "good_key": good.GoodKey}
@@ -161,7 +165,7 @@ see current occupancy. A market has no workplaces and needs no workers. An unsta
 				}
 				if !jsonMode {
 					if applied == delta {
-						fmt.Printf("Placed %s on %s.\n", citizenCount(applied), buildingType)
+						fmt.Printf("Placed %s on %s.\n", citizenCount(applied), where)
 					} else {
 						fmt.Printf("Placed %d of %d requested (stopped: %v).\n", applied, delta, stopErr)
 					}
@@ -185,7 +189,7 @@ see current occupancy. A market has no workplaces and needs no workers. An unsta
 						if want < -delta {
 							fmt.Printf("Removed %s — only %d were staffed there.\n", citizenCount(removed), want)
 						} else {
-							fmt.Printf("Removed %s from %s.\n", citizenCount(removed), buildingType)
+							fmt.Printf("Removed %s from %s.\n", citizenCount(removed), where)
 						}
 					} else {
 						fmt.Printf("Removed %d of %d requested (stopped: %v).\n", removed, want, stopErr)
@@ -202,7 +206,7 @@ see current occupancy. A market has no workplaces and needs no workers. An unsta
 			}
 			var after *placementGood
 			for _, b := range opts2.Buildings {
-				if b.BuildingType != buildingType {
+				if b.BuildingType != buildingType || b.GodID != building.GodID {
 					continue
 				}
 				for i := range b.Goods {
