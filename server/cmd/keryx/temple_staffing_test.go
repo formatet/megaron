@@ -93,3 +93,19 @@ func TestStaffGodReadbackMatchesGod(t *testing.T) {
 		t.Fatal(out)
 	}
 }
+
+func TestStaffBuildingUnderConstructionSaysSo(t *testing.T) {
+	round3Client(t, func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/placement-options") {
+			fmt.Fprint(w, `{"total_gubbar":10,"pool_size":10,"hexes":[],"buildings":[]}`)
+			return
+		}
+		fmt.Fprint(w, `{"settlement":{"build_queue":[{"type":"olive_press","complete_at":"2099-01-01T18:34:00Z"}]}}`)
+	})
+	cmd := staffCmd()
+	cmd.SetArgs([]string{"olive_press", "+1"})
+	_, err := captureStdout(t, cmd.Execute)
+	if err == nil || !strings.Contains(err.Error(), "still under construction — done") || strings.Contains(err.Error(), "no built workplace") {
+		t.Fatalf("err %v", err)
+	}
+}

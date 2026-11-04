@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -113,6 +114,9 @@ see current occupancy. A market has no workplaces and needs no workers. An unsta
 					}
 				}
 
+				if done := buildingUnderConstruction(c, prov, buildingType); done != "" {
+					return fmt.Errorf("the %s is still under construction — done %s", buildingType, done)
+				}
 				return fmt.Errorf("no built workplace %q here (see `keryx city` for what's built)", buildingType)
 			}
 			if len(building.Goods) == 0 {
@@ -277,4 +281,31 @@ func hexBuildingGood(building, good string) bool {
 		return good == "copper" || good == "tin" || good == "silver"
 	}
 	return false
+}
+
+// buildingUnderConstruction returns the completion time of a queued build of
+// buildingType in the province's build queue, or "" when none is queued (or
+// the queue cannot be read — the caller then gives its ordinary message).
+func buildingUnderConstruction(c *Client, prov, buildingType string) string {
+	data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces/%s", cfg.WorldID, prov))
+	if err != nil {
+		return ""
+	}
+	var p struct {
+		Settlement struct {
+			BuildQueue []struct {
+				Type       string `json:"type"`
+				CompleteAt string `json:"complete_at"`
+			} `json:"build_queue"`
+		} `json:"settlement"`
+	}
+	if json.Unmarshal(data, &p) != nil {
+		return ""
+	}
+	for _, q := range p.Settlement.BuildQueue {
+		if q.Type == buildingType {
+			return buildQueueETA(c, q.CompleteAt)
+		}
+	}
+	return ""
 }
