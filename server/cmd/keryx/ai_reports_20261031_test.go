@@ -198,3 +198,46 @@ func TestCityCmd_GoodsAlphabeticalPerHex(t *testing.T) {
 		t.Fatalf("goods not alphabetical:\n%s", out)
 	}
 }
+
+// A frontier hex only touching known land that is cut off from the player's cities
+// (here: across known sea) is marked; one reached over known land is not.
+func TestMapFrontierMarksNoKnownLandRoute(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if testWorldTimeResponse(w, r) {
+			return
+		}
+		switch {
+		case strings.HasSuffix(r.URL.Path, "/provinces/home"):
+			_ = json.NewEncoder(w).Encode(map[string]any{"map_tile": map[string]int{"q": 0, "r": 0}})
+		case strings.HasSuffix(r.URL.Path, "/provinces"):
+			_ = json.NewEncoder(w).Encode([]any{})
+		case strings.HasSuffix(r.URL.Path, "/map"):
+			_, _ = w.Write([]byte(`[{"q":0,"r":0,"terrain":"plains","visible":true},
+				{"q":1,"r":0,"terrain":"plains","visible":true},
+				{"q":2,"r":0,"terrain":"coastal_sea","visible":true},
+				{"q":3,"r":0,"terrain":"plains","visible":true},
+				{"q":-1,"r":0,"terrain":"fog","visible":false,"frontier":true},
+				{"q":1,"r":-1,"terrain":"fog","visible":false,"frontier":true},
+				{"q":4,"r":0,"terrain":"fog","visible":false,"frontier":true}]`))
+		}
+	}))
+	defer srv.Close()
+	withTestConfig(t, srv.URL)
+	cfg.ProvinceID = "home"
+	out, err := captureStdout(t, mapCmd().Execute)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, l := range strings.Split(out, "\n") {
+		cut := strings.Contains(l, "no known land route")
+		if strings.Contains(l, "(  4,  0)") && !cut {
+			t.Errorf("hex beyond the sea gap must be marked: %q", l)
+		}
+		if (strings.Contains(l, "( -1,  0)") || strings.Contains(l, "(  1, -1)")) && cut {
+			t.Errorf("hex reached over known land must not be marked: %q", l)
+		}
+	}
+	if !strings.Contains(out, "(  4,  0)") {
+		t.Fatalf("frontier row missing:\n%s", out)
+	}
+}
