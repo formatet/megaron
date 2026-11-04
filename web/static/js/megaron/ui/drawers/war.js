@@ -69,6 +69,7 @@ export function fmtUnitCost(entry, isNaval) {
   if (!entry || !entry.batch_men) return null;
   const goods = Object.entries(entry.costs || {})
     .filter(([, v]) => v > 0)
+    .sort(([a], [b]) => a.localeCompare(b))
     .map(([k, v]) => trimNum(v) + ' ' + (k === 'timber' ? 'timber (or cedar)' : k))
     .join(' + ');
   return (goods || '0 cost') + ' · ' + entry.batch_men + (isNaval ? ' crew' : ' men') + ' from the city';

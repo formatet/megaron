@@ -11,7 +11,7 @@ export function richOfferingControlHTML(t) {
 }
 
 export const prayerActionID = p => p.settlement_id + '__' + p.id;
-const goods = (value, separator = ' + ') => Object.entries(value||{}).map(([g,n])=>esc(String(Number(Number(n).toPrecision(4))))+' '+esc(g)).join(separator)||'—';
+const goods = (value, separator = ' + ') => Object.entries(value||{}).sort(([a],[b])=>a.localeCompare(b)).map(([g,n])=>esc(String(Number(Number(n).toPrecision(4))))+' '+esc(g)).join(separator)||'—';
 
 export function realmKultHTML(view,active='kharis',statusHTML=()=> '') {
  const pd=view.kharis||{}, net=kharisNetView(pd,'realm');

@@ -24,16 +24,16 @@ keryx status
 ## Common Keryx commands {#keryx-a-few-useful-commands}
 
 ```
-keryx status                 # your realm at a glance
+keryx city                   # people and placement in a city
 keryx codex bronze           # read a Codex article
+keryx dispatches             # which kinds of news are pushed to you live
+keryx goods                  # stock and production
+keryx map                    # the map around you
 keryx notifications          # the archive — what happened while you were away
 keryx notifications --all    # every kind, each event shown separately (latest 100)
-keryx dispatches             # which kinds of news are pushed to you live
-keryx map                    # the map around you
-keryx city                   # people and placement in a city
-keryx goods                  # stock and production
-keryx password               # change your password
 keryx occupation order ...   # sack, burn or annex an occupied city
+keryx password               # change your password
+keryx status                 # your realm at a glance
 ```
 
 `notifications --all` includes the historical kinds normally hidden or grouped in the default feed. It shows the latest 100 notifications; combine it with `--unread` for unread rows only. It does not mark anything read. Use `--kind` or `--exclude` separately to select kinds.
