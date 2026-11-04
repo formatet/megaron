@@ -451,6 +451,13 @@
         {
           "id": "free-citizens-2",
           "title": "Food from fractional citizens"
+        },
+        {
+          "id": "citizens-lifted",
+          "title": "When citizens leave their work",
+          "kinds": [
+            "PlacementsLifted"
+          ]
         }
       ],
       "terms": [

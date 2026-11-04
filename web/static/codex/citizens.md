@@ -34,4 +34,8 @@ One placeable **citizen represents 100 people**. Population counts people; City 
 
 People outside whole groups of 100 automatically produce a fraction of the best food worker’s output: 42 people give 42 hundredths. They make fish or grain, whichever their best food hex produces most of, including its building bonus. This work is invisible and takes no place from your citizens. Nearby ground supplies its grain separately. City food details show these automatic contributions beside the placed citizens needed for meals. The count uses production rather than stored food; it is an estimate for the best food slots, not a recommendation to remove particular citizens.
 
+## When citizens leave their work {#citizens-lifted}
+
+Drafting men for a unit, sending men to reinforce one, or a city that shrinks (hunger, [[battle]], [[occupation]]) leaves fewer citizens than posts. The surplus is taken from your workplaces in a fixed order: **refining first** ([[bronze]], [[oil]], [[wine]]), then other non-food work, then [[temple]] service, and **food last**. Within each kind, the citizen placed most recently goes first. You are always told: a **PlacementsLifted** notification names how many citizens left, where and at what, and why. The citizens are not lost; the city simply has fewer than it had posts for, so place anyone free again from the City drawer.
+
 [[temple]] workers use the same citizen pool as other jobs. Use `keryx staff temple +1` to assign one, `staff temple -1` to free one (with several temples, add `--god <god>`), and `roster` to see their assignments. See [[temples]].

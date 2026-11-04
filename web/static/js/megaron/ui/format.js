@@ -165,7 +165,7 @@ export function notifDomain(kind) {
     FoodShortfall: 'city', CivilianStarvationStarted: 'city', CivilianStarvationEnded: 'city', SubsistenceWarning: 'city',
     // Historical only: archived food-reserve notification icons.
     SitosGranaryRelease: 'city', SitosIntervention: 'city', SitosFundLow: 'city',
-    HexBlockaded: 'city', HexUnblockaded: 'city', HexTaken: 'city',
+    HexBlockaded: 'city', HexUnblockaded: 'city', HexTaken: 'city', PlacementsLifted: 'city',
     // Trade — goods on the move, and the offers that set them moving.
     GiftDispatchedV2:'trade', GiftDeliveredV2:'trade', GiftLostV2:'trade', TransferDeliveredV2:'trade', TransferLostV2:'trade', GiftDelivered: 'trade', GiftLost: 'trade', TradeDelivery: 'trade', TradeReturn: 'trade', TradeLost: 'trade',
     TradeCaravanArrival: 'trade', TransferDelivered: 'trade',
@@ -236,6 +236,7 @@ export function notifIcon(kind) {
     CivilianStarvationStarted: '🍽', CivilianStarvationEnded: '🍽',
     StorageCapacityWarning: '📦', StorageOverflow: '📦', FoodRunningLow: '🍽',
     FoodShortfall:      '🍽',
+    PlacementsLifted:   '👤',
     HexBlockaded:       '🚧',
     HexUnblockaded:     '↩',
     HexTaken:           '🚩',
@@ -921,6 +922,9 @@ export function notifText(kind, body) {
       const place = body.name || 'A settlement';
       return `${place} went hungry today — ${Math.round(body.unmet || 0)} grain unmet`;
     }
+    case 'PlacementsLifted':
+      // economy.AnnouncePlacementsLifted: the server writes the one sentence (who left which work, and why).
+      return esc(body.text || 'Citizens left their work');
     case 'HexBlockaded': {
       // Payload per economy.SyncHexBlockade (megaron_plan_blockad_med_enhet.md,
       // Timothy 2026-09-05): a foreign unit in fortify/sentry standing directly

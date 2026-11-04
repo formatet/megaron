@@ -67,7 +67,7 @@ function coalesce(key, fn, ms = 2000) {
 const DATA_KINDS = new Set([
   'StorageCapacityWarning','StorageOverflow',
   'GarrisonStarvationStarted','GarrisonStarvationEnded','CivilianStarvationStarted','CivilianStarvationEnded','KharisBandChanged','KharisDeclining','TempleDemolitionWrath','GodsAngered',
-  'ArmyArrival','BuildComplete','GoodsCrafted','TrainComplete','MessengerArrival',
+  'ArmyArrival','BuildComplete','PlacementsLifted','GoodsCrafted','TrainComplete','MessengerArrival',
   'GiftDelivered','GiftLost','TradeCaravanArrival','UnitAttrition','UnitDeserted','UnitArrived','UnitExploreReturned',
   'RoadEdgeBuilt','UnitReturnedStarving','ShipCameHomeForFood','ExpeditionTurnedHome','ExpeditionReport',
 ]);

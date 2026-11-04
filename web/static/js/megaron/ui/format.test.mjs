@@ -810,3 +810,8 @@ test('FoodRunningLow: names the city, game days, wall clock and who eats', () =>
   assert.match(line, /citizens −5\.0/);
   assert.match(line, /a game day\.$/);
 });
+
+test('PlacementsLifted shows the server sentence and escapes it',()=>{
+ assert.equal(notifText('PlacementsLifted',{text:'A citizen left their work in Gournia: 1 on grain at (30, 45) (men were drafted).'}),'A citizen left their work in Gournia: 1 on grain at (30, 45) (men were drafted).');
+ assert.doesNotMatch(notifText('PlacementsLifted',{text:'<b>x</b>'}),/<b>/);
+});

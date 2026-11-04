@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"formatet/megaron/server/internal/hexgrid"
+	"github.com/google/uuid"
 )
 
 // TestPrunePlacementsToPopulation_S1bOrder is S1b's own acceptance criterion
@@ -26,10 +27,11 @@ func TestPrunePlacementsToPopulation_S1bOrder(t *testing.T) {
 	placeHexGubbe(t, pool, settlementID, 3, hexRing0(t)[0], GoodGrain)
 	placeHexGubbe(t, pool, settlementID, 4, hexRing0(t)[1], GoodGrain)
 
-	pruned, err := PrunePlacementsToPopulation(ctx, pool, settlementID)
+	liftedRows, err := PrunePlacementsToPopulation(ctx, pool, settlementID)
 	if err != nil {
 		t.Fatalf("PrunePlacementsToPopulation: %v", err)
 	}
+	pruned := len(liftedRows)
 	if pruned != 2 {
 		t.Errorf("pruned = %d, want 2 (bronze + cult)", pruned)
 	}
@@ -81,10 +83,11 @@ func TestPrunePlacementsToPopulation_ConvergesInOnePass(t *testing.T) {
 		placeHexGubbe(t, pool, settlementID, ordinal, hex, GoodTimber)
 	}
 
-	pruned, err := PrunePlacementsToPopulation(ctx, pool, settlementID)
+	liftedRows, err := PrunePlacementsToPopulation(ctx, pool, settlementID)
 	if err != nil {
 		t.Fatalf("PrunePlacementsToPopulation: %v", err)
 	}
+	pruned := len(liftedRows)
 	if pruned != 3 {
 		t.Errorf("pruned = %d, want 3 (5 placements down to cap 2, in one pass)", pruned)
 	}
@@ -134,10 +137,11 @@ func TestPrunePlacementsToPopulation_IdempotentWhenWithinCap(t *testing.T) {
 	placeHexGubbe(t, pool, settlementID, 2, hexes[1], GoodGrain)
 	placeHexGubbe(t, pool, settlementID, 3, hexes[2], GoodGrain)
 
-	pruned, err := PrunePlacementsToPopulation(ctx, pool, settlementID)
+	liftedRows, err := PrunePlacementsToPopulation(ctx, pool, settlementID)
 	if err != nil {
 		t.Fatalf("PrunePlacementsToPopulation: %v", err)
 	}
+	pruned := len(liftedRows)
 	if pruned != 0 {
 		t.Errorf("pruned = %d, want 0 (3 placements, cap 5 — already within bounds)", pruned)
 	}
@@ -197,4 +201,125 @@ func hexRing0(t *testing.T) []hexgrid.Coord {
 		t.Fatalf("catchment ring too small for fixture use: %d hexes", len(ring))
 	}
 	return ring
+}
+
+// TestPrunePlacementsToPopulation_ReturnsLiftedRows: the rows come back with what
+// each gubbe was doing, the S1b order picks refining before food, a second run is
+// empty, and the temple row names its god.
+func TestPrunePlacementsToPopulation_ReturnsLiftedRows(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+
+	settlementID := seedFullRingFixture(t, 100, 300, "plains") // cap 3
+	if _, err := pool.Exec(ctx, `INSERT INTO buildings(settlement_id,building_type,level,god_id) VALUES($1,'temple',1,'potnia')`, settlementID); err != nil {
+		t.Fatal(err)
+	}
+	hexes := hexRing0(t)
+	placeHexGubbe(t, pool, settlementID, 1, hexes[0], GoodGrain)
+	placeBuildingGubbe(t, pool, settlementID, 2, "temple", GoodCult)
+	placeBuildingGubbe(t, pool, settlementID, 3, "olive_press", GoodOil)
+	placeHexGubbe(t, pool, settlementID, 4, hexes[1], GoodGrain)
+
+	lifted, err := PrunePlacementsToPopulation(ctx, pool, settlementID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(lifted) != 1 {
+		t.Fatalf("lifted = %d rows, want 1", len(lifted))
+	}
+	if l := lifted[0]; l.Ordinal != 3 || l.GoodKey != GoodOil || l.TargetKind != "building" || l.BuildingType != "olive_press" {
+		t.Errorf("lifted = %+v, want the olive press oil gubbe (refining goes before food and temple)", l)
+	}
+
+	// Cap 2 now: temple goes next (before food) and names its god.
+	if _, err := pool.Exec(ctx, `UPDATE settlements SET population = 250 WHERE id = $1`, settlementID); err != nil {
+		t.Fatal(err)
+	}
+	lifted, err = PrunePlacementsToPopulation(ctx, pool, settlementID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(lifted) != 1 || lifted[0].GodID == nil || *lifted[0].GodID != "potnia" || lifted[0].GoodKey != GoodCult {
+		t.Fatalf("lifted = %+v, want the temple gubbe with god potnia", lifted)
+	}
+
+	// Food lifted last, with its hex.
+	if _, err := pool.Exec(ctx, `UPDATE settlements SET population = 100 WHERE id = $1`, settlementID); err != nil {
+		t.Fatal(err)
+	}
+	lifted, err = PrunePlacementsToPopulation(ctx, pool, settlementID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(lifted) != 1 || lifted[0].Ordinal != 4 || lifted[0].HexQ == nil || *lifted[0].HexQ != hexes[1].Q || *lifted[0].HexR != hexes[1].R {
+		t.Fatalf("lifted = %+v, want ordinal 4 at hex %v", lifted, hexes[1])
+	}
+
+	again, err := PrunePlacementsToPopulation(ctx, pool, settlementID)
+	if err != nil || len(again) != 0 {
+		t.Errorf("second run = %v, %v; want empty", again, err)
+	}
+}
+
+type liftRecorder struct {
+	kinds   []string
+	payload []any
+	level   []int
+}
+
+func (r *liftRecorder) NotifyPlayer(ctx context.Context, worldID, playerID uuid.UUID, kind string, level int, payload any) error {
+	r.kinds = append(r.kinds, kind)
+	r.payload = append(r.payload, payload)
+	r.level = append(r.level, level)
+	return nil
+}
+
+func TestAnnouncePlacementsLifted_TextAndNotification(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	settlementID := seedFullRingFixture(t, 100, 300, "plains")
+	var worldID uuid.UUID
+	if err := pool.QueryRow(ctx, `SELECT world_id FROM settlements WHERE id=$1`, settlementID).Scan(&worldID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.Exec(ctx, `UPDATE settlements SET name='Gournia' WHERE id=$1`, settlementID); err != nil {
+		t.Fatal(err)
+	}
+	q, r := 30, 45
+	god := "potnia"
+	name := func(string) string { return "Temple of Potnia" }
+
+	rec := &liftRecorder{}
+	AnnouncePlacementsLifted(ctx, pool, nil, rec, worldID, settlementID, LiftCauseDraft,
+		[]LiftedPlacement{{Ordinal: 3, TargetKind: "hex", HexQ: &q, HexR: &r, GoodKey: GoodGrain}}, name)
+	if len(rec.kinds) != 1 || rec.kinds[0] != "PlacementsLifted" {
+		t.Fatalf("notifications = %v, want one PlacementsLifted", rec.kinds)
+	}
+	want := "A citizen left their work in Gournia: 1 on grain at (30, 45) (men were drafted)."
+	if got := rec.payload[0].(PlacementsLiftedPayload).Text; got != want {
+		t.Errorf("text = %q, want %q", got, want)
+	}
+
+	if got := PlacementsLiftedText("Gournia", LiftCauseDecline, []LiftedPlacement{{TargetKind: "building", BuildingType: "olive_press", GoodKey: GoodOil}}, name); got !=
+		"A citizen left their work in Gournia: 1 at the olive press (oil) (the city has fewer people than posts)." {
+		t.Errorf("building text = %q", got)
+	}
+	if got := PlacementsLiftedText("Gournia", LiftCauseReinforcement, []LiftedPlacement{{TargetKind: "building", BuildingType: "temple", GoodKey: GoodCult, GodID: &god}}, name); got !=
+		"A citizen left their work in Gournia: 1 serving at the temple of Potnia (men were sent to reinforce a unit)." {
+		t.Errorf("temple text = %q", got)
+	}
+	multi := PlacementsLiftedText("Gournia", LiftCauseDraft, []LiftedPlacement{
+		{TargetKind: "hex", HexQ: &q, HexR: &r, GoodKey: GoodGrain},
+		{TargetKind: "hex", HexQ: &q, HexR: &r, GoodKey: GoodGrain},
+		{TargetKind: "building", BuildingType: "olive_press", GoodKey: GoodOil},
+	}, name)
+	if multi != "3 citizens left their work in Gournia: grain at (30, 45) ×2, olive press (oil) ×1 (men were drafted)." {
+		t.Errorf("multi text = %q", multi)
+	}
+
+	none := &liftRecorder{}
+	AnnouncePlacementsLifted(ctx, pool, nil, none, worldID, settlementID, LiftCauseDecline, nil, name)
+	if len(none.kinds) != 0 {
+		t.Errorf("empty lift notified: %v", none.kinds)
+	}
 }
