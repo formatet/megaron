@@ -8,8 +8,8 @@ Go och Python ger SAMMA antal sund på alla 28 (inga avvikelser). min 0, median 
 Live-världen (e1ed7d0c, 64x64): 3 sund (6, 9, 14 hex) och 23 vikar (alla en hex).
 
 ## Vik inom sund (överlapp)
-Hexar som är vikhex enligt fiskeregeln OCH sundhex (tillhör sundet): 0-4 per karta, 25 av ~640 vikhexar totalt
-(~4 %); 7 av 28 kartor har två eller fler. Enstaka, ingen stopp. Livevärlden: 1 hex ((51,39)).
+Hexar som är vikhex enligt fiskeregeln OCH sundhex (tillhör sundet): 0-4 per karta, 21 av 658 vikhexar totalt
+(~3 %); 6 av 28 kartor har två eller fler. Enstaka, ingen stopp. Livevärlden: 1 hex ((51,39)).
 
 ## Paritet vik
 `economy.TestBayParityWithWorld` (internal/economy/bay_parity_test.go), 10 kartor 56x40:
