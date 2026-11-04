@@ -10,10 +10,16 @@ import (
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/combat"
 	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/unit"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
+
+// expeditionBudgetMsg names only the public floor of an expedition (the shortest expedition is
+// ExpeditionMinTicks), never the route's own minimum: the route may cross unseen terrain.
+var expeditionBudgetMsg = "the expedition duration is too short to reach the chosen area and return home — the shortest expedition is " +
+	tick.FormatDays(combat.ExpeditionMinTicks) + ", and this one needs longer: choose a longer duration or a nearer area"
 
 // MarchPreview estimates arrival without dispatching an order. Timing describes
 // current conditions, not a reservation or a guarantee that dispatch will succeed.
@@ -108,7 +114,7 @@ func (h *UnitHandler) MarchPreview(w http.ResponseWriter, r *http.Request) {
 				// Route costs may cross unseen terrain. Refuse the selected budget
 				// without exposing its minimum duration or either leg's timing.
 				if rej.Code == combat.RejectExpeditionBudget {
-					writeError(w, rej.Status, "the expedition duration is too short to reach the chosen area and return home — choose a longer duration or a nearer area")
+					writeError(w, rej.Status, expeditionBudgetMsg)
 					return
 				}
 				writeError(w, rej.Status, rej.Reason)
