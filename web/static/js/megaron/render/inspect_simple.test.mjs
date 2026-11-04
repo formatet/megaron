@@ -59,7 +59,7 @@ test('L actual inspect: fog never exposes marker/army and late army reply cannot
 test('L actual Host: food and reserve durations use exact game days in words, never wall time',async()=>{
  await click({city:null,host:true});let html=element('ip-body-extra').innerHTML;
  assert.match(html,/Food lasts 2.5 game days/,'host food uses exact unscaled game days');assert.match(html,/Silver reserve lasts 240 game days/);assert.doesNotMatch(html.replace(/<[^>]*>/g,''),/game day left|real time|NaN/,'Host status uses no tick/wall-clock wording');assert.match(element('ip-foot').innerHTML,/Found the metropolis here/,'founding stays');
- fp={...fp,grain:{ticks_left:null},silver:{ticks_left:1},spearmen_in_field:1};await click({city:null,host:true});html=element('ip-body-extra').innerHTML;assert.match(html,/Food lasts indefinitely/);assert.match(html,/Silver reserve lasts 1 game day</);assert.match(html,/1 Spearmen cohort in the field/);
+ fp={...fp,grain:{ticks_left:null},silver:{ticks_left:1},spearmen_in_field:1};await click({city:null,host:true});html=element('ip-body-extra').innerHTML;assert.match(html,/Food is not draining/);assert.match(html,/Silver reserve lasts 1 game day</);assert.match(html,/1 Spearmen cohort in the field/);
 });
 
 test('river hex and rural panel name appears only in title, terrain row stays generic and fog stays unnamed',async()=>{

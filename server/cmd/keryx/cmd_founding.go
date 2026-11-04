@@ -84,7 +84,7 @@ func fetchFoundingStatus(c *Client) (*foundingStatusResp, error) {
 // clock). Mirrors the web Host panel's hostStoreLine (render/map.js).
 func foundingStoreLine(label string, s foundingStore, tickSeconds float64) string {
 	if s.TicksLeft == nil {
-		return fmt.Sprintf("%s: %.0f — lasts indefinitely", label, s.Amount)
+		return fmt.Sprintf("%s: %.0f — not draining", label, s.Amount)
 	}
 	ticksLeft := float64(*s.TicksLeft)
 	return fmt.Sprintf("%s: %.0f left — %s", label, s.Amount, formatDays(ticksLeft, "%.0f"))

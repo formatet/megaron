@@ -3722,7 +3722,7 @@ function openRuralPanel(h, tile, rural, units, foreignUnits) {
 // ticks_left already counts game days (one tick = one day). Never divide
 // by twenty-four or convert this player-facing store duration to wall time.
 function hostStoreLine(label, s) {
-  if (!s || s.ticks_left == null) return `${label} lasts indefinitely`;
+  if (!s || s.ticks_left == null) return `${label} is not draining`;
   const days = Number(s.ticks_left);
   if (!Number.isFinite(days)) return `${label} duration unknown`;
   return `${label} lasts ${fmtDays(days)}`;
