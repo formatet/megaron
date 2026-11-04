@@ -9,7 +9,7 @@
 
 ## Fishing places, bays and storms {#fishing-details}
 
-A **bay** is [[coastal-sea|coastal water]] with land on at least four of its six sides. Rivers and [[river-ford|fords]] count as land for this rule; coastal water, deep water and the Thalassa do not. A missing hex beyond the map edge does not count as land. A bay doubles each fisher’s catch; it has the same two places as other coastal water.
+A **bay** is [[coastal-sea|coastal water]] with land on at least four of its six sides. Rivers and [[river-ford|fords]] count as land for this rule; coastal water, deep water and the Thalassa do not. A missing hex beyond the map edge does not count as land. A bay doubles each fisher’s catch, and a bay that has been [[naming-the-land|named]] is exactly this fishing bay; it has the same two places as other coastal water.
 
 Deep-water fishing requires the city’s [[harbour]]. The harbour supplies deep-water places without multiplying the catch. It adds no places or production to coastal water or bays. Rivers and fords keep their own fishing places and production.
 

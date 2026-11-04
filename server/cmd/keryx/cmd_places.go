@@ -22,7 +22,7 @@ func placeKindLabel(kind string) string {
 		return "cedar forest"
 	case "lake":
 		return "lake"
-	case "island", "strait", "cape", "plain", "hills", "delta":
+	case "island", "strait", "bay", "cape", "plain", "hills", "delta":
 		return kind
 	default:
 		return "place"
@@ -31,7 +31,7 @@ func placeKindLabel(kind string) string {
 
 func placesCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "places", Short: "Known rivers, lakes, mountain massifs, deserts, cedar forests, islands, straits, capes, plains, hills and deltas",
+		Use: "places", Short: "Known rivers, lakes, mountain massifs, deserts, cedar forests, islands, straits, bays, capes, plains, hills and deltas",
 		Long: `Places you can see or remember. The first Wanax whose own physical unit reaches a place may name it, once.
 Seeing it nearby gives no naming right. Use: keryx places name <kind> <q,r> "<name>".`,
 		Args: noPositionalArgs(),
@@ -108,9 +108,9 @@ func formatPlaces(data []byte) (string, error) {
 
 func validatePlaceArgs(kind, id string) error {
 	switch kind {
-	case "river", "massif", "desert", "forest", "lake", "island", "strait", "cape", "plain", "hills", "delta":
+	case "river", "massif", "desert", "forest", "lake", "island", "strait", "bay", "cape", "plain", "hills", "delta":
 	default:
-		return fmt.Errorf("kind must be river, lake, massif, desert, forest, island, strait, cape, plain, hills or delta")
+		return fmt.Errorf("kind must be river, lake, massif, desert, forest, island, strait, bay, cape, plain, hills or delta")
 	}
 	if !regexp.MustCompile(`^-?\d+,-?\d+$`).MatchString(id) {
 		return fmt.Errorf("place id must be its q,r anchor (see keryx places)")

@@ -257,3 +257,27 @@ func TestPlaceLakeCanBeNamed(t *testing.T) {
 		t.Fatalf("named lake missing from catalogue: HTTP%d %s", got.Code, got.Body)
 	}
 }
+
+// A bay is a place kind the API names (sund-och-vikar, mig 239 CHECK): coastal sea ringed by land.
+func TestPlaceBayCanBeNamed(t *testing.T) {
+	n := newPlaceRig(t)
+	ctx := context.Background()
+	for _, h := range [][3]interface{}{{50, 5, "coastal_sea"}, {51, 5, "scrub_maquis"}, {49, 5, "scrub_maquis"}, {50, 6, "scrub_maquis"}, {50, 4, "scrub_maquis"}, {51, 4, "scrub_maquis"}, {49, 6, "scrub_maquis"}} {
+		if _, err := n.pool.Exec(ctx, `INSERT INTO map_tiles(world_id,q,r,terrain) VALUES($1,$2,$3,$4)`, n.world, h[0], h[1], h[2]); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := n.pool.Exec(ctx, `INSERT INTO player_scouted_tiles(world_id,player_id,q,r) VALUES($1,$2,$3,$4)`, n.world, n.viewer, h[0], h[1]); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, err := n.pool.Exec(ctx, `INSERT INTO place_names(world_id,kind,anchor_q,anchor_r,claimed_by,claimed_tick) VALUES($1,'bay',50,5,$2,7)`, n.world, n.viewer); err != nil {
+		t.Fatal(err)
+	}
+	if got := n.do("POST", "bay", "50,5", `{"name":"Sheltered Cove"}`, n.token, ""); got.Code != 200 {
+		t.Fatalf("bay claimant cannot name it: HTTP%d %s", got.Code, got.Body)
+	}
+	got := n.do("GET", "", "", "", n.token, "")
+	if got.Code != 200 || !strings.Contains(got.Body.String(), `"kind":"bay","id":"50,5","name":"Sheltered Cove"`) {
+		t.Fatalf("named bay missing from catalogue: HTTP%d %s", got.Code, got.Body)
+	}
+}

@@ -72,7 +72,7 @@ func Places(tiles []MapTile) []Place {
 // IsPlaceKind reports whether kind names a Places kind.
 func IsPlaceKind(kind string) bool {
 	switch kind {
-	case "river", "massif", "desert", "forest", "lake", "island", "strait", "cape", "plain", "hills", "delta":
+	case "river", "massif", "desert", "forest", "lake", "island", "strait", "bay", "cape", "plain", "hills", "delta":
 		return true
 	}
 	return false
@@ -87,9 +87,65 @@ const (
 	DeltaMin = 1
 )
 
+// StraitMaxWidth (W) is the widest gap of open water, in hexes, that still counts
+// as a strait (Timothy 2026-11-02: build with 3, adjust after seeing the live map).
+// BayMinLand is how many of a hex's six sides must be land for coastal sea to be a
+// bay. DUPLICATES the fishing bay rule in economy.rulesWithLandNeighbors
+// (server/internal/economy/hex_rules.go): world has no internal deps and cannot
+// import economy; economy's TestBayParityWithWorld keeps the two equal.
+const (
+	StraitMaxWidth = 3
+	BayMinLand     = 4
+)
+
+// straitHexes marks every open-sea hex whose hex distance (through water) to its two
+// nearest DIFFERENT landmasses sums to at most StraitMaxWidth+1. A gap of W hexes
+// gives every hex on a straight line across it the sum W+1. The result may include
+// lake hexes the BFS passed through; the caller keeps only open sea.
+func straitHexes(terrain map[cell]Terrain, land [][]cell) map[cell]bool {
+	const maxDist = StraitMaxWidth + 1
+	// dist[c] holds, per landmass reaching c, the distance (BFS through sea, capped).
+	dist := map[cell][]int{}
+	for _, comp := range land {
+		seen := map[cell]int{}
+		front := make([]cell, 0, len(comp))
+		for _, h := range comp {
+			seen[h] = 0
+			front = append(front, h)
+		}
+		for d := 1; d <= maxDist && len(front) > 0; d++ {
+			var next []cell
+			for _, x := range front {
+				for _, y := range riverNeighbours(x) {
+					t, ok := terrain[y]
+					if _, done := seen[y]; done || !ok || !isSea(t) {
+						continue
+					}
+					seen[y] = d
+					next = append(next, y)
+					dist[y] = append(dist[y], d)
+				}
+			}
+			front = next
+		}
+	}
+	out := map[cell]bool{}
+	for c, ds := range dist {
+		if len(ds) < 2 {
+			continue
+		}
+		sort.Ints(ds)
+		if ds[0]+ds[1] <= StraitMaxWidth+1 {
+			out[c] = true
+		}
+	}
+	return out
+}
+
 // shapePlaces finds the kinds defined by the shape of land against water:
 // islands (a landmass wholly inside the map that is not the biggest), straits
-// (sea with land on two opposite sides) and capes (landmass hexes with four or
+// (open water within W hexes of two different landmasses), bays (coastal sea with
+// land on four or more sides) and capes (landmass hexes with four or
 // more sea neighbours). Land is anything that is not sea; rivers and fords are land.
 func shapePlaces(tiles []MapTile) []Place {
 	terrain := make(map[cell]Terrain, len(tiles))
@@ -127,16 +183,25 @@ func shapePlaces(tiles []MapTile) []Place {
 		}
 	}
 	isOpenSea := func(t Terrain) bool { return t == TerrainCoastalSea || t == TerrainDeepSea }
-	isLand := func(c cell) bool { t, ok := terrain[c]; return ok && !isSea(t) }
-	var strait, cape []MapTile
+	landNeighbours := func(c cell) int {
+		n := 0
+		for _, nb := range riverNeighbours(c) {
+			if t, ok := terrain[nb]; ok && !isSea(t) {
+				n++
+			}
+		}
+		return n
+	}
+	straitHex := straitHexes(terrain, land)
+	var strait, bay, cape []MapTile
 	for _, t := range tiles {
 		c := cell{t.Q, t.R}
 		if isOpenSea(t.Terrain) {
-			for _, d := range [][2]cell{{{1, 0}, {-1, 0}}, {{0, 1}, {0, -1}}, {{1, -1}, {-1, 1}}} {
-				if isLand(cell{c.q + d[0].q, c.r + d[0].r}) && isLand(cell{c.q + d[1].q, c.r + d[1].r}) {
-					strait = append(strait, t)
-					break
-				}
+			if straitHex[c] {
+				// A bay inside a strait is strait water: the strait wins.
+				strait = append(strait, t)
+			} else if t.Terrain == TerrainCoastalSea && landNeighbours(c) >= BayMinLand {
+				bay = append(bay, t)
 			}
 		} else if !isSea(t.Terrain) && landSize[c] >= 3 {
 			n := 0
@@ -153,6 +218,9 @@ func shapePlaces(tiles []MapTile) []Place {
 	all := func(Terrain) bool { return true }
 	for _, chain := range terrainComponents(strait, all) {
 		add("strait", chain)
+	}
+	for _, chain := range terrainComponents(bay, all) {
+		add("bay", chain)
 	}
 	for _, chain := range terrainComponents(cape, all) {
 		add("cape", chain)
