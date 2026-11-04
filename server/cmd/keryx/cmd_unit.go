@@ -1574,7 +1574,11 @@ repair completes and its hull returns to full.`,
 		Args:    rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
-			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/repair", cfg.WorldID, unitID)
+			resolved, err := resolveUnitID(c, cfg.WorldID, unitID)
+			if err != nil {
+				return err
+			}
+			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/repair", cfg.WorldID, resolved)
 			data, err := c.post(path, map[string]any{})
 			if err != nil {
 				return err
@@ -1593,7 +1597,7 @@ repair completes and its hull returns to full.`,
 				ShipyardWaiting bool    `json:"shipyard_waiting"`
 			}
 			_ = json.Unmarshal(data, &resp)
-			fmt.Printf("Repair started on unit %s (hull %d→%d), costing %.1f %s over %s", unitID[:8], resp.HullBefore, resp.HullTarget, resp.Amount, resp.Good, formatDays(resp.DurationTicks, "%d"))
+			fmt.Printf("Repair started on unit %s (hull %d→%d), costing %.1f %s over %s", shortID(resolved), resp.HullBefore, resp.HullTarget, resp.Amount, resp.Good, formatDays(resp.DurationTicks, "%d"))
 			if resp.ShipyardWaiting {
 				fmt.Print(" — waiting for shipyard workers")
 			} else if t, err := time.Parse(time.RFC3339, resp.CompleteAt); err == nil {
