@@ -265,7 +265,18 @@ func foundMetropolisFromNomadicHost(
 	// 8. Poseidon's gift: a coastal founding is owed exactly one galley, once.
 	// Built inline here (not via a shared starter-unit path): the founder already
 	// marched in with two spearmen, so only the galley is owed.
+	// Timothy 2026-11-01: a ship must be able to leave — a closed lake (no
+	// waterway to the Thalassa, the shipyard's own predicate) gives no galley;
+	// the harbour stays.
+	galleyOwed := false
 	if coastal {
+		var wwErr error
+		galleyOwed, wwErr = province.HasThalassaWaterway(ctx, tx, worldID, q, r)
+		if wwErr != nil {
+			return out, fmt.Errorf("check waterway for poseidon galley: %w", wwErr)
+		}
+	}
+	if galleyOwed {
 		// Ordinalen delas ut ur den monotona räknaren, aldrig ur MAX(ordinal):
 		// numret återanvänds inte ens när ett förband upplöses (§3.1 punkt 2).
 		galleyOrdinal, err := unit.AllocateOrdinal(ctx, tx, m.SettlementID, string(unit.TypeGalley))
