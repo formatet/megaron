@@ -38,9 +38,8 @@ const RichOfferingBonus = 1.5
 // richOfferingShare is the rich offering's cost as a share of the base grain value (0.25 x level^2).
 const richOfferingShare = 0.5
 
-// templeTaste is the god's taste for a good at the temple's rich offering. Smak per tempel has no source
-// yet (see docs/reviews/rikt-offer/README.md): this is the single place to change once Timothy decides.
-var templeTaste = func(god, good string) float64 { return 1 }
+// templeTaste is the god's taste for a good at the temple's rich offering (religion.TempleGods, Timothy 2026-11-04).
+var templeTaste = religion.TempleTaste
 
 // RichOfferingGood reports whether good may be a rich offering (it has a divine price).
 func RichOfferingGood(good string) bool { _, ok := religion.FixedDivineValues[good]; return ok }
@@ -117,6 +116,7 @@ type TempleOffer struct {
 	RichGood        string             `json:"rich_offering_good"`
 	RichAmount      float64            `json:"rich_offering_amount"`
 	RichPaid        bool               `json:"rich_offering_paid"`
+	Tastes          map[string]float64 `json:"rich_offering_tastes,omitempty"` // the god's taste (religion.TempleGods)
 }
 
 func positiveFinite(v float64) bool { return v > 0 && !math.IsInf(v, 0) && !math.IsNaN(v) }
@@ -213,6 +213,9 @@ func planCityOffers(id uuid.UUID, name string, temples []templeRef, stock, value
 		}
 		o := newTempleOfferForLevel(id, name, level, t.staffed, left, values)
 		o.BuildingID, o.GodID, o.Temple = t.id, t.god, religion.TempleName(t.god)
+		if g, ok := religion.TempleGodByID(t.god); ok {
+			o.Tastes = g.Tastes
+		}
 		for good, amount := range o.Offering {
 			left[good] -= amount
 		}

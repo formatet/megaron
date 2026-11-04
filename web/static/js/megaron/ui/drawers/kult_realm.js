@@ -7,7 +7,7 @@ export function richOfferingControlHTML(t) {
  if (chosen) return `<button class="btn-small" data-cult-rich-off="${esc(t.id)}">Stop rich offering</button> `;
  const held = Object.entries(t.offer?.stock || {}).filter(([, n]) => n > 0).map(([g]) => g).sort();
  if (!held.length) return '';
- return `<select class="btn-small" data-cult-rich-good="${esc(t.id)}">${held.map(g => `<option value="${esc(g)}">${esc(g)}</option>`).join('')}</select> <button class="btn-small" data-cult-rich-on="${esc(t.id)}">Add rich offering</button> `;
+ return `<select class="btn-small" data-cult-rich-good="${esc(t.id)}">${held.map(g => `<option value="${esc(g)}">${esc(g)}${t.offer?.rich_offering_tastes?.[g] ? ' (×' + esc(String(t.offer.rich_offering_tastes[g])) + ')' : ''}</option>`).join('')}</select> <button class="btn-small" data-cult-rich-on="${esc(t.id)}">Add rich offering</button> `;
 }
 
 export const prayerActionID = p => p.settlement_id + '__' + p.id;

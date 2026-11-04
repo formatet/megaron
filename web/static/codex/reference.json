@@ -412,28 +412,45 @@
       "Name": "Potnia",
       "Cultures": [
         "minoan"
-      ]
+      ],
+      "Tastes": {
+        "fish": 1.5,
+        "livestock": 2
+      }
     },
     {
       "ID": "velchanos",
       "Name": "Velchanos",
       "Cultures": [
         "minoan"
-      ]
+      ],
+      "Tastes": {
+        "grain": 1.5,
+        "livestock": 1.5,
+        "wine": 2
+      }
     },
     {
       "ID": "asterion",
       "Name": "Asterion",
       "Cultures": [
         "minoan"
-      ]
+      ],
+      "Tastes": {
+        "silver": 2,
+        "stone": 1.5
+      }
     },
     {
       "ID": "sea_daimons_stillness",
       "Name": "the Sea Daimons of Stillness",
       "Cultures": [
         "minoan"
-      ]
+      ],
+      "Tastes": {
+        "fish": 2,
+        "oil": 1.5
+      }
     }
   ],
   "goods": [

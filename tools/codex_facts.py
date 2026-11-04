@@ -30,6 +30,13 @@ def favours():
   taste=', '.join(k+' ×'+amount(v) for k,v in sorted(f.items(),key=lambda kv:(-kv[1],kv[0]))) if f else 'no preference: every good at its worth'
   rows.append('| '+x['Name']+' | '+x['God']+' | '+taste+' |')
  return '| Prayer | God | Favours (dearest first) |\n|---|---|---|\n'+'\n'.join(rows)
+def tastes():
+ # Each god's rich-offering taste from reference.json (religion.TempleGods), dearest first; gods alphabetical.
+ rows=[]
+ for g in sorted(reference['gods'],key=lambda g:re.sub(r'^the ','',g['Name'].lower())):
+  t=g.get('Tastes') or {}
+  rows.append('| '+g['Name'][0].upper()+g['Name'][1:]+' | '+(', '.join('[['+k+'|'+k+']] ×'+amount(v) for k,v in sorted(t.items(),key=lambda kv:(-kv[1],kv[0]))) or 'no preference')+' |')
+ return '| God | Prizes in a rich offering |\n|---|---|\n'+'\n'.join(rows)
 def write(path,text):
  if not path.exists() or path.read_text()!=text:
   changed.append(str(path.relative_to(ROOT)))
@@ -53,6 +60,7 @@ def hub_list(kind,keys):
 for article in index['articles']:
  path=D/(article['id']+'.md');text=path.read_text()
  text=re.sub(r'<!-- facts: (building|prayer) ([a-z0-9_]+) -->[\s\S]*?<!-- /facts -->',lambda m:'<!-- facts: '+m[1]+' '+m[2]+' -->\n'+block(m[1],m[2])+'\n<!-- /facts -->',text)
+ text=re.sub(r'<!-- tastes -->[\s\S]*?<!-- /tastes -->',lambda m:'<!-- tastes -->\n'+tastes()+'\n<!-- /tastes -->',text)
  text=re.sub(r'<!-- favours -->[\s\S]*?<!-- /favours -->',lambda m:'<!-- favours -->\n'+favours()+'\n<!-- /favours -->',text)
  text=re.sub(r'<!-- list: ([a-z]+)((?: [a-z0-9_]+)*) -->[\s\S]*?<!-- /list -->',lambda m:'<!-- list: '+m[1]+m[2]+' -->\n'+hub_list(m[1],m[2].split())+'\n<!-- /list -->',text)
  for entity in article.get('entities',[]):

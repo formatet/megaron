@@ -26,7 +26,16 @@ The grain part uses **grain first, then [[fish|fish]], then [[timber|timber]], t
 
 ### The rich offering {#rich-offering}
 
-On top of the tithe, each temple can have a **rich offering**. Turn it on per temple and choose one good from the city's store: **Kult → Temples**, *Add rich offering*, or `keryx rich-offering --god potnia --good fish` (`--off` to stop). Each game day, after every tithe in the city is taken, the temple also receives a small amount of that good: half the tithe's grain value, divided by the good's divine value. Dearer goods mean a smaller amount.
+On top of the tithe, each temple can have a **rich offering**. Turn it on per temple and choose one good from the city's store: **Kult → Temples**, *Add rich offering*, or `keryx rich-offering --god potnia --good fish` (`--off` to stop). Each game day, after every tithe in the city is taken, the temple also receives a small amount of that good: half the tithe's grain value, divided by the good's divine value and by the god's taste for it. Dearer goods, and goods the god prizes, mean a smaller amount: a taste of ×2 halves it. Goods not listed count at ×1.
+
+<!-- tastes -->
+| God | Prizes in a rich offering |
+|---|---|
+| Asterion | [[silver|silver]] ×2, [[stone|stone]] ×1.5 |
+| Potnia | [[livestock|livestock]] ×2, [[fish|fish]] ×1.5 |
+| The Sea Daimons of Stillness | [[fish|fish]] ×2, [[oil|oil]] ×1.5 |
+| Velchanos | [[wine|wine]] ×2, [[grain|grain]] ×1.5, [[livestock|livestock]] ×1.5 |
+<!-- /tastes -->
 
 If the rich offering is paid in full, the temple's effective weight is **multiplied by 1.5**. If the good is missing, nothing is taken and there is no partial bonus. It does not raise your kharis ceiling, and it gives nothing while the tithe itself goes unpaid.
 

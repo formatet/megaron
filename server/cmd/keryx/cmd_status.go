@@ -206,6 +206,24 @@ func templeOfferingLine(row map[string]any) string {
 			next += " · rich offering " + rich + " not paid"
 		}
 	}
+	if tastes, _ := row["rich_offering_tastes"].(map[string]any); len(tastes) > 0 {
+		keys := make([]string, 0, len(tastes))
+		for k := range tastes {
+			keys = append(keys, k)
+		}
+		sort.Slice(keys, func(i, j int) bool {
+			a, b := tastes[keys[i]].(float64), tastes[keys[j]].(float64)
+			if a != b {
+				return a > b
+			}
+			return keys[i] < keys[j]
+		})
+		parts := make([]string, len(keys))
+		for i, k := range keys {
+			parts[i] = fmt.Sprintf("%s ×%g", k, tastes[k])
+		}
+		next += " · prizes " + strings.Join(parts, ", ")
+	}
 	// Each temple has its own gift; a city's temples take from one store in turn,
 	// so "stock" is what the temples before this one left.
 	return fmt.Sprintf("  %s in %s: reference %s per game day — alternatives: %s — stock: %s — next gift: %s  %s",

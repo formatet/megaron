@@ -22,8 +22,8 @@ func TestRichOfferingOnOffAndMissing(t *testing.T) {
 	if off.RichPaid || off.RichGood != "" {
 		t.Fatalf("off: %+v", off)
 	}
-	// 0.5 * 0.25 * 1 * grain(1) / fish(2) = 0.0625
-	if !on.RichPaid || math.Abs(on.Offering["fish"]-0.0625) > 1e-9 || on.Offering["grain"] != 0.25 {
+	// 0.5 * 0.25 * 1 * grain(1) / (fish(2) * Potnia's taste 1.5) = 0.0625/1.5
+	if !on.RichPaid || math.Abs(on.Offering["fish"]-0.0625/1.5) > 1e-9 || on.Offering["grain"] != 0.25 {
 		t.Fatalf("on: %+v", on)
 	}
 	if math.Abs(on.EffectiveWeight-off.EffectiveWeight*1.5) > 1e-9 {
@@ -35,7 +35,7 @@ func TestRichOfferingOnOffAndMissing(t *testing.T) {
 		t.Fatalf("missing: %+v", miss)
 	}
 	// Short of the full amount: still no partial bonus.
-	short := richPlan(1, "fish", map[string]float64{"grain": 10, "fish": 0.06})
+	short := richPlan(1, "fish", map[string]float64{"grain": 10, "fish": 0.04})
 	if short.RichPaid || short.Offering["fish"] != 0 || short.EffectiveWeight != off.EffectiveWeight {
 		t.Fatalf("short: %+v", short)
 	}
@@ -89,7 +89,7 @@ func TestRichOfferingTasteLowersAmountAndLevelScales(t *testing.T) {
 		t.Fatalf("taste ignored: %g", got)
 	}
 	templeTaste = was
-	base := richAmount(1, "potnia", "fish", map[string]float64{"grain": 1, "fish": 4})
+	base := richAmount(1, "asterion", "fish", map[string]float64{"grain": 1, "fish": 4})
 	if math.Abs(base-0.5*0.25/4) > 1e-9 {
 		t.Fatalf("value divides: %g", base)
 	}
@@ -154,12 +154,23 @@ func TestRichOfferingChargedByTickAndSeenByForecast(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT (SELECT amount FROM settlement_goods WHERE settlement_id=$1 AND good_key='grain'),(SELECT amount FROM settlement_goods WHERE settlement_id=$1 AND good_key='fish')`, sid).Scan(&grain, &fish); err != nil {
 		t.Fatal(err)
 	}
-	if math.Abs(grain-.75) > 1e-6 || math.Abs(fish-(1-.0625)) > 1e-6 {
+	if math.Abs(grain-.75) > 1e-6 || math.Abs(fish-(1-.0625/1.5)) > 1e-6 {
 		t.Fatalf("charged grain%g fish%g", grain, fish)
 	}
 	for _, m := range fc {
-		if math.Abs(m["fish"]-.0625) > 1e-9 {
+		if math.Abs(m["fish"]-.0625/1.5) > 1e-9 {
 			t.Fatalf("forecast %v", fc)
 		}
+	}
+}
+
+// The live table (Timothy 2026-11-04, alternative A): the Sea Daimons prize fish x2, so they ask half;
+// an unlisted good counts at 1.
+func TestRichOfferingUsesTheGodsTasteTable(t *testing.T) {
+	if got := richAmount(1, "sea_daimons_stillness", "fish", religion.FixedDivineValues); math.Abs(got-0.5*0.25/(2*2)) > 1e-9 {
+		t.Fatalf("sea daimons fish %g", got)
+	}
+	if got := richAmount(1, "sea_daimons_stillness", "wine", religion.FixedDivineValues); math.Abs(got-0.5*0.25/3) > 1e-9 {
+		t.Fatalf("unlisted wine %g", got)
 	}
 }
