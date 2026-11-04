@@ -2191,6 +2191,14 @@ func (h *UnitArrivalHandler) foundColony(
 		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "ColonyFounded", 3, payload)
 	}
 
+	// Places in the colony's own catchment: one notice now, claimed for the founder
+	// (delivered after commit through the arrival's outcome buffer).
+	if fp, err := ClaimFoundingPlaces(ctx, tx, h.eventStore, worldID, u.ownerID, colonyID, name, destQ, destR); err != nil {
+		return fmt.Errorf("foundColony: claim catchment places: %w", err)
+	} else if fp != nil && h.expeditionOutcomes != nil {
+		*h.expeditionOutcomes = append(*h.expeditionOutcomes, fp.outcome())
+	}
+
 	slog.Info("colony founded (discrete unit)", "settlement", colonyID, "name", name,
 		"province", provinceID, "owner", u.ownerID, "founding_unit", u.id, "population", population, "q", destQ, "r", destR)
 	return nil
