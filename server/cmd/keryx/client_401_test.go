@@ -1,6 +1,11 @@
 package main
 
 import (
+	"fmt"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -20,4 +25,50 @@ func TestAPIError_Unauthorized_PointsAtKeryxLogin(t *testing.T) {
 	if got := apiError([]byte(`{"error":"not your province"}`), 403).Error(); got != "not your province (HTTP 403)" {
 		t.Errorf("403 passthrough = %q", got)
 	}
+}
+
+// An expired access token is renewed once with the saved refresh token and the
+// request repeated; a refresh that fails leaves today's 401 text.
+func TestClient401RefreshesOnceAndRetries(t *testing.T) {
+	t.Setenv("POLEIA_CONFIG", filepath.Join(t.TempDir(), "config.json"))
+	t.Setenv("POLEIA_TOKEN", "")
+	refreshes, gets := 0, 0
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/v1/auth/refresh":
+			refreshes++
+			if refreshes > 1 || !strings.Contains(readBody(r), "rt-old") {
+				w.WriteHeader(401)
+				return
+			}
+			fmt.Fprint(w, `{"access_token":"at-new","refresh_token":"rt-new"}`)
+		default:
+			gets++
+			if r.Header.Get("Authorization") != "Bearer at-new" {
+				w.WriteHeader(401)
+				fmt.Fprint(w, `{"error":"expired"}`)
+				return
+			}
+			fmt.Fprint(w, `{"ok":true}`)
+		}
+	}))
+	defer ts.Close()
+	cfg := &Config{Server: ts.URL, Token: "at-old", RefreshToken: "rt-old"}
+	c := newClient(cfg)
+	if _, err := c.get("/api/v1/x"); err != nil {
+		t.Fatalf("expected a transparent refresh, got %v", err)
+	}
+	if gets != 2 || refreshes != 1 || cfg.Token != "at-new" || cfg.RefreshToken != "rt-new" {
+		t.Fatalf("gets=%d refreshes=%d cfg=%+v", gets, refreshes, cfg)
+	}
+	// Second client: refresh token is now spent on the server side -> today's text.
+	cfg2 := &Config{Server: ts.URL, Token: "at-old", RefreshToken: "rt-old"}
+	if _, err := newClient(cfg2).get("/api/v1/x"); err == nil || !strings.Contains(err.Error(), "keryx login") {
+		t.Fatalf("failed refresh must give the login hint, got %v", err)
+	}
+}
+
+func readBody(r *http.Request) string {
+	b, _ := io.ReadAll(r.Body)
+	return string(b)
 }

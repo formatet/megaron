@@ -58,9 +58,10 @@ value leaks into the process list and shell history.`,
 			}
 
 			cfg := &Config{
-				Server:   server,
-				Token:    resp.AccessToken,
-				Username: username,
+				Server:       server,
+				Token:        resp.AccessToken,
+				RefreshToken: resp.RefreshToken,
+				Username:     username,
 			}
 
 			// Auto-detect world and province.
