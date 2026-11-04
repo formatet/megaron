@@ -19,6 +19,7 @@ import (
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/kharis"
+	"formatet/megaron/server/internal/ledger"
 	"formatet/megaron/server/internal/notify"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/religion"
@@ -1433,7 +1434,7 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 
-	if err := deductGoods(r.Context(), tx, settlementID, spec.Costs); err != nil {
+	if err := deductGoods(r.Context(), tx, settlementID, spec.Costs, "build_cost"); err != nil {
 		var insErr *insufficientGoodsError
 		if errors.As(err, &insErr) {
 			writeGoodsError(w, insErr, buildContext)
@@ -1445,6 +1446,7 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 
 	// Deduct silver if required.
 	if spec.CostSilver > 0 {
+		_ = ledger.Reason(r.Context(), tx, "build_cost_silver")
 		tag, err2 := province.DeductGood(r.Context(), tx, settlementID, "silver", spec.CostSilver)
 		if err2 != nil || tag.RowsAffected() == 0 {
 			// Name the shortfall (need/have) like writeGoodsError does for goods —
@@ -2413,7 +2415,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	paidCosts, err := deductGoodsPaid(r.Context(), tx, settlementID, totalCosts)
+	paidCosts, err := deductGoodsPaid(r.Context(), tx, settlementID, totalCosts, "recruit_cost")
 	if err != nil {
 		var insErr *insufficientGoodsError
 		if errors.As(err, &insErr) {
@@ -3531,6 +3533,7 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	// Deduct from origin — silver is now a normal good in settlement_goods.
 	manifest := transport.Manifest{}
 	for _, item := range items {
+		_ = ledger.Reason(r.Context(), tx, "dispatch_out")
 		deductTag, err := province.DeductGood(r.Context(), tx, originID, item.GoodKey, item.Quantity)
 		if err != nil {
 			writeError(w, 500, "could not deduct goods")

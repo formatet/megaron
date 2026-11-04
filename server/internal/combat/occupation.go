@@ -57,6 +57,7 @@ import (
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/gossip"
+	"formatet/megaron/server/internal/ledger"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/transport"
@@ -702,6 +703,7 @@ func lootSettlementGoods(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID,
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
+	_ = ledger.Reason(ctx, tx, "loot_out")
 	for _, lr := range loots {
 		manifest[lr.good] += lr.qty
 		if _, err := tx.Exec(ctx,

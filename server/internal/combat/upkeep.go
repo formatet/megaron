@@ -9,6 +9,7 @@ import (
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/ledger"
 	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -358,6 +359,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 					slog.Error("upkeep: food transaction failed", "err", err)
 					continue
 				}
+				_ = ledger.Reason(ctx, tx, "army_ration")
 				meal, err := economy.TakeFood(ctx, tx, foodSid, grainNeed, false, true)
 				if err != nil {
 					tx.Rollback(ctx)
@@ -403,7 +405,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 			continue
 		}
 
-		tag, err := h.pool.Exec(ctx,
+		tag, err := ledger.ExecAs(ctx, h.pool, "army_wages",
 			`UPDATE settlement_goods
 			 SET amount   = LEAST(cap, storage_capped(settlement_id,good_key,settled(amount,rate,calc_tick),cap,'production') - $1),
 			     calc_tick = current_world_tick()

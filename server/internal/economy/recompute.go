@@ -6,6 +6,7 @@ import (
 	"math"
 
 	"formatet/megaron/server/internal/hexgrid"
+	"formatet/megaron/server/internal/ledger"
 	"formatet/megaron/server/internal/province"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -787,6 +788,7 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 			}
 		}
 		if bronzeProduced > 0 {
+			_ = ledger.Reason(ctx, tx, "refining_in")
 			for _, ing := range ingredients {
 				if _, err := tx.Exec(ctx,
 					`UPDATE settlement_goods
@@ -798,6 +800,7 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 					return fmt.Errorf("recompute: consume %s for bronze: %w", ing.good, err)
 				}
 			}
+			_ = ledger.Reason(ctx, tx, "refining_out")
 			if _, err := tx.Exec(ctx,
 				`UPDATE settlement_goods
 				 SET amount    = storage_capped(settlement_id,good_key,settled(amount,rate,calc_tick)+$2,cap,'refining'),

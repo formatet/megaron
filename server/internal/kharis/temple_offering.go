@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"maps"
 	"math"
+	"sort"
 
 	"formatet/megaron/server/internal/economy"
+	"formatet/megaron/server/internal/ledger"
 	"formatet/megaron/server/internal/religion"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -272,29 +274,40 @@ func (h *TickHandler) chargeTempleOffering(ctx context.Context, settlementID uui
 		return nil, err
 	}
 	fed := map[uuid.UUID]TempleOffer{}
-	take := map[string]float64{}
+	take := map[string]map[string]float64{} // god → good → amount
 	for _, o := range planCityOffers(settlementID, "", temples, stock, values) {
 		if o.PaidFraction <= 0 {
 			continue
 		}
 		fed[o.BuildingID] = o
+		if take[o.GodID] == nil {
+			take[o.GodID] = map[string]float64{}
+		}
 		for good, amount := range o.Offering {
-			take[good] += amount
+			take[o.GodID][good] += amount
 		}
 	}
-	for _, good := range templeOfferingGoods {
-		amount := take[good]
-		if amount <= 0 {
-			continue
-		}
-		tag, err := tx.Exec(ctx, `UPDATE settlement_goods SET
+	gods := make([]string, 0, len(take))
+	for god := range take {
+		gods = append(gods, god)
+	}
+	sort.Strings(gods)
+	for _, god := range gods {
+		for _, good := range templeOfferingGoods {
+			amount := take[god][good]
+			if amount <= 0 {
+				continue
+			}
+			_ = ledger.Reason(ctx, tx, ledger.TempleTithe(god))
+			tag, err := tx.Exec(ctx, `UPDATE settlement_goods SET
 		 amount=GREATEST(0,settled(amount,rate,calc_tick)-$3),calc_tick=current_world_tick()
 		 WHERE settlement_id=$1 AND good_key=$2`, settlementID, good, amount)
-		if err != nil {
-			return nil, fmt.Errorf("temple offering %s: %w", good, err)
-		}
-		if tag.RowsAffected() != 1 {
-			return nil, pgx.ErrNoRows
+			if err != nil {
+				return nil, fmt.Errorf("temple offering %s: %w", good, err)
+			}
+			if tag.RowsAffected() != 1 {
+				return nil, pgx.ErrNoRows
+			}
 		}
 	}
 	if err := tx.Commit(ctx); err != nil {

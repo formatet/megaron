@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"formatet/megaron/server/internal/ledger"
 	"formatet/megaron/server/internal/province"
 
 	"formatet/megaron/server/internal/economy"
@@ -110,6 +111,7 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, p metropolisParams) (creat
 		return out, &metropolisError{"could not link province", err}
 	}
 
+	_ = ledger.Reason(ctx, tx, "founding_seed")
 	// Seed a zero row for every good so the settlement always has full inventory
 	// schema regardless of terrain. RecomputeProduction (below) writes actual rates
 	// from catchment tiles; zero rows here ensure non-producible goods are visible.
@@ -144,6 +146,7 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, p metropolisParams) (creat
 
 	// Every founding moves only what the Host carries; no eligibility branch
 	// can mint a second endowment for direct or returning callers.
+	_ = ledger.Reason(ctx, tx, "founding_seed")
 	liquidSeed, liquidCap := economy.MetropolisSilver(p.CarriedSilver)
 	if _, err := tx.Exec(ctx, `UPDATE settlement_goods SET amount=$1,
 	 cap=GREATEST($2, GREATEST(0,settled(amount,rate,calc_tick))), calc_tick=current_world_tick()

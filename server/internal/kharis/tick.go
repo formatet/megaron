@@ -12,8 +12,8 @@ import (
 
 	"formatet/megaron/server/internal/ai"
 	"formatet/megaron/server/internal/economy"
-	"formatet/megaron/server/internal/ledger"
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/ledger"
 	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/unit"
@@ -978,7 +978,7 @@ func (h *TickHandler) applyReinforcement(ctx context.Context, worldID uuid.UUID,
 				if perManCost <= 0 {
 					continue
 				}
-				if _, err := h.pool.Exec(ctx,
+				if _, err := ledger.ExecAs(ctx, h.pool, "reinforce",
 					`UPDATE settlement_goods SET
 					   amount = GREATEST(0, settled(amount, rate, calc_tick) - $1),
 					   calc_tick = current_world_tick()
@@ -1353,6 +1353,7 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 		}
 	}
 	var amount float64
+	_ = ledger.Reason(ctx, tx, "punishment")
 	if err = tx.QueryRow(ctx, p.sql, settlementID, worldID, ownerID).Scan(&amount); err != nil {
 		return fmt.Errorf("apply divine punishment: %w", err)
 	}

@@ -151,7 +151,7 @@ func (h *UnitHandler) Repair(w http.ResponseWriter, r *http.Request) {
 	}
 	durationTicks := combat.RepairDurationTicks(hullPoints)
 
-	if err := deductGoods(ctx, tx, settlementID, map[string]float64{good: amount}); err != nil {
+	if err := deductGoods(ctx, tx, settlementID, map[string]float64{good: amount}, "repair"); err != nil {
 		var insErr *insufficientGoodsError
 		if errors.As(err, &insErr) {
 			writeGoodsError(w, insErr)

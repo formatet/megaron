@@ -45,6 +45,24 @@ func Reason(ctx context.Context, tx Execer, reason string) error {
 	return err
 }
 
+// ExecAs runs one statement on the pool inside its own transaction under a category,
+// for writers that have no transaction of their own.
+func ExecAs(ctx context.Context, pool *pgxpool.Pool, reason, sql string, args ...any) (pgconn.CommandTag, error) {
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		return pgconn.CommandTag{}, err
+	}
+	defer tx.Rollback(ctx)
+	if err := Reason(ctx, tx, reason); err != nil {
+		return pgconn.CommandTag{}, err
+	}
+	tag, err := tx.Exec(ctx, sql, args...)
+	if err != nil {
+		return tag, err
+	}
+	return tag, tx.Commit(ctx)
+}
+
 // CloseDay settles every producing row of the world, stores the closing stock and
 // trims old rows. Exactly once per event (processed_tick_claims).
 func CloseDay(ctx context.Context, pool *pgxpool.Pool, worldID uuid.UUID, eventID int64) error {
