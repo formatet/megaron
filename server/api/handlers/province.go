@@ -696,6 +696,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		}
 
 		var storage []economy.StorageForecast
+		var forecast *economy.CityForecast
 		if viewer, ok := auth.PlayerIDFromContext(r.Context()); ok && sett.OwnerID != nil && viewer == *sett.OwnerID {
 			tx, err := h.pool.Begin(r.Context())
 			if err != nil {
@@ -703,6 +704,12 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			storage, err = NewCityForecaster().StorageForecast(r.Context(), tx, sett.ID)
+			if err == nil {
+				var fc economy.CityForecast
+				if fc, err = NewCityForecaster().CityForecast(r.Context(), tx, sett.ID); err == nil {
+					forecast = &fc
+				}
+			}
 			tx.Rollback(r.Context())
 			if err != nil {
 				writeError(w, 500, "could not read storage forecast")
@@ -785,7 +792,8 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				"used": settlementsOwned,
 				"max":  province.MaxSettlementsPerWanax,
 			},
-			"storage": storage,
+			"storage":  storage,
+			"forecast": forecast,
 			"food": map[string]any{
 
 				"coverage_ticks":    coverageDays,

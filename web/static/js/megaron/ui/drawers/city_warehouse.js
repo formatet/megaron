@@ -10,26 +10,39 @@ import { herdHTML } from './city_production.js';
 const FOOD_KEYS = ['fish', 'grain', 'oil'];
 const NOT_GOODS = new Set([...FOOD_KEYS, 'livestock']);
 
+const signed = v => `${v >= 0 ? '+' : '\u2212'}${fmtNum(Math.abs(Number(Number(v).toFixed(1))))}`;
 const stored = (amount, cap) => `${fmtNum(Math.floor(amount || 0))}${cap > 0 ? ' / ' + fmtNum(Math.floor(cap)) : ''}`;
-function storeRow(label, amount, cap) {
+function storeRow(label, amount, cap, net) {
   const full = atStorageCeiling(amount || 0, cap || 0);
-  return `<div class="stat-row${full ? ' wh-full' : ''}"${full ? ' title="Full: anything produced past the cap is discarded."' : ''}><span class="sr-label">${esc(label)}</span><span class="sr-val">${stored(amount, cap)}${full ? ' · full' : ''}</span></div>`;
+  const netText = Number.isFinite(net) ? ` · net ${signed(net)} a game day` : '';
+  return `<div class="stat-row${full ? ' wh-full' : ''}"${full ? ' title="Full: anything produced past the cap is discarded."' : ''}><span class="sr-label">${esc(label)}</span><span class="sr-val">${stored(amount, cap)}${full ? ' · full' : ''}${netText}</span></div>`;
 }
 const labelOf = g => g.name || g.key;
 
 export function warehouseHTML(pd, goods) {
   const list = Array.isArray(goods) ? goods : [];
   const cov = pd?.food?.coverage_ticks;
+  // One forecast owner (server): expected net per game day for every good, and how
+  // long the food lasts at the net, with all known posts (citizens, army, temples).
+  const fc = pd?.forecast;
+  const net = {};
+  for (const g of fc?.goods || []) net[g.good_key] = g.net;
   const foodRows = FOOD_KEYS.map(k => list.find(g => g.key === k))
     .filter(g => g && (g.amount > 0 || g.cap > 0))
-    .map(g => storeRow(labelOf(g), g.amount, g.cap)).join('');
+    .map(g => storeRow(labelOf(g), g.amount, g.cap, net[g.key])).join('');
+  const foodFor = fc?.food
+    ? (fc.food.days != null
+      ? `<div class="stat-row"><span class="sr-label">Food for</span><span class="sr-val">${fmtDays(fc.food.days)} · net ${signed(fc.food.net)} a game day</span></div>`
+      : `<div class="stat-row"><span class="sr-label">Food for</span><span class="sr-val">not running down · net ${signed(fc.food.net)} a game day</span></div>`)
+    : (cov != null && Number.isFinite(Number(cov)) ? `<div class="stat-row"><span class="sr-label">Food for</span><span class="sr-val">${fmtDays(cov)}</span></div>` : '');
+  const foodFlows = (fc?.food?.flows || []).map(f => `<div class="stat-row wh-flow"><span class="sr-label">${esc(f.label)}</span><span class="sr-val">${signed(f.amount)}</span></div>`).join('');
   const food = `<div class="dsec"><div class="dsec-title">Food <button class="btn-small" onclick="openCodex('granary')" title="Read the Codex" aria-label="Read the Codex">?</button></div>`
-    + (cov != null && Number.isFinite(Number(cov)) ? `<div class="stat-row"><span class="sr-label">Food for</span><span class="sr-val">${fmtDays(cov)}</span></div>` : '')
+    + foodFor + foodFlows
     + (foodRows || '<p class="empty-state">No food stored.</p>') + '</div>';
   const herdLine = herdHTML(pd?.food?.herd);
   const herd = herdLine ? `<div class="dsec"><div class="dsec-title">Herd</div>${herdLine}</div>` : '';
   const others = list.filter(g => !NOT_GOODS.has(g.key) && g.amount > 0)
     .sort((a, b) => labelOf(a).localeCompare(labelOf(b)));
-  const goodsRows = others.length ? others.map(g => storeRow(labelOf(g), g.amount, g.cap)).join('') : '<p class="empty-state">No goods stored.</p>';
+  const goodsRows = others.length ? others.map(g => storeRow(labelOf(g), g.amount, g.cap, net[g.key])).join('') : '<p class="empty-state">No goods stored.</p>';
   return food + herd + `<div class="dsec"><div class="dsec-title">Goods</div>${goodsRows}</div>`;
 }

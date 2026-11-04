@@ -484,7 +484,7 @@ export async function loadTicklog() {
     const ledgerHtml = !led.known
       ? '<p class="empty-state">The books for the last game day are not ready yet.</p>'
       : `<p>Last game day, ending ${fmtTickTime(led.tick)}</p>` + (led.goods || []).map(g =>
-        `<table class="goods-mini ledger-day"><tr><th>${esc(g.good)}</th><th class="num">${g.delta >= 0 ? '+' : ''}${fmtNum(Number(g.delta.toFixed(1)))}</th></tr>` +
+        `<table class="goods-mini ledger-table"><tr><th>${esc(g.good)}</th><th class="num">${g.delta >= 0 ? '+' : ''}${fmtNum(Number(g.delta.toFixed(1)))}</th></tr>` +
         (g.posts || []).map(p => `<tr><td>${esc(p.label)}</td><td class="num">${p.amount >= 0 ? '+' : ''}${fmtNum(Number(p.amount.toFixed(1)))}</td></tr>`).join('') +
         (g.other ? `<tr class="ledger-other"><td>Other</td><td class="num">${g.other >= 0 ? '+' : ''}${fmtNum(Number(g.other.toFixed(1)))}</td></tr>` : '') +
         '</table>').join('');

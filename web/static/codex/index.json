@@ -464,6 +464,7 @@
       "category": "Your city",
       "kinds": [
         "FoodShortfall",
+        "FoodRunningLow",
         "CivilianStarvationStarted",
         "CivilianStarvationEnded",
         "SubsistenceWarning",
@@ -494,6 +495,10 @@
         {
           "id": "food-what-to-do-about-it",
           "title": "Responding to a food shortage"
+        },
+        {
+          "id": "food-running-low",
+          "title": "Food running low"
         }
       ],
       "terms": [

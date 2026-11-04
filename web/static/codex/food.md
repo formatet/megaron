@@ -31,3 +31,9 @@ The herd breeds itself — no herder is needed. Every ten animals give one calf 
 Your city has food stocks: the fish, grain and oil in its [[goods|stores]]. **Food for N game days** shows those stocks at current consumption, without counting future production. **City → More → Food details** shows production, the last meal by good and army food separately. Different goods forming a real share of the meal improve [[growth|population growth]]; merely storing another food does not. Stored food buys time during a shortfall. A city under [[sieges|siege]] starves because its fields are cut off, not because it produces too little.
 
 Growth is covered in [[growth]].
+
+## Food running low {#food-running-low}
+
+The Warehouse shows, for food and for every other good, the **net per game day**: what the city is expected to make, minus what the citizens eat, what the army eats and is paid, and what each temple is given. **Food for** is the food in store divided by that net when the net is negative; when the net is zero or better the Warehouse says the food is not running down.
+
+When the net is negative and the food will last **fewer than 24 game days**, you receive **one** notice, for example "Food in Knossos runs out in about 18 game days (Thursday 14:30): citizens −5.0, army −2.0, temples −1.0, production +3.0 a game day." It is not repeated while things stay as they are. A new notice comes only after the city has been well again: a net of zero or better, or food for 24 game days or more. The forecast counts the herd's surplus calves as food. It is a forecast at today's numbers, not a promise.

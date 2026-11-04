@@ -159,7 +159,7 @@ export function notifDomain(kind) {
     SettlementDefended: 'war', SettlementSacked: 'war', CityCollapsed: 'war',
     OutpostCaptured: 'war',
     // City — what your own settlements build, grow, eat and stop producing.
-    StorageCapacityWarning: 'city', StorageOverflow: 'city',
+    StorageCapacityWarning: 'city', StorageOverflow: 'city', FoodRunningLow: 'city',
     BuildComplete: 'city', GoodsCrafted: 'city', ColonyFounded: 'city',
     MetropolisFounded: 'city', OutpostEstablished: 'city',
     FoodShortfall: 'city', CivilianStarvationStarted: 'city', CivilianStarvationEnded: 'city', SubsistenceWarning: 'city',
@@ -234,7 +234,7 @@ export function notifIcon(kind) {
     DivineBlessing:     '✨',
     RiteAnswered:       '🕯',
     CivilianStarvationStarted: '🍽', CivilianStarvationEnded: '🍽',
-    StorageCapacityWarning: '📦', StorageOverflow: '📦',
+    StorageCapacityWarning: '📦', StorageOverflow: '📦', FoodRunningLow: '🍽',
     FoodShortfall:      '🍽',
     HexBlockaded:       '🚧',
     HexUnblockaded:     '↩',
@@ -340,6 +340,14 @@ export function notifText(kind, body) {
     case 'TransferDeliveredV2': case 'TransferLostV2': return manifestOutcomeText(kind,body);
     case 'StorageCapacityWarning':
       return `${esc(body.name || 'Your city')}: ${esc(body.good_key || 'goods')} storage ${Number.isFinite(body.full_in_ticks) ? 'full in ' + fmtDays(body.full_in_ticks) : 'forecast unavailable'} (capacity ${fmtNum(body.cap)}). Send goods away or trade.`;
+    case 'FoodRunningLow': {
+      const f = body.flows || {};
+      const sum = pred => Object.entries(f).filter(([k]) => pred(k)).reduce((t, [, v]) => t + Number(v), 0);
+      const part = (label, v) => Math.abs(v) < 0.05 ? '' : `${label} ${v < 0 ? '\u2212' : '+'}${Math.abs(v).toFixed(1)}`;
+      const parts = [part('citizens', sum(k => k === 'meal')), part('army', sum(k => k === 'army_ration')), part('temples', sum(k => k.startsWith('temple_tithe'))),
+        part('production', sum(k => k === 'production' || k === 'herd_surplus'))].filter(Boolean).join(', ');
+      return `Food in ${esc(body.name || 'your city')} runs out in about ${fmtDays(body.days)}${Number.isInteger(body.runs_out_tick) ? ' (' + fmtTickTime(body.runs_out_tick) + ')' : ''}${parts ? ': ' + parts + ' a game day' : ''}.`;
+    }
     case 'StorageOverflow':
       return `${esc(body.name || 'Your city')}: storage full — lost ${body.lost_quantity == null ? 'an unknown amount of' : fmtNum(body.lost_quantity)} ${esc(body.good_key || 'goods')} from ${storageReason(body.reason)} (capacity ${fmtNum(body.cap)}). Send goods away or trade.`;
     case 'GarrisonStarvationStarted': return body.food_category === true
