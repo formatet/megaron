@@ -146,6 +146,12 @@ func messengerCmd() *cobra.Command {
 			} else {
 				fmt.Printf("Messenger dispatched to %s · arrives %s\n", destSettleName, arrivalETA(c, arrivesAt))
 			}
+			printPassageNote(resp)
+			if status, _ := resp["passage_status"].(string); status == "awaiting_passage" {
+				if id, _ := resp["id"].(string); id != "" {
+					fmt.Printf("  arrange passage: keryx passage --id %s --ship <id>\n", id)
+				}
+			}
 			return nil
 		},
 	}
