@@ -67,8 +67,8 @@ func TestWrathDeclineNoticeOnceAndNoPositiveNetWarning(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT (body_json->>'net_per_tick')::float8,(body_json->>'days_to_wrathful')::int FROM notifications WHERE world_id=$1 AND kind='KharisDeclining'`, wid).Scan(&net, &days); err != nil {
 		t.Fatal(err)
 	}
-	// 30.1 − 1.2 = 28.9: risk has begun; (28.9 − 5) / 1.2 → 20 game days to Wrathful.
-	if math.Abs(net+1.2) > 1e-9 || days != 20 {
+	// 30.1 − 1/3: risk has begun; (29.77 − 5) / (1/3) = 74.3 → 75 game days to Wrathful.
+	if math.Abs(net+KharisPerDemand) > 1e-9 || days != 75 {
 		t.Fatalf("forecast net%g game days%d", net, days)
 	}
 

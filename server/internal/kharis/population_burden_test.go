@@ -34,15 +34,15 @@ func TestPopulationBurdenFullTickMatchesProjection(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// 3 active cities: 9 demand times 1.2; 3500 residents do not contribute.
-	if math.Abs(net+10.8) > 1e-9 {
-		t.Errorf("population projection net%g want-10.8", net)
+	// 3 active cities: 9 demand times 1/3; 3500 residents do not contribute.
+	if math.Abs(net+3) > 1e-9 {
+		t.Errorf("population projection net%g want-3", net)
 	}
 	d, err := ProjectDecay(ctx, pool, pid, wid)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if d.CityCount != 3 || d.Population != 3500 || math.Abs(d.Residents) > 1e-10 || math.Abs(d.Total-10.8) > 1e-10 {
+	if d.CityCount != 3 || d.Population != 3500 || math.Abs(d.Residents) > 1e-10 || math.Abs(d.Total-3) > 1e-10 {
 		t.Fatalf("bad breakdown %+v", d)
 	}
 	if _, err := pool.Exec(ctx, `UPDATE settlements SET state='collapsed' WHERE id=$1`, b); err != nil {
@@ -52,7 +52,7 @@ func TestPopulationBurdenFullTickMatchesProjection(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if d.CityCount != 2 || d.Population != 2201 || math.Abs(d.Total-4.8) > 1e-10 {
+	if d.CityCount != 2 || d.Population != 2201 || math.Abs(d.Total-4.0/3) > 1e-10 {
 		t.Fatalf("collapsed city still counted %+v", d)
 	}
 	if _, err := pool.Exec(ctx, `UPDATE settlements SET state='active' WHERE id=$1`, b); err != nil {
@@ -66,7 +66,7 @@ func TestPopulationBurdenFullTickMatchesProjection(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT kharis_amount FROM player_world_records WHERE player_id=$1 AND world_id=$2`, pid, wid).Scan(&amount); err != nil {
 		t.Fatal(err)
 	}
-	if math.Abs(amount-29.2) > 1e-9 {
-		t.Errorf("full tick kharis%g want29.2", amount)
+	if math.Abs(amount-37) > 1e-9 {
+		t.Errorf("full tick kharis%g want37", amount)
 	}
 }

@@ -13,7 +13,7 @@ func TestLoweredCeilingDriftsWithoutCliffAndForecastMatches(t *testing.T) {
 		start float64
 		staff int
 		want  float64
-	}{{80, 2, 78.8}, {80, 0, 78.8}, {50.1, 2, 48.9}, {49, 2, 49.9}} {
+	}{{80, 2, 80 - KharisPerDemand}, {80, 0, 80 - KharisPerDemand}, {50.1, 2, 50.1 - KharisPerDemand}, {49, 2, 49 + KharisPerTempleWeight - KharisPerDemand}} {
 		pool, wid, sid := newGrowthFixture(t, [6]string{"plains", "plains", "plains", "plains", "plains", "plains"}, 1000)
 		ctx := context.Background()
 		var pid uuid.UUID
@@ -31,8 +31,8 @@ func TestLoweredCeilingDriftsWithoutCliffAndForecastMatches(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if tc.start > 50 && math.Abs(net+1.2) > 1e-9 {
-			t.Errorf("above ceiling forecast %g want-1.2", net)
+		if tc.start > 50 && math.Abs(net+KharisPerDemand) > 1e-9 {
+			t.Errorf("above ceiling forecast %g want -KharisPerDemand", net)
 		}
 		h := newTestTickHandler(pool)
 		w := wanaxSnap{playerID: pid, settlementID: sid, kharis: tc.start, kharisCap: 50, cityCount: 1, population: 1000, templeCities: 1, maxTempleLevel: 1, devotionSum: dev}

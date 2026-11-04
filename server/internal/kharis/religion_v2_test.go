@@ -14,7 +14,7 @@ func TestReligionV2DemandWeightAndNet(t *testing.T) {
 			t.Fatalf("cities %d demand %g want %g", cities, got, want)
 		}
 		for _, population := range []int{0, 100, 50000} {
-			if got := computeDailyDecay(cities, population); math.Abs(got-1.2*want) > 1e-9 {
+			if got := computeDailyDecay(cities, population); math.Abs(got-KharisPerDemand*want) > 1e-9 {
 				t.Fatalf("population must not change demand: %g", got)
 			}
 		}
@@ -29,10 +29,10 @@ func TestReligionV2DemandWeightAndNet(t *testing.T) {
 			t.Fatal("half staffing", got)
 		}
 	}
-	if got := 4*KharisPerTempleWeight - computeDailyDecay(4, 15600); math.Abs(got+10.8) > 1e-9 {
+	if got := 4*KharisPerTempleWeight - computeDailyDecay(4, 15600); math.Abs(got+3) > 1e-9 {
 		t.Fatal("four full L1 net", got)
 	}
-	if got := KharisPerTempleWeight - computeDailyDecay(1, 1000); math.Abs(got-.9) > 1e-9 {
+	if got := KharisPerTempleWeight - computeDailyDecay(1, 1000); math.Abs(got-.25) > 1e-9 {
 		t.Fatal("one full L1 net", got)
 	}
 }

@@ -22,7 +22,7 @@ func TestDevotionCalibration_ModestClimbsGrandClimbsFaster(t *testing.T) {
 
 	// Timothy2026-10-13: ordinary fully staffed and fed L1 must climb under the current realm burden.
 	net := dayNet(l1, 1, 1, 0)
-	if net <= 0 || net > 2.1 {
+	if net <= 0 || net > KharisPerTempleWeight {
 		t.Errorf("tended L1 net%+.3f want(0,.5]", net)
 	}
 
