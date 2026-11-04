@@ -12,7 +12,7 @@ Gren `sonnet/keryx-papperssar` (från master b8a5c8b5). En commit per punkt.
 | 6 | 81c9f1be | `cmd_march_preview_test.go` — catchment-prognos i `--preview` (läsning, inget skickas) |
 | 7 | 24cef412 | `cmd_runners_test.go` — tomt skeppsnamn → "a ship"; aboard-raden säger "landfall made … runner ashore" resp. "still at sea" (tolkning av "status": landfall passerad eller ej, ur `lands_at`) |
 | 8 | 0027d984 | `null ticks_left` = hastighet >= 0 (servern sätter bara `ticks_left` vid negativ takt) -> "not draining". CLI + `map.js` + node-test |
-| 9 | 0027d984+1 (`2d09e4ee`) | `temple_staffing_test.go` — läser `build_queue` i province-svaret |
+| 9 | 2d09e4ee | `temple_staffing_test.go` — läser `build_queue` i province-svaret |
 | 10 | b9e8e889 | `client_401_test.go`. Login sparade INTE refresh-token förut (parsad men kastad); nu sparas den (`Config.RefreshToken`, omitempty). 401 -> en refresh -> en omkörning; POLEIA_TOKEN-env hoppar över refresh |
 | 11 | ef95309d | `building_purpose_test.go`; Go-texten + `codex/reference.json` |
 | 12 | 8db3347a | `small_texts_test.go` (konstanten); ingen DB-test av själva 409:an |
