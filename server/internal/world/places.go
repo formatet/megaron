@@ -100,7 +100,8 @@ const (
 
 // straitHexes marks every open-sea hex whose hex distance (through water) to its two
 // nearest DIFFERENT landmasses sums to at most StraitMaxWidth+1. A gap of W hexes
-// gives every hex on a straight line across it the sum W+1.
+// gives every hex on a straight line across it the sum W+1. The result may include
+// lake hexes the BFS passed through; the caller keeps only open sea.
 func straitHexes(terrain map[cell]Terrain, land [][]cell) map[cell]bool {
 	const maxDist = StraitMaxWidth + 1
 	// dist[c] holds, per landmass reaching c, the distance (BFS through sea, capped).
@@ -130,7 +131,7 @@ func straitHexes(terrain map[cell]Terrain, land [][]cell) map[cell]bool {
 	}
 	out := map[cell]bool{}
 	for c, ds := range dist {
-		if t := terrain[c]; t != TerrainCoastalSea && t != TerrainDeepSea || len(ds) < 2 {
+		if len(ds) < 2 {
 			continue
 		}
 		sort.Ints(ds)
