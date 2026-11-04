@@ -101,6 +101,17 @@ func TestPlaceFirstReachedReadableNotificationAllKinds(t *testing.T) {
 	}
 }
 
+func TestPlacesInNewCityListsEachPlaceWithItsNamingCommand(t *testing.T) {
+	raw, _ := json.Marshal(map[string]any{"settlement_name": "Iolkos", "places": []map[string]any{
+		{"kind": "river", "place_id": "6,79", "q": 6, "r": 80}, {"kind": "bay", "place_id": "7,80", "q": 7, "r": 80}}})
+	out := capturePrint(t, func() { printNotificationDetail(nil, notificationItem{Kind: "PlacesInNewCity", Body: raw}) })
+	for _, want := range []string{"Iolkos lies beside places no one has named", `keryx places name river 6,79 "<name>"`, `keryx places name bay 7,80 "<name>"`} {
+		if !strings.Contains(out, want) {
+			t.Fatalf("missing %q in: %s", want, out)
+		}
+	}
+}
+
 func TestPlacesNameHumanUsesServerNameAndRefusals(t *testing.T) {
 	oldCfg, oldJSON := cfg, jsonMode
 	defer func() { cfg, jsonMode = oldCfg, oldJSON }()

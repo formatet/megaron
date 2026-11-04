@@ -126,6 +126,21 @@ func printNotificationDetail(c *Client, n notificationItem) {
 			fmt.Printf("      Your %s is the first to reach this %s — you may name it. `keryx places name %s %s \"<name>\"`\n", name, placeKindLabel(body.Kind), body.Kind, body.PlaceID)
 		}
 	}
+	if n.Kind == "PlacesInNewCity" {
+		var body struct {
+			SettlementName string `json:"settlement_name"`
+			Places         []struct {
+				Kind    string `json:"kind"`
+				PlaceID string `json:"place_id"`
+			} `json:"places"`
+		}
+		if json.Unmarshal(n.Body, &body) == nil {
+			fmt.Printf("      %s lies beside places no one has named — you may name each:\n", body.SettlementName)
+			for _, p := range body.Places {
+				fmt.Printf("      - %s: `keryx places name %s %s \"<name>\"`\n", placeKindLabel(p.Kind), p.Kind, p.PlaceID)
+			}
+		}
+	}
 	if n.Kind == "PlaceTold" {
 		var body struct {
 			From  string `json:"from"`

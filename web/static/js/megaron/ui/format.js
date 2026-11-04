@@ -150,7 +150,7 @@ export function notifDomain(kind) {
     UnitAttrition: 'war', UnitDeserted: 'war', UnitLostAtSea: 'war',
     UnitRecalled: 'war', UnitRedirected: 'war', MarchStalled: 'war', OrderFailed: 'war',
     GarrisonStarvationStarted: 'war', GarrisonStarvationEnded: 'war', UpkeepUnpaid: 'war', ShipDamaged: 'war', ShipRepaired: 'war',
-    PlaceFirstReached: 'war',
+    PlaceFirstReached: 'war', PlacesInNewCity: 'city',
     ShipStormDamaged: 'war', ShipStormSpared: 'war', ShipFoundered: 'war',
     ShipCaptured: 'war', ShipLost: 'war', ShipStranded: 'war',
     SiegeStarted: 'war', SiegeLifted: 'war',
@@ -223,6 +223,7 @@ export function notifIcon(kind) {
     ShipCameHomeForFood: '⛵',
     ShipDamaged:        '⛵',
     PlaceFirstReached: '🌊',
+    PlacesInNewCity:    '🗺',
     ShipStormDamaged:   '🌊',
     ShipStormSpared:    '🌊',
     ShipFoundered:      '🌊',
@@ -390,6 +391,19 @@ export function notifText(kind, body) {
     case 'PlaceFirstReached': {
       const place = { river: 'river', massif: 'mountain massif', desert: 'desert', forest: 'cedar forest', lake: 'lake', island: 'island', strait: 'strait', bay: 'bay', cape: 'cape', plain: 'plain', hills: 'hills', delta: 'delta' }[body.kind] || 'place';
       return `Your ${esc(body.unit_name || unitTypeLabel(body.unit_type) || 'unit')} is the first to reach this ${place} — you may name it. Click it at (${body.q},${body.r}) on the map.`;
+    }
+    case 'PlacesInNewCity': {
+      // One notice per founding: the unnamed places in the new city's own catchment.
+      const label = { river: 'river', massif: 'mountain massif', desert: 'desert', forest: 'cedar forest', lake: 'lake', island: 'island', strait: 'strait', bay: 'bay', cape: 'cape', plain: 'plain', hills: 'hills', delta: 'delta' };
+      const counts = new Map();
+      for (const p of body.places || []) counts.set(p.kind, (counts.get(p.kind) || 0) + 1);
+      const phrase = [...counts].map(([k, n]) => {
+        const l = label[k] || 'place';
+        if (n > 1) return `${n} ${l === 'hills' ? l : l + 's'}`;
+        return `${/^[aeiou]/.test(l) ? 'an' : 'a'} ${l}`;
+      });
+      const list = phrase.length > 1 ? `${phrase.slice(0, -1).join(', ')} and ${phrase[phrase.length - 1]}` : phrase[0] || 'ground';
+      return `${esc(body.settlement_name || 'Your city')} lies beside places no one has named: ${list}. You may name them — click each on the map.`;
     }
     case 'TrainComplete': return `${esc(body.unit_name || unitTypeLabel(body.unit_type))} ready in ${esc(body.settlement_name || 'your city')}`;
     case 'ArmyArrival':        return `Army arrived — ${body.outcome || ''}`;

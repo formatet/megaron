@@ -198,7 +198,7 @@ export function initWS() {
           window.startOmen(p.revealed_tiles, { q: p.q, r: p.r });
         }
       }
-      if (msg.kind === 'PlaceFirstReached') {
+      if (msg.kind === 'PlaceFirstReached' || msg.kind === 'PlacesInNewCity') {
         // This can happen mid-route, before UnitArrived. Expose the new naming
         // right on the authoritative FOW map as soon as the notice arrives.
         window.refreshTiles();

@@ -84,3 +84,11 @@ test('actor/city panels show a spent place name safely, terrain titles avoid rep
  assert.equal(placePanelHTML(tile),'');assert.match(placePanelHTML(tile,{showName:true}),/<strong>&lt;Ariadne&gt;<\/strong>/);assert.doesNotMatch(placePanelHTML(tile,{showName:true}),/namePlace\(/);
  assert.equal(placePanelHTML({...tile,tier:'fog'},{showName:true}),'');
 });
+
+test('PlacesInNewCity names the kinds once, in plain words, with counts for repeats', () => {
+  const places = [{kind:'river'},{kind:'bay'},{kind:'forest'}];
+  assert.equal(notifText('PlacesInNewCity',{settlement_name:'Iolkos',places}),
+    'Iolkos lies beside places no one has named: a river, a bay and a cedar forest. You may name them — click each on the map.');
+  assert.match(notifText('PlacesInNewCity',{settlement_name:'Iolkos',places:[{kind:'river'},{kind:'river'},{kind:'island'}]}), /2 rivers and an island\./);
+  assert.match(notifText('PlacesInNewCity',{settlement_name:'<b>',places}), /^&lt;b&gt; lies/);
+});

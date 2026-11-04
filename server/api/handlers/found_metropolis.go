@@ -11,6 +11,7 @@ import (
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/combat"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/hexgrid"
@@ -64,6 +65,7 @@ type foundedMetropolis struct {
 	SilverCarried float64
 	GrainTotal    float64 // what the city holds right after founding (carried only)
 	SilverTotal   float64
+	Places        *combat.FoundingPlaces // PlacesInNewCity notice; deliver after commit, nil when none
 }
 
 // foundMetropolisFromNomadicHost turns a wandering host into a player's first and
@@ -325,6 +327,10 @@ func foundMetropolisFromNomadicHost(
 	).Scan(&out.GrainTotal, &out.SilverTotal); err != nil {
 		return out, fmt.Errorf("read founded stores: %w", err)
 	}
+	// Places in the new city's own catchment: claimed now, announced once.
+	if out.Places, err = combat.ClaimFoundingPlaces(ctx, tx, eventStore, worldID, playerID, m.SettlementID, name, q, r); err != nil {
+		return out, fmt.Errorf("claim catchment places: %w", err)
+	}
 	return out, nil
 }
 
@@ -454,6 +460,11 @@ func (h *JoinHandler) Settle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	wrath.deliver(r.Context(), h.eventStore, h.hub)
+	if h.hub != nil {
+		founded.Places.Deliver(r.Context(), h.eventStore, h.hub, worldID)
+	} else if founded.Places != nil {
+		h.eventStore.RecordCommitted(r.Context(), founded.Places.Event())
+	}
 
 	// MetropolisFounded — the design's founding notice (grain balance, carried
 	// stock, known/unknown catchment, Poseidon status). Sent only after a
