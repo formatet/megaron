@@ -1706,4 +1706,8 @@ h4.cx-h { font-size: var(--fs-base); }
 .ledger-table th { text-align: left; padding: 0.18rem 0.3rem; color: var(--text); border-bottom: 1px solid var(--bg-raised); }
 .ledger-table th.num { text-align: right; font-family: var(--mono); }
 .ledger-table .ledger-other td { color: var(--danger); font-style: italic; }
-.wh-flow .sr-label { padding-left: 0.8rem; color: var(--text-dim, var(--text)); }
+.wh-flow .sr-label { padding-left: 0.8rem; color: var(--text-dim); }
+
+/* Founding panel: the founder's own words to the other Wanaxes. */
+.ip-settle-msg-label { display: block; margin-top: .3rem; font-size: .73rem; color: var(--text-dim); }
+.ip-settle-msg { display: block; width: 100%; box-sizing: border-box; margin-top: .2rem; padding: .3rem; background: var(--bg-raised); border: 1px solid var(--border); color: var(--text); font-size: .8rem; }

@@ -42,3 +42,16 @@ func TestOpeningDispatchSummaryAndArchiveWatchDetails(t *testing.T) {
 		}
 	}
 }
+
+func TestWanaxEnteredSaysWhoAndWhatTheySayNeverWhere(t *testing.T) {
+	raw, _ := json.Marshal(map[string]any{"wanax_id": "x", "wanax_name": "Minos", "message": "Peace."})
+	out := capturePrint(t, func() { printNotificationDetail(nil, notificationItem{Kind: "WanaxEntered", Level: 3, Body: raw}) })
+	if !strings.Contains(out, "A new Wanax has entered the Thalassa: Minos. They say: “Peace.”") {
+		t.Fatalf("got %q", out)
+	}
+	raw, _ = json.Marshal(map[string]any{"wanax_name": "Minos", "message": ""})
+	out = capturePrint(t, func() { printNotificationDetail(nil, notificationItem{Kind: "WanaxEntered", Level: 3, Body: raw}) })
+	if strings.Contains(out, "They say") || !strings.Contains(out, "Minos.") {
+		t.Fatalf("empty message: %q", out)
+	}
+}

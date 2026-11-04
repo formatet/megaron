@@ -3803,7 +3803,9 @@ async function openHostPanel(h, tile) {
 
   const foot = document.getElementById('ip-foot');
   foot.innerHTML =
-    `<button id="ip-settle-btn" style="${MARCH_BTN_STYLE}">⚒ Found the metropolis here</button>
+    `<label class="ip-settle-msg-label" for="ip-settle-msg">Your words to the other Wanaxes (optional, first city only). They learn your name and this — never where.</label>
+     <input id="ip-settle-msg" class="ip-settle-msg" type="text" maxlength="280" autocomplete="off" placeholder="A new Wanax has entered the Thalassa…">
+     <button id="ip-settle-btn" style="${MARCH_BTN_STYLE}">⚒ Found the metropolis here</button>
      <div id="ip-settle-err"></div>`;
   openMobilePanel(document.getElementById('inspect-panel'), closeInspect);
   document.getElementById('inspect-panel').style.display = 'flex';
@@ -3849,7 +3851,8 @@ async function openHostPanel(h, tile) {
         const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/founding/settle`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({expected_q:hostState.q,expected_r:hostState.r}),
+          body: JSON.stringify(Object.assign({expected_q:hostState.q,expected_r:hostState.r},
+            (document.getElementById('ip-settle-msg')?.value || '').trim() ? {message:document.getElementById('ip-settle-msg').value.trim()} : {})),
         });
         if (res.ok) {
           // New province, new eyes, host gone: refresh the changed world.

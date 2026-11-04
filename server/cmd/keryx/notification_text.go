@@ -44,6 +44,16 @@ func printNotificationSummary(c *Client, n notificationItem) {
 		fmt.Printf("      %s — %s at %s · %s\n", b.Opponent, action, b.Place, b.At)
 		return
 	}
+	if n.Kind == "WanaxEntered" {
+		var b struct {
+			Name    string `json:"wanax_name"`
+			Message string `json:"message"`
+		}
+		if json.Unmarshal(n.Body, &b) == nil {
+			fmt.Printf("      %s\n", wanaxEnteredText(b.Name, b.Message))
+			return
+		}
+	}
 	if n.Kind == "GodsAngered" {
 		var b struct {
 			KharisLost float64 `json:"kharis_lost"`
@@ -562,4 +572,14 @@ func godsAngeredText(lost float64) string {
 		return fmt.Sprintf("The gods heard what was written in your name. Your realm loses %s kharis.", strconv.FormatFloat(lost, 'f', -1, 64))
 	}
 	return "The gods heard what was written in your name. Your realm's kharis is already at its floor."
+}
+
+// wanaxEnteredText is the one sentence for a new Wanax's arrival: who and what
+// they say, never where.
+func wanaxEnteredText(name, message string) string {
+	text := "A new Wanax has entered the Thalassa: " + name + "."
+	if message != "" {
+		text += " They say: \u201c" + message + "\u201d"
+	}
+	return text
 }

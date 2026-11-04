@@ -182,6 +182,7 @@ Get the shape wrong and you write wrong code. Everything else: `megaron_moc.md`.
   the sender at once — "den sortens information är omedelbar". It carries no other news. `megaron_transportrisk.md`.
   **Second exception (Timothy 2026-10-12, extended 2026-10-25): divine omens** may report true facts none of your people have seen. Normally vague; the approved highest kharis tier may rarely name a concrete hex for an urgent fact. Never exact strength, future arrival time or route; unknown place names stay hidden. Current contract: `temenos_kharis.md` §Sanna omen.
   **Third exception (Timothy 2026-10-31, decided, not built): the bird oracle prayer** gives live sight — units and strength included — over one named place on your own map for one tick; expensive, temple rest. `megaron_bonesystem_v3_20261031.md`.
+  **Fourth exception (Timothy 2026-11-02): a new Wanax is heard by all.** When a Wanax founds their FIRST city, every other Wanax gets a `WanaxEntered` dispatch with the founder's name and the founder's own message — never where the city is (no position, no city name, no direction; FOW untouched). Not for colonies or a Wanax who rose again. `megaron_styrande_beslut.md`, order `.agents/order-ny-wanax-dispatch-20261104.md`.
 - **Catchment is the only production source** — the settlement's own hex + a radius-2 ring around it
   (19 hexes, 18 worked; P1, 2026-08-07 — was radius-1/7 hexes before), worked without outposts; dynamic,
   lazy, deterministic. Radius lives in `internal/hexgrid.CatchmentRadius`.

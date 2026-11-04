@@ -150,7 +150,7 @@ export function notifDomain(kind) {
     UnitAttrition: 'war', UnitDeserted: 'war', UnitLostAtSea: 'war',
     UnitRecalled: 'war', UnitRedirected: 'war', MarchStalled: 'war', OrderFailed: 'war',
     GarrisonStarvationStarted: 'war', GarrisonStarvationEnded: 'war', UpkeepUnpaid: 'war', ShipDamaged: 'war', ShipRepaired: 'war',
-    PlaceFirstReached: 'war', PlacesInNewCity: 'city',
+    PlaceFirstReached: 'war', PlacesInNewCity: 'city', WanaxEntered: 'city',
     ShipStormDamaged: 'war', ShipStormSpared: 'war', ShipFoundered: 'war',
     ShipCaptured: 'war', ShipLost: 'war', ShipStranded: 'war',
     SiegeStarted: 'war', SiegeLifted: 'war',
@@ -224,6 +224,7 @@ export function notifIcon(kind) {
     ShipDamaged:        '⛵',
     PlaceFirstReached: '🌊',
     PlacesInNewCity:    '🗺',
+    WanaxEntered:       '🏺',
     ShipStormDamaged:   '🌊',
     ShipStormSpared:    '🌊',
     ShipFoundered:      '🌊',
@@ -405,6 +406,9 @@ export function notifText(kind, body) {
       const list = phrase.length > 1 ? `${phrase.slice(0, -1).join(', ')} and ${phrase[phrase.length - 1]}` : phrase[0] || 'ground';
       return `${esc(body.settlement_name || 'Your city')} lies beside places no one has named: ${list}. You may name them — click each on the map.`;
     }
+    case 'WanaxEntered':
+      // Who and what they say — never where (a deliberate exception to the messenger pillar).
+      return `A new Wanax has entered the Thalassa: ${esc(body.wanax_name || 'a stranger')}.` + (body.message ? ` They say: \u201c${esc(body.message)}\u201d` : '');
     case 'TrainComplete': return `${esc(body.unit_name || unitTypeLabel(body.unit_type))} ready in ${esc(body.settlement_name || 'your city')}`;
     case 'ArmyArrival':        return `Army arrived — ${body.outcome || ''}`;
     case 'ColonyFounded':      return `Colony founded: ${body.name || ''}`;
