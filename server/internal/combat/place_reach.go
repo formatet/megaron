@@ -214,40 +214,6 @@ func loadPlaceVoyages(ctx context.Context, tx pgx.Tx, worldID uuid.UUID) ([]plac
 // route replacement flush call it with their actual cutoff, while holding the
 // same world lock. Claims, durable notifications and journey progress commit
 // together; competing actors are ordered by exact saved-route entry time.
-// homeGround holds, per Wanax, the centres of their catchments: every settlement
-// they own and every colony site a marching colonize column is about to found
-// (the settlement does not exist yet when the column's last hex is scanned).
-type homeGround map[uuid.UUID][]hexgrid.Coord
-
-func (h homeGround) contains(owner uuid.UUID, hex [2]int) bool {
-	at := hexgrid.Coord{Q: hex[0], R: hex[1]}
-	for _, c := range h[owner] {
-		if hexgrid.Distance(c, at) <= hexgrid.CatchmentRadius {
-			return true
-		}
-	}
-	return false
-}
-
-func loadHomeGround(ctx context.Context, tx pgx.Tx, worldID uuid.UUID) (homeGround, error) {
-	out := homeGround{}
-	rows, err := tx.Query(ctx, `SELECT s.owner_id,p.map_q,p.map_r FROM settlements s JOIN provinces p ON p.id=s.province_id WHERE s.world_id=$1 AND s.owner_id IS NOT NULL
-		UNION ALL SELECT owner_id,target_q,target_r FROM units WHERE world_id=$1 AND status='marching' AND march_intent='colonize' AND target_q IS NOT NULL AND target_r IS NOT NULL`, worldID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		var owner uuid.UUID
-		var q, r int
-		if err := rows.Scan(&owner, &q, &r); err != nil {
-			return nil, err
-		}
-		out[owner] = append(out[owner], hexgrid.Coord{Q: q, R: r})
-	}
-	return out, rows.Err()
-}
-
 func recordPlaceEntriesTx(ctx context.Context, tx pgx.Tx, store *events.Store, worldID uuid.UUID, through int64) ([]expeditionOutcome, error) {
 	rows, err := tx.Query(ctx, `SELECT q,r,terrain FROM map_tiles WHERE world_id=$1`, worldID)
 	if err != nil {
@@ -280,10 +246,6 @@ func recordPlaceEntriesTx(ctx context.Context, tx pgx.Tx, store *events.Store, w
 	var appliedAt *time.Time
 	err = tx.QueryRow(ctx, `SELECT first_tick,applied_at FROM place_reach_epoch WHERE world_id=$1`, worldID).Scan(&deployTick, &appliedAt)
 	if err != nil && err != pgx.ErrNoRows {
-		return nil, err
-	}
-	home, err := loadHomeGround(ctx, tx, worldID)
-	if err != nil {
 		return nil, err
 	}
 	var entries []placeEntry
@@ -387,12 +349,6 @@ func recordPlaceEntriesTx(ctx context.Context, tx pgx.Tx, store *events.Store, w
 			if named != nil {
 				continue
 			} // admin-spent right never promises a naming action
-			// Ground inside the Wanax's own catchment (a settlement of theirs, or the
-			// colony their column is marching to found) is home, not a discovery: the
-			// right to name it is kept above, but no "first reached" notice is sent.
-			if home.contains(v.owner, entry.hex) {
-				continue
-			}
 			displayName := v.name
 			if v.displayID != uuid.Nil {
 				if name := unit.LoadDisplayName(ctx, tx, v.displayID); name != "" {
