@@ -22,7 +22,7 @@ Each temple pays its daily tithe from its own city. Temples in the same city dra
 | 2 | 0.75 grain | 0.1 silver | — | 75% / 25% |
 | 3 | 1.75 grain | 0.25 silver | 0.1 incense | 70% / 20% / 10% |
 
-The grain part uses **grain first, then [[fish|fish]], then [[timber|timber]], then [[livestock]]**, at their divine value (livestock counts as 2). Silver never replaces grain. Each part is paid separately: a part that cannot be paid in full takes nothing. No part replaces another. A level-2 temple without silver still receives 75% effect if its grain part is paid; a level-3 temple with only its grain part receives 70%. [[rites|Prayers]] keep their own offerings.
+The grain part uses **grain first, then [[fish|fish]], then [[timber|timber]], then [[livestock]]** (this is the order of payment, not a list, so it is not alphabetical), at their divine value (livestock counts as 2). Silver never replaces grain. Each part is paid separately: a part that cannot be paid in full takes nothing. No part replaces another. A level-2 temple without silver still receives 75% effect if its grain part is paid; a level-3 temple with only its grain part receives 70%. [[rites|Prayers]] keep their own offerings.
 
 ### The rich offering {#rich-offering}
 

@@ -4,15 +4,15 @@ You see the world at two depths: what you are looking at **now**, and what you *
 
 ## Live sight {#live-sight}
 
-Every settlement, every unit standing on the map and every [[messengers|messenger]] on the road is an eye. A [[runners|Runner]] or messenger reveals the ground on the way out *and* on the way home.
+Every [[messengers|messenger]] on the road, every settlement and every unit standing on the map is an eye. A [[runners|Runner]] or messenger reveals the ground on the way out *and* on the way home.
 
 | Eye | Sees |
 |---|---|
-| Settlement | 3 hexes |
-| Land unit, or the [[horde|Nomadic Host]] | 2 hexes |
-| Ship | 1 hex of land — a ship is blind inland, but sees the shoreline across the water it sees |
 | Anyone, looking at a mountain | 2 hexes further — mountains are landmarks |
 | Anyone standing at open water | 4 hexes of sea — in a straight line across open water only |
+| Land unit, or the [[horde|Nomadic Host]] | 2 hexes |
+| Settlement | 3 hexes |
+| Ship | 1 hex of land — a ship is blind inland, but sees the shoreline across the water it sees |
 <!-- src: server/internal/province/hex.go LiveRadius, SeaSightline -->
 
 ### Seeing shorelines from ships {#live-sight-2}
@@ -29,6 +29,6 @@ The map shows **colour for live sight, grayscale for remembered ground, and blac
 
 ## Moving actors on the map {#map-actors}
 
-Your marching armies, ships, Runners and [[transfers|caravans]] always show their **remaining route ahead**, beginning where the actor is now. The line shrinks as they travel; nothing is drawn behind them. Solid lines mark armies, long dashes mark ships, dots mark Runners, and mixed long/short dashes mark caravans. The line shows only ground you can see live.
+Your marching armies, [[transfers|caravans]], Runners and ships always show their **remaining route ahead**, beginning where the actor is now. The line shrinks as they travel; nothing is drawn behind them. Solid lines mark armies, mixed long/short dashes mark caravans, dots mark Runners, and long dashes mark ships. The line shows only ground you can see live.
 
 A foreign actor shows only a **compass arrow at its current live position**. It tells you which way the actor goes now, never its destination or full route. Your lines are azure; foreign arrows use the foreign unit's muted accent. Line patterns and arrow shapes carry meaning alongside colour. An agreed trade caravan coming to you shows its remaining route too, in the foreign accent. Its known cargo and arrival remain in the trade details. Gifts are not agreed deliveries and show only an arrow. A Runner coming to you from another Wanax also shows only an arrow. Waiting or sealed Runners have no forward route, and a Runner aboard follows the real carrier. Runners remain sacred and cannot be attacked.

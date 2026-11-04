@@ -7,6 +7,13 @@ The Codex is ordered by what things are. This page is ordered by what you want t
 - Build something → [[buildings]]
 - See what happened while I was away → [[coming-back]]
 
+## Exploring and expanding
+
+- Build a road → [[roads-building-one]]
+- Explore unknown ground → [[marching-exploring-an-area]]
+- Found a colony → [[colonies-founding-a-colony]]
+- Name a [[semi-desert|desert]], forest, mountain or [[rivers|river]] → [[naming-the-land]]
+
 ## Food and growth
 
 - Feed my city → [[food]]
@@ -15,24 +22,17 @@ The Codex is ordered by what things are. This page is ordered by what you want t
 
 ## Goods and trade
 
+- Get bronze → [[bronze]]
+- Give goods away → [[gifts]]
 - Move goods between my own cities → [[transfers]]
 - Send goods on a schedule → [[routes]]
 - Trade with another ruler → [[trade-making-an-offer]]
-- Give goods away → [[gifts]]
-- Get bronze → [[bronze]]
 
 ## Other rulers
 
-- Write to another ruler → [[messengers-your-letters]]
 - Find other rulers → [[trade-finding-partners]], [[gossip]], [[contact]]
 - Know what other rulers are doing → [[gossip-how-rumours-spread]], [[sight]]
-
-## Exploring and expanding
-
-- Explore unknown ground → [[marching-exploring-an-area]]
-- Name a [[semi-desert|desert]], forest, mountain or [[rivers|river]] → [[naming-the-land]]
-- Found a colony → [[colonies-founding-a-colony]]
-- Build a road → [[roads-building-one]]
+- Write to another ruler → [[messengers-your-letters]]
 
 ## Ships and the sea
 
@@ -41,18 +41,18 @@ The Codex is ordered by what things are. This page is ordered by what you want t
 - Repair a ship → [[ship-types]]
 - Stay out of storms → [[storms]]
 
-## War
-
-- Recruit soldiers → [[units-recruiting]]
-- March → [[marching-giving-a-march-order]]
-- Change an order to forces already out → [[marching-orders-to-forces-already-in-the-field-travel-by-runner]]
-- Guard a road or catch caravans → [[stances-details]]
-- Win a battle → [[battle-how-a-battle-runs]]
-- Take a city → [[sieges]], [[occupation]]
-- Defend my city → [[walls]], [[occupation-when-it-happens-to-you]]
-
 ## The gods
 
-- Keep [[gods|the gods]]' favour → [[raising-kharis]]
 - Build a temple → [[temples-building-one]]
+- Keep [[gods|the gods]]' favour → [[raising-kharis]]
 - Pray → [[rites]]
+
+## War
+
+- Change an order to forces already out → [[marching-orders-to-forces-already-in-the-field-travel-by-runner]]
+- Defend my city → [[walls]], [[occupation-when-it-happens-to-you]]
+- Guard a road or catch caravans → [[stances-details]]
+- March → [[marching-giving-a-march-order]]
+- Recruit soldiers → [[units-recruiting]]
+- Take a city → [[sieges]], [[occupation]]
+- Win a battle → [[battle-how-a-battle-runs]]

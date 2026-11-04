@@ -27,10 +27,10 @@ type actionRequirement struct {
 	Hint      string `json:"hint"`
 }
 
-// categoryOrder is the fixed display order for the six locked categories
-// (temenos_capabilities.md — "Kategori-taxonomi"). Keep in sync with
-// internal/capabilities/registry.go.
-var categoryOrder = []string{"province", "military", "trade", "diplomacy", "kingdom", "cult"}
+// categoryOrder is the display order for the six locked categories
+// (temenos_capabilities.md — "Kategori-taxonomi"): alphabetical, like every
+// list the player reads (Timothy 2026-11-01). Locked by TestCategoryOrderAlphabetical.
+var categoryOrder = []string{"cult", "diplomacy", "kingdom", "military", "province", "trade"}
 
 func actionsCmd() *cobra.Command {
 	var provinceID string
@@ -49,7 +49,7 @@ Progressive disclosure:
                                live gap, and how to unlock it
   keryx actions --json       the full raw array (all verbs, all categories)
 
-Categories: province, military, trade, diplomacy, kingdom, cult
+Categories: cult, diplomacy, kingdom, military, province, trade
 
 Not a verb here: 'keryx storms' lists the storms at sea your people have seen.`,
 		Example: `  keryx actions

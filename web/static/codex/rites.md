@@ -2,7 +2,7 @@ A rite is a request made at the temple of its god.
 
 A **rite** is a request to [[gods|the gods]]. Open **Kult → Prayers**.
 
-Each prayer is said at its own god's [[temples|temple]], so a city needs that temple standing: [[potnias-vision]] and [[mistress-of-the-walls]] need a [[temple]] of [[potnia]], [[green-shoots]] a Temple of [[velchanos]], [[the-thread-shows-a-path]] a Temple of [[asterion]], [[favourable-passage]] a Temple of the [[sea-daimons|Sea Daimons]] of Stillness. Level 1 is enough. Without it the prayer shows "no Temple of …".
+Each prayer is said at its own god's [[temples|temple]], so a city needs that temple standing: [[favourable-passage]] needs a Temple of the [[sea-daimons|Sea Daimons]] of Stillness, [[green-shoots]] a Temple of [[velchanos]], [[mistress-of-the-walls]] and [[potnias-vision]] a [[temple]] of [[potnia]], [[the-thread-shows-a-path]] a Temple of [[asterion]]. Level 1 is enough. Without it the prayer shows "no Temple of …".
 
 ## Temples required by prayers {#rites-details}
 
@@ -22,7 +22,7 @@ Older prayers outside the current Minoan catalogue retain their uncertain answer
 
 ## Prayer answers and active blessings {#rites-the-prayers}
 
-The current Minoan prayers are **Potnia's Vision**, **Mistress of the Walls**, **Green Shoots**, **The Thread Shows a Path** and **Favourable Passage**, described below. `keryx rite --list` or **Kult → Prayers** shows the prayers your culture can offer and why one is unavailable. Current kharis is shown with a decimal; eligibility uses the exact pool value.
+The current Minoan prayers are **Favourable Passage**, **Green Shoots**, **Mistress of the Walls**, **Potnia's Vision** and **The Thread Shows a Path**, described below. `keryx rite --list` or **Kult → Prayers** shows the prayers your culture can offer and why one is unavailable. Current kharis is shown with a decimal; eligibility uses the exact pool value.
 
 The answer or a refusal appears in the Kult drawer after you offer; it stays beside the prayers. An answer also arrives as a dispatch naming the god, the prayer and what was granted. When the god marks a place, **⌖ Take me there** goes to it. In Keryx it is listed by `keryx notifications`.
 
@@ -32,16 +32,16 @@ The row disappears when the blessing ends; [[fish|fish]] receives no harvest bon
 
 ## The current Minoan prayers {#minoan-prayers}
 
-- **Potnia's Vision** — offer 10 [[grain|grain]] + 3 [[silver|silver]]. Potnia marks one source of [[copper|copper]], incense, silver or [[tin|tin]] you neither see nor remember, and unknown ground within two hexes, as grey memory. It creates no living eyes and shows no moving activity. Her temple rests 24 game days after answering at level 1.
-- **Mistress of the Walls** — offer 8 grain + 4 [[timber|timber]]. Potnia strengthens your own garrison defending this city by a quarter for 6 game days with the traditional gift; a larger gift lasts longer. It helps neither an attacking army nor soldiers away from that city. It shares Vision's rest.
 - **Green Shoots** — offer 15 grain + 2 silver. Velchanos raises grain, [[oil|oil]] and [[wine|wine]] yield by a quarter for 25 game days with the traditional gift; a larger gift lasts longer. Fish and the herd are unchanged. His temple rests 25 game days after answering at level 1.
+- **Mistress of the Walls** — offer 8 grain + 4 [[timber|timber]]. Potnia strengthens your own garrison defending this city by a quarter for 6 game days with the traditional gift; a larger gift lasts longer. It helps neither an attacking army nor soldiers away from that city. It shares Vision's rest.
+- **Potnia's Vision** — offer 10 [[grain|grain]] + 3 [[silver|silver]]. Potnia marks one source of [[copper|copper]], incense, silver or [[tin|tin]] you neither see nor remember, and unknown ground within two hexes, as grey memory. It creates no living eyes and shows no moving activity. Her temple rests 24 game days after answering at level 1.
 
 ### Departure prayers {#minoan-prayers-2}
 
-- **The Thread Shows a Path** — offer 3 silver + 4 timber to Asterion. The next land [[transfers|caravan]] or [[runners|Runner]] leaving this city takes a quarter less time on its outward leg. A land caravan can be intercepted only within one hex of an enemy army, instead of two. Runners remain sacred. Asterion's temple rests 12 game days after answering at level 1.
 - **Favourable Passage** — offer 6 fish + 3 silver to The Sea Daimons of Stillness. The next ship leaving this city takes a quarter less time and suffers no [[storms|storm]] damage on its outward leg. A Runner aboard travels at that ship's actual speed. Their temple rests 12 game days after answering at level 1.
+- **The Thread Shows a Path** — offer 3 silver + 4 timber to Asterion. The next land [[transfers|caravan]] or [[runners|Runner]] leaving this city takes a quarter less time on its outward leg. A land caravan can be intercepted only within one hex of an enemy army, instead of two. Runners remain sacred. Asterion's temple rests 12 game days after answering at level 1.
 
-Vision, [[walls|Walls]] and the two departure prayers require at least 5 kharis; Green Shoots requires 30. The temple's ordinary daily offering is separate.
+Green Shoots requires 30 kharis; Vision, [[walls|Walls]] and the two departure prayers require at least 5. The temple's ordinary daily offering is separate.
 
 ### Gifts awaiting departure {#minoan-prayers-3}
 

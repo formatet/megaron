@@ -245,3 +245,8 @@ test('Forces name opens the Codex article for its actual unit type',()=>{
  const html=renderUnitCard(unit({type:'merchantman',category:'naval',display_name:'Cargo <one>'}));
  assert.match(html,/<a[^>]*data-cx-kind="unit"[^>]*data-cx-key="merchantman"[^>]*>Cargo &lt;one&gt;<\/a>/);
 });
+
+test('alphabetical: unit cost lists goods by name whatever order the server sent', () => {
+  const text = fmtUnitCost({ batch_men: 100, costs: { timber: 4, copper: 2, bronze: 1, grain: 9 } }, false);
+  assert.ok(text.startsWith('1 bronze + 2 copper + 9 grain + 4 timber (or cedar)'), text);
+});
