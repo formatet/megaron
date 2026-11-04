@@ -217,7 +217,7 @@ func foundingSettleCmd() *cobra.Command {
 		Long: `Turn the wandering host into your first and only city — a metropolis — on
 the hex it currently occupies. The host dissolves permanently in the act; its
 remaining grain and silver are carried into the city's stores. The founding
-is owed ONE gift: a coastal city Poseidon's galley, an inland city with
+is owed ONE gift: a coastal city Poseidon's galley (none on a lake with no way out to the Thalassa), an inland city with
 grain land in its catchment Demeter's farm — never both.
 
 The founding forecast (same surface as colonization) is shown before the
