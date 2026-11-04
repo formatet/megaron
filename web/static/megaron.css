@@ -1696,3 +1696,9 @@ h4.cx-h { font-size: var(--fs-base); }
 /* City → Daily history: today's rate, shown once above the day rows */
 .tl-prod { color: var(--safe-text); }
 .tl-cons { color: var(--accent); }
+
+/* Booked last game day (City → Daily history) */
+.ledger-day { margin-bottom: 0.5rem; }
+.ledger-day th { text-align: left; padding: 0.18rem 0.3rem; color: var(--text); border-bottom: 1px solid var(--bg-raised); }
+.ledger-day th.num { text-align: right; font-family: var(--mono); }
+.ledger-day .ledger-other td { color: var(--danger); font-style: italic; }

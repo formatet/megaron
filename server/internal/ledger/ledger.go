@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"math"
 	"sort"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -114,7 +115,35 @@ func CloseDay(ctx context.Context, pool *pgxpool.Pool, worldID uuid.UUID, eventI
 // Post is one line of a good's day.
 type Post struct {
 	Category string  `json:"category"`
+	Label    string  `json:"label"`
 	Amount   float64 `json:"amount"`
+}
+
+var labels = map[string]string{
+	"production": "Production", "overflow": "Lost: store full", "meal": "Citizens' meals", "army_ration": "Army rations",
+	"army_wages": "Army wages", "herd_births": "Calves born", "herd_feed": "Calves fed", "reinforce": "Reinforcements",
+	"punishment": "Divine punishment", "ship_provisions": "Ship provisions", "hospitality": "Hospitality aboard",
+	"build_cost": "Building costs", "build_cost_silver": "Building costs (silver)", "recruit_cost": "Recruitment costs",
+	"repair": "Ship repair", "dispatch_out": "Sent away", "trade_escrow": "Trade offer set aside", "trade_pay": "Trade payment",
+	"tribute": "Tribute", "prayer_offering": "Prayer offering", "road_stone": "Road stone", "colonist_purse": "Colonists' purse",
+	"standing_order_load": "Standing order cargo", "loot_out": "Plundered from us", "refining_in": "Used in refining",
+	"refining_out": "Refined", "founding_seed": "Founding stores", "carried_purse": "Purse carried here", "settle_floor": "Rounding",
+	"trade_delivery": "Trade delivered", "trade_return": "Trade returned", "gift_delivery": "Gifts received",
+	"shipment_delivery_v2": "Shipment delivered", "transfer_delivery": "Transfer delivered", "legacy_delivery": "Delivery",
+	"escrow_refund": "Offer returned", "build_refund": "Build refund", "recruit_refund": "Recruit refund",
+	"returned_purse": "Purse returned", "returned_provisions": "Provisions returned", "founder_stores": "Founders' stores",
+	"seized_cargo": "Seized cargo",
+}
+
+// Label is the player-facing name of a category.
+func Label(category string) string {
+	if god, ok := strings.CutPrefix(category, "temple_tithe:"); ok && god != "" {
+		return "Temple tithe (" + strings.ToUpper(god[:1]) + god[1:] + ")"
+	}
+	if l, ok := labels[category]; ok {
+		return l
+	}
+	return category
 }
 
 // GoodDay is one good's last closed game day.
@@ -196,6 +225,7 @@ func LastDay(ctx context.Context, q Querier, sid uuid.UUID) (Day, error) {
 			if p.Category == Unlabelled {
 				continue // an unnamed write is Other by definition
 			}
+			p.Label = Label(p.Category)
 			d.Posts = append(d.Posts, p)
 			sum += p.Amount
 		}

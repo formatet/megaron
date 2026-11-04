@@ -3278,9 +3278,14 @@ func (h *ProvinceHandler) Ticklog(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	day, derr := ledger.LastDay(r.Context(), h.pool, sett.ID)
+	if derr != nil {
+		slog.Error("ticklog: ledger", "settlement", sett.ID, "err", derr)
+	}
 	writeJSON(w, http.StatusOK, map[string]any{
 		"settlement_id": sett.ID,
 		"current_tick":  currentTick,
+		"ledger":        day,
 		"ticks":         ticks,
 	})
 }
