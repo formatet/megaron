@@ -31,7 +31,7 @@ func storageCity(t *testing.T) (*pgxpool.Pool, uuid.UUID, uuid.UUID, uuid.UUID) 
 	exec(`INSERT INTO players(id,username,password_hash,agora_exempt) VALUES($1,$2,'x',true)`, owner, "storage-"+owner.String())
 	exec(`INSERT INTO provinces(id,world_id,map_q,map_r,terrain_type) VALUES($1,$2,0,0,'plains')`, pid, wid)
 	exec(`INSERT INTO settlements(id,world_id,province_id,owner_id,name,culture_id,control_type,is_capital,state,population) VALUES($1,$2,$3,$4,'MalliaWest','achaean','colony',false,'active',1000)`, sid, wid, pid, owner)
-	exec(`INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,'silver',0,0,60,10)`, sid)
+	exec(`INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,'silver',440,0,1000000,10)`, sid) // 60 places left in the shared 500-store (mig 241)
 	return pool, wid, sid, owner
 }
 
@@ -129,7 +129,7 @@ func TestStorageKnownIncomingWarningDebounceAndActualDelivery(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT count(*),COALESCE(sum((body_json->>'lost_quantity')::float8),0) FROM notifications WHERE player_id=$1 AND kind='StorageOverflow'`, owner).Scan(&n, &lost); err != nil {
 		t.Fatal(err)
 	}
-	if amount != 60 || n != 1 || lost != 90 {
+	if amount != 500 || n != 1 || lost != 90 {
 		t.Fatalf("actual delivery stock%g notices%d lost%g", amount, n, lost)
 	}
 }

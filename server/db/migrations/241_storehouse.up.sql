@@ -79,7 +79,7 @@ BEGIN
         IF NOT FOUND THEN cap := p_cap; ELSE
             cap := LEAST(cap, p_cap);
             PERFORM set_config('megaron.storehouse_clipped', p_sid::text||':'||p_good, true);
-            IF p_good = 'silver' THEN PERFORM set_config('megaron.silver_admitted', e_adm::text, true); END IF;
+            IF p_good = 'silver' THEN PERFORM set_config('megaron.silver_admitted', GREATEST(0, LEAST(e_adm, cap - e_base))::text, true); END IF;
         END IF;
     END IF;
     lost:=GREATEST(0,p_available-cap);
@@ -145,7 +145,8 @@ BEGIN
     avail := OLD.amount + acc;
     SELECT e.base + e.admitted, e.admitted INTO capi, adm FROM storehouse_effective(OLD.settlement_id, NEW.good_key, avail) e WHERE e.good_key = NEW.good_key;
     IF NOT FOUND THEN RETURN NEW; END IF;
-    IF NEW.good_key = 'silver' THEN PERFORM set_config('megaron.silver_admitted', adm::text, true); END IF;
+    capi := LEAST(capi, NEW.cap);
+    IF NEW.good_key = 'silver' THEN PERFORM set_config('megaron.silver_admitted', GREATEST(0, LEAST(adm, capi - (avail - acc)))::text, true); END IF;
     lost := avail - capi;
     IF lost > 1e-9 THEN
         PERFORM set_config('megaron.ledger_overflow', (COALESCE(NULLIF(current_setting('megaron.ledger_overflow',true),''),'0')::float8 + lost)::text, true);
@@ -161,13 +162,22 @@ CREATE TRIGGER settlement_goods_clip_storehouse BEFORE UPDATE ON settlement_good
 -- advances calc_tick passes storage_capped or the clip trigger, both of which publish the
 -- admitted amount in megaron.silver_admitted before this AFTER trigger runs.
 CREATE OR REPLACE FUNCTION record_silver_mining_credit() RETURNS trigger LANGUAGE plpgsql AS $$
-DECLARE credited DOUBLE PRECISION; wid UUID;
+DECLARE credited DOUBLE PRECISION; admitted DOUBLE PRECISION; wid UUID;
 BEGIN
     IF OLD.good_key <> 'silver' OR OLD.rate <= 0 OR NEW.calc_tick <= OLD.calc_tick THEN
         RETURN NEW;
     END IF;
-    credited := GREATEST(0, COALESCE(NULLIF(current_setting('megaron.silver_admitted', true), ''), '0')::float8);
+    admitted := NULLIF(current_setting('megaron.silver_admitted', true), '')::float8;
     PERFORM set_config('megaron.silver_admitted', '', true);
+    IF admitted IS NOT NULL THEN
+        credited := GREATEST(0, admitted);
+    ELSE
+        -- A write that published nothing (no accrual passed the store's gate): the
+        -- per-row inference of mig 179.
+        credited := GREATEST(0,
+            LEAST(OLD.cap, GREATEST(0, OLD.amount + OLD.rate * (NEW.calc_tick - OLD.calc_tick)))
+            - LEAST(OLD.cap, GREATEST(0, OLD.amount)));
+    END IF;
     IF credited > 0 THEN
         SELECT world_id INTO wid FROM settlements WHERE id = OLD.settlement_id;
         INSERT INTO silver_mining_totals(settlement_id, world_id, credited_silver) VALUES(OLD.settlement_id, wid, credited)
@@ -197,6 +207,8 @@ BEGIN
     IF storehouse_stored_good(p_good) THEN
         UPDATE settlement_goods SET amount=stock,calc_tick=current_world_tick()
          WHERE settlement_id=p_sid AND good_key=p_good;
+        PERFORM set_config('megaron.storehouse_clipped', '', true);
+        PERFORM set_config('megaron.silver_admitted', '', true);
         SELECT stock + GREATEST(0, storehouse_cap(p_sid) - COALESCE(sum(e.amount),0)) INTO credit_cap
           FROM storehouse_effective(p_sid) e;
         credit_cap := LEAST(credit_cap, g.cap);
