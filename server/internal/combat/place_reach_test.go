@@ -614,3 +614,33 @@ func TestPlaceReachShipFirstOnLakeClaims(t *testing.T) {
 		t.Fatalf("want one lake naming notice, got %d", notices)
 	}
 }
+
+// A place inside the catchment of a colony the column is marching to found is
+// home ground: the naming right is kept, but no "first reached" notice is sent.
+// The same route without the colonize intent still notifies for both fords.
+func TestPlaceReachHomeCatchmentGetsNoNotice(t *testing.T) {
+	for _, colonize := range []bool{true, false} {
+		t.Run(fmt.Sprintf("colonize_%v", colonize), func(t *testing.T) {
+			f := reachWorld(t)
+			ctx := context.Background()
+			id := f.mover(t, "infantry", f.owner, reachRoute(0, 6, 0, 6))
+			if colonize {
+				if _, err := f.pool.Exec(ctx, `UPDATE units SET march_intent='colonize' WHERE id=$1`, id); err != nil {
+					t.Fatal(err)
+				}
+			}
+			f.scan(t, 7)
+			var notices int
+			if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM notifications WHERE world_id=$1 AND kind='PlaceFirstReached'`, f.world).Scan(&notices); err != nil {
+				t.Fatal(err)
+			}
+			want := 2
+			if colonize {
+				want = 1 // the ford at q=2 is far from the colony site at q=6; the ford at q=6 is home
+			}
+			if notices != want || f.claims(t) != 2 {
+				t.Fatalf("colonize=%v notices=%d (want %d) claims=%d (want 2: the right is kept)", colonize, notices, want, f.claims(t))
+			}
+		})
+	}
+}
