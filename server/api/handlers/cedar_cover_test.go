@@ -44,7 +44,7 @@ func payCosts(t *testing.T, pool *pgxpool.Pool, sid uuid.UUID, costs map[string]
 		t.Fatal(err)
 	}
 	defer tx.Rollback(ctx)
-	if err := deductGoods(ctx, tx, sid, costs); err != nil {
+	if err := deductGoods(ctx, tx, sid, costs, "build_cost"); err != nil {
 		return err
 	}
 	return tx.Commit(ctx)

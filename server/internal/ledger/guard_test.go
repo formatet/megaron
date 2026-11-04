@@ -29,7 +29,7 @@ var writers = map[string]bool{
 	"internal/economy/recompute.go":      true,
 	"internal/kharis/temple_offering.go": true,
 	"internal/kharis/tick.go":            true,
-	"internal/ledger/ledger.go":          true,
+	"internal/ledger/ledger.go":          false,
 	"internal/province/goods_cost.go":    false, // DeductGood: callers label
 }
 

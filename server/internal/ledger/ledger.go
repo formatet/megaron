@@ -190,9 +190,13 @@ func LastDay(ctx context.Context, q Querier, sid uuid.UUID) (Day, error) {
 	}
 	prows.Close()
 	for _, g := range gds {
-		d := GoodDay{Good: g.good, Delta: g.closing - g.o, Posts: posts[g.good]}
+		d := GoodDay{Good: g.good, Delta: g.closing - g.o}
 		sum := 0.0
-		for _, p := range d.Posts {
+		for _, p := range posts[g.good] {
+			if p.Category == Unlabelled {
+				continue // an unnamed write is Other by definition
+			}
+			d.Posts = append(d.Posts, p)
 			sum += p.Amount
 		}
 		d.Other = d.Delta - sum
