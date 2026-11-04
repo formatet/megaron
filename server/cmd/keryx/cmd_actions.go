@@ -49,7 +49,9 @@ Progressive disclosure:
                                live gap, and how to unlock it
   keryx actions --json       the full raw array (all verbs, all categories)
 
-Categories: province, military, trade, diplomacy, kingdom, cult`,
+Categories: province, military, trade, diplomacy, kingdom, cult
+
+Not a verb here: 'keryx storms' lists the storms at sea your people have seen.`,
 		Example: `  keryx actions
   keryx actions military
   keryx actions military --province <province-id>

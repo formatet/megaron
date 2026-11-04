@@ -857,6 +857,8 @@ further order (--name to name it). Give the order from a ship in port.
 For a foreign coastal city, use an ordinary march by a laden ship for the
 existing amphibious assault; --intent land does not attack a foreign city.
 A ship at sea takes no new orders — give its whole mission before departure.
+Storms drift over open water and can sink a ship: 'keryx storms' lists the
+ones your people have seen.
 
 Ore on mountain terrain (copper, silver, tin):
   Mountains are impassable — you cannot colonize the mountain hex itself.
