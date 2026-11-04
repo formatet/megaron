@@ -12,6 +12,7 @@ import (
 
 	"formatet/megaron/server/internal/ai"
 	"formatet/megaron/server/internal/economy"
+	"formatet/megaron/server/internal/ledger"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/tick"
@@ -221,6 +222,10 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 	h.applySubsistenceCritical(ctx, e.WorldID)
 	if err := h.observeStorage(ctx, e.WorldID); err != nil {
 		slog.Error("storage observation failed", "world", e.WorldID, "err", err)
+	}
+	// Bokförd dagsräkning: stäng dagen sist, så att posterna ovan hamnar i den.
+	if err := ledger.CloseDay(ctx, h.pool, e.WorldID, e.ID); err != nil {
+		slog.Error("ledger close failed", "world", e.WorldID, "err", err)
 	}
 
 	return h.scheduler.EnqueueTickRecurring(ctx, e.WorldID, events.ScheduledKharisTick,

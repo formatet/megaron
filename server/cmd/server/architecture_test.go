@@ -22,18 +22,18 @@ const architectureModule = "formatet/megaron/server"
 // Test-only imports are intentionally excluded; changing an edge is a design decision.
 var g1Allowed = map[string][]string{
 	"agora": {}, "ai": {}, "auth": {}, "clock": {}, "gossip": {}, "hexgrid": {}, "textfilter": {},
-	"movement": {}, "notify": {}, "religion": {}, "unit": {},
+	"movement": {}, "ledger": {}, "notify": {}, "religion": {}, "unit": {},
 	"unit/shipnames": {}, "world": {},
-	"province": {"hexgrid", "movement"},
+	"province": {"hexgrid", "movement", "ledger"},
 	"events":   {"clock"}, "tick": {"clock", "events"},
 	"carrier":   {"events"},
 	"chronicle": {"events"}, "settlement": {"province"},
-	"economy":      {"carrier", "clock", "events", "gossip", "hexgrid", "province", "tick"},
-	"transport":    {"economy", "religion", "carrier", "clock", "events", "province", "movement", "tick"},
+	"economy":      {"ledger", "carrier", "clock", "events", "gossip", "hexgrid", "province", "tick"},
+	"transport":    {"ledger", "economy", "religion", "carrier", "clock", "events", "province", "movement", "tick"},
 	"capabilities": {"clock", "province", "religion", "unit"},
-	"kharis":       {"ai", "clock", "economy", "events", "hexgrid", "religion", "tick", "unit"},
-	"combat":       {"religion", "carrier", "capabilities", "clock", "economy", "events", "gossip", "hexgrid", "movement", "province", "tick", "transport", "unit", "world"},
-	"messenger":    {"carrier", "ai", "clock", "gossip", "hexgrid", "movement", "province", "religion", "unit", "unit/shipnames", "world", "events", "tick", "chronicle", "settlement", "economy", "transport", "capabilities", "kharis", "combat"},
+	"kharis":       {"ledger", "ai", "clock", "economy", "events", "hexgrid", "religion", "tick", "unit"},
+	"combat":       {"ledger", "religion", "carrier", "capabilities", "clock", "economy", "events", "gossip", "hexgrid", "movement", "province", "tick", "transport", "unit", "world"},
+	"messenger":    {"ledger", "carrier", "ai", "clock", "gossip", "hexgrid", "movement", "province", "religion", "unit", "unit/shipnames", "world", "events", "tick", "chronicle", "settlement", "economy", "transport", "capabilities", "kharis", "combat"},
 }
 
 type g1Package struct {
