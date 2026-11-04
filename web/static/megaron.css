@@ -489,7 +489,7 @@ body:has(.auth-page) main {
   font: inherit;
   font-size: var(--fs-xs);
   letter-spacing: 0.06em;
-  color: var(--gold);
+  color: var(--accent);
   background: none;
   border: none;
   border-right: 1px solid var(--border);
@@ -804,6 +804,10 @@ body:has(.auth-page) main {
   .gt-celestial { flex: 0 0 60%; min-width: 0; gap: 4px; padding: 0 4px; }
   .gt-wanax { flex-shrink: 1; min-width: 0; max-width: 40%; padding: 0 0.4rem; overflow: hidden; }
   .gt-netstatus { flex-shrink: 1; min-width: 0; max-width: 20%; padding: 0 0.4rem; overflow: hidden; }
+  /* The update notice wraps to two lines instead of being clipped; while it is
+     shown it takes the room the Wanax name would (the name is in Account). */
+  .gt-update { flex: 1 1 0; min-width: 0; padding: 0 0.4rem; white-space: normal; line-height: 1.15; text-align: left; }
+  .game-topbar:has(.gt-update.visible) .gt-wanax { display: none; }
   .gt-dispatch-strip { padding: 0 3px; }
   .cel-arc-wrap { width: 40px; height: 25px; flex-shrink: 1; min-width: 0; }
   .cel-arc-wrap #cel-svg { width: 100%; height: 25px; }
