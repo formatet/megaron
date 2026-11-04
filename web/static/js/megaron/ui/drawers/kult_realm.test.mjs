@@ -42,3 +42,15 @@ test('temple row: Reference/Stock/Next gift only; no Alternatives, weight or tit
  assert.match(html,/Reference: 1 grain per game day/);assert.match(html,/Next gift: 1 grain/);assert.match(html,/grain: paid · silver: missing/);
  assert.doesNotMatch(html,/Alternatives|Weight|of tithe/);
 });
+
+test('rich offering: off shows a good picker and one button, on shows status and a stop button',()=>{
+ const base={id:'t',name:'Potnia',god_id:'potnia',city_name:'Knossos',province_id:'p',level:1,staffed:2,capacity:2};
+ const off=realmKultHTML({temples:[{...base,offer:{parts:[{good:'grain',paid:true}],stock:{grain:5,fish:3,incense:0}}}]},'temples');
+ assert.ok(off.includes('data-cult-rich-on="t"'));
+ assert.ok(off.includes('<option value="fish">')&&!off.includes('<option value="incense">'));
+ assert.ok(!off.includes('data-cult-rich-off'));
+ const paid=realmKultHTML({temples:[{...base,offer:{parts:[{good:'grain',paid:true}],stock:{fish:3},rich_offering_good:'fish',rich_offering_amount:.0625,rich_offering_paid:true}}]},'temples');
+ assert.ok(paid.includes('data-cult-rich-off="t"')&&paid.includes('Rich offering: 0.063 fish — paid, +50%'));
+ const missing=realmKultHTML({temples:[{...base,offer:{parts:[{good:'grain',paid:true}],stock:{},rich_offering_good:'fish',rich_offering_amount:.0625,rich_offering_paid:false}}]},'temples');
+ assert.ok(missing.includes('fish — not paid'));
+});

@@ -84,6 +84,7 @@ func newRootCommand() *cobra.Command {
 		buildCmd(),
 		cancelBuildCmd(),
 		demolishCmd(),
+		richOfferingCmd(),
 		worldsCmd(),
 		// MVP-disabled 2026-07-08: kingdoms är post-MVP — stubs print why instead
 		// of cobra's raw "unknown command" (see cmd_kingdoms_stub.go).

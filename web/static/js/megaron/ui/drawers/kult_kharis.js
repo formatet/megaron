@@ -89,5 +89,12 @@ export function kharisRulesHTML(pd) {
 
 export function templeTitheHTML(offer) {
  if (!offer?.parts) return '';
- return '<br>'+offer.parts.map(p=>esc(p.good)+': '+(p.paid?'paid':'missing')).join(' · ');
+ return '<br>'+offer.parts.map(p=>esc(p.good)+': '+(p.paid?'paid':'missing')).join(' · ')+richOfferingLine(offer);
+}
+
+// Rich offering status: paid in full (+50%) or not paid, never a partial bonus.
+export function richOfferingLine(offer) {
+ if (!offer?.rich_offering_good) return '';
+ const amount = esc(String(Number(Number(offer.rich_offering_amount || 0).toPrecision(2))));
+ return '<br>Rich offering: ' + amount + ' ' + esc(offer.rich_offering_good) + (offer.rich_offering_paid ? ' — paid, +50%' : ' — not paid');
 }

@@ -118,6 +118,8 @@ func buildHexFixture(t *testing.T) *mineGateFixture {
 	r.Post("/worlds/{worldID}/provinces/{provinceID}/build", ph.Build)
 	r.Delete("/worlds/{worldID}/provinces/{provinceID}/buildings/{buildingID}", ph.DemolishBuilding)
 	r.Post("/worlds/{worldID}/provinces/{provinceID}/placements", ph.PlaceGubbe)
+	r.Put("/worlds/{worldID}/temples/{buildingID}/rich-offering", ph.SetRichOffering)
+	r.Delete("/worlds/{worldID}/temples/{buildingID}/rich-offering", ph.SetRichOffering)
 	r.Get("/worlds/{worldID}/provinces/{provinceID}", ph.Get)
 
 	return &mineGateFixture{pool: pool, worldID: worldID, provinceID: provinceID, settlementID: settlementID, accessToken: accessToken, router: r}

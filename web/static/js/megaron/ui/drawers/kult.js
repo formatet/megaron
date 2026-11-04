@@ -48,8 +48,21 @@ export async function loadKultDrawer() {
    el.querySelectorAll('[data-cult-panel]').forEach(panel=>panel.hidden=panel.dataset.cultPanel!==kultTab);
   }));
   el.querySelectorAll?.('[data-cult-demolish]').forEach(button=>button.addEventListener('click',()=>demolishCultTemple(view.temples.find(t=>t.id===button.dataset.cultDemolish))));
+  el.querySelectorAll?.('[data-cult-rich-on]').forEach(button=>button.addEventListener('click',()=>setRichOffering(button.dataset.cultRichOn,el.querySelector('[data-cult-rich-good="'+button.dataset.cultRichOn+'"]')?.value)));
+  el.querySelectorAll?.('[data-cult-rich-off]').forEach(button=>button.addEventListener('click',()=>setRichOffering(button.dataset.cultRichOff,null)));
   el.querySelectorAll?.('[data-cult-city]').forEach(button=>button.addEventListener('click',()=>window.openCitySettlement(button.dataset.cultCity)));
  }catch(error){if(seq===kultLoadSeq&&world===State.WORLD_ID)el.innerHTML='<p class="empty-state">Could not load your realm’s cult. Try again.</p>';}
+}
+
+// PUT turns the temple's rich offering on with a good, DELETE turns it off. The
+// fetchAuth telemetry records the verb (rich_offering_set / rich_offering_cleared).
+async function setRichOffering(templeID,good){
+ const url='/api/v1/worlds/'+State.WORLD_ID+'/temples/'+templeID+'/rich-offering';
+ try{
+  const res=await fetchAuth(url,good?{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({good})}:{method:'DELETE'});
+  if(!res.ok){const r=await res.json().catch(()=>({}));showInlineResult('kult-body',r.error||'Could not change the rich offering',true);return;}
+  await loadKultDrawer();
+ }catch(_){showInlineResult('kult-body','Could not change the rich offering. Try again.',true);}
 }
 
 async function demolishCultTemple(temple){

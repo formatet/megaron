@@ -199,6 +199,13 @@ func templeOfferingLine(row map[string]any) string {
 		}
 		next += fmt.Sprintf(" · %.0f%% of tithe · weight %v, gives %v", row["paid_fraction"].(float64)*100, row["weight"], row["effective_weight"])
 	}
+	if rich, _ := row["rich_offering_good"].(string); rich != "" {
+		if row["rich_offering_paid"] == true {
+			next += " · rich offering " + rich + " paid (+50%)"
+		} else {
+			next += " · rich offering " + rich + " not paid"
+		}
+	}
 	// Each temple has its own gift; a city's temples take from one store in turn,
 	// so "stock" is what the temples before this one left.
 	return fmt.Sprintf("  %s in %s: reference %s per game day — alternatives: %s — stock: %s — next gift: %s  %s",
