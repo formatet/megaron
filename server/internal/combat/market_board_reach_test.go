@@ -39,43 +39,27 @@ func (f reachFixture) reading(t *testing.T, reader, city uuid.UUID) (buys []stri
 	return r.Buys, ok
 }
 
-func TestMarketBoardReadOnlyWithinReachOfLevel(t *testing.T) {
+// Only who touches the city reads its board (Timothy 2026-11-04): no reach,
+// whatever the market's level.
+func TestMarketBoardReadOnlyOnTheCityHex(t *testing.T) {
 	f := reachWorld(t)
 	ctx := context.Background()
-	_, city := f.marketCity(t, 8, 1)
+	_, city := f.marketCity(t, 8, 3) // an old level-3 market reaches no further
 	if err := economy.WriteMarketBoard(ctx, f.pool, f.world, city, []string{"tin"}, []string{"wine"}, 0); err != nil {
 		t.Fatal(err)
 	}
-	// Level 1 reaches 2 hexes: a march ending at q=5 (distance 3) reads nothing.
-	f.mover(t, "infantry", f.owner, reachRoute(0, 5, 0, 5))
-	f.scan(t, 5)
+	// A march ending next to the city (q=7, distance 1) reads nothing.
+	f.mover(t, "infantry", f.owner, reachRoute(0, 7, 0, 7))
+	f.scan(t, 7)
 	if _, ok := f.reading(t, f.owner, city); ok {
-		t.Fatal("board read from 3 hexes at market level 1")
+		t.Fatal("board read from the neighbouring hex")
 	}
-	// One step further, distance 2: read.
-	f.mover(t, "infantry", f.owner, reachRoute(6, 12, 0, 6))
-	f.scan(t, 12)
+	// A march whose road runs through the city hex on to q=10 reads it.
+	f.mover(t, "infantry", f.owner, reachRoute(8, 18, 0, 10))
+	f.scan(t, 18)
 	buys, ok := f.reading(t, f.owner, city)
 	if !ok || len(buys) != 1 || buys[0] != "tin" {
-		t.Fatalf("board within reach not read: ok=%v buys=%v", ok, buys)
-	}
-	var heard int
-	if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM player_heard_tiles WHERE world_id=$1 AND player_id=$2 AND q=8 AND r=0 AND source='board'`, f.world, f.owner).Scan(&heard); err != nil {
-		t.Fatal(err)
-	}
-	if heard != 1 {
-		t.Fatal("reading from afar did not make the city's hex known by word")
-	}
-}
-
-func TestMarketBoardReachGrowsWithLevel(t *testing.T) {
-	f := reachWorld(t)
-	_, city := f.marketCity(t, 8, 2)
-	// Level 2 reaches 4 hexes: q=4 reads.
-	f.mover(t, "infantry", f.owner, reachRoute(0, 4, 0, 4))
-	f.scan(t, 4)
-	if _, ok := f.reading(t, f.owner, city); !ok {
-		t.Fatal("market level 2 did not reach 4 hexes")
+		t.Fatalf("board not read by a march through the city: ok=%v buys=%v", ok, buys)
 	}
 }
 
@@ -96,12 +80,12 @@ func TestMarketBoardReadingIsASnapshot(t *testing.T) {
 	if err := economy.WriteMarketBoard(ctx, f.pool, f.world, city, []string{"tin"}, nil, 0); err != nil {
 		t.Fatal(err)
 	}
-	f.mover(t, "infantry", f.owner, reachRoute(0, 6, 0, 6))
-	f.scan(t, 6)
-	if err := economy.WriteMarketBoard(ctx, f.pool, f.world, city, []string{"copper"}, nil, 7); err != nil {
+	f.mover(t, "infantry", f.owner, reachRoute(0, 8, 0, 8))
+	f.scan(t, 8)
+	if err := economy.WriteMarketBoard(ctx, f.pool, f.world, city, []string{"copper"}, nil, 9); err != nil {
 		t.Fatal(err)
 	}
-	f.scan(t, 8) // rerun: no new entry, the reading stays as it was read
+	f.scan(t, 10) // rerun: no new entry, the reading stays as it was read
 	buys, ok := f.reading(t, f.owner, city)
 	if !ok || len(buys) != 1 || buys[0] != "tin" {
 		t.Fatalf("reading followed the board after it was read: %v", buys)

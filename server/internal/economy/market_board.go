@@ -19,21 +19,6 @@ import (
 // BoardMaxGoods is how many goods each of the Buys and Sells lines may name.
 const BoardMaxGoods = 3
 
-// BoardReach is how far from the city hex a passer-by reads the board, by
-// market level: level 1 reaches the catchment, each level beyond reaches further.
-func BoardReach(level int) int {
-	switch {
-	case level <= 0:
-		return -1
-	case level == 1:
-		return 2
-	case level == 2:
-		return 4
-	default:
-		return 6
-	}
-}
-
 type boardDB interface {
 	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
 	Exec(ctx context.Context, sql string, args ...any) (pgconn.CommandTag, error)
@@ -110,13 +95,14 @@ func RecordBoardReading(ctx context.Context, db boardDB, worldID, readerID uuid.
 	return err
 }
 
-// ReadBoardsAt lets reader's journey, standing at pos at tick, read every other
-// ruler's board within reach. A board read from beyond the city hex also makes
-// the city's hex known by word (player_heard_tiles): reader can write there,
-// but heard hexes never open trade offers (Timothy 2026-10-28 20:53).
+// ReadBoardsAt lets reader's journey, standing at pos at tick, read the board of
+// another ruler's city standing on that very hex. There is no reach: only who
+// touches the city reads it (Timothy 2026-11-04; the 2/4/6 reach by market level
+// is gone). The city's hex also becomes known by word (player_heard_tiles), as
+// before; trade rights still follow what reader's own people saw.
 func ReadBoardsAt(ctx context.Context, db contactDB, worldID, readerID uuid.UUID, boards []MarketBoard, pos province.MapPosition, tick int) error {
 	for _, b := range boards {
-		if b.OwnerID == readerID || province.HexDistance(b.Pos, pos) > BoardReach(b.Level) {
+		if b.OwnerID == readerID || b.Pos != pos {
 			continue
 		}
 		if err := RecordBoardReading(ctx, db, worldID, readerID, b, tick); err != nil {

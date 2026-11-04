@@ -107,19 +107,9 @@
         "timber": 10
       },
       "duration_game_days": 8,
-      "max_level": 3,
-      "purpose": "Puts up the city's market board, read by other rulers passing within reach; no workers needed",
-      "type": "market",
-      "upgrade_costs": {
-        "2": {
-          "stone": 16,
-          "timber": 20
-        },
-        "3": {
-          "stone": 32,
-          "timber": 40
-        }
-      }
+      "max_level": 1,
+      "purpose": "Puts up the city's market board, read by other rulers whose people reach the city; no workers needed",
+      "type": "market"
     },
     {
       "costs": {

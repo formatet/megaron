@@ -120,7 +120,7 @@ func marketBoardView(ctx context.Context, pool *pgxpool.Pool, worldID, settlemen
 			return nil
 		}
 		return map[string]any{"buys": nonNil(b.Buys), "sells": nonNil(b.Sells), "level": b.Level,
-			"reach": economy.BoardReach(b.Level), "max_goods": economy.BoardMaxGoods, "empty": b.WrittenTick == nil}
+			"max_goods": economy.BoardMaxGoods, "empty": b.WrittenTick == nil}
 	}
 	readings, err := economy.LoadBoardReadings(ctx, pool, worldID, viewer)
 	if err != nil {

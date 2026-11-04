@@ -24,7 +24,7 @@ test('the owner edits up to max_goods goods per line, current choice selected', 
   assert.equal((html.match(/data-board-line="buys"/g) || []).length, 3);
   assert.equal((html.match(/data-board-line="sells"/g) || []).length, 3);
   assert.match(html, /<option value="tin" selected>Tin<\/option>/);
-  assert.match(html, /within 2 hexes/);
+  assert.match(html, /when they reach the city/);
   assert.match(html, /saveMarketBoard\('s1'\)/);
 });
 

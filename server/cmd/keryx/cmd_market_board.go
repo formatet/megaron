@@ -19,8 +19,8 @@ func marketBoardCmd() *cobra.Command {
 		Short: "Show or write what your city's market board says it buys and sells",
 		Long: `Show or write your city's market board. A city with a Market can put up a
 board naming up to three goods it buys and three it sells (silver too). Other rulers'
-caravans, armies and messengers read it when they pass within reach of the
-market (wider at higher market levels) and remember it as it stood then.
+messengers, caravans, armies and ships read it when they reach the city, and
+remember it as it stood then.
 
 The board is your word: the game checks nothing against your stores. Trade
 itself still happens in letters — the board tells others whom to ask.
@@ -61,9 +61,7 @@ With no flag it shows the board. --buys and --sells replace each line
 					return nil
 				}
 				fmt.Printf("%s market board: %s\n", city.Name, describeBoard(city.Board))
-				if reach, ok := city.Board["reach"].(float64); ok {
-					fmt.Printf("Read by others' journeys within %g hexes of the city.\n", reach)
-				}
+				fmt.Println("Read by other rulers' people when they reach the city.")
 				return nil
 			}
 			if city.Board == nil {

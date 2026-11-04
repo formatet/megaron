@@ -55,7 +55,7 @@ export function ownBoardHTML(board, goods, settlementID) {
   const max = board.max_goods || 3;
   return `<div class="dsec-title">Market board</div>
     <p class="market-board-reading">${esc(boardLine(board))}</p>
-    <p class="empty-state">Other rulers' caravans, armies and messengers read it within ${board.reach} hexes of the city and remember it as it stood. It is your word; nothing checks it against your stores.</p>
+    <p class="empty-state">Other rulers' messengers, caravans, armies and ships read it when they reach the city, and remember it as it stood. It is your word; nothing checks it against your stores.</p>
     <div class="market-board-line"><span>Buys</span>${lineSelects('buys', board.buys || [], goods, max)}</div>
     <div class="market-board-line"><span>Sells</span>${lineSelects('sells', board.sells || [], goods, max)}</div>
     <button class="btn-small" onclick="saveMarketBoard('${esc(settlementID)}')">Put up the board</button>
