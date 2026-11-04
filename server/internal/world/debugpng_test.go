@@ -77,14 +77,9 @@ func TestComputeMapMetrics_SyntheticHexBlob(t *testing.T) {
 	if m.DeltaTiles != 0 {
 		t.Errorf("delta_tiles = %d, want 0", m.DeltaTiles)
 	}
-	// A convex radius-1 blob leaves no sea hex flanked by REAL land on an
-	// opposing axis pair — but countStraits (existing generator code, reused
-	// as-is) treats out-of-domain lookups as land (the zero-value Terrain ""
-	// is not sea), so two sheared-corner sea cells at the map boundary count
-	// as straits on this 9×9 domain. Documenting existing behaviour here,
-	// not endorsing it.
-	if m.Straits != 2 {
-		t.Errorf("straits = %d, want 2 (boundary artifact of countStraits)", m.Straits)
+	// One landmass: no water lies between two landmasses, so no strait.
+	if m.Straits != 0 {
+		t.Errorf("straits = %d, want 0 (one landmass)", m.Straits)
 	}
 
 	// A perfect radius-1 hexagon IS the isoperimetric optimum: quotient 1.0.

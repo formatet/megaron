@@ -137,34 +137,15 @@ func ExportDebugOverlayPNG(tiles []MapTile, width, height int, path string) erro
 		fillRect(img, x, y, debugTilePx, debugTilePx, c)
 	}
 
-	// 2. Strait hexes: sea tiles flanked by land on an opposing axis pair —
-	// same per-tile rule as countStraits (mapgen.go), replicated read-only
-	// here (see spawnBuildable below for the same "copy on purpose"
-	// reasoning: this file must never become an import target for game logic).
-	terrainAt := make(map[[2]int]Terrain, len(tiles))
+	// 2. Strait hexes: the same predicate as countStraits and the strait place
+	// (places.go straitHexes) — open sea between two landmasses.
+	terrainAt := make(map[cell]Terrain, len(tiles))
 	for _, t := range tiles {
-		terrainAt[[2]int{t.Q, t.R}] = t.Terrain
+		terrainAt[cell{t.Q, t.R}] = t.Terrain
 	}
-	straitAxes := [][2][2]int{
-		{{1, 0}, {-1, 0}},
-		{{0, 1}, {0, -1}},
-		{{1, -1}, {-1, 1}},
-	}
-	for _, t := range tiles {
-		if !isSea(t.Terrain) {
-			continue
-		}
-		strait := false
-		for _, pair := range straitAxes {
-			a := terrainAt[[2]int{t.Q + pair[0][0], t.R + pair[0][1]}]
-			b := terrainAt[[2]int{t.Q + pair[1][0], t.R + pair[1][1]}]
-			if tileIsLand(a) && tileIsLand(b) {
-				strait = true
-				break
-			}
-		}
-		if strait {
-			x, y := debugTileOrigin(t.Q, t.R, width)
+	for c := range straitHexes(terrainAt, terrainComponents(tiles, func(t Terrain) bool { return !isSea(t) })) {
+		if t := terrainAt[c]; t == TerrainCoastalSea || t == TerrainDeepSea {
+			x, y := debugTileOrigin(c.q, c.r, width)
 			fillRect(img, x+2, y+2, 4, 4, straitColor)
 		}
 	}

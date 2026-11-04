@@ -3853,34 +3853,20 @@ func tinCopperSeaDistance(tiles []MapTile) int {
 	return best
 }
 
-// countStraits counts sea hexes that are flanked by land on at least one opposing
-// axis pair. A strait hex is a narrow water passage — vital for controlling trade routes.
+// countStraits counts strait hexes: narrow water between two landmasses, vital for trade routes.
 func countStraits(tiles []MapTile) int {
+	// Same predicate as the strait place (places.go straitHexes, Timothy 2026-11-02):
+	// open sea within StraitMaxWidth of two DIFFERENT landmasses. The old
+	// opposing-axis rule counted every narrow bay as a strait.
 	terrain := make(map[cell]Terrain, len(tiles))
 	for _, t := range tiles {
 		terrain[cell{t.Q, t.R}] = t.Terrain
 	}
-	// Opposing axis pairs in axial hex coordinates.
-	opposites := [][2][2]int{
-		{{1, 0}, {-1, 0}},
-		{{0, 1}, {0, -1}},
-		{{1, -1}, {-1, 1}},
-	}
+	land := terrainComponents(tiles, func(t Terrain) bool { return !isSea(t) })
 	straits := 0
-	for _, t := range tiles {
-		if !isSea(t.Terrain) {
-			continue
-		}
-		c := cell{t.Q, t.R}
-		for _, pair := range opposites {
-			a := cell{c.q + pair[0][0], c.r + pair[0][1]}
-			b := cell{c.q + pair[1][0], c.r + pair[1][1]}
-			at := terrain[a]
-			bt := terrain[b]
-			if tileIsLand(at) && tileIsLand(bt) {
-				straits++
-				break // count this tile once even if multiple axes qualify
-			}
+	for c := range straitHexes(terrain, land) {
+		if t := terrain[c]; t == TerrainCoastalSea || t == TerrainDeepSea {
+			straits++
 		}
 	}
 	return straits
