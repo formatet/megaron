@@ -230,3 +230,19 @@ func TestPlacesMapEdgeIsNotLand(t *testing.T) {
 		t.Fatalf("one landmass and the edge is no strait: %d", n)
 	}
 }
+
+// A lake between two landmasses is lake water: no strait, no bay.
+func TestPlacesLakeBetweenLandmassesIsNotStrait(t *testing.T) {
+	t.Parallel()
+	g := seaGrid(12)
+	landBlock(g, 0, 3, 0, 11)
+	landBlock(g, 6, 9, 0, 11)
+	for r := 0; r < 12; r++ {
+		g[[2]int{4, r}] = TerrainLake
+		g[[2]int{5, r}] = TerrainLake
+	}
+	tiles := gridTiles(g)
+	if n := kindCount(tiles, "strait") + kindCount(tiles, "bay"); n != 0 {
+		t.Fatalf("lake water is neither strait nor bay: %d", n)
+	}
+}
