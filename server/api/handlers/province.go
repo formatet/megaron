@@ -579,9 +579,11 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// hiding timber/stone even when labor was actively allocated to them).
 		resSnap := sett.Resources.SnapshotFull(now)
 		if grows, gerr := h.pool.Query(r.Context(),
-			`SELECT good_key, GREATEST(0, settled(amount, rate, calc_tick)), rate, cap
-			 FROM settlement_goods
-			 WHERE settlement_id = $1`,
+			`SELECT g.good_key, GREATEST(0, COALESCE(se.amount, settled(g.amount, g.rate, g.calc_tick))), g.rate,
+			        CASE WHEN se.good_key IS NULL THEN g.cap ELSE GREATEST(se.amount, LEAST(g.cap, storehouse_cap($1))) END
+			 FROM settlement_goods g
+			 LEFT JOIN storehouse_effective($1) se ON se.good_key = g.good_key
+			 WHERE g.settlement_id = $1`,
 			sett.ID,
 		); gerr == nil {
 			for grows.Next() {
@@ -733,6 +735,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"walls":                        sett.WallLevel,
 			"population_cap":               economy.PopulationCap(sett.WallLevel),
 			"silo_level":                   economy.SiloLevel(r.Context(), h.pool, sett.ID),
+			"storehouse":                   economy.LoadStorehouse(r.Context(), h.pool, sett.ID),
 			"resources":                    resSnap,
 			"kharis":                       kharisNow,
 			"kharis_wrath":                 kharisWrath,
@@ -3026,10 +3029,12 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	hexSlots, _ := economy.LoadHexCapacity(r.Context(), h.pool, settlementID)
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT sg.good_key, settled(sg.amount, sg.rate, sg.calc_tick), sg.rate, sg.cap,
+		`SELECT sg.good_key, COALESCE(se.amount, settled(sg.amount, sg.rate, sg.calc_tick)), sg.rate,
+		        CASE WHEN se.good_key IS NULL THEN sg.cap ELSE GREATEST(se.amount, LEAST(sg.cap, storehouse_cap($1))) END,
 		        g.labor_value, g.name, g.tier, g.category, g.weight > 0
 		 FROM settlement_goods sg
 		 JOIN goods g ON g.key = sg.good_key
+		 LEFT JOIN storehouse_effective($1) se ON se.good_key = sg.good_key
 		 WHERE sg.settlement_id = $1
 		 ORDER BY g.category, sg.good_key`,
 		settlementID,
