@@ -43,3 +43,12 @@ func TestBuildingPurposes_MakeNoGoodsClaims(t *testing.T) {
 		}
 	}
 }
+
+// The harbour opens deep-water fishing places (web/static/codex/fishing.md);
+// it does not "work coastal waters".
+func TestBuildingPurposes_HarbourIsDeepWater(t *testing.T) {
+	h := BuildingPurposes[BuildingHarbour]
+	if !strings.Contains(h, "deep-water") || strings.Contains(h, "coastal waters") {
+		t.Fatalf("harbour purpose %q", h)
+	}
+}

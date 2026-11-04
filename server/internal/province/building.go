@@ -28,7 +28,7 @@ var BuildingPurposes = map[BuildingType]string{
 	BuildingStonequarry: "Stands on a land hex; its crew quarry the stone there — far more on hills and limestone",
 	BuildingMarket:      "Puts up the city's market board, read by other rulers passing within reach; no workers needed",
 	BuildingWall:        "Adds a wall tier (Palisade → Stone Wall → Bronze Wall) for combat defence",
-	BuildingHarbour:     "Works the settlement's coastal waters and enables sea trade",
+	BuildingHarbour:     "Opens deep-water fishing places in the city's catchment and takes part in sea trade",
 	BuildingShipyard:    "Builds and repairs ships",
 	BuildingFoundry:     "Smelts copper and tin into bronze",
 	BuildingStable:      "Enables chariots",
