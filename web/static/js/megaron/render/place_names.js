@@ -11,6 +11,7 @@ export function namedPlaceTerrain(tile,fallback){
  if(tile.place_kind==='lake')return 'Lake';
  if(tile.place_kind==='island')return 'Island';
  if(tile.place_kind==='strait')return 'Strait';
+ if(tile.place_kind==='bay')return 'Bay';
  if(tile.place_kind==='cape')return 'Cape';
  if(tile.place_kind==='plain')return 'Plain';
  if(tile.place_kind==='hills')return 'Hills';
