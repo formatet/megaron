@@ -327,10 +327,10 @@ func rawGrainRow(t *testing.T, pool *pgxpool.Pool, settlementID uuid.UUID) (amou
 
 // expectedDayResult mirrors ONE simulated day exactly — FoodTick's stock debit
 // (Utfodringsordningen D2/D3, runs first, priority 55) then tick.go's
-// applyDecay (decay ×0.99, then growth gated on economy.FoodNet) — so the test
+// applyDecay (growth gated on economy.FoodNet) — so the test
 // can cross-check the SQL's actual output against an independent Go
 // computation. Growth draws no grain (Timothy 2026-09-26), so the stock the
-// SQL leaves must be exactly FoodTick's remainder after decay.
+// SQL leaves must be exactly FoodTick's remainder.
 func expectedDayResult(prevPop int, prevAmount, prevRate float64) (newPop int, newGrain float64) {
 	rawGrainNow := prevAmount + prevRate // one tick elapsed since prev calc_tick
 
@@ -343,7 +343,7 @@ func expectedDayResult(prevPop int, prevAmount, prevRate float64) (newPop int, n
 	if postFood < 0 {
 		postFood = 0
 	}
-	newGrain = postFood * 0.99
+	newGrain = postFood
 
 	switch {
 	case starving:
