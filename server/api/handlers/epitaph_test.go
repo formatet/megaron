@@ -180,7 +180,7 @@ func TestEpitaphLines_TellsEveryCityTheWanaxFounded(t *testing.T) {
 }
 
 // A metropolis on a named lake rose on that lake's shore, not the Thalassa's
-// (insjöar slice 3, Timothy 2026-10-30). Unnamed lake or a sea neighbour: old line.
+// (insjöar slice 3, Timothy 2026-10-30). Unnamed lake: "the lake". A sea neighbour: the Thalassa.
 func TestEpitaphLines_LakeCityRoseOnTheLakeShore(t *testing.T) {
 	ctx := context.Background()
 	f := newEpitaphFixture(t)
@@ -191,7 +191,7 @@ func TestEpitaphLines_LakeCityRoseOnTheLakeShore(t *testing.T) {
 		}
 	}
 	or := f.cityName(city)
-	if got := f.h.epitaphLines(ctx, f.player, f.world, &city); got[0] != or+" rose on the shore of the Thalassa." {
+	if got := f.h.epitaphLines(ctx, f.player, f.world, &city); got[0] != or+" rose on the shore of the lake." {
 		t.Fatalf("unnamed lake: %q", got[0])
 	}
 	if _, err := f.h.pool.Exec(ctx, `INSERT INTO place_names(world_id,kind,anchor_q,anchor_r,name,named_tick) VALUES($1,'lake',2,0,'Kopais',1)`, f.world); err != nil {

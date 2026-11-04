@@ -429,7 +429,7 @@ func (h *WebHandler) epitaphLines(ctx context.Context, playerID, worldID uuid.UU
 
 // withLakeShore adds "shore" to a founding payload when the city lies on a named
 // lake and not on the Thalassa (insjöar slice 3, Timothy 2026-10-30). An unnamed
-// lake keeps the old line until someone names it.
+// lake reads "the lake" until someone names it.
 func (h *WebHandler) withLakeShore(ctx context.Context, worldID uuid.UUID, payload []byte) []byte {
 	var p map[string]any
 	if json.Unmarshal(payload, &p) != nil || p["colony"] == true {
@@ -469,10 +469,11 @@ func (h *WebHandler) withLakeShore(ctx context.Context, worldID uuid.UUID, paylo
 	if anchor == nil {
 		return payload
 	}
-	var name string
+	name := "the lake"
+	var named string
 	if h.pool.QueryRow(ctx, `SELECT name FROM place_names WHERE world_id=$1 AND kind='lake' AND anchor_q=$2 AND anchor_r=$3 AND name IS NOT NULL`,
-		worldID, anchor[0], anchor[1]).Scan(&name) != nil {
-		return payload
+		worldID, anchor[0], anchor[1]).Scan(&named) == nil {
+		name = named
 	}
 	p["shore"] = name
 	out, _ := json.Marshal(p)
