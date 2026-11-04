@@ -38,7 +38,7 @@ export function foreignIntelHTML(sett) {
     const then = buildingList(c.buildings, true);
     if (then) html += `<p class="empty-state">Buildings then: ${esc(then)}.</p>`;
   } else {
-    html += '<p class="empty-state">No one of yours has been inside. Send a messenger, a caravan or a gift to learn more.</p>';
+    html += '<p class="empty-state">No info</p>';
   }
   return html;
 }

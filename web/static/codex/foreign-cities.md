@@ -6,6 +6,8 @@ What you know about another Wanax's city is only what your own people have seen,
 - **Seen.** Your people can see the city now ([[sight]]), or they remember it. You know its name, its ruler, its walls, its rough size (*hamlet*, *town*, *city* or *great city*) and which buildings stand there, but not how large each one is. Whether it is under [[sieges|siege]] shows only while you can see it. A remembered city is shown **as last seen**, with the time.
 - **Been inside.** Something of yours has stood in the city: a [[messengers|messenger]] who delivered a letter, a [[transfers|caravan]] or [[gifts|gift]] that was unloaded there, traders who delivered goods, or your people reading its [[market|market board]]. They bring home a picture of that moment: its size, whether it was *well fed*, *hungry* or *[[food|starving]]*, up to three goods it held (*plenty of* or *some*, never an amount) and how far each building had been raised. The picture does not change until someone of yours goes there again. It always shows when it was taken and who brought it.
 
+A city that none of yours has been inside shows **No info**: send a messenger, a caravan or a gift to learn more.
+
 ## What stays hidden {#foreign-cities-hidden}
 
 Production, workers, [[silver|silver]], the build queue, recruiting, [[upkeep|upkeep]] and the city's standing with [[gods|the gods]] are never shown. An army in the city is seen only while you can see the city itself, just like an army in the open.
