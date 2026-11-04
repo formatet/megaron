@@ -22,6 +22,10 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
+// noCitizensLeftMsg is the 409 when every citizen already has a placement; the tip
+// names the two verbs that free one (hex placements and building workplaces).
+const noCitizensLeftMsg = "no citizens left in the pool — every citizen is already placed; free one with `keryx place <good> -1` or `keryx staff <building> -1`"
+
 // parsePositiveInt parses a URL path param as a positive integer (gubbe
 // ordinals are always ≥1, settlement_placement's own CHECK constraint).
 func parsePositiveInt(s string) (int, error) {
@@ -592,7 +596,7 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if placed.Total >= totalGubbar {
-		writeError(w, http.StatusConflict, "no citizens left in the pool — every citizen is already placed")
+		writeError(w, http.StatusConflict, noCitizensLeftMsg)
 		return
 	}
 	usedOrdinals := make(map[int]bool, placed.Total)
@@ -616,7 +620,7 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if gubbeOrdinal == 0 {
-		writeError(w, http.StatusConflict, "no citizens left in the pool — every citizen is already placed")
+		writeError(w, http.StatusConflict, noCitizensLeftMsg)
 		return
 	}
 
