@@ -695,8 +695,19 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 	}
 	// Demeter's farm is owed where ChooseFarmHex finds a grain hex — the very test
 	// createMetropolis applies, over the same known hexes — but never to a
-	// coastal founding, which gets Poseidon's galley instead (slice C).
+	// founding owed Poseidon's galley instead (slice C). A coastal city on a
+	// closed lake is owed no galley, so it gets the farm (Timothy 2026-11-05).
 	coastalCentre := len(view) > 0 && view[0].Known && view[0].Coastal
+	// A closed lake has no waterway to the Thalassa: harbour yes, galley no
+	// (the same predicate the settle and the shipyard use).
+	galleyGift := false
+	if starterFarm && coastalCentre {
+		galleyGift, err = province.HasThalassaWaterway(ctx, h.pool, worldID, center.Q, center.R)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "could not check the waterway")
+			return
+		}
+	}
 	_, farmGift, err := economy.ChooseFarmHex(ctx, h.pool, worldID, center, reachable)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not compute farm potential")
@@ -708,7 +719,7 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 	// with-farm call answers "would a farm help here" for the colony hint
 	// ("bygg en farm") without inventing a second formula for it.
 	foodForecast, err := economy.FoundingFoodForecastAt(
-		ctx, h.pool, worldID, center, starterFarm && !coastalCentre, reachable, forecastPop)
+		ctx, h.pool, worldID, center, starterFarm && !galleyGift, reachable, forecastPop)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not compute founding grain forecast")
 		return
@@ -795,7 +806,7 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 			"est_net_per_tick":            estNetPerTick,
 			"seed":                        seed,
 			"farm_possible":               farmGift,
-			"starter_farm_included":       starterFarm && !coastalCentre && farmGift,
+			"starter_farm_included":       starterFarm && !galleyGift && farmGift,
 			"ticks_until_empty":           daysUntilEmpty,
 			"with_farm_per_tick":          farmForecast.GrainProduction,
 			"consumption_per_tick":        foodForecast.Consumption,
@@ -815,16 +826,6 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 	// like everything else here: unknown_hexes already tells the reader the
 	// forecast is partial.
 	if starterFarm {
-		// A closed lake has no waterway to the Thalassa: harbour yes, galley no
-		// (the same predicate the settle and the shipyard use).
-		galleyGift := false
-		if coastalCentre {
-			galleyGift, err = province.HasThalassaWaterway(ctx, h.pool, worldID, center.Q, center.R)
-			if err != nil {
-				writeError(w, http.StatusInternalServerError, "could not check the waterway")
-				return
-			}
-		}
 		resp["founding_gifts"] = foundingGifts(farmGift, coastalCentre, galleyGift)
 	}
 	// The harbour rule, told before the irreversible step (only when the centre
@@ -847,18 +848,18 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 // foundingGifts lists the gifts a metropolis founded on this site is owed —
 // EITHER a farm OR a galley, never both (Timothy 2026-09-28, slice C). Both
 // conditions mirror the founding code exactly — Demeter's farm is granted when
-// the founding hex is inland and ChooseFarmHex finds a grain hex in the
-// catchment (createMetropolis), Poseidon's galley when the founding hex is
-// coastal (foundMetropolisFromNomadicHost) — so the forecast cannot promise
+// no galley is owed (not coastal, or a closed lake) and ChooseFarmHex finds a
+// grain hex in the catchment (createMetropolis), Poseidon's galley when the
+// founding hex is coastal with a waterway (foundMetropolisFromNomadicHost) — so the forecast cannot promise
 // what the settle will not deliver. Colonies are owed neither; the caller
 // gates on ?starter_farm=1.
 func foundingGifts(farmGift, coastalCentre, galleyGift bool) []map[string]string {
 	gifts := []map[string]string{}
-	if farmGift && !coastalCentre {
+	if farmGift && !galleyGift {
 		gifts = append(gifts, map[string]string{
 			"key":    "demeter_farm",
 			"label":  "Demeter's farm",
-			"detail": "an inland site whose catchment bears grain, so the city is founded with a farm already standing",
+			"detail": "an inland or closed-lake site whose catchment bears grain, so the city is founded with a farm already standing",
 		})
 	}
 	if coastalCentre && galleyGift {

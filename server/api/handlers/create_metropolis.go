@@ -32,6 +32,9 @@ type metropolisParams struct {
 	Cedar   bool
 	Incense bool
 	Coastal bool
+	// GalleyOwed: the founding is owed Poseidon's galley (coastal AND a waterway
+	// to the Thalassa), so it gets no farm. Either farm or galley, never both.
+	GalleyOwed bool
 
 	Name          string
 	Culture       string
@@ -200,12 +203,13 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, p metropolisParams) (creat
 	// barren ground she grants nothing — and the founding grain forecast still
 	// reads true there, since it uses the same function.
 	// Must precede RecomputeProduction so the farm's grain is picked up.
-	// A coastal founding gets no farm: it is owed Poseidon's galley instead,
-	// granted by the caller — EITHER farm OR galley (Timothy 2026-09-28,
-	// slice C). Measured on world f7c90afa 2026-10-01 before the change: 6 of
+	// A founding owed Poseidon's galley gets no farm: the galley is granted by
+	// the caller — EITHER farm OR galley (Timothy 2026-09-28,
+	// slice C). A coastal city on a closed lake is owed no galley, so it gets
+	// the farm (Timothy 2026-11-05). Measured on world f7c90afa 2026-10-01 before the change: 6 of
 	// 399 coastal sites starve without the farm vs 4 with it — the sea feeds
 	// them; it is the inland hills that go hungry.
-	if !p.Coastal {
+	if !p.GalleyOwed {
 		// The farm stands on the hex giving the largest level-1 grain OUTPUT, the
 		// SAME choice ChooseFarmHex gives the founding forecast
 		// (economy.FoundingGrainNetPerTick), so prognosis and reality agree.

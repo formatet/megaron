@@ -11,7 +11,7 @@ import (
 
 // Poseidon's galley needs a waterway to the Thalassa (Timothy 2026-11-01): a
 // founding on a closed lake keeps its harbour right but gets no ship.
-func foundAndCountGalleys(t *testing.T, tiles map[[2]int]string) (galleys int, gift bool) {
+func foundAndCountGalleys(t *testing.T, tiles map[[2]int]string) (galleys int, gift bool, farms int) {
 	t.Helper()
 	pool := escortTestPool(t)
 	ctx := context.Background()
@@ -19,6 +19,7 @@ func foundAndCountGalleys(t *testing.T, tiles map[[2]int]string) (galleys int, g
 	if _, err := pool.Exec(ctx, `UPDATE map_tiles SET coastal = true WHERE world_id=$1 AND q=0 AND r=0`, worldID); err != nil {
 		t.Fatal(err)
 	}
+	tiles[[2]int{-1, 0}] = "plains" // a grain hex in the catchment: Demeter's farm is possible
 	for c, terrain := range tiles {
 		if _, err := pool.Exec(ctx,
 			`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1,$2,$3,$4)
@@ -43,27 +44,30 @@ func foundAndCountGalleys(t *testing.T, tiles map[[2]int]string) (galleys int, g
 	if err := tx.QueryRow(ctx, `SELECT count(*) FROM units WHERE settlement_id=$1 AND type='galley'`, founded.SettlementID).Scan(&galleys); err != nil {
 		t.Fatal(err)
 	}
-	return galleys, founded.GalleyID != nil
+	if err := tx.QueryRow(ctx, `SELECT count(*) FROM buildings WHERE settlement_id=$1 AND building_type='farm'`, founded.SettlementID).Scan(&farms); err != nil {
+		t.Fatal(err)
+	}
+	return galleys, founded.GalleyID != nil, farms
 }
 
-func TestFoundingClosedLakeGivesNoGalley(t *testing.T) {
-	galleys, gift := foundAndCountGalleys(t, map[[2]int]string{{1, 0}: "lake"})
-	if galleys != 0 || gift {
-		t.Fatalf("closed lake: galleys=%d gift=%v, want none", galleys, gift)
+func TestFoundingClosedLakeGivesFarmNotGalley(t *testing.T) {
+	galleys, gift, farms := foundAndCountGalleys(t, map[[2]int]string{{1, 0}: "lake"})
+	if galleys != 0 || gift || farms != 1 {
+		t.Fatalf("closed lake: galleys=%d gift=%v farms=%d, want no galley and Demeter's farm", galleys, gift, farms)
 	}
 }
 
 func TestFoundingLakeWithOutletGivesGalley(t *testing.T) {
-	galleys, gift := foundAndCountGalleys(t, map[[2]int]string{
+	galleys, gift, farms := foundAndCountGalleys(t, map[[2]int]string{
 		{1, 0}: "lake", {2, 0}: "river", {3, 0}: "river_ford", {4, 0}: "coastal_sea"})
-	if galleys != 1 || !gift {
-		t.Fatalf("lake with outlet: galleys=%d gift=%v, want 1", galleys, gift)
+	if galleys != 1 || !gift || farms != 0 {
+		t.Fatalf("lake with outlet: galleys=%d gift=%v farms=%d, want 1 galley and no farm", galleys, gift, farms)
 	}
 }
 
 func TestFoundingSeaCoastGivesGalley(t *testing.T) {
-	galleys, gift := foundAndCountGalleys(t, map[[2]int]string{{1, 0}: "coastal_sea"})
-	if galleys != 1 || !gift {
-		t.Fatalf("sea coast: galleys=%d gift=%v, want 1", galleys, gift)
+	galleys, gift, farms := foundAndCountGalleys(t, map[[2]int]string{{1, 0}: "coastal_sea"})
+	if galleys != 1 || !gift || farms != 0 {
+		t.Fatalf("sea coast: galleys=%d gift=%v farms=%d, want 1 galley and no farm", galleys, gift, farms)
 	}
 }

@@ -98,6 +98,7 @@ func foundMetropolisFixturePopulation(t *testing.T, terrains [7]string, coastal 
 		R:          0,
 		Terrain:    terrains[0],
 		Coastal:    coastal,
+		GalleyOwed: coastal,
 		Name:       "Foundington-" + uuid.New().String(),
 		Culture:    "achaean",
 		Population: population,

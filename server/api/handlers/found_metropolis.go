@@ -126,6 +126,19 @@ func foundMetropolisFromNomadicHost(
 		return out, fmt.Errorf("settle founder store: %w", err)
 	}
 
+	// Timothy 2026-11-01: a ship must be able to leave — a closed lake (no
+	// waterway to the Thalassa, the shipyard's own predicate) gives no galley;
+	// the harbour stays. Timothy 2026-11-05: that city is owed Demeter's farm
+	// instead (createMetropolis gates the farm on !GalleyOwed).
+	galleyOwed := false
+	if coastal {
+		var wwErr error
+		galleyOwed, wwErr = province.HasThalassaWaterway(ctx, tx, worldID, q, r)
+		if wwErr != nil {
+			return out, fmt.Errorf("check waterway for poseidon galley: %w", wwErr)
+		}
+	}
+
 	// 4. Raise the metropolis through the same path an ordinary join uses.
 	m, err := createMetropolis(ctx, tx, metropolisParams{
 		WorldID:       worldID,
@@ -139,6 +152,7 @@ func foundMetropolisFromNomadicHost(
 		Cedar:         cedarDep,
 		Incense:       incenseDep,
 		Coastal:       coastal,
+		GalleyOwed:    galleyOwed,
 		Name:          name,
 		Culture:       culture,
 		Population:    pop,
@@ -265,17 +279,7 @@ func foundMetropolisFromNomadicHost(
 	// 8. Poseidon's gift: a coastal founding is owed exactly one galley, once.
 	// Built inline here (not via a shared starter-unit path): the founder already
 	// marched in with two spearmen, so only the galley is owed.
-	// Timothy 2026-11-01: a ship must be able to leave — a closed lake (no
-	// waterway to the Thalassa, the shipyard's own predicate) gives no galley;
-	// the harbour stays.
-	galleyOwed := false
-	if coastal {
-		var wwErr error
-		galleyOwed, wwErr = province.HasThalassaWaterway(ctx, tx, worldID, q, r)
-		if wwErr != nil {
-			return out, fmt.Errorf("check waterway for poseidon galley: %w", wwErr)
-		}
-	}
+	// galleyOwed was settled above, before createMetropolis (step 4).
 	if galleyOwed {
 		// Ordinalen delas ut ur den monotona räknaren, aldrig ur MAX(ordinal):
 		// numret återanvänds inte ens när ett förband upplöses (§3.1 punkt 2).
