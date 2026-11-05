@@ -31,11 +31,11 @@ const (
 	blessProbability = 0.15 // 15% chance of divine blessing per maintained day above threshold
 )
 
-// StartingKharis is the founding value and no-temple ceiling (Timothy 2026-10-18).
-// Existing Wanaxes are not lifted to this value.
-// Exported for the Codex reference guard (BlessThreshold lives in wrath.go).
+// BlessProbability is exported for the Codex reference guard (BlessThreshold lives in wrath.go).
 const BlessProbability = blessProbability
 
+// StartingKharis is the founding value and no-temple ceiling (Timothy 2026-10-18).
+// Existing Wanaxes are not lifted to this value.
 const StartingKharis = 40.0
 
 // PunishmentProbability is independent of temple presence (R5).

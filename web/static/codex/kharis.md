@@ -1,4 +1,4 @@
-**Kharis** is your standing with [[gods|the gods]] — a relationship, not a resource. It is held for your whole realm, not per city, and your [[account|Account]] summary shows its current amount. The **Kult (⛩)** drawer shows the number, mood and its current meaning:
+**Kharis** is your standing with [[gods|the gods]] — a relationship, not a resource. It is held for your whole realm, not per city, and your [[account|Account]] summary shows its current amount. The **Kult (⛩)** drawer shows the number, mood and its current meaning.
 
 ## What the gods ask, in numbers {#kharis-numbers}
 
@@ -39,8 +39,8 @@ Where your kharis stands decides the risk and the favour you meet.
 | below 30 | 2% chance of punishment each game day. |
 | 30 and above | No punishment. |
 | 40 | A new Wanax starts here. It is also the ceiling with no temple. |
-| 60 and above | With a maintained temple: 15% chance of a spontaneous blessing each game day. |
 | 50 | The ceiling set by a level 1 temple. |
+| 60 and above | With a maintained temple: 15% chance of a spontaneous blessing each game day. |
 | 75 | The ceiling set by a level 2 temple. |
 | 100 | The ceiling set by a level 3 temple. |
 <!-- /kharis-standing -->

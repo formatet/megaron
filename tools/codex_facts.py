@@ -50,14 +50,15 @@ def kharis_demand():
 def pct(x):return f'{x*100:g}%'
 def kharis_standing():
  k=reference['kharis']
- rows=[(amount(k['floor']),'The floor: kharis never falls below this.'),
-  ('below '+amount(k['wrathful_threshold']),pct(k['wrathful_probability'])+' chance of punishment each game day.'),
-  ('below '+amount(k['wrath_threshold']),pct(k['wrath_probability'])+' chance of punishment each game day.'),
-  (amount(k['wrath_threshold'])+' and above','No punishment.'),
-  (amount(k['starting']),'A new Wanax starts here. It is also the ceiling with no temple.'),
-  (amount(k['bless_threshold'])+' and above','With a maintained temple: '+pct(k['bless_probability'])+' chance of a spontaneous blessing each game day.')]
- for l in k['levels']:rows.append((amount(l['ceiling']),'The ceiling set by a level '+str(l['level'])+' temple.'))
- return '| Kharis | What it means |\n|---|---|\n'+'\n'.join('| '+a+' | '+b+' |' for a,b in rows)
+ # Rows ascend by kharis; a "below N" row sorts just under N, so the table reads like the scale it describes.
+ rows=[(k['floor'],amount(k['floor']),'The floor: kharis never falls below this.'),
+  (k['wrathful_threshold']-.5,'below '+amount(k['wrathful_threshold']),pct(k['wrathful_probability'])+' chance of punishment each game day.'),
+  (k['wrath_threshold']-.5,'below '+amount(k['wrath_threshold']),pct(k['wrath_probability'])+' chance of punishment each game day.'),
+  (k['wrath_threshold'],amount(k['wrath_threshold'])+' and above','No punishment.'),
+  (k['starting'],amount(k['starting']),'A new Wanax starts here. It is also the ceiling with no temple.'),
+  (k['bless_threshold'],amount(k['bless_threshold'])+' and above','With a maintained temple: '+pct(k['bless_probability'])+' chance of a spontaneous blessing each game day.')]
+ for l in k['levels']:rows.append((l['ceiling'],amount(l['ceiling']),'The ceiling set by a level '+str(l['level'])+' temple.'))
+ return '| Kharis | What it means |\n|---|---|\n'+'\n'.join('| '+a+' | '+b+' |' for _,a,b in sorted(rows,key=lambda r:r[0]))
 def temple_levels():
  k=reference['kharis'];rows=[]
  goods={e['key']:a['id'] for a in index['articles'] for e in a.get('entities',[]) if e['kind']=='good'}
