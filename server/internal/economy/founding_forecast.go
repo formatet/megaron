@@ -34,7 +34,7 @@ import (
 // in api/handlers/founding_forecast_parity_test.go does exactly that.
 //
 // hasFarm mirrors whether the founding would seed a starter farm —
-// true for an INLAND metropolis (createMetropolis's Demeter's-gift farm; a coastal one gets a galley instead), false for
+// true for a metropolis owed Demeter's farm (createMetropolis; inland or on a closed lake — one owed Poseidon's galley gets that instead), false for
 // a colony (builds its own farm later, unit_arrival.go foundColony). When
 // true, ChooseFarmHex picks the SAME hex a real founding would (§A of the
 // plan: "prognosen och verkligt grundande måste välja samma hex"). reachable

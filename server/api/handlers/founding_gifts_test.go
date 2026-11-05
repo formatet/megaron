@@ -19,7 +19,9 @@ func TestFoundingGifts_DemeterOnlyWhenAFarmHexExists(t *testing.T) {
 		{"barren inland — no gift at all", false, false, false, nil},
 		{"farmland inland — Demeter only", true, false, false, []string{"demeter_farm"}},
 		{"barren coast — Poseidon only", false, true, true, []string{"poseidon_galley"}},
-		{"closed lake — no gift (no way out to the Thalassa)", false, true, false, nil},
+		{"barren closed lake — no gift (no way out to the Thalassa)", false, true, false, nil},
+		// Timothy 2026-11-05: a ship could never leave, so the lake city gets Demeter's farm.
+		{"farmland closed lake — Demeter only", true, true, false, []string{"demeter_farm"}},
 		// EITHER farm OR galley (Timothy 2026-09-28, slice C): the coast is fed
 		// by the sea, so farmland there earns no farm.
 		{"farmland coast — Poseidon only", true, true, true, []string{"poseidon_galley"}},
