@@ -29,3 +29,11 @@ func TestStorageNotificationsNameTheLoss(t *testing.T) {
 		t.Fatalf("status storage lines = %v, want one silver warning", lines)
 	}
 }
+
+func TestPrintStorageNotification_StorehousePool(t *testing.T) {
+	raw := json.RawMessage(`{"name":"Knossos","good_key":"stone","lost_quantity":12,"reason":"production","pool":"storehouse","pool_amount":500,"pool_capacity":500}`)
+	out := capturePrint(t, func() { printStorageNotification(notificationItem{Kind: "StorageOverflow", Body: raw}) })
+	if !strings.Contains(out, "Storehouse full (500 / 500)") || strings.Contains(out, "stone") {
+		t.Fatalf("pool dispatch: %q", out)
+	}
+}

@@ -17,7 +17,7 @@ test('Warehouse: food with granary cap, herd with pen cap, goods alphabetical wi
  assert.match(html,/Grain<\/span><span class="sr-val">463 \/ 2,000/);
  assert.match(html,/Fish<\/span><span class="sr-val">88 \/ 2,000/);
  assert.match(html,/Herd 40 \/ 50/);
- const goodsPart=html.split('>Goods<')[1];
+ const goodsPart=html.split('dsec-title">Goods')[1];
  assert.deepEqual(labels(goodsPart),['Bronze','Copper','Stone','Timber'],'alphabetical, no food, no livestock, no zero amounts');
  assert.match(goodsPart,/Copper<\/span><span class="sr-val">9 \/ 1,000/);
  assert.match(goodsPart,/Timber<\/span><span class="sr-val">120</);
@@ -71,4 +71,19 @@ test('Warehouse: net per game day per good, food runway from the forecast, stead
  html=warehouseHTML(pd({forecast:{goods:[],food:{days:null,net:1.5,flows:[]}}}),goods);
  assert.match(html,/Food for<\/span><span class="sr-val">not running down · net \+1.5 a game day/);
  assert.doesNotMatch(html,/indefinitely/);
+});
+
+test('Warehouse: the Storehouse row is "Stores X / Y"; its goods carry no cap of their own',()=>{
+ const sg=[{...good('stone','Stone',300,500),stored_in:'storehouse'},{...good('timber','Timber',120,500),stored_in:'storehouse'},good('grain','Grain',10,2000)];
+ const html=warehouseHTML(pd({storehouse:{level:0,capacity:500,amount:420}}),sg);
+ const goodsPart=html.split('dsec-title">Goods')[1];
+ assert.deepEqual(labels(goodsPart),['Stores','Stone','Timber']);
+ assert.match(goodsPart,/Stores<\/span><span class="sr-val">420 \/ 500/);
+ assert.match(goodsPart,/Stone<\/span><span class="sr-val">300</);
+ assert.doesNotMatch(goodsPart,/Stone<\/span><span class="sr-val">300 \//,'a stored_in good never shows a cap');
+ assert.match(goodsPart,/No Storehouse built/);
+ assert.match(html,/openCodex\('storehouse'\)/);
+ const built=warehouseHTML(pd({storehouse:{level:2,capacity:2500,amount:2500}}),sg);
+ assert.match(built,/wh-full[^>]*><span class="sr-label">Stores<\/span><span class="sr-val">2,500 \/ 2,500 · full/);
+ assert.doesNotMatch(built,/No Storehouse built/);
 });

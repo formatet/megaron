@@ -216,6 +216,10 @@ func purseFixture(t *testing.T, pool *pgxpool.Pool, ctx context.Context, motherS
 	).Scan(&motherID); err != nil {
 		t.Fatalf("create mother settlement: %v", err)
 	}
+	// The shared Storehouse (mig 244) holds 500 with no building; this test moves thousands.
+	if _, err := pool.Exec(ctx, `INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, 'storehouse', 3)`, motherID); err != nil {
+		t.Fatalf("storehouse: %v", err)
+	}
 	if _, err := pool.Exec(ctx,
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
 		 VALUES ($1, 'silver', $2, 0, 1000000, current_world_tick())`,

@@ -48,6 +48,15 @@ func PenLevel(ctx context.Context, db interface {
 	return lvl
 }
 
+// StorehouseLevel is the settlement's Storehouse level, 0 when it has none.
+func StorehouseLevel(ctx context.Context, db interface {
+	QueryRow(context.Context, string, ...any) pgx.Row
+}, sid uuid.UUID) int {
+	var lvl int
+	_ = db.QueryRow(ctx, `SELECT COALESCE(MAX(level),0) FROM buildings WHERE settlement_id=$1 AND building_type='storehouse'`, sid).Scan(&lvl)
+	return lvl
+}
+
 // SiloLevel is the settlement's Granary (silo building) level, 0 when it has none.
 func SiloLevel(ctx context.Context, db interface {
 	QueryRow(context.Context, string, ...any) pgx.Row

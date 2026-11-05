@@ -53,6 +53,9 @@ func mkTradeSettlement(t *testing.T, pool *pgxpool.Pool, ctx context.Context, wo
 	).Scan(&id); err != nil {
 		t.Fatalf("create settlement %s: %v", name, err)
 	}
+	if _, err := pool.Exec(ctx, `INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, 'storehouse', 3)`, id); err != nil {
+		t.Fatalf("storehouse: %v", err)
+	}
 	return id
 }
 

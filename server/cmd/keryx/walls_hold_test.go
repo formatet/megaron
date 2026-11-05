@@ -20,3 +20,17 @@ func TestWallsHoldLine_OnlyTheCeilingNoCountdown(t *testing.T) {
 		t.Fatalf("no cap reported -> no line")
 	}
 }
+
+func TestStorehouseLine(t *testing.T) {
+	got := storehouseLine(map[string]any{"storehouse": map[string]any{"amount": 120.0, "capacity": 500.0, "level": 0.0}})
+	if !strings.HasPrefix(got, "Storehouse: 120 / 500") || !strings.Contains(got, "keryx build --type storehouse") {
+		t.Fatalf("no building: %q", got)
+	}
+	got = storehouseLine(map[string]any{"storehouse": map[string]any{"amount": 1200.0, "capacity": 2500.0, "level": 2.0}})
+	if got != "Storehouse: 1.2k / 2.5k (level 2)" {
+		t.Fatalf("level 2: %q", got)
+	}
+	if storehouseLine(map[string]any{}) != "" {
+		t.Fatal("a foreign city has no Storehouse line")
+	}
+}

@@ -12,7 +12,9 @@ const NOT_GOODS = new Set([...FOOD_KEYS, 'livestock']);
 
 const signed = v => `${v >= 0 ? '+' : '\u2212'}${fmtNum(Math.abs(Number(Number(v).toFixed(1))))}`;
 const stored = (amount, cap) => `${fmtNum(Math.floor(amount || 0))}${cap > 0 ? ' / ' + fmtNum(Math.floor(cap)) : ''}`;
-function storeRow(label, amount, cap, net) {
+function storeRow(label, amount, cap, net, shared) {
+  // A good in the Storehouse has no cap of its own: only the store row shows X / Y.
+  if (shared) cap = 0;
   const full = atStorageCeiling(amount || 0, cap || 0);
   const netText = Number.isFinite(net) ? ` · net ${signed(net)} a game day` : '';
   return `<div class="stat-row${full ? ' wh-full' : ''}"${full ? ' title="Full: anything produced past the cap is discarded."' : ''}><span class="sr-label">${esc(label)}</span><span class="sr-val">${stored(amount, cap)}${full ? ' · full' : ''}${netText}</span></div>`;
@@ -43,6 +45,9 @@ export function warehouseHTML(pd, goods) {
   const herd = herdLine ? `<div class="dsec"><div class="dsec-title">Herd</div>${herdLine}</div>` : '';
   const others = list.filter(g => !NOT_GOODS.has(g.key) && g.amount > 0)
     .sort((a, b) => labelOf(a).localeCompare(labelOf(b)));
-  const goodsRows = others.length ? others.map(g => storeRow(labelOf(g), g.amount, g.cap, net[g.key])).join('') : '<p class="empty-state">No goods stored.</p>';
-  return food + herd + `<div class="dsec"><div class="dsec-title">Goods</div>${goodsRows}</div>`;
+  const goodsRows = others.length ? others.map(g => storeRow(labelOf(g), g.amount, g.cap, net[g.key], g.stored_in === 'storehouse')).join('') : '<p class="empty-state">No goods stored.</p>';
+  const sh = pd?.storehouse;
+  const storesRow = sh ? storeRow('Stores', sh.amount, sh.capacity, undefined)
+    + (sh.level < 1 ? '<p class="empty-state">No Storehouse built: everything but food and the herd shares room for 500. Build a Storehouse in Construct to raise it.</p>' : '') : '';
+  return food + herd + `<div class="dsec"><div class="dsec-title">Goods <button class="btn-small" onclick="openCodex('storehouse')" title="Read the Codex" aria-label="Read the Codex">?</button></div>${storesRow}${goodsRows}</div>`;
 }

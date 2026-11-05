@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"math"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -285,6 +286,16 @@ func TestSilverAuditV2Conservation(t *testing.T) {
 		t.Fatal(err)
 	}
 	if _, err := tx.Exec(ctx, string(filter)); err != nil {
+		t.Fatal(err)
+	}
+	// ...and the Storehouse's admitted-silver function (mig 244) that replaced 179's body.
+	storeSQL, err := os.ReadFile("../../db/migrations/244_storehouse.up.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	from := strings.Index(string(storeSQL), "CREATE OR REPLACE FUNCTION record_silver_mining_credit()")
+	to := from + strings.Index(string(storeSQL)[from:], "$$;") + len("$$;")
+	if _, err := tx.Exec(ctx, string(storeSQL)[from:to]); err != nil {
 		t.Fatal(err)
 	}
 	if err := tx.Commit(ctx); err != nil {

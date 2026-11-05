@@ -1,0 +1,24 @@
+api/handlers/create_metropolis.go:119: `INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+api/handlers/create_metropolis.go:151: if _, err := tx.Exec(ctx, `UPDATE settlement_goods SET amount=$1,
+api/handlers/kingdom.go:1111: `UPDATE settlement_goods
+internal/combat/road.go:235: `UPDATE settlement_goods
+internal/combat/occupation.go:710: `UPDATE settlement_goods SET
+internal/combat/march_start.go:1032: `UPDATE settlement_goods
+api/handlers/settlement.go:1016: `UPDATE settlement_goods SET
+internal/combat/silver_audit_v2.go:76: if _, err := tx.Exec(ctx, `UPDATE settlement_goods g
+internal/combat/upkeep.go:409: `UPDATE settlement_goods
+internal/kharis/temple_offering.go:364: tag, err := tx.Exec(ctx, `UPDATE settlement_goods SET
+api/handlers/helpers.go:306: `UPDATE settlement_goods SET
+internal/economy/recompute.go:705: `INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+internal/economy/recompute.go:794: `UPDATE settlement_goods
+internal/economy/recompute.go:805: `UPDATE settlement_goods
+internal/economy/recompute.go:830: `UPDATE settlement_goods
+internal/province/goods_cost.go:24: return tx.Exec(ctx, `UPDATE settlement_goods SET
+internal/economy/food_tick.go:225: if _, err := tx.Exec(ctx, `UPDATE settlement_goods SET amount=GREATEST(0,settled(amount,rate,calc_tick)+$3),calc_tick=current_world_tick() WHERE settlement_id=$1 AND good_key=
+internal/economy/food_tick.go:230: if _, err := tx.Exec(ctx, `UPDATE settlement_goods SET amount=GREATEST(0,settled(amount,rate,calc_tick)-$3),calc_tick=current_world_tick() WHERE settlement_id=$1 AND good_key=
+internal/combat/unit_arrival.go:2047: `INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+internal/combat/unit_arrival.go:2089: if _, err := tx.Exec(ctx, `UPDATE settlement_goods
+internal/economy/food_basket.go:185: tag, err := tx.Exec(ctx, `UPDATE settlement_goods SET amount=GREATEST(0,LEAST(cap,settled(amount,rate,calc_tick))-$3),calc_tick=current_world_tick() WHERE settlement_id=$1 A
+internal/kharis/tick.go:987: `UPDATE settlement_goods SET
+internal/kharis/tick.go:1323:      UPDATE settlement_goods sg SET
+internal/ledger/ledger.go:87: `UPDATE settlement_goods g

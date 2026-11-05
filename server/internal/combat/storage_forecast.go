@@ -28,7 +28,8 @@ func (f StorageForecaster) CityForecast(ctx context.Context, tx pgx.Tx, sid uuid
 	if err := tx.QueryRow(ctx, `SELECT s.population FROM settlements s WHERE s.id=$1`, sid).Scan(&population); err != nil {
 		return out, err
 	}
-	rows, err := tx.Query(ctx, `SELECT good_key,GREATEST(0,LEAST(cap,settled(amount,rate,calc_tick))),rate FROM settlement_goods WHERE settlement_id=$1 ORDER BY good_key`, sid)
+	rows, err := tx.Query(ctx, `SELECT g.good_key,GREATEST(0,COALESCE(se.amount,LEAST(g.cap,settled(g.amount,g.rate,g.calc_tick)))),g.rate
+ FROM settlement_goods g LEFT JOIN storehouse_effective($1) se ON se.good_key=g.good_key WHERE g.settlement_id=$1 ORDER BY g.good_key`, sid)
 	if err != nil {
 		return out, err
 	}
@@ -157,7 +158,8 @@ func (f StorageForecaster) StorageForecast(ctx context.Context, tx pgx.Tx, sid u
 	for _, g := range city.Goods {
 		net[g.GoodKey] = g.Net
 	}
-	rows, err := tx.Query(ctx, `SELECT good_key,GREATEST(0,LEAST(cap,settled(amount,rate,calc_tick))),cap FROM settlement_goods WHERE settlement_id=$1 ORDER BY good_key`, sid)
+	rows, err := tx.Query(ctx, `SELECT g.good_key,GREATEST(0,COALESCE(se.amount,LEAST(g.cap,settled(g.amount,g.rate,g.calc_tick)))),g.cap
+ FROM settlement_goods g LEFT JOIN storehouse_effective($1) se ON se.good_key=g.good_key WHERE g.settlement_id=$1 ORDER BY g.good_key`, sid)
 	if err != nil {
 		return nil, err
 	}
@@ -196,19 +198,42 @@ func (f StorageForecaster) StorageForecast(ctx context.Context, tx pgx.Tx, sid u
 	if err := incoming.Err(); err != nil {
 		return nil, err
 	}
-	for i, f := range result {
-		net := f.NetPerTick
-		result[i] = economy.ProjectStorage(f.GoodKey, f.Amount, f.Cap, net, receipts[f.GoodKey])
+	// The Storehouse is ONE store: its goods are projected together against the shared
+	// ceiling (sum of stock, sum of net flows, every pooled receipt in arrival order) and
+	// reported as one row, good_key "storehouse". Never the same remaining room per good.
+	var out []economy.StorageForecast
+	pool := economy.StorageForecast{GoodKey: economy.StorehouseKey}
+	poolSeen := false
+	var poolReceipts []economy.StorageReceipt
+	for _, f := range result {
+		if province.StorehouseStoredGood(f.GoodKey) {
+			poolSeen = true
+			pool.Amount += f.Amount
+			pool.NetPerTick += f.NetPerTick
+			poolReceipts = append(poolReceipts, receipts[f.GoodKey]...)
+			delete(receipts, f.GoodKey)
+			continue
+		}
+		out = append(out, economy.ProjectStorage(f.GoodKey, f.Amount, f.Cap, f.NetPerTick, receipts[f.GoodKey]))
 		delete(receipts, f.GoodKey)
 	}
 	// A commodity not stored yet can still arrive and fill a default-cap row.
 	for good, rs := range receipts {
+		if province.StorehouseStoredGood(good) {
+			poolSeen = true
+			poolReceipts = append(poolReceipts, rs...)
+			continue
+		}
 		storeCap := province.DefaultGoodStorageCap
 		if slices.Contains(economy.FoodGoods, good) {
 			storeCap = province.FoodStorageCap(economy.SiloLevel(ctx, tx, sid))
 		}
-		result = append(result, economy.ProjectStorage(good, 0, storeCap, 0, rs))
+		out = append(out, economy.ProjectStorage(good, 0, storeCap, 0, rs))
 	}
-	sort.Slice(result, func(i, j int) bool { return result[i].GoodKey < result[j].GoodKey })
-	return result, nil
+	sort.SliceStable(poolReceipts, func(i, j int) bool { return poolReceipts[i].InTicks < poolReceipts[j].InTicks })
+	if poolSeen {
+		out = append(out, economy.ProjectStorage(economy.StorehouseKey, pool.Amount, economy.LoadStorehouse(ctx, tx, sid).Capacity, pool.NetPerTick, poolReceipts))
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].GoodKey < out[j].GoodKey })
+	return out, nil
 }

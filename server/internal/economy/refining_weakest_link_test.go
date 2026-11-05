@@ -376,6 +376,10 @@ func TestRecomputeProduction_BronzeRefiningLimited(t *testing.T) {
 		t.Fatalf("build foundry: %v", err)
 	}
 	placeBuildingGubbe(t, pool, settlementID, 1, "foundry", GoodBronze)
+	// 1 000 of metal is over the 500 of a city with no Storehouse (mig 244): level 3 holds 5 000.
+	if _, err := pool.Exec(ctx, `INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, 'storehouse', 3)`, settlementID); err != nil {
+		t.Fatalf("storehouse: %v", err)
+	}
 	if _, err := pool.Exec(ctx,
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
 		 VALUES ($1, 'copper', 900, 0, 1000000, 100), ($1, 'tin', 100, 0, 1000000, 100)`,

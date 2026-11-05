@@ -281,6 +281,27 @@
     },
     {
       "costs": {
+        "stone": 8,
+        "timber": 12
+      },
+      "duration_game_days": 8,
+      "max_level": 3,
+      "purpose": "One shared store for every good except food, the herd and cult: stone, timber, metals, silver, wine and the rest",
+      "type": "storehouse",
+      "upgrade_costs": {
+        "2": {
+          "stone": 16,
+          "timber": 24
+        },
+        "3": {
+          "bronze": 8,
+          "stone": 32,
+          "timber": 48
+        }
+      }
+    },
+    {
+      "costs": {
         "stone": 24,
         "timber": 8
       },
@@ -382,6 +403,7 @@
       "silo": "Granary",
       "stable": "Stable",
       "stonequarry": "Stone Quarry",
+      "storehouse": "Storehouse",
       "temple": "Temple",
       "wall": "Wall",
       "winery": "Winery"

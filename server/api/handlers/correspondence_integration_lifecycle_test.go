@@ -25,9 +25,13 @@ func integrationTradeFixture(t *testing.T) (*replyFixture, *events.Scheduler, *e
 	h := NewMessengerHandler(f.pool, sched, clk, nil)
 	f.router.Post("/worlds/{worldID}/messengers/{messengerID}/trade-accept", h.TradeAccept)
 	f.router.Post("/worlds/{worldID}/messengers/{messengerID}/trade-decline", h.TradeDecline)
+	// 100 of every good under a level-3 Storehouse (mig 244): a refund must find room.
+	if _, err := f.pool.Exec(context.Background(), `INSERT INTO buildings(settlement_id,building_type,level) SELECT s,'storehouse',3 FROM unnest(ARRAY[$1::uuid,$2::uuid]) s`, f.originID, f.destID); err != nil {
+		t.Fatal(err)
+	}
 	if _, err := f.pool.Exec(context.Background(), `INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick)
- SELECT s.id,g.key,10000,0,1000000,current_world_tick() FROM settlements s CROSS JOIN goods g
- WHERE s.id=$1 OR s.id=$2 ON CONFLICT(settlement_id,good_key) DO UPDATE SET amount=10000,rate=0,cap=1000000,calc_tick=current_world_tick()`, f.originID, f.destID); err != nil {
+ SELECT s.id,g.key,100,0,1000000,current_world_tick() FROM settlements s CROSS JOIN goods g
+ WHERE s.id=$1 OR s.id=$2 ON CONFLICT(settlement_id,good_key) DO UPDATE SET amount=100,rate=0,cap=1000000,calc_tick=current_world_tick()`, f.originID, f.destID); err != nil {
 		t.Fatal(err)
 	}
 	return f, sched, store
