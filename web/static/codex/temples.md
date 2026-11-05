@@ -16,11 +16,7 @@ Temple levels 1/2/3 have **weight 1/4/9**. Effective weight is temple weight × 
 
 Each temple pays its daily tithe from its own city. Temples in the same city draw in god order (Asterion, Potnia, Stillness, Velchanos), each against what the earlier temples left. Kharis remains one pool for the realm.
 
-| Level | [[grain]] part | [[silver]] part | [[incense]] part | Effect shares |
-|---|---|---|---|---|
-| 1 | 0.25 grain | — | — | 100% |
-| 2 | 0.75 grain | 0.1 silver | — | 75% / 25% |
-| 3 | 1.75 grain | 0.25 silver | 0.1 incense | 70% / 20% / 10% |
+The tithe of each level is in the table under Temple levels and the Kharis ceiling, below.
 
 The grain part uses **grain first, then [[fish|fish]], then [[timber|timber]], then [[livestock]]** (this is the order of payment, not a list, so it is not alphabetical), at their divine value (livestock counts as 2). Silver never replaces grain. Each part is paid separately: a part that cannot be paid in full takes nothing. No part replaces another. A level-2 temple without silver still receives 75% effect if its grain part is paid; a level-3 temple with only its grain part receives 70%. [[rites|Prayers]] keep their own offerings.
 
@@ -46,6 +42,14 @@ If the rich offering is paid in full, the temple's effective weight is **multipl
 ## Temple levels and the Kharis ceiling {#temple-levels}
 
 With full staffing and tithe, a level-1 temple raises kharis in a one-city realm by **0.25 per game day**. Compare your realm demand and given weight in **Kult → Kharis**. A temple does not remove its city from the demand, nor protect low standing from [[divine-wrath|divine wrath]].
+
+<!-- temple-levels -->
+| Level | Workplaces | Weight | Kharis per game day, full staff and tithe | With rich offering | Kharis ceiling | Daily tithe |
+|---|---|---|---|---|---|---|
+| 1 | 2 | 1 | 0.58 | 0.88 | 50 | 0.25 grain (100%) |
+| 2 | 4 | 4 | 2.33 | 3.50 | 75 | 0.75 grain (75%) + 0.1 silver (25%) |
+| 3 | 8 | 9 | 5.25 | 7.88 | 100 | 1.75 grain (70%) + 0.25 silver (20%) + 0.1 incense (10%) |
+<!-- /temple-levels -->
 
 **Your best temple sets your kharis ceiling:** no temple 40, level 1 50, level 2 75, level 3 100. Everyday prayers work at a level-1 temple. Spontaneous blessings need 60 kharis and a maintained temple. Only a level-2 temple or higher lets kharis grow that far. Kharis retained above a lowered ceiling still counts. Levelling a temple further needs [[cedar|cedar]].
 

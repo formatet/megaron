@@ -85,6 +85,10 @@ func EffectiveTempleWeight(level, staffed, capacity int, paid float64) float64 {
 	}
 	return TempleWeight(level) * float64(min(staffed, capacity)) / float64(capacity) * paid
 }
+
+// TitheParts is the daily tithe of a temple level, for the Codex reference guard.
+func TitheParts(level int) []TithePart { return titheParts(level) }
+
 func titheParts(level int) []TithePart {
 	switch level {
 	case 2:

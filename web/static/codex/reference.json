@@ -611,6 +611,110 @@
       "weight": 1.5
     }
   ],
+  "kharis": {
+    "bless_probability": 0.15,
+    "bless_threshold": 60,
+    "demand": [
+      {
+        "cities": 1,
+        "demand": 1
+      },
+      {
+        "cities": 2,
+        "demand": 3
+      },
+      {
+        "cities": 3,
+        "demand": 6
+      },
+      {
+        "cities": 4,
+        "demand": 10
+      },
+      {
+        "cities": 5,
+        "demand": 15
+      },
+      {
+        "cities": 6,
+        "demand": 21
+      }
+    ],
+    "demolition_per_level": 10,
+    "floor": 1,
+    "levels": [
+      {
+        "ceiling": 50,
+        "level": 1,
+        "tithe": [
+          {
+            "good": "grain",
+            "amount": 0.25,
+            "share": 1,
+            "paid": false
+          }
+        ],
+        "weight": 1,
+        "workplaces": 2
+      },
+      {
+        "ceiling": 75,
+        "level": 2,
+        "tithe": [
+          {
+            "good": "grain",
+            "amount": 0.75,
+            "share": 0.75,
+            "paid": false
+          },
+          {
+            "good": "silver",
+            "amount": 0.1,
+            "share": 0.25,
+            "paid": false
+          }
+        ],
+        "weight": 4,
+        "workplaces": 4
+      },
+      {
+        "ceiling": 100,
+        "level": 3,
+        "tithe": [
+          {
+            "good": "grain",
+            "amount": 1.75,
+            "share": 0.7,
+            "paid": false
+          },
+          {
+            "good": "silver",
+            "amount": 0.25,
+            "share": 0.2,
+            "paid": false
+          },
+          {
+            "good": "incense",
+            "amount": 0.1,
+            "share": 0.1,
+            "paid": false
+          }
+        ],
+        "weight": 9,
+        "workplaces": 8
+      }
+    ],
+    "no_temple_ceiling": 40,
+    "per_demand": 0.3333333333333333,
+    "per_temple_weight": 0.5833333333333334,
+    "protection_ticks": 7,
+    "rich_offering_bonus": 1.5,
+    "starting": 40,
+    "wrath_probability": 0.02,
+    "wrath_threshold": 30,
+    "wrathful_probability": 0.04,
+    "wrathful_threshold": 5
+  },
   "prayers": {
     "minoan_asterion_thread": {
       "ID": "minoan_asterion_thread",
@@ -626,7 +730,12 @@
       "God": "Asterion",
       "Name": "The Thread Shows a Path",
       "Description": "Your next land caravan or Runner from this city travels faster; the caravan is harder to intercept.",
-      "Favours": null
+      "Favours": null,
+      "RestByLevel": [
+        12,
+        6,
+        4
+      ]
     },
     "minoan_potnia_vision_v2": {
       "ID": "minoan_potnia_vision_v2",
@@ -652,7 +761,12 @@
         "purple": 2,
         "silver": 1.4,
         "stone": 0.4
-      }
+      },
+      "RestByLevel": [
+        24,
+        12,
+        8
+      ]
     },
     "minoan_potnia_walls": {
       "ID": "minoan_potnia_walls",
@@ -678,7 +792,12 @@
         "pottery": 0.5,
         "stone": 0.4,
         "wine": 1.7
-      }
+      },
+      "RestByLevel": [
+        24,
+        12,
+        8
+      ]
     },
     "minoan_stillness_passage": {
       "ID": "minoan_stillness_passage",
@@ -694,7 +813,12 @@
       "God": "The Sea Daimons of Stillness",
       "Name": "Favourable Passage",
       "Description": "The next ship leaving this port sails faster and takes no storm damage on its outward leg.",
-      "Favours": null
+      "Favours": null,
+      "RestByLevel": [
+        12,
+        6,
+        4
+      ]
     },
     "minoan_velchanos_green_shoots": {
       "ID": "minoan_velchanos_green_shoots",
@@ -721,7 +845,12 @@
         "timber": 0.4,
         "tin": 0.5,
         "wine": 2
-      }
+      },
+      "RestByLevel": [
+        25,
+        13,
+        9
+      ]
     }
   },
   "recipes": [

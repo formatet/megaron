@@ -1,5 +1,50 @@
 **Kharis** is your standing with [[gods|the gods]] — a relationship, not a resource. It is held for your whole realm, not per city, and your [[account|Account]] summary shows its current amount. The **Kult (⛩)** drawer shows the number, mood and its current meaning:
 
+## What the gods ask, in numbers {#kharis-numbers}
+
+Every prayer asks for a minimum standing, and each has its own offering and rest.
+
+<!-- kharis-prayers -->
+| Prayer | God | Required kharis | Traditional offering | Temple’s rest at level 1 / 2 / 3 |
+|---|---|---|---|---|
+| [[favourable-passage|Favourable Passage]] | The Sea Daimons of Stillness | 5 | 6 fish · 3 silver | 12 / 6 / 4 game days |
+| [[green-shoots|Green Shoots]] | Velchanos | 30 | 15 grain · 2 silver | 25 / 13 / 9 game days |
+| [[mistress-of-the-walls|Mistress of the Walls]] | Potnia | 5 | 8 grain · 4 timber (or cedar) | 24 / 12 / 8 game days |
+| [[potnias-vision|Potnia's Vision]] | Potnia | 5 | 10 grain · 3 silver | 24 / 12 / 8 game days |
+| [[the-thread-shows-a-path|The Thread Shows a Path]] | Asterion | 5 | 3 silver · 4 timber (or cedar) | 12 / 6 / 4 game days |
+<!-- /kharis-prayers -->
+
+Kharis is never spent on a prayer; it is only a minimum you must hold.
+
+Each active city adds to the realm's demand, and that demand fades kharis every game day. Temples are what hold it up.
+
+<!-- kharis-demand -->
+| Active cities | Realm demand | Upkeep per game day | Temple weight to hold steady |
+|---|---|---|---|
+| 1 | 1 | 0.33 | 0.57 |
+| 2 | 3 | 1.00 | 1.71 |
+| 3 | 6 | 2.00 | 3.43 |
+| 4 | 10 | 3.33 | 5.71 |
+| 5 | 15 | 5.00 | 8.57 |
+| 6 | 21 | 7.00 | 12.00 |
+<!-- /kharis-demand -->
+
+Where your kharis stands decides the risk and the favour you meet.
+
+<!-- kharis-standing -->
+| Kharis | What it means |
+|---|---|
+| 1 | The floor: kharis never falls below this. |
+| below 5 | 4% chance of punishment each game day. |
+| below 30 | 2% chance of punishment each game day. |
+| 30 and above | No punishment. |
+| 40 | A new Wanax starts here. It is also the ceiling with no temple. |
+| 60 and above | With a maintained temple: 15% chance of a spontaneous blessing each game day. |
+| 50 | The ceiling set by a level 1 temple. |
+| 75 | The ceiling set by a level 2 temple. |
+| 100 | The ceiling set by a level 3 temple. |
+<!-- /kharis-standing -->
+
 ## Divine moods {#kharis-details}
 
 | Mood | Meaning |

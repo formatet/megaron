@@ -30,6 +30,37 @@ def favours():
   taste=', '.join(k+' ×'+amount(v) for k,v in sorted(f.items(),key=lambda kv:(-kv[1],kv[0]))) if f else 'no preference: every good at its worth'
   rows.append('| '+x['Name']+' | '+x['God']+' | '+taste+' |')
  return '| Prayer | God | Favours (dearest first) |\n|---|---|---|\n'+'\n'.join(rows)
+def kharis_prayers():
+ # Prayers alphabetical by name; linked to their article when the index names one for the prayer.
+ art={e['key']:a['id'] for a in index['articles'] for e in a.get('entities',[]) if e['kind']=='prayer'}
+ rows=[]
+ for k,x in sorted(reference['prayers'].items(),key=lambda kv:kv[1]['Name']):
+  name=('[['+art[k]+'|'+x['Name']+']]') if k in art else x['Name']
+  rows.append('| '+name+' | '+x['God']+' | '+amount(x['MinKharis'])+' | '+costs(x['Offering'])+' | '+' / '.join(amount(r) for r in x['RestByLevel'])+' game days |')
+ return '| Prayer | God | Required kharis | Traditional offering | Temple’s rest at level 1 / 2 / 3 |\n|---|---|---|---|---|\n'+'\n'.join(rows)
+def kharis_demand():
+ k=reference['kharis'];rows=[]
+ for d in k['demand']:
+  up=k['per_demand']*d['demand'];rows.append('| '+str(d['cities'])+' | '+amount(d['demand'])+f' | {up:.2f} | {up/k["per_temple_weight"]:.2f} |')
+ return '| Active cities | Realm demand | Upkeep per game day | Temple weight to hold steady |\n|---|---|---|---|\n'+'\n'.join(rows)
+def pct(x):return f'{x*100:g}%'
+def kharis_standing():
+ k=reference['kharis']
+ rows=[(amount(k['floor']),'The floor: kharis never falls below this.'),
+  ('below '+amount(k['wrathful_threshold']),pct(k['wrathful_probability'])+' chance of punishment each game day.'),
+  ('below '+amount(k['wrath_threshold']),pct(k['wrath_probability'])+' chance of punishment each game day.'),
+  (amount(k['wrath_threshold'])+' and above','No punishment.'),
+  (amount(k['starting']),'A new Wanax starts here. It is also the ceiling with no temple.'),
+  (amount(k['bless_threshold'])+' and above','With a maintained temple: '+pct(k['bless_probability'])+' chance of a spontaneous blessing each game day.')]
+ for l in k['levels']:rows.append((amount(l['ceiling']),'The ceiling set by a level '+str(l['level'])+' temple.'))
+ return '| Kharis | What it means |\n|---|---|\n'+'\n'.join('| '+a+' | '+b+' |' for a,b in rows)
+def temple_levels():
+ k=reference['kharis'];rows=[]
+ for l in k['levels']:
+  r=l['weight']*k['per_temple_weight']
+  tithe=' + '.join(amount(p['amount'])+' '+p['good']+' ('+pct(p['share'])+')' for p in l['tithe'])
+  rows.append('| '+str(l['level'])+' | '+str(l['workplaces'])+' | '+amount(l['weight'])+f' | {r:.2f} | {r*k["rich_offering_bonus"]:.2f} | '+amount(l['ceiling'])+' | '+tithe+' |')
+ return '| Level | Workplaces | Weight | Kharis per game day, full staff and tithe | With rich offering | Kharis ceiling | Daily tithe |\n|---|---|---|---|---|---|---|\n'+'\n'.join(rows)
 def tastes():
  # Each god's rich-offering taste from reference.json (religion.TempleGods), dearest first; gods alphabetical.
  rows=[]
@@ -62,6 +93,8 @@ for article in index['articles']:
  text=re.sub(r'<!-- facts: (building|prayer) ([a-z0-9_]+) -->[\s\S]*?<!-- /facts -->',lambda m:'<!-- facts: '+m[1]+' '+m[2]+' -->\n'+block(m[1],m[2])+'\n<!-- /facts -->',text)
  text=re.sub(r'<!-- tastes -->[\s\S]*?<!-- /tastes -->',lambda m:'<!-- tastes -->\n'+tastes()+'\n<!-- /tastes -->',text)
  text=re.sub(r'<!-- favours -->[\s\S]*?<!-- /favours -->',lambda m:'<!-- favours -->\n'+favours()+'\n<!-- /favours -->',text)
+ for name,fn in (('kharis-prayers',kharis_prayers),('kharis-demand',kharis_demand),('kharis-standing',kharis_standing),('temple-levels',temple_levels)):
+  text=re.sub('<!-- '+name+r' -->[\s\S]*?<!-- /'+name+' -->',lambda m,name=name,fn=fn:'<!-- '+name+' -->\n'+fn()+'\n<!-- /'+name+' -->',text)
  text=re.sub(r'<!-- list: ([a-z]+)((?: [a-z0-9_]+)*) -->[\s\S]*?<!-- /list -->',lambda m:'<!-- list: '+m[1]+m[2]+' -->\n'+hub_list(m[1],m[2].split())+'\n<!-- /list -->',text)
  for entity in article.get('entities',[]):
   if entity['kind']!='unit' or entity['key'] not in units:continue

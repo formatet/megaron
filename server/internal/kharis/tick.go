@@ -33,6 +33,9 @@ const (
 
 // StartingKharis is the founding value and no-temple ceiling (Timothy 2026-10-18).
 // Existing Wanaxes are not lifted to this value.
+// Exported for the Codex reference guard (BlessThreshold lives in wrath.go).
+const BlessProbability = blessProbability
+
 const StartingKharis = 40.0
 
 // PunishmentProbability is independent of temple presence (R5).

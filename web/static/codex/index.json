@@ -2000,6 +2000,10 @@
       ],
       "sections": [
         {
+          "id": "kharis-numbers",
+          "title": "What the gods ask, in numbers"
+        },
+        {
           "id": "kharis-details",
           "title": "Divine moods"
         },

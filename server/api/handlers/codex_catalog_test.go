@@ -17,6 +17,8 @@ import (
 	"strings"
 	"testing"
 
+	"formatet/megaron/server/internal/economy"
+	"formatet/megaron/server/internal/kharis"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/unit"
@@ -247,13 +249,36 @@ func TestCodexReferenceMatchesAuthoritativeCatalogues(t *testing.T) {
 		"gods":         religion.TempleGods,
 		"entity_names": codexEntityNames(t),
 	}
-	prayers := map[string]religion.PrayerSpec{}
+	prayers := map[string]any{}
 	for _, id := range religion.CulturePrayers[string(province.MVPCulture)] {
 		spec := religion.PrayerSpecs[id]
 		spec.Favours = religion.FavoursFor(spec) // the taste the game uses, archetype fallback included (Codex Favours table)
-		prayers[id] = spec
+		prayers[id] = struct {
+			religion.PrayerSpec
+			RestByLevel []int
+		}{spec, []int{religion.RestTicks(spec.CooldownTicks, 1, 1), religion.RestTicks(spec.CooldownTicks, 1, 2), religion.RestTicks(spec.CooldownTicks, 1, 3)}}
 	}
 	facts["prayers"] = prayers
+	demand := []map[string]any{}
+	for n := 1; n <= 6; n++ {
+		demand = append(demand, map[string]any{"cities": n, "demand": kharis.RealmDemand(n)})
+	}
+	levels := []map[string]any{}
+	for l := 1; l <= 3; l++ {
+		levels = append(levels, map[string]any{"level": l, "workplaces": economy.TempleWorkplaces(l), "weight": kharis.TempleWeight(l), "ceiling": kharis.TempleKharisCeiling(l), "tithe": kharis.TitheParts(l)})
+	}
+	facts["kharis"] = map[string]any{
+		"starting": kharis.StartingKharis, "floor": kharis.Floor,
+		"per_temple_weight": kharis.KharisPerTempleWeight, "per_demand": kharis.KharisPerDemand,
+		"rich_offering_bonus": kharis.RichOfferingBonus,
+		"bless_threshold":     kharis.BlessThreshold, "bless_probability": kharis.BlessProbability,
+		"wrath_threshold": kharis.WrathThreshold, "wrath_probability": kharis.WrathDailyProbability,
+		"wrathful_threshold": kharis.WrathfulThreshold, "wrathful_probability": kharis.WrathfulDailyProbability,
+		"protection_ticks":     kharis.WrathProtectionTicks,
+		"demolition_per_level": kharis.TempleDemolitionPenaltyPerLevel,
+		"no_temple_ceiling":    kharis.TempleKharisCeiling(0),
+		"demand":               demand, "levels": levels,
+	}
 	var goodsRaw []byte
 	if err := pool.QueryRow(context.Background(), `SELECT json_agg(t) FROM(SELECT key,name,tier,category,status,weight FROM goods ORDER BY key)t`).Scan(&goodsRaw); err != nil {
 		t.Fatal(err)
