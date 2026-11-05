@@ -46,9 +46,9 @@ With full staffing and tithe, a level-1 temple raises kharis in a one-city realm
 <!-- temple-levels -->
 | Level | Workplaces | Weight | Kharis per game day, full staff and tithe | With rich offering | Kharis ceiling | Daily tithe |
 |---|---|---|---|---|---|---|
-| 1 | 2 | 1 | 0.58 | 0.88 | 50 | 0.25 grain (100%) |
-| 2 | 4 | 4 | 2.33 | 3.50 | 75 | 0.75 grain (75%) + 0.1 silver (25%) |
-| 3 | 8 | 9 | 5.25 | 7.88 | 100 | 1.75 grain (70%) + 0.25 silver (20%) + 0.1 incense (10%) |
+| 1 | 2 | 1 | 0.58 | 0.88 | 50 | 0.25 [[grain|grain]] (100%) |
+| 2 | 4 | 4 | 2.33 | 3.50 | 75 | 0.75 [[grain|grain]] (75%) + 0.1 [[silver|silver]] (25%) |
+| 3 | 8 | 9 | 5.25 | 7.88 | 100 | 1.75 [[grain|grain]] (70%) + 0.25 [[silver|silver]] (20%) + 0.1 [[incense|incense]] (10%) |
 <!-- /temple-levels -->
 
 **Your best temple sets your kharis ceiling:** no temple 40, level 1 50, level 2 75, level 3 100. Everyday prayers work at a level-1 temple. Spontaneous blessings need 60 kharis and a maintained temple. Only a level-2 temple or higher lets kharis grow that far. Kharis retained above a lowered ceiling still counts. Levelling a temple further needs [[cedar|cedar]].

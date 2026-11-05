@@ -7,11 +7,11 @@ Every prayer asks for a minimum standing, and each has its own offering and rest
 <!-- kharis-prayers -->
 | Prayer | God | Required kharis | Traditional offering | Temple’s rest at level 1 / 2 / 3 |
 |---|---|---|---|---|
-| [[favourable-passage|Favourable Passage]] | The Sea Daimons of Stillness | 5 | 6 fish · 3 silver | 12 / 6 / 4 game days |
-| [[green-shoots|Green Shoots]] | Velchanos | 30 | 15 grain · 2 silver | 25 / 13 / 9 game days |
-| [[mistress-of-the-walls|Mistress of the Walls]] | Potnia | 5 | 8 grain · 4 timber (or cedar) | 24 / 12 / 8 game days |
-| [[potnias-vision|Potnia's Vision]] | Potnia | 5 | 10 grain · 3 silver | 24 / 12 / 8 game days |
-| [[the-thread-shows-a-path|The Thread Shows a Path]] | Asterion | 5 | 3 silver · 4 timber (or cedar) | 12 / 6 / 4 game days |
+| [[favourable-passage|Favourable Passage]] | [[sea-daimons|The Sea Daimons of Stillness]] | 5 | 6 [[fish|fish]] · 3 [[silver|silver]] | 12 / 6 / 4 game days |
+| [[green-shoots|Green Shoots]] | [[velchanos|Velchanos]] | 30 | 15 [[grain|grain]] · 2 [[silver|silver]] | 25 / 13 / 9 game days |
+| [[mistress-of-the-walls|Mistress of the Walls]] | [[potnia|Potnia]] | 5 | 8 [[grain|grain]] · 4 [[timber|timber]] (or [[cedar|cedar]]) | 24 / 12 / 8 game days |
+| [[potnias-vision|Potnia's Vision]] | [[potnia|Potnia]] | 5 | 10 [[grain|grain]] · 3 [[silver|silver]] | 24 / 12 / 8 game days |
+| [[the-thread-shows-a-path|The Thread Shows a Path]] | [[asterion|Asterion]] | 5 | 3 [[silver|silver]] · 4 [[timber|timber]] (or [[cedar|cedar]]) | 12 / 6 / 4 game days |
 <!-- /kharis-prayers -->
 
 Kharis is never spent on a prayer; it is only a minimum you must hold.

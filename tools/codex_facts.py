@@ -33,10 +33,14 @@ def favours():
 def kharis_prayers():
  # Prayers alphabetical by name; linked to their article when the index names one for the prayer.
  art={e['key']:a['id'] for a in index['articles'] for e in a.get('entities',[]) if e['kind']=='prayer'}
+ gods={e['key']:a['id'] for a in index['articles'] for e in a.get('entities',[]) if e['kind']=='god'}
+ goods={e['key']:a['id'] for a in index['articles'] for e in a.get('entities',[]) if e['kind']=='good'}
+ link=lambda g:('[['+goods[g]+'|'+g+']]') if g in goods else g
+ offer=lambda o:' · '.join(amount(o[g])+' '+link(g)+(' (or '+link('cedar')+')' if g=='timber' else '') for g in sorted(o) if o[g])
  rows=[]
  for k,x in sorted(reference['prayers'].items(),key=lambda kv:kv[1]['Name']):
   name=('[['+art[k]+'|'+x['Name']+']]') if k in art else x['Name']
-  rows.append('| '+name+' | '+x['God']+' | '+amount(x['MinKharis'])+' | '+costs(x['Offering'])+' | '+' / '.join(amount(r) for r in x['RestByLevel'])+' game days |')
+  rows.append('| '+name+' | '+('[['+gods[x['GodID']]+'|'+x['God']+']]' if x['GodID'] in gods else x['God'])+' | '+amount(x['MinKharis'])+' | '+offer(x['Offering'])+' | '+' / '.join(amount(r) for r in x['RestByLevel'])+' game days |')
  return '| Prayer | God | Required kharis | Traditional offering | Temple’s rest at level 1 / 2 / 3 |\n|---|---|---|---|---|\n'+'\n'.join(rows)
 def kharis_demand():
  k=reference['kharis'];rows=[]
@@ -56,9 +60,11 @@ def kharis_standing():
  return '| Kharis | What it means |\n|---|---|\n'+'\n'.join('| '+a+' | '+b+' |' for a,b in rows)
 def temple_levels():
  k=reference['kharis'];rows=[]
+ goods={e['key']:a['id'] for a in index['articles'] for e in a.get('entities',[]) if e['kind']=='good'}
+ link=lambda g:('[['+goods[g]+'|'+g+']]') if g in goods else g
  for l in k['levels']:
   r=l['weight']*k['per_temple_weight']
-  tithe=' + '.join(amount(p['amount'])+' '+p['good']+' ('+pct(p['share'])+')' for p in l['tithe'])
+  tithe=' + '.join(amount(p['amount'])+' '+link(p['good'])+' ('+pct(p['share'])+')' for p in l['tithe'])
   rows.append('| '+str(l['level'])+' | '+str(l['workplaces'])+' | '+amount(l['weight'])+f' | {r:.2f} | {r*k["rich_offering_bonus"]:.2f} | '+amount(l['ceiling'])+' | '+tithe+' |')
  return '| Level | Workplaces | Weight | Kharis per game day, full staff and tithe | With rich offering | Kharis ceiling | Daily tithe |\n|---|---|---|---|---|---|---|\n'+'\n'.join(rows)
 def tastes():
