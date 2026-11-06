@@ -83,14 +83,14 @@ func TestAIRound4_AutomaticFoodAPIAndFixedQueue(t *testing.T) {
 			t.Fatalf("unexpected stored production: %v", s)
 		}
 	}
-	for _, kind := range []string{"market", "temple"} {
+	for _, kind := range []string{"market", "temple", "stable"} {
 		if _, err := pool.Exec(ctx, `INSERT INTO build_queue(world_id,settlement_id,building_type,complete_at,god_id) VALUES($1,$2,$3,$4,CASE WHEN $3='temple' THEN 'potnia' END)`, wid, sid, kind, time.Unix(4102444800, 0)); err != nil {
 			t.Fatal(err)
 		}
 	}
 	// A different valid city building (not the wall: that is gated on a Granary first) hits the fixed queue guard before costs.
 	rec := request("POST", "/worlds/"+wid.String()+"/provinces/"+pid.String()+"/build", `{"building_type":"barracks"}`)
-	if rec.Code != 422 || !strings.Contains(rec.Body.String(), "fixed at 2 concurrent") || !strings.Contains(rec.Body.String(), "population and buildings do not add slots") {
+	if rec.Code != 422 || !strings.Contains(rec.Body.String(), "one building at a time plus 2 waiting") || !strings.Contains(rec.Body.String(), "population and buildings do not add slots") {
 		t.Fatalf("%d %s", rec.Code, rec.Body.String())
 	}
 }

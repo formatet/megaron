@@ -12,7 +12,7 @@ package handlers
 //     terrain, no NULL-terrain fallback) — built off those terrains it
 //     silently produces nothing. Now exposed as BuildingCatalogue's
 //     requires_terrain field.
-//   - the build queue's concurrent-slot cap (province.go's maxParallelBuilds)
+//   - the build queue's concurrent-slot cap (province.go's maxQueuedBuilds)
 //     only ever appeared in the 422 refusing a 3rd build. Now exposed as
 //     province Get's build_queue_max field, alongside the existing
 //     build_queue array.
@@ -208,7 +208,7 @@ func TestProvinceGet_ExposesBuildQueueMax(t *testing.T) {
 	if resp.Settlement.BuildQueueMax == nil {
 		t.Fatal("settlement.build_queue_max missing from Get response")
 	}
-	if *resp.Settlement.BuildQueueMax != maxParallelBuilds {
-		t.Errorf("settlement.build_queue_max = %d, want %d (maxParallelBuilds)", *resp.Settlement.BuildQueueMax, maxParallelBuilds)
+	if *resp.Settlement.BuildQueueMax != maxQueuedBuilds {
+		t.Errorf("settlement.build_queue_max = %d, want %d (maxQueuedBuilds)", *resp.Settlement.BuildQueueMax, maxQueuedBuilds)
 	}
 }

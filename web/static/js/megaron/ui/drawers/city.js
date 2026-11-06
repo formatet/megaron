@@ -220,7 +220,7 @@ export async function startBuild() {
   const d = await r.json().catch(() => ({}));
   if (r.ok) {
     resultEl.style.color = 'var(--safe-text)';
-    const receipt = `${btype === 'temple' ? templeName(god) : (_BLD_LBL[btype]||btype)} queued${hexLabel}${d.duration_game_days != null ? ' · ' + fmtDuration(d.duration_game_days) : ''}${d.complete_at ? ' · ready ' + fmtArrival(d.complete_at, d.complete_tick, 'ready') : ''}.`;
+    const receipt = `${btype === 'temple' ? templeName(god) : (_BLD_LBL[btype]||btype)} queued${hexLabel}${d.duration_game_days != null ? ' · ' + fmtDuration(d.duration_game_days) : ''}${d.complete_at ? ' · ready ' + fmtArrival(d.complete_at, d.complete_tick, 'ready') : d.active === false ? ' · starts when the current build is done' : ''}.`;
     resultEl.textContent = receipt;
     // Refresh only the buildings section — avoids resetting the active tab
     await refreshCityBuildings(capital.id);
@@ -563,11 +563,12 @@ async function refreshCityBuildings(provinceID) {
         }</table><div id="city-demolish-res"></div>`
       : '<p class="empty-state">No buildings yet.</p>';
     if (pd.market_board) h2 += await ownBoardSection(pd.market_board, pd.id);
-    if (pd.build_queue_max != null) h2 += `<p class="empty-state">Queue: ${bq.length}/${pd.build_queue_max} slots used — fixed limit; population and buildings do not add slots. Finish or cancel a build.</p>`;
+    if (pd.build_queue_max != null) h2 += `<p class="empty-state">Queue: ${bq.length}/${pd.build_queue_max} — one building at a time, the rest wait their turn. Builders in a Workshop speed the active build up (up to 3x). Finish or cancel a build to free a place.</p>`;
     if (bq.length) h2 += `<div class="dsec-title" style="margin-top:.8rem">Build queue</div><table class="goods-mini">${
       // A building finishes, it doesn't arrive — say "ready" (matches the
-      // Training column below and war.js's ship-build phrasing).
-      bq.map(b => `<tr><td>${esc(b.name||_BLD_LBL[b.type]||b.type)} · ${esc(b.settlement_name||pd.name||'this city')}${b.hex_q != null ? ` at (${b.hex_q},${b.hex_r})` : ''}</td><td>${arrivalHTML(b.complete_at, undefined, 'ready')}</td>` +
+      // Training column below and war.js's ship-build phrasing). Only the
+      // active build has a finish time; the others say "next" until they start.
+      bq.map(b => `<tr><td>${esc(b.name||_BLD_LBL[b.type]||b.type)} · ${esc(b.settlement_name||pd.name||'this city')}${b.hex_q != null ? ` at (${b.hex_q},${b.hex_r})` : ''}</td><td>${b.active === false || !b.complete_at ? `next in line · ${fmtNum(b.work_left_game_days ?? 0)} game days of work` : `${b.rate > 1 ? `${b.rate}x pace · ` : ''}${arrivalHTML(b.complete_at, undefined, 'ready')}`}</td>` +
         `<td style="text-align:right"><button class="btn-small" onclick="cancelBuild('${provinceID}','${b.id}')" style="padding:.05rem .3rem;font-size:.68rem;cursor:pointer">✕</button></td></tr>`).join('')
     }</table>`;
     if (tu.length) {

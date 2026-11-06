@@ -386,6 +386,26 @@
           "timber": 32
         }
       }
+    },
+    {
+      "costs": {
+        "stone": 12,
+        "timber": 10
+      },
+      "duration_game_days": 8,
+      "max_level": 3,
+      "purpose": "Its builders speed up construction here: one builder per level, up to 3x pace; without one the city builds at base pace",
+      "type": "workshop",
+      "upgrade_costs": {
+        "2": {
+          "stone": 24,
+          "timber": 20
+        },
+        "3": {
+          "stone": 48,
+          "timber": 40
+        }
+      }
     }
   ],
   "entity_names": {
@@ -406,7 +426,8 @@
       "storehouse": "Storehouse",
       "temple": "Temple",
       "wall": "Wall",
-      "winery": "Winery"
+      "winery": "Winery",
+      "workshop": "Workshop"
     },
     "unit": {
       "elite_infantry": "Bronze Guard",
@@ -473,6 +494,14 @@
       "status": "active",
       "tier": "manufactured",
       "weight": 2.5
+    },
+    {
+      "category": "bulk",
+      "key": "building",
+      "name": "Construction work",
+      "status": "parked",
+      "tier": "manufactured",
+      "weight": 0
     },
     {
       "category": "bulk",

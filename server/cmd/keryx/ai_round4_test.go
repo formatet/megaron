@@ -148,10 +148,10 @@ func TestAIRound4_NetThresholdAndSingular(t *testing.T) {
 
 func TestAIRound4_QueueExplainsFixedSlots(t *testing.T) {
 	round3Client(t, func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, `{"settlement":{"build_queue_max":2,"build_queue":[{},{}]}}`)
+		fmt.Fprint(w, `{"settlement":{"build_queue_max":3,"build_queue":[{},{},{}]}}`)
 	})
 	out, err := captureStdout(t, func() error { return printBuildQueue(newClient(cfg), "world", "default") })
-	if err != nil || !strings.Contains(out, "2/2 slots used — fixed limit; population and buildings do not add slots") {
+	if err != nil || !strings.Contains(out, "3/3 — one building at a time, the others wait their turn") {
 		t.Fatalf("%v %s", err, out)
 	}
 }

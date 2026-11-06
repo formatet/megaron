@@ -99,11 +99,25 @@ var HexBoundBuildingTypes = map[string]bool{
 
 var workplaceSlotTable = map[string][4]int{
 	// index 0 unused (level is always ≥1); index = level.
-	"shipyard":    {0, 3, 6, 10},
+	"shipyard":    {0, 1, 2, 3}, // = level; the work rate is the placed count, capped at 3
+	"workshop":    {0, 1, 2, 3}, // builders: 1x/2x/3x construction pace
 	"olive_press": {0, 1, 2, 4},
 	"winery":      {0, 1, 2, 4},
 	"stable":      {0, 1, 2, 4},
 	"foundry":     {0, 1, 2, 4},
+}
+
+// shipyardBerths is how many ships a shipyard can repair at once, by level. It used to be
+// the shipyard's worker slots (3/6/10); workers are now 1/2/3 (pace), so the berths keep
+// their own table and the repair limit does not change (megaron_byggare_verkstad.md).
+var shipyardBerths = [4]int{0, 3, 6, 10}
+
+// ShipyardBerths returns the concurrent-repair berths of a shipyard of the given level.
+func ShipyardBerths(level int) int {
+	if level < 1 || level >= len(shipyardBerths) {
+		return 0
+	}
+	return shipyardBerths[level]
 }
 
 // WorkplaceSlots returns how many citizens a building of the given type and

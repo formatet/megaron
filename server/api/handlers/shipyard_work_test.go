@@ -188,7 +188,7 @@ func TestShipyardPlacementIsServiceWithCapacityAndIdleLifecycle(t *testing.T) {
 	if !strings.Contains(string(encoded), `"shipbuilding"`) || !strings.Contains(string(encoded), `"staffing_only":true`) {
 		t.Fatal(string(encoded))
 	}
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 1; i++ { // a level-1 shipyard has ONE place (1/2/3 by level)
 		code, body = f.do(t, http.MethodPost, f.placementsPath(), map[string]any{"target_kind": "building", "building_type": "shipyard", "good_key": "shipbuilding"})
 		if code != 201 {
 			t.Fatal(code, body)

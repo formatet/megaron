@@ -28,6 +28,10 @@ type BuildCompletePayload struct {
 	BuildingType string    `json:"building_type"`
 	HexQ         *int      `json:"hex_q,omitempty"`
 	HexR         *int      `json:"hex_r,omitempty"`
+	// Revision stamps the queue's clock (build_queue.work_revision, mig 245): an event
+	// whose revision is not the row's current one was superseded by a rate change.
+	// Absent (legacy event) = 0, which never matches a started row.
+	Revision int `json:"revision"`
 }
 
 // BuildCompleteHandler resolves a completed building construction.
@@ -63,12 +67,16 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 	// Verify queue entry still exists (idempotency guard).
 	var existingID uuid.UUID
 	var godID *string // the queued temple's god (mig 202); the payload never carried it
+	var revision int
 	err = tx.QueryRow(ctx,
-		`SELECT id, god_id FROM build_queue WHERE id = $1 AND settlement_id = $2`,
+		`SELECT id, god_id, work_revision FROM build_queue WHERE id = $1 AND settlement_id = $2 FOR UPDATE`,
 		p.BuildQueueID, p.SettlementID,
-	).Scan(&existingID, &godID)
+	).Scan(&existingID, &godID, &revision)
 	if err != nil {
 		return nil // Already resolved.
+	}
+	if revision != p.Revision {
+		return nil // Superseded by a rate change (a newer event owns the finish), or never started.
 	}
 
 	// Insert completed building into settlement. Hex-bound types (HexQ/HexR
@@ -238,6 +246,10 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 
 	if _, err := tx.Exec(ctx, `DELETE FROM build_queue WHERE id = $1`, p.BuildQueueID); err != nil {
 		return fmt.Errorf("delete build queue entry: %w", err)
+	}
+	// The next build in line starts now.
+	if _, err := tx.Exec(ctx, `SELECT sync_build_queue($1)`, p.SettlementID); err != nil {
+		return fmt.Errorf("start next build: %w", err)
 	}
 
 	if err := tx.Commit(ctx); err != nil {

@@ -23,8 +23,9 @@ func staffCmd() *cobra.Command {
 		Short: "Show a named building workplace, or place/remove citizens with +n/-n",
 		Long: `<building> is a city workplace (e.g. olive_press). Hex buildings use place. +n places n more idle
 citizens there; -n returns n citizens to the idle pool. The building name is required. Omit the delta to just
-see current occupancy. A market has no workplaces and needs no workers. An unstaffed shipyard stands still; one worker keeps it working. A city may hold one temple per god: with more than one, name it with --god.`,
+see current occupancy. A market has no workplaces and needs no workers. An unstaffed shipyard stands still; its pace is the number of workers (1x/2x/3x, a place per level). A Workshop's builders speed up construction the same way; without builders the city builds at base pace 1x. A city may hold one temple per god: with more than one, name it with --god.`,
 		Example: `  keryx staff shipyard +1
+  keryx staff workshop +2
   keryx staff temple +1 --god potnia
   keryx staff olive_press
   keryx staff olive_press +2
@@ -304,6 +305,9 @@ func buildingUnderConstruction(c *Client, prov, buildingType string) string {
 	}
 	for _, q := range p.Settlement.BuildQueue {
 		if q.Type == buildingType {
+			if q.CompleteAt == "" {
+				return "after the build before it"
+			}
 			return buildQueueETA(c, q.CompleteAt)
 		}
 	}

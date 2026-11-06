@@ -399,9 +399,9 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 	for _, opt := range buildingOptions {
 		if opt.StaffingOnly {
 			cap := opt.PlaceCapPerGood[opt.ServiceRole]
-			if opt.BuildingType == "shipyard" {
+			if opt.BuildingType == "shipyard" || opt.BuildingType == "workshop" {
 				ords := placedOrdinals.Building[opt.BuildingType][opt.ServiceRole]
-				buildings = append(buildings, buildingOut{BuildingType: opt.BuildingType, Level: opt.Level, Name: "Shipyard", Goods: []goodOut{{GoodKey: opt.ServiceRole, StaffingOnly: true, Cap: &cap, Placed: len(ords), PlacedOrdinals: ords}}})
+				buildings = append(buildings, buildingOut{BuildingType: opt.BuildingType, Level: opt.Level, Name: province.BuildingDisplayName(opt.BuildingType), Goods: []goodOut{{GoodKey: opt.ServiceRole, StaffingOnly: true, Cap: &cap, Placed: len(ords), PlacedOrdinals: ords}}})
 				continue
 			}
 			ords := placedOrdinals.Temple[opt.BuildingID]

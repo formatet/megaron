@@ -435,6 +435,21 @@ func capitalize(s string) string {
 // entry) hasn't fired. Show "finishing…" rather than a past timestamp that reads
 // as done, so `staff foundry` answering "no such building" moments after the
 // build no longer surprises. Once the event fires the entry is gone from the queue.
+// buildQueueState is one queue row's state in words: the active build has a finish
+// time (and its builders' pace), a waiting one says it is next in line.
+func buildQueueState(c *Client, m map[string]any) string {
+	if act, ok := m["active"].(bool); ok && !act {
+		left, _ := m["work_left_game_days"].(float64)
+		return fmt.Sprintf("next in line · %g game days of work once it starts", left)
+	}
+	ca, _ := m["complete_at"].(string)
+	eta := buildQueueETA(c, ca)
+	if rate, _ := m["rate"].(float64); rate > 1 {
+		return fmt.Sprintf("%s · %gx builders' pace", eta, rate)
+	}
+	return eta
+}
+
 func buildQueueETA(c *Client, iso string) string {
 	if t, err := time.Parse(time.RFC3339, iso); err == nil {
 		if !t.After(time.Now()) {
@@ -1169,8 +1184,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				for _, it := range bq {
 					m, _ := it.(map[string]any)
 					t := buildingLabel(m)
-					ca, _ := m["complete_at"].(string)
-					fmt.Printf("  %-12s %s\n", t, buildQueueETA(c, ca))
+					fmt.Printf("  %-12s %s\n", t, buildQueueState(c, m))
 				}
 			}
 

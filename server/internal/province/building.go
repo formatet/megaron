@@ -37,6 +37,7 @@ var BuildingPurposes = map[BuildingType]string{
 	BuildingWinery:      "Refines a vintner's wine from the settlement's vines",
 	BuildingPen:         "Holds a bigger herd; animals the pen cannot hold are eaten, then lost",
 	BuildingSilo:        "Stores more food (not the herd); a wall of level N needs a Granary of level N",
+	BuildingWorkshop:    "Its builders speed up construction here: one builder per level, up to 3x pace; without one the city builds at base pace",
 	BuildingStorehouse:  "One shared store for every good except food, the herd and cult: stone, timber, metals, silver, wine and the rest",
 }
 
@@ -102,6 +103,8 @@ var BuildingSpecs = map[BuildingType]BuildingSpec{
 	BuildingPen:         {Costs: map[string]float64{"timber": 6, "stone": 4}, DurationTicks: 4},
 	BuildingSilo:        {Costs: map[string]float64{"timber": 12, "stone": 8}, DurationTicks: 8},
 	BuildingStorehouse:  {Costs: map[string]float64{"timber": 12, "stone": 8}, DurationTicks: 8},
+	// Workshop sits between the stable and the barracks in cost: timber 10 / stone 12, 8 game days.
+	BuildingWorkshop: {Costs: map[string]float64{"timber": 10, "stone": 12}, DurationTicks: 8},
 }
 
 // WallLevelSpecs ger kostnad/duration för nästa murnivå (1=Palisade, 2=Stone Wall,
@@ -136,8 +139,7 @@ const MaxBuildingLevel = 3
 // för en ny byggnad — lägg den här också, annars kan dess arbetsplats aldrig växa.
 // Shipyard hör hit av samma skäl som temple: ingen production_rules-rad (den
 // producerar ingen vara), men nivån styr ändå en arbetsplatskapacitet —
-// economy.WorkplaceSlots("shipyard", level), 3/6/10 (Temenos_varutaxonomi_sol.md
-// §8.2/§11.2) — för skeppsbygge och -reparation (megaron_plan_skeppsreparation.md).
+// economy.WorkplaceSlots("shipyard", level), 1/2/3 (megaron_byggare_verkstad.md) — för skeppsbygge och -reparation (megaron_plan_skeppsreparation.md).
 var LevelledBuildings = map[BuildingType]bool{
 	BuildingFarm:        true,
 	BuildingHarbour:     true,
@@ -152,6 +154,7 @@ var LevelledBuildings = map[BuildingType]bool{
 	BuildingPen:         true,
 	BuildingSilo:        true,
 	BuildingStorehouse:  true,
+	BuildingWorkshop:    true,
 }
 
 // LevelCedarCost är cedar-påslaget för att bygga en arbetsplats till nivå N.

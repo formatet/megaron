@@ -12,10 +12,13 @@ import (
 // GoodShipbuilding is a non-inventory placement role (parked, zero weight).
 const GoodShipbuilding = "shipbuilding"
 
+// GoodBuilding is the Workshop's placement role (parked, zero weight, never stocked).
+const GoodBuilding = "building"
+
 // StartShipyardWork saves paid work, then derives its rate from physical staffing.
 // Sync's calc=NULL forces an initial rate/queue derivation even at this tick.
 func StartShipyardWork(ctx context.Context, db Tx, id uuid.UUID, work int) error {
-	if _, err := db.Exec(ctx, `UPDATE units SET shipyard_work_remaining=$2,shipyard_work_calc_tick=NULL,shipyard_work_running=false WHERE id=$1`, id, work); err != nil {
+	if _, err := db.Exec(ctx, `UPDATE units SET shipyard_work_remaining=$2,shipyard_work_calc_tick=NULL,shipyard_work_running=false,shipyard_work_rate=0 WHERE id=$1`, id, work); err != nil {
 		return err
 	}
 	_, err := db.Exec(ctx, `SELECT sync_shipyard_work($1)`, id)
@@ -96,6 +99,7 @@ func CompleteShipyardWorkTransition(ctx context.Context, pool *pgxpool.Pool) err
 // ShipyardWork is a read projection; timing remains owned by tick.Anchor.
 type ShipyardWork struct {
 	Remaining  *int
+	Rate       int // placed shipyard workers, 0..3 (0 = waiting)
 	Waiting    bool
 	CompleteAt *time.Time
 }
@@ -104,9 +108,10 @@ func LoadShipyardWork(ctx context.Context, db Tx, id uuid.UUID) (ShipyardWork, e
 	var out ShipyardWork
 	var world uuid.UUID
 	var due *int
-	err := db.QueryRow(ctx, `SELECT world_id,CASE WHEN shipyard_work_remaining IS NULL THEN NULL ELSE shipyard_work_left(shipyard_work_remaining,shipyard_work_running,shipyard_work_calc_tick,(SELECT current_tick FROM worlds WHERE id=units.world_id)) END,
- shipyard_work_remaining IS NOT NULL AND NOT shipyard_work_running,
- CASE WHEN shipyard_work_running THEN shipyard_work_calc_tick+shipyard_work_remaining ELSE NULL END FROM units WHERE id=$1`, id).Scan(&world, &out.Remaining, &out.Waiting, &due)
+	err := db.QueryRow(ctx, `SELECT world_id,CASE WHEN shipyard_work_remaining IS NULL THEN NULL ELSE shipyard_work_left(shipyard_work_remaining,shipyard_work_rate,shipyard_work_calc_tick,(SELECT current_tick FROM worlds WHERE id=units.world_id)) END,
+ shipyard_work_remaining IS NOT NULL AND shipyard_work_rate=0,
+ shipyard_work_rate,
+ CASE WHEN shipyard_work_rate>0 THEN shipyard_work_calc_tick+(shipyard_work_remaining+shipyard_work_rate-1)/shipyard_work_rate ELSE NULL END FROM units WHERE id=$1`, id).Scan(&world, &out.Remaining, &out.Waiting, &out.Rate, &due)
 	if err != nil {
 		return out, err
 	}
