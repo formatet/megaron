@@ -1599,6 +1599,9 @@ h4.cx-h { font-size: var(--fs-base); }
 .offer-field { display:flex; align-items:center; gap:.25rem; color:var(--text); }
 .offer-stock { color:var(--text-dim); }
 .offer-input { width:3.6rem; background:var(--warm-white); border:1px solid var(--border); padding:.15rem .25rem; font-family:var(--mono); }
+.offer-target { margin-bottom:.4rem; font-size:var(--fs-sm); font-family:var(--mono); }
+.offer-scope { display:inline-flex; align-items:center; gap:.3rem; color:var(--text); }
+.offer-target-unit { margin-top:.2rem; font-family:var(--mono); }
 .offer-note { margin:.2rem 0 .4rem; font-size:var(--fs-sm); color:var(--text-dim); font-family:var(--mono); }
 
 /* A whole unit is one figure and one action, including damaged cohorts. */

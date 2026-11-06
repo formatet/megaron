@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-const { offerFields, offerRowHTML, offeringFromEntries } = await import('./kult_offer.js');
+const { offerFields, offerRowHTML, offeringFromEntries, scopeChoices, chosenTarget, scaledRecipe, defaultScope } = await import('./kult_offer.js');
 
 const prayer = { id: 'minoan_potnia_vision_v2', god: 'Potnia', offering: { grain: 10, silver: 3 },
   favours: { wine: 1.8, grain: 0.9, bronze: 1.4 }, offering_baseline: 45.4 };
@@ -77,4 +77,43 @@ test('Bönegrund: a lasting prayer names its base length and says a larger gift 
   assert.match(html, /Lasts 6 game days with the traditional gift; a larger gift lasts longer\./);
   assert.match(html, /larger gift makes the temple rest longer/);
   assert.doesNotMatch(offerRowHTML({ ...prayer, god_id: 'potnia' }, stock), /Lasts/);
+});
+
+// Blessing prayers (steg 2a): the offer row carries a target chooser with the price of each step.
+const blessing = { id: 'minoan_stillness_hull', god_id: 'sea_daimons_stillness', offering: { fish: 8, oil: 4 }, scope_cost_factors: { unit: 1, city: 2, realm: 4 },
+  targets: { unit: [{ id: 'u1', name: 'Horns of Crete', where: 'in Knossos' }, { id: 'u2', name: 'Argo', where: 'sailing at (3,1)' }], city: { name: 'Knossos', count: 2 }, realm: { count: 3 } } };
+
+test('target chooser: unit/city/realm with the gift multiple, ships by name and place', () => {
+  const html = offerRowHTML(blessing, { fish: 100, oil: 100 });
+  assert.match(html, /One named — 2 to choose from · gift ×1/);
+  assert.match(html, /This city's — 2 of Knossos · gift ×2/);
+  assert.match(html, /The whole realm — all 3 · gift ×4/);
+  assert.match(html, /Horns of Crete \(in Knossos\)/);
+  assert.match(html, /name="scope-minoan_stillness_hull" value="unit" checked/);
+  assert.doesNotMatch(html, /%|chance|odds/i);
+});
+
+test('target chooser: a step with nothing to bless is greyed out and the first usable step is the default', () => {
+  const only = { ...blessing, targets: { unit: [], city: { name: 'Knossos', count: 0 }, realm: { count: 0 } } };
+  assert.ok(scopeChoices(only).every(c => !c.enabled));
+  assert.match(offerRowHTML(only, {}), /nothing of this kind to bless/);
+  const cityOnly = { ...blessing, targets: { unit: [], city: { name: 'Knossos', count: 1 }, realm: { count: 1 } } };
+  assert.equal(defaultScope(cityOnly), 'city');
+  assert.match(offerRowHTML(cityOnly, { fish: 100 }), /value="unit" disabled/);
+});
+
+test('target chooser: the fields are pre-filled with the gift of the chosen step; a prayer without targets is unchanged', () => {
+  const field = (html, good) => Number(new RegExp('data-good="' + good + '" value="(\\d+)"').exec(html)[1]);
+  assert.equal(field(offerRowHTML(blessing, { fish: 100, oil: 100 }), 'fish'), 8);
+  assert.deepEqual(scaledRecipe(blessing.offering, 4), { fish: 32, oil: 16 });
+  const cityFirst = { ...blessing, targets: { ...blessing.targets, unit: [] } };
+  assert.equal(field(offerRowHTML(cityFirst, { fish: 100, oil: 100 }), 'fish'), 16);
+  assert.doesNotMatch(offerRowHTML(prayer, stock), /offer-scope/);
+});
+
+test('chosenTarget reads the checked step and, for one unit, the chosen unit', () => {
+  const host = (scope, unit) => ({ querySelector: sel => sel.includes('checked') ? { value: scope } : sel.includes('offer-target-unit') ? { value: unit } : null });
+  assert.deepEqual(chosenTarget(host('unit', 'u2')), { target_scope: 'unit', target: 'u2' });
+  assert.deepEqual(chosenTarget(host('realm', 'u2')), { target_scope: 'realm' });
+  assert.deepEqual(chosenTarget(null), {});
 });

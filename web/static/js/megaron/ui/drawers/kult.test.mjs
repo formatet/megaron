@@ -190,6 +190,32 @@ test('same god in two cities: offering from second row posts only to that city',
  assert.deepEqual(posts,[['/api/v1/worlds/realm-routing/settlements/two/rite',{prayer:'same-prayer'}]]);
 });
 
+test('blessing prayer: the chosen step and unit are posted; nothing chosen is refused before any request', async t => {
+ const {State}=await import('../../state.js');const {loadKultDrawer,bringOffering}=await import('./kult.js');
+ const state={WORLD_ID:State.WORLD_ID};const old={document:globalThis.document,fetch:globalThis.fetch,localStorage:globalThis.localStorage};
+ t.after(()=>{Object.assign(State,state);Object.assign(globalThis,old);});
+ const result={};const body={innerHTML:'',querySelector:()=>result};
+ let checked=null,unit='u2';
+ const host={innerHTML:'',querySelectorAll:()=>[],querySelector:sel=>sel.includes('checked')?checked:sel.includes('offer-target-unit')?{value:unit}:result};
+ globalThis.document={getElementById:id=>id==='kult-body'?body:id.startsWith('offer-row-')?host:null,addEventListener(){}};
+ globalThis.localStorage={getItem:()=>null};State.WORLD_ID='bless-routing';const posts=[];
+ const prayers=[{id:'minoan_stillness_hull',god_id:'sea_daimons_stillness',settlement_id:'c1',province_id:'p1',city_name:'Knossos',has_temple:true,affordable:true,can_prepare_offering:true,offering:{fish:8},scope_cost_factors:{unit:1,city:2,realm:4},targets:{unit:[{id:'u2',name:'Argo',where:'at sea'}],city:{name:'Knossos',count:1},realm:{count:1}}}];
+ globalThis.fetch=async(url,options={})=>{
+  if(url.endsWith('/cult'))return new Response(JSON.stringify({kharis:{},temples:[],prayers,unbuilt_temples:[]}));
+  if(url.endsWith('/actions'))return new Response('[]');
+  if(options.method==='POST'){posts.push([url,JSON.parse(options.body)]);return new Response(JSON.stringify({success:true,message:'Answered'}));}
+  assert.fail('Unexpected '+url);
+ };
+ await loadKultDrawer();
+ await bringOffering('c1__minoan_stillness_hull');
+ assert.deepEqual(posts,[], 'no step chosen: nothing is sent');
+ checked={value:'unit'};await bringOffering('c1__minoan_stillness_hull');
+ checked={value:'realm'};await bringOffering('c1__minoan_stillness_hull');
+ assert.deepEqual(posts,[
+  ['/api/v1/worlds/bless-routing/settlements/c1/rite',{prayer:'minoan_stillness_hull',target_scope:'unit',target:'u2'}],
+  ['/api/v1/worlds/bless-routing/settlements/c1/rite',{prayer:'minoan_stillness_hull',target_scope:'realm'}]]);
+});
+
 test('Bönegrund: a resting temple names itself, its rest, and the pause for want of servants', () => {
   const p = { id: 'minoan_potnia_walls', affordable: false, temple: 'Temple of Potnia', cooldown_remaining_game_days: 3, rest_remaining_game_days: 3, rest_paused: true, temple_staffed: 2, temple_capacity: 4 };
   const html = prayerStatusHTML(p);

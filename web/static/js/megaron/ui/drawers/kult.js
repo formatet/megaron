@@ -10,7 +10,7 @@ import { serverNow } from '../../clock.js';
 import { renderLockedActions } from '../misc.js';
 import { demolishPrompt, demolishResultLine } from '../demolish.js';
 import { realmKultHTML, prayerActionID } from './kult_realm.js';
-import { offerRowHTML, offeringFromEntries, offerFoodText } from './kult_offer.js';
+import { offerRowHTML, offeringFromEntries, offerFoodText, chosenTarget, scopeFactor, scaledRecipe } from './kult_offer.js';
 import { kharisNetView, kharisDecayHTML, kharisRulesHTML, kharisStandingHTML } from './kult_kharis.js';
 
 // ── Kult drawer ───────────────────────────────────────────────────────────
@@ -152,6 +152,12 @@ export async function okRite(prayerID) {
     if (foodLine) foodLine.textContent = offerFoodText(offering, stock, prayerFood.get(prayerID), prayer.city_name);
   };
   inputs.forEach(i => i.addEventListener('input', update));
+  // A wider blessing asks a larger gift: the fields follow the chosen step.
+  host.querySelectorAll('input[type=radio]').forEach(radio => radio.addEventListener('change', () => {
+    const recipe = scaledRecipe(prayer.offering, scopeFactor(prayer, radio.value));
+    inputs.forEach(i => { i.value = recipe[i.dataset.good] || 0; });
+    update();
+  }));
   update();
 }
 
@@ -168,15 +174,25 @@ export async function bringOffering(prayerID) {
     showInlineResult(host, 'Choose goods for your offering.', true);
     return;
   }
-  const offering = offeringFromEntries(inputs.map(i => ({ good: i.dataset.good, value: i.value })), prayer && prayer.offering);
-  return castRite(prayerID, offering, host);
+  const target = prayer?.targets ? chosenTarget(host) : {};
+  if (prayer?.targets && !target.target_scope) {
+    showInlineResult(host, 'Choose who is blessed.', true);
+    return;
+  }
+  if (target.target_scope === 'unit' && !target.target) {
+    showInlineResult(host, 'Choose the unit to bless.', true);
+    return;
+  }
+  const recipe = scaledRecipe(prayer && prayer.offering, prayer?.targets ? scopeFactor(prayer, target.target_scope) : 1);
+  const offering = offeringFromEntries(inputs.map(i => ({ good: i.dataset.good, value: i.value })), recipe);
+  return castRite(prayerID, offering, host, target);
 }
 
 // No offering = the prayer's traditional recipe on the server.
-async function castRite(prayerID, offering, host) {
+async function castRite(prayerID, offering, host, target = {}) {
   const prayer=prayerCatalog.find(p=>p.action_id===prayerID||p.id===prayerID);
   if(!prayer)return;
-  const body = { prayer: prayer.id };
+  const body = { prayer: prayer.id, ...target };
   if (offering) body.offering = offering;
   const r = await fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/settlements/' + prayer.settlement_id + '/rite', {
     method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body),

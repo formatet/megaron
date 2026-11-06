@@ -697,6 +697,12 @@ test('storm notices: the gods\' hand is named in the outcome (R2)', () => {
     "Your Galley was battered by a storm at (6,0) — hull 2/5 — the gods' wrath struck harder");
 });
 
+test('storm notices: a Stout Hulls ward reads as unharmed, never as a battering (steg 2a)', () => {
+  const hit = { ...foundered, foundered: false, cargo: undefined, hull: 5, hull_before: 5, damage: 0, divine: 'warded' };
+  assert.equal(notifText('ShipStormDamaged', hit),
+    "The Sea Daimons' blessing took the blow: your Galley met a storm at (6,0) unharmed — hull 5/5");
+});
+
 test('kharis decline warning: risk begins at 30, countdown to Wrathful (R2); old notices keep their text', () => {
   assert.equal(notifText('KharisDeclining', { kharis: 28.9, net_per_tick: -1.2, wrath_threshold: 30, wrath_probability: .02, days_to_wrathful: 20, wrathful_threshold: 5, wrathful_probability: .04 }),
     'Kharis is falling (28.9, net -1.2 per game day). Below 30 the gods may punish you, with or without a temple: about 2% each game day, 4% below 5. At this rate it falls below 5 in 20 game days. Staff and feed your temples.');
