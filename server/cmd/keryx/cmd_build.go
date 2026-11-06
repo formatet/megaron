@@ -145,6 +145,7 @@ func buildCmd() *cobra.Command {
 				Duration     *float64 `json:"duration_game_days"`
 				CompleteAt   string   `json:"complete_at"`
 				CompleteTick *int     `json:"complete_tick"`
+				Active       *bool    `json:"active"`
 			}
 			if json.Unmarshal(data, &receipt) == nil {
 				if receipt.Duration != nil {
@@ -155,7 +156,10 @@ func buildCmd() *cobra.Command {
 				} else if receipt.CompleteAt != "" {
 					fmt.Printf(" · ready %s", arrivalETA(c, receipt.CompleteAt))
 				}
-				if receipt.Duration != nil || receipt.CompleteAt != "" || receipt.CompleteTick != nil {
+				if receipt.Active != nil && !*receipt.Active {
+					fmt.Print(" · starts when the current build is done")
+				}
+				if receipt.Duration != nil || receipt.CompleteAt != "" || receipt.CompleteTick != nil || receipt.Active != nil {
 					fmt.Println()
 				}
 			}
@@ -203,7 +207,7 @@ func printBuildQueue(c *Client, worldID, provinceID string) error {
 	// concurrent" only AFTER a 3rd build was refused) is now printed up front
 	// here, every time — not just when you hit it.
 	if qmax, ok := sett["build_queue_max"].(float64); ok {
-		fmt.Printf("Queue: %d/%.0f slots used — fixed limit; population and buildings do not add slots. Finish or cancel a build.\n", len(bq), qmax)
+		fmt.Printf("Queue: %d/%.0f — one building at a time, the others wait their turn. Builders in a Workshop speed the active build up (up to 3x). Finish or cancel a build to free a place.\n", len(bq), qmax)
 	}
 	if len(bq) == 0 {
 		fmt.Println("Build queue is empty.")
@@ -215,7 +219,6 @@ func printBuildQueue(c *Client, worldID, provinceID string) error {
 		m, _ := it.(map[string]any)
 		t := buildingLabel(m)
 		id, _ := m["id"].(string)
-		ca, _ := m["complete_at"].(string)
 		city, _ := m["settlement_name"].(string)
 		if city == "" {
 			city, _ = sett["name"].(string)
@@ -226,7 +229,7 @@ func printBuildQueue(c *Client, worldID, provinceID string) error {
 				where += fmt.Sprintf(" at (%.0f,%.0f)", q, r)
 			}
 		}
-		fmt.Printf("%-14s  %-38s  %s · %s\n", t, id, where, buildQueueETA(c, ca))
+		fmt.Printf("%-14s  %-38s  %s · %s\n", t, id, where, buildQueueState(c, m))
 	}
 	return nil
 }

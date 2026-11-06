@@ -44,7 +44,7 @@ func TestShipyardWaitingSuppressesETA(t *testing.T) {
 	cap := 3
 	for _, placed := range []int{0, 1, 3} {
 		out := goodCell(placementGood{GoodKey: "shipbuilding", StaffingOnly: true, Cap: &cap, Placed: placed})
-		want := "full working pace"
+		want := fmt.Sprintf("%dx working pace", placed)
 		if placed == 0 {
 			want = "waiting for shipyard workers"
 		}
@@ -69,5 +69,21 @@ func TestPaidShipyardOrdersPrintWaiting(t *testing.T) {
 	out, err = captureStdout(t, repair.Execute)
 	if err != nil || !strings.Contains(out, "waiting for shipyard workers") || strings.Contains(out, "ready ") {
 		t.Fatalf("%s %v", out, err)
+	}
+}
+
+func TestWorkshopBuildersAndQueueStateAreTold(t *testing.T) {
+	cap := 3
+	if out := goodCell(placementGood{GoodKey: "building", StaffingOnly: true, Cap: &cap, Placed: 0}); !strings.Contains(out, "base building pace 1x") {
+		t.Fatal(out)
+	}
+	if out := goodCell(placementGood{GoodKey: "building", StaffingOnly: true, Cap: &cap, Placed: 2}); !strings.Contains(out, "2/3 builders") || !strings.Contains(out, "2x building pace") {
+		t.Fatal(out)
+	}
+	if out := buildQueueState(nil, map[string]any{"active": false, "work_left_game_days": 8.0}); !strings.Contains(out, "next in line") || !strings.Contains(out, "8 game days of work") {
+		t.Fatal(out)
+	}
+	if out := buildQueueState(nil, map[string]any{"active": true, "rate": 3.0, "complete_at": "2099-01-01T00:00:00Z"}); !strings.Contains(out, "3x builders' pace") {
+		t.Fatal(out)
 	}
 }

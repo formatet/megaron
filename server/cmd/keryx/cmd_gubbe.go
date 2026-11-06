@@ -191,6 +191,8 @@ func sortedGoods(goods []placementGood) []placementGood {
 		switch {
 		case g.StaffingOnly && g.GoodKey == "shipbuilding":
 			return "shipbuilding"
+		case g.StaffingOnly && g.GoodKey == "building":
+			return "construction"
 		case g.StaffingOnly:
 			return "devotion"
 		}
@@ -205,9 +207,16 @@ func goodCell(g placementGood) string {
 	if g.StaffingOnly && g.GoodKey == "shipbuilding" {
 		state := "waiting for shipyard workers"
 		if g.Placed > 0 {
-			state = "full working pace"
+			state = fmt.Sprintf("%dx working pace", min(g.Placed, 3))
 		}
 		return fmt.Sprintf("shipbuilding %d/%d shipyard workers — %s", g.Placed, *g.Cap, state)
+	}
+	if g.StaffingOnly && g.GoodKey == "building" {
+		state := "base building pace 1x"
+		if g.Placed > 0 {
+			state = fmt.Sprintf("%dx building pace", min(g.Placed, 3))
+		}
+		return fmt.Sprintf("construction %d/%d builders — %s", g.Placed, *g.Cap, state)
 	}
 	if g.StaffingOnly {
 		if g.GodID != "" {
