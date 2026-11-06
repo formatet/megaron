@@ -177,6 +177,9 @@ type battleParticipant struct {
 	side         string // "attacker" | "defender"
 	currentSize  int
 	defenseBoost bool
+	// blessedStrength: Velchanos' blessing covers this land unit now (read afresh
+	// every battle tick, never frozen at entry — religion.LoadBlessed).
+	blessedStrength bool
 	// stance is optional (nil for callers that don't care — field arrival and
 	// interception never set it, so storm below is always false for them,
 	// same as before this field existed). Read only by startBattle, only off
@@ -499,6 +502,18 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 	rows.Close()
 	if err := rows.Err(); err != nil {
 		return false, err
+	}
+
+	for i := range loaded {
+		p := &loaded[i].p
+		if unit.CategoryOf(unit.Type(p.utype)) == unit.CategoryNaval {
+			continue
+		}
+		blessed, err := religion.LoadBlessed(ctx, tx, p.ownerID, p.unitID, religion.EffectBlessedStrength, defenseTick)
+		if err != nil {
+			return false, fmt.Errorf("battle tick: read blessing: %w", err)
+		}
+		p.blessedStrength = blessed
 	}
 
 	participants := make([]battleParticipant, len(loaded))
@@ -1137,6 +1152,9 @@ func rollSide(participants []battleParticipant, sizes []int, idx []int, part flo
 		}
 		if participants[i].defenseBoost {
 			diceCount = int(math.Round(float64(diceCount) * GarrisonDefenseFactor))
+		}
+		if participants[i].blessedStrength && unit.CategoryOf(unit.Type(participants[i].utype)) != unit.CategoryNaval {
+			diceCount = int(math.Round(float64(diceCount) * religion.BlessedStrengthFactor))
 		}
 		if unit.CategoryOf(unit.Type(participants[i].utype)) == unit.CategoryNaval {
 			diceCount = int(math.Round(float64(diceCount) * float64(participants[i].hull) / float64(hullMax)))
