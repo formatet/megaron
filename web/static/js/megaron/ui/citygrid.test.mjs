@@ -245,14 +245,27 @@ test('ORDER15: staffing posts god and -1 removes a worker at that god\'s temple 
   assert.equal(urls[1], 'u/9');
 });
 
-test('ORDER28: shipyard staffing shows binary pace and preserves temple labels',()=>{
+test('ORDER28: shipyard staffing shows its pace (1x-3x) and preserves temple labels',()=>{
  const goods=placed=>[{good_key:'shipbuilding',staffing_only:true,cap:3,placed,placed_ordinals:placed?[1]:[]}];
  const empty=cityBuildingsHTML([{building_type:'shipyard',level:1,goods:goods(0)}]);
  assert.match(empty,/waiting for shipyard workers/);
  assert.match(empty,/0 shipyard workers/);
  assert.doesNotMatch(empty,/Devotion|temple workers|per game day/);
  const working=cityBuildingsHTML([{building_type:'shipyard',level:1,goods:goods(1)}]);
- assert.match(working,/full working pace/);
+ assert.match(working,/1x working pace/);
+ const three=cityBuildingsHTML([{building_type:'shipyard',level:3,goods:[{good_key:'shipbuilding',staffing_only:true,cap:3,placed:3,placed_ordinals:[1,2,3]}]}]);
+ assert.match(three,/3x working pace/);
+});
+
+test('workshop staffing: builders set the pace, base pace 1x without them',()=>{
+ const goods=placed=>[{good_key:'building',staffing_only:true,cap:3,placed,placed_ordinals:placed?[1,2].slice(0,placed):[]}];
+ const none=cityBuildingsHTML([{building_type:'workshop',level:1,goods:goods(0)}]);
+ assert.match(none,/Construction/);
+ assert.match(none,/base building pace 1x/);
+ assert.doesNotMatch(none,/Devotion|temple workers|shipyard/);
+ const two=cityBuildingsHTML([{building_type:'workshop',level:2,goods:goods(2)}]);
+ assert.match(two,/2 builders/);
+ assert.match(two,/2x building pace/);
 });
 
 test('ORDER30: server workplace options without market render only assignable workplaces', () => {

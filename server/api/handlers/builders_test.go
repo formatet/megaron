@@ -248,7 +248,8 @@ func TestWorkshopBuildersSetBuildPace(t *testing.T) {
 		workshop bool
 		placed   int
 		days     int
-	}{{false, 0, 12}, {true, 0, 12}, {true, 1, 12}, {true, 2, 6}, {true, 3, 4}, {true, 4, 4}} {
+		work     int // 0 = 12
+	}{{false, 0, 12, 0}, {true, 0, 12, 0}, {true, 1, 12, 0}, {true, 2, 6, 0}, {true, 3, 4, 0}, {true, 4, 4, 0}, {true, 3, 4, 10}} { // 10 days at 3x = ceil(10/3) = 4, never 3
 		f := newQueueFixture(t)
 		ctx := context.Background()
 		if c.workshop {
@@ -256,8 +257,12 @@ func TestWorkshopBuildersSetBuildPace(t *testing.T) {
 				t.Fatal(err)
 			}
 		}
+		work := 12
+		if c.work != 0 {
+			work = c.work
+		}
 		var q uuid.UUID
-		if err := f.pool.QueryRow(ctx, `INSERT INTO build_queue(world_id,settlement_id,building_type,complete_at,work_remaining) VALUES($1,$2,'harbour',now(),12) RETURNING id`, f.world, f.city).Scan(&q); err != nil {
+		if err := f.pool.QueryRow(ctx, `INSERT INTO build_queue(world_id,settlement_id,building_type,complete_at,work_remaining) VALUES($1,$2,'harbour',now(),$3) RETURNING id`, f.world, f.city, work).Scan(&q); err != nil {
 			t.Fatal(err)
 		}
 		for i := 1; i <= c.placed; i++ {
