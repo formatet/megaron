@@ -42,7 +42,7 @@ func TestRiteList_ShowsTargetsAndThePricePerStep(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{"Horns of Crete", "in Knossos", "Horns of Naxos", "--scope unit", "×1", "fish×16 oil×8", "city", "2 units of Knossos", "×4", "fish×32 oil×16", "all 3"} {
+	for _, want := range []string{"Horns of Crete", "in Knossos", "Horns of Naxos", "--scope unit", "×1", "fish×16 oil×8", "city", "the 2 supported by Knossos", "×4", "fish×32 oil×16", "all 3"} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("--list lacks %q:\n%s", want, out)
 		}

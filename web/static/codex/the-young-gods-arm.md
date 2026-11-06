@@ -19,6 +19,6 @@ The blessing is read when it is needed, not when a unit marches: it helps a unit
 | Temple’s rest (level 1, traditional gift) | 12 game days |
 <!-- /facts -->
 
-Offer in **Kult → Prayers** at the matching city and god: pick *One named*, *This city's* or *The whole realm*, and for one unit choose it from the list. In Keryx, `keryx rite --prayer minoan_velchanos_strength --scope unit --target "<name>"`, or `--scope city` / `--scope realm`; `keryx rite --list` shows the units you can name and the gift for each step.
+Offer in **Kult → Prayers** at the matching city and god: pick *One named*, *This city's* or *The whole realm*, and for one unit choose it from the list. In Keryx, `keryx rite --prayer minoan_velchanos_strength --scope unit --target "<name>"`, or `--scope city` / `--scope realm`; `keryx rite --list` shows the troops you can name and the gift for each step.
 
 See [[prayer-requirements]], [[offerings]] and [[temples]].

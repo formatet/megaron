@@ -81,7 +81,7 @@ func printRiteTargets(p riteAvailablePrayer, settlementID string) {
 	for _, u := range p.Targets.Unit {
 		fmt.Printf("        %s (%s) %s\n", u.Name, u.Where, u.ID)
 	}
-	fmt.Printf("    --scope city  ×%d  %s  — %d units of %s\n", f["city"], formatOffering(scaledOffering(p.Offering, f["city"])), p.Targets.City.Count, p.Targets.City.Name)
+	fmt.Printf("    --scope city  ×%d  %s  — the %d supported by %s\n", f["city"], formatOffering(scaledOffering(p.Offering, f["city"])), p.Targets.City.Count, p.Targets.City.Name)
 	fmt.Printf("    --scope realm ×%d  %s  — all %d\n", f["realm"], formatOffering(scaledOffering(p.Offering, f["realm"])), p.Targets.Realm.Count)
 }
 

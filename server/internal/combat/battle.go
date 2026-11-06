@@ -511,7 +511,7 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 		}
 		blessed, err := religion.LoadBlessed(ctx, tx, p.ownerID, p.unitID, religion.EffectBlessedStrength, defenseTick)
 		if err != nil {
-			return false, fmt.Errorf("battle tick: read blessing: %w", err)
+			return false, fmt.Errorf("battle: read blessing: %w", err)
 		}
 		p.blessedStrength = blessed
 	}
