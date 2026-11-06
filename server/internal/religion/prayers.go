@@ -125,7 +125,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: MoodSuspicious, Offering: map[string]float64{"grain": 10, "wine": 10},
 		CooldownTicks: 6, TargetKind: "",
 		God: "Ares", Name: "Ares' Fury",
-		Description: "Grants your garrison battle frenzy — a temporary combat-strength boost.",
+		Description: "Your own garrison defending this city fights a quarter stronger for 6 game days.",
 	},
 
 	// ── Khemetiu (Egyptian) ───────────────────────────────────────────────
@@ -148,7 +148,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: MoodSuspicious, Offering: map[string]float64{"grain": 10, "wine": 10},
 		CooldownTicks: 6, TargetKind: "",
 		God: "Sekhmet", Name: "Sekhmet's Wrath",
-		Description: "Grants your garrison battle frenzy — a temporary combat-strength boost.",
+		Description: "Your own garrison defending this city fights a quarter stronger for 6 game days.",
 	},
 
 	// ── Kna'ani (Baal / Levant) ───────────────────────────────────────────
@@ -171,7 +171,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: MoodSuspicious, Offering: map[string]float64{"wine": 10, "grain": 10},
 		CooldownTicks: 6, TargetKind: "",
 		God: "Anat", Name: "Anat's Rage",
-		Description: "Grants your garrison battle frenzy — a temporary combat-strength boost.",
+		Description: "Your own garrison defending this city fights a quarter stronger for 6 game days.",
 	},
 
 	// ── Thrakes ──────────────────────────────────────────────────────────
@@ -194,7 +194,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: MoodSuspicious, Offering: map[string]float64{"wine": 25},
 		CooldownTicks: 6, TargetKind: "",
 		God: "Ares Thrakios", Name: "Thrakian Battle Rage",
-		Description: "Grants your garrison battle frenzy — a temporary combat-strength boost.",
+		Description: "Your own garrison defending this city fights a quarter stronger for 6 game days.",
 	},
 
 	// ── Minoan ───────────────────────────────────────────────────────────
@@ -218,7 +218,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: MoodSuspicious, Offering: map[string]float64{"grain": 10, "wine": 10},
 		CooldownTicks: 6, TargetKind: "",
 		God: "Poseidon", Name: "Poseidon's Storm",
-		Description: "Grants your garrison battle frenzy — a temporary combat-strength boost.",
+		Description: "Your own garrison defending this city fights a quarter stronger for 6 game days.",
 		Favours:     havsdaimonernaBattleFrenzyFavours,
 	},
 
@@ -242,7 +242,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: MoodSuspicious, Offering: map[string]float64{"grain": 15, "wine": 10},
 		CooldownTicks: 6, TargetKind: "",
 		God: "Teshub", Name: "Teshub's Thunder",
-		Description: "Grants your garrison battle frenzy — a temporary combat-strength boost.",
+		Description: "Your own garrison defending this city fights a quarter stronger for 6 game days.",
 	},
 }
 

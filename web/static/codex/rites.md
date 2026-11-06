@@ -41,6 +41,8 @@ The row disappears when the blessing ends; [[fish|fish]] receives no harvest bon
 - **Favourable Passage** — offer 6 fish + 3 silver to The Sea Daimons of Stillness. The next ship leaving this city takes a quarter less time and suffers no [[storms|storm]] damage on its outward leg. A Runner aboard travels at that ship's actual speed. Their temple rests 12 game days after answering at level 1.
 - **The Thread Shows a Path** — offer 3 silver + 4 timber to Asterion. The next land [[transfers|caravan]] or [[runners|Runner]] leaving this city takes a quarter less time on its outward leg. A land caravan can be intercepted only within one hex of an enemy army, instead of two. Runners remain sacred. Asterion's temple rests 12 game days after answering at level 1.
 
+Other cultures' war prayer (for example Ares' Fury for the Akhaier) works the same way as the Walls: your own garrison defending this city fights a quarter stronger for 6 game days with the traditional gift, and it cannot be offered again while it is active. It does not help an attacking army.
+
 Green Shoots requires 30 kharis; Vision, [[walls|Walls]] and the two departure prayers require at least 5. The temple's ordinary daily offering is separate.
 
 ### Gifts awaiting departure {#minoan-prayers-3}

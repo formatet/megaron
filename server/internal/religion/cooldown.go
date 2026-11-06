@@ -76,7 +76,7 @@ func PrayerActiveRemaining(ctx context.Context, db PrayerDB, settlement, player 
 	}
 	var until int
 	err := db.QueryRow(ctx, `SELECT CASE
- WHEN $3='garrison_defense' AND owner_id=$2 AND garrison_defense_owner_id=$2 THEN COALESCE(garrison_defense_until_tick,0)
+ WHEN $3 IN ('garrison_defense','battle_frenzy') AND owner_id=$2 AND garrison_defense_owner_id=$2 THEN COALESCE(garrison_defense_until_tick,0)
  WHEN $3='harvest_blessing' THEN COALESCE(harvest_blessing_until_tick,0)
  ELSE 0 END FROM settlements WHERE id=$1`, settlement, player, effect).Scan(&until)
 	if err != nil {

@@ -99,7 +99,7 @@ func (h *ProvinceHandler) loadPrayerRows(ctx context.Context, sett *settlement.S
 		if spec.GodID != "" {
 			templeInfo = templeByGod[spec.GodID]
 		}
-		if spec.GodID != "" && sett.OwnerID != nil {
+		if (spec.GodID != "" || spec.EffectType == religion.EffectBattleFrenzy) && sett.OwnerID != nil {
 			var cdErr error
 			if templeInfo.BuildingID != uuid.Nil {
 				cooldownRemainingDays, cdErr = religion.TempleRestRemaining(ctx, h.pool, templeInfo.BuildingID)
@@ -162,7 +162,7 @@ func (h *ProvinceHandler) loadPrayerRows(ctx context.Context, sett *settlement.S
 // traditional gift; 0 for prayers without a length. A larger gift lasts longer.
 func prayerBaseDuration(effect string) int {
 	switch effect {
-	case religion.EffectGarrisonDefense:
+	case religion.EffectGarrisonDefense, religion.EffectBattleFrenzy:
 		return combat.GarrisonDefenseTicks
 	case religion.EffectHarvestBlessing:
 		return economy.HarvestBlessingTicks

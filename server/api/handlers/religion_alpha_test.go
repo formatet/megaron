@@ -341,3 +341,45 @@ func TestAlphaVisionMemoryAPIHidesActivity(t *testing.T) {
 		t.Fatal("memory city marker missing")
 	}
 }
+
+// Battle Frenzy shares Walls' owner-stamped garrison_defense mechanism (it used
+// to write a wall-clock column the battle never read).
+func TestBattleFrenzyWritesOwnerStampedGarrisonDefense(t *testing.T) {
+	f := newAlphaFixture(t)
+	ctx := context.Background()
+	f.h.RiteDice = alphaDice{0}
+	if _, err := f.pool.Exec(ctx, `UPDATE settlements SET culture_id='akhaier' WHERE id=$1`, f.cities[0]); err != nil {
+		t.Fatal(err)
+	}
+	if r := f.cast(f.cities[0], "akhaier_battle_frenzy"); r.Code != 200 || !strings.Contains(r.Body.String(), `"success":true`) {
+		t.Fatalf("frenzy cast %d %s", r.Code, r.Body.String())
+	}
+	var until int
+	var owner uuid.UUID
+	if err := f.pool.QueryRow(ctx, `SELECT garrison_defense_until_tick,garrison_defense_owner_id FROM settlements WHERE id=$1`, f.cities[0]).Scan(&until, &owner); err != nil {
+		t.Fatal(err)
+	}
+	if until != 106 || owner != f.player {
+		t.Fatalf("frenzy flag %d/%v, want 106/%v", until, owner, f.player)
+	}
+	// A second cast while active is refused; a new owner does not inherit it.
+	if r := f.cast(f.cities[0], "akhaier_battle_frenzy"); r.Code != 409 {
+		t.Fatalf("stacked frenzy %d %s", r.Code, r.Body.String())
+	}
+	other := uuid.New()
+	rem, err := religion.PrayerActiveRemaining(ctx, f.pool, f.cities[0], f.player, religion.EffectBattleFrenzy, 100)
+	if err != nil || rem != 6 {
+		t.Fatalf("owner remaining %d %v", rem, err)
+	}
+	rem, err = religion.PrayerActiveRemaining(ctx, f.pool, f.cities[0], other, religion.EffectBattleFrenzy, 100)
+	if err != nil || rem != 0 {
+		t.Fatalf("stranger remaining %d %v", rem, err)
+	}
+	if _, err := f.pool.Exec(ctx, `UPDATE settlements SET owner_id=NULL WHERE id=$1`, f.cities[0]); err != nil {
+		t.Fatal(err)
+	}
+	rem, _ = religion.PrayerActiveRemaining(ctx, f.pool, f.cities[0], f.player, religion.EffectBattleFrenzy, 100)
+	if rem != 0 {
+		t.Fatalf("lost city still frenzied for old owner: %d", rem)
+	}
+}
