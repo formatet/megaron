@@ -1233,8 +1233,8 @@ func (h *SettlementHandler) checkBlessingTarget(ctx context.Context, tx pgx.Tx, 
 		if err != nil {
 			return "", nil, http.StatusInternalServerError, "could not read the unit"
 		}
-		if status == "disbanded" {
-			return "", nil, http.StatusBadRequest, "that unit is gone"
+		if status == "disbanded" || status == "forming" {
+			return "", nil, http.StatusBadRequest, "that unit is gone or not yet built"
 		}
 		if cat != category {
 			return "", nil, http.StatusBadRequest, fmt.Sprintf("%s blesses %s, not that unit", spec.Name, noun)
@@ -1245,7 +1245,7 @@ func (h *SettlementHandler) checkBlessingTarget(ctx context.Context, tx pgx.Tx, 
 		fallthrough
 	case religion.ScopeRealm:
 		var n int
-		if err := tx.QueryRow(ctx, `SELECT count(*) FROM units WHERE world_id=$1 AND owner_id=$2 AND category=$3 AND status<>'disbanded' AND ($4::uuid IS NULL OR support_settlement_id=$4)`,
+		if err := tx.QueryRow(ctx, `SELECT count(*) FROM units WHERE world_id=$1 AND owner_id=$2 AND category=$3 AND status NOT IN ('disbanded','forming') AND ($4::uuid IS NULL OR support_settlement_id=$4)`,
 			worldID, playerID, category, cityRef).Scan(&n); err != nil {
 			return "", nil, http.StatusInternalServerError, "could not count the units"
 		}

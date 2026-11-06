@@ -183,9 +183,9 @@ func prayerBaseDuration(effect string) int {
 // living units of the prayer's kind ("land" | "naval"), the count supported by
 // this city, and the count in the whole realm.
 func (h *ProvinceHandler) loadPrayerTargets(ctx context.Context, sett *settlement.Settlement, owner uuid.UUID, kind string) (*prayerTargets, error) {
-	rows, err := h.pool.Query(ctx, `SELECT u.id, u.status, u.q, u.r, u.support_settlement_id, COALESCE(s.name,'')
+	rows, err := h.pool.Query(ctx, `SELECT u.id, u.status, COALESCE(u.q,0), COALESCE(u.r,0), u.support_settlement_id, COALESCE(s.name,'')
  FROM units u LEFT JOIN settlements s ON s.id=u.settlement_id
- WHERE u.world_id=$1 AND u.owner_id=$2 AND u.category=$3 AND u.status<>'disbanded'
+ WHERE u.world_id=$1 AND u.owner_id=$2 AND u.category=$3 AND u.status NOT IN ('disbanded','forming')
  ORDER BY u.created_at, u.id`, sett.WorldID, owner, kind)
 	if err != nil {
 		return nil, err

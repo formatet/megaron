@@ -111,6 +111,7 @@ func TestBlessingCast_RefusesWrongTargets(t *testing.T) {
 	ship := f.unit(t, f.player, "galley", "naval", "garrison", f.cities[0])
 	troop := f.unit(t, f.player, "infantry", "land", "garrison", f.cities[0])
 	dead := f.unit(t, f.player, "infantry", "land", "disbanded", f.cities[0])
+	forming := f.unit(t, f.player, "infantry", "land", "forming", f.cities[0])
 	theirs := f.unit(t, foreign, "infantry", "land", "garrison", f.cities[0])
 	stock := f.stock(t, f.cities[0], "livestock")
 	for _, c := range []struct {
@@ -121,6 +122,7 @@ func TestBlessingCast_RefusesWrongTargets(t *testing.T) {
 		{"someone else's unit", map[string]any{"target_scope": "unit", "target": theirs.String()}, 404},
 		{"a ship for a strength prayer", map[string]any{"target_scope": "unit", "target": ship.String()}, 400},
 		{"a disbanded unit", map[string]any{"target_scope": "unit", "target": dead.String()}, 400},
+		{"a unit still being built", map[string]any{"target_scope": "unit", "target": forming.String()}, 400},
 		{"no such unit", map[string]any{"target_scope": "unit", "target": uuid.NewString()}, 404},
 		{"unit scope without a unit", map[string]any{"target_scope": "unit"}, 400},
 		{"no target at all", map[string]any{}, 400},
