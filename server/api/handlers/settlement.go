@@ -1355,6 +1355,9 @@ func (h *SettlementHandler) applyBlessing(ctx context.Context, tx pgx.Tx, worldI
 	switch scope {
 	case religion.ScopeUnit:
 		who = "the " + strings.TrimSuffix(noun, "s") + " you named"
+		if spec.EffectType == religion.EffectBlessedSpeedLand {
+			who = "the Runner or caravan you named"
+		}
 	case religion.ScopeRealm:
 		who = "all your " + noun
 	}

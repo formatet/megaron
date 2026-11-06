@@ -2126,8 +2126,8 @@
         "potnias-vision",
         "mistress-of-the-walls",
         "green-shoots",
-        "the-thread-shows-a-path",
-        "favourable-passage",
+        "swift-feet",
+        "following-seas",
         "the-young-gods-arm",
         "stout-hulls"
       ],
@@ -2154,7 +2154,7 @@
         },
         {
           "id": "minoan-prayers-2",
-          "title": "Departure prayers"
+          "title": "Prayers of speed"
         },
         {
           "id": "minoan-prayers-3",
@@ -3073,42 +3073,41 @@
       "parent": "rites"
     },
     {
-      "id": "the-thread-shows-a-path",
-      "title": "The Thread Shows a Path",
+      "id": "swift-feet",
+      "title": "Swift Feet",
       "category": "The gods",
       "entities": [
         {
           "kind": "prayer",
-          "key": "minoan_asterion_thread"
+          "key": "minoan_asterion_swift"
         }
       ],
       "aliases": [
-        "minoan asterion thread"
+        "minoan asterion swift"
       ],
       "terms": [
-        "The Thread Shows a Path",
-        "Thread Shows a Path"
+        "Swift Feet"
       ],
-      "summary": "The Thread Shows a Path: Asterion speeds your next caravan or Runner from a city and makes the caravan harder to catch.",
+      "summary": "Swift Feet: Asterion shortens what is left of the road for the Runners and caravans you name, also when they are already under way.",
       "parent": "rites"
     },
     {
-      "id": "favourable-passage",
-      "title": "Favourable Passage",
+      "id": "following-seas",
+      "title": "Following Seas",
       "category": "The gods",
       "entities": [
         {
           "kind": "prayer",
-          "key": "minoan_stillness_passage"
+          "key": "minoan_stillness_swift"
         }
       ],
       "aliases": [
-        "minoan stillness passage"
+        "minoan stillness swift"
       ],
       "terms": [
-        "Favourable Passage"
+        "Following Seas"
       ],
-      "summary": "Favourable Passage: the Sea Daimons speed your next ship out of port and keep storms off its outward leg.",
+      "summary": "Following Seas: the Sea Daimons shorten what is left of the voyage for the ships you name, also when they are already at sea.",
       "parent": "rites"
     },
     {

@@ -59,6 +59,8 @@ type riteTargets struct {
 	Realm struct {
 		Count int `json:"count"`
 	} `json:"realm"`
+	// Always: a city or realm blessing needs nothing under way now (Runner/caravan prayers hold for departures too).
+	Always bool `json:"always"`
 }
 
 // scaledOffering is the traditional gift times a target step's factor.
@@ -80,6 +82,11 @@ func printRiteTargets(p riteAvailablePrayer, settlementID string) {
 	fmt.Printf("    --scope unit  ×%d  %s  — one named, with --target <name|id>\n", f["unit"], formatOffering(scaledOffering(p.Offering, f["unit"])))
 	for _, u := range p.Targets.Unit {
 		fmt.Printf("        %s (%s) %s\n", u.Name, u.Where, u.ID)
+	}
+	if p.Targets.Always {
+		fmt.Printf("    --scope city  ×%d  %s  — every Runner and caravan of %s, now on the road (%d) and while the prayer lasts\n", f["city"], formatOffering(scaledOffering(p.Offering, f["city"])), p.Targets.City.Name, p.Targets.City.Count)
+		fmt.Printf("    --scope realm ×%d  %s  — all of yours, now on the road (%d) and while the prayer lasts\n", f["realm"], formatOffering(scaledOffering(p.Offering, f["realm"])), p.Targets.Realm.Count)
+		return
 	}
 	fmt.Printf("    --scope city  ×%d  %s  — the %d supported by %s\n", f["city"], formatOffering(scaledOffering(p.Offering, f["city"])), p.Targets.City.Count, p.Targets.City.Name)
 	fmt.Printf("    --scope realm ×%d  %s  — all %d\n", f["realm"], formatOffering(scaledOffering(p.Offering, f["realm"])), p.Targets.Realm.Count)
@@ -371,6 +378,7 @@ func riteCmd() *cobra.Command {
 				if resp.EffectType != "" {
 					fmt.Printf("Effect: %s\n", resp.EffectType)
 				}
+				printSpedUp(resp.Effect)
 				if resp.RestDays > 0 {
 					fmt.Printf("The temple rests %s.\n", formatDays(resp.RestDays))
 				}
@@ -388,7 +396,7 @@ func riteCmd() *cobra.Command {
 	cmd.Flags().StringVar(&provinceArg, "province", "", "city name or province ID, like status/place/build (default: your capital)")
 	cmd.Flags().StringVar(&settlementID, "settlement", "", "settlement UUID (same as --province, kept for old scripts)")
 	cmd.Flags().StringVar(&prayerID, "prayer", "", "prayer ID (run --list to see your culture's prayers; defaults to the culture's listed default prayer)")
-	cmd.Flags().StringVar(&targetID, "target", "", "the unit a blessing is laid on, by name or id (with --scope unit; see --list)")
+	cmd.Flags().StringVar(&targetID, "target", "", "the unit, ship, Runner or caravan a blessing is laid on, by name or id (with --scope unit; see --list)")
 	cmd.Flags().StringVar(&scope, "scope", "", "how wide a blessing reaches: unit | city | realm — the wider, the dearer (see --list)")
 	cmd.Flags().BoolVar(&yes, "yes", false, "skip the pre-cast confirmation (required for non-interactive/agent use)")
 	cmd.Flags().StringVar(&offer, "offer", "",
@@ -676,4 +684,21 @@ func riteSettlementByProvince(markers []map[string]any, arg string) string {
 		}
 	}
 	return ""
+}
+
+// printSpedUp tells which journeys under way a speed prayer shortened and by how much.
+func printSpedUp(effect map[string]any) {
+	list, _ := effect["sped_up"].([]any)
+	for _, raw := range list {
+		m, _ := raw.(map[string]any)
+		kind, _ := m["kind"].(string)
+		id, _ := m["id"].(string)
+		oldT, _ := m["old_arrive_tick"].(float64)
+		newT, _ := m["new_arrive_tick"].(float64)
+		what := map[string]string{"unit": "Ship", "transport": "Caravan", "messenger": "Runner"}[kind]
+		if what == "" {
+			what = kind
+		}
+		fmt.Printf("  %s %s arrives %s sooner.\n", what, id, formatDays(int(oldT-newT)))
+	}
 }

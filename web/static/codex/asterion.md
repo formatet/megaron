@@ -2,6 +2,6 @@ Asterion is **lord of the labyrinth**, the god of ways and of finding them. His 
 
 Build a temple for this god in **City → Buildings → Construct** or use `keryx build --type temple --god asterion`. [[temple]] workers and daily offerings maintain realm-wide [[kharis]].
 
-Prayers: [[the-thread-shows-a-path]].
+Prayers: [[swift-feet]].
 
 See [[temples]], [[rites]] and [[offerings]].
