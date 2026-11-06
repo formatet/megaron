@@ -120,14 +120,13 @@ func TestWorkplaceSlots_LevelsIncrease(t *testing.T) {
 
 // TestWorkplaceSlots_ShipyardMatchesTaxonomy — same regression class as
 // TestWorkplaceSlots_MineAndSilverMineMatchTaxonomy: pin shipyard's slots to
-// Temenos_varutaxonomi_sol.md §8.2/§11.2's own 3/6/10 rather than an
-// extrapolated tier (megaron_plan_skeppsreparation.md Slice A explicitly
-// flags this as the exact trap mine/silver_mine fell into).
+// the 1/2/3 of megaron_byggare_verkstad.md (a slot per level; the work rate
+// is the placed count capped at 3). It was 3/6/10 before 2026-11-06.
 func TestWorkplaceSlots_ShipyardMatchesTaxonomy(t *testing.T) {
-	want := [3]int{3, 6, 10}
+	want := [3]int{1, 2, 3}
 	for level := 1; level <= 3; level++ {
 		if got := WorkplaceSlots("shipyard", level); got != want[level-1] {
-			t.Errorf("shipyard level %d: taxonomy §8.2/§11.2 says %d, got %d", level, want[level-1], got)
+			t.Errorf("shipyard level %d: megaron_byggare_verkstad says %d, got %d", level, want[level-1], got)
 		}
 	}
 }
