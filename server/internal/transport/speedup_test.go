@@ -28,6 +28,7 @@ func TestSpeedUpTransport_RemainingTimeIdempotentAndInPlace(t *testing.T) {
 	}
 	clk := clock.NewTestClock(start.Add(10 * time.Second))
 	tx, _ := pool.Begin(ctx)
+	defer tx.Rollback(ctx)
 	id, err := Dispatch(ctx, tx, events.NewScheduler(pool, clk), DispatchParams{WorldID: f.worldID, OwnerID: f.owner, OriginID: f.sourceID, DestID: f.destID, Kind: "transfer", Category: "land", DestQ: 3, DepartsAt: clk.Now(), Manifest: Manifest{"grain": 10}})
 	if err != nil {
 		t.Fatal(err)
@@ -40,7 +41,7 @@ func TestSpeedUpTransport_RemainingTimeIdempotentAndInPlace(t *testing.T) {
 	if err = pool.QueryRow(ctx, `SELECT journey,departed_tick,due_tick FROM transports WHERE id=$1`, id).Scan(&raw, &dep, &due); err != nil {
 		t.Fatal(err)
 	}
-	now := start.Add(10*time.Second + 70*time.Second) // a bit more than one tick under way
+	now := start.Add(10*time.Second + 35*time.Second) // inside the first tick, so a second run could still gain a tick
 	before, err := SavedPosition(raw, dep, due, 0, now)
 	if err != nil {
 		t.Fatal(err)
@@ -53,6 +54,7 @@ func TestSpeedUpTransport_RemainingTimeIdempotentAndInPlace(t *testing.T) {
 
 	bless := uuid.New()
 	tx, _ = pool.Begin(ctx)
+	defer tx.Rollback(ctx)
 	got, err := SpeedUpTransport(ctx, tx, id, bless, now)
 	if err != nil || got == nil {
 		t.Fatalf("not sped: %v %v", got, err)
@@ -83,6 +85,7 @@ func TestSpeedUpTransport_RemainingTimeIdempotentAndInPlace(t *testing.T) {
 	}
 	// Idempotent: a marked journey is left alone, bit for bit; a second prayer does not stack.
 	tx, _ = pool.Begin(ctx)
+	defer tx.Rollback(ctx)
 	again, err := SpeedUpTransport(ctx, tx, id, uuid.New(), now.Add(time.Second))
 	if err != nil || again != nil {
 		t.Fatalf("second run sped again: %v %v", again, err)
@@ -101,6 +104,7 @@ func TestSpeedUpTransport_DepartureSpedIsLeftAlone(t *testing.T) {
 	pool := testPool(t)
 	f := newFixture(t, pool)
 	tx, _ := pool.Begin(ctx)
+	defer tx.Rollback(ctx)
 	defer tx.Rollback(ctx)
 	if _, err := tx.Exec(ctx, `INSERT INTO departure_prayers(settlement_id,owner_id,effect) VALUES($1,$2,'next_land_departure')`, f.sourceID, f.owner); err != nil {
 		t.Fatal(err)
@@ -137,6 +141,7 @@ func TestBlessDeparture_SpeedPrayerHoldsOnlyWhileItLasts(t *testing.T) {
 	run := func(city uuid.UUID) province.TradeJourney {
 		t.Helper()
 		tx, _ := pool.Begin(ctx)
+		defer tx.Rollback(ctx)
 		defer tx.Rollback(ctx)
 		j := plain()
 		if err := BlessDeparture(ctx, tx, f.worldID, f.owner, city, &j, true); err != nil {

@@ -40,6 +40,8 @@ func TestSpeedUpMarchingUnit_RemainingTimeNewArrivalAndIdempotent(t *testing.T) 
 	_ = pool.QueryRow(ctx, `SELECT march_route FROM units WHERE id=$1`, f.unitID).Scan(&oldRaw)
 
 	tx, _ := pool.Begin(ctx)
+
+	defer tx.Rollback(ctx)
 	got, err := SpeedUpMarchingUnit(ctx, tx, f.scheduler, f.worldID, f.unitID, uuid.New(), now)
 	if err != nil || got == nil {
 		t.Fatalf("not sped: %v %v", got, err)
@@ -81,6 +83,7 @@ func TestSpeedUpMarchingUnit_RemainingTimeNewArrivalAndIdempotent(t *testing.T) 
 		t.Fatalf("the old arrival job moved the ship: %s", status)
 	}
 	tx, _ = pool.Begin(ctx)
+	defer tx.Rollback(ctx)
 	again, err := SpeedUpMarchingUnit(ctx, tx, f.scheduler, f.worldID, f.unitID, uuid.New(), now.Add(time.Minute))
 	_ = tx.Commit(ctx)
 	if err != nil || again != nil {
@@ -96,6 +99,7 @@ func TestSpeedUpMarchingUnit_MarkedVoyageIsLeftAlone(t *testing.T) {
 	var before []byte
 	_ = pool.QueryRow(ctx, `SELECT march_route FROM units WHERE id=$1`, f.unitID).Scan(&before)
 	tx, _ := pool.Begin(ctx)
+	defer tx.Rollback(ctx)
 	got, err := SpeedUpMarchingUnit(ctx, tx, f.scheduler, f.worldID, f.unitID, uuid.New(), at.Add(2*time.Minute))
 	_ = tx.Commit(ctx)
 	if err != nil || got != nil {

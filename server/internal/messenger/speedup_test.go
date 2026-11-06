@@ -38,6 +38,7 @@ func TestSpeedUpMessenger_RemainingTimeIdempotentAndInPlace(t *testing.T) {
 	f, id, now := speedFixture(t)
 	sched := events.NewScheduler(f.pool, clock.NewTestClock(now))
 	tx, _ := f.pool.Begin(ctx)
+	defer tx.Rollback(ctx)
 	if err := SaveLandRouteTx(ctx, tx, f.worldID, id, province.MapPosition{}, province.MapPosition{Q: 3}, now, now.Add(8*time.Minute)); err != nil {
 		t.Fatal(err)
 	}
@@ -53,6 +54,8 @@ func TestSpeedUpMessenger_RemainingTimeIdempotentAndInPlace(t *testing.T) {
 	before, _, _ := province.RunnerLandPosition(raw, nil, at)
 
 	tx, _ = f.pool.Begin(ctx)
+
+	defer tx.Rollback(ctx)
 	got, err := SpeedUpMessenger(ctx, tx, id, uuid.New(), at)
 	if err != nil || got == nil {
 		t.Fatalf("not sped: %v %v", got, err)
@@ -76,6 +79,7 @@ func TestSpeedUpMessenger_RemainingTimeIdempotentAndInPlace(t *testing.T) {
 		t.Fatalf("jobs %d due %d at %v eta %v", n, due, pa, arr)
 	}
 	tx, _ = f.pool.Begin(ctx)
+	defer tx.Rollback(ctx)
 	again, err := SpeedUpMessenger(ctx, tx, id, uuid.New(), at.Add(time.Second))
 	_ = tx.Commit(ctx)
 	if err != nil || again != nil {
@@ -88,6 +92,7 @@ func TestSpeedUpMessenger_AboardACarrierIsLeftAlone(t *testing.T) {
 	ctx := context.Background()
 	f, id, now := speedFixture(t)
 	tx, _ := f.pool.Begin(ctx)
+	defer tx.Rollback(ctx)
 	if err := SaveLandRouteTx(ctx, tx, f.worldID, id, province.MapPosition{}, province.MapPosition{Q: 3}, now, now.Add(8*time.Minute)); err != nil {
 		t.Fatal(err)
 	}
@@ -96,6 +101,7 @@ func TestSpeedUpMessenger_AboardACarrierIsLeftAlone(t *testing.T) {
 		t.Fatal(err)
 	}
 	tx, _ = f.pool.Begin(ctx)
+	defer tx.Rollback(ctx)
 	got, err := SpeedUpMessenger(ctx, tx, id, uuid.New(), now.Add(2*time.Minute))
 	_ = tx.Commit(ctx)
 	if err != nil || got != nil {
@@ -115,6 +121,7 @@ func TestSaveDeparture_SpeedPrayerOverTheCity(t *testing.T) {
 	}
 	end := func() int {
 		tx, _ := f.pool.Begin(ctx)
+		defer tx.Rollback(ctx)
 		if err := SaveDepartureTx(ctx, tx, f.worldID, id, now); err != nil {
 			t.Fatal(err)
 		}
