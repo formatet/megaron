@@ -41,6 +41,82 @@ type riteAvailablePrayer struct {
 	TempleStaffed     int    `json:"temple_staffed"`
 	TempleCapacity    int    `json:"temple_capacity"`
 	BaseDurationDays  int    `json:"base_duration_game_days"`
+	// Blessing prayers (steg 2a): what may be named and what each step costs (x the traditional gift).
+	Targets          *riteTargets   `json:"targets"`
+	ScopeCostFactors map[string]int `json:"scope_cost_factors"`
+}
+
+type riteTargets struct {
+	Unit []struct {
+		ID    string `json:"id"`
+		Name  string `json:"name"`
+		Where string `json:"where"`
+	} `json:"unit"`
+	City struct {
+		Name  string `json:"name"`
+		Count int    `json:"count"`
+	} `json:"city"`
+	Realm struct {
+		Count int `json:"count"`
+	} `json:"realm"`
+}
+
+// scaledOffering is the traditional gift times a target step's factor.
+func scaledOffering(offering map[string]float64, factor int) map[string]float64 {
+	out := make(map[string]float64, len(offering))
+	for g, n := range offering {
+		out[g] = n * float64(factor)
+	}
+	return out
+}
+
+// printRiteTargets lists what a blessing prayer may be laid on and what each step costs.
+func printRiteTargets(p riteAvailablePrayer, settlementID string) {
+	if p.Targets == nil {
+		return
+	}
+	f := p.ScopeCostFactors
+	fmt.Printf("  Choose a target with --scope; the wider, the dearer (gift × step):\n")
+	fmt.Printf("    --scope unit  ×%d  %s  — one named, with --target <name|id>\n", f["unit"], formatOffering(scaledOffering(p.Offering, f["unit"])))
+	for _, u := range p.Targets.Unit {
+		fmt.Printf("        %s (%s) %s\n", u.Name, u.Where, u.ID)
+	}
+	fmt.Printf("    --scope city  ×%d  %s  — %d units of %s\n", f["city"], formatOffering(scaledOffering(p.Offering, f["city"])), p.Targets.City.Count, p.Targets.City.Name)
+	fmt.Printf("    --scope realm ×%d  %s  — all %d\n", f["realm"], formatOffering(scaledOffering(p.Offering, f["realm"])), p.Targets.Realm.Count)
+}
+
+// resolveRiteTarget turns --target (a name or an id) into a unit id from the prayer's own target list.
+func resolveRiteTarget(p riteAvailablePrayer, arg string) (string, error) {
+	if p.Targets == nil {
+		return arg, nil
+	}
+	var names []string
+	var hits []string
+	for _, u := range p.Targets.Unit {
+		names = append(names, fmt.Sprintf("%s (%s)", u.Name, u.Where))
+		if strings.EqualFold(u.ID, arg) {
+			return u.ID, nil
+		}
+		if strings.Contains(strings.ToLower(u.Name), strings.ToLower(arg)) {
+			hits = append(hits, u.ID)
+		}
+	}
+	for _, u := range p.Targets.Unit {
+		if strings.EqualFold(u.Name, arg) {
+			return u.ID, nil
+		}
+	}
+	if len(hits) == 1 {
+		return hits[0], nil
+	}
+	list := strings.Join(names, ", ")
+	if list == "" {
+		list = "none"
+	}
+	if len(hits) > 1 {
+		return "", fmt.Errorf("%q matches more than one — name it fully or use the id. Yours: %s", arg, list)
+	}
+	return "", fmt.Errorf("no unit of yours called %q for this prayer. Yours: %s", arg, list)
 }
 
 // riteProvinceStatus is the slice of the province status response this file needs.
@@ -120,6 +196,7 @@ func riteCmd() *cobra.Command {
 	var settlementID, provinceArg string
 	var prayerID string
 	var targetID string
+	var scope string
 	var list bool
 	var yes bool
 	var offerMultiplier float64
@@ -132,6 +209,8 @@ func riteCmd() *cobra.Command {
   keryx rite --prayer <prayer-id>
   keryx rite --prayer <prayer-id> --province Knossos
   keryx rite --prayer <prayer-id> --offer grain=10,silver=3
+  keryx rite --prayer minoan_stillness_hull --scope unit --target "Horns of Crete"
+  keryx rite --prayer minoan_velchanos_strength --scope realm
   keryx rite --prayer <prayer-id> --yes
   keryx rite --json`,
 		Args: rejectPositionalArgs("prayer"),
@@ -185,12 +264,47 @@ func riteCmd() *cobra.Command {
 				composed = parsed
 			}
 
+			// A blessing prayer names its target: --scope unit|city|realm, and for unit a
+			// --target (name or id) picked from the prayer's own list. Refused here, before
+			// anything is offered, with the choices in the error.
+			if scope != "" || targetID != "" {
+				view, err := loadRealmCult(c)
+				if err != nil {
+					return err
+				}
+				for _, p := range view.Prayers {
+					if p.SettlementID != settlementID || p.Targets == nil || !(p.ID == prayerID || (prayerID == "" && p.Default)) {
+						continue
+					}
+					if scope == "" {
+						scope = "unit"
+					}
+					switch scope {
+					case "unit":
+						if targetID == "" {
+							_, err := resolveRiteTarget(p.riteAvailablePrayer, "")
+							return fmt.Errorf("--scope unit needs --target <name|id>: %w", err)
+						}
+						if targetID, err = resolveRiteTarget(p.riteAvailablePrayer, targetID); err != nil {
+							return err
+						}
+					case "city", "realm":
+						if targetID != "" {
+							return fmt.Errorf("--target goes with --scope unit only")
+						}
+					default:
+						return fmt.Errorf("--scope must be unit, city or realm")
+					}
+					break
+				}
+			}
+
 			// Pre-cast confirmation (A7 core): shows mood + offer + effect + the miss-note
 			// before the offering is spent. Skipped via --yes, --json, or when stdin isn't
 			// a terminal — an unanswered prompt would otherwise hang the agent harness.
 			autoConfirm := yes || jsonMode || !stdinIsTerminal()
 			if !autoConfirm {
-				confirmed, err := confirmRiteCast(c, markers, settlementID, prayerID, offerMultiplier, composed)
+				confirmed, err := confirmRiteCast(c, markers, settlementID, prayerID, scope, offerMultiplier, composed)
 				if err != nil {
 					return err
 				}
@@ -204,6 +318,9 @@ func riteCmd() *cobra.Command {
 			body := map[string]any{}
 			if prayerID != "" {
 				body["prayer"] = prayerID
+			}
+			if scope != "" {
+				body["target_scope"] = scope
 			}
 			if targetID != "" {
 				body["target"] = targetID
@@ -271,7 +388,8 @@ func riteCmd() *cobra.Command {
 	cmd.Flags().StringVar(&provinceArg, "province", "", "city name or province ID, like status/place/build (default: your capital)")
 	cmd.Flags().StringVar(&settlementID, "settlement", "", "settlement UUID (same as --province, kept for old scripts)")
 	cmd.Flags().StringVar(&prayerID, "prayer", "", "prayer ID (run --list to see your culture's prayers; defaults to the culture's listed default prayer)")
-	cmd.Flags().StringVar(&targetID, "target", "", "target province UUID (for future targeted prayers)")
+	cmd.Flags().StringVar(&targetID, "target", "", "the unit a blessing is laid on, by name or id (with --scope unit; see --list)")
+	cmd.Flags().StringVar(&scope, "scope", "", "how wide a blessing reaches: unit | city | realm — the wider, the dearer (see --list)")
 	cmd.Flags().BoolVar(&yes, "yes", false, "skip the pre-cast confirmation (required for non-interactive/agent use)")
 	cmd.Flags().StringVar(&offer, "offer", "",
 		"composed offering, e.g. --offer wine=20,oil=10 — worth at least the traditional offering; the gods value what the world is short of")
@@ -285,7 +403,7 @@ func riteCmd() *cobra.Command {
 // is consumed even on a miss, and that has no other warning (A7). Returns false
 // (no error) if the player declines. Never shows a computed success percentage —
 // only the gods' mood (Timothy 2026-07-11 hard invariant).
-func confirmRiteCast(c *Client, markers []map[string]any, settlementID, prayerID string, offerMultiplier float64, composed map[string]float64) (bool, error) {
+func confirmRiteCast(c *Client, markers []map[string]any, settlementID, prayerID, scope string, offerMultiplier float64, composed map[string]float64) (bool, error) {
 	if markers == nil {
 		provs, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces", cfg.WorldID))
 		if err != nil {
@@ -347,6 +465,10 @@ func confirmRiteCast(c *Client, markers []map[string]any, settlementID, prayerID
 		fmt.Printf("Lasts %s with the traditional gift; a larger gift lasts longer.\n", formatDays(chosen.BaseDurationDays))
 	}
 	previewGift := chosen.Offering
+	if f := chosen.ScopeCostFactors[scope]; f > 1 {
+		previewGift = scaledOffering(previewGift, f)
+		fmt.Printf("Target: %s — the gift is ×%d.\n", scope, f)
+	}
 	if len(composed) > 0 {
 		previewGift = composed
 	}

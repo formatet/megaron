@@ -662,6 +662,10 @@ func printSeaStormLine(n notificationItem) {
 		fmt.Printf("      Storm at (%d,%d): Poseidon held back the waves — your %s sails on unharmed, hull %d/%d.\n", body.Q, body.R, name, body.Hull, body.HullMax)
 		return
 	}
+	if n.Kind == "ShipStormDamaged" && body.Divine == "warded" {
+		fmt.Printf("      Storm at (%d,%d): the Sea Daimons' blessing took the blow — your %s sails on unharmed, hull %d/%d.\n", body.Q, body.R, name, body.Hull, body.HullMax)
+		return
+	}
 	if n.Kind == "ShipStormDamaged" {
 		wrath := ""
 		if body.Divine == "wrath" {

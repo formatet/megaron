@@ -37,6 +37,16 @@ func TestPrintSeaStormLine_GodsHand(t *testing.T) {
 	}
 }
 
+func TestPrintSeaStormLine_WardedByStoutHulls(t *testing.T) {
+	out, _ := captureStdout(t, func() error {
+		printSeaStormLine(notificationItem{Kind: "ShipStormDamaged", Body: []byte(`{"name":"Ariadne","q":6,"r":0,"hull":5,"hull_max":5,"damage":0,"divine":"warded"}`)})
+		return nil
+	})
+	if want := "Storm at (6,0): the Sea Daimons' blessing took the blow — your Ariadne sails on unharmed, hull 5/5."; !strings.Contains(out, want) || strings.Contains(out, "Repair") {
+		t.Fatalf("keryx = %q, want %q and no repair advice", out, want)
+	}
+}
+
 func TestPrintBattleReportLine_GodsHand(t *testing.T) {
 	out, _ := captureStdout(t, func() error {
 		printBattleReportLine(notificationItem{Kind: "BattleWon", Body: []byte(`{"role":"attacker","outcome":"attacker_wins","opponent_name":"Nestor","place":"Pylos","divine":"favor"}`)})
