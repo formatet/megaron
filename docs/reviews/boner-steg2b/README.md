@@ -54,4 +54,4 @@ temenos (`rite` + `sped_up`, katalogens `targets.always`) · keryx (`rite --list
 Kult → Prayers → Swift Feet / Following Seas → Offer: målväljaren (vägens lista, city/realm öppna). Inga skärmdumpar tagna.
 
 ## Svit
-Se slutrapporten (hela `tools/gotest.sh`, färsk DB på migration 247, + webbtester).
+Hela `tools/gotest.sh` (färsk DB på migration 247): alla Go-paket `ok` utom `api/handlers` som föll på ett receptprov (speed-bönerna betalas ×4 för riket) — rättat, paketet kört om grönt (80 s); webbtester (inkl. `codex.test.mjs`) gröna. Två svitkörningar behövdes; en transport-testhäng (öppen tx höll stadsraden) rättades före.

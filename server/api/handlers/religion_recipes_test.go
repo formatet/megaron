@@ -93,7 +93,7 @@ func TestAlphaOfferDebitsDecisionRecipeExactly(t *testing.T) {
 				if err := json.Unmarshal(raw, &payload); err != nil {
 					t.Fatal(err)
 				}
-				if !reflect.DeepEqual(payload.Offering, recipe) || !payload.Success {
+				if !reflect.DeepEqual(payload.Offering, want) || !payload.Success {
 					t.Fatalf("frozen outcome %s", raw)
 				}
 			})
