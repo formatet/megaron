@@ -13,6 +13,9 @@ import (
 	"github.com/google/uuid"
 )
 
+// strengthLiteral is Velchanos' x1.25 written out: the test must not follow the constant it checks.
+const strengthLiteral = 1.25
+
 type strengthRun struct {
 	att, def BattleSideRoundResult
 }
@@ -61,8 +64,8 @@ func bless(t *testing.T, f siegeFixture, owner uuid.UUID, scope string, unit, ci
 
 func TestBlessedStrength_ScopesOwnerAndExpiry(t *testing.T) {
 	base := blessedBattle(t, nil)
-	boosted := int(math.Round(float64(base.att.DiceRolled) * religion.BlessedStrengthFactor))
-	boostedDef := int(math.Round(float64(base.def.DiceRolled) * religion.BlessedStrengthFactor))
+	boosted := int(math.Round(float64(base.att.DiceRolled) * strengthLiteral))
+	boostedDef := int(math.Round(float64(base.def.DiceRolled) * strengthLiteral))
 	if boosted <= base.att.DiceRolled {
 		t.Fatalf("fixture too small to show a boost: %d", base.att.DiceRolled)
 	}
@@ -135,7 +138,7 @@ func TestBlessedStrength_MidBattleFromTheNextTick(t *testing.T) {
 	if b1.DiceRolled != plain1.DiceRolled {
 		t.Fatalf("the prayer reached back into the tick before it was said: %d vs %d", b1.DiceRolled, plain1.DiceRolled)
 	}
-	if want := int(math.Round(float64(plain2.DiceRolled) * religion.BlessedStrengthFactor)); b2.DiceRolled != want {
+	if want := int(math.Round(float64(plain2.DiceRolled) * strengthLiteral)); b2.DiceRolled != want {
 		t.Fatalf("next tick not strengthened: %d want %d (unblessed %d)", b2.DiceRolled, want, plain2.DiceRolled)
 	}
 }
