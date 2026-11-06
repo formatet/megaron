@@ -11,7 +11,9 @@ Every prayer asks for a minimum standing, and each has its own offering and rest
 | [[green-shoots|Green Shoots]] | [[velchanos|Velchanos]] | 30 | 15 [[grain|grain]] · 2 [[silver|silver]] | 25 / 13 / 9 game days |
 | [[mistress-of-the-walls|Mistress of the Walls]] | [[potnia|Potnia]] | 5 | 8 [[grain|grain]] · 4 [[timber|timber]] (or [[cedar|cedar]]) | 24 / 12 / 8 game days |
 | [[potnias-vision|Potnia's Vision]] | [[potnia|Potnia]] | 5 | 10 [[grain|grain]] · 3 [[silver|silver]] | 24 / 12 / 8 game days |
+| [[stout-hulls|Stout Hulls]] | [[sea-daimons|The Sea Daimons of Stillness]] | 5 | 8 [[fish|fish]] · 4 [[oil|oil]] | 12 / 6 / 4 game days |
 | [[the-thread-shows-a-path|The Thread Shows a Path]] | [[asterion|Asterion]] | 5 | 3 [[silver|silver]] · 4 [[timber|timber]] (or [[cedar|cedar]]) | 12 / 6 / 4 game days |
+| [[the-young-gods-arm|The Young God's Arm]] | [[velchanos|Velchanos]] | 5 | 6 [[livestock|livestock]] · 4 [[wine|wine]] | 12 / 6 / 4 game days |
 <!-- /kharis-prayers -->
 
 Kharis is never spent on a prayer; it is only a minimum you must hold.

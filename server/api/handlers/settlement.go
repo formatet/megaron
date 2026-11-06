@@ -722,7 +722,10 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	// Decode optional body.
 	var body struct {
 		Prayer          string  `json:"prayer"`
+		// Target is a unit id (target_scope "unit") for the blessing prayers; TargetScope
+		// is how wide the blessing reaches: "unit" | "city" | "realm" (religion.ScopeCostFactor).
 		Target          string  `json:"target"`
+		TargetScope     string  `json:"target_scope"`
 		OfferMultiplier float64 `json:"offer_multiplier"`
 		// Offering is the composed sacrifice: good_key→amount, the Wanax's own
 		// choice of what to carry to the altar. Omitted → the prayer's
@@ -837,6 +840,22 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// A blessing names its target: one unit of yours, the units of this city, or all of them.
+	// The wider the target, the dearer the gift (scopeFactor).
+	scopeFactor := 1.0
+	var blessScope string
+	var blessUnit *uuid.UUID
+	if religion.IsBlessing(spec.EffectType) {
+		var code int
+		var msg string
+		blessScope, blessUnit, code, msg = h.checkBlessingTarget(r.Context(), tx, worldID, playerID, settlementID, spec, body.TargetScope, body.Target, nowTick)
+		if code != 0 {
+			writeError(w, code, msg)
+			return
+		}
+		scopeFactor = float64(religion.ScopeCostFactor[blessScope])
+	}
+
 	// Kharis tier gate.
 	if kharisNow < spec.MinKharis {
 		writeError(w, http.StatusBadRequest, insufficientKharisMessage(prayerID, spec.MinKharis, kharisNow))
@@ -929,7 +948,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	// still lands on offerMod 0. Omitting `offering` keeps the old
 	// offer_multiplier path untouched: no client breaks.
 	// temenos_prayers_komposition_plan.md
-	offering := scaleOffering(spec.Offering, offerMultiplier)
+	offering := scaleOffering(spec.Offering, offerMultiplier*scopeFactor)
 	offerMod := riteOfferMod(offerMultiplier)
 	divineValues, dvErr := religion.LoadDivineValues(r.Context(), h.pool, worldID)
 	if dvErr != nil {
@@ -954,7 +973,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	}
 	favours := religion.FavoursFor(spec)
 	offeringWorth := religion.OfferingWorth(offering, divineValues, favours)
-	offeringBaseline := religion.TraditionalBaseline(spec, divineValues)
+	offeringBaseline := religion.TraditionalBaseline(spec, divineValues) * scopeFactor
 	offerCap := riteOfferModFat
 	if composed && !everyday {
 		offerMod, offerCap = religion.ComposedOfferMod(offering, divineValues, favours, offeringBaseline)
@@ -967,7 +986,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	}
 	if everyday && composed && offeringWorth < offeringBaseline*(1-1e-9) {
 		writeError(w, http.StatusBadRequest,
-			fmt.Sprintf("%s asks for a gift worth at least the traditional offering (%s)", spec.God, formatOffering(spec.Offering)))
+			fmt.Sprintf("%s asks for a gift worth at least the traditional offering (%s)", spec.God, formatOffering(scaleOffering(spec.Offering, scopeFactor))))
 		return
 	}
 
@@ -1053,6 +1072,8 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 			if spec.EffectType == religion.EffectBattleFrenzy {
 				message = fmt.Sprintf("The gods answer your plea — your own garrison defends this city a quarter stronger for %s.", tick.FormatDays(durationTicks))
 			}
+		case religion.EffectBlessedStrength, religion.EffectBlessedHull:
+			effectPayload, message, durationTicks, err = h.applyBlessing(r.Context(), tx, worldID, playerID, settlementID, spec, blessScope, blessUnit, nowTick, giftFactor)
 		case religion.EffectOracleRevealDeposits:
 			effectPayload, message, err = h.applyOracleRevealDeposits(r.Context(), tx, settlementID, worldID, playerID, spec)
 		case religion.EffectHarvestBlessing:
@@ -1114,6 +1135,12 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "could not record prayer outcome")
 		return
 	}
+	if id, ok := effectPayload["blessing_id"].(uuid.UUID); ok {
+		if _, err = tx.Exec(r.Context(), `UPDATE prayer_blessings SET cast_event_id=$2 WHERE id=$1`, id, riteEvent.ID); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not link the blessing to its outcome")
+			return
+		}
+	}
 	if err = tx.Commit(r.Context()); err != nil {
 		writeError(w, http.StatusInternalServerError, "commit failed")
 		return
@@ -1173,6 +1200,111 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	writeJSON(w, http.StatusOK, resp)
+}
+
+// checkBlessingTarget validates the target of a blessing prayer inside the cast
+// TX and returns the scope and (for scope unit) the unit. code != 0 is the HTTP refusal.
+// Only the caster's own, living units of the prayer's kind can be named; a city or
+// realm blessing needs at least one such unit; the same target twice is a 409.
+func (h *SettlementHandler) checkBlessingTarget(ctx context.Context, tx pgx.Tx, worldID, playerID, settlementID uuid.UUID,
+	spec religion.PrayerSpec, scope, target string, nowTick int) (string, *uuid.UUID, int, string) {
+	if _, ok := religion.ScopeCostFactor[scope]; !ok {
+		return "", nil, http.StatusBadRequest, "choose a target_scope for this prayer: unit, city or realm"
+	}
+	kind := religion.BlessingUnitKind(spec.EffectType)
+	category := "land"
+	noun := "land troops"
+	if kind == "naval" {
+		category, noun = "naval", "ships"
+	}
+	var unitID *uuid.UUID
+	var cityRef *uuid.UUID
+	switch scope {
+	case religion.ScopeUnit:
+		id, err := uuid.Parse(target)
+		if err != nil {
+			return "", nil, http.StatusBadRequest, "a unit blessing needs target = the id of one of your units"
+		}
+		var cat, status string
+		err = tx.QueryRow(ctx, `SELECT category, status FROM units WHERE id=$1 AND world_id=$2 AND owner_id=$3`, id, worldID, playerID).Scan(&cat, &status)
+		if err == pgx.ErrNoRows {
+			return "", nil, http.StatusNotFound, "no such unit of yours"
+		}
+		if err != nil {
+			return "", nil, http.StatusInternalServerError, "could not read the unit"
+		}
+		if status == "disbanded" || status == "forming" {
+			return "", nil, http.StatusBadRequest, "that unit is gone or not yet built"
+		}
+		if cat != category {
+			return "", nil, http.StatusBadRequest, fmt.Sprintf("%s blesses %s, not that unit", spec.Name, noun)
+		}
+		unitID = &id
+	case religion.ScopeCity:
+		cityRef = &settlementID
+		fallthrough
+	case religion.ScopeRealm:
+		var n int
+		if err := tx.QueryRow(ctx, `SELECT count(*) FROM units WHERE world_id=$1 AND owner_id=$2 AND category=$3 AND status NOT IN ('disbanded','forming') AND ($4::uuid IS NULL OR support_settlement_id=$4)`,
+			worldID, playerID, category, cityRef).Scan(&n); err != nil {
+			return "", nil, http.StatusInternalServerError, "could not count the units"
+		}
+		if n == 0 {
+			where := "in your realm"
+			if cityRef != nil {
+				where = "supported by this city"
+			}
+			return "", nil, http.StatusBadRequest, fmt.Sprintf("you have no %s %s to bless", noun, where)
+		}
+	}
+	active, err := religion.BlessingActive(ctx, tx, playerID, spec.EffectType, scope, unitID, cityRef, nowTick)
+	if err != nil {
+		return "", nil, http.StatusInternalServerError, "could not read active blessings"
+	}
+	if active {
+		return "", nil, http.StatusConflict, "already blessed — wait for the blessing to end"
+	}
+	return scope, unitID, 0, ""
+}
+
+// applyBlessing lays the blessing row; length is the gift against its own baseline
+// (religion.DurationTicks), like the other lasting prayers.
+func (h *SettlementHandler) applyBlessing(ctx context.Context, tx pgx.Tx, worldID, playerID, settlementID uuid.UUID,
+	spec religion.PrayerSpec, scope string, unitID *uuid.UUID, nowTick int, giftFactor float64) (map[string]any, string, int, error) {
+	base, noun := religion.BlessedStrengthTicks, "troops"
+	if spec.EffectType == religion.EffectBlessedHull {
+		base, noun = religion.BlessedHullTicks, "ships"
+	}
+	duration := religion.DurationTicks(base, giftFactor)
+	until := nowTick + duration
+	var city *uuid.UUID
+	if scope == religion.ScopeCity {
+		city = &settlementID
+	}
+	var id uuid.UUID
+	if err := tx.QueryRow(ctx, `INSERT INTO prayer_blessings(world_id,owner_id,effect,scope,unit_id,settlement_id,from_tick,until_tick) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
+		worldID, playerID, spec.EffectType, scope, unitID, city, nowTick, until).Scan(&id); err != nil {
+		return nil, "", 0, err
+	}
+	payload := map[string]any{"target_scope": scope, "blessing_id": id, "until_tick": until, "duration_ticks": duration}
+	if unitID != nil {
+		payload["target_unit_id"] = unitID.String()
+	}
+	who := "your " + noun + " of this city"
+	switch scope {
+	case religion.ScopeUnit:
+		who = "the " + strings.TrimSuffix(noun, "s") + " you named"
+	case religion.ScopeRealm:
+		who = "all your " + noun
+	}
+	var message string
+	if spec.EffectType == religion.EffectBlessedStrength {
+		payload["strength_factor"] = religion.BlessedStrengthFactor
+		message = fmt.Sprintf("Velchanos steadies %s — they fight a quarter stronger for %s.", who, tick.FormatDays(duration))
+	} else {
+		message = fmt.Sprintf("The Sea Daimons shelter %s — each takes the next storm unharmed, for %s.", who, tick.FormatDays(duration))
+	}
+	return payload, message, duration, nil
 }
 
 // applyHarvestBlessing raises the yield of every food good but fish by a

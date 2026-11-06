@@ -2,7 +2,7 @@ A rite is a request made at the temple of its god.
 
 A **rite** is a request to [[gods|the gods]]. Open **Kult → Prayers**.
 
-Each prayer is said at its own god's [[temples|temple]], so a city needs that temple standing: [[favourable-passage]] needs a Temple of the [[sea-daimons|Sea Daimons]] of Stillness, [[green-shoots]] a Temple of [[velchanos]], [[mistress-of-the-walls]] and [[potnias-vision]] a [[temple]] of [[potnia]], [[the-thread-shows-a-path]] a Temple of [[asterion]]. Level 1 is enough. Without it the prayer shows "no Temple of …".
+Each prayer is said at its own god's [[temples|temple]], so a city needs that temple standing: [[favourable-passage]] and [[stout-hulls]] need a Temple of the [[sea-daimons|Sea Daimons]] of Stillness, [[green-shoots]] and [[the-young-gods-arm]] a Temple of [[velchanos]], [[mistress-of-the-walls]] and [[potnias-vision]] a [[temple]] of [[potnia]], [[the-thread-shows-a-path]] a Temple of [[asterion]]. Level 1 is enough. Without it the prayer shows "no Temple of …".
 
 ## Temples required by prayers {#rites-details}
 
@@ -10,7 +10,7 @@ Each prayer row shows its temple, **Required kharis: N** (the minimum standing i
 
 ## Standing and offerings for prayers {#prayer-requirements}
 
-**[[kharis]] is never spent on a prayer.** Each of the five Minoan everyday prayers answers when you meet its standing requirement, have its god's temple, and can bring its offering. Waiting time, an active gift or an unused departure gift can still prevent a new prayer.
+**[[kharis]] is never spent on a prayer.** Each of the seven Minoan everyday prayers answers when you meet its standing requirement, have its god's temple, and can bring its offering. Waiting time, an active gift or an unused departure gift can still prevent a new prayer.
 
 Bring the traditional recipe or a composed offering worth at least as much to that god. If you lack the traditional gift, **Compose offering** opens empty fields so you can choose other goods you hold. Choose some goods before bringing the gift. `keryx rite --list` marks this as **compose**; use `rite --offer good=amount` to choose the gift. In an interactive terminal, Keryx shows your chosen goods and exact amounts before asking **Cast?**; answering no leaves the gift untouched. A smaller gift is refused without taking goods. Bringing more does not change whether the god answers, but a larger gift makes a lasting prayer last longer (up to five times as long) and makes the temple rest longer. For these prayers, `--offer-multiplier` is ignored; omitting a composed offering always brings the traditional recipe.
 
@@ -22,7 +22,7 @@ Older prayers outside the current Minoan catalogue retain their uncertain answer
 
 ## Prayer answers and active blessings {#rites-the-prayers}
 
-The current Minoan prayers are **Favourable Passage**, **Green Shoots**, **Mistress of the Walls**, **Potnia's Vision** and **The Thread Shows a Path**, described below. `keryx rite --list` or **Kult → Prayers** shows the prayers your culture can offer and why one is unavailable. Current kharis is shown with a decimal; eligibility uses the exact pool value.
+The current Minoan prayers are **Favourable Passage**, **Green Shoots**, **Mistress of the Walls**, **Potnia's Vision**, **Stout Hulls**, **The Thread Shows a Path** and **The Young God's Arm**, described below. `keryx rite --list` or **Kult → Prayers** shows the prayers your culture can offer and why one is unavailable. Current kharis is shown with a decimal; eligibility uses the exact pool value.
 
 The answer or a refusal appears in the Kult drawer after you offer; it stays beside the prayers. An answer also arrives as a dispatch naming the god, the prayer and what was granted. When the god marks a place, **⌖ Take me there** goes to it. In Keryx it is listed by `keryx notifications`.
 
@@ -36,6 +36,11 @@ The row disappears when the blessing ends; [[fish|fish]] receives no harvest bon
 - **Mistress of the Walls** — offer 8 grain + 4 [[timber|timber]]. Potnia strengthens your own garrison defending this city by a quarter for 6 game days with the traditional gift; a larger gift lasts longer. It helps neither an attacking army nor soldiers away from that city. It shares Vision's rest.
 - **Potnia's Vision** — offer 10 [[grain|grain]] + 3 [[silver|silver]]. Potnia marks one source of [[copper|copper]], incense, silver or [[tin|tin]] you neither see nor remember, and unknown ground within two hexes, as grey memory. It creates no living eyes and shows no moving activity. Her temple rests 24 game days after answering at level 1.
 
+- **The Young God's Arm** — offer 6 [[livestock|livestock]] + 4 [[wine|wine]]. Velchanos makes the land troops you name roll a quarter more dice in [[battle]] for 6 game days with the traditional gift, attacking or defending, wherever they stand. It is a **blessing with a target**, see below. His temple rests 12 game days after answering at level 1.
+- **Stout Hulls** — offer 8 fish + 4 [[oil|oil]]. The Sea Daimons let each ship you name take its next [[storms|storm]] unharmed, for 12 game days with the traditional gift. It is a **blessing with a target**, see below. Their temple rests 12 game days after answering at level 1.
+
+**Blessings with a target.** These two prayers ask who is blessed: **one named unit** of yours, **everything of that kind supported by the city where you pray**, or **all of it in your realm**. The wider the target, the dearer the gift: the traditional offering ×1, ×2 or ×4. A larger gift than that lasts longer, as for any lasting prayer. In **Kult → Prayers** the offer row has the three choices, the list of your troops or ships, and the gift for each; in Keryx use `rite --scope unit|city|realm` and, for one unit, `--target <name or id>`; `rite --list` shows what you can name. Only your own, living troops or ships of the right kind can be named (troops for the Arm, ships for Stout Hulls). The blessing is read when it is needed, wherever the blessed troops or ship are, so it works for a unit already marching or at sea. The same target cannot be blessed twice at once, but two different troops or ships can each be blessed, once the temple has rested.
+
 ### Departure prayers {#minoan-prayers-2}
 
 - **Favourable Passage** — offer 6 fish + 3 silver to The Sea Daimons of Stillness. The next ship leaving this city takes a quarter less time and suffers no [[storms|storm]] damage on its outward leg. A Runner aboard travels at that ship's actual speed. Their temple rests 12 game days after answering at level 1.
@@ -43,7 +48,7 @@ The row disappears when the blessing ends; [[fish|fish]] receives no harvest bon
 
 Other cultures' war prayer (for example Ares' Fury for the Akhaier) works the same way as the Walls: your own garrison defending this city fights a quarter stronger for 6 game days with the traditional gift, and it cannot be offered again while it is active. It does not help an attacking army.
 
-Green Shoots requires 30 kharis; Vision, [[walls|Walls]] and the two departure prayers require at least 5. The temple's ordinary daily offering is separate.
+Green Shoots requires 30 kharis; Vision, [[walls|Walls]], the two departure prayers and the two blessings require at least 5. The temple's ordinary daily offering is separate.
 
 ### Gifts awaiting departure {#minoan-prayers-3}
 
@@ -76,7 +81,9 @@ A good's worth is multiplied by the god's taste for it. A taste above 1 means th
 | Green Shoots | Velchanos | incense ×2, wine ×2, oil ×1.6, grain ×1.3, livestock ×1.3, fish ×0.9, copper ×0.5, tin ×0.5, timber ×0.4, stone ×0.3 |
 | Mistress of the Walls | Potnia | livestock ×2, wine ×1.7, horses ×1.6, bronze ×1.5, incense ×1.5, grain ×1, pottery ×0.5, fish ×0.4, stone ×0.4 |
 | Potnia's Vision | Potnia | fish ×2.2, incense ×2.1, purple ×2, oil ×1.5, silver ×1.4, bronze ×1.3, pottery ×1.1, grain ×0.6, stone ×0.4 |
+| Stout Hulls | The Sea Daimons of Stillness | fish ×2.2, livestock ×2, wine ×1.7, horses ×1.6, bronze ×1.5, incense ×1.5, grain ×1, pottery ×0.5, stone ×0.4 |
 | The Thread Shows a Path | Asterion | no preference: every good at its worth |
+| The Young God's Arm | Velchanos | livestock ×2, wine ×1.7, horses ×1.6, bronze ×1.5, incense ×1.5, grain ×1, pottery ×0.5, fish ×0.4, stone ×0.4 |
 <!-- /favours -->
 
 Any good may be offered. **Oil and wine** are offerings like any other — oil is also food, so do not give up what a hungry city needs. **Incense** is a valuable gift ([[incense]]). For everyday prayers it can help meet the offering requirement; excess value does not change the answer, but a lasting prayer lasts longer and the temple rests longer.

@@ -2127,7 +2127,9 @@
         "mistress-of-the-walls",
         "green-shoots",
         "the-thread-shows-a-path",
-        "favourable-passage"
+        "favourable-passage",
+        "the-young-gods-arm",
+        "stout-hulls"
       ],
       "sections": [
         {
@@ -3107,6 +3109,44 @@
         "Favourable Passage"
       ],
       "summary": "Favourable Passage: the Sea Daimons speed your next ship out of port and keep storms off its outward leg.",
+      "parent": "rites"
+    },
+    {
+      "id": "the-young-gods-arm",
+      "title": "The Young God's Arm",
+      "category": "The gods",
+      "entities": [
+        {
+          "kind": "prayer",
+          "key": "minoan_velchanos_strength"
+        }
+      ],
+      "aliases": [
+        "minoan velchanos strength"
+      ],
+      "terms": [
+        "The Young God's Arm"
+      ],
+      "summary": "The Young God's Arm: Velchanos makes the land troops you name fight a quarter stronger for a few game days, wherever they stand.",
+      "parent": "rites"
+    },
+    {
+      "id": "stout-hulls",
+      "title": "Stout Hulls",
+      "category": "The gods",
+      "entities": [
+        {
+          "kind": "prayer",
+          "key": "minoan_stillness_hull"
+        }
+      ],
+      "aliases": [
+        "minoan stillness hull"
+      ],
+      "terms": [
+        "Stout Hulls"
+      ],
+      "summary": "Stout Hulls: the Sea Daimons let each ship you name take its next storm unharmed.",
       "parent": "rites"
     },
     {

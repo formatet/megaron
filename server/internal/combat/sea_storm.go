@@ -51,7 +51,8 @@ const StormDamage = 2
 const (
 	EventShipStormDamaged = "ShipStormDamaged"
 	// EventShipStormSpared: the ship met a storm and the gods held back its blow
-	// (R2, religion.StormTilt). Hull unchanged; never a ShipStormDamaged with 0.
+	// (R2, religion.StormTilt). Hull unchanged. (A ward from Stout Hulls is the one
+	// ShipStormDamaged with Damage 0: Divine "warded", order 2026-11-06.)
 	EventShipStormSpared = "ShipStormSpared"
 	EventShipFoundered   = "ShipFoundered"
 )
@@ -88,7 +89,7 @@ type SeaStormPayload struct {
 	FirstToMeet bool      `json:"first_to_meet"` // this blow gave the owner the right to name the storm
 	Damage      int       `json:"damage"`        // hull lost to this storm (absent on events before 2026-10-10: 1)
 	Foundered   bool      `json:"foundered"`
-	// Divine names the gods' hand in this outcome: "spared" (ShipStormSpared) or
+	// Divine names the gods' hand in this outcome: "warded" (a Stout Hulls ward took the storm, Damage 0), "spared" (ShipStormSpared) or
 	// "wrath" (StormWrathExtraHull more lost). Empty: the storm alone.
 	Divine      string          `json:"divine,omitempty"`
 	Errand      string          `json:"errand"` // "march" or the transport kind
@@ -341,7 +342,15 @@ func (h *SeaStormScanHandler) sail(ctx context.Context, worldID uuid.UUID, dueTi
 		for _, encounter := range encounters {
 			// The roll happens once, here; the outcome is what is stored.
 			divine, damage := "", StormDamage
-			if spare > 0 || wrath > 0 {
+			// A ward (Stout Hulls) takes the storm first and draws no die; it is spent
+			// in this TX, together with the hull outcome it replaces.
+			warded, err := religion.ConsumeWard(ctx, tx, v.owner, v.shipID, religion.EffectBlessedHull, encounter.tick)
+			if err != nil {
+				return err
+			}
+			if warded {
+				divine, damage = "warded", 0
+			} else if spare > 0 || wrath > 0 {
 				roll := h.GodDice.Float64()
 				if roll < spare {
 					divine, damage = "spared", 0

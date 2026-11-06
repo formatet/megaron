@@ -73,6 +73,28 @@ type prayerRow struct {
 	// Without this the composition mechanic is unplayable noise.
 	Favours          map[string]float64 `json:"favours,omitempty"`
 	OfferingBaseline float64            `json:"offering_baseline,omitempty"`
+	// Targets is set only for the blessing prayers (steg 2a): what may be named
+	// (one of your units, this city's units, all of them) and what each step costs
+	// as a multiple of the traditional gift (scope_cost_factors).
+	Targets          *prayerTargets `json:"targets,omitempty"`
+	ScopeCostFactors map[string]int `json:"scope_cost_factors,omitempty"`
+}
+
+type prayerTargets struct {
+	Unit  []prayerTargetUnit `json:"unit"`
+	City  prayerTargetGroup  `json:"city"`
+	Realm prayerTargetGroup  `json:"realm"`
+}
+
+type prayerTargetUnit struct {
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Where string `json:"where"`
+}
+
+type prayerTargetGroup struct {
+	Name  string `json:"name,omitempty"`
+	Count int    `json:"count"`
 }
 
 // maxQueuedBuilds caps how many buildings a single settlement may have in its

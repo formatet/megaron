@@ -828,6 +828,37 @@
         8
       ]
     },
+    "minoan_stillness_hull": {
+      "ID": "minoan_stillness_hull",
+      "GodID": "sea_daimons_stillness",
+      "EffectType": "blessed_hull",
+      "MinKharis": 5,
+      "Offering": {
+        "fish": 8,
+        "oil": 4
+      },
+      "CooldownTicks": 12,
+      "TargetKind": "",
+      "God": "The Sea Daimons of Stillness",
+      "Name": "Stout Hulls",
+      "Description": "Each ship you name takes the next storm it meets unharmed, for 12 game days: one ship, the city's ships, or the whole fleet. A wider blessing costs more.",
+      "Favours": {
+        "bronze": 1.5,
+        "fish": 2.2,
+        "grain": 1,
+        "horses": 1.6,
+        "incense": 1.5,
+        "livestock": 2,
+        "pottery": 0.5,
+        "stone": 0.4,
+        "wine": 1.7
+      },
+      "RestByLevel": [
+        12,
+        6,
+        4
+      ]
+    },
     "minoan_stillness_passage": {
       "ID": "minoan_stillness_passage",
       "GodID": "sea_daimons_stillness",
@@ -879,6 +910,37 @@
         25,
         13,
         9
+      ]
+    },
+    "minoan_velchanos_strength": {
+      "ID": "minoan_velchanos_strength",
+      "GodID": "velchanos",
+      "EffectType": "blessed_strength",
+      "MinKharis": 5,
+      "Offering": {
+        "livestock": 6,
+        "wine": 4
+      },
+      "CooldownTicks": 12,
+      "TargetKind": "",
+      "God": "Velchanos",
+      "Name": "The Young God's Arm",
+      "Description": "Land troops you name fight a quarter stronger for 6 game days, wherever they stand: one unit, the city's units, or the whole realm. A wider blessing costs more.",
+      "Favours": {
+        "bronze": 1.5,
+        "fish": 0.4,
+        "grain": 1,
+        "horses": 1.6,
+        "incense": 1.5,
+        "livestock": 2,
+        "pottery": 0.5,
+        "stone": 0.4,
+        "wine": 1.7
+      },
+      "RestByLevel": [
+        12,
+        6,
+        4
       ]
     }
   },

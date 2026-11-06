@@ -86,6 +86,7 @@ func listRealmPrayers(c *Client, settlement string) error {
 		if taste := favouredGoods(p.Favours); taste != "" {
 			fmt.Printf("  %s favours %s\n", p.God, taste)
 		}
+		printRiteTargets(p.riteAvailablePrayer, p.SettlementID)
 		fmt.Printf("  Cast here: keryx rite --settlement %s --prayer %s\n", p.SettlementID, p.ID)
 	}
 	if len(view.Prayers) == 0 {

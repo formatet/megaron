@@ -264,6 +264,8 @@ func init() {
 	PrayerSpecs[PrayerPotniaWalls] = PrayerSpec{ID: PrayerPotniaWalls, GodID: "potnia", EffectType: EffectGarrisonDefense, MinKharis: MoodSuspicious, Offering: map[string]float64{"grain": 8, "timber": 4}, CooldownTicks: 24, God: "Potnia", Name: "Mistress of the Walls", Description: "Your own garrison defending this city fights a quarter stronger for 6 game days.", Favours: favoursByEffect[EffectBattleFrenzy]}
 	PrayerSpecs[PrayerGreenShoots] = PrayerSpec{ID: PrayerGreenShoots, GodID: "velchanos", EffectType: EffectHarvestBlessing, MinKharis: MoodIndifferent, Offering: map[string]float64{"grain": 15, "silver": 2}, CooldownTicks: 25, God: "Velchanos", Name: "Green Shoots", Description: "Grain, oil and wine yield a quarter more for 25 game days; fish and the herd are unchanged."}
 	PrayerSpecs[PrayerAsterionThread] = PrayerSpec{ID: PrayerAsterionThread, GodID: "asterion", EffectType: EffectNextLandDeparture, MinKharis: MoodSuspicious, Offering: map[string]float64{"timber": 4, "silver": 3}, CooldownTicks: 12, God: "Asterion", Name: "The Thread Shows a Path", Description: "Your next land caravan or Runner from this city travels faster; the caravan is harder to intercept."}
+	PrayerSpecs[PrayerVelchanosStrength] = PrayerSpec{ID: PrayerVelchanosStrength, GodID: "velchanos", EffectType: EffectBlessedStrength, MinKharis: MoodSuspicious, Offering: map[string]float64{"livestock": 6, "wine": 4}, CooldownTicks: 12, God: "Velchanos", Name: "The Young God's Arm", Description: "Land troops you name fight a quarter stronger for 6 game days, wherever they stand: one unit, the city's units, or the whole realm. A wider blessing costs more.", Favours: favoursByEffect[EffectBattleFrenzy]}
+	PrayerSpecs[PrayerStillnessHull] = PrayerSpec{ID: PrayerStillnessHull, GodID: "sea_daimons_stillness", EffectType: EffectBlessedHull, MinKharis: MoodSuspicious, Offering: map[string]float64{"fish": 8, "oil": 4}, CooldownTicks: 12, God: "The Sea Daimons of Stillness", Name: "Stout Hulls", Description: "Each ship you name takes the next storm it meets unharmed, for 12 game days: one ship, the city's ships, or the whole fleet. A wider blessing costs more.", Favours: havsdaimonernaBattleFrenzyFavours}
 	PrayerSpecs[PrayerStillnessPassage] = PrayerSpec{ID: PrayerStillnessPassage, GodID: "sea_daimons_stillness", EffectType: EffectNextShipDeparture, MinKharis: MoodSuspicious, Offering: map[string]float64{"fish": 6, "silver": 3}, CooldownTicks: 12, God: "The Sea Daimons of Stillness", Name: "Favourable Passage", Description: "The next ship leaving this port sails faster and takes no storm damage on its outward leg."}
 }
 
@@ -274,7 +276,7 @@ var CulturePrayers = map[string][]string{
 	"khemetiu": {"khemetiu_oracle_deposits", "khemetiu_harvest_blessing", "khemetiu_battle_frenzy"},
 	"knaani":   {"knaani_oracle_deposits", "knaani_harvest_blessing", "knaani_battle_frenzy"},
 	"thrakes":  {"thrakes_oracle_deposits", "thrakes_harvest_blessing", "thrakes_battle_frenzy"},
-	"minoan":   {PrayerPotniaVision, PrayerPotniaWalls, PrayerGreenShoots, PrayerAsterionThread, PrayerStillnessPassage},
+	"minoan":   {PrayerPotniaVision, PrayerPotniaWalls, PrayerGreenShoots, PrayerAsterionThread, PrayerStillnessPassage, PrayerVelchanosStrength, PrayerStillnessHull},
 	"hatti":    {"hatti_oracle_deposits", "hatti_harvest_blessing", "hatti_battle_frenzy"},
 }
 
