@@ -69,12 +69,12 @@ func TestSpeedUpMarchingUnit_RemainingTimeNewArrivalAndIdempotent(t *testing.T) 
 		t.Fatalf("new arrival job: %d %v", n, err)
 	}
 	// The old arrival job (old route key, old tick) runs and does nothing: the ship is still at sea.
-	oldTick := 110
+	oldTick := 108 // the new tick, so only the old route key says this job is stale
 	body, _ := json.Marshal(arrivalV2Payload{ScheduledUnitArrivalPayload: unit.ScheduledUnitArrivalPayload{UnitID: f.unitID, WorldID: f.worldID, ArriveTick: &oldTick}, RouteKey: fmt.Sprintf("%x", sha256.Sum256(oldRaw))})
-	if _, err = pool.Exec(ctx, `UPDATE worlds SET current_tick=110 WHERE id=$1`, f.worldID); err != nil {
+	if _, err = pool.Exec(ctx, `UPDATE worlds SET current_tick=108 WHERE id=$1`, f.worldID); err != nil {
 		t.Fatal(err)
 	}
-	if err = f.h.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, EventType: events.ScheduledUnitArrivalV2, DueTick: 110, Payload: body}); err != nil {
+	if err = f.h.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, EventType: events.ScheduledUnitArrivalV2, DueTick: 108, Payload: body}); err != nil {
 		t.Fatal(err)
 	}
 	var status string

@@ -156,6 +156,21 @@ func TestBlessDeparture_SpeedPrayerHoldsOnlyWhileItLasts(t *testing.T) {
 	if j := run(f.sourceID); j.TravelTicks != 5 || j.SpeedBlessing == "" {
 		t.Fatalf("a prayer over the city must speed the departure (x0.75 of 6 = 5): %+v", j)
 	}
+	// Already sped (by this or another prayer): a second pass takes nothing more off.
+	{
+		tx, _ := pool.Begin(ctx)
+		defer tx.Rollback(ctx)
+		j := plain()
+		for i := 0; i < 2; i++ {
+			j.DepartureChecked = false
+			if err := BlessDeparture(ctx, tx, f.worldID, f.owner, f.sourceID, &j, true); err != nil {
+				t.Fatal(err)
+			}
+		}
+		if j.TravelTicks != 5 {
+			t.Fatalf("a journey already sped was sped again: %d ticks", j.TravelTicks)
+		}
+	}
 	if j := run(f.destID); j.TravelTicks != 6 {
 		t.Fatalf("another city is not covered: %+v", j)
 	}

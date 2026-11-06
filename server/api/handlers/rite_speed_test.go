@@ -111,6 +111,8 @@ func TestSpeedCast_LandScopesOwnerAndNoStacking(t *testing.T) {
 	theirs := f.runner(t, foreign, f.cities[0], f.cities[1])
 	van := f.caravan(t, f.player, f.cities[0])
 	vanDue := f.arriveTick(t, "transports", van)
+	theirVan := f.caravan(t, foreign, f.cities[0])
+	theirVanDue := f.arriveTick(t, "transports", theirVan)
 
 	// 1. named: only Runner a.
 	if r := f.castBody(f.cities[0], map[string]any{"prayer": religion.PrayerAsterionSwift, "target_scope": "unit", "target": a.String()}); r.Code != 200 {
@@ -154,8 +156,8 @@ func TestSpeedCast_LandScopesOwnerAndNoStacking(t *testing.T) {
 	if f.arriveTick(t, "messengers", b) != 106 || f.arriveTick(t, "messengers", a) != 106 || f.arriveTick(t, "transports", van) != vanOnce {
 		t.Fatal("realm blessing: b should be sped, a and the caravan only once")
 	}
-	if f.arriveTick(t, "messengers", theirs) != 108 {
-		t.Fatal("a foreign Runner was sped")
+	if f.arriveTick(t, "messengers", theirs) != 108 || f.arriveTick(t, "transports", theirVan) != theirVanDue {
+		t.Fatal("a foreign Runner or caravan was sped")
 	}
 	if s := f.spedUp(t); len(s) != 1 || s[0].ID != b {
 		t.Fatalf("realm cast sped_up %+v, want only b", s)
