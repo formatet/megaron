@@ -9,6 +9,7 @@ import (
 	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/settlement"
 	"formatet/megaron/server/internal/tick"
+	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 	"slices"
 	"time"
@@ -153,6 +154,14 @@ func (h *ProvinceHandler) loadPrayerRows(ctx context.Context, sett *settlement.S
 			Favours:               religion.FavoursFor(spec),
 			OfferingBaseline:      religion.TraditionalBaseline(spec, divineValues),
 		})
+		if religion.IsBlessing(spec.EffectType) && sett.OwnerID != nil {
+			targets, tErr := h.loadPrayerTargets(ctx, sett, *sett.OwnerID, religion.BlessingUnitKind(spec.EffectType))
+			if tErr != nil {
+				return nil, nil, fmt.Errorf("could not read the prayer's targets: %w", tErr)
+			}
+			prayers[len(prayers)-1].Targets = targets
+			prayers[len(prayers)-1].ScopeCostFactors = religion.ScopeCostFactor
+		}
 	}
 
 	return prayers, divineValues, nil
@@ -168,4 +177,45 @@ func prayerBaseDuration(effect string) int {
 		return economy.HarvestBlessingTicks
 	}
 	return 0
+}
+
+// loadPrayerTargets lists what a blessing prayer may be laid on: the caster's own
+// living units of the prayer's kind ("land" | "naval"), the count supported by
+// this city, and the count in the whole realm.
+func (h *ProvinceHandler) loadPrayerTargets(ctx context.Context, sett *settlement.Settlement, owner uuid.UUID, kind string) (*prayerTargets, error) {
+	rows, err := h.pool.Query(ctx, `SELECT u.id, u.status, u.q, u.r, u.support_settlement_id, COALESCE(s.name,'')
+ FROM units u LEFT JOIN settlements s ON s.id=u.settlement_id
+ WHERE u.world_id=$1 AND u.owner_id=$2 AND u.category=$3 AND u.status<>'disbanded'
+ ORDER BY u.created_at, u.id`, sett.WorldID, owner, kind)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := &prayerTargets{Unit: []prayerTargetUnit{}, City: prayerTargetGroup{Name: sett.Name}}
+	for rows.Next() {
+		var id uuid.UUID
+		var status, in string
+		var q, r int
+		var support *uuid.UUID
+		if err := rows.Scan(&id, &status, &q, &r, &support, &in); err != nil {
+			return nil, err
+		}
+		where := fmt.Sprintf("%s at (%d,%d)", status, q, r)
+		if in != "" {
+			where = "in " + in
+		}
+		out.Unit = append(out.Unit, prayerTargetUnit{ID: id.String(), Where: where})
+		out.Realm.Count++
+		if support != nil && *support == sett.ID {
+			out.City.Count++
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	for i := range out.Unit {
+		id, _ := uuid.Parse(out.Unit[i].ID)
+		out.Unit[i].Name = unit.LoadDisplayName(ctx, h.pool, id)
+	}
+	return out, nil
 }

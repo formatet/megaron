@@ -11,8 +11,12 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
+	"formatet/megaron/server/internal/auth"
+	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/religion"
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
 
@@ -201,5 +205,64 @@ func TestBlessingCast_WiderTargetNeedsTheWiderGift(t *testing.T) {
 	}
 	if until <= 106 || until > 100+6*religion.MaxGiftFactor {
 		t.Fatalf("a double gift should last longer than 6 days: until %d", until)
+	}
+}
+
+// The catalogue tells each blessing prayer what can be named and what each step costs.
+func TestBlessingCatalogue_ListsTargetsAndStepCosts(t *testing.T) {
+	f := newAlphaFixture(t)
+	ctx := context.Background()
+	f.unit(t, f.player, "galley", "naval", "garrison", f.cities[0])
+	f.unit(t, f.player, "galley", "naval", "garrison", f.cities[1])
+	f.unit(t, f.player, "infantry", "land", "garrison", f.cities[0])
+	f.unit(t, f.player, "infantry", "land", "disbanded", f.cities[0])
+	var foreign uuid.UUID
+	if err := f.pool.QueryRow(ctx, `INSERT INTO players(username,password_hash) VALUES($1,'x') RETURNING id`, uuid.NewString()).Scan(&foreign); err != nil {
+		t.Fatal(err)
+	}
+	f.unit(t, foreign, "galley", "naval", "garrison", f.cities[0])
+	var prov uuid.UUID
+	if err := f.pool.QueryRow(ctx, `SELECT province_id FROM settlements WHERE id=$1`, f.cities[0]).Scan(&prov); err != nil {
+		t.Fatal(err)
+	}
+	router := chi.NewRouter()
+	router.With(auth.Middleware(auth.NewService(f.pool, "alpha-secret"))).Get("/worlds/{worldID}/provinces/{provinceID}", NewProvinceHandler(f.pool, nil, clock.NewTestClock(time.Now()), nil, nil).Get)
+	req := httptest.NewRequest("GET", "/worlds/"+f.world.String()+"/provinces/"+prov.String(), nil)
+	req.Header.Set("Authorization", "Bearer "+f.token)
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, req)
+	if rec.Code != 200 {
+		t.Fatalf("%d %s", rec.Code, rec.Body.String())
+	}
+	var city struct {
+		Settlement struct {
+			Prayers []prayerRow `json:"available_prayers"`
+		} `json:"settlement"`
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &city); err != nil {
+		t.Fatal(err)
+	}
+	by := map[string]prayerRow{}
+	for _, p := range city.Settlement.Prayers {
+		by[p.ID] = p
+	}
+	hull, strength := by[religion.PrayerStillnessHull], by[religion.PrayerVelchanosStrength]
+	if hull.Targets == nil || strength.Targets == nil {
+		t.Fatalf("blessing prayers lack targets: %+v / %+v", hull.Targets, strength.Targets)
+	}
+	if len(hull.Targets.Unit) != 2 || hull.Targets.City.Count != 1 || hull.Targets.Realm.Count != 2 || hull.Targets.City.Name != "Alpha City" {
+		t.Fatalf("hull targets (own ships only, city = support city): %+v", hull.Targets)
+	}
+	if len(strength.Targets.Unit) != 1 || strength.Targets.Realm.Count != 1 {
+		t.Fatalf("strength targets (the disbanded unit is not one): %+v", strength.Targets)
+	}
+	if hull.Targets.Unit[0].Name == "" || hull.Targets.Unit[0].Where == "" || hull.Targets.Unit[0].ID == "" {
+		t.Fatalf("a target needs id, name and where: %+v", hull.Targets.Unit[0])
+	}
+	if hull.ScopeCostFactors["unit"] != 1 || hull.ScopeCostFactors["city"] != 2 || hull.ScopeCostFactors["realm"] != 4 {
+		t.Fatalf("step costs %v", hull.ScopeCostFactors)
+	}
+	if by[religion.PrayerPotniaWalls].Targets != nil {
+		t.Fatal("a prayer without a target got a target list")
 	}
 }
