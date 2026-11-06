@@ -16,7 +16,7 @@ CREATE TABLE prayer_blessings (
     settlement_id uuid REFERENCES settlements(id) ON DELETE CASCADE,
     from_tick     integer NOT NULL,
     until_tick    integer NOT NULL,
-    cast_event_id uuid,
+    cast_event_id bigint,
     CHECK ((scope = 'unit') = (unit_id IS NOT NULL)),
     CHECK ((scope = 'city') = (settlement_id IS NOT NULL))
 );
