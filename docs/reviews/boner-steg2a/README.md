@@ -61,4 +61,5 @@ Alla restaurerade (`git diff` ren efter varje körning). Rå logg togs i session
 - Pre-existerande `gofmt -l`-träffar (`api/handlers/unit_march_silver.go`, `world.go`, `cmd/keryx/cmd_codex.go`, `cmd_ticklog.go`) orörda.
 
 ## Svit
-SVITRESULTAT
+`tools/gotest.sh` (hela, färsk DB på migration 246, `-p 1`, commit `5eba2a69`): **alla Go-paket `ok`, inga FAIL** (bl.a. handlers 80 s, combat 23 s, religion, keryx, tick/day_guard) och webbtesterna **911/911** (inkl. `codex.test.mjs`, `forces_guard`).
+Första svitkörningen fångade två guardar (`day_guard`: ordet "tick" i ett felmeddelande; `forces_guard`: ordet "units" i spelartext) — rättade och sviten kördes om i sin helhet.
