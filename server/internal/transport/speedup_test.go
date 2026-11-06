@@ -170,6 +170,7 @@ func TestBlessDeparture_SpeedPrayerHoldsOnlyWhileItLasts(t *testing.T) {
 		if j.TravelTicks != 5 {
 			t.Fatalf("a journey already sped was sped again: %d ticks", j.TravelTicks)
 		}
+		_ = tx.Rollback(ctx) // release the city row before the next departure
 	}
 	if j := run(f.destID); j.TravelTicks != 6 {
 		t.Fatalf("another city is not covered: %+v", j)

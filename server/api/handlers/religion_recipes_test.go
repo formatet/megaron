@@ -49,13 +49,24 @@ func TestAlphaOfferDebitsDecisionRecipeExactly(t *testing.T) {
 				if err := rows.Err(); err != nil {
 					t.Fatal(err)
 				}
+				want := recipe
 				response := f.cast(f.cities[0], id)
+				if id == religion.PrayerAsterionSwift || id == religion.PrayerStillnessSwift {
+					// Prayers with a target: the whole realm, so the recipe is paid x4 (steg 2a/2b).
+					f.unit(t, f.player, "galley", "naval", "garrison", f.cities[0])
+					response = f.castBody(f.cities[0], map[string]any{"prayer": id, "target_scope": "realm"})
+					scaled := map[string]float64{}
+					for g, n := range recipe {
+						scaled[g] = n * 4
+					}
+					want = scaled
+				}
 				if response.Code != 200 {
 					t.Fatalf("Offer status%d %s", response.Code, response.Body.String())
 				}
 				for good, amount := range before {
-					if after := f.stock(t, f.cities[0], good); after != amount-recipe[good] {
-						t.Fatalf("Offer debited %s: before%g after%g, expected debit%g", good, amount, after, recipe[good])
+					if after := f.stock(t, f.cities[0], good); after != amount-want[good] {
+						t.Fatalf("Offer debited %s: before%g after%g, expected debit%g", good, amount, after, want[good])
 					}
 				}
 				var raw []byte
