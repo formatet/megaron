@@ -75,12 +75,14 @@ type prayerRow struct {
 	OfferingBaseline float64            `json:"offering_baseline,omitempty"`
 }
 
-// maxParallelBuilds caps how many buildings a single settlement may have
-// queued at once (Build's queue guard, below). Hoisted to package scope
-// (P10, soak 2026-07-18) so Get can also surface it as "build_queue_max"
-// alongside "build_queue" — before this it only ever appeared in the 422
-// error a player got AFTER trying to queue a 3rd building.
-const maxParallelBuilds = 2
+// maxQueuedBuilds caps how many buildings a single settlement may have in its
+// build queue (Build's queue guard, below): ONE active build plus two waiting
+// (megaron_byggare_verkstad.md; was 2 parallel builds). Get surfaces it as
+// "build_queue_max" and maxActiveBuilds as "build_active_max".
+const (
+	maxQueuedBuilds = 3
+	maxActiveBuilds = 1
+)
 
 // ProvinceHandler handles HTTP requests for province endpoints.
 type ProvinceHandler struct {
@@ -228,26 +230,50 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 		// Build queue — include so API clients don't need a separate endpoint.
 		type buildItem struct {
-			ID             uuid.UUID `json:"id"`
-			Type           string    `json:"type"`
-			CreatedAt      time.Time `json:"created_at"`
-			CompleteAt     time.Time `json:"complete_at"`
-			GodID          string    `json:"god_id,omitempty"`
-			Name           string    `json:"name,omitempty"`
-			HexQ           *int      `json:"hex_q,omitempty"`
-			HexR           *int      `json:"hex_r,omitempty"`
-			SettlementName string    `json:"settlement_name"`
+			ID        uuid.UUID `json:"id"`
+			Type      string    `json:"type"`
+			CreatedAt time.Time `json:"created_at"`
+			// CompleteAt/CompleteTick only while the build is ACTIVE; a waiting build has
+			// no finish time until it starts (and builders can change it any day).
+			CompleteAt     *time.Time `json:"complete_at,omitempty"`
+			CompleteTick   *int       `json:"complete_tick,omitempty"`
+			Active         bool       `json:"active"`
+			Position       int        `json:"position"` // 1 = building now, 2/3 = next in line
+			Rate           int        `json:"rate"`     // builders' pace: 1x without builders, up to 3x
+			WorkLeft       *int       `json:"work_left_game_days,omitempty"`
+			GodID          string     `json:"god_id,omitempty"`
+			Name           string     `json:"name,omitempty"`
+			HexQ           *int       `json:"hex_q,omitempty"`
+			HexR           *int       `json:"hex_r,omitempty"`
+			SettlementName string     `json:"settlement_name"`
 		}
 		var buildQueue []buildItem
 		qrows, _ := h.pool.Query(r.Context(),
-			`SELECT id, building_type, created_at, complete_at, coalesce(god_id,''),hex_q,hex_r FROM build_queue
-			 WHERE settlement_id = $1 ORDER BY complete_at`,
+			`SELECT id, building_type, created_at, complete_at, coalesce(god_id,''),hex_q,hex_r,
+			        work_remaining, work_calc_tick, work_rate, current_world_tick()
+			 FROM build_queue
+			 WHERE settlement_id = $1 ORDER BY (work_calc_tick IS NULL), created_at, id`,
 			sett.ID,
 		)
 		if qrows != nil {
 			for qrows.Next() {
 				var bi buildItem
-				_ = qrows.Scan(&bi.ID, &bi.Type, &bi.CreatedAt, &bi.CompleteAt, &bi.GodID, &bi.HexQ, &bi.HexR)
+				var legacyAt time.Time
+				var workRem, calc *int
+				var rate, cur int
+				_ = qrows.Scan(&bi.ID, &bi.Type, &bi.CreatedAt, &legacyAt, &bi.GodID, &bi.HexQ, &bi.HexR, &workRem, &calc, &rate, &cur)
+				bi.Position = len(buildQueue) + 1
+				switch {
+				case calc != nil && workRem != nil && rate > 0:
+					due := *calc + (*workRem+rate-1)/rate
+					at := tick.EtaAt(h.clk, due, cur)
+					left := max(0, *workRem-max(0, cur-*calc)*rate)
+					bi.Active, bi.Rate, bi.CompleteTick, bi.CompleteAt, bi.WorkLeft = true, rate, &due, &at, &left
+				case workRem != nil:
+					bi.WorkLeft = workRem // waiting: full remaining work, no finish time yet
+				default: // a row without saved work (pre-queue data): its stored deadline
+					bi.Active, bi.Rate, bi.CompleteAt = bi.Position == 1, 1, &legacyAt
+				}
 				bi.SettlementName = sett.Name
 				bi.Name = province.BuildingDisplayName(bi.Type)
 				if bi.GodID != "" {
@@ -778,7 +804,8 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"food_net_per_tick_after_upkeep":   foodNetAfterArmy(foodNetPerDay, armyUp.Grain),
 			"net_silver_per_tick_after_upkeep": netSilverPerDay,
 			"build_queue":                      buildQueue,
-			"build_queue_max":                  maxParallelBuilds,
+			"build_queue_max":                  maxQueuedBuilds,
+			"build_active_max":                 maxActiveBuilds,
 			"training_units":                   trainingUnits,
 			"buildings":                        buildings,
 			"build_quotes":                     buildQuotes,
@@ -1323,7 +1350,7 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 	// 1. Walls/towers/bronze walls upgrade an existing wall_level; everything else
 	//    is a one-instance building (production_rules use UPSERT, duplicates waste resources).
 	// 2. No double-queueing the same building.
-	// 3. Cap concurrent queue at maxParallelBuilds (package-level const above).
+	// 3. Cap the queue at maxQueuedBuilds (package-level const above).
 	bType := province.BuildingType(req.BuildingType)
 	isWall := req.BuildingType == "wall"
 
@@ -1418,9 +1445,9 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusUnprocessableEntity, "this building is already in the queue")
 		return
 	}
-	if queueDepth >= maxParallelBuilds {
+	if queueDepth >= maxQueuedBuilds {
 		writeError(w, http.StatusUnprocessableEntity,
-			fmt.Sprintf("build queue is full (fixed at %d concurrent buildings; population and buildings do not add slots — finish or cancel a build)", maxParallelBuilds))
+			fmt.Sprintf("build queue is full (one building at a time plus %d waiting; population and buildings do not add slots — finish or cancel a build)", maxQueuedBuilds-maxActiveBuilds))
 		return
 	}
 
@@ -1464,42 +1491,48 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 	// row or schedule rolls the payment back with it.
 	var buildCurrentTick int
 	_ = tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&buildCurrentTick)
-	buildDueTick := buildCurrentTick + spec.DurationTicks
-	completeAt := tick.EtaAt(h.clk, buildDueTick, buildCurrentTick)
+	// complete_at here is only a stored estimate at base pace; the queue's clock is
+	// work_remaining / work_rate / work_calc_tick, owned by sync_build_queue (mig 245).
+	completeAt := tick.EtaAt(h.clk, buildCurrentTick+spec.DurationTicks, buildCurrentTick)
 	var queueID uuid.UUID
 	err = tx.QueryRow(r.Context(),
-		`INSERT INTO build_queue (settlement_id, world_id, building_type, complete_at, hex_q, hex_r, god_id)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
-		settlementID, worldID, req.BuildingType, completeAt, req.HexQ, req.HexR, godArg,
+		`INSERT INTO build_queue (settlement_id, world_id, building_type, complete_at, hex_q, hex_r, god_id, work_remaining)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
+		settlementID, worldID, req.BuildingType, completeAt, req.HexQ, req.HexR, godArg, spec.DurationTicks,
 	).Scan(&queueID)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not queue build")
 		return
 	}
-
-	if err := h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledBuildComplete,
-		combat.BuildCompletePayload{
-			SettlementID: settlementID,
-			BuildQueueID: queueID,
-			BuildingType: req.BuildingType,
-			HexQ:         req.HexQ,
-			HexR:         req.HexR,
-		}, buildDueTick,
-	); err != nil {
+	// Start it if nothing is building; otherwise it waits its turn.
+	if _, err := tx.Exec(r.Context(), `SELECT sync_build_queue($1)`, settlementID); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not schedule build")
 		return
 	}
+	var started bool
+	var calc, rem, rate int
+	_ = tx.QueryRow(r.Context(),
+		`SELECT work_calc_tick IS NOT NULL, coalesce(work_calc_tick,0), work_remaining, work_rate FROM build_queue WHERE id=$1`,
+		queueID).Scan(&started, &calc, &rem, &rate)
+	var position int
+	_ = tx.QueryRow(r.Context(), `SELECT count(*) FROM build_queue WHERE settlement_id=$1`, settlementID).Scan(&position)
 	if err := tx.Commit(r.Context()); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not queue build")
 		return
 	}
 
-	writeJSON(w, http.StatusCreated, map[string]any{
+	resp := map[string]any{
 		"queue_id":           queueID,
-		"complete_at":        completeAt,
-		"complete_tick":      buildDueTick,
+		"queue_position":     position,
+		"active":             started,
 		"duration_game_days": spec.DurationTicks,
-	})
+	}
+	if started && rate > 0 {
+		buildDueTick := calc + (rem+rate-1)/rate
+		resp["complete_at"] = tick.EtaAt(h.clk, buildDueTick, buildCurrentTick)
+		resp["complete_tick"] = buildDueTick
+	}
+	writeJSON(w, http.StatusCreated, resp)
 }
 
 var (
@@ -1586,6 +1619,11 @@ func cancelQueuedBuild(ctx context.Context, tx economy.Tx, queueID uuid.UUID) (s
 		   AND processed_at IS NULL`,
 		queueID,
 	)
+
+	// The active build was cancelled: the next in line starts now (no-op otherwise).
+	if _, err := tx.Exec(ctx, `SELECT sync_build_queue($1)`, settlementID); err != nil {
+		return "", err
+	}
 
 	// Refund costs.
 	for goodKey, qty := range spec.Costs {

@@ -2070,7 +2070,7 @@ func (h *UnitArrivalHandler) foundColony(
 		                 -- forever. Capitals never had this. Silver's real cap is set
 		                 -- from the carried silver purse below, same as for capitals.
 		        current_world_tick()
-		 FROM goods g WHERE g.key <> 'shipbuilding'
+		 FROM goods g WHERE g.key NOT IN ('shipbuilding','building')
 		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
 		colonyID, economy.ColonyGrainSeed, economy.FoundingHerdLivestock, province.DefaultGoodStorageCap,
 	); err != nil {

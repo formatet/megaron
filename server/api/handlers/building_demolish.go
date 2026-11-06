@@ -169,8 +169,8 @@ func (h *ProvinceHandler) DemolishBuilding(w http.ResponseWriter, r *http.Reques
 	// with it (mig 202) — lift them first so they are counted. Every other
 	// workplace is lifted after the delete, against the capacity left behind.
 	var lifted []int
-	if godID != nil || bType == "shipyard" {
-		trows, err := tx.Query(ctx, `DELETE FROM settlement_placement WHERE settlement_id=$2 AND (building_id=$1 OR (building_type='shipyard' AND $3='shipyard')) RETURNING gubbe_ordinal`, buildingID, settlementID, bType)
+	if godID != nil || bType == "shipyard" || bType == "workshop" {
+		trows, err := tx.Query(ctx, `DELETE FROM settlement_placement WHERE settlement_id=$2 AND (building_id=$1 OR (building_type=$3 AND $3 IN ('shipyard','workshop'))) RETURNING gubbe_ordinal`, buildingID, settlementID, bType)
 		if err != nil {
 			fail("could not lift temple workers", err)
 			return

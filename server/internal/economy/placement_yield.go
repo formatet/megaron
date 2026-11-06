@@ -470,20 +470,25 @@ func LoadBuildingProductionOptions(ctx context.Context, tx Tx, settlementID uuid
 			RatePerGood: map[string]float64{GoodCult: 0}, CapPerGood: map[string]int{GoodCult: t.Capacity},
 			CapL1PerGood: map[string]int{GoodCult: t.Capacity}, PlaceCapPerGood: map[string]int{GoodCult: t.Capacity}, MultPerGood: map[string]float64{GoodCult: 1}})
 	}
-	shipRows, err := tx.Query(ctx, `SELECT level FROM buildings WHERE settlement_id=$1 AND building_type='shipyard'`, settlementID)
+	shipRows, err := tx.Query(ctx, `SELECT building_type,level FROM buildings WHERE settlement_id=$1 AND building_type IN ('shipyard','workshop') ORDER BY building_type`, settlementID)
 	if err != nil {
 		return nil, err
 	}
 	for shipRows.Next() {
+		var typ string
 		var level int
-		if err := shipRows.Scan(&level); err != nil {
+		if err := shipRows.Scan(&typ, &level); err != nil {
 			shipRows.Close()
 			return nil, err
 		}
-		cap := WorkplaceSlots("shipyard", level)
-		out = append(out, BuildingOption{BuildingType: "shipyard", Level: level, StaffingOnly: true, ServiceRole: GoodShipbuilding,
-			RatePerGood: map[string]float64{GoodShipbuilding: 0}, CapPerGood: map[string]int{GoodShipbuilding: cap},
-			CapL1PerGood: map[string]int{GoodShipbuilding: cap}, PlaceCapPerGood: map[string]int{GoodShipbuilding: cap}, MultPerGood: map[string]float64{GoodShipbuilding: 1}})
+		role := GoodShipbuilding
+		if typ == "workshop" {
+			role = GoodBuilding
+		}
+		cap := WorkplaceSlots(typ, level)
+		out = append(out, BuildingOption{BuildingType: typ, Level: level, StaffingOnly: true, ServiceRole: role,
+			RatePerGood: map[string]float64{role: 0}, CapPerGood: map[string]int{role: cap},
+			CapL1PerGood: map[string]int{role: cap}, PlaceCapPerGood: map[string]int{role: cap}, MultPerGood: map[string]float64{role: 1}})
 	}
 	shipRows.Close()
 	if err := shipRows.Err(); err != nil {

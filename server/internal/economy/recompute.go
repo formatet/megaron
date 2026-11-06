@@ -99,7 +99,8 @@ var HexBoundBuildingTypes = map[string]bool{
 
 var workplaceSlotTable = map[string][4]int{
 	// index 0 unused (level is always ≥1); index = level.
-	"shipyard":    {0, 3, 6, 10},
+	"shipyard":    {0, 1, 2, 3}, // = level; the work rate is the placed count, capped at 3
+	"workshop":    {0, 1, 2, 3}, // builders: 1x/2x/3x construction pace
 	"olive_press": {0, 1, 2, 4},
 	"winery":      {0, 1, 2, 4},
 	"stable":      {0, 1, 2, 4},

@@ -61,7 +61,7 @@ func (h *ShipyardWorkCompleteHandler) Handle(ctx context.Context, e events.Sched
 	if remaining == nil || *remaining > 0 || !running {
 		return tx.Commit(ctx)
 	}
-	if _, err = tx.Exec(ctx, `UPDATE units SET status='garrison',hull=CASE WHEN status='repairing' THEN $2 ELSE hull END,build_complete_at=NULL,shipyard_work_remaining=NULL,shipyard_work_running=false,updated_at=now() WHERE id=$1`, p.UnitID, HullMax); err != nil {
+	if _, err = tx.Exec(ctx, `UPDATE units SET status='garrison',hull=CASE WHEN status='repairing' THEN $2 ELSE hull END,build_complete_at=NULL,shipyard_work_remaining=NULL,shipyard_work_running=false,shipyard_work_rate=0,updated_at=now() WHERE id=$1`, p.UnitID, HullMax); err != nil {
 		return err
 	}
 	if _, err = tx.Exec(ctx, `UPDATE scheduled_events SET processed_at=now() WHERE event_type='ShipyardWorkComplete' AND payload->>'unit_id'=$1 AND processed_at IS NULL`, p.UnitID.String()); err != nil {

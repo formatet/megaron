@@ -124,6 +124,7 @@ const (
 	BuildingPen         BuildingType = "pen"
 	BuildingSilo        BuildingType = "silo" // player-facing name: Granary
 	BuildingStorehouse  BuildingType = "storehouse"
+	BuildingWorkshop    BuildingType = "workshop" // builders: faster construction (megaron_byggare_verkstad)
 )
 
 // HexBoundBuildings is the ONE canonical list of building types placed on a
