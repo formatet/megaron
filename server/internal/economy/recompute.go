@@ -107,6 +107,19 @@ var workplaceSlotTable = map[string][4]int{
 	"foundry":     {0, 1, 2, 4},
 }
 
+// shipyardBerths is how many ships a shipyard can repair at once, by level. It used to be
+// the shipyard's worker slots (3/6/10); workers are now 1/2/3 (pace), so the berths keep
+// their own table and the repair limit does not change (megaron_byggare_verkstad.md).
+var shipyardBerths = [4]int{0, 3, 6, 10}
+
+// ShipyardBerths returns the concurrent-repair berths of a shipyard of the given level.
+func ShipyardBerths(level int) int {
+	if level < 1 || level >= len(shipyardBerths) {
+		return 0
+	}
+	return shipyardBerths[level]
+}
+
 // WorkplaceSlots returns how many citizens a building of the given type and
 // level can employ, as an absolute headcount. Building types missing from
 // workplaceSlotTable (temple — cult labor, a separate path) or an unrecognised

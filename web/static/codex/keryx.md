@@ -56,6 +56,8 @@ Start construction with `keryx build --type harbour`. A positional argument in `
 is the **city**, as in `keryx build Knossos --type harbour`; it is not the building type.
 Use `build --list` for the catalogue or `build --queue` for queued construction.
 
+`keryx staff workshop +1` places a builder: the city builds one building at a time, and each builder speeds the active build up (up to 3×).
+
 `keryx staff olive_press` shows that named workplace's staffing. Add `+1` or `-1`
 to change it; the building name is required. Use `keryx city` or `keryx roster`
 to find workplaces and assignments. Hex buildings use `place`.

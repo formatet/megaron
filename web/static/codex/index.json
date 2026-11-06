@@ -660,7 +660,8 @@
         "winery",
         "pen",
         "granary",
-        "storehouse"
+        "storehouse",
+        "workshop"
       ],
       "sections": [
         {
@@ -2606,6 +2607,36 @@
         {
           "id": "storehouse-fills",
           "title": "How the shared store fills"
+        }
+      ]
+    },
+    {
+      "id": "workshop",
+      "title": "Workshop",
+      "category": "Your city",
+      "entities": [
+        {
+          "kind": "building",
+          "key": "workshop"
+        }
+      ],
+      "aliases": [
+        "workshop",
+        "builders"
+      ],
+      "terms": [
+        "Workshop",
+        "Builders"
+      ],
+      "parent": "buildings",
+      "related": [
+        "shipyard",
+        "citizens"
+      ],
+      "sections": [
+        {
+          "id": "workshop-builders",
+          "title": "Builders and construction pace"
         }
       ]
     },

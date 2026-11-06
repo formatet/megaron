@@ -24,6 +24,7 @@ Open **City → Buildings**. The tab shows what is **built** (and its level), th
 | [[temple]] | A Temple is a workplace dedicated to one god, opening that god’s prayers and maintaining kharis. |
 | [[walls]] | Walls defend the city and determine its population ceiling. |
 | [[winery]] | A Winery refines wine from the city’s vines, which grow only on hills — without a hill in the city's reach it makes nothing. |
+| [[workshop]] | A Workshop is where a city's builders work. |
 <!-- /list -->
 
 ### Walls, population and coastal access {#buildings-details-3}
@@ -60,7 +61,7 @@ Production workplaces need people assigned to them. The market has no workplaces
 
 If cancelling a queued build is refused, the reason appears in the Buildings tab.
 
-The construction queue has a fixed limit, shown in `keryx build --queue`; population and building upgrades do not add slots. Finish or cancel a queued building before starting another when it is full. Hex buildings use `place`, not `staff`: for a lumbermill use `keryx place timber <hex> +2` (cedar on a cedar hex). `build --hex` accepts coordinates such as `3,-1` or the City ordinal `6`/`#6`.
+A city builds one building at a time: the queue holds the active build and two waiting behind it (`keryx build --queue` shows them), and population and building upgrades do not add places. Builders in a [[workshop]] speed the active build up to 3×. Finish or cancel a queued building before starting another when the queue is full. Hex buildings use `place`, not `staff`: for a lumbermill use `keryx place timber <hex> +2` (cedar on a cedar hex). `build --hex` accepts coordinates such as `3,-1` or the City ordinal `6`/`#6`.
 
 ## Demolishing a finished building {#demolition}
 

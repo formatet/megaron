@@ -131,6 +131,15 @@ func TestWorkplaceSlots_ShipyardMatchesTaxonomy(t *testing.T) {
 	}
 }
 
+// Repair berths are NOT the worker slots: they stayed 3/6/10 when the workers became 1/2/3.
+func TestShipyardBerthsStayAtThreeSixTen(t *testing.T) {
+	for level, want := range map[int]int{0: 0, 1: 3, 2: 6, 3: 10, 4: 0} {
+		if got := ShipyardBerths(level); got != want {
+			t.Errorf("shipyard level %d: %d berths, want %d", level, got, want)
+		}
+	}
+}
+
 // TestHexCapacity_UnknownTerrainGrantsNothing — arbetssätt §7: a terrain with
 // no matching rule (a name the table does not know) must contribute nothing,
 // not a guessed default. (mountain_red/semi_desert got fieldstone in mig 156.)
