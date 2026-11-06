@@ -17,6 +17,9 @@ type StoredRoute struct {
 	EndTick         int       `json:"end_tick"`
 	Hexes           [][2]int  `json:"hexes"`
 	Costs           []int64   `json:"costs"`
+	// Sped is the id of the blessing that already shortened this journey
+	// (bönesystemet v3 steg 2b): a journey is sped up at most once.
+	Sped string `json:"sped,omitempty"`
 }
 
 // Move converts a StoredRoute to movement's pure Move shape.
@@ -97,4 +100,63 @@ func (r StoredRoute) Position(now time.Time) (Hex, error) {
 // endpoint is included so arrival-tie hazards keep the existing priority.
 func (r StoredRoute) InTransitAt(now time.Time) bool {
 	return !now.Before(r.DepartureAt) && !now.After(r.WallAt(int64(r.EndTick)*1000+r.OffsetMilli))
+}
+
+// SpeedUpRemaining shortens what is LEFT of a journey: the new arrival is
+// nowTick + max(1, ceil(num*T/den)) where T is the whole ticks left. Boundaries
+// already passed stay exactly where they were (so the position now is the same
+// before and after); the boundaries still ahead are scaled between now and the
+// new arrival. Costs are rewritten as real milli lengths (their sum is the new
+// duration), which keeps the movement core's uniform-scaling rule intact.
+// ok=false (route unchanged) when the route has no precise clock, nothing
+// would be gained, or a rounding collapse would give a zero-length step.
+func SpeedUpRemaining(r StoredRoute, nowMilli, num, den int64) (StoredRoute, bool) {
+	if r.Version != 2 || len(r.Hexes) < 2 || r.Sped != "" {
+		return r, false
+	}
+	bounds, err := Boundaries(r.Move())
+	if err != nil {
+		return r, false
+	}
+	start := int64(r.StartTick)*millisPerTick + r.OffsetMilli
+	if nowMilli < start {
+		nowMilli = start
+	}
+	nowTick := nowMilli / millisPerTick
+	left := int64(r.EndTick) - nowTick
+	if left < 1 {
+		return r, false
+	}
+	end1 := nowTick + max(1, (num*left+den-1)/den)
+	if end1 >= int64(r.EndTick) {
+		return r, false
+	}
+	a0 := int64(r.EndTick)*millisPerTick + r.OffsetMilli
+	a1 := end1*millisPerTick + r.OffsetMilli
+	if a1 <= nowMilli || a0 <= nowMilli {
+		return r, false
+	}
+	n := len(r.Hexes) - 1
+	nb := make([]int64, n+1)
+	nb[0] = int64(bounds[0])
+	for i := 1; i < n; i++ {
+		b := int64(bounds[i])
+		if b > nowMilli {
+			b = nowMilli + ((b-nowMilli)*(a1-nowMilli)+(a0-nowMilli)/2)/(a0-nowMilli)
+		}
+		nb[i] = b
+	}
+	nb[n] = a1
+	costs := make([]int64, n)
+	for i := range costs {
+		costs[i] = nb[i+1] - nb[i]
+		if costs[i] <= 0 {
+			return r, false
+		}
+	}
+	out := r
+	out.EndTick = int(end1)
+	out.Costs = costs
+	out.Hexes = append([][2]int(nil), r.Hexes...)
+	return out, true
 }

@@ -34,9 +34,9 @@ Men ordern förutsätter två saker som koden inte har; båda löses utan omdesi
 | Konsument | Plats | Plan |
 |---|---|---|
 | transport (land+sjö) | `transport/departure.go:14 BlessDeparture`, anropas från `prepareJourney` (transport.go ~:215) | efter `ConsumeDeparture`: om ej redan 750 → täckande blessing (stad = `originID`, realm, namngivet skepp via `ShipUnitID`) ⇒ ×0,75 + märke |
-| budbärare (löpare) | `messenger/departure_prayer.go:15 BlessRunner`, anrop `api/handlers/messenger.go:458`, `unit.go:464` | efter `ConsumeDeparture`; märke sätts på raden efter INSERT (ny kolumn `messengers.speed_blessed`, mig 247) |
+| budbärare (löpare) | `messenger/departure_prayer.go:15 BlessRunner`, anrop `api/handlers/messenger.go:458`, `unit.go:464` | efter `ConsumeDeparture`; märke sätts på raden efter INSERT (märke i `land_route`) |
 | skepp (units) | `combat/march_start.go:874–890` (`stillness`/`departureFactor`) | om `!stillness` och täckt ⇒ `departureFactor=0,75`, märke i `march_route` |
-Märkning över rutter: `StoredRoute.Sped` (units/budbärare), `TradeJourney.SpeedBlessing` (transporter). Budbärarens `land_route` byggs om flera gånger (retur, call-back) så ett märke i rutten räcker inte: därför kolumnen.
+Märkning: `StoredRoute.Sped` (units, budbärare — ruttens märke följer med benet och nollas naturligt när ett nytt ben byggs), `TradeJourney.SpeedBlessing` (transporter). Budbäraren speeds efter `SaveDepartureTx` (rutten finns då), före ankomstköandet.
 
 ## 3. Avvikelser mot ordern (kod vs order)
 1. **Likformig skalning** (ovan): "skala kvarvarande StepCosts" duger inte rent; milli-omskrivning + ny `SpeedUpRemaining` behövs, och `Validate` får en undantagsgren för märkta färder.

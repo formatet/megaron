@@ -35,7 +35,7 @@ var ScopeCostFactor = map[string]int{ScopeUnit: 1, ScopeCity: 2, ScopeRealm: 4}
 
 // IsBlessing says whether the effect is a targeted blessing.
 func IsBlessing(effect string) bool {
-	return effect == EffectBlessedStrength || effect == EffectBlessedHull
+	return effect == EffectBlessedStrength || effect == EffectBlessedHull || IsSpeedBlessing(effect)
 }
 
 // BlessingUnitKind is the kind of unit a blessing can be laid on: "land" or "naval".
@@ -43,7 +43,7 @@ func BlessingUnitKind(effect string) string {
 	switch effect {
 	case EffectBlessedStrength:
 		return "land"
-	case EffectBlessedHull:
+	case EffectBlessedHull, EffectBlessedSpeedSea:
 		return "naval"
 	}
 	return ""
@@ -85,7 +85,7 @@ func BlessingActive(ctx context.Context, db PrayerDB, owner uuid.UUID, effect, s
  WHERE b.owner_id=$1 AND b.effect=$2 AND b.from_tick<=$6 AND b.until_tick>$6 AND (
    b.scope='realm'
    OR ($3='city' AND b.scope='city' AND b.settlement_id=$4)
-   OR ($3='unit' AND b.scope='unit' AND b.unit_id=$5)
+   OR ($3='unit' AND b.scope='unit' AND (b.unit_id=$5 OR b.mover_id=$5))
    OR ($3='unit' AND b.scope='city' AND b.settlement_id=u.support_settlement_id)))`,
 		owner, effect, scope, city, unitID, tick).Scan(&active)
 	return active, err

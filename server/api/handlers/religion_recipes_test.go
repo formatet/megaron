@@ -14,11 +14,11 @@ import (
 // and freeze that same sacrifice in RiteCast, even with a losing legacy dice value (everyday prayers never roll).
 func TestAlphaOfferDebitsDecisionRecipeExactly(t *testing.T) {
 	expected := map[string]map[string]float64{
-		religion.PrayerPotniaVision:     {"grain": 10, "silver": 3},
-		religion.PrayerPotniaWalls:      {"grain": 8, "timber": 4},
-		religion.PrayerGreenShoots:      {"grain": 15, "silver": 2},
-		religion.PrayerAsterionThread:   {"timber": 4, "silver": 3},
-		religion.PrayerStillnessPassage: {"fish": 6, "silver": 3},
+		religion.PrayerPotniaVision:   {"grain": 10, "silver": 3},
+		religion.PrayerPotniaWalls:    {"grain": 8, "timber": 4},
+		religion.PrayerGreenShoots:    {"grain": 15, "silver": 2},
+		religion.PrayerAsterionSwift:  {"timber": 4, "silver": 3},
+		religion.PrayerStillnessSwift: {"fish": 6, "silver": 3},
 	}
 	for id, recipe := range expected {
 		for _, losingDice := range []bool{false, true} {

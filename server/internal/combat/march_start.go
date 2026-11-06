@@ -886,6 +886,20 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 			departureFactor = religion.DepartureTimeFactor
 		}
 	}
+	// A ship that leaves while a speed prayer holds sails at DepartureTimeFactor of its
+	// time (steg 2b); one already sped by a departure prayer is not sped again.
+	speedBlessing := uuid.Nil
+	if unit.CategoryOf(u.Type) == unit.CategoryNaval && !stillness {
+		var support *uuid.UUID
+		_ = pool.QueryRow(ctx, `SELECT support_settlement_id FROM units WHERE id=$1`, o.UnitID).Scan(&support)
+		id, ok, bErr := religion.SpeedBlessingFor(ctx, pool, o.PlayerID, religion.EffectBlessedSpeedSea, o.UnitID, support, currentTick)
+		if bErr != nil {
+			return nil, reject(http.StatusInternalServerError, "could not read the speed prayer")
+		}
+		if ok {
+			speedBlessing, departureFactor = id, religion.DepartureTimeFactor
+		}
+	}
 	travelTicks := max(1, int(math.Round(moveTicks*departureFactor)))
 	if expeditionPlan != nil {
 		expeditionPlan.TurnTick = ExpeditionTurnTick(currentTick, expeditionPlan.LengthTicks)
@@ -930,6 +944,9 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		if !ok {
 			slog.Error("march route: invalid stored route", "unit", o.UnitID)
 			return nil, reject(http.StatusInternalServerError, "pathfinding error")
+		}
+		if speedBlessing != uuid.Nil {
+			route.Sped = speedBlessing.String()
 		}
 		shift := route.StartTick - currentTick
 		currentTick = route.StartTick

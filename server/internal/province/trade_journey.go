@@ -29,6 +29,10 @@ type TradeJourney struct {
 	Thread           bool                 `json:"asterion_thread,omitempty"`
 	Stillness        bool                 `json:"stillness,omitempty"`
 	DepartureChecked bool                 `json:"departure_checked,omitempty"`
+	// SpeedBlessing is the id of the speed prayer that shortened this journey (steg 2b).
+	// A marked journey keeps its StepCosts as real milli lengths, so the 1.5x calibration
+	// below no longer applies to it; it is sped up at most once.
+	SpeedBlessing string `json:"speed_blessing,omitempty"`
 }
 
 // PlanTradeJourney uses one terrain snapshot for A* and its entering-hex costs.
@@ -127,6 +131,12 @@ func (j TradeJourney) Validate() error {
 	}
 	if (j.Thread || j.Stillness) != (factor == 750) || (j.Thread && j.Category != "land") || (j.Stillness && j.Category != "naval") {
 		return fmt.Errorf("invalid saved departure blessing")
+	}
+	if j.SpeedBlessing != "" {
+		if factor != 1000 && factor != 0 {
+			return fmt.Errorf("a speed-blessed journey carries no other departure factor")
+		}
+		return nil
 	}
 	ticks := int((total*3*int64(factor) + 1000000) / 2000000)
 	if ticks < 1 {

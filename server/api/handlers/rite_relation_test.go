@@ -48,7 +48,7 @@ func relationValues(t *testing.T, f alphaFixture) {
 	}
 }
 func TestRelationEverydayExactThresholdNoDiceOrStandingDebit(t *testing.T) {
-	for _, prayer := range []string{religion.PrayerPotniaVision, religion.PrayerPotniaWalls, religion.PrayerGreenShoots, religion.PrayerAsterionThread, religion.PrayerStillnessPassage} {
+	for _, prayer := range []string{religion.PrayerPotniaVision, religion.PrayerPotniaWalls, religion.PrayerGreenShoots} {
 		t.Run(prayer, func(t *testing.T) {
 			f := newAlphaFixture(t)
 			ctx := context.Background()

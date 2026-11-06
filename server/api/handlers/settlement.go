@@ -20,9 +20,11 @@ import (
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/ledger"
+	"formatet/megaron/server/internal/messenger"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/tick"
+	"formatet/megaron/server/internal/transport"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -721,7 +723,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 
 	// Decode optional body.
 	var body struct {
-		Prayer          string  `json:"prayer"`
+		Prayer string `json:"prayer"`
 		// Target is a unit id (target_scope "unit") for the blessing prayers; TargetScope
 		// is how wide the blessing reaches: "unit" | "city" | "realm" (religion.ScopeCostFactor).
 		Target          string  `json:"target"`
@@ -1072,7 +1074,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 			if spec.EffectType == religion.EffectBattleFrenzy {
 				message = fmt.Sprintf("The gods answer your plea — your own garrison defends this city a quarter stronger for %s.", tick.FormatDays(durationTicks))
 			}
-		case religion.EffectBlessedStrength, religion.EffectBlessedHull:
+		case religion.EffectBlessedStrength, religion.EffectBlessedHull, religion.EffectBlessedSpeedLand, religion.EffectBlessedSpeedSea:
 			effectPayload, message, durationTicks, err = h.applyBlessing(r.Context(), tx, worldID, playerID, settlementID, spec, blessScope, blessUnit, nowTick, giftFactor)
 		case religion.EffectOracleRevealDeposits:
 			effectPayload, message, err = h.applyOracleRevealDeposits(r.Context(), tx, settlementID, worldID, playerID, spec)
@@ -1211,6 +1213,9 @@ func (h *SettlementHandler) checkBlessingTarget(ctx context.Context, tx pgx.Tx, 
 	if _, ok := religion.ScopeCostFactor[scope]; !ok {
 		return "", nil, http.StatusBadRequest, "choose a target_scope for this prayer: unit, city or realm"
 	}
+	if spec.EffectType == religion.EffectBlessedSpeedLand {
+		return h.checkLandSpeedTarget(ctx, tx, worldID, playerID, settlementID, spec, scope, target, nowTick)
+	}
 	kind := religion.BlessingUnitKind(spec.EffectType)
 	category := "land"
 	noun := "land troops"
@@ -1267,13 +1272,51 @@ func (h *SettlementHandler) checkBlessingTarget(ctx context.Context, tx pgx.Tx, 
 	return scope, unitID, 0, ""
 }
 
+// checkLandSpeedTarget validates a Runner/caravan blessing. A named target is one of
+// the caster's own journeys under way (a Runner on a free land leg, or a land caravan);
+// a city or realm blessing needs no journey now: it holds for departures too.
+// The returned *uuid.UUID is the named mover (stored as mover_id by applyBlessing).
+func (h *SettlementHandler) checkLandSpeedTarget(ctx context.Context, tx pgx.Tx, worldID, playerID, settlementID uuid.UUID,
+	spec religion.PrayerSpec, scope, target string, nowTick int) (string, *uuid.UUID, int, string) {
+	var moverID *uuid.UUID
+	var cityRef *uuid.UUID
+	switch scope {
+	case religion.ScopeUnit:
+		id, err := uuid.Parse(target)
+		if err != nil {
+			return "", nil, http.StatusBadRequest, "a Runner or caravan blessing needs target = the id of one of your Runners or caravans on the road"
+		}
+		movers, err := religion.CoveredMovers(ctx, tx, worldID, playerID, spec.EffectType, religion.ScopeUnit, &id, nil)
+		if err != nil {
+			return "", nil, http.StatusInternalServerError, "could not read the journey"
+		}
+		if len(movers) == 0 {
+			return "", nil, http.StatusNotFound, "no such Runner or caravan of yours on the road"
+		}
+		moverID = &id
+	case religion.ScopeCity:
+		cityRef = &settlementID
+	}
+	if active, err := religion.BlessingActive(ctx, tx, playerID, spec.EffectType, scope, moverID, cityRef, nowTick); err != nil {
+		return "", nil, http.StatusInternalServerError, "could not read active blessings"
+	} else if active {
+		return "", nil, http.StatusConflict, "already blessed — wait for the blessing to end"
+	}
+	return scope, moverID, 0, ""
+}
+
 // applyBlessing lays the blessing row; length is the gift against its own baseline
 // (religion.DurationTicks), like the other lasting prayers.
 func (h *SettlementHandler) applyBlessing(ctx context.Context, tx pgx.Tx, worldID, playerID, settlementID uuid.UUID,
 	spec religion.PrayerSpec, scope string, unitID *uuid.UUID, nowTick int, giftFactor float64) (map[string]any, string, int, error) {
 	base, noun := religion.BlessedStrengthTicks, "troops"
-	if spec.EffectType == religion.EffectBlessedHull {
+	switch spec.EffectType {
+	case religion.EffectBlessedHull:
 		base, noun = religion.BlessedHullTicks, "ships"
+	case religion.EffectBlessedSpeedSea:
+		base, noun = religion.BlessedSpeedTicks, "ships"
+	case religion.EffectBlessedSpeedLand:
+		base, noun = religion.BlessedSpeedTicks, "Runners and caravans"
 	}
 	duration := religion.DurationTicks(base, giftFactor)
 	until := nowTick + duration
@@ -1281,14 +1324,32 @@ func (h *SettlementHandler) applyBlessing(ctx context.Context, tx pgx.Tx, worldI
 	if scope == religion.ScopeCity {
 		city = &settlementID
 	}
+	// A named Runner or caravan is not a unit: it is stored as mover_id (mig 247).
+	var moverID *uuid.UUID
+	var moverKind *string
+	if spec.EffectType == religion.EffectBlessedSpeedLand && unitID != nil {
+		moverID, unitID = unitID, nil
+		k := "transport"
+		var isRunner bool
+		if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM messengers WHERE id=$1)`, *moverID).Scan(&isRunner); err != nil {
+			return nil, "", 0, err
+		}
+		if isRunner {
+			k = "messenger"
+		}
+		moverKind = &k
+	}
 	var id uuid.UUID
-	if err := tx.QueryRow(ctx, `INSERT INTO prayer_blessings(world_id,owner_id,effect,scope,unit_id,settlement_id,from_tick,until_tick) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
-		worldID, playerID, spec.EffectType, scope, unitID, city, nowTick, until).Scan(&id); err != nil {
+	if err := tx.QueryRow(ctx, `INSERT INTO prayer_blessings(world_id,owner_id,effect,scope,unit_id,mover_id,mover_kind,settlement_id,from_tick,until_tick) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id`,
+		worldID, playerID, spec.EffectType, scope, unitID, moverID, moverKind, city, nowTick, until).Scan(&id); err != nil {
 		return nil, "", 0, err
 	}
 	payload := map[string]any{"target_scope": scope, "blessing_id": id, "until_tick": until, "duration_ticks": duration}
 	if unitID != nil {
 		payload["target_unit_id"] = unitID.String()
+	}
+	if moverID != nil {
+		payload["target_mover_id"] = moverID.String()
 	}
 	who := "your " + noun + " of this city"
 	switch scope {
@@ -1298,13 +1359,66 @@ func (h *SettlementHandler) applyBlessing(ctx context.Context, tx pgx.Tx, worldI
 		who = "all your " + noun
 	}
 	var message string
-	if spec.EffectType == religion.EffectBlessedStrength {
+	switch spec.EffectType {
+	case religion.EffectBlessedStrength:
 		payload["strength_factor"] = religion.BlessedStrengthFactor
 		message = fmt.Sprintf("Velchanos steadies %s — they fight a quarter stronger for %s.", who, tick.FormatDays(duration))
-	} else {
+	case religion.EffectBlessedHull:
 		message = fmt.Sprintf("The Sea Daimons shelter %s — each takes the next storm unharmed, for %s.", who, tick.FormatDays(duration))
+	default:
+		sped, sErr := h.speedUpCovered(ctx, tx, worldID, playerID, settlementID, spec.EffectType, scope, unitID, moverID, id)
+		if sErr != nil {
+			return nil, "", 0, sErr
+		}
+		payload["time_factor"] = religion.DepartureTimeFactor
+		payload["sped_up"] = sped
+		god := "Asterion"
+		if spec.EffectType == religion.EffectBlessedSpeedSea {
+			god = "The Sea Daimons"
+		}
+		message = fmt.Sprintf("%s speeds %s — what is left of their road takes three quarters of the time, and so does every journey they begin, for %s.", god, who, tick.FormatDays(duration))
+		if len(sped) > 0 {
+			message += fmt.Sprintf(" %d already under way arrive sooner.", len(sped))
+		}
 	}
 	return payload, message, duration, nil
+}
+
+// speedUpCovered shortens, in the cast's own TX, every journey under way that the new
+// speed blessing reaches (each form has its own recomputation; all are idempotent).
+func (h *SettlementHandler) speedUpCovered(ctx context.Context, tx pgx.Tx, worldID, playerID, settlementID uuid.UUID, effect, scope string, unitID, moverID *uuid.UUID, blessing uuid.UUID) ([]religion.SpedUp, error) {
+	target := unitID
+	if target == nil {
+		target = moverID
+	}
+	var city *uuid.UUID
+	if scope == religion.ScopeCity {
+		city = &settlementID
+	}
+	movers, err := religion.CoveredMovers(ctx, tx, worldID, playerID, effect, scope, target, city)
+	if err != nil {
+		return nil, err
+	}
+	now := h.clk.Now()
+	out := []religion.SpedUp{}
+	for _, m := range movers {
+		var sp *religion.SpedUp
+		switch m.Kind {
+		case "unit":
+			sp, err = combat.SpeedUpMarchingUnit(ctx, tx, h.scheduler, worldID, m.ID, blessing, now)
+		case "transport":
+			sp, err = transport.SpeedUpTransport(ctx, tx, m.ID, blessing, now)
+		case "messenger":
+			sp, err = messenger.SpeedUpMessenger(ctx, tx, m.ID, blessing, now)
+		}
+		if err != nil {
+			return nil, err
+		}
+		if sp != nil {
+			out = append(out, *sp)
+		}
+	}
+	return out, nil
 }
 
 // applyHarvestBlessing raises the yield of every food good but fish by a

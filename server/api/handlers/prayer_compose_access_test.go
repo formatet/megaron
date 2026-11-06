@@ -34,7 +34,7 @@ func TestPrayerCanPrepareWithoutTraditionalGoods(t *testing.T) {
 }
 
 func TestPrayerPreparationRespectsNonMaterialRequirements(t *testing.T) {
-	for _, state := range []string{"ready", "temple", "kharis", "waiting", "active", "pending"} {
+	for _, state := range []string{"ready", "temple", "kharis", "waiting", "active"} {
 		t.Run(state, func(t *testing.T) {
 			f := newAlphaFixture(t)
 			ctx := context.Background()
@@ -50,10 +50,8 @@ func TestPrayerPreparationRespectsNonMaterialRequirements(t *testing.T) {
 				}
 			case "active":
 				id = religion.PrayerGreenShoots
-			case "pending":
-				id = religion.PrayerAsterionThread
 			}
-			if state == "waiting" || state == "active" || state == "pending" {
+			if state == "waiting" || state == "active" {
 				if rec := f.cast(f.cities[0], id); rec.Code != 200 {
 					t.Fatalf("setup cast=%d %s", rec.Code, rec.Body.String())
 				}

@@ -75,7 +75,10 @@ func SaveDepartureTx(ctx context.Context, tx pgx.Tx, world, id uuid.UUID, now ti
 	if err != nil {
 		return err
 	}
-	return SaveLandRouteTx(ctx, tx, world, id, from, to, now, arrival)
+	if err := SaveLandRouteTx(ctx, tx, world, id, from, to, now, arrival); err != nil {
+		return err
+	}
+	return speedAtDeparture(ctx, tx, id, now)
 }
 
 // EnqueueLandTx uses the saved clock and current generation. V1 remains for
