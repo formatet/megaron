@@ -3,7 +3,6 @@ package handlers
 import (
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -93,7 +92,7 @@ func (h *GodHandler) View(w http.ResponseWriter, r *http.Request) {
 		        s.population, s.wall_level,
 		        COALESCE((SELECT SUM(size) FROM units u WHERE u.settlement_id = s.id AND u.status = 'garrison'), 0)::int AS army_total,
 		        COALESCE(k.name, ''),
-		        s.battle_frenzy_until,
+		        COALESCE(s.garrison_defense_until_tick > (SELECT current_tick FROM worlds WHERE id = s.world_id) AND s.garrison_defense_owner_id = s.owner_id, false),
 		        COALESCE((SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_tick))
 		                  FROM player_world_records pwr
 		                  WHERE pwr.player_id = s.owner_id AND pwr.world_id = s.world_id), 0)
@@ -133,7 +132,6 @@ func (h *GodHandler) View(w http.ResponseWriter, r *http.Request) {
 	for settRows.Next() {
 		var s settlementView
 		var ownerID *uuid.UUID
-		var frenzyUntil *time.Time
 		var q, r *int
 		var terrain *string
 		var kharis float64
@@ -142,7 +140,7 @@ func (h *GodHandler) View(w http.ResponseWriter, r *http.Request) {
 			&q, &r, &terrain,
 			&s.Owner, &ownerID,
 			&s.Population, &s.WallLevel, &s.ArmyTotal,
-			&s.Kingdom, &frenzyUntil, &kharis,
+			&s.Kingdom, &s.Frenzied, &kharis,
 		); err != nil {
 			continue
 		}
@@ -154,7 +152,6 @@ func (h *GodHandler) View(w http.ResponseWriter, r *http.Request) {
 			s.OwnerID = &sid
 		}
 		s.Kharis = kharis
-		s.Frenzied = frenzyUntil != nil
 		settlements = append(settlements, s)
 	}
 	if settlements == nil {

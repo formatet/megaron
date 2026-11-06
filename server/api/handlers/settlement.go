@@ -449,13 +449,6 @@ func (h *SettlementHandler) Get(w http.ResponseWriter, r *http.Request) {
 	now := h.clk.Now()
 
 	// Load cult_level and live kharis from the player's world record.
-	// battle_frenzy_until is still on the settlement (it's a per-settlement combat state).
-	var frenzyUntil *time.Time
-	_ = h.pool.QueryRow(r.Context(),
-		`SELECT battle_frenzy_until FROM settlements WHERE id = $1`,
-		sett.ID,
-	).Scan(&frenzyUntil)
-
 	var cultLevel string
 	var kharisNow float64
 	if sett.OwnerID != nil {
@@ -470,23 +463,22 @@ func (h *SettlementHandler) Get(w http.ResponseWriter, r *http.Request) {
 	divineMood := kharisToMood(kharisNow)
 
 	resp := map[string]any{
-		"id":                  sett.ID,
-		"province_id":         sett.ProvinceID,
-		"name":                sett.Name,
-		"culture":             sett.CultureID,
-		"control_type":        sett.ControlType,
-		"wall_level":          sett.WallLevel,
-		"population_cap":      economy.PopulationCap(sett.WallLevel),
-		"is_capital":          sett.IsCapital,
-		"state":               sett.State,
-		"besieged":            sett.Besieged,
-		"population":          sett.Population,
-		"resources":           sett.Resources.Snapshot(now),
-		"army":                sett.Army,
-		"cult_level":          cultLevel,
-		"divine_mood":         divineMood,
-		"battle_frenzy_until": frenzyUntil,
-		"updated_at":          sett.UpdatedAt,
+		"id":             sett.ID,
+		"province_id":    sett.ProvinceID,
+		"name":           sett.Name,
+		"culture":        sett.CultureID,
+		"control_type":   sett.ControlType,
+		"wall_level":     sett.WallLevel,
+		"population_cap": economy.PopulationCap(sett.WallLevel),
+		"is_capital":     sett.IsCapital,
+		"state":          sett.State,
+		"besieged":       sett.Besieged,
+		"population":     sett.Population,
+		"resources":      sett.Resources.Snapshot(now),
+		"army":           sett.Army,
+		"cult_level":     cultLevel,
+		"divine_mood":    divineMood,
+		"updated_at":     sett.UpdatedAt,
 	}
 
 	own := sett.OwnerID != nil && *sett.OwnerID == playerID
@@ -746,17 +738,16 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 
-	// Lock the settlement row and read culture + battle_frenzy state.
+	// Lock the settlement row and read culture.
 	var cultureID string
-	var alreadyFrenzied bool
 	var nowTick int
 	err = tx.QueryRow(r.Context(),
-		`SELECT culture_id, (battle_frenzy_until IS NOT NULL AND battle_frenzy_until > $4)
+		`SELECT culture_id
 		 FROM settlements
 		 WHERE id = $1 AND world_id = $2 AND owner_id = $3
 		 FOR UPDATE`,
-		settlementID, worldID, playerID, h.clk.Now(),
-	).Scan(&cultureID, &alreadyFrenzied)
+		settlementID, worldID, playerID,
+	).Scan(&cultureID)
 	if err != nil {
 		writeError(w, http.StatusForbidden, "not your settlement")
 		return
@@ -826,7 +817,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "could not read world time")
 		return
 	}
-	if spec.GodID != "" {
+	if spec.GodID != "" || spec.EffectType == religion.EffectBattleFrenzy {
 		active, activeErr := religion.PrayerActiveRemaining(r.Context(), tx, settlementID, playerID, spec.EffectType, nowTick)
 		if activeErr != nil {
 			writeError(w, http.StatusInternalServerError, "could not read active prayer")
@@ -837,6 +828,10 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 				writeError(w, http.StatusConflict, "prayer awaits your next eligible departure from this city")
 				return
 			}
+			if spec.EffectType == religion.EffectBattleFrenzy {
+				writeError(w, http.StatusConflict, "battle frenzy already active — wait for it to expire")
+				return
+			}
 			writeError(w, http.StatusConflict, "prayer effect already active — wait for it to end")
 			return
 		}
@@ -845,12 +840,6 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	// Kharis tier gate.
 	if kharisNow < spec.MinKharis {
 		writeError(w, http.StatusBadRequest, insufficientKharisMessage(prayerID, spec.MinKharis, kharisNow))
-		return
-	}
-
-	// Battle-frenzy-specific guard (can't stack).
-	if spec.EffectType == religion.EffectBattleFrenzy && alreadyFrenzied {
-		writeError(w, http.StatusConflict, "battle frenzy already active — wait for it to expire")
 		return
 	}
 
@@ -1055,14 +1044,15 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 			if spec.EffectType == religion.EffectNextShipDeparture {
 				message = "The Sea Daimons of Stillness shelter the next ship departing this port — faster sailing and no storm damage on its outward leg."
 			}
-		case religion.EffectGarrisonDefense:
+		case religion.EffectGarrisonDefense, religion.EffectBattleFrenzy:
 			durationTicks = religion.DurationTicks(combat.GarrisonDefenseTicks, giftFactor)
 			until := nowTick + durationTicks
 			_, err = tx.Exec(r.Context(), `UPDATE settlements SET garrison_defense_until_tick=$2,garrison_defense_owner_id=$3 WHERE id=$1`, settlementID, until, playerID)
 			effectPayload = map[string]any{"until_tick": until, "strength_factor": combat.GarrisonDefenseFactor, "duration_ticks": durationTicks}
 			message = fmt.Sprintf("Potnia shelters your walls — your own garrison defends this city a quarter stronger for %s.", tick.FormatDays(durationTicks))
-		case religion.EffectBattleFrenzy:
-			effectPayload, message, err = h.applyBattleFrenzy(r.Context(), tx, settlementID)
+			if spec.EffectType == religion.EffectBattleFrenzy {
+				message = fmt.Sprintf("The gods answer your plea — your own garrison defends this city a quarter stronger for %s.", tick.FormatDays(durationTicks))
+			}
 		case religion.EffectOracleRevealDeposits:
 			effectPayload, message, err = h.applyOracleRevealDeposits(r.Context(), tx, settlementID, worldID, playerID, spec)
 		case religion.EffectHarvestBlessing:
@@ -1183,18 +1173,6 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	writeJSON(w, http.StatusOK, resp)
-}
-
-// applyBattleFrenzy sets battle_frenzy_until for 6 scaled hours.
-func (h *SettlementHandler) applyBattleFrenzy(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID) (map[string]any, string, error) {
-	t := h.clk.Now().Add(tick.RealUntil(6, 0))
-	if _, err := tx.Exec(ctx,
-		`UPDATE settlements SET battle_frenzy_until = $1 WHERE id = $2`,
-		t, settlementID,
-	); err != nil {
-		return nil, "", err
-	}
-	return map[string]any{"expires_at": t}, "The gods answer your plea — your warriors fight with divine fury!", nil
 }
 
 // applyHarvestBlessing raises the yield of every food good but fish by a
