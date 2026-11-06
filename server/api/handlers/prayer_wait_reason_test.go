@@ -57,7 +57,7 @@ func readWaitReasonPrayer(t *testing.T, f alphaFixture, id string) waitReasonPra
 }
 
 func TestPrayerStatusKeepsStructuredWaitAndActiveState(t *testing.T) {
-	for _, id := range []string{religion.PrayerPotniaVision, religion.PrayerGreenShoots, religion.PrayerAsterionThread} {
+	for _, id := range []string{religion.PrayerPotniaVision, religion.PrayerGreenShoots} {
 		t.Run(id, func(t *testing.T) {
 			f := newAlphaFixture(t)
 			rec := f.cast(f.cities[0], id)
@@ -73,9 +73,6 @@ func TestPrayerStatusKeepsStructuredWaitAndActiveState(t *testing.T) {
 			}
 			if id == religion.PrayerGreenShoots && p.Active <= 0 {
 				t.Fatalf("active gift missing: %+v", p)
-			}
-			if id == religion.PrayerAsterionThread && (!p.Pending || p.Active != 0) {
-				t.Fatalf("pending departure treated as timed active gift: %+v", p)
 			}
 		})
 	}

@@ -10,6 +10,15 @@ import (
 	"testing"
 )
 
+// pend lays a departure prayer directly. Thread/Passage are retired from the catalogue (steg 2b)
+// but a row left pending is still honoured at departure, and that is what these tests prove.
+func (f *alphaFixture) pend(t *testing.T, city uuid.UUID, effect string) {
+	t.Helper()
+	if _, err := f.pool.Exec(context.Background(), `INSERT INTO departure_prayers(settlement_id,owner_id,effect) VALUES($1,$2,$3) ON CONFLICT(settlement_id,effect) DO UPDATE SET owner_id=EXCLUDED.owner_id`, city, f.player, effect); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestBetaDeparturePrayerCastConsumeLateAndReturn(t *testing.T) {
 	for _, effect := range []string{religion.EffectNextLandDeparture, religion.EffectNextShipDeparture} {
 		t.Run(effect, func(t *testing.T) {
@@ -21,9 +30,7 @@ func TestBetaDeparturePrayerCastConsumeLateAndReturn(t *testing.T) {
 				prayer = religion.PrayerStillnessPassage
 				cat = "naval"
 			}
-			if r := f.cast(f.cities[0], prayer); r.Code != 200 {
-				t.Fatalf("cast %d %s", r.Code, r.Body.String())
-			}
+			f.pend(t, f.cities[0], effect)
 			tx, err := f.pool.Begin(ctx)
 			if err != nil {
 				t.Fatal(err)
@@ -42,9 +49,6 @@ func TestBetaDeparturePrayerCastConsumeLateAndReturn(t *testing.T) {
 			}
 			// No renewal even after divine waiting time when the blessing is still pending.
 			f.clearRest(t)
-			if r := f.cast(f.cities[0], prayer); r.Code != 200 {
-				t.Fatalf("new gift %d %s", r.Code, r.Body.String())
-			}
 			after, _ := json.Marshal(j)
 			if string(before) != string(after) {
 				t.Fatal("prayer after departure altered frozen journey")
@@ -74,8 +78,8 @@ func TestBetaDeparturePrayerCastConsumeLateAndReturn(t *testing.T) {
 				t.Fatal(err)
 			}
 			f.clearRest(t)
-			if r := f.cast(f.cities[0], prayer); r.Code != 409 {
-				t.Fatalf("renewed pending gift %d %s", r.Code, r.Body.String())
+			if r := f.cast(f.cities[0], prayer); r.Code == 200 {
+				t.Fatalf("the retired prayer %s can no longer be cast", prayer)
 			}
 		})
 	}
@@ -84,9 +88,7 @@ func TestBetaDeparturePrayerCastConsumeLateAndReturn(t *testing.T) {
 func TestBetaDepartureOwnerStampAndRollback(t *testing.T) {
 	f := newAlphaFixture(t)
 	ctx := context.Background()
-	if r := f.cast(f.cities[0], religion.PrayerAsterionThread); r.Code != 200 {
-		t.Fatal(r.Body.String())
-	}
+	f.pend(t, f.cities[0], religion.EffectNextLandDeparture)
 	var foreign uuid.UUID
 	if err := f.pool.QueryRow(ctx, `INSERT INTO players(username,password_hash) VALUES($1,'x') RETURNING id`, uuid.NewString()).Scan(&foreign); err != nil {
 		t.Fatal(err)
@@ -139,9 +141,7 @@ func TestBetaPrayerAfterActualTransportDeparture(t *testing.T) {
 	if err := f.pool.QueryRow(ctx, `SELECT journey,due_tick FROM transports WHERE id=$1`, id).Scan(&before, &due); err != nil {
 		t.Fatal(err)
 	}
-	if r := f.cast(f.cities[0], religion.PrayerAsterionThread); r.Code != 200 {
-		t.Fatal(r.Body.String())
-	}
+	f.pend(t, f.cities[0], religion.EffectNextLandDeparture)
 	var after []byte
 	var later int
 	if err := f.pool.QueryRow(ctx, `SELECT journey,due_tick FROM transports WHERE id=$1`, id).Scan(&after, &later); err != nil {
@@ -220,9 +220,7 @@ func TestBetaPrayerAfterShipDepartureDoesNotProtectVoyage(t *testing.T) {
 	if err := f.pool.QueryRow(ctx, `INSERT INTO units(world_id,owner_id,type,category,size,crew,status,q,r,target_q,target_r,depart_tick,arrive_tick) VALUES($1,$2,'galley','naval',1,20,'marching',0,0,4,0,100,104) RETURNING id`, f.world, f.player).Scan(&ship); err != nil {
 		t.Fatal(err)
 	}
-	if r := f.cast(f.cities[0], religion.PrayerStillnessPassage); r.Code != 200 {
-		t.Fatal(r.Body.String())
-	}
+	f.pend(t, f.cities[0], religion.EffectNextShipDeparture)
 	var protected bool
 	var arr int
 	if err := f.pool.QueryRow(ctx, `SELECT stillness_depart_tick IS NOT NULL,arrive_tick FROM units WHERE id=$1`, ship).Scan(&protected, &arr); err != nil {

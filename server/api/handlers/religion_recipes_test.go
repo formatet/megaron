@@ -14,11 +14,11 @@ import (
 // and freeze that same sacrifice in RiteCast, even with a losing legacy dice value (everyday prayers never roll).
 func TestAlphaOfferDebitsDecisionRecipeExactly(t *testing.T) {
 	expected := map[string]map[string]float64{
-		religion.PrayerPotniaVision:     {"grain": 10, "silver": 3},
-		religion.PrayerPotniaWalls:      {"grain": 8, "timber": 4},
-		religion.PrayerGreenShoots:      {"grain": 15, "silver": 2},
-		religion.PrayerAsterionThread:   {"timber": 4, "silver": 3},
-		religion.PrayerStillnessPassage: {"fish": 6, "silver": 3},
+		religion.PrayerPotniaVision:   {"grain": 10, "silver": 3},
+		religion.PrayerPotniaWalls:    {"grain": 8, "timber": 4},
+		religion.PrayerGreenShoots:    {"grain": 15, "silver": 2},
+		religion.PrayerAsterionSwift:  {"timber": 4, "silver": 3},
+		religion.PrayerStillnessSwift: {"fish": 6, "silver": 3},
 	}
 	for id, recipe := range expected {
 		for _, losingDice := range []bool{false, true} {
@@ -49,13 +49,24 @@ func TestAlphaOfferDebitsDecisionRecipeExactly(t *testing.T) {
 				if err := rows.Err(); err != nil {
 					t.Fatal(err)
 				}
+				want := recipe
 				response := f.cast(f.cities[0], id)
+				if id == religion.PrayerAsterionSwift || id == religion.PrayerStillnessSwift {
+					// Prayers with a target: the whole realm, so the recipe is paid x4 (steg 2a/2b).
+					f.unit(t, f.player, "galley", "naval", "garrison", f.cities[0])
+					response = f.castBody(f.cities[0], map[string]any{"prayer": id, "target_scope": "realm"})
+					scaled := map[string]float64{}
+					for g, n := range recipe {
+						scaled[g] = n * 4
+					}
+					want = scaled
+				}
 				if response.Code != 200 {
 					t.Fatalf("Offer status%d %s", response.Code, response.Body.String())
 				}
 				for good, amount := range before {
-					if after := f.stock(t, f.cities[0], good); after != amount-recipe[good] {
-						t.Fatalf("Offer debited %s: before%g after%g, expected debit%g", good, amount, after, recipe[good])
+					if after := f.stock(t, f.cities[0], good); after != amount-want[good] {
+						t.Fatalf("Offer debited %s: before%g after%g, expected debit%g", good, amount, after, want[good])
 					}
 				}
 				var raw []byte
@@ -82,7 +93,7 @@ func TestAlphaOfferDebitsDecisionRecipeExactly(t *testing.T) {
 				if err := json.Unmarshal(raw, &payload); err != nil {
 					t.Fatal(err)
 				}
-				if !reflect.DeepEqual(payload.Offering, recipe) || !payload.Success {
+				if !reflect.DeepEqual(payload.Offering, want) || !payload.Success {
 					t.Fatalf("frozen outcome %s", raw)
 				}
 			})

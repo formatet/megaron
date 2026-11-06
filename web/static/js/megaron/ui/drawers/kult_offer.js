@@ -36,7 +36,8 @@ export function scopeChoices(prayer) {
   const t = prayer.targets;
   if (!t) return [];
   const count = { unit: (t.unit || []).length, city: t.city?.count || 0, realm: t.realm?.count || 0 };
-  return SCOPES.map(([scope, label]) => ({ scope, label, count: count[scope], enabled: count[scope] > 0, factor: scopeFactor(prayer, scope) }));
+  // Runner/caravan prayers (steg 2b) hold for departures too, so city and realm are always open.
+  return SCOPES.map(([scope, label]) => ({ scope, label, count: count[scope], enabled: count[scope] > 0 || (!!t.always && scope !== 'unit'), factor: scopeFactor(prayer, scope) }));
 }
 
 export function defaultScope(prayer) {
@@ -50,6 +51,7 @@ export function targetChooserHTML(prayer) {
   const id = esc(prayer.id);
   const rows = choices.map(c => {
     const what = c.scope === 'unit' ? c.count + ' to choose from'
+      : prayer.targets.always ? (c.scope === 'city' ? 'every Runner and caravan of ' + (prayer.targets.city.name || 'this city') : 'all of yours') + ', on the road now (' + c.count + ') and while it lasts'
       : c.scope === 'city' ? c.count + ' of ' + (prayer.targets.city.name || 'this city')
       : 'all ' + c.count;
     return '<label class="offer-scope"><input type="radio" name="scope-' + id + '" value="' + c.scope + '"' +
@@ -58,7 +60,7 @@ export function targetChooserHTML(prayer) {
   }).join('<br>');
   const options = (prayer.targets.unit || []).map(u =>
     '<option value="' + esc(u.id) + '">' + esc(u.name) + (u.where ? ' (' + esc(u.where) + ')' : '') + '</option>').join('');
-  const select = options ? '<select class="offer-target-unit" aria-label="Unit to bless">' + options + '</select>' : '';
+  const select = options ? '<select class="offer-target-unit" aria-label="Who to bless">' + options + '</select>' : '';
   const none = choices.some(c => c.enabled) ? '' : '<p class="offer-note">You have nothing of this kind to bless.</p>';
   return '<div class="offer-target"><p class="offer-note">Who is blessed? The wider the blessing, the dearer the gift.</p>' + rows + '<br>' + select + none + '</div>';
 }

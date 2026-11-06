@@ -745,10 +745,10 @@
     "wrathful_threshold": 5
   },
   "prayers": {
-    "minoan_asterion_thread": {
-      "ID": "minoan_asterion_thread",
+    "minoan_asterion_swift": {
+      "ID": "minoan_asterion_swift",
       "GodID": "asterion",
-      "EffectType": "next_land_departure",
+      "EffectType": "blessed_speed_land",
       "MinKharis": 5,
       "Offering": {
         "silver": 3,
@@ -757,8 +757,8 @@
       "CooldownTicks": 12,
       "TargetKind": "",
       "God": "Asterion",
-      "Name": "The Thread Shows a Path",
-      "Description": "Your next land caravan or Runner from this city travels faster; the caravan is harder to intercept.",
+      "Name": "Swift Feet",
+      "Description": "Runners and land caravans you name take a quarter less time over what is left of their road, also when already under way, for 12 game days: one Runner or caravan, the city's, or all of them. A wider blessing costs more.",
       "Favours": null,
       "RestByLevel": [
         12,
@@ -859,10 +859,10 @@
         4
       ]
     },
-    "minoan_stillness_passage": {
-      "ID": "minoan_stillness_passage",
+    "minoan_stillness_swift": {
+      "ID": "minoan_stillness_swift",
       "GodID": "sea_daimons_stillness",
-      "EffectType": "next_ship_departure",
+      "EffectType": "blessed_speed_sea",
       "MinKharis": 5,
       "Offering": {
         "fish": 6,
@@ -871,8 +871,8 @@
       "CooldownTicks": 12,
       "TargetKind": "",
       "God": "The Sea Daimons of Stillness",
-      "Name": "Favourable Passage",
-      "Description": "The next ship leaving this port sails faster and takes no storm damage on its outward leg.",
+      "Name": "Following Seas",
+      "Description": "Ships you name take a quarter less time over what is left of their voyage, also when already at sea, for 12 game days: one ship, the city's ships, or the whole fleet. A wider blessing costs more.",
       "Favours": null,
       "RestByLevel": [
         12,

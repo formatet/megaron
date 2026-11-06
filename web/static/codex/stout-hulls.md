@@ -8,7 +8,7 @@ Each ship you name takes the next [[storms|storm]] it meets **unharmed**, within
 | Every ship supported by the city where you pray | twice the traditional offering |
 | Every ship in your realm | four times the traditional offering |
 
-Every blessed ship carries its own ward, so a blessing over several ships protects each of them once. The blessing is read when the storm is met, wherever the ship is, and a storm met before the prayer was said is not covered. The storm notice says the ship was shielded (hull unchanged). The ward replaces [[gods|the gods]]' own favour or wrath for that storm. A ship under [[favourable-passage|Favourable Passage]] meets no storms on its outward leg and keeps its ward for later. Only your own ships can be named. The same ships cannot be blessed twice at once.
+Every blessed ship carries its own ward, so a blessing over several ships protects each of them once. The blessing is read when the storm is met, wherever the ship is, and a storm met before the prayer was said is not covered. The storm notice says the ship was shielded (hull unchanged). The ward replaces [[gods|the gods]]' own favour or wrath for that storm. Only your own ships can be named. The same ships cannot be blessed twice at once.
 
 <!-- facts: prayer minoan_stillness_hull -->
 | Reference | Current rule |

@@ -155,7 +155,13 @@ func (h *ProvinceHandler) loadPrayerRows(ctx context.Context, sett *settlement.S
 			OfferingBaseline:      religion.TraditionalBaseline(spec, divineValues),
 		})
 		if religion.IsBlessing(spec.EffectType) && sett.OwnerID != nil {
-			targets, tErr := h.loadPrayerTargets(ctx, sett, *sett.OwnerID, religion.BlessingUnitKind(spec.EffectType))
+			var targets *prayerTargets
+			var tErr error
+			if spec.EffectType == religion.EffectBlessedSpeedLand {
+				targets, tErr = h.loadRoadTargets(ctx, sett, *sett.OwnerID, prayerTick)
+			} else {
+				targets, tErr = h.loadPrayerTargets(ctx, sett, *sett.OwnerID, religion.BlessingUnitKind(spec.EffectType))
+			}
 			if tErr != nil {
 				return nil, nil, fmt.Errorf("could not read the prayer's targets: %w", tErr)
 			}
@@ -218,4 +224,43 @@ func (h *ProvinceHandler) loadPrayerTargets(ctx context.Context, sett *settlemen
 		out.Unit[i].Name = unit.LoadDisplayName(ctx, h.pool, id)
 	}
 	return out, nil
+}
+
+// loadRoadTargets lists what an Asterion prayer can name: the caster's own Runners on a
+// free land leg and land caravans under way. Neither has a name of its own, so each is
+// told by where it is going and when it arrives. A city or realm step needs no journey now.
+func (h *ProvinceHandler) loadRoadTargets(ctx context.Context, sett *settlement.Settlement, owner uuid.UUID, nowTick int) (*prayerTargets, error) {
+	rows, err := h.pool.Query(ctx, `SELECT 'Runner', m.id, COALESCE(d.name,''), (m.land_route->>'end_tick')::int, m.origin_id=$3
+ FROM messengers m LEFT JOIN settlements d ON d.id=m.destination_id
+ WHERE m.world_id=$1 AND m.sender_id=$2 AND m.status IN ('outbound','returning') AND m.land_route IS NOT NULL AND m.passage_status IS NULL
+   AND m.carrier_transport_id IS NULL AND m.carrier_unit_id IS NULL
+ UNION ALL
+ SELECT 'Caravan', t.id, COALESCE(d.name,''), t.due_tick, t.origin_id=$3
+ FROM transports t LEFT JOIN settlements d ON d.id=t.dest_id
+ WHERE t.world_id=$1 AND t.owner_id=$2 AND t.category='land' AND t.status='in_transit'
+ ORDER BY 4, 2`, sett.WorldID, owner, sett.ID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := &prayerTargets{Unit: []prayerTargetUnit{}, City: prayerTargetGroup{Name: sett.Name}, Always: true}
+	for rows.Next() {
+		var kind, dest string
+		var id uuid.UUID
+		var end int
+		var here bool
+		if err := rows.Scan(&kind, &id, &dest, &end, &here); err != nil {
+			return nil, err
+		}
+		name := kind
+		if dest != "" {
+			name = kind + " to " + dest
+		}
+		out.Unit = append(out.Unit, prayerTargetUnit{ID: id.String(), Name: name, Where: "arrives in " + tick.FormatDays(max(1, end-nowTick))})
+		out.Realm.Count++
+		if here {
+			out.City.Count++
+		}
+	}
+	return out, rows.Err()
 }

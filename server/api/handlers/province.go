@@ -84,6 +84,9 @@ type prayerTargets struct {
 	Unit  []prayerTargetUnit `json:"unit"`
 	City  prayerTargetGroup  `json:"city"`
 	Realm prayerTargetGroup  `json:"realm"`
+	// Always: a city or realm blessing needs nothing under way now (a Runner or caravan
+	// prayer holds for departures too), so those steps are never greyed out.
+	Always bool `json:"always,omitempty"`
 }
 
 type prayerTargetUnit struct {

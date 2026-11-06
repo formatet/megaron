@@ -117,3 +117,22 @@ test('chosenTarget reads the checked step and, for one unit, the chosen unit', (
   assert.deepEqual(chosenTarget(host('realm', 'u2')), { target_scope: 'realm' });
   assert.deepEqual(chosenTarget(null), {});
 });
+
+// Speed prayers (steg 2b): Runners/caravans on the road are named; city and realm hold for departures too.
+const swift = { id: 'minoan_asterion_swift', god_id: 'asterion', offering: { timber: 4, silver: 3 }, scope_cost_factors: { unit: 1, city: 2, realm: 4 },
+  targets: { always: true, unit: [{ id: 'm1', name: 'Runner to Phaistos', where: 'arrives in 4 game days' }], city: { name: 'Knossos', count: 1 }, realm: { count: 1 } } };
+
+test('speed prayer: the road journeys are listed by destination and arrival; city and realm say they hold for departures too', () => {
+  const html = offerRowHTML(swift, { timber: 100, silver: 100 });
+  assert.match(html, /Runner to Phaistos \(arrives in 4 game days\)/);
+  assert.match(html, /every Runner and caravan of Knossos, on the road now \(1\) and while it lasts · gift ×2/);
+  assert.match(html, /all of yours, on the road now \(1\) and while it lasts · gift ×4/);
+});
+
+test('speed prayer: with nothing on the road the city and realm steps stay open, the named step is greyed out', () => {
+  const empty = { ...swift, targets: { ...swift.targets, unit: [], city: { name: 'Knossos', count: 0 }, realm: { count: 0 } } };
+  const choices = scopeChoices(empty);
+  assert.deepEqual(choices.map(c => c.enabled), [false, true, true]);
+  assert.equal(defaultScope(empty), 'city');
+  assert.doesNotMatch(offerRowHTML(empty, {}), /nothing of this kind to bless/);
+});
