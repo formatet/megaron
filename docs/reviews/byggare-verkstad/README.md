@@ -52,7 +52,7 @@ City drawer -> Buildings tab (build queue: active row with ready time + "Nx pace
 7. Rows inserted without `work_remaining` (old test fixtures) are shown in a legacy mode (stored deadline, first row active).
 
 ## Final run
-See the last section appended below by the final full-suite run.
+`tools/gotest.sh` (whole suite incl. web) on a fresh DB at migration 245: **0 red** (Go 935 ok packages, no FAIL; web `# pass 905 # fail 0`; Codex catalogue/reference tests green).
 
 ## Diffstat
  server/cmd/keryx/cmd_build.go                      |  11 +-
