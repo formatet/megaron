@@ -175,7 +175,7 @@ export function notifDomain(kind) {
     // Diplomacy — the messenger channel.
     MessengerLostAtSea: 'diplomacy', MessengerRescuedAtSea: 'diplomacy', MessengerArrival: 'diplomacy', MessengerReturned: 'diplomacy', PlaceTold: 'diplomacy', PassageStalled: 'diplomacy',
     // Kult — the gods answering.
-    ReligionRuleChangedV2: 'kult', RiteAnswered: 'kult', TempleDemolitionWrath: 'kult', GodsAngered: 'kult', KharisDeclining: 'kult', KharisBandChanged: 'kult', DivinePunishment: 'kult', DivineBlessing: 'kult', KharisEvent: 'kult',
+    ReligionRuleChangedV2: 'kult', RiteAnswered: 'kult', TempleDemolitionWrath: 'kult', GodsAngered: 'kult', KharisDeclining: 'kult', KharisBandChanged: 'kult', DivinePunishment: 'kult', DivinePunishmentAverted: 'kult', DivineBlessing: 'kult', KharisEvent: 'kult',
   };
   return domains[kind] || 'system';
 }
@@ -233,6 +233,7 @@ export function notifIcon(kind) {
     ShipLost:           '⚔',
     ShipStranded:       '⚠',
     DivinePunishment:   '⚡',
+    DivinePunishmentAverted: '🐐',
     DivineBlessing:     '✨',
     RiteAnswered:       '🕯',
     CivilianStarvationStarted: '🍽', CivilianStarvationEnded: '🍽',
@@ -910,6 +911,13 @@ export function notifText(kind, body) {
         case 'garrison_plague': return `A pestilence swept the barracks${place} — ${amount} fell${protection}`;
         default:                return `${kind} — ${payloadSummary(body)}`;
       }
+    }
+    case 'DivinePunishmentAverted': {
+      // The scapegoat bore it (steg 5a): nothing was lost. would_have names what was spared.
+      const place = body.name ? ` at ${body.name}` : '';
+      const spared = { chariot_loss: 'some of your chariots', ship_loss: 'a ship from your harbour', harvest_failure: 'half your grain stores', garrison_plague: 'many of your garrison' }[body.type || body.would_have] || 'something';
+      const protection = body.protection_until ? ` Protected from further divine punishment until ${fmtClock(body.protection_until)}.` : '';
+      return `The gods' anger fell on the scapegoat${place}. It would have taken ${spared}; nothing was lost.${protection}`;
     }
     case 'RiteAnswered': {
       // The answer to your own prayer (byggplan A.2); the server's message

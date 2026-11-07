@@ -194,3 +194,28 @@ test('chosenTarget reads the unit for the permanent step as for the named one', 
   const host = (scope, unit) => ({ querySelector: sel => sel.includes('checked') ? { value: scope } : sel.includes('offer-target-unit') ? { value: unit } : null });
   assert.deepEqual(chosenTarget(host('permanent', 'u1')), { target_scope: 'permanent', target: 'u1' });
 });
+
+// World blessings (steg 5a): a city or the realm, no unit to name; the scapegoat only the realm.
+const worldPrayer = { id: 'minoan_potnia_fertility', god: 'Potnia', offering: { livestock: 4, grain: 4 }, can_prepare_offering: true, affordable: true,
+  scope_cost_factors: { city: 2, realm: 4 },
+  targets: { kind: 'world', always: true, unit: [], city: { name: 'Knossos', count: 1 }, realm: { count: 3 } } };
+
+test('a world blessing offers only city and realm, both open, with the step price', () => {
+  const c = scopeChoices(worldPrayer);
+  assert.deepEqual(c.map(x => [x.scope, x.enabled, x.factor]), [['city', true, 2], ['realm', true, 4]]);
+  assert.equal(defaultScope(worldPrayer), 'city');
+  const html = offerRowHTML(worldPrayer, { livestock: 50, grain: 50 });
+  assert.match(html, /Knossos only · gift ×2/);
+  assert.match(html, /all 3 of your cities · gift ×4/);
+  assert.doesNotMatch(html, /One named|For ever|offer-target-unit/);
+  assert.match(html, /How wide is it laid\?/);
+});
+
+test('the scapegoat offers the realm alone', () => {
+  const goat = { ...worldPrayer, id: 'minoan_potnia_scapegoat', scope_cost_factors: { realm: 4 } };
+  const c = scopeChoices(goat);
+  assert.deepEqual(c.map(x => x.scope), ['realm']);
+  assert.equal(defaultScope(goat), 'realm');
+  const host = { querySelector: s => s === 'input[type=radio]:checked' ? { value: 'realm' } : null };
+  assert.deepEqual(chosenTarget(host), { target_scope: 'realm' });
+});
