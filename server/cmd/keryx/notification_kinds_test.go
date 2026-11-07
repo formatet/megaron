@@ -296,6 +296,9 @@ func TestEveryNotificationKindHasReadableDetail(t *testing.T) {
 			if kind == "DivinePunishment" {
 				body = json.RawMessage(`{"type":"harvest_failure","amount":12,"name":"Tiryns"}`)
 			}
+			if kind == "DivinePunishmentAverted" {
+				body = json.RawMessage(`{"would_have":"harvest_failure","name":"Tiryns"}`)
+			}
 			if kind == "FoodShortfall" {
 				body = json.RawMessage(`{"unmet":12,"name":"Tiryns"}`)
 			}

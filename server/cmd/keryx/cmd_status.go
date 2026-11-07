@@ -444,6 +444,9 @@ func buildQueueState(c *Client, m map[string]any) string {
 	}
 	ca, _ := m["complete_at"].(string)
 	eta := buildQueueETA(c, ca)
+	if m["blessed"] == true {
+		eta += " · the Builder's Blessing"
+	}
 	if rate, _ := m["rate"].(float64); rate > 1 {
 		return fmt.Sprintf("%s · %gx builders' pace", eta, rate)
 	}
@@ -753,6 +756,9 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			printNoTradeContactsHint(c, cfg.WorldID, prov)
 
 			if line := harvestBlessingLine(sett); line != "" {
+				fmt.Println(line)
+			}
+			for _, line := range cityBlessingLines(sett) {
 				fmt.Println(line)
 			}
 			if line := stormFishingLine(sett); line != "" {
@@ -1087,6 +1093,9 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 					wrathful = fmt.Sprintf(", %.0f%% below %.0f", wp*100, wt)
 				}
 				fmt.Printf("  Wrath risk below %.0f: %.0f%% / game day%s\n", threshold, probability*100, wrathful)
+				if line := scapegoatLine(wrath); line != "" {
+					fmt.Println("  " + line)
+				}
 				if remaining, _ := wrath["protection_remaining_days"].(float64); remaining > 0 {
 					if iso, ok := wrath["protection_until"].(string); ok {
 						if at, err := time.Parse(time.RFC3339Nano, iso); err == nil {

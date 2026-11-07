@@ -101,6 +101,14 @@ func printRiteTargets(p riteAvailablePrayer, settlementID string) {
 		return
 	}
 	f := p.ScopeCostFactors
+	if p.Targets.Kind == "world" {
+		fmt.Printf("  Choose how wide with --scope; the wider, the dearer (gift × step):\n")
+		if f["city"] > 0 {
+			fmt.Printf("    --scope city  ×%d  %s  — %s only\n", f["city"], formatOffering(scaledOffering(p.Offering, f["city"])), p.Targets.City.Name)
+		}
+		fmt.Printf("    --scope realm ×%d  %s  — all %d of your cities\n", f["realm"], formatOffering(scaledOffering(p.Offering, f["realm"])), p.Targets.Realm.Count)
+		return
+	}
 	fmt.Printf("  Choose a target with --scope; the wider, the dearer (gift × step):\n")
 	fmt.Printf("    --scope unit  ×%d  %s  — one named, with --target <name|id>\n", f["unit"], formatOffering(scaledOffering(p.Offering, f["unit"])))
 	for _, u := range p.Targets.Unit {
@@ -380,6 +388,9 @@ func riteCmd() *cobra.Command {
 					}
 					if scope == "" {
 						scope = "unit"
+					}
+					if p.Targets.Kind == "world" && p.ScopeCostFactors[scope] == 0 {
+						return fmt.Errorf("%s cannot be said for --scope %q: choose %s (see rite --list)", p.Name, scope, worldScopes(p.ScopeCostFactors))
 					}
 					switch scope {
 					case "unit", "permanent":
@@ -783,6 +794,17 @@ func riteSettlementByProvince(markers []map[string]any, arg string) string {
 	return ""
 }
 
+// worldScopes names the steps a world blessing offers, e.g. "city or realm".
+func worldScopes(f map[string]int) string {
+	var out []string
+	for _, k := range []string{"city", "realm"} {
+		if f[k] > 0 {
+			out = append(out, k)
+		}
+	}
+	return strings.Join(out, " or ")
+}
+
 // printSpedUp tells which journeys under way a speed prayer shortened and by how much.
 func printSpedUp(effect map[string]any) {
 	list, _ := effect["sped_up"].([]any)
@@ -792,6 +814,18 @@ func printSpedUp(effect map[string]any) {
 		id, _ := m["id"].(string)
 		oldT, _ := m["old_arrive_tick"].(float64)
 		newT, _ := m["new_arrive_tick"].(float64)
+		if kind == "build" || kind == "ship" {
+			// the Builder's Blessing: a build or a ship under construction (steg 5a)
+			oldD, _ := m["old_due_tick"].(float64)
+			newD, _ := m["new_due_tick"].(float64)
+			what := map[string]string{"build": "Building", "ship": "Ship under construction"}[kind]
+			if oldD > newD {
+				fmt.Printf("  %s %s is ready %s sooner.\n", what, id, formatDays(int(oldD-newD)))
+			} else {
+				fmt.Printf("  %s %s is cut to three quarters of the time left.\n", what, id)
+			}
+			continue
+		}
 		what := map[string]string{"unit": "Ship", "transport": "Caravan", "messenger": "Runner"}[kind]
 		if what == "" {
 			what = kind
