@@ -71,8 +71,8 @@ Runs coordinated with Timothy; see `megaron_namn_hygien.md` §D.
 
 Go (minimum version in `server/go.mod`) · chi · PostgreSQL 16 (pgx/v5) · Redis 7 (go-redis) · gorilla/websocket · golang-migrate · log/slog · HTMX + vanilla JS.
 
-- **Event sourcing is hybrid.** `events` is an append-only audit/notify log. **Only loyalty is replay-derived**
-  (`settlement/loyalty.go`). Resources, army, silver, kharis and population are mutated with direct `UPDATE`
+- **Event sourcing is hybrid.** `events` is an append-only audit/notify log. **Loyalty, the one replay-derived projection, is gone** (
+  removed 2026-10-18, mig 185). Resources, army, silver, kharis and population are mutated with direct `UPDATE`
   on projection tables — **`events` is not the source of truth for them**, so don't plan on rebuilding
   settlement state from the log. Write the events anyway (notifications + audit). Mutate atomically in a TX.
 - **Lazy resource eval:** store `(amount, rate_per_tick, calc_tick)`, compute on read with the shared SQL `settled()` function.
@@ -172,7 +172,7 @@ navigation through `auth.WebMiddleware`; all API calls use Bearer.) Wired in
 Get the shape wrong and you write wrong code. Everything else: `megaron_moc.md`.
 
 - **Province ≠ settlement** — separate tables. (The outpost model is gone — mig 138 dropped it, 2026-09-02.)
-- **Loyalty** — bounded low-integer projection, never 0–100; event-sourced.
+- **Loyalty is gone** (Timothy 2026-10-18, mig 185) — kharis is the expansion brake. Don't build on it.
 - **Kharis** is a relationship, not mana; always a floor (never 0); realm pool per Wanax, cap driven by
   temple level. Cult is produced by population allocated to temples.
 - **Messengers are physical and sacred** (uninterceptable); the reply arrives on return. **Load-bearing
