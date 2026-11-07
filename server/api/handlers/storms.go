@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"sort"
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/combat"
@@ -153,12 +154,24 @@ func (h *WorldHandler) Storms(w http.ResponseWriter, r *http.Request) {
 		return province.AnyEyeSees(eyes, province.MapPosition{Q: hx.Q, R: hx.R}, terrain[[2]int{hx.Q, hx.R}])
 	}
 
+	// A dead storm has no live position but is still remembered where it was last seen.
+	rest := []uuid.UUID{}
+	for id := range remembered {
+		if now[id] == nil {
+			rest = append(rest, id)
+		}
+	}
+	sort.Slice(rest, func(i, j int) bool { return rest[i].String() < rest[j].String() })
+	order = append(order, rest...)
+
 	out := []stormView{}
 	for _, id := range order {
 		c := now[id]
 		live := false
-		for _, hx := range c.hexes {
-			live = live || sees(hx)
+		if c != nil {
+			for _, hx := range c.hexes {
+				live = live || sees(hx)
+			}
 		}
 		if live {
 			out = append(out, stormView{ID: id, Tier: "live", Hexes: c.hexes, Heading: combat.StormHeadingName(c.heading), SeenTick: tick})
