@@ -264,6 +264,8 @@ func main() {
 	worker.Register(events.ScheduledSiegeCapitulation, siegeCapitulationH.Handle)
 	wallsFallH := combat.NewWallsFallHandler(pool, eventStore, hub)
 	worker.Register(events.ScheduledWallsFall, wallsFallH.Handle)
+	birdOracleCloseH := combat.NewBirdOracleCloseHandler(pool)
+	worker.Register(events.ScheduledBirdOracleClose, birdOracleCloseH.Handle)
 	navalSeizureH := combat.NewNavalSeizureOutcomeHandler(pool, scheduler, gameClock, hub)
 	worker.Register(events.ScheduledNavalSeizureOutcome, navalSeizureH.Handle)
 	collapseH := combat.NewCollapseSettlementHandler(pool, eventStore, scheduler, hub)

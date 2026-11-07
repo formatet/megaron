@@ -94,6 +94,8 @@ type prayerTargets struct {
 	Storms []prayerTargetStorm `json:"storms,omitempty"`
 	// Kind "city" (steg 5c): The Walls Fall, pick one of Cities (foreign, on your map, wall remembered >= 1).
 	Cities []prayerTargetCity `json:"cities,omitempty"`
+	// Kind "place" (steg 5d): The Bird Oracle, pick one of Cities (yours and remembered) or Places (named, anchor known).
+	Places []prayerTargetPlace `json:"places,omitempty"`
 }
 
 type prayerTargetUnit struct {
