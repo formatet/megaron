@@ -322,6 +322,9 @@ type Unit struct {
 	// the column too (table-wide default 5) but never reads it — every
 	// consumer gates on Category == CategoryNaval first.
 	Hull int
+	// HullBonus is +1 max hull for ever (Stout Hulls, permanent; böner steg 4): the ship's
+	// own ceiling is combat.HullMax + HullBonus.
+	HullBonus int
 	// Provisions is the scalar food total; ProvisionGoods preserves physical
 	// commodity identity through loading, eating and return (migration190).
 	Provisions     float64
@@ -431,7 +434,7 @@ func NewStore(pool *pgxpool.Pool) *Store {
 
 const selectCols = `
 	id, world_id, owner_id,
-	type, category, size, crew, hull, provisions, provision_goods,
+	type, category, size, crew, hull, hull_bonus, provisions, provision_goods,
 	ARRAY(SELECT passenger.id FROM units passenger WHERE passenger.carried_by_ship_id = units.id ORDER BY passenger.created_at, passenger.id),
 	status, stance,
 	settlement_id, support_settlement_id, ordinal,
@@ -454,7 +457,7 @@ func scanUnit(row interface {
 	var reactionRaw []byte
 	if err := row.Scan(
 		&u.ID, &u.WorldID, &u.OwnerID,
-		&u.Type, &u.Category, &u.Size, &u.Crew, &u.Hull, &u.Provisions, &u.ProvisionGoods, &u.CargoUnitIDs,
+		&u.Type, &u.Category, &u.Size, &u.Crew, &u.Hull, &u.HullBonus, &u.Provisions, &u.ProvisionGoods, &u.CargoUnitIDs,
 		&u.Status, &stance,
 		&u.SettlementID, &u.SupportSettlementID, &u.Ordinal,
 		&u.Q, &u.R,

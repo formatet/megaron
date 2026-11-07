@@ -278,11 +278,11 @@ func (h *SeaStormScanHandler) sail(ctx context.Context, worldID uuid.UUID, dueTi
 		}
 	}
 	var status string
-	var hull int
+	var hull, hullBonus int
 	var dep, arr *int
 	if err := tx.QueryRow(ctx,
-		`SELECT status, hull, depart_tick, arrive_tick FROM units WHERE id = $1 FOR UPDATE`, v.shipID,
-	).Scan(&status, &hull, &dep, &arr); err != nil {
+		`SELECT status, hull, hull_bonus, depart_tick, arrive_tick FROM units WHERE id = $1 FOR UPDATE`, v.shipID,
+	).Scan(&status, &hull, &hullBonus, &dep, &arr); err != nil {
 		return err
 	}
 	if status == string(unit.StatusDisbanded) {
@@ -365,7 +365,7 @@ func (h *SeaStormScanHandler) sail(ctx context.Context, worldID uuid.UUID, dueTi
 			}
 			storms = append(storms, SeaStormPayload{
 				WorldID: worldID, ShipID: v.shipID, OwnerID: v.owner, ShipType: v.shipType,
-				Q: encounter.hex[0], R: encounter.hex[1], Tick: encounter.tick, HullBefore: before, Hull: hull, HullMax: hullMax,
+				Q: encounter.hex[0], R: encounter.hex[1], Tick: encounter.tick, HullBefore: before, Hull: hull, HullMax: HullCap(hullBonus),
 				Damage: before - hull, StormID: encounter.id, Foundered: hull <= 0, Errand: v.errand, TransportID: v.transportID,
 				Divine: divine,
 			})

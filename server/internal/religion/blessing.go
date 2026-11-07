@@ -21,6 +21,12 @@ const (
 	ScopeUnit  = "unit"
 	ScopeCity  = "city"
 	ScopeRealm = "realm"
+	// ScopePermanent (steg 4): the blessing lasts for ever, on one NAMED unit only.
+	ScopePermanent = "permanent"
+
+	// PermanentUntil is until_tick of a permanent row (int4 max): every reader tests
+	// until_tick > tick, so a permanent row needs no special case anywhere.
+	PermanentUntil = 2147483647
 
 	// BlessedStrengthFactor is the dice multiplier of a blessed land unit
 	// (same size as combat.GarrisonDefenseFactor; its own constant so the two can be tuned apart).
@@ -31,7 +37,26 @@ const (
 
 // ScopeCostFactor is what the target costs: the traditional gift times this
 // (Claude's alpha numbers, tune freely).
-var ScopeCostFactor = map[string]int{ScopeUnit: 1, ScopeCity: 2, ScopeRealm: 4}
+var ScopeCostFactor = map[string]int{ScopeUnit: 1, ScopeCity: 2, ScopeRealm: 4, ScopePermanent: 20}
+
+// HasPermanentStep says whether a prayer has the fourth step: strength, hull and
+// sea speed can be laid on a named unit for ever. Swift Feet (Runners, caravans: one
+// journey each) cannot.
+func HasPermanentStep(effect string) bool {
+	return effect == EffectBlessedStrength || effect == EffectBlessedHull || effect == EffectBlessedSpeedSea
+}
+
+// ScopeCostFactorsFor is the step table a prayer offers: the permanent step only where it exists.
+func ScopeCostFactorsFor(effect string) map[string]int {
+	out := make(map[string]int, len(ScopeCostFactor))
+	for k, v := range ScopeCostFactor {
+		if k == ScopePermanent && !HasPermanentStep(effect) {
+			continue
+		}
+		out[k] = v
+	}
+	return out
+}
 
 // IsBlessing says whether the effect is a targeted blessing.
 func IsBlessing(effect string) bool {
