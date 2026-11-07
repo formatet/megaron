@@ -424,3 +424,74 @@ func TestStormLifecycle_LateScanEqualsDailyScansAcrossDeathsAndBirths(t *testing
 		}
 	}
 }
+
+// dice with a chosen Float64 (the birth die) and the seeded Intn of stormDice.
+type birthDice struct {
+	f float64
+	d *stormDice
+}
+
+func (b birthDice) Float64() float64 { return b.f }
+func (b birthDice) Intn(n int) int   { return b.d.Intn(n) }
+
+// A world with no living storm has no track to anchor "the last rolled tick" on: the world's
+// own storm_weather_tick must carry it, so a duplicate scan of the same tick does not roll
+// the birth die again (the first roll said: no birth).
+func TestStormLifecycle_DuplicateScanWithNoLivingStormDoesNotRollBirthsAgain(t *testing.T) {
+	pool, worldID := seaWorld(t, 30) // want 9: 0.036 births a tick
+	ctx := context.Background()
+	id := newTestStorm(t, pool, worldID, 5)
+	_, _ = pool.Exec(ctx, `UPDATE sea_storms SET died_tick = 5 WHERE id = $1`, id)
+	count := func() (n int) {
+		_ = pool.QueryRow(ctx, `SELECT count(*) FROM sea_storms WHERE world_id = $1`, worldID).Scan(&n)
+		return
+	}
+	scanTo(t, pool, worldID, 10, birthDice{f: 0.99, d: newStormDice(1)}) // rolls tick 10: no birth
+	if count() != 1 {
+		t.Fatalf("storms after a no-birth roll: %d, want 1", count())
+	}
+	scanTo(t, pool, worldID, 10, birthDice{f: 0, d: newStormDice(2)}) // same tick again, a die that always births
+	if count() != 1 {
+		t.Fatalf("a duplicate scan of tick 10 rolled births again: %d storms, want 1", count())
+	}
+	var wt int
+	_ = pool.QueryRow(ctx, `SELECT storm_weather_tick FROM worlds WHERE id = $1`, worldID).Scan(&wt)
+	if wt != 10 {
+		t.Fatalf("storm_weather_tick = %d, want 10", wt)
+	}
+	scanTo(t, pool, worldID, 11, birthDice{f: 0, d: newStormDice(3)}) // a new tick does roll
+	if count() != 2 {
+		t.Fatalf("tick 11 with a certain birth: %d storms, want 2", count())
+	}
+}
+
+// A newborn storm stands only on sea no living storm occupies that tick.
+func TestStormLifecycle_NewbornNeverOverlapsALivingStorm(t *testing.T) {
+	pool, worldID := seaWorld(t, 10)
+	ctx := context.Background()
+	// 80 one-hex storms fill rows r 0..7; rows 8 and 9 are the free sea.
+	for q := 0; q < 10; q++ {
+		for r := 0; r < 8; r++ {
+			id := newTestStorm(t, pool, worldID, 100000)
+			_, _ = pool.Exec(ctx, `INSERT INTO sea_storm_track(storm_id,tick,slot,q,r) VALUES($1,4,0,$2,$3)`, id, q, r)
+		}
+	}
+	_, _ = pool.Exec(ctx, `UPDATE worlds SET storm_weather_tick = 4 WHERE id = $1`, worldID)
+	dice := birthDice{f: 0, d: newStormDice(8)}
+	for tick := 5; tick <= 12; tick++ {
+		scanTo(t, pool, worldID, tick, dice)
+	}
+	var born, overlaps int
+	_ = pool.QueryRow(ctx, `SELECT count(*) FROM sea_storms WHERE world_id = $1 AND created_tick > 4`, worldID).Scan(&born)
+	_ = pool.QueryRow(ctx, `SELECT count(*) FROM sea_storms n
+	    JOIN sea_storm_track nt ON nt.storm_id = n.id AND nt.tick = n.created_tick
+	    JOIN sea_storm_track ot ON ot.tick = nt.tick AND ot.q = nt.q AND ot.r = nt.r AND ot.storm_id <> n.id
+	    JOIN sea_storms o ON o.id = ot.storm_id AND o.world_id = n.world_id AND o.created_tick < n.created_tick
+	   WHERE n.world_id = $1 AND n.created_tick > 4`, worldID).Scan(&overlaps)
+	if born == 0 {
+		t.Fatal("no storm was born: the test proves nothing")
+	}
+	if overlaps != 0 {
+		t.Fatalf("%d newborn hexes overlap a living storm", overlaps)
+	}
+}
