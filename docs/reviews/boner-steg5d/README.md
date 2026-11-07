@@ -51,3 +51,6 @@ temenos (`rite` + katalog `targets.kind="place"`, mig 253, `BirdOracleClose` reg
 
 ## Vyer för BILD (efter merge)
 Kult -> Prayers -> The Bird Oracle (väljare med Cities/Named places) och kartan under dagen efter en cast: området runt platsen ritas i färg (levande) med främmande enheter blinkande, sedan grått. Inga skärmdumpar tagna. Ingen särskild orakelmarkering ritad (området syns som levande syn).
+
+## Hela sviten
+`GOTEST_PORT=55501 tools/gotest.sh` (färsk DB, mig 253): alla Go-paket `ok`, inga `FAIL`/`_test.go:`-rader; webbtesterna gröna efter att en dagvaktsträff i `the-bird-oracle.md` ("that day") skrevs om och Codex-testerna kördes om. `codex_facts.py --check`, `day_guard_test.py`, `test_verb_parity.py` gröna.
