@@ -214,7 +214,10 @@ func TestBlessingCast_WiderTargetNeedsTheWiderGift(t *testing.T) {
 func TestBlessingCatalogue_ListsTargetsAndStepCosts(t *testing.T) {
 	f := newAlphaFixture(t)
 	ctx := context.Background()
-	f.unit(t, f.player, "galley", "naval", "garrison", f.cities[0])
+	plank := f.unit(t, f.player, "galley", "naval", "garrison", f.cities[0])
+	if _, err := f.pool.Exec(ctx, `UPDATE units SET hull_bonus=1, hull=6 WHERE id=$1`, plank); err != nil {
+		t.Fatal(err)
+	}
 	f.unit(t, f.player, "galley", "naval", "garrison", f.cities[1])
 	f.unit(t, f.player, "infantry", "land", "garrison", f.cities[0])
 	f.unit(t, f.player, "infantry", "land", "disbanded", f.cities[0])
@@ -263,6 +266,25 @@ func TestBlessingCatalogue_ListsTargetsAndStepCosts(t *testing.T) {
 	}
 	if hull.ScopeCostFactors["unit"] != 1 || hull.ScopeCostFactors["city"] != 2 || hull.ScopeCostFactors["realm"] != 4 {
 		t.Fatalf("step costs %v", hull.ScopeCostFactors)
+	}
+	forever := 0
+	for _, u := range hull.Targets.Unit {
+		if u.Forever {
+			forever++
+			if u.ID != plank.String() {
+				t.Fatalf("the wrong ship is marked blessed for ever: %+v", u)
+			}
+		}
+	}
+	if forever != 1 {
+		t.Fatalf("exactly the ship with the permanent plank is closed for the fourth step, got %d: %+v", forever, hull.Targets.Unit)
+	}
+	// The fourth step, for ever on a named unit, x20 — only where it exists.
+	if hull.ScopeCostFactors["permanent"] != 20 || strength.ScopeCostFactors["permanent"] != 20 || by[religion.PrayerStillnessSwift].ScopeCostFactors["permanent"] != 20 {
+		t.Fatalf("permanent step missing: hull %v strength %v seaspeed %v", hull.ScopeCostFactors, strength.ScopeCostFactors, by[religion.PrayerStillnessSwift].ScopeCostFactors)
+	}
+	if _, has := by[religion.PrayerAsterionSwift].ScopeCostFactors["permanent"]; has {
+		t.Fatalf("Swift Feet offers a permanent step: %v", by[religion.PrayerAsterionSwift].ScopeCostFactors)
 	}
 	if by[religion.PrayerPotniaWalls].Targets != nil {
 		t.Fatal("a prayer without a target got a target list")

@@ -58,7 +58,7 @@ func (h *UnitHandler) Repair(w http.ResponseWriter, r *http.Request) {
 			fmt.Sprintf("ship must be in garrison to begin repair (status: %s)", string(u.Status)))
 		return
 	}
-	if u.Hull >= combat.HullMax {
+	if u.Hull >= combat.HullCap(u.HullBonus) {
 		writeError(w, http.StatusUnprocessableEntity, "hull is already at full strength")
 		return
 	}
@@ -126,7 +126,7 @@ func (h *UnitHandler) Repair(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var lockedStatus string
-	if err := tx.QueryRow(ctx, `SELECT status,hull FROM units WHERE id=$1 AND owner_id=$2 AND settlement_id=$3 FOR UPDATE`, unitID, playerID, settlementID).Scan(&lockedStatus, &u.Hull); err != nil || lockedStatus != "garrison" {
+	if err := tx.QueryRow(ctx, `SELECT status,hull,hull_bonus FROM units WHERE id=$1 AND owner_id=$2 AND settlement_id=$3 FOR UPDATE`, unitID, playerID, settlementID).Scan(&lockedStatus, &u.Hull, &u.HullBonus); err != nil || lockedStatus != "garrison" {
 		writeError(w, http.StatusConflict, "ship is no longer available for repair")
 		return
 	}
@@ -139,7 +139,7 @@ func (h *UnitHandler) Repair(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hullPoints := combat.HullMax - u.Hull
+	hullPoints := combat.HullCap(u.HullBonus) - u.Hull
 	if hullPoints <= 0 {
 		writeError(w, http.StatusUnprocessableEntity, "hull is already at full strength")
 		return
@@ -184,7 +184,7 @@ func (h *UnitHandler) Repair(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusAccepted, map[string]any{
 		"unit_id":                 unitID,
 		"hull_before":             u.Hull,
-		"hull_target":             combat.HullMax,
+		"hull_target":             combat.HullCap(u.HullBonus),
 		"good":                    good,
 		"amount":                  amount,
 		"duration_ticks":          durationTicks,

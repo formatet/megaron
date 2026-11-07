@@ -115,3 +115,11 @@ func BlessingActive(ctx context.Context, db PrayerDB, owner uuid.UUID, effect, s
 		owner, effect, scope, city, unitID, tick).Scan(&active)
 	return active, err
 }
+
+// PermanentBlessed says whether the named unit already carries this effect for ever.
+func PermanentBlessed(ctx context.Context, db PrayerDB, owner uuid.UUID, effect string, unitID uuid.UUID) (bool, error) {
+	var has bool
+	err := db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM prayer_blessings WHERE owner_id=$1 AND effect=$2 AND unit_id=$3 AND permanent)`,
+		owner, effect, unitID).Scan(&has)
+	return has, err
+}

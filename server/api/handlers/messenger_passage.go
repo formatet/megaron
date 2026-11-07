@@ -224,9 +224,9 @@ func (h *PassageHandler) Arrange(w http.ResponseWriter, r *http.Request) {
 	}
 
 	stormWarning := ""
-	var shipHull int
-	if h.pool.QueryRow(ctx, `SELECT hull FROM units WHERE id = $1`, req.ShipID).Scan(&shipHull) == nil {
-		stormWarning = stormShipWarning(shipType, shipHull)
+	var shipHull, shipBonus int
+	if h.pool.QueryRow(ctx, `SELECT hull, hull_bonus FROM units WHERE id = $1`, req.ShipID).Scan(&shipHull, &shipBonus) == nil {
+		stormWarning = stormShipWarning(shipType, shipHull, shipBonus)
 	}
 	writeJSON(w, http.StatusAccepted, map[string]any{
 		"storm_warning":  stormWarning,

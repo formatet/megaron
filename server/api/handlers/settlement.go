@@ -25,6 +25,7 @@ import (
 	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/transport"
+	"formatet/megaron/server/internal/unit"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -1244,6 +1245,9 @@ func (h *SettlementHandler) checkBlessingTarget(ctx context.Context, tx pgx.Tx, 
 	if _, ok := religion.ScopeCostFactor[scope]; !ok {
 		return "", nil, http.StatusBadRequest, "choose a target_scope for this prayer: unit, city or realm"
 	}
+	if scope == religion.ScopePermanent {
+		return h.checkPermanentTarget(ctx, tx, worldID, playerID, spec, target)
+	}
 	if spec.EffectType == religion.EffectBlessedSpeedLand {
 		return h.checkLandSpeedTarget(ctx, tx, worldID, playerID, settlementID, spec, scope, target, nowTick)
 	}
@@ -1298,9 +1302,60 @@ func (h *SettlementHandler) checkBlessingTarget(ctx context.Context, tx pgx.Tx, 
 		return "", nil, http.StatusInternalServerError, "could not read active blessings"
 	}
 	if active {
+		if scope == religion.ScopeUnit && unitID != nil {
+			if forever, fErr := religion.PermanentBlessed(ctx, tx, playerID, spec.EffectType, *unitID); fErr == nil && forever {
+				return "", nil, http.StatusConflict, "already blessed for ever"
+			}
+		}
 		return "", nil, http.StatusConflict, "already blessed — wait for the blessing to end"
 	}
 	return scope, unitID, 0, ""
+}
+
+// checkPermanentTarget validates the fourth step (böner steg 4): one NAMED unit of the caster's,
+// of the prayer's kind, that does not already carry the effect for ever. Never a city, the realm,
+// a Runner or a caravan. The same effect for ever twice is refused (no stacking); an ordinary
+// prayer running on the unit does not stop it. The unit row is locked so two casts cannot both pass.
+func (h *SettlementHandler) checkPermanentTarget(ctx context.Context, tx pgx.Tx, worldID, playerID uuid.UUID,
+	spec religion.PrayerSpec, target string) (string, *uuid.UUID, int, string) {
+	if !religion.HasPermanentStep(spec.EffectType) {
+		return "", nil, http.StatusBadRequest, fmt.Sprintf("%s has no permanent step: it blesses journeys, one by one", spec.Name)
+	}
+	id, err := uuid.Parse(target)
+	if err != nil {
+		return "", nil, http.StatusBadRequest, "a blessing for ever names one of your units: target = its id (never a city or the realm)"
+	}
+	category, noun := "land", "land troops"
+	if religion.BlessingUnitKind(spec.EffectType) == "naval" {
+		category, noun = "naval", "ships"
+	}
+	var cat, status string
+	var hullBonus int
+	err = tx.QueryRow(ctx, `SELECT category, status, hull_bonus FROM units WHERE id=$1 AND world_id=$2 AND owner_id=$3 FOR UPDATE`, id, worldID, playerID).Scan(&cat, &status, &hullBonus)
+	if err == pgx.ErrNoRows {
+		return "", nil, http.StatusNotFound, "no such unit of yours"
+	}
+	if err != nil {
+		return "", nil, http.StatusInternalServerError, "could not read the unit"
+	}
+	if status == "disbanded" || status == "forming" {
+		return "", nil, http.StatusBadRequest, "that unit is gone or not yet built"
+	}
+	if cat != category {
+		return "", nil, http.StatusBadRequest, fmt.Sprintf("%s blesses %s, not that unit", spec.Name, noun)
+	}
+	if spec.EffectType == religion.EffectBlessedHull {
+		if hullBonus > 0 {
+			return "", nil, http.StatusConflict, "already blessed for ever"
+		}
+		return religion.ScopePermanent, &id, 0, ""
+	}
+	if forever, err := religion.PermanentBlessed(ctx, tx, playerID, spec.EffectType, id); err != nil {
+		return "", nil, http.StatusInternalServerError, "could not read active blessings"
+	} else if forever {
+		return "", nil, http.StatusConflict, "already blessed for ever"
+	}
+	return religion.ScopePermanent, &id, 0, ""
 }
 
 // checkLandSpeedTarget validates a Runner/caravan blessing. A named target is one of
@@ -1348,6 +1403,9 @@ func (h *SettlementHandler) applyBlessing(ctx context.Context, tx pgx.Tx, worldI
 		base, noun = religion.BlessedSpeedTicks, "ships"
 	case religion.EffectBlessedSpeedLand:
 		base, noun = religion.BlessedSpeedTicks, "Runners and caravans"
+	}
+	if scope == religion.ScopePermanent {
+		return h.applyPermanentBlessing(ctx, tx, worldID, playerID, settlementID, spec, unitID, nowTick)
 	}
 	duration := religion.DurationTicks(base, giftFactor)
 	until := nowTick + duration
@@ -1887,4 +1945,44 @@ func templeRestMessage(temple string, days, staffed, capacity int) string {
 		msg += fmt.Sprintf(" — its rest stands still until it has all its servants (%d of %d servants)", staffed, capacity)
 	}
 	return msg
+}
+
+// applyPermanentBlessing lays a blessing for ever on one named unit (böner steg 4). Strength and
+// sea speed are one prayer_blessings row without an end (the readers need no special case); hull is
+// +1 max hull and +1 hull now on the ship itself. The outcome goes in the payload.
+func (h *SettlementHandler) applyPermanentBlessing(ctx context.Context, tx pgx.Tx, worldID, playerID, settlementID uuid.UUID,
+	spec religion.PrayerSpec, unitID *uuid.UUID, nowTick int) (map[string]any, string, int, error) {
+	name := unit.LoadDisplayName(ctx, tx, *unitID)
+	payload := map[string]any{"target_scope": religion.ScopePermanent, "target_unit_id": unitID.String(), "permanent": true}
+	if spec.EffectType == religion.EffectBlessedHull {
+		var hull, bonus int
+		if err := tx.QueryRow(ctx, `UPDATE units SET hull_bonus=1, hull=hull+1, updated_at=now() WHERE id=$1 AND hull_bonus=0 RETURNING hull, hull_bonus`, *unitID).Scan(&hull, &bonus); err != nil {
+			return nil, "", 0, err
+		}
+		payload["hull_bonus"] = bonus
+		payload["hull_before"] = hull - 1
+		payload["hull_after"] = hull
+		return payload, fmt.Sprintf("The Sea Daimons lay one plank more in %s, for ever — her hull stands at %d of %d.", name, hull, combat.HullCap(bonus)), 0, nil
+	}
+	var id uuid.UUID
+	if err := tx.QueryRow(ctx, `INSERT INTO prayer_blessings(world_id,owner_id,effect,scope,unit_id,from_tick,until_tick,permanent) VALUES($1,$2,$3,'unit',$4,$5,$6,true) RETURNING id`,
+		worldID, playerID, spec.EffectType, *unitID, nowTick, religion.PermanentUntil).Scan(&id); err != nil {
+		return nil, "", 0, err
+	}
+	payload["blessing_id"] = id
+	if spec.EffectType == religion.EffectBlessedStrength {
+		payload["strength_factor"] = religion.BlessedStrengthFactor
+		return payload, fmt.Sprintf("Velchanos lays his arm on %s for ever — they fight a quarter stronger in every battle.", name), 0, nil
+	}
+	sped, err := h.speedUpCovered(ctx, tx, worldID, playerID, settlementID, spec.EffectType, religion.ScopeUnit, unitID, nil, id)
+	if err != nil {
+		return nil, "", 0, err
+	}
+	payload["time_factor"] = religion.DepartureTimeFactor
+	payload["sped_up"] = sped
+	message := fmt.Sprintf("The Sea Daimons follow %s for ever — every voyage she begins takes three quarters of the time.", name)
+	if len(sped) > 0 {
+		message += " The one under way arrives sooner."
+	}
+	return payload, message, 0, nil
 }

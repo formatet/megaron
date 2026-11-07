@@ -172,13 +172,13 @@ func (h *ProvinceHandler) loadPrayerRows(ctx context.Context, sett *settlement.S
 			if spec.EffectType == religion.EffectBlessedSpeedLand {
 				targets, tErr = h.loadRoadTargets(ctx, sett, *sett.OwnerID, prayerTick)
 			} else {
-				targets, tErr = h.loadPrayerTargets(ctx, sett, *sett.OwnerID, religion.BlessingUnitKind(spec.EffectType))
+				targets, tErr = h.loadPrayerTargets(ctx, sett, *sett.OwnerID, spec.EffectType)
 			}
 			if tErr != nil {
 				return nil, nil, fmt.Errorf("could not read the prayer's targets: %w", tErr)
 			}
 			prayers[len(prayers)-1].Targets = targets
-			prayers[len(prayers)-1].ScopeCostFactors = religion.ScopeCostFactor
+			prayers[len(prayers)-1].ScopeCostFactors = religion.ScopeCostFactorsFor(spec.EffectType)
 		}
 	}
 
@@ -200,11 +200,15 @@ func prayerBaseDuration(effect string) int {
 // loadPrayerTargets lists what a blessing prayer may be laid on: the caster's own
 // living units of the prayer's kind ("land" | "naval"), the count supported by
 // this city, and the count in the whole realm.
-func (h *ProvinceHandler) loadPrayerTargets(ctx context.Context, sett *settlement.Settlement, owner uuid.UUID, kind string) (*prayerTargets, error) {
-	rows, err := h.pool.Query(ctx, `SELECT u.id, u.status, COALESCE(u.q,0), COALESCE(u.r,0), u.support_settlement_id, COALESCE(s.name,'')
+func (h *ProvinceHandler) loadPrayerTargets(ctx context.Context, sett *settlement.Settlement, owner uuid.UUID, effect string) (*prayerTargets, error) {
+	kind := religion.BlessingUnitKind(effect)
+	// forever: this unit already carries the effect for ever (hull: the plank; the others: a permanent row).
+	rows, err := h.pool.Query(ctx, `SELECT u.id, u.status, COALESCE(u.q,0), COALESCE(u.r,0), u.support_settlement_id, COALESCE(s.name,''),
+   CASE WHEN $4='blessed_hull' THEN u.hull_bonus>0
+        ELSE EXISTS(SELECT 1 FROM prayer_blessings b WHERE b.owner_id=u.owner_id AND b.unit_id=u.id AND b.effect=$4 AND b.permanent) END
  FROM units u LEFT JOIN settlements s ON s.id=u.settlement_id
  WHERE u.world_id=$1 AND u.owner_id=$2 AND u.category=$3 AND u.status NOT IN ('disbanded','forming')
- ORDER BY u.created_at, u.id`, sett.WorldID, owner, kind)
+ ORDER BY u.created_at, u.id`, sett.WorldID, owner, kind, effect)
 	if err != nil {
 		return nil, err
 	}
@@ -215,14 +219,15 @@ func (h *ProvinceHandler) loadPrayerTargets(ctx context.Context, sett *settlemen
 		var status, in string
 		var q, r int
 		var support *uuid.UUID
-		if err := rows.Scan(&id, &status, &q, &r, &support, &in); err != nil {
+		var forever bool
+		if err := rows.Scan(&id, &status, &q, &r, &support, &in, &forever); err != nil {
 			return nil, err
 		}
 		where := fmt.Sprintf("%s at (%d,%d)", status, q, r)
 		if in != "" {
 			where = "in " + in
 		}
-		out.Unit = append(out.Unit, prayerTargetUnit{ID: id.String(), Where: where})
+		out.Unit = append(out.Unit, prayerTargetUnit{ID: id.String(), Where: where, Forever: forever})
 		out.Realm.Count++
 		if support != nil && *support == sett.ID {
 			out.City.Count++

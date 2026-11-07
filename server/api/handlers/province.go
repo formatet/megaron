@@ -97,6 +97,8 @@ type prayerTargetUnit struct {
 	ID    string `json:"id"`
 	Name  string `json:"name"`
 	Where string `json:"where"`
+	// Forever: the unit already carries this prayer's effect for ever (böner steg 4), so the fourth step is closed for it.
+	Forever bool `json:"forever,omitempty"`
 }
 
 type prayerTargetGroup struct {
@@ -3580,7 +3582,7 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			shipType = ship.Type
-			shipStormWarning = stormShipWarning(ship.Type, ship.Hull)
+			shipStormWarning = stormShipWarning(ship.Type, ship.Hull, ship.HullBonus)
 			capacity := ship.Capacity
 			cargoCapacity = &capacity
 			sid := ship.ID
