@@ -80,6 +80,9 @@ export function kharisRulesHTML(pd) {
  if (wrath && Number.isFinite(wrath.threshold) && Number.isFinite(wrath.daily_probability)) {
   const wrathful=Number.isFinite(wrath.wrathful_threshold) && Number.isFinite(wrath.wrathful_probability) ? ', ' + Math.round(wrath.wrathful_probability*100) + '% below ' + wrath.wrathful_threshold : '';
   html+='<div class="stat-row"><span class="sr-label">Wrath risk below ' + wrath.threshold + '</span><span class="sr-val">' + Math.round(wrath.daily_probability*100) + '% / game day' + wrathful + '</span></div>';
+  if (wrath.scapegoat_remaining_game_days>0) {
+   html+='<div class="stat-row"><span class="sr-label">Scapegoat</span><span class="sr-val">stands for your realm for ' + fmtDuration(wrath.scapegoat_remaining_game_days) + ' · bears the next divine punishment</span></div>';
+  }
   if (wrath.protection_remaining_days>0 && wrath.protection_until) {
    html+='<div class="stat-row"><span class="sr-label">Protected from divine punishment</span><span class="sr-val">' + fmtDuration(wrath.protection_remaining_days) + ' · until ' + fmtClock(wrath.protection_until) + '</span></div>';
   }

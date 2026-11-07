@@ -239,7 +239,7 @@ func TestRelationProvincePublishesRequirementsWithoutCost(t *testing.T) {
 	if err := json.Unmarshal(payload.Settlement["available_prayers"], &prayers); err != nil {
 		t.Fatal(err)
 	}
-	if len(prayers) != 9 {
+	if len(prayers) != 12 {
 		t.Fatalf("catalogue length %d", len(prayers))
 	}
 	for _, p := range prayers {

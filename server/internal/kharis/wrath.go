@@ -28,6 +28,9 @@ type WrathStatus struct {
 	ProtectionUntilTick     int        `json:"protection_until_tick,omitempty"`
 	ProtectionUntil         *time.Time `json:"protection_until,omitempty"`
 	ProtectionRemainingDays int        `json:"protection_remaining_days"`
+	// Potnia's scapegoat (steg 5a): a goat stands for the realm until this tick; the next punishment is borne by it.
+	ScapegoatUntilTick     int `json:"scapegoat_until_tick,omitempty"`
+	ScapegoatRemainingDays int `json:"scapegoat_remaining_game_days,omitempty"`
 }
 
 // LoadWrathStatus reads the same durable owner-scoped shield the punishment locks.
@@ -43,6 +46,10 @@ func LoadWrathStatus(ctx context.Context, db tick.Queryer, player, world uuid.UU
 		return s, err
 	}
 	s.ProtectionRemainingDays = max(0, s.ProtectionUntilTick-anchor.Tick)
+	if s.ScapegoatUntilTick, err = religion.ScapegoatUntil(ctx, db, player, anchor.Tick); err != nil {
+		return s, err
+	}
+	s.ScapegoatRemainingDays = max(0, s.ScapegoatUntilTick-anchor.Tick)
 	if s.ProtectionRemainingDays > 0 {
 		at := anchor.WallAt(int64(s.ProtectionUntilTick) * 1000)
 		s.ProtectionUntil = &at

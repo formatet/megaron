@@ -89,6 +89,7 @@ type prayerTargets struct {
 	Always bool `json:"always,omitempty"`
 	// Storm prayers (steg 3b). Kind "storm": Still the Storm, pick one of Storms (named, living, on your
 	// storm map). Kind "hex": Wake the Storm, give a sea hex of your own map as "q,r".
+	// Kind "world" (steg 5a): fertility, the Builder's Blessing, the scapegoat: a city or the realm, no unit to name.
 	Kind   string              `json:"kind,omitempty"`
 	Storms []prayerTargetStorm `json:"storms,omitempty"`
 }
@@ -272,6 +273,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			Position       int        `json:"position"` // 1 = building now, 2/3 = next in line
 			Rate           int        `json:"rate"`     // builders' pace: 1x without builders, up to 3x
 			WorkLeft       *int       `json:"work_left_game_days,omitempty"`
+			Blessed        bool       `json:"blessed,omitempty"` // the Builder's Blessing has shortened this build
 			GodID          string     `json:"god_id,omitempty"`
 			Name           string     `json:"name,omitempty"`
 			HexQ           *int       `json:"hex_q,omitempty"`
@@ -281,7 +283,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		var buildQueue []buildItem
 		qrows, _ := h.pool.Query(r.Context(),
 			`SELECT id, building_type, created_at, complete_at, coalesce(god_id,''),hex_q,hex_r,
-			        work_remaining, work_calc_tick, work_rate, current_world_tick()
+			        work_remaining, work_calc_tick, work_rate, current_world_tick(), sped
 			 FROM build_queue
 			 WHERE settlement_id = $1 ORDER BY (work_calc_tick IS NULL), created_at, id`,
 			sett.ID,
@@ -292,7 +294,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				var legacyAt time.Time
 				var workRem, calc *int
 				var rate, cur int
-				_ = qrows.Scan(&bi.ID, &bi.Type, &bi.CreatedAt, &legacyAt, &bi.GodID, &bi.HexQ, &bi.HexR, &workRem, &calc, &rate, &cur)
+				_ = qrows.Scan(&bi.ID, &bi.Type, &bi.CreatedAt, &legacyAt, &bi.GodID, &bi.HexQ, &bi.HexR, &workRem, &calc, &rate, &cur, &bi.Blessed)
 				bi.Position = len(buildQueue) + 1
 				switch {
 				case calc != nil && workRem != nil && rate > 0:
@@ -628,7 +630,6 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			writeError(w, 500, "could not load prayers")
 			return
 		}
-
 		// Silver is authoritative in settlement_goods (mig 057 silver_unify); the
 		// ResourceLedger.Silver column is stale (~0). Inject the live value for every
 		// good the settlement holds — not a hard-coded subset — so the status view
@@ -670,6 +671,16 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusInternalServerError, "could not read settlement status")
 			return
 		}
+		// Fertility and the Builder's Blessing standing over this city (owner only, like the prayer list).
+		cityBlessings := []religion.CityBlessing{}
+		if ownCult {
+			var cbErr error
+			if cityBlessings, cbErr = religion.LoadCityBlessings(r.Context(), h.pool, *sett.OwnerID, sett.ID, currentTick); cbErr != nil {
+				writeError(w, 500, "could not load the blessings over this city")
+				return
+			}
+		}
+
 		// Extracted to settlementFoodSummary (megaron_plan_oversiktsendpoint.md,
 		// 2026-09-06) so SettlementsOverview reads the exact same economy.* calls
 		// — the two surfaces can never disagree about a settlement's food state.
@@ -843,6 +854,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"can_afford":                       buildAfford,
 			"can_recruit":                      recruitAfford,
 			"available_prayers":                prayers,
+			"city_blessings":                   cityBlessings,
 			"divine_values":                    divineValues,
 			// Physical temple workers share the settlement workforce.
 			"temple_staffed":  templeStaff.Staffed,

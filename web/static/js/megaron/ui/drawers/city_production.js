@@ -78,6 +78,16 @@ function harvestBlessingHTML(pd) {
   return `<p class="harvest-blessing">Blessed harvest: +${percent}% ${esc(b.goods.join(', '))} yield · ${fmtNum(b.remaining_ticks)} ${b.remaining_ticks === 1 ? 'game day' : 'game days'} left</p>`;
 }
 
+// Fertility and the Builder's Blessing standing over this city (steg 5a), from pd.city_blessings.
+export function cityBlessingsHTML(pd) {
+  return (pd?.city_blessings || []).map(b => {
+    const where = b.scope === 'realm' ? 'on the whole realm' : 'on this city';
+    const what = b.effect === 'blessed_building' ? 'what is left of each build takes three quarters of the time, and so do builds begun'
+      : 'people and herds grow half as fast again';
+    return `<p class="harvest-blessing">${esc(b.prayer)} ${where}: ${what} · ${fmtNum(b.remaining_game_days)} ${b.remaining_game_days === 1 ? 'game day' : 'game days'} left</p>`;
+  }).join('');
+}
+
 // A storm standing on the city's staffed fishing hexes stops their fishing
 // (Timothy 2026-10-24); the server counts them (storm_no_fishing).
 export function stormFishingHTML(pd) {
@@ -89,7 +99,7 @@ export function stormFishingHTML(pd) {
 // Production side of food only: today's net per game day. Stocks, coverage and
 // the herd live in City -> Warehouse (city_warehouse.js).
 export function foodSummaryHTML(pd) {
-  const blessing = harvestBlessingHTML(pd) + stormFishingHTML(pd);
+  const blessing = harvestBlessingHTML(pd) + cityBlessingsHTML(pd) + stormFishingHTML(pd);
   const net = Number(pd?.food?.food_net_per_tick);
   const warning = pd?.food_self_sufficient === false ? '<p class="stat-warn">The fields cannot feed everyone.</p>' : '';
   if (!Number.isFinite(net)) return blessing + warning + '<p class="empty-state">Food production not reported.</p>';

@@ -840,3 +840,11 @@ test('cargo lists are written alphabetically by good, whatever the payload order
   assert.equal(notifText('CaravanRaided', { q: 1, r: 2, goods }), 'Your caravan carrying 20 grain, 7 oil, 5 wine was raided at (1, 2)');
   assert.ok(notifText('ShipFoundered', { name: 'Ariadne', q: 1, r: 2, cargo: goods }).includes('lost with her: 20 grain, 7 oil, 5 wine'));
 });
+
+test('steg 5a: DivinePunishmentAverted says the goat bore it and nothing was lost', () => {
+  const line = notifText('DivinePunishmentAverted', { would_have: 'harvest_failure', name: 'Phaistos', protection_until: '2026-10-23T18:30:00Z' });
+  assert.match(line, /anger fell on the scapegoat at Phaistos/);
+  assert.match(line, /would have taken half your grain stores; nothing was lost/);
+  assert.match(line, /Protected from further divine punishment until/);
+  assert.doesNotMatch(notifText('DivinePunishmentAverted', { would_have: 'ship_loss' }), /undefined/);
+});

@@ -2135,7 +2135,10 @@
         "the-young-gods-arm",
         "stout-hulls",
         "still-the-storm",
-        "wake-the-storm"
+        "wake-the-storm",
+        "fruitful-season",
+        "builders-blessing",
+        "the-scapegoat"
       ],
       "sections": [
         {
@@ -3096,6 +3099,66 @@
       ],
       "summary": "Swift Feet: Asterion shortens what is left of the road for the Runners and caravans you name, also when they are already under way.",
       "parent": "rites"
+    },
+    {
+      "id": "fruitful-season",
+      "title": "Fruitful Season",
+      "category": "The gods",
+      "entities": [
+        {
+          "kind": "prayer",
+          "key": "minoan_potnia_fertility"
+        }
+      ],
+      "aliases": [
+        "minoan potnia fertility"
+      ],
+      "terms": [
+        "Fruitful Season"
+      ],
+      "summary": "Fruitful Season: Potnia makes a blessed city's people and herds grow half as fast again.",
+      "parent": "rites"
+    },
+    {
+      "id": "builders-blessing",
+      "title": "The Builder's Blessing",
+      "category": "The gods",
+      "entities": [
+        {
+          "kind": "prayer",
+          "key": "minoan_velchanos_building"
+        }
+      ],
+      "aliases": [
+        "minoan velchanos building"
+      ],
+      "terms": [
+        "The Builder's Blessing"
+      ],
+      "summary": "The Builder's Blessing: Velchanos shortens what is left of each build in a city or the realm to three quarters.",
+      "parent": "rites"
+    },
+    {
+      "id": "the-scapegoat",
+      "title": "The Scapegoat",
+      "category": "The gods",
+      "entities": [
+        {
+          "kind": "prayer",
+          "key": "minoan_potnia_scapegoat"
+        }
+      ],
+      "aliases": [
+        "minoan potnia scapegoat"
+      ],
+      "terms": [
+        "The Scapegoat"
+      ],
+      "summary": "The Scapegoat: a goat bears the next divine punishment, so nothing is lost.",
+      "parent": "rites",
+      "kinds": [
+        "DivinePunishmentAverted"
+      ]
     },
     {
       "id": "following-seas",

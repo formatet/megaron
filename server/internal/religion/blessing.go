@@ -48,6 +48,13 @@ func HasPermanentStep(effect string) bool {
 
 // ScopeCostFactorsFor is the step table a prayer offers: the permanent step only where it exists.
 func ScopeCostFactorsFor(effect string) map[string]int {
+	if IsWorldBlessing(effect) {
+		out := map[string]int{}
+		for _, sc := range WorldBlessingScopes(effect) {
+			out[sc] = ScopeCostFactor[sc]
+		}
+		return out
+	}
 	out := make(map[string]int, len(ScopeCostFactor))
 	for k, v := range ScopeCostFactor {
 		if k == ScopePermanent && !HasPermanentStep(effect) {

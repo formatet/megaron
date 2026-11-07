@@ -857,6 +857,16 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		scopeFactor = float64(religion.ScopeCostFactor[blessScope])
+	} else if religion.IsWorldBlessing(spec.EffectType) {
+		// Fertility, the Builder's Blessing and the Scapegoat are laid on a city or the realm (steg 5a).
+		var code int
+		var msg string
+		blessScope, code, msg = h.checkWorldBlessingTarget(r.Context(), tx, playerID, settlementID, spec, body.TargetScope, nowTick)
+		if code != 0 {
+			writeError(w, code, msg)
+			return
+		}
+		scopeFactor = float64(religion.ScopeCostFactor[blessScope])
 	}
 
 	// Storm prayers name a storm of your storm map or a sea hex of your map (checked before any gift is taken).
@@ -1091,6 +1101,8 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 			}
 		case religion.EffectBlessedStrength, religion.EffectBlessedHull, religion.EffectBlessedSpeedLand, religion.EffectBlessedSpeedSea:
 			effectPayload, message, durationTicks, err = h.applyBlessing(r.Context(), tx, worldID, playerID, settlementID, spec, blessScope, blessUnit, nowTick, giftFactor)
+		case religion.EffectBlessedFertility, religion.EffectBlessedBuilding, religion.EffectScapegoat:
+			effectPayload, message, durationTicks, err = h.applyWorldBlessing(r.Context(), tx, worldID, playerID, settlementID, spec, blessScope, nowTick, giftFactor)
 		case religion.EffectStormCalm, religion.EffectStormWake:
 			var code int
 			if spec.EffectType == religion.EffectStormCalm {

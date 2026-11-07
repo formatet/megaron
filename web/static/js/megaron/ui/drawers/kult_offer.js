@@ -39,7 +39,9 @@ export function scopeChoices(prayer) {
   if (!t) return [];
   const count = { unit: (t.unit || []).length, city: t.city?.count || 0, realm: t.realm?.count || 0,
     permanent: (t.unit || []).filter(u => !u.forever).length };
-  const scopes = prayer.scope_cost_factors && prayer.scope_cost_factors.permanent ? [...SCOPES, FOREVER] : SCOPES;
+  let scopes = prayer.scope_cost_factors && prayer.scope_cost_factors.permanent ? [...SCOPES, FOREVER] : SCOPES;
+  // A prayer lists only the steps it offers (the world blessings, steg 5a, have no unit step; the scapegoat only the realm).
+  if (prayer.scope_cost_factors) scopes = scopes.filter(([scope]) => prayer.scope_cost_factors[scope]);
   // Runner/caravan prayers (steg 2b) hold for departures too, so city and realm are always open.
   return scopes.map(([scope, label]) => ({ scope, label, count: count[scope], enabled: count[scope] > 0 || (!!t.always && scope !== 'unit'), factor: scopeFactor(prayer, scope) }));
 }
@@ -63,6 +65,9 @@ function stormChooserHTML(prayer) {
     '<select class="offer-target-storm" aria-label="Storm to still">' + options + '</select></div>';
 }
 
+// World blessings (steg 5a): a city or the realm, no unit to name.
+function isWorldPrayer(prayer) { return prayer.targets && prayer.targets.kind === 'world'; }
+
 export function targetChooserHTML(prayer) {
   if (prayer.targets && (prayer.targets.kind === 'storm' || prayer.targets.kind === 'hex')) return stormChooserHTML(prayer);
   const choices = scopeChoices(prayer);
@@ -70,7 +75,8 @@ export function targetChooserHTML(prayer) {
   const first = defaultScope(prayer);
   const id = esc(prayer.id);
   const rows = choices.map(c => {
-    const what = c.scope === 'unit' ? c.count + ' to choose from'
+    const what = isWorldPrayer(prayer) ? (c.scope === 'city' ? (prayer.targets.city.name || 'this city') + ' only' : 'all ' + c.count + ' of your cities')
+      : c.scope === 'unit' ? c.count + ' to choose from'
       : c.scope === 'permanent' ? 'the one you choose below, and never a city; ' + c.count + ' without it yet'
       : prayer.targets.always ? (c.scope === 'city' ? 'every Runner and caravan of ' + (prayer.targets.city.name || 'this city') : 'all of yours') + ', on the road now (' + c.count + ') and while it lasts'
       : c.scope === 'city' ? c.count + ' of ' + (prayer.targets.city.name || 'this city')
@@ -83,7 +89,7 @@ export function targetChooserHTML(prayer) {
     '<option value="' + esc(u.id) + '">' + esc(u.name) + (u.where ? ' (' + esc(u.where) + ')' : '') + (u.forever ? ', blessed for ever' : '') + '</option>').join('');
   const select = options ? '<select class="offer-target-unit" aria-label="Who to bless">' + options + '</select>' : '';
   const none = choices.some(c => c.enabled) ? '' : '<p class="offer-note">You have nothing of this kind to bless.</p>';
-  return '<div class="offer-target"><p class="offer-note">Who is blessed? The wider the blessing, the dearer the gift.</p>' + rows + '<br>' + select + none + '</div>';
+  return '<div class="offer-target"><p class="offer-note">' + (isWorldPrayer(prayer) ? 'How wide is it laid?' : 'Who is blessed?') + ' The wider the blessing, the dearer the gift.</p>' + rows + '<br>' + select + none + '</div>';
 }
 
 // What the player chose in an open offer row: { target_scope, target } to send, or {} for a prayer without targets.

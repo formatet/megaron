@@ -121,3 +121,9 @@ test('standing effects are short rows, not prose (Timothy 2026-11-01)', async ()
  assert.deepEqual(kharisEffectRows({short:'x',blessing_probability:.15,storm_spare_probability:.15,battle_strength_factor:1.05}),[['Blessing','15% each game day'],['Storms at sea','15% spared'],['In battle','+5%']]);
  assert.deepEqual(kharisEffectRows({short:'x',battle_strength_factor:1}),[]);
 });
+test('steg 5a: a standing scapegoat is named next to the protection',async()=>{
+ const {kharisRulesHTML}=await import('./kult_kharis.js');
+ const html=kharisRulesHTML({kharis_blessing_threshold:60,kharis_wrath:{threshold:30,daily_probability:.02,protection_remaining_days:0,scapegoat_remaining_game_days:20}});
+ assert.match(html,/Scapegoat<\/span><span class="sr-val">stands for your realm for [^<]*20[^<]* · bears the next divine punishment/);
+ assert.doesNotMatch(kharisRulesHTML({kharis_blessing_threshold:60,kharis_wrath:{threshold:30,daily_probability:.02,protection_remaining_days:0}}),/Scapegoat/);
+});

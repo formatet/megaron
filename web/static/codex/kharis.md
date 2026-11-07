@@ -8,12 +8,15 @@ Every prayer asks for a minimum standing, and each has its own offering and rest
 | Prayer | God | Required kharis | Traditional offering | Temple’s rest at level 1 / 2 / 3 |
 |---|---|---|---|---|
 | [[following-seas|Following Seas]] | [[sea-daimons|The Sea Daimons of Stillness]] | 5 | 6 [[fish|fish]] · 3 [[silver|silver]] | 12 / 6 / 4 game days |
+| [[fruitful-season|Fruitful Season]] | [[potnia|Potnia]] | 5 | 4 [[grain|grain]] · 4 [[livestock|livestock]] | 12 / 6 / 4 game days |
 | [[green-shoots|Green Shoots]] | [[velchanos|Velchanos]] | 30 | 15 [[grain|grain]] · 2 [[silver|silver]] | 25 / 13 / 9 game days |
 | [[mistress-of-the-walls|Mistress of the Walls]] | [[potnia|Potnia]] | 5 | 8 [[grain|grain]] · 4 [[timber|timber]] (or [[cedar|cedar]]) | 24 / 12 / 8 game days |
 | [[potnias-vision|Potnia's Vision]] | [[potnia|Potnia]] | 5 | 10 [[grain|grain]] · 3 [[silver|silver]] | 24 / 12 / 8 game days |
 | [[still-the-storm|Still the Storm]] | [[sea-daimons|The Sea Daimons of Stillness]] | 5 | 10 [[fish|fish]] · 6 [[oil|oil]] | 12 / 6 / 4 game days |
 | [[stout-hulls|Stout Hulls]] | [[sea-daimons|The Sea Daimons of Stillness]] | 5 | 8 [[fish|fish]] · 4 [[oil|oil]] | 12 / 6 / 4 game days |
 | [[swift-feet|Swift Feet]] | [[asterion|Asterion]] | 5 | 3 [[silver|silver]] · 4 [[timber|timber]] (or [[cedar|cedar]]) | 12 / 6 / 4 game days |
+| [[builders-blessing|The Builder's Blessing]] | [[velchanos|Velchanos]] | 5 | 3 [[timber|timber]] (or [[cedar|cedar]]) · 2 [[wine|wine]] | 12 / 6 / 4 game days |
+| [[the-scapegoat|The Scapegoat]] | [[potnia|Potnia]] | 5 | 3 [[livestock|livestock]] | 12 / 6 / 4 game days |
 | [[the-young-gods-arm|The Young God's Arm]] | [[velchanos|Velchanos]] | 5 | 6 [[livestock|livestock]] · 4 [[wine|wine]] | 12 / 6 / 4 game days |
 | [[wake-the-storm|Wake the Storm]] | [[sea-daimons|The Sea Daimons of Stillness]] | 5 | 10 [[fish|fish]] · 6 [[wine|wine]] | 12 / 6 / 4 game days |
 <!-- /kharis-prayers -->
@@ -116,7 +119,7 @@ The estimate assumes that net continues. Staff and feed your temples, then check
 
 ### Protection after punishment {#divine-wrath-seven-game-days-after-punishment}
 
-An actual loss gives your whole realm **seven game days of protection from further divine punishment**. A game day follows this world's pace; **Kult**, `keryx status` and the punishment notice show the protection's end in your local clock. Repeated processing does not extend it. At the end, the ordinary risk resumes if kharis is still below 30. The protection follows the Wanax, across their cities and temples.
+An actual loss gives your whole realm **seven game days of protection from further divine punishment**. A punishment borne by [[the-scapegoat]] sets the same protection, though nothing is lost. A game day follows this world's pace; **Kult**, `keryx status` and the punishment notice show the protection's end in your local clock. Repeated processing does not extend it. At the end, the ordinary risk resumes if kharis is still below 30. The protection follows the Wanax, across their cities and temples.
 
 If there is nothing to take, there is no punishment and no new protection. Protection does not stop cult upkeep or prevent losses from [[food|hunger]], [[battle|battle]] or weather.
 

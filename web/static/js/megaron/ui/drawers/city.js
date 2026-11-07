@@ -568,7 +568,7 @@ async function refreshCityBuildings(provinceID) {
       // A building finishes, it doesn't arrive — say "ready" (matches the
       // Training column below and war.js's ship-build phrasing). Only the
       // active build has a finish time; the others say "next" until they start.
-      bq.map(b => `<tr><td>${esc(b.name||_BLD_LBL[b.type]||b.type)} · ${esc(b.settlement_name||pd.name||'this city')}${b.hex_q != null ? ` at (${b.hex_q},${b.hex_r})` : ''}</td><td>${b.active === false || !b.complete_at ? `next in line · ${fmtNum(b.work_left_game_days ?? 0)} game days of work` : `${b.rate > 1 ? `${b.rate}x pace · ` : ''}${arrivalHTML(b.complete_at, undefined, 'ready')}`}</td>` +
+      bq.map(b => `<tr><td>${esc(b.name||_BLD_LBL[b.type]||b.type)} · ${esc(b.settlement_name||pd.name||'this city')}${b.hex_q != null ? ` at (${b.hex_q},${b.hex_r})` : ''}</td><td>${b.active === false || !b.complete_at ? `next in line · ${fmtNum(b.work_left_game_days ?? 0)} game days of work` : `${b.rate > 1 ? `${b.rate}x pace · ` : ''}${arrivalHTML(b.complete_at, undefined, 'ready')}${b.blessed ? ' · Builder\'s Blessing' : ''}`}</td>` +
         `<td style="text-align:right"><button class="btn-small" onclick="cancelBuild('${provinceID}','${b.id}')" style="padding:.05rem .3rem;font-size:.68rem;cursor:pointer">✕</button></td></tr>`).join('')
     }</table>`;
     if (tu.length) {

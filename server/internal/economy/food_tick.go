@@ -221,6 +221,12 @@ func herdBirths(ctx context.Context, tx pgx.Tx, sid uuid.UUID, tick int) (born, 
 	if born == 0 {
 		return 0, 0, nil
 	}
+	// Potnia's fertility: half again as many calves; the grain paid (fed) is unchanged.
+	if fertile, ferr := fertileAt(ctx, tx, sid, tick); ferr != nil {
+		return 0, 0, ferr
+	} else if fertile {
+		born = FertileBirths(born)
+	}
 	_ = ledger.Reason(ctx, tx, "herd_births")
 	if _, err := tx.Exec(ctx, `UPDATE settlement_goods SET amount=GREATEST(0,settled(amount,rate,calc_tick)+$3),calc_tick=current_world_tick() WHERE settlement_id=$1 AND good_key=$2`, sid, GoodLivestock, float64(born)); err != nil {
 		return 0, 0, err

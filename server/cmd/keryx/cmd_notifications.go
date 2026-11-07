@@ -214,6 +214,9 @@ func printNotificationDetail(c *Client, n notificationItem) {
 	if n.Kind == "DivinePunishment" {
 		printDivinePunishmentLine(n)
 	}
+	if n.Kind == "DivinePunishmentAverted" {
+		printDivinePunishmentAvertedLine(n)
+	}
 	if n.Kind == "DivineBlessing" {
 		printDivineBlessingLine(n)
 	}
@@ -1155,6 +1158,39 @@ func printDivinePunishmentLine(n notificationItem) {
 	default:
 		return
 	}
+	if body.ProtectionUntil != "" {
+		if at, err := time.Parse(time.RFC3339Nano, body.ProtectionUntil); err == nil {
+			line += " Protected from further divine punishment until " + clockTime(at) + "."
+		}
+	}
+	fmt.Printf("      %s\n", line)
+}
+
+// divineSpared says what a punishment would have taken, by its type (the same four as printDivinePunishmentLine).
+var divineSpared = map[string]string{
+	"chariot_loss": "some of the chariots", "ship_loss": "a ship from the harbor",
+	"harvest_failure": "half the grain stores", "garrison_plague": "many of the garrison",
+}
+
+// printDivinePunishmentAvertedLine renders a punishment the scapegoat bore (steg 5a): nothing was lost.
+func printDivinePunishmentAvertedLine(n notificationItem) {
+	var body struct {
+		ProtectionUntil string `json:"protection_until"`
+		WouldHave       string `json:"would_have"`
+		Name            string `json:"name"`
+	}
+	if err := json.Unmarshal(n.Body, &body); err != nil {
+		return
+	}
+	where := ""
+	if body.Name != "" {
+		where = " in " + body.Name
+	}
+	spared := divineSpared[body.WouldHave]
+	if spared == "" {
+		spared = "something"
+	}
+	line := fmt.Sprintf("The gods' anger fell on the scapegoat%s. It would have taken %s; nothing was lost.", where, spared)
 	if body.ProtectionUntil != "" {
 		if at, err := time.Parse(time.RFC3339Nano, body.ProtectionUntil); err == nil {
 			line += " Protected from further divine punishment until " + clockTime(at) + "."

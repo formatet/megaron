@@ -166,6 +166,15 @@ func (h *ProvinceHandler) loadPrayerRows(ctx context.Context, sett *settlement.S
 			}
 			prayers[len(prayers)-1].Targets = targets
 		}
+		if religion.IsWorldBlessing(spec.EffectType) && sett.OwnerID != nil {
+			var n int
+			if err := h.pool.QueryRow(ctx, `SELECT count(*) FROM settlements WHERE world_id=$1 AND owner_id=$2 AND state NOT IN ('sunk','collapsed','razed')`, worldID, *sett.OwnerID).Scan(&n); err != nil {
+				return nil, nil, fmt.Errorf("could not count your cities: %w", err)
+			}
+			prayers[len(prayers)-1].Targets = &prayerTargets{Unit: []prayerTargetUnit{}, City: prayerTargetGroup{Name: sett.Name, Count: 1},
+				Realm: prayerTargetGroup{Count: n}, Always: true, Kind: "world"}
+			prayers[len(prayers)-1].ScopeCostFactors = religion.ScopeCostFactorsFor(spec.EffectType)
+		}
 		if religion.IsBlessing(spec.EffectType) && sett.OwnerID != nil {
 			var targets *prayerTargets
 			var tErr error
@@ -189,6 +198,12 @@ func (h *ProvinceHandler) loadPrayerRows(ctx context.Context, sett *settlement.S
 // traditional gift; 0 for prayers without a length. A larger gift lasts longer.
 func prayerBaseDuration(effect string) int {
 	switch effect {
+	case religion.EffectBlessedFertility:
+		return religion.FertilityTicks
+	case religion.EffectBlessedBuilding:
+		return religion.BuildingBlessingTicks
+	case religion.EffectScapegoat:
+		return 0
 	case religion.EffectGarrisonDefense, religion.EffectBattleFrenzy:
 		return combat.GarrisonDefenseTicks
 	case religion.EffectHarvestBlessing:

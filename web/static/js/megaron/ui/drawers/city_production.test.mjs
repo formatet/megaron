@@ -149,3 +149,11 @@ test('herd at the pen cap shows its overflow as a term of the food net', () => {
  assert.match(foodDetailsHTML(pd({food:food(0.25)})),/production 5 \+ herd 0\.3 − people eat 5 = 0\.3 net before army/);
  assert.doesNotMatch(foodDetailsHTML(pd({food:food(0)})),/herd/);
 });
+test('steg 5a: fertility and the Builder\'s Blessing standing over the city are named with their days left',()=>{
+ const html=foodSummaryHTML(pd({city_blessings:[
+  {effect:'blessed_fertility',prayer:'Fruitful Season',scope:'city',remaining_game_days:12},
+  {effect:'blessed_building',prayer:"The Builder's Blessing",scope:'realm',remaining_game_days:1}]}));
+ assert.match(html,/Fruitful Season on this city: people and herds grow half as fast again · 12 game days left/);
+ assert.match(html,/The Builder's Blessing on the whole realm: what is left of each build takes three quarters of the time, and so do builds begun · 1 game day left/);
+ assert.doesNotMatch(foodSummaryHTML(pd({city_blessings:[]})),/Fruitful|Builder/);
+});
