@@ -154,6 +154,18 @@ func (h *ProvinceHandler) loadPrayerRows(ctx context.Context, sett *settlement.S
 			Favours:               religion.FavoursFor(spec),
 			OfferingBaseline:      religion.TraditionalBaseline(spec, divineValues),
 		})
+		if isStormPrayer(spec.EffectType) && sett.OwnerID != nil {
+			var targets *prayerTargets
+			if spec.EffectType == religion.EffectStormWake {
+				targets = &prayerTargets{Unit: []prayerTargetUnit{}, Kind: "hex"}
+			} else {
+				var tErr error
+				if targets, tErr = h.loadStormTargets(ctx, *sett.OwnerID, worldID, prayerTick); tErr != nil {
+					return nil, nil, fmt.Errorf("could not read the storm map: %w", tErr)
+				}
+			}
+			prayers[len(prayers)-1].Targets = targets
+		}
 		if religion.IsBlessing(spec.EffectType) && sett.OwnerID != nil {
 			var targets *prayerTargets
 			var tErr error

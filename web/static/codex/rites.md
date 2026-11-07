@@ -2,7 +2,7 @@ A rite is a request made at the temple of its god.
 
 A **rite** is a request to [[gods|the gods]]. Open **Kult → Prayers**.
 
-Each prayer is said at its own god's [[temples|temple]], so a city needs that temple standing: [[following-seas]] and [[stout-hulls]] need a Temple of the [[sea-daimons|Sea Daimons]] of Stillness, [[green-shoots]] and [[the-young-gods-arm]] a Temple of [[velchanos]], [[mistress-of-the-walls]] and [[potnias-vision]] a [[temple]] of [[potnia]], [[swift-feet]] a Temple of [[asterion]]. Level 1 is enough. Without it the prayer shows "no Temple of …".
+Each prayer is said at its own god's [[temples|temple]], so a city needs that temple standing: [[following-seas]], [[stout-hulls]], [[still-the-storm]] and [[wake-the-storm]] need a Temple of the [[sea-daimons|Sea Daimons]] of Stillness, [[green-shoots]] and [[the-young-gods-arm]] a Temple of [[velchanos]], [[mistress-of-the-walls]] and [[potnias-vision]] a [[temple]] of [[potnia]], [[swift-feet]] a Temple of [[asterion]]. Level 1 is enough. Without it the prayer shows "no Temple of …".
 
 ## Temples required by prayers {#rites-details}
 
@@ -83,9 +83,11 @@ A good's worth is multiplied by the god's taste for it. A taste above 1 means th
 | Green Shoots | Velchanos | incense ×2, wine ×2, oil ×1.6, grain ×1.3, livestock ×1.3, fish ×0.9, copper ×0.5, tin ×0.5, timber ×0.4, stone ×0.3 |
 | Mistress of the Walls | Potnia | livestock ×2, wine ×1.7, horses ×1.6, bronze ×1.5, incense ×1.5, grain ×1, pottery ×0.5, fish ×0.4, stone ×0.4 |
 | Potnia's Vision | Potnia | fish ×2.2, incense ×2.1, purple ×2, oil ×1.5, silver ×1.4, bronze ×1.3, pottery ×1.1, grain ×0.6, stone ×0.4 |
+| Still the Storm | The Sea Daimons of Stillness | fish ×2.2, livestock ×2, wine ×1.7, horses ×1.6, bronze ×1.5, incense ×1.5, grain ×1, pottery ×0.5, stone ×0.4 |
 | Stout Hulls | The Sea Daimons of Stillness | fish ×2.2, livestock ×2, wine ×1.7, horses ×1.6, bronze ×1.5, incense ×1.5, grain ×1, pottery ×0.5, stone ×0.4 |
 | Swift Feet | Asterion | no preference: every good at its worth |
 | The Young God's Arm | Velchanos | livestock ×2, wine ×1.7, horses ×1.6, bronze ×1.5, incense ×1.5, grain ×1, pottery ×0.5, fish ×0.4, stone ×0.4 |
+| Wake the Storm | The Sea Daimons of Stillness | fish ×2.2, livestock ×2, wine ×1.7, horses ×1.6, bronze ×1.5, incense ×1.5, grain ×1, pottery ×0.5, stone ×0.4 |
 <!-- /favours -->
 
 Any good may be offered. **Oil and wine** are offerings like any other — oil is also food, so do not give up what a hungry city needs. **Incense** is a valuable gift ([[incense]]). For everyday prayers it can help meet the offering requirement; excess value does not change the answer, but a lasting prayer lasts longer and the temple rests longer.

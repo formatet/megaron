@@ -828,6 +828,37 @@
         8
       ]
     },
+    "minoan_stillness_calm": {
+      "ID": "minoan_stillness_calm",
+      "GodID": "sea_daimons_stillness",
+      "EffectType": "storm_calm",
+      "MinKharis": 5,
+      "Offering": {
+        "fish": 10,
+        "oil": 6
+      },
+      "CooldownTicks": 12,
+      "TargetKind": "",
+      "God": "The Sea Daimons of Stillness",
+      "Name": "Still the Storm",
+      "Description": "A storm you have named and keep on your storm map shrinks by one hex at once, for everyone's good; the hex grows back after 24 game days. Three such prayers within 24 game days kill a storm of three hexes. A richer gift does no more.",
+      "Favours": {
+        "bronze": 1.5,
+        "fish": 2.2,
+        "grain": 1,
+        "horses": 1.6,
+        "incense": 1.5,
+        "livestock": 2,
+        "pottery": 0.5,
+        "stone": 0.4,
+        "wine": 1.7
+      },
+      "RestByLevel": [
+        12,
+        6,
+        4
+      ]
+    },
     "minoan_stillness_hull": {
       "ID": "minoan_stillness_hull",
       "GodID": "sea_daimons_stillness",
@@ -874,6 +905,37 @@
       "Name": "Following Seas",
       "Description": "Ships you name take a quarter less time over what is left of their voyage, also when already at sea, for 12 game days: one ship, the city's ships, or the whole fleet. A wider blessing costs more.",
       "Favours": null,
+      "RestByLevel": [
+        12,
+        6,
+        4
+      ]
+    },
+    "minoan_stillness_wake": {
+      "ID": "minoan_stillness_wake",
+      "GodID": "sea_daimons_stillness",
+      "EffectType": "storm_wake",
+      "MinKharis": 5,
+      "Offering": {
+        "fish": 10,
+        "wine": 6
+      },
+      "CooldownTicks": 12,
+      "TargetKind": "",
+      "God": "The Sea Daimons of Stillness",
+      "Name": "Wake the Storm",
+      "Description": "A new storm is born on a sea hex of your own map. It lives as long as any storm and strikes every ship it meets, yours too. Nobody can tell it was woken. A richer gift does no more.",
+      "Favours": {
+        "bronze": 1.5,
+        "fish": 2.2,
+        "grain": 1,
+        "horses": 1.6,
+        "incense": 1.5,
+        "livestock": 2,
+        "pottery": 0.5,
+        "stone": 0.4,
+        "wine": 1.7
+      },
       "RestByLevel": [
         12,
         6,

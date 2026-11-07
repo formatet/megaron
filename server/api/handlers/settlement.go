@@ -858,6 +858,19 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		scopeFactor = float64(religion.ScopeCostFactor[blessScope])
 	}
 
+	// Storm prayers name a storm of your storm map or a sea hex of your map (checked before any gift is taken).
+	var stormTarget *uuid.UUID
+	var wakeHex *hexgrid.Coord
+	if isStormPrayer(spec.EffectType) {
+		var code int
+		var msg string
+		stormTarget, wakeHex, code, msg = h.checkStormTarget(r.Context(), tx, worldID, playerID, spec, body.Target, nowTick)
+		if code != 0 {
+			writeError(w, code, msg)
+			return
+		}
+	}
+
 	// Kharis tier gate.
 	if kharisNow < spec.MinKharis {
 		writeError(w, http.StatusBadRequest, insufficientKharisMessage(prayerID, spec.MinKharis, kharisNow))
@@ -1051,6 +1064,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 
 	// Apply effect on success.
 	effectPayload := map[string]any{}
+	recordedEffect := map[string]any(nil) // when the event must record more than the Wanax is shown (storm prayers)
 	var message string
 	durationTicks := 0 // set by the lasting prayers (garrison defence, harvest blessing)
 
@@ -1076,6 +1090,20 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 			}
 		case religion.EffectBlessedStrength, religion.EffectBlessedHull, religion.EffectBlessedSpeedLand, religion.EffectBlessedSpeedSea:
 			effectPayload, message, durationTicks, err = h.applyBlessing(r.Context(), tx, worldID, playerID, settlementID, spec, blessScope, blessUnit, nowTick, giftFactor)
+		case religion.EffectStormCalm, religion.EffectStormWake:
+			var code int
+			if spec.EffectType == religion.EffectStormCalm {
+				recordedEffect, effectPayload, message, code, err = h.applyStormCalm(r.Context(), tx, worldID, *stormTarget, nowTick)
+			} else {
+				recordedEffect, effectPayload, message, code, err = h.applyStormWake(r.Context(), tx, worldID, *wakeHex, nowTick)
+			}
+			if code != 0 {
+				if message == "" {
+					message = "that storm is gone"
+				}
+				writeError(w, code, message)
+				return
+			}
 		case religion.EffectOracleRevealDeposits:
 			effectPayload, message, err = h.applyOracleRevealDeposits(r.Context(), tx, settlementID, worldID, playerID, spec)
 		case religion.EffectHarvestBlessing:
@@ -1115,6 +1143,9 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		"valuation_version":      religion.LaborValuationVersion,
 		"offer_mod":              offerMod,
 		"kharis_spent":           0.0,
+	}
+	if recordedEffect != nil {
+		eventPayload["effect"] = recordedEffect
 	}
 	restTicks := 0
 	if success && spec.GodID != "" {

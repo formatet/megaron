@@ -30,3 +30,7 @@ The first Wanax whose ship a storm strikes **may [[naming-the-land|name it]]**, 
 In Keryx: `storms` lists the storms in sight and the ones you remember, with their ids; `storms name <id> "<name>"` names one you were first to meet.
 
 **Fishers stay at their grounds.** A storm makes them catch nothing while it covers their hex; it never sends them home or removes their placement. They resume fishing when it moves on. See [[fishing]].
+
+## Stilling and waking storms {#storms-prayers}
+
+The [[sea-daimons|Sea Daimons]] of Stillness can change the weather. [[still-the-storm]] shrinks a storm you have named by one hex (it grows back after 24 game days, and a storm stilled to nothing dies); it helps every ship on the sea. [[wake-the-storm]] lets a new storm be born on a sea hex of your own map; it strikes all ships alike, the one who woke it included, and no one can tell it was woken.

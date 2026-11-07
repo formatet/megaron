@@ -61,6 +61,13 @@ type riteTargets struct {
 	} `json:"realm"`
 	// Always: a city or realm blessing needs nothing under way now (Runner/caravan prayers hold for departures too).
 	Always bool `json:"always"`
+	// Storm prayers: Kind "storm" picks one of Storms; Kind "hex" takes a sea hex of your map as q,r.
+	Kind   string `json:"kind"`
+	Storms []struct {
+		ID    string `json:"id"`
+		Name  string `json:"name"`
+		Where string `json:"where"`
+	} `json:"storms"`
 }
 
 // scaledOffering is the traditional gift times a target step's factor.
@@ -75,6 +82,21 @@ func scaledOffering(offering map[string]float64, factor int) map[string]float64 
 // printRiteTargets lists what a blessing prayer may be laid on and what each step costs.
 func printRiteTargets(p riteAvailablePrayer, settlementID string) {
 	if p.Targets == nil {
+		return
+	}
+	switch p.Targets.Kind {
+	case "storm":
+		if len(p.Targets.Storms) == 0 {
+			fmt.Printf("  No named storm on your storm map: a storm must be named (keryx storms name) before it can be stilled.\n")
+			return
+		}
+		fmt.Printf("  Choose a storm with --storm <name> (one gift, whoever's ships sail there):\n")
+		for _, st := range p.Targets.Storms {
+			fmt.Printf("        %s (%s) %s\n", st.Name, st.Where, st.ID)
+		}
+		return
+	case "hex":
+		fmt.Printf("  Choose a sea hex of your own map with --hex q,r — a storm is born there (one gift, no more for a richer one).\n")
 		return
 	}
 	f := p.ScopeCostFactors
@@ -124,6 +146,34 @@ func resolveRiteTarget(p riteAvailablePrayer, arg string) (string, error) {
 		return "", fmt.Errorf("%q matches more than one — name it fully or use the id. Yours: %s", arg, list)
 	}
 	return "", fmt.Errorf("no unit of yours called %q for this prayer. Yours: %s", arg, list)
+}
+
+// resolveRiteStorm turns --storm (a name or an id) into a storm id from the prayer's storm list.
+func resolveRiteStorm(p riteAvailablePrayer, arg string) (string, error) {
+	if p.Targets == nil || p.Targets.Kind != "storm" {
+		return "", fmt.Errorf("--storm goes with a prayer that stills a storm (minoan_stillness_calm)")
+	}
+	var names, hits []string
+	for _, st := range p.Targets.Storms {
+		names = append(names, st.Name)
+		if strings.EqualFold(st.ID, arg) || strings.EqualFold(st.Name, arg) {
+			return st.ID, nil
+		}
+		if arg != "" && strings.Contains(strings.ToLower(st.Name), strings.ToLower(arg)) {
+			hits = append(hits, st.ID)
+		}
+	}
+	if len(hits) == 1 {
+		return hits[0], nil
+	}
+	list := strings.Join(names, ", ")
+	if list == "" {
+		list = "none: name a storm first"
+	}
+	if len(hits) > 1 {
+		return "", fmt.Errorf("%q matches more than one storm — name it fully. On your map: %s", arg, list)
+	}
+	return "", fmt.Errorf("no named storm %q on your storm map. On your map: %s", arg, list)
 }
 
 // riteProvinceStatus is the slice of the province status response this file needs.
@@ -203,6 +253,7 @@ func riteCmd() *cobra.Command {
 	var settlementID, provinceArg string
 	var prayerID string
 	var targetID string
+	var stormArg, hexArg string
 	var scope string
 	var list bool
 	var yes bool
@@ -218,6 +269,8 @@ func riteCmd() *cobra.Command {
   keryx rite --prayer <prayer-id> --offer grain=10,silver=3
   keryx rite --prayer minoan_stillness_hull --scope unit --target "Horns of Crete"
   keryx rite --prayer minoan_velchanos_strength --scope realm
+  keryx rite --prayer minoan_stillness_calm --storm "Old Grey"
+  keryx rite --prayer minoan_stillness_wake --hex 12,-3
   keryx rite --prayer <prayer-id> --yes
   keryx rite --json`,
 		Args: rejectPositionalArgs("prayer"),
@@ -271,10 +324,43 @@ func riteCmd() *cobra.Command {
 				composed = parsed
 			}
 
+			// A storm prayer names a storm (--storm) or a sea hex (--hex); both travel as "target".
+			if stormArg != "" || hexArg != "" {
+				if stormArg != "" && hexArg != "" || scope != "" || targetID != "" {
+					return fmt.Errorf("give --storm or --hex alone, without --scope or --target")
+				}
+				if hexArg != "" {
+					q, r, ok := strings.Cut(hexArg, ",")
+					if _, e1 := strconv.Atoi(strings.TrimSpace(q)); !ok || e1 != nil {
+						return fmt.Errorf("--hex wants q,r, for example --hex 12,-3")
+					}
+					if _, e2 := strconv.Atoi(strings.TrimSpace(r)); e2 != nil {
+						return fmt.Errorf("--hex wants q,r, for example --hex 12,-3")
+					}
+					targetID = hexArg
+				} else {
+					view, err := loadRealmCult(c)
+					if err != nil {
+						return err
+					}
+					for _, p := range view.Prayers {
+						if p.SettlementID == settlementID && p.ID == prayerID {
+							if targetID, err = resolveRiteStorm(p.riteAvailablePrayer, stormArg); err != nil {
+								return err
+							}
+							break
+						}
+					}
+					if targetID == "" {
+						targetID = stormArg
+					}
+				}
+			}
+
 			// A blessing prayer names its target: --scope unit|city|realm, and for unit a
 			// --target (name or id) picked from the prayer's own list. Refused here, before
 			// anything is offered, with the choices in the error.
-			if scope != "" || targetID != "" {
+			if (scope != "" || targetID != "") && stormArg == "" && hexArg == "" {
 				view, err := loadRealmCult(c)
 				if err != nil {
 					return err
@@ -397,6 +483,8 @@ func riteCmd() *cobra.Command {
 	cmd.Flags().StringVar(&settlementID, "settlement", "", "settlement UUID (same as --province, kept for old scripts)")
 	cmd.Flags().StringVar(&prayerID, "prayer", "", "prayer ID (run --list to see your culture's prayers; defaults to the culture's listed default prayer)")
 	cmd.Flags().StringVar(&targetID, "target", "", "the unit, ship, Runner or caravan a blessing is laid on, by name or id (with --scope unit; see --list)")
+	cmd.Flags().StringVar(&stormArg, "storm", "", "the named storm to still (minoan_stillness_calm), by name or id; see --list")
+	cmd.Flags().StringVar(&hexArg, "hex", "", "the sea hex of your own map to wake a storm on (minoan_stillness_wake), as q,r")
 	cmd.Flags().StringVar(&scope, "scope", "", "how wide a blessing reaches: unit | city | realm — the wider, the dearer (see --list)")
 	cmd.Flags().BoolVar(&yes, "yes", false, "skip the pre-cast confirmation (required for non-interactive/agent use)")
 	cmd.Flags().StringVar(&offer, "offer", "",

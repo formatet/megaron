@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"formatet/megaron/server/internal/economy"
+	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/hexgrid"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -346,5 +347,25 @@ func TestWakeStorm_RefusesLandAndOccupiedWaterAndIsIdempotent(t *testing.T) {
 		if line3.has(c) {
 			t.Fatalf("woken storm overlaps a living one at %v", c)
 		}
+	}
+}
+
+// A woken storm strikes the ship of whoever woke it: ownership of a storm does not exist.
+func TestWakeStorm_StrikesTheWakersOwnShipLikeAnyStorm(t *testing.T) {
+	pool, world, owner, route := seaStormWorld(t)
+	ship, _ := mkStormFleet(t, pool, world, owner, route)
+	h := NewSeaStormScanHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), nil)
+	h.Dice = newStormDice(1)
+	for day := 0; day <= 5; day++ {
+		runStormDay(t, h, world, day)
+	}
+	res, err := wakeIt(t, pool, world, hexgrid.Coord{Q: 6, R: 0}, 6, uuid.New(), newStormDice(7))
+	if err != nil {
+		t.Fatal(err)
+	}
+	runStormDay(t, h, world, 6)
+	got := stormPayloads(t, ship)
+	if len(got) != 1 || got[0].StormID != res.StormID || got[0].Damage != StormDamage {
+		t.Fatalf("ship events %+v, want one blow from the woken storm %s", got, res.StormID)
 	}
 }
