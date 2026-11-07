@@ -13,7 +13,8 @@ func stormsCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "storms",
 		Short: "Storms at sea you can see, and where you last saw the others",
-		Long: `A storm is three connected sea hexes that drift slowly. You see one only inside your
+		Long: `A storm is a few connected sea hexes (three when born) that drift slowly. It lives some 200 to 300
+game days and then dies; new ones form. A dead storm is never listed as in sight. You see one only inside your
 sight; afterwards it is remembered where you LAST saw it (with the time), not where it is now.
 A ship that sails into a storm takes 2 hull damage (of 5), once per storm however long it stays inside.
 The first Wanax whose ship a storm strikes may name it, once: keryx storms name <id> "<name>".`,

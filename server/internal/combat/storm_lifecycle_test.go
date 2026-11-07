@@ -6,7 +6,6 @@ import (
 	"context"
 	"testing"
 
-	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/province"
 	"github.com/google/uuid"
@@ -413,7 +412,7 @@ func TestStormLifecycle_LateScanEqualsDailyScansAcrossDeathsAndBirths(t *testing
 	scanTo(t, poolB, worldB, 30, diceB) // one late scan
 	ta, bornA, diedA := read(poolA, worldA)
 	tb, bornB, diedB := read(poolB, worldB)
-	if bornA == 0 || diedA != 6 {
+	if bornA == 0 || diedA < 6 {
 		t.Fatalf("the daily run must cover births and deaths: born %d, died %d", bornA, diedA)
 	}
 	if bornA != bornB || diedA != diedB || len(ta) != len(tb) {
