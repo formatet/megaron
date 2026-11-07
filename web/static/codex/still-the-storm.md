@@ -4,7 +4,7 @@ A [[storms|storm]] that you have **named** and that stands on your storm map shr
 
 The hex comes back **24 game days later**, on a sea hex beside the storm that no other storm stands on; if there is none, the storm tries again the next game day. A storm that is stilled down to nothing is **dead**, so three prayers within 24 game days kill a storm of three hexes, and one prayer kills a storm of a single hex. A dead storm stays on your map as a memory until you look at its place.
 
-You choose the storm from the names on your map. You are told that the storm shrank, not where it stands now. A richer gift does no more: the prayer is fixed, and only the temple's rest grows with the gift. Each [[temple]] rests between prayers, so several cities can pray in the same stretch of days.
+You choose the storm from the names on your map. You are told that the storm shrank, not where it stands now. A richer gift does no more: the prayer is fixed, and only the temple's rest grows with the gift. Each [[temple]] rests between prayers, so several cities can pray close together.
 
 <!-- facts: prayer minoan_stillness_calm -->
 | Reference | Current rule |
