@@ -2283,6 +2283,9 @@
       "id": "keryx",
       "title": "Keryx, the command line",
       "category": "Reference",
+      "kinds": [
+        "KeryxReleased"
+      ],
       "related": [
         "rough-edges"
       ],

@@ -44,6 +44,16 @@ func printNotificationSummary(c *Client, n notificationItem) {
 		fmt.Printf("      %s — %s at %s · %s\n", b.Opponent, action, b.Place, b.At)
 		return
 	}
+	if n.Kind == "KeryxReleased" {
+		var b struct {
+			Commit string `json:"commit"`
+			URL    string `json:"url"`
+		}
+		if json.Unmarshal(n.Body, &b) == nil {
+			fmt.Printf("      A new keryx is out (%s). Download: %s\n", b.Commit, b.URL)
+			return
+		}
+	}
 	if n.Kind == "WanaxEntered" {
 		var b struct {
 			Name    string `json:"wanax_name"`
