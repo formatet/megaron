@@ -136,3 +136,36 @@ test('speed prayer: with nothing on the road the city and realm steps stay open,
   assert.equal(defaultScope(empty), 'city');
   assert.doesNotMatch(offerRowHTML(empty, {}), /nothing of this kind to bless/);
 });
+
+// Storm prayers (steg 3b): a storm picked from the storm map, or a sea hex typed as q,r. No scope steps, no price steps.
+const calm = { id: 'minoan_stillness_calm', god: 'The Sea Daimons', god_id: 'sea_daimons_stillness', offering: { fish: 10, oil: 6 },
+  targets: { unit: [], city: { count: 0 }, realm: { count: 0 }, kind: 'storm', storms: [{ id: 's-1', name: 'Old Grey', where: 'last seen near (4,4)' }] } };
+const wake = { id: 'minoan_stillness_wake', god: 'The Sea Daimons', god_id: 'sea_daimons_stillness', offering: { fish: 10, wine: 6 },
+  targets: { unit: [], city: { count: 0 }, realm: { count: 0 }, kind: 'hex' } };
+
+test('Still the Storm offers the named storms of your map and no scope steps', () => {
+  const html = offerRowHTML(calm, { fish: 20, oil: 20 });
+  assert.match(html, /class="offer-target-storm"/);
+  assert.match(html, /Old Grey \(last seen near \(4,4\)\)/);
+  assert.doesNotMatch(html, /type="radio"|gift ×|Who is blessed/);
+  assert.match(html, /data-good="fish" value="10"/);
+});
+
+test('Still the Storm with no named storm says so and offers no select', () => {
+  const html = offerRowHTML({ ...calm, targets: { ...calm.targets, storms: [] } }, {});
+  assert.match(html, /No named storm on your storm map/);
+  assert.doesNotMatch(html, /offer-target-storm/);
+});
+
+test('Wake the Storm asks for a sea hex as q,r', () => {
+  const html = offerRowHTML(wake, { fish: 20, wine: 20 });
+  assert.match(html, /class="offer-target-hex"/);
+  assert.match(html, /placeholder="q,r"/);
+  assert.doesNotMatch(html, /type="radio"/);
+});
+
+test('chosenTarget reads the storm select and the hex field', () => {
+  const host = (sel) => ({ querySelector: (q) => sel[q] || null });
+  assert.deepEqual(chosenTarget(host({ '.offer-target-storm': { value: 's-1' } })), { target: 's-1' });
+  assert.deepEqual(chosenTarget(host({ '.offer-target-hex': { value: ' 7,3 ' } })), { target: '7,3' });
+});

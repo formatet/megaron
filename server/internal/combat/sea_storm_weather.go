@@ -180,37 +180,45 @@ func StepStorm(s StormShape, heading int, sea func(hexgrid.Coord) bool, dice eco
 
 // seedShape finds a fresh connected three-hex shape on unused sea hexes.
 func seedShape(sea []hexgrid.Coord, used map[hexgrid.Coord]bool, isSea func(hexgrid.Coord) bool, dice economy.Dice) (StormShape, bool) {
-	free := func(c hexgrid.Coord) bool { return isSea(c) && !used[c] }
 	for try := 0; try < 60; try++ {
 		a := sea[dice.Intn(len(sea))]
-		if !free(a) {
-			continue
+		if shape, ok := seedShapeAt(a, used, isSea, dice); ok {
+			return shape, true
 		}
-		var opts []hexgrid.Coord
-		for _, d := range stormDirs {
-			if n := (hexgrid.Coord{Q: a.Q + d.Q, R: a.R + d.R}); free(n) {
-				opts = append(opts, n)
-			}
-		}
-		if len(opts) == 0 {
-			continue
-		}
-		b := opts[dice.Intn(len(opts))]
-		var opts2 []hexgrid.Coord
-		for _, base := range []hexgrid.Coord{a, b} {
-			for _, d := range stormDirs {
-				n := hexgrid.Coord{Q: base.Q + d.Q, R: base.R + d.R}
-				if free(n) && n != a && n != b {
-					opts2 = append(opts2, n)
-				}
-			}
-		}
-		if len(opts2) == 0 {
-			continue
-		}
-		return StormShape{a, b, opts2[dice.Intn(len(opts2))]}, true
 	}
 	return nil, false
+}
+
+// seedShapeAt grows a connected three-hex shape from a on unused sea hexes (false when a or its
+// surroundings leave no room). The Wake the Storm prayer starts here with the hex it was given.
+func seedShapeAt(a hexgrid.Coord, used map[hexgrid.Coord]bool, isSea func(hexgrid.Coord) bool, dice economy.Dice) (StormShape, bool) {
+	free := func(c hexgrid.Coord) bool { return isSea(c) && !used[c] }
+	if !free(a) {
+		return nil, false
+	}
+	var opts []hexgrid.Coord
+	for _, d := range stormDirs {
+		if n := (hexgrid.Coord{Q: a.Q + d.Q, R: a.R + d.R}); free(n) {
+			opts = append(opts, n)
+		}
+	}
+	if len(opts) == 0 {
+		return nil, false
+	}
+	b := opts[dice.Intn(len(opts))]
+	var opts2 []hexgrid.Coord
+	for _, base := range []hexgrid.Coord{a, b} {
+		for _, d := range stormDirs {
+			n := hexgrid.Coord{Q: base.Q + d.Q, R: base.R + d.R}
+			if free(n) && n != a && n != b {
+				opts2 = append(opts2, n)
+			}
+		}
+	}
+	if len(opts2) == 0 {
+		return nil, false
+	}
+	return StormShape{a, b, opts2[dice.Intn(len(opts2))]}, true
 }
 
 // seaHexes lists the world's sea hexes in a fixed order (so the dice replay exactly).
@@ -291,10 +299,18 @@ func writeStormTrack(ctx context.Context, tx pgx.Tx, id uuid.UUID, tick int, s S
 type liveStorm struct {
 	id      uuid.UUID
 	heading int
+	created int
 	dies    int
+	calms   []*pendingCalm // Still the Storm hexes waiting to grow back
 	shape   StormShape
 	last    int  // last tick with a stored track row
 	stepped bool // moved in this scan: heading to store
+}
+
+// pendingCalm is a hex a prayer took that has not grown back yet.
+type pendingCalm struct {
+	id     uuid.UUID
+	regrow int
 }
 
 // advanceStorms walks the world's weather to dueTick, TICK BY TICK (so a late scan rolls the
@@ -306,7 +322,7 @@ func advanceStorms(ctx context.Context, tx pgx.Tx, worldID uuid.UUID, dueTick in
 	// Order: a stable one for the dice. Birth hex breaks ties between storms born the same tick
 	// (ids are random); the track row may be pruned for old storms, then id decides.
 	rows, err := tx.Query(ctx,
-		`SELECT s.id, s.heading, s.dies_tick FROM sea_storms s
+		`SELECT s.id, s.heading, s.created_tick, s.dies_tick FROM sea_storms s
 		   LEFT JOIN sea_storm_track t0 ON t0.storm_id = s.id AND t0.tick = s.created_tick AND t0.slot = 0
 		  WHERE s.world_id = $1 AND s.died_tick IS NULL
 		  ORDER BY s.created_tick, t0.q, t0.r, s.id FOR UPDATE OF s`, worldID)
@@ -316,7 +332,7 @@ func advanceStorms(ctx context.Context, tx pgx.Tx, worldID uuid.UUID, dueTick in
 	var storms []*liveStorm
 	for rows.Next() {
 		s := &liveStorm{}
-		if err := rows.Scan(&s.id, &s.heading, &s.dies); err != nil {
+		if err := rows.Scan(&s.id, &s.heading, &s.created, &s.dies); err != nil {
 			rows.Close()
 			return err
 		}
@@ -324,6 +340,29 @@ func advanceStorms(ctx context.Context, tx pgx.Tx, worldID uuid.UUID, dueTick in
 	}
 	rows.Close()
 	if err := rows.Err(); err != nil {
+		return err
+	}
+	calmRows, err := tx.Query(ctx,
+		`SELECT c.storm_id, c.id, c.regrow_tick FROM sea_storm_calms c JOIN sea_storms s ON s.id = c.storm_id
+		  WHERE s.world_id = $1 AND s.died_tick IS NULL AND c.regrown_tick IS NULL ORDER BY c.regrow_tick, c.id`, worldID)
+	if err != nil {
+		return err
+	}
+	for calmRows.Next() {
+		var sid uuid.UUID
+		c := &pendingCalm{}
+		if err := calmRows.Scan(&sid, &c.id, &c.regrow); err != nil {
+			calmRows.Close()
+			return err
+		}
+		for _, s := range storms {
+			if s.id == sid {
+				s.calms = append(s.calms, c)
+			}
+		}
+	}
+	calmRows.Close()
+	if err := calmRows.Err(); err != nil {
 		return err
 	}
 	anchor := dueTick - 1
@@ -357,11 +396,32 @@ func advanceStorms(ctx context.Context, tx pgx.Tx, worldID uuid.UUID, dueTick in
 	want := len(sea) / SeaHexesPerStorm
 	for t := from; t <= dueTick; t++ {
 		used := map[hexgrid.Coord]bool{}
+		// Regrowth looks at where every living storm stands at the start of the tick.
+		occupied := map[hexgrid.Coord]bool{}
 		for _, s := range storms {
-			if s.shape == nil || t >= s.dies {
-				continue // unreadable, or dead: no more track
+			if s.shape != nil && t >= s.created && t < s.dies {
+				for _, c := range s.shape {
+					occupied[c] = true
+				}
+			}
+		}
+		for _, s := range storms {
+			if s.shape == nil || t >= s.dies || t < s.created {
+				continue // unreadable, dead (no more track), or not yet born (a woken storm, late scan)
 			}
 			if t > s.last {
+				for len(s.calms) > 0 && s.calms[0].regrow <= t && len(s.shape) < StormHexes {
+					grown, ok := regrowHex(s.shape, occupied, isSea, dice)
+					if !ok {
+						break // no room: try again next tick
+					}
+					s.shape = grown
+					occupied[grown[len(grown)-1]] = true
+					if _, err := tx.Exec(ctx, `UPDATE sea_storm_calms SET regrown_tick = $2 WHERE id = $1`, s.calms[0].id, t); err != nil {
+						return err
+					}
+					s.calms = s.calms[1:]
+				}
 				for step := 0; step < StormStepsPerTick; step++ {
 					s.shape, s.heading, _ = StepStorm(s.shape, s.heading, isSea, dice)
 				}

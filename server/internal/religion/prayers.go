@@ -259,6 +259,13 @@ const (
 	EffectGarrisonDefense   = "garrison_defense"
 	EffectNextLandDeparture = "next_land_departure"
 	EffectNextShipDeparture = "next_ship_departure"
+
+	// Stormbönerna (steg 3b): the Sea Daimons of Stillness still a named storm or wake an ordinary one.
+	// Not blessings: no scope, no duration; the effect is done by combat.CalmStorm / combat.WakeStorm.
+	PrayerStillnessCalm = "minoan_stillness_calm"
+	PrayerStillnessWake = "minoan_stillness_wake"
+	EffectStormCalm     = "storm_calm"
+	EffectStormWake     = "storm_wake"
 )
 
 func init() {
@@ -269,6 +276,8 @@ func init() {
 	PrayerSpecs[PrayerVelchanosStrength] = PrayerSpec{ID: PrayerVelchanosStrength, GodID: "velchanos", EffectType: EffectBlessedStrength, MinKharis: MoodSuspicious, Offering: map[string]float64{"livestock": 6, "wine": 4}, CooldownTicks: 12, God: "Velchanos", Name: "The Young God's Arm", Description: "Land troops you name fight a quarter stronger for 6 game days, wherever they stand: one unit, the city's units, or the whole realm. A wider blessing costs more.", Favours: favoursByEffect[EffectBattleFrenzy]}
 	PrayerSpecs[PrayerStillnessHull] = PrayerSpec{ID: PrayerStillnessHull, GodID: "sea_daimons_stillness", EffectType: EffectBlessedHull, MinKharis: MoodSuspicious, Offering: map[string]float64{"fish": 8, "oil": 4}, CooldownTicks: 12, God: "The Sea Daimons of Stillness", Name: "Stout Hulls", Description: "Each ship you name takes the next storm it meets unharmed, for 12 game days: one ship, the city's ships, or the whole fleet. A wider blessing costs more.", Favours: havsdaimonernaBattleFrenzyFavours}
 	PrayerSpecs[PrayerStillnessSwift] = PrayerSpec{ID: PrayerStillnessSwift, GodID: "sea_daimons_stillness", EffectType: EffectBlessedSpeedSea, MinKharis: MoodSuspicious, Offering: map[string]float64{"fish": 6, "silver": 3}, CooldownTicks: 12, God: "The Sea Daimons of Stillness", Name: "Following Seas", Description: "Ships you name take a quarter less time over what is left of their voyage, also when already at sea, for 12 game days: one ship, the city's ships, or the whole fleet. A wider blessing costs more."}
+	PrayerSpecs[PrayerStillnessCalm] = PrayerSpec{ID: PrayerStillnessCalm, GodID: "sea_daimons_stillness", EffectType: EffectStormCalm, MinKharis: MoodSuspicious, Offering: map[string]float64{"fish": 10, "oil": 6}, CooldownTicks: 12, God: "The Sea Daimons of Stillness", Name: "Still the Storm", Description: "A storm you have named and keep on your storm map shrinks by one hex at once, for everyone's good; the hex grows back after 24 game days. Three such prayers within 24 game days kill a storm of three hexes. A richer gift does no more.", Favours: havsdaimonernaBattleFrenzyFavours}
+	PrayerSpecs[PrayerStillnessWake] = PrayerSpec{ID: PrayerStillnessWake, GodID: "sea_daimons_stillness", EffectType: EffectStormWake, MinKharis: MoodSuspicious, Offering: map[string]float64{"fish": 10, "wine": 6}, CooldownTicks: 12, God: "The Sea Daimons of Stillness", Name: "Wake the Storm", Description: "A new storm is born on a sea hex of your own map. It lives as long as any storm and strikes every ship it meets, yours too. Nobody can tell it was woken. A richer gift does no more.", Favours: havsdaimonernaBattleFrenzyFavours}
 }
 
 // CulturePrayers maps a culture key to its allowed prayer IDs.
@@ -278,7 +287,7 @@ var CulturePrayers = map[string][]string{
 	"khemetiu": {"khemetiu_oracle_deposits", "khemetiu_harvest_blessing", "khemetiu_battle_frenzy"},
 	"knaani":   {"knaani_oracle_deposits", "knaani_harvest_blessing", "knaani_battle_frenzy"},
 	"thrakes":  {"thrakes_oracle_deposits", "thrakes_harvest_blessing", "thrakes_battle_frenzy"},
-	"minoan":   {PrayerPotniaVision, PrayerPotniaWalls, PrayerGreenShoots, PrayerAsterionSwift, PrayerStillnessSwift, PrayerVelchanosStrength, PrayerStillnessHull},
+	"minoan":   {PrayerPotniaVision, PrayerPotniaWalls, PrayerGreenShoots, PrayerAsterionSwift, PrayerStillnessSwift, PrayerVelchanosStrength, PrayerStillnessHull, PrayerStillnessCalm, PrayerStillnessWake},
 	"hatti":    {"hatti_oracle_deposits", "hatti_harvest_blessing", "hatti_battle_frenzy"},
 }
 

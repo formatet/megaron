@@ -1399,6 +1399,10 @@
         {
           "id": "storms-naming-a-storm",
           "title": "Naming a storm"
+        },
+        {
+          "id": "storms-prayers",
+          "title": "Stilling and waking storms"
         }
       ],
       "terms": [
@@ -2129,7 +2133,9 @@
         "swift-feet",
         "following-seas",
         "the-young-gods-arm",
-        "stout-hulls"
+        "stout-hulls",
+        "still-the-storm",
+        "wake-the-storm"
       ],
       "sections": [
         {
@@ -3146,6 +3152,44 @@
         "Stout Hulls"
       ],
       "summary": "Stout Hulls: the Sea Daimons let each ship you name take its next storm unharmed.",
+      "parent": "rites"
+    },
+    {
+      "id": "still-the-storm",
+      "title": "Still the Storm",
+      "category": "The gods",
+      "entities": [
+        {
+          "kind": "prayer",
+          "key": "minoan_stillness_calm"
+        }
+      ],
+      "aliases": [
+        "minoan stillness calm"
+      ],
+      "terms": [
+        "Still the Storm"
+      ],
+      "summary": "Still the Storm: the Sea Daimons shrink a storm you have named by one hex; the hex grows back, and a storm stilled to nothing dies.",
+      "parent": "rites"
+    },
+    {
+      "id": "wake-the-storm",
+      "title": "Wake the Storm",
+      "category": "The gods",
+      "entities": [
+        {
+          "kind": "prayer",
+          "key": "minoan_stillness_wake"
+        }
+      ],
+      "aliases": [
+        "minoan stillness wake"
+      ],
+      "terms": [
+        "Wake the Storm"
+      ],
+      "summary": "Wake the Storm: the Sea Daimons birth an ordinary storm on a sea hex of your map; it strikes everyone, you too, and nobody can tell it was woken.",
       "parent": "rites"
     },
     {

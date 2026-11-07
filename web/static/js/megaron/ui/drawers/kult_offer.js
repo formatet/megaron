@@ -44,7 +44,23 @@ export function defaultScope(prayer) {
   return scopeChoices(prayer).find(c => c.enabled)?.scope || 'unit';
 }
 
+// Storm prayers (steg 3b) name no unit: Still the Storm picks a named storm from your storm map,
+// Wake the Storm takes the coordinates of a sea hex of your own map.
+function stormChooserHTML(prayer) {
+  const t = prayer.targets;
+  if (t.kind === 'hex') {
+    return '<div class="offer-target"><p class="offer-note">Where is the storm woken? Give a sea hex of your own map as q,r.</p>' +
+      '<label class="offer-field">Sea hex <input type="text" class="offer-target-hex" placeholder="q,r" inputmode="text" autocomplete="off" aria-label="Sea hex q,r"></label></div>';
+  }
+  const options = (t.storms || []).map(s =>
+    '<option value="' + esc(s.id) + '">' + esc(s.name) + (s.where ? ' (' + esc(s.where) + ')' : '') + '</option>').join('');
+  if (!options) return '<div class="offer-target"><p class="offer-note">No named storm on your storm map. A storm must be named before it can be stilled.</p></div>';
+  return '<div class="offer-target"><p class="offer-note">Which storm is stilled? It shrinks by one hex, wherever it is now.</p>' +
+    '<select class="offer-target-storm" aria-label="Storm to still">' + options + '</select></div>';
+}
+
 export function targetChooserHTML(prayer) {
+  if (prayer.targets && (prayer.targets.kind === 'storm' || prayer.targets.kind === 'hex')) return stormChooserHTML(prayer);
   const choices = scopeChoices(prayer);
   if (!choices.length) return '';
   const first = defaultScope(prayer);
@@ -68,6 +84,10 @@ export function targetChooserHTML(prayer) {
 // What the player chose in an open offer row: { target_scope, target } to send, or {} for a prayer without targets.
 export function chosenTarget(host) {
   if (!host || !host.querySelector) return {};
+  const storm = host.querySelector('.offer-target-storm');
+  if (storm) return { target: storm.value };
+  const hex = host.querySelector('.offer-target-hex');
+  if (hex) return { target: (hex.value || '').trim() };
   const radio = host.querySelector('input[type=radio]:checked');
   if (!radio) return {};
   const scope = radio.value;

@@ -175,7 +175,12 @@ export async function bringOffering(prayerID) {
     return;
   }
   const target = prayer?.targets ? chosenTarget(host) : {};
-  if (prayer?.targets && !target.target_scope) {
+  const stormPrayer = prayer?.targets?.kind === 'storm' || prayer?.targets?.kind === 'hex';
+  if (stormPrayer && !target.target) {
+    showInlineResult(host, prayer.targets.kind === 'hex' ? 'Give the sea hex as q,r.' : 'Choose the storm to still.', true);
+    return;
+  }
+  if (prayer?.targets && !stormPrayer && !target.target_scope) {
     showInlineResult(host, 'Choose who is blessed.', true);
     return;
   }

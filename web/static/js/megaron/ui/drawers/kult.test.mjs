@@ -196,7 +196,7 @@ test('blessing prayer: the chosen step and unit are posted; nothing chosen is re
  t.after(()=>{Object.assign(State,state);Object.assign(globalThis,old);});
  const result={};const body={innerHTML:'',querySelector:()=>result};
  let checked=null,unit='u2';
- const host={innerHTML:'',querySelectorAll:()=>[],querySelector:sel=>sel.includes('checked')?checked:sel.includes('offer-target-unit')?{value:unit}:result};
+ const host={innerHTML:'',querySelectorAll:()=>[],querySelector:sel=>sel.includes('checked')?checked:sel.includes('offer-target-unit')?{value:unit}:sel.includes('offer-target-storm')||sel.includes('offer-target-hex')?null:result};
  globalThis.document={getElementById:id=>id==='kult-body'?body:id.startsWith('offer-row-')?host:null,addEventListener(){}};
  globalThis.localStorage={getItem:()=>null};State.WORLD_ID='bless-routing';const posts=[];
  const prayers=[{id:'minoan_stillness_hull',god_id:'sea_daimons_stillness',settlement_id:'c1',province_id:'p1',city_name:'Knossos',has_temple:true,affordable:true,can_prepare_offering:true,offering:{fish:8},scope_cost_factors:{unit:1,city:2,realm:4},targets:{unit:[{id:'u2',name:'Argo',where:'at sea'}],city:{name:'Knossos',count:1},realm:{count:1}}}];
@@ -222,4 +222,32 @@ test('Bönegrund: a resting temple names itself, its rest, and the pause for wan
   assert.match(html, /Temple of Potnia rests 3 game days — paused: 2 of 4 servants/);
   assert.doesNotMatch(html, /Offer|on cooldown/);
   assert.match(prayerStatusHTML({ ...p, rest_paused: false }), /Temple of Potnia rests 3 game days<\/span>/);
+});
+
+test('storm prayers: the chosen storm or typed hex is posted as target; nothing chosen is refused before any request', async t => {
+ const {State}=await import('../../state.js');const {loadKultDrawer,bringOffering}=await import('./kult.js');
+ const state={WORLD_ID:State.WORLD_ID};const old={document:globalThis.document,fetch:globalThis.fetch,localStorage:globalThis.localStorage};
+ t.after(()=>{Object.assign(State,state);Object.assign(globalThis,old);});
+ const result={};const body={innerHTML:'',querySelector:()=>result};
+ let storm=null,hex=null;
+ const host={innerHTML:'',querySelectorAll:()=>[],querySelector:sel=>sel.includes('offer-target-storm')?storm:sel.includes('offer-target-hex')?hex:sel.includes('checked')?null:result};
+ globalThis.document={getElementById:id=>id==='kult-body'?body:id.startsWith('offer-row-')?host:null,addEventListener(){}};
+ globalThis.localStorage={getItem:()=>null};State.WORLD_ID='storm-routing';const posts=[];
+ const base={god_id:'sea_daimons_stillness',settlement_id:'c1',province_id:'p1',city_name:'Knossos',has_temple:true,affordable:true,can_prepare_offering:true,offering:{fish:10}};
+ const prayers=[{...base,id:'minoan_stillness_calm',targets:{unit:[],city:{count:0},realm:{count:0},kind:'storm',storms:[{id:'s-1',name:'Old Grey',where:'x'}]}},
+  {...base,id:'minoan_stillness_wake',targets:{unit:[],city:{count:0},realm:{count:0},kind:'hex'}}];
+ globalThis.fetch=async(url,options={})=>{
+  if(url.endsWith('/cult'))return new Response(JSON.stringify({kharis:{},temples:[],prayers,unbuilt_temples:[]}));
+  if(url.endsWith('/actions'))return new Response('[]');
+  if(options.method==='POST'){posts.push([url,JSON.parse(options.body)]);return new Response(JSON.stringify({success:true,message:'Answered'}));}
+  assert.fail('Unexpected '+url);
+ };
+ await loadKultDrawer();
+ await bringOffering('c1__minoan_stillness_calm');await bringOffering('c1__minoan_stillness_wake');
+ assert.deepEqual(posts,[],'no storm and no hex: nothing is sent');
+ storm={value:'s-1'};await bringOffering('c1__minoan_stillness_calm');
+ storm=null;hex={value:' 7,3 '};await bringOffering('c1__minoan_stillness_wake');
+ assert.deepEqual(posts,[
+  ['/api/v1/worlds/storm-routing/settlements/c1/rite',{prayer:'minoan_stillness_calm',target:'s-1'}],
+  ['/api/v1/worlds/storm-routing/settlements/c1/rite',{prayer:'minoan_stillness_wake',target:'7,3'}]]);
 });
