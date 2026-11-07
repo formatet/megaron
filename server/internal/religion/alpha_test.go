@@ -3,10 +3,10 @@ package religion
 import "testing"
 
 func TestSilverCalibrationCatalogueAndNoAltarFloor(t *testing.T) {
-	if len(CulturePrayers["minoan"]) != 9 {
-		t.Fatal("checkpoint B must expose five implemented prayers, the two targeted blessings and the two storm prayers")
+	if len(CulturePrayers["minoan"]) != 12 {
+		t.Fatal("checkpoint B must expose five implemented prayers, the two targeted blessings, the two storm prayers and the three world blessings")
 	}
-	for _, id := range []string{PrayerPotniaVision, PrayerPotniaWalls, PrayerGreenShoots, PrayerAsterionSwift, PrayerStillnessSwift, PrayerVelchanosStrength, PrayerStillnessHull, PrayerStillnessCalm, PrayerStillnessWake} {
+	for _, id := range []string{PrayerPotniaVision, PrayerPotniaWalls, PrayerGreenShoots, PrayerAsterionSwift, PrayerStillnessSwift, PrayerVelchanosStrength, PrayerStillnessHull, PrayerStillnessCalm, PrayerStillnessWake, PrayerPotniaFertility, PrayerVelchanosBuilding, PrayerPotniaScapegoat} {
 		spec, ok := PrayerSpecs[id]
 		if !ok || spec.GodID == "" {
 			t.Fatalf("missing alpha spec %s", id)
