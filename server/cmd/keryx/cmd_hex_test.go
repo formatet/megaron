@@ -70,3 +70,37 @@ func TestHexInspectsPhysicalOwnAndOnlyPublicForeignFields(t *testing.T) {
 		t.Fatal("march matched origin instead of current position")
 	}
 }
+
+func TestHexNamesTheCityOfAGarrisonedUnit(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if testWorldTimeResponse(w, r) {
+			return
+		}
+		switch {
+		case strings.HasSuffix(r.URL.Path, "/map"):
+			w.Write([]byte(`[{"q":0,"r":0,"terrain":"plains"}]`))
+		case strings.HasSuffix(r.URL.Path, "/provinces"):
+			w.Write([]byte(`[{"settlement_id":"aaaaaaaa-1111-2222-3333-444444444444","name":"Mycenae","q":0,"r":0,"own":true}]`))
+		case strings.HasSuffix(r.URL.Path, "/foreign-units"), strings.HasSuffix(r.URL.Path, "/trades"):
+			w.Write([]byte(`[]`))
+		case strings.HasSuffix(r.URL.Path, "/units"):
+			w.Write([]byte(`{"units":[{"id":"own","display_name":"Bronze Guard","type":"spearman","category":"land","size":100,"status":"positioned","q":0,"r":0,"settlement_id":"aaaaaaaa-1111-2222-3333-444444444444"}]}`))
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer srv.Close()
+	old, j := cfg, jsonMode
+	defer func() { cfg, jsonMode = old, j }()
+	cfg = &Config{Server: srv.URL, Token: "token", WorldID: "world"}
+	jsonMode = false
+	cmd := hexCmd()
+	cmd.SetArgs([]string{"0,0"})
+	out, err := captureStdout(t, cmd.Execute)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(out, "in Mycenae") || strings.Contains(out, "settlement aaaaaaaa") {
+		t.Errorf("garrisoned unit should name its city: %s", out)
+	}
+}

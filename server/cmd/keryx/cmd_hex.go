@@ -115,13 +115,14 @@ func hexCmd() *cobra.Command {
 			return nil
 		}
 		fmt.Printf("Hex (%d,%d): %v\n", q, r, tile["terrain"])
+		homes := fetchOwnSettlementPositions(c, cfg.WorldID)
 		for _, u := range own {
 			name := u.DisplayName
 			if name == "" {
 				name = u.Type
 			}
 			fmt.Printf("  %s [%s] · %s ×%d · %s\n", name, u.ID, u.Type, u.Size, u.Status)
-			fmt.Println("    " + locationStr(c, u, nil))
+			fmt.Println("    " + locationStr(c, u, homes))
 			if u.Category == "naval" {
 				fmt.Printf("    Hull %d/%d · crew %d · food for %s\n", u.Hull, u.hullCeiling(), u.Crew, formatDays(u.ProvisionDays, "%d"))
 				for _, p := range u.CargoUnits {
