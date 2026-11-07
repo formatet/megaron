@@ -118,26 +118,6 @@ func ticklogCmd() *cobra.Command {
 	return cmd
 }
 
-// fmtFlows renders a good→rate map deterministically (sorted keys).
-func fmtFlows(m map[string]float64) string {
-	if len(m) == 0 {
-		return "—"
-	}
-	keys := make([]string, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	out := ""
-	for i, k := range keys {
-		if i > 0 {
-			out += ", "
-		}
-		out += fmt.Sprintf("%s %.2f", k, m[k]) // one logged day; a "+" on consumption read as a gain (Haiku-8)
-	}
-	return out
-}
-
 // renderTickEvent gives a one-line human rendering of a journal event.
 func renderTickEvent(etype string, payload json.RawMessage) string {
 	switch etype {

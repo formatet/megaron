@@ -4,4 +4,4 @@ It carries two things only: the founder's **name**, and the **message** they cho
 
 This is a deliberate exception to the rule that news travels by [[messengers]]: a founding is heard by everyone, but only as a name and a few words. A Wanax who loses every city and rises again is not new, and a [[colonies|colony]] is not a first city — neither is announced. The founder receives no copy.
 
-You write the message in the founding panel, or in [[keryx|Keryx]] with `keryx founding settle --message "…"`. Coarse words are replaced and cost the writer [[kharis]], as in a letter.
+You write the message in the founding panel, or in [[keryx|Keryx]] with `keryx founding settle --message "…"`. Coarse words are replaced and cost the writer [[kharis]], as in a letter. The field is offered only when your founding will be announced, so a Wanax who rises again does not see it; a message over 280 characters is refused, not cut.

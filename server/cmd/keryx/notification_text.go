@@ -276,6 +276,7 @@ func printNotificationSummary(c *Client, n notificationItem) {
 	city := firstNotificationText(b.Name, "The city")
 	at := fmt.Sprintf("(%d, %d)", b.Q, b.R)
 	cargo := []string{}
+	sort.SliceStable(b.Goods, func(i, j int) bool { return b.Goods[i].GoodKey < b.Goods[j].GoodKey })
 	for _, g := range b.Goods {
 		cargo = append(cargo, fmt.Sprintf("%s %s", notificationAmount(g.Quantity), g.GoodKey))
 	}

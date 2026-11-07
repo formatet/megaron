@@ -28,6 +28,7 @@ type enteredFixture struct {
 	founder uuid.UUID
 	others  []uuid.UUID
 	send    func(path, body string) *httptest.ResponseRecorder
+	status  func() *httptest.ResponseRecorder
 }
 
 func newEnteredFixture(t *testing.T) *enteredFixture {
@@ -43,6 +44,7 @@ func newEnteredFixture(t *testing.T) *enteredFixture {
 	r.Use(auth.Middleware(svc))
 	r.Post("/worlds/{worldID}/join", h.Join)
 	r.Post("/worlds/{worldID}/founding/settle", h.Settle)
+	r.Get("/worlds/{worldID}/founding/status", h.FoundingStatus)
 	f := &enteredFixture{pool: pool, world: wid}
 	tokens := map[uuid.UUID]string{}
 	var ids []uuid.UUID
@@ -55,6 +57,13 @@ func newEnteredFixture(t *testing.T) *enteredFixture {
 	cur := f.founder
 	f.send = func(path, body string) *httptest.ResponseRecorder {
 		req := httptest.NewRequest(http.MethodPost, "/worlds/"+wid.String()+path, strings.NewReader(body))
+		req.Header.Set("Authorization", "Bearer "+tokens[cur])
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+		return rec
+	}
+	f.status = func() *httptest.ResponseRecorder {
+		req := httptest.NewRequest(http.MethodGet, "/worlds/"+wid.String()+"/founding/status", nil)
 		req.Header.Set("Authorization", "Bearer "+tokens[cur])
 		rec := httptest.NewRecorder()
 		r.ServeHTTP(rec, req)
@@ -213,5 +222,43 @@ func TestWanaxEntered_EmptyMessageStillAnnounces(t *testing.T) {
 	n := f.notices(t, f.others[0])
 	if len(n) != 1 || n[0]["message"] != "" {
 		t.Fatalf("empty message: %v", n)
+	}
+}
+
+// The founding status tells the clients whether settling will be announced, so
+// the message field is shown only to a Wanax whose words will be sent.
+func TestWanaxEntered_StatusSaysWhetherSettlingAnnounces(t *testing.T) {
+	f := newEnteredFixture(t)
+	read := func() bool {
+		t.Helper()
+		rec := f.status()
+		if rec.Code != http.StatusOK {
+			t.Fatalf("status: %d %s", rec.Code, rec.Body.String())
+		}
+		var body struct {
+			Active         bool  `json:"active"`
+			AnnouncesEntry *bool `json:"announces_entry"`
+		}
+		if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil || !body.Active || body.AnnouncesEntry == nil {
+			t.Fatalf("status body %s (%v)", rec.Body.String(), err)
+		}
+		return *body.AnnouncesEntry
+	}
+	if !read() {
+		t.Fatal("a new Wanax's settling is announced; announces_entry must be true")
+	}
+	if _, err := f.pool.Exec(context.Background(), `UPDATE founder_phase SET is_refugee=true WHERE world_id=$1 AND owner_id=$2`, f.world, f.founder); err != nil {
+		t.Fatal(err)
+	}
+	if read() {
+		t.Fatal("a returning Wanax is not announced; announces_entry must be false")
+	}
+}
+
+// Over-long words are refused with the limit named, never cut.
+func TestWanaxEntered_TooLongNamesTheLimit(t *testing.T) {
+	_, err := normaliseEnteredMessage(strings.Repeat("a", wanaxEnteredMaxRunes+1))
+	if err == nil || !strings.Contains(err.Error(), "limit is 280") {
+		t.Fatalf("err = %v, want it to name the 280 limit", err)
 	}
 }

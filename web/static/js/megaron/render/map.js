@@ -3728,6 +3728,22 @@ function hostStoreLine(label, s) {
   return `${label} lasts ${fmtDays(days)}`;
 }
 
+export const SETTLE_MESSAGE_LIMIT = 280; // server wanaxEnteredMaxRunes
+
+export function settleMessageCount(value) {
+  return `${[...String(value || '')].length}/${SETTLE_MESSAGE_LIMIT}`;
+}
+
+// The founder's words to the other Wanaxes. Only a first city is announced
+// (founding status announces_entry); a returning Wanax gets no field. An
+// older server that does not say keeps the field.
+export function settleMessageHTML(fp) {
+  if (fp?.announces_entry === false) return '';
+  return `<label class="ip-settle-msg-label" for="ip-settle-msg">Your words to the other Wanaxes (optional, first city only, at most ${SETTLE_MESSAGE_LIMIT} characters). They learn your name and this — never where.</label>
+     <input id="ip-settle-msg" class="ip-settle-msg" type="text" maxlength="${SETTLE_MESSAGE_LIMIT}" autocomplete="off" placeholder="A new Wanax has entered the Thalassa…">
+     <div id="ip-settle-count" class="ip-settle-msg-label">${settleMessageCount('')}</div>`;
+}
+
 // Summarize the same existing forecast. Do not round before deciding yes/no.
 export function hostForecastSummaryHTML(p) {
   const net = p?.grain?.food_net_per_tick ?? p?.grain?.est_net_per_tick;
@@ -3803,10 +3819,13 @@ async function openHostPanel(h, tile) {
 
   const foot = document.getElementById('ip-foot');
   foot.innerHTML =
-    `<label class="ip-settle-msg-label" for="ip-settle-msg">Your words to the other Wanaxes (optional, first city only). They learn your name and this — never where.</label>
-     <input id="ip-settle-msg" class="ip-settle-msg" type="text" maxlength="280" autocomplete="off" placeholder="A new Wanax has entered the Thalassa…">
+    `${settleMessageHTML(fp)}
      <button id="ip-settle-btn" style="${MARCH_BTN_STYLE}">⚒ Found the metropolis here</button>
      <div id="ip-settle-err"></div>`;
+  const settleMsg = document.getElementById('ip-settle-msg');
+  if (settleMsg) settleMsg.addEventListener('input', () => {
+    document.getElementById('ip-settle-count').textContent = settleMessageCount(settleMsg.value);
+  });
   openMobilePanel(document.getElementById('inspect-panel'), closeInspect);
   document.getElementById('inspect-panel').style.display = 'flex';
 

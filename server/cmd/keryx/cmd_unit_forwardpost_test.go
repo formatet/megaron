@@ -147,3 +147,24 @@ func TestLocationStr_ForwardPost_UnknownHome(t *testing.T) {
 		t.Errorf("kostnaden ska visas även utan känd hemstad: %q", got)
 	}
 }
+
+// A garrisoned unit's location names its city when the city is known, and a
+// short or unknown id never panics.
+func TestLocationStr_Garrisoned_NamesCity(t *testing.T) {
+	sid := "35f553f9-aaaa-bbbb-cccc-dddddddddddd"
+	u := unitRow{Category: "land", Status: "garrison", SettlementID: strPtr(sid)}
+	if got := locationStr(nil, u, map[string]settlementPos{sid: {Name: "Knossos"}}); got != "in Knossos" {
+		t.Errorf("known city: %q, want %q", got, "in Knossos")
+	}
+	if got := locationStr(nil, u, nil); got != "settlement 35f553f9…" {
+		t.Errorf("unknown city: %q", got)
+	}
+	short := unitRow{Category: "land", Status: "garrison", SettlementID: strPtr("abc")}
+	if got := locationStr(nil, short, nil); got != "settlement abc" {
+		t.Errorf("short id: %q", got)
+	}
+	emb := unitRow{Category: "land", Status: "embarked", CarrierShipID: strPtr("xy")}
+	if got := locationStr(nil, emb, nil); got != "embarked on ship xy" {
+		t.Errorf("short carrier id: %q", got)
+	}
+}

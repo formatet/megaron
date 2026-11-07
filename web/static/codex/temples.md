@@ -10,7 +10,7 @@ Choose the god when you build. On the web, **City → Construct** lists one row 
 
 Temple levels 1/2/3 provide **2/4/8 workplaces**. A worker stands at one temple only and cannot work another job at the same time. Founding grants no automatic temple staffing. **Temple workplaces unfilled** on **Kult → Kharis** means a temple has empty places: place citizens in it from **City**.
 
-Temple levels 1/2/3 have **weight 1/4/9**. Effective weight is temple weight × staffed fraction × paid tithe fraction. Each effective weight produces **about 0.58 kharis per game day**. An empty temple gives nothing.
+Temple levels 1/2/3 have **weight 1/4/9**. Effective weight is temple weight × staffed fraction × paid tithe fraction. Each effective weight produces the same small amount of kharis each game day (the table below gives the total per level). An empty temple gives nothing.
 
 ## A temple’s daily offering {#daily-offerings}
 
@@ -51,7 +51,7 @@ With full staffing and tithe, a level-1 temple raises kharis in a one-city realm
 | 3 | 8 | 9 | 5.25 | 7.88 | 100 | 1.75 [[grain|grain]] (70%) + 0.25 [[silver|silver]] (20%) + 0.1 [[incense|incense]] (10%) |
 <!-- /temple-levels -->
 
-**Your best temple sets your kharis ceiling:** no temple 40, level 1 50, level 2 75, level 3 100. Everyday prayers work at a level-1 temple. Spontaneous blessings need 60 kharis and a maintained temple. Only a level-2 temple or higher lets kharis grow that far. Kharis retained above a lowered ceiling still counts. Levelling a temple further needs [[cedar|cedar]].
+**Your best temple sets your kharis ceiling:** a realm with no temple has the lowest ceiling, and each temple level raises it (the Kharis ceiling column above gives the numbers). Everyday prayers work at a level-1 temple. Spontaneous blessings need 60 kharis and a maintained temple. Only a level-2 temple or higher lets kharis grow that far. Kharis retained above a lowered ceiling still counts. Levelling a temple further needs [[cedar|cedar]].
 
 ### Temple demolition and realm temple lists {#temple-levels-2}
 
@@ -76,7 +76,7 @@ filter the list to one city.
 
 ## Daily upkeep of the cult {#cult-upkeep}
 
-Realm demand grows with each city: **the first active city demands 1, the second adds 2, the third adds 3**, and so on. All active cities count, including the capital, with or without temples. Sunk, collapsed and razed cities do not count. Population, armies and crews do not change demand. Cult upkeep is **about 0.33 × demand per game day**.
+Realm demand grows with each city: **the first active city demands 1, the second adds 2, the third adds 3**, and so on. All active cities count, including the capital, with or without temples. Sunk, collapsed and razed cities do not count. Population, armies and crews do not change demand. Cult upkeep is a fixed amount per point of demand each game day (see the upkeep table in [[kharis]]).
 
 One, two, three and four cities demand **1, 3, 6 and 10** respectively. Four fully staffed level-1 temples in a four-city realm give 4 weight: **about 2.33 income − 3.33 upkeep = −1 kharis per game day**. A realm with no active city has zero demand.
 
@@ -92,6 +92,6 @@ Voluntarily demolishing a [[temples|temple]] angers its god. Your realm loses **
 
 Before you confirm, **City → Demolish** and `keryx demolish --type temple --god potnia` show the actual kharis loss, standing afterward and the ceiling before and after. Keryx asks for confirmation; non-interactive or `--json` use without `--yes` previews the consequences without demolishing. Run again with `--yes` to confirm. The result and the **god is angered** notification record what actually happened. Nothing is refunded, and only that temple's workers become idle.
 
-Your best remaining temple determines the ceiling: no temple **40**, level 1 **50**, level 2 **75**, level 3 **100**. Another equally high temple can keep the ceiling unchanged. **Demolition costs kharis immediately; the lower ceiling takes no additional kharis.** Standing above it declines by ordinary daily cult upkeep; temple gains do not offset this decline. Once standing is at or below the ceiling, ordinary gain and upkeep apply again. The voluntary demolition loss still applies.
+Your best remaining temple determines the ceiling: the Kharis ceiling column of the temple table above gives the number for each level, and a realm with no temple has the lowest. Another equally high temple can keep the ceiling unchanged. **Demolition costs kharis immediately; the lower ceiling takes no additional kharis.** Standing above it declines by ordinary daily cult upkeep; temple gains do not offset this decline. Once standing is at or below the ceiling, ordinary gain and upkeep apply again. The voluntary demolition loss still applies.
 
 A temple destroyed by **plundering** creates **no demolition debt** for its owner. Its loss can lower the ceiling and remove its production. Cancelling construction is not demolition and does not incur the kharis loss.

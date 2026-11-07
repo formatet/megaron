@@ -574,16 +574,17 @@ func (h *JoinHandler) FoundingStatus(w http.ResponseWriter, r *http.Request) {
 		grainAmt, grainRate   float64
 		silverAmt, silverRate float64
 		currentTick           int
+		refugee               bool
 	)
 	err = h.pool.QueryRow(r.Context(),
 		`SELECT fp.population,
 		        GREATEST(0, settled(fp.grain_amount, fp.grain_rate, fp.calc_tick)), fp.grain_rate,
 		        GREATEST(0, settled(fp.silver_amount, fp.silver_rate, fp.calc_tick)), fp.silver_rate,
-		        current_world_tick()
+		        current_world_tick(), fp.is_refugee
 		 FROM founder_phase fp
 		 WHERE fp.world_id = $1 AND fp.owner_id = $2 AND fp.active`,
 		worldID, playerID,
-	).Scan(&population, &grainAmt, &grainRate, &silverAmt, &silverRate, &currentTick)
+	).Scan(&population, &grainAmt, &grainRate, &silverAmt, &silverRate, &currentTick, &refugee)
 	if err != nil {
 		// No active phase — settled (or never a founder). Not an error: the panel
 		// and keryx both key off active=false to show nothing.
@@ -629,6 +630,9 @@ func (h *JoinHandler) FoundingStatus(w http.ResponseWriter, r *http.Request) {
 		"r":                 host.Position.R,
 		"population":        population,
 		"spearmen_in_field": spearmenInField,
+		// Whether settling will tell the other Wanaxes (announceWanaxEntered):
+		// not for a Wanax who rose again after every city fell.
+		"announces_entry": !refugee,
 		"current_tick":      currentTick,
 		"tick_seconds":      tick.TickSeconds,
 		"grain":             store(grainAmt, grainRate),

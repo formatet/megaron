@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"unicode/utf8"
 
 	"formatet/megaron/server/internal/kharis"
 	"formatet/megaron/server/internal/province"
@@ -25,6 +26,28 @@ type foundingStatusResp struct {
 	TickSeconds     float64            `json:"tick_seconds"`
 	Grain           foundingStore      `json:"grain"`
 	Silver          foundingStore      `json:"silver"`
+	// AnnouncesEntry: settling tells the other Wanaxes (a first city only; false
+	// for a Wanax who rose again). nil = an older server that does not say.
+	AnnouncesEntry *bool `json:"announces_entry"`
+}
+
+// foundingMessageLimit mirrors the server's wanaxEnteredMaxRunes.
+const foundingMessageLimit = 280
+
+// settleMessage checks --message before the irreversible founding: too long is
+// refused (the server refuses too, never cuts), and a Wanax whose settling is
+// not announced is told so instead of having the words silently dropped.
+func settleMessage(fp *foundingStatusResp, message string) error {
+	if message == "" {
+		return nil
+	}
+	if n := utf8.RuneCountInString(message); n > foundingMessageLimit {
+		return fmt.Errorf("--message is %d characters — the limit is %d", n, foundingMessageLimit)
+	}
+	if fp.AnnouncesEntry != nil && !*fp.AnnouncesEntry {
+		return fmt.Errorf("--message would not be sent: the other Wanaxes are told only of a first city, and you are returning — settle without it")
+	}
+	return nil
 }
 
 type foundingHostState struct {
@@ -132,6 +155,9 @@ func printFoundingStatus(fp *foundingStatusResp) error {
 	fmt.Println("\nNext steps:")
 	fmt.Printf("  keryx unit march --unit %s --q <q> --r <r>   # travel\n", hostID)
 	fmt.Println("  keryx founding settle                       # found the metropolis where the host stands")
+	if fp.AnnouncesEntry == nil || *fp.AnnouncesEntry {
+		fmt.Println("                                              # add --message \"...\" (max 280 characters) to tell the other Wanaxes")
+	}
 	fmt.Println("  keryx message --from-host --to <city> --text \"...\"")
 	return nil
 }
@@ -231,7 +257,9 @@ settling. To found somewhere else: march the host there first
 (keryx unit march), then settle.
 
 Founding your FIRST city tells every other Wanax that you have entered the Thalassa:
-your name and, if you give one, --message. Never where the city stands.`,
+your name and, if you give one, --message (max 280 characters; refused, not cut, if longer).
+A Wanax who rises again after every city fell is not new: nothing is sent, and --message is refused.
+Never where the city stands.`,
 		Example: `  keryx founding settle
   keryx founding settle --name Thapsos --yes
   keryx founding settle --yes --message "Peace to all who sail these waters."`,
@@ -254,6 +282,10 @@ your name and, if you give one, --message. Never where the city stands.`,
 			q, r := *fp.Q, *fp.R
 			if fp.HostState != nil && !fp.HostState.CanFoundHere {
 				return fmt.Errorf("cannot found here: %s", fp.HostState.Reason)
+			}
+
+			if err := settleMessage(fp, message); err != nil {
+				return err
 			}
 
 			if jsonMode {

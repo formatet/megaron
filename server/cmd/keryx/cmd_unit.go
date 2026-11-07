@@ -669,6 +669,14 @@ func fetchOwnSettlementPositions(c *Client, worldID string) map[string]settlemen
 	return out
 }
 
+// shortIDEllipsis is shortID plus a trailing "…" when it cut the id.
+func shortIDEllipsis(id string) string {
+	if s := shortID(id); s != id {
+		return s + "…"
+	}
+	return id
+}
+
 func locationStr(c *Client, u unitRow, homes map[string]settlementPos) string {
 	// Passage wait (megaron_plan_ordna_passage.md 3b-3 R3): the ship stands
 	// positioned, off a port, holding for its runner's return — not a forward
@@ -787,7 +795,7 @@ func locationStr(c *Client, u unitRow, homes map[string]settlementPos) string {
 			return "embarked on " + *u.CarrierShipName
 		}
 		if u.CarrierShipID != nil {
-			return "embarked on ship " + (*u.CarrierShipID)[:8] + "…"
+			return "embarked on ship " + shortIDEllipsis(*u.CarrierShipID)
 		}
 		return "embarked"
 	case "freighting":
@@ -800,7 +808,10 @@ func locationStr(c *Client, u unitRow, homes map[string]settlementPos) string {
 		return "freighting"
 	default:
 		if u.SettlementID != nil {
-			return "settlement " + (*u.SettlementID)[:8] + "…"
+			if h, ok := homes[*u.SettlementID]; ok && h.Name != "" {
+				return "in " + h.Name
+			}
+			return "settlement " + shortIDEllipsis(*u.SettlementID)
 		}
 		if u.Q != nil && u.R != nil {
 			return fmt.Sprintf("hex (%d,%d)", *u.Q, *u.R)

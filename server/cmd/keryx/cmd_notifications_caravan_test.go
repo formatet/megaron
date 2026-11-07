@@ -23,3 +23,26 @@ func TestPrintCaravanSeizureLine_NamesCargo(t *testing.T) {
 		t.Errorf("pre-manifest line = %q", old)
 	}
 }
+
+// Cargo lists are written alphabetically by good, whatever the payload order.
+func TestCargoListsAlphabetical(t *testing.T) {
+	goods := `[{"good_key":"wine","quantity":5},{"good_key":"grain","quantity":20},{"good_key":"oil","quantity":7}]`
+	raided := capturePrint(t, func() {
+		printCaravanSeizureLine(notificationItem{Kind: "CaravanRaided", Body: []byte(`{"q":1,"r":2,"goods":` + goods + `}`)})
+	})
+	if !strings.Contains(raided, "carrying 20 grain, 7 oil, 5 wine was") {
+		t.Errorf("caravan line = %q", raided)
+	}
+	storm := capturePrint(t, func() {
+		printSeaStormLine(notificationItem{Kind: "ShipFoundered", Body: []byte(`{"name":"A","q":1,"r":2,"cargo":` + goods + `}`)})
+	})
+	if !strings.Contains(storm, "Lost with her: 20 grain, 7 oil, 5 wine.") {
+		t.Errorf("storm line = %q", storm)
+	}
+	transfer := capturePrint(t, func() {
+		printNotificationSummary(nil, notificationItem{Kind: "TransferDelivered", Body: []byte(`{"dest_name":"X","goods":` + goods + `}`)})
+	})
+	if !strings.Contains(transfer, "20 grain, 7 oil, 5 wine") {
+		t.Errorf("transfer line = %q", transfer)
+	}
+}
