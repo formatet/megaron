@@ -27,6 +27,7 @@ keryx status
 keryx city                   # people and placement in a city
 keryx codex bronze           # read a Codex article
 keryx dispatches             # which kinds of news are pushed to you live
+keryx dossier --out world.md # one markdown report of everything you know
 keryx goods                  # stock and production
 keryx map                    # the map around you
 keryx notifications          # the archive — what happened while you were away
@@ -37,6 +38,8 @@ keryx status                 # your realm at a glance
 ```
 
 `notifications --all` includes the historical kinds normally hidden or grouped in the default feed. It shows the latest 100 notifications; combine it with `--unread` for unread rows only. It does not mark anything read. Use `--kind` or `--exclude` separately to select kinds.
+
+`keryx dossier` writes one markdown report of what you know, in a fixed order: failed orders first, then urgent news, your cities, forces and orders on the way, known places, contacts, [[storms]], unread news and what you can do now. A section with nothing in it says "None.". It only reads, so it marks nothing as read, and it shows only what your own people know. `keryx dossier --out world.md` saves it to a file and prints the path and size. The report is a snapshot of one moment: write a new one each round and do not trust an old file.
 
 Orders given through Keryx obey the same rules as in the browser: they travel by [[runners|Runner]] and take game days ([[time]]).
 
