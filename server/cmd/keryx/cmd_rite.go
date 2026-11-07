@@ -69,6 +69,12 @@ type riteTargets struct {
 		Name  string `json:"name"`
 		Where string `json:"where"`
 	} `json:"storms"`
+	// Kind "city" (The Walls Fall): a foreign city of your map with a remembered wall.
+	Cities []struct {
+		ID    string `json:"id"`
+		Name  string `json:"name"`
+		Where string `json:"where"`
+	} `json:"cities"`
 }
 
 // scaledOffering is the traditional gift times a target step's factor.
@@ -94,6 +100,16 @@ func printRiteTargets(p riteAvailablePrayer, settlementID string) {
 		fmt.Printf("  Choose a storm with --storm <name> (one gift, whoever's ships sail there):\n")
 		for _, st := range p.Targets.Storms {
 			fmt.Printf("        %s (%s) %s\n", st.Name, st.Where, st.ID)
+		}
+		return
+	case "city":
+		if len(p.Targets.Cities) == 0 {
+			fmt.Printf("  No foreign city with a wall you remember: see one with its wall (keryx cities) before Potnia can be asked.\n")
+			return
+		}
+		fmt.Printf("  Choose a city with --target <name> (one gift; the wall falls a level 3 game days after the prayer, and you will not be told):\n")
+		for _, c := range p.Targets.Cities {
+			fmt.Printf("        %s (%s) %s\n", c.Name, c.Where, c.ID)
 		}
 		return
 	case "hex":
@@ -196,6 +212,31 @@ func resolveRiteStorm(p riteAvailablePrayer, arg string) (string, error) {
 	return "", fmt.Errorf("no named storm %q on your storm map. On your map: %s", arg, list)
 }
 
+// resolveRiteCity turns --target (a name or an id) into a city id from the prayer's city list.
+func resolveRiteCity(p riteAvailablePrayer, arg string) (string, error) {
+	var names, hits []string
+	for _, c := range p.Targets.Cities {
+		names = append(names, c.Name)
+		if strings.EqualFold(c.ID, arg) || strings.EqualFold(c.Name, arg) {
+			return c.ID, nil
+		}
+		if arg != "" && strings.Contains(strings.ToLower(c.Name), strings.ToLower(arg)) {
+			hits = append(hits, c.ID)
+		}
+	}
+	if len(hits) == 1 {
+		return hits[0], nil
+	}
+	list := strings.Join(names, ", ")
+	if list == "" {
+		list = "none: see a walled city first"
+	}
+	if len(hits) > 1 {
+		return "", fmt.Errorf("%q matches more than one city — name it fully. On your map: %s", arg, list)
+	}
+	return "", fmt.Errorf("no foreign city %q with a wall you remember. On your map: %s", arg, list)
+}
+
 // riteProvinceStatus is the slice of the province status response this file needs.
 type riteProvinceStatus struct {
 	Settlement struct {
@@ -292,6 +333,7 @@ func riteCmd() *cobra.Command {
   keryx rite --prayer minoan_velchanos_strength --scope realm
   keryx rite --prayer minoan_stillness_calm --storm "Old Grey"
   keryx rite --prayer minoan_stillness_wake --hex 12,-3
+  keryx rite --prayer minoan_potnia_walls_fall --target "Mycenae"
   keryx rite --prayer <prayer-id> --yes
   keryx rite --json`,
 		Args: rejectPositionalArgs("prayer"),
@@ -389,6 +431,15 @@ func riteCmd() *cobra.Command {
 				for _, p := range view.Prayers {
 					if p.SettlementID != settlementID || p.Targets == nil || !(p.ID == prayerID || (prayerID == "" && p.Default)) {
 						continue
+					}
+					if p.Targets.Kind == "city" {
+						if scope != "" {
+							return fmt.Errorf("%s takes --target <city> only, without --scope", p.Name)
+						}
+						if targetID, err = resolveRiteCity(p.riteAvailablePrayer, targetID); err != nil {
+							return err
+						}
+						break
 					}
 					if scope == "" {
 						scope = "unit"
@@ -506,7 +557,7 @@ func riteCmd() *cobra.Command {
 	cmd.Flags().StringVar(&provinceArg, "province", "", "city name or province ID, like status/place/build (default: your capital)")
 	cmd.Flags().StringVar(&settlementID, "settlement", "", "settlement UUID (same as --province, kept for old scripts)")
 	cmd.Flags().StringVar(&prayerID, "prayer", "", "prayer ID (run --list to see your culture's prayers; defaults to the culture's listed default prayer)")
-	cmd.Flags().StringVar(&targetID, "target", "", "the unit, ship, Runner or caravan a blessing is laid on, by name or id (with --scope unit or permanent; see --list)")
+	cmd.Flags().StringVar(&targetID, "target", "", "the unit, ship, Runner or caravan a blessing is laid on, or the foreign city whose wall Potnia is asked to bring down (minoan_potnia_walls_fall), by name or id (see --list)")
 	cmd.Flags().StringVar(&stormArg, "storm", "", "the named storm to still (minoan_stillness_calm), by name or id; see --list")
 	cmd.Flags().StringVar(&hexArg, "hex", "", "the sea hex of your own map to wake a storm on (minoan_stillness_wake), as q,r")
 	cmd.Flags().StringVar(&scope, "scope", "", "how wide a blessing reaches: unit | city | realm, or permanent (one named unit, for ever, ×20) — the wider, the dearer (see --list)")

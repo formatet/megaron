@@ -54,6 +54,16 @@ func printNotificationSummary(c *Client, n notificationItem) {
 			return
 		}
 	}
+	if n.Kind == "WallsOmen" || n.Kind == "WallsFell" {
+		var b struct {
+			Name      string `json:"name"`
+			WallAfter int    `json:"wall_after"`
+		}
+		if json.Unmarshal(n.Body, &b) == nil {
+			fmt.Printf("      %s\n", wallsNoticeText(n.Kind, b.Name, b.WallAfter))
+			return
+		}
+	}
 	if n.Kind == "GodsAngered" {
 		var b struct {
 			KharisLost float64 `json:"kharis_lost"`
@@ -583,4 +593,19 @@ func wanaxEnteredText(name, message string) string {
 		text += " They say: \u201c" + message + "\u201d"
 	}
 	return text
+}
+
+// wallsNoticeText is the player text of Potnia's wall prayer for the city's owner: an omen
+// beforehand (only for a Wanax in good standing) and the fall itself. Never who prayed.
+func wallsNoticeText(kind, city string, wallAfter int) string {
+	if city == "" {
+		city = "your city"
+	}
+	if kind == "WallsOmen" {
+		return fmt.Sprintf("Potnia's wrath gathers over the walls of %s: someone has prayed against them.", city)
+	}
+	if wallAfter <= 0 {
+		return fmt.Sprintf("The gods struck the wall of %s: it fell and is gone.", city)
+	}
+	return fmt.Sprintf("The gods struck the wall of %s: it lost a level and now stands at level %d.", city, wallAfter)
 }
