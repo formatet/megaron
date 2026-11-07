@@ -262,3 +262,25 @@ test('the Bull\'s Horns: troops by name, city and realm by count, no fourth step
   assert.match(html, /all 3 · gift ×4/);
   assert.doesNotMatch(html, /For ever/);
 });
+
+// The Bird Oracle (steg 5d): a city or a named place from one list, no scope steps.
+const birdOracle = { id: 'minoan_asterion_bird_oracle', god: 'Asterion', god_id: 'asterion', offering: { silver: 10, wine: 8 },
+  targets: { unit: [], city: { count: 0 }, realm: { count: 0 }, kind: 'place', cities: [{ id: 'c-1', name: 'Mycenae', where: 'held by Agamemnon, near (20,20)' }],
+    places: [{ id: 'Sunken Cape', name: 'Sunken Cape', where: 'cape, near (70,70)' }] } };
+
+test('The Bird Oracle offers known cities and named places, says what is seen and that the watched are told nothing', () => {
+  const html = offerRowHTML(birdOracle, { silver: 20, wine: 20 });
+  assert.match(html, /class="offer-target-place"/);
+  assert.match(html, /<optgroup label="Cities">[^]*Mycenae/);
+  assert.match(html, /<optgroup label="Named places">[^]*Sunken Cape/);
+  assert.match(html, /within 2 hexes/);
+  assert.match(html, /told nothing/);
+  assert.doesNotMatch(html, /type="radio"|gift ×/);
+  assert.deepEqual(chosenTarget({ querySelector: (q) => (q === '.offer-target-place' ? { value: 'Sunken Cape' } : null) }), { target: 'Sunken Cape' });
+});
+
+test('The Bird Oracle with no known place says so and offers no select', () => {
+  const html = offerRowHTML({ ...birdOracle, targets: { ...birdOracle.targets, cities: [], places: [] } }, {});
+  assert.match(html, /No named place on your map/);
+  assert.doesNotMatch(html, /offer-target-place/);
+});

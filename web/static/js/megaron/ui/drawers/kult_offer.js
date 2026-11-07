@@ -74,10 +74,23 @@ function cityChooserHTML(prayer) {
     '<select class="offer-target-city" aria-label="City whose wall falls">' + options + '</select></div>';
 }
 
+// The Bird Oracle (steg 5d) names a city (yours or remembered) or a named place whose anchor you know.
+function placeChooserHTML(prayer) {
+  const cities = (prayer.targets.cities || []).map(c =>
+    '<option value="' + esc(c.id) + '">' + esc(c.name) + (c.where ? ' (' + esc(c.where) + ')' : '') + '</option>').join('');
+  const places = (prayer.targets.places || []).map(p =>
+    '<option value="' + esc(p.id) + '">' + esc(p.name) + (p.where ? ' (' + esc(p.where) + ')' : '') + '</option>').join('');
+  if (!cities && !places) return '<div class="offer-target"><p class="offer-note">No named place on your map. Asterion\'s birds need a city or a named land you know.</p></div>';
+  return '<div class="offer-target"><p class="offer-note">Which place do Asterion\'s birds watch? For 1 game day you see what stands within 2 hexes of it, live, armies and fleets with their strength. Afterwards it is grey memory. The one watched is told nothing.</p>' +
+    '<select class="offer-target-place" aria-label="Place to watch">' +
+    (cities ? '<optgroup label="Cities">' + cities + '</optgroup>' : '') + (places ? '<optgroup label="Named places">' + places + '</optgroup>' : '') + '</select></div>';
+}
+
 // World blessings (steg 5a): a city or the realm, no unit to name.
 function isWorldPrayer(prayer) { return prayer.targets && prayer.targets.kind === 'world'; }
 
 export function targetChooserHTML(prayer) {
+  if (prayer.targets && prayer.targets.kind === 'place') return placeChooserHTML(prayer);
   if (prayer.targets && prayer.targets.kind === 'city') return cityChooserHTML(prayer);
   if (prayer.targets && (prayer.targets.kind === 'storm' || prayer.targets.kind === 'hex')) return stormChooserHTML(prayer);
   const choices = scopeChoices(prayer);
@@ -105,6 +118,8 @@ export function targetChooserHTML(prayer) {
 // What the player chose in an open offer row: { target_scope, target } to send, or {} for a prayer without targets.
 export function chosenTarget(host) {
   if (!host || !host.querySelector) return {};
+  const place = host.querySelector('.offer-target-place');
+  if (place && place.value) return { target: place.value };
   const city = host.querySelector('.offer-target-city');
   if (city && city.value) return { target: city.value };
   const storm = host.querySelector('.offer-target-storm');
