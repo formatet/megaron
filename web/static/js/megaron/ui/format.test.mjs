@@ -430,8 +430,8 @@ test('OrderFailed prefixes the named unit when present', () => {
 
 test('caravan seizure notices name the cargo when the payload carries it', () => {
   const goods = [{ good_key: 'tin', quantity: 30 }, { good_key: 'grain', quantity: 12.7 }];
-  assert.equal(notifText('CaravanRaided', { q: 7, r: 0, goods }), 'Your caravan carrying 30 tin, 12 grain was raided at (7, 0)');
-  assert.equal(notifText('CaravanSeized', { q: 7, r: 0, goods }), 'You seized an enemy caravan carrying 30 tin, 12 grain at (7, 0)');
+  assert.equal(notifText('CaravanRaided', { q: 7, r: 0, goods }), 'Your caravan carrying 12 grain, 30 tin was raided at (7, 0)');
+  assert.equal(notifText('CaravanSeized', { q: 7, r: 0, goods }), 'You seized an enemy caravan carrying 12 grain, 30 tin at (7, 0)');
   // Bodies persisted before the manifest was added keep their old wording.
   assert.equal(notifText('CaravanRaided', { q: 7, r: 0 }), 'Your caravan was raided at (7, 0)');
 });
@@ -833,4 +833,10 @@ test('StorageOverflow from the Storehouse is ONE line about the store, not a goo
   assert.match(line, /Knossos: Storehouse full \(500 \/ 500\)/);
   assert.doesNotMatch(line, /stone/);
   assert.match(notifText('StorageOverflow', { name: 'Knossos', good_key: 'stone', cap: 500, lost_quantity: 12, reason: 'gift_delivery', pool: 'storehouse' }), /lost 12 stone/);
+});
+
+test('cargo lists are written alphabetically by good, whatever the payload order', () => {
+  const goods = [{ good_key: 'wine', quantity: 5 }, { good_key: 'grain', quantity: 20 }, { good_key: 'oil', quantity: 7 }];
+  assert.equal(notifText('CaravanRaided', { q: 1, r: 2, goods }), 'Your caravan carrying 20 grain, 7 oil, 5 wine was raided at (1, 2)');
+  assert.ok(notifText('ShipFoundered', { name: 'Ariadne', q: 1, r: 2, cargo: goods }).includes('lost with her: 20 grain, 7 oil, 5 wine'));
 });

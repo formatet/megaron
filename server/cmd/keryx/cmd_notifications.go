@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"net/url"
+	"sort"
 	"strings"
 	"time"
 
@@ -675,6 +676,7 @@ func printSeaStormLine(n notificationItem) {
 		return
 	}
 	var lost []string
+	sort.SliceStable(body.Cargo, func(i, j int) bool { return body.Cargo[i].GoodKey < body.Cargo[j].GoodKey })
 	for _, c := range body.Cargo {
 		lost = append(lost, fmt.Sprintf("%.0f %s", c.Quantity, c.GoodKey))
 	}
@@ -725,6 +727,7 @@ func printCaravanSeizureLine(n notificationItem) {
 		return
 	}
 	cargo := make([]string, 0, len(body.Goods))
+	sort.SliceStable(body.Goods, func(i, j int) bool { return body.Goods[i].GoodKey < body.Goods[j].GoodKey })
 	for _, g := range body.Goods {
 		cargo = append(cargo, fmt.Sprintf("%d %s", int(g.Quantity), g.GoodKey))
 	}
