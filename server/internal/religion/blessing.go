@@ -14,9 +14,13 @@ import (
 const (
 	EffectBlessedStrength = "blessed_strength" // Velchanos: land troops roll more dice
 	EffectBlessedHull     = "blessed_hull"     // the Sea Daimons: a ship takes one storm unharmed
+	EffectBlessedHorns    = "blessed_horns"    // Asterion: land troops hit harder in the first round of a battle
+	EffectBlessedThread   = "blessed_thread"   // Asterion: a land caravan is only taken by a sentry within one hex
 
 	PrayerVelchanosStrength = "minoan_velchanos_strength"
 	PrayerStillnessHull     = "minoan_stillness_hull"
+	PrayerAsterionHorns     = "minoan_asterion_horns"
+	PrayerAsterionThreadV2  = "minoan_asterion_thread_v2"
 
 	ScopeUnit  = "unit"
 	ScopeCity  = "city"
@@ -33,6 +37,15 @@ const (
 	BlessedStrengthFactor = 1.25
 	BlessedStrengthTicks  = 6
 	BlessedHullTicks      = 12
+
+	// HornsDiceFactor multiplies a blessed land unit's dice in the FIRST round of a battle only
+	// (steg 5b; it multiplies with BlessedStrengthFactor). Alpha number, tune freely.
+	HornsDiceFactor    = 1.5
+	BlessedHornsTicks  = 12
+	BlessedThreadTicks = 12
+	// ThreadInterceptRadius is how close a sentry must stand to take a blessed caravan
+	// (transport.interceptRadius is 2).
+	ThreadInterceptRadius = 1
 )
 
 // ScopeCostFactor is what the target costs: the traditional gift times this
@@ -67,13 +80,13 @@ func ScopeCostFactorsFor(effect string) map[string]int {
 
 // IsBlessing says whether the effect is a targeted blessing.
 func IsBlessing(effect string) bool {
-	return effect == EffectBlessedStrength || effect == EffectBlessedHull || IsSpeedBlessing(effect)
+	return effect == EffectBlessedStrength || effect == EffectBlessedHull || effect == EffectBlessedHorns || effect == EffectBlessedThread || IsSpeedBlessing(effect)
 }
 
 // BlessingUnitKind is the kind of unit a blessing can be laid on: "land" or "naval".
 func BlessingUnitKind(effect string) string {
 	switch effect {
-	case EffectBlessedStrength:
+	case EffectBlessedStrength, EffectBlessedHorns:
 		return "land"
 	case EffectBlessedHull, EffectBlessedSpeedSea:
 		return "naval"
