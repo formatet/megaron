@@ -175,9 +175,9 @@ export async function bringOffering(prayerID) {
     return;
   }
   const target = prayer?.targets ? chosenTarget(host) : {};
-  const stormPrayer = prayer?.targets?.kind === 'storm' || prayer?.targets?.kind === 'hex';
+  const stormPrayer = prayer?.targets?.kind === 'storm' || prayer?.targets?.kind === 'hex' || prayer?.targets?.kind === 'city';
   if (stormPrayer && !target.target) {
-    showInlineResult(host, prayer.targets.kind === 'hex' ? 'Give the sea hex as q,r.' : 'Choose the storm to still.', true);
+    showInlineResult(host, prayer.targets.kind === 'hex' ? 'Give the sea hex as q,r.' : prayer.targets.kind === 'city' ? 'Choose the city whose wall falls.' : 'Choose the storm to still.', true);
     return;
   }
   if (prayer?.targets && !stormPrayer && !target.target_scope) {

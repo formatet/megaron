@@ -19,6 +19,7 @@ Every prayer asks for a minimum standing, and each has its own offering and rest
 | [[the-bulls-horns|The Bull's Horns]] | [[asterion|Asterion]] | 5 | 5 [[livestock|livestock]] · 2 [[silver|silver]] | 12 / 6 / 4 game days |
 | [[the-scapegoat|The Scapegoat]] | [[potnia|Potnia]] | 5 | 3 [[livestock|livestock]] | 12 / 6 / 4 game days |
 | [[the-thread|The Thread]] | [[asterion|Asterion]] | 5 | 2 [[silver|silver]] · 3 [[wine|wine]] | 12 / 6 / 4 game days |
+| [[the-walls-fall|The Walls Fall]] | [[potnia|Potnia]] | 5 | 12 [[livestock|livestock]] · 8 [[silver|silver]] | 24 / 12 / 8 game days |
 | [[the-young-gods-arm|The Young God's Arm]] | [[velchanos|Velchanos]] | 5 | 6 [[livestock|livestock]] · 4 [[wine|wine]] | 12 / 6 / 4 game days |
 | [[wake-the-storm|Wake the Storm]] | [[sea-daimons|The Sea Daimons of Stillness]] | 5 | 10 [[fish|fish]] · 6 [[wine|wine]] | 12 / 6 / 4 game days |
 <!-- /kharis-prayers -->

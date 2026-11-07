@@ -65,10 +65,20 @@ function stormChooserHTML(prayer) {
     '<select class="offer-target-storm" aria-label="Storm to still">' + options + '</select></div>';
 }
 
+// The Walls Fall (steg 5c) names a foreign city of your map whose wall you remember. No scope steps.
+function cityChooserHTML(prayer) {
+  const options = (prayer.targets.cities || []).map(c =>
+    '<option value="' + esc(c.id) + '">' + esc(c.name) + (c.where ? ' (' + esc(c.where) + ')' : '') + '</option>').join('');
+  if (!options) return '<div class="offer-target"><p class="offer-note">No foreign city with a wall you remember. See a walled city first.</p></div>';
+  return '<div class="offer-target"><p class="offer-note">Whose wall is Potnia asked to bring down? It falls one level 3 game days after the prayer, and you will not be told: see the city again to learn it. A battle already under way at the walls is not changed.</p>' +
+    '<select class="offer-target-city" aria-label="City whose wall falls">' + options + '</select></div>';
+}
+
 // World blessings (steg 5a): a city or the realm, no unit to name.
 function isWorldPrayer(prayer) { return prayer.targets && prayer.targets.kind === 'world'; }
 
 export function targetChooserHTML(prayer) {
+  if (prayer.targets && prayer.targets.kind === 'city') return cityChooserHTML(prayer);
   if (prayer.targets && (prayer.targets.kind === 'storm' || prayer.targets.kind === 'hex')) return stormChooserHTML(prayer);
   const choices = scopeChoices(prayer);
   if (!choices.length) return '';
@@ -95,6 +105,8 @@ export function targetChooserHTML(prayer) {
 // What the player chose in an open offer row: { target_scope, target } to send, or {} for a prayer without targets.
 export function chosenTarget(host) {
   if (!host || !host.querySelector) return {};
+  const city = host.querySelector('.offer-target-city');
+  if (city && city.value) return { target: city.value };
   const storm = host.querySelector('.offer-target-storm');
   if (storm) return { target: storm.value };
   const hex = host.querySelector('.offer-target-hex');

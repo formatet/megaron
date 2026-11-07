@@ -166,6 +166,13 @@ func (h *ProvinceHandler) loadPrayerRows(ctx context.Context, sett *settlement.S
 			}
 			prayers[len(prayers)-1].Targets = targets
 		}
+		if spec.EffectType == religion.EffectWallsFall && sett.OwnerID != nil {
+			targets, tErr := h.loadWallsFallTargets(ctx, *sett.OwnerID, worldID)
+			if tErr != nil {
+				return nil, nil, fmt.Errorf("could not read your city memory: %w", tErr)
+			}
+			prayers[len(prayers)-1].Targets = targets
+		}
 		if religion.IsWorldBlessing(spec.EffectType) && sett.OwnerID != nil {
 			var n int
 			if err := h.pool.QueryRow(ctx, `SELECT count(*) FROM settlements WHERE world_id=$1 AND owner_id=$2 AND state NOT IN ('sunk','collapsed','razed')`, worldID, *sett.OwnerID).Scan(&n); err != nil {

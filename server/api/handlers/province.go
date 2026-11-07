@@ -92,6 +92,8 @@ type prayerTargets struct {
 	// Kind "world" (steg 5a): fertility, the Builder's Blessing, the scapegoat: a city or the realm, no unit to name.
 	Kind   string              `json:"kind,omitempty"`
 	Storms []prayerTargetStorm `json:"storms,omitempty"`
+	// Kind "city" (steg 5c): The Walls Fall, pick one of Cities (foreign, on your map, wall remembered >= 1).
+	Cities []prayerTargetCity `json:"cities,omitempty"`
 }
 
 type prayerTargetUnit struct {

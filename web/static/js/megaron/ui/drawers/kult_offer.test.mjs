@@ -170,6 +170,27 @@ test('chosenTarget reads the storm select and the hex field', () => {
   assert.deepEqual(chosenTarget(host({ '.offer-target-hex': { value: ' 7,3 ' } })), { target: '7,3' });
 });
 
+// The Walls Fall (steg 5c): a foreign city picked from the list, no scope steps.
+const wallsFall = { id: 'minoan_potnia_walls_fall', god: 'Potnia', god_id: 'potnia', offering: { livestock: 12, silver: 8 },
+  targets: { unit: [], city: { count: 0 }, realm: { count: 0 }, kind: 'city', cities: [{ id: 'c-1', name: 'Mycenae', where: 'held by Agamemnon, near (20,20), wall level 2 as you last saw it' }] } };
+
+test('The Walls Fall offers the remembered walled foreign cities, says it will not be told, and has no scope steps', () => {
+  const html = offerRowHTML(wallsFall, { livestock: 20, silver: 20 });
+  assert.match(html, /class="offer-target-city"/);
+  assert.match(html, /Mycenae \(held by Agamemnon/);
+  assert.match(html, /you will not be told/);
+  assert.match(html, /already under way at the walls is not changed/);
+  assert.doesNotMatch(html, /type="radio"|gift ×|Who is blessed/);
+  assert.match(html, /data-good="livestock" value="12"/);
+  assert.deepEqual(chosenTarget({ querySelector: (q) => (q === '.offer-target-city' ? { value: 'c-1' } : null) }), { target: 'c-1' });
+});
+
+test('The Walls Fall with no remembered walled city says so and offers no select', () => {
+  const html = offerRowHTML({ ...wallsFall, targets: { ...wallsFall.targets, cities: [] } }, {});
+  assert.match(html, /No foreign city with a wall you remember/);
+  assert.doesNotMatch(html, /offer-target-city/);
+});
+
 // Permanent (steg 4): a fourth radio, "For ever", for one named unit, x20; only prayers that have the step.
 const forever = { ...blessing, scope_cost_factors: { unit: 1, city: 2, realm: 4, permanent: 20 },
   targets: { ...blessing.targets, unit: [{ id: 'u1', name: 'Horns of Crete', where: 'in Knossos' }, { id: 'u2', name: 'Argo', where: 'sailing at (3,1)', forever: true }] } };

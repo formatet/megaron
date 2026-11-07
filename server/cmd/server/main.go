@@ -262,6 +262,8 @@ func main() {
 	worker.Register(events.ScheduledOccupationCheck, occupationCheckH.Handle)
 	siegeCapitulationH := combat.NewSiegeCapitulationHandler(pool, eventStore, scheduler, hub)
 	worker.Register(events.ScheduledSiegeCapitulation, siegeCapitulationH.Handle)
+	wallsFallH := combat.NewWallsFallHandler(pool, eventStore, hub)
+	worker.Register(events.ScheduledWallsFall, wallsFallH.Handle)
 	navalSeizureH := combat.NewNavalSeizureOutcomeHandler(pool, scheduler, gameClock, hub)
 	worker.Register(events.ScheduledNavalSeizureOutcome, navalSeizureH.Handle)
 	collapseH := combat.NewCollapseSettlementHandler(pool, eventStore, scheduler, hub)
