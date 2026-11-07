@@ -196,7 +196,15 @@ func TestWallsFallPrayer_RefusesOwnUnknownAndUnwalledMemoryWithoutTakingTheGift(
 	f.foreignWalled(t, "Remembered Bare", 2, 0, 10) // really walled, remembered as bare
 	unknown := f.foreignWalled(t, "Unknown", 2, 2, 10)
 	_, _ = f.pool.Exec(context.Background(), `DELETE FROM player_seen_settlements WHERE settlement_id=$1`, unknown.id)
-	cases := map[string]string{"own city by name": "Alpha City", "own city by id": f.cities[1].String(), "unknown city": "Unknown",
+	// The caster's own city is in the caster's memory too, with a wall: still refused.
+	if _, err := f.pool.Exec(context.Background(), `UPDATE settlements SET name='Own Walled', wall_level=2 WHERE id=$1`, f.cities[1]); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.pool.Exec(context.Background(), `INSERT INTO player_seen_settlements(world_id,player_id,settlement_id,q,r,name,owner_id,owner_name,is_capital,state,wall_level,population,seen_tick)
+	  VALUES($1,$2,$3,1,0,'Own Walled',$2,'me',false,'active',2,500,90)`, f.world, f.player, f.cities[1]); err != nil {
+		t.Fatal(err)
+	}
+	cases := map[string]string{"own city by name in memory": "Own Walled", "own city by name": "Alpha City", "own city by id": f.cities[1].String(), "unknown city": "Unknown",
 		"remembered wall 0": "Remembered Bare", "nothing": "", "no such": "Nowhere"}
 	for name, target := range cases {
 		lv := f.stock(t, f.cities[0], "livestock")
