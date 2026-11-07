@@ -161,3 +161,21 @@ func TestThread_ACityThreadCoversOnlyCaravansFromThatCity(t *testing.T) {
 		t.Fatalf("a thread on another city does not cover this caravan, status = %q", got)
 	}
 }
+
+// Sea freight is never covered, whatever the blessing says.
+func TestThread_SeaFreightIsNeverCovered(t *testing.T) {
+	r := newThreadRig(t, 3)
+	pool := testPool(t)
+	var sea uuid.UUID
+	must(t, pool.QueryRow(r.ctx, `INSERT INTO transports(world_id,owner_id,kind,origin_id,category,origin_q,origin_r,dest_q,dest_r,departs_at,arrives_at,due_tick,status,interceptable)
+ VALUES($1,$2,'trade',$3,'naval',0,0,3,0,now(),now()+interval '1 hour',108,'in_transit',true) RETURNING id`, r.f.worldID, r.f.owner, r.f.sourceID).Scan(&sea))
+	r.bless(t, r.f.owner, "realm", nil, nil, 0, 200)
+	got, err := religion.ThreadCovered(r.ctx, pool, r.f.worldID, 100)
+	must(t, err)
+	if _, covered := got[sea]; covered {
+		t.Fatal("sea freight is covered by the Thread")
+	}
+	if _, covered := got[r.caravan]; !covered {
+		t.Fatal("the land caravan should be covered")
+	}
+}
