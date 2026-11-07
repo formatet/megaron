@@ -943,6 +943,37 @@
         8
       ]
     },
+    "minoan_potnia_walls_fall": {
+      "ID": "minoan_potnia_walls_fall",
+      "GodID": "potnia",
+      "EffectType": "walls_fall",
+      "MinKharis": 5,
+      "Offering": {
+        "livestock": 12,
+        "silver": 8
+      },
+      "CooldownTicks": 24,
+      "TargetKind": "",
+      "God": "Potnia",
+      "Name": "The Walls Fall",
+      "Description": "A city of another Wanax that you know and remember with a wall loses one wall level 3 game days after the prayer. You hear only that Potnia listened; you learn the result by seeing the city again. A battle already under way at the walls is not changed. If that Wanax stands well with the gods they feel the wrath gather, never from whom. A richer gift does no more.",
+      "Favours": {
+        "bronze": 1.5,
+        "fish": 0.4,
+        "grain": 1,
+        "horses": 1.6,
+        "incense": 1.5,
+        "livestock": 2,
+        "pottery": 0.5,
+        "stone": 0.4,
+        "wine": 1.7
+      },
+      "RestByLevel": [
+        24,
+        12,
+        8
+      ]
+    },
     "minoan_stillness_calm": {
       "ID": "minoan_stillness_calm",
       "GodID": "sea_daimons_stillness",

@@ -3139,6 +3139,41 @@
       "parent": "rites"
     },
     {
+      "id": "the-walls-fall",
+      "title": "The Walls Fall",
+      "category": "The gods",
+      "entities": [
+        {
+          "kind": "prayer",
+          "key": "minoan_potnia_walls_fall"
+        }
+      ],
+      "aliases": [
+        "minoan potnia walls fall"
+      ],
+      "terms": [
+        "The Walls Fall"
+      ],
+      "summary": "The Walls Fall: Potnia brings one level off the wall of a foreign city you remember, three game days after the prayer; you are not told the result.",
+      "parent": "rites"
+    },
+    {
+      "id": "wrath-over-the-walls",
+      "title": "Wrath over the walls",
+      "category": "The gods",
+      "kinds": [
+        "WallsOmen",
+        "WallsFell"
+      ],
+      "related": [
+        "the-walls-fall",
+        "kharis",
+        "messengers",
+        "sight"
+      ],
+      "parent": "rites"
+    },
+    {
       "id": "fruitful-season",
       "title": "Fruitful Season",
       "category": "The gods",
