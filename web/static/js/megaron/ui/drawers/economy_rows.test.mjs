@@ -87,3 +87,11 @@ test('changing transfer destination clears old route choices until fresh preview
  resolve(new Response(JSON.stringify({selected_by:'sea',options:[{by:'land',available:true,travel_ticks:2,travel_seconds:120},{by:'sea',available:true,travel_ticks:1,travel_seconds:60}]})));await pending;
  assert.match(node('ec-tr-route').innerHTML,/value="land" checked/);assert.equal(node('ec-tr-send').disabled,false);
 }));
+
+test('cargo rows carry the prayers over the owner\'s own caravan (the Thread)', () => {
+  const rows = economy.formatCargoRows([{ id: 't1', good_key: 'grain', quantity: 10, role: 'sender', arrival_tick: 5, arrives_at: '2026-01-01T00:00:00Z', blessings: ['the Thread, 12 game days'] },
+    { id: 't2', good_key: 'wine', quantity: 3, role: 'sender', arrival_tick: 6, arrives_at: '2026-01-01T00:00:00Z' }], 0);
+  assert.deepEqual(rows.map(r => r.blessings), [['the Thread, 12 game days'], []]);
+  const html = economy.renderCargoHTML([{ id: 't1', good_key: 'grain', quantity: 10, role: 'sender', arrival_tick: 5, arrives_at: '2026-01-01T00:00:00Z', blessings: ['the Thread, 12 game days'] }], 0);
+  assert.match(html, /the Thread, 12 game days/);
+});

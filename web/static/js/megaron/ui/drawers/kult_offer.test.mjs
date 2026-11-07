@@ -219,3 +219,25 @@ test('the scapegoat offers the realm alone', () => {
   const host = { querySelector: s => s === 'input[type=radio]:checked' ? { value: 'realm' } : null };
   assert.deepEqual(chosenTarget(host), { target_scope: 'realm' });
 });
+
+// The Thread (steg 5b): land caravans only — a Runner is never taken, so the city step must not talk of one.
+const thread = { id: 'minoan_asterion_thread_v2', god_id: 'asterion', offering: { wine: 3, silver: 2 }, scope_cost_factors: { unit: 1, city: 2, realm: 4 },
+  targets: { always: true, unit: [{ id: 'c1', name: 'Caravan to Phaistos', where: 'arrives in 4 game days' }], city: { name: 'Knossos', count: 1 }, realm: { count: 1 } } };
+
+test('the Thread: caravans are named, the city step says land caravans and never a Runner, and there is no fourth step', () => {
+  const html = offerRowHTML(thread, { wine: 100, silver: 100 });
+  assert.match(html, /Caravan to Phaistos \(arrives in 4 game days\)/);
+  assert.match(html, /every land caravan of Knossos, on the road now \(1\) and while it lasts · gift ×2/);
+  assert.doesNotMatch(html, /Runner/);
+  assert.doesNotMatch(html, /For ever/);
+});
+
+test('the Bull\'s Horns: troops by name, city and realm by count, no fourth step', () => {
+  const horns = { id: 'minoan_asterion_horns', god_id: 'asterion', offering: { livestock: 5, silver: 2 }, scope_cost_factors: { unit: 1, city: 2, realm: 4 },
+    targets: { unit: [{ id: 'u1', name: 'Royal Guard', where: 'in Knossos' }], city: { name: 'Knossos', count: 1 }, realm: { count: 3 } } };
+  const html = offerRowHTML(horns, { livestock: 100, silver: 100 });
+  assert.match(html, /Royal Guard \(in Knossos\)/);
+  assert.match(html, /1 of Knossos · gift ×2/);
+  assert.match(html, /all 3 · gift ×4/);
+  assert.doesNotMatch(html, /For ever/);
+});

@@ -287,6 +287,7 @@ export function formatCargoRows(trades, nowMs) {
       to: t.dest_name || `(${t.dest_q},${t.dest_r})`,
       eta,
       direction: t.role === 'recipient' ? 'incoming' : 'outgoing',
+      blessings: t.blessings || [],
     };
   });
 }
@@ -304,7 +305,7 @@ export function renderCargoHTML(trades, nowMs) {
     '<td>Good</td><td>Qty</td><td>From → To</td><td>Dir</td><td style="text-align:right">ETA</td></tr>' +
     rows.map(row =>
       `<tr data-cargo-id="${esc(row.id||'')}"><td>${esc(row.good)}</td><td>${row.qty}</td><td>${esc(row.from)} → ${esc(row.to)}</td>` +
-      `<td>${esc(row.direction)}</td><td style="text-align:right">${esc(row.eta)}</td></tr>`
+      `<td>${esc(row.direction)}${row.blessings.map(b => ` · ${esc(b)}`).join('')}</td><td style="text-align:right">${esc(row.eta)}</td></tr>`
     ).join('') +
     '</table>' +
     '<p style="color:var(--text-dim);font-size:.68rem;margin-top:.3rem">' +
