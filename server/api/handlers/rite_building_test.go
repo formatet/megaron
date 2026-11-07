@@ -197,6 +197,15 @@ func TestBuilderBlessing_ScopesOwnerAndNeverBelowOneDay(t *testing.T) {
 	if f.due(t, mine) != 109 || f.due(t, other) != 112 || f.due(t, foreign) != 112 {
 		t.Fatalf("city scope: mine %d other city %d foreign %d, want 109/112/112", f.due(t, mine), f.due(t, other), f.due(t, foreign))
 	}
+	// the next time the other city's queue is touched (any placement or enqueue), the city blessing of the first must not reach it
+	for _, c := range []uuid.UUID{f.cities[1], theirs} {
+		if _, err := f.pool.Exec(ctx, `SELECT sync_build_queue($1)`, c); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if f.due(t, other) != 112 || f.due(t, foreign) != 112 {
+		t.Fatalf("a city blessing reached another city on its next sync: %d / %d", f.due(t, other), f.due(t, foreign))
+	}
 	f.clearRest(t)
 	f.setTick(t, 101)
 	if r := f.castBody(f.cities[1], f.cityBuilding(f.cities[1], "realm")); r.Code != 200 {
