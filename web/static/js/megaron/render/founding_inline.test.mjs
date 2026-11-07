@@ -64,3 +64,15 @@ test('Founding sends the typed message, trimmed, and omits it when blank',async(
  assert.equal(JSON.parse(calls[before].options.body).message,'Peace to all.');
  reply=new Response('{}');resolveRequest();await sent;
 });
+
+test('Founding message field: shown with a N/280 counter to a new Wanax, absent for a returning one',async()=>{
+ const {settleMessageHTML,settleMessageCount}=await import('./map.js');
+ const shown=settleMessageHTML({announces_entry:true});
+ assert.match(shown,/id="ip-settle-msg"/);assert.match(shown,/maxlength="280"/);assert.match(shown,/0\/280/);
+ assert.match(settleMessageHTML({}),/id="ip-settle-msg"/,'an older server that does not say keeps the field');
+ assert.equal(settleMessageHTML({announces_entry:false}),'');
+ assert.equal(settleMessageCount('Hej å'),'5/280');
+ fp.announces_entry=false;
+ try{await openHost();assert.doesNotMatch(element('ip-foot').innerHTML,/ip-settle-msg/);assert.match(element('ip-foot').innerHTML,/ip-settle-btn/);}finally{delete fp.announces_entry;}
+ await openHost();assert.match(element('ip-foot').innerHTML,/ip-settle-msg/);
+});

@@ -64,3 +64,37 @@ func TestFoundingStoreNotDrainingWording(t *testing.T) {
 		t.Fatalf("got %q", got)
 	}
 }
+
+func TestSettleMessage(t *testing.T) {
+	yes, no := true, false
+	if err := settleMessage(&foundingStatusResp{AnnouncesEntry: &yes}, strings.Repeat("a", 280)); err != nil {
+		t.Errorf("280 characters must pass: %v", err)
+	}
+	err := settleMessage(&foundingStatusResp{AnnouncesEntry: &yes}, strings.Repeat("å", 281))
+	if err == nil || !strings.Contains(err.Error(), "281") || !strings.Contains(err.Error(), "limit is 280") {
+		t.Errorf("281 characters must be refused naming the limit: %v", err)
+	}
+	if err := settleMessage(&foundingStatusResp{AnnouncesEntry: &no}, "hello"); err == nil {
+		t.Error("a returning Wanax's --message must be refused")
+	}
+	if err := settleMessage(&foundingStatusResp{AnnouncesEntry: &no}, ""); err != nil {
+		t.Errorf("no message from a returning Wanax is fine: %v", err)
+	}
+	if err := settleMessage(&foundingStatusResp{}, "hello"); err != nil {
+		t.Errorf("an older server that does not say must not block: %v", err)
+	}
+}
+
+func TestFoundingStatusOffersMessageOnlyWhenAnnounced(t *testing.T) {
+	yes, no := true, false
+	show := func(a *bool) string {
+		out, _ := captureStdout(t, func() error { return printFoundingStatus(&foundingStatusResp{AnnouncesEntry: a}) })
+		return out
+	}
+	if !strings.Contains(show(&yes), "--message") {
+		t.Error("a new Wanax is offered --message")
+	}
+	if strings.Contains(show(&no), "--message") {
+		t.Error("a returning Wanax must not be offered --message")
+	}
+}
