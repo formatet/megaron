@@ -156,6 +156,7 @@ func newRootCommand() *cobra.Command {
 		actionsCmd(),
 		notificationsCmd(),
 		watchCmd(),
+		dossierCmd(),
 	)
 
 	return root
