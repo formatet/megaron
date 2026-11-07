@@ -31,6 +31,8 @@ avvikelser: `inventory.md`. Inga böner (3b). Ingen ny notiskind (stormarna syns
 | M4 `ensureStorms` räknar bara levande (seedar om när alla dött) | DÖDAD: storm_lifecycle_test.go:322 |
 | M5 `ensureStorms` ger alla samma `dies_tick` | DÖDAD: storm_lifecycle_test.go:310, :356 |
 | M5b migrationen ger alla samma `dies_tick` (`random()` -> 0) | DÖDAD via script (migrationer körs före testerna): distinct=1 mot 36 |
+| M-A (Opus) `UPDATE worlds SET storm_weather_tick` blir no-op | DÖDAD: storm_lifecycle_test.go:455 (`TestStormLifecycle_DuplicateScanWithNoLivingStormDoesNotRollBirthsAgain`) |
+| M-B (Opus) nyfödd storm seedas utan `used` (kan stå på levande storm) | DÖDAD: storm_lifecycle_test.go:495 (`TestStormLifecycle_NewbornNeverOverlapsALivingStorm`) |
 | M6 omen utan levande-filter | DÖDAD: omen_truth_test.go:259 |
 | M7 namnge död storm tillåts | DÖDAD: storm_names_test.go:150 |
 
