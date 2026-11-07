@@ -1371,6 +1371,13 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 		return fmt.Errorf("choose divine punishment target: %w", err)
 	}
 	p := punishments[eligible[rand.Intn(len(eligible))]]
+	// Potnia's scapegoat (steg 5a): the dice were the gods' and a loss was possible; a goat that stands
+	// for the realm bears it instead. Same TX and the same shield lock as the punishment itself.
+	if ward, borne, wErr := religion.SpendScapegoat(ctx, tx, ownerID, anchor.Tick); wErr != nil {
+		return wErr
+	} else if borne {
+		return h.averted(ctx, tx, anchor, settlementID, worldID, ownerID, settlementName, p.name, ward)
+	}
 	// The galley the storm will take, named before it is disbanded (Haiku-7: a
 	// player saw the galley arrive, then vanish, and could not tell it was lost).
 	// Same victim rule as the ship_loss SQL.
@@ -1448,6 +1455,42 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 		_ = h.hub.NotifyPlayer(ctx, worldID, ownerID, "DivinePunishment", 2, body)
 	}
 	slog.Info("divine punishment applied", "settlement", settlementID, "type", p.name, "amount", amount)
+	return nil
+}
+
+// averted finishes a punishment the scapegoat bore: nothing is taken, the gods' mercy (the shield) is set
+// exactly as after a punishment, and the owner is told what was spared. DivinePunishment itself is not
+// written — its meaning is frozen as "the gods took something".
+func (h *TickHandler) averted(ctx context.Context, tx pgx.Tx, anchor tick.Anchor, settlementID, worldID, ownerID uuid.UUID, settlementName, wouldHave string, ward uuid.UUID) error {
+	until := anchor.Tick + WrathProtectionTicks
+	body := map[string]any{
+		"player_id": ownerID, "settlement_id": settlementID, "name": settlementName,
+		"would_have": wouldHave, "ward_id": ward,
+		"protection_until_tick": until, "protection_until": anchor.WallAt(int64(until) * 1000),
+	}
+	if _, err := tx.Exec(ctx, `UPDATE kharis_notice_state SET state='protected',observed_tick=$3,context=jsonb_build_object('until_tick',$4::int)
+ WHERE world_id=$1 AND player_id=$2 AND scope_id=$2 AND condition='divine_punishment'`, worldID, ownerID, anchor.Tick, until); err != nil {
+		return err
+	}
+	event, err := h.store.AppendTx(ctx, tx, settlementID, events.StreamProvince, "DivinePunishmentAverted", body, worldID, nil)
+	if err != nil {
+		return err
+	}
+	var noticeID string
+	if err := tx.QueryRow(ctx, `INSERT INTO notifications(world_id,player_id,kind,level,body_json,world_tick)
+ VALUES($1,$2,'DivinePunishmentAverted',3,$3,$4) RETURNING id`, worldID, ownerID, body, anchor.Tick).Scan(&noticeID); err != nil {
+		return err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return err
+	}
+	h.store.RecordCommitted(ctx, event)
+	if d, ok := h.hub.(committedNoticeDelivery); ok {
+		d.DeliverCommittedNotification(ctx, worldID, ownerID, noticeID, "DivinePunishmentAverted", 3, body)
+	} else if h.hub != nil {
+		_ = h.hub.NotifyPlayer(ctx, worldID, ownerID, "DivinePunishmentAverted", 3, body)
+	}
+	slog.Info("divine punishment borne by the scapegoat", "settlement", settlementID, "would_have", wouldHave)
 	return nil
 }
 
