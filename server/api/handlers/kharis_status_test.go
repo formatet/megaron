@@ -79,12 +79,13 @@ func TestKharisPlayerRulesSourceParity(t *testing.T) {
 	article := codexArticleTextWithRelated(t, "kharis")
 	for _, want := range []string{
 		fmt.Sprintf("**%g Kharis**", kharis.StartingKharis),
-		fmt.Sprintf("no temple **%g**", kharis.EffectiveKharisCap(100, 0)),
-		fmt.Sprintf("level 1 **%g**", kharis.EffectiveKharisCap(100, 1)),
-		fmt.Sprintf("level 2 **%g**", kharis.EffectiveKharisCap(100, 2)),
-		fmt.Sprintf("level 3 **%g**", kharis.EffectiveKharisCap(100, 3)),
+		fmt.Sprintf("| %g | A new Wanax starts here. It is also the ceiling with no temple.", kharis.EffectiveKharisCap(100, 0)),
+		fmt.Sprintf("| %g | The ceiling set by a level 1 temple.", kharis.EffectiveKharisCap(100, 1)),
+		fmt.Sprintf("| %g | The ceiling set by a level 2 temple.", kharis.EffectiveKharisCap(100, 2)),
+		fmt.Sprintf("| %g | The ceiling set by a level 3 temple.", kharis.EffectiveKharisCap(100, 3)),
 		fmt.Sprintf("a %.0f%% chance", 100*kharis.PunishmentProbability(kharis.WrathThreshold-1, false)),
-		fmt.Sprintf("**%.2f × effective temple weight − %.2f × realm demand**", kharis.KharisPerTempleWeight, kharis.KharisPerDemand),
+		// The rates live in the generated tables (tools/codex_facts.py), not in prose.
+		fmt.Sprintf("| %.2f |", kharis.KharisPerTempleWeight), fmt.Sprintf("| %.2f |", kharis.KharisPerDemand),
 		"Population does not contribute", "random eligible city",
 		"with or without a temple",
 	} {
