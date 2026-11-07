@@ -34,7 +34,7 @@ func populationGrowthSQL(foodValue int) string {
 	return fmt.Sprintf(`SELECT inputs.*,
  CASE WHEN NOT can_grow OR unmet>0 THEN 0
       WHEN food_net>0 AND pop<pop_cap THEN
-        LEAST(pop_cap-pop,GREATEST(1,ROUND(pop*%g::float8*variety)))
+        LEAST(pop_cap-pop,GREATEST(1,ROUND(pop*%g::float8*variety*%s)))
       ELSE 0 END::int AS growth_per_tick
  FROM (
  SELECT s.population AS pop,s.food_unmet_amount AS unmet,
@@ -52,7 +52,7 @@ func populationGrowthSQL(foodValue int) string {
      ) AND s.food_consumed_tick=current_world_tick()
  )-1))) AS variety,
  (ARRAY[%s]::int[])[LEAST(GREATEST(s.wall_level,0),3)+1] AS pop_cap
- ) inputs`, PopulationGrowthRatePerTick, strings.Join(foods, ","), herdSurplusRateSQL(foodValue), GrainConsumptionPerCitizenPerTick, strings.Join(foods, ","), foodValue, VarietyMinShare, foodValue, strings.Join(foods, ","), strings.Join(caps, ","))
+ ) inputs`, PopulationGrowthRatePerTick, fertilityFactorSQL("s"), strings.Join(foods, ","), herdSurplusRateSQL(foodValue), GrainConsumptionPerCitizenPerTick, strings.Join(foods, ","), foodValue, VarietyMinShare, foodValue, strings.Join(foods, ","), strings.Join(caps, ","))
 }
 
 type NextCitizen struct {
