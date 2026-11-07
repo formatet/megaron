@@ -68,4 +68,5 @@ Grundläggningsriten ingår inte (struken av Timothy 11-07).
 - Pre-existerande `gofmt -l`-träffar (`found_metropolis.go`, `unit_march_silver.go`, `world.go`, `cmd_codex.go`, `cmd_ticklog.go`) orörda.
 
 ## Svit
-`tools/gotest.sh` (hela, färsk DB på migration 251, `-p 1`): alla Go-paket `ok`, inga FAIL; webbtester 935/935 (inkl. `codex.test.mjs`); `codex_facts.py --check`, `day_guard_test.py`, `test_verb_parity.py` gröna. Efter sviten ändrades bara ett test (M7-skärpningen) och README; berörda paket kördes om gröna.
+`tools/gotest.sh` (hela, färsk DB på migration 251, `-p 1`, exit 0): 965 Go-paket `ok`, inga FAIL; webbtester 935/935 (inkl. `codex.test.mjs`); `codex_facts.py --check`, `day_guard_test.py`, `test_verb_parity.py` gröna.
+Två körningar föll först på kataloglängden (9 -> 12 böner): `handlers: TestRelationProvincePublishesRequirementsWithoutCost` och `religion: TestSilverCalibrationCatalogueAndNoAltarFloor` räknade det gamla antalet; rättade, hela sviten kördes om grön.
