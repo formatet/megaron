@@ -766,6 +766,69 @@
         4
       ]
     },
+    "minoan_potnia_fertility": {
+      "ID": "minoan_potnia_fertility",
+      "GodID": "potnia",
+      "EffectType": "blessed_fertility",
+      "MinKharis": 5,
+      "Offering": {
+        "grain": 4,
+        "livestock": 4
+      },
+      "CooldownTicks": 12,
+      "TargetKind": "",
+      "God": "Potnia",
+      "Name": "Fruitful Season",
+      "Description": "People and herds grow half as fast again for 20 game days, in this city or in the whole realm. A fed city only: hunger still thins a people. A wider blessing costs more.",
+      "Favours": {
+        "copper": 0.5,
+        "fish": 0.9,
+        "grain": 1.3,
+        "incense": 2,
+        "livestock": 1.3,
+        "oil": 1.6,
+        "stone": 0.3,
+        "timber": 0.4,
+        "tin": 0.5,
+        "wine": 2
+      },
+      "RestByLevel": [
+        12,
+        6,
+        4
+      ]
+    },
+    "minoan_potnia_scapegoat": {
+      "ID": "minoan_potnia_scapegoat",
+      "GodID": "potnia",
+      "EffectType": "scapegoat",
+      "MinKharis": 5,
+      "Offering": {
+        "livestock": 3
+      },
+      "CooldownTicks": 12,
+      "TargetKind": "",
+      "God": "Potnia",
+      "Name": "The Scapegoat",
+      "Description": "The next divine punishment that would strike any of your cities within 30 game days is borne by a goat instead: nothing is lost, and the gods' mercy holds as after any punishment. It does not lower the chance of a punishment. The realm only; one goat at a time.",
+      "Favours": {
+        "copper": 0.5,
+        "fish": 0.9,
+        "grain": 1.3,
+        "incense": 2,
+        "livestock": 1.3,
+        "oil": 1.6,
+        "stone": 0.3,
+        "timber": 0.4,
+        "tin": 0.5,
+        "wine": 2
+      },
+      "RestByLevel": [
+        12,
+        6,
+        4
+      ]
+    },
     "minoan_potnia_vision_v2": {
       "ID": "minoan_potnia_vision_v2",
       "GodID": "potnia",
@@ -936,6 +999,27 @@
         "stone": 0.4,
         "wine": 1.7
       },
+      "RestByLevel": [
+        12,
+        6,
+        4
+      ]
+    },
+    "minoan_velchanos_building": {
+      "ID": "minoan_velchanos_building",
+      "GodID": "velchanos",
+      "EffectType": "blessed_building",
+      "MinKharis": 5,
+      "Offering": {
+        "timber": 3,
+        "wine": 2
+      },
+      "CooldownTicks": 12,
+      "TargetKind": "",
+      "God": "Velchanos",
+      "Name": "The Builder's Blessing",
+      "Description": "What is left of a building or a ship under construction takes three quarters of the time, once for each, and so does each one begun while the blessing lasts, for 12 game days: in this city or in the whole realm. A wider blessing costs more.",
+      "Favours": null,
       "RestByLevel": [
         12,
         6,
