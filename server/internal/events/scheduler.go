@@ -162,6 +162,10 @@ const (
 	// dependency of kharis (G1) — so, like ScheduledCollapseSettlement, this
 	// crosses the layer boundary via event emission instead.
 	ScheduledSiegeCapitulation ScheduledEventType = "SiegeCapitulation"
+
+	// ScheduledWallsFall carries out Potnia's offensive prayer: three ticks after the cast one
+	// wall level of the named city falls (boner steg 5c). The payload names the cast.
+	ScheduledWallsFall ScheduledEventType = "WallsFall"
 	// ScheduledStandingOrderTick is the self-rescheduling per-world sweep that
 	// drives every standing order (megaron_plan_staende_leverans.md, PULL not
 	// push): each firing reads every route's destination shortfall and
