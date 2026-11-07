@@ -882,6 +882,18 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// The Walls Fall names a foreign city of your map (checked before any gift is taken).
+	var wallsTarget *wallsFallTarget
+	if spec.EffectType == religion.EffectWallsFall {
+		var code int
+		var msg string
+		wallsTarget, code, msg = h.checkWallsFallTarget(r.Context(), tx, worldID, playerID, body.Target)
+		if code != 0 {
+			writeError(w, code, msg)
+			return
+		}
+	}
+
 	// Kharis tier gate.
 	if kharisNow < spec.MinKharis {
 		writeError(w, http.StatusBadRequest, insufficientKharisMessage(prayerID, spec.MinKharis, kharisNow))
@@ -1117,6 +1129,8 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 				writeError(w, code, message)
 				return
 			}
+		case religion.EffectWallsFall:
+			recordedEffect, effectPayload, message = h.applyWallsFall(wallsTarget, nowTick)
 		case religion.EffectOracleRevealDeposits:
 			effectPayload, message, err = h.applyOracleRevealDeposits(r.Context(), tx, settlementID, worldID, playerID, spec)
 		case religion.EffectHarvestBlessing:
@@ -1181,6 +1195,12 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "could not record prayer outcome")
 		return
 	}
+	if success && wallsTarget != nil {
+		if err = h.scheduleWallsFall(r.Context(), tx, worldID, wallsTarget, riteEvent.ID, nowTick); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not schedule the fall")
+			return
+		}
+	}
 	if id, ok := effectPayload["blessing_id"].(uuid.UUID); ok {
 		if _, err = tx.Exec(r.Context(), `UPDATE prayer_blessings SET cast_event_id=$2 WHERE id=$1`, id, riteEvent.ID); err != nil {
 			writeError(w, http.StatusInternalServerError, "could not link the blessing to its outcome")
@@ -1193,6 +1213,9 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	}
 	h.eventStore.RecordCommitted(r.Context(), riteEvent)
 	h.notifyRiteAnswered(r.Context(), worldID, playerID, settlementID, spec, success, message, effectPayload)
+	if success && wallsTarget != nil {
+		h.notifyWallsOmen(r.Context(), worldID, wallsTarget)
+	}
 
 	resp := map[string]any{
 		"success":          success,
