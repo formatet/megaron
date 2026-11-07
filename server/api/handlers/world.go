@@ -1421,6 +1421,8 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		DepartsAt           time.Time           `json:"departs_at"`
 		ArrivesAt           time.Time           `json:"arrives_at"`
 		Mine                bool                `json:"mine"`
+		// Blessings (owner only): "the Thread, N game days" while Asterion's thread covers this land caravan.
+		Blessings   []string `json:"blessings,omitempty"`
 		ArrivalTick         *int                `json:"arrival_tick,omitempty"`
 		DepartureTick       *int                `json:"departure_tick,omitempty"`
 		TravelTicks         *int                `json:"travel_ticks,omitempty"`
@@ -1448,6 +1450,15 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		// only — blanked below with the cargo for anyone else.
 		OriginName string `json:"origin_name"`
 		DestName   string `json:"dest_name"`
+	}
+
+	// The Thread over the caller's own caravans (owner only, one query for the whole list).
+	var threadUntil map[uuid.UUID]int
+	var worldTick int
+	if authenticated {
+		if err := h.pool.QueryRow(r.Context(), `SELECT current_tick FROM worlds WHERE id=$1`, worldID).Scan(&worldTick); err == nil {
+			threadUntil, _ = religion.ThreadCovered(r.Context(), h.pool, worldID, worldTick)
+		}
 	}
 
 	var markers []any
@@ -1505,6 +1516,9 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		// Unauthenticated callers get no ownership info at all — never let an
 		// anonymous request see mine:true on any row.
 		m.Mine = authenticated && ownerID == playerID
+		if end, ok := threadUntil[m.ID]; ok && m.Mine {
+			m.Blessings = []string{"the Thread, " + tick.FormatDays(end-worldTick)}
+		}
 
 		switch {
 		case !authenticated:

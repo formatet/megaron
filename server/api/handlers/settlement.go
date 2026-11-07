@@ -1099,7 +1099,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 			if spec.EffectType == religion.EffectBattleFrenzy {
 				message = fmt.Sprintf("The gods answer your plea — your own garrison defends this city a quarter stronger for %s.", tick.FormatDays(durationTicks))
 			}
-		case religion.EffectBlessedStrength, religion.EffectBlessedHull, religion.EffectBlessedSpeedLand, religion.EffectBlessedSpeedSea:
+		case religion.EffectBlessedStrength, religion.EffectBlessedHull, religion.EffectBlessedHorns, religion.EffectBlessedThread, religion.EffectBlessedSpeedLand, religion.EffectBlessedSpeedSea:
 			effectPayload, message, durationTicks, err = h.applyBlessing(r.Context(), tx, worldID, playerID, settlementID, spec, blessScope, blessUnit, nowTick, giftFactor)
 		case religion.EffectBlessedFertility, religion.EffectBlessedBuilding, religion.EffectScapegoat:
 			effectPayload, message, durationTicks, err = h.applyWorldBlessing(r.Context(), tx, worldID, playerID, settlementID, spec, blessScope, nowTick, giftFactor)
@@ -1263,6 +1263,9 @@ func (h *SettlementHandler) checkBlessingTarget(ctx context.Context, tx pgx.Tx, 
 	if spec.EffectType == religion.EffectBlessedSpeedLand {
 		return h.checkLandSpeedTarget(ctx, tx, worldID, playerID, settlementID, spec, scope, target, nowTick)
 	}
+	if spec.EffectType == religion.EffectBlessedThread {
+		return h.checkThreadTarget(ctx, tx, worldID, playerID, settlementID, spec, scope, target, nowTick)
+	}
 	kind := religion.BlessingUnitKind(spec.EffectType)
 	category := "land"
 	noun := "land troops"
@@ -1403,6 +1406,38 @@ func (h *SettlementHandler) checkLandSpeedTarget(ctx context.Context, tx pgx.Tx,
 	return scope, moverID, 0, ""
 }
 
+// checkThreadTarget validates the Thread (steg 5b): a named target is one of the caster's own land
+// caravans on the road (never a Runner, who is never taken, and never sea freight); a city or realm
+// blessing needs no caravan now, it holds for the ones that leave later too (it is read at every scan).
+func (h *SettlementHandler) checkThreadTarget(ctx context.Context, tx pgx.Tx, worldID, playerID, settlementID uuid.UUID,
+	spec religion.PrayerSpec, scope, target string, nowTick int) (string, *uuid.UUID, int, string) {
+	var moverID *uuid.UUID
+	var cityRef *uuid.UUID
+	switch scope {
+	case religion.ScopeUnit:
+		id, err := uuid.Parse(target)
+		if err != nil {
+			return "", nil, http.StatusBadRequest, "the Thread names one of your land caravans on the road: target = its id"
+		}
+		var ok bool
+		if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM transports WHERE id=$1 AND world_id=$2 AND owner_id=$3 AND category='land' AND status='in_transit')`, id, worldID, playerID).Scan(&ok); err != nil {
+			return "", nil, http.StatusInternalServerError, "could not read the caravan"
+		}
+		if !ok {
+			return "", nil, http.StatusNotFound, "no such land caravan of yours on the road"
+		}
+		moverID = &id
+	case religion.ScopeCity:
+		cityRef = &settlementID
+	}
+	if active, err := religion.BlessingActive(ctx, tx, playerID, spec.EffectType, scope, moverID, cityRef, nowTick); err != nil {
+		return "", nil, http.StatusInternalServerError, "could not read active blessings"
+	} else if active {
+		return "", nil, http.StatusConflict, "already blessed — wait for the blessing to end"
+	}
+	return scope, moverID, 0, ""
+}
+
 // applyBlessing lays the blessing row; length is the gift against its own baseline
 // (religion.DurationTicks), like the other lasting prayers.
 func (h *SettlementHandler) applyBlessing(ctx context.Context, tx pgx.Tx, worldID, playerID, settlementID uuid.UUID,
@@ -1415,6 +1450,10 @@ func (h *SettlementHandler) applyBlessing(ctx context.Context, tx pgx.Tx, worldI
 		base, noun = religion.BlessedSpeedTicks, "ships"
 	case religion.EffectBlessedSpeedLand:
 		base, noun = religion.BlessedSpeedTicks, "Runners and caravans"
+	case religion.EffectBlessedHorns:
+		base = religion.BlessedHornsTicks
+	case religion.EffectBlessedThread:
+		base, noun = religion.BlessedThreadTicks, "caravans"
 	}
 	if scope == religion.ScopePermanent {
 		return h.applyPermanentBlessing(ctx, tx, worldID, playerID, settlementID, spec, unitID, nowTick)
@@ -1428,7 +1467,7 @@ func (h *SettlementHandler) applyBlessing(ctx context.Context, tx pgx.Tx, worldI
 	// A named Runner or caravan is not a unit: it is stored as mover_id (mig 247).
 	var moverID *uuid.UUID
 	var moverKind *string
-	if spec.EffectType == religion.EffectBlessedSpeedLand && unitID != nil {
+	if (spec.EffectType == religion.EffectBlessedSpeedLand || spec.EffectType == religion.EffectBlessedThread) && unitID != nil {
 		moverID, unitID = unitID, nil
 		k := "transport"
 		var isRunner bool
@@ -1459,6 +1498,9 @@ func (h *SettlementHandler) applyBlessing(ctx context.Context, tx pgx.Tx, worldI
 		if spec.EffectType == religion.EffectBlessedSpeedLand {
 			who = "the Runner or caravan you named"
 		}
+		if spec.EffectType == religion.EffectBlessedThread {
+			who = "the caravan you named"
+		}
 	case religion.ScopeRealm:
 		who = "all your " + noun
 	}
@@ -1469,6 +1511,12 @@ func (h *SettlementHandler) applyBlessing(ctx context.Context, tx pgx.Tx, worldI
 		message = fmt.Sprintf("Velchanos steadies %s — they fight a quarter stronger for %s.", who, tick.FormatDays(duration))
 	case religion.EffectBlessedHull:
 		message = fmt.Sprintf("The Sea Daimons shelter %s — each takes the next storm unharmed, for %s.", who, tick.FormatDays(duration))
+	case religion.EffectBlessedHorns:
+		payload["horns_factor"] = religion.HornsDiceFactor
+		message = fmt.Sprintf("Asterion lowers his horns for %s — they strike half as hard again in the first round of a battle, for %s.", who, tick.FormatDays(duration))
+	case religion.EffectBlessedThread:
+		payload["intercept_radius"] = religion.ThreadInterceptRadius
+		message = fmt.Sprintf("Asterion spins his thread round %s — a sentry must stand within one hex to take them, for %s.", who, tick.FormatDays(duration))
 	default:
 		sped, sErr := h.speedUpCovered(ctx, tx, worldID, playerID, settlementID, spec.EffectType, scope, unitID, moverID, id)
 		if sErr != nil {

@@ -6,6 +6,7 @@ import (
 	"formatet/megaron/server/internal/combat"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/religion"
+	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 )
@@ -28,6 +29,7 @@ func attachPermanentBlessings(ctx context.Context, db province.Queryer, worldID,
 			summaries[i].Blessings = append(summaries[i].Blessings, "Stout Hulls for ever")
 		}
 	}
+	attachHorns(ctx, db, worldID, playerID, index, summaries)
 	rows, err := db.Query(ctx, `SELECT unit_id, effect FROM prayer_blessings WHERE world_id=$1 AND owner_id=$2 AND permanent AND unit_id IS NOT NULL ORDER BY effect`, worldID, playerID)
 	if err != nil {
 		return
@@ -48,6 +50,28 @@ func attachPermanentBlessings(ctx context.Context, db province.Queryer, worldID,
 			summaries[i].Blessings = append(summaries[i].Blessings, "blessed by Velchanos, for ever")
 		case religion.EffectBlessedSpeedSea:
 			summaries[i].Blessings = append(summaries[i].Blessings, "followed by the Sea Daimons, for ever")
+		}
+	}
+}
+
+// attachHorns adds "the bull's horns, N game days" to the owner's troops under Asterion's horns now.
+func attachHorns(ctx context.Context, db province.Queryer, worldID, playerID uuid.UUID, index map[uuid.UUID]int, summaries []unitSummary) {
+	var now int
+	tickRows, err := db.Query(ctx, `SELECT current_tick FROM worlds WHERE id=$1`, worldID)
+	if err != nil {
+		return
+	}
+	if tickRows.Next() {
+		_ = tickRows.Scan(&now)
+	}
+	tickRows.Close()
+	until, err := religion.HornsUntil(ctx, db, worldID, playerID, now)
+	if err != nil {
+		return
+	}
+	for id, end := range until {
+		if i, ok := index[id]; ok {
+			summaries[i].Blessings = append(summaries[i].Blessings, "the bull's horns, "+tick.FormatDays(end-now))
 		}
 	}
 }

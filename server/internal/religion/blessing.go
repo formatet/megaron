@@ -14,9 +14,13 @@ import (
 const (
 	EffectBlessedStrength = "blessed_strength" // Velchanos: land troops roll more dice
 	EffectBlessedHull     = "blessed_hull"     // the Sea Daimons: a ship takes one storm unharmed
+	EffectBlessedHorns    = "blessed_horns"    // Asterion: land troops hit harder in the first round of a battle
+	EffectBlessedThread   = "blessed_thread"   // Asterion: a land caravan is only taken by a sentry within one hex
 
 	PrayerVelchanosStrength = "minoan_velchanos_strength"
 	PrayerStillnessHull     = "minoan_stillness_hull"
+	PrayerAsterionHorns     = "minoan_asterion_horns"
+	PrayerAsterionThreadV2  = "minoan_asterion_thread_v2"
 
 	ScopeUnit  = "unit"
 	ScopeCity  = "city"
@@ -33,6 +37,15 @@ const (
 	BlessedStrengthFactor = 1.25
 	BlessedStrengthTicks  = 6
 	BlessedHullTicks      = 12
+
+	// HornsDiceFactor multiplies a blessed land unit's dice in the FIRST round of a battle only
+	// (steg 5b; it multiplies with BlessedStrengthFactor). Alpha number, tune freely.
+	HornsDiceFactor    = 1.5
+	BlessedHornsTicks  = 12
+	BlessedThreadTicks = 12
+	// ThreadInterceptRadius is how close a sentry must stand to take a blessed caravan
+	// (transport.interceptRadius is 2).
+	ThreadInterceptRadius = 1
 )
 
 // ScopeCostFactor is what the target costs: the traditional gift times this
@@ -67,13 +80,13 @@ func ScopeCostFactorsFor(effect string) map[string]int {
 
 // IsBlessing says whether the effect is a targeted blessing.
 func IsBlessing(effect string) bool {
-	return effect == EffectBlessedStrength || effect == EffectBlessedHull || IsSpeedBlessing(effect)
+	return effect == EffectBlessedStrength || effect == EffectBlessedHull || effect == EffectBlessedHorns || effect == EffectBlessedThread || IsSpeedBlessing(effect)
 }
 
 // BlessingUnitKind is the kind of unit a blessing can be laid on: "land" or "naval".
 func BlessingUnitKind(effect string) string {
 	switch effect {
-	case EffectBlessedStrength:
+	case EffectBlessedStrength, EffectBlessedHorns:
 		return "land"
 	case EffectBlessedHull, EffectBlessedSpeedSea:
 		return "naval"
@@ -129,4 +142,28 @@ func PermanentBlessed(ctx context.Context, db PrayerDB, owner uuid.UUID, effect 
 	err := db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM prayer_blessings WHERE owner_id=$1 AND effect=$2 AND unit_id=$3 AND permanent)`,
 		owner, effect, unitID).Scan(&has)
 	return has, err
+}
+
+// HornsUntil lists, for the owner's living land units, when the temporary bull's horns that cover
+// each of them run out (the longest, when several do). Permanent rows are not horns' business.
+func HornsUntil(ctx context.Context, db moverQuerier, world, owner uuid.UUID, tick int) (map[uuid.UUID]int, error) {
+	rows, err := db.Query(ctx, `SELECT u.id, max(b.until_tick) FROM units u
+ JOIN prayer_blessings b ON b.owner_id=u.owner_id AND b.effect=$3 AND NOT b.permanent AND b.from_tick<=$4 AND b.until_tick>$4
+  AND (b.scope='realm' OR (b.scope='unit' AND b.unit_id=u.id) OR (b.scope='city' AND b.settlement_id=u.support_settlement_id))
+ WHERE u.world_id=$1 AND u.owner_id=$2 AND u.category='land' AND u.status NOT IN ('disbanded','forming')
+ GROUP BY u.id`, world, owner, EffectBlessedHorns, tick)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := map[uuid.UUID]int{}
+	for rows.Next() {
+		var id uuid.UUID
+		var until int
+		if err := rows.Scan(&id, &until); err != nil {
+			return nil, err
+		}
+		out[id] = until
+	}
+	return out, rows.Err()
 }

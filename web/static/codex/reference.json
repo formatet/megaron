@@ -745,6 +745,37 @@
     "wrathful_threshold": 5
   },
   "prayers": {
+    "minoan_asterion_horns": {
+      "ID": "minoan_asterion_horns",
+      "GodID": "asterion",
+      "EffectType": "blessed_horns",
+      "MinKharis": 5,
+      "Offering": {
+        "livestock": 5,
+        "silver": 2
+      },
+      "CooldownTicks": 12,
+      "TargetKind": "",
+      "God": "Asterion",
+      "Name": "The Bull's Horns",
+      "Description": "Land troops you name strike half as hard again in the first round of a battle, for 12 game days, wherever they stand: one unit, the city's units, or the whole realm. Later rounds are as usual, and so is any troop that joins a battle once it has begun. A wider blessing costs more.",
+      "Favours": {
+        "bronze": 1.5,
+        "fish": 0.4,
+        "grain": 1,
+        "horses": 1.6,
+        "incense": 1.5,
+        "livestock": 2,
+        "pottery": 0.5,
+        "stone": 0.4,
+        "wine": 1.7
+      },
+      "RestByLevel": [
+        12,
+        6,
+        4
+      ]
+    },
     "minoan_asterion_swift": {
       "ID": "minoan_asterion_swift",
       "GodID": "asterion",
@@ -759,6 +790,27 @@
       "God": "Asterion",
       "Name": "Swift Feet",
       "Description": "Runners and land caravans you name take a quarter less time over what is left of their road, also when already under way, for 12 game days: one Runner or caravan, the city's, or all of them. A wider blessing costs more.",
+      "Favours": null,
+      "RestByLevel": [
+        12,
+        6,
+        4
+      ]
+    },
+    "minoan_asterion_thread_v2": {
+      "ID": "minoan_asterion_thread_v2",
+      "GodID": "asterion",
+      "EffectType": "blessed_thread",
+      "MinKharis": 5,
+      "Offering": {
+        "silver": 2,
+        "wine": 3
+      },
+      "CooldownTicks": 12,
+      "TargetKind": "",
+      "God": "Asterion",
+      "Name": "The Thread",
+      "Description": "Land caravans you name can only be taken by a sentry standing within one hex, not two, for 12 game days, also when already on the road: one caravan, the city's, or all of them. Runners are never taken, and ships are not helped. A wider blessing costs more.",
       "Favours": null,
       "RestByLevel": [
         12,

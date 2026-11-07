@@ -83,6 +83,8 @@ type BattleSideRoundResult struct {
 	DiceRolled       int `json:"dice_rolled"`       // Σ T12 rolled (elite ×3/man, chariot ×5/vagn)
 	HitsCaused       int `json:"hits_caused"`       // Σ rolls of exactly 12 (p=1/12) — casualties inflicted on the OTHER side
 	LossesReceived   int `json:"losses_received"`   // casualties this side actually took this round
+	// BlessedHorns: Asterion's bull's horns counted for a land unit of this side this round (round 1 of the first tick only).
+	BlessedHorns bool `json:"blessed_horns,omitempty"`
 }
 
 // BattleRoundResolvedPayload is emitted once per resolved round (battleRoundsPerTick

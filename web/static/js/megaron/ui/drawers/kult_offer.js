@@ -78,7 +78,7 @@ export function targetChooserHTML(prayer) {
     const what = isWorldPrayer(prayer) ? (c.scope === 'city' ? (prayer.targets.city.name || 'this city') + ' only' : 'all ' + c.count + ' of your cities')
       : c.scope === 'unit' ? c.count + ' to choose from'
       : c.scope === 'permanent' ? 'the one you choose below, and never a city; ' + c.count + ' without it yet'
-      : prayer.targets.always ? (c.scope === 'city' ? 'every Runner and caravan of ' + (prayer.targets.city.name || 'this city') : 'all of yours') + ', on the road now (' + c.count + ') and while it lasts'
+      : prayer.targets.always ? (c.scope === 'city' ? 'every ' + (prayer.id === 'minoan_asterion_thread_v2' ? 'land caravan' : 'Runner and caravan') + ' of ' + (prayer.targets.city.name || 'this city') : 'all of yours') + ', on the road now (' + c.count + ') and while it lasts'
       : c.scope === 'city' ? c.count + ' of ' + (prayer.targets.city.name || 'this city')
       : 'all ' + c.count;
     return '<label class="offer-scope"><input type="radio" name="scope-' + id + '" value="' + c.scope + '"' +

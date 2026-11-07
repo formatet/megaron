@@ -180,6 +180,8 @@ func (h *ProvinceHandler) loadPrayerRows(ctx context.Context, sett *settlement.S
 			var tErr error
 			if spec.EffectType == religion.EffectBlessedSpeedLand {
 				targets, tErr = h.loadRoadTargets(ctx, sett, *sett.OwnerID, prayerTick)
+			} else if spec.EffectType == religion.EffectBlessedThread {
+				targets, tErr = h.loadCaravanTargets(ctx, sett, *sett.OwnerID, prayerTick)
 			} else {
 				targets, tErr = h.loadPrayerTargets(ctx, sett, *sett.OwnerID, spec.EffectType)
 			}
@@ -287,6 +289,40 @@ func (h *ProvinceHandler) loadRoadTargets(ctx context.Context, sett *settlement.
 		name := kind
 		if dest != "" {
 			name = kind + " to " + dest
+		}
+		out.Unit = append(out.Unit, prayerTargetUnit{ID: id.String(), Name: name, Where: "arrives in " + tick.FormatDays(max(1, end-nowTick))})
+		out.Realm.Count++
+		if here {
+			out.City.Count++
+		}
+	}
+	return out, rows.Err()
+}
+
+// loadCaravanTargets lists what the Thread can name: the caster's own land caravans under way.
+// A caravan has no name of its own, so each is told by where it is going and when it arrives.
+// A city or realm step needs no caravan now (it holds for the ones that leave later too).
+func (h *ProvinceHandler) loadCaravanTargets(ctx context.Context, sett *settlement.Settlement, owner uuid.UUID, nowTick int) (*prayerTargets, error) {
+	rows, err := h.pool.Query(ctx, `SELECT t.id, COALESCE(d.name,''), t.due_tick, t.origin_id=$3
+ FROM transports t LEFT JOIN settlements d ON d.id=t.dest_id
+ WHERE t.world_id=$1 AND t.owner_id=$2 AND t.category='land' AND t.status='in_transit'
+ ORDER BY t.due_tick, t.id`, sett.WorldID, owner, sett.ID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := &prayerTargets{Unit: []prayerTargetUnit{}, City: prayerTargetGroup{Name: sett.Name}, Always: true}
+	for rows.Next() {
+		var id uuid.UUID
+		var dest string
+		var end int
+		var here bool
+		if err := rows.Scan(&id, &dest, &end, &here); err != nil {
+			return nil, err
+		}
+		name := "Caravan"
+		if dest != "" {
+			name = "Caravan to " + dest
 		}
 		out.Unit = append(out.Unit, prayerTargetUnit{ID: id.String(), Name: name, Where: "arrives in " + tick.FormatDays(max(1, end-nowTick))})
 		out.Realm.Count++

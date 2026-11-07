@@ -100,3 +100,28 @@ func CoveredMovers(ctx context.Context, db moverQuerier, world, owner uuid.UUID,
 	}
 	return out, rows.Err()
 }
+
+// ThreadCovered lists the in-transit LAND caravans of the world that a live Thread blessing
+// covers at the tick (steg 5b): the whole realm, the caravan's origin city, or the caravan
+// named, with the tick the longest covering blessing runs out. It is READ at every scan, one query for the whole world (never baked at departure),
+// and the owner of the blessing must be the owner of the caravan.
+func ThreadCovered(ctx context.Context, db moverQuerier, world uuid.UUID, tick int) (map[uuid.UUID]int, error) {
+	rows, err := db.Query(ctx, `SELECT t.id, max(b.until_tick) FROM transports t
+ JOIN prayer_blessings b ON b.owner_id=t.owner_id AND b.world_id=t.world_id AND b.effect=$3 AND b.from_tick<=$2 AND b.until_tick>$2
+  AND (b.scope='realm' OR (b.scope='city' AND b.settlement_id=t.origin_id) OR (b.scope='unit' AND b.mover_id=t.id))
+ WHERE t.world_id=$1 AND t.status='in_transit' AND t.category='land' GROUP BY t.id`, world, tick, EffectBlessedThread)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := map[uuid.UUID]int{}
+	for rows.Next() {
+		var id uuid.UUID
+		var until int
+		if err := rows.Scan(&id, &until); err != nil {
+			return nil, err
+		}
+		out[id] = until
+	}
+	return out, rows.Err()
+}

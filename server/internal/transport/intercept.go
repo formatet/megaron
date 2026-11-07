@@ -13,6 +13,7 @@ import (
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/tick"
 	"github.com/google/uuid"
 
@@ -174,6 +175,17 @@ func (h *InterceptScanHandler) ScanAt(ctx context.Context, e events.ScheduledEve
 	}
 	rows.Close()
 
+	// The Thread (steg 5b) is read at EVERY scan, once for the whole world: a blessed land
+	// caravan can only be taken by a sentry within religion.ThreadInterceptRadius.
+	var worldTick int
+	if err := h.pool.QueryRow(ctx, `SELECT current_tick FROM worlds WHERE id=$1`, e.WorldID).Scan(&worldTick); err != nil {
+		return fmt.Errorf("intercept scan: world clock: %w", err)
+	}
+	threaded, err := religion.ThreadCovered(ctx, h.pool, e.WorldID, worldTick)
+	if err != nil {
+		return fmt.Errorf("intercept scan: read the thread: %w", err)
+	}
+
 	for _, t := range fleet {
 		origin := province.MapPosition{Q: t.originQ, R: t.originR}
 		dest := province.MapPosition{Q: t.destQ, R: t.destR}
@@ -218,7 +230,7 @@ func (h *InterceptScanHandler) ScanAt(ctx context.Context, e events.ScheduledEve
 			   AND (ABS(sentry_q - $3) + ABS(sentry_r - $4) + ABS((sentry_q + sentry_r) - ($3 + $4))) / 2 <= $5
 			 ORDER BY size DESC
 			 LIMIT 1`,
-			e.WorldID, t.owner, pos.Q, pos.R, departureInterceptRadius(t),
+			e.WorldID, t.owner, pos.Q, pos.R, scanRadius(t, threaded),
 		).Scan(&sentryID, &interceptor); qErr != nil {
 			continue // no intercept-policy sentry in reach
 		}
@@ -250,6 +262,15 @@ func (h *InterceptScanHandler) ScanAt(ctx context.Context, e events.ScheduledEve
 
 	// Re-enqueue the next sweep.
 	return nil
+}
+
+// scanRadius is how close a sentry must stand to take the caravan: ordinary two hexes, one
+// for a caravan under the Thread (the prayer now) or carrying the retired departure thread.
+func scanRadius(t inFlightTransport, threaded map[uuid.UUID]int) int {
+	if _, ok := threaded[t.id]; ok {
+		return min(religion.ThreadInterceptRadius, departureInterceptRadius(t))
+	}
+	return departureInterceptRadius(t)
 }
 
 // seize marks the caravan intercepted and moves its manifest to the interceptor's
