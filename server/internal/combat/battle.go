@@ -180,6 +180,11 @@ type battleParticipant struct {
 	// blessedStrength: Velchanos' blessing covers this land unit now (read afresh
 	// every battle tick, never frozen at entry — religion.LoadBlessed).
 	blessedStrength bool
+	// blessedHorns: Asterion's blessing covers this land unit (read afresh like blessedStrength).
+	// hornsNow: set by resolveTick for round 1 of the battle's first tick only — that is when
+	// the horns count (rollSide reads hornsNow, never blessedHorns).
+	blessedHorns bool
+	hornsNow     bool
 	// stance is optional (nil for callers that don't care — field arrival and
 	// interception never set it, so storm below is always false for them,
 	// same as before this field existed). Read only by startBattle, only off
@@ -516,6 +521,15 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 			return false, fmt.Errorf("battle: read blessing: %w", err)
 		}
 		p.blessedStrength = blessed
+		horns, err := religion.LoadBlessed(ctx, tx, p.ownerID, p.unitID, religion.EffectBlessedHorns, defenseTick)
+		if err != nil {
+			return false, fmt.Errorf("battle: read horns: %w", err)
+		}
+		p.blessedHorns = horns
+	}
+	firstTick, err := isFirstBattleTick(ctx, tx, battleID, tickIndex)
+	if err != nil {
+		return false, err
 	}
 
 	participants := make([]battleParticipant, len(loaded))
@@ -550,6 +564,9 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 
 	for round := 1; round <= battleRoundsPerTick; round++ {
 		dice := economy.NewSeededDice(battleRoundSeed(seed, tickIndex, round))
+		for i := range participants {
+			participants[i].hornsNow = firstTick && round == 1 && participants[i].blessedHorns
+		}
 
 		attActive, attDice, attHits := rollSide(participants, sizes, bySide["attacker"], participationBySide["attacker"], dice)
 		defActive, defDice, defHits := rollSide(participants, sizes, bySide["defender"], participationBySide["defender"], dice)
@@ -588,8 +605,8 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 			sizes[idx] -= loss
 		}
 
-		attResult := BattleSideRoundResult{ActiveCombatants: attActive, DiceRolled: attDice, HitsCaused: attHits, LossesReceived: sumIntMap(attLosses)}
-		defResult := BattleSideRoundResult{ActiveCombatants: defActive, DiceRolled: defDice, HitsCaused: defHits, LossesReceived: sumIntMap(defLosses)}
+		attResult := BattleSideRoundResult{ActiveCombatants: attActive, DiceRolled: attDice, HitsCaused: attHits, LossesReceived: sumIntMap(attLosses), BlessedHorns: anyHorns(participants, bySide["attacker"])}
+		defResult := BattleSideRoundResult{ActiveCombatants: defActive, DiceRolled: defDice, HitsCaused: defHits, LossesReceived: sumIntMap(defLosses), BlessedHorns: anyHorns(participants, bySide["defender"])}
 
 		attJSON, _ := json.Marshal(attResult)
 		defJSON, _ := json.Marshal(defResult)
@@ -1128,6 +1145,27 @@ func markSideRouted(ctx context.Context, tx pgx.Tx, battleID uuid.UUID, tickInde
 	return nil
 }
 
+// isFirstBattleTick says whether no earlier tick of the battle has stored a round: the
+// bull's horns count in round 1 of this tick only. It reads stored rounds, so a replay of
+// the same tick is still the first and a unit that joins later never is.
+func isFirstBattleTick(ctx context.Context, tx pgx.Tx, battleID uuid.UUID, tickIndex int) (bool, error) {
+	var earlier bool
+	if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM battle_rounds WHERE battle_id=$1 AND tick_index<$2)`, battleID, tickIndex).Scan(&earlier); err != nil {
+		return false, fmt.Errorf("battle tick: first tick check: %w", err)
+	}
+	return !earlier, nil
+}
+
+// anyHorns says whether the bull's horns counted for someone on the side this round.
+func anyHorns(participants []battleParticipant, idx []int) bool {
+	for _, i := range idx {
+		if participants[i].hornsNow && unit.CategoryOf(unit.Type(participants[i].utype)) != unit.CategoryNaval {
+			return true
+		}
+	}
+	return false
+}
+
 // HullCap is a ship's own hull ceiling: the common HullMax plus the +1 that Stout Hulls
 // gives a named ship for ever (units.hull_bonus, böner steg 4).
 func HullCap(bonus int) int { return HullMax + bonus }
@@ -1161,6 +1199,9 @@ func rollSide(participants []battleParticipant, sizes []int, idx []int, part flo
 		}
 		if participants[i].blessedStrength && unit.CategoryOf(unit.Type(participants[i].utype)) != unit.CategoryNaval {
 			diceCount = int(math.Round(float64(diceCount) * religion.BlessedStrengthFactor))
+		}
+		if participants[i].hornsNow && unit.CategoryOf(unit.Type(participants[i].utype)) != unit.CategoryNaval {
+			diceCount = int(math.Round(float64(diceCount) * religion.HornsDiceFactor))
 		}
 		if unit.CategoryOf(unit.Type(participants[i].utype)) == unit.CategoryNaval {
 			diceCount = int(math.Round(float64(diceCount) * float64(participants[i].hull) / float64(HullCap(participants[i].hullBonus))))
