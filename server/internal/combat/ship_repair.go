@@ -33,6 +33,7 @@ import (
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -146,17 +147,19 @@ func (h *ShipRepairCompleteHandler) Handle(ctx context.Context, e events.Schedul
 		return fmt.Errorf("unmarshal ship repair payload: %w", err)
 	}
 
-	tag, err := h.pool.Exec(ctx,
-		`UPDATE units SET status = 'garrison', hull = $2, build_complete_at = NULL, updated_at = now()
-		 WHERE id = $1 AND status = 'repairing'`,
+	// Back to the ship's OWN ceiling (HullMax + hull_bonus), not a flat HullMax.
+	var restored int
+	err := h.pool.QueryRow(ctx,
+		`UPDATE units SET status = 'garrison', hull = $2 + hull_bonus, build_complete_at = NULL, updated_at = now()
+		 WHERE id = $1 AND status = 'repairing' RETURNING hull`,
 		p.UnitID, HullMax,
-	)
-	if err != nil {
-		return fmt.Errorf("ship repair complete: flip unit: %w", err)
-	}
-	if tag.RowsAffected() == 0 {
+	).Scan(&restored)
+	if err == pgx.ErrNoRows {
 		slog.Info("ship repair complete: unit not in repairing status, skipping (already completed?)", "unit", p.UnitID)
 		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("ship repair complete: flip unit: %w", err)
 	}
 
 	if err := economy.RecomputeProduction(ctx, h.pool, p.SettlementID); err != nil {
@@ -170,7 +173,7 @@ func (h *ShipRepairCompleteHandler) Handle(ctx context.Context, e events.Schedul
 		_, _ = h.eventStore.Append(ctx, p.UnitID, events.StreamType(unit.StreamUnit), EventShipRepaired,
 			ShipRepairedPayload{
 				UnitID: p.UnitID, WorldID: p.WorldID, SettlementID: p.SettlementID,
-				UnitType: p.UnitType, Hull: HullMax,
+				UnitType: p.UnitType, Hull: restored,
 			}, p.WorldID, nil,
 		)
 	}
@@ -180,7 +183,8 @@ func (h *ShipRepairCompleteHandler) Handle(ctx context.Context, e events.Schedul
 			"unit_type":     p.UnitType,
 			"name":          unit.LoadDisplayName(ctx, h.pool, p.UnitID),
 			"settlement_id": p.SettlementID,
-			"hull":          HullMax,
+			"hull":          restored,
+			"hull_max":      restored,
 		}); err != nil {
 			slog.Warn("ship repair complete: notify failed", "unit", p.UnitID, "err", err)
 		}

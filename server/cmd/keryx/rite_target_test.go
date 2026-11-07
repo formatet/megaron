@@ -11,8 +11,8 @@ import (
 
 const riteTargetCult = `{"kharis":{},"temples":[],"unbuilt_temples":[],"prayers":[
  {"id":"minoan_stillness_hull","name":"Stout Hulls","god":"The Sea Daimons","god_id":"sea_daimons_stillness","settlement_id":"capital","city_name":"Knossos",
-  "offering":{"fish":8,"oil":4},"affordable":true,"can_prepare_offering":true,"scope_cost_factors":{"unit":1,"city":2,"realm":4},
-  "targets":{"unit":[{"id":"11111111-1111-1111-1111-111111111111","name":"Horns of Crete","where":"in Knossos"},{"id":"22222222-2222-2222-2222-222222222222","name":"Horns of Naxos","where":"sailing at (3,1)"}],
+  "offering":{"fish":8,"oil":4},"affordable":true,"can_prepare_offering":true,"scope_cost_factors":{"unit":1,"city":2,"realm":4,"permanent":20},
+  "targets":{"unit":[{"id":"11111111-1111-1111-1111-111111111111","name":"Horns of Crete","where":"in Knossos"},{"id":"22222222-2222-2222-2222-222222222222","name":"Horns of Naxos","where":"sailing at (3,1)","forever":true}],
    "city":{"name":"Knossos","count":2},"realm":{"count":3}}}]}`
 
 func riteTargetServer(t *testing.T, posted *map[string]any) {
@@ -90,5 +90,40 @@ func TestRiteCast_TargetErrorsNameTheChoices(t *testing.T) {
 		if name != "bad scope" && !strings.Contains(err.Error(), "Horns of Crete") {
 			t.Fatalf("%s: the error should list the ships: %v", name, err)
 		}
+	}
+}
+
+// The fourth step: for ever on one named unit, x20; a unit that already has it says so.
+func TestRiteList_ShowsThePermanentStepAndWhoAlreadyHasIt(t *testing.T) {
+	var posted map[string]any
+	riteTargetServer(t, &posted)
+	c := riteCmd()
+	c.SetArgs([]string{"--list"})
+	out, err := captureStdout(t, c.Execute)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"--scope permanent", "×20", "fish×160 oil×80", "for ever", "already blessed for ever"} {
+		if !strings.Contains(out, want) {
+			t.Fatalf("--list lacks %q:\n%s", want, out)
+		}
+	}
+}
+
+func TestRiteCast_PermanentNamesOneUnit(t *testing.T) {
+	var posted map[string]any
+	riteTargetServer(t, &posted)
+	c := riteCmd()
+	c.SetArgs([]string{"--prayer", "minoan_stillness_hull", "--scope", "permanent", "--target", "horns of crete", "--yes"})
+	if _, err := captureStdout(t, c.Execute); err != nil {
+		t.Fatal(err)
+	}
+	if posted["target_scope"] != "permanent" || posted["target"] != "11111111-1111-1111-1111-111111111111" {
+		t.Fatalf("posted %v", posted)
+	}
+	c = riteCmd()
+	c.SetArgs([]string{"--prayer", "minoan_stillness_hull", "--scope", "permanent", "--yes"})
+	if _, err := captureStdout(t, c.Execute); err == nil || !strings.Contains(err.Error(), "needs --target") {
+		t.Fatalf("permanent without a target should name the choices, got %v", err)
 	}
 }

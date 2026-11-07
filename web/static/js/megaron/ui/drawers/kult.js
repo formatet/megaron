@@ -184,8 +184,12 @@ export async function bringOffering(prayerID) {
     showInlineResult(host, 'Choose who is blessed.', true);
     return;
   }
-  if (target.target_scope === 'unit' && !target.target) {
+  if ((target.target_scope === 'unit' || target.target_scope === 'permanent') && !target.target) {
     showInlineResult(host, 'Choose the unit to bless.', true);
+    return;
+  }
+  if (target.target_scope === 'permanent' && (prayer.targets.unit || []).find(u => u.id === target.target)?.forever) {
+    showInlineResult(host, 'That one is already blessed for ever.', true);
     return;
   }
   const recipe = scaledRecipe(prayer && prayer.offering, prayer?.targets ? scopeFactor(prayer, target.target_scope) : 1);

@@ -153,9 +153,15 @@ export function renderUnitCard(u, options = {}) {
   // Hull badge (megaron_plan_skeppsreparation.md §B2) — only shown while
   // damaged (hull < 5); a pristine ship (hull omitted or 5) shows nothing,
   // same "don't clutter the common case" posture as crewBadge above.
-  const hullBadge = isNaval && u.hull != null && (hex || u.hull < 5)
-    ? '<span style="font-size:.6rem;color:var(' + (u.hull < 5 ? '--accent-war' : '--text-dim') + ');margin-left:.3rem">hull ' + fmtNum(u.hull) + '/5</span>'
+  // The ceiling is the ship's own (hull_max, 6 with Stout Hulls for ever, steg 4): a blessed
+  // ship always shows its hull, full or not.
+  const hullMax = u.hull_max || 5;
+  const hullBadge = isNaval && u.hull != null && (hex || u.hull < hullMax || hullMax > 5)
+    ? '<span style="font-size:.6rem;color:var(' + (u.hull < hullMax ? '--accent-war' : '--text-dim') + ');margin-left:.3rem">hull ' + fmtNum(u.hull) + '/' + fmtNum(hullMax) + '</span>'
     : '';
+  // What was laid on this unit for ever, in the server's words (owner's view only).
+  const blessingBadge = (u.blessings || []).map(b =>
+    '<span class="force-blessing" style="font-size:.6rem;color:var(--text-dim);margin-left:.3rem">' + esc(b) + '</span>').join('');
 
   // Matmätaren (megaron_plan_skeppsproviant.md §7, Timothy 2026-08-26). Dygn,
   // inte råa korn — resten av spelet mäts i speldygn.
@@ -290,7 +296,7 @@ export function renderUnitCard(u, options = {}) {
   // with hull < 5. The server rejects it if the settlement has no shipyard
   // or the yard is full — this button only knows the ship is damaged and
   // docked, same "let the server be the judge" posture as Load/Unload.
-  if (isNaval && isGarrison && u.hull != null && u.hull < 5) {
+  if (isNaval && isGarrison && u.hull != null && u.hull < (u.hull_max || 5)) {
     actions += '<button onclick="unitRepair(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Repair</button> ';
   }
 	if (isNaval && u.can_lay_up) {
@@ -342,7 +348,7 @@ export function renderUnitCard(u, options = {}) {
   return '<div class="force-card" id="' + (hex ? 'hex-' : '') + 'ucard-' + u.id + '" style="padding:.3rem .2rem;border-bottom:1px solid var(--border)">'
     + '<div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap">'
     + '<a class="cx-link force-codex-name" href="#" data-cx-kind="unit" data-cx-key="'+esc(u.type)+'">' + lbl + '</a>'
-    + stanceBadge + crewBadge + hullBadge + foodBadge + cargoBadge
+    + stanceBadge + crewBadge + hullBadge + blessingBadge + foodBadge + cargoBadge
     + '<span style="font-size:.68rem;color:var(--text-dim);margin-left:auto">' + esc(unitStatusLabel(u)) + '</span>'
     + '</div>'
     + (hex ? '<p class="force-strength">' + esc(unitTypeLabel(u.type)) + ' ×' + fmtNum(u.size) + '</p>' : '')

@@ -59,13 +59,19 @@ func hullLossForCasualtyFraction(fraction float64) int {
 // that the ship just lost of its hull (hullLoss/hullMax), not the fraction
 // still standing. A full 5→0 hull loss (sunk) takes every man with it.
 func cargoSizeAfterHullLoss(size, hullLoss int) int {
+	return cargoSizeAfterHullLossOf(size, hullLoss, hullMax)
+}
+
+// cargoSizeAfterHullLossOf is the same mapping against the SHIP'S OWN ceiling (HullCap):
+// a ship with Stout Hulls for ever has 6, and losing 5 of them is not the sinking.
+func cargoSizeAfterHullLossOf(size, hullLoss, ceiling int) int {
 	if hullLoss <= 0 || size <= 0 {
 		return size
 	}
-	if hullLoss >= hullMax {
+	if hullLoss >= ceiling {
 		return 0
 	}
-	lost := int(math.Floor(float64(size) * float64(hullLoss) / float64(hullMax)))
+	lost := int(math.Floor(float64(size) * float64(hullLoss) / float64(ceiling)))
 	return size - lost
 }
 
@@ -156,7 +162,7 @@ func (h *BattleTickHandler) drawShipHull(
 			slog.Warn("battle: load embarked cargo failed", "unit", p.unitID, "err", err)
 		}
 		for _, cargoID := range cargoIDs {
-			h.applyCargoLoss(ctx, tx, cargoID, hullLoss, sunk)
+			h.applyCargoLoss(ctx, tx, cargoID, hullLoss, HullCap(p.hullBonus), sunk)
 		}
 	}
 
@@ -190,7 +196,7 @@ func (h *BattleTickHandler) drawShipHull(
 // unit (status = 'embarked') — a ship's cargo_unit_id can point at a unit
 // that already disembarked or was otherwise disbanded, and this must not
 // resurrect or otherwise disturb it.
-func (h *BattleTickHandler) applyCargoLoss(ctx context.Context, tx pgx.Tx, cargoUnitID uuid.UUID, hullLoss int, shipSunk bool) {
+func (h *BattleTickHandler) applyCargoLoss(ctx context.Context, tx pgx.Tx, cargoUnitID uuid.UUID, hullLoss, ceiling int, shipSunk bool) {
 	if shipSunk {
 		// "Sänks skeppet (hull=0) går kohorten under med det" — full loss,
 		// not just this draw's proportional share.
@@ -214,7 +220,7 @@ func (h *BattleTickHandler) applyCargoLoss(ctx context.Context, tx pgx.Tx, cargo
 		}
 		return // no longer embarked (or gone) — nothing to reduce
 	}
-	newSize := cargoSizeAfterHullLoss(size, hullLoss)
+	newSize := cargoSizeAfterHullLossOf(size, hullLoss, ceiling)
 	if newSize == size {
 		return
 	}
@@ -232,7 +238,7 @@ func (h *BattleTickHandler) notifyShipDamaged(ctx context.Context, battleID, wor
 	_, _ = h.eventStore.Append(ctx, p.unitID, events.StreamType(unit.StreamUnit), EventShipDamaged,
 		ShipDamagedPayload{
 			BattleID: battleID, WorldID: worldID, UnitID: p.unitID, UnitType: p.utype,
-			Hull: hull, HullMax: hullMax, Sunk: sunk, ReturningHome: returningHome,
+			Hull: hull, HullMax: HullCap(p.hullBonus), Sunk: sunk, ReturningHome: returningHome,
 		}, worldID, nil,
 	)
 	if h.hub == nil {
@@ -249,7 +255,7 @@ func (h *BattleTickHandler) notifyShipDamaged(ctx context.Context, battleID, wor
 		"q":              q,
 		"r":              r,
 		"hull":           hull,
-		"hull_max":       hullMax,
+		"hull_max":       HullCap(p.hullBonus),
 		"sunk":           sunk,
 		"returning_home": returningHome,
 	}); err != nil {

@@ -22,6 +22,8 @@ export function offerFields(prayer, stock, factor = 1) {
 // Blessing prayers (steg 2a) name a target: one unit, the city's units, or all.
 // The server lists them with the price of each step (x the traditional gift).
 const SCOPES = [['unit', 'One named'], ['city', 'This city\'s'], ['realm', 'The whole realm']];
+// The fourth step (steg 4): one named unit, for ever. Offered only by prayers that have it (scope_cost_factors.permanent).
+const FOREVER = ['permanent', 'For ever'];
 
 export function scaledRecipe(recipe, factor = 1) {
   return Object.fromEntries(Object.entries(recipe || {}).map(([g, n]) => [g, n * factor]));
@@ -35,9 +37,11 @@ export function scopeFactor(prayer, scope) {
 export function scopeChoices(prayer) {
   const t = prayer.targets;
   if (!t) return [];
-  const count = { unit: (t.unit || []).length, city: t.city?.count || 0, realm: t.realm?.count || 0 };
+  const count = { unit: (t.unit || []).length, city: t.city?.count || 0, realm: t.realm?.count || 0,
+    permanent: (t.unit || []).filter(u => !u.forever).length };
+  const scopes = prayer.scope_cost_factors && prayer.scope_cost_factors.permanent ? [...SCOPES, FOREVER] : SCOPES;
   // Runner/caravan prayers (steg 2b) hold for departures too, so city and realm are always open.
-  return SCOPES.map(([scope, label]) => ({ scope, label, count: count[scope], enabled: count[scope] > 0 || (!!t.always && scope !== 'unit'), factor: scopeFactor(prayer, scope) }));
+  return scopes.map(([scope, label]) => ({ scope, label, count: count[scope], enabled: count[scope] > 0 || (!!t.always && scope !== 'unit'), factor: scopeFactor(prayer, scope) }));
 }
 
 export function defaultScope(prayer) {
@@ -67,6 +71,7 @@ export function targetChooserHTML(prayer) {
   const id = esc(prayer.id);
   const rows = choices.map(c => {
     const what = c.scope === 'unit' ? c.count + ' to choose from'
+      : c.scope === 'permanent' ? 'the one you choose below, and never a city; ' + c.count + ' without it yet'
       : prayer.targets.always ? (c.scope === 'city' ? 'every Runner and caravan of ' + (prayer.targets.city.name || 'this city') : 'all of yours') + ', on the road now (' + c.count + ') and while it lasts'
       : c.scope === 'city' ? c.count + ' of ' + (prayer.targets.city.name || 'this city')
       : 'all ' + c.count;
@@ -75,7 +80,7 @@ export function targetChooserHTML(prayer) {
       esc(c.label) + ' — ' + esc(what) + ' · gift ×' + c.factor + '</label>';
   }).join('<br>');
   const options = (prayer.targets.unit || []).map(u =>
-    '<option value="' + esc(u.id) + '">' + esc(u.name) + (u.where ? ' (' + esc(u.where) + ')' : '') + '</option>').join('');
+    '<option value="' + esc(u.id) + '">' + esc(u.name) + (u.where ? ' (' + esc(u.where) + ')' : '') + (u.forever ? ', blessed for ever' : '') + '</option>').join('');
   const select = options ? '<select class="offer-target-unit" aria-label="Who to bless">' + options + '</select>' : '';
   const none = choices.some(c => c.enabled) ? '' : '<p class="offer-note">You have nothing of this kind to bless.</p>';
   return '<div class="offer-target"><p class="offer-note">Who is blessed? The wider the blessing, the dearer the gift.</p>' + rows + '<br>' + select + none + '</div>';
@@ -92,7 +97,7 @@ export function chosenTarget(host) {
   if (!radio) return {};
   const scope = radio.value;
   const out = { target_scope: scope };
-  if (scope === 'unit') {
+  if (scope === 'unit' || scope === 'permanent') {
     const sel = host.querySelector('.offer-target-unit');
     if (sel && sel.value) out.target = sel.value;
   }

@@ -23,13 +23,13 @@ func TestExpeditionBudgetMsgNamesFloorOnly(t *testing.T) {
 }
 
 func TestStormShipWarningByTypeAndHull(t *testing.T) {
-	if got := stormShipWarning("galley", 2); !strings.Contains(got, "will sink it") {
+	if got := stormShipWarning("galley", 2, 0); !strings.Contains(got, "will sink it") {
 		t.Fatalf("damaged galley: %q", got)
 	}
-	if got := stormShipWarning("galley", 5); got != "" {
+	if got := stormShipWarning("galley", 5, 0); got != "" {
 		t.Fatalf("sound galley: %q", got)
 	}
-	if got := stormShipWarning("spearman", 1); got != "" {
+	if got := stormShipWarning("spearman", 1, 0); got != "" {
 		t.Fatalf("land unit: %q", got)
 	}
 }

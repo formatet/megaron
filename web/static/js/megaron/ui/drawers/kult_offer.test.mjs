@@ -169,3 +169,28 @@ test('chosenTarget reads the storm select and the hex field', () => {
   assert.deepEqual(chosenTarget(host({ '.offer-target-storm': { value: 's-1' } })), { target: 's-1' });
   assert.deepEqual(chosenTarget(host({ '.offer-target-hex': { value: ' 7,3 ' } })), { target: '7,3' });
 });
+
+// Permanent (steg 4): a fourth radio, "For ever", for one named unit, x20; only prayers that have the step.
+const forever = { ...blessing, scope_cost_factors: { unit: 1, city: 2, realm: 4, permanent: 20 },
+  targets: { ...blessing.targets, unit: [{ id: 'u1', name: 'Horns of Crete', where: 'in Knossos' }, { id: 'u2', name: 'Argo', where: 'sailing at (3,1)', forever: true }] } };
+
+test('permanent step: a fourth radio "For ever" at the x20 gift, and units that already have it say so', () => {
+  const html = offerRowHTML(forever, { fish: 1000, oil: 1000 });
+  assert.match(html, /For ever — the one you choose below, and never a city; 1 without it yet · gift ×20/);
+  assert.match(html, /name="scope-minoan_stillness_hull" value="permanent"/);
+  assert.match(html, /Argo \(sailing at \(3,1\)\), blessed for ever/);
+  assert.deepEqual(scaledRecipe(forever.offering, 20), { fish: 160, oil: 80 });
+});
+
+test('permanent step: not offered by a prayer without it, and greyed out when every unit already has it', () => {
+  assert.doesNotMatch(offerRowHTML(blessing, { fish: 100 }), /value="permanent"/);
+  assert.doesNotMatch(offerRowHTML(swift, {}), /value="permanent"/);
+  const all = { ...forever, targets: { ...forever.targets, unit: [{ id: 'u2', name: 'Argo', where: 'x', forever: true }] } };
+  assert.equal(scopeChoices(all).find(c => c.scope === 'permanent').enabled, false);
+  assert.equal(scopeChoices(forever).find(c => c.scope === 'permanent').enabled, true);
+});
+
+test('chosenTarget reads the unit for the permanent step as for the named one', () => {
+  const host = (scope, unit) => ({ querySelector: sel => sel.includes('checked') ? { value: scope } : sel.includes('offer-target-unit') ? { value: unit } : null });
+  assert.deepEqual(chosenTarget(host('permanent', 'u1')), { target_scope: 'permanent', target: 'u1' });
+});

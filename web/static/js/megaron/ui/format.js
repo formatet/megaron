@@ -682,7 +682,7 @@ export function notifText(kind, body) {
     case 'ShipRepaired': {
       // Payload per ShipRepairCompleteHandler (megaron_plan_skeppsreparation.md
       // Slice C point 4) — hull is always hull_max here, the repair job's outcome.
-      return `Your ${body.name || unitTypeLabel(body.unit_type) || 'ship'} is repaired (hull ${body.hull ?? 5}/5) and ready to sail`;
+      return `Your ${body.name || unitTypeLabel(body.unit_type) || 'ship'} is repaired (hull ${body.hull ?? 5}/${body.hull_max ?? 5}) and ready to sail`;
     }
     case 'CityOccupied': {
       // Payload per occupation.go's occupySettlement (megaron_plan_erovring.md

@@ -2168,6 +2168,7 @@ func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {
 	}
 	attachPassageNotes(r.Context(), h.pool, worldID, units, summaries)
 	attachExpeditionNotes(r.Context(), h.pool, worldID, summaries)
+	attachPermanentBlessings(r.Context(), h.pool, worldID, playerID, units, summaries)
 	attachPickupNotes(r.Context(), h.pool, worldID, playerID, units, summaries)
 	attachOrdersEnRoute(r.Context(), h.pool, worldID, playerID, summaries)
 	attachRecruitCancelNotes(r.Context(), h.pool, worldID, playerID, summaries)
@@ -2346,6 +2347,11 @@ type unitSummary struct {
 	// 5=untouched/0=sunk) — omitted for land units (always the DB default 5,
 	// meaningless for them; see unit.Unit.Hull's own doc comment).
 	Hull int `json:"hull,omitempty"`
+	// HullMax is this ship's own ceiling (HullMax + hull_bonus, böner steg 4); naval only.
+	HullMax int `json:"hull_max,omitempty"`
+	// Blessings are the prayers laid on this unit for ever, in the server's words (steg 4).
+	// Owner's view only: foreignUnit carries neither.
+	Blessings []string `json:"blessings,omitempty"`
 	// ProvisionDays är matmätaren (Timothy 2026-08-26): hur många DYGN skeppets
 	// lager räcker vid nuvarande ranson. Dygn, inte råa korn — världen mäts i
 	// speldygn och "14 dygn" är ett tal en spelare kan handla på. Utelämnas för

@@ -144,6 +144,12 @@ test('ShipDamaged: winning side keeps its orders', () => {
   assert.equal(line, 'Your Emporos took damage (hull 4/5) but holds its orders');
 });
 
+// Böner steg 4: a ship with Stout Hulls for ever is repaired to its own ceiling.
+test('ShipRepaired: reads the ship\'s own ceiling, 6 with the permanent plank', () => {
+  assert.equal(notifText('ShipRepaired', { unit_type: 'galley', hull: 6, hull_max: 6 }), 'Your Galley is repaired (hull 6/6) and ready to sail');
+  assert.equal(notifText('ShipRepaired', { unit_type: 'galley', hull: 5 }), 'Your Galley is repaired (hull 5/5) and ready to sail');
+});
+
 // A7 (megaron_mvp_mandag.md §A7): 16 NotifyPlayer kinds fell through to the
 // raw-payload default before this slice — real server payloads (grepped from
 // each call site, not invented) now get real text. Red-before: every one of

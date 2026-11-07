@@ -394,6 +394,8 @@ type unitRow struct {
 	Size                int                `json:"size"`
 	Crew                int                `json:"crew"`
 	Hull                int                `json:"hull"`
+	HullMax             int                `json:"hull_max"`
+	Blessings           []string           `json:"blessings"`
 	ProvisionDays       int                `json:"provision_days"`
 	ProvisionsAboard    bool               `json:"provisions_aboard"`
 	Status              string             `json:"status"`
@@ -482,7 +484,24 @@ type pickupShipChoice struct {
 	CanCarryRunner bool   `json:"can_carry_runner"`
 }
 
+// hullCeiling is the ship's own max hull: 5, or 6 with Stout Hulls for ever (hull_max from the server).
+func (u unitRow) hullCeiling() int {
+	if u.HullMax > 0 {
+		return u.HullMax
+	}
+	return 5
+}
+
+// formatSize is the unit's size/strength text plus what has been laid on it for ever (böner steg 4).
 func formatSize(c *Client, u unitRow) string {
+	text := formatSizeBase(c, u)
+	if len(u.Blessings) > 0 {
+		text += " — " + strings.Join(u.Blessings, ", ")
+	}
+	return text
+}
+
+func formatSizeBase(c *Client, u unitRow) string {
 	if u.ShipyardWaiting {
 		return "waiting for shipyard workers"
 	}
@@ -528,8 +547,10 @@ func formatSize(c *Client, u unitRow) string {
 	}
 	if u.Category == "naval" {
 		hull := ""
-		if u.Hull < 5 {
-			hull = fmt.Sprintf(", hull %d/5 damaged", u.Hull)
+		if u.Hull < u.hullCeiling() {
+			hull = fmt.Sprintf(", hull %d/%d damaged", u.Hull, u.hullCeiling())
+		} else if u.hullCeiling() > 5 {
+			hull = fmt.Sprintf(", hull %d/%d", u.Hull, u.hullCeiling())
 		}
 		// Matmätaren (Timothy 2026-08-26). Dygn, inte korn — resten av spelet
 		// mäts i speldygn. Under provisionsLowDays markeras den: det är sista

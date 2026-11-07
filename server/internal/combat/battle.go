@@ -197,6 +197,8 @@ type battleParticipant struct {
 	// have no need of it). Zero for every battleParticipant built anywhere
 	// else in this file.
 	hull int
+	// hullBonus is units.hull_bonus (Stout Hulls for ever): the ship's own ceiling is HullCap(hullBonus).
+	hullBonus int
 	// cargoUnitID mirrors units.cargo_unit_id for a naval participant — the
 	// land unit riding it, if any. Same "only resolveTick's own query
 	// populates this" scope as hull above.
@@ -473,7 +475,7 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 		return false, err
 	}
 	rows, err := tx.Query(ctx,
-		`SELECT bp.unit_id, bp.owner_id, bp.side, bp.current_size, bp.initial_size, bp.standing_orders, COALESCE(bp.divine,''), u.type, u.hull, (SELECT cargo.id FROM units cargo WHERE cargo.carried_by_ship_id=u.id ORDER BY cargo.created_at,cargo.id LIMIT 1),
+		`SELECT bp.unit_id, bp.owner_id, bp.side, bp.current_size, bp.initial_size, bp.standing_orders, COALESCE(bp.divine,''), u.type, u.hull, u.hull_bonus, (SELECT cargo.id FROM units cargo WHERE cargo.carried_by_ship_id=u.id ORDER BY cargo.created_at,cargo.id LIMIT 1),
  COALESCE((SELECT s.garrison_defense_until_tick > $2 AND s.garrison_defense_owner_id=u.owner_id AND s.owner_id=u.owner_id
  FROM settlements s JOIN provinces sp ON sp.id=s.province_id
  WHERE s.id=u.settlement_id AND s.state='active' AND bp.side='defender' AND sp.world_id=$3 AND sp.map_q=$4 AND sp.map_r=$5),false)
@@ -493,7 +495,7 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 	var loaded []row
 	for rows.Next() {
 		var rr row
-		if scanErr := rows.Scan(&rr.p.unitID, &rr.p.ownerID, &rr.p.side, &rr.p.currentSize, &rr.initialSize, &rr.standingOrders, &rr.p.divine, &rr.p.utype, &rr.p.hull, &rr.p.cargoUnitID, &rr.p.defenseBoost); scanErr != nil {
+		if scanErr := rows.Scan(&rr.p.unitID, &rr.p.ownerID, &rr.p.side, &rr.p.currentSize, &rr.initialSize, &rr.standingOrders, &rr.p.divine, &rr.p.utype, &rr.p.hull, &rr.p.hullBonus, &rr.p.cargoUnitID, &rr.p.defenseBoost); scanErr != nil {
 			rows.Close()
 			return false, fmt.Errorf("battle tick: scan participant: %w", scanErr)
 		}
@@ -1126,6 +1128,10 @@ func markSideRouted(ctx context.Context, tx pgx.Tx, battleID uuid.UUID, tickInde
 	return nil
 }
 
+// HullCap is a ship's own hull ceiling: the common HullMax plus the +1 that Stout Hulls
+// gives a named ship for ever (units.hull_bonus, böner steg 4).
+func HullCap(bonus int) int { return HullMax + bonus }
+
 // rollSide rolls one side's dice for one round: each side's PARTICIPATION-sampled
 // active combatants roll battleDiceMultiplier(utype) T12 each; a 12 (p=1/12) is a hit.
 //
@@ -1157,7 +1163,7 @@ func rollSide(participants []battleParticipant, sizes []int, idx []int, part flo
 			diceCount = int(math.Round(float64(diceCount) * religion.BlessedStrengthFactor))
 		}
 		if unit.CategoryOf(unit.Type(participants[i].utype)) == unit.CategoryNaval {
-			diceCount = int(math.Round(float64(diceCount) * float64(participants[i].hull) / float64(hullMax)))
+			diceCount = int(math.Round(float64(diceCount) * float64(participants[i].hull) / float64(HullCap(participants[i].hullBonus))))
 		}
 		// The gods' hand (R2): scale the dice, rounding the fraction by a roll so
 		// a small force keeps its expected tilt. No hand: no roll drawn.
