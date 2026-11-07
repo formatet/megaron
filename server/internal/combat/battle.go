@@ -1151,7 +1151,7 @@ func markSideRouted(ctx context.Context, tx pgx.Tx, battleID uuid.UUID, tickInde
 func isFirstBattleTick(ctx context.Context, tx pgx.Tx, battleID uuid.UUID, tickIndex int) (bool, error) {
 	var earlier bool
 	if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM battle_rounds WHERE battle_id=$1 AND tick_index<$2)`, battleID, tickIndex).Scan(&earlier); err != nil {
-		return false, fmt.Errorf("battle tick: first tick check: %w", err)
+		return false, fmt.Errorf("battle: first round check: %w", err)
 	}
 	return !earlier, nil
 }

@@ -179,7 +179,7 @@ func (h *InterceptScanHandler) ScanAt(ctx context.Context, e events.ScheduledEve
 	// caravan can only be taken by a sentry within religion.ThreadInterceptRadius.
 	var worldTick int
 	if err := h.pool.QueryRow(ctx, `SELECT current_tick FROM worlds WHERE id=$1`, e.WorldID).Scan(&worldTick); err != nil {
-		return fmt.Errorf("intercept scan: world tick: %w", err)
+		return fmt.Errorf("intercept scan: world clock: %w", err)
 	}
 	threaded, err := religion.ThreadCovered(ctx, h.pool, e.WorldID, worldTick)
 	if err != nil {
