@@ -29,6 +29,7 @@ var dossierUrgentKinds = map[string]bool{
 	"ForeignMarchSighted": true, "ForeignMarchSightedV2": true,
 	"ShipStormDamaged": true, "ShipFoundered": true,
 	"MessengerLostAtSea": true,
+	"BattleBegun": true, "SiegeStarted": true,
 }
 
 const (

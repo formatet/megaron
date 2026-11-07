@@ -189,6 +189,19 @@ func TestDossierUrgentKindsSeparated(t *testing.T) {
 	}
 }
 
+func TestDossierBattleAndSiegeAreUrgent(t *testing.T) {
+	notifs := notifJSON(1, "BattleBegun", 99, `{"opponent_name":"Oledoledoff","place":"Tiryns","q":1,"r":2}`) + "," +
+		notifJSON(2, "SiegeStarted", 99, `{"name":"Aigina","q":1,"r":2}`)
+	newDossierFake(t, fullDossierReplies(notifs))
+	text := buildDossier(newClient(cfg), cfg.WorldID, dossierNow)
+	_, bodies := sectionBodies(t, text)
+	for _, k := range []string{"BattleBegun", "SiegeStarted"} {
+		if !strings.Contains(bodies["Urgent"], k) {
+			t.Errorf("Urgent lacks %s:\n%s", k, bodies["Urgent"])
+		}
+	}
+}
+
 func TestDossierOnlyReadsAndNeverMarksRead(t *testing.T) {
 	notifs := notifJSON(1, "BuildComplete", 98, `{"type":"farm"}`)
 	f := newDossierFake(t, fullDossierReplies(notifs))
