@@ -143,3 +143,27 @@ func PermanentBlessed(ctx context.Context, db PrayerDB, owner uuid.UUID, effect 
 		owner, effect, unitID).Scan(&has)
 	return has, err
 }
+
+// HornsUntil lists, for the owner's living land units, when the temporary bull's horns that cover
+// each of them run out (the longest, when several do). Permanent rows are not horns' business.
+func HornsUntil(ctx context.Context, db moverQuerier, world, owner uuid.UUID, tick int) (map[uuid.UUID]int, error) {
+	rows, err := db.Query(ctx, `SELECT u.id, max(b.until_tick) FROM units u
+ JOIN prayer_blessings b ON b.owner_id=u.owner_id AND b.effect=$3 AND NOT b.permanent AND b.from_tick<=$4 AND b.until_tick>$4
+  AND (b.scope='realm' OR (b.scope='unit' AND b.unit_id=u.id) OR (b.scope='city' AND b.settlement_id=u.support_settlement_id))
+ WHERE u.world_id=$1 AND u.owner_id=$2 AND u.category='land' AND u.status NOT IN ('disbanded','forming')
+ GROUP BY u.id`, world, owner, EffectBlessedHorns, tick)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := map[uuid.UUID]int{}
+	for rows.Next() {
+		var id uuid.UUID
+		var until int
+		if err := rows.Scan(&id, &until); err != nil {
+			return nil, err
+		}
+		out[id] = until
+	}
+	return out, rows.Err()
+}
