@@ -3101,6 +3101,44 @@
       "parent": "rites"
     },
     {
+      "id": "the-bulls-horns",
+      "title": "The Bull's Horns",
+      "category": "The gods",
+      "entities": [
+        {
+          "kind": "prayer",
+          "key": "minoan_asterion_horns"
+        }
+      ],
+      "aliases": [
+        "minoan asterion horns"
+      ],
+      "terms": [
+        "The Bull's Horns"
+      ],
+      "summary": "The Bull's Horns: Asterion makes the land troops you name strike half as hard again in the first round of a battle, for a few game days.",
+      "parent": "rites"
+    },
+    {
+      "id": "the-thread",
+      "title": "The Thread",
+      "category": "The gods",
+      "entities": [
+        {
+          "kind": "prayer",
+          "key": "minoan_asterion_thread_v2"
+        }
+      ],
+      "aliases": [
+        "minoan asterion thread v2"
+      ],
+      "terms": [
+        "The Thread"
+      ],
+      "summary": "The Thread: Asterion means a sentry must stand within one hex, not two, to take the land caravans you name.",
+      "parent": "rites"
+    },
+    {
       "id": "fruitful-season",
       "title": "Fruitful Season",
       "category": "The gods",
