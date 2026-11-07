@@ -12,6 +12,7 @@ Every [[messengers|messenger]] on the road, every settlement and every unit stan
 | Anyone standing at open water | 4 hexes of sea — in a straight line across open water only |
 | Land unit, or the [[horde|Nomadic Host]] | 2 hexes |
 | Settlement | 3 hexes |
+| [[the-bird-oracle|Bird Oracle]] | 2 hexes around one named place, for 1 game day, whatever the ground |
 | Ship | 1 hex of land — a ship is blind inland, but sees the shoreline across the water it sees |
 <!-- src: server/internal/province/hex.go LiveRadius, SeaSightline -->
 

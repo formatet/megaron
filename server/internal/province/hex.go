@@ -56,6 +56,16 @@ const (
 	// other surfaces identify a host by it, not because it sees differently.
 	EyeNomadicHost = "nomadic-host"
 	EyeShip        = "ship"
+	// EyeOracle is the bird oracle's eye (boner steg 5d): a god's sight over one named place
+	// for BirdOracleTicks. Its radius is fixed (BirdOracleRadius): no terrain modifier, no horizon.
+	EyeOracle = "oracle"
+)
+
+// The bird oracle (Asterion): live sight, radius BirdOracleRadius around the named place, for
+// BirdOracleTicks game days from the cast. Tunable, not an invariant.
+const (
+	BirdOracleRadius = 2
+	BirdOracleTicks  = 1
 )
 
 // Eye is a live vision source (a settlement or a positioned/marching unit) at a
@@ -101,6 +111,9 @@ func IsSea(terrain string) bool {
 // behind him across forest, hills and a mountain ridge. Timothy 2026-09-25: the
 // open horizon is a SIGHTLINE rule.
 func LiveRadius(eyeKind string, targetTerrain string) int {
+	if eyeKind == EyeOracle {
+		return BirdOracleRadius // the gods see: no mountain landmark, no horizon
+	}
 	base := 2
 	switch eyeKind {
 	case EyeSettlement:
@@ -155,6 +168,9 @@ func SetSeaHorizons(eyes []Eye, terrainAt func(MapPosition) string) {
 	isSea := func(p MapPosition) bool { return IsSea(terrainAt(p)) }
 	for i := range eyes {
 		var horizon map[MapPosition]struct{}
+		if eyes[i].Kind == EyeOracle {
+			continue // fixed radius: the oracle has no open-water horizon
+		}
 		for _, c := range hexgrid.Disk(hexgrid.Coord{Q: eyes[i].Pos.Q, R: eyes[i].Pos.R}, SeaHorizonRadius) {
 			target := MapPosition{Q: c.Q, R: c.R}
 			if target == eyes[i].Pos || !SeaSightline(eyes[i].Pos, target, isSea) {

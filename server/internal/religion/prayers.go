@@ -272,6 +272,11 @@ const (
 	PrayerPotniaWallsFall = "minoan_potnia_walls_fall"
 	EffectWallsFall       = "walls_fall"
 	WallsFallTicks        = 3
+
+	// The bird oracle (steg 5d): Asterion's live sight over one named place for a game day.
+	// The eye lives in province.LoadLiveEyes (oracle_sights); radius and length are province.BirdOracle*.
+	PrayerAsterionBirdOracle = "minoan_asterion_bird_oracle"
+	EffectBirdOracle         = "bird_oracle"
 )
 
 func init() {
@@ -288,6 +293,7 @@ func init() {
 	PrayerSpecs[PrayerVelchanosBuilding] = PrayerSpec{ID: PrayerVelchanosBuilding, GodID: "velchanos", EffectType: EffectBlessedBuilding, MinKharis: MoodSuspicious, Offering: map[string]float64{"timber": 3, "wine": 2}, CooldownTicks: 12, God: "Velchanos", Name: "The Builder's Blessing", Description: "What is left of a building or a ship under construction takes three quarters of the time, once for each, and so does each one begun while the blessing lasts, for 12 game days: in this city or in the whole realm. A wider blessing costs more."}
 	PrayerSpecs[PrayerPotniaScapegoat] = PrayerSpec{ID: PrayerPotniaScapegoat, GodID: "potnia", EffectType: EffectScapegoat, MinKharis: MoodSuspicious, Offering: map[string]float64{"livestock": 3}, CooldownTicks: 12, God: "Potnia", Name: "The Scapegoat", Description: "The next divine punishment that would strike any of your cities within 30 game days is borne by a goat instead: nothing is lost, and the gods' mercy holds as after any punishment. It does not lower the chance of a punishment. The realm only; one goat at a time.", Favours: favoursByEffect[EffectHarvestBlessing]}
 	PrayerSpecs[PrayerPotniaWallsFall] = PrayerSpec{ID: PrayerPotniaWallsFall, GodID: "potnia", EffectType: EffectWallsFall, MinKharis: MoodSuspicious, Offering: map[string]float64{"livestock": 12, "silver": 8}, CooldownTicks: 24, God: "Potnia", Name: "The Walls Fall", Description: "A city of another Wanax that you know and remember with a wall loses one wall level 3 game days after the prayer. You hear only that Potnia listened; you learn the result by seeing the city again. A battle already under way at the walls is not changed. If that Wanax stands well with the gods they feel the wrath gather, never from whom. A richer gift does no more.", Favours: favoursByEffect[EffectBattleFrenzy]}
+	PrayerSpecs[PrayerAsterionBirdOracle] = PrayerSpec{ID: PrayerAsterionBirdOracle, GodID: "asterion", EffectType: EffectBirdOracle, MinKharis: MoodIndifferent, Offering: map[string]float64{"silver": 10, "wine": 8}, CooldownTicks: 24, God: "Asterion", Name: "The Bird Oracle", Description: "Birds carry the eyes of Asterion over one named place of your map - a city or a named land you know - for one game day: you see what stands within 2 hexes of it as if your own people were there, armies, fleets and caravans with their strength. Afterwards it is memory, grey as any. The one who is watched is told nothing. It is the only way to see far away without a person of yours there. A richer gift does no more.", Favours: favoursByEffect[EffectBattleFrenzy]}
 	PrayerSpecs[PrayerStillnessCalm] = PrayerSpec{ID: PrayerStillnessCalm, GodID: "sea_daimons_stillness", EffectType: EffectStormCalm, MinKharis: MoodSuspicious, Offering: map[string]float64{"fish": 10, "oil": 6}, CooldownTicks: 12, God: "The Sea Daimons of Stillness", Name: "Still the Storm", Description: "A storm you have named and keep on your storm map shrinks by one hex at once, for everyone's good; the hex grows back after 24 game days. Three such prayers within 24 game days kill a storm of three hexes. A richer gift does no more.", Favours: havsdaimonernaBattleFrenzyFavours}
 	PrayerSpecs[PrayerStillnessWake] = PrayerSpec{ID: PrayerStillnessWake, GodID: "sea_daimons_stillness", EffectType: EffectStormWake, MinKharis: MoodSuspicious, Offering: map[string]float64{"fish": 10, "wine": 6}, CooldownTicks: 12, God: "The Sea Daimons of Stillness", Name: "Wake the Storm", Description: "A new storm is born on a sea hex of your own map. It lives as long as any storm and strikes every ship it meets, yours too. Nobody can tell it was woken. A richer gift does no more.", Favours: havsdaimonernaBattleFrenzyFavours}
 }
@@ -299,7 +305,7 @@ var CulturePrayers = map[string][]string{
 	"khemetiu": {"khemetiu_oracle_deposits", "khemetiu_harvest_blessing", "khemetiu_battle_frenzy"},
 	"knaani":   {"knaani_oracle_deposits", "knaani_harvest_blessing", "knaani_battle_frenzy"},
 	"thrakes":  {"thrakes_oracle_deposits", "thrakes_harvest_blessing", "thrakes_battle_frenzy"},
-	"minoan":   {PrayerPotniaVision, PrayerPotniaWalls, PrayerGreenShoots, PrayerPotniaFertility, PrayerPotniaScapegoat, PrayerPotniaWallsFall, PrayerVelchanosBuilding, PrayerAsterionSwift, PrayerAsterionHorns, PrayerAsterionThreadV2, PrayerStillnessSwift, PrayerVelchanosStrength, PrayerStillnessHull, PrayerStillnessCalm, PrayerStillnessWake},
+	"minoan":   {PrayerPotniaVision, PrayerPotniaWalls, PrayerGreenShoots, PrayerPotniaFertility, PrayerPotniaScapegoat, PrayerPotniaWallsFall, PrayerVelchanosBuilding, PrayerAsterionSwift, PrayerAsterionHorns, PrayerAsterionThreadV2, PrayerAsterionBirdOracle, PrayerStillnessSwift, PrayerVelchanosStrength, PrayerStillnessHull, PrayerStillnessCalm, PrayerStillnessWake},
 	"hatti":    {"hatti_oracle_deposits", "hatti_harvest_blessing", "hatti_battle_frenzy"},
 }
 

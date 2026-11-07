@@ -166,6 +166,11 @@ const (
 	// ScheduledWallsFall carries out Potnia's offensive prayer: three ticks after the cast one
 	// wall level of the named city falls (boner steg 5c). The payload names the cast.
 	ScheduledWallsFall ScheduledEventType = "WallsFall"
+
+	// ScheduledBirdOracleClose is the bird oracle's closing sweep, one game day after the cast
+	// (boner steg 5d): it writes into the caster's memory what the eye saw, even if the caster
+	// never read the map in the meantime.
+	ScheduledBirdOracleClose ScheduledEventType = "BirdOracleClose"
 	// ScheduledStandingOrderTick is the self-rescheduling per-world sweep that
 	// drives every standing order (megaron_plan_staende_leverans.md, PULL not
 	// push): each firing reads every route's destination shortfall and

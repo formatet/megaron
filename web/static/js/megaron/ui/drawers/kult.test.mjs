@@ -275,3 +275,27 @@ test('The Walls Fall: the chosen city is posted as target; none chosen is refuse
  city={value:'f-1'};await bringOffering('c1__minoan_potnia_walls_fall');
  assert.deepEqual(posts,[['/api/v1/worlds/walls-routing/settlements/c1/rite',{prayer:'minoan_potnia_walls_fall',target:'f-1'}]]);
 });
+
+test('The Bird Oracle: the chosen place is posted as target; none chosen is refused before any request', async t => {
+ const {State}=await import('../../state.js');const {loadKultDrawer,bringOffering}=await import('./kult.js');
+ const state={WORLD_ID:State.WORLD_ID};const old={document:globalThis.document,fetch:globalThis.fetch,localStorage:globalThis.localStorage};
+ t.after(()=>{Object.assign(State,state);Object.assign(globalThis,old);});
+ const result={};const body={innerHTML:'',querySelector:()=>result};
+ let place=null;
+ const host={innerHTML:'',querySelectorAll:()=>[],querySelector:sel=>sel.includes('offer-target-place')?place:sel.includes('checked')?null:result};
+ globalThis.document={getElementById:id=>id==='kult-body'?body:id.startsWith('offer-row-')?host:null,addEventListener(){}};
+ globalThis.localStorage={getItem:()=>null};State.WORLD_ID='oracle-routing';const posts=[];
+ const prayers=[{god_id:'asterion',settlement_id:'c1',province_id:'p1',city_name:'Knossos',has_temple:true,affordable:true,can_prepare_offering:true,offering:{silver:10},
+  id:'minoan_asterion_bird_oracle',targets:{unit:[],city:{count:0},realm:{count:0},kind:'place',cities:[{id:'f-1',name:'Mycenae',where:'x'}],places:[]}}];
+ globalThis.fetch=async(url,options={})=>{
+  if(url.endsWith('/cult'))return new Response(JSON.stringify({kharis:{},temples:[],prayers,unbuilt_temples:[]}));
+  if(url.endsWith('/actions'))return new Response('[]');
+  if(options.method==='POST'){posts.push([url,JSON.parse(options.body)]);return new Response(JSON.stringify({success:true,message:'The birds go out.'}));}
+  assert.fail('Unexpected '+url);
+ };
+ await loadKultDrawer();
+ await bringOffering('c1__minoan_asterion_bird_oracle');
+ assert.deepEqual(posts,[],'no place chosen: nothing is sent');
+ place={value:'f-1'};await bringOffering('c1__minoan_asterion_bird_oracle');
+ assert.deepEqual(posts,[['/api/v1/worlds/oracle-routing/settlements/c1/rite',{prayer:'minoan_asterion_bird_oracle',target:'f-1'}]]);
+});

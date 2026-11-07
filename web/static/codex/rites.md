@@ -2,7 +2,7 @@ A rite is a request made at the temple of its god.
 
 A **rite** is a request to [[gods|the gods]]. Open **Kult → Prayers**.
 
-Each prayer is said at its own god's [[temples|temple]], so a city needs that temple standing: [[following-seas]], [[stout-hulls]], [[still-the-storm]] and [[wake-the-storm]] need a Temple of the [[sea-daimons|Sea Daimons]] of Stillness, [[green-shoots]], [[the-young-gods-arm]] and [[builders-blessing]] a Temple of [[velchanos]], [[mistress-of-the-walls]], [[potnias-vision]], [[fruitful-season]], [[the-scapegoat]] and [[the-walls-fall]] a [[temple]] of [[potnia]], [[swift-feet]], [[the-bulls-horns]] and [[the-thread]] a Temple of [[asterion]]. Level 1 is enough. Without it the prayer shows "no Temple of …".
+Each prayer is said at its own god's [[temples|temple]], so a city needs that temple standing: [[following-seas]], [[stout-hulls]], [[still-the-storm]] and [[wake-the-storm]] need a Temple of the [[sea-daimons|Sea Daimons]] of Stillness, [[green-shoots]], [[the-young-gods-arm]] and [[builders-blessing]] a Temple of [[velchanos]], [[mistress-of-the-walls]], [[potnias-vision]], [[fruitful-season]], [[the-scapegoat]] and [[the-walls-fall]] a [[temple]] of [[potnia]], [[swift-feet]], [[the-bulls-horns]], [[the-thread]] and [[the-bird-oracle]] a Temple of [[asterion]]. Level 1 is enough. Without it the prayer shows "no Temple of …".
 
 ## Temples required by prayers {#rites-details}
 
@@ -22,7 +22,7 @@ Older prayers outside the current Minoan catalogue retain their uncertain answer
 
 ## Prayer answers and active blessings {#rites-the-prayers}
 
-The current Minoan prayers are **Following Seas**, **Fruitful Season**, **Green Shoots**, **Mistress of the Walls**, **Potnia's Vision**, **Stout Hulls**, **Swift Feet**, **The Builder's Blessing**, **The Bull's Horns**, **The Scapegoat**, **The Thread**, **The Walls Fall** and **The Young God's Arm**, described below. `keryx rite --list` or **Kult → Prayers** shows the prayers your culture can offer and why one is unavailable. Current kharis is shown with a decimal; eligibility uses the exact pool value.
+The current Minoan prayers are **Following Seas**, **Fruitful Season**, **Green Shoots**, **Mistress of the Walls**, **Potnia's Vision**, **Stout Hulls**, **Swift Feet**, **The Bird Oracle**, **The Builder's Blessing**, **The Bull's Horns**, **The Scapegoat**, **The Thread**, **The Walls Fall** and **The Young God's Arm**, described below. `keryx rite --list` or **Kult → Prayers** shows the prayers your culture can offer and why one is unavailable. Current kharis is shown with a decimal; eligibility uses the exact pool value.
 
 The answer or a refusal appears in the Kult drawer after you offer; it stays beside the prayers. An answer also arrives as a dispatch naming the god, the prayer and what was granted. When the god marks a place, **⌖ Take me there** goes to it. In Keryx it is listed by `keryx notifications`.
 
@@ -55,6 +55,7 @@ These three name no unit; you choose **the city where you pray** (twice the trad
 
 - **The Bull's Horns** — offer 5 [[livestock|livestock]] + 2 [[silver|silver]] to Asterion. Land troops you name strike half as hard again in the **first round** of a [[battle]], attacking or defending, for 12 game days with the traditional gift. Later rounds, and troops that join a battle already begun, are as usual; it stacks with the Arm in that first round. A **blessing with a target**, see above, without a step for ever. See [[the-bulls-horns]].
 - **The Thread** — offer 3 [[wine|wine]] + 2 silver to Asterion. Land [[transfers|caravans]] you name can only be taken by a sentry standing within one hex, not two, for 12 game days with the traditional gift, also when already on the road. [[runners|Runners]] and ships are not covered. A **blessing with a target**, see above; the city and realm steps also hold for caravans that leave while the prayer lasts. See [[the-thread]].
+- **The Bird Oracle** — offer 10 [[silver|silver]] + 8 [[wine|wine]] to Asterion, and stand at 30 [[kharis]] or more. Name a city or a named place of your map, and for 1 game day you see live everything within 2 hexes of it, armies, fleets and caravans with their strength. Afterwards it is grey memory. The one watched is told nothing. It is the only way to see far away without a person of yours there. See [[the-bird-oracle]].
 
 ### A prayer against another Wanax
 
@@ -106,6 +107,7 @@ A good's worth is multiplied by the god's taste for it. A taste above 1 means th
 | Still the Storm | The Sea Daimons of Stillness | fish ×2.2, livestock ×2, wine ×1.7, horses ×1.6, bronze ×1.5, incense ×1.5, grain ×1, pottery ×0.5, stone ×0.4 |
 | Stout Hulls | The Sea Daimons of Stillness | fish ×2.2, livestock ×2, wine ×1.7, horses ×1.6, bronze ×1.5, incense ×1.5, grain ×1, pottery ×0.5, stone ×0.4 |
 | Swift Feet | Asterion | no preference: every good at its worth |
+| The Bird Oracle | Asterion | livestock ×2, wine ×1.7, horses ×1.6, bronze ×1.5, incense ×1.5, grain ×1, pottery ×0.5, fish ×0.4, stone ×0.4 |
 | The Builder's Blessing | Velchanos | no preference: every good at its worth |
 | The Bull's Horns | Asterion | livestock ×2, wine ×1.7, horses ×1.6, bronze ×1.5, incense ×1.5, grain ×1, pottery ×0.5, fish ×0.4, stone ×0.4 |
 | The Scapegoat | Potnia | incense ×2, wine ×2, oil ×1.6, grain ×1.3, livestock ×1.3, fish ×0.9, copper ×0.5, tin ×0.5, timber ×0.4, stone ×0.3 |

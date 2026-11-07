@@ -894,6 +894,18 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// The Bird Oracle names a city or a named place of your map (checked before any gift is taken).
+	var oracleTarget *birdOracleTarget
+	if spec.EffectType == religion.EffectBirdOracle {
+		var code int
+		var msg string
+		oracleTarget, code, msg = h.checkBirdOracleTarget(r.Context(), tx, worldID, playerID, body.Target)
+		if code != 0 {
+			writeError(w, code, msg)
+			return
+		}
+	}
+
 	// Kharis tier gate.
 	if kharisNow < spec.MinKharis {
 		writeError(w, http.StatusBadRequest, insufficientKharisMessage(prayerID, spec.MinKharis, kharisNow))
@@ -1131,6 +1143,8 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 			}
 		case religion.EffectWallsFall:
 			recordedEffect, effectPayload, message = h.applyWallsFall(wallsTarget, nowTick)
+		case religion.EffectBirdOracle:
+			effectPayload, message, err = h.applyBirdOracle(r.Context(), tx, worldID, playerID, oracleTarget, nowTick)
 		case religion.EffectOracleRevealDeposits:
 			effectPayload, message, err = h.applyOracleRevealDeposits(r.Context(), tx, settlementID, worldID, playerID, spec)
 		case religion.EffectHarvestBlessing:
@@ -1198,6 +1212,12 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	if success && wallsTarget != nil {
 		if err = h.scheduleWallsFall(r.Context(), tx, worldID, wallsTarget, riteEvent.ID, nowTick); err != nil {
 			writeError(w, http.StatusInternalServerError, "could not schedule the fall")
+			return
+		}
+	}
+	if success && oracleTarget != nil {
+		if err = h.scheduleBirdOracleClose(r.Context(), tx, worldID, playerID, oracleTarget, nowTick); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not schedule the closing sweep")
 			return
 		}
 	}

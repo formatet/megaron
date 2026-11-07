@@ -51,6 +51,23 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 		sRows.Close()
 	}
 
+	// The bird oracle (boner steg 5d): a stored, time-limited eye over a named place. Only the
+	// caster's own player_id; active while from_milli <= at < until_milli.
+	oRows, err := db.Query(ctx,
+		`SELECT q, r FROM oracle_sights
+		 WHERE world_id = $1 AND player_id = $2 AND from_milli <= $3 AND $3 < until_milli`,
+		worldID, playerID, at,
+	)
+	if err == nil {
+		for oRows.Next() {
+			var pos MapPosition
+			if oRows.Scan(&pos.Q, &pos.R) == nil {
+				eyes = append(eyes, Eye{Pos: pos, Kind: EyeOracle})
+			}
+		}
+		oRows.Close()
+	}
+
 	uRows, err := db.Query(ctx,
 		`SELECT status, q, r, target_q, target_r, category, type, departs_at, arrives_at, depart_tick, arrive_tick, march_route
 		 FROM units

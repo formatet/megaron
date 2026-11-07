@@ -111,9 +111,11 @@ var tickPriorities = map[ScheduledEventType]int{
 	ScheduledShipFitOutComplete: tickPriorityArrival,
 
 	// 20 — vad ögonen ser när rörelsen är gjord.
-	ScheduledInterceptScan:      tickPrioritySight,
-	ScheduledUnitInterceptScan:  tickPrioritySight,
-	ScheduledMarchSightingScan:  tickPrioritySight,
+	ScheduledInterceptScan:     tickPrioritySight,
+	ScheduledUnitInterceptScan: tickPrioritySight,
+	ScheduledMarchSightingScan: tickPrioritySight,
+	// The oracle's memory is written after the day's movement, like every other sight.
+	ScheduledBirdOracleClose:    tickPrioritySight,
 	ScheduledMarchEncounterScan: tickPrioritySight,
 	// Budet ser vilka bärare just lämnade hamn (boarding) och vilka redan
 	// ombordvarande bärare försvann (kapning) — samma "efter rörelsen" tier
