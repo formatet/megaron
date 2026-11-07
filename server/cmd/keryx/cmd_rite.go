@@ -122,7 +122,11 @@ func printRiteTargets(p riteAvailablePrayer, settlementID string) {
 		fmt.Printf("    --scope permanent ×%d  %s  — one named, for ever (never a city or the realm), with --target <name|id>\n", f["permanent"], formatOffering(scaledOffering(p.Offering, f["permanent"])))
 	}
 	if p.Targets.Always {
-		fmt.Printf("    --scope city  ×%d  %s  — every Runner and caravan of %s, now on the road (%d) and while the prayer lasts\n", f["city"], formatOffering(scaledOffering(p.Offering, f["city"])), p.Targets.City.Name, p.Targets.City.Count)
+		what := "Runner and caravan"
+		if p.ID == "minoan_asterion_thread_v2" {
+			what = "land caravan" // the Thread never reaches a Runner
+		}
+		fmt.Printf("    --scope city  ×%d  %s  — every %s of %s, now on the road (%d) and while the prayer lasts\n", f["city"], formatOffering(scaledOffering(p.Offering, f["city"])), what, p.Targets.City.Name, p.Targets.City.Count)
 		fmt.Printf("    --scope realm ×%d  %s  — all of yours, now on the road (%d) and while the prayer lasts\n", f["realm"], formatOffering(scaledOffering(p.Offering, f["realm"])), p.Targets.Realm.Count)
 		return
 	}

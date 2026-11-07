@@ -427,7 +427,7 @@ func cargoCmd() *cobra.Command {
 					direction = "incoming"
 				}
 				fmt.Printf("%-10s  %9.0f  %12s  %12s  %10s  %s\n",
-					good, qty, from, to, etaStr, cargoPhysicalPosition(m)+" · "+direction)
+					good, qty, from, to, etaStr, cargoPhysicalPosition(m)+" · "+direction+cargoBlessingNote(m))
 			}
 			fmt.Println("\nPhysical cargo, not a promise — it can be intercepted and seized in transit.")
 			fmt.Println("Same risk for every cargo, own or traded: on land only interception;")
@@ -435,6 +435,19 @@ func cargoCmd() *cobra.Command {
 			return nil
 		},
 	}
+}
+
+// cargoBlessingNote names the prayers over the owner's own caravan ("the Thread, 12 game days"), in the server's words.
+func cargoBlessingNote(m map[string]any) string {
+	var out string
+	if lines, ok := m["blessings"].([]any); ok {
+		for _, l := range lines {
+			if s, ok := l.(string); ok {
+				out += " · " + s
+			}
+		}
+	}
+	return out
 }
 
 func cargoPhysicalPosition(m map[string]any) string {
