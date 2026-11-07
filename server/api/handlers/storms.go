@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"sort"
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/combat"
@@ -36,6 +37,8 @@ type stormView struct {
 // player_storm_sightings, so afterwards it is shown where it was LAST SEEN, marked
 // remembered with that tick — never its live position. A remembered storm with any
 // remembered hex in sight again, and which is not there, has moved on and is forgotten.
+// A dead storm (sea_storms.dies_tick passed) is never live; the memory of it is forgotten the
+// same way, when you see the place and it is not there.
 // The full track is never exposed.
 func (h *WorldHandler) Storms(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
@@ -68,7 +71,7 @@ func (h *WorldHandler) Storms(w http.ResponseWriter, r *http.Request) {
 		   FROM sea_storms s
 		   JOIN sea_storm_track t ON t.storm_id = s.id
 		    AND t.tick = (SELECT max(tick) FROM sea_storm_track WHERE storm_id = s.id)
-		  WHERE s.world_id = $1 ORDER BY s.id, t.slot`, worldID)
+		  WHERE s.world_id = $1 AND s.died_tick IS NULL AND s.dies_tick > $2 ORDER BY s.id, t.slot`, worldID, tick)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not load storms")
 		return
@@ -151,12 +154,24 @@ func (h *WorldHandler) Storms(w http.ResponseWriter, r *http.Request) {
 		return province.AnyEyeSees(eyes, province.MapPosition{Q: hx.Q, R: hx.R}, terrain[[2]int{hx.Q, hx.R}])
 	}
 
+	// A dead storm has no live position but is still remembered where it was last seen.
+	rest := []uuid.UUID{}
+	for id := range remembered {
+		if now[id] == nil {
+			rest = append(rest, id)
+		}
+	}
+	sort.Slice(rest, func(i, j int) bool { return rest[i].String() < rest[j].String() })
+	order = append(order, rest...)
+
 	out := []stormView{}
 	for _, id := range order {
 		c := now[id]
 		live := false
-		for _, hx := range c.hexes {
-			live = live || sees(hx)
+		if c != nil {
+			for _, hx := range c.hexes {
+				live = live || sees(hx)
+			}
 		}
 		if live {
 			out = append(out, stormView{ID: id, Tier: "live", Hexes: c.hexes, Heading: combat.StormHeadingName(c.heading), SeenTick: tick})

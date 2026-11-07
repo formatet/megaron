@@ -89,7 +89,7 @@ func TestOmenObservedOutcomeCooldownAndSpecificity(t *testing.T) {
 		t.Fatal(err)
 	}
 	var storm string
-	if err := pool.QueryRow(ctx, `INSERT INTO sea_storms(world_id,heading,created_tick) VALUES($1,0,0) RETURNING id::text`, wid).Scan(&storm); err != nil {
+	if err := pool.QueryRow(ctx, `INSERT INTO sea_storms(world_id,heading,created_tick, dies_tick) VALUES($1,0,0, 100000) RETURNING id::text`, wid).Scan(&storm); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := pool.Exec(ctx, `INSERT INTO sea_storm_track(storm_id,tick,slot,q,r) VALUES($1,0,0,1,0)`, storm); err != nil {
@@ -220,5 +220,42 @@ func TestMaintainedTickProducesObservedOmenOnce(t *testing.T) {
 	}
 	if count != 1 {
 		t.Fatalf("actual maintenance path must produce exactly one observed omen, got %d", count)
+	}
+}
+
+// A dead storm (dies_tick passed) is no omen fact, though its last track row is still stored.
+func TestOmenFacts_DeadStormIsNotAFact(t *testing.T) {
+	pool, wid, sid := newGrowthFixture(t, [6]string{"plains", "plains", "plains", "plains", "plains", "plains"}, 1000)
+	ctx := context.Background()
+	var storm string
+	if err := pool.QueryRow(ctx, `INSERT INTO sea_storms(world_id,heading,created_tick,dies_tick) VALUES($1,0,0,50) RETURNING id::text`, wid).Scan(&storm); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.Exec(ctx, `INSERT INTO sea_storm_track(storm_id,tick,slot,q,r) VALUES($1,49,0,1,0)`, storm); err != nil {
+		t.Fatal(err)
+	}
+	facts := func(current int) int {
+		tx, err := pool.Begin(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer tx.Rollback(ctx)
+		fs, err := loadOmenFacts(ctx, tx, wid, sid, 0, 0, 1000, true, current, 5)
+		if err != nil {
+			t.Fatal(err)
+		}
+		n := 0
+		for _, f := range fs {
+			if f.Kind == "storm" {
+				n++
+			}
+		}
+		return n
+	}
+	if got := facts(49); got != 1 {
+		t.Fatalf("living storm at tick 49: %d storm facts, want 1", got)
+	}
+	if got := facts(50); got != 0 {
+		t.Fatalf("storm died at tick 50: %d storm facts, want 0", got)
 	}
 }

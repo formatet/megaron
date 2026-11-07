@@ -1,11 +1,11 @@
-A **storm** is three connected hexes of dark cloud on the Thalassa. There is about one for every 100 hexes of sea, and they never stop wandering. No storm forms on a [[lake]] or drifts onto one. <!-- src: server/internal/combat/sea_storm_weather.go SeaHexesPerStorm -->
+A **storm** is a body of connected hexes of dark cloud on the Thalassa — three when it is born. There is about one for every 100 hexes of sea, and they never stop wandering. Storms are born and they die: a storm lives some 200 to 300 game days, then it is gone, and new storms form on open sea so that the Thalassa is never long without them. <!-- src: server/internal/combat/sea_storm_weather.go StormLifeMinTicks StormLifeMaxTicks --> No storm forms on a [[lake]] or drifts onto one. <!-- src: server/internal/combat/sea_storm_weather.go SeaHexesPerStorm -->
 
 
 Select a water hex on the world map or in the city's workforce grid to read any known storm there. An open panel follows incoming weather updates; workers stay placed while a storm stops fishing. Keryx `storms` lists known storm coordinates, and `status` reports affected fishing grounds.
 
 ## How storms move {#storms-how-they-move}
 
-Each game day a storm takes **two steps**. In each step, one of its three hexes moves to a neighbouring sea hex, and the storm stays in one piece. So a storm crawls: slowly, and a little more each game day in the direction it has been drifting, now and then turning. It never crosses land.
+Each game day a storm takes **two steps**. In each step, one of its hexes moves to a neighbouring sea hex, and the storm stays in one piece. So a storm crawls: slowly, and a little more each game day in the direction it has been drifting, now and then turning. It never crosses land. A storm that has died is gone from the sea: the map still remembers it where you last saw it, until you look at that place and find it empty.
 
 ## Storm effects {#storms-what-they-do}
 

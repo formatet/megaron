@@ -432,7 +432,7 @@ def A12(br):
  fx_city();fx_ships();W=S['world'];q,r=me()['x'],S['r']
  dol=sql(f"SELECT id FROM units WHERE owner_id='{me()['pid']}' AND name='Dolphin'")
  sql(f"DELETE FROM sea_storm_track WHERE storm_id IN(SELECT id FROM sea_storms WHERE world_id='{W}'); DELETE FROM sea_storms WHERE world_id='{W}';",True)
- st=sql(f"INSERT INTO sea_storms(world_id,heading,created_tick) VALUES('{W}',0,100) RETURNING id",True).splitlines()[0]
+ st=sql(f"INSERT INTO sea_storms(world_id,heading,created_tick, dies_tick) VALUES('{W}',0,100, 100000) RETURNING id",True).splitlines()[0]
  sql(f"INSERT INTO sea_storm_track(storm_id,tick,slot,q,r) VALUES('{st}',100,0,{q+2},{r+2}),('{st}',100,1,{q+3},{r+2}),('{st}',100,2,{q+3},{r+3});",True)
  for w in (1280,390):
   pg=newpage(br,'Idomeneus',w);centre(pg,q+2,r+2);pg.wait_for_timeout(800)

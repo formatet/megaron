@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { stormOuterEdges, stormTone, stormRain, EDGE_NEIGHBOUR } from './storms.js';
+import { stormOuterEdges, stormTone, stormRain, EDGE_NEIGHBOUR, drawStorm } from './storms.js';
 
 // Axial → pixel centre in S units, flat-top (the same as hexPx in map.js).
 const centre = (q, r) => [1.5 * q, Math.sqrt(3) * (r + q / 2)];
@@ -50,4 +50,30 @@ test('rain streaks are sparse, deterministic and slide with the phase', () => {
   }
   assert.ok(n > 40 && n < 400, `rain pixels: ${n}`);
   assert.ok(moved > 0, 'the streaks must slide between phases');
+});
+
+// A storm may shrink to two or one hex (storms die small, megaron_plan_stormar §Stormar föds och dör).
+test('one hex has 6 outer edges, two adjacent hexes have 10', () => {
+  assert.equal(stormOuterEdges([{ q: 0, r: 0 }]).flat().filter(Boolean).length, 6);
+  assert.equal(stormOuterEdges([{ q: 0, r: 0 }, { q: 1, r: 0 }]).flat().filter(Boolean).length, 10);
+});
+
+test('drawStorm draws one- and two-hex storms in every phase, lightning always inside the storm', () => {
+  const g = { fillStyle: '', fillRect() {} };
+  globalThis.document = { createElement: () => ({ getContext: () => g }) };
+  try {
+    for (const hexes of [[{ q: 4, r: 2 }], [{ q: 4, r: 2 }, { q: 5, r: 2 }]]) {
+      for (let frame = 0; frame < 400; frame += 7) {
+        const flashes = [];
+        const ctx = { drawImage() {}, save() {}, restore() {}, beginPath() {}, moveTo() {}, lineTo() {}, stroke() {}, setLineDash() {},
+          set fillStyle(v) {}, fillRect(x, y) { flashes.push([x, y]); } };
+        const hexPx = (q, r) => ({ x: q * 100, y: r * 100 });
+        const hexPts = (x, y) => [0, 1, 2, 3, 4, 5].map(i => [x + i, y + i]);
+        drawStorm(ctx, { tier: 'live', hexes }, { S: 8, hexPx, hexPts, frame });
+        for (const [x, y] of flashes) {
+          assert.ok(hexes.some(h => Math.abs(x - h.q * 100) <= 2 && Math.abs(y - h.r * 100) <= 7), `flash ${x},${y} outside a ${hexes.length}-hex storm`);
+        }
+      }
+    }
+  } finally { delete globalThis.document; }
 });

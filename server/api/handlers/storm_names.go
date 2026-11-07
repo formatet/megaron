@@ -89,10 +89,10 @@ func (h *WorldHandler) NameStorm(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var claimedBy *uuid.UUID
 	var namedTick *int
-	var tick int
+	var tick, diesTick int
 	if err := h.pool.QueryRow(ctx,
-		`SELECT s.claimed_by, s.named_tick, w.current_tick FROM sea_storms s JOIN worlds w ON w.id = s.world_id
-		  WHERE s.id = $1 AND s.world_id = $2`, stormID, worldID).Scan(&claimedBy, &namedTick, &tick); err != nil {
+		`SELECT s.claimed_by, s.named_tick, w.current_tick, s.dies_tick FROM sea_storms s JOIN worlds w ON w.id = s.world_id
+		  WHERE s.id = $1 AND s.world_id = $2`, stormID, worldID).Scan(&claimedBy, &namedTick, &tick, &diesTick); err != nil {
 		writeError(w, http.StatusNotFound, "no such storm")
 		return
 	}
@@ -102,6 +102,10 @@ func (h *WorldHandler) NameStorm(w http.ResponseWriter, r *http.Request) {
 	}
 	if namedTick != nil {
 		writeError(w, http.StatusConflict, "this storm has already been named")
+		return
+	}
+	if diesTick <= tick {
+		writeError(w, http.StatusConflict, "this storm has died and can no longer be named")
 		return
 	}
 	// named_tick IS NULL in the WHERE keeps two racing requests to a single winner.

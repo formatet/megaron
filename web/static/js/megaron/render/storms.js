@@ -103,7 +103,7 @@ export function drawStorm(ctx, storm, { S, hexPx, hexPts, frame }) {
   ctx.restore();
   // A lightning flash in one hex now and then (one phase in four).
   if (!ghost && (phase === 1 || phase === 3)) {
-    const h = storm.hexes[(hash(storm.hexes[0].q, storm.hexes[0].r, 7) >>> 3) % 3];
+    const h = storm.hexes[(hash(storm.hexes[0].q, storm.hexes[0].r, 7) >>> 3) % storm.hexes.length];
     const { x, y } = hexPx(h.q, h.r);
     ctx.fillStyle = FLASH;
     for (const [dx, dy] of [[1, -6], [0, -5], [-1, -4], [0, -3], [1, -2], [0, -1], [-1, 0], [0, 1]]) ctx.fillRect(x + dx, y + dy, 1, 1);

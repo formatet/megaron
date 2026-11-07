@@ -82,7 +82,7 @@ func seedStorm(t *testing.T, pool *pgxpool.Pool, worldID uuid.UUID, heading int,
 	t.Helper()
 	ctx := context.Background()
 	var id uuid.UUID
-	if err := pool.QueryRow(ctx, `INSERT INTO sea_storms (world_id, heading, created_tick) VALUES ($1, $2, 0) RETURNING id`, worldID, heading).Scan(&id); err != nil {
+	if err := pool.QueryRow(ctx, `INSERT INTO sea_storms (world_id, heading, created_tick, dies_tick) VALUES ($1, $2, 0, 100000) RETURNING id`, worldID, heading).Scan(&id); err != nil {
 		t.Fatal(err)
 	}
 	for slot, hx := range hexes {
@@ -175,5 +175,50 @@ func TestStorms_ForgottenWhenAnyRememberedHexIsInSightAndEmpty(t *testing.T) {
 	}
 	if got := get(); len(got.Storms) != 0 {
 		t.Fatalf("storms = %+v, want none: (3,0) is in sight and empty, so the storm has moved on", got.Storms)
+	}
+}
+
+// A storm that has died (dies_tick passed) is not live, however near: the track row at its last
+// tick is still there, but the weather has no storm on that place any more.
+func TestStorms_DeadStormIsNotLive(t *testing.T) {
+	pool, worldID, _, _, get := stormsRig(t)
+	id := seedStorm(t, pool, worldID, 1, [3][2]int{{2, 0}, {3, 0}, {2, 1}})
+	if got := get(); len(got.Storms) != 1 || got.Storms[0].Tier != "live" {
+		t.Fatalf("before death: %+v, want one live storm", got.Storms)
+	}
+	if _, err := pool.Exec(context.Background(), `UPDATE sea_storms SET dies_tick = 7, died_tick = 7 WHERE id = $1`, id); err != nil {
+		t.Fatal(err)
+	}
+	if got := get(); len(got.Storms) != 0 {
+		t.Fatalf("storms = %+v, want none: the storm died at tick 7", got.Storms)
+	}
+}
+
+// The map remembers a dead storm where it was last seen, like any storm, until you look at
+// the place and it is not there.
+func TestStorms_DeadStormMemoryIsForgottenOnlyWhenThePlaceIsSeen(t *testing.T) {
+	pool, worldID, viewerID, _, get := stormsRig(t)
+	id := seedStorm(t, pool, worldID, 0, [3][2]int{{20, 5}, {21, 5}, {20, 6}})
+	if _, err := pool.Exec(context.Background(), `UPDATE sea_storms SET dies_tick = 6, died_tick = 6 WHERE id = $1`, id); err != nil {
+		t.Fatal(err)
+	}
+	remember := func(hexes string) {
+		if _, err := pool.Exec(context.Background(),
+			`INSERT INTO player_storm_sightings (player_id, storm_id, seen_tick, hexes) VALUES ($1, $2, 3, $3)
+			 ON CONFLICT (player_id, storm_id) DO UPDATE SET hexes = EXCLUDED.hexes`, viewerID, id, hexes); err != nil {
+			t.Fatal(err)
+		}
+	}
+	remember(`[{"q":12,"r":0},{"q":13,"r":0},{"q":12,"r":1}]`) // out of sight
+	if got := get(); len(got.Storms) != 1 || got.Storms[0].Tier != "remembered" {
+		t.Fatalf("storms = %+v, want the dead storm still remembered out of sight", got.Storms)
+	}
+	if _, err := pool.Exec(context.Background(),
+		`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, 1, 0, 'coastal_sea'), ($1, 2, 0, 'coastal_sea'), ($1, 1, 1, 'coastal_sea') ON CONFLICT DO NOTHING`, worldID); err != nil {
+		t.Fatal(err)
+	}
+	remember(`[{"q":1,"r":0},{"q":2,"r":0},{"q":1,"r":1}]`) // in sight, and empty
+	if got := get(); len(got.Storms) != 0 {
+		t.Fatalf("storms = %+v, want none: the place is in sight and the storm is dead", got.Storms)
 	}
 }

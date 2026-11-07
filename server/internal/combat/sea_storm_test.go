@@ -40,7 +40,7 @@ func stormsOverHexes(t *testing.T, pool *pgxpool.Pool, worldID uuid.UUID, qs ...
 		}
 		end := i
 		var id uuid.UUID
-		if err := pool.QueryRow(ctx, `INSERT INTO sea_storms(world_id,heading,created_tick) VALUES($1,0,0) RETURNING id`, worldID).Scan(&id); err != nil {
+		if err := pool.QueryRow(ctx, `INSERT INTO sea_storms(world_id,heading,created_tick, dies_tick) VALUES($1,0,0, 100000) RETURNING id`, worldID).Scan(&id); err != nil {
 			t.Fatal(err)
 		}
 		for tick := 0; tick <= 20; tick++ {
@@ -309,7 +309,7 @@ func TestSeaStorm_NeighbouringHexDoesNotHit(t *testing.T) {
 	ship, _ := mkStormFleet(t, pool, worldID, owner, route)
 	ctx := context.Background()
 	var id uuid.UUID
-	if err := pool.QueryRow(ctx, `INSERT INTO sea_storms (world_id, heading, created_tick) VALUES ($1, 0, 0) RETURNING id`, worldID).Scan(&id); err != nil {
+	if err := pool.QueryRow(ctx, `INSERT INTO sea_storms (world_id, heading, created_tick, dies_tick) VALUES ($1, 0, 0, 100000) RETURNING id`, worldID).Scan(&id); err != nil {
 		t.Fatal(err)
 	}
 	for tick := 0; tick <= 20; tick++ {

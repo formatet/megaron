@@ -31,7 +31,7 @@ func carrierStormOver(t *testing.T, pool *pgxpool.Pool, worldID uuid.UUID) {
 	ctx := context.Background()
 	for start := -2; start <= 12; start += 3 {
 		var id uuid.UUID
-		if err := pool.QueryRow(ctx, `INSERT INTO sea_storms (world_id, heading, created_tick) VALUES ($1, 0, 498) RETURNING id`, worldID).Scan(&id); err != nil {
+		if err := pool.QueryRow(ctx, `INSERT INTO sea_storms (world_id, heading, created_tick, dies_tick) VALUES ($1, 0, 498, 100000) RETURNING id`, worldID).Scan(&id); err != nil {
 			t.Fatal(err)
 		}
 		for tick := 501; tick <= 510; tick++ {
