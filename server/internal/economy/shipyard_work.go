@@ -18,7 +18,7 @@ const GoodBuilding = "building"
 // StartShipyardWork saves paid work, then derives its rate from physical staffing.
 // Sync's calc=NULL forces an initial rate/queue derivation even at this tick.
 func StartShipyardWork(ctx context.Context, db Tx, id uuid.UUID, work int) error {
-	if _, err := db.Exec(ctx, `UPDATE units SET shipyard_work_remaining=$2,shipyard_work_calc_tick=NULL,shipyard_work_running=false,shipyard_work_rate=0 WHERE id=$1`, id, work); err != nil {
+	if _, err := db.Exec(ctx, `UPDATE units SET shipyard_work_remaining=$2,shipyard_work_calc_tick=NULL,shipyard_work_running=false,shipyard_work_rate=0,shipyard_sped=false WHERE id=$1`, id, work); err != nil {
 		return err
 	}
 	_, err := db.Exec(ctx, `SELECT sync_shipyard_work($1)`, id)
