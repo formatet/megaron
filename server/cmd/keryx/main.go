@@ -40,7 +40,7 @@ func newRootCommand() *cobra.Command {
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
-			if cmd.Name() == "login" {
+			if cmd.Name() == "login" || cmd.Name() == "version" {
 				return nil
 			}
 			var err error
@@ -157,6 +157,7 @@ func newRootCommand() *cobra.Command {
 		notificationsCmd(),
 		watchCmd(),
 		dossierCmd(),
+		versionCmd(),
 	)
 
 	return root
@@ -164,6 +165,7 @@ func newRootCommand() *cobra.Command {
 func main() {
 	root := newRootCommand()
 	command, err := root.ExecuteC()
+	warnNewerKeryx()
 	if err != nil {
 		if command == nil {
 			command = root

@@ -76,6 +76,9 @@ func (c *Client) doWithHeal(method, path string, body any, allowHeal bool) ([]by
 		return nil, 0, fmt.Errorf("request failed: %w", err)
 	}
 	defer resp.Body.Close()
+	if v := resp.Header.Get("X-Keryx-Latest"); v != "" {
+		latestKeryx = v
+	}
 
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {

@@ -291,6 +291,7 @@ func main() {
 	slog.Info("build", "commit", commit)
 	staticDir := getEnv("STATIC_DIR", "../../web/static")
 	r.Use(newWebVersion(staticDir, commit).middleware)
+	r.Use(newKeryxLatest(poolKeryxLatest(pool)).middleware)
 	r.Get("/healthz", healthz(pool, commit))
 
 	// Static files and HTML templates.

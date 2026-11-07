@@ -41,6 +41,8 @@ keryx status                 # your realm at a glance
 
 `keryx dossier` writes one markdown report of what you know, in a fixed order: failed orders first, then urgent news, your cities, forces and orders on the way, known places, contacts, [[storms]], unread news and what you can do now. A section with nothing in it says "None.". It only reads, so it marks nothing as read, and it shows only what your own people know. `keryx dossier --out world.md` saves it to a file and prints the path and size. The report is a snapshot of one moment: write a new one each round and do not trust an old file.
 
+`keryx version` prints the commit your keryx was built from. When a new keryx is released, every Wanax is told with a notification, "A new keryx is out", and any keryx command that talks to the server adds one line on stderr after its output, `A newer keryx is out (<commit>). Download: <link>`. Your output on stdout is unchanged, so scripts and agents are not disturbed; a development build says nothing. To update, download the binary again with the command above.
+
 Orders given through Keryx obey the same rules as in the browser: they travel by [[runners|Runner]] and take game days ([[time]]).
 
 `POLEIA_CONFIG` selects a separate configuration file. `POLEIA_SERVER` and `POLEIA_TOKEN` override connection settings. Command failures show the error and a pointer to `keryx <command> --help`. March previews call the soldiers' [[silver|silver]] cost **Pay**.

@@ -150,7 +150,7 @@ export function notifDomain(kind) {
     UnitAttrition: 'war', UnitDeserted: 'war', UnitLostAtSea: 'war',
     UnitRecalled: 'war', UnitRedirected: 'war', MarchStalled: 'war', OrderFailed: 'war',
     GarrisonStarvationStarted: 'war', GarrisonStarvationEnded: 'war', UpkeepUnpaid: 'war', ShipDamaged: 'war', ShipRepaired: 'war',
-    PlaceFirstReached: 'war', PlacesInNewCity: 'city', WanaxEntered: 'city',
+    PlaceFirstReached: 'war', PlacesInNewCity: 'city', WanaxEntered: 'city', KeryxReleased: 'city',
     ShipStormDamaged: 'war', ShipStormSpared: 'war', ShipFoundered: 'war',
     ShipCaptured: 'war', ShipLost: 'war', ShipStranded: 'war',
     SiegeStarted: 'war', SiegeLifted: 'war',
@@ -225,6 +225,7 @@ export function notifIcon(kind) {
     PlaceFirstReached: '🌊',
     PlacesInNewCity:    '🗺',
     WanaxEntered:       '🏺',
+    KeryxReleased:      '📜',
     ShipStormDamaged:   '🌊',
     ShipStormSpared:    '🌊',
     ShipFoundered:      '🌊',
@@ -414,6 +415,12 @@ export function notifText(kind, body) {
     case 'WanaxEntered':
       // Who and what they say — never where (a deliberate exception to the messenger pillar).
       return `A new Wanax has entered the Thalassa: ${esc(body.wanax_name || 'a stranger')}.` + (body.message ? ` They say: \u201c${esc(body.message)}\u201d` : '');
+    case 'KeryxReleased': {
+      // A new keryx binary is out; the link only if the server's address is https.
+      const url = String(body.url || '');
+      const link = /^https:\/\//.test(url) ? ` <a href="${esc(url)}" target="_blank" rel="noopener noreferrer">Download</a>.` : '';
+      return `A new keryx is out (${esc(body.commit || '')}).${link}`;
+    }
     case 'TrainComplete': return `${esc(body.unit_name || unitTypeLabel(body.unit_type))} ready in ${esc(body.settlement_name || 'your city')}`;
     case 'ArmyArrival':        return `Army arrived — ${body.outcome || ''}`;
     case 'ColonyFounded':      return `Colony founded: ${body.name || ''}`;

@@ -98,3 +98,10 @@ test('WanaxEntered says who and what they say, escaped, and has nothing to say a
   assert.equal(notifText('WanaxEntered',{wanax_name:'Minos',message:''}), 'A new Wanax has entered the Thalassa: Minos.');
   assert.match(notifText('WanaxEntered',{wanax_name:'<b>',message:'<i>'}), /&lt;b&gt;.*&lt;i&gt;/);
 });
+
+test('KeryxReleased names the commit and links only an https download, escaped', () => {
+  assert.equal(notifText('KeryxReleased',{commit:'def5678',url:'https://example.org/kx'}),
+    'A new keryx is out (def5678). <a href="https://example.org/kx" target="_blank" rel="noopener noreferrer">Download</a>.');
+  assert.equal(notifText('KeryxReleased',{commit:'def5678',url:'javascript:alert(1)'}), 'A new keryx is out (def5678).');
+  assert.match(notifText('KeryxReleased',{commit:'<b>',url:''}), /&lt;b&gt;/);
+});
