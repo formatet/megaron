@@ -320,7 +320,10 @@ func dossierCitiesSection(c *Client, worldID string, cities []dossierCity, err e
 		return []string{"None. Your people are still on the road — see `keryx status`."}
 	}
 	var out []string
-	for _, ct := range cities {
+	for i, ct := range cities {
+		if i > 0 {
+			out = append(out, "")
+		}
 		out = append(out, dossierCityBlock(c, worldID, ct)...)
 	}
 	return out
