@@ -1056,7 +1056,8 @@
         "river-ford",
         "maquis",
         "semi-desert",
-        "cedar-forest"
+        "cedar-forest",
+        "the-bird-oracle"
       ],
       "sections": [
         {
@@ -3136,6 +3137,25 @@
         "The Thread"
       ],
       "summary": "The Thread: Asterion means a sentry must stand within one hex, not two, to take the land caravans you name.",
+      "parent": "rites"
+    },
+    {
+      "id": "the-bird-oracle",
+      "title": "The Bird Oracle",
+      "category": "The gods",
+      "entities": [
+        {
+          "kind": "prayer",
+          "key": "minoan_asterion_bird_oracle"
+        }
+      ],
+      "aliases": [
+        "minoan asterion bird oracle"
+      ],
+      "terms": [
+        "The Bird Oracle"
+      ],
+      "summary": "The Bird Oracle: Asterion lets you see live, for one game day, within 2 hexes of a city or named place on your map; afterwards it is memory and the watched are told nothing.",
       "parent": "rites"
     },
     {

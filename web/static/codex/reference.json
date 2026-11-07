@@ -745,6 +745,37 @@
     "wrathful_threshold": 5
   },
   "prayers": {
+    "minoan_asterion_bird_oracle": {
+      "ID": "minoan_asterion_bird_oracle",
+      "GodID": "asterion",
+      "EffectType": "bird_oracle",
+      "MinKharis": 30,
+      "Offering": {
+        "silver": 10,
+        "wine": 8
+      },
+      "CooldownTicks": 24,
+      "TargetKind": "",
+      "God": "Asterion",
+      "Name": "The Bird Oracle",
+      "Description": "Birds carry the eyes of Asterion over one named place of your map - a city or a named land you know - for one game day: you see what stands within 2 hexes of it as if your own people were there, armies, fleets and caravans with their strength. Afterwards it is memory, grey as any. The one who is watched is told nothing. It is the only way to see far away without a person of yours there. A richer gift does no more.",
+      "Favours": {
+        "bronze": 1.5,
+        "fish": 0.4,
+        "grain": 1,
+        "horses": 1.6,
+        "incense": 1.5,
+        "livestock": 2,
+        "pottery": 0.5,
+        "stone": 0.4,
+        "wine": 1.7
+      },
+      "RestByLevel": [
+        24,
+        12,
+        8
+      ]
+    },
     "minoan_asterion_horns": {
       "ID": "minoan_asterion_horns",
       "GodID": "asterion",
