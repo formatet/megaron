@@ -46,4 +46,4 @@ Codex `storms.md` ("lives some 200 to 300 game days", död storm minns men är b
 Ingen ny grafik. Att titta på i Firefox 1:1: en storm som krympt till 1–2 hex (3b) ritas med samma kontur; en död storms ghost-moln kvar tills platsen ses.
 
 ## Sviten
-Se slutrapporten för helkörningen (`tools/gotest.sh`, GOTEST_PORT=56912, färsk DB, Go + webbtester).
+Helkörning `tools/gotest.sh` (GOTEST_PORT=56912, färsk DB mig 248): Go alla paket ok, webb 915 tester, 915 pass, 0 fail (efter omgenererad Codex-bundle).
