@@ -175,7 +175,7 @@ export function notifDomain(kind) {
     // Diplomacy — the messenger channel.
     MessengerLostAtSea: 'diplomacy', MessengerRescuedAtSea: 'diplomacy', MessengerArrival: 'diplomacy', MessengerReturned: 'diplomacy', PlaceTold: 'diplomacy', PassageStalled: 'diplomacy',
     // Kult — the gods answering.
-    ReligionRuleChangedV2: 'kult', RiteAnswered: 'kult', TempleDemolitionWrath: 'kult', GodsAngered: 'kult', KharisDeclining: 'kult', KharisBandChanged: 'kult', DivinePunishment: 'kult', DivinePunishmentAverted: 'kult', DivineBlessing: 'kult', KharisEvent: 'kult',
+    ReligionRuleChangedV2: 'kult', RiteAnswered: 'kult', WallsOmen: 'kult', WallsFell: 'kult', TempleDemolitionWrath: 'kult', GodsAngered: 'kult', KharisDeclining: 'kult', KharisBandChanged: 'kult', DivinePunishment: 'kult', DivinePunishmentAverted: 'kult', DivineBlessing: 'kult', KharisEvent: 'kult',
   };
   return domains[kind] || 'system';
 }
@@ -236,6 +236,8 @@ export function notifIcon(kind) {
     DivinePunishmentAverted: '🐐',
     DivineBlessing:     '✨',
     RiteAnswered:       '🕯',
+    WallsOmen:          '🕯',
+    WallsFell:          '🧱',
     CivilianStarvationStarted: '🍽', CivilianStarvationEnded: '🍽',
     StorageCapacityWarning: '📦', StorageOverflow: '📦', FoodRunningLow: '🍽',
     FoodShortfall:      '🍽',
@@ -918,6 +920,14 @@ export function notifText(kind, body) {
       const spared = { chariot_loss: 'some of your chariots', ship_loss: 'a ship from your harbour', harvest_failure: 'half your grain stores', garrison_plague: 'many of your garrison' }[body.type || body.would_have] || 'something';
       const protection = body.protection_until ? ` Protected from further divine punishment until ${fmtClock(body.protection_until)}.` : '';
       return `The gods' anger fell on the scapegoat${place}. It would have taken ${spared}; nothing was lost.${protection}`;
+    }
+    case 'WallsOmen':
+      // Only for a Wanax in good standing, and never who prayed.
+      return esc(`Potnia's wrath gathers over the walls of ${body.name || 'your city'}: someone has prayed against them.`);
+    case 'WallsFell': {
+      const city = esc(body.name || 'your city');
+      return body.wall_after > 0 ? `The gods struck the wall of ${city}: it lost a level and now stands at level ${body.wall_after}.`
+        : `The gods struck the wall of ${city}: it fell and is gone.`;
     }
     case 'RiteAnswered': {
       // The answer to your own prayer (byggplan A.2); the server's message
