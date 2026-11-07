@@ -123,7 +123,7 @@ func hexCmd() *cobra.Command {
 			fmt.Printf("  %s [%s] · %s ×%d · %s\n", name, u.ID, u.Type, u.Size, u.Status)
 			fmt.Println("    " + locationStr(c, u, nil))
 			if u.Category == "naval" {
-				fmt.Printf("    Hull %d/5 · crew %d · food for %s\n", u.Hull, u.Crew, formatDays(u.ProvisionDays, "%d"))
+				fmt.Printf("    Hull %d/%d · crew %d · food for %s\n", u.Hull, u.hullCeiling(), u.Crew, formatDays(u.ProvisionDays, "%d"))
 				for _, p := range u.CargoUnits {
 					fmt.Printf("    Passengers: %s ×%d\n", p.DisplayName, p.Size)
 				}

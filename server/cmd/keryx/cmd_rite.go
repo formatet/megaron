@@ -48,9 +48,10 @@ type riteAvailablePrayer struct {
 
 type riteTargets struct {
 	Unit []struct {
-		ID    string `json:"id"`
-		Name  string `json:"name"`
-		Where string `json:"where"`
+		ID      string `json:"id"`
+		Name    string `json:"name"`
+		Where   string `json:"where"`
+		Forever bool   `json:"forever"`
 	} `json:"unit"`
 	City struct {
 		Name  string `json:"name"`
@@ -103,7 +104,14 @@ func printRiteTargets(p riteAvailablePrayer, settlementID string) {
 	fmt.Printf("  Choose a target with --scope; the wider, the dearer (gift × step):\n")
 	fmt.Printf("    --scope unit  ×%d  %s  — one named, with --target <name|id>\n", f["unit"], formatOffering(scaledOffering(p.Offering, f["unit"])))
 	for _, u := range p.Targets.Unit {
-		fmt.Printf("        %s (%s) %s\n", u.Name, u.Where, u.ID)
+		note := ""
+		if u.Forever {
+			note = " — already blessed for ever"
+		}
+		fmt.Printf("        %s (%s) %s%s\n", u.Name, u.Where, u.ID, note)
+	}
+	if f["permanent"] > 0 {
+		fmt.Printf("    --scope permanent ×%d  %s  — one named, for ever (never a city or the realm), with --target <name|id>\n", f["permanent"], formatOffering(scaledOffering(p.Offering, f["permanent"])))
 	}
 	if p.Targets.Always {
 		fmt.Printf("    --scope city  ×%d  %s  — every Runner and caravan of %s, now on the road (%d) and while the prayer lasts\n", f["city"], formatOffering(scaledOffering(p.Offering, f["city"])), p.Targets.City.Name, p.Targets.City.Count)
@@ -268,6 +276,7 @@ func riteCmd() *cobra.Command {
   keryx rite --prayer <prayer-id> --province Knossos
   keryx rite --prayer <prayer-id> --offer grain=10,silver=3
   keryx rite --prayer minoan_stillness_hull --scope unit --target "Horns of Crete"
+  keryx rite --prayer minoan_stillness_hull --scope permanent --target "Horns of Crete"
   keryx rite --prayer minoan_velchanos_strength --scope realm
   keryx rite --prayer minoan_stillness_calm --storm "Old Grey"
   keryx rite --prayer minoan_stillness_wake --hex 12,-3
@@ -373,20 +382,20 @@ func riteCmd() *cobra.Command {
 						scope = "unit"
 					}
 					switch scope {
-					case "unit":
+					case "unit", "permanent":
 						if targetID == "" {
 							_, err := resolveRiteTarget(p.riteAvailablePrayer, "")
-							return fmt.Errorf("--scope unit needs --target <name|id>: %w", err)
+							return fmt.Errorf("--scope %s needs --target <name|id>: %w", scope, err)
 						}
 						if targetID, err = resolveRiteTarget(p.riteAvailablePrayer, targetID); err != nil {
 							return err
 						}
 					case "city", "realm":
 						if targetID != "" {
-							return fmt.Errorf("--target goes with --scope unit only")
+							return fmt.Errorf("--target goes with --scope unit or permanent only")
 						}
 					default:
-						return fmt.Errorf("--scope must be unit, city or realm")
+						return fmt.Errorf("--scope must be unit, city, realm or permanent")
 					}
 					break
 				}
@@ -482,10 +491,10 @@ func riteCmd() *cobra.Command {
 	cmd.Flags().StringVar(&provinceArg, "province", "", "city name or province ID, like status/place/build (default: your capital)")
 	cmd.Flags().StringVar(&settlementID, "settlement", "", "settlement UUID (same as --province, kept for old scripts)")
 	cmd.Flags().StringVar(&prayerID, "prayer", "", "prayer ID (run --list to see your culture's prayers; defaults to the culture's listed default prayer)")
-	cmd.Flags().StringVar(&targetID, "target", "", "the unit, ship, Runner or caravan a blessing is laid on, by name or id (with --scope unit; see --list)")
+	cmd.Flags().StringVar(&targetID, "target", "", "the unit, ship, Runner or caravan a blessing is laid on, by name or id (with --scope unit or permanent; see --list)")
 	cmd.Flags().StringVar(&stormArg, "storm", "", "the named storm to still (minoan_stillness_calm), by name or id; see --list")
 	cmd.Flags().StringVar(&hexArg, "hex", "", "the sea hex of your own map to wake a storm on (minoan_stillness_wake), as q,r")
-	cmd.Flags().StringVar(&scope, "scope", "", "how wide a blessing reaches: unit | city | realm — the wider, the dearer (see --list)")
+	cmd.Flags().StringVar(&scope, "scope", "", "how wide a blessing reaches: unit | city | realm, or permanent (one named unit, for ever, ×20) — the wider, the dearer (see --list)")
 	cmd.Flags().BoolVar(&yes, "yes", false, "skip the pre-cast confirmation (required for non-interactive/agent use)")
 	cmd.Flags().StringVar(&offer, "offer", "",
 		"composed offering, e.g. --offer wine=20,oil=10 — worth at least the traditional offering; the gods value what the world is short of")

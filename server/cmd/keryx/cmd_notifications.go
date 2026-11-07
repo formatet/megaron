@@ -699,11 +699,15 @@ func printShipRepairedLine(n notificationItem) {
 		Name     string `json:"name"`
 		UnitType string `json:"unit_type"`
 		Hull     int    `json:"hull"`
+		HullMax  int    `json:"hull_max"`
 	}
 	if err := json.Unmarshal(n.Body, &body); err != nil {
 		return
 	}
-	fmt.Printf("      Your %s is repaired (hull %d/5) and ready to sail again.\n", firstNotificationText(body.Name, body.UnitType, "ship"), body.Hull)
+	if body.HullMax == 0 {
+		body.HullMax = 5
+	}
+	fmt.Printf("      Your %s is repaired (hull %d/%d) and ready to sail again.\n", firstNotificationText(body.Name, body.UnitType, "ship"), body.Hull, body.HullMax)
 }
 
 // printCaravanSeizureLine names the cargo that changed hands — the same text
