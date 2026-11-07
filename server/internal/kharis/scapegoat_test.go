@@ -146,3 +146,23 @@ func TestScapegoat_AnExpiredOrForeignOrFutureGoatBearsNothing(t *testing.T) {
 		t.Fatal("somebody else's goat was spent")
 	}
 }
+
+// The wrath status every surface reads (keryx status, dossier, Kult) names a standing goat.
+func TestScapegoat_WrathStatusNamesTheStandingGoat(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	worldID, _, owner := starvationWarningFixture(t, 400, 0)
+	setWorldTick(t, pool, worldID, 700)
+	if w, err := LoadWrathStatus(ctx, pool, owner, worldID); err != nil || w.ScapegoatRemainingDays != 0 || w.ScapegoatUntilTick != 0 {
+		t.Fatalf("no goat: %+v %v", w, err)
+	}
+	layGoat(t, pool, worldID, owner, 700, 730)
+	w, err := LoadWrathStatus(ctx, pool, owner, worldID)
+	if err != nil || w.ScapegoatUntilTick != 730 || w.ScapegoatRemainingDays != 30 {
+		t.Fatalf("a goat stands to 730: %+v %v", w, err)
+	}
+	setWorldTick(t, pool, worldID, 730)
+	if w, _ = LoadWrathStatus(ctx, pool, owner, worldID); w.ScapegoatRemainingDays != 0 {
+		t.Fatalf("an over goat is still named: %+v", w)
+	}
+}
