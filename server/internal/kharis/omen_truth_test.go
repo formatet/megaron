@@ -89,7 +89,7 @@ func TestOmenObservedOutcomeCooldownAndSpecificity(t *testing.T) {
 		t.Fatal(err)
 	}
 	var storm string
-	if err := pool.QueryRow(ctx, `INSERT INTO sea_storms(world_id,heading,created_tick) VALUES($1,0,0) RETURNING id::text`, wid).Scan(&storm); err != nil {
+	if err := pool.QueryRow(ctx, `INSERT INTO sea_storms(world_id,heading,created_tick, dies_tick) VALUES($1,0,0, 100000) RETURNING id::text`, wid).Scan(&storm); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := pool.Exec(ctx, `INSERT INTO sea_storm_track(storm_id,tick,slot,q,r) VALUES($1,0,0,1,0)`, storm); err != nil {

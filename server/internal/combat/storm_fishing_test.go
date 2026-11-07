@@ -43,7 +43,7 @@ func TestRecomputeStormFishing_FollowsTheStorm(t *testing.T) {
 		t.Fatalf("calm rate %v", calm)
 	}
 	var storm uuid.UUID
-	must(pool.QueryRow(ctx, `INSERT INTO sea_storms(world_id,heading,created_tick) VALUES($1,0,299) RETURNING id`, world).Scan(&storm))
+	must(pool.QueryRow(ctx, `INSERT INTO sea_storms(world_id,heading,created_tick, dies_tick) VALUES($1,0,299, 100000) RETURNING id`, world).Scan(&storm))
 	_, err = pool.Exec(ctx, `INSERT INTO sea_storm_track(storm_id,tick,slot,q,r) VALUES($1,300,0,1,0)`, storm)
 	must(err)
 	step := func() {

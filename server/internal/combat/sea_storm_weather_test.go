@@ -11,6 +11,18 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+func sameShape(a, b StormShape) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
 func openSea(hexgrid.Coord) bool { return true }
 
 func moved(a, b StormShape) (slots int) {
@@ -79,7 +91,7 @@ func TestStepStorm_BoxedInStaysPutAndTurns(t *testing.T) {
 	s := StormShape{{Q: 0, R: 0}, {Q: 1, R: 0}, {Q: 0, R: 1}}
 	only := func(c hexgrid.Coord) bool { return s.has(c) }
 	next, _, slot := StepStorm(s, 0, only, newStormDice(1))
-	if slot != -1 || next != s {
+	if slot != -1 || !sameShape(next, s) {
 		t.Fatalf("a storm with no sea to step into must stay (slot %d, %v)", slot, next)
 	}
 }
@@ -188,7 +200,7 @@ func TestSeaStormWeather_DriftExceedsOldSpeedBound(t *testing.T) {
 	}
 	defer tx.Rollback(ctx)
 	var id uuid.UUID
-	if err := tx.QueryRow(ctx, `INSERT INTO sea_storms(world_id,created_tick,heading) VALUES($1,0,0) RETURNING id`, worldID).Scan(&id); err != nil {
+	if err := tx.QueryRow(ctx, `INSERT INTO sea_storms(world_id,created_tick,heading,dies_tick) VALUES($1,0,0,100000) RETURNING id`, worldID).Scan(&id); err != nil {
 		t.Fatal(err)
 	}
 	start := StormShape{{Q: 5, R: 5}, {Q: 6, R: 5}, {Q: 5, R: 6}}
@@ -218,7 +230,7 @@ func TestSeaStormWeather_DriftExceedsOldSpeedBound(t *testing.T) {
 		t.Fatal(err)
 	}
 	again, _, err := latestStormShape(ctx, tx, id)
-	if err != nil || again != end {
+	if err != nil || !sameShape(again, end) {
 		t.Fatalf("duplicate scan changed weather: %v -> %v, %v", end, again, err)
 	}
 }

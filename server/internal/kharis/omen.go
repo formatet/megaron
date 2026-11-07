@@ -209,7 +209,7 @@ func (h *TickHandler) generateOmen(ctx context.Context, settlementID, world uuid
 }
 func loadOmenFacts(ctx context.Context, tx pgx.Tx, world, city uuid.UUID, q, r, pop int, coastal bool, current, radius int) ([]omenFact, error) {
 	facts := []omenFact{}
-	rows, err := tx.Query(ctx, `SELECT t.storm_id::text,t.q,t.r FROM sea_storm_track t JOIN sea_storms s ON s.id=t.storm_id WHERE s.world_id=$1 AND t.tick=(SELECT max(t2.tick) FROM sea_storm_track t2 WHERE t2.storm_id=t.storm_id AND t2.tick<=$2) AND greatest(abs(t.q-$3),abs(t.r-$4),abs(t.q+t.r-$3-$4))<=$5 ORDER BY t.storm_id,t.slot`, world, current, q, r, radius)
+	rows, err := tx.Query(ctx, `SELECT t.storm_id::text,t.q,t.r FROM sea_storm_track t JOIN sea_storms s ON s.id=t.storm_id WHERE s.world_id=$1 AND s.died_tick IS NULL AND s.dies_tick>$2 AND t.tick=(SELECT max(t2.tick) FROM sea_storm_track t2 WHERE t2.storm_id=t.storm_id AND t2.tick<=$2) AND greatest(abs(t.q-$3),abs(t.r-$4),abs(t.q+t.r-$3-$4))<=$5 ORDER BY t.storm_id,t.slot`, world, current, q, r, radius)
 	if err != nil {
 		return nil, err
 	}

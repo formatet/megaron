@@ -139,3 +139,19 @@ func TestNameStorm_NameDoesNotLeakAStormOutOfSight(t *testing.T) {
 		}
 	}
 }
+
+// A dead storm can no longer be named (409); the right stays unspent and the name index is untouched.
+func TestNameStorm_ADeadStormCannotBeNamed(t *testing.T) {
+	n, storm := newNameRig(t)
+	if _, err := n.pool.Exec(context.Background(), `UPDATE sea_storms SET dies_tick = 7, died_tick = 7 WHERE id = $1`, storm); err != nil {
+		t.Fatal(err)
+	}
+	if c := n.do("POST", storm, `{"name":"Late Tide"}`, n.token, ""); c != http.StatusConflict {
+		t.Fatalf("naming a dead storm = %d, want 409", c)
+	}
+	var named bool
+	_ = n.pool.QueryRow(context.Background(), `SELECT named_tick IS NOT NULL FROM sea_storms WHERE id = $1`, storm).Scan(&named)
+	if named {
+		t.Fatal("a dead storm was named")
+	}
+}

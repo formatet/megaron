@@ -70,7 +70,7 @@ try:
   sql(f"UPDATE units SET q={q+2},r={r},status='positioned' WHERE id='{fallen['host']}'; UPDATE founder_phase SET is_refugee=true WHERE host_unit_id='{fallen['host']}'; UPDATE worlds SET current_tick=100,last_tick_at=now() WHERE id='{world}';",True)
   for a,b in [(me,writer),(writer,me)]:sql(f"INSERT INTO player_scouted_provinces(world_id,player_id,province_id) VALUES('{world}','{a['pid']}','{b['province']}') ON CONFLICT DO NOTHING",True)
   sql(f"UPDATE provinces SET coastal=true WHERE id='{me['province']}'; INSERT INTO buildings(settlement_id,building_type,level,god_id) VALUES('{me['sid']}','harbour',1,NULL),('{me['sid']}','temple',3,'potnia') ON CONFLICT DO NOTHING; UPDATE player_world_records SET kharis_amount=90,kharis_rate=0,kharis_calc_tick=100 WHERE world_id='{world}' AND player_id='{me['pid']}'; UPDATE settlement_goods SET amount=10000,rate=0,cap=1000000,calc_tick=100 WHERE settlement_id IN('{me['sid']}','{writer['sid']}'); DELETE FROM settlement_placement WHERE settlement_id='{me['sid']}'; INSERT INTO settlement_placement(settlement_id,gubbe_ordinal,target_kind,hex_q,hex_r,good_key) VALUES('{me['sid']}',1,'hex',{fq},{fr},'fish');",True)
-  storm=sql(f"INSERT INTO sea_storms(world_id,heading,created_tick) VALUES('{world}',0,100) RETURNING id",True).splitlines()[0]
+  storm=sql(f"INSERT INTO sea_storms(world_id,heading,created_tick, dies_tick) VALUES('{world}',0,100, 100000) RETURNING id",True).splitlines()[0]
   sql(f"INSERT INTO sea_storm_track(storm_id,tick,slot,q,r) VALUES('{storm}',100,0,{fq},{fr}),('{storm}',100,1,{fq+1},{fr}),('{storm}',100,2,{fq},{fr+1});",True)
   (OUT/'storms-api.json').write_text(json.dumps(api(wp+'/storms',token=me['token']),indent=2))
   if '--expect-live' in sys.argv:

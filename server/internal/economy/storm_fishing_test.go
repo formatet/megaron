@@ -50,7 +50,7 @@ func TestRecompute_StormOnTheHexStopsItsFishing(t *testing.T) {
 	}
 	before := placements()
 	var storm string
-	if err := pool.QueryRow(ctx, `INSERT INTO sea_storms(world_id,heading,created_tick) SELECT world_id,0,$2 FROM settlements WHERE id=$1 RETURNING id`, settlementID, tick).Scan(&storm); err != nil {
+	if err := pool.QueryRow(ctx, `INSERT INTO sea_storms(world_id,heading,created_tick,dies_tick) SELECT world_id,0,$2,100000 FROM settlements WHERE id=$1 RETURNING id`, settlementID, tick).Scan(&storm); err != nil {
 		t.Fatal(err)
 	}
 	c := recomputeWaterFixtureOffsets[0]

@@ -36,6 +36,8 @@ type stormView struct {
 // player_storm_sightings, so afterwards it is shown where it was LAST SEEN, marked
 // remembered with that tick — never its live position. A remembered storm with any
 // remembered hex in sight again, and which is not there, has moved on and is forgotten.
+// A dead storm (sea_storms.dies_tick passed) is never live; the memory of it is forgotten the
+// same way, when you see the place and it is not there.
 // The full track is never exposed.
 func (h *WorldHandler) Storms(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
@@ -68,7 +70,7 @@ func (h *WorldHandler) Storms(w http.ResponseWriter, r *http.Request) {
 		   FROM sea_storms s
 		   JOIN sea_storm_track t ON t.storm_id = s.id
 		    AND t.tick = (SELECT max(tick) FROM sea_storm_track WHERE storm_id = s.id)
-		  WHERE s.world_id = $1 ORDER BY s.id, t.slot`, worldID)
+		  WHERE s.world_id = $1 AND s.died_tick IS NULL AND s.dies_tick > $2 ORDER BY s.id, t.slot`, worldID, tick)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not load storms")
 		return
