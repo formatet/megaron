@@ -84,8 +84,8 @@ type prayerTargets struct {
 	Unit  []prayerTargetUnit `json:"unit"`
 	City  prayerTargetGroup  `json:"city"`
 	Realm prayerTargetGroup  `json:"realm"`
-	// Always: a city or realm blessing needs nothing under way now (a Runner or caravan
-	// prayer holds for departures too), so those steps are never greyed out.
+	// Always: a city or realm blessing needs nothing in place now (a Runner or caravan prayer
+	// holds for departures, a troop or ship blessing for units that join later), so those steps are never greyed out.
 	Always bool `json:"always,omitempty"`
 	// Storm prayers (steg 3b). Kind "storm": Still the Storm, pick one of Storms (named, living, on your
 	// storm map). Kind "hex": Wake the Storm, give a sea hex of your own map as "q,r".

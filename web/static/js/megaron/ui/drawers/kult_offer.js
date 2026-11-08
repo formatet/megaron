@@ -29,6 +29,9 @@ export function scaledRecipe(recipe, factor = 1) {
   return Object.fromEntries(Object.entries(recipe || {}).map(([g, n]) => [g, n * factor]));
 }
 
+// Runner/caravan prayers (steg 2b): the city and realm steps hold for departures; other blessings hold for units that join.
+const ROAD_PRAYERS = ['minoan_asterion_swift', 'minoan_asterion_thread_v2'];
+
 export function scopeFactor(prayer, scope) {
   return (prayer.scope_cost_factors && prayer.scope_cost_factors[scope]) || 1;
 }
@@ -101,6 +104,9 @@ export function targetChooserHTML(prayer) {
     const what = isWorldPrayer(prayer) ? (c.scope === 'city' ? (prayer.targets.city.name || 'this city') + ' only' : (c.count === 1 ? 'your one city' : 'all ' + c.count + ' of your cities'))
       : c.scope === 'unit' ? c.count + ' to choose from'
       : c.scope === 'permanent' ? 'the one you choose below, and never a city; ' + c.count + ' without it yet'
+      : prayer.targets.always && !ROAD_PRAYERS.includes(prayer.id) ? (c.scope === 'city'
+        ? (c.count ? c.count + ' supported by ' + (prayer.targets.city.name || 'this city') + ' now, and any that join' : 'any supported by ' + (prayer.targets.city.name || 'this city'))
+        : (c.count ? 'all ' + c.count + ' of yours now, and any that join' : 'any of yours')) + ' while it lasts'
       : prayer.targets.always ? (c.scope === 'city' ? 'every ' + (prayer.id === 'minoan_asterion_thread_v2' ? 'land caravan' : 'Runner and caravan') + ' of ' + (prayer.targets.city.name || 'this city') : 'all of yours') + ', on the road now (' + c.count + ') and while it lasts'
       : c.scope === 'city' ? c.count + ' of ' + (prayer.targets.city.name || 'this city')
       : 'all ' + c.count;

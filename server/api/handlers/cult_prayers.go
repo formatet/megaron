@@ -244,7 +244,8 @@ func (h *ProvinceHandler) loadPrayerTargets(ctx context.Context, sett *settlemen
 		return nil, err
 	}
 	defer rows.Close()
-	out := &prayerTargets{Unit: []prayerTargetUnit{}, City: prayerTargetGroup{Name: sett.Name}}
+	// Always: the city and realm steps are open with none in place and hold for those that join later.
+	out := &prayerTargets{Unit: []prayerTargetUnit{}, City: prayerTargetGroup{Name: sett.Name}, Always: true}
 	for rows.Next() {
 		var id uuid.UUID
 		var status, in string
