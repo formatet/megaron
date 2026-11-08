@@ -156,6 +156,19 @@ func printRiteTargets(p riteAvailablePrayer, settlementID string) {
 	if f["permanent"] > 0 {
 		fmt.Printf("    --scope permanent ×%d  %s  — one named, for ever (never a city or the realm), with --target <name|id>\n", f["permanent"], formatOffering(scaledOffering(p.Offering, f["permanent"])))
 	}
+	if p.Targets.Always && p.ID != "minoan_asterion_swift" && p.ID != "minoan_asterion_thread_v2" {
+		// Troop and ship blessings: city and realm need none in place and hold for those that join while it lasts.
+		cityLine, realmLine := fmt.Sprintf("any supported by %s while the prayer lasts", p.Targets.City.Name), "any of yours while the prayer lasts"
+		if p.Targets.City.Count > 0 {
+			cityLine = fmt.Sprintf("the %d supported by %s now, and any that join while the prayer lasts", p.Targets.City.Count, p.Targets.City.Name)
+		}
+		if p.Targets.Realm.Count > 0 {
+			realmLine = fmt.Sprintf("all %d of yours now, and any that join while the prayer lasts", p.Targets.Realm.Count)
+		}
+		fmt.Printf("    --scope city  ×%d  %s  — %s\n", f["city"], formatOffering(scaledOffering(p.Offering, f["city"])), cityLine)
+		fmt.Printf("    --scope realm ×%d  %s  — %s\n", f["realm"], formatOffering(scaledOffering(p.Offering, f["realm"])), realmLine)
+		return
+	}
 	if p.Targets.Always {
 		what := "Runner and caravan"
 		if p.ID == "minoan_asterion_thread_v2" {
