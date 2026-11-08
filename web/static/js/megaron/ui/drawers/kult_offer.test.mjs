@@ -284,3 +284,12 @@ test('The Bird Oracle with no known place says so and offers no select', () => {
   assert.match(html, /No named place on your map/);
   assert.doesNotMatch(html, /offer-target-place/);
 });
+
+test('world prayer with exactly one city says "your one city", not "all 1"', () => {
+  const one = { ...blessing, targets: { ...blessing.targets, kind: 'world', realm: { count: 1 }, city: { name: 'Knossos', count: 1 } } };
+  const html = offerRowHTML(one, { fish: 100, oil: 100 });
+  assert.match(html, /your one city/);
+  assert.doesNotMatch(html, /all 1 of your cities/);
+  const three = offerRowHTML({ ...one, targets: { ...one.targets, realm: { count: 3 } } }, { fish: 100, oil: 100 });
+  assert.match(three, /all 3 of your cities/);
+});
