@@ -137,6 +137,28 @@ test('speed prayer: with nothing on the road the city and realm steps stay open,
   assert.doesNotMatch(offerRowHTML(empty, {}), /nothing of this kind to bless/);
 });
 
+// Blessings of troops/ships (beslut 2026-11-07): city and realm open with no unit of the kind; they cover those that join later.
+const arm = { id: 'minoan_velchanos_strength', god_id: 'velchanos', offering: { livestock: 6 }, scope_cost_factors: { unit: 1, city: 2, realm: 4 },
+  targets: { always: true, unit: [], city: { name: 'Knossos', count: 0 }, realm: { count: 0 } } };
+
+test('troop blessing with no troops: city and realm are open, the unit step is greyed out, no "nothing to bless"', () => {
+  const choices = scopeChoices(arm);
+  assert.deepEqual(choices.map(c => c.enabled), [false, true, true]);
+  assert.equal(defaultScope(arm), 'city');
+  const html = offerRowHTML(arm, {});
+  assert.match(html, /any supported by Knossos while it lasts · gift ×2/);
+  assert.match(html, /any of yours while it lasts · gift ×4/);
+  assert.doesNotMatch(html, /nothing of this kind to bless/);
+  assert.doesNotMatch(html, /Runner|caravan|on the road/);
+});
+
+test('troop blessing with troops: the count is told, and those that join later are included', () => {
+  const some = { ...arm, targets: { ...arm.targets, city: { name: 'Knossos', count: 2 }, realm: { count: 5 } } };
+  const html = offerRowHTML(some, {});
+  assert.match(html, /2 supported by Knossos now, and any that join while it lasts · gift ×2/);
+  assert.match(html, /all 5 of yours now, and any that join while it lasts · gift ×4/);
+});
+
 // Storm prayers (steg 3b): a storm picked from the storm map, or a sea hex typed as q,r. No scope steps, no price steps.
 const calm = { id: 'minoan_stillness_calm', god: 'The Sea Daimons', god_id: 'sea_daimons_stillness', offering: { fish: 10, oil: 6 },
   targets: { unit: [], city: { count: 0 }, realm: { count: 0 }, kind: 'storm', storms: [{ id: 's-1', name: 'Old Grey', where: 'last seen near (4,4)' }] } };

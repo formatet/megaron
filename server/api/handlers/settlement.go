@@ -1294,7 +1294,8 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 // checkBlessingTarget validates the target of a blessing prayer inside the cast
 // TX and returns the scope and (for scope unit) the unit. code != 0 is the HTTP refusal.
 // Only the caster's own, living units of the prayer's kind can be named; a city or
-// realm blessing needs at least one such unit; the same target twice is a 409.
+// realm blessing needs no unit at all (it covers those that join while it lasts);
+// the same target twice is a 409.
 func (h *SettlementHandler) checkBlessingTarget(ctx context.Context, tx pgx.Tx, worldID, playerID, settlementID uuid.UUID,
 	spec religion.PrayerSpec, scope, target string, nowTick int) (string, *uuid.UUID, int, string) {
 	if _, ok := religion.ScopeCostFactor[scope]; !ok {
@@ -1340,20 +1341,9 @@ func (h *SettlementHandler) checkBlessingTarget(ctx context.Context, tx pgx.Tx, 
 		unitID = &id
 	case religion.ScopeCity:
 		cityRef = &settlementID
-		fallthrough
 	case religion.ScopeRealm:
-		var n int
-		if err := tx.QueryRow(ctx, `SELECT count(*) FROM units WHERE world_id=$1 AND owner_id=$2 AND category=$3 AND status NOT IN ('disbanded','forming') AND ($4::uuid IS NULL OR support_settlement_id=$4)`,
-			worldID, playerID, category, cityRef).Scan(&n); err != nil {
-			return "", nil, http.StatusInternalServerError, "could not count the units"
-		}
-		if n == 0 {
-			where := "in your realm"
-			if cityRef != nil {
-				where = "supported by this city"
-			}
-			return "", nil, http.StatusBadRequest, fmt.Sprintf("you have no %s %s to bless", noun, where)
-		}
+		// A city or realm blessing needs no unit in place (Timothy 2026-11-07): it holds for
+		// the place while it lasts, also for units that join later (the readers match at use).
 	}
 	active, err := religion.BlessingActive(ctx, tx, playerID, spec.EffectType, scope, unitID, cityRef, nowTick)
 	if err != nil {

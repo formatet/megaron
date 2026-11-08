@@ -127,3 +127,42 @@ func TestRiteCast_PermanentNamesOneUnit(t *testing.T) {
 		t.Fatalf("permanent without a target should name the choices, got %v", err)
 	}
 }
+
+// Beslut 2026-11-07: a city or realm blessing of troops or ships may be said with none in place,
+// and holds for those that join while it lasts.
+func TestRiteList_TroopBlessingCityAndRealmHoldForLaterUnits(t *testing.T) {
+	for _, c := range []struct {
+		name, city, realm   string
+		wantCity, wantRealm string
+	}{
+		{"none", "0", "0", "any supported by Knossos while the prayer lasts", "any of yours while the prayer lasts"},
+		{"some", "2", "5", "the 2 supported by Knossos now, and any that join while the prayer lasts", "all 5 of yours now, and any that join while the prayer lasts"},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			round3Client(t, func(w http.ResponseWriter, r *http.Request) {
+				if strings.HasSuffix(r.URL.Path, "/cult") {
+					fmt.Fprint(w, `{"kharis":{},"temples":[],"unbuilt_temples":[],"prayers":[
+ {"id":"minoan_velchanos_strength","name":"Arm of Velchanos","god":"Velchanos","god_id":"velchanos","settlement_id":"capital","city_name":"Knossos",
+  "offering":{"livestock":6},"affordable":true,"can_prepare_offering":true,"scope_cost_factors":{"unit":1,"city":2,"realm":4},
+  "targets":{"always":true,"unit":[],"city":{"name":"Knossos","count":`+c.city+`},"realm":{"count":`+c.realm+`}}}]}`)
+					return
+				}
+				fmt.Fprint(w, `{"settlement":{}}`)
+			})
+			cmd := riteCmd()
+			cmd.SetArgs([]string{"--list"})
+			out, err := captureStdout(t, cmd.Execute)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, want := range []string{c.wantCity, c.wantRealm} {
+				if !strings.Contains(out, want) {
+					t.Fatalf("--list lacks %q:\n%s", want, out)
+				}
+			}
+			if strings.Contains(out, "Runner") || strings.Contains(out, "on the road") {
+				t.Fatalf("a troop blessing is not a road prayer:\n%s", out)
+			}
+		})
+	}
+}

@@ -138,12 +138,72 @@ func TestBlessingCast_RefusesWrongTargets(t *testing.T) {
 	if f.stock(t, f.cities[0], "livestock") != stock || f.rows(t, religion.EffectBlessedStrength) != 0 {
 		t.Fatal("a refused cast cost goods or left a blessing")
 	}
-	// Hull prayer: a troop is the wrong kind; no ships in a city = nothing to bless.
+	// Hull prayer: a troop is the wrong kind.
 	if r := f.castBody(f.cities[0], map[string]any{"prayer": religion.PrayerStillnessHull, "target_scope": "unit", "target": troop.String()}); r.Code != 400 {
 		t.Fatalf("a troop for a hull prayer: %d", r.Code)
 	}
-	if r := f.castBody(f.cities[1], map[string]any{"prayer": religion.PrayerStillnessHull, "target_scope": "city"}); r.Code != 400 {
-		t.Fatalf("city scope with no ships of that city: %d %s", r.Code, r.Body.String())
+	// A unit blessing still needs a unit that exists, also for a prayer that may now be said over an empty city.
+	if r := f.castBody(f.cities[0], map[string]any{"prayer": religion.PrayerStillnessHull, "target_scope": "unit", "target": uuid.NewString()}); r.Code != 404 {
+		t.Fatalf("a ship that does not exist: %d %s", r.Code, r.Body.String())
+	}
+}
+
+// Beslut 2026-11-07: a city or realm blessing may be said with no unit of the kind in place,
+// and it covers units that come afterwards (the readers match on support city / owner at use).
+func TestBlessingCast_CityAndRealmNeedNoUnitsAndCoverLaterOnes(t *testing.T) {
+	for _, c := range []struct {
+		name, prayer, effect, scope, typ, cat string
+	}{
+		{"hull city", religion.PrayerStillnessHull, religion.EffectBlessedHull, religion.ScopeCity, "galley", "naval"},
+		{"hull realm", religion.PrayerStillnessHull, religion.EffectBlessedHull, religion.ScopeRealm, "galley", "naval"},
+		{"strength city", religion.PrayerVelchanosStrength, religion.EffectBlessedStrength, religion.ScopeCity, "infantry", "land"},
+		{"strength realm", religion.PrayerVelchanosStrength, religion.EffectBlessedStrength, religion.ScopeRealm, "infantry", "land"},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			f := newAlphaFixture(t)
+			r := f.castBody(f.cities[0], map[string]any{"prayer": c.prayer, "target_scope": c.scope})
+			if r.Code != 200 || f.rows(t, c.effect) != 1 {
+				t.Fatalf("no unit of the kind yet: %d %s rows=%d", r.Code, r.Body.String(), f.rows(t, c.effect))
+			}
+			later := f.unit(t, f.player, c.typ, c.cat, "garrison", f.cities[0])
+			blessed, err := religion.LoadBlessed(context.Background(), f.pool, f.player, later, c.effect, 101)
+			if err != nil || !blessed {
+				t.Fatalf("a unit that came after the prayer is not covered: %v %v", blessed, err)
+			}
+			f.clearRest(t)
+			if r := f.castBody(f.cities[0], map[string]any{"prayer": c.prayer, "target_scope": c.scope}); r.Code != 409 {
+				t.Fatalf("the same prayer twice: %d %s", r.Code, r.Body.String())
+			}
+		})
+	}
+}
+
+func TestBlessingCatalogue_CityAndRealmStepsAlwaysOpen(t *testing.T) {
+	f := newAlphaFixture(t) // no units at all
+	var prov uuid.UUID
+	if err := f.pool.QueryRow(context.Background(), `SELECT province_id FROM settlements WHERE id=$1`, f.cities[0]).Scan(&prov); err != nil {
+		t.Fatal(err)
+	}
+	router := chi.NewRouter()
+	router.With(auth.Middleware(auth.NewService(f.pool, "alpha-secret"))).Get("/worlds/{worldID}/provinces/{provinceID}", NewProvinceHandler(f.pool, nil, clock.NewTestClock(time.Now()), nil, nil).Get)
+	req := httptest.NewRequest("GET", "/worlds/"+f.world.String()+"/provinces/"+prov.String(), nil)
+	req.Header.Set("Authorization", "Bearer "+f.token)
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, req)
+	var city struct {
+		Settlement struct {
+			Prayers []prayerRow `json:"available_prayers"`
+		} `json:"settlement"`
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &city); err != nil {
+		t.Fatal(err)
+	}
+	for _, p := range city.Settlement.Prayers {
+		if p.ID == religion.PrayerStillnessHull || p.ID == religion.PrayerVelchanosStrength {
+			if p.Targets == nil || !p.Targets.Always || p.Targets.Realm.Count != 0 {
+				t.Fatalf("%s: city and realm must be open with no units: %+v", p.ID, p.Targets)
+			}
+		}
 	}
 }
 
