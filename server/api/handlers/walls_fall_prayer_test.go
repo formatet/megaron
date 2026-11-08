@@ -274,4 +274,7 @@ func TestWallsFallPrayer_CatalogueOffersOnlyRememberedWalledForeignCities(t *tes
 	if targets.Kind != "city" || len(targets.Cities) != 1 || targets.Cities[0].Name != "Walled" {
 		t.Fatalf("targets %+v", targets)
 	}
+	if got, want := targets.Cities[0].Where, "Foe Wanax's, wall 2 when last seen"; got != want {
+		t.Fatalf("where %q, want %q", got, want)
+	}
 }

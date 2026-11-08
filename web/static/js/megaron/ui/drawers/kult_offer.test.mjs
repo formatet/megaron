@@ -172,12 +172,12 @@ test('chosenTarget reads the storm select and the hex field', () => {
 
 // The Walls Fall (steg 5c): a foreign city picked from the list, no scope steps.
 const wallsFall = { id: 'minoan_potnia_walls_fall', god: 'Potnia', god_id: 'potnia', offering: { livestock: 12, silver: 8 },
-  targets: { unit: [], city: { count: 0 }, realm: { count: 0 }, kind: 'city', cities: [{ id: 'c-1', name: 'Mycenae', where: 'held by Agamemnon, near (20,20), wall level 2 as you last saw it' }] } };
+  targets: { unit: [], city: { count: 0 }, realm: { count: 0 }, kind: 'city', cities: [{ id: 'c-1', name: 'Mycenae', where: "Agamemnon's, wall 2 when last seen" }] } };
 
 test('The Walls Fall offers the remembered walled foreign cities, says it will not be told, and has no scope steps', () => {
   const html = offerRowHTML(wallsFall, { livestock: 20, silver: 20 });
   assert.match(html, /class="offer-target-city"/);
-  assert.match(html, /Mycenae \(held by Agamemnon/);
+  assert.match(html, /Mycenae \(Agamemnon's, wall 2 when last seen\)/);
   assert.match(html, /you will not be told/);
   assert.match(html, /already under way at the walls is not changed/);
   assert.doesNotMatch(html, /type="radio"|gift ×|Who is blessed/);
@@ -283,4 +283,13 @@ test('The Bird Oracle with no known place says so and offers no select', () => {
   const html = offerRowHTML({ ...birdOracle, targets: { ...birdOracle.targets, cities: [], places: [] } }, {});
   assert.match(html, /No named place on your map/);
   assert.doesNotMatch(html, /offer-target-place/);
+});
+
+test('world prayer with exactly one city says "your one city", not "all 1"', () => {
+  const one = { ...blessing, targets: { ...blessing.targets, kind: 'world', realm: { count: 1 }, city: { name: 'Knossos', count: 1 } } };
+  const html = offerRowHTML(one, { fish: 100, oil: 100 });
+  assert.match(html, /your one city/);
+  assert.doesNotMatch(html, /all 1 of your cities/);
+  const three = offerRowHTML({ ...one, targets: { ...one.targets, realm: { count: 3 } } }, { fish: 100, oil: 100 });
+  assert.match(three, /all 3 of your cities/);
 });

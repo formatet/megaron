@@ -101,7 +101,11 @@ test('WanaxEntered says who and what they say, escaped, and has nothing to say a
 
 test('KeryxReleased names the commit and links only an https download, escaped', () => {
   assert.equal(notifText('KeryxReleased',{commit:'def5678',url:'https://example.org/kx'}),
-    'A new keryx is out (def5678). <a href="https://example.org/kx" target="_blank" rel="noopener noreferrer">Download</a>.');
+    'A new keryx is out (def5678). <a class="notif-link" href="https://example.org/kx" target="_blank" rel="noopener noreferrer">Download</a>.');
   assert.equal(notifText('KeryxReleased',{commit:'def5678',url:'javascript:alert(1)'}), 'A new keryx is out (def5678).');
   assert.match(notifText('KeryxReleased',{commit:'<b>',url:''}), /&lt;b&gt;/);
+});
+
+test('KeryxReleased download link carries the notif-link class (readable on papyrus)', () => {
+  assert.match(notifText('KeryxReleased',{commit:'def5678',url:'https://example.org/kx'}), /<a class="notif-link" href="https:\/\/example.org\/kx"/);
 });

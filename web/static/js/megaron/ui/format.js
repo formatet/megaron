@@ -418,7 +418,7 @@ export function notifText(kind, body) {
     case 'KeryxReleased': {
       // A new keryx binary is out; the link only if the server's address is https.
       const url = String(body.url || '');
-      const link = /^https:\/\//.test(url) ? ` <a href="${esc(url)}" target="_blank" rel="noopener noreferrer">Download</a>.` : '';
+      const link = /^https:\/\//.test(url) ? ` <a class="notif-link" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Download</a>.` : '';
       return `A new keryx is out (${esc(body.commit || '')}).${link}`;
     }
     case 'TrainComplete': return `${esc(body.unit_name || unitTypeLabel(body.unit_type))} ready in ${esc(body.settlement_name || 'your city')}`;

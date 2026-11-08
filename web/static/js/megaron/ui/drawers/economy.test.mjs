@@ -260,3 +260,10 @@ test('route cargo uses saved route identity; unrelated shipments are not merged 
  assert.ok(html.slice(0,split).includes('data-cargo-id="ship-leg"'));assert.ok(!html.slice(0,split).includes('data-cargo-id="land-leg"'));
  assert.ok(html.slice(split).includes('data-cargo-id="land-leg"'));assert.ok(!html.includes('other-leg'));
 });
+
+test('standing order route cargo lists each blessing on the caravan after its ETA', () => {
+  const html = renderStandingOrdersHTML(
+    [{ id: 'r1', from_name: 'A', to_name: 'B', status: 'active' }],
+    [{ id: 't1', standing_order_id: 'r1', category: 'land', quantity: 5, good_key: 'grain', blessings: ['the Thread, 3 game days'] }], 0);
+  assert.match(html, /the Thread, 3 game days/);
+});

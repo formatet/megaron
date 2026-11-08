@@ -98,7 +98,7 @@ export function targetChooserHTML(prayer) {
   const first = defaultScope(prayer);
   const id = esc(prayer.id);
   const rows = choices.map(c => {
-    const what = isWorldPrayer(prayer) ? (c.scope === 'city' ? (prayer.targets.city.name || 'this city') + ' only' : 'all ' + c.count + ' of your cities')
+    const what = isWorldPrayer(prayer) ? (c.scope === 'city' ? (prayer.targets.city.name || 'this city') + ' only' : (c.count === 1 ? 'your one city' : 'all ' + c.count + ' of your cities'))
       : c.scope === 'unit' ? c.count + ' to choose from'
       : c.scope === 'permanent' ? 'the one you choose below, and never a city; ' + c.count + ' without it yet'
       : prayer.targets.always ? (c.scope === 'city' ? 'every ' + (prayer.id === 'minoan_asterion_thread_v2' ? 'land caravan' : 'Runner and caravan') + ' of ' + (prayer.targets.city.name || 'this city') : 'all of yours') + ', on the road now (' + c.count + ') and while it lasts'
