@@ -12,7 +12,7 @@ import { esc, formatApiError } from '../format.js';
 import { unitTypeLabel } from '../actornames.js';
 import { startCityAnim } from '../../render/city.js';
 import { renderGubbeGrid, terrainLabel } from '../citygrid.js';
-import { productionSectionsHTML, populationHTML, foodSummaryHTML, foodDetailsHTML, storageWarningsHTML } from './city_production.js';
+import { productionSectionsHTML, populationHTML, blessingsSectionHTML, foodSummaryHTML, foodDetailsHTML, storageWarningsHTML } from './city_production.js';
 import { warehouseHTML } from './city_warehouse.js';
 import { fmtNum, fmtDays, fmtDuration } from '../fmt_num.js';
 import { ownBoardSection } from '../market_board.js';
@@ -137,6 +137,7 @@ export async function loadCityDrawer() {
     }
 
     document.getElementById('city-food-sec').innerHTML = foodSummaryHTML(pd);
+    document.getElementById('city-blessings-sec').innerHTML = blessingsSectionHTML(pd);
     document.getElementById('city-wh-sec').innerHTML = warehouseHTML(pd, goods);
     document.getElementById('city-food-details-sec').innerHTML = foodDetailsHTML(pd);
     if (pd && pd.last_tick) {

@@ -3,7 +3,7 @@ import { fmtTickTime as testTickTime } from './../fmt_clock.js';
 timeTestState.CURRENT_TICK=0; timeTestState.TICK_SECONDS=60; timeTestState.TICK_ANCHOR_MS=Date.now();
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { productionSectionsHTML, populationHTML, foodSummaryHTML, foodDetailsHTML, stormFishingHTML } from './city_production.js';
+import { productionSectionsHTML, populationHTML, foodSummaryHTML, foodDetailsHTML, stormFishingHTML, blessingsSectionHTML } from './city_production.js';
 const pd=(extra={})=>({population:1000,grain_prod_rate:4.5,grain_consum_rate:3.2,food:{coverage_ticks:4.2,food_net_per_tick:-2},...extra});
 test('J: only three primary sections, all secondary abilities remain under closed More',()=>{
  const html=productionSectionsHTML({is_capital:false}),[primary,more]=html.split('<details');
@@ -150,10 +150,20 @@ test('herd at the pen cap shows its overflow as a term of the food net', () => {
  assert.doesNotMatch(foodDetailsHTML(pd({food:food(0)})),/herd/);
 });
 test('steg 5a: fertility and the Builder\'s Blessing standing over the city are named with their days left',()=>{
- const html=foodSummaryHTML(pd({city_blessings:[
+ const html=blessingsSectionHTML(pd({city_blessings:[
   {effect:'blessed_fertility',prayer:'Fruitful Season',scope:'city',remaining_game_days:12},
   {effect:'blessed_building',prayer:"The Builder's Blessing",scope:'realm',remaining_game_days:1}]}));
  assert.match(html,/Fruitful Season on this city: people and herds grow half as fast again · 12 game days left/);
  assert.match(html,/The Builder's Blessing on the whole realm: what is left of each build takes three quarters of the time, and so do builds begun · 1 game day left/);
- assert.doesNotMatch(foodSummaryHTML(pd({city_blessings:[]})),/Fruitful|Builder/);
+ assert.doesNotMatch(blessingsSectionHTML(pd({city_blessings:[]})),/Fruitful|Builder/);
+});
+
+test('city blessings sit under their own Blessings heading, not under Food', () => {
+  const bl = { prayer: "Builder's Blessing", effect: 'blessed_building', scope: 'city', remaining_game_days: 4 };
+  const withB = pd({ city_blessings: [bl] });
+  assert.doesNotMatch(foodSummaryHTML(withB), /Builder's Blessing/);
+  const sections = productionSectionsHTML({ is_capital: false });
+  assert.match(sections, /id="city-blessings-sec"/);
+  assert.match(blessingsSectionHTML(withB), /dsec-title">Blessings<\/div>.*Builder's Blessing/);
+  assert.equal(blessingsSectionHTML(pd()), '');
 });

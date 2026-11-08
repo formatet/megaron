@@ -15,6 +15,7 @@ export function productionSectionsHTML(city) {
   return `<div class="dsec"><div class="dsec-title">Population</div><div id="city-pop-sec"></div></div>
     <div class="dsec"><div class="dsec-title">Catchment &amp; workplaces</div>${placeNameForm}<div id="city-prod-sec"></div></div>
     <div class="dsec"><div class="dsec-title">Food</div><div id="city-food-sec"></div></div>
+    <div id="city-blessings-sec"></div>
     <details id="city-more" class="dsec"><summary class="dsec-title">More</summary>
       <div class="dsec-title">People at work</div><div id="city-people-details"></div>
       <div class="dsec-title">Food details</div><div id="city-food-details-sec"></div>
@@ -88,6 +89,12 @@ export function cityBlessingsHTML(pd) {
   }).join('');
 }
 
+// Own section so Fertility and the Builder's Blessing do not read as food; empty when none stands.
+export function blessingsSectionHTML(pd) {
+  const html = cityBlessingsHTML(pd);
+  return html ? `<div class="dsec"><div class="dsec-title">Blessings</div>${html}</div>` : '';
+}
+
 // A storm standing on the city's staffed fishing hexes stops their fishing
 // (Timothy 2026-10-24); the server counts them (storm_no_fishing).
 export function stormFishingHTML(pd) {
@@ -99,7 +106,7 @@ export function stormFishingHTML(pd) {
 // Production side of food only: today's net per game day. Stocks, coverage and
 // the herd live in City -> Warehouse (city_warehouse.js).
 export function foodSummaryHTML(pd) {
-  const blessing = harvestBlessingHTML(pd) + cityBlessingsHTML(pd) + stormFishingHTML(pd);
+  const blessing = harvestBlessingHTML(pd) + stormFishingHTML(pd);
   const net = Number(pd?.food?.food_net_per_tick);
   const warning = pd?.food_self_sufficient === false ? '<p class="stat-warn">The fields cannot feed everyone.</p>' : '';
   if (!Number.isFinite(net)) return blessing + warning + '<p class="empty-state">Food production not reported.</p>';
