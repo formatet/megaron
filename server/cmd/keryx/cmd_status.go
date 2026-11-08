@@ -1219,7 +1219,9 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 					case m["shipyard_waiting"] == true:
 						fmt.Printf("  %-10s waiting for shipyard workers\n", name)
 					case cat == "naval":
-						fmt.Printf("  %-10s building%s\n", name, ready)
+						w, _ := m["shipyard_workers"].(float64)
+						n, _ := m["shipyard_sharing"].(float64)
+						fmt.Printf("  %-10s building%s%s\n", name, shipyardShareNote(int(w), int(n)), ready)
 					case status == "training":
 						fmt.Printf("  %-10s %.0f/100 · training%s\n", name, sz, ready)
 					default: // forming
@@ -1472,4 +1474,17 @@ func buildingLabel(m map[string]any) string {
 	}
 	t, _ := m["type"].(string)
 	return province.BuildingDisplayName(t)
+}
+
+// shipyardShareNote says how the yard divides its workers (shared equally by every ship it works on).
+// Empty unless ships actually share.
+func shipyardShareNote(workers, sharing int) string {
+	if workers < 1 || sharing < 2 {
+		return ""
+	}
+	noun := "workers"
+	if workers == 1 {
+		noun = "worker"
+	}
+	return fmt.Sprintf(" · %d %s shared by %d ships", workers, noun, sharing)
 }

@@ -11,7 +11,7 @@ import { renderLockedActions } from '../misc.js';
 import { esc, formatApiError } from '../format.js';
 import { unitTypeLabel } from '../actornames.js';
 import { startCityAnim } from '../../render/city.js';
-import { renderGubbeGrid, terrainLabel } from '../citygrid.js';
+import { renderGubbeGrid, terrainLabel, shipyardShareNote } from '../citygrid.js';
 import { productionSectionsHTML, populationHTML, blessingsSectionHTML, foodSummaryHTML, foodDetailsHTML, storageWarningsHTML } from './city_production.js';
 import { warehouseHTML } from './city_warehouse.js';
 import { fmtNum, fmtDays, fmtDuration } from '../fmt_num.js';
@@ -581,7 +581,7 @@ async function refreshCityBuildings(provinceID) {
           // A trained unit is ready, not arrived.
           let label, eta = !u.shipyard_waiting && u.ready_at ? arrivalHTML(u.ready_at, undefined, 'ready') : '';
           if (u.shipyard_waiting) label = 'waiting for shipyard workers';
-          else if (u.category === 'naval') label = 'building';
+          else if (u.category === 'naval') label = 'building' + (shipyardShareNote(u.shipyard_workers, u.shipyard_sharing) ? ' · ' + shipyardShareNote(u.shipyard_workers, u.shipyard_sharing) : '');
           else if (u.status === 'training') label = `${u.size}/100 · training`;
           // Say what's missing, not just the raw count — recruiting more of
           // the same type into this settlement is what fills it (a
