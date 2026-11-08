@@ -581,7 +581,7 @@ async function loadEconomyAutomation(mySettlements) {
 // testability reason as renderCargoHTML above.
 function routeCargoHTML(trades, nowMs) {
  if(!trades.length)return '<p class="empty-state">No cargo travelling.</p>';
- return trades.map(t=>'<div class="standing-order-config" data-cargo-id="'+esc(t.id)+'"><strong>'+ (t.category==='naval'?'Ship':'Caravan')+'</strong> · '+esc(t.origin_name||'Origin')+' → '+esc(t.dest_name||'Destination')+'<br>'+formatCargoRows([t],nowMs).map(row=>esc(String(row.qty))+' '+esc(row.good)+' · '+esc(row.eta)).join('<br>')+'</div>').join('');
+ return trades.map(t=>'<div class="standing-order-config" data-cargo-id="'+esc(t.id)+'"><strong>'+ (t.category==='naval'?'Ship':'Caravan')+'</strong> · '+esc(t.origin_name||'Origin')+' → '+esc(t.dest_name||'Destination')+'<br>'+formatCargoRows([t],nowMs).map(row=>esc(String(row.qty))+' '+esc(row.good)+' · '+esc(row.eta)+row.blessings.map(b=>' · '+esc(b)).join('')).join('<br>')+'</div>').join('');
 }
 
 export function renderStandingOrdersHTML(orders, trades, nowMs = 0) {
