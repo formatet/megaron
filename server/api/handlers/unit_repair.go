@@ -88,14 +88,11 @@ func (h *UnitHandler) Repair(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Capacity gate (§Slice C point 3): a repair occupies a shipyard
-	// berth, economy.ShipyardBerths(level) = 3/6/10 by
-	// level (not the worker slots, which are 1/2/3 since mig 245). This counts ONLY concurrent repairs at this settlement, not ship
-	// BUILDS sharing the same yard — Recruit's existing flat build-queue cap
-	// (province.go, 10/settlement) is untouched here. Combining the two pools
-	// into one true labour-slot accounting is the "full P2 integration" the
-	// plan explicitly allows deferring ("bygg kapacitetsgrinden ... men
-	// namnge det") — flagged, not built, in this slice.
+	// Capacity gate (§Slice C point 3): a repair occupies a shipyard berth, economy.ShipyardBerths(level)
+	// = the yard's workplaces, 1/2/3 by level (Timothy 2026-11-07; the yard's pace is shared between
+	// every ship it works on, mig 255). This counts ONLY concurrent repairs at this settlement, not ship
+	// BUILDS sharing the same yard — Recruit's existing flat build-queue cap (province.go, 10/settlement)
+	// is untouched here. Repairs already running above the cap go on; only new ones are refused.
 	slots := economy.ShipyardBerths(shipyardLevel)
 	var activeRepairs int
 	if err := h.pool.QueryRow(ctx,
