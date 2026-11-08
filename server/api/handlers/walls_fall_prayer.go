@@ -128,7 +128,7 @@ func (h *SettlementHandler) notifyWallsOmen(ctx context.Context, worldID uuid.UU
 // loadWallsFallTargets lists the foreign cities of the Wanax's map whose remembered wall is at least 1.
 func (h *ProvinceHandler) loadWallsFallTargets(ctx context.Context, owner, worldID uuid.UUID) (*prayerTargets, error) {
 	rows, err := h.pool.Query(ctx,
-		`SELECT pss.settlement_id, pss.name, pss.owner_name, pss.q, pss.r, pss.wall_level
+		`SELECT pss.settlement_id, pss.name, pss.owner_name, pss.wall_level
 		   FROM player_seen_settlements pss JOIN settlements s ON s.id = pss.settlement_id
 		  WHERE pss.world_id = $1 AND pss.player_id = $2 AND s.state <> 'sunk'
 		    AND s.owner_id IS NOT NULL AND s.owner_id <> $2 AND pss.wall_level >= 1
@@ -141,12 +141,12 @@ func (h *ProvinceHandler) loadWallsFallTargets(ctx context.Context, owner, world
 	for rows.Next() {
 		var id uuid.UUID
 		var name, holder string
-		var q, r, wall int
-		if err := rows.Scan(&id, &name, &holder, &q, &r, &wall); err != nil {
+		var wall int
+		if err := rows.Scan(&id, &name, &holder, &wall); err != nil {
 			return nil, err
 		}
 		out.Cities = append(out.Cities, prayerTargetCity{ID: id.String(), Name: name,
-			Where: fmt.Sprintf("held by %s, near (%d,%d), wall level %d as you last saw it", holder, q, r, wall)})
+			Where: fmt.Sprintf("%s's, wall %d when last seen", holder, wall)})
 	}
 	return out, rows.Err()
 }
