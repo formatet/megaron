@@ -340,6 +340,8 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			ReadyAt               *time.Time `json:"ready_at,omitempty"`
 			ShipyardWaiting       bool       `json:"shipyard_waiting"`
 			ShipyardWorkRemaining *int       `json:"shipyard_work_remaining,omitempty"`
+			ShipyardWorkers       int        `json:"shipyard_workers,omitempty"`
+			ShipyardSharing       int        `json:"shipyard_sharing,omitempty"`
 		}
 		var trainingUnits []trainingUnit
 		if trows, terr := h.pool.Query(r.Context(),
@@ -363,6 +365,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 						tu.ReadyAt = work.CompleteAt
 						tu.ShipyardWaiting = work.Waiting
 						tu.ShipyardWorkRemaining = work.Remaining
+						tu.ShipyardWorkers, tu.ShipyardSharing = work.Workers, work.Sharing
 					}
 					trainingUnits = append(trainingUnits, tu)
 				}

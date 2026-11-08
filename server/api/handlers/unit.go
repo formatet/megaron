@@ -3007,11 +3007,12 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 		var workRemaining *int
 		waiting := false
 		if u.ShipyardWorkRemaining != nil {
-			remaining := *u.ShipyardWorkRemaining
+			// Stored in parts (mig 255): worker-ticks rounded up while waiting, days to finish while running.
+			remaining := (*u.ShipyardWorkRemaining + economy.ShipyardWorkParts - 1) / economy.ShipyardWorkParts
 			waiting = !u.ShipyardWorkRunning
 			readyAt = nil
-			if u.ShipyardWorkRunning && u.ShipyardWorkCalcTick != nil {
-				due := *u.ShipyardWorkCalcTick + remaining
+			if u.ShipyardWorkRunning && u.ShipyardWorkCalcTick != nil && u.ShipyardWorkRate > 0 {
+				due := *u.ShipyardWorkCalcTick + (*u.ShipyardWorkRemaining+u.ShipyardWorkRate-1)/u.ShipyardWorkRate
 				remaining = max(0, due-currentTick)
 				if hasAnchor && len(anchors) > 0 {
 					at := anchors[0].WallAt(int64(due) * 1000)

@@ -19,7 +19,7 @@ globalThis.document ??= {
 globalThis.window ??= { addEventListener() {}, matchMedia: () => ({ matches: false, addEventListener() {} }) };
 globalThis.localStorage ??= { getItem: () => null, setItem() {}, removeItem() {} };
 
-const { placementOutcome, refusalText, selectionKey, takeLabel, goodRowHTML, cityBuildingsHTML,placementTargetKey, sortGoods } = await import('./citygrid.js');
+const { placementOutcome, refusalText, selectionKey, takeLabel, goodRowHTML, cityBuildingsHTML,placementTargetKey, sortGoods, shipyardShareNote } = await import('./citygrid.js');
 
 // The refusal sentences below are copied verbatim from the server
 // (api/handlers/settlement_placement.go) — they are the actual bodies this
@@ -303,4 +303,12 @@ test('goods are listed alphabetically by shown label, whatever order the server 
   const html = cityBuildingsHTML([{ building_type: 'farm', level: 1, goods: [g('wine'), g('grain'), g('barley')] }]);
   const order = [...html.matchAll(/data-good="([a-z_]+)"/g)].map(m => m[1]);
   assert.deepEqual(order, ['barley', 'grain', 'wine']);
+});
+
+test('shipyardShareNote says how the yard divides its workers, only when ships share', () => {
+  assert.equal(shipyardShareNote(3, 3), '3 workers shared by 3 ships');
+  assert.equal(shipyardShareNote(1, 2), '1 worker shared by 2 ships');
+  assert.equal(shipyardShareNote(3, 1), '');
+  assert.equal(shipyardShareNote(0, 2), '');
+  assert.equal(shipyardShareNote(undefined, undefined), '');
 });

@@ -230,13 +230,13 @@ func TestShipyardPaidBuildsShareOneWorkerAndPausedOrdersStillCount(t *testing.T)
 		t.Fatal(err)
 	}
 	var n int
-	if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM units WHERE settlement_id=$1 AND shipyard_work_running AND shipyard_work_remaining=3`, f.settlementID).Scan(&n); err != nil || n != 10 {
-		t.Fatal("one worker must run all ten jobs at full pace", n, err)
+	if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM units WHERE settlement_id=$1 AND shipyard_work_running AND shipyard_work_remaining=180`, f.settlementID).Scan(&n); err != nil || n != 10 {
+		t.Fatal("one worker must run all ten jobs, a tenth each", n, err)
 	}
 	if _, err := f.pool.Exec(ctx, `DELETE FROM settlement_placement WHERE settlement_id=$1 AND building_type='shipyard'`, f.settlementID); err != nil {
 		t.Fatal(err)
 	}
-	if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM units WHERE settlement_id=$1 AND NOT shipyard_work_running AND shipyard_work_remaining=3`, f.settlementID).Scan(&n); err != nil || n != 10 {
+	if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM units WHERE settlement_id=$1 AND NOT shipyard_work_running AND shipyard_work_remaining=180`, f.settlementID).Scan(&n); err != nil || n != 10 {
 		t.Fatal("last worker must pause all jobs", n, err)
 	}
 }

@@ -341,6 +341,7 @@ type Unit struct {
 	ShipyardWorkRemaining *int
 	ShipyardWorkCalcTick  *int
 	ShipyardWorkRunning   bool
+	ShipyardWorkRate      int // parts per tick (economy.ShipyardWorkParts per worker); 0 = waiting
 	BuildCompleteAt       *time.Time
 
 	CargoUnitID  *uuid.UUID  // naval: first (oldest) land unit aboard; nil when empty
@@ -445,7 +446,7 @@ const selectCols = `
 	reaction_policy,
 	leader_role,
 	march_intent, colony_name,
-	name, build_complete_at, shipyard_work_remaining,shipyard_work_calc_tick,shipyard_work_running,
+	name, build_complete_at, shipyard_work_remaining,shipyard_work_calc_tick,shipyard_work_running,shipyard_work_rate,
 	origin_settlement_id, reinforcing,
 	created_at, updated_at`
 
@@ -467,7 +468,7 @@ func scanUnit(row interface {
 		&reactionRaw,
 		&u.LeaderRole,
 		&u.MarchIntent, &u.ColonyName,
-		&u.Name, &u.BuildCompleteAt, &u.ShipyardWorkRemaining, &u.ShipyardWorkCalcTick, &u.ShipyardWorkRunning,
+		&u.Name, &u.BuildCompleteAt, &u.ShipyardWorkRemaining, &u.ShipyardWorkCalcTick, &u.ShipyardWorkRunning, &u.ShipyardWorkRate,
 		&u.OriginSettlementID, &u.Reinforcing,
 		&u.CreatedAt, &u.UpdatedAt,
 	); err != nil {

@@ -131,9 +131,9 @@ func TestWorkplaceSlots_ShipyardMatchesTaxonomy(t *testing.T) {
 	}
 }
 
-// Repair berths are NOT the worker slots: they stayed 3/6/10 when the workers became 1/2/3.
-func TestShipyardBerthsStayAtThreeSixTen(t *testing.T) {
-	for level, want := range map[int]int{0: 0, 1: 3, 2: 6, 3: 10, 4: 0} {
+// Repair berths ARE the yard's workplaces (Timothy 2026-11-07): 1/2/3 by level.
+func TestShipyardBerthsAreTheWorkplaces(t *testing.T) {
+	for level, want := range map[int]int{0: 0, 1: 1, 2: 2, 3: 3, 4: 0} {
 		if got := ShipyardBerths(level); got != want {
 			t.Errorf("shipyard level %d: %d berths, want %d", level, got, want)
 		}
