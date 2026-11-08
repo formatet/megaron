@@ -21,6 +21,7 @@ import (
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/combat"
+	"formatet/megaron/server/internal/economy"
 
 	"formatet/megaron/server/internal/events"
 	"github.com/go-chi/chi/v5"
@@ -237,7 +238,7 @@ func TestRecruitShip_NavalBuildsOneFormingVesselWithNameAndETA(t *testing.T) {
 		t.Error("name column empty — a suggested name should have been stored")
 	}
 	var work *int
-	if err := f.pool.QueryRow(ctx, `SELECT shipyard_work_remaining FROM units WHERE id=$1`, unitID).Scan(&work); err != nil || work == nil || *work != 3 {
+	if err := f.pool.QueryRow(ctx, `SELECT shipyard_work_remaining FROM units WHERE id=$1`, unitID).Scan(&work); err != nil || work == nil || *work != 3*economy.ShipyardWorkParts {
 		t.Fatalf("saved shipyard work=%v err=%v", work, err)
 	}
 

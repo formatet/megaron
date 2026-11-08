@@ -12,16 +12,26 @@ import (
 // GoodShipbuilding is a non-inventory placement role (parked, zero weight).
 const GoodShipbuilding = "shipbuilding"
 
+// ShipyardWorkParts is how many parts one worker-tick is stored in (mig 255). 60 divides evenly by
+// 1-6, 10 and 12 ships, so a yard sharing its pace never loses work to rounding. Paid work is still
+// given and shown in worker-ticks; only the stored column is in parts.
+const ShipyardWorkParts = 60
+
 // GoodBuilding is the Workshop's placement role (parked, zero weight, never stocked).
 const GoodBuilding = "building"
 
-// StartShipyardWork saves paid work, then derives its rate from physical staffing.
+// StartShipyardWork saves paid work (given in worker-ticks, stored in parts), then derives the rate of
+// the ship AND of every other ship the yard is working on, from physical staffing and the number of ships.
 // Sync's calc=NULL forces an initial rate/queue derivation even at this tick.
 func StartShipyardWork(ctx context.Context, db Tx, id uuid.UUID, work int) error {
-	if _, err := db.Exec(ctx, `UPDATE units SET shipyard_work_remaining=$2,shipyard_work_calc_tick=NULL,shipyard_work_running=false,shipyard_work_rate=0,shipyard_sped=false WHERE id=$1`, id, work); err != nil {
+	if _, err := db.Exec(ctx, `UPDATE units SET shipyard_work_remaining=$2,shipyard_work_calc_tick=NULL,shipyard_work_running=false,shipyard_work_rate=0,shipyard_sped=false WHERE id=$1`, id, work*ShipyardWorkParts); err != nil {
 		return err
 	}
-	_, err := db.Exec(ctx, `SELECT sync_shipyard_work($1)`, id)
+	if _, err := db.Exec(ctx, `SELECT sync_shipyard_work($1)`, id); err != nil {
+		return err
+	}
+	// A new job changes every other ship's share of the yard.
+	_, err := db.Exec(ctx, `SELECT sync_shipyard_city(settlement_id) FROM units WHERE id=$1`, id)
 	return err
 }
 
@@ -99,7 +109,8 @@ func CompleteShipyardWorkTransition(ctx context.Context, pool *pgxpool.Pool) err
 // ShipyardWork is a read projection; timing remains owned by tick.Anchor.
 type ShipyardWork struct {
 	Remaining  *int
-	Rate       int // placed shipyard workers, 0..3 (0 = waiting)
+	Workers    int // placed shipyard workers, 0..3 (0 = waiting)
+	Sharing    int // ships the yard is working on, this one included (>=1)
 	Waiting    bool
 	CompleteAt *time.Time
 }
@@ -108,10 +119,11 @@ func LoadShipyardWork(ctx context.Context, db Tx, id uuid.UUID) (ShipyardWork, e
 	var out ShipyardWork
 	var world uuid.UUID
 	var due *int
-	err := db.QueryRow(ctx, `SELECT world_id,CASE WHEN shipyard_work_remaining IS NULL THEN NULL ELSE shipyard_work_left(shipyard_work_remaining,shipyard_work_rate,shipyard_work_calc_tick,(SELECT current_tick FROM worlds WHERE id=units.world_id)) END,
+	err := db.QueryRow(ctx, `SELECT world_id,CASE WHEN shipyard_work_remaining IS NULL THEN NULL ELSE (shipyard_work_left(shipyard_work_remaining,shipyard_work_rate,shipyard_work_calc_tick,(SELECT current_tick FROM worlds WHERE id=units.world_id))+$2::int-1)/$2::int END,
  shipyard_work_remaining IS NOT NULL AND shipyard_work_rate=0,
- shipyard_work_rate,
- CASE WHEN shipyard_work_rate>0 THEN shipyard_work_calc_tick+(shipyard_work_remaining+shipyard_work_rate-1)/shipyard_work_rate ELSE NULL END FROM units WHERE id=$1`, id).Scan(&world, &out.Remaining, &out.Waiting, &out.Rate, &due)
+ CASE WHEN shipyard_work_remaining IS NULL THEN 0 ELSE shipyard_workers(settlement_id,owner_id) END,
+ CASE WHEN shipyard_work_remaining IS NULL THEN 0 ELSE shipyard_sharing(settlement_id,owner_id) END,
+ CASE WHEN shipyard_work_rate>0 THEN shipyard_work_calc_tick+(shipyard_work_remaining+shipyard_work_rate-1)/shipyard_work_rate ELSE NULL END FROM units WHERE id=$1`, id, ShipyardWorkParts).Scan(&world, &out.Remaining, &out.Waiting, &out.Workers, &out.Sharing, &due)
 	if err != nil {
 		return out, err
 	}
