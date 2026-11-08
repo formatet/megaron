@@ -95,6 +95,8 @@ main, .topbar, footer { position: relative; z-index: 1; }
 
 a { color: var(--gold); text-decoration: none; }
 a:hover { text-decoration: underline; }
+/* A link inside notification text sits on the papyrus panel: gold is unreadable there. */
+a.notif-link { color: var(--accent-city-text); text-decoration: underline; }
 
 h1, h2, h3, h4 {
   font-weight: normal;
