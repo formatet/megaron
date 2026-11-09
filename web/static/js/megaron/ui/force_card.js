@@ -10,7 +10,10 @@ import { canTakeStance } from './stance.js';
 import { unitRetreatControlHTML } from './retreat.js';
 import { expeditionMissionText } from './expedition.js';
 import { orderRunnerHTML } from './runner_status.js';
+import { shipyardShareNote } from './citygrid.js';
 import { roadPanelHTML } from './roadorder.js';
+const shareSuffix = (u) => { const n = shipyardShareNote(u.shipyard_workers, u.shipyard_sharing); return n ? ' · ' + n : ''; };
+
 export function readyWord(iso) {
   const eta = fmtArrival(iso, undefined, 'ready');
   return !eta || eta === 'ready' ? eta : 'ready ' + eta;
@@ -100,9 +103,9 @@ export function renderUnitCard(u, options = {}) {
   if (u.shipyard_waiting) {
     progress = dim('waiting for shipyard workers');
   } else if (u.status === 'repairing') {
-    progress = dim('being repaired — ' + readyWord(u.build_complete_at));
+    progress = dim('being repaired — ' + readyWord(u.build_complete_at) + shareSuffix(u));
   } else if (isNaval && isForming) {
-    progress = dim('building — ' + readyWord(u.build_complete_at));
+    progress = dim('building — ' + readyWord(u.build_complete_at) + shareSuffix(u));
   } else if (isForming) {
     // men_to_deploy is server-computed (100 − size); recruiting more of the
     // same type into this settlement is what fills it — say so, so a

@@ -29,3 +29,12 @@ test('a blessed troop shows its line', () => {
   const troop = { id: 't1', type: 'spearman', category: 'land', status: 'garrison', size: 50, blessings: ['blessed by Velchanos, for ever'] };
   assert.match(renderUnitCard(troop, {}), /blessed by Velchanos, for ever/);
 });
+
+test('yard sharing shows on building and repair lines, only when more than one ship shares', () => {
+  const b = { id: 'b1', type: 'galley', category: 'naval', status: 'forming', size: 1, crew: 20, hull: 5, build_complete_at: new Date(Date.now() + 3600e3).toISOString(), shipyard_workers: 3, shipyard_sharing: 2 };
+  assert.match(renderUnitCard(b, {}), /building — ready .* · 3 workers shared by 2 ships/);
+  assert.doesNotMatch(renderUnitCard({ ...b, shipyard_sharing: 1 }, {}), /shared by/);
+  const r = { ...b, status: 'repairing' };
+  assert.match(renderUnitCard(r, {}), /being repaired — ready .* · 3 workers shared by 2 ships/);
+  assert.doesNotMatch(renderUnitCard({ ...r, shipyard_sharing: 1 }, {}), /shared by/);
+});
