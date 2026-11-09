@@ -402,6 +402,8 @@ type unitRow struct {
 	Name                *string            `json:"name"`
 	DisplayName         string             `json:"display_name"`
 	ShipyardWaiting     bool               `json:"shipyard_waiting"`
+	ShipyardWorkers     int                `json:"shipyard_workers"`
+	ShipyardSharing     int                `json:"shipyard_sharing"`
 	BuildCompleteAt     *time.Time         `json:"build_complete_at"`
 	Stance              *string            `json:"stance"`
 	SettlementID        *string            `json:"settlement_id"`
@@ -520,7 +522,7 @@ func formatSizeBase(c *Client, u unitRow) string {
 			if u.BuildCompleteAt != nil {
 				eta = gameETA(c, *u.BuildCompleteAt)
 			}
-			return fmt.Sprintf("building (crew %d) — ready %s", u.Crew, eta)
+			return fmt.Sprintf("building (crew %d) — ready %s", u.Crew, eta) + shipyardShareNote(u.ShipyardWorkers, u.ShipyardSharing)
 		}
 		// Land: still gathering men. At 100 it enters training (below); grow it by
 		// recruiting more of the same type into the same settlement.
@@ -535,9 +537,9 @@ func formatSizeBase(c *Client, u unitRow) string {
 		return fmt.Sprintf("100/100 (training — ready %s)", eta)
 	case "repairing":
 		if u.BuildCompleteAt != nil {
-			return "being repaired — ready " + gameETA(c, *u.BuildCompleteAt)
+			return "being repaired — ready " + gameETA(c, *u.BuildCompleteAt) + shipyardShareNote(u.ShipyardWorkers, u.ShipyardSharing)
 		}
-		return "being repaired"
+		return "being repaired" + shipyardShareNote(u.ShipyardWorkers, u.ShipyardSharing)
 	case "fitting_out":
 		eta := "unknown"
 		if u.BuildCompleteAt != nil {

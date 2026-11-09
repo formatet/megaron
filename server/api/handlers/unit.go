@@ -2162,6 +2162,7 @@ func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {
 	attachUnitPaths(r.Context(), h.pool, worldID, units, summaries)
 	attachBattleFlags(r.Context(), h.pool, worldID, playerID, summaries)
 	attachFreightingNotes(r.Context(), h.pool, worldID, playerID, summaries)
+	attachShipyardSharing(r.Context(), h.pool, playerID, summaries)
 	if err := attachBoundRoutes(r.Context(), h.pool, worldID, playerID, summaries); err != nil {
 		writeError(w, 500, "could not load bound routes")
 		return
@@ -2384,6 +2385,8 @@ type unitSummary struct {
 	BuildCompleteAt       *time.Time `json:"build_complete_at,omitempty"`
 	ShipyardWaiting       bool       `json:"shipyard_waiting"`
 	ShipyardWorkRemaining *int       `json:"shipyard_work_remaining,omitempty"`
+	ShipyardWorkers       int        `json:"shipyard_workers,omitempty"`
+	ShipyardSharing       int        `json:"shipyard_sharing,omitempty"`
 	Stance                *string    `json:"stance,omitempty"`
 	SettlementID          *uuid.UUID `json:"settlement_id,omitempty"`
 	Q                     *int       `json:"q,omitempty"`
@@ -2574,6 +2577,43 @@ func attachBattleFlags(ctx context.Context, db province.Queryer, worldID, ownerI
 // leg (the ship is actually moving right now) wins over a standing route's
 // own note (the ship might be docked between legs, still locked to the
 // route) — the more specific, currently-true fact is always preferred.
+// attachShipyardSharing says how the yard divides its workers between the ships it works on
+// (same SQL functions as the city drawer's Training row). One query per list, keyed by city.
+func attachShipyardSharing(ctx context.Context, db province.Queryer, ownerID uuid.UUID, summaries []unitSummary) {
+	seen := map[uuid.UUID]bool{}
+	var cities []uuid.UUID
+	for _, s := range summaries {
+		if s.ShipyardWorkRemaining != nil && s.SettlementID != nil && !seen[*s.SettlementID] {
+			seen[*s.SettlementID] = true
+			cities = append(cities, *s.SettlementID)
+		}
+	}
+	if len(cities) == 0 {
+		return
+	}
+	rows, err := db.Query(ctx,
+		`SELECT c, shipyard_workers(c, $2), shipyard_sharing(c, $2) FROM unnest($1::uuid[]) c`, cities, ownerID)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+	type share struct{ workers, sharing int }
+	byCity := map[uuid.UUID]share{}
+	for rows.Next() {
+		var c uuid.UUID
+		var sh share
+		if rows.Scan(&c, &sh.workers, &sh.sharing) == nil {
+			byCity[c] = sh
+		}
+	}
+	for i := range summaries {
+		if summaries[i].ShipyardWorkRemaining != nil && summaries[i].SettlementID != nil {
+			sh := byCity[*summaries[i].SettlementID]
+			summaries[i].ShipyardWorkers, summaries[i].ShipyardSharing = sh.workers, sh.sharing
+		}
+	}
+}
+
 func attachFreightingNotes(ctx context.Context, db province.Queryer, worldID, ownerID uuid.UUID, summaries []unitSummary) {
 	freighting := map[uuid.UUID]int{} // unit id -> index into summaries
 	for i, s := range summaries {
