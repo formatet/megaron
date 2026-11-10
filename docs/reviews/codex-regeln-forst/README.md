@@ -73,3 +73,26 @@ Removed or collapsed text, per article: first six words · reason.
 - "Travel time is fixed at departure; later rule changes" · history (kept: fixed at departure)
 - "Your dispatch receipt says when" · screen description
 
+## ship-types
+- "The Galley is cheap timber and no silver" · duplicate of the unit pages and [[units]]
+- "With automatic routing, no free hull" detail · shortened
+- "From that unit's own card (Fetch by ship, whenever" · screen description
+- "exactly like arrange passage's own crossing" · duplicate of [[messengers]]
+- "You choose how many game days it holds" / "you are told either way" · screen description
+- "Give a pickup mission while the ship is in port" · duplicate of the lead bullet
+- "In War → Forces, use Load for each cohort" · screen description
+- "You do not need a second Unload order. An empty ship" · duplicate/obvious
+- "A laden ship can also use --intent land" · CLI detail
+- "Deep water is faster, and storms" / "Rivers allow ... across or where the flow is unknown" · duplicate of [[marching]]
+- "For goods, a Galley carries 20 and an Emporos" · duplicate of [[units]] (kept there)
+- "Nike came home early" example, "It does not mean that the crew starved" · example
+- "At sea, a ship eats" / hospitality host-notice sentence · duplicate of [[xenia]]
+- "you are notified when the work is done" · screen description
+- "Choose the mission in War → Forces" · screen description
+- "Land" and "March to your city" table rows · duplicate of Docking / Landing sections
+- "For Explore, the port loads food" · duplicate of [[sight]]
+- "Load, March, Recall, Redirect ..." detail · shortened
+- "Check supplies: War → Forces or keryx unit list" and the "At port" bullet · screen description / duplicate of [[xenia]]
+- "Lay up an idle ... The crew joins" detail · duplicate of [[units]]
+- The generated unit list (`<!-- list: unit ... -->`) is moved under a new un-anchored heading "The three ships" so the lead stays short; untouched otherwise.
+
