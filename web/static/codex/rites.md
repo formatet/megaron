@@ -87,19 +87,19 @@ These are offering values, not trade prices. A good's worth is multiplied by the
 | Following Seas | The Sea Daimons of Stillness | no preference: every good at its worth |
 | Fruitful Season | Potnia | incense ×2, wine ×2, oil ×1.6, grain ×1.3, livestock ×1.3, fish ×0.9, copper ×0.5, tin ×0.5, timber ×0.4, stone ×0.3 |
 | Green Shoots | Velchanos | incense ×2, wine ×2, oil ×1.6, grain ×1.3, livestock ×1.3, fish ×0.9, copper ×0.5, tin ×0.5, timber ×0.4, stone ×0.3 |
-| Mistress of the Walls | Potnia | livestock ×2, wine ×1.7, horses ×1.6, bronze ×1.5, incense ×1.5, grain ×1, pottery ×0.5, fish ×0.4, stone ×0.4 |
-| Potnia's Vision | Potnia | fish ×2.2, incense ×2.1, purple ×2, oil ×1.5, silver ×1.4, bronze ×1.3, pottery ×1.1, grain ×0.6, stone ×0.4 |
-| Still the Storm | The Sea Daimons of Stillness | fish ×2.2, livestock ×2, wine ×1.7, horses ×1.6, bronze ×1.5, incense ×1.5, grain ×1, pottery ×0.5, stone ×0.4 |
-| Stout Hulls | The Sea Daimons of Stillness | fish ×2.2, livestock ×2, wine ×1.7, horses ×1.6, bronze ×1.5, incense ×1.5, grain ×1, pottery ×0.5, stone ×0.4 |
+| Mistress of the Walls | Potnia | livestock ×2, wine ×1.7, bronze ×1.5, incense ×1.5, grain ×1, fish ×0.4, stone ×0.4 |
+| Potnia's Vision | Potnia | fish ×2.2, incense ×2.1, oil ×1.5, silver ×1.4, bronze ×1.3, grain ×0.6, stone ×0.4 |
+| Still the Storm | The Sea Daimons of Stillness | fish ×2.2, livestock ×2, wine ×1.7, bronze ×1.5, incense ×1.5, grain ×1, stone ×0.4 |
+| Stout Hulls | The Sea Daimons of Stillness | fish ×2.2, livestock ×2, wine ×1.7, bronze ×1.5, incense ×1.5, grain ×1, stone ×0.4 |
 | Swift Feet | Asterion | no preference: every good at its worth |
-| The Bird Oracle | Asterion | livestock ×2, wine ×1.7, horses ×1.6, bronze ×1.5, incense ×1.5, grain ×1, pottery ×0.5, fish ×0.4, stone ×0.4 |
+| The Bird Oracle | Asterion | livestock ×2, wine ×1.7, bronze ×1.5, incense ×1.5, grain ×1, fish ×0.4, stone ×0.4 |
 | The Builder's Blessing | Velchanos | no preference: every good at its worth |
-| The Bull's Horns | Asterion | livestock ×2, wine ×1.7, horses ×1.6, bronze ×1.5, incense ×1.5, grain ×1, pottery ×0.5, fish ×0.4, stone ×0.4 |
+| The Bull's Horns | Asterion | livestock ×2, wine ×1.7, bronze ×1.5, incense ×1.5, grain ×1, fish ×0.4, stone ×0.4 |
 | The Scapegoat | Potnia | incense ×2, wine ×2, oil ×1.6, grain ×1.3, livestock ×1.3, fish ×0.9, copper ×0.5, tin ×0.5, timber ×0.4, stone ×0.3 |
 | The Thread | Asterion | no preference: every good at its worth |
-| The Walls Fall | Potnia | livestock ×2, wine ×1.7, horses ×1.6, bronze ×1.5, incense ×1.5, grain ×1, pottery ×0.5, fish ×0.4, stone ×0.4 |
-| The Young God's Arm | Velchanos | livestock ×2, wine ×1.7, horses ×1.6, bronze ×1.5, incense ×1.5, grain ×1, pottery ×0.5, fish ×0.4, stone ×0.4 |
-| Wake the Storm | The Sea Daimons of Stillness | fish ×2.2, livestock ×2, wine ×1.7, horses ×1.6, bronze ×1.5, incense ×1.5, grain ×1, pottery ×0.5, stone ×0.4 |
+| The Walls Fall | Potnia | livestock ×2, wine ×1.7, bronze ×1.5, incense ×1.5, grain ×1, fish ×0.4, stone ×0.4 |
+| The Young God's Arm | Velchanos | livestock ×2, wine ×1.7, bronze ×1.5, incense ×1.5, grain ×1, fish ×0.4, stone ×0.4 |
+| Wake the Storm | The Sea Daimons of Stillness | fish ×2.2, livestock ×2, wine ×1.7, bronze ×1.5, incense ×1.5, grain ×1, stone ×0.4 |
 <!-- /favours -->
 
 Any good may be offered. **Oil and wine** are offerings like any other — oil is also food, so do not give up what a hungry city needs. **Incense** is a valuable gift ([[incense]]). For everyday prayers it can help meet the offering requirement; excess value does not change the answer, but a lasting prayer lasts longer and the temple rests longer.

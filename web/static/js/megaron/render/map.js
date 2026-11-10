@@ -3348,7 +3348,7 @@ export function resetView() {
 // terrain with a `coastal` boolean flag on land tiles, so fish is folded into
 // producesText() below via that flag instead of a dict key.
 const TERRAIN_GOODS = {
-  plains:             'grain, horses, a little oil',
+  plains:             'grain, a little oil',
   river_valley:       'grain ×3 (very fertile)',
   river_delta:        'grain ×4 (richest — exposed coast)',
   hills:              'copper (if deposit), wine, a little oil',
