@@ -105,98 +105,6 @@ const EffectHarvestBlessing = "harvest_blessing"
 //
 // Kharis is NEVER spent. MinKharis = required standing, not a cost.
 var PrayerSpecs = map[string]PrayerSpec{
-	// ── Akhaier (Olympians) ────────────────────────────────────────────────
-	"akhaier_oracle_deposits": {
-		ID: "akhaier_oracle_deposits", EffectType: EffectOracleRevealDeposits,
-		MinKharis: MoodSuspicious, Offering: map[string]float64{"oil": 20, "wine": 10},
-		CooldownTicks: 24, TargetKind: "",
-		God: "Apollon", Name: "Apollon's Sight",
-		Description: "Reveals one ore deposit you have never seen — copper, tin or silver, somewhere in the world.",
-	},
-	"akhaier_harvest_blessing": {
-		ID: "akhaier_harvest_blessing", EffectType: EffectHarvestBlessing,
-		MinKharis: MoodIndifferent, Offering: map[string]float64{"wine": 15, "oil": 10},
-		CooldownTicks: 12, TargetKind: "",
-		God: "Demeter", Name: "Demeter's Bounty",
-		Description: "Blesses the harvest — grain, oil and wine yield a quarter more for 25 game days.",
-	},
-	"akhaier_battle_frenzy": {
-		ID: "akhaier_battle_frenzy", EffectType: EffectBattleFrenzy,
-		MinKharis: MoodSuspicious, Offering: map[string]float64{"grain": 10, "wine": 10},
-		CooldownTicks: 6, TargetKind: "",
-		God: "Ares", Name: "Ares' Fury",
-		Description: "Your own garrison defending this city fights a quarter stronger for 6 game days.",
-	},
-
-	// ── Khemetiu (Egyptian) ───────────────────────────────────────────────
-	"khemetiu_oracle_deposits": {
-		ID: "khemetiu_oracle_deposits", EffectType: EffectOracleRevealDeposits,
-		MinKharis: MoodSuspicious, Offering: map[string]float64{"grain": 25, "oil": 15},
-		CooldownTicks: 24, TargetKind: "",
-		God: "Thoth", Name: "Thoth's Revelation",
-		Description: "Reveals one ore deposit you have never seen — copper, tin or silver, somewhere in the world.",
-	},
-	"khemetiu_harvest_blessing": {
-		ID: "khemetiu_harvest_blessing", EffectType: EffectHarvestBlessing,
-		MinKharis: MoodIndifferent, Offering: map[string]float64{"grain": 20, "oil": 10},
-		CooldownTicks: 12, TargetKind: "",
-		God: "Osiris", Name: "Osiris' Flood",
-		Description: "Blesses the harvest — grain, oil and wine yield a quarter more for 25 game days.",
-	},
-	"khemetiu_battle_frenzy": {
-		ID: "khemetiu_battle_frenzy", EffectType: EffectBattleFrenzy,
-		MinKharis: MoodSuspicious, Offering: map[string]float64{"grain": 10, "wine": 10},
-		CooldownTicks: 6, TargetKind: "",
-		God: "Sekhmet", Name: "Sekhmet's Wrath",
-		Description: "Your own garrison defending this city fights a quarter stronger for 6 game days.",
-	},
-
-	// ── Kna'ani (Baal / Levant) ───────────────────────────────────────────
-	"knaani_oracle_deposits": {
-		ID: "knaani_oracle_deposits", EffectType: EffectOracleRevealDeposits,
-		MinKharis: MoodSuspicious, Offering: map[string]float64{"oil": 20, "wine": 15},
-		CooldownTicks: 24, TargetKind: "",
-		God: "El", Name: "El's Oracle",
-		Description: "Reveals one ore deposit you have never seen — copper, tin or silver, somewhere in the world.",
-	},
-	"knaani_harvest_blessing": {
-		ID: "knaani_harvest_blessing", EffectType: EffectHarvestBlessing,
-		MinKharis: MoodIndifferent, Offering: map[string]float64{"wine": 15, "oil": 10},
-		CooldownTicks: 12, TargetKind: "",
-		God: "Baal", Name: "Baal's Rain",
-		Description: "Blesses the harvest — grain, oil and wine yield a quarter more for 25 game days.",
-	},
-	"knaani_battle_frenzy": {
-		ID: "knaani_battle_frenzy", EffectType: EffectBattleFrenzy,
-		MinKharis: MoodSuspicious, Offering: map[string]float64{"wine": 10, "grain": 10},
-		CooldownTicks: 6, TargetKind: "",
-		God: "Anat", Name: "Anat's Rage",
-		Description: "Your own garrison defending this city fights a quarter stronger for 6 game days.",
-	},
-
-	// ── Thrakes ──────────────────────────────────────────────────────────
-	"thrakes_oracle_deposits": {
-		ID: "thrakes_oracle_deposits", EffectType: EffectOracleRevealDeposits,
-		MinKharis: MoodSuspicious, Offering: map[string]float64{"wine": 25, "oil": 10},
-		CooldownTicks: 24, TargetKind: "",
-		God: "Sabazios", Name: "Sabazios' Dream",
-		Description: "Reveals one ore deposit you have never seen — copper, tin or silver, somewhere in the world.",
-	},
-	"thrakes_harvest_blessing": {
-		ID: "thrakes_harvest_blessing", EffectType: EffectHarvestBlessing,
-		MinKharis: MoodIndifferent, Offering: map[string]float64{"wine": 20, "oil": 10},
-		CooldownTicks: 12, TargetKind: "",
-		God: "Bendis", Name: "Bendis' Harvest",
-		Description: "Blesses the harvest — grain, oil and wine yield a quarter more for 25 game days.",
-	},
-	"thrakes_battle_frenzy": {
-		ID: "thrakes_battle_frenzy", EffectType: EffectBattleFrenzy,
-		MinKharis: MoodSuspicious, Offering: map[string]float64{"wine": 25},
-		CooldownTicks: 6, TargetKind: "",
-		God: "Ares Thrakios", Name: "Thrakian Battle Rage",
-		Description: "Your own garrison defending this city fights a quarter stronger for 6 game days.",
-	},
-
 	// ── Minoan ───────────────────────────────────────────────────────────
 	"minoan_oracle_deposits": {
 		ID: "minoan_oracle_deposits", EffectType: EffectOracleRevealDeposits,
@@ -220,29 +128,6 @@ var PrayerSpecs = map[string]PrayerSpec{
 		God: "Poseidon", Name: "Poseidon's Storm",
 		Description: "Your own garrison defending this city fights a quarter stronger for 6 game days.",
 		Favours:     havsdaimonernaBattleFrenzyFavours,
-	},
-
-	// ── Hatti (Hittite) ──────────────────────────────────────────────────
-	"hatti_oracle_deposits": {
-		ID: "hatti_oracle_deposits", EffectType: EffectOracleRevealDeposits,
-		MinKharis: MoodSuspicious, Offering: map[string]float64{"grain": 20, "wine": 15},
-		CooldownTicks: 24, TargetKind: "",
-		God: "Hepat", Name: "Hepat's Counsel",
-		Description: "Reveals one ore deposit you have never seen — copper, tin or silver, somewhere in the world.",
-	},
-	"hatti_harvest_blessing": {
-		ID: "hatti_harvest_blessing", EffectType: EffectHarvestBlessing,
-		MinKharis: MoodIndifferent, Offering: map[string]float64{"wine": 15, "oil": 10},
-		CooldownTicks: 12, TargetKind: "",
-		God: "Telipinu", Name: "Telipinu's Return",
-		Description: "Blesses the harvest — grain, oil and wine yield a quarter more for 25 game days.",
-	},
-	"hatti_battle_frenzy": {
-		ID: "hatti_battle_frenzy", EffectType: EffectBattleFrenzy,
-		MinKharis: MoodSuspicious, Offering: map[string]float64{"grain": 15, "wine": 10},
-		CooldownTicks: 6, TargetKind: "",
-		God: "Teshub", Name: "Teshub's Thunder",
-		Description: "Your own garrison defending this city fights a quarter stronger for 6 game days.",
 	},
 }
 
@@ -301,12 +186,7 @@ func init() {
 // CulturePrayers maps a culture key to its allowed prayer IDs.
 // A culture only sees its own prayer names — same effect behind the scenes.
 var CulturePrayers = map[string][]string{
-	"akhaier":  {"akhaier_oracle_deposits", "akhaier_harvest_blessing", "akhaier_battle_frenzy"},
-	"khemetiu": {"khemetiu_oracle_deposits", "khemetiu_harvest_blessing", "khemetiu_battle_frenzy"},
-	"knaani":   {"knaani_oracle_deposits", "knaani_harvest_blessing", "knaani_battle_frenzy"},
-	"thrakes":  {"thrakes_oracle_deposits", "thrakes_harvest_blessing", "thrakes_battle_frenzy"},
-	"minoan":   {PrayerPotniaVision, PrayerPotniaWalls, PrayerGreenShoots, PrayerPotniaFertility, PrayerPotniaScapegoat, PrayerPotniaWallsFall, PrayerVelchanosBuilding, PrayerAsterionSwift, PrayerAsterionHorns, PrayerAsterionThreadV2, PrayerAsterionBirdOracle, PrayerStillnessSwift, PrayerVelchanosStrength, PrayerStillnessHull, PrayerStillnessCalm, PrayerStillnessWake},
-	"hatti":    {"hatti_oracle_deposits", "hatti_harvest_blessing", "hatti_battle_frenzy"},
+	"minoan": {PrayerPotniaVision, PrayerPotniaWalls, PrayerGreenShoots, PrayerPotniaFertility, PrayerPotniaScapegoat, PrayerPotniaWallsFall, PrayerVelchanosBuilding, PrayerAsterionSwift, PrayerAsterionHorns, PrayerAsterionThreadV2, PrayerAsterionBirdOracle, PrayerStillnessSwift, PrayerVelchanosStrength, PrayerStillnessHull, PrayerStillnessCalm, PrayerStillnessWake},
 }
 
 // AllowedForCulture returns true if the prayer is in the culture's allowed list.
@@ -319,12 +199,8 @@ func AllowedForCulture(culture, prayerID string) bool {
 	return false
 }
 
-// DefaultBattleFrenzyFor returns the default cultural prayer (legacy function name).
-// Minoan defaults to Walls; historical cultures retain battle frenzy.
-// Used for backward-compatible rite calls that omit the prayer parameter.
+// DefaultBattleFrenzyFor returns the default prayer (legacy function name): Walls,
+// the only culture being minoan. Used for rite calls that omit the prayer parameter.
 func DefaultBattleFrenzyFor(culture string) string {
-	if culture == "minoan" {
-		return PrayerPotniaWalls
-	}
-	return culture + "_battle_frenzy"
+	return PrayerPotniaWalls
 }

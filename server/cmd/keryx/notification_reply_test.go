@@ -38,6 +38,17 @@ func TestRiteAnsweredSummary(t *testing.T) {
 	}
 }
 
+// A notification stored before the five-culture prayers were removed names a
+// retired prayer id; it still reads by its stored name, never as a raw id.
+func TestRiteAnsweredSummaryOldRetiredPrayer(t *testing.T) {
+	out := capturePrint(t, func() {
+		printNotificationSummary(nil, notificationItem{Kind: "RiteAnswered", Body: json.RawMessage(`{"prayer":"akhaier_battle_frenzy","prayer_name":"Ares' Fury","name":"Mycenae","message":"The gods answer your plea"}`)})
+	})
+	if !strings.Contains(out, "Ares' Fury at Mycenae: The gods answer your plea") || strings.Contains(out, "akhaier_battle_frenzy") {
+		t.Fatalf("summary %q", out)
+	}
+}
+
 func TestOfferFoodTextMatchesTheWeb(t *testing.T) {
 	got := offerFoodText(map[string]float64{"grain": 28, "silver": 3}, map[string]float64{"grain": 29.6, "fish": 4}, 55.8, "Lato")
 	if !strings.Contains(got, "takes 28 of Lato's 29 grain") || !strings.Contains(got, "leaves 5 food, less than Lato eats in a game day (55.8)") {

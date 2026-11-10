@@ -21,18 +21,17 @@ import (
 	"formatet/megaron/server/internal/religion"
 )
 
-// TestRiteCultureGate_HattiCannotCastKnaaniPrayer is the 403 scenario:
-// Hatti submits a prayer that belongs to Kna'an's catalogue.
-func TestRiteCultureGate_HattiCannotCastKnaaniPrayer(t *testing.T) {
-	if religion.AllowedForCulture("hatti", "knaani_oracle_deposits") {
-		t.Error("hatti must not be allowed to cast knaani_oracle_deposits (culture gate broken)")
+// TestRiteCultureGate_UnknownCultureCannotCastMinoanPrayer is the 403 scenario.
+func TestRiteCultureGate_UnknownCultureCannotCastMinoanPrayer(t *testing.T) {
+	if religion.AllowedForCulture("hatti", religion.PrayerPotniaWalls) {
+		t.Error("a culture without a catalogue must not cast a minoan prayer (culture gate broken)")
 	}
 }
 
-// TestRiteCultureGate_KnaaniCanCastOwnPrayer is the positive case.
-func TestRiteCultureGate_KnaaniCanCastOwnPrayer(t *testing.T) {
-	if !religion.AllowedForCulture("knaani", "knaani_oracle_deposits") {
-		t.Error("knaani must be allowed to cast knaani_oracle_deposits")
+// TestRiteCultureGate_MinoanCanCastOwnPrayer is the positive case.
+func TestRiteCultureGate_MinoanCanCastOwnPrayer(t *testing.T) {
+	if !religion.AllowedForCulture("minoan", religion.PrayerPotniaWalls) {
+		t.Error("minoan must be allowed to cast its own prayer")
 	}
 }
 
