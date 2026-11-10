@@ -571,7 +571,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// it to know which prayers it can actually cast.
 		var kharisNow, kharisRate, kharisCap float64
 		var maxTempleLevel int
-		var kharisNetPerDay, kharisProduction, kharisBaseDecay, kharisCityDecay, kharisPopulationDecay float64
+		var kharisNetPerDay, kharisProduction, kharisBaseDecay, kharisCityDecay float64
 		var kharisCityCount, kharisPopulation int
 		var kharisNetKnown, kharisDevotionIdle bool
 		var kharisWrath *kharis.WrathStatus
@@ -599,7 +599,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			}
 			decay, decayErr := kharis.ProjectDecay(r.Context(), h.pool, *sett.OwnerID, worldID)
 			kharisCityCount, kharisPopulation = decay.CityCount, decay.Population
-			kharisBaseDecay, kharisCityDecay, kharisPopulationDecay = decay.Base, decay.Cities, decay.Residents
+			kharisBaseDecay, kharisCityDecay = decay.Base, decay.Cities
 			if decayErr != nil {
 				writeError(w, http.StatusInternalServerError, "could not load kharis decay")
 				return
@@ -823,9 +823,8 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"kharis_city_count":            kharisCityCount,
 			"kharis_base_decay":            kharisBaseDecay,
 			"kharis_city_decay":            kharisCityDecay,
-			"kharis_daily_decay":           kharisBaseDecay + kharisCityDecay + kharisPopulationDecay,
+			"kharis_daily_decay":           kharisBaseDecay + kharisCityDecay,
 			"kharis_population":            kharisPopulation,
-			"kharis_population_decay":      kharisPopulationDecay,
 			"kharis_production_per_tick":   kharisProduction,
 			"kharis_demand":                kharis.RealmDemand(kharisCityCount),
 			"kharis_given_weight":          kharis.GivenWeight(templeOffers),
@@ -900,7 +899,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// visitor has never seen. Cult upkeep is private, like local altar stocks.
 		if !ownCult {
 			private := resp["settlement"].(map[string]any)
-			for _, key := range []string{"storm_no_fishing", "kharis_standing", "kharis_wrath", "kharis_city_count", "kharis_base_decay", "kharis_city_decay", "kharis_daily_decay", "kharis_population", "kharis_population_decay", "kharis_production_per_tick", "kharis_net_per_tick", "kharis_devotion_idle"} {
+			for _, key := range []string{"storm_no_fishing", "kharis_standing", "kharis_wrath", "kharis_city_count", "kharis_base_decay", "kharis_city_decay", "kharis_daily_decay", "kharis_population", "kharis_production_per_tick", "kharis_net_per_tick", "kharis_devotion_idle"} {
 				delete(private, key)
 			}
 		}

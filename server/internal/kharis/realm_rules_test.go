@@ -46,7 +46,7 @@ func TestRealmKharis_CountsTempledCitiesIncludingCapital(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if d.CityCount != 6 || d.Base != 0 || math.Abs(d.Cities-7) > 1e-10 || math.Abs(d.Residents) > 1e-10 {
+	if d.CityCount != 6 || d.Base != 0 || math.Abs(d.Cities-7) > 1e-10 {
 		t.Fatalf("burden n%d base%g extra%g", d.CityCount, d.Base, d.Cities)
 	}
 	net, _, _, _, err := ProjectDailyNet(ctx, pool, pid, wid)

@@ -63,7 +63,7 @@ func TestProvinceRealmKharisProjection(t *testing.T) {
 		if d.CityCount != i+1 || hasTemples {
 			t.Fatalf("bad fixture count=%d temples=%v", d.CityCount, hasTemples)
 		}
-		for key, want := range map[string]float64{"kharis_city_count": float64(d.CityCount), "kharis_base_decay": d.Base, "kharis_city_decay": d.Cities, "kharis_daily_decay": d.Total, "kharis_net_per_tick": net, "kharis_population": float64(d.Population), "kharis_population_decay": d.Residents, "kharis_production_per_tick": net + d.Total} {
+		for key, want := range map[string]float64{"kharis_city_count": float64(d.CityCount), "kharis_base_decay": d.Base, "kharis_city_decay": d.Cities, "kharis_daily_decay": d.Total, "kharis_net_per_tick": net, "kharis_population": float64(d.Population), "kharis_production_per_tick": net + d.Total} {
 			got, ok := payload.Settlement[key].(float64)
 			if !ok || math.Abs(got-want) > 1e-9 {
 				t.Errorf("%s=%v want %g", key, payload.Settlement[key], want)

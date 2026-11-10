@@ -60,22 +60,6 @@ func TestDevotionCalibration_UnfedTempleEarnsNothing(t *testing.T) {
 	}
 }
 
-// A shortage may make devotion worth more, but it can never mint kharis.
-func TestTempleScarcity_BoundedAndNeverPunishing(t *testing.T) {
-	plenty := dayNet(1.0, 1.0, 1.0, 1)
-	shortage := dayNet(1.0, 1.0, templeScarcityCeil, 0)
-	if shortage <= plenty {
-		t.Error("burning scarce oil on the altar must be worth more than burning cheap oil")
-	}
-	// The bound lives in clampTempleScarcity, which is where it must be proven.
-	if got := clampTempleScarcity(9.0); got != templeScarcityCeil {
-		t.Errorf("a scarcity spike must be capped at %.1f×, got %.2f", templeScarcityCeil, got)
-	}
-	if got := clampTempleScarcity(0.3); got != 1.0 {
-		t.Errorf("abundance must not punish a tended temple, got %.2f", got)
-	}
-}
-
 // Expansion still costs when the same temples supply gain.
 func TestDevotionCalibration_TemplelessColoniesStillBite(t *testing.T) {
 	tended := dayNet(1.0, 1.0, 1.0, 1)

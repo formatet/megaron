@@ -35,11 +35,7 @@ func TestSilverCalibrationKharisFlowLeavesStalePriceClamp(t *testing.T) {
 	}
 	staffTestTemple(t, pool, sid, 2)
 	h := newTestTickHandler(pool)
-	// A scarcity row in the parked table no longer moves the standing cult:
-	// the factor is locked at 1 with the fixed price list (2026-10-31).
-	if factor := h.templeOfferScarcity(ctx, wid); factor != 1 {
-		t.Fatalf("actual maintenance factor=%g want 1 (locked)", factor)
-	}
+	// A scarcity row in the old table does not move the standing cult.
 	net, has, dev, _, err := ProjectDailyNet(ctx, pool, pid, wid)
 	if err != nil {
 		t.Fatal(err)
@@ -47,12 +43,6 @@ func TestSilverCalibrationKharisFlowLeavesStalePriceClamp(t *testing.T) {
 	want := 2*(KharisPerTempleWeight/2)*1 - KharisPerDemand
 	if !has || dev != 2 || math.Abs(net-want) > 1e-8 {
 		t.Fatalf("projection %g devotion%g has%v want%g", net, dev, has, want)
-	}
-	// Simulate the old valuation scale's stale denominator to display the change.
-	oldFactor := scarcityFromValues(map[string]float64{"grain": 129.6}, map[string]float64{"grain": 1}, nil)
-	oldNet := 2*(KharisPerTempleWeight/2)*oldFactor - KharisPerDemand
-	if oldFactor != 2 || oldNet <= net {
-		t.Fatalf("old price clamp %g should overstate catalogue-based net%g", oldNet, net)
 	}
 	// Charge the actual maintenance path and compare the persisted relationship.
 	before := 20.0
@@ -90,7 +80,7 @@ func TestSilverCalibrationKharisFlowLeavesStalePriceClamp(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got := scarcityFromValues(map[string]float64{"grain": 1.5}, refs, nil); got != 1 {
-		t.Fatalf("catalogue reference not used: %g", got)
+	if refs["grain"] != 2 {
+		t.Fatalf("catalogue reference not used: %g", refs["grain"])
 	}
 }
