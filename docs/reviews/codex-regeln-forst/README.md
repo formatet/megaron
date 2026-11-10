@@ -120,3 +120,26 @@ Removed or collapsed text, per article: first six words · reason.
 - "Everyday prayers work at a level-1 temple. Spontaneous blessings need 60" (divine-wrath-temple-levels) · third copy of the same text (heading and anchor stay)
 - The three generated blocks (about 620 words) are untouched and count toward the cap.
 
+## runners
+- "When you tell a unit in the field to turn around" · duplicate of the lead (kept the meeting-estimate example, one example)
+- "The one exception is your Nomadic Host" · moved to the lead
+- "Look at the unit in War → Forces and decide again" · screen description
+- "Recall and redirect are sent from War → Forces" (long form) · duplicate of [[marching]]
+- "The pending order says when its next meeting" and "If it must wait before it can continue" · duplicate of How orders travel
+- "In groups: ... Times are the clock time" detail · screen description
+- "Runners are sacred; a ship's captain does not read" · duplicate of [[messengers]]
+- "At least ... It sees from each province" history-style detail · shortened
+- "Waiting for a ship to happen to sail the right way" · screen description
+- "except this one you chose yourself" · obvious
+- "While it sails out, the drawer and keryx unit show it" · screen description
+- "The ship's own risks are unchanged ... starved crew" · duplicate of [[upkeep]] / [[sea]]
+- "Open the dispatch to read ... (for example, 'Sent yesterday" · example
+- "An older sealed record may have no preserved departure" · history
+- "The dispatch names people first: 'From you, at Mycenae'" · example (second example removed; the headline example kept)
+- "A runner follows a saved land route" duplicate sentences · shortened
+- "None of this changes anything for a message" · shortened
+- "Sealed markers remain a recovery measure" · history
+- "The runner follows that actual ship ... You receive no instant" second example "With only one landing" · example
+- "In Diplomacy → Correspondence, use Call it back" long form · screen description
+- "(a later known waiting spell can trigger it again; an unknown rescued runner" · internals
+
