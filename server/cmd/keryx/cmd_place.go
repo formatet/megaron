@@ -34,7 +34,7 @@ and immediate. To move a citizen from a hex into a building:
   keryx place grain 5 -1
   keryx staff olive_press +1`,
 		Example: `  keryx place grain 5
-  keryx place --province <prov-id> livestock 5
+  keryx place --city <name> livestock 5
   keryx place grain 5 +2
   keryx place grain 5 -1`,
 		Args: func(cmd *cobra.Command, args []string) error {
@@ -61,7 +61,7 @@ and immediate. To move a citizen from a hex into a building:
 			args = rest
 			if city != "" {
 				if provinceID != "" {
-					return fmt.Errorf("choose a city either positionally or with --province")
+					return fmt.Errorf("choose a city either positionally or with --city")
 				}
 				provinceID = city
 			}
@@ -131,6 +131,7 @@ and immediate. To move a citizen from a hex into a building:
 	}
 	cmd.Flags().StringVar(&hexFlag, "hex", "", "catchment coordinate q,r or ordinal 6/#6; put flags before the good")
 	cmd.Flags().StringVar(&provinceID, "province", "", "province ID/name to place in (default: your capital)")
+	addCityFlag(cmd, &provinceID, false, "province")
 	// A bare "-1" delta is otherwise misparsed by pflag as an attempted
 	// shorthand flag ("unknown shorthand flag: '1' in -1"). Disabling
 	// interspersion stops flag parsing at the first positional (<roll>),

@@ -43,7 +43,7 @@ func recruitCmd() *cobra.Command {
   keryx recruit --unit war_chariot
   keryx recruit --unit galley --name Asterion
   keryx recruit --unit war_galley --count 3
-  keryx recruit --unit spearman --province <province-id>   # recruit in a colony`,
+  keryx recruit --unit spearman --city <name>   # recruit in a colony`,
 		Args: rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
@@ -184,6 +184,7 @@ func recruitCmd() *cobra.Command {
 
 	cmd.Flags().SortFlags = false
 	cmd.Flags().StringVar(&provinceID, "province", "", "province to recruit in (default: your capital)")
+	addCityFlag(cmd, &provinceID, true, "province")
 	cmd.Flags().StringVarP(&unit, "unit", "u", "", "unit type (required unless --list)")
 	cmd.Flags().IntVarP(&men, "men", "n", 100, "deprecated, no effect — land recruits always draft a full 100-man cohort now; ignored for ships")
 	cmd.Flags().IntVarP(&count, "count", "c", 1, "number of vessels to build in one call (ships only, 1–20)")

@@ -102,6 +102,7 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` (read it off --full) and th
 		},
 	}
 	cmd.Flags().StringVar(&provinceID, "province", "", "city name or province ID (default: capital)")
+	addCityFlag(cmd, &provinceID, false, "province")
 	cmd.Flags().BoolVar(&full, "full", false, "list every catchment hex row (default: one summary line)")
 	return cmd
 }

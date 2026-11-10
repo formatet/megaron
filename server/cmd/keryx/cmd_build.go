@@ -44,7 +44,7 @@ func buildCmd() *cobra.Command {
 		Example: `  keryx build --list
   keryx build --type farm --hex 3,-1          # farm/lumbermill/mine/stonequarry are hex-bound: pick a catchment hex
   keryx build --type harbour          # requires coastal (adjacent sea hex)
-  keryx build --type mine --hex 5,2 --province <province-id>   # build in a colony
+  keryx build --type mine --hex 5,2 --city <name>   # build in a colony
   keryx build --type winery           # produces nothing unless a hills tile is in catchment
   keryx build --type storehouse       # one shared store for everything but food, the herd and cult
   keryx build --queue                 # see what's already queued, with cancel-build IDs`,
@@ -56,7 +56,7 @@ func buildCmd() *cobra.Command {
 			c := newClient(cfg)
 			if len(args) > 0 {
 				if provinceID != "" {
-					return fmt.Errorf("choose a city either positionally or with --province")
+					return fmt.Errorf("choose a city either positionally or with --city")
 				}
 				provinceID = args[0]
 			}
@@ -170,6 +170,7 @@ func buildCmd() *cobra.Command {
 
 	cmd.Flags().SortFlags = false
 	cmd.Flags().StringVar(&provinceID, "province", "", "province ID to build in (default: your capital)")
+	addCityFlag(cmd, &provinceID, false, "province")
 	cmd.Flags().StringVarP(&buildingType, "type", "t", "", "building type (omit to see list)")
 	cmd.Flags().StringVar(&god, "god", "", "the god a temple is built for (one temple per god and city): "+religion.TempleGodIDs())
 	cmd.Flags().StringVar(&hexFlag, "hex", "", "catchment q,r or ordinal 6/#6 — required for hex-bound building types")

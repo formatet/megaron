@@ -390,7 +390,7 @@ func riteCmd() *cobra.Command {
 		Short: "Perform a cultural prayer at your settlement (requires temple + offering)",
 		Example: `  keryx rite --list
   keryx rite --prayer <prayer-id>
-  keryx rite --prayer <prayer-id> --province Knossos
+  keryx rite --prayer <prayer-id> --city Knossos
   keryx rite --prayer <prayer-id> --offer grain=10,silver=3
   keryx rite --prayer minoan_stillness_hull --scope unit --target "Horns of Crete"
   keryx rite --prayer minoan_stillness_hull --scope permanent --target "Horns of Crete"
@@ -406,7 +406,7 @@ func riteCmd() *cobra.Command {
 			c := newClient(cfg)
 			if provinceArg != "" {
 				if settlementID != "" {
-					return fmt.Errorf("give --province or --settlement, not both")
+					return fmt.Errorf("give --city or --settlement, not both")
 				}
 				provs, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces", cfg.WorldID))
 				if err != nil {
@@ -438,7 +438,7 @@ func riteCmd() *cobra.Command {
 				settlementID = riteSettlement(markers, "")
 			}
 			if settlementID == "" {
-				return fmt.Errorf("could not find own settlement — use --settlement <id>")
+				return fmt.Errorf("could not find own settlement — use --city <name>")
 			}
 
 			// Parse once: the confirmation and POST must describe the same gift.
@@ -625,6 +625,7 @@ func riteCmd() *cobra.Command {
 
 	cmd.Flags().BoolVar(&list, "list", false, "list this culture's available prayers (id + affordability) and exit")
 	cmd.Flags().StringVar(&provinceArg, "province", "", "city name or province ID, like status/place/build (default: your capital)")
+	addCityFlag(cmd, &provinceArg, false, "province")
 	cmd.Flags().StringVar(&settlementID, "settlement", "", "settlement UUID (same as --province, kept for old scripts)")
 	cmd.Flags().StringVar(&prayerID, "prayer", "", "prayer ID (run --list to see your culture's prayers; defaults to the culture's listed default prayer)")
 	cmd.Flags().StringVar(&targetID, "target", "", "the unit, ship, Runner or caravan a blessing is laid on, or the foreign city whose wall Potnia is asked to bring down (minoan_potnia_walls_fall), or the city or named place Asterion's birds watch (minoan_asterion_bird_oracle), by name or id (see --list)")

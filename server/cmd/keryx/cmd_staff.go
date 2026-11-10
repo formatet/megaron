@@ -29,10 +29,10 @@ see current occupancy. A market has no workplaces and needs no workers. An unsta
   keryx staff temple +1 --god potnia
   keryx staff olive_press
   keryx staff olive_press +2
-  keryx staff olive_press -1 --province <prov-id>`,
+  keryx staff olive_press -1 --city <name>`,
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return fmt.Errorf("building name is required: keryx staff <building> (see keryx city for workplaces, or keryx roster for all assignments)")
+				return fmt.Errorf("building name is required: keryx staff <building> (see keryx city for workplaces, or keryx dossier for the whole realm)")
 			}
 			args, err := trailingLongFlags(cmd, args)
 			if err != nil {
@@ -99,7 +99,7 @@ see current occupancy. A market has no workplaces and needs no workers. An unsta
 					if h.Building != nil && h.Building.Type == buildingType {
 						prefix := "keryx place"
 						if prov != cfg.ProvinceID {
-							prefix += " --province " + prov
+							prefix += " --city " + prov
 						}
 						roles := []string{}
 						for _, g := range h.Goods {
@@ -244,6 +244,7 @@ see current occupancy. A market has no workplaces and needs no workers. An unsta
 		},
 	}
 	cmd.Flags().StringVar(&provinceID, "province", "", "province ID/name (default: your capital)")
+	addCityFlag(cmd, &provinceID, false, "province")
 	cmd.Flags().StringVar(&god, "god", "", "which temple, when the city has one to several gods")
 	// A bare "-1" delta is otherwise misparsed by pflag as an attempted
 	// shorthand flag ("unknown shorthand flag: '1' in -1"). Disabling

@@ -48,7 +48,7 @@ func resolveTransferDestination(c *Client, world, source, name string) (string, 
 		}
 		for _, marker := range markers {
 			if marker.Own && marker.ID == source && strings.EqualFold(marker.Name, name) {
-				return "", fmt.Errorf("sending city %q is also the destination — choose another source with --from <city> (see keryx settlements)", marker.Name)
+				return "", fmt.Errorf("sending city %q is also the destination — choose another source with --city <city> (see keryx cities)", marker.Name)
 			}
 		}
 		return "", fmt.Errorf("no own or contacted city named %q", name)

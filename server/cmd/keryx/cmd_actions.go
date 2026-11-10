@@ -37,7 +37,7 @@ func actionsCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "actions [category]",
-		Short: "Show what you can do right now — and what's missing for what you can't (--province for a colony)",
+		Short: "Show what you can do right now — and what's missing for what you can't (--city for another city)",
 		Long: `Server-authoritative capabilities surface: every mutating verb, whether it's
 available right now, and for locked verbs exactly what live gap blocks it and
 how to close it.
@@ -54,7 +54,7 @@ Categories: cult, diplomacy, kingdom, military, province, trade
 Not a verb here: 'keryx storms' lists the storms at sea your people have seen.`,
 		Example: `  keryx actions
   keryx actions military
-  keryx actions military --province <province-id>
+  keryx actions military --city <name>
   keryx actions --json`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -109,6 +109,7 @@ Not a verb here: 'keryx storms' lists the storms at sea your people have seen.`,
 		},
 	}
 	cmd.Flags().StringVar(&provinceID, "province", "", "province ID to inspect (default: your capital)")
+	addCityFlag(cmd, &provinceID, false, "province")
 	return cmd
 }
 

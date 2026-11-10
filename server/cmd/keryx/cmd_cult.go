@@ -87,7 +87,7 @@ func listRealmPrayers(c *Client, settlement string) error {
 			fmt.Printf("  %s favours %s\n", p.God, taste)
 		}
 		printRiteTargets(p.riteAvailablePrayer, p.SettlementID)
-		fmt.Printf("  Cast here: keryx rite --settlement %s --prayer %s\n", p.SettlementID, p.ID)
+		fmt.Printf("  Cast here: keryx rite --city %s --prayer %s\n", p.SettlementID, p.ID)
 	}
 	if len(view.Prayers) == 0 {
 		fmt.Println("No prayers available here. Found a city and build a temple.")
@@ -115,9 +115,9 @@ func printRealmTemples(c *Client) bool {
 	for _, t := range view.Temples {
 		fmt.Printf("  %s — %s · level %d · workers %d/%d\n", t.Name, t.CityName, t.Level, t.Staffed, t.Capacity)
 		fmt.Println(templeOfferingLine(t.Offer))
-		fmt.Printf("  Manage: keryx staff temple +1 --province %s --god %s\n", t.ProvinceID, t.GodID)
-		fmt.Printf("  Rich offering: keryx rich-offering --god %s --province %s --good <good> (or --off)\n", t.GodID, t.ProvinceID)
-		fmt.Printf("  Demolish: keryx demolish --type temple --god %s --province %s\n", t.GodID, t.ProvinceID)
+		fmt.Printf("  Manage: keryx staff temple +1 --city %s --god %s\n", t.ProvinceID, t.GodID)
+		fmt.Printf("  Rich offering: keryx rich-offering --god %s --city %s --good <good> (or --off)\n", t.GodID, t.ProvinceID)
+		fmt.Printf("  Demolish: keryx demolish --type temple --god %s --city %s\n", t.GodID, t.ProvinceID)
 	}
 	if len(view.Temples) == 0 {
 		fmt.Println("  No standing temples.")

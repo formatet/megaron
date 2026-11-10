@@ -16,7 +16,7 @@ func richOfferingCmd() *cobra.Command {
 		Short: "Give a temple a rich offering on top of its tithe (+50% effect while paid in full)",
 		Example: `  keryx rich-offering --god potnia --good fish
   keryx rich-offering --god potnia --off
-  keryx rich-offering --god velchanos --good livestock --province <province-id>`,
+  keryx rich-offering --god velchanos --good livestock --city <name>`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if god == "" {
@@ -41,7 +41,7 @@ func richOfferingCmd() *cobra.Command {
 					continue
 				}
 				if id != "" {
-					return fmt.Errorf("you have more than one temple of %s — name the city with --province", god)
+					return fmt.Errorf("you have more than one temple of %s — name the city with --city", god)
 				}
 				id = t.ID
 			}
@@ -72,6 +72,7 @@ func richOfferingCmd() *cobra.Command {
 	}
 	cmd.Flags().StringVar(&god, "god", "", "god of the temple (required)")
 	cmd.Flags().StringVar(&provinceID, "province", "", "city, when you hold two temples of the same god")
+	addCityFlag(cmd, &provinceID, true, "province")
 	cmd.Flags().StringVar(&good, "good", "", "good to offer from the city's store")
 	cmd.Flags().BoolVar(&off, "off", false, "turn the rich offering off")
 	return cmd

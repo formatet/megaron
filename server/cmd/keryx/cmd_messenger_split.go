@@ -113,6 +113,7 @@ func messageCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&destName, "to", "t", "", "destination settlement name (required)")
 	cmd.Flags().StringVarP(&text, "text", "x", "", "message text (required)")
 	cmd.Flags().StringVar(&fromName, "from", "", "your city to send from (default: capital)")
+	addCityFlag(cmd, &fromName, false, "from")
 	cmd.Flags().BoolVar(&fromHost, "from-host", false, "send from your wandering Nomadic Host (founder phase) instead of a city")
 	cmd.Flags().StringVar(&tellPlace, "tell-place", "", "tell of a named place or a city your people have seen (see keryx places)")
 	_ = cmd.MarkFlagRequired("to")
@@ -265,6 +266,7 @@ sell one for silver and buy the other.`,
 	cmd.Flags().Float64Var(&offerQty, "offer-qty", 0, "quantity of good to sell (sell mode)")
 	cmd.Flags().Float64Var(&wantSilver, "want-silver", 0, "silver to request in exchange (sell mode)")
 	cmd.Flags().StringVar(&fromName, "from", "", "your city to send/pay from (default: capital)")
+	addCityFlag(cmd, &fromName, false, "from")
 	cmd.Flags().StringVarP(&msgText, "message", "m", "", "optional message text (auto-generated if omitted)")
 	cmd.Flags().StringVar(&counterID, "counter", "", "counter a delivered offer by its exact messenger UUID; omit --to/--from")
 	return cmd

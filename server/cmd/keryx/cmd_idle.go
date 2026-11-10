@@ -45,5 +45,6 @@ func idleCmd() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVar(&provinceID, "province", "", "province ID/name (default: your capital)")
+	addCityFlag(cmd, &provinceID, true, "province")
 	return cmd
 }

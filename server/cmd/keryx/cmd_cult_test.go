@@ -34,7 +34,7 @@ func TestRealmCultCLIThreeTemplesAndCityPrayerRouting(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, city := range []string{"Tylissos", "Amnissos", "Kommos"} {
-		if !strings.Contains(out, "--settlement s-"+city) {
+		if !strings.Contains(out, "--city s-"+city) {
 			t.Fatalf("missing city-specific cast %s: %s", city, out)
 		}
 	}
@@ -42,14 +42,14 @@ func TestRealmCultCLIThreeTemplesAndCityPrayerRouting(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(filtered, "--settlement s-Kommos") || strings.Contains(filtered, "s-Amnissos") {
+	if !strings.Contains(filtered, "--city s-Kommos") || strings.Contains(filtered, "s-Amnissos") {
 		t.Fatal(filtered)
 	}
 	status, err := captureStdout(t, statusCmd().Execute)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if strings.Count(status, "workers 1/2") != 3 || !strings.Contains(status, "--province p-Kommos --god asterion") || strings.Index(status, "Not built") < strings.LastIndex(status, "workers 1/2") {
+	if strings.Count(status, "workers 1/2") != 3 || !strings.Contains(status, "--city p-Kommos --god asterion") || strings.Index(status, "Not built") < strings.LastIndex(status, "workers 1/2") {
 		t.Fatal(status)
 	}
 }

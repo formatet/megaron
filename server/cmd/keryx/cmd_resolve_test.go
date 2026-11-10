@@ -67,8 +67,8 @@ func TestResolveProvince_NoMatch(t *testing.T) {
 		if err == nil {
 			t.Fatal("expected error for unknown UUID, got nil")
 		}
-		if !strings.Contains(err.Error(), "keryx settlements") {
-			t.Errorf("expected actionable hint to run `keryx settlements`, got: %v", err)
+		if !strings.Contains(err.Error(), "keryx cities") {
+			t.Errorf("expected actionable hint to run `keryx cities`, got: %v", err)
 		}
 	})
 
@@ -167,4 +167,24 @@ func TestResolveUnitID(t *testing.T) {
 			}
 		}
 	})
+}
+
+// A wrong city name answers with the names of your own cities.
+func TestResolveProvince_WrongNameListsYourCities(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		if strings.HasSuffix(r.URL.Path, "/cities") {
+			_, _ = w.Write([]byte(`[{"settlement_id":"a","name":"Phaistos","own":true,"knowledge":"known","q":1,"r":2},` +
+				`{"settlement_id":"b","name":"Knossos","own":true,"knowledge":"known","q":3,"r":4},` +
+				`{"settlement_id":"c","name":"Korinth","own":false,"knowledge":"known","q":5,"r":6}]`))
+			return
+		}
+		_, _ = w.Write([]byte(`[]`))
+	}))
+	defer ts.Close()
+	c := newClient(&Config{Server: ts.URL})
+	_, err := resolveProvince(c, "world-1", "Phaestos")
+	if err == nil || !strings.Contains(err.Error(), "your cities: Knossos, Phaistos") || strings.Contains(err.Error(), "Korinth") {
+		t.Fatalf("error should list own cities only, got: %v", err)
+	}
 }

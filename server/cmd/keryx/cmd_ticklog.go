@@ -21,7 +21,7 @@ func ticklogCmd() *cobra.Command {
 		Aliases: []string{"journal"},
 		Short:   "Daily journal for a city: prod/cons, trade, builds (newest first)",
 		Example: `  keryx ticklog --last 10
-  keryx ticklog --province <province-id> --last 20 --asc`,
+  keryx ticklog --city <name> --last 20 --asc`,
 		// --province and --last are both plausible for a stray positional —
 		// no single one is the obvious guess.
 		Args: rejectPositionalArgs("province"),
@@ -113,6 +113,7 @@ func ticklogCmd() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVar(&provinceID, "province", "", "city name or province ID (default: your capital)")
+	addCityFlag(cmd, &provinceID, true, "province")
 	cmd.Flags().IntVar(&last, "last", 10, "number of most-recent game days to show")
 	cmd.Flags().BoolVar(&asc, "asc", false, "chronological order (oldest first)")
 	return cmd

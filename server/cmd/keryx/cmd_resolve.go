@@ -30,7 +30,7 @@ func resolveSettlement(c *Client, worldID, nameOrID string) (string, error) {
 			return sid, nil
 		}
 	}
-	return "", fmt.Errorf("no visible settlement named %q", nameOrID)
+	return "", fmt.Errorf("no visible settlement named %q%s", nameOrID, yourCitiesHint(c, worldID))
 }
 
 // resolveProvince looks up a province by province-UUID, settlement-UUID, name, or
@@ -84,9 +84,9 @@ func resolveProvince(c *Client, worldID, nameOrID string) (string, error) {
 	}
 
 	if len(nameOrID) == 36 && strings.Count(nameOrID, "-") == 4 {
-		return "", fmt.Errorf("no province/settlement with id %q you can see — run `keryx settlements`", nameOrID)
+		return "", fmt.Errorf("no province/settlement with id %q you can see — run `keryx cities`", nameOrID)
 	}
-	return "", fmt.Errorf("no visible province named %q", nameOrID)
+	return "", fmt.Errorf("no visible province named %q%s", nameOrID, yourCitiesHint(c, worldID))
 }
 
 // resolveUnitID resolves a --unit/--ship value to a full unit UUID. An
@@ -149,7 +149,7 @@ func resolveUnitID(c *Client, worldID, idOrPrefix string) (string, error) {
 func selectedProvince(c *Client, flag string, args []string) (string, error) {
 	if len(args) > 0 {
 		if flag != "" {
-			return "", fmt.Errorf("choose a city either positionally or with --province")
+			return "", fmt.Errorf("choose a city either positionally or with --city")
 		}
 		flag = args[0]
 	}

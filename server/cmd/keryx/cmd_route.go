@@ -67,7 +67,7 @@ func resolveOwnSettlement(c *Client, worldID, nameOrID string) (string, error) {
 			}
 		}
 	}
-	return "", fmt.Errorf("could not find your capital settlement — pass --from explicitly")
+	return "", fmt.Errorf("could not find your capital settlement — pass --city explicitly")
 }
 
 func routeCreateCmd() *cobra.Command {
@@ -77,7 +77,7 @@ func routeCreateCmd() *cobra.Command {
 		Use:   "route",
 		Short: "Create a standing order — a caravan that keeps a destination's stock topped up on its own",
 		Example: `  keryx route --to Colony --out grain:200
-  keryx route --from Petras --to Colony --out grain:200,fish:50 --home silver:0,stone:20 --crew from`,
+  keryx route --city Petras --to Colony --out grain:200,fish:50 --home silver:0,stone:20 --crew from`,
 		Args: noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if err := validateTransportBy(by); err != nil {
@@ -151,6 +151,7 @@ func routeCreateCmd() *cobra.Command {
 
 	cmd.Flags().SortFlags = false
 	cmd.Flags().StringVar(&fromName, "from", "", "source settlement name (default: your capital)")
+	addCityFlag(cmd, &fromName, false, "from")
 	cmd.Flags().StringVar(&toName, "to", "", "destination settlement name")
 	cmd.Flags().StringVar(&crewSide, "crew", "from", `which end supplies the gubbe: "from" or "to"`)
 	cmd.Flags().StringVar(&outSpec, "out", "", "outbound goods to keep topped up at the destination, e.g. grain:200,fish:50")

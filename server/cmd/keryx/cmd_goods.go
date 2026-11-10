@@ -16,9 +16,9 @@ func goodsCmd() *cobra.Command {
 	var provinceID string
 	cmd := &cobra.Command{
 		Use:   "goods",
-		Short: "Show goods inventory and production (defaults to capital; --province for a colony)",
+		Short: "Show goods inventory and production (defaults to capital; --city for another city)",
 		Example: `  keryx goods
-  keryx goods --province <province-id>   # inspect a colony`,
+  keryx goods --city <name>   # inspect a colony`,
 		Args: rejectPositionalArgs("province"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
@@ -125,6 +125,7 @@ func goodsCmd() *cobra.Command {
 	}
 	cmd.Flags().SortFlags = false
 	cmd.Flags().StringVar(&provinceID, "province", "", "province ID to inspect (default: your capital)")
+	addCityFlag(cmd, &provinceID, true, "province")
 	return cmd
 }
 
@@ -177,7 +178,7 @@ func transferCmd() *cobra.Command {
 		Short: "Send physical goods to your own city or a contacted foreign city as a gift, with nothing requested in return",
 		Example: `  keryx transfer --good grain --qty 50 --dest Korinth
   keryx transfer --good grain --qty 12 --good timber --qty 8 --dest Korinth
-  keryx transfer --from <colony> --good grain --qty 50 --dest Korinth   # pull a colony's surplus home
+  keryx transfer --city <colony> --good grain --qty 50 --dest Korinth   # pull a colony's surplus home
   keryx transfer --good grain --qty 50 --dest Korinth --again           # send a second identical caravan the same game day`,
 		// --good, --qty and --dest are all required — no single one is the
 		// obvious guess for a stray positional.
@@ -269,6 +270,7 @@ func transferCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&destName, "dest", "d", "", "destination settlement name")
 	cmd.Flags().StringVar(&provinceID, "province", "", "source province/settlement (default: your selected city; see status)")
 	cmd.Flags().StringVar(&provinceID, "from", "", "alias for --province")
+	addCityFlag(cmd, &provinceID, false, "province", "from")
 	_ = cmd.MarkFlagRequired("good")
 	_ = cmd.MarkFlagRequired("qty")
 	_ = cmd.MarkFlagRequired("dest")
