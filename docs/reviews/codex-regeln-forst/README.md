@@ -16,3 +16,18 @@ Removed or collapsed text, per article: first six words · reason.
 - "Forces groups ... Being in harbour" and "Marches lists your ordered marches ..." · screen description
 - "Older units, army and unit list commands" · history
 
+## buildings
+- "Open City → Buildings. The tab" · screen description (moved rule bullets to the lead)
+- "Construct shows the next wall greyed" · screen description
+- "The founding forecast tells you" · duplicate of [[founding]]
+- "You may build more than one" / "Building the same kind again" · example / duplicate of upgrade section
+- "Harbour levels 1, 2 and 3 open" · duplicate of [[harbour]] / [[fishing]]
+- "A building costs what it is made of: timber for ..." · screen description (prices are in Construct)
+- "The market has no workplaces and" · history (former market workers)
+- "If cancelling a queued build is refused" · screen description
+- "for a lumbermill use keryx place" · example
+- "In the Buildings tab press Demolish" · screen description
+- "The confirmation shows the actual loss" · screen description
+- "`keryx build --list [city]` ... Construction dispatches name" · screen description
+- The generated building table (`<!-- list: building -->`, about 250 words) is untouched and counts toward the cap.
+
