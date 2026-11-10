@@ -13,7 +13,11 @@ func TestUnitCancelTrainingUsesExactUnit(t *testing.T) {
 			defer func() { cfg, jsonMode = oldCfg, oldJSON }()
 			requests := 0
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				if r.Method != "POST" || r.URL.Path != "/api/v1/worlds/w/units/u/cancel-training" {
+				if r.Method == "GET" && r.URL.Path == "/api/v1/worlds/w/units" {
+					w.Write([]byte(`{"units":[{"id":"11111111-1111-1111-1111-111111111111","display_name":"Other"},{"id":"22222222-2222-2222-2222-222222222222","display_name":"Spearmen of Pylos"}]}`))
+					return
+				}
+				if r.Method != "POST" || r.URL.Path != "/api/v1/worlds/w/units/22222222-2222-2222-2222-222222222222/cancel-training" {
 					t.Errorf("unexpected %s %s", r.Method, r.URL.Path)
 				}
 				requests++
@@ -24,7 +28,7 @@ func TestUnitCancelTrainingUsesExactUnit(t *testing.T) {
 			cfg = &Config{Server: srv.URL, WorldID: "w"}
 			jsonMode = jsonOutput
 			cmd := unitCancelTrainingCmd()
-			if err := cmd.Flags().Set("unit", "u"); err != nil {
+			if err := cmd.Flags().Set("unit", "spearmen of pylos"); err != nil {
 				t.Fatal(err)
 			}
 			if err := cmd.RunE(cmd, nil); err != nil {

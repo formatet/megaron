@@ -104,6 +104,10 @@ func formatStorms(data []byte, clients ...*Client) (string, error) {
 	return b.String(), nil
 }
 
+// stormsPointer is the one line the sea verbs print so an agent knows where to
+// look before it sends something over open water.
+const stormsPointer = "Storms drift over open water — `keryx storms` shows the ones your people have seen."
+
 func shortID(id string) string {
 	if len(id) > 8 {
 		return id[:8]

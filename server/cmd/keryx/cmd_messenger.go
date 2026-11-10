@@ -198,6 +198,7 @@ func passageCmd() *cobra.Command {
 			if w, _ := resp["storm_warning"].(string); w != "" {
 				fmt.Println("⚠ " + w)
 			}
+			fmt.Println(stormsPointer)
 			return nil
 		},
 	}
