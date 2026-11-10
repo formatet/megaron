@@ -12,3 +12,8 @@ Cost: up to four extra GETs per transfer (world tick, destinations, provinces, t
 Tests: `cmd/keryx/transfer_dubblett_test.go`. Existing transfer test mocks (caravan_time, gift, haiku6, transfer_manifest) were taught to answer the new GETs.
 Mutants (each reverted): tick comparison neutralised -> `TestTransferNotIdenticalSends` "earlier" red; qty ignored -> same test "qty" red;
 `--again` ignored -> `TestTransferDuplicateAgainFlagSends` red.
+
+## Opus review (2026-11-10)
+- Own mutant: destination comparison removed → `transfer_dubblett_test.go:84` red (dest case). Killed.
+- Own mutant: `m.Role != "sender"` removed → **survives**. Only observable when a foreign city shares your origin city's name and
+  sends the same goods to the same destination this tick — the name-collision case flagged above. Accepted, not tested.
