@@ -4,7 +4,7 @@ Forces are the soldiers, ships and people you command.
 - Each force needs its building: Barracks, Stable or Shipyard (Foundry for Bronze Guard and War Galleys).
 - Every force eats each game day; Bronze Guard, chariots and War Galleys also draw silver.
 - Home service costs half the field pay.
-- Open the **War (⚔)** drawer: **Forces**, **Recruit**, **Marches**. <!-- src: server/internal/unit catalogue; reference.json units -->
+- Open the **War (⚔)** drawer: **Forces**, **Recruit**, **Marches**. <!-- src: server/internal/unit catalogue; reference.json -->
 
 ## Recruitment costs and requirements {#units-recruiting}
 
