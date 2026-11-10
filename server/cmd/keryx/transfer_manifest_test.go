@@ -59,6 +59,10 @@ func TestTransferRepeatedFlagsSendOneManifest(t *testing.T) {
 			json.NewEncoder(w).Encode(map[string]any{"category": "naval", "ship_name": "Naia", "cargo_capacity": 20})
 			return
 		}
+		if r.Method != "POST" {
+			json.NewEncoder(w).Encode([]any{})
+			return
+		}
 		posts++
 		var body struct {
 			Items []transferItem `json:"items"`

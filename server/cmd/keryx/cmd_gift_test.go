@@ -18,6 +18,10 @@ func TestGiftTransferResolvesContactedForeignCity(t *testing.T) {
 			json.NewEncoder(w).Encode(map[string]any{"category": "land"})
 			return
 		}
+		if r.Method == "GET" && (strings.HasSuffix(r.URL.Path, "/trades") || strings.HasSuffix(r.URL.Path, "/provinces")) {
+			json.NewEncoder(w).Encode([]any{}) // duplicate-transfer guard lookups
+			return
+		}
 		calls++
 		if r.Header.Get("Authorization") != "Bearer token" {
 			t.Error("missing auth")
@@ -48,7 +52,7 @@ func TestGiftTransferResolvesContactedForeignCity(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if calls != 2 || !strings.Contains(out, "Gift dispatched") || !strings.Contains(out, "arrives "+testTickTime(42)) {
+	if calls != 3 || !strings.Contains(out, "Gift dispatched") || !strings.Contains(out, "arrives "+testTickTime(42)) {
 		t.Fatalf("calls=%d output=%s", calls, out)
 	}
 }

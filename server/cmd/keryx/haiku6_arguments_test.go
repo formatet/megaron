@@ -91,6 +91,8 @@ func TestHaiku6TransferSelectedColonyAndExplicitSource(t *testing.T) {
 		switch {
 		case r.Method == "GET" && r.URL.Path == "/api/v1/worlds/world/provinces":
 			json.NewEncoder(w).Encode(markers)
+		case r.Method == "GET" && strings.HasSuffix(r.URL.Path, "/trades"):
+			json.NewEncoder(w).Encode([]any{})
 		case r.Method == "GET" && strings.HasSuffix(r.URL.Path, "/trade/preview"):
 			json.NewEncoder(w).Encode(map[string]any{"category": "land"})
 		case r.Method == "GET" && strings.HasSuffix(r.URL.Path, "/trade/destinations"):
