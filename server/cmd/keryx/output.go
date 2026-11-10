@@ -49,7 +49,9 @@ func rate(v float64) string {
 // Duration formatting uses days of the world.
 func formatDays(value any, precision ...string) string {
 	number := fmt.Sprint(value)
-	if len(precision) > 0 {
+	if f, isFloat := value.(float64); isFloat && (len(precision) == 0 || precision[0] == "%g") {
+		number = oneDecimal(f) // no 359.9999 leaks
+	} else if len(precision) > 0 {
 		number = fmt.Sprintf(precision[0], value)
 	}
 	qualifier := ""
@@ -235,4 +237,9 @@ func printSupersededOrderNote(resp map[string]any) {
 		return
 	}
 	fmt.Printf("  %d earlier unboarded orders withdrawn; their Runners are walking home.\n", len(ids))
+}
+
+// oneDecimal prints a quantity with at most one decimal: 12 -> "12", 359.9999 -> "360", 2.54 -> "2.5".
+func oneDecimal(v float64) string {
+	return strconv.FormatFloat(math.Round(v*10)/10, 'f', -1, 64)
 }

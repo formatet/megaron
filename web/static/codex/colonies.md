@@ -20,7 +20,7 @@ Every active city, including your capital, counts toward [[kharis|upkeep of the 
 
 ## Abandoning a colony {#colonies-abandoning-a-colony}
 
-Open **War → Recruit → Abandon settlement**, choose the colony and press **Abandon**. The confirmation appears in the same row: press **Abandon** there to give it up, or **Keep settlement** to cancel. This cannot be undone. In Keryx, use `abandon --settlement <settlement-id>`.
+Open **War → Recruit → Abandon settlement**, choose the colony and press **Abandon**. The confirmation appears in the same row: press **Abandon** there to give it up, or **Keep settlement** to cancel. This cannot be undone. In Keryx, use `abandon --city <city>`.
 
 You can abandon only an active colony you own. **Your capital cannot be abandoned.** The colony leaves your realm, its garrison is disbanded, and troops aboard ships in that garrison are disbanded too. Its people do not move to your capital. The ground becomes open for founding again, and you regain a settlement slot.
 

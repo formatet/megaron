@@ -55,4 +55,4 @@ A **Galley carries 20** goods and an **Emporos 120**, of any kind; one good take
 
 ## Forces, Marches and commerce {#units-forces-and-marches}
 
-**Forces** groups your roster as **Land Forces**, **Ships** and, only while you have a Nomadic Host, **People**. A ship bound to a standing route stays under Ships and names its route. Automated trade is under **Economy → Routes & cargo** ([[routes]], [[transfers]]). `keryx forces` shows the same roster.
+**Forces** groups your roster as **Land Forces**, **Ships** and, only while you have a Nomadic Host, **People**. A ship bound to a standing route stays under Ships and names its route. Automated trade is under **Economy → Routes & cargo** ([[routes]], [[transfers]]). `keryx army` shows the same roster.

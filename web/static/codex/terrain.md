@@ -25,3 +25,5 @@ Every hex of the world has one kind of ground. The ground decides what your [[ci
 <!-- /list -->
 
 How long each kind of ground takes to cross is in [[marching]]. What lies under the ground ([[copper|copper]], [[incense|incense]], [[silver|silver]], [[tin|tin]]) is marked on the hex itself; see [[goods]] and [[bronze]].
+
+**Who can enter what.** No force can enter mountains (limestone or red). Land forces walk plain, hills, olive groves, cedar forest, maquis, semi-desert, river valley and delta. They cannot enter sea or river: a river is a wall, except at a [[river-ford|ford]], which carries one hex of about every ten of a river's length. Ships sail coastal and deep water and rivers, and may pass a ford too. They dock at your coastal cities or harbours; other land is closed to them. Travel times are in [[marching]].

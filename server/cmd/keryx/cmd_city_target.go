@@ -53,7 +53,12 @@ func resolveCityTarget(cmd *cobra.Command, c *Client, to, target string, q, r in
 		}
 		name := strings.TrimSpace(to)
 		if name == "" {
-			return 0, 0, "", false, fmt.Errorf("--to needs a city name")
+			return 0, 0, "", false, fmt.Errorf("--to needs a city name or q,r")
+		}
+		if strings.Contains(name, ",") {
+			if hq, hr, perr := parseQR(name); perr == nil { // --to 5,-3 is a hex
+				return hq, hr, "", true, nil
+			}
 		}
 		cities, err := destinationCities(c, cfg.WorldID)
 		if err != nil {
@@ -152,5 +157,15 @@ func addCityFlag(cmd *cobra.Command, target *string, withPositional bool, hide .
 			args = nil
 		}
 		return orig(cmd, args)
+	}
+}
+
+// hideHexFlags keeps --q/--r/--target working but leaves them out of --help:
+// `--to <city|q,r>` is the one documented destination form.
+func hideHexFlags(cmd *cobra.Command) {
+	for _, name := range []string{"q", "r", "target"} {
+		if f := cmd.Flags().Lookup(name); f != nil {
+			f.Hidden = true
+		}
 	}
 }

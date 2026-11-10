@@ -150,7 +150,7 @@ func describeReading(b map[string]any) string {
 		}
 		s += " (read " + clockTime(at)
 		if days, ok := b["read_game_days_ago"].(float64); ok {
-			s += fmt.Sprintf(", %g game days ago", days)
+			s += ", " + formatDays(days) + " ago"
 		}
 		s += ")"
 	}

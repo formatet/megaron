@@ -153,7 +153,7 @@ func routeCreateCmd() *cobra.Command {
 	cmd.Flags().StringVar(&fromName, "from", "", "source settlement name (default: your capital)")
 	addCityFlag(cmd, &fromName, false, "from")
 	cmd.Flags().StringVar(&toName, "to", "", "destination settlement name")
-	cmd.Flags().StringVar(&crewSide, "crew", "from", `which end supplies the gubbe: "from" or "to"`)
+	cmd.Flags().StringVar(&crewSide, "crew", "from", `which end supplies the citizens: "from" or "to"`)
 	cmd.Flags().StringVar(&outSpec, "out", "", "outbound goods to keep topped up at the destination, e.g. grain:200,fish:50")
 	cmd.Flags().StringVar(&homeSpec, "home", "", "return goods to bring home, leaving at least this much behind, e.g. silver:0,stone:20")
 	_ = cmd.MarkFlagRequired("to")

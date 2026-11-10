@@ -189,6 +189,7 @@ func recruitCmd() *cobra.Command {
 	cmd.Flags().IntVarP(&men, "men", "n", 100, "deprecated, no effect — land recruits always draft a full 100-man cohort now; ignored for ships")
 	cmd.Flags().IntVarP(&count, "count", "c", 1, "number of vessels to build in one call (ships only, 1–20)")
 	cmd.Flags().StringVar(&name, "name", "", "ship name (ships only; omit for a suggested name)")
+	_ = cmd.Flags().MarkHidden("men")
 	cmd.Flags().BoolVar(&list, "list", false, "show the recruitable-unit catalogue and exit")
 	return cmd
 }

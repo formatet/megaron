@@ -16,7 +16,7 @@ The menu estimates each unit's arrival **before you send**, from the current rou
 
 If a [[messengers|messenger]] must first deliver the order, or the destination is unexplored, the forecast says why arrival is not yet known. The **Sold** line shows the forces' [[silver|silver]] drain at home and in the field and how long the treasury lasts ([[spearmen|spearmen]] show **0 → 0**).
 
-Keryx: `march --unit <id> --target q,r --preview`; omit `--preview` to send. `--unit` also accepts an exact unit name.
+Keryx: `march --unit <id> --to q,r --preview`; omit `--preview` to send. `--unit` also accepts an exact unit name.
 
 **Destination city** lists your own cities, then cities you have seen, remembered or contacted; a city known only by rumour is not a destination.
 
@@ -42,6 +42,7 @@ Recall and redirect need a passable route from the unit's position; otherwise th
 
 - **A plain march only reaches ground your people have already seen.** On an unseen hex the menu offers **Explore** instead ([[sight]]).
 - Crossing the sea needs ships ([[sea]]); a march that cannot go on stalls and you are told why.
+- Which terrain each kind of force can enter: [[terrain]].
 
 ## Forces travelling on a route {#marching-on-the-road}
 
@@ -55,7 +56,7 @@ Choose **Explore**; **More** changes the duration in **game days**. The chosen h
 
 If the chosen hex cannot be reached from the unit's position, the order is refused; no other destination is substituted. A ship prefers unseen coastal water over open sea.
 
-Keryx: `unit march --unit <id> --target q,r --intent explore --ticks N` (`--preview` checks only). Exploration routes cross unknown ground, so their arrival forecast stays unavailable.
+Keryx: `unit march --unit <id> --to q,r --intent explore --ticks N` (`--preview` checks only). Exploration routes cross unknown ground, so their arrival forecast stays unavailable.
 
 ## Land terrain and travel time {#marching-terrain-and-journey-time}
 

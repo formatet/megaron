@@ -56,7 +56,7 @@ func unusedCatchmentDeposits(catchmentDeposits []any, buildings []any) []string 
 func incenseInCatchmentLine(catchmentDeposits []any) string {
 	for _, d := range catchmentDeposits {
 		if ds, _ := d.(string); ds == "incense" {
-			return "Incense lies in the catchment - no building needed: place gubbar on its hex (`keryx place incense <ordinal>`, see `keryx city`). Offered at a rite it moves the odds further than any other gift."
+			return "Incense lies in the catchment - no building needed: place citizens on its hex (`keryx place incense <ordinal>`, see `keryx city`). Offered at a rite it moves the odds further than any other gift."
 		}
 	}
 	return ""
@@ -440,7 +440,7 @@ func capitalize(s string) string {
 func buildQueueState(c *Client, m map[string]any) string {
 	if act, ok := m["active"].(bool); ok && !act {
 		left, _ := m["work_left_game_days"].(float64)
-		return fmt.Sprintf("next in line · %g game days of work once it starts", left)
+		return fmt.Sprintf("next in line · %s of work once it starts", formatDays(left))
 	}
 	ca, _ := m["complete_at"].(string)
 	eta := buildQueueETA(c, ca)

@@ -49,9 +49,9 @@ interception can prevent that delivery.
 
 In Keryx, `transfer` sends from your **selected city**, which may be a [[colonies|colony]].
 Check it with `keryx status`, or choose the sending city explicitly:
-`keryx transfer --from Knossos --dest Mallia --good grain --qty 50`.
+`keryx transfer --city Knossos --dest Mallia --good grain --qty 50`.
 The sending city cannot also be the destination. A rejected self-transfer sends
-nothing; use `--from` to choose the other city you meant to send from.
+nothing; use `--city` to choose the other city you meant to send from.
 
 ### Port approaches and mixed cargo {#transfers-route-and-journey-time-2}
 

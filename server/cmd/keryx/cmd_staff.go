@@ -19,7 +19,7 @@ import (
 func staffCmd() *cobra.Command {
 	var provinceID, god string
 	cmd := &cobra.Command{
-		Use:   "staff <byggnad> [+n|-n]",
+		Use:   "staff <building> [+n|-n]",
 		Short: "Show a named building workplace, or place/remove citizens with +n/-n",
 		Long: `<building> is a city workplace (e.g. olive_press). Hex buildings use place. +n places n more idle
 citizens there; -n returns n citizens to the idle pool. The building name is required. Omit the delta to just
