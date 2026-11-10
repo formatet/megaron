@@ -5,44 +5,9 @@ import (
 	"testing"
 )
 
-// TestPrayerCatalog_AllCulturesHaveThreePrayers verifies each culture has exactly
-// oracle, harvest_blessing, and battle_frenzy entries.
-func TestPrayerCatalog_AllCulturesHaveThreePrayers(t *testing.T) {
-	wantEffects := map[string]bool{
-		EffectOracleRevealDeposits: true,
-		EffectHarvestBlessing:      true,
-		EffectBattleFrenzy:         true,
-	}
-	for culture, ids := range CulturePrayers {
-		if culture == "minoan" {
-			continue
-		}
-		if len(ids) != 3 {
-			t.Errorf("culture %q: want 3 prayers, got %d", culture, len(ids))
-		}
-		seen := map[string]bool{}
-		for _, id := range ids {
-			spec, ok := PrayerSpecs[id]
-			if !ok {
-				t.Errorf("culture %q: prayer %q not in PrayerSpecs", culture, id)
-				continue
-			}
-			if !wantEffects[spec.EffectType] {
-				t.Errorf("culture %q: prayer %q has unknown effect type %q", culture, id, spec.EffectType)
-			}
-			seen[spec.EffectType] = true
-		}
-		for effect := range wantEffects {
-			if !seen[effect] {
-				t.Errorf("culture %q: missing prayer with effect %q", culture, effect)
-			}
-		}
-	}
-}
-
-// TestAllCulturesPresent verifies all six Bronze Age cultures have a prayer list.
+// TestAllCulturesPresent verifies the one playable culture has a prayer list.
 func TestAllCulturesPresent(t *testing.T) {
-	wantCultures := []string{"akhaier", "khemetiu", "knaani", "thrakes", "minoan", "hatti"}
+	wantCultures := []string{"minoan"}
 	for _, c := range wantCultures {
 		if _, ok := CulturePrayers[c]; !ok {
 			t.Errorf("missing prayer list for culture %q", c)
@@ -61,19 +26,14 @@ func TestCultureGate_AllowsOwnPrayer(t *testing.T) {
 	}
 }
 
-// TestCultureGate_RejectsOtherCulturePrayer verifies that a prayer from one culture
-// is rejected for a different culture — the 403 gate.
+// TestCultureGate_RejectsOtherCulturePrayer: a culture without a catalogue
+// (the five historical ones were removed 2026-11-10) casts nothing.
 func TestCultureGate_RejectsOtherCulturePrayer(t *testing.T) {
-	// Hatti should not be able to cast a Kna'ani prayer.
-	hattiAllowed := AllowedForCulture("hatti", "knaani_oracle_deposits")
-	if hattiAllowed {
-		t.Error("AllowedForCulture(hatti, knaani_oracle_deposits) = true, want false")
+	if AllowedForCulture("hatti", PrayerPotniaWalls) {
+		t.Error("AllowedForCulture(hatti, minoan prayer) = true, want false")
 	}
-
-	// Akhaier should not be able to cast a Khemetiu prayer.
-	akhaierAllowed := AllowedForCulture("akhaier", "khemetiu_battle_frenzy")
-	if akhaierAllowed {
-		t.Error("AllowedForCulture(akhaier, khemetiu_battle_frenzy) = true, want false")
+	if len(CulturePrayers) != 1 {
+		t.Errorf("CulturePrayers has %d cultures, want only minoan", len(CulturePrayers))
 	}
 }
 

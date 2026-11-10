@@ -36,3 +36,9 @@ test('silver can go on the board, in alphabetical place, once', () => {
   assert.ok(buys.indexOf('"silver"') < buys.indexOf('"tin"'), 'silver sorts before tin');
   assert.equal((buys.match(/value="silver"/g) || []).length, 1);
 });
+
+test('a good written on an old board stays visible even when it is no longer tradeable', () => {
+  const goods = [{ key: 'tin', name: 'Tin' }];
+  const html = ownBoardHTML({ buys: [], sells: ['pottery'], max_goods: 1, reach: 2 }, goods, 's1');
+  assert.match(html, /<option value="pottery" selected>pottery<\/option>/);
+});

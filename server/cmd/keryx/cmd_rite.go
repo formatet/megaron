@@ -383,7 +383,6 @@ func riteCmd() *cobra.Command {
 	var scope string
 	var list bool
 	var yes bool
-	var offerMultiplier float64
 	var offer string
 
 	cmd := &cobra.Command{
@@ -421,8 +420,7 @@ func riteCmd() *cobra.Command {
 			}
 
 			// --list: show this culture's available prayers (id + affordability) from
-			// the province status endpoint, which exposes `available_prayers`. Works for
-			// any culture — no hardcoded akhaier_* IDs.
+			// the province status endpoint, which exposes `available_prayers`.
 			if list {
 				return listRealmPrayers(c, settlementID)
 			}
@@ -547,7 +545,7 @@ func riteCmd() *cobra.Command {
 			// a terminal — an unanswered prompt would otherwise hang the agent harness.
 			autoConfirm := yes || jsonMode || !stdinIsTerminal()
 			if !autoConfirm {
-				confirmed, err := confirmRiteCast(c, markers, settlementID, prayerID, scope, offerMultiplier, composed)
+				confirmed, err := confirmRiteCast(c, markers, settlementID, prayerID, scope, composed)
 				if err != nil {
 					return err
 				}
@@ -567,9 +565,6 @@ func riteCmd() *cobra.Command {
 			}
 			if targetID != "" {
 				body["target"] = targetID
-			}
-			if offerMultiplier != 0 {
-				body["offer_multiplier"] = offerMultiplier
 			}
 			// Composed offering: bring what you judge worthy instead of the
 			// prayer's inherited recipe. Worth is the fixed divine value times this
@@ -639,8 +634,6 @@ func riteCmd() *cobra.Command {
 	cmd.Flags().BoolVar(&yes, "yes", false, "skip the pre-cast confirmation (required for non-interactive/agent use)")
 	cmd.Flags().StringVar(&offer, "offer", "",
 		"composed offering, e.g. --offer wine=20,oil=10 — worth at least the traditional offering; the gods value what the world is short of")
-	cmd.Flags().Float64Var(&offerMultiplier, "offer-multiplier", 0,
-		"scale the material offering (0.5-2.0) of an old prayer without a god; everyday prayers always take their traditional offering")
 	return cmd
 }
 
@@ -649,7 +642,7 @@ func riteCmd() *cobra.Command {
 // is consumed even on a miss, and that has no other warning (A7). Returns false
 // (no error) if the player declines. Never shows a computed success percentage —
 // only the gods' mood (Timothy 2026-07-11 hard invariant).
-func confirmRiteCast(c *Client, markers []map[string]any, settlementID, prayerID, scope string, offerMultiplier float64, composed map[string]float64) (bool, error) {
+func confirmRiteCast(c *Client, markers []map[string]any, settlementID, prayerID, scope string, composed map[string]float64) (bool, error) {
 	if markers == nil {
 		provs, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces", cfg.WorldID))
 		if err != nil {
@@ -721,9 +714,6 @@ func confirmRiteCast(c *Client, markers []map[string]any, settlementID, prayerID
 	fmt.Printf("Offer: %s\n", formatOffering(previewGift))
 	if line := offerFoodText(previewGift, p.Settlement.Food.Goods, p.Settlement.Food.ConsumptionPerTick, p.Settlement.Name); line != "" {
 		fmt.Println(line)
-	}
-	if len(composed) == 0 && chosen.GodID == "" && offerMultiplier != 0 && offerMultiplier != 1 {
-		fmt.Printf("Offer multiplier: %.2fx — changes the offering and the gods' response.\n", offerMultiplier)
 	}
 	fmt.Println(prayerPaymentText(*chosen))
 	return askYesNo("Cast?")

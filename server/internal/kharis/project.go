@@ -10,7 +10,7 @@ import (
 )
 
 // ProjectDailyNet computes, read-only, the kharis a Wanax would net on the NEXT
-// maintained day: effective temple weight × KharisPerTempleWeight × scarcity (locked 1) −
+// maintained day: effective temple weight × KharisPerTempleWeight −
 // dailyDecay below the ceiling. Above it, only ordinary decay applies;
 // offerings cannot offset that drift. This matches processMaintenance, with the same
 // feeding rule (early grain reference or local substitutions to the same divine worth).
@@ -65,7 +65,6 @@ func ProjectDailyNet(ctx context.Context, pool *pgxpool.Pool, playerID, worldID 
 	}
 
 	values, _ := religion.LoadDivineValues(ctx, pool, worldID)
-	scarcity := lockedTempleScarcity // same factor as the tick (templeOfferScarcity)
 	effectiveWeight := projectEffectiveWeight(ctx, pool, playerID, worldID, values)
 
 	// Read current standing and ceiling using the same realm temples as the tick.
@@ -80,27 +79,8 @@ func ProjectDailyNet(ctx context.Context, pool *pgxpool.Pool, playerID, worldID 
 	if amount > EffectiveKharisCap(recordCap, maxLevel) {
 		return -dailyDecay, true, devotionSum, devotionCapacity, nil
 	}
-	gain := effectiveWeight * KharisPerTempleWeight * scarcity
+	gain := effectiveWeight * KharisPerTempleWeight
 	return gain - dailyDecay, true, devotionSum, devotionCapacity, nil
-}
-
-// scarcityFromValues is the parked scarcity-derived temple factor (before
-// 2026-10-31 both the tick and this projection read it). Unused until the
-// scarcity price list returns (todo SENARE [C]).
-func scarcityFromValues(values, baseValues map[string]float64, err error) float64 {
-	if err != nil || len(values) == 0 {
-		return 1.0
-	}
-	offering := templeOfferingRecipe()
-	var divine, base float64
-	for good, amount := range offering {
-		divine += amount * values[good]
-		base += amount * baseValues[good]
-	}
-	if base <= 0 || divine <= 0 {
-		return 1.0
-	}
-	return clampTempleScarcity(divine / base)
 }
 
 // projectEffectiveWeight sums the same per-part tithe and staffing plan as the tick.
@@ -118,8 +98,8 @@ func projectEffectiveWeight(ctx context.Context, pool *pgxpool.Pool, playerID, w
 
 // DecayProjection is the authoritative breakdown of realm cult upkeep.
 type DecayProjection struct {
-	CityCount, Population          int
-	Base, Cities, Residents, Total float64
+	CityCount, Population int
+	Base, Cities, Total   float64
 }
 
 // ProjectDecay reads population from the same non-ended settlements as food,
@@ -133,7 +113,6 @@ func ProjectDecay(ctx context.Context, pool *pgxpool.Pool, playerID, worldID uui
 	}
 	d.Base = 0
 	d.Cities = cityDecay(d.CityCount)
-	d.Residents = populationDecay(d.Population)
 	d.Total = computeDailyDecay(d.CityCount, d.Population)
 	return d, nil
 }

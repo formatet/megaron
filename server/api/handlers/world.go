@@ -249,10 +249,6 @@ func (h *WorldHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := religion.InitializeLaborValuations(r.Context(), h.pool, id); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not initialize labor valuations")
-		return
-	}
 	writeJSON(w, http.StatusCreated, map[string]any{"id": id, "map_seed": effSeed})
 }
 

@@ -49,7 +49,7 @@ test('a null/undefined payload draws nothing, crashes nothing', () => {
 
 
 test('realm upkeep is one short line from the authoritative total, including templeless realms; demand/given likewise', () => {
-  const pd = {kharis_city_count: 5, kharis_base_decay: 0.1, kharis_city_decay: 1, kharis_daily_decay: 1.1, kharis_population:2500, kharis_population_decay:.25,
+  const pd = {kharis_city_count: 5, kharis_base_decay: 0.1, kharis_city_decay: 1, kharis_daily_decay: 1.1, kharis_population:2500, 
     kharis_net_known: true, kharis_net_per_tick: -1.1, temple_offers: []};
   // With a known net, upkeep sits inside the game-day block; alone it stands on its own row.
   assert.equal(kharisDecayHTML(pd), '');

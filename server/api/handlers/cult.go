@@ -111,7 +111,7 @@ func (h *ProvinceHandler) Cult(w http.ResponseWriter, r *http.Request) {
 		"kharis_mood": kharisToMood(k.Amount), "kharis_standing": kharis.DescribeStanding(k.Amount, has, wrath.ProtectionRemainingDays),
 		"kharis_wrath": wrath, "kharis_blessing_threshold": kharis.BlessThreshold, "kharis_city_count": decay.CityCount,
 		"kharis_population": decay.Population, "kharis_base_decay": decay.Base, "kharis_city_decay": decay.Cities,
-		"kharis_population_decay": decay.Residents, "kharis_daily_decay": decay.Total, "kharis_net_per_tick": net,
+		"kharis_daily_decay": decay.Total, "kharis_net_per_tick": net,
 		"kharis_net_known": true, "kharis_production_per_tick": net + decay.Total, "kharis_demand": kharis.RealmDemand(decay.CityCount), "kharis_given_weight": kharis.GivenWeight(offers),
 		"kharis_devotion_idle": has && cap > dev, "temple_staffed": staffed, "temple_capacity": capacity, "temple_offers": offers, "divine_values": values,
 	}}

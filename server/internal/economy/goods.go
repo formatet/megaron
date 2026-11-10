@@ -25,10 +25,7 @@ const (
 	GoodOil       = "oil"
 	GoodIncense   = "incense"
 	GoodLivestock = "livestock"
-	GoodHorses    = "horses"
 	GoodBronze    = "bronze"
-	GoodPurple    = "purple"
-	GoodPottery   = "pottery"
 	GoodCult      = "cult" // internal staffing role/FK anchor; never produced or stocked
 )
 

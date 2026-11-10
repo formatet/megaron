@@ -24,7 +24,7 @@ func TestStatusRealmKharisDecay(t *testing.T) {
 						"name": "Mycenae", "population": 1000, "labor_pool": 1000, "resources": map[string]any{},
 						"kharis": 40, "kharis_cap": 40, "kharis_mood": "Indifferent", "kharis_per_tick": 0,
 						"kharis_net_known": true, "kharis_net_per_tick": -tc.total,
-						"kharis_population": 2500, "kharis_population_decay": .25, "kharis_production_per_tick": 2.1, "kharis_per_temple_worker": 1.05, "kharis_city_count": tc.cities, "kharis_base_decay": tc.base, "kharis_city_decay": tc.burden, "kharis_daily_decay": tc.total,
+						"kharis_population": 2500, "kharis_production_per_tick": 2.1, "kharis_per_temple_worker": 1.05, "kharis_city_count": tc.cities, "kharis_base_decay": tc.base, "kharis_city_decay": tc.burden, "kharis_daily_decay": tc.total,
 						"temple_offers": []any{},
 					}})
 				} else {

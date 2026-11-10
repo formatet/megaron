@@ -146,9 +146,6 @@ func TestSilverCalibrationOfferWorkAndLegacyPayloadRead(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := religion.InitializeLaborValuations(ctx, f.pool, f.world); err != nil {
-		t.Fatal(err)
-	}
 	values, err := religion.LoadDivineValues(ctx, f.pool, f.world)
 	if err != nil {
 		t.Fatal(err)

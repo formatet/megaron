@@ -42,7 +42,7 @@ func TestPopulationBurdenFullTickMatchesProjection(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if d.CityCount != 3 || d.Population != 3500 || math.Abs(d.Residents) > 1e-10 || math.Abs(d.Total-2) > 1e-10 {
+	if d.CityCount != 3 || d.Population != 3500 || math.Abs(d.Total-2) > 1e-10 {
 		t.Fatalf("bad breakdown %+v", d)
 	}
 	if _, err := pool.Exec(ctx, `UPDATE settlements SET state='collapsed' WHERE id=$1`, b); err != nil {

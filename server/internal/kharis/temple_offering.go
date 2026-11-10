@@ -16,7 +16,6 @@ import (
 )
 
 // TempleOfferingGrain is the standing reference gift per temple and tick.
-// The level-one grain part also sets the scarcity reference.
 const TempleOfferingGrain = 0.25
 
 // Only food/wood may substitute for the grain part. Other parts are independent.
@@ -51,10 +50,6 @@ func richAmount(level int, god, good string, values map[string]float64) float64 
 		return 0
 	}
 	return richOfferingShare * TempleOfferingGrain * float64(level*level) * values["grain"] / v
-}
-
-func templeOfferingRecipe() map[string]float64 {
-	return map[string]float64{"grain": TempleOfferingGrain}
 }
 
 // TempleOffer is the actual next-tick plan, shared by status and maintenance.

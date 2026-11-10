@@ -38,8 +38,10 @@ export function readingHTML(board) {
 }
 
 function lineSelects(line, chosen, goods, max) {
+  // A good on an old board that is no longer tradeable stays visible as written.
   const opts = sel => ['<option value="">—</option>', ...goods.map(g =>
-    `<option value="${esc(g.key)}"${g.key === sel ? ' selected' : ''}>${esc(g.name || g.key)}</option>`)].join('');
+    `<option value="${esc(g.key)}"${g.key === sel ? ' selected' : ''}>${esc(g.name || g.key)}</option>`),
+    ...(sel && !goods.some(g => g.key === sel) ? [`<option value="${esc(sel)}" selected>${esc(sel)}</option>`] : [])].join('');
   return Array.from({ length: max }, (_, i) =>
     `<select class="build-select market-board-select" data-board-line="${line}">${opts(chosen[i] || '')}</select>`).join('');
 }

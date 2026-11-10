@@ -117,10 +117,6 @@ type wanaxSnap struct {
 
 // Handle processes a KharisTick scheduled event.
 func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
-	// ── 0. (retired) The daily scarcity reprice stopped 2026-10-31: the gods
-	// keep a fixed price list (religion.FixedDivineValues). The scarcity code is
-	// parked, not called.
-
 	// ── 1. Kharis maintenance: one tick per player_world_record ────────────
 	rows, err := h.pool.Query(ctx,
 		`SELECT pwr.player_id, s.id AS capital_id,
@@ -241,7 +237,6 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 // computeDailyDecay depends only on active city count; population never contributes.
 func computeDailyDecay(cityCount, _ int) float64 { return KharisPerDemand * RealmDemand(cityCount) }
 func cityDecay(cityCount int) float64            { return computeDailyDecay(cityCount, 0) }
-func populationDecay(_ int) float64              { return 0 }
 
 // kharisCapPerTempleLevel — the grandest temple a Wanax has built sets how close
 // to the gods they can come. Ceiling = kharisCapPerTempleLevel × (1 + max temple
@@ -407,10 +402,8 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 		offerFed, offerTotal, effectiveWeight = h.applyTempleOffering(ctx, w.playerID, worldID)
 		offerFraction = computeOfferFraction(offerFed, offerTotal)
 
-		// Locked at 1 since the fixed price list (Timothy 2026-10-31).
-		scarcity := h.templeOfferScarcity(ctx, worldID)
 		// Each temple's workers count only when that temple was fed (ORDER 15).
-		gain = effectiveWeight * KharisPerTempleWeight * scarcity
+		gain = effectiveWeight * KharisPerTempleWeight
 
 		_, _ = h.store.Append(ctx, w.settlementID, events.StreamProvince, "KharisOfferingV2",
 			map[string]any{
@@ -419,7 +412,6 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 				"offer_fraction":      offerFraction,
 				"temple_workers":      w.devotionSum,
 				"effective_weight":    effectiveWeight,
-				"scarcity_factor":     scarcity,
 				"valuation_version":   religion.LaborValuationVersion,
 				"offering_value_unit": religion.LaborValueUnit,
 				"staffed_workers":     devotionGain,
@@ -1680,30 +1672,3 @@ func (h *TickHandler) addDivineGossip(ctx context.Context, settlementID, worldID
 		worldID, *ownerID, name, category, text,
 	)
 }
-
-// templeOfferScarcity is locked at 1 (Timothy 2026-10-31): with the gods'
-// fixed price list there is no world scarcity left to reward, and the factor
-// would only follow grain's listed price. The old scarcity-derived factor
-// (scarcityFromValues) is parked with the scarcity price list.
-func (h *TickHandler) templeOfferScarcity(ctx context.Context, worldID uuid.UUID) float64 {
-	return lockedTempleScarcity
-}
-
-// lockedTempleScarcity is the standing cult's scarcity factor since 2026-10-31.
-const lockedTempleScarcity = 1.0
-
-// clampTempleScarcity bounds what a shortage can be worth to a temple. Pure, so
-// the bound is testable without a rig: abundance never PUNISHES a tended temple
-// (it simply stops paying extra), and a scarcity spike can never mint kharis.
-func clampTempleScarcity(factor float64) float64 {
-	if factor < 1.0 {
-		return 1.0
-	}
-	if factor > templeScarcityCeil {
-		return templeScarcityCeil
-	}
-	return factor
-}
-
-// templeScarcityCeil bounds what a shortage can be worth to a temple.
-const templeScarcityCeil = 2.0

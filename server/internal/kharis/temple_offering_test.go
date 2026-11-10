@@ -160,11 +160,8 @@ func TestEarlyTempleOfferingMixedGiftAtomic(t *testing.T) {
 	_ = wid
 }
 
-func TestEarlyTempleOfferingScarcityAndDeterministicSubstitutes(t *testing.T) {
+func TestEarlyTempleOfferingDeterministicSubstitutes(t *testing.T) {
 	values := map[string]float64{"grain": 1.5, "fish": 3, "timber": 3, "silver": 3, "oil": 9, "wine": 9}
-	if got := scarcityFromValues(values, map[string]float64{"grain": 1}, nil); got != 1.5 {
-		t.Fatalf("early scarcity %g", got)
-	}
 	for i := 0; i < 20; i++ {
 		plan, fed := planTempleOffering(map[string]float64{"grain": .1, "fish": 1, "timber": 1, "silver": 1}, values)
 		if !fed || plan["grain"] != .1 || math.Abs(plan["fish"]-.075) > 1e-10 || len(plan) != 2 {
