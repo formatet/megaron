@@ -59,7 +59,7 @@ func tradeAcceptCmd() *cobra.Command {
 		Short: "Accept a trade offer from inbox",
 		Example: `  keryx trade-accept
   keryx trade-accept --id 3f2a1b9c`,
-		Args:  rejectPositionalArgs("id"),
+		Args: rejectPositionalArgs("id"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			cand, err := pickID("trade-accept", "trade offer", msgID, "", func() ([]idCandidate, error) { return inboxCandidates(c, true) })
@@ -106,7 +106,7 @@ func tradeDeclineCmd() *cobra.Command {
 		Short: "Decline a trade offer from inbox",
 		Example: `  keryx trade-decline
   keryx trade-decline --id 3f2a1b9c`,
-		Args:  rejectPositionalArgs("id"),
+		Args: rejectPositionalArgs("id"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			cand, err := pickID("trade-decline", "trade offer", msgID, "", func() ([]idCandidate, error) { return inboxCandidates(c, true) })
@@ -133,11 +133,11 @@ func tradeDeclineCmd() *cobra.Command {
 func tradeCancelCmd() *cobra.Command {
 	var msgID string
 	cmd := &cobra.Command{
-		Use:     "trade-cancel",
-		Short:   "Cancel an outgoing pending trade offer and reclaim escrowed silver",
+		Use:   "trade-cancel",
+		Short: "Cancel an outgoing pending trade offer and reclaim escrowed silver",
 		Example: `  keryx trade-cancel
   keryx trade-cancel --id 3f2a1b9c`,
-		Args:    rejectPositionalArgs("id"),
+		Args: rejectPositionalArgs("id"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			cand, err := pickID("trade-cancel", "pending offer of yours", msgID, "", func() ([]idCandidate, error) { return outboxCandidates(c, outboxPendingOffer) })

@@ -104,7 +104,7 @@ Not a verb here: 'keryx storms' lists the storms at sea your people have seen.`,
 			if !isKnownCategory(category) {
 				return fmt.Errorf("unknown category %q — one of: %s", category, strings.Join(categoryOrder, ", "))
 			}
-			printCategoryDetail(verbs, category)
+			printCategoryDetail(verbs, category, actionsCityName(c, prov))
 			return nil
 		},
 	}
@@ -245,7 +245,7 @@ func printCategoryOverview(verbs []actionVerb) {
 	}
 }
 
-func printCategoryDetail(verbs []actionVerb, category string) {
+func printCategoryDetail(verbs []actionVerb, category, cityName string) {
 	var available, locked []actionVerb
 	for _, v := range verbs {
 		if v.Category != category {
@@ -269,6 +269,9 @@ func printCategoryDetail(verbs []actionVerb, category string) {
 	}
 	for _, v := range available {
 		fmt.Printf("  %-16s %s\n", v.Name, v.Purpose)
+		if line := actionCommandLine(v.Name, cityName); line != "" {
+			fmt.Printf("      → %s\n", line)
+		}
 	}
 
 	fmt.Println("\nLocked — here's how to unlock it")
@@ -286,4 +289,67 @@ func printCategoryDetail(verbs []actionVerb, category string) {
 			fmt.Printf("        → %s\n", r.Hint)
 		}
 	}
+}
+
+// actionsCityName is the acting city's name, best effort (empty when unknown).
+func actionsCityName(c *Client, provinceID string) string {
+	data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces/%s", cfg.WorldID, provinceID))
+	if err != nil {
+		return ""
+	}
+	var p struct {
+		Settlement struct {
+			Name string `json:"name"`
+		} `json:"settlement"`
+	}
+	if json.Unmarshal(data, &p) != nil {
+		return ""
+	}
+	return p.Settlement.Name
+}
+
+// actionVerbCommands maps an available verb to the command that does it.
+// %s is the "--city <name> " part (empty when the city is unknown). Verbs that
+// need a choice start from the list that prints the real keys.
+var actionVerbCommands = map[string]string{
+	"build":         "keryx build %s--list",
+	"recruit":       "keryx recruit %s--list",
+	"rite":          "keryx rite %s--list",
+	"cancel-build":  "keryx cancel-build",
+	"abandon":       "keryx abandon %s",
+	"message":       "keryx message %s--to <city> --text \"...\"",
+	"reply":         "keryx reply --text \"...\"",
+	"trade-offer":   "keryx trade-offer %s--to <city> --want-good <good> --want-qty <n> --offer-silver <n>",
+	"trade-accept":  "keryx trade-accept",
+	"trade-decline": "keryx trade-decline",
+	"trade-cancel":  "keryx trade-cancel",
+	"transfer":      "keryx transfer %s--good <good> --qty <n> --dest <city>",
+	"march":         "keryx march --unit <unit> --to <city|q,r>",
+	"recall":        "keryx recall --unit <unit>",
+	"redirect":      "keryx redirect --unit <unit> --to <city|q,r>",
+	"post":          "keryx unit post --unit <unit> --to <city|q,r>",
+	"disband":       "keryx disband %s--unit <unit>",
+	"stance":        "keryx unit stance --unit <unit> --stance <fortify|sentry|none>",
+	"build-road":    "keryx build-road --unit <unit> --to <q,r>",
+	"load":          "keryx unit load --ship <ship> --unit <unit>",
+	"unload":        "keryx unit unload --ship <ship>",
+}
+
+func actionCommandLine(verb, cityName string) string {
+	tmpl, ok := actionVerbCommands[verb]
+	if !ok {
+		return ""
+	}
+	city := ""
+	if cityName != "" {
+		city = "--city " + commandArgument(cityName) + " "
+	}
+	if !strings.Contains(tmpl, "%s") {
+		return tmpl
+	}
+	line := fmt.Sprintf(tmpl, city)
+	if verb == "abandon" && city == "" {
+		line += "--city <name>"
+	}
+	return strings.TrimSpace(line)
 }

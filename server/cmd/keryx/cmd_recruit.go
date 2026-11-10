@@ -249,10 +249,12 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 	// read a bare "can't carry this yet" as a pop cap, a unit cap and a stock cap
 	// before giving up — one of them was sitting on 118k grain, short only silver).
 	var netGrain, netSilver, grainStock, silverStock float64
+	cityName := ""
 	if sdata, serr := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces/%s", worldID, provinceID)); serr == nil {
 		var p map[string]any
 		if json.Unmarshal(sdata, &p) == nil {
 			if sett, ok := p["settlement"].(map[string]any); ok {
+				cityName, _ = sett["name"].(string)
 				netGrain, _ = sett["net_grain_per_tick_after_upkeep"].(float64)
 				netSilver, _ = sett["net_silver_per_tick_after_upkeep"].(float64)
 				// Stocks for the runway clause in unsustainableReason (a negative
@@ -362,8 +364,16 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 			}
 		}
 
-		fmt.Printf("%-24s  %-24s  %-28s  %-9d  %-16s  %-6s  %s\n",
+		row := fmt.Sprintf("%-24s  %-24s  %-28s  %-9d  %-16s  %-6s  %s",
 			label, batch, costStr, u.DurationGameDays, reqStr, affordStr, upkeepStr)
+		if affordStr == "✓" {
+			cmdLine := "keryx recruit --unit " + u.Type
+			if cityName != "" {
+				cmdLine = "keryx recruit --city " + commandArgument(cityName) + " --unit " + u.Type
+			}
+			row += "  → " + cmdLine
+		}
+		fmt.Println(row)
 	}
 	return nil
 }

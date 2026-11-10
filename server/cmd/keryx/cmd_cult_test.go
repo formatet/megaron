@@ -34,7 +34,7 @@ func TestRealmCultCLIThreeTemplesAndCityPrayerRouting(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, city := range []string{"Tylissos", "Amnissos", "Kommos"} {
-		if !strings.Contains(out, "--city s-"+city) {
+		if !strings.Contains(out, "--city "+city+" --prayer") {
 			t.Fatalf("missing city-specific cast %s: %s", city, out)
 		}
 	}
@@ -42,7 +42,7 @@ func TestRealmCultCLIThreeTemplesAndCityPrayerRouting(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(filtered, "--city s-Kommos") || strings.Contains(filtered, "s-Amnissos") {
+	if !strings.Contains(filtered, "--city Kommos --prayer") || strings.Contains(filtered, "s-Amnissos") {
 		t.Fatal(filtered)
 	}
 	status, err := captureStdout(t, statusCmd().Execute)

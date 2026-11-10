@@ -104,8 +104,26 @@ func listCityBuilds(c *Client, world, prov string) error {
 			if typ == "silo" { // the player's word; build --type granary maps it back
 				typ = "granary"
 			}
-			fmt.Printf("%-15s %-12s L%-6d %-7s %-42s %-5s %s\n", typ, site, q.Current, next, cost, days, requires)
+			row := fmt.Sprintf("%-15s %-12s L%-6d %-7s %-42s %-5s %s", typ, site, q.Current, next, cost, days, requires)
+			if q.Next != nil { // at max level there is nothing to build
+				row += "  → " + buildCommandLine(city.Settlement.Name, typ, q)
+			}
+			fmt.Println(row)
 		}
 	}
 	return nil
+}
+
+// buildCommandLine is the exact command that builds (or levels up) this row.
+func buildCommandLine(cityName, typ string, q buildListQuote) string {
+	line := "keryx build --city " + commandArgument(cityName) + " --type " + typ
+	switch {
+	case q.GodID != "":
+		line += " --god " + q.GodID
+	case q.NewSite:
+		line += " --hex <q,r>"
+	case q.Q != nil && q.R != nil:
+		line += fmt.Sprintf(" --hex %d,%d", *q.Q, *q.R)
+	}
+	return line
 }

@@ -87,7 +87,9 @@ func listRealmPrayers(c *Client, settlement string) error {
 			fmt.Printf("  %s favours %s\n", p.God, taste)
 		}
 		printRiteTargets(p.riteAvailablePrayer, p.SettlementID)
-		fmt.Printf("  Cast here: keryx rite --city %s --prayer %s\n", p.SettlementID, p.ID)
+		if ready == "yes" {
+			fmt.Printf("  Cast here: %s\n", riteCommandLine(p))
+		}
 	}
 	if len(view.Prayers) == 0 {
 		fmt.Println("No prayers available here. Found a city and build a temple.")
@@ -130,4 +132,31 @@ func printRealmTemples(c *Client) bool {
 	}
 
 	return true
+}
+
+// riteCommandLine is the exact command that casts this prayer: required flags
+// only, plus --yes (agents have no terminal to confirm on).
+func riteCommandLine(p cultPrayer) string {
+	line := "keryx rite --city " + commandArgument(p.CityName) + " --prayer " + p.ID
+	if t := p.Targets; t != nil {
+		switch t.Kind {
+		case "storm":
+			name := "<storm>"
+			if len(t.Storms) == 1 {
+				name = commandArgument(t.Storms[0].Name)
+			}
+			line += " --storm " + name
+		case "city", "place":
+			line += " --target <name>"
+		case "hex":
+			line += " --hex <q,r>"
+		default:
+			scope := "city"
+			if p.ScopeCostFactors["city"] == 0 && p.ScopeCostFactors["realm"] > 0 {
+				scope = "realm"
+			}
+			line += " --scope " + scope
+		}
+	}
+	return line + " --yes"
 }
