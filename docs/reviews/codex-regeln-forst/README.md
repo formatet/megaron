@@ -1,5 +1,119 @@
 # Codex: the rule first (2026-11-10)
 
+## Word counts
+
+| article | before | after | % | lead words |
+|---|---|---|---|---|
+| rites | 2934 | 1660 | 56 | 78 |
+| runners | 2482 | 1479 | 59 | 90 |
+| kharis | 2078 | 1233 | 59 | 83 |
+| ship-types | 1792 | 1067 | 59 | 76 |
+| marching | 1719 | 1020 | 59 | 90 |
+| temples | 1638 | 980 | 59 | 78 |
+| buildings | 1426 | 838 | 58 | 81 |
+| units | 1413 | 797 | 56 | 79 |
+| total | 15482 | 9074 | 58 | |
+
+## The eight leads
+
+### rites
+
+```
+A rite is a request made at the temple of its god.
+
+- Each prayer is said at its own god's [[temples|temple]]; level 1 is enough.
+- [[kharis]] is a minimum you must hold, never spent; the offering is.
+- Bring the traditional recipe, or a composed offering worth at least as much.
+- An answered prayer makes **that temple** rest, and only while it is fully staffed.
+- A larger gift makes a lasting prayer last longer. <!-- src: reference.json prayers -->
+```
+
+### runners
+
+```
+**Command is never instant:** to change a unit in the field you send a **Runner**, who walks to it.
+
+- On land a Runner needs half a foot army's terrain time.
+- An order takes effect only when Runner and unit meet; until then the unit keeps its last orders.
+- Runners are sacred and cannot be intercepted. Your [[horde|Nomadic Host]] obeys at once.
+- A Runner cannot swim: it waits in your port for any ship sailing the right way.
+- Your own lost runner is reported at once. <!-- src: server/internal/province/pathfind.go runner speed -->
+```
+
+### kharis
+
+```
+**Kharis** is your standing with [[gods|the gods]], held for your whole realm.
+
+- A new Wanax starts at 40; it never falls below 1.
+- Each active city adds to the realm's demand, which fades kharis every game day.
+- Staffed, fed temples raise it; your best temple sets the ceiling (50, 75, 100; 40 with none).
+- Below 30 the gods may punish you; a punishment gives 7 game days of protection.
+- Prayers need a minimum standing but never spend it. <!-- src: reference.json kharis -->
+```
+
+### ship-types
+
+```
+Every ship needs a **[[harbour|Harbour]]** and a **[[shipyard|Shipyard]]** ([[buildings]]).
+
+- A Galley ([[timber|timber]]) carries 20 goods or one land unit.
+- An Emporos (90 [[cedar|cedar]]) carries 120 goods or up to three land units.
+- A War Galley (cedar, [[foundry]]) fights and never carries cargo.
+- A ship takes its whole mission in port; once it sails it takes no more orders.
+- It eats what it carries and turns home before the food runs short. <!-- src: server/internal/unit catalogue; reference.json units -->
+```
+
+### marching
+
+```
+**Right-click a destination**, select your forces and check the forecast before sending.
+
+- A plain march reaches only ground your people have seen; **Explore** covers unknown ground.
+- Foot soldiers take 1 game day per plain hex, up to 3 in semi-desert; mountains cannot be crossed.
+- Orders to forces in the field travel by Runner and take effect when it reaches them.
+- Ships get their whole mission in port ([[ship-types]]).
+- An enemy can stop you and a [[battle|battle]] begins by itself: there is no declaration of war. <!-- src: server/internal/province/movement.go TerrainMoveTicks -->
+```
+
+### temples
+
+```
+A **[[temple]]** ([[buildings]]) is how you keep [[gods|the gods]]' favour ([[kharis]]).
+
+- A city may hold several temples, **at most one per god**: [[asterion]], [[potnia]], the [[sea-daimons|Sea Daimons]] of Stillness, [[velchanos]].
+- Levels 1/2/3 have 2/4/8 workplaces; an unstaffed temple gives nothing.
+- Each temple pays a daily tithe from its own city; unpaid parts lose effect.
+- Your best temple sets your kharis ceiling: 50, 75 or 100.
+- Demolishing a temple costs 10 kharis per level. <!-- src: reference.json kharis levels, demolition_per_level -->
+```
+
+### buildings
+
+```
+Buildings provide workplaces, defences and the facilities needed for recruitment and trade.
+
+- One building is built at a time; two more wait in the queue.
+- Farm, Lumbermill, Mine and Stone Quarry stand on one catchment hex, one per hex, with 4 workplaces each.
+- Levels go to 3; each raises every worker's rate on that hex by 70 %.
+- The wall sets the population ceiling: 2 000, then 5 000, 10 000, 20 000. <!-- src: server/internal/economy/population_cap.go populationCaps; hex_rules.go -->
+- Demolishing refunds nothing.
+```
+
+### units
+
+```
+Forces are the soldiers, ships and people you command.
+
+- Land forces train as a 100-man cohort drafted from one city's people; ships are built one at a time.
+- Each force needs its building: Barracks, Stable or Shipyard (Foundry for Bronze Guard and War Galleys).
+- Every force eats each game day; Bronze Guard, chariots and War Galleys also draw silver.
+- Home service costs half the field pay.
+- Open the **War (⚔)** drawer: **Forces**, **Recruit**, **Marches**. <!-- src: server/internal/unit catalogue; reference.json units -->
+```
+
+
+## Removed text (first six words · reason)
 Removed or collapsed text, per article: first six words · reason.
 
 ## units (1413 -> see table)
@@ -165,4 +279,28 @@ Removed or collapsed text, per article: first six words · reason.
 - "In Keryx, rite --list shows your prayers, their effects" · screen description
 - "keryx cult and keryx rite --list print the same figures" and the Offer-row Favours line · screen description
 - The generated Favours table (about 400 words) is untouched and counts toward the cap.
+
+
+## Moved anchors
+
+None. Every anchor of the eight articles is still on a heading (the new test pins them); sections whose body was folded away kept a short body under the same heading.
+
+## Welcome
+
+"Six things to know" (not seven) with a "These can wait:" line. The seventh, "soldiers need bread and silver every game day", is NOT written because it is false: Spearmen, Galleys and Emporoi draw 0 silver ([[units]] "Drafting and supporting forces"; reference/code: only Bronze Guard, chariots and War Galleys draw pay). Reviewer: say if you want "soldiers eat every game day" instead. Checked: founding forecast ([[founding]]), starvation collapse below 50 ([[food]]), "timber almost always your bottleneck" (stated in [[goods]], design claim, not a code constant), copper/tin separation (`bronze.md`, mapgen landmass bias), Bronze Guard needs bronze + Foundry (reference.json). `welcome` anchor `welcome-your-opening-dispatch` kept.
+
+## Contradictions with code or between articles (reported, not fixed beyond item 4)
+
+- temples.md and kharis.md said a level-1 temple raises kharis by "0.25 per game day"; the generated table says 0.58 (0.25 is the grain tithe). Both sentences were cut as part of the clear-out; nothing was added in their place.
+- rites.md said "each of the ten Minoan everyday prayers"; fourteen are listed. The count was dropped.
+- Item 4 done: the "scarce in the world" clause is gone from kharis.md.
+- Not verified line by line against code (kept as written): building queue of two waiting builds, workshop 3x speed, ship repair 8 % / 10-ship queue, runner/ship risks. Numbers in the eight leads were checked: wall ceilings and +4 workplaces and x1.7/2.4/3.1 (economy/population_cap.go, hex_rules.go), temple workplaces and ceilings and demolition 10 per level (reference.json kharis), foot terrain times (province/movement.go), runner half speed (province/pathfind.go).
+
+## Not reached / notes
+
+- All eight reached <= 60 %: runners 59.6 %, kharis 59.3 %, buildings 58.7 %, temples 59.8 %; the generated tables (kharis about 620 words, rites about 400, buildings about 250, temples about 270) cannot be touched and eat most of the budget, so the cuts in those four are deeper in the prose than the percentage suggests.
+- Prayers in rites.md no longer repeat offerings and rest per prayer; the reader finds them in the generated table in kharis.md and on each prayer's own page. If you want them back in rites, that costs about 150 words.
+- ship-types.md: the generated unit list moved under a new un-anchored heading "The three ships" so the lead stays short.
+- `codex_links.mjs` added a few first-mention links while I worked; articles.json regenerated.
+- Keryx Codex tests: `go test ./cmd/keryx/` green. Node: 37 pass (29 old + 8 new). `codex_facts.py --check` clean.
 
