@@ -140,7 +140,7 @@ its own when the patrol timer runs out.`,
 				printRawJSON(data)
 				return nil
 			}
-			fmt.Printf("Patrol order dispatched: ship %s → (%d,%d). It will patrol, then sail home on its own.\n", unitID, q, r)
+			fmt.Printf("Patrol order dispatched: ship %s → (%d,%d). It will patrol, then sail home on its own.\n", unitLabel(unitID), q, r)
 			return nil
 		},
 	}
@@ -269,6 +269,7 @@ func unitListCmd() *cobra.Command {
 			if err := json.Unmarshal(data, &resp); err != nil {
 				return fmt.Errorf("parse response: %w", err)
 			}
+			rememberUnits(resp.Units)
 			if len(resp.Units) == 0 {
 				fmt.Println("No forces.")
 				return nil
@@ -679,6 +680,28 @@ func shortIDEllipsis(id string) string {
 	return id
 }
 
+// unitNames remembers display names of units the CLI has already read in this
+// run (resolveUnitID's list and the unit list reads), so dispatch confirmations
+// can print a name instead of an id fragment without an extra request.
+var unitNames = map[string]string{}
+
+func rememberUnits(us []unitRow) {
+	for _, u := range us {
+		if u.ID != "" && u.DisplayName != "" {
+			unitNames[u.ID] = u.DisplayName
+		}
+	}
+}
+
+// unitLabel is what a confirmation prints for a unit: its display name when
+// known, else the id through shortIDEllipsis (never panics on a short id).
+func unitLabel(id string) string {
+	if n := unitNames[id]; n != "" {
+		return n
+	}
+	return shortIDEllipsis(id)
+}
+
 func locationStr(c *Client, u unitRow, homes map[string]settlementPos) string {
 	// Passage wait (megaron_plan_ordna_passage.md 3b-3 R3): the ship stands
 	// positioned, off a port, holding for its runner's return — not a forward
@@ -797,7 +820,7 @@ func locationStr(c *Client, u unitRow, homes map[string]settlementPos) string {
 			return "embarked on " + *u.CarrierShipName
 		}
 		if u.CarrierShipID != nil {
-			return "embarked on ship " + shortIDEllipsis(*u.CarrierShipID)
+			return "embarked on ship " + unitLabel(*u.CarrierShipID)
 		}
 		return "embarked"
 	case "freighting":
@@ -995,7 +1018,7 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/march", cfg.WorldID, unitID)
 			if previewOnly {
 				if !jsonMode && cityName != "" {
-					fmt.Printf("Unit %s — destination %s\n", unitID[:8], cityTargetLabel(c, targetQ, targetR, cityName))
+					fmt.Printf("Unit %s — destination %s\n", unitLabel(unitID), cityTargetLabel(c, targetQ, targetR, cityName))
 				}
 				if err := showMarchPreview(c, path+"-preview", body); err != nil {
 					return err
@@ -1070,7 +1093,7 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 			// delivery (temenos_orderlopare_plan.md Fas 5) — the 202 is a
 			// dispatch receipt with the COURIER's ETA, not a march start.
 			if status, _ := resp["status"].(string); status == "order_dispatched" {
-				fmt.Printf("A Runner carries your march order to unit %s — target %s", unitID[:8], cityTargetLabel(c, targetQ, targetR, cityName))
+				fmt.Printf("A Runner carries your march order to unit %s — target %s", unitLabel(unitID), cityTargetLabel(c, targetQ, targetR, cityName))
 				if pursuit := pursuitDispatchText(c, resp); pursuit != "" {
 					fmt.Print("; " + pursuit)
 				} else {
@@ -1094,7 +1117,7 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 			} else if intent == "land" {
 				verb = "sailing to land troops at"
 			}
-			fmt.Printf("Unit %s %s %s", unitID[:8], verb, cityTargetLabel(c, targetQ, targetR, cityName))
+			fmt.Printf("Unit %s %s %s", unitLabel(unitID), verb, cityTargetLabel(c, targetQ, targetR, cityName))
 			if arrivesAt != "" {
 				if t, err := time.Parse(time.RFC3339, arrivesAt); err == nil {
 					fmt.Printf(" — arrives %s", gameETA(c, t))
@@ -1495,7 +1518,7 @@ at delivery appears in notifications with its reason.`,
 			}
 			var resp map[string]any
 			json.Unmarshal(data, &resp)
-			fmt.Printf("Recall order sent to unit %s", unitID[:8])
+			fmt.Printf("Recall order sent to unit %s", unitLabel(unitID))
 			if pursuit := pursuitDispatchText(c, resp); pursuit != "" {
 				fmt.Print(" — " + pursuit)
 			} else {
@@ -1575,9 +1598,9 @@ with its reason.`,
 			var resp map[string]any
 			json.Unmarshal(data, &resp)
 			if pursuit := pursuitDispatchText(c, resp); pursuit != "" {
-				fmt.Printf("Redirect order sent to unit %s — target %s; %s; it applies when they meet", unitID[:8], cityTargetLabel(c, newQ, newR, cityName), pursuit)
+				fmt.Printf("Redirect order sent to unit %s — target %s; %s; it applies when they meet", unitLabel(unitID), cityTargetLabel(c, newQ, newR, cityName), pursuit)
 			} else {
-				fmt.Printf("Unit %s receives a redirect order to %s", unitID[:8], cityTargetLabel(c, newQ, newR, cityName))
+				fmt.Printf("Unit %s receives a redirect order to %s", unitLabel(unitID), cityTargetLabel(c, newQ, newR, cityName))
 				if resp["catch_up"] == "at_destination" {
 					fmt.Print("; the Runner follows the unit to its destination and applies the order there if it is still present")
 				}
@@ -1804,16 +1827,16 @@ its destination and the stance applies where it stopped.`,
 						eta = gameETA(c, t)
 					}
 				}
-				fmt.Println(stanceDispatchLine(stanceResp, stance, unitID[:8], eta))
+				fmt.Println(stanceDispatchLine(stanceResp, stance, unitLabel(unitID), eta))
 				printPassageNote(stanceResp)
 				return nil
 			}
 			if stance == "none" {
-				fmt.Printf("Unit %s stance cleared\n", unitID[:8])
+				fmt.Printf("Unit %s stance cleared\n", unitLabel(unitID))
 			} else if reactionApplied, _ := stanceResp["reaction_foreign"].(string); stance == "sentry" && reactionApplied != "" {
-				fmt.Printf("Unit %s stance → %s (reacts to foreign forces: %s)\n", unitID[:8], stance, reactionApplied)
+				fmt.Printf("Unit %s stance → %s (reacts to foreign forces: %s)\n", unitLabel(unitID), stance, reactionApplied)
 			} else {
-				fmt.Printf("Unit %s stance → %s\n", unitID[:8], stance)
+				fmt.Printf("Unit %s stance → %s\n", unitLabel(unitID), stance)
 			}
 			return nil
 		},
@@ -1910,7 +1933,7 @@ battle only. A unit not in a battle is refused — set the default instead.`,
 			var resp map[string]any
 			json.Unmarshal(data, &resp)
 			if status, _ := resp["status"].(string); status == "order_dispatched" {
-				fmt.Printf("A Runner carries your retreat order to unit %s", unitID[:8])
+				fmt.Printf("A Runner carries your retreat order to unit %s", unitLabel(unitID))
 				if courierAt, _ := resp["courier_arrives_at"].(string); courierAt != "" {
 					if t, err := time.Parse(time.RFC3339, courierAt); err == nil {
 						fmt.Printf("; the runner reaches it %s", gameETA(c, t))
@@ -1922,7 +1945,7 @@ battle only. A unit not in a battle is refused — set the default instead.`,
 				return nil
 			}
 			hold, _ := resp["hold_to_last_man"].(bool)
-			fmt.Printf("Unit %s: %s (this battle only)\n", unitID[:8], describeRetreatDefault(hold))
+			fmt.Printf("Unit %s: %s (this battle only)\n", unitLabel(unitID), describeRetreatDefault(hold))
 			return nil
 		},
 	}
@@ -1967,7 +1990,8 @@ func unitLoadCmd() *cobra.Command {
 				printRawJSON(data)
 				return nil
 			}
-			fmt.Printf("Unit %s embarked on ship %s\n", landUnitID[:8], shipID[:8])
+			fmt.Printf("Unit %s embarked on ship %s\n", unitLabel(landUnitID), unitLabel(shipID))
+			fmt.Println(stormsPointer)
 			return nil
 		},
 	}
@@ -2010,10 +2034,11 @@ func unitUnloadCmd() *cobra.Command {
 			}
 			_ = json.Unmarshal(data, &resp)
 			if n := len(resp.CargoUnitIDs); n > 1 {
-				fmt.Printf("%d land forces disembarked from ship %s\n", n, shipID[:8])
+				fmt.Printf("%d land forces disembarked from ship %s\n", n, unitLabel(shipID))
 			} else {
-				fmt.Printf("Cargo unit disembarked from ship %s\n", shipID[:8])
+				fmt.Printf("Cargo unit disembarked from ship %s\n", unitLabel(shipID))
 			}
+			fmt.Println(stormsPointer)
 			return nil
 		},
 	}
@@ -2080,7 +2105,7 @@ func unitPickupCmd() *cobra.Command {
 			if err := json.Unmarshal(data, &resp); err != nil {
 				return err
 			}
-			fmt.Printf("Ship %s sails to (%d,%d), arriving %s, waiting %s there", resp.UnitID[:8], resp.ShoreQ, resp.ShoreR, formatWorldTime(c, resp.ArrivalTick), formatDays(resp.WaitTicks, "%d"))
+			fmt.Printf("Ship %s sails to (%d,%d), arriving %s, waiting %s there", unitLabel(resp.UnitID), resp.ShoreQ, resp.ShoreR, formatWorldTime(c, resp.ArrivalTick), formatDays(resp.WaitTicks, "%d"))
 			if resp.MessengerID != nil {
 				fmt.Printf(" — a runner rides along, estimated %s to reach the unit and march it to the shore", formatDays(resp.EstimatedTicksToShore, "%d"))
 			}
@@ -2088,6 +2113,7 @@ func unitPickupCmd() *cobra.Command {
 			if resp.MessengerID != nil && resp.WaitTicks < resp.EstimatedTicksToShore {
 				fmt.Printf("Note: the wait (%s) is SHORTER than the estimate (%s) — the ship may leave before the unit gets there. Consider --wait %d or more.\n", formatDays(resp.WaitTicks, "%d"), formatDays(resp.EstimatedTicksToShore, "%d"), resp.EstimatedTicksToShore)
 			}
+			fmt.Println(stormsPointer)
 			return nil
 		},
 	}

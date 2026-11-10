@@ -118,6 +118,7 @@ func resolveUnitID(c *Client, worldID, idOrPrefix string) (string, error) {
 	if err := json.Unmarshal(data, &resp); err != nil {
 		return "", err
 	}
+	rememberUnits(resp.Units)
 	needle := strings.ToLower(strings.TrimSpace(idOrPrefix))
 	var matches []unitRow
 	for _, u := range resp.Units {

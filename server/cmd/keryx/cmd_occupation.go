@@ -50,7 +50,11 @@ choice; it executes only when the Runner arrives, not instantly.
 		Args: rejectPositionalArgs("occupation order"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
-			path := fmt.Sprintf("/api/v1/worlds/%s/settlements/%s/occupation-order", cfg.WorldID, settlementID)
+			sid, rerr := resolveSettlement(c, cfg.WorldID, settlementID)
+			if rerr != nil {
+				return rerr
+			}
+			path := fmt.Sprintf("/api/v1/worlds/%s/settlements/%s/occupation-order", cfg.WorldID, sid)
 			body := map[string]any{"action": action}
 			if len(goods) > 0 {
 				body["goods"] = goods
@@ -65,7 +69,7 @@ choice; it executes only when the Runner arrives, not instantly.
 			}
 			var resp map[string]any
 			_ = json.Unmarshal(data, &resp)
-			fmt.Printf("A Runner carries your occupation order (%s) to %s", action, settlementID[:8])
+			fmt.Printf("A Runner carries your occupation order (%s) to %s", action, shortIDEllipsis(sid))
 			if courierAt, _ := resp["courier_arrives_at"].(string); courierAt != "" {
 				if t, err := time.Parse(time.RFC3339, courierAt); err == nil {
 					fmt.Printf("; the runner reaches it %s", gameETA(c, t))
@@ -76,7 +80,7 @@ choice; it executes only when the Runner arrives, not instantly.
 		},
 	}
 
-	cmd.Flags().StringVar(&settlementID, "settlement", "", "occupied settlement UUID (required)")
+	cmd.Flags().StringVar(&settlementID, "settlement", "", "occupied city name or settlement UUID (required)")
 	cmd.Flags().StringVar(&action, "action", "", "sack | burn | annex (required)")
 	cmd.Flags().StringSliceVar(&goods, "goods", nil, "sack/burn only: which goods to loot (default: every lootable good)")
 	_ = cmd.MarkFlagRequired("settlement")

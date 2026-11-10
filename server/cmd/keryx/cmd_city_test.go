@@ -32,6 +32,12 @@ func TestIsFoodGood(t *testing.T) {
 // — same harness shape as runWantsCmd (cmd_wants_test.go).
 func runCityCmd(t *testing.T, placementOptionsBody, provinceBody string) string {
 	t.Helper()
+	return runCityCmdMode(t, true, placementOptionsBody, provinceBody)
+}
+
+// runCityCmdMode runs `city` with or without --full.
+func runCityCmdMode(t *testing.T, full bool, placementOptionsBody, provinceBody string) string {
+	t.Helper()
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		if strings.HasSuffix(r.URL.Path, "/placement-options") {
@@ -53,7 +59,13 @@ func runCityCmd(t *testing.T, placementOptionsBody, provinceBody string) string 
 		t.Fatal(err)
 	}
 	os.Stdout = w
-	runErr := cityCmd().RunE(nil, nil)
+	cc := cityCmd()
+	if full {
+		if err := cc.Flags().Set("full", "true"); err != nil {
+			t.Fatal(err)
+		}
+	}
+	runErr := cc.RunE(nil, nil)
 	w.Close()
 	os.Stdout = old
 	if runErr != nil {
@@ -127,5 +139,34 @@ func TestCityCmd_NoSurplus_NoMarkerNoClaim(t *testing.T) {
 	}
 	if !strings.Contains(out, "7 citizens needed for people on best food slots, 7 on food") {
 		t.Errorf("output missing the plain required/placed line:\n%s", out)
+	}
+}
+
+const cityTwoHexes = `{"total_gubbar":10,"pool_size":3,"hexes":[
+	{"hex_q":0,"hex_r":0,"hex_ordinal":1,"terrain":"plains","goods":[{"good_key":"grain","rate_per_tick":12.0,"placed":7,"marginal_yield":12.0}]},
+	{"hex_q":1,"hex_r":0,"hex_ordinal":2,"terrain":"hills","goods":[{"good_key":"timber","rate_per_tick":6.0,"cap":4,"placed":0,"marginal_yield":6.0}]}],
+	"buildings":[{"building_type":"farm","level":1,"goods":[{"good_key":"grain","rate_per_tick":1,"placed":0,"marginal_yield":1}]}]}`
+
+// Default `city` is short: one Catchment line, no per-hex rows, buildings kept.
+func TestCityCmd_DefaultIsShort(t *testing.T) {
+	out := runCityCmdMode(t, false, cityTwoHexes, `{"settlement":{}}`)
+	if !strings.Contains(out, "Catchment: 2 hexes, 1 worked — keryx city <name> --full for each hex") {
+		t.Fatalf("missing summary line:\n%s", out)
+	}
+	if strings.Contains(out, "#1 ") || strings.Contains(out, "(0,0)") || strings.Contains(out, "plains") {
+		t.Fatalf("per-hex rows printed by default:\n%s", out)
+	}
+	if !strings.Contains(out, "Buildings:") {
+		t.Fatalf("buildings block missing:\n%s", out)
+	}
+}
+
+func TestCityCmd_FullHasHexRows(t *testing.T) {
+	out := runCityCmdMode(t, true, cityTwoHexes, `{"settlement":{}}`)
+	if !strings.Contains(out, "Catchment:\n") || !strings.Contains(out, "#1") || !strings.Contains(out, "plains") || !strings.Contains(out, "hills") {
+		t.Fatalf("--full lacks hex rows:\n%s", out)
+	}
+	if strings.Contains(out, "for each hex") {
+		t.Fatalf("--full printed the summary pointer:\n%s", out)
 	}
 }

@@ -254,7 +254,25 @@ func (c *Client) delete(path string) ([]byte, error) {
 	return data, nil
 }
 
+// refusalHint appends the way forward to the few refusals an agent keeps
+// retrying blind. Only these substrings get a hint; every other error is
+// returned untouched.
+func refusalHint(err error) error {
+	msg := err.Error()
+	switch {
+	case strings.Contains(msg, "no passable route"):
+		return fmt.Errorf("%w — try `keryx map --radius 12` around the target, or `keryx storms` if the way is by sea", err)
+	case strings.Contains(msg, "carries no passengers"), strings.Contains(msg, "Choose a ship docked in"):
+		return fmt.Errorf("%w — `keryx unit list` lists your ships and where they lie", err)
+	}
+	return err
+}
+
 func apiError(body []byte, status int) error {
+	return refusalHint(apiErrorPlain(body, status))
+}
+
+func apiErrorPlain(body []byte, status int) error {
 	// The server's 401 text is written for the web ("reload the page"); in a
 	// terminal the way back in is keryx login. Without this an expired token
 	// read as a bare "HTTP 401" to a player — or an LLM agent — mid-loop.

@@ -14,6 +14,7 @@ import (
 // — the same numbers `place`/`staff` take.
 func cityCmd() *cobra.Command {
 	var provinceID string
+	var full bool
 	cmd := &cobra.Command{
 		Use:   "city [city]",
 		Short: "Show a settlement's catchment hexes, building slots and idle pool (default: your capital)",
@@ -22,10 +23,13 @@ yield the NEXT citizen placed there would add ("next"). Each good has its own
 limit on that hex. A hex or building can support more
 than one good; each is its own row.
 
-Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
+By default the catchment is one summary line; add --full for every hex row.
+
+Use the hex ordinal (#) with ` + "`keryx place`" + ` (read it off --full) and the building name with
 ` + "`keryx staff`" + `.`,
 		Example: `  keryx city
-  keryx city Knossos`,
+  keryx city Knossos
+  keryx city Knossos --full`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c := newClient(cfg)
@@ -71,36 +75,8 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 				fmt.Println()
 			}
 
-			fmt.Println("Catchment:")
-			if len(opts.Hexes) == 0 {
-				fmt.Println("  (no scouted catchment hexes yet)")
-			}
-			for _, h := range opts.Hexes {
-				// hex-bound production building standing on THIS hex (farm/mine/
-				// lumbermill/stonequarry, megaron_plan_byggnad_pa_hex.md §A) —
-				// printed once per hex, on its first line, so a player sees at a
-				// glance which hex a building is on without cross-referencing
-				// `status`'s flat Buildings list.
-				bldSuffix := ""
-				if h.Building != nil {
-					if h.Terrain != "" {
-						bldSuffix = fmt.Sprintf("  [%s L%d @ (%d,%d) %s]", h.Building.Type, h.Building.Level, h.HexQ, h.HexR, h.Terrain)
-					} else {
-						bldSuffix = fmt.Sprintf("  [%s L%d @ (%d,%d)]", h.Building.Type, h.Building.Level, h.HexQ, h.HexR)
-					}
-				}
-				bldSuffix += heldHexNote(h)
-				if len(h.Goods) == 0 {
-					fmt.Printf("  #%-3d (%d,%d) %-14s (no producible good)%s\n", h.HexOrdinal, h.HexQ, h.HexR, namedRiverTerrain(h.Terrain, h.RiverName), bldSuffix)
-					continue
-				}
-				for i, g := range sortedGoods(h.Goods) {
-					if i == 0 {
-						fmt.Printf("  #%-3d (%d,%d) %-14s %s%s%s\n", h.HexOrdinal, h.HexQ, h.HexR, namedRiverTerrain(h.Terrain, h.RiverName), goodCell(g), "", bldSuffix)
-					} else {
-						fmt.Printf("  %-4s %-14s %s%s\n", "", "", goodCell(g), "")
-					}
-				}
+			if full {
+				printCatchmentRows(opts.Hexes)
 			}
 
 			if len(opts.Buildings) > 0 {
@@ -119,11 +95,65 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 					}
 				}
 			}
+			if !full {
+				fmt.Println(catchmentSummary(opts.Hexes))
+			}
 			return nil
 		},
 	}
 	cmd.Flags().StringVar(&provinceID, "province", "", "city name or province ID (default: capital)")
+	cmd.Flags().BoolVar(&full, "full", false, "list every catchment hex row (default: one summary line)")
 	return cmd
+}
+
+// printCatchmentRows prints one block per catchment hex (the `city --full` view).
+func printCatchmentRows(hexes []placementHex) {
+	fmt.Println("Catchment:")
+	if len(hexes) == 0 {
+		fmt.Println("  (no scouted catchment hexes yet)")
+	}
+	for _, h := range hexes {
+		// hex-bound production building standing on THIS hex (farm/mine/
+		// lumbermill/stonequarry, megaron_plan_byggnad_pa_hex.md §A) —
+		// printed once per hex, on its first line, so a player sees at a
+		// glance which hex a building is on without cross-referencing
+		// `status`'s flat Buildings list.
+		bldSuffix := ""
+		if h.Building != nil {
+			if h.Terrain != "" {
+				bldSuffix = fmt.Sprintf("  [%s L%d @ (%d,%d) %s]", h.Building.Type, h.Building.Level, h.HexQ, h.HexR, h.Terrain)
+			} else {
+				bldSuffix = fmt.Sprintf("  [%s L%d @ (%d,%d)]", h.Building.Type, h.Building.Level, h.HexQ, h.HexR)
+			}
+		}
+		bldSuffix += heldHexNote(h)
+		if len(h.Goods) == 0 {
+			fmt.Printf("  #%-3d (%d,%d) %-14s (no producible good)%s\n", h.HexOrdinal, h.HexQ, h.HexR, namedRiverTerrain(h.Terrain, h.RiverName), bldSuffix)
+			continue
+		}
+		for i, g := range sortedGoods(h.Goods) {
+			if i == 0 {
+				fmt.Printf("  #%-3d (%d,%d) %-14s %s%s%s\n", h.HexOrdinal, h.HexQ, h.HexR, namedRiverTerrain(h.Terrain, h.RiverName), goodCell(g), "", bldSuffix)
+			} else {
+				fmt.Printf("  %-4s %-14s %s%s\n", "", "", goodCell(g), "")
+			}
+		}
+	}
+}
+
+// catchmentSummary is the one-line default for `city`: how many hexes, how many
+// have a citizen placed on any good.
+func catchmentSummary(hexes []placementHex) string {
+	worked := 0
+	for _, h := range hexes {
+		for _, g := range h.Goods {
+			if g.Placed > 0 {
+				worked++
+				break
+			}
+		}
+	}
+	return fmt.Sprintf("Catchment: %d hexes, %d worked — keryx city <name> --full for each hex", len(hexes), worked)
 }
 
 // errNoCityYet turns the empty province ID of a player who has not founded

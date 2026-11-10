@@ -9,7 +9,12 @@ import (
 func unitCancelTrainingCmd() *cobra.Command {
 	var id string
 	cmd := &cobra.Command{Use: "cancel-training", Short: "Cancel unfinished recruitment and return its people and reserved resources", Args: noPositionalArgs(), RunE: func(cmd *cobra.Command, args []string) error {
-		data, err := newClient(cfg).post(fmt.Sprintf("/api/v1/worlds/%s/units/%s/cancel-training", cfg.WorldID, id), nil)
+		c := newClient(cfg)
+		uid, rerr := resolveUnitID(c, cfg.WorldID, id)
+		if rerr != nil {
+			return rerr
+		}
+		data, err := c.post(fmt.Sprintf("/api/v1/worlds/%s/units/%s/cancel-training", cfg.WorldID, uid), nil)
 		if err != nil {
 			return err
 		}
@@ -32,7 +37,7 @@ func unitCancelTrainingCmd() *cobra.Command {
 		fmt.Printf("Training cancelled. %d people returned; reserved resources refunded.\n", result.PopRestored)
 		return nil
 	}}
-	cmd.Flags().StringVar(&id, "unit", "", "unit ID (required)")
+	cmd.Flags().StringVar(&id, "unit", "", "unit display name, id prefix or ID (required)")
 	cmd.MarkFlagRequired("unit")
 	return cmd
 }

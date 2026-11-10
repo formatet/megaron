@@ -131,7 +131,7 @@ func recruitCmd() *cobra.Command {
 					fmt.Printf("Ready %s — not deployable until then (`keryx unit list` shows the ETA).\n",
 						gameETA(c, resp.CompleteAt))
 				}
-				fmt.Println("Storms drift over open water — `keryx storms` shows the ones your people have seen.")
+				fmt.Println(stormsPointer)
 				// Hål 3 (megaron_plan_tysta_forluster.md): the crew drawn from the
 				// settlement's population used to vanish — a new ship appeared,
 				// nothing said the city shrank to man it.
