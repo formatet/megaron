@@ -1,9 +1,9 @@
 Buildings provide workplaces, defences and the facilities needed for recruitment and trade.
 
-- A city builds one building at a time; two more wait in the queue. Cancelling a queued build refunds it.
-- Farm, Lumbermill, Mine and Stone Quarry stand on one catchment hex, one building per hex; each adds 4 workplaces there.
-- Every building levels up to 3; each level raises the rate of every worker on that hex by 70 %.
-- The wall sets the city's population ceiling: 2 000 with no wall, then 5 000, 10 000, 20 000. <!-- src: server/internal/economy/population_cap.go populationCaps; hex_rules.go -->
+- One building is built at a time; two more wait in the queue.
+- Farm, Lumbermill, Mine and Stone Quarry stand on one catchment hex, one per hex, with 4 workplaces each.
+- Levels go to 3; each raises every worker's rate on that hex by 70 %.
+- The wall sets the population ceiling: 2 000, then 5 000, 10 000, 20 000. <!-- src: server/internal/economy/population_cap.go populationCaps; hex_rules.go -->
 - Demolishing refunds nothing.
 
 ## All buildings {#buildings-details}

@@ -31,3 +31,24 @@ Removed or collapsed text, per article: first six words · reason.
 - "`keryx build --list [city]` ... Construction dispatches name" · screen description
 - The generated building table (`<!-- list: building -->`, about 250 words) is untouched and counts toward the cap.
 
+## temples
+- "They are named by their god" · history/obvious
+- "Each prayer is said at its own" list (swift-feet at Asterion's ...) · duplicate of [[rites]]
+- "Demolishing a temple frees only" (build section) · duplicate of [[temple-demolition]]
+- "City → catchment & workplaces → Temple: place" · screen description
+- "The web shows one card per temple" · screen description
+- "The tithe of each level is in the table" · duplicate of the table
+- "Dearer goods, and goods the god prizes" · duplicate of the tastes table (kept as one clause)
+- "Kult → Temples and keryx status show the next tithe" · screen description (one line kept)
+- "With full staffing and tithe, a level-1" · CONTRADICTION removed (see below)
+- "Everyday prayers work at a level-1 temple" · duplicate of [[rites]]
+- "Demolishing a temple voluntarily costs 10 kharis" (temple-levels-2 body) · duplicate of [[temple-demolition]]; the heading and anchor stay
+- "Manage in City opens that temple's city ... Temples you have not built are listed last" · screen description
+- "Kult → Prayers lists prayers across" detail · screen description
+- "One, two, three and four cities demand 1, 3, 6" · duplicate of the table in [[kharis]]
+- "Kult → Kharis explains your realm's standing" · screen description
+- "Staffing and paid tithe both multiply" · duplicate of weight rule above
+- "A game day follows this world's pace" · screen/explanation duplicate of time article
+- "The confirmation shows... Keryx asks for confirmation" detail, "The result and the god is angered notification" · screen description
+- "Another equally high temple can keep" detail trimmed; "Once standing is at or below the ceiling" · repeats the line before
+
