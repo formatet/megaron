@@ -236,17 +236,35 @@ func printBuildQueue(c *Client, worldID, provinceID string) error {
 }
 
 func cancelBuildCmd() *cobra.Command {
-	var queueID string
+	var queueID, cityName string
 
 	cmd := &cobra.Command{
-		Use:     "cancel-build",
-		Short:   "Cancel a queued building and refund costs",
-		Example: `  keryx cancel-build --id <queue-id>`,
-		Args:    rejectPositionalArgs("id"),
+		Use:   "cancel-build",
+		Short: "Cancel a queued building and refund costs",
+		Example: `  keryx cancel-build
+  keryx cancel-build --city Phaistos --id 3f2a1b9c`,
+		Args: rejectPositionalArgs("id"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
+			prov := cfg.ProvinceID
+			if cityName != "" {
+				resolved, err := resolveProvince(c, cfg.WorldID, cityName)
+				if err != nil {
+					return err
+				}
+				prov = resolved
+			}
+			cand, err := pickID("cancel-build", "queued building", queueID, "", func() ([]idCandidate, error) {
+				return buildQueueCandidates(c, prov, cityName != "")
+			})
+			if err != nil {
+				return err
+			}
+			if cand.Extra != "" {
+				prov = cand.Extra
+			}
 			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/build-queue/%s",
-				cfg.WorldID, cfg.ProvinceID, queueID)
+				cfg.WorldID, prov, cand.ID)
 			data, err := c.delete(path)
 			if err != nil {
 				return err
@@ -265,7 +283,68 @@ func cancelBuildCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&queueID, "id", "", "build queue ID (from status or build output)")
-	_ = cmd.MarkFlagRequired("id")
+	cmd.Flags().StringVar(&queueID, "id", "", "build queue ID or unique prefix (default: the only queued building)")
+	addCityFlag(cmd, &cityName, false)
 	return cmd
+}
+
+// buildQueueCandidates lists queued buildings: those of one city when the
+// city was named, otherwise of every city you own (the id then carries its
+// own province, so the cancel goes to the right place).
+func buildQueueCandidates(c *Client, provinceID string, oneCity bool) ([]idCandidate, error) {
+	provs := []string{provinceID}
+	if !oneCity {
+		data, err := c.get("/api/v1/worlds/" + cfg.WorldID + "/provinces")
+		if err == nil {
+			var markers []map[string]any
+			if json.Unmarshal(data, &markers) == nil {
+				provs = nil
+				for _, m := range markers {
+					if own, _ := m["own"].(bool); own {
+						if id, _ := m["id"].(string); id != "" {
+							provs = append(provs, id)
+						}
+					}
+				}
+			}
+		}
+		if len(provs) == 0 {
+			provs = []string{provinceID}
+		}
+	}
+	var out []idCandidate
+	for _, pid := range provs {
+		data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces/%s", cfg.WorldID, pid))
+		if err != nil {
+			return nil, err
+		}
+		var p map[string]any
+		if err := json.Unmarshal(data, &p); err != nil {
+			return nil, err
+		}
+		sett, _ := p["settlement"].(map[string]any)
+		bq, _ := sett["build_queue"].([]any)
+		for _, it := range bq {
+			m, _ := it.(map[string]any)
+			id, _ := m["id"].(string)
+			if id == "" {
+				continue
+			}
+			city, _ := m["settlement_name"].(string)
+			if city == "" {
+				city, _ = sett["name"].(string)
+			}
+			label := buildingLabel(m)
+			if city != "" {
+				label += " in " + city
+			}
+			if q, ok := m["hex_q"].(float64); ok {
+				if r, ok := m["hex_r"].(float64); ok {
+					label += fmt.Sprintf(" at %.0f,%.0f", q, r)
+				}
+			}
+			out = append(out, idCandidate{ID: id, Label: label, Extra: pid})
+		}
+	}
+	return out, nil
 }

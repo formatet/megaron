@@ -238,15 +238,20 @@ func routesCmd() *cobra.Command {
 	return cmd
 }
 
-func routeSetStatusCmd(use, short, verb string) *cobra.Command {
+func routeSetStatusCmd(use, short, verb, wantStatus string) *cobra.Command {
 	var orderID string
 	cmd := &cobra.Command{
 		Use:     use,
 		Short:   short,
-		Example: fmt.Sprintf(`  keryx %s --id <standing-order-id>`, use),
+		Example: fmt.Sprintf("  keryx %s\n  keryx %s --id <standing-order-id>", use, use),
 		Args:    noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
+			cand, err := pickID(use, "standing order", orderID, "", func() ([]idCandidate, error) { return standingOrderCandidates(c, wantStatus) })
+			if err != nil {
+				return err
+			}
+			orderID = cand.ID
 			path := fmt.Sprintf("/api/v1/worlds/%s/standing-orders/%s/%s", cfg.WorldID, orderID, verb)
 			data, err := c.post(path, nil)
 			if err != nil {
@@ -260,17 +265,16 @@ func routeSetStatusCmd(use, short, verb string) *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&orderID, "id", "", "standing order ID (see `keryx routes`)")
-	_ = cmd.MarkFlagRequired("id")
+	cmd.Flags().StringVar(&orderID, "id", "", "standing order ID or unique prefix (default: the only candidate; see `keryx routes`)")
 	return cmd
 }
 
 func routePauseCmd() *cobra.Command {
-	return routeSetStatusCmd("route-pause", "Pause a standing order (an in-flight caravan still completes)", "pause")
+	return routeSetStatusCmd("route-pause", "Pause a standing order (an in-flight caravan still completes)", "pause", "active")
 }
 
 func routeResumeCmd() *cobra.Command {
-	return routeSetStatusCmd("route-resume", "Resume a paused standing order", "resume")
+	return routeSetStatusCmd("route-resume", "Resume a paused standing order", "resume", "paused")
 }
 
 func routeDeleteCmd() *cobra.Command {
@@ -278,10 +282,15 @@ func routeDeleteCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "route-delete",
 		Short:   "Delete a standing order (an in-flight caravan still completes, as an ordinary transfer)",
-		Example: `  keryx route-delete --id <standing-order-id>`,
+		Example: "  keryx route-delete\n  keryx route-delete --id <standing-order-id>",
 		Args:    noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
+			cand, err := pickID("route-delete", "standing order", orderID, "", func() ([]idCandidate, error) { return standingOrderCandidates(c, "") })
+			if err != nil {
+				return err
+			}
+			orderID = cand.ID
 			path := fmt.Sprintf("/api/v1/worlds/%s/standing-orders/%s", cfg.WorldID, orderID)
 			if _, err := c.delete(path); err != nil {
 				return err
@@ -290,7 +299,6 @@ func routeDeleteCmd() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&orderID, "id", "", "standing order ID (see `keryx routes`)")
-	_ = cmd.MarkFlagRequired("id")
+	cmd.Flags().StringVar(&orderID, "id", "", "standing order ID or unique prefix (default: the only candidate; see `keryx routes`)")
 	return cmd
 }
