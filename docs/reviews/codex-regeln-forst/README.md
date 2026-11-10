@@ -52,3 +52,24 @@ Removed or collapsed text, per article: first six words · reason.
 - "The confirmation shows... Keryx asks for confirmation" detail, "The result and the god is angered notification" · screen description
 - "Another equally high temple can keep" detail trimmed; "Once standing is at or below the ceiling" · repeats the line before
 
+## marching
+- "Only one unit is selected initially" · screen description
+- "You can also left-click a hex and" · screen description (Hovering those buttons previews...)
+- "Choose the named forces to send and" · duplicate of the sentence above it
+- "Ships with different crews or cargo" · obvious/duplicate of forecast
+- "Redirects also wait for a messenger" · duplicate of the Redirect section
+- "Add --json for the server forecast" · screen/CLI detail
+- "Selecting one fills the destination" · screen description
+- "A notification tells you when" · screen description
+- "Right-click a new destination and a unit" (menu detail) · screen description
+- "The horn sounds when the soldiers" · colour/history
+- "Recall and redirect ... While the Runner follows a moving unit" detail · duplicate of [[runners]]
+- "The map and keryx unit list show" · screen description
+- "Choose Explore ... default duration is ready" · screen description
+- "The order summary shows its extent" and "show the area, duration, latest turn" · screen description
+- "Choose a reachable hex or use a unit" · screen description
+- "An expedition preview shows its planned length" / "A march preview applies" detail · duplicate of [[exploration]]
+- "Before sending an expedition, both the web menu" · screen description
+- "Travel time is fixed at departure; later rule changes" · history (kept: fixed at departure)
+- "Your dispatch receipt says when" · screen description
+
