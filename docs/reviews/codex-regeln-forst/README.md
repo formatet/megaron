@@ -96,3 +96,27 @@ Removed or collapsed text, per article: first six words · reason.
 - "Lay up an idle ... The crew joins" detail · duplicate of [[units]]
 - The generated unit list (`<!-- list: unit ... -->`) is moved under a new un-anchored heading "The three ships" so the lead stays short; untouched otherwise.
 
+## kharis
+- "Kharis is your standing ... The Kult (⛩) drawer shows" · screen description
+- "The number is your standing, not a percentage" · obvious; "Protection temporarily removes" · duplicate of Divine wrath
+- "Blessings and punishments arrive as notifications" · screen description
+- "Rising again keeps your standing... Kharis never falls all the way" · duplicate of the generated standing table (floor)
+- "a fully staffed level-1 temple raises kharis only a quarter" · CONTRADICTION removed (see below)
+- "1. You have a temple ... 2. People serve ... 3. The tithe is paid" list · duplicate of [[temples]]
+- "In a small realm, a fully staffed" · example
+- "it is more when the cult's reference offering of grain is scarce in the world" · FACTUAL ERROR (order item 4), removed
+- "Larger temples can employ more devotion" · duplicate of [[temples]]
+- "Your best temple sets your ceiling ... Everyday prayers work" (raising-kharis-2) · duplicate of the generated ceiling table and [[temples]]
+- "Kharis changes by ... the second adds 2, the third 3" · duplicate of [[cult-upkeep]] and the generated demand table
+- "Under Kharis each game day the drawer lists" · screen description
+- "Kharis is a requirement for prayers, never spent" (second statement) · duplicate of the lead
+- "An ongoing blessed harvest appears beside Food" · screen description
+- "The temple shows how much each good counts" · duplicate of [[temples]] tastes
+- "Demolishing a temple voluntarily costs 10 kharis" (full paragraph) · duplicate of [[temple-demolition]]
+- "The Kult drawer has three tabs: Kharis for this realm-wide" detail · screen description
+- "The estimate assumes that net continues" · obvious
+- "A game day follows this world's pace; Kult ... show the protection's end" · duplicate of the time article
+- "Repeated processing does not extend it. At the end" · internals
+- "Everyday prayers work at a level-1 temple. Spontaneous blessings need 60" (divine-wrath-temple-levels) · third copy of the same text (heading and anchor stay)
+- The three generated blocks (about 620 words) are untouched and count toward the cap.
+

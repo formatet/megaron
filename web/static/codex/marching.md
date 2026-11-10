@@ -3,7 +3,7 @@
 - A plain march reaches only ground your people have seen; **Explore** covers unknown ground.
 - Foot soldiers take 1 game day per plain hex, up to 3 in semi-desert; mountains cannot be crossed.
 - Orders to forces in the field travel by Runner and take effect when it reaches them.
-- Ships must receive their whole mission in port ([[ship-types]]).
+- Ships get their whole mission in port ([[ship-types]]).
 - An enemy can stop you and a [[battle|battle]] begins by itself: there is no declaration of war. <!-- src: server/internal/province/movement.go TerrainMoveTicks -->
 
 ## Selecting forces for a march {#marching-giving-a-march-order}
