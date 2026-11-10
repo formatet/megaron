@@ -1,6 +1,6 @@
 A **gift or tribute** sends goods or [[silver|silver]] to another Wanax's city, with nothing requested in return. It needs no acceptance. The city must have a known location on your map, through sight, exploration or completed contact. A rumour alone is not enough.
 
-Open **Economy → Transfer**. Choose your sending city, a destination marked with its Wanax's name **(gift)**, one or more goods and their quantities, then **Send →**. In Keryx, use `keryx transfer --good silver --qty 20 --dest CityName`; use the settlement ID if two cities share a name. Your own cities remain [[transfers|internal transfers]].
+Open **Economy → Send goods**, or click the city on the map and press **Send goods →**. Choose your sending city, a destination shown as *city — its Wanax*, the goods and their quantities, then **Send as a gift →**. It is the same form as sending between your own cities. In Keryx, use `keryx transfer --good silver --qty 20 --dest CityName`; use the settlement ID if two cities share a name. Your own cities remain [[transfers|internal transfers]].
 
 ## Gifts in transit {#gifts-on-the-road}
 
