@@ -137,6 +137,8 @@ func StepStorm(s StormShape, heading int, sea func(hexgrid.Coord) bool, dice eco
 		slot int
 		to   hexgrid.Coord
 		gain float64
+		dx   float64
+		dy   float64
 	}
 	var cands []cand
 	ox, oy := centroid(s)
@@ -153,18 +155,39 @@ func StepStorm(s StormShape, heading int, sea func(hexgrid.Coord) bool, dice eco
 				continue
 			}
 			nx, ny := centroid(next)
-			cands = append(cands, cand{slot, to, (nx-ox)*hx + (ny-oy)*hy})
+			cands = append(cands, cand{slot, to, (nx-ox)*hx + (ny-oy)*hy, nx - ox, ny - oy})
 		}
 	}
 	if len(cands) == 0 {
 		return s, dice.Intn(6), -1
 	}
 	pick := cands[dice.Intn(len(cands))]
-	if dice.Float64() >= stormRandomChance {
-		best := cands[0].gain
-		for _, c := range cands {
-			best = math.Max(best, c.gain)
+	best := cands[0].gain
+	for _, c := range cands {
+		best = math.Max(best, c.gain)
+	}
+	if best <= 1e-9 {
+		// Pressed against a coast: no legal step carries the storm forward, so it turns away.
+		// Turn to the side where a legal step does carry the storm forward; dice decide a tie.
+		sides := [2]int{(heading + 5) % 6, (heading + 1) % 6}
+		var reach [2]float64
+		for i, h := range sides {
+			ux, uy := cart(stormDirs[h])
+			reach[i] = math.Inf(-1)
+			for _, c := range cands {
+				reach[i] = math.Max(reach[i], c.dx*ux+c.dy*uy)
+			}
 		}
+		switch {
+		case reach[0] > reach[1]+1e-9:
+			heading = sides[0]
+		case reach[1] > reach[0]+1e-9:
+			heading = sides[1]
+		default:
+			heading = sides[dice.Intn(2)]
+		}
+	}
+	if dice.Float64() >= stormRandomChance {
 		var top []cand
 		for _, c := range cands {
 			if c.gain >= best-1e-9 {

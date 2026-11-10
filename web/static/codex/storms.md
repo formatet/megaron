@@ -5,7 +5,7 @@ Select a water hex on the world map or in the city's workforce grid to read any 
 
 ## How storms move {#storms-how-they-move}
 
-Each game day a storm takes **two steps**. In each step, one of its hexes moves to a neighbouring sea hex, and the storm stays in one piece. So a storm crawls: slowly, and a little more each game day in the direction it has been drifting, now and then turning. It never crosses land. A storm that has died is gone from the sea: the map still remembers it where you last saw it, until you look at that place and find it empty.
+Each game day a storm takes **two steps**. In each step, one of its hexes moves to a neighbouring sea hex, and the storm stays in one piece. So a storm crawls: slowly, and a little more each game day in the direction it has been drifting, now and then turning. It never crosses land. A storm that runs against a coast turns away from it. A storm that has died is gone from the sea: the map still remembers it where you last saw it, until you look at that place and find it empty.
 
 ## Storm effects {#storms-what-they-do}
 
