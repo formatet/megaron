@@ -2,13 +2,14 @@ You are a **Wanax**: a [[bronze|Bronze]] Age ruler of a people on the eastern sh
 
 This Codex is the world's book of knowledge. Every article links onward — follow what you are curious about, or open it from the **?** on any drawer or notification to read about exactly what is in front of you.
 
-## Six things to know
+## Seven things to know
 
 - Read the land before you found: the forecast says whether it feeds you ([[founding]]).
 - Keep food above zero: an unfed city shrinks and below 50 people it is gone ([[food]]).
 - Early on, [[timber|timber]] is almost always the bottleneck ([[goods]]).
 - [[copper]] and [[tin|tin]] never lie on the same landmass ([[bronze]]).
 - Bronze makes elite troops ([[elite-infantry]]).
+- Every force eats each game day; Bronze Guard, [[war-chariot|chariots]] and [[war-galley|War Galleys]] also draw [[silver|silver]] ([[upkeep]]).
 - A temple keeps [[gods|the gods]] calm ([[temples]]).
 
 These can wait: [[offerings|offering sizes]], [[routes]] (standing orders), [[naming-the-land|naming places]], [[sieges]], [[ship-types-2|laying up ships]].
