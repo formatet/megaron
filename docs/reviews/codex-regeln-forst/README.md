@@ -143,3 +143,26 @@ Removed or collapsed text, per article: first six words · reason.
 - "In Diplomacy → Correspondence, use Call it back" long form · screen description
 - "(a later known waiting spell can trigger it again; an unknown rescued runner" · internals
 
+## rites
+- "A **rite** is a request to the gods. Open Kult" · duplicate of the first line
+- "Each prayer row shows its temple, Required kharis" · screen description
+- "Each of the ten Minoan everyday prayers" · CONTRADICTION (fourteen prayers listed), removed (see below)
+- "Choose some goods before bringing the gift" and "In an interactive terminal, Keryx shows" · screen description
+- "For these prayers, --offer-multiplier is ignored" · CLI internals
+- "Another temple of the same god in another city" · obvious from "that temple"
+- "Kult and keryx rite --list show the rest" · screen description
+- "Older prayers outside the current Minoan catalogue retain" · history
+- "The current Minoan prayers are Following Seas, Fruitful" · duplicate of the list below and of [[kharis]] table
+- "Current kharis is shown with a decimal" · screen description
+- "The answer or a refusal appears in the Kult drawer" · screen description
+- "An ongoing blessed harvest appears beside Food" · duplicate of [[kharis]] (screen description)
+- Per-prayer "offer 15 grain + 2 silver ... His temple rests 25 game days" (14 lines) · duplicate of the generated table in [[kharis]] and of each prayer's own article
+- Blessings-with-target: "In Kult → Prayers the offer row has the three choices" and the list of who can be named · screen description / duplicate of the prayer articles
+- "Your force list shows what is laid on each troop" · screen description
+- "It stacks with the Arm ... Later rounds, and troops that join" · duplicate of [[the-bulls-horns]]
+- "In Keryx: rite --prayer minoan_potnia_walls_fall" · CLI detail (in [[the-walls-fall]])
+- "Retired: The Thread Shows a Path ..." · history
+- "In Keryx, rite --list shows your prayers, their effects" · screen description
+- "keryx cult and keryx rite --list print the same figures" and the Offer-row Favours line · screen description
+- The generated Favours table (about 400 words) is untouched and counts toward the cap.
+
