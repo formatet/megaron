@@ -1,10 +1,10 @@
 Every ship needs a **[[harbour|Harbour]]** and a **[[shipyard|Shipyard]]** ([[buildings]]).
 
 - A Galley ([[timber|timber]]) carries 20 goods or one land unit.
-- An Emporos (90 [[cedar|cedar]]) carries 120 goods or up to three land units.
+- An Emporos (90 [[cedar|cedar]]) carries 120 goods or up to three land forces.
 - A War Galley (cedar, [[foundry]]) fights and never carries cargo.
 - A ship takes its whole mission in port; once it sails it takes no more orders.
-- It eats what it carries and turns home before the food runs short. <!-- src: server/internal/unit catalogue; reference.json units -->
+- It eats what it carries and turns home before the food runs short. <!-- src: server/internal/unit catalogue; reference.json -->
 
 ## The three ships
 

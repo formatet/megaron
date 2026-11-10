@@ -73,7 +73,7 @@ Where your kharis stands decides the risk and the favour you meet.
 
 Higher kharis brings true omens more often and in more detail; they never reveal exact strength, arrival times, routes or unknown place names.
 
-A new Wanax starts at **40 kharis**, before founding; rising again keeps your standing. With one city and no temple about 10 points fade in 30 game days: build a temple early.
+A new Wanax starts at **40 Kharis**, before founding; rising again keeps your standing. With one city and no temple about 10 points fade in 30 game days: build a temple early.
 
 ## Maintaining divine standing {#raising-kharis}
 
@@ -83,7 +83,7 @@ Kharis holds only while a temple exists, is **staffed** and has its **tithe paid
 
 **Your best temple sets your ceiling** (table above); with no temple it is the lowest.
 
-Kharis changes by **what your temples produce − what your realm's demand costs** per game day ([[cult-upkeep]]); population does not contribute. **Above ceiling (N)** on the Kult drawer: [[upkeep|upkeep]] continues and temples add nothing until standing is back at or below N.
+Kharis changes by **what your temples produce − what your realm's demand costs** per game day ([[cult-upkeep]]). Population does not contribute. **Above ceiling (N)** on the Kult drawer: [[upkeep|upkeep]] continues and temples add nothing until standing is back at or below N.
 
 ### Kult tabs and changes in standing {#raising-kharis-3}
 
