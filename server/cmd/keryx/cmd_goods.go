@@ -170,13 +170,15 @@ func transferCmd() *cobra.Command {
 	var destName string
 	var provinceID string
 	var by string
+	var again bool
 
 	cmd := &cobra.Command{
 		Use:   "transfer",
 		Short: "Send physical goods to your own city or a contacted foreign city as a gift, with nothing requested in return",
 		Example: `  keryx transfer --good grain --qty 50 --dest Korinth
   keryx transfer --good grain --qty 12 --good timber --qty 8 --dest Korinth
-  keryx transfer --from <colony> --good grain --qty 50 --dest Korinth   # pull a colony's surplus home`,
+  keryx transfer --from <colony> --good grain --qty 50 --dest Korinth   # pull a colony's surplus home
+  keryx transfer --good grain --qty 50 --dest Korinth --again           # send a second identical caravan the same game day`,
 		// --good, --qty and --dest are all required — no single one is the
 		// obvious guess for a stray positional.
 		Args: noPositionalArgs(),
@@ -202,6 +204,11 @@ func transferCmd() *cobra.Command {
 			destID, err := resolveTransferDestination(c, cfg.WorldID, src, destName)
 			if err != nil {
 				return fmt.Errorf("resolve destination %q: %w", destName, err)
+			}
+			if !again {
+				if err := refuseDuplicateTransfer(c, cfg.WorldID, src, destID, items); err != nil {
+					return err
+				}
 			}
 			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/trade", cfg.WorldID, src)
 			previewData, err := c.get(path + "/preview?destination_id=" + url.QueryEscape(destID) + "&by=" + url.QueryEscape(by))
@@ -255,6 +262,7 @@ func transferCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&by, "by", "", "goods route: land or sea (omitted: automatic)")
+	cmd.Flags().BoolVar(&again, "again", false, "send even if an identical caravan already left this game day")
 
 	cmd.Flags().StringArrayVarP(&goods, "good", "g", nil, "good key; repeat with matching --qty for each item")
 	cmd.Flags().StringArrayVarP(&quantities, "qty", "q", nil, "quantity to send; repeat once for each --good")
@@ -265,6 +273,118 @@ func transferCmd() *cobra.Command {
 	_ = cmd.MarkFlagRequired("qty")
 	_ = cmd.MarkFlagRequired("dest")
 	return cmd
+}
+
+// refuseDuplicateTransfer stops a re-run (typically an agent retrying after a
+// timeout) from silently sending a second identical caravan. It reads the
+// caller's own transfers/gifts from GET /trades (origin_name, dest_name, items,
+// departure_tick) and refuses when one with the same origin, destination and
+// goods left in the current tick. Any lookup that fails lets the transfer
+// through: the guard must never block a legitimate send.
+func refuseDuplicateTransfer(c *Client, worldID, src, destID string, items []transferItem) error {
+	tick, ok := fetchWorldTick(c, worldID)
+	if !ok {
+		return nil
+	}
+	originName, destName := transferEndpointNames(c, worldID, src, destID)
+	if originName == "" || destName == "" {
+		return nil
+	}
+	data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/trades", worldID))
+	if err != nil {
+		return nil
+	}
+	var markers []struct {
+		Role          string         `json:"role"`
+		Kind          string         `json:"kind"`
+		OriginName    string         `json:"origin_name"`
+		DestName      string         `json:"dest_name"`
+		DepartureTick *int           `json:"departure_tick"`
+		ArrivalTick   *int           `json:"arrival_tick"`
+		ArrivesAt     string         `json:"arrives_at"`
+		GoodKey       string         `json:"good_key"`
+		Quantity      float64        `json:"quantity"`
+		Items         []transferItem `json:"items"`
+	}
+	if json.Unmarshal(data, &markers) != nil {
+		return nil
+	}
+	want := transferTotals(items)
+	for _, m := range markers {
+		if m.Role != "sender" || (m.Kind != "transfer" && m.Kind != "gift") || m.DepartureTick == nil || *m.DepartureTick != tick {
+			continue
+		}
+		if !strings.EqualFold(m.OriginName, originName) || !strings.EqualFold(m.DestName, destName) {
+			continue
+		}
+		have := m.Items
+		if len(have) == 0 {
+			have = []transferItem{{m.GoodKey, m.Quantity}}
+		}
+		if !sameTotals(want, transferTotals(have)) {
+			continue
+		}
+		when := "arrival time unavailable"
+		if m.ArrivalTick != nil {
+			when = formatWorldTime(c, *m.ArrivalTick)
+		} else if m.ArrivesAt != "" {
+			when = arrivalETA(c, m.ArrivesAt)
+		}
+		return fmt.Errorf("An identical caravan already left %s for %s this game day (%s, arrives %s). Run again with --again to send another.",
+			originName, destName, transferItemText(items), when)
+	}
+	return nil
+}
+
+func transferTotals(items []transferItem) map[string]float64 {
+	out := map[string]float64{}
+	for _, it := range items {
+		out[it.GoodKey] += it.Quantity
+	}
+	return out
+}
+
+func sameTotals(a, b map[string]float64) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for k, v := range a {
+		if w, ok := b[k]; !ok || w != v {
+			return false
+		}
+	}
+	return true
+}
+
+// transferEndpointNames returns the sending and receiving city names ("" when unknown).
+func transferEndpointNames(c *Client, worldID, src, destID string) (origin, dest string) {
+	if data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/trade/destinations", worldID, src)); err == nil {
+		var rows []struct {
+			ID   string `json:"settlement_id"`
+			Name string `json:"name"`
+		}
+		if json.Unmarshal(data, &rows) == nil {
+			for _, r := range rows {
+				if r.ID == destID {
+					dest = r.Name
+				}
+			}
+		}
+	}
+	if data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces", worldID)); err == nil {
+		var rows []struct {
+			ID   string `json:"id"`
+			Name string `json:"name"`
+		}
+		if json.Unmarshal(data, &rows) == nil {
+			for _, r := range rows {
+				if r.ID == src {
+					origin = r.Name
+				}
+			}
+		}
+	}
+	return origin, dest
 }
 
 type transferItem struct {
