@@ -275,3 +275,29 @@ test('codex: ? in the Kult drawer opens rites on Prayers, temples on Temples, kh
   assert.equal(articleForDrawer('kult:temples', index), 'temples');
   assert.equal(articleForDrawer('kult', index), 'kharis');
 });
+
+// "The rule first" (order-codex-regeln-forst-20261110): the eight longest articles open with at most
+// five bullets (<= 90 words), stay under 60 % of their former length, and keep every anchor they had.
+// Caps and anchor lists are literals taken from master at 9aaf99aa.
+const ruleFirst = {
+  'rites': { cap: 1761, anchors: ['rites-details', 'prayer-requirements', 'prayer-requirements-2', 'rites-the-prayers', 'minoan-prayers', 'minoan-prayers-2', 'minoan-prayers-3', 'offerings'] },
+  'runners': { cap: 1490, anchors: ['runners-details', 'runners-why-this-is-good-for-you', 'runners-when-an-order-fails', 'runners-catching-up-with-a-moving-unit', 'runners-catching-up-with-a-moving-unit-2', 'runners-crossing-the-sea', 'runners-the-runners-tab', 'runners-runner-speed', 'arrange-passage', 'arrange-passage-2', 'runner-lost-at-sea', 'runner-lost-at-sea-details', 'runner-lost-at-sea-details-2', 'runner-passage', 'runner-passage-2', 'runner-passage-3', 'runner-passage-on-map', 'runner-rescued-at-sea', 'runner-rescued-at-sea-details', 'runner-return', 'runner-waiting'] },
+  'kharis': { cap: 1247, anchors: ['kharis-numbers', 'kharis-details', 'kharis-details-2', 'raising-kharis', 'raising-kharis-2', 'raising-kharis-3', 'divine-wrath', 'divine-wrath-warning-before-danger', 'divine-wrath-seven-game-days-after-punishment', 'divine-wrath-temple-levels'] },
+  'ship-types': { cap: 1076, anchors: ['fetch-by-ship', 'fetch-by-ship-2', 'landing-in-own-city', 'landing-in-own-city-2', 'sailing-time', 'ship-food-return', 'ship-loss', 'ship-missions', 'ship-missions-2', 'ship-missions-3', 'ship-types-2'] },
+  'marching': { cap: 1032, anchors: ['marching-giving-a-march-order', 'marching-giving-a-march-order-2', 'marching-giving-a-march-order-3', 'marching-a-marching-unit-is-still-reachable', 'marching-orders-to-forces-already-in-the-field-travel-by-runner', 'marching-orders-to-forces-already-in-the-field-travel-by-runner-2', 'marching-where-you-can-march', 'marching-on-the-road', 'marching-exploring-an-area', 'marching-exploring-an-area-2', 'marching-terrain-and-journey-time', 'marching-terrain-and-journey-time-2', 'marching-terrain-and-journey-time-3'] },
+  'temples': { cap: 983, anchors: ['temples-building-one', 'temple-workers', 'daily-offerings', 'rich-offering', 'daily-offerings-2', 'temple-levels', 'temple-levels-2', 'temples-find-your-temples', 'cult-upkeep', 'cult-upkeep-2', 'temple-demolition'] },
+  'buildings': { cap: 856, anchors: ['buildings-details', 'buildings-details-3', 'hex-buildings', 'hex-buildings-2', 'hex-production-buildings', 'building-levels', 'building-levels-2', 'demolition', 'demolition-2'] },
+  'units': { cap: 848, anchors: ['units-recruiting', 'units-recruiting-2', 'units-recruits-are-your-own-people', 'units-recruits-are-your-own-people-2', 'units-recruits-are-your-own-people-3', 'units-the-forces-tab', 'units-the-forces-tab-2', 'units-forces-and-marches'] },
+};
+const wordCount = s => s.split(/\s+/).filter(Boolean).length;
+for (const [id, spec] of Object.entries(ruleFirst)) {
+  test(`codex: ${id} opens with a short rule, is cleared out, and keeps its anchors`, () => {
+    const lead = splitSections(bodies[id])[0].text.replace(/<!--[\s\S]*?-->/g, '');
+    const bullets = lead.split('\n').filter(l => /^- /.test(l)).length;
+    assert.ok(wordCount(lead) <= 90, `${id} lead has ${wordCount(lead)} words (max 90)`);
+    assert.ok(bullets >= 1 && bullets <= 5, `${id} lead has ${bullets} bullets (need 1-5)`);
+    assert.ok(wordCount(bodies[id]) <= spec.cap, `${id} has ${wordCount(bodies[id])} words (cap ${spec.cap})`);
+    const have = [...bodies[id].matchAll(/\{#([a-z0-9-]+)\}/g)].map(m => m[1]);
+    assert.deepEqual(spec.anchors.filter(a => !have.includes(a)), [], `${id} lost anchors`);
+  });
+}

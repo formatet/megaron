@@ -1,82 +1,71 @@
 A rite is a request made at the temple of its god.
 
-A **rite** is a request to [[gods|the gods]]. Open **Kult → Prayers**.
-
-Each prayer is said at its own god's [[temples|temple]], so a city needs that temple standing: [[following-seas]], [[stout-hulls]], [[still-the-storm]] and [[wake-the-storm]] need a Temple of the [[sea-daimons|Sea Daimons]] of Stillness, [[green-shoots]], [[the-young-gods-arm]] and [[builders-blessing]] a Temple of [[velchanos]], [[mistress-of-the-walls]], [[potnias-vision]], [[fruitful-season]], [[the-scapegoat]] and [[the-walls-fall]] a [[temple]] of [[potnia]], [[swift-feet]], [[the-bulls-horns]], [[the-thread]] and [[the-bird-oracle]] a Temple of [[asterion]]. Level 1 is enough. Without it the prayer shows "no Temple of …".
+- Each prayer is said at its own god's [[temples|temple]]; level 1 is enough.
+- [[kharis]] is a minimum you must hold, never spent; the offering is.
+- Bring the traditional recipe, or a composed offering worth at least as much.
+- An answered prayer makes **that temple** rest, and only while it is fully staffed.
+- A larger gift makes a lasting prayer last longer. <!-- src: reference.json prayers -->
 
 ## Temples required by prayers {#rites-details}
 
-Each prayer row shows its temple, **Required kharis: N** (the minimum standing it needs, never spent), its effect and its **Offering** (the traditional recipe). Press **Offer**: a row opens with a field for each good, filled with the prayer's recipe. Bring it as it stands, or change the numbers first.
+[[temple]] per prayer: [[sea-daimons|Sea Daimons]] of Stillness: [[following-seas]], [[stout-hulls]], [[still-the-storm]], [[wake-the-storm]]. [[velchanos]]: [[green-shoots]], [[the-young-gods-arm]], [[builders-blessing]]. [[potnia]]: [[mistress-of-the-walls]], [[potnias-vision]], [[fruitful-season]], [[the-scapegoat]], [[the-walls-fall]]. [[asterion]]: [[swift-feet]], [[the-bulls-horns]], [[the-thread]], [[the-bird-oracle]].
 
 ## Standing and offerings for prayers {#prayer-requirements}
 
-**[[kharis]] is never spent on a prayer.** Each of the ten Minoan everyday prayers answers when you meet its standing requirement, have its god's temple, and can bring its offering. Waiting time, an active gift or an unused departure gift can still prevent a new prayer.
+A prayer answers when you meet its standing, have its god's temple and can bring its offering. Waiting time, an active gift or an unused departure gift can still prevent a new prayer.
 
-Bring the traditional recipe or a composed offering worth at least as much to that god. If you lack the traditional gift, **Compose offering** opens empty fields so you can choose other goods you hold. Choose some goods before bringing the gift. `keryx rite --list` marks this as **compose**; use `rite --offer good=amount` to choose the gift. In an interactive terminal, Keryx shows your chosen goods and exact amounts before asking **Cast?**; answering no leaves the gift untouched. A smaller gift is refused without taking goods. Bringing more does not change whether the god answers, but a larger gift makes a lasting prayer last longer (up to five times as long) and makes the temple rest longer. For these prayers, `--offer-multiplier` is ignored; omitting a composed offering always brings the traditional recipe.
+Without the traditional gift, **Compose offering** opens empty fields for other goods you hold. In Keryx, `rite --offer good=amount` chooses the gift. A smaller gift is refused without taking goods. A larger gift does not change whether the god answers, but a lasting prayer lasts longer (up to five times) and the temple rests longer.
 
 ### Waiting between prayers {#prayer-requirements-2}
 
-An answered prayer makes **that temple** rest — not the god, and not your other temples. Another temple of the same god in another city can still pray meanwhile. The rest grows with the size of the gift and shrinks with the temple's level: a level 2 temple rests half as long as a level 1 temple for the same gift, a level 3 temple a third. **A temple recovers only while it is fully staffed**; if it lacks servants its rest stands still, and **Kult** and `keryx rite --list` say so ("paused: 2 of 4 servants"). Potnia's two prayers share her temple's rest. **Kult** and `keryx rite --list` show the rest, an active gift or a gift awaiting departure. Missing temples and insufficient kharis are named as separate requirements. An active gift cannot be renewed before it ends. A gift awaiting departure cannot be renewed before it is used.
-
-Older prayers outside the current Minoan catalogue retain their uncertain answer and offering multiplier. Their offering is spent even on a silent answer, but kharis is never spent. Old recorded outcomes remain as they happened.
+An answered prayer makes **that temple** rest, not the god or your other temples. The rest grows with the gift and shrinks with temple level: level 2 rests half as long as level 1, level 3 a third. **A temple recovers only while fully staffed**. Potnia's prayers share her temple's rest. An active gift, or one awaiting departure, cannot be renewed before it ends or is used.
 
 ## Prayer answers and active blessings {#rites-the-prayers}
 
-The current Minoan prayers are **Following Seas**, **Fruitful Season**, **Green Shoots**, **Mistress of the Walls**, **Potnia's Vision**, **Stout Hulls**, **Swift Feet**, **The Bird Oracle**, **The Builder's Blessing**, **The Bull's Horns**, **The Scapegoat**, **The Thread**, **The Walls Fall** and **The Young God's Arm**, described below. `keryx rite --list` or **Kult → Prayers** shows the prayers your culture can offer and why one is unavailable. Current kharis is shown with a decimal; eligibility uses the exact pool value.
-
-The answer or a refusal appears in the Kult drawer after you offer; it stays beside the prayers. An answer also arrives as a dispatch naming the god, the prayer and what was granted. When the god marks a place, **⌖ Take me there** goes to it. In Keryx it is listed by `keryx notifications`.
-
-An ongoing **blessed harvest** appears beside Food in the city drawer and in
-`keryx status` and `keryx city`, with its yield bonus, affected goods and game days left.
-The row disappears when the blessing ends; [[fish|fish]] receives no harvest bonus.
+`keryx rite --list` or **Kult → Prayers** shows what you can offer and why one is unavailable. The answer arrives as a dispatch naming the god, the prayer and what was granted; when the god marks a place, **⌖ Take me there** goes to it.
 
 ## The current Minoan prayers {#minoan-prayers}
 
-- **Green Shoots** — offer 15 grain + 2 silver. Velchanos raises grain, [[oil|oil]] and [[wine|wine]] yield by a quarter for 25 game days with the traditional gift; a larger gift lasts longer. Fish and the herd are unchanged. His temple rests 25 game days after answering at level 1.
-- **Mistress of the Walls** — offer 8 grain + 4 [[timber|timber]]. Potnia strengthens your own garrison defending this city by a quarter for 6 game days with the traditional gift; a larger gift lasts longer. It helps neither an attacking army nor soldiers away from that city. It shares Vision's rest.
-- **Potnia's Vision** — offer 10 [[grain|grain]] + 3 [[silver|silver]]. Potnia marks one source of [[copper|copper]], incense, silver or [[tin|tin]] you neither see nor remember, and unknown ground within two hexes, as grey memory. It creates no living eyes and shows no moving activity. Her temple rests 24 game days after answering at level 1.
+Offerings, required kharis and rest are in the table in [[kharis]]. Durations below are for the traditional gift.
 
-- **The Young God's Arm** — offer 6 [[livestock|livestock]] + 4 [[wine|wine]]. Velchanos makes the land troops you name roll a quarter more dice in [[battle]] for 6 game days with the traditional gift, attacking or defending, wherever they stand. It is a **blessing with a target**, see below. His temple rests 12 game days after answering at level 1.
-- **Stout Hulls** — offer 8 fish + 4 [[oil|oil]]. The Sea Daimons let each ship you name take its next [[storms|storm]] unharmed, for 12 game days with the traditional gift. It is a **blessing with a target**, see below. Their temple rests 12 game days after answering at level 1.
+- **[[green-shoots|Green Shoots]]**: grain, [[oil|oil]] and [[wine|wine]] yield a quarter more for 25 game days; fish and the herd unchanged.
+- **[[mistress-of-the-walls|Mistress of the Walls]]**: your garrison defending this city is a quarter stronger for 6 game days; no help to an attacker or to soldiers elsewhere. Shares Vision's rest.
+- **[[potnias-vision|Potnia's Vision]]**: marks one source of [[copper|copper]], incense, silver or [[tin|tin]] you neither see nor remember, and unknown ground within two hexes, as grey memory. No living eyes.
+- **[[the-young-gods-arm|The Young God's Arm]]**: named land troops roll a quarter more dice in [[battle]] for 6 game days, attacking or defending, wherever they stand.
+- **[[stout-hulls|Stout Hulls]]**: each ship you name takes its next [[storms|storm]] unharmed, for 12 game days.
 
-**Blessings with a target.** These prayers (the Arm, Stout Hulls, Swift Feet, Following Seas, the Bull's Horns and the Thread) ask who is blessed: **one named unit** (or [[runners|Runner]], caravan or ship) of yours, **everything of that kind supported by the city where you pray**, or **all of it in your realm**. The wider the target, the dearer the gift: the traditional offering ×1, ×2 or ×4. A larger gift than that lasts longer, as for any lasting prayer. In **Kult → Prayers** the offer row has the three choices, the list of your troops or ships, and the gift for each; in Keryx use `rite --scope unit|city|realm` and, for one unit, `--target <name or id>`; `rite --list` shows what you can name. Only your own, living troops or ships of the right kind can be named (troops for the Arm and the Horns, ships for Stout Hulls and Following Seas, Runners and caravans for Swift Feet, land caravans for the Thread). The blessing is read when it is needed, wherever the blessed troops or ship are, so it works for a unit already marching or at sea. A city or realm blessing can be asked even when you have no troops or ships of that kind yet: it holds for the place while it lasts and also covers troops or ships that join afterwards. A blessing on one named unit still needs that unit. The same target cannot be blessed twice at once, but two different troops or ships can each be blessed, once the temple has rested.
+**Blessings with a target.** The Arm, Stout Hulls, Swift Feet, Following Seas, the Bull's Horns and the Thread ask who is blessed: **one named unit** (or [[runners|Runner]], caravan or ship), **everything of that kind supported by the city where you pray**, or **all of it in your realm**; the traditional offering ×1, ×2 or ×4. Keryx: `rite --scope unit|city|realm`, `--target <name or id>`. Only your own troops or ships of the right kind can be named. The blessing is read when needed, so it works on a unit already marching or at sea; a city or realm blessing also covers those that join later. The same target cannot be blessed twice at once.
 
-**For ever (a fourth step).** Three of these prayers can also be laid on **one named troop or ship, for good**, at **twenty times** the traditional offering: the Arm (fights a quarter stronger in every battle), Following Seas (every voyage of that ship takes three quarters of the time) and Stout Hulls (one plank more, so her hull is 6 and not 5, repaired back to 6). It is never a city or the realm, and never a Runner or caravan, which make one journey each (Swift Feet, the Horns and the Thread have no such step). The same blessing cannot be said twice over the same troop or ship. The temple rests as after the ordinary prayer. Choose *For ever* in **Kult → Prayers**, or use `rite --scope permanent --target <name>`. Your force list shows what is laid on each troop or ship; other Wanaxer do not see it.
+**For ever (a fourth step).** The Arm (a quarter stronger in every battle), Following Seas (every voyage takes three quarters of the time) and Stout Hulls (hull 6, not 5) can be laid on **one named troop or ship, for good**, at **twenty times** the offering. Never a city, the realm, a Runner or a caravan. Keryx: `rite --scope permanent --target <name>`.
 
 ### Prayers laid on a city or the realm
 
-These three name no unit; you choose **the city where you pray** (twice the traditional offering) or **the whole realm** (four times). In **Kult → Prayers** the offer row has just those choices; in Keryx use `rite --scope city|realm`.
+You choose **the city where you pray** (twice the offering) or **the whole realm** (four times); Keryx `rite --scope city|realm`.
 
-- **Fruitful Season** — offer 4 livestock + 4 grain to Potnia. People and herds grow half as fast again for 20 game days with the traditional gift, see [[fruitful-season]].
-- **The Builder's Blessing** — offer 3 timber + 2 wine to Velchanos. What is left of each building and ship under construction takes three quarters of the time, once for each, and so do those begun while it lasts, for 12 game days with the traditional gift, see [[builders-blessing]].
-- **The Scapegoat** — offer 3 livestock to Potnia, for the realm only (so 12 livestock). A goat bears the next divine punishment within 30 game days, so nothing is lost; the gods' mercy holds as after any punishment, see [[the-scapegoat]]. A notice tells you when it has done so.
+- **[[fruitful-season|Fruitful Season]]**: people and herds grow half as fast again for 20 game days.
+- **[[builders-blessing|The Builder's Blessing]]**: each building and ship under construction, and those begun meanwhile, takes three quarters of the time, for 12 game days.
+- **[[the-scapegoat|The Scapegoat]]**, realm only (so 12 livestock): a goat bears the next divine punishment within 30 game days, so nothing is lost, and [[gods|the gods]]' mercy holds as after any punishment.
 
 ### Prayers of battle and of the road
 
-- **The Bull's Horns** — offer 5 [[livestock|livestock]] + 2 [[silver|silver]] to Asterion. Land troops you name strike half as hard again in the **first round** of a [[battle]], attacking or defending, for 12 game days with the traditional gift. Later rounds, and troops that join a battle already begun, are as usual; it stacks with the Arm in that first round. A **blessing with a target**, see above, without a step for ever. See [[the-bulls-horns]].
-- **The Thread** — offer 3 [[wine|wine]] + 2 silver to Asterion. Land [[transfers|caravans]] you name can only be taken by a sentry standing within one hex, not two, for 12 game days with the traditional gift, also when already on the road. [[runners|Runners]] and ships are not covered. A **blessing with a target**, see above; the city and realm steps also hold for caravans that leave while the prayer lasts. See [[the-thread]].
-- **The Bird Oracle** — offer 10 [[silver|silver]] + 8 [[wine|wine]] to Asterion, and stand at 30 [[kharis]] or more. Name a city or a named place of your map, and for 1 game day you see live everything within 2 hexes of it, armies, fleets and caravans with their strength. Afterwards it is grey memory. The one watched is told nothing. It is the only way to see far away without a person of yours there. See [[the-bird-oracle]].
+- **[[the-bulls-horns|The Bull's Horns]]**: named land troops strike half as hard again in the **first round** of a battle, for 12 game days; stacks with the Arm in that round. No step for ever.
+- **[[the-thread|The Thread]]**: named land [[transfers|caravans]] can be taken only by a sentry within one hex, not two, for 12 game days, also on the road. Runners and ships are not covered.
+- **[[the-bird-oracle|The Bird Oracle]]** (30 [[kharis]] or more): name a city or place on your map and for 1 game day you see live everything within 2 hexes, armies, fleets and caravans with strength. Afterwards it is grey memory. The one watched is told nothing.
 
 ### A prayer against another Wanax
 
-- **The Walls Fall** — offer 12 [[livestock|livestock]] + 8 [[silver|silver]] to Potnia. You name a city of another Wanax that is on your map and whose wall you remember. Three game days later it loses one wall level. You hear only that Potnia listened; you learn the result by seeing the city again. The other Wanax is told when the wall falls, and warned beforehand if they stand well with the gods, never by whom. A battle already under way at the walls is not changed. A richer gift does no more. See [[the-walls-fall]] and [[wrath-over-the-walls]]. In Keryx: `rite --prayer minoan_potnia_walls_fall --target "<city>"`.
+- **[[the-walls-fall|The Walls Fall]]**: name a city of another Wanax that is on your map and whose wall you remember. Three game days later it loses one wall level. You learn the result by seeing the city again. The other Wanax is told when the wall falls, warned beforehand if they stand well with the gods, never by whom. A richer gift does no more. See [[wrath-over-the-walls]].
 
 ### Prayers of speed {#minoan-prayers-2}
 
-- **Swift Feet** — offer 3 silver + 4 timber to Asterion. Runners and land [[transfers|caravans]] you name take a quarter less time over what is left of their road, also when already under way, for 12 game days with the traditional gift. A **blessing with a target**, see above; the city and realm steps also hold for journeys that start while the prayer lasts. Asterion's temple rests 12 game days after answering at level 1.
-- **Following Seas** — offer 6 fish + 3 silver to The Sea Daimons of Stillness. Ships you name take a quarter less time over what is left of their voyage, also when already at sea, for 12 game days with the traditional gift. A **blessing with a target**, see above. A journey is shortened once, however many prayers are said. Their temple rests 12 game days after answering at level 1.
+- **[[swift-feet|Swift Feet]]**: named Runners and land caravans take a quarter less time over what is left of their road, for 12 game days.
+- **[[following-seas|Following Seas]]**: named ships take a quarter less time over what is left of their voyage, for 12 game days. A journey is shortened once, however many prayers are said.
 
-*Retired:* **The Thread Shows a Path** (not the Thread above) and **Favourable Passage** (next-departure prayers) can no longer be offered; a departure prayer already waiting is still honoured when its journey leaves.
-
-Other cultures' war prayer (for example Ares' Fury for the Akhaier) works the same way as the Walls: your own garrison defending this city fights a quarter stronger for 6 game days with the traditional gift, and it cannot be offered again while it is active. It does not help an attacking army.
-
-Green Shoots requires 30 kharis; Vision, [[walls|Walls]], the two prayers of speed and the two blessings require at least 5. The temple's ordinary daily offering is separate.
+Ares' Fury (Akhaier) works like Mistress of the Walls. Green Shoots requires 30 kharis; the rest at least 5.
 
 ### Gifts awaiting departure {#minoan-prayers-3}
 
-A departure gift stays in the city where you offered until an eligible journey physically leaves. It is used once. It cannot follow the city to a new owner, change a journey already underway, or bless a return leg. **Awaiting next departure** appears beside the prayer while the gift is unused; the god's waiting time is shown separately. Other ongoing gifts show their remaining game days.
-
-In Keryx, `rite --list` shows your prayers, their effects, offerings, active game days, pending departure gifts of the retired prayers and each temple's rest. `rite --prayer <id>` chooses one. Omitting the ID uses the prayer marked as the culture's default — Mistress of the Walls for Minoans.
+A departure gift stays in the city where you offered until an eligible journey physically leaves. It is used once, and cannot change a journey underway or bless a return leg. **Awaiting next departure** shows beside the prayer until then. `rite --prayer <id>` chooses a prayer; omitting it uses the culture's default (Mistress of the Walls for Minoans).
 
 ## The value of an offering {#offerings}
 
@@ -90,11 +79,7 @@ The gods keep a fixed reckoning: what one unit of each good is worth as an offer
 | [[incense]] | 12 |
 | [[bronze]] | 33 |
 
-`keryx cult` and `keryx rite --list` print the same figures; the web prayer row shows what each god **Favours**.
-
-These are offering values. Wanaxes agree their own trade prices. You may compose an offering in the Offer row on the web, or in Keryx with `rite --offer good=amount,...`. Each god has a taste: the Offer row's **Favours:** line lists the goods this god loves most, dearest first. The traditional recipe always suffices.
-
-A good's worth is multiplied by the god's taste for it. A taste above 1 means the god values that good more than its worth, below 1 less. Goods not listed count at their worth.
+These are offering values, not trade prices. A good's worth is multiplied by the god's taste for it (above 1 the god values it more, below 1 less; unlisted goods count at their worth). The traditional recipe always suffices.
 
 <!-- favours -->
 | Prayer | God | Favours (dearest first) |
