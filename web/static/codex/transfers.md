@@ -1,6 +1,6 @@
 A **transfer** moves goods between two of your *own* settlements. No consent, no negotiation — simpler than [[trade]] with a stranger.
 
-Open **Economy → Transfer**, choose *From*, *To*, the goods and their quantities, and press **Send →**. Below, **Your cargo in transit** lists everything on the road — which city it left, which city it is bound for, and its arrival time. A notification tells you when it is delivered.
+Open **Economy → Send goods**, choose *From*, *To*, type a quantity beside each good (or press **All**), and press **Send →**. **On the road** lists everything on the road — which city it left, which city it is bound for, and its arrival time. A notification tells you when it is delivered.
 
 ## Physical cargo {#transfers-cargo-is-physical}
 
@@ -64,7 +64,7 @@ Keryx shows the same cargo total and hull capacity before dispatch.
 
 ## Choosing land or sea {#transfers-choose-land-or-sea}
 
-Economy → Transfer compares **Land** and **Sea** before you send a transfer or gift. Both show the journey in game days and real time, its arrival estimate, risk and requirements. An unavailable alternative explains why: a missing connected path, no departure/arrival coast or harbour, or no free ship with cargo space. Times assume departure now; an accepted agreement or standing route departs later and checks again. A preview reserves nothing.
+Economy → Send goods compares **Land** and **Sea** before you send a transfer or gift. Both show the journey in game days and real time, its arrival estimate, risk and requirements. An unavailable alternative explains why: a missing connected path, no departure/arrival coast or harbour, or no free ship with cargo space. Times assume departure now; an accepted agreement or standing route departs later and checks again. A preview reserves nothing.
 
 Land cargo can be intercepted. Sea cargo can be intercepted and the ship can meet [[storms|storms]]; the same risks apply to your own goods, gifts, trade and standing routes. Sea needs your available Galley or Emporos at departure, enough cargo space and the existing voyage provisions.
 

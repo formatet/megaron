@@ -1675,6 +1675,24 @@ h4.cx-h { font-size: var(--fs-base); }
 .transfer-good input { width:4rem; min-width:0; background:var(--warm-white); border:1px solid var(--border); padding:.2rem .3rem; font:inherit; border-radius:0; }
 .transfer-capacity { padding:.45rem; border:1px solid var(--border); background:var(--warm-white); }
 .transfer-capacity.overloaded { color:var(--accent); border-color:var(--accent); }
+/* Economy → Send goods: one form, buttons instead of dropdowns */
+.sg-group { display:flex; flex-wrap:wrap; align-items:center; gap:.3rem; margin:.35rem 0; }
+.sg-label { font-size:var(--fs-sm); color:var(--text-dim); min-width:2.2rem; }
+.sg-btn { white-space:normal; text-align:left; }
+.sg-btn.active { color:var(--accent); border-color:var(--accent); }
+.sg-line { font-size:var(--fs-sm); margin:.3rem 0; }
+.sg-over { color:var(--accent); }
+.sg-over:empty { display:none; }
+.sg-row { display:flex; flex-wrap:wrap; align-items:center; gap:.4rem; padding:.2rem 0; }
+.sg-good { flex:1 1 5rem; min-width:0; }
+.sg-have { color:var(--text-dim); font-size:var(--fs-sm); }
+.sg-row input { width:5rem; min-width:0; background:var(--warm-white); border:1px solid var(--border); padding:.2rem .3rem; font:inherit; border-radius:0; }
+.sg-keep { display:flex; align-items:center; gap:.4rem; margin:.4rem 0; font-size:var(--fs-sm); }
+.sg-keep input { width:auto; }
+.sg-more { margin:.3rem 0; font-size:var(--fs-sm); }
+.action-result.sg-ok { color:var(--safe-text); }
+#sg-send { margin-top:.4rem; }
+
 
 /* A citizen is completed at the next hundred people: ten whole progress steps. */
 .next-citizen { display:grid; grid-template-columns:auto 1fr; align-items:center; gap:.3rem .6rem; font-size:.75rem; padding:.35rem 0 .5rem; }

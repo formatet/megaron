@@ -1,4 +1,3 @@
-import {transportChoicesHTML, selectedTransportBy, loadTransportChoices} from '../transport_choice.js';
 import { fmtNum, fmtDays } from '../fmt_num.js';
 import { fmtTickTime } from '../fmt_clock.js';
 import { State } from '../../state.js';
@@ -6,6 +5,7 @@ import { fetchAuth } from '../../api.js';
 import { serverNow } from '../../clock.js';
 import { esc, byGoodName } from '../format.js';
 import { renderLockedActions } from '../misc.js';
+import { loadSendGoods } from './send_goods.js';
 
 // A good at its storage ceiling is a silent off-switch: everything produced
 // past the cap is discarded, so labour sitting on it earns nothing. Mirror
@@ -155,12 +155,12 @@ export async function loadEconomyDrawer() {
   body.innerHTML =
     '<div class="drawer-tabs">' +
       '<button class="dtab active" data-tab="goods">Goods</button>' +
-      '<button class="dtab" data-tab="transfer">Transfer</button>' +
-      '<button class="dtab" data-tab="automation">Routes &amp; cargo</button>' +
+      '<button class="dtab" data-tab="send">Send goods</button>' +
+      '<button class="dtab" data-tab="road">On the road</button>' +
     '</div>' +
     '<div id="ectab-goods" class="city-tab"></div>' +
-    '<div id="ectab-transfer" class="city-tab" style="display:none"></div>' +
-    '<div id="ectab-automation" class="city-tab" style="display:none"></div>';
+    '<div id="ectab-send" class="city-tab" style="display:none"></div>' +
+    '<div id="ectab-road" class="city-tab" style="display:none"></div>';
 
   body.querySelectorAll('.dtab').forEach(tab => {
     tab.addEventListener('click', function() {
@@ -170,10 +170,11 @@ export async function loadEconomyDrawer() {
       const el = document.getElementById('ectab-' + this.dataset.tab);
       if (el) el.style.display = '';
       if (this.dataset.tab === 'goods') loadEconomyGoods(mySettlements);
-      else if (this.dataset.tab === 'transfer') loadEconomyTransfer(mySettlements);
-      else if (this.dataset.tab === 'automation') loadEconomyAutomation(mySettlements);
+      else if (this.dataset.tab === 'send') loadSendGoods(mySettlements);
+      else if (this.dataset.tab === 'road') loadEconomyRoad();
     });
   });
+
 
   await loadEconomyGoods(mySettlements);
 }
@@ -233,36 +234,6 @@ async function loadEconomyGoods(mySettlements) {
   }
 }
 
-async function loadEconomyTransfer(mySettlements) {
-  const el = document.getElementById('ectab-transfer');
-  if (mySettlements.length < 1) {
-    el.innerHTML = '<p class="empty-state" style="padding:1rem">Found a city before sending goods.</p>';
-    return;
-  }
-  // From is addressed by PROVINCE id (the /provinces/{id}/trade URL); To is the
-  // DESTINATION SETTLEMENT id (the handler resolves the destination by settlement
-  // id — sending a province id here was the "destination settlement not found" bug).
-  const fromOpts = mySettlements.map(s => `<option value="${s.id}">${esc(s.name)}${s.is_capital?' ★':''}</option>`).join('');
-  const toOpts = '<option value="">Loading…</option>';
-  const inputStyle = 'width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .3rem;font:inherit;border-radius:0';
-  el.innerHTML = `
-    <div class="dsec">
-      <div class="dsec-title">Transfer or gift</div>
-      <div style="display:flex;flex-direction:column;gap:.35rem;font-size:.78rem">
-        <label>From <select id="ec-tr-from" onchange="loadTransferGoods(this.value);loadTransferDestinations(this.value)" style="${inputStyle}">${fromOpts}</select></label>
-        <label>To <select id="ec-tr-to" onchange="loadTransferPreview()" style="${inputStyle}">${toOpts}</select></label>
-        <div id="ec-tr-items">Loading goods…</div>
-        <button id="ec-tr-add" class="btn-small" onclick="addTransferGood()" type="button">+ Add good</button>
-        <div id="ec-tr-route" class="transport-choice" data-transport-choice></div>
-        <div id="ec-tr-capacity" class="transfer-capacity" role="status" aria-live="polite">Checking cargo route…</div>
-        <button id="ec-tr-send" class="btn-primary btn-small" onclick="startTransfer()">Send →</button>
-        <div id="ec-tr-result" class="action-result"></div>
-      </div>
-    </div>
-    <p class="empty-state">Track land and sea cargo under Routes &amp; cargo.</p>`;
-  await Promise.all([loadTransferDestinations(document.getElementById('ec-tr-from').value),
-    loadTransferGoods(document.getElementById('ec-tr-from').value),refreshCargoInTransit()]);
-}
 
 // formatCargoRows is the pure part of the "your cargo in transit" list — no
 // DOM, no fetch, no Date.now()/serverNow() read internally. `nowMs` is passed
@@ -312,162 +283,6 @@ export function renderCargoHTML(trades, nowMs) {
     'Physical cargo — it can be intercepted and seized while in transit.</p>';
 }
 
-// Fetches GET /trades and renders the in-transit cargo the caller is party to.
-// Filters on `role` rather than `mine` (2026-08-24): `mine` marks only the side
-// that DISPATCHED a shipment, so a Wanax who accepted a trade offer and paid
-// escrow saw an empty list while the goods they had bought crossed the map.
-// Called on tab load and again right after a successful transfer, so a freshly
-// dispatched caravan appears without having to leave and reopen the tab.
-async function refreshCargoInTransit() {
-  if (document.getElementById('ec-so-list')) return refreshStandingOrders();
-  const el = document.getElementById('ec-tr-cargo');
-  if (!el) return;
-  el.innerHTML = '<div class="loading" style="padding:.4rem 0">Loading…</div>';
-  try {
-    const r = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/trades`);
-    if (!r.ok) { el.innerHTML = '<p class="empty-state" style="padding:.4rem 0">Could not load.</p>'; return; }
-    const trades = (await r.json()) || [];
-    el.innerHTML = renderCargoHTML(
-      trades.filter(t => t.role === 'sender' || t.role === 'recipient'), serverNow());
-  } catch (_) {
-    el.innerHTML = '<p class="empty-state" style="padding:.4rem 0">Could not load.</p>';
-  }
-}
-
-let transferDestinationsSeq = 0;
-export async function loadTransferDestinations(fromProvId) {
-  const sel = document.getElementById('ec-tr-to');
-  if (!sel || !fromProvId) return;
-  const seq = ++transferDestinationsSeq, world = State.WORLD_ID;
-  sel.innerHTML = '<option value="">Loading…</option>';
-  try {
-    const r = await fetchAuth(`/api/v1/worlds/${world}/provinces/${fromProvId}/trade/destinations`);
-    const rows = r.ok ? (await r.json()) || [] : [];
-    if (seq !== transferDestinationsSeq || State.WORLD_ID !== world || document.getElementById('ec-tr-to') !== sel) return;
-    sel.innerHTML = rows.length ? rows.map(d => `<option value="${esc(d.settlement_id)}">${esc(d.name)} — ${d.own ? 'your city' : esc(d.owner_name) + ' (gift)'}</option>`).join('')
-      : '<option value="">No contacted destination</option>';
-    loadTransferPreview();
-  } catch {
-    if (seq === transferDestinationsSeq && document.getElementById('ec-tr-to') === sel) sel.innerHTML = '<option value="">Could not load destinations</option>';
-  }
-}
-
-// The route preview uses the same server choice as dispatch. A preview does not
-// reserve a hull: dispatch still validates its availability atomically.
-let transferPreview = null, transferPreviewSeq = 0;
-export function transferItems(inputs) {
-  return Array.from(inputs).map(input => ({good_key: input.dataset.good, quantity: Number(input.value)}))
-    .filter(item => Number.isFinite(item.quantity) && item.quantity > 0);
-}
-export function cargoStatus(items, preview) {
-  const quantity = items.reduce((sum, item) => sum + item.quantity, 0);
-  if (!preview) return {quantity, overloaded:false, text:'Checking cargo route…'};
-  if (preview.category === 'land') return {quantity, overloaded:false, text:`Land caravan · Cargo ${fmtNum(quantity)} — no cargo limit`};
-  const capacity = preview.cargo_capacity;
-  const overloaded = quantity > capacity;
-  const hull = preview.ship_name || (preview.ship_type === 'merchantman' ? 'Emporos' : 'Galley');
-  return {quantity, overloaded, text:`${hull} · Cargo ${fmtNum(quantity)} / ${fmtNum(capacity)}`
-    + (overloaded ? ` — remove ${fmtNum(quantity-capacity)} goods` : '')};
-}
-export function updateTransferCargo() {
-  const status = cargoStatus(transferItems(document.querySelectorAll?.('#ec-tr-items input[data-good]') || []), transferPreview);
-  const el = document.getElementById('ec-tr-capacity');
-  if (el) { el.textContent = status.text; el.classList.toggle('overloaded',status.overloaded); }
-  const send = document.getElementById('ec-tr-send');
-  if (send) send.disabled = !transferPreview || status.overloaded;
-}
-export async function loadTransferPreview() {
-  const from = document.getElementById('ec-tr-from')?.value;
-  const to = document.getElementById('ec-tr-to')?.value;
-  const el = document.getElementById('ec-tr-capacity');
-  const seq = ++transferPreviewSeq, world = State.WORLD_ID;
-  const routePicker=document.getElementById('ec-tr-route'), preferredBy=selectedTransportBy('ec-tr-route');
-  if(routePicker)routePicker.textContent='Checking land and sea routes…';
-  transferPreview = null;
-  updateTransferCargo();
-  if (!from || !to || !el) return;
-  try {
-    const r = await fetchAuth(`/api/v1/worlds/${world}/provinces/${from}/trade/preview?destination_id=${encodeURIComponent(to)}`);
-    const data = await r.json();
-    if (seq !== transferPreviewSeq || world !== State.WORLD_ID || document.getElementById('ec-tr-capacity') !== el) return;
-    if (!r.ok) { el.textContent = data.error || 'Could not check cargo route.'; return; }
-    const picker=document.getElementById('ec-tr-route');
-    if(picker&&data.options){
-      picker.innerHTML=transportChoicesHTML(data,'ec-tr-route',preferredBy);
-      const select=()=>{const by=selectedTransportBy('ec-tr-route');transferPreview=data.options.find(o=>o.by===by&&o.available);if(transferPreview)transferPreview={...transferPreview,category:by==='sea'?'naval':'land'};updateTransferCargo();};
-      picker.onchange=select;
-      select();
-    }else{transferPreview=data;updateTransferCargo();}
-  } catch {
-    if (seq === transferPreviewSeq && document.getElementById('ec-tr-capacity') === el) el.textContent = 'Could not check cargo route.';
-  }
-}
-let transferGoodsSeq = 0, transferGoods = [];
-export function addTransferGood() {
-  const el = document.getElementById('ec-tr-items');
-  if (!el || !transferGoods.length) return;
-  const used = new Set(Array.from(el.querySelectorAll('input[data-good]')).map(i=>i.dataset.good));
-  const selected = transferGoods.find(g=>!used.has(g.key)) || transferGoods[0];
-  const row = document.createElement('div');
-  row.className = 'transfer-good';
-  row.innerHTML = `<select aria-label="Good" onchange="this.nextElementSibling.dataset.good=this.value;updateTransferCargo()">${transferGoods.map(g=>`<option value="${esc(g.key)}"${g.key===selected.key?' selected':''}>${esc(g.name || g.key)} — ${fmtNum(Math.floor(g.amount))} in stock</option>`).join('')}</select><input aria-label="Quantity" type="number" min="0" step="any" data-good="${esc(selected.key)}" placeholder="0" oninput="updateTransferCargo()"><button type="button" class="btn-small" aria-label="Remove good" onclick="this.parentElement.remove();updateTransferCargo()">×</button>`;
-  el.appendChild(row);
-  updateTransferCargo();
-}
-export async function loadTransferGoods(fromProvId) {
-  const el = document.getElementById('ec-tr-items');
-  if (!el || !fromProvId) return;
-  const seq = ++transferGoodsSeq, world = State.WORLD_ID;
-  el.textContent = 'Loading goods…';
-  try {
-    const r = await fetchAuth(`/api/v1/worlds/${world}/provinces/${fromProvId}/goods`);
-    const goods = r.ok ? ((await r.json()) || []).filter(g => (g.amount || 0) > 0 && g.shippable === true) : [];
-    if (seq !== transferGoodsSeq || world !== State.WORLD_ID || document.getElementById('ec-tr-items') !== el) return;
-    transferGoods = goods.sort(byGoodName);
-    el.textContent = goods.length ? '' : 'No goods in stock';
-    if (goods.length) addTransferGood();
-    updateTransferCargo();
-  } catch { if (seq === transferGoodsSeq && document.getElementById('ec-tr-items') === el) el.textContent = 'Could not load goods.'; }
-}
-
-export async function startTransfer() {
-  const from = document.getElementById('ec-tr-from')?.value;
-  const to = document.getElementById('ec-tr-to')?.value;
-  const items = transferItems(document.querySelectorAll?.('#ec-tr-items input[data-good]') || []);
-  const cargo = items.map(item => `${fmtNum(item.quantity)} ${item.good_key}`).join(', ');
-  const resultEl = document.getElementById('ec-tr-result');
-  if (!resultEl) return;
-  if (!from || !to || from === to) { resultEl.style.color = 'var(--accent)'; resultEl.textContent = 'Pick two different settlements.'; return; }
-  if (!items.length) { resultEl.style.color = 'var(--accent)'; resultEl.textContent = 'Good and quantity required.'; return; }
-  if(document.getElementById('ec-tr-route')?.hasAttribute?.('data-transport-choice')&&!selectedTransportBy('ec-tr-route')){resultEl.textContent='Choose an available land or sea route.';return;}
-  resultEl.textContent = '';
-  const r = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${from}/trade`, {
-    method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ destination_id: to, items, ...(selectedTransportBy('ec-tr-route')?{by:selectedTransportBy('ec-tr-route')}:{}) }),
-  });
-  const d = await r.json().catch(() => ({}));
-  if (document.getElementById('ec-tr-result') !== resultEl) return;
-  if (r.ok) {
-    resultEl.style.color = 'var(--safe-text)';
-    // Sjöhandel kräver skepp (megaron_plan_sjohandel_kraver_skepp.md R3): name
-    // the ship on a naval transfer — it's now bound to this round trip and
-    // isn't free again until it sails home empty afterward.
-    resultEl.textContent = d.ship_name
-      ? `${cargo} sent aboard ${d.ship_name} — carried, can be intercepted en route, and sails home empty afterward.`
-      : `${cargo} sent — physical cargo, can be intercepted en route.`;
-    resultEl.textContent += ' Track it under Routes & cargo.';
-    if (d.kind === 'gift') resultEl.textContent = 'Gift: ' + resultEl.textContent;
-    if (Number.isInteger(d.arrival_tick)) {
-      resultEl.textContent += ` Arrives ${fmtTickTime(d.route_version===2?null:d.arrival_tick,d.arrives_at)} (journey: ${fmtDays(d.travel_ticks)}).`;
-    }
-    refreshCargoInTransit();
-    loadTransferPreview();
-  } else {
-    resultEl.style.color = 'var(--accent)';
-    resultEl.textContent = d.error || 'Transfer failed.';
-  }
-}
-
 // ── Automation tab (standing orders) ────────────────────────────────────────
 // megaron_plan_staende_leverans.md: a caravan that keeps a destination's
 // stock topped up on its own (PULL — "hold grain at Colony ≥ 200" — not a
@@ -483,103 +298,9 @@ export function parseGoodAmountPairs(spec) {
     return { good_key: good, amount: parseFloat(amt) };
   }).filter(p => p.good_key && !isNaN(p.amount));
 }
-
-// Internal routes use the full inventory, including zero stocks, silver and
-// parked goods. The trade-offer catalogue deliberately excludes those goods.
-function standingGoodRowHTML(goods, group) {
-  const options = '<option value="">Choose a good</option>' + [...goods].sort(byGoodName).map(g =>
-    `<option value="${esc(g.key)}">${esc(g.name || g.key)}</option>`).join('');
-  return `<div class="inline-fields field" data-good-row>
-    <label class="obj-info">Good<br><select>${options}</select></label>
-    <label class="obj-info">${group === 'out' ? 'Minimum' : 'Leave'}<br>
-      <input type="number" min="0" step="any">
-    </label>
-    <button class="btn-small" type="button" data-remove-good aria-label="Remove good">×</button>
-  </div>`;
-}
-
-function bindStandingGoodsRows(group, goods) {
-  const el = document.getElementById('ec-so-' + group);
-  const add = () => el.insertAdjacentHTML('beforeend', standingGoodRowHTML(goods, group));
-  add();
-  document.getElementById('ec-so-' + group + '-add').addEventListener('click', add);
-  el.addEventListener('click', event => {
-    event.target.closest('[data-remove-good]')?.closest('[data-good-row]')?.remove();
-  });
-}
-
-function readStandingGoodsRows(group) {
-  return [...(document.getElementById('ec-so-' + group)?.querySelectorAll('[data-good-row]') || [])]
-    .map(row => ({ good_key: row.querySelector('select').value.trim(), amount: parseFloat(row.querySelector('input').value) }))
-    .filter(p => p.good_key && !isNaN(p.amount));
-}
-
-// Opening the tab twice quickly must not let the older goods reply rebuild the
-// form (and wipe what the player typed) after the newer one rendered it.
-let automationLoadSeq = 0;
-async function loadEconomyAutomation(mySettlements) {
-  const el = document.getElementById('ectab-automation');
-  const seq = ++automationLoadSeq;
-  if (mySettlements.length < 1) {
-    el.innerHTML = '<p class="empty-state" style="padding:1rem">Need at least two of your own settlements for a standing order.</p>';
-    return;
-  }
-  el.innerHTML = '<p class="loading">Loading goods…</p>';
-  let goods;
-  try {
-    const r = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${mySettlements[0].id}/goods`);
-    if (!r.ok) throw new Error('inventory unavailable');
-    goods = ((await r.json()) || []).filter(g => g.key !== 'cult');
-    if (!goods.length) throw new Error('empty inventory');
-  } catch (_) {
-    if (seq !== automationLoadSeq) return;
-    el.innerHTML = '<p class="empty-state">Could not load goods. Open Routes & cargo again to retry.</p>';
-    return;
-  }
-  if (seq !== automationLoadSeq) return;
-  const inputStyle = 'width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .3rem';
-  const opts = mySettlements.map(s => `<option value="${s.settlement_id||s.id}">${esc(s.name)}${s.is_capital?' ★':''}</option>`).join('');
-  el.innerHTML = `
-    <div class="dsec">
-      <div class="dsec-title">New standing order</div>
-      <div style="display:flex;flex-direction:column;gap:.35rem;font-size:.78rem">
-        <label>From <select id="ec-so-from" style="${inputStyle}">${opts}</select></label>
-        <label>To <select id="ec-so-to" style="${inputStyle}">${opts}</select></label>
-        <label>Crewed by (which end supplies the gubbe)
-          <select id="ec-so-crew" style="${inputStyle}">
-            <option value="from">From (source)</option>
-            <option value="to">To (destination)</option>
-          </select>
-        </label>
-        <div>Keep at destination
-          <div id="ec-so-out"></div>
-          <button id="ec-so-out-add" class="btn-small" type="button">Add a good</button>
-        </div>
-        <div>Bring home (optional) — leave this much at the destination
-          <div id="ec-so-home"></div>
-          <button id="ec-so-home-add" class="btn-small" type="button">Add a good</button>
-        </div>
-        <div id="ec-so-route" class="transport-choice" data-transport-choice></div><button class="btn-primary btn-small" onclick="createStandingOrder()">Create route</button>
-        <div id="ec-so-result" class="action-result"></div>
-      </div>
-    </div>
-    <div class="dsec">
-      <div class="dsec-title">Standing orders</div>
-      <div id="ec-so-list" class="loading" style="padding:.4rem 0">Loading…</div>
-    </div><div class="dsec"><div class="dsec-title">Other cargo in transit</div><div id="ec-tr-cargo"></div></div>`;
-  const toSel = document.getElementById('ec-so-to');
-  if (toSel && mySettlements.length > 1) toSel.selectedIndex = 1;
-  bindStandingGoodsRows('out', goods);
-  bindStandingGoodsRows('home', goods);
-  const preview=()=>loadTransportChoices('ec-so-route',document.getElementById('ec-so-from')?.value,document.getElementById('ec-so-to')?.value);
-  document.getElementById('ec-so-from')?.addEventListener('change',preview);
-  toSel?.addEventListener('change',preview);
-  await Promise.all([refreshStandingOrders(),preview()]);
-}
-
 // renderStandingOrdersHTML is pure (list in, markup out) for the same
 // testability reason as renderCargoHTML above.
-function routeCargoHTML(trades, nowMs) {
+export function routeCargoHTML(trades, nowMs) {
  if(!trades.length)return '<p class="empty-state">No cargo travelling.</p>';
  return trades.map(t=>'<div class="standing-order-config" data-cargo-id="'+esc(t.id)+'"><strong>'+ (t.category==='naval'?'Ship':'Caravan')+'</strong> · '+esc(t.origin_name||'Origin')+' → '+esc(t.dest_name||'Destination')+'<br>'+formatCargoRows([t],nowMs).map(row=>esc(String(row.qty))+' '+esc(row.good)+' · '+esc(row.eta)+row.blessings.map(b=>' · '+esc(b)).join('')).join('<br>')+'</div>').join('');
 }
@@ -635,34 +356,6 @@ async function refreshStandingOrders() {
   }
 }
 
-export async function createStandingOrder() {
-  const from = document.getElementById('ec-so-from')?.value;
-  const to = document.getElementById('ec-so-to')?.value;
-  const crew = document.getElementById('ec-so-crew')?.value;
-  const resultEl = document.getElementById('ec-so-result');
-  if (!resultEl) return;
-  if (!from || !to || from === to) { resultEl.style.color = 'var(--accent)'; resultEl.textContent = 'Pick two different settlements.'; return; }
-  const outbound = readStandingGoodsRows('out').map(p => ({ good_key: p.good_key, threshold: p.amount }));
-  if (!outbound.length) { resultEl.style.color = 'var(--accent)'; resultEl.textContent = 'Choose at least one good and the stock to keep at the destination.'; return; }
-  const ret = readStandingGoodsRows('home').map(p => ({ good_key: p.good_key, floor: p.amount }));
-  if(document.getElementById('ec-so-route')?.hasAttribute?.('data-transport-choice')&&!selectedTransportBy('ec-so-route')){resultEl.textContent='Choose an available land or sea route.';return;}
-  const crewedBy = crew === 'to' ? to : from;
-  resultEl.textContent = '';
-  const r = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/standing-orders`, {
-    method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ from_settlement_id: from, to_settlement_id: to, crewed_by_settlement_id: crewedBy, outbound, return: ret, ...(selectedTransportBy('ec-so-route')?{by:selectedTransportBy('ec-so-route')}:{}) }),
-  });
-  const d = await r.json().catch(() => ({}));
-  if (r.ok) {
-    resultEl.style.color = 'var(--safe-text)';
-    resultEl.textContent = 'Standing order created.';
-    refreshStandingOrders();
-  } else {
-    resultEl.style.color = 'var(--accent)';
-    resultEl.textContent = d.error || 'Could not create standing order.';
-  }
-}
-
 export async function pauseStandingOrder(id) {
   await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/standing-orders/${id}/pause`, { method: 'POST' });
   refreshStandingOrders();
@@ -678,15 +371,40 @@ export async function deleteStandingOrder(id) {
   refreshStandingOrders();
 }
 
+// ── On the road: standing orders and other cargo in transit ─────────────────
+async function loadEconomyRoad() {
+  const el = document.getElementById('ectab-road');
+  if (!el) return;
+  el.innerHTML = `<div class="dsec">
+      <div class="dsec-title">Standing orders</div>
+      <div id="ec-so-list" class="loading" style="padding:.4rem 0">Loading…</div>
+    </div><div class="dsec"><div class="dsec-title">Other cargo in transit</div><div id="ec-tr-cargo"></div></div>`;
+  await refreshStandingOrders();
+}
+
+// Activate one Economy tab without a click (used by deep links and the map).
+function showEconomyTab(name) {
+  document.querySelectorAll('#economy-body .dtab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.querySelectorAll('#economy-body .city-tab').forEach(t => { t.style.display = t.id === 'ectab-' + name ? '' : 'none'; });
+}
+
+
 export async function focusStandingOrder(id){
  window.openDrawer?.('economy');
  await loadEconomyDrawer();
- const cities=State.provinceData.filter(p=>p.own&&!p.is_outpost);
- document.querySelectorAll('#economy-body .dtab').forEach(t=>t.classList.toggle('active',t.dataset.tab==='automation'));
- document.querySelectorAll('#economy-body .city-tab').forEach(t=>{t.style.display=t.id==='ectab-automation'?'':'none';});
- await loadEconomyAutomation(cities);
+ showEconomyTab('road');
+ await loadEconomyRoad();
  const row=document.getElementById('standing-order-'+id);
  if(row){row.classList.add('ucard-focus');row.scrollIntoView({block:'center'});}
+}
+
+// The map's "Send goods →" button: open the form with the destination chosen.
+export async function openSendGoods(toSettlementId){
+ window.openDrawer?.('economy');
+ await loadEconomyDrawer();
+ const cities=State.provinceData.filter(p=>p.own&&!p.is_outpost);
+ showEconomyTab('send');
+ await loadSendGoods(cities,toSettlementId);
 }
 
 export async function focusEconomyCity(id){
@@ -697,10 +415,8 @@ export async function focusEconomyCity(id){
 }
 export async function focusCargo(id){
  window.openDrawer?.('economy');await loadEconomyDrawer();
- const cities=State.provinceData.filter(p=>p.own&&!p.is_outpost);
- document.querySelectorAll('#economy-body .dtab').forEach(t=>t.classList.toggle('active',t.dataset.tab==='transfer'));
- document.querySelectorAll('#economy-body .city-tab').forEach(t=>{t.style.display=t.id==='ectab-transfer'?'':'none';});
- await loadEconomyTransfer(cities);
+ showEconomyTab('road');
+ await loadEconomyRoad();
  const row=[...document.querySelectorAll('[data-cargo-id]')].find(r=>r.dataset.cargoId===id);
  if(row){row.classList.add('ucard-focus');row.scrollIntoView({block:'center'});}
 }

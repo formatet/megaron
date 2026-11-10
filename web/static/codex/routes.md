@@ -1,15 +1,15 @@
-A **standing order** is a land or sea cargo route that runs by itself. For a game that runs while you sleep, the **Economy → Routes & cargo** tab may be the most important screen you have.
+A **standing order** is a land or sea cargo route that runs by itself. For a game that runs while you sleep, the **Keep it stocked** box in **Economy → Send goods** may be the most important control you have: check it, and the numbers mean *keep this much there*. The city you send from crews the route.
 
-Under **New standing order**, set *From*, *To*, and which end supplies the caravan's crew. Then:
+In **Send goods**, set *From* and *To* (one of your own cities), check **Keep it stocked**, then:
 
 ## Standing route stock targets {#routes-details}
 
-- **Keep at destination** — choose a good and the stock to keep there, for example two hundred [[grain|grain]] and fifty [[fish|fish]]. Use **Add a good** for another row and **Remove** to drop a row. The caravan keeps those goods topped up to that level at the destination.
-- **Bring home** — choose a good and the stock to leave at the destination, for example twenty [[stone|stone]]. Zero means bring home everything available. Leave the rows empty for no return cargo. On the way back it brings home anything above that floor.
+- **Keep at destination** — type beside each good the stock to keep there, for example 200 [[grain|grain]] and 50 [[fish|fish]]. The caravan keeps those goods topped up to that level at the destination.
+- **Bring home** (under **More**) — type beside a good the stock to leave at the destination, for example twenty [[stone|stone]]. Zero means bring home everything available. Leave the rows empty for no return cargo. On the way back it brings home anything above that floor.
 
 ### Managing standing routes {#routes-details-2}
 
-Press **Create route**. Existing routes are listed below with **Pause**, **Resume** and **Delete**. Each route shows **Keep at destination** (the target stock) and **Bring home above** (the stock left there before loading return cargo), including a zero floor. **Return cargo: none** means no goods are configured for the homeward leg. These are route settings; the cargo in each trip depends on available surplus and capacity. `keryx routes` shows the same settings. A route pauses itself when it cannot run — when there is no surplus to send, or no spare [[citizens|citizen]] to crew the caravan — and the list says why. You are told each time a route sends a caravan, and when it pauses.
+Press **Keep it stocked →**. Existing routes are listed under **On the road** with **Pause**, **Resume** and **Delete**. Each route shows **Keep at destination** (the target stock) and **Bring home above** (the stock left there before loading return cargo), including a zero floor. **Return cargo: none** means no goods are configured for the homeward leg. These are route settings; the cargo in each trip depends on available surplus and capacity. `keryx routes` shows the same settings. A route pauses itself when it cannot run — when there is no surplus to send, or no spare [[citizens|citizen]] to crew the caravan — and the list says why. You are told each time a route sends a caravan, and when it pauses.
 
 ## Uses for standing routes {#routes-what-to-use-it-for}
 
@@ -40,10 +40,10 @@ interception can prevent that delivery.
 
 ## Following a route’s cargo {#routes-follow-your-cargo}
 
-**Economy → Routes & cargo** shows the ship or caravan travelling on each
+**Economy → On the road** shows the ship or caravan travelling on each
 standing route, with its cargo and arrival. Other shipments are listed
 separately. Both land and sea cargo live here; **War → Marches** is for the
 forces you order to move. A route's ship remains in **War → Forces → Ships**,
 with its route named on the card.
 
-Choose **Land** or **Sea** in Routes & cargo before creating a route; Keryx uses `route --by land` or `route --by sea`. The choice is saved for subsequent departures. The comparison explains travel time, risk and unavailable alternatives; see [[transfers|land or sea]].
+Choose **By land** or **By sea** in Send goods before creating a route; Keryx uses `route --by land` or `route --by sea`. The choice is saved for subsequent departures. The comparison explains travel time, risk and unavailable alternatives; see [[transfers|land or sea]].

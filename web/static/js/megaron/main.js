@@ -49,8 +49,8 @@ import {
   unitRoadToggle, unitBuildRoad,
 } from './ui/drawers/war.js';
 import {
-  loadEconomyDrawer, loadTransferGoods, loadTransferDestinations, loadTransferPreview, updateTransferCargo, addTransferGood, startTransfer,
-  createStandingOrder, pauseStandingOrder, resumeStandingOrder, deleteStandingOrder,
+  loadEconomyDrawer, openSendGoods,
+  pauseStandingOrder, resumeStandingOrder, deleteStandingOrder,
   sortEconomySettlements, openCitySettlement,
 } from './ui/drawers/economy.js';
 import { loadKultDrawer, okRite, bringOffering, cancelOffering } from './ui/drawers/kult.js';
@@ -185,7 +185,6 @@ Object.assign(window, {
   closeMarchCtx,
   closeSearch,
   codexBack,
-  createStandingOrder,
   cycleCityView,
   deleteStandingOrder,
   dipAccept,
@@ -202,11 +201,6 @@ Object.assign(window, {
   dipToggleThread,
   dismissAllChips,
   loadTicklog,
-  loadTransferGoods,
-  loadTransferDestinations,
-  loadTransferPreview,
-  updateTransferCargo,
-  addTransferGood,
   loadWarDrawer,
   notifShowKind,
   okRite,
@@ -216,6 +210,7 @@ Object.assign(window, {
   onColonizeToggle,
   onExploreToggle,
   openCitySettlement,
+  openSendGoods,
   openCodex,
   openCodexForDrawer,
   pauseStandingOrder,
@@ -230,7 +225,6 @@ Object.assign(window, {
   reopenSelectedHex,
   sortEconomySettlements,
   startBuild,
-  startTransfer,
   submitReport,
   toggleAccountWindow,
   toggleActivityOverlay,

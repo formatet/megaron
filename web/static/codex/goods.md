@@ -1,4 +1,4 @@
-Everything your cities make, eat and trade is a **good**. The **Economy (⚖)** drawer shows your goods across every settlement, in three tabs: **Goods**, **Transfer** and **Routes & cargo**.
+Everything your cities make, eat and trade is a **good**. The **Economy (⚖)** drawer shows your goods across every settlement, in three tabs: **Goods**, **Send goods** and **On the road**.
 
 ## All goods {#goods-details}
 
@@ -34,8 +34,8 @@ Everything your cities make, eat and trade is a **good**. The **Economy (⚖)** 
 ## Economy tabs {#goods-the-three-tabs}
 
 - **Goods** — stock, production and use of each good, city by city. The settlements table compares people, food produced minus food eaten, food game days and shortage status; select a city to close Economy and open its City drawer. Goods piling up with nothing using them are marked — see [[surplus]].
-- **Transfer** — move goods between your own cities ([[transfers]]).
-- **Routes & cargo** — [[routes|standing orders]] that move goods for you while you are away.
+- **Send goods** — move goods between your own cities ([[transfers]]), give them to another Wanax ([[gifts]]), or check **Keep it stocked** for a [[routes|standing order]].
+- **On the road** — your [[routes|standing orders]] and every cargo travelling.
 
 To learn what another city needs or can spare, ask its Wanax in a [[messengers|letter]] through **Diplomacy → Correspondence**, then agree a [[trade|trade offer]].
 
