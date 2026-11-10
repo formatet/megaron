@@ -177,8 +177,12 @@ func passageCmd() *cobra.Command {
 				return fmt.Errorf("--ship required (find eligible ships with: keryx outbox, or: keryx unit)")
 			}
 			c := newClient(cfg)
+			sid, err := resolveUnitID(c, cfg.WorldID, shipID)
+			if err != nil {
+				return err
+			}
 			path := fmt.Sprintf("/api/v1/worlds/%s/messengers/%s/passage", cfg.WorldID, msgID)
-			data, err := c.post(path, map[string]any{"ship_id": shipID})
+			data, err := c.post(path, map[string]any{"ship_id": sid})
 			if err != nil {
 				return err
 			}
@@ -194,7 +198,11 @@ func passageCmd() *cobra.Command {
 			if arrT, ok := resp["arrives_at"].(string); ok {
 				eta = arrT
 			}
-			fmt.Printf("Passage arranged — ship %v sails, runner aboard when it departs. Arrives %v\n", resp["unit_id"], eta)
+			shipLabel := unitLabel(sid)
+			if id, _ := resp["unit_id"].(string); id != "" {
+				shipLabel = unitLabel(id)
+			}
+			fmt.Printf("Passage arranged — %s sails, runner aboard when it departs. Arrives %v\n", shipLabel, eta)
 			if w, _ := resp["storm_warning"].(string); w != "" {
 				fmt.Println("⚠ " + w)
 			}
@@ -203,7 +211,7 @@ func passageCmd() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVar(&msgID, "id", "", "messenger ID (find with: keryx outbox)")
-	cmd.Flags().StringVar(&shipID, "ship", "", "ship ID (galley or merchantman, garrisoned; find with: keryx outbox or keryx unit)")
+	cmd.Flags().StringVar(&shipID, "ship", "", "ship name or ID (galley or merchantman, garrisoned; find with: keryx outbox or keryx unit)")
 	return cmd
 }
 

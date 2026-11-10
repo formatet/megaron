@@ -156,3 +156,15 @@ func TestApiErrorRefusalHints(t *testing.T) {
 		t.Fatalf("unrelated error changed: %v", plain)
 	}
 }
+
+func TestPassageResolvesShipNameAndPrintsIt(t *testing.T) {
+	var posts []string
+	llmServer(t, &posts)
+	out, err := runLLM(t, passageCmd(), "--id", "m1", "--ship", "sea swallow")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(posts) != 1 || !strings.Contains(out, "Sea Swallow sails") {
+		t.Fatalf("posts=%v out=%s", posts, out)
+	}
+}

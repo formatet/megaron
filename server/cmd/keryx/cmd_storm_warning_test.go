@@ -36,7 +36,7 @@ func TestPassageReceiptPrintsStormWarning(t *testing.T) {
 		json.NewEncoder(w).Encode(map[string]any{"unit_id": "u1", "arrives_at": "2026-11-04T18:34:00Z", "storm_warning": warnText})
 	})
 	cmd := passageCmd()
-	cmd.SetArgs([]string{"--id", "m1", "--ship", "s1"})
+	cmd.SetArgs([]string{"--id", "m1", "--ship", "cccccccc-1111-2222-3333-444444444444"})
 	out, err := captureStdout(t, cmd.Execute)
 	if err != nil || !strings.Contains(out, "⚠ "+warnText) {
 		t.Fatalf("err %v out %q", err, out)
