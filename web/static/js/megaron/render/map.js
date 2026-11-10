@@ -3552,6 +3552,11 @@ function openCityPanel(h, tile, marker, units, foreignUnits) {
       </div>`;
   }
   footHtml += '<button id="ip-march-btn" style="' + MARCH_BTN_STYLE + '">March here →</button>';
+  // Foreign cities you have contacted can be sent goods as a gift; the form says
+  // so itself when there is no contact yet.
+  if (State.MY_SETTLEMENT_ID && marker.settlement_id) {
+    footHtml += `<button id="ip-send-btn" style="${MARCH_BTN_STYLE}" onclick="openSendGoods('${marker.settlement_id}')">Send goods →</button>`;
+  }
   foot.innerHTML = footHtml;
   fillTellOptions(document.getElementById('ip-msg-tell'), marker.settlement_id);
   bindUnitButtons(foot);

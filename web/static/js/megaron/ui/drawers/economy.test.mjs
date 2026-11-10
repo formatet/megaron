@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { State } from '../../state.js';
 import {
-  loadEconomyDrawer, loadTransferGoods, startTransfer, atStorageCeiling, goodsRateCell,
+  loadEconomyDrawer, openSendGoods, atStorageCeiling, goodsRateCell,
   parseGoodAmountPairs, renderStandingOrdersHTML,
   settlementFoodRow, sortSettlementRows, renderSettlementsOverviewHTML,
 } from './economy.js';
@@ -43,8 +43,7 @@ test('goodsRateCell: below cap and idle renders an empty cell', () => {
 
 test('AK1: economy.js imports under node --test without a DOM (proves the misc.js pointerdown listener no longer runs at module scope)', () => {
   assert.equal(typeof loadEconomyDrawer, 'function');
-  assert.equal(typeof loadTransferGoods, 'function');
-  assert.equal(typeof startTransfer, 'function');
+  assert.equal(typeof openSendGoods, 'function');
 });
 
 test('parseGoodAmountPairs: matches keryx cmd_route.go\'s good:amount,good:amount shape', () => {

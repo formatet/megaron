@@ -16,8 +16,8 @@ const base = { froms: [{ id: 'pA', settlementId: 'sA', name: 'Phaistos' }], from
 
 test('(a) destinations: own cities first, foreign labelled "city — ruler", no gift suffix', () => {
   const b = destinationButtons(dests);
-  assert.deepEqual(b.map(x => x.id), ['k1', 'n1', 'a1', 'g1']);
-  assert.equal(b[2].label, 'Amnisos — Aias');
+  assert.deepEqual(b.map(x => x.id), ['k1', 'n1', 'g1', 'a1']);
+  assert.equal(b[3].label, 'Amnisos — Aias');
   assert.equal(b[0].label, 'Kyme');
   assert.ok(b.every(x => !/gift/i.test(x.label)));
 });

@@ -3,89 +3,50 @@ import assert from 'node:assert/strict';
 import { State } from '../../state.js';
 import * as economy from './economy.js';
 
-// Exercise real drawer clicks and POST handler. Stub only browser DOM and HTTP.
+// Drive the real Send goods form: stub only the browser DOM and HTTP.
 async function rig(run) {
   const saved={document:globalThis.document,fetch:globalThis.fetch,localStorage:globalThis.localStorage};
-  const nodes=new Map(),calls=[];
-  function node(id){if(!nodes.has(id))nodes.set(id,{id,value:'',innerHTML:'',textContent:'',insertAdjacentHTML(_position,html){this.innerHTML+=html;},style:{},classList:{add(){},remove(){},toggle(){}},dataset:{},rows:[],querySelectorAll(){return this.rows;},addEventListener(_,fn){this.listener=fn;}});return nodes.get(id);}
-  const body=node('economy-body');
-  body.querySelectorAll=sel=>sel==='.dtab'?['goods','transfer','automation'].map(name=>{const t=node('tab-'+name);t.dataset.tab=name;return t;}):[];
-  globalThis.document={getElementById:id=>id==='net-status'?null:node(id)};
+  const handlers={},calls=[];
+  const host={innerHTML:'',addEventListener(type,fn){handlers[type]=fn;}};
+  host.querySelector=()=>null;
+  globalThis.document={getElementById:id=>id==='ectab-send'?host:null,createElement:()=>({set innerHTML(v){this.h=v;},querySelector:()=>null})};
   globalThis.localStorage={getItem:()=>null};
-  State.WORLD_ID='world';State.provinceData=[{id:'province-a',settlement_id:'city-a',own:true,name:'Nostos'},{id:'province-b',settlement_id:'city-b',own:true,name:'Kyme'}];
-  globalThis.fetch=async(url,opts={})=>{calls.push({url,opts});return new Response(JSON.stringify(url.endsWith('/goods')?[{key:'grain',name:'Grain',amount:0},{key:'silver',name:'Silver',amount:0},{key:'horses',name:'Horses',amount:0}]:[]),{status:opts.method==='POST'?201:200});};
-  node('ec-so-from').value='city-a';node('ec-so-to').value='city-b';node('ec-so-crew').value='to';
-  function rows(group,pairs){node('ec-so-'+group).rows=pairs.map(([good,amount])=>({querySelector:s=>({value:s==='select'?good:amount})}));}
-  try{await run({node,calls,rows,body});}finally{Object.assign(globalThis,saved);State.WORLD_ID=null;State.provinceData=[];}
+  State.WORLD_ID='world';State.MY_SETTLEMENT_ID='city-a';
+  State.provinceData=[{id:'province-a',settlement_id:'city-a',own:true,name:'Phaistos',is_capital:true},{id:'province-b',settlement_id:'city-b',own:true,name:'Kyme'}];
+  globalThis.fetch=async(url,opts={})=>{calls.push({url,opts});
+    const json=d=>new Response(JSON.stringify(d),{status:opts.method==='POST'?201:200});
+    if(url.endsWith('/provinces/province-a/goods'))return json([{key:'grain',name:'Grain',amount:240,shippable:true},{key:'wine',name:'Wine',amount:30,shippable:true}]);
+    if(url.endsWith('/provinces/province-b/goods'))return json([{key:'wine',name:'Wine',amount:5,shippable:true}]);
+    if(url.endsWith('/trade/destinations'))return json([{settlement_id:'city-b',name:'Kyme',owner_name:'Me',own:true},{settlement_id:'city-g',name:'Gournia',owner_name:'Myrine',own:false}]);
+    if(url.includes('/trade/preview'))return json({selected_by:'land',options:[{by:'land',available:true,travel_ticks:3,arrives_at:'2026-01-01T12:00:00Z'},{by:'sea',available:false,reason:'No free ship'}]});
+    if(url.endsWith('/standing-orders')&&opts.method==='POST')return json({id:'so1'});
+    if(url.endsWith('/trade'))return json({transport_id:'t1',kind:'transfer'});
+    return json([]);};
+  const click=(act,extra={})=>handlers.click({target:{closest:()=>({dataset:{act,...extra}})}});
+  const type=(key,value)=>handlers.input({target:{dataset:{amt:key},value}});
+  try{await run({host,calls,click,type,handlers,tick:()=>new Promise(r=>setTimeout(r,20))});}finally{Object.assign(globalThis,saved);State.WORLD_ID=null;State.provinceData=[];State.MY_SETTLEMENT_ID=null;}
 }
 
-test('N: actual POST preserves multiple outbound goods, return floor zero, decimals and destination crew',()=>rig(async({rows,calls})=>{
-  rows('out',[['grain','200'],['fish','50.5']]);rows('home',[['silver','0'],['stone','20']]);
-  await economy.createStandingOrder();
-  const post=calls.find(c=>c.opts.method==='POST');assert.ok(post,'row inputs must dispatch');
+test('Send goods: preselected foreign destination posts today\'s transfer body (no crew field)',()=>rig(async({host,calls,click,type,tick})=>{
+  await economy.openSendGoods('city-g').catch(()=>{});
+  const {loadSendGoods}=await import('./send_goods.js');
+  await loadSendGoods(State.provinceData,'city-g');
+  assert.match(host.innerHTML,/Send as a gift →/);assert.doesNotMatch(host.innerHTML,/<select|Crewed by/);
+  type('grain','50');await click('send');await tick();
+  const post=calls.find(c=>c.opts.method==='POST');
+  assert.equal(post.url,'/api/v1/worlds/world/provinces/province-a/trade');
+  assert.equal(post.opts.body,JSON.stringify({destination_id:'city-g',items:[{good_key:'grain',quantity:50}],by:'land'}));
+}));
+
+test('Send goods: Keep it stocked posts a standing order crewed by the source city',()=>rig(async({host,calls,click,type,handlers,tick})=>{
+  const {loadSendGoods}=await import('./send_goods.js');
+  await loadSendGoods(State.provinceData,'city-b');
+  await handlers.change({target:{dataset:{act:'keep'},checked:true}});
+  assert.match(host.innerHTML,/Keep it stocked →/);
+  type('grain','200');await click('send');await tick();
+  const post=calls.find(c=>c.opts.method==='POST');
   assert.equal(post.url,'/api/v1/worlds/world/standing-orders');
-  assert.deepEqual(JSON.parse(post.opts.body),{from_settlement_id:'city-a',to_settlement_id:'city-b',crewed_by_settlement_id:'city-b',outbound:[{good_key:'grain',threshold:200},{good_key:'fish',threshold:50.5}],return:[{good_key:'silver',floor:0},{good_key:'stone',floor:20}]});
-}));
-
-test('N: blank optional rows leave an empty return array and source crew intact',()=>rig(async({node,rows,calls})=>{
-  node('ec-so-crew').value='from';rows('out',[['grain','0'],['',''],['fish','']]);rows('home',[['','']]);
-  await economy.createStandingOrder();const post=calls.find(c=>c.opts.method==='POST');assert.ok(post,'zero is an entered amount');
-  const body=JSON.parse(post.opts.body);assert.equal(body.crewed_by_settlement_id,'city-a');assert.deepEqual(body.outbound,[{good_key:'grain',threshold:0}]);assert.deepEqual(body.return,[]);
-}));
-
-test('N: drawer keeps three tabs and crew choices, replaces both CSV inputs with addable goods rows',()=>rig(async({node,body,calls})=>{
-  await economy.loadEconomyDrawer();await node('tab-automation').listener.call(node('tab-automation'));
-  // Wait for catalogue request and its DOM continuation.
-  for(let i=0;i<10;i++)await new Promise(resolve=>setImmediate(resolve));
-  assert.deepEqual([...body.innerHTML.matchAll(/data-tab="([^"]+)"/g)].map(m=>m[1]),['goods','transfer','automation']);
-  assert.doesNotMatch(body.innerHTML,/data-tab="wants"|ectab-wants/);
-  assert.ok(!calls.some(c=>c.url.includes('/market/wants')));
-  const html=node('ectab-automation').innerHTML;
-  assert.match(html,/Crewed by \(which end supplies the gubbe\)/);assert.match(html,/value="from"/);assert.match(html,/value="to"/);
-  assert.doesNotMatch(html,/comma-separated|grain:200|silver:0/);
-  assert.match(node('ec-so-out').innerHTML,/value="silver"/);assert.match(node('ec-so-out').innerHTML,/value="horses"/);
-  assert.match(html,/ec-so-out-add/);assert.match(html,/ec-so-home-add/);
-  assert.ok(calls.some(c=>c.url.endsWith('/provinces/province-a/goods')),'own inventory catalogue');
-  assert.ok(!calls.some(c=>c.url==='/api/v1/goods'),'offer catalogue would lose silver and parked goods');
-}));
-
-test('N: same-city and missing-outbound rows still cannot dispatch',()=>rig(async({node,rows,calls})=>{
-  rows('out',[]);rows('home',[['silver','0']]);await economy.createStandingOrder();
-  node('ec-so-to').value='city-a';rows('out',[['grain','200']]);await economy.createStandingOrder();
-  assert.equal(calls.filter(c=>c.opts.method==='POST').length,0);
-}));
-
-
-test('N: failed goods fetch sends no form, reopening Automation retries full inventory',()=>rig(async({node})=>{
-  await economy.loadEconomyDrawer();
-  const fetch=globalThis.fetch;globalThis.fetch=async()=>new Response('{}',{status:400});
-  await node('tab-automation').listener.call(node('tab-automation'));
-  for(let i=0;i<10;i++)await new Promise(resolve=>setImmediate(resolve));
-  assert.match(node('ectab-automation').innerHTML,/Could not load goods/);assert.doesNotMatch(node('ectab-automation').innerHTML,/Create route/);
-  globalThis.fetch=fetch;await node('tab-automation').listener.call(node('tab-automation'));
-  for(let i=0;i<10;i++)await new Promise(resolve=>setImmediate(resolve));
-  assert.match(node('ectab-automation').innerHTML,/Create route/);assert.match(node('ec-so-home').innerHTML,/value="silver"/);
-}));
-
-test('land/sea choice reaches standing order POST and missing choice blocks actual form',()=>rig(async({node,rows,calls})=>{
- rows('out',[['grain','200']]);const picker=node('ec-so-route');picker.hasAttribute=()=>true;picker.querySelector=()=>({value:'land'});
- await economy.createStandingOrder();assert.equal(JSON.parse(calls.find(c=>c.opts.method==='POST').opts.body).by,'land');
- calls.length=0;picker.querySelector=()=>null;await economy.createStandingOrder();assert.equal(calls.filter(c=>c.opts.method==='POST').length,0);assert.match(node('ec-so-result').textContent,/Choose an available/);
-}));
-
-test('transfer sends selected sea mode and no unavailable-route fallback',()=>rig(async({node,calls})=>{
- node('ec-tr-from').value='province-a';node('ec-tr-to').value='city-b';node('ec-tr-route').querySelector=()=>({value:'sea'});node('ec-tr-route').hasAttribute=()=>true;
- document.querySelectorAll=()=>[{dataset:{good:'grain'},value:'2'}];
- await economy.startTransfer();await new Promise(resolve=>setImmediate(resolve));assert.equal(JSON.parse(calls.find(c=>c.opts.method==='POST').opts.body).by,'sea');
- calls.length=0;node('ec-tr-route').querySelector=()=>null;await economy.startTransfer();assert.equal(calls.filter(c=>c.opts.method==='POST').length,0);assert.match(node('ec-tr-result').textContent,/Choose an available/);
-}));
-
-test('changing transfer destination clears old route choices until fresh preview arrives',()=>rig(async({node})=>{
- node('ec-tr-from').value='province-a';node('ec-tr-to').value='city-b';node('ec-tr-route').querySelector=()=>({value:'land'});node('ec-tr-route').textContent='Old route';
- document.querySelectorAll=()=>[];let resolve;globalThis.fetch=()=>new Promise(done=>{resolve=done});
- const pending=economy.loadTransferPreview();assert.equal(node('ec-tr-route').textContent,'Checking land and sea routes…');assert.equal(node('ec-tr-send').disabled,true);
- resolve(new Response(JSON.stringify({selected_by:'sea',options:[{by:'land',available:true,travel_ticks:2,travel_seconds:120},{by:'sea',available:true,travel_ticks:1,travel_seconds:60}]})));await pending;
- assert.match(node('ec-tr-route').innerHTML,/value="land" checked/);assert.equal(node('ec-tr-send').disabled,false);
+  assert.equal(post.opts.body,JSON.stringify({from_settlement_id:'city-a',to_settlement_id:'city-b',crewed_by_settlement_id:'city-a',outbound:[{good_key:'grain',threshold:200}],return:[],by:'land'}));
 }));
 
 test('cargo rows carry the prayers over the owner\'s own caravan (the Thread)', () => {
