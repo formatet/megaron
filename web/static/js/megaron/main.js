@@ -52,7 +52,8 @@ import {
   pauseStandingOrder, resumeStandingOrder, deleteStandingOrder,
   sortEconomySettlements, openCitySettlement,
 } from './ui/drawers/economy.js';
-import { loadKultDrawer, okRite, bringOffering, cancelOffering } from './ui/drawers/kult.js';
+import { loadKultDrawer, okRite, bringOffering, cancelOffering, pickStormHex } from './ui/drawers/kult.js';
+import { pickActive, pickCancel } from './ui/hexpick.js';
 import {
   loadDiplomacyDrawer, openLettersWith, refreshDiplomacyLetters, dipToggleKind, dipToggleThread, dipSendInThread,
   dipCancel, dipAccept, dipDecline, dipReply, dipWrite, dipCounter, dipCancelCounter, dipSendCounter,
@@ -109,6 +110,7 @@ export function closeDrawer(name) {
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
+    if (pickActive()) { pickCancel(); return; }
     const cx = document.getElementById('codex-panel');
     if (cx && cx.classList.contains('open')) { closeCodex(); return; }
     if (State.activeDrawer) { closeDrawer(State.activeDrawer); return; }
@@ -204,6 +206,7 @@ Object.assign(window, {
   notifShowKind,
   okRite,
   bringOffering,
+  pickStormHex,
   cancelOffering,
   onColonizeToggle,
   onExploreToggle,

@@ -1749,3 +1749,21 @@ h4.cx-h { font-size: var(--fs-base); }
 .build-city-link { margin-top: .5rem; font-size: var(--fs-sm); }
 .build-pick-bar button, .build-city-link button { min-height: 32px; }
 .gubbe-refusal.gubbe-built { color: var(--safe-text); }
+
+/* ── Pick a hex on the map (ui/hexpick.js) ──────────────────────────────────
+   While picking, everything that could cover the map is hidden (visibility keeps scroll and typed text) and a
+   one-line bar sits on top of the map. At phone width the bar wraps to two short rows and stays <= 64px. */
+body.hex-picking .drawer, body.hex-picking .inspect-panel, body.hex-picking .march-ctx,
+body.hex-picking .dispatch-window-overlay, body.hex-picking .search-overlay, body.hex-picking .codex-panel,
+body.hex-picking .map-dim { visibility: hidden !important; pointer-events: none !important; }
+body.hex-picking .game-nav, body.hex-picking .gt-notif-btn, body.hex-picking .gt-search-btn, body.hex-picking .gt-codex-btn { pointer-events: none; opacity: .45; }
+body.hex-picking .mobile-panel-blocked { pointer-events: auto; touch-action: auto; }
+.hexpick-bar { position: absolute; top: 0; left: 0; right: 0; z-index: 30; box-sizing: border-box; max-height: 64px; overflow: hidden;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0 .5rem; padding: 2px .5rem;
+  background: var(--bg-panel); border-bottom: 2px solid var(--accent); font-size: var(--fs-sm); line-height: 1.2; }
+.hexpick-prompt { flex: 1 1 14rem; min-width: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.hexpick-actions { flex: 0 1 auto; display: flex; align-items: center; gap: .4rem; min-width: 0; margin-left: auto; }
+.hexpick-actions button { min-height: 30px; padding: 0 .6rem; font-size: var(--fs-sm); width: auto; margin: 0; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.hexpick-reason { color: var(--accent); }
+.redirect-picked { margin-top: .2rem; color: var(--text); }
+.redirect-send { padding: .1rem .3rem; border: 1px solid var(--border); background: var(--accent-war); color: var(--bg-panel); font-size: .65rem; cursor: pointer; }

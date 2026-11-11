@@ -15,6 +15,6 @@ You can only wake a storm where you can already see or remember the water. A ric
 | Temple’s rest (level 1, traditional gift) | 12 game days |
 <!-- /facts -->
 
-Offer in **Kult → Prayers** at the matching city and god, and enter the hex as `q,r` (or click a sea hex on the map first). In Keryx, `keryx rite --prayer minoan_stillness_wake --hex q,r`.
+Offer in **Kult → Prayers** at the matching city and god, and press **Pick on the map**, then tap a sea hex and **Use this hex** (or type it as `q,r`). In Keryx, `keryx rite --prayer minoan_stillness_wake --hex q,r`.
 
 See [[prayer-requirements]], [[offerings]] and [[temples]].

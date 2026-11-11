@@ -7,7 +7,8 @@ const narrow = () => typeof window !== 'undefined' && window.matchMedia?.('(max-
 function sync() {
   const mobile = narrow();
   for (const [el] of panels) mark(el, 'mobile-fullscreen', !!mobile);
-  const blocked = !!mobile && panels.size > 0;
+  const picking = typeof document !== 'undefined' && document.body?.classList?.contains?.('hex-picking');
+  const blocked = !!mobile && panels.size > 0 && !picking;
   const map = document.getElementById('map-root');
   mark(map, 'mobile-panel-blocked', blocked);
   const canvas = document.getElementById('hex-canvas');

@@ -20,6 +20,8 @@ import { forceSections } from '../forces.js';
 import { warMovements } from '../movements.js';
 import { expeditionMissionText } from '../expedition.js';
 import { chooseMarchTarget } from '../marchctx.js';
+import { pickHex } from '../hexpick.js';
+import { redirectBody, redirectPickedHTML } from '../redirect_pick.js';
 import { fmtNum, fmtDays } from '../fmt_num.js';
 import { fmtTickTime } from '../fmt_clock.js';
 import { orderRunnerHTML, orderPursuitText } from '../runner_status.js';
@@ -496,9 +498,18 @@ export async function unitRecallAll() {
   }
 }
 
-export function unitRedirectToggle(unitID) {
+// Redirect starts the shared map pick at once (ui/hexpick.js); the card comes back with the chosen hex and Send order.
+export async function unitRedirectToggle(unitID) {
+  const u = (State.unitsData || []).find(x => x.id === unitID);
+  const hex = await pickHex({ prompt: 'Redirect ' + ((u && u.display_name) || 'this force') + ': tap the new destination' });
   const row = document.getElementById('uredir-' + unitID);
-  if (row) row.style.display = row.style.display === 'none' ? 'block' : 'none';
+  if (row) row.style.display = 'block';
+  const picked = document.getElementById('uredir-picked-' + unitID);
+  if (!hex) { if (picked) picked.innerHTML = ''; return; }
+  const q = document.getElementById('uredir-q-' + unitID), r = document.getElementById('uredir-r-' + unitID);
+  if (q) q.value = hex.q;
+  if (r) r.value = hex.r;
+  if (picked) picked.innerHTML = redirectPickedHTML(unitID, hex.q, hex.r);
 }
 
 // The typed Q/R fallback (megaron_arbetssatt.md: keep it only if it costs
@@ -511,11 +522,14 @@ export function unitRedirectTypedToggle(unitID) {
 }
 
 export async function unitRedirect(unitID) {
-  const q = parseInt(document.getElementById('uredir-q-' + unitID)?.value || '0', 10);
-  const r = parseInt(document.getElementById('uredir-r-' + unitID)?.value || '0', 10);
   const statusEl = document.getElementById('uorder-' + unitID);
+  const out = redirectBody(document.getElementById('uredir-q-' + unitID)?.value, document.getElementById('uredir-r-' + unitID)?.value);
+  if (out.error) {
+    if (statusEl) { statusEl.style.color = 'var(--accent)'; statusEl.textContent = out.error; }
+    return;
+  }
   const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units/${unitID}/recall`, {
-    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ target_q: q, target_r: r }),
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(out.body),
   });
   const d = await res.json().catch(() => ({}));
   if (res.ok) {
