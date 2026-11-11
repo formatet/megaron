@@ -8,9 +8,7 @@
 
 ## Selecting forces for a march {#marching-giving-a-march-order}
 
-**Right-click the destination hex.** The order menu shows what the destination is, which of your forces can go and **March →**. Check each named unit to order. **More** holds stance ([[stances]]), expedition duration and column name. **Colonize →** works on empty land ([[colonies]]).
-
-The menu estimates each unit's arrival **before you send**, from the current route and speed.
+**Right-click the destination hex**, or press **March** on a force in **War** and tap the hex (every window hides; **Cities** lists known cities). The menu shows what the destination is, which of your forces can go and **March →**. **More** holds stance ([[stances]]), expedition duration and column name. **Colonize →** works on empty land ([[colonies]]).
 
 ### March forecasts and city destinations {#marching-giving-a-march-order-2}
 
