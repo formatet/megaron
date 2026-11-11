@@ -1036,6 +1036,8 @@ body:has(.auth-page) main {
 .gubbe-hex.takeable { stroke: var(--accent-war); stroke-width: 3; stroke-dasharray: 3 2; }
 .gubbe-held-note { font-size: var(--fs-xs); color: var(--danger); margin: 0 0 0.3rem; }
 .gubbe-take { color: var(--accent-war); text-align: left; white-space: normal; }
+.gubbe-hex.pick-ok { stroke: var(--accent); stroke-width: 3; }
+.gubbe-hex.pick-dim { opacity: 0.35; }
 .gubbe-hex.selected { stroke: var(--accent); stroke-width: 3; }
 .gubbe-city-hex { fill: var(--sandstone); stroke: var(--gold); stroke-width: 2; }
 .gubbe-hex-label { font-family: var(--mono); font-size: 9px; fill: var(--text); text-anchor: middle; pointer-events: none; }
@@ -1735,3 +1737,14 @@ h4.cx-h { font-size: var(--fs-base); }
 /* Founding panel: the founder's own words to the other Wanaxes. */
 .ip-settle-msg-label { display: block; margin-top: .3rem; font-size: .73rem; color: var(--text-dim); }
 .ip-settle-msg { display: block; width: 100%; box-sizing: border-box; margin-top: .2rem; padding: .3rem; background: var(--bg-raised); border: 1px solid var(--border); color: var(--text); font-size: .8rem; }
+
+/* Building by clicking: Construct list rows, hex build rows, pick-mode bar. */
+.build-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .3rem .6rem; padding: .35rem 0; border-bottom: 1px solid var(--border-in); font-size: var(--fs-sm); }
+.build-row-text { flex: 1 1 14rem; min-width: 0; overflow-wrap: anywhere; }
+.build-row-btn { min-height: 32px; flex: 0 0 auto; }
+.build-row-sub { color: var(--text-dim); font-size: var(--fs-xs); }
+.build-row.locked { opacity: .65; }
+.build-row-reason { color: var(--accent); font-size: var(--fs-xs); }
+.build-pick-bar { margin: .3rem 0; padding: .3rem .5rem; border: 2px solid var(--accent); background: var(--bg-panel); font-size: var(--fs-sm); }
+.build-city-link { margin-top: .5rem; font-size: var(--fs-sm); }
+.gubbe-refusal.gubbe-built { color: var(--safe-text); }
