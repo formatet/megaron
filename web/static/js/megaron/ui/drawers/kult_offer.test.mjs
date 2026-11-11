@@ -315,3 +315,27 @@ test('world prayer with exactly one city says "your one city", not "all 1"', () 
   const three = offerRowHTML({ ...one, targets: { ...one.targets, realm: { count: 3 } } }, { fish: 100, oil: 100 });
   assert.match(three, /all 3 of your cities/);
 });
+
+// ── Pick on the map (Wake the Storm) ────────────────────────────────────────
+const { stormHexRefusal, stormHexText, targetChooserHTML } = await import('./kult_offer.js');
+
+test('Wake the Storm: the field has a Pick on the map button and stays an editable text input', () => {
+  const html = targetChooserHTML({ targets: { kind: 'hex' } });
+  assert.match(html, /data-pick-storm-hex/);
+  assert.match(html, />Pick on the map</);
+  assert.match(html, /class="offer-target-hex"/);
+});
+
+test('Wake the Storm: only seen sea is accepted; the reasons are plain', () => {
+  assert.equal(stormHexRefusal({ terrain: 'deep_sea' }), null);
+  assert.equal(stormHexRefusal({ terrain: 'coastal_sea' }), null);
+  assert.equal(stormHexRefusal({ terrain: 'plains' }), 'Not a sea hex');
+  assert.equal(stormHexRefusal({ terrain: 'lake' }), 'Not a sea hex');
+  assert.equal(stormHexRefusal({ terrain: 'fog' }), 'You have not seen this ground');
+  assert.equal(stormHexRefusal(undefined), 'You have not seen this ground');
+});
+
+test('Wake the Storm: a picked hex fills the field as q,r and the rite target is unchanged', () => {
+  assert.equal(stormHexText({ q: 7, r: -3 }), '7,-3');
+  assert.deepEqual(chosenTarget({ querySelector: q => q === '.offer-target-hex' ? { value: stormHexText({ q: 7, r: -3 }) } : null }), { target: '7,-3' });
+});

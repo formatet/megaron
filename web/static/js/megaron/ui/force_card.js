@@ -326,11 +326,11 @@ export function renderUnitCard(u, options = {}) {
     actions += '<button onclick="unitRecall(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Recall</button> ';
     actions += '<button onclick="unitRedirectToggle(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Redirect</button> ';
     redirectRow = '<div id="uredir-' + u.id + '" style="display:none;margin-top:.2rem;font-size:.65rem;color:var(--text-dim)">'
-      + '<div>Right-click the new destination on the map — a messenger carries the order to this unit.</div>'
+      + '<div id="uredir-picked-' + u.id + '"></div>'
       + '<div style="margin-top:.2rem"><a href="#" onclick="unitRedirectTypedToggle(\'' + u.id + '\');return false" style="color:var(--text-dim)">or type coordinates</a></div>'
       + '<div id="uredir-typed-' + u.id + '" style="display:none;margin-top:.2rem;gap:.25rem;align-items:center">'
-        + '<label>Q <input id="uredir-q-' + u.id + '" type="number" value="0" style="width:40px;padding:.1rem .2rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.65rem"></label>'
-        + '<label>R <input id="uredir-r-' + u.id + '" type="number" value="0" style="width:40px;padding:.1rem .2rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.65rem"></label>'
+        + '<label>Q <input id="uredir-q-' + u.id + '" type="number" value="" style="width:40px;padding:.1rem .2rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.65rem"></label>'
+        + '<label>R <input id="uredir-r-' + u.id + '" type="number" value="" style="width:40px;padding:.1rem .2rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.65rem"></label>'
         + '<button onclick="unitRedirect(\'' + u.id + '\')" style="padding:.1rem .3rem;border:1px solid var(--border);background:var(--accent-war);color:#fff;font-size:.65rem;cursor:pointer">Send order →</button>'
       + '</div>'
       + '</div>';

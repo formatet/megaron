@@ -1,5 +1,6 @@
 import { esc } from '../format.js';
 import { fmtDays } from '../fmt_num.js';
+import { isThalassa } from '../../terrain.js';
 
 // The Offer row under a prayer: one number field per good, pre-filled with the
 // prayer's recipe, or empty when composing an alternative. Mirrors
@@ -53,13 +54,21 @@ export function defaultScope(prayer) {
   return scopeChoices(prayer).find(c => c.enabled)?.scope || 'unit';
 }
 
+// Pick on the map: the client's own facts about a tapped hex (the server still has the last word).
+export function stormHexRefusal(tile) {
+  if (!tile || tile.terrain === 'fog') return 'You have not seen this ground';
+  return isThalassa(tile.terrain) ? null : 'Not a sea hex';
+}
+export const stormHexText = hex => hex.q + ',' + hex.r;
+
 // Storm prayers (steg 3b) name no unit: Still the Storm picks a named storm from your storm map,
 // Wake the Storm takes the coordinates of a sea hex of your own map.
 function stormChooserHTML(prayer) {
   const t = prayer.targets;
   if (t.kind === 'hex') {
     return '<div class="offer-target"><p class="offer-note">Where is the storm woken? Give a sea hex of your own map as q,r.</p>' +
-      '<label class="offer-field">Sea hex <input type="text" class="offer-target-hex" placeholder="q,r" inputmode="text" autocomplete="off" aria-label="Sea hex q,r"></label></div>';
+      '<label class="offer-field">Sea hex <input type="text" class="offer-target-hex" placeholder="q,r" inputmode="text" autocomplete="off" aria-label="Sea hex q,r"></label> ' +
+      '<button type="button" class="btn-small btn-secondary" data-pick-storm-hex onclick="pickStormHex(this)">Pick on the map</button></div>';
   }
   const options = (t.storms || []).map(s =>
     '<option value="' + esc(s.id) + '">' + esc(s.name) + (s.where ? ' (' + esc(s.where) + ')' : '') + '</option>').join('');

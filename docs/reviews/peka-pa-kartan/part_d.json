@@ -1,0 +1,72 @@
+[
+ [
+  "P1",
+  "March here / the march menu (map tap or right-click)",
+  {
+   "cover": 100,
+   "inert": true,
+   "blocked": true
+  },
+  "P1-covers-map-mobile.png"
+ ],
+ [
+  "P2",
+  "Colonize (a checkbox inside the same march menu)",
+  {
+   "cover": 100,
+   "inert": true,
+   "blocked": true
+  },
+  "P2-covers-map-mobile.png"
+ ],
+ [
+  "P3",
+  "\"Show ...\" from a dispatch (opens the hex panel)",
+  {
+   "cover": 100,
+   "inert": true,
+   "blocked": true
+  },
+  "P3-covers-map-mobile.png"
+ ],
+ [
+  "P4",
+  "Clicking a chip (dispatch window)",
+  {
+   "cover": 100,
+   "inert": true,
+   "blocked": true
+  },
+  "P4-covers-map-mobile.png"
+ ],
+ [
+  "P5",
+  "Send goods -> (Economy drawer, send tab)",
+  {
+   "cover": 100,
+   "inert": true,
+   "blocked": true
+  },
+  "P5-covers-map-mobile.png"
+ ],
+ [
+  "P6",
+  "Build pick mode (City drawer grid)",
+  {
+   "cover": 100,
+   "inert": true,
+   "blocked": true
+  },
+  "P6-covers-map-mobile.png"
+ ],
+ [
+  "P7",
+  "War -> March (March menu says \"Choose a destination on the map\")",
+  {
+   "cover": 100,
+   "inert": true,
+   "blocked": true
+  },
+  "P7-covers-map-mobile.png"
+ ]
+]

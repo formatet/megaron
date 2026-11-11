@@ -10,7 +10,8 @@ import { serverNow } from '../../clock.js';
 import { renderLockedActions } from '../misc.js';
 import { demolishPrompt, demolishResultLine } from '../demolish.js';
 import { realmKultHTML, prayerActionID } from './kult_realm.js';
-import { offerRowHTML, offeringFromEntries, offerFoodText, chosenTarget, scopeFactor, scaledRecipe } from './kult_offer.js';
+import { offerRowHTML, offeringFromEntries, offerFoodText, chosenTarget, scopeFactor, scaledRecipe, stormHexRefusal, stormHexText } from './kult_offer.js';
+import { pickHex } from '../hexpick.js';
 import { kharisNetView, kharisDecayHTML, kharisRulesHTML, kharisStandingHTML } from './kult_kharis.js';
 
 // ── Kult drawer ───────────────────────────────────────────────────────────
@@ -164,6 +165,16 @@ export async function okRite(prayerID) {
 export function cancelOffering(prayerID) {
   const host = document.getElementById('offer-row-' + prayerID);
   if (host) host.innerHTML = '';
+}
+
+// Wake the Storm: the sea hex is tapped on the map; the field is filled and stays editable.
+export async function pickStormHex(button) {
+  const input = button?.closest?.('.offer-target')?.querySelector('.offer-target-hex');
+  const hex = await pickHex({
+    prompt: 'Wake the Storm: tap a sea hex of your own map',
+    accept: h => stormHexRefusal((State.tileData || []).find(t => t.q === h.q && t.r === h.r)),
+  });
+  if (hex && input) input.value = stormHexText(hex);
 }
 
 export async function bringOffering(prayerID) {

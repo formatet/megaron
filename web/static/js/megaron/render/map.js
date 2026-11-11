@@ -1,6 +1,7 @@
 import {renderUnitCard,renderForeignUnitCard,unitStatusLabel} from '../ui/force_card.js';
 import {riverFlowLines,drawRiverFlow} from '../ui/river_flow.js';
 import { openMobilePanel, closeMobilePanel } from '../ui/mobile_panels.js';
+import { pickActive, pickTap } from '../ui/hexpick.js';
 import { physicalHostState, hostStatusText } from '../ui/host_state.js';
 import { State, ownCapital, activeCitySettlement } from '../state.js';
 import { fetchAuth, pollJSON } from '../api.js';
@@ -2906,9 +2907,10 @@ export function render() {
   }
   pass('memory');
 
-  // 3. Highlight selected hex
-  if (State.selectedHex) {
-    const {x,y} = hexPx(State.selectedHex.q, State.selectedHex.r);
+  // 3. Highlight selected hex (or the hex tapped in the pick-a-hex mode)
+  const outlined = State.pickHexSel || State.selectedHex;
+  if (outlined) {
+    const {x,y} = hexPx(outlined.q, outlined.r);
     const pts = hexPts(x, y);
     ctx.save();
     ctx.strokeStyle = '#F9E79F'; ctx.lineWidth = 2.5;
@@ -4067,6 +4069,7 @@ export function initMap() {
     tap(clientX, clientY) {
       const rect = canvas.getBoundingClientRect();
       const h = hexAtScreen(clientX - rect.left, clientY - rect.top);
+      if (pickActive()) { pickTap(h.q, h.r); return; }
       if (State.marchCtxUnitID) {
         const tile = tileAt(h.q, h.r);
         const target = State.provinceData.find(p => p.q === h.q && p.r === h.r);
@@ -4152,6 +4155,7 @@ export function initMap() {
 
   // Mouse right-click and touch/pen long-press share every affordance/FOW rule.
   function openMapOrders(clientX, clientY) {
+    if (pickActive()) return; // a hex is chosen by a plain tap while picking
     const capital = ownCapital();
     if (!capital) return;
     const rect = canvas.getBoundingClientRect();

@@ -16,7 +16,7 @@ Because orders move at walking pace, **a defender who is offline is not helpless
 
 ## Failed orders {#runners-when-an-order-fails}
 
-If a Runner arrives and the order can no longer be carried out, you get an *Order failed* notification naming the order and the reason. Recall and redirect are sent from **War → Forces**, or by right-clicking a new destination ([[marching]]).
+If a Runner arrives and the order can no longer be carried out, you get an *Order failed* notification naming the order and the reason. Recall and redirect are sent from **War → Forces** (Redirect lets you tap the new destination on the map) or by right-clicking one ([[marching]]).
 
 ## Catching a moving force {#runners-catching-up-with-a-moving-unit}
 
