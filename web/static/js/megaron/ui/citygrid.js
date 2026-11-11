@@ -117,12 +117,13 @@ export function goodRowHTML(target, good, take) {
         <span style="color:var(--text-dim)"> ${good.staffing_only ? fmtNum(good.placed) + (shipyard ? ' shipyard workers' : workshop ? ' builders' : ' temple workers') : fmtNum(Number(good.rate_per_tick.toFixed(1))) + ' per game day total'} · ${nextLabel}</span>
         <div>${pipsHTML}</div>
       </div>
-      <div style="display:flex;gap:.3rem">
+      <div style="display:flex;flex-wrap:wrap;gap:.3rem">
         ${take
           ? `<button class="btn-small gubbe-act gubbe-take" data-verb="place1">${esc(take)}</button>`
           : `<button class="btn-small gubbe-act" data-verb="place1" ${full ? 'disabled' : ''}>+1</button>
         ${full ? '' : `<button class="btn-small gubbe-act" data-verb="fill">Fill</button>`}
-        <button class="btn-small gubbe-act" data-verb="unplace1" ${mine > 0 ? '' : 'disabled'}>−1</button>`}
+        <button class="btn-small gubbe-act" data-verb="unplace1" ${mine > 0 ? '' : 'disabled'}>−1</button>
+        ${[full ? 'All places are staffed' : '', mine > 0 ? '' : 'None of yours to take off'].filter(Boolean).map(r => `<span class="btn-reason">${r}</span>`).join('')}`}
       </div>
     </div>`;
 }

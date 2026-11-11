@@ -307,7 +307,7 @@ export function renderUnitCard(u, options = {}) {
 	}
 	if (isNaval && isLaidUp) {
 		if (u.can_fit_out) actions += '<button onclick="unitFitOut(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Fit out</button> ';
-		else actions += '<button disabled title="Needs enough people in your active harbour" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;opacity:.55">Fit out</button> ';
+		else actions += '<button disabled title="Needs enough people in your active harbour" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;opacity:.55">Fit out</button> <span class="btn-reason">Needs enough people in your active harbour</span> ';
 	}
 
   // Recall/redirect: marching LAND units only. A marching ship is on a

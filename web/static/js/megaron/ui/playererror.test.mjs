@@ -84,3 +84,10 @@ test('guard: no result element is set directly from .error', () => {
   }
   assert.deepEqual(bad, []);
 });
+
+// Part C: a button disabled by game state carries a visible reason line.
+test('Recall all disabled with nothing marching says why in visible text', async () => {
+  const { recallAllControlsHTML } = await import('./recall_all.js');
+  assert.match(recallAllControlsHTML([{ status: 'home' }]), /disabled>Recall all<\/button><span class="btn-reason">No forces are marching</);
+  assert.doesNotMatch(recallAllControlsHTML([{ status: 'marching' }]), /btn-reason/);
+});

@@ -2,7 +2,9 @@ import {esc, formatApiError, playerError} from './format.js';
 
 export function recallAllControlsHTML(units, result = '', busy = false) {
   const disabled = busy || !units.some(u => u.status === 'marching');
+  const none = !busy && !units.some(u => u.status === 'marching');
   return '<button class="btn-small btn-primary" id="recall-all-send" onclick="unitRecallAll()"' + (disabled ? ' disabled' : '') + '>Recall all</button>'
+    + (none ? '<span class="btn-reason">No forces are marching</span>' : '')
     + '<div id="recall-all-result" role="status" aria-live="polite">' + result + '</div>';
 }
 
