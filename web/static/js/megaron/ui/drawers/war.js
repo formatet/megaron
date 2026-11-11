@@ -540,10 +540,12 @@ export async function unitRedirect(unitID) {
   }
 }
 
-export function unitMarch(unitID) {
+export async function unitMarch(unitID) {
   // Use the same destination menu as the map, pinned to the chosen card.
-  if (State.activeDrawer) window.closeDrawer(State.activeDrawer);
-  chooseMarchTarget(unitID);
+  const drawer = State.activeDrawer;
+  if (drawer) window.closeDrawer(drawer);
+  // Cancelling the pick puts the drawer back, as Redirect (which never closes it) does.
+  if ((await chooseMarchTarget(unitID)) === null && drawer) window.openDrawer?.(drawer);
 }
 
 export async function unitStance(unitID) {

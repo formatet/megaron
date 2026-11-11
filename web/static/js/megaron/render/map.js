@@ -118,9 +118,9 @@ export function clampCamera() {
 }
 
 // Hit-test: nearest hex to canvas coords
-function hexAtScreen(sx, sy) {
-  const wx = (sx - State.camera.x) / (State.camera.zoom * SCALE);
-  const wy = (sy - State.camera.y) / (State.camera.zoom * SCALE);
+export function hexAtScreen(sx, sy, camera = State.camera) {
+  const wx = (sx - camera.x) / (camera.zoom * SCALE);
+  const wy = (sy - camera.y) / (camera.zoom * SCALE);
   const q = (2/3 * wx) / S;
   const r = (-1/3 * wx + Math.sqrt(3)/3 * wy) / S;
   const s = -q - r;
@@ -129,6 +129,12 @@ function hexAtScreen(sx, sy) {
   if (dq > dr && dq > ds) rq = -rr - rs;
   else if (dr > ds) rr = -rq - rs;
   return {q: rq, r: rr};
+}
+
+// Inverse of hexAtScreen: the hex centre in client (page) pixels.
+export function hexClientPos(q, r, camera = State.camera, rect = canvas.getBoundingClientRect()) {
+  const wx = 1.5 * S * q, wy = Math.sqrt(3) * (S * r + wx / 3);
+  return { x: rect.left + camera.x + wx * camera.zoom * SCALE, y: rect.top + camera.y + wy * camera.zoom * SCALE };
 }
 
 // The economic catchment: the settlement's own hex plus every hex within
@@ -3398,7 +3404,7 @@ function bindUnitButtons(foot) {
  foot.querySelectorAll('[data-unit-id]').forEach(b=>b.addEventListener('click',e=>{e.preventDefault();window.warFocusUnit(b.dataset.unitId);}));
  for (const verb of ['march','redirect']) foot.querySelectorAll('[data-hex-'+verb+']').forEach(b=>b.addEventListener('click',async()=>{
   const {chooseMarchTarget}=await import('../ui/marchctx.js');
-  closeInspect();chooseMarchTarget(b.dataset[verb==='march'?'hexMarch':'hexRedirect']);
+  closeInspect();chooseMarchTarget(b.dataset[verb==='march'?'hexMarch':'hexRedirect'], verb==='march'?'March':'Redirect');
  }));
  foot.querySelectorAll('[data-hex-recall]').forEach(b=>b.addEventListener('click',async()=>{
   if(b.disabled)return;b.disabled=true;

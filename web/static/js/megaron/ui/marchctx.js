@@ -12,7 +12,8 @@ import { playWarHorn } from './sfx.js';
 import { configureExpedition, expeditionTicks, expeditionMissionText } from './expedition.js';
 import { createMarchPreview, loadMarchPreview } from './march_preview.js';
 import { destinationCities, destinationCityOptions, destinationFromCity, cityDestinationLabel } from './city_targets.js';
-import { canvas } from '../render/map.js';
+import { canvas, tileAt, destFromHex, hexClientPos } from '../render/map.js';
+import { pickHex, pickShortcuts } from './hexpick.js';
 
 // ── March context menu (per-unit model) ───────────────────────────────────
 // Right-clicking a hex orders individual units to it via
@@ -334,20 +335,44 @@ export function resolveMarchIntent(dest, exploreWanted) {
 // has ever seen it, so terrain (land or sea) is unknown too. march_start.go's
 // FOW rule then accepts only intent=explore (exploreRowVisible below and the
 // resolveMarchIntent forcing it here mirror that server rule).
-// War chooses WHO; a normal click/tap or right-click on the map chooses WHERE.
-export function chooseMarchTarget(unitID) {
+// War chooses WHO; the shared map pick (ui/hexpick.js) chooses WHERE, with every panel hidden. Confirming
+// opens the real menu for that hex with the unit pinned; cancelling leaves nothing armed. The known-cities
+// shortcuts ride along behind the bar's "Cities" button.
+const defaultPickEnv = () => ({
+  pickHex, setPickShortcuts: pickShortcuts, tileAt, destFromHex, hexClientPos, openMarchCtx,
+  fetchCities: async () => {
+    const response = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/cities`);
+    if (!response.ok) throw new Error('unavailable');
+    return response.json();
+  },
+});
+
+// Keep the menu off the chosen hex: it sits on whichever side of it has more room.
+function menuXBesideHex(x) {
+  return x > window.innerWidth / 2 ? Math.max(8, x - 210 - 40) : x + 28;
+}
+
+export async function chooseMarchTarget(unitID, verb = 'March', env = defaultPickEnv()) {
   closeMarchCtx();
+  const unit = (State.unitsData || []).find(u => u.id === unitID);
+  const picking = env.pickHex({
+    prompt: verb + ' ' + ((unit && unit.display_name) || 'this force') + ': tap the destination',
+    accept: ({ q, r }) => (env.tileAt(q, r) ? null : 'Not on the map.'),
+  });
+  env.fetchCities().then(rows => {
+    const list = destinationCities(rows).map(c => ({ label: c.name + ' — ' + (c.own ? 'your city' : (c.owner || 'owner unknown')), q: c.q, r: c.r }));
+    if (list.length) env.setPickShortcuts(list);
+  }).catch(() => {});
+  const hex = await picking;
+  State.marchCtxUnitID = null;
+  if (!hex) return null; // cancelled: the caller may put back what it closed
+  const tile = env.tileAt(hex.q, hex.r);
+  if (!tile) return null;
+  const target = (State.provinceData || []).find(p => p.q === hex.q && p.r === hex.r);
+  const at = env.hexClientPos(hex.q, hex.r);
   State.marchCtxUnitID = unitID;
-  document.getElementById('mctx-name').textContent = 'March';
-  document.getElementById('mctx-hint').textContent = 'Choose a destination on the map.';
-  document.getElementById('mctx-units').innerHTML = '';
-  document.getElementById('mctx-colonize-row').style.display = 'none';
-  document.getElementById('mctx-more').style.display = 'none';
-  document.getElementById('mctx-send').style.display = 'none';
-  openMobilePanel(marchCtx, closeMarchCtx);
-  marchCtx.style.display = 'block';
-  positionMarchCtx(8, 80);
-  loadMarchCities();
+  env.openMarchCtx(env.destFromHex(hex, tile, target), menuXBesideHex(at.x), Math.max(8, at.y - 60));
+  return hex;
 }
 
 export function marchDefaultQuantity(group, index) {

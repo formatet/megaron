@@ -1765,6 +1765,12 @@ body.hex-picking .mobile-panel-blocked { pointer-events: auto; touch-action: aut
 .hexpick-actions { flex: 0 1 auto; display: flex; align-items: center; gap: .4rem; min-width: 0; margin-left: auto; }
 .hexpick-actions button { min-height: 30px; padding: 0 .6rem; font-size: var(--fs-sm); width: auto; margin: 0; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .hexpick-reason { color: var(--accent); }
+.hexpick-sheet { position: absolute; left: 0; right: 0; z-index: 30; box-sizing: border-box; max-height: 40%; overflow-y: auto; overscroll-behavior: contain;
+  display: flex; flex-direction: column; background: var(--bg-panel); border-bottom: 2px solid var(--accent); font-size: var(--fs-sm); }
+.hexpick-sheet[hidden] { display: none; }
+.hexpick-city { min-height: 36px; padding: 0 .7rem; text-align: left; width: auto; margin: 0; cursor: pointer; border: 0; border-bottom: 1px solid var(--border); background: transparent; color: var(--text); font: inherit; }
 .redirect-picked { margin-top: .2rem; color: var(--text); }
 .redirect-send { padding: .1rem .3rem; border: 1px solid var(--border); background: var(--accent-war); color: var(--bg-panel); font-size: .65rem; cursor: pointer; }
 .redirect-picked a { color: var(--text-dim); text-decoration: underline; }
+/* While a hex is being picked the bar sits on the map top edge: the zoom buttons move below it. */
+body.hex-picking .map-zoom-overlay { top: 72px; }
