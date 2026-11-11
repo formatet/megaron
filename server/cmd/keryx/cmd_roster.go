@@ -40,11 +40,11 @@ type rosterAssign struct {
 func rosterCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "roster",
-		Short: "List every placed gubbe across all your settlements, with idle pools",
+		Short: "List every placed citizen across all your settlements, with idle pools",
 		Long: `A realm-wide view of where your citizens work. Each settlement shows how many
-of its gubbar are placed vs idle, then every hex/building assignment with a
+of its citizens are placed vs idle, then every hex/building assignment with a
 count. Use ` + "`keryx city <name>`" + ` to drill into one settlement and ` +
-			"`keryx place`/`keryx staff`" + ` to move gubbar, including temple workers.`,
+			"`keryx place`/`keryx staff`" + ` to move citizens, including temple workers.`,
 		Args: noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
@@ -77,7 +77,7 @@ count. Use ` + "`keryx city <name>`" + ` to drill into one settlement and ` +
 			if len(roster) == 1 {
 				plural = "settlement"
 			}
-			fmt.Printf("Gubbar across %d %s — %d/%d placed, %d idle\n", len(roster), plural, placed, total, idle)
+			fmt.Printf("Citizens across %d %s — %d/%d placed, %d idle\n", len(roster), plural, placed, total, idle)
 
 			for _, s := range roster {
 				role := ""
@@ -90,7 +90,7 @@ count. Use ` + "`keryx city <name>`" + ` to drill into one settlement and ` +
 				}
 				fmt.Printf("\n%s%s  —  %d/%d placed%s\n", s.Name, role, s.Placed, s.TotalGubbar, idleNote)
 				if len(s.Assignments) == 0 {
-					fmt.Println("  (no gubbar placed — every citizen is idle)")
+					fmt.Println("  (no citizens placed — every citizen is idle)")
 					continue
 				}
 				for _, a := range s.Assignments {

@@ -106,7 +106,7 @@ func TestMultiCityHint(t *testing.T) {
 			if !strings.Contains(got, tt.settlementName) {
 				t.Errorf("multiCityHint(%q, %v) = %q, want it to name the settlement", tt.settlementName, tt.used, got)
 			}
-			if !strings.Contains(got, "keryx settlements") || !strings.Contains(got, "keryx status --province") {
+			if !strings.Contains(got, "keryx cities") || !strings.Contains(got, "keryx status --city") {
 				t.Errorf("multiCityHint(%q, %v) = %q, want it to point at both escape hatches", tt.settlementName, tt.used, got)
 			}
 		})

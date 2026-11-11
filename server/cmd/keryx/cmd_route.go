@@ -67,7 +67,7 @@ func resolveOwnSettlement(c *Client, worldID, nameOrID string) (string, error) {
 			}
 		}
 	}
-	return "", fmt.Errorf("could not find your capital settlement — pass --from explicitly")
+	return "", fmt.Errorf("could not find your capital settlement — pass --city explicitly")
 }
 
 func routeCreateCmd() *cobra.Command {
@@ -77,7 +77,7 @@ func routeCreateCmd() *cobra.Command {
 		Use:   "route",
 		Short: "Create a standing order — a caravan that keeps a destination's stock topped up on its own",
 		Example: `  keryx route --to Colony --out grain:200
-  keryx route --from Petras --to Colony --out grain:200,fish:50 --home silver:0,stone:20 --crew from`,
+  keryx route --city Petras --to Colony --out grain:200,fish:50 --home silver:0,stone:20 --crew from`,
 		Args: noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if err := validateTransportBy(by); err != nil {
@@ -151,8 +151,9 @@ func routeCreateCmd() *cobra.Command {
 
 	cmd.Flags().SortFlags = false
 	cmd.Flags().StringVar(&fromName, "from", "", "source settlement name (default: your capital)")
+	addCityFlag(cmd, &fromName, false, "from")
 	cmd.Flags().StringVar(&toName, "to", "", "destination settlement name")
-	cmd.Flags().StringVar(&crewSide, "crew", "from", `which end supplies the gubbe: "from" or "to"`)
+	cmd.Flags().StringVar(&crewSide, "crew", "from", `which end supplies the citizens: "from" or "to"`)
 	cmd.Flags().StringVar(&outSpec, "out", "", "outbound goods to keep topped up at the destination, e.g. grain:200,fish:50")
 	cmd.Flags().StringVar(&homeSpec, "home", "", "return goods to bring home, leaving at least this much behind, e.g. silver:0,stone:20")
 	_ = cmd.MarkFlagRequired("to")
@@ -237,15 +238,20 @@ func routesCmd() *cobra.Command {
 	return cmd
 }
 
-func routeSetStatusCmd(use, short, verb string) *cobra.Command {
+func routeSetStatusCmd(use, short, verb, wantStatus string) *cobra.Command {
 	var orderID string
 	cmd := &cobra.Command{
 		Use:     use,
 		Short:   short,
-		Example: fmt.Sprintf(`  keryx %s --id <standing-order-id>`, use),
+		Example: fmt.Sprintf("  keryx %s\n  keryx %s --id <standing-order-id>", use, use),
 		Args:    noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
+			cand, err := pickID(use, "standing order", orderID, "", func() ([]idCandidate, error) { return standingOrderCandidates(c, wantStatus) })
+			if err != nil {
+				return err
+			}
+			orderID = cand.ID
 			path := fmt.Sprintf("/api/v1/worlds/%s/standing-orders/%s/%s", cfg.WorldID, orderID, verb)
 			data, err := c.post(path, nil)
 			if err != nil {
@@ -259,17 +265,16 @@ func routeSetStatusCmd(use, short, verb string) *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&orderID, "id", "", "standing order ID (see `keryx routes`)")
-	_ = cmd.MarkFlagRequired("id")
+	cmd.Flags().StringVar(&orderID, "id", "", "standing order ID or unique prefix (default: the only candidate; see `keryx routes`)")
 	return cmd
 }
 
 func routePauseCmd() *cobra.Command {
-	return routeSetStatusCmd("route-pause", "Pause a standing order (an in-flight caravan still completes)", "pause")
+	return routeSetStatusCmd("route-pause", "Pause a standing order (an in-flight caravan still completes)", "pause", "active")
 }
 
 func routeResumeCmd() *cobra.Command {
-	return routeSetStatusCmd("route-resume", "Resume a paused standing order", "resume")
+	return routeSetStatusCmd("route-resume", "Resume a paused standing order", "resume", "paused")
 }
 
 func routeDeleteCmd() *cobra.Command {
@@ -277,10 +282,15 @@ func routeDeleteCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "route-delete",
 		Short:   "Delete a standing order (an in-flight caravan still completes, as an ordinary transfer)",
-		Example: `  keryx route-delete --id <standing-order-id>`,
+		Example: "  keryx route-delete\n  keryx route-delete --id <standing-order-id>",
 		Args:    noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
+			cand, err := pickID("route-delete", "standing order", orderID, "", func() ([]idCandidate, error) { return standingOrderCandidates(c, "") })
+			if err != nil {
+				return err
+			}
+			orderID = cand.ID
 			path := fmt.Sprintf("/api/v1/worlds/%s/standing-orders/%s", cfg.WorldID, orderID)
 			if _, err := c.delete(path); err != nil {
 				return err
@@ -289,7 +299,6 @@ func routeDeleteCmd() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&orderID, "id", "", "standing order ID (see `keryx routes`)")
-	_ = cmd.MarkFlagRequired("id")
+	cmd.Flags().StringVar(&orderID, "id", "", "standing order ID or unique prefix (default: the only candidate; see `keryx routes`)")
 	return cmd
 }

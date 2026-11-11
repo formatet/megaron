@@ -27,7 +27,7 @@ func harvestBlessingLine(sett map[string]any) string {
 	if remaining == 1 {
 		day = "game day"
 	}
-	return fmt.Sprintf("Blessed harvest: +%g%% %s yield · %g %s left", bonus*100, strings.Join(goods, ", "), remaining, day)
+	return fmt.Sprintf("Blessed harvest: +%s%% %s yield · %s %s left", oneDecimal(bonus*100), strings.Join(goods, ", "), oneDecimal(remaining), day)
 }
 
 // stormFishingLine names the city's fishing grounds a storm stands on now

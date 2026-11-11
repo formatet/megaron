@@ -160,6 +160,7 @@ func newRootCommand() *cobra.Command {
 		versionCmd(),
 	)
 
+	applyHelpGroups(root)
 	return root
 }
 func main() {

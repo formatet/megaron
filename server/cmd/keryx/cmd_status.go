@@ -56,7 +56,7 @@ func unusedCatchmentDeposits(catchmentDeposits []any, buildings []any) []string 
 func incenseInCatchmentLine(catchmentDeposits []any) string {
 	for _, d := range catchmentDeposits {
 		if ds, _ := d.(string); ds == "incense" {
-			return "Incense lies in the catchment - no building needed: place gubbar on its hex (`keryx place incense <ordinal>`, see `keryx city`). Offered at a rite it moves the odds further than any other gift."
+			return "Incense lies in the catchment - no building needed: place citizens on its hex (`keryx place incense <ordinal>`, see `keryx city`). Offered at a rite it moves the odds further than any other gift."
 		}
 	}
 	return ""
@@ -440,7 +440,7 @@ func capitalize(s string) string {
 func buildQueueState(c *Client, m map[string]any) string {
 	if act, ok := m["active"].(bool); ok && !act {
 		left, _ := m["work_left_game_days"].(float64)
-		return fmt.Sprintf("next in line · %g game days of work once it starts", left)
+		return fmt.Sprintf("next in line · %s of work once it starts", formatDays(left))
 	}
 	ca, _ := m["complete_at"].(string)
 	eta := buildQueueETA(c, ca)
@@ -572,7 +572,7 @@ func multiCityHint(name string, settlementsUsed float64) string {
 	if settlementsUsed <= 1 {
 		return ""
 	}
-	return fmt.Sprintf("This is %s. You have %.0f cities — `keryx settlements` lists them, `keryx status --province <id>` shows another.",
+	return fmt.Sprintf("This is %s. You have %.0f cities — `keryx cities` lists them, `keryx status --city <name>` shows another.",
 		name, settlementsUsed)
 }
 
@@ -608,7 +608,7 @@ func statusCmd() *cobra.Command {
 	var provinceID string
 	cmd := &cobra.Command{
 		Use:   "status [city]",
-		Short: "Show your province status (defaults to your capital; --province inspects a colony)",
+		Short: "Show your province status (defaults to your capital; --city inspects another city)",
 		// --json documentation (megaron_plan_cli_sanning §B): reproduced against
 		// the live acceptance world 2026-08-24, the raw payload always HAD
 		// grain/silver — nested, not at the top level a script naturally
@@ -630,14 +630,14 @@ field — looking one up there returns nothing, not a real null from the server.
 Some derived figures DO live at the settlement top level: grain_prod_rate,
 grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_upkeep.`,
 		Example: `  keryx status
-  keryx status --province <province-id>   # inspect a colony
+  keryx status --city <name>   # inspect a colony
   keryx status --json | jq '.settlement.resources.silver.amount'`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c := newClient(cfg)
 			if len(args) > 0 {
 				if provinceID != "" {
-					return fmt.Errorf("choose a city either positionally or with --province")
+					return fmt.Errorf("choose a city either positionally or with --city")
 				}
 				provinceID = args[0]
 			}
@@ -1234,6 +1234,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 	}
 	cmd.Flags().SortFlags = false
 	cmd.Flags().StringVar(&provinceID, "province", "", "province ID to inspect (default: your capital)")
+	addCityFlag(cmd, &provinceID, false, "province")
 	return cmd
 }
 

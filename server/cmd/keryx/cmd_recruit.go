@@ -43,7 +43,7 @@ func recruitCmd() *cobra.Command {
   keryx recruit --unit war_chariot
   keryx recruit --unit galley --name Asterion
   keryx recruit --unit war_galley --count 3
-  keryx recruit --unit spearman --province <province-id>   # recruit in a colony`,
+  keryx recruit --unit spearman --city <name>   # recruit in a colony`,
 		Args: rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
@@ -184,10 +184,12 @@ func recruitCmd() *cobra.Command {
 
 	cmd.Flags().SortFlags = false
 	cmd.Flags().StringVar(&provinceID, "province", "", "province to recruit in (default: your capital)")
+	addCityFlag(cmd, &provinceID, true, "province")
 	cmd.Flags().StringVarP(&unit, "unit", "u", "", "unit type (required unless --list)")
 	cmd.Flags().IntVarP(&men, "men", "n", 100, "deprecated, no effect — land recruits always draft a full 100-man cohort now; ignored for ships")
 	cmd.Flags().IntVarP(&count, "count", "c", 1, "number of vessels to build in one call (ships only, 1–20)")
 	cmd.Flags().StringVar(&name, "name", "", "ship name (ships only; omit for a suggested name)")
+	_ = cmd.Flags().MarkHidden("men")
 	cmd.Flags().BoolVar(&list, "list", false, "show the recruitable-unit catalogue and exit")
 	return cmd
 }
@@ -248,10 +250,12 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 	// read a bare "can't carry this yet" as a pop cap, a unit cap and a stock cap
 	// before giving up — one of them was sitting on 118k grain, short only silver).
 	var netGrain, netSilver, grainStock, silverStock float64
+	cityName := ""
 	if sdata, serr := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces/%s", worldID, provinceID)); serr == nil {
 		var p map[string]any
 		if json.Unmarshal(sdata, &p) == nil {
 			if sett, ok := p["settlement"].(map[string]any); ok {
+				cityName, _ = sett["name"].(string)
 				netGrain, _ = sett["net_grain_per_tick_after_upkeep"].(float64)
 				netSilver, _ = sett["net_silver_per_tick_after_upkeep"].(float64)
 				// Stocks for the runway clause in unsustainableReason (a negative
@@ -361,8 +365,16 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 			}
 		}
 
-		fmt.Printf("%-24s  %-24s  %-28s  %-9d  %-16s  %-6s  %s\n",
+		row := fmt.Sprintf("%-24s  %-24s  %-28s  %-9d  %-16s  %-6s  %s",
 			label, batch, costStr, u.DurationGameDays, reqStr, affordStr, upkeepStr)
+		if affordStr == "✓" {
+			cmdLine := "keryx recruit --unit " + u.Type
+			if cityName != "" {
+				cmdLine = "keryx recruit --city " + commandArgument(cityName) + " --unit " + u.Type
+			}
+			row += "  → " + cmdLine
+		}
+		fmt.Println(row)
 	}
 	return nil
 }

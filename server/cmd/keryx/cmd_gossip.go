@@ -159,6 +159,7 @@ func messengerCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&destName, "to", "t", "", "destination settlement name (required)")
 	cmd.Flags().StringVarP(&message, "message", "m", "", "message text (required)")
 	cmd.Flags().StringVar(&fromName, "from", "", "your city to send from (default: capital — the silver hub)")
+	addCityFlag(cmd, &fromName, false, "from")
 	cmd.Flags().StringVar(&wantGood, "want-good", "", "good to request (e.g. grain, cedar)")
 	cmd.Flags().Float64Var(&wantQty, "want-qty", 0, "quantity of good to request")
 	cmd.Flags().Float64Var(&offerSilver, "offer-silver", 0, "silver to offer in exchange")
@@ -212,7 +213,7 @@ func resolveMessengerDest(markers, wanaxes []map[string]any, destName, fromName 
 	switch {
 	case fromName != "":
 		if fromID == "" {
-			return "", "", "", fmt.Errorf("you have no settlement named %q to send from — pick one of your own cities (see `settlements`)", fromName)
+			return "", "", "", fmt.Errorf("you have no settlement named %q to send from — pick one of your own cities (see `keryx cities`)", fromName)
 		}
 		ownID = fromID
 	case capitalID != "":

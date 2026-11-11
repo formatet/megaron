@@ -126,7 +126,7 @@ func TestHaiku6TransferSelectedColonyAndExplicitSource(t *testing.T) {
 	cmd := transferCmd()
 	cmd.SetArgs(args)
 	_, err := captureStdout(t, cmd.Execute)
-	if err == nil || !strings.Contains(err.Error(), "sending city") || !strings.Contains(err.Error(), "--from") {
+	if err == nil || !strings.Contains(err.Error(), "sending city") || !strings.Contains(err.Error(), "--city") {
 		t.Fatalf("self destination error=%v", err)
 	}
 	if posts != 0 || cfg.ProvinceID != colony {

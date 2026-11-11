@@ -19,12 +19,14 @@ keryx join
 keryx status
 ```
 
-`keryx actions` is the command to reach for when you are stuck: it lists what you can do right now. `keryx --help`, and `--help` after any command, explain the rest. The rules themselves are in this Codex: `keryx codex` lists the articles and `keryx codex <id>` prints one.
+**The round.** Each round has two steps. `keryx dossier` writes everything you know (read it first); `keryx actions` lists what you can do now, what is locked and, for each thing you can do, the command that does it. Then act. `keryx --help` shows the commands in groups, and `--help` after any command gives copy-paste examples. The rules themselves are in this Codex: `keryx codex` lists the articles and `keryx codex <id>` prints one.
+
+Commands that exist but are not in `keryx --help` (`me`, `brief`, `idle`, `roster`, `placements`, `forces`, `settlements`, `diplomacy`, `messenger`) still work; each only repeats part of `dossier`, `status`, `city`, `army`, `cities`, `message` or `trade-offer`.
 
 ## Common Keryx commands {#keryx-a-few-useful-commands}
 
 ```
-keryx city                   # people and placement in a city
+keryx city                   # people and placement in a city (--city <name> for another)
 keryx codex bronze           # read a Codex article
 keryx dispatches             # which kinds of news are pushed to you live
 keryx dossier --out world.md # one markdown report of everything you know
@@ -51,7 +53,7 @@ Orders given through Keryx obey the same rules as in the browser: they travel by
 
 With exactly one active world, commands select and save it automatically. To choose explicitly, run `keryx worlds` and then `keryx worlds --select <world-id>`. City rows show both the placement number and `(q,r)`; use those coordinates with `build --hex q,r`.
 
-Use a city name or province ID either positionally or with `--province` in `city`, `placements`, `status` and `build`. For placement: `keryx place Knossos fish 13 -1` or `keryx place --province Knossos fish 13 -1`. Put flags before the good when using a negative amount. If no [[citizens|citizens]] work that good on the chosen hex, the result lists where they do work it. `founding settle --yes` skips the question. Travel estimates use game days; if an arrival cannot be calculated it is reported as unavailable.
+Name the city you act in with `--city <name-or-id>`, on every command that works in one city (`build`, `city`, `status`, `place`, `staff`, `recruit`, `rite`, `goods`, `transfer`, `route`, `message`, `trade-offer` and the rest). Without it the command uses your capital. Where a command has no other argument you may also give the name alone (`keryx goods Knossos`). A wrong name answers with the names of your cities. The older `--province`, `--from` and `--settlement` still work. For placement: `keryx place Knossos fish 13 -1` or `keryx place --city Knossos fish 13 -1`. Put flags before the good when using a negative amount. If no [[citizens|citizens]] work that good on the chosen hex, the result lists where they do work it. `founding settle --yes` skips the question. Travel estimates use game days; if an arrival cannot be calculated it is reported as unavailable.
 
 Hex selection accepts the ordinal shown by City, with or without `#`: `build --type lumbermill --hex 6` or `--hex '#6'`. Placement can use `place fish 6 +1`, `place fish '#6' +1`, or `place --hex 6 fish +1`; `--hex q,r` also works. Put flags before the good when giving a negative amount. `staff` is for city workplaces; hex-bound buildings are worked with `place` on their hex.
 
@@ -64,16 +66,20 @@ Use `build --list` for the catalogue or `build --queue` for queued construction.
 `keryx staff workshop +1` places a builder: the city builds one building at a time, and each builder speeds the active build up (up to 3×).
 
 `keryx staff olive_press` shows that named workplace's staffing. Add `+1` or `-1`
-to change it; the building name is required. Use `keryx city` or `keryx roster`
+to change it; the building name is required. Use `keryx city` or `keryx dossier`
 to find workplaces and assignments. Hex buildings use `place`.
 
 Send a report with `keryx report --text "what happened"`; use `--kind confused`
 for a question the rules did not answer. For [[colonies|colony]] founding in scripts, add
-`--yes`: `keryx unit march --unit <id> --target 5,-3 --intent colonize --name Thapsos --yes`.
+`--yes`: `keryx unit march --unit <id> --to 5,-3 --intent colonize --name Thapsos --yes`.
 Without confirmation, the non-interactive text command only shows the forecast;
 JSON callers receive a refusal until they add `--yes`.
 
-To learn what a contacted city needs or can spare, ask its Wanax with `keryx messenger` and read the reply with `keryx inbox`. See [[messengers]] and [[trade]].
+To learn what a contacted city needs or can spare, ask its Wanax with `keryx message --to <city> --text "..."` (or send an offer with `keryx trade-offer`) and read the reply with `keryx inbox`. See [[messengers]] and [[trade]].
+
+**Answering without an id.** `trade-accept`, `trade-decline`, `trade-cancel`, `reply`, `cancel-build`, `call-back`, `passage`, `route-pause`, `route-resume` and `route-delete` need no `--id` when there is only one thing they could act on: Keryx acts on it and says which. When there are several it does nothing and prints each candidate as a ready command line, for example `keryx trade-accept --id 3f2a1b9c  # 20 grain for 80 silver from Myrine`. A short unique start of an id is accepted wherever a full id is.
+
+**Lists that print the command.** `build --list`, `recruit --list`, `rite --list` and `actions <category>` end each available row with the exact command that does it (`→ keryx build --city Phaistos --type farm --hex 12,21`). A locked row keeps its "needs ..." reason and prints no command. `march`, `redirect` and `unit post` take the destination as `--to "City name"` or `--to q,r`.
 
 ### Keryx staffing and labour commands {#keryx-argument-reminders-2}
 

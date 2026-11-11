@@ -16,4 +16,4 @@ Production, workers, [[silver|silver]], the build queue, recruiting, [[upkeep|up
 
 Send a [[messengers|messenger]], [[trade]], or send a [[gifts|gift]]. Each delivery gives you a new picture. You can always just ask in a letter, but the answer is only as true as its writer.
 
-In [[keryx|Keryx]]: `keryx status --province <city>` prints the same lines, each with its date and source.
+In [[keryx|Keryx]]: `keryx status --city <city>` prints the same lines, each with its date and source.

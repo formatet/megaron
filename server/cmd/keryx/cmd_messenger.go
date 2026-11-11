@@ -14,15 +14,21 @@ func replyCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "reply",
 		Short: "Reply to an inbox message",
+		Example: `  keryx reply --text "We agree."
+  keryx reply --id 3f2a1b9c --text "We agree."`,
 		// --id and --text are both required and equally plausible for a
 		// stray positional — no single one is the obvious guess.
 		Args: noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			if msgID == "" || text == "" {
-				return fmt.Errorf("--id and --text required")
+			if text == "" {
+				return fmt.Errorf("--text required")
 			}
 			c := newClient(cfg)
-			path := fmt.Sprintf("/api/v1/worlds/%s/messengers/%s/reply", cfg.WorldID, msgID)
+			cand, err := pickID("reply", "letter to answer", msgID, ` --text "..."`, func() ([]idCandidate, error) { return inboxCandidates(c, false) })
+			if err != nil {
+				return err
+			}
+			path := fmt.Sprintf("/api/v1/worlds/%s/messengers/%s/reply", cfg.WorldID, cand.ID)
 			data, err := c.post(path, map[string]string{"reply": text})
 			if err != nil {
 				return err
@@ -41,7 +47,7 @@ func replyCmd() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&msgID, "id", "", "messenger ID (from inbox --output json)")
+	cmd.Flags().StringVar(&msgID, "id", "", "messenger ID or unique prefix (default: the only open letter)")
 	cmd.Flags().StringVar(&text, "text", "", "reply text")
 	return cmd
 }
@@ -51,13 +57,16 @@ func tradeAcceptCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "trade-accept",
 		Short: "Accept a trade offer from inbox",
-		Args:  rejectPositionalArgs("id"),
+		Example: `  keryx trade-accept
+  keryx trade-accept --id 3f2a1b9c`,
+		Args: rejectPositionalArgs("id"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			if msgID == "" {
-				return fmt.Errorf("--id required")
-			}
 			c := newClient(cfg)
-			path := fmt.Sprintf("/api/v1/worlds/%s/messengers/%s/trade-accept", cfg.WorldID, msgID)
+			cand, err := pickID("trade-accept", "trade offer", msgID, "", func() ([]idCandidate, error) { return inboxCandidates(c, true) })
+			if err != nil {
+				return err
+			}
+			path := fmt.Sprintf("/api/v1/worlds/%s/messengers/%s/trade-accept", cfg.WorldID, cand.ID)
 			data, err := c.post(path, map[string]any{})
 			if err != nil {
 				return err
@@ -86,7 +95,7 @@ func tradeAcceptCmd() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&msgID, "id", "", "messenger ID")
+	cmd.Flags().StringVar(&msgID, "id", "", "messenger ID or unique prefix (default: the only candidate)")
 	return cmd
 }
 
@@ -95,13 +104,16 @@ func tradeDeclineCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "trade-decline",
 		Short: "Decline a trade offer from inbox",
-		Args:  rejectPositionalArgs("id"),
+		Example: `  keryx trade-decline
+  keryx trade-decline --id 3f2a1b9c`,
+		Args: rejectPositionalArgs("id"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			if msgID == "" {
-				return fmt.Errorf("--id required")
-			}
 			c := newClient(cfg)
-			path := fmt.Sprintf("/api/v1/worlds/%s/messengers/%s/trade-decline", cfg.WorldID, msgID)
+			cand, err := pickID("trade-decline", "trade offer", msgID, "", func() ([]idCandidate, error) { return inboxCandidates(c, true) })
+			if err != nil {
+				return err
+			}
+			path := fmt.Sprintf("/api/v1/worlds/%s/messengers/%s/trade-decline", cfg.WorldID, cand.ID)
 			data, err := c.post(path, map[string]any{})
 			if err != nil {
 				return err
@@ -114,23 +126,25 @@ func tradeDeclineCmd() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&msgID, "id", "", "messenger ID")
+	cmd.Flags().StringVar(&msgID, "id", "", "messenger ID or unique prefix (default: the only candidate)")
 	return cmd
 }
 
 func tradeCancelCmd() *cobra.Command {
 	var msgID string
 	cmd := &cobra.Command{
-		Use:     "trade-cancel",
-		Short:   "Cancel an outgoing pending trade offer and reclaim escrowed silver",
-		Example: `  keryx trade-cancel --id <messenger-id>`,
-		Args:    rejectPositionalArgs("id"),
+		Use:   "trade-cancel",
+		Short: "Cancel an outgoing pending trade offer and reclaim escrowed silver",
+		Example: `  keryx trade-cancel
+  keryx trade-cancel --id 3f2a1b9c`,
+		Args: rejectPositionalArgs("id"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			if msgID == "" {
-				return fmt.Errorf("--id required (find the id with: keryx outbox)")
-			}
 			c := newClient(cfg)
-			path := fmt.Sprintf("/api/v1/worlds/%s/messengers/%s/trade-cancel", cfg.WorldID, msgID)
+			cand, err := pickID("trade-cancel", "pending offer of yours", msgID, "", func() ([]idCandidate, error) { return outboxCandidates(c, outboxPendingOffer) })
+			if err != nil {
+				return err
+			}
+			path := fmt.Sprintf("/api/v1/worlds/%s/messengers/%s/trade-cancel", cfg.WorldID, cand.ID)
 			data, err := c.post(path, map[string]any{})
 			if err != nil {
 				return err
@@ -153,7 +167,7 @@ func tradeCancelCmd() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&msgID, "id", "", "messenger ID (find with: keryx outbox)")
+	cmd.Flags().StringVar(&msgID, "id", "", "messenger ID or unique prefix (default: the only candidate)")
 	return cmd
 }
 
@@ -166,22 +180,24 @@ func passageCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "passage",
 		Short: "Arrange for a ship to carry a runner across the sea",
-		Example: `  keryx passage --id <messenger-id> --ship <ship-id>
-  (find the messenger id with: keryx outbox — it names the ship choices too)`,
+		Example: `  keryx passage --ship <ship>
+  keryx passage --id 3f2a1b9c --ship <ship>
+  (keryx outbox names the runners waiting and the ship choices)`,
 		Args: rejectPositionalArgs("id"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			if msgID == "" {
-				return fmt.Errorf("--id required (find the id with: keryx outbox)")
-			}
 			if shipID == "" {
 				return fmt.Errorf("--ship required (find eligible ships with: keryx outbox, or: keryx unit)")
 			}
 			c := newClient(cfg)
+			cand, err := pickID("passage", "runner waiting for a ship", msgID, " --ship <ship>", func() ([]idCandidate, error) { return outboxCandidates(c, outboxWaitingRunner("can_arrange_passage")) })
+			if err != nil {
+				return err
+			}
 			sid, err := resolveUnitID(c, cfg.WorldID, shipID)
 			if err != nil {
 				return err
 			}
-			path := fmt.Sprintf("/api/v1/worlds/%s/messengers/%s/passage", cfg.WorldID, msgID)
+			path := fmt.Sprintf("/api/v1/worlds/%s/messengers/%s/passage", cfg.WorldID, cand.ID)
 			data, err := c.post(path, map[string]any{"ship_id": sid})
 			if err != nil {
 				return err
@@ -210,7 +226,7 @@ func passageCmd() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&msgID, "id", "", "messenger ID (find with: keryx outbox)")
+	cmd.Flags().StringVar(&msgID, "id", "", "messenger ID or unique prefix (default: the only candidate)")
 	cmd.Flags().StringVar(&shipID, "ship", "", "ship name or ID (galley or merchantman, garrisoned; find with: keryx outbox or keryx unit)")
 	return cmd
 }
@@ -225,15 +241,17 @@ func callBackCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "call-back",
 		Short: "Call a runner stuck waiting for passage back home, undelivered",
-		Example: `  keryx call-back --id <messenger-id>
-  (find the messenger id with: keryx outbox)`,
+		Example: `  keryx call-back
+  keryx call-back --id 3f2a1b9c
+  (keryx outbox lists the runners waiting)`,
 		Args: rejectPositionalArgs("id"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			if msgID == "" {
-				return fmt.Errorf("--id required (find the id with: keryx outbox)")
-			}
 			c := newClient(cfg)
-			path := fmt.Sprintf("/api/v1/worlds/%s/messengers/%s/call-back", cfg.WorldID, msgID)
+			cand, err := pickID("call-back", "runner waiting for a ship", msgID, "", func() ([]idCandidate, error) { return outboxCandidates(c, outboxWaitingRunner("can_call_back")) })
+			if err != nil {
+				return err
+			}
+			path := fmt.Sprintf("/api/v1/worlds/%s/messengers/%s/call-back", cfg.WorldID, cand.ID)
 			data, err := c.post(path, map[string]any{})
 			if err != nil {
 				return err
@@ -254,7 +272,7 @@ func callBackCmd() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&msgID, "id", "", "messenger ID (find with: keryx outbox)")
+	cmd.Flags().StringVar(&msgID, "id", "", "messenger ID or unique prefix (default: the only candidate)")
 	return cmd
 }
 
@@ -266,49 +284,9 @@ func outboxCmd() *cobra.Command {
 		Args:  noPositionalArgs(), // no flags at all — nothing to guess
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
-			// Resolve own settlement_ids from the province markers (cfg stores province_id, not settlement_id).
-			// Aggregate sent messengers across ALL owned settlements — a pending offer may have been
-			// sent from a colony, and listing only one settlement made it look like the outbox was empty
-			// while the server still rejected re-sends with "check your outbox".
-			provinces, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces", cfg.WorldID))
+			msgs, err := fetchOutbox(c)
 			if err != nil {
 				return err
-			}
-			var markers []map[string]any
-			_ = json.Unmarshal(provinces, &markers)
-			var ownSettlementIDs []string
-			for _, m := range markers {
-				if own, _ := m["own"].(bool); own {
-					if sid, _ := m["settlement_id"].(string); sid != "" {
-						ownSettlementIDs = append(ownSettlementIDs, sid)
-					}
-				}
-			}
-			msgs := []map[string]any{}
-			// Host-origin messengers (founder phase, mig 087) live on their own
-			// endpoint — merged in so the correspondence is readable both while the
-			// host wanders (no settlement exists) and after founding (replies to a
-			// dissolved host still come home).
-			if hostData, herr := c.get(fmt.Sprintf("/api/v1/worlds/%s/founding/messengers", cfg.WorldID)); herr == nil {
-				var part []map[string]any
-				if json.Unmarshal(hostData, &part) == nil {
-					msgs = append(msgs, part...)
-				}
-			}
-			if len(ownSettlementIDs) == 0 && len(msgs) == 0 {
-				return fmt.Errorf("could not find own settlement")
-			}
-			for _, sid := range ownSettlementIDs {
-				path := fmt.Sprintf("/api/v1/worlds/%s/settlements/%s/messengers", cfg.WorldID, sid)
-				data, err := c.get(path)
-				if err != nil {
-					return err
-				}
-				var part []map[string]any
-				if err := json.Unmarshal(data, &part); err != nil {
-					return err
-				}
-				msgs = append(msgs, part...)
 			}
 			if jsonMode {
 				printJSON(msgs)
@@ -582,4 +560,53 @@ func escrowExposureSummary(msgs []map[string]any) string {
 	}
 	return fmt.Sprintf("⚠ Escrow exposure: %s locked across %d pending %s",
 		strings.Join(parts, " + "), pendingCount, offerWord)
+}
+
+// fetchOutbox aggregates sent messengers across all owned settlements and the founding host.
+func fetchOutbox(c *Client) ([]map[string]any, error) {
+	// Resolve own settlement_ids from the province markers (cfg stores province_id, not settlement_id).
+	// Aggregate sent messengers across ALL owned settlements — a pending offer may have been
+	// sent from a colony, and listing only one settlement made it look like the outbox was empty
+	// while the server still rejected re-sends with "check your outbox".
+	provinces, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces", cfg.WorldID))
+	if err != nil {
+		return nil, err
+	}
+	var markers []map[string]any
+	_ = json.Unmarshal(provinces, &markers)
+	var ownSettlementIDs []string
+	for _, m := range markers {
+		if own, _ := m["own"].(bool); own {
+			if sid, _ := m["settlement_id"].(string); sid != "" {
+				ownSettlementIDs = append(ownSettlementIDs, sid)
+			}
+		}
+	}
+	msgs := []map[string]any{}
+	// Host-origin messengers (founder phase, mig 087) live on their own
+	// endpoint — merged in so the correspondence is readable both while the
+	// host wanders (no settlement exists) and after founding (replies to a
+	// dissolved host still come home).
+	if hostData, herr := c.get(fmt.Sprintf("/api/v1/worlds/%s/founding/messengers", cfg.WorldID)); herr == nil {
+		var part []map[string]any
+		if json.Unmarshal(hostData, &part) == nil {
+			msgs = append(msgs, part...)
+		}
+	}
+	if len(ownSettlementIDs) == 0 && len(msgs) == 0 {
+		return nil, fmt.Errorf("could not find own settlement")
+	}
+	for _, sid := range ownSettlementIDs {
+		path := fmt.Sprintf("/api/v1/worlds/%s/settlements/%s/messengers", cfg.WorldID, sid)
+		data, err := c.get(path)
+		if err != nil {
+			return nil, err
+		}
+		var part []map[string]any
+		if err := json.Unmarshal(data, &part); err != nil {
+			return nil, err
+		}
+		msgs = append(msgs, part...)
+	}
+	return msgs, nil
 }

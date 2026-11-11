@@ -87,7 +87,7 @@ func TestBuildListNamesTheGranary(t *testing.T) {
 
 func TestAlreadyMarchingNamesRedirect(t *testing.T) {
 	err := alreadyMarchingHint(fmt.Errorf("the unit is already marching; redirect it by choosing a new destination"), "67cfc031", 56, 44)
-	if !strings.Contains(err.Error(), "keryx unit redirect --unit 67cfc031 --q 56 --r 44") {
+	if !strings.Contains(err.Error(), "keryx unit redirect --unit 67cfc031 --to 56,44") {
 		t.Fatal(err)
 	}
 	if other := fmt.Errorf("no route"); alreadyMarchingHint(other, "u", 1, 2) != other {

@@ -56,7 +56,7 @@ func disbandUnitIDs(c *Client, selectors []string) ([]string, error) {
 			}
 		}
 		if len(matches) != 1 {
-			return nil, fmt.Errorf("%q matches %d forces — choose a unique name or id from keryx forces", selector, len(matches))
+			return nil, fmt.Errorf("%q matches %d forces — choose a unique name or id from keryx army", selector, len(matches))
 		}
 		if seen[matches[0].ID] {
 			return nil, fmt.Errorf("choose each whole unit only once")
@@ -71,10 +71,10 @@ func disbandCmd() *cobra.Command {
 	var selectors []string
 	var province string
 	cmd := &cobra.Command{Use: "disband", Short: "Disband a whole unit in a city; its remaining people return there", Args: noPositionalArgs(), Example: `  keryx disband --unit "1st Spearmen of Phaistos"
-  keryx disband --unit <unit-id> --province Phaistos
+  keryx disband --unit <unit-id> --city Phaistos
   keryx disband --unit <unit-id> --unit <another-unit-id>`, RunE: func(cmd *cobra.Command, _ []string) error {
 		if len(selectors) == 0 {
-			return fmt.Errorf("disband a whole unit by its id or unique name: use --unit (see keryx forces)")
+			return fmt.Errorf("disband a whole unit by its id or unique name: use --unit (see keryx army)")
 		}
 		c := newClient(cfg)
 		city, err := selectedProvince(c, province, nil)
@@ -102,5 +102,6 @@ func disbandCmd() *cobra.Command {
 	}}
 	cmd.Flags().StringArrayVar(&selectors, "unit", nil, "whole unit ID, unique ID prefix or name (repeat to select several)")
 	cmd.Flags().StringVar(&province, "province", "", "city name or province ID (default: selected city)")
+	addCityFlag(cmd, &province, true, "province")
 	return cmd
 }

@@ -87,7 +87,9 @@ func listRealmPrayers(c *Client, settlement string) error {
 			fmt.Printf("  %s favours %s\n", p.God, taste)
 		}
 		printRiteTargets(p.riteAvailablePrayer, p.SettlementID)
-		fmt.Printf("  Cast here: keryx rite --settlement %s --prayer %s\n", p.SettlementID, p.ID)
+		if ready == "yes" {
+			fmt.Printf("  Cast here: %s\n", riteCommandLine(p))
+		}
 	}
 	if len(view.Prayers) == 0 {
 		fmt.Println("No prayers available here. Found a city and build a temple.")
@@ -115,9 +117,9 @@ func printRealmTemples(c *Client) bool {
 	for _, t := range view.Temples {
 		fmt.Printf("  %s — %s · level %d · workers %d/%d\n", t.Name, t.CityName, t.Level, t.Staffed, t.Capacity)
 		fmt.Println(templeOfferingLine(t.Offer))
-		fmt.Printf("  Manage: keryx staff temple +1 --province %s --god %s\n", t.ProvinceID, t.GodID)
-		fmt.Printf("  Rich offering: keryx rich-offering --god %s --province %s --good <good> (or --off)\n", t.GodID, t.ProvinceID)
-		fmt.Printf("  Demolish: keryx demolish --type temple --god %s --province %s\n", t.GodID, t.ProvinceID)
+		fmt.Printf("  Manage: keryx staff temple +1 --city %s --god %s\n", t.ProvinceID, t.GodID)
+		fmt.Printf("  Rich offering: keryx rich-offering --god %s --city %s --good <good> (or --off)\n", t.GodID, t.ProvinceID)
+		fmt.Printf("  Demolish: keryx demolish --type temple --god %s --city %s\n", t.GodID, t.ProvinceID)
 	}
 	if len(view.Temples) == 0 {
 		fmt.Println("  No standing temples.")
@@ -130,4 +132,31 @@ func printRealmTemples(c *Client) bool {
 	}
 
 	return true
+}
+
+// riteCommandLine is the exact command that casts this prayer: required flags
+// only, plus --yes (agents have no terminal to confirm on).
+func riteCommandLine(p cultPrayer) string {
+	line := "keryx rite --city " + commandArgument(p.CityName) + " --prayer " + p.ID
+	if t := p.Targets; t != nil {
+		switch t.Kind {
+		case "storm":
+			name := "<storm>"
+			if len(t.Storms) == 1 {
+				name = commandArgument(t.Storms[0].Name)
+			}
+			line += " --storm " + name
+		case "city", "place":
+			line += " --target <name>"
+		case "hex":
+			line += " --hex <q,r>"
+		default:
+			scope := "city"
+			if p.ScopeCostFactors["city"] == 0 && p.ScopeCostFactors["realm"] > 0 {
+				scope = "realm"
+			}
+			line += " --scope " + scope
+		}
+	}
+	return line + " --yes"
 }

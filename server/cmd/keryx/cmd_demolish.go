@@ -19,13 +19,13 @@ func demolishCmd() *cobra.Command {
 		Short: "Tear down a finished building so the hex/slot is free to rebuild (no refund; its workers become idle)",
 		Example: `  keryx demolish --hex 3,-1                 # the farm/lumbermill/mine/stonequarry standing on that hex
   keryx demolish --type market               # a city building
-  keryx demolish --hex 5,2 --province <province-id>`,
+  keryx demolish --hex 5,2 --city <name>`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c := newClient(cfg)
 			if len(args) > 0 {
 				if provinceID != "" {
-					return fmt.Errorf("choose a city either positionally or with --province")
+					return fmt.Errorf("choose a city either positionally or with --city")
 				}
 				provinceID = args[0]
 			}
@@ -157,6 +157,7 @@ func demolishCmd() *cobra.Command {
 	cmd.Flags().StringVar(&hexFlag, "hex", "", "hex building to demolish, as \"q,r\"")
 	cmd.Flags().StringVar(&god, "god", "", "which temple, when the city has one to several gods")
 	cmd.Flags().StringVar(&provinceID, "province", "", "city to demolish in (default: your capital)")
+	addCityFlag(cmd, &provinceID, false, "province")
 	return cmd
 }
 

@@ -80,7 +80,7 @@ func mapCmd() *cobra.Command {
 		Short: "Show nearby visible land hexes — colony candidates and ore deposits (sorted by distance)",
 		Example: `  keryx map
   keryx map --radius 12
-  keryx map --province <province-id>   # inspect a colony's surroundings`,
+  keryx map --city <name>   # inspect a colony's surroundings`,
 		Args: rejectPositionalArgs("province"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
@@ -363,6 +363,7 @@ func mapCmd() *cobra.Command {
 	}
 	cmd.Flags().SortFlags = false
 	cmd.Flags().StringVar(&provinceID, "province", "", "province to center the map on (default: your capital)")
+	addCityFlag(cmd, &provinceID, true, "province")
 	cmd.Flags().IntVar(&radius, "radius", 8, "max hex distance to list")
 	return cmd
 }

@@ -12,10 +12,10 @@ import (
 // marketBoardCmd shows or writes a city's market board
 // (PUT /worlds/{w}/settlements/{s}/market-board, megaron_plan_marknadstavlan).
 func marketBoardCmd() *cobra.Command {
-	var buys, sells string
+	var buys, sells, cityName string
 	var clear bool
 	cmd := &cobra.Command{
-		Use:   "market-board <city>",
+		Use:   "market-board [city]",
 		Short: "Show or write what your city's market board says it buys and sells",
 		Long: `Show or write your city's market board. A city with a Market can put up a
 board naming up to three goods it buys and three it sells (silver too). Other rulers'
@@ -27,14 +27,16 @@ itself still happens in letters — the board tells others whom to ask.
 
 With no flag it shows the board. --buys and --sells replace each line
 (comma-separated goods; an empty value clears that line). --clear empties both.`,
-		Example: `  keryx market-board Knossos
-  keryx market-board Knossos --buys tin,copper --sells wine
-  keryx market-board Knossos --sells ""
-  keryx market-board Knossos --clear`,
-		Args: cobra.ExactArgs(1),
+		Example: `  keryx market-board --city Knossos
+  keryx market-board --city Knossos --buys tin,copper --sells wine
+  keryx market-board --city Knossos --sells ""
+  keryx market-board --city Knossos --clear`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if cityName == "" {
+				return fmt.Errorf("name the city: keryx market-board --city <name>")
+			}
 			c := newClient(cfg)
-			sid, err := resolveSettlement(c, cfg.WorldID, args[0])
+			sid, err := resolveSettlement(c, cfg.WorldID, cityName)
 			if err != nil {
 				return err
 			}
@@ -93,6 +95,7 @@ With no flag it shows the board. --buys and --sells replace each line
 			return nil
 		},
 	}
+	addCityFlag(cmd, &cityName, true)
 	cmd.Flags().StringVar(&buys, "buys", "", "goods the city buys, comma-separated (max 3)")
 	cmd.Flags().StringVar(&sells, "sells", "", "goods the city sells, comma-separated (max 3)")
 	cmd.Flags().BoolVar(&clear, "clear", false, "empty the board")
@@ -147,7 +150,7 @@ func describeReading(b map[string]any) string {
 		}
 		s += " (read " + clockTime(at)
 		if days, ok := b["read_game_days_ago"].(float64); ok {
-			s += fmt.Sprintf(", %g game days ago", days)
+			s += ", " + formatDays(days) + " ago"
 		}
 		s += ")"
 	}
