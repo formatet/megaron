@@ -30,7 +30,7 @@ export async function run(name) {
  const grid=await import('/web/static/js/megaron/ui/citygrid.js');
  const kult=await import('/web/static/js/megaron/ui/drawers/kult.js');
  const search=await import('/web/static/js/megaron/ui/search.js');
- Object.assign(window,{onCityBuildTypeChange:city.onCityBuildTypeChange,dipToggleKind:dip.dipToggleKind});
+ Object.assign(window,{dipToggleKind:dip.dipToggleKind});
  const el=id=>document.getElementById(id);
  const check=(condition,message)=>{if(!condition)throw new Error(name+': '+message);};
  const turn=()=>new Promise(r=>realTimeout(r,0));
@@ -69,22 +69,6 @@ export async function run(name) {
   await economy.loadTransferGoods('P2');el('ec-tr-good').value='fish';
   d.release([{key:'grain',amount:300}]);await pending;
   check(el('ec-tr-good').value==='fish','older From reply replaced selected good');
- } else if(name==='build-hex') {
-  document.body.insertAdjacentHTML('beforeend','<select id="city-build-select"><option>farm</option><option>mine</option><option>barracks</option></select><select id="city-build-hex"><option value="1,0">one</option><option value="2,0">two</option></select>');
-  const d=delay('/placement-options');pending=city.onCityBuildTypeChange();await reached(()=>d.release);
-  el('city-build-hex').value='2,0';d.release(placement);await pending;
-  check(el('city-build-hex').value==='2,0','hex choice lost while refresh pending');
- } else if(name==='build-stale') {
-  document.body.insertAdjacentHTML('beforeend','<select id="city-build-select"><option>farm</option><option>barracks</option></select><select id="city-build-hex"></select>');
-  const d=delay('/placement-options');pending=city.onCityBuildTypeChange();await reached(()=>d.release);
-  el('city-build-select').value='barracks';await city.onCityBuildTypeChange();
-  d.release(placement);await pending;check(el('city-build-hex').style.display==='none','older farm response reopened hex picker for barracks');
- } else if(name==='build-refresh') {
-  await city.loadCityDrawer();await reached(()=>el('city-build-select')?.options.length>0);await turn();
-  el('city-build-select').value='farm';await city.onCityBuildTypeChange();
-  const d=delay('/provinces/P');pending=city.startBuild();await reached(()=>d.release);
-  el('city-build-hex').value='2,0';d.release({settlement:pd});await pending;await reached(()=>el('city-build-hex')?.options.length>0);
-  check(el('city-build-hex').value==='2,0','build completion refresh lost next build hex');
  } else if(name==='grid') {
   await grid.renderGubbeGrid(el('grid'),'P',0,0);
   el('grid').querySelector('[data-ordinal="1"]').dispatchEvent(new MouseEvent('click'));

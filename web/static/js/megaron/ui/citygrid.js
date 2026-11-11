@@ -5,6 +5,13 @@ import { State } from '../state.js';
 import { fetchAuth } from '../api.js';
 import { formatApiError, esc } from './format.js';
 import { isNavigable } from '../terrain.js';
+import { getBuildingCatalogue, hexRowsHTML, pickHexes } from './build_rows.js';
+import { BUILDING_LABELS } from './building_names.js';
+
+// Who sends a build (city.js registers startBuild here; citygrid cannot import
+// city.js, which imports this file). Returns { ok, text }.
+let buildHandler = null;
+export function setBuildHandler(fn) { buildHandler = fn; }
 
 // Gubbe placement grid (P5: megaron_plan_fysisk_gubbemodell.md). Replaces the
 // old percent-per-good allocation table (DE2=B, 2026-08-07) with the P0-UI-
@@ -265,7 +272,7 @@ const liveSelection = new WeakMap();
 //                  that flicker is what made the panel appear to jump away on
 //                  every click (Timothy 2026-09-10).
 export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR, renderOpts = {}) {
-  const { selected = null, silent = false, targetHex=null, buildingType=null, god=null } = renderOpts;
+  const { selected = null, silent = false, targetHex=null, buildingType=null, god=null, pick=null } = renderOpts;
   const mySeq = ++renderSeq;
   if (!silent) { liveSelection.delete(containerEl); containerEl.innerHTML = '<div class="loading" style="font-size:.8rem">Loading…</div>'; }
 
@@ -285,6 +292,12 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
 
   const hexes = opts.hexes || [];
   const buildings = opts.buildings || [];
+  // Null when the catalogue cannot be loaded: then no build rows, the grid still works.
+  const catalogue = await getBuildingCatalogue();
+  if (mySeq !== renderSeq) return;
+  // Pick mode: hex "q,r" -> level step, for every hex that can take pick.type now.
+  const pickable = pick ? pickHexes(pick.type, opts) : null;
+  const pickName = pick ? (BUILDING_LABELS[pick.type] || pick.type) : '';
   const selectedHex=targetHex&&hexes.find(h=>h.hex_q===targetHex.q&&h.hex_r===targetHex.r);
 
   // SVG viewBox: compute from actual hex centres so the widget scales to
@@ -303,7 +316,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
   const cells = pixels.map(p => {
     if (p.isCentre) {
       return `<g class="gubbe-hex-g" data-target="city">
-        <polygon class="gubbe-hex gubbe-city-hex" points="${hexCorners(p.x, p.y, HEX_SIZE)}"></polygon>
+        <polygon class="gubbe-hex gubbe-city-hex${pick ? ' pick-dim' : ''}" points="${hexCorners(p.x, p.y, HEX_SIZE)}"></polygon>
         <text x="${p.x}" y="${p.y}" class="gubbe-hex-label">City</text>
       </g>`;
     }
@@ -311,11 +324,12 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
     const water = isNavigable(h.terrain);
     const anyGood = (h.goods || [])[0];
     const full = anyGood && anyGood.cap != null && (h.goods || []).every(g => g.cap == null || g.placed >= g.cap);
-    const cls = ['gubbe-hex', water ? 'water' : '', full ? 'full' : '', h.held_by ? (h.takeable ? 'takeable' : 'held') : ''].filter(Boolean).join(' ');
+    const step = pickable && pickable.get(`${h.hex_q},${h.hex_r}`);
+    const cls = ['gubbe-hex', water ? 'water' : '', full ? 'full' : '', h.held_by ? (h.takeable ? 'takeable' : 'held') : '', pick ? (step ? 'pick-ok' : 'pick-dim') : ''].filter(Boolean).join(' ');
     return `<g class="gubbe-hex-g" data-target="hex" data-ordinal="${h.hex_ordinal}">
       <polygon class="${cls}" points="${hexCorners(p.x, p.y, HEX_SIZE)}"></polygon>
       <text x="${p.x}" y="${p.y - 4}" class="gubbe-hex-label">${h.hex_q},${h.hex_r}</text>
-      <text x="${p.x}" y="${p.y + 9}" class="gubbe-hex-sub">${fmtNum((h.goods || []).length)} good${(h.goods || []).length === 1 ? '' : 's'}</text>
+      <text x="${p.x}" y="${p.y + 9}" class="gubbe-hex-sub">${step ? step : `${fmtNum((h.goods || []).length)} good${(h.goods || []).length === 1 ? '' : 's'}`}</text>
     </g>`;
   }).join('');
 
@@ -338,6 +352,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
       <span>Citizens: <b>${fmtNum(opts.total_gubbar - opts.pool_size)} of ${fmtNum(opts.total_gubbar)}</b> placed</span>
       <span style="color:var(--text-dim)">${fmtNum(opts.pool_size)} free</span>
     </div>
+    ${pick ? `<div class="build-pick-bar">${pickable.size ? `Choose a hex for the ${esc(pickName)}` : `No hex in your catchment can take a ${esc(pickName)} now`} · <button class="btn-small" data-pick-cancel>Cancel</button></div>` : ''}
     <svg class="gubbe-svg" viewBox="${minX} ${minY} ${maxX - minX} ${maxY - minY}" preserveAspectRatio="xMidYMid meet">${cells}</svg>
     ${fowCells ? `<div class="gubbe-fow-list">${fowCells}</div>` : ''}
     <div id="gubbe-detail" class="gubbe-detail-panel">
@@ -348,23 +363,35 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
   // the next render so +1/−1 does not close the panel they are clicking in.
   let openKey = silent && liveSelection.has(containerEl) ? liveSelection.get(containerEl) : placementTargetKey(hexes,targetHex,selected);
 
-  const rerender = () => renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
-    { selected: openKey, silent: true });
+  const rerender = (extra = {}) => renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
+    { selected: openKey, silent: true, ...extra });
 
   // A refusal is shown where the player just clicked and does NOT re-render:
   // nothing changed on the server, so rebuilding the widget would only throw
   // away the selected hex and leave the player with no way back to the button
   // they pressed. On success we re-render as before.
-  const showRefusal = (msg) => {
+  const showRefusal = (msg, ok = false) => {
     const detail = containerEl.querySelector('#gubbe-detail');
     if (!detail) return;
     let el = detail.querySelector('.gubbe-refusal');
     if (!el) {
       el = document.createElement('div');
-      el.className = 'gubbe-refusal';
       detail.appendChild(el);
     }
+    el.className = ok ? 'gubbe-refusal gubbe-built' : 'gubbe-refusal';
     el.textContent = msg;
+  };
+
+  // [Build] on a hex row: same function as the Construct list. Success leaves
+  // pick mode and repaints; a refusal stays where the player clicked.
+  const buildOnHex = async (btn) => {
+    if (!buildHandler) return;
+    const stale = containerEl.querySelector('.gubbe-refusal');
+    if (stale) stale.remove();
+    btn.disabled = true;
+    const out = await buildHandler({ type: btn.dataset.buildType, hex_q: Number(btn.dataset.buildQ), hex_r: Number(btn.dataset.buildR) });
+    if (out.ok) { await rerender({ pick: null }); showRefusal(out.text, true); }
+    else { btn.disabled = false; showRefusal(out.text); }
   };
 
   const doAction = async (verb, targetBody, good, cap) => {
@@ -395,24 +422,33 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
     const detail = containerEl.querySelector('#gubbe-detail');
     if (!detail) return;
 
-    if (g.dataset.target === 'city') {
-      if (!buildings.length) {
-        detail.innerHTML = '<p class="empty-state">No workplace buildings staffed here yet.</p>';
-        return;
-      }
-      detail.innerHTML = cityBuildingsHTML(buildings);
+    const cityLink = '<p class="build-city-link">Build in the city → <button class="btn-small" data-goto-buildings>Buildings</button></p>';
+    if (pick) {
+      // Pick mode: only the build row for the chosen type, on an eligible hex.
+      const hex = g.dataset.target === 'hex' && hexes.find(h => h.hex_ordinal === Number(g.dataset.ordinal));
+      const rows = hex ? hexRowsHTML(catalogue, opts, hex.hex_q, hex.hex_r, pick.type) : '';
+      detail.innerHTML = hex
+        ? `<div class="dsec-title">(${hex.hex_q},${hex.hex_r}) — ${terrainLabel(hex.terrain)}</div>${rows || `<p class="empty-state">A ${esc(pickName)} cannot be built here.</p>`}`
+        : `<p class="empty-state">A ${esc(pickName)} is built on a catchment hex, not in the city.</p>`;
+    } else if (g.dataset.target === 'city') {
+      detail.innerHTML = (buildings.length ? cityBuildingsHTML(buildings) : '<p class="empty-state">No workplace buildings staffed here yet.</p>') + cityLink;
     } else {
       const ordinal = Number(g.dataset.ordinal);
       const hex = hexes.find(h => h.hex_ordinal === ordinal);
       if (!hex) return;
+      const buildHere = hexRowsHTML(catalogue, opts, hex.hex_q, hex.hex_r);
       detail.innerHTML = `
         <div class="dsec-title">(${hex.hex_q},${hex.hex_r}) — ${terrainLabel(hex.terrain)}</div>
         ${isNavigable(hex.terrain)?stormHexPanelHTML(hex.hex_q,hex.hex_r):''}
         ${hex.held_by ? `<p class="gubbe-held-note">Held by ${esc(hex.held_by)} — already worked by another city${hex.takeable ? '' : ' — stand a unit there in fortify or sentry to take it'}</p>` : ''}
         ${(hex.goods || []).length
           ? sortGoods(hex.goods, { target_kind: 'hex', hex_ordinal: hex.hex_ordinal }).map(good => goodRowHTML({ target_kind: 'hex', hex_ordinal: hex.hex_ordinal }, good, takeLabel(hex))).join('')
-          : '<p class="empty-state">No producible good on this hex.</p>'}`;
+          : '<p class="empty-state">No producible good on this hex.</p>'}
+        ${buildHere ? `<div class="dsec-title">Build here</div>${buildHere}` : ''}`;
     }
+
+    detail.querySelectorAll('[data-build-act="build-hex"]').forEach(btn => btn.addEventListener('click', () => buildOnHex(btn)));
+    detail.querySelector('[data-goto-buildings]')?.addEventListener('click', () => document.querySelector('#city-body [data-tab="byggnader"]')?.click());
 
     detail.querySelectorAll('.gubbe-act').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -428,6 +464,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
     });
   };
 
+  containerEl.querySelector('[data-pick-cancel]')?.addEventListener('click', () => rerender());
   const groups = Array.from(containerEl.querySelectorAll('.gubbe-hex-g'));
   groups.forEach(g => g.addEventListener('click', () => selectTarget(g)));
 
@@ -437,7 +474,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
   if (openKey) {
     const again = groups.find(g => selectionKey(g) === openKey);
     if (again) selectTarget(again);
-    if(buildingType&&!selectedHex){
+    if(buildingType&&!selectedHex&&!pick){
       const title=[...containerEl.querySelectorAll('[data-building-type]')].find(el=>el.dataset.buildingType===buildingType&&(!god||el.dataset.god===god));
       if(title){title.classList.add('ucard-focus');title.scrollIntoView({block:'center'});}
     }

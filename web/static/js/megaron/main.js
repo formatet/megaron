@@ -36,9 +36,8 @@ import {
   renderColonizePreviewHTML,
 } from './ui/marchctx.js';
 import {
-  loadCityDrawer, cycleCityView, startBuild,
+  loadCityDrawer, cycleCityView,
   loadTicklog, cancelBuild, demolishBuilding,
-  onCityBuildTypeChange,
 } from './ui/drawers/city.js';
 import { saveMarketBoard } from './ui/market_board.js';
 import {
@@ -206,7 +205,6 @@ Object.assign(window, {
   okRite,
   bringOffering,
   cancelOffering,
-  onCityBuildTypeChange,
   onColonizeToggle,
   onExploreToggle,
   openCitySettlement,
@@ -224,7 +222,6 @@ Object.assign(window, {
   namePlace,
   reopenSelectedHex,
   sortEconomySettlements,
-  startBuild,
   submitReport,
   toggleAccountWindow,
   toggleActivityOverlay,

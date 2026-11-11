@@ -1,6 +1,6 @@
 A Farm expands the [[grain|grain]] workplaces and production of one chosen [[catchment|catchment]] hex.
 
-Build or upgrade it in **City → Buildings → Construct**, or use `keryx build --type farm` with `--hex` to choose its catchment hex.
+Build or upgrade it with **Choose a hex →** in **City → Buildings → Construct** (then click a highlighted hex), or with **Build here** on a hex in **City → Production**, or use `keryx build --type farm` with `--hex` to choose its catchment hex.
 
 <!-- facts: building farm -->
 | Reference | Current rule |

@@ -18,7 +18,7 @@ What the city holds and how much room it has: **Food** (how many game days the s
 
 ## Buildings
 
-What stands, what is queued (with a **✕** to cancel), forces in training, and **Construct**. See [[buildings]].
+What stands, what is queued (with a **✕** to cancel), forces in training, and **Construct**, a list of buildings with a **Build** button each. See [[buildings]].
 
 ## Garrison
 

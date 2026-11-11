@@ -55,7 +55,7 @@ Each of the four adds **4 workplaces** to its hex and multiplies each worker's o
 
 Buildings level up to three. Building the same thing again raises it one level (for a hex building, pick the same hex). A temple is built for a god: Construct lists one row per god (`keryx build --type temple --god potnia`). **Levels 2 and 3 of a Harbour, Shipyard or [[temple]]** also need **[[cedar|cedar]]**, scarce and often only available by [[trade]].
 
-Prices are shown in Construct; short of [[timber|timber]], **cedar** pays the difference one for one. Workplaces need people placed on them ([[citizens]]); the market needs none.
+Construct rows show price, time and **Build**; a hex building's row says **Choose a hex →**, then click a highlighted hex. Short of [[timber|timber]], **cedar** pays the difference one for one. Workplaces need people placed on them ([[citizens]]); the market needs none.
 
 ### Construction queues and hex selectors {#building-levels-2}
 
