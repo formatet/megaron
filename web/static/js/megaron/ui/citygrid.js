@@ -3,7 +3,7 @@ import { buildingLabel } from './building_names.js';
 import { fmtNum } from './fmt_num.js';
 import { State } from '../state.js';
 import { fetchAuth } from '../api.js';
-import { formatApiError, esc } from './format.js';
+import { playerError, esc } from './format.js';
 import { isNavigable } from '../terrain.js';
 import { getBuildingCatalogue, hexRowsHTML, pickHexes } from './build_rows.js';
 import { BUILDING_LABELS } from './building_names.js';
@@ -163,7 +163,7 @@ export async function refusalText(res) {
   } catch {
     // empty or non-JSON body — fall through to the status-code fallback
   }
-  return formatApiError(data, `Could not place that citizen (error ${res.status}).`);
+  return playerError(res, data, `Could not place that citizen (error ${res.status}).`);
 }
 
 // placementOutcome is the network half of a grid action, with no DOM in sight —

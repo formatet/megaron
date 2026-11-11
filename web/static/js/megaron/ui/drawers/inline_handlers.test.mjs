@@ -21,19 +21,19 @@ const {dipCancel,dipArrangePassage,dipCallBack}=await import('./diplomacy.js');
 const {warAbandon}=await import('./war.js');
 State.WORLD_ID='w';State.MY_SETTLEMENT_ID='s';State.provinceData=[{id:'p',own:true,is_capital:true}];
 const calls=[];
-globalThis.fetch=async(url,opts={})=>{calls.push([url,opts]);return new Response(JSON.stringify({error:'Server refused <literally>'}),{status:422});};
+globalThis.fetch=async(url,opts={})=>{calls.push([url,opts]);return new Response(JSON.stringify({error:'Server refused <literally>.'}),{status:422});};
 test('K: cancellation and passage refusals keep buttons enabled and show server text beside the action',async()=>{
- calls.length=0;await cancelBuild('p','q');assert.equal(els.get('city-bld-sec').children.at(-1).textContent,'Server refused <literally>');
- const button=new El();button.parentElement=new El();await dipCancel('m',button);assert.equal(button.disabled,false);assert.equal(els.get('dip-trade-m').children.at(-1).textContent,'Server refused <literally>');
- els.set('ship-select',{value:'ship'});await dipArrangePassage('m','ship-select',button);assert.equal(button.disabled,false);assert.equal(els.get('dip-passage-m').children.at(-1).textContent,'Server refused <literally>');
- await dipCallBack('m',button);assert.equal(button.disabled,false);assert.equal(button.parentElement.children.at(-1).textContent,'Server refused <literally>');
+ calls.length=0;await cancelBuild('p','q');assert.equal(els.get('city-bld-sec').children.at(-1).textContent,'Server refused <literally>.');
+ const button=new El();button.parentElement=new El();await dipCancel('m',button);assert.equal(button.disabled,false);assert.equal(els.get('dip-trade-m').children.at(-1).textContent,'Server refused <literally>.');
+ els.set('ship-select',{value:'ship'});await dipArrangePassage('m','ship-select',button);assert.equal(button.disabled,false);assert.equal(els.get('dip-passage-m').children.at(-1).textContent,'Server refused <literally>.');
+ await dipCallBack('m',button);assert.equal(button.disabled,false);assert.equal(button.parentElement.children.at(-1).textContent,'Server refused <literally>.');
  assert.deepEqual(calls.map(x=>x[1].method),['DELETE','POST','POST','POST']);assert.equal(calls[2][1].body,JSON.stringify({ship_id:'ship'}));
 });
 const cultFixture={kharis:{},temples:[],unbuilt_temples:[],prayers:[{id:'prayer',settlement_id:'s',province_id:'p',city_name:'Nostos',affordable:true}]};
 test('K: rite refusal stays in Kult; success survives drawer refresh',async()=>{
- globalThis.fetch=async(url,opts={})=>opts.method==='POST'?new Response(JSON.stringify({error:'Server refused <literally>'}),{status:422}):new Response(JSON.stringify(url.endsWith('/cult')?cultFixture:[]));
+ globalThis.fetch=async(url,opts={})=>opts.method==='POST'?new Response(JSON.stringify({error:'Server refused <literally>.'}),{status:422}):new Response(JSON.stringify(url.endsWith('/cult')?cultFixture:[]));
  await loadKultDrawer();
- await bringOffering('s__prayer');assert.equal(els.get('offer-row-s__prayer').children.at(-1).textContent,'Server refused <literally>');
+ await bringOffering('s__prayer');assert.equal(els.get('offer-row-s__prayer').children.at(-1).textContent,'Server refused <literally>.');
  globalThis.fetch=async(url,opts={})=>{
   if(opts.method==='POST')return new Response(JSON.stringify({success:true,message:'The gods answered.'}),{status:200});
   if(url.endsWith('/goods')||url.endsWith('/actions'))return new Response('[]',{status:200});
@@ -59,7 +59,7 @@ test('K: real abandon handler cannot POST before inline confirmation; refusal re
 });
 
 test('demolish needs the inline confirm, then shows the server refusal beside the buildings',async()=>{
- globalThis.fetch=async(url,opts={})=>{calls.push([url,opts]);if (!opts.method) return new Response(JSON.stringify([{id:'b1',type:'farm'}]),{status:200});return new Response(JSON.stringify({error:'Server refused <literally>'}),{status:403});};
+ globalThis.fetch=async(url,opts={})=>{calls.push([url,opts]);if (!opts.method) return new Response(JSON.stringify([{id:'b1',type:'farm'}]),{status:200});return new Response(JSON.stringify({error:'Server refused <literally>.'}),{status:403});};
  calls.length=0;await demolishBuilding('p','b1','Farm @ (1,0)');
  const host=els.get('city-demolish-res');
  assert.match(host.children[0].textContent,/Demolish Farm @ \(1,0\)\?/);
@@ -67,5 +67,5 @@ test('demolish needs the inline confirm, then shows the server refusal beside th
  const [,yes,no]=host.children;assert.equal(yes.textContent,'Demolish');assert.equal(no.textContent,'Keep it');
  await yes.events.click();
  assert.equal(calls.length,2);assert.equal(calls[1][1].method,'DELETE');assert.match(calls[1][0],/\/provinces\/p\/buildings\/b1$/);
- assert.equal(els.get('city-bld-sec').children.at(-1).textContent,'Server refused <literally>');
+ assert.equal(els.get('city-bld-sec').children.at(-1).textContent,'Server refused <literally>.');
 });

@@ -31,6 +31,8 @@ const FOG        = "that hex hasn't been scouted yet — fog-of-war hexes can't 
 const NO_OPTION  = 'this hex has no production option for that good';
 const FULLY      = 'this hex is fully staffed for that good';
 
+// playerError capitalises a rule refusal and gives it a full stop; the words stay the server's.
+const polish = (t) => { const c = t[0].toUpperCase() + t.slice(1); return /[.!?]$/.test(c) ? c : c + '.'; };
 const refuse = (status, error) => ({ ok: false, status, json: async () => ({ error }) });
 const accept = (body = {}) => ({ ok: true, status: 200, json: async () => body });
 
@@ -46,7 +48,7 @@ const base = (fetchImpl) => ({
 
 test('CG1: a refused +1 carries the server\'s own reason, and does NOT count as a change', async () => {
   const out = await placementOutcome('place1', base(async () => refuse(409, POOL_EMPTY)));
-  assert.equal(out.refusal, POOL_EMPTY, 'the pool refusal must reach the player verbatim');
+  assert.equal(out.refusal, polish(POOL_EMPTY), 'the pool refusal must reach the player verbatim');
   assert.equal(out.changed, false, 'nothing changed server-side, so nothing to re-render');
 });
 
@@ -56,7 +58,7 @@ test('CG2: each distinct server refusal surfaces as itself — not one generic l
     const out = await placementOutcome('place1', base(async () => refuse(status, msg)));
     seen.push(out.refusal);
   }
-  assert.deepEqual(seen, [FOG, NO_OPTION, FULLY]);
+  assert.deepEqual(seen, [FOG, NO_OPTION, FULLY].map(polish));
   assert.equal(new Set(seen).size, 3, 'three different situations must read as three different lines');
 });
 
@@ -70,7 +72,7 @@ test('CG3: a successful +1 reports a change and says nothing', async () => {
 
 test('CG4: Fill that places nothing at all explains why (the old code broke out silently)', async () => {
   const out = await placementOutcome('fill', base(async () => refuse(409, POOL_EMPTY)));
-  assert.equal(out.refusal, POOL_EMPTY);
+  assert.equal(out.refusal, polish(POOL_EMPTY));
   assert.equal(out.changed, false);
 });
 
@@ -113,7 +115,7 @@ test('CG9: a failed DELETE is reported, not swallowed', async () => {
   const out = await placementOutcome('unplace1', base(async (url, opts) =>
     opts ? refuse(403, 'not your settlement')
          : accept({ placements: [{ good_key: 'grain', hex_ordinal: 5, gubbe_ordinal: 7 }] })));
-  assert.equal(out.refusal, 'not your settlement');
+  assert.equal(out.refusal, 'Not your settlement.');
   assert.equal(out.changed, false);
 });
 
@@ -121,7 +123,7 @@ test('CG9: a failed DELETE is reported, not swallowed', async () => {
 
 test('CG10: an empty or non-JSON error body still produces a line, never blank silence', async () => {
   const text = await refusalText({ ok: false, status: 502, json: async () => { throw new SyntaxError('no body'); } });
-  assert.match(text, /502/);
+  assert.match(text, /could not do that just now/);
   assert.notEqual(text.trim(), '');
 });
 

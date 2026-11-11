@@ -111,6 +111,63 @@ export function fmtAgo(iso) {
 // the plain error string exactly as every call site did before, so this is
 // additive, not a behaviour change for the common non-goods case.
 export function formatApiError(data, fallback) {
+  return playerError(null, data, fallback);
+}
+
+// playerError is the one function that decides what the player reads when the
+// server refuses or fails. docs/reviews/serverfel/classification.md sorts every
+// server string. Game-rule refusals pass through unchanged (capitalised, with a
+// full stop); technical ones become a friendly line. Pass res (the fetch
+// Response) when you have it so a 401 / 5xx is recognised; opts.network marks a
+// thrown fetch or an unreadable body.
+export const TECHNICAL_ERRORS = [
+  'invalid JSON', 'invalid request body', 'commit failed', 'transaction error',
+  'could not begin transaction', 'world not found', 'db error',
+];
+export const TECHNICAL_PREFIXES = [
+  'could not load ', 'could not check ', 'could not write ', 'could not record ', 'could not read ',
+];
+const TECHNICAL_ID = /^invalid .*\b(?:ID|_id)$/;
+const LOGGED_OUT_ERRORS = ['not authenticated', 'unauthorized', 'authentication required'];
+export function isTechnicalError(msg) {
+  if (typeof msg !== 'string') return false;
+  return TECHNICAL_ERRORS.includes(msg) || TECHNICAL_PREFIXES.some(p => msg.startsWith(p)) || TECHNICAL_ID.test(msg);
+}
+// A 401 whose body is already a readable sentence (the session-expired text,
+// invalid credentials) keeps it; a bare/empty/technical 401 becomes "logged out".
+const isLoggedOut = (res, msg) => LOGGED_OUT_ERRORS.includes(msg) ||
+  (!!res && res.status === 401 && (!msg || isTechnicalError(msg)));
+const isTechnical = (res, msg) => (!!res && res.status >= 500) || isTechnicalError(msg);
+
+export function playerError(res, data, fallback, opts = {}) {
+  const goods = goodsText(data);
+  if (goods) return goods;
+  const msg = data && typeof data.error === 'string' ? data.error : '';
+  if (isLoggedOut(res, msg)) return 'You have been logged out. Log in again.';
+  if (isTechnical(res, msg)) return 'The server could not do that just now. Try again in a moment.';
+  if (opts.network) return 'No answer from the server. Check your connection and try again.';
+  if (!msg) return fallback;
+  if (!/\s/.test(msg)) return msg; // a bare code such as not_owner: nothing to polish
+  const t = msg.charAt(0).toUpperCase() + msg.slice(1);
+  return /[.!?]$/.test(t) ? t : t + '.';
+}
+
+// errorDetail is the raw server string behind a friendly line ('' for a rule
+// refusal) — carried in title/data-detail so a bug report can quote it.
+export function errorDetail(res, data) {
+  const msg = data && typeof data.error === 'string' ? data.error : '';
+  return msg && (isLoggedOut(res, msg) || isTechnical(res, msg)) ? msg : '';
+}
+
+// setErrorText writes the player line into el and the raw detail beside it.
+export function setErrorText(el, res, data, fallback, opts) {
+  if (!el) return;
+  el.textContent = playerError(res, data, fallback, opts);
+  const d = errorDetail(res, data);
+  if (d) { el.title = d; el.dataset.detail = d; } else { el.removeAttribute('title'); delete el.dataset.detail; }
+}
+
+function goodsText(data) {
   if (data?.build_context && data.message) return data.message;
   if (data && data.error === 'insufficient_goods' && Array.isArray(data.missing) && data.missing.length) {
     const parts = data.missing.map(m => {
@@ -121,7 +178,7 @@ export function formatApiError(data, fallback) {
     });
     return 'Not enough: ' + parts.join('; ') + '. Produce it here, or send it from another of your cities (Economy → Send goods).';
   }
-  return (data && data.error) || fallback;
+  return null;
 }
 
 // Notification wall-clock estimates share the same clock/date formatter as ETAs.
