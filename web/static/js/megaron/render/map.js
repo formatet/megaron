@@ -13,7 +13,7 @@ import {
   GARRISON_DOT_ZOOM, ACTIVITY_BADGE_ZOOM, ROAD_DEPOSIT_ZOOM,
   PAN_SPEED_PX_PER_SEC,
 } from '../config.js';
-import { isTypingTarget, esc } from '../ui/format.js';
+import { isTypingTarget, esc, playerError, errorDetail, setErrorText } from '../ui/format.js';
 import { fmtNum, fmtDays } from '../ui/fmt_num.js';
 import { canonicalUnitType, actorName } from '../ui/actornames.js';
 import { drawActor, spriteRuns, FOREIGN_ACCENT, FOREIGN_OUTLINE } from './actorsprites.js';
@@ -3892,7 +3892,7 @@ async function openHostPanel(h, tile) {
         } else {
           const err = await res.json().catch(() => ({ error: 'Unknown error' }));
           result.replaceChildren();
-          showInlineResult(result, err.error || 'Error', true);
+          showInlineResult(result, playerError(res, err, 'Error'), true, errorDetail(res, err));
           pending = false;
           settleButton.disabled = false;
         }
@@ -4025,7 +4025,7 @@ export async function sendMessengerFromInspect(destSettlementID) {
   } else {
     const err = await res.json().catch(() => ({error: 'Unknown error'}));
     errEl.style.color = 'var(--accent)';
-    errEl.textContent = err.error || 'Error';
+    setErrorText(errEl, res, err, 'Error');
   }
 }
 

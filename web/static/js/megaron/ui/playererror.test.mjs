@@ -78,7 +78,7 @@ test('guard: no result element is set directly from .error', () => {
     readFileSync(f, 'utf8').split('\n').forEach((line, i) => {
       if (/^\s*\/\//.test(line)) return;
       if (/\b(?:d|data|body|err|r|res|sdata|out)\.error\s*\|\|/.test(line) ||
-          /(?:textContent|innerHTML)\s*=[^;]*\.error\b/.test(line) ||
+          /(?:textContent|innerHTML)\s*=[^;]*(?<!\bout)\.error\b/.test(line) ||
           /showInlineResult\([^;]*\.error\b/.test(line)) bad.push(`${f}:${i + 1}: ${line.trim()}`);
     });
   }

@@ -55,7 +55,7 @@ test('naming POST uses Bearer then authoritative FOW map before reopening', asyn
 for (const status of [400,403,409]) test(`naming ${status} shows server reason without stale success`, async t => {
   const h = harness(t,[new Response('{"error":"Right already spent"}',{status})]);
   await namePlace('river','6,79');
-  assert.equal(h.error.textContent,'Right already spent'); assert.equal(h.calls.length,1); assert.equal(h.reopened(),0);
+  assert.equal(h.error.textContent,'Right already spent.'); assert.equal(h.calls.length,1); assert.equal(h.reopened(),0);
 });
 
 test('place naming notification escapes a unit name before inserting HTML', () => {

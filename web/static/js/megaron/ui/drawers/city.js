@@ -7,7 +7,7 @@ import { fetchAuth } from '../../api.js';
 import { arrivalHTML, fmtArrival } from '../time.js';
 import { fmtTickTime } from '../fmt_clock.js';
 import { renderLockedActions } from '../misc.js';
-import { esc, formatApiError } from '../format.js';
+import { esc, formatApiError, playerError, errorDetail } from '../format.js';
 import { unitTypeLabel } from '../actornames.js';
 import { startCityAnim } from '../../render/city.js';
 import { renderGubbeGrid, shipyardShareNote, setBuildHandler } from '../citygrid.js';
@@ -291,7 +291,7 @@ export async function cancelBuild(provinceID, queueID) {
     await refreshCityBuildings(provinceID);
   } else {
     const d = await res.json().catch(() => ({}));
-    showInlineResult('city-bld-sec', d.error || 'Could not cancel build', true);
+    showInlineResult('city-bld-sec', playerError(res, d, 'Could not cancel build'), true, errorDetail(res, d));
   }
 }
 
@@ -321,7 +321,7 @@ export async function demolishBuilding(provinceID, buildingID, label) {
       showInlineResult('city-bld-sec', demolishResultLine(label, d.citizens_lifted, d.demolition_kharis));
     } else {
       const d = await res.json().catch(() => ({}));
-      showInlineResult('city-bld-sec', d.error || 'Could not demolish', true);
+      showInlineResult('city-bld-sec', playerError(res, d, 'Could not demolish'), true, errorDetail(res, d));
     }
   }, { confirmLabel: 'Demolish', cancelLabel: 'Keep it' });
 }

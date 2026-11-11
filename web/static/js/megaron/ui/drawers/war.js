@@ -7,7 +7,7 @@ import { showInlineResult, confirmInline } from '../inline_result.js';
 import { State, ownCapital, activeCitySettlement } from '../../state.js';
 import { serverNow } from '../../clock.js';
 import { fetchAuth } from '../../api.js';
-import { esc, formatApiError, passageNote, supersededOrderNote, purseLine } from '../format.js';
+import { esc, formatApiError, playerError, errorDetail, setErrorText, passageNote, supersededOrderNote, purseLine } from '../format.js';
 import { fmtEta, fmtArrival, arrivalHTML } from '../time.js';
 import { renderLockedActions } from '../misc.js';
 import { unitTypeLabel, actorName } from '../actornames.js';
@@ -395,7 +395,7 @@ export async function warDisband(provinceID, unitID, button) {
       method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({unit_ids:[unitID]}),
     });
     const data=await res.json().catch(()=>({}));
-    if(!res.ok){status(data.error || 'Disband failed.');return;}
+    if(!res.ok){status(playerError(res, data, 'Disband failed.'));return;}
     received=true;
     if(State.WORLD_ID!==worldID || activeCitySettlement()?.id!==provinceID)return;
     await loadCityDrawer();
@@ -438,7 +438,7 @@ export async function warAbandon(settlementID, name) {
       await loadWarDrawer();
     } else {
       const d = await res.json().catch(() => ({}));
-      showInlineResult(resEl, d.error || 'Abandon failed', true);
+      showInlineResult(resEl, playerError(res, d, 'Abandon failed'), true, errorDetail(res, d));
     }
   });
 }
@@ -469,9 +469,9 @@ export async function unitRecall(unitID, resultElement) {
     if (statusEl) { statusEl.style.color = 'var(--safe-text)'; statusEl.textContent = orderSentLine(d, 'Recall'); }
   } else if (statusEl) {
     statusEl.style.color = 'var(--accent)';
-    statusEl.textContent = d.error || 'Recall failed';
+    setErrorText(statusEl, res, d, 'Recall failed');
   }
-  return {ok: res.ok, error: d.error || 'Recall failed'};
+  return {ok: res.ok, error: playerError(res, d, 'Recall failed')};
 }
 
 export async function unitRecallAll() {
@@ -483,7 +483,7 @@ export async function unitRecallAll() {
   try {
     const response = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`);
     const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'Could not load forces.');
+    if (!response.ok) throw new Error(playerError(response, data, 'Could not load forces.'));
     if (!Array.isArray(data.units)) throw new Error('Could not read forces.');
     hasMarching = data.units.some(u => u.status === 'marching');
     recallAllResult = recallAllResultHTML(await recallAll(data.units, unitRecall));
@@ -536,7 +536,7 @@ export async function unitRedirect(unitID) {
     if (statusEl) { statusEl.style.color = 'var(--safe-text)'; statusEl.textContent = orderSentLine(d, 'Redirect'); }
   } else if (statusEl) {
     statusEl.style.color = 'var(--accent)';
-    statusEl.textContent = d.error || 'Redirect failed';
+    setErrorText(statusEl, res, d, 'Redirect failed');
   }
 }
 

@@ -4,7 +4,7 @@ import { fmtTickTime } from './fmt_clock.js';
 // panel shows the name, or a small form if the right is yours.
 import { State } from '../state.js';
 import { fetchAuth } from '../api.js';
-import { esc } from './format.js';
+import { esc, setErrorText } from './format.js';
 
 // stormPanelHTML renders the panel block for the storms on one hex ('' when there are none).
 export function stormPanelHTML(storms) {
@@ -50,7 +50,7 @@ export async function nameStorm(stormID) {
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    if (err) { err.style.color = 'var(--accent)'; err.textContent = body.error || 'Could not name the storm.'; }
+    if (err) { err.style.color = 'var(--accent)'; setErrorText(err, res, body, 'Could not name the storm.'); }
     return;
   }
   const list = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/storms`);

@@ -122,11 +122,12 @@ export function formatApiError(data, fallback) {
 // thrown fetch or an unreadable body.
 export const TECHNICAL_ERRORS = [
   'invalid JSON', 'invalid request body', 'commit failed', 'transaction error',
-  'could not begin transaction', 'world not found', 'db error',
+  'could not begin transaction', 'world not found', 'db error', 'delete failed', 'insert failed',
+  'query failed', 'update failed', 'scan error', 'pathfinding error', 'unknown building type in queue',
 ];
-export const TECHNICAL_PREFIXES = [
-  'could not load ', 'could not check ', 'could not write ', 'could not record ', 'could not read ',
-];
+// Measured on server/api: every "could not …" string is sent with a 5xx status
+// (none with a 4xx), so the whole prefix is technical, not just load/check/write/record.
+export const TECHNICAL_PREFIXES = ['could not '];
 const TECHNICAL_ID = /^invalid .*\b(?:ID|_id)$/;
 const LOGGED_OUT_ERRORS = ['not authenticated', 'unauthorized', 'authentication required'];
 export function isTechnicalError(msg) {
@@ -164,7 +165,8 @@ export function setErrorText(el, res, data, fallback, opts) {
   if (!el) return;
   el.textContent = playerError(res, data, fallback, opts);
   const d = errorDetail(res, data);
-  if (d) { el.title = d; el.dataset.detail = d; } else { el.removeAttribute('title'); delete el.dataset.detail; }
+  if (d) { el.title = d; if (el.dataset) el.dataset.detail = d; }
+  else { el.title = ''; if (el.dataset) delete el.dataset.detail; }
 }
 
 function goodsText(data) {

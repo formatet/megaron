@@ -52,7 +52,7 @@ test('Founding actual map click: opening/cancel never sends; confirmed request i
 test('Founding actual handler: server and network errors stay inline and allow retry',async()=>{
  await openHost();const button=element('ip-settle-btn');button.disabled=false;
  await button.events.click();let sent=element('ip-settle-err').children[1].events.click();reply=new Response(JSON.stringify({error:'<move further>'}),{status:422});resolveRequest();await sent;
- assert.equal(reloads,1);assert.equal(button.disabled,false,'failed founding can retry');assert.equal(element('ip-settle-err').querySelector().textContent,'<move further>','server error stays literal inline');
+ assert.equal(reloads,1);assert.equal(button.disabled,false,'failed founding can retry');assert.equal(element('ip-settle-err').querySelector().textContent,'<move further>.','server error stays literal inline');
  const previous=globalThis.fetch;globalThis.fetch=async()=>{throw new Error('offline');};
  try{await button.events.click();await element('ip-settle-err').children[1].events.click();assert.equal(button.disabled,false);assert.match(element('ip-settle-err').querySelector().textContent,/Could not/);}finally{globalThis.fetch=previous;}
 });

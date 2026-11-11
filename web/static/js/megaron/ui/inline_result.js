@@ -1,5 +1,5 @@
 // Results stay beside the action. Server text is always plain text.
-export function showInlineResult(host, text, failed = false) {
+export function showInlineResult(host, text, failed = false, detail = '') {
   const parent = typeof host === 'string' ? document.getElementById(host) : host;
   if (!parent) return;
   let result = parent.querySelector('[data-inline-result]');
@@ -12,6 +12,9 @@ export function showInlineResult(host, text, failed = false) {
   }
   result.className = failed ? 'action-result stat-warn' : 'action-result';
   result.textContent = text;
+  // The raw server string behind a friendly line, for a bug report to quote.
+  if (detail) { result.title = detail; if (result.dataset) result.dataset.detail = detail; }
+  else { result.title = ''; if (result.dataset) delete result.dataset.detail; }
   return result;
 }
 

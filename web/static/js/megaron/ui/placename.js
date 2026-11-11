@@ -2,7 +2,7 @@ import { acceptMapTiles } from '../map_data.js';
 // The server grants a place's naming right to its first physical arrival.
 import { State } from '../state.js';
 import { fetchAuth } from '../api.js';
-import { esc } from './format.js';
+import { esc, setErrorText } from './format.js';
 
 export const PLACE_LABELS = { river: 'river', massif: 'mountain massif', desert: 'desert', forest: 'cedar forest', lake: 'lake', island: 'island', strait: 'strait', bay: 'bay', cape: 'cape', plain: 'plain', hills: 'hills', delta: 'delta' };
 
@@ -43,7 +43,7 @@ export async function namePlace(kind, placeID) {
     });
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
-      if (err) { err.style.color = 'var(--accent)'; err.textContent = body.error || 'Could not name the place.'; }
+      if (err) { err.style.color = 'var(--accent)'; setErrorText(err, res, body, 'Could not name the place.'); }
       return;
     }
     // Refresh the authoritative FOW map before reopening: known hexes acquire

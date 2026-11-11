@@ -26,6 +26,6 @@ test('no marching units means disabled button and no recall requests',async()=>{
 test('a transport failure names that unit and continues to later units',async()=>{
   const calls=[];
   const results=await recallAll([{id:'a',status:'marching'},{id:'b',status:'marching'}],async id=>{calls.push(id);if(id==='a')throw Error('Connection lost');return {ok:true};});
-  assert.deepEqual(calls,['a','b']);assert.match(recallAllResultHTML(results),/a: Connection lost/);
+  assert.deepEqual(calls,['a','b']);assert.match(recallAllResultHTML(results),/a: No answer from the server/);
   assert.match(recallAllResultHTML(results),/One unit is being called home/);
 });

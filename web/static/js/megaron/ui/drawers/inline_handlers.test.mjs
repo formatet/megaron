@@ -53,9 +53,9 @@ test('K: bringOffering posts the offering from the filled fields, omitting 0',as
  assert.deepEqual(body,{prayer:'prayer',offering:{fish:12}});
 });
 test('K: real abandon handler cannot POST before inline confirmation; refusal remains visible',async()=>{
- calls.length=0;globalThis.fetch=async(url,opts={})=>{calls.push([url,opts]);return new Response(JSON.stringify({error:'Cannot abandon capital'}),{status:422});};
+ calls.length=0;globalThis.fetch=async(url,opts={})=>{calls.push([url,opts]);return new Response(JSON.stringify({error:'Cannot abandon capital.'}),{status:422});};
  await warAbandon('s','Nostos');assert.equal(calls.length,0,'no pre-confirmation POST');
- const host=els.get('war-abandon-res');await host.children[1].events.click();assert.equal(calls.length,1);assert.equal(calls[0][1].method,'POST');assert.equal(host.children.at(-1).textContent,'Cannot abandon capital');
+ const host=els.get('war-abandon-res');await host.children[1].events.click();assert.equal(calls.length,1);assert.equal(calls[0][1].method,'POST');assert.equal(host.children.at(-1).textContent,'Cannot abandon capital.');
 });
 
 test('demolish needs the inline confirm, then shows the server refusal beside the buildings',async()=>{
