@@ -77,6 +77,7 @@ export const State = {
                         // player was looking at when something confused them.
 
   // March context menu (ui/marchctx.js).
+  pickHexSel: null,     // the hex chosen (not yet confirmed) in ui/hexpick.js, outlined by the map
   marchCtxUnitID: null, // War → March pins one unit while choosing a map target
   marchCtxDest: null,   // { q, r, terrain, isSea, name, isSettlement, allied }
   marchCtxUnits: [],    // eligible units currently listed
