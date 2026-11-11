@@ -68,7 +68,7 @@ function stormChooserHTML(prayer) {
   if (t.kind === 'hex') {
     return '<div class="offer-target"><p class="offer-note">Where is the storm woken? Give a sea hex of your own map as q,r.</p>' +
       '<label class="offer-field">Sea hex <input type="text" class="offer-target-hex" placeholder="q,r" inputmode="text" autocomplete="off" aria-label="Sea hex q,r"></label> ' +
-      '<button type="button" class="btn-small" data-pick-storm-hex onclick="pickStormHex(this)">Pick on the map</button></div>';
+      '<button type="button" class="btn-small btn-secondary" data-pick-storm-hex onclick="pickStormHex(this)">Pick on the map</button></div>';
   }
   const options = (t.storms || []).map(s =>
     '<option value="' + esc(s.id) + '">' + esc(s.name) + (s.where ? ' (' + esc(s.where) + ')' : '') + '</option>').join('');

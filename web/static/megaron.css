@@ -1767,3 +1767,4 @@ body.hex-picking .mobile-panel-blocked { pointer-events: auto; touch-action: aut
 .hexpick-reason { color: var(--accent); }
 .redirect-picked { margin-top: .2rem; color: var(--text); }
 .redirect-send { padding: .1rem .3rem; border: 1px solid var(--border); background: var(--accent-war); color: var(--bg-panel); font-size: .65rem; cursor: pointer; }
+.redirect-picked a { color: var(--text-dim); text-decoration: underline; }
