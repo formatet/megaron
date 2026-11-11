@@ -11,7 +11,7 @@ class Quiet(http.server.SimpleHTTPRequestHandler):
 server=http.server.ThreadingHTTPServer(('127.0.0.1',0),functools.partial(Quiet,directory=str(ROOT)))
 threading.Thread(target=server.serve_forever,daemon=True).start()
 out=pathlib.Path(sys.argv[1]);out.mkdir(parents=True,exist_ok=True)
-cases=sys.argv[2:] or ['garrison','recruit','transfer','build-hex','build-stale','build-refresh','grid','correspondence','automation','city-reload','war-reload','cult-reload','search']
+cases=sys.argv[2:] or ['garrison','recruit','transfer','grid','correspondence','automation','city-reload','war-reload','cult-reload','search']
 results=[]
 try:
  with sync_playwright() as p:

@@ -475,13 +475,12 @@ def A16(br):
  for w in (1280,390):
   pg=newpage(br,'Idomeneus',w);drawer(pg,'city')
   pg.locator('#drawer-city [data-tab="byggnader"]').click();pg.wait_for_timeout(500)
-  sel=pg.locator('#city-build-select')
-  opts=[o for o in sel.locator('option').all_inner_texts()]
+  rows=pg.locator('#city-bld-sec .build-row:not(.locked) [data-build-act="build"]')
   shot(pg,'A16','build-preview','Buildings tab: construct preview with duration','#city-bld-sec',tall=True) if pg.locator('#city-bld-sec').count() else shot(pg,'A16','build-preview','Buildings tab: construct preview','#drawer-city',tall=True)
   try:
-   sel.select_option(index=1);pg.wait_for_timeout(500)
+   pg.wait_for_timeout(500)
    with pg.expect_response(lambda r_:r_.request.method=='POST' and r_.url.endswith('/build'),timeout=8000):
-    pg.locator('#city-bld-sec button[onclick="startBuild()"]').click()
+    rows.first.click()
    pg.wait_for_timeout(800)
    shot(pg,'A16','build-receipt','After + Build: the receipt line','#drawer-city',tall=True)
   except Exception as e:PROBLEMS.append(f'A16@{w}: build receipt not captured: {e!r}'[:200])

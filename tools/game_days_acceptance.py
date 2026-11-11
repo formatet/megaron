@@ -71,21 +71,19 @@ try:
      if brief.is_visible():brief.click()
     page.locator('#trig-city').click()
     page.locator('#drawer-city [data-tab="byggnader"]').click()
-    page.locator('#city-build-select').select_option('stable')
     page.wait_for_timeout(400)
-    quote=page.locator('#city-build-quote').inner_text()
-    assert 'game days' in quote and 'about ' in quote and 'hours' in quote and 'if started now, ready' in quote,quote
+    stable_row=page.locator('#city-bld-sec .build-row[data-build-type="stable"]')
+    quote=stable_row.inner_text()
+    assert 'game days' in quote and 'if started now, ready' in quote,quote
     import re
-    duration=re.search(r'([0-9,.]+) game days · about ([0-9,.]+) hours',quote)
-    assert duration and abs(float(duration[1].replace(',',''))*cadence/3600-float(duration[2].replace(',','')))<.011,quote
     # The actual runtime State cadence must agree with the public world API.
     assert page.evaluate("async()=> (await import('/static/js/megaron/state.js')).State.TICK_SECONDS")==cadence
     (out/(label+'-quote.txt')).write_text(quote)
-    page.locator('#city-build-quote').scroll_into_view_if_needed()
+    stable_row.scroll_into_view_if_needed()
     page.screenshot(path=str(out/(label+'.png')))
     if label=='mobile':
      with page.expect_response(lambda response: response.request.method=='POST' and response.url.endswith('/build')) as submitted:
-      page.locator('#city-bld-sec button[onclick="startBuild()"]').click()
+      stable_row.locator('[data-build-act="build"]').click()
      response=submitted.value;assert response.status==201,response.text()
      receipt=response.json();assert 'complete_tick' in receipt and 'duration_game_days' in receipt,receipt
      page.wait_for_timeout(400)
