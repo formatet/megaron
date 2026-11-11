@@ -4,7 +4,7 @@
 import { State } from '../../state.js';
 import { fetchAuth } from '../../api.js';
 import { serverNow } from '../../clock.js';
-import { esc, byGoodName, formatApiError } from '../format.js';
+import { esc, byGoodName, formatApiError, playerError } from '../format.js';
 import { fmtNum, fmtDays } from '../fmt_num.js';
 import { fmtTickTime } from '../fmt_clock.js';
 import { routeCargoHTML, renderStandingOrdersHTML } from './economy.js';
@@ -147,10 +147,10 @@ async function pickTo(id) {
   render();
   const mine = ++seq, from = S.from.id;
   const pv = fetchAuth(`${base()}/provinces/${from}/trade/preview?destination_id=${encodeURIComponent(id)}`)
-    .then(async r => ({ ok: r.ok, data: await r.json().catch(() => ({})) })).catch(() => ({ ok: false, data: {} }));
+    .then(async r => ({ ok: r.ok, status: r.status, data: await r.json().catch(() => ({})) })).catch(() => ({ ok: false, data: {} }));
   const [res] = await Promise.all([pv, S.keep ? loadHome() : null]);
   if (mine !== seq || !S || S.to !== id) return;
-  S.preview = res.ok ? res.data : { options: [{ by: 'land', available: false, reason: res.data.error || 'Could not check the route' }] };
+  S.preview = res.ok ? res.data : { options: [{ by: 'land', available: false, reason: playerError(res, res.data, 'Could not check the route') }] };
   const ch = routeChoices(S.preview);
   S.by = ch.find(o => o.by === res.data.selected_by)?.by || ch[0]?.by || '';
   render();

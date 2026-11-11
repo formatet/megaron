@@ -1,0 +1,565 @@
+# Server error classification (2026-11-11)
+
+Source: `grep` of every `writeError(w, <status>, "<literal>")` under `server/api` -> `server-errors.txt` (547 distinct literals; strings built from variables/backticks are not listed and pass through as rule refusals).
+
+Sorted by the exact predicate in `web/static/js/megaron/ui/format.js` (`isTechnicalError`, plus the logged-out list). Unsure = rule (shown unchanged).
+
+- logged out: 3
+- technical (friendly line, raw string kept in title/data-detail): 300
+- rule refusals (shown unchanged, capitalised + full stop): 244
+
+Measured basis: no "could not ..." string is sent with a 4xx status (grep), so the whole prefix "could not " is technical.
+Also, any HTTP >= 500 is technical whatever its text, so 5xx strings in the rule list below (e.g. "march failed") are caught by status when the caller passes the Response.
+
+## Logged out
+- authentication required
+- not authenticated
+- unauthorized
+
+## Technical
+- commit failed
+- could not abandon settlement
+- could not add founder
+- could not allocate ship ordinal
+- could not allocate spill ordinal
+- could not allocate unit ordinal
+- could not anchor cargo journey
+- could not anchor preview
+- could not announce your arrival
+- could not apply effect
+- could not apply order
+- could not archive active world
+- could not archive player records
+- could not assign role
+- could not assign world name
+- could not attach the story
+- could not begin transaction
+- could not bind ship
+- could not cancel offer
+- could not cancel training
+- could not capture correspondence queue
+- could not change password
+- could not change ship status
+- could not check destination harbour
+- could not check harbour
+- could not check hex
+- could not check hex capacity
+- could not check hex ownership
+- could not check origin
+- could not check origin harbour
+- could not check recruitment buildings
+- could not check settlement coastal
+- could not check ship build queue
+- could not check shipyard capacity
+- could not check the Host's founding site
+- could not check the waterway
+- could not clear the name
+- could not commit departure
+- could not commit load
+- could not commit order dispatch
+- could not commit Runner departure
+- could not commit ship action
+- could not commit the road order
+- could not commit unload
+- could not commit world creation
+- could not complete atomic counteroffer
+- could not complete recruitment
+- could not compute army upkeep
+- could not compute catchment potential
+- could not compute farm potential
+- could not compute founding grain forecast
+- could not count trade cargo
+- could not create forming unit
+- could not create invitation
+- could not create messenger
+- could not create nomadic host
+- could not create ship
+- could not create spill forming unit
+- could not create standing order
+- could not create trade route
+- could not decode cargo manifest
+- could not decode shipment manifest
+- could not deduct forces
+- could not deduct goods
+- could not deduct offering
+- could not deduct recruitment kharis
+- could not deduct resources
+- could not deduct silver
+- could not delete standing order
+- could not disembark unit
+- could not dispatch order runner
+- could not dispatch reply
+- could not draft men
+- could not embark unit
+- could not encode response
+- could not find origin province
+- could not find treasury seat
+- could not free province
+- could not freeze Runner route
+- could not gather the survivors
+- could not grow forming unit
+- could not inspect passengers
+- could not leave the world
+- could not lift placements
+- could not link settlement to kingdom
+- could not link shipment manifest
+- could not link the blessing to its outcome
+- could not list kingdoms
+- could not list worlds
+- could not load borrowed armies
+- could not load bound routes
+- could not load build city
+- could not load building
+- could not load building owner
+- could not load buildings
+- could not load build quotes
+- could not load catchment
+- could not load catchment tiles
+- could not load correspondence queue
+- could not load council
+- could not load divine protection
+- could not load forces
+- could not load foreign forces
+- could not load forming unit
+- could not load garrison
+- could not load geography
+- could not load gifts
+- could not load goods
+- could not load goods catalogue
+- could not load gossip
+- could not load hex buildings
+- could not load inbox
+- could not load invitations
+- could not load kharis decay
+- could not load kingdom
+- could not load letters
+- could not load map
+- could not load marches
+- could not load messengers
+- could not load placements
+- could not load place names
+- could not load player
+- could not load prayers
+- could not load profile
+- could not load profile kharis
+- could not load profile settlements
+- could not load provinces
+- could not load realm cult
+- could not load realm standing
+- could not load recipes
+- could not load reply window
+- could not load river names
+- could not load roads
+- could not load road sites
+- could not load runners
+- could not load rural projections
+- could not load settlement
+- could not load settlements
+- could not load ship
+- could not load shipment manifest
+- could not load standing order
+- could not load standing orders
+- could not load storm memory
+- could not load storms
+- could not load temple offerings
+- could not load temple staffing
+- could not load terrain
+- could not load the blessings over this city
+- could not load the runner's port
+- could not load the ship's port
+- could not load trade routes
+- could not load trades
+- could not load transfer destinations
+- could not load upkeep context
+- could not locate the army
+- could not lock joining
+- could not lock recruitment settlement
+- could not look for a free ship
+- could not look for free ship
+- could not mark army returned
+- could not mark letter read
+- could not move crew
+- could not name the place
+- could not name the storm
+- could not persist effective map seed
+- could not place the road order
+- could not plan caravan journey
+- could not prepare departure
+- could not prepare Runner departure
+- could not prepare the order
+- could not prepare the story
+- could not preview departure
+- could not queue build
+- could not quote temple demolition
+- could not read active prayer
+- could not read correspondence queue
+- could not read current game day
+- could not read existing ship names
+- could not read expedition game day
+- could not read gift
+- could not read gifts
+- could not read next citizen growth
+- could not read passengers
+- could not read placement
+- could not read placements
+- could not read recruitment game day
+- could not read repair work
+- could not read roads
+- could not read road sites
+- could not read sender
+- could not read settlement status
+- could not read ship naming culture
+- could not read shipyard queue
+- could not read shipyard work
+- could not read standing order
+- could not read standing orders
+- could not read storage forecast
+- could not read storms
+- could not read temple staffing
+- could not read the gods' reckoning
+- could not read the temple
+- could not read the temple's rest
+- could not read trade offer
+- could not read transfer destination
+- could not read transfer destinations
+- could not read world time
+- could not recheck Host
+- could not recheck settlement
+- could not recompute city production
+- could not record borrowed army
+- could not record gift dispatch
+- could not record opening dispatch
+- could not record prayer outcome
+- could not record returning dispatch
+- could not record ship formation
+- could not record the gods' anger
+- could not record the temple's rest
+- could not refund goods
+- could not refund goods to seller
+- could not refund silver
+- could not release ship
+- could not replace the earlier unboarded order
+- could not reserve ship costs
+- could not reserve spill training costs
+- could not reserve training costs
+- could not resolve a land fallback route
+- could not resolve courier route
+- could not resolve messenger route
+- could not resolve return destination
+- could not resolve return route
+- could not resolve runner interception
+- could not resolve the Host's position
+- could not resolve the runner's destination
+- could not resolve the unit's current position
+- could not resolve unit's current position
+- could not restore population
+- could not return army forces
+- could not return the colonist purse
+- could not save outbound goods
+- could not save repair work
+- could not save return goods
+- could not save the rich offering
+- could not schedule arrival
+- could not schedule build
+- could not schedule delivery
+- could not schedule fit out
+- could not schedule gift
+- could not schedule goods delivery
+- could not schedule offer expiry
+- could not schedule order delivery
+- could not schedule Runner arrival
+- could not schedule settlement collapse
+- could not schedule shipment
+- could not schedule silver delivery
+- could not schedule the closing sweep
+- could not schedule the fall
+- could not schedule training
+- could not schedule treasury caravan
+- could not send the runner home
+- could not start reinforcement
+- could not start repair
+- could not start ship action
+- could not start shipyard work
+- could not start unit training
+- could not store map tiles
+- could not update offer
+- could not update offer status
+- could not update standing order
+- could not write the board
+- db error
+- delete failed
+- insert failed
+- invalid building ID
+- invalid candidate ID
+- invalid destination ID
+- invalid JSON
+- invalid kingdom ID
+- invalid lender player ID
+- invalid messenger ID
+- invalid notification ID
+- invalid order ID
+- invalid player ID
+- invalid province ID
+- invalid queue ID
+- invalid request body
+- invalid settlement ID
+- invalid ship ID
+- invalid temple ID
+- invalid unit ID
+- invalid Wanax ID
+- invalid world ID
+- invalid world or place ID
+- invalid world or storm ID
+- pathfinding error
+- query failed
+- scan error
+- transaction error
+- unknown building type in queue
+- update failed
+- world not found
+
+## Rule refusals
+- a composed offering needs positive amounts of goods the temple can value
+- admin key required
+- already a member
+- already a member of a kingdom
+- already at full strength
+- already voted in this election
+- amount must be positive
+- another place in this world already has that name
+- another storm in this world already has that name
+- a people on the move cannot go aboard
+- a read refusal is not a verb refusal
+- a road needs one of your cities to supply the stone
+- a story is told to another Wanax — this city has no other ruler to hear it
+- backfill failed: 
+- barracks required
+- basileus must abdicate or disband kingdom before leaving
+- battle frenzy already active — wait for it to expire
+- body must not be empty
+- both settlements must be your own
+- build already completed or not found
+- building already exists
+- building placement requires building_type
+- build queue entry not found or not yours
+- buy trade_offer requires want_good, want_qty > 0, offer_silver > 0
+- call back failed
+- candidate is not a kingdom member
+- cannot assign a role to yourself
+- cannot sell cult — cult is temple labor, not a tradeable good
+- cannot sell silver — silver is the payment currency, not a tradeable good
+- cannot send messenger to own settlement
+- cannot trade for cult — cult is temple labor, not a tradeable good
+- cannot trade for silver — silver is the payment currency, not a tradeable good
+- cannot transfer cult — cult is produced by temple labor and converted to kharis in place, it cannot be shipped
+- cargo unit not found
+- cargo unit not found in transaction
+- cargo unit status changed; load not applied
+- choose each whole unit id only once
+- Community chat is unavailable
+- Community chat is unavailable; try again later
+- counter_offer_id requires a valid offer ID and trade_offer
+- count must be 1–20
+- crewed_by_settlement_id must be either the source or the destination
+- destination has no Wanax to receive goods
+- destination settlement is not active
+- destination settlement not found
+- destination settlement not found in this world
+- disband failed
+- election already in progress or could not create
+- elections can only be called on a Sunday
+- expected_q and expected_r must be supplied together
+- forces can only disembark at coastal settlements or harbours
+- forces can only embark at coastal settlements or harbours
+- from and to must be different settlements
+- Gifts to your own colonies have been removed; use a transfer to move goods between your cities.
+- good is required
+- harbour required
+- hex_ordinal out of range (1..18)
+- hex placement requires hex_ordinal, or hex_q and hex_r
+- hull is already at full strength
+- insufficient forces in lender's settlement
+- insufficient goods: 
+- insufficient silver
+- invalid cargo quantity
+- invalid citizen ordinal
+- invalid credentials
+- invalid expedition duration
+- invalid limit
+- invalid or expired refresh token
+- invalid place kind or anchor
+- invalid queue cursor
+- invalid queue cursor snapshot
+- invalid role — must be member, lochagos, or navarchos
+- invalid ship_id
+- invalid target_q
+- invalid target_r
+- invalid unit_id
+- kind must be bug, design or confused
+- kingdom is locked until 
+- kingdom name already taken
+- kingdom name required
+- land forces cannot enter sea terrain
+- lender has no capital in this world
+- lender is not a kingdom member
+- letter not found
+- limit must be between 1 and 100
+- login failed
+- march failed
+- marching unit missing position data
+- march preview failed
+- markets have no workplaces; no workers are needed for trade
+- message must be 1–1000 characters
+- messenger already started its way home
+- messenger not found
+- messenger not found, not yours, or not yet arrived
+- messenger not in this world
+- missing kind
+- mountain terrain is impassable
+- must borrow at least one unit
+- must provide both target_q and target_r, or neither (omit both to recall home)
+- must provide from_q, from_r, to_q and to_r (the two neighbouring hexes the road joins)
+- naval forces cannot take a stance
+- no active settlement in this world
+- no borrowed army to return
+- no capital settlement found
+- no eligible settlement
+- no free land remains in this world for a host to stand on
+- no letters with this Wanax
+- none of your men have ever seen that target — only an explorer goes into unknown land: march there with intent \"explore\" (keryx: --intent explore)
+- no open election
+- no passable route for this caravan
+- no settlement here
+- no settlement in province
+- no such building
+- no such place
+- no such storm
+- no such temple of yours
+- not a kingdom member
+- not a member
+- not joined to this world
+- not the basileus for this settlement's kingdom
+- not your active settlement
+- not your city
+- not your province
+- not your settlement
+- not your ship
+- not your standing order
+- not your unit
+- not your unit in this world
+- no valid invitation
+- only a land army can build a road
+- only a temple is built for a god
+- only a Wanax who has lost every city can leave the world
+- only a Wanax who has lost every city can rise again
+- only land cohorts can be reinforced
+- only land forces can be loaded onto ships
+- only naval forces have a hull to repair
+- only ships can be laid up
+- only the basileus may assign roles
+- only the basileus may borrow armies
+- only the basileus may invite
+- only the first Wanax to meet a storm may name it
+- only the first Wanax to reach a place may name it
+- outbound must name at least one good and threshold
+- passage failed
+- passengers must disembark before lay up
+- pickup failed
+- prayer awaits your next eligible departure from this city
+- prayer effect already active — wait for it to end
+- province not found
+- q and r query params are required integers
+- recompute production failed
+- refresh failed
+- registration failed
+- registration is closed for now
+- repair city changed
+- reply must be at most 1000 characters
+- role limit reached for 
+- selected sea route requires a free galley or Emporos at the origin
+- selected sea trade requires a free galley or Emporos at the origin
+- sell trade_offer requires offer_good, offer_qty > 0, want_silver > 0
+- settlement is no longer available for recruitment
+- settlement not found
+- settlement not in this world
+- settlement ownership changed
+- settlements are on the same province
+- ship and cargo unit must be in the same settlement
+- ship carries no unit
+- ship changed port
+- ship has no cargo (concurrent request)
+- ship has no crew requirement
+- ship has no settlement; cannot load
+- ship has no settlement to repair at
+- ship_id is required
+- ship is no longer available for repair
+- ship is not in a port
+- ship must be in your active harbour
+- ship not found
+- ship not found in transaction
+- ship not in this world
+- ship status changed; load not applied
+- ship status changed; unload not applied
+- shipyard full
+- shipyard required
+- silver forecast failed
+- stable required
+- stance change failed
+- standing orders change failed
+- target hex not found
+- that citizen isn't placed
+- that hex hasn't been scouted yet — fog-of-war hexes can't be staffed
+- that hex is not in this settlement's catchment
+- That runner is not waiting in port — only a runner still waiting for a ship can be called back.
+- That runner is not yours — only the Wanax who sent it can arrange its passage.
+- the army could not start for the road; the stone caravan is on its way
+- the army has no position
+- the gods do not price that good
+- the host is standing on that settlement's province
+- the other city is busy — retry this placement
+- the reply window has closed; the messenger is due to leave
+- the ship is already carrying a unit — unload it first
+- the temple cannot value a composed offering yet — use the traditional offering
+- the whole unit must be in this city's garrison or laid up here
+- this building has no further levels
+- this building has no production option for that good
+- this building is already in the queue
+- this building is fully staffed for that good
+- this city is not known on your map — discover or contact it before sending a gift
+- this hex is fully staffed for that good
+- this place has already been named
+- this storm has already been named
+- this storm has died and can no longer be named
+- this unit cannot be disbanded in a city
+- this world is full — every remaining tile is within 4 hexes of an existing settlement or host; retrying will not help. Join another world.
+- trade destination no longer available
+- trade offer already 
+- trade offer expired without an answer
+- trade offer is no longer available (expired or already resolved)
+- trade_offer kind must be \"buy\" or \"sell\"
+- trade offer no longer available to you
+- trade offer not found
+- trade offer not found or not available to you
+- trade offer not found or not yours
+- trade origin no longer available
+- trade origin no longer owned
+- unit counts must be non-negative
+- unit is not a naval vessel
+- unit not found
+- unknown building type
+- unknown good
+- unknown hex
+- unknown or unshippable outbound good: 
+- unknown or unshippable return good: 
+- unknown unit type
+- unload the ship before laying it up
+- use items or good_key/quantity, not both
+- username already registered
+- username required
+- world is full — try again later
+- world is not accepting new players
+- world name already exists or DB error
+- you already hold a metropolis
+- you do not currently hold this city under occupation
+- you have no wandering host to settle
+- your current password is incorrect

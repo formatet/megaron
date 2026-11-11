@@ -285,6 +285,7 @@ body:has(.auth-page) main {
 .btn-secondary:hover { background: var(--bg-raised); border-color: var(--border);   color: var(--text); }
 .btn-danger          { background: var(--bg-panel);  border-color: var(--danger);   color: var(--danger); }
 .btn-danger:hover    { background: var(--danger);    border-color: var(--text);     color: var(--bg-panel); }
+.btn-reason { flex-basis: 100%; margin-left: 0.4rem; color: var(--text-dim); font-size: var(--fs-sm); }
 .btn-small { padding: 0.25rem 0.8rem; font-size: var(--fs-sm); width: auto; margin-top: 0; }
 
 .form-error { color: var(--danger); font-size: var(--fs-sm); min-height: 1.2em; margin-bottom: 0.5rem; }

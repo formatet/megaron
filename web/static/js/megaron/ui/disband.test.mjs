@@ -40,7 +40,7 @@ test('whole-unit click sends selected id once while pending and preserves refusa
  await warDisband('province','u2',button);
  assert.equal(calls,1);assert.deepEqual(payload,{unit_ids:['u2']});
  release();await first;
- assert.equal(result.textContent,'unit is marching');assert.equal(button.disabled,false);
+ assert.equal(result.textContent,'Unit is marching.');assert.equal(button.disabled,false);
 });
 
 test('receipt names each unit before its people and city, one sentence per unit',()=>{

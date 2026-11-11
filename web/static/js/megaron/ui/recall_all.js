@@ -1,8 +1,10 @@
-import {esc} from './format.js';
+import {esc, formatApiError, playerError} from './format.js';
 
 export function recallAllControlsHTML(units, result = '', busy = false) {
   const disabled = busy || !units.some(u => u.status === 'marching');
+  const none = !busy && !units.some(u => u.status === 'marching');
   return '<button class="btn-small btn-primary" id="recall-all-send" onclick="unitRecallAll()"' + (disabled ? ' disabled' : '') + '>Recall all</button>'
+    + (none ? '<span class="btn-reason">No forces are marching</span>' : '')
     + '<div id="recall-all-result" role="status" aria-live="polite">' + result + '</div>';
 }
 
@@ -14,7 +16,7 @@ export async function recallAll(units, recallOne) {
       const result = await recallOne(u.id);
       results.push({name: u.display_name || u.name || u.id, ...result});
     } catch (error) {
-      results.push({name: u.display_name || u.name || u.id, ok: false, error: error.message || 'Recall failed.'});
+      results.push({name: u.display_name || u.name || u.id, ok: false, error: playerError(null, null, '', {network: true})});
     }
   }
   return results;
@@ -28,5 +30,5 @@ function recallAllSummary(count) {
 
 export function recallAllResultHTML(results) {
   return '<p>' + recallAllSummary(results.filter(r => r.ok).length) + '</p>'
-    + results.filter(r => !r.ok).map(r => '<p>' + esc(r.name) + ': ' + esc(r.error || 'Recall failed.') + '</p>').join('');
+    + results.filter(r => !r.ok).map(r => '<p>' + esc(r.name) + ': ' + esc(formatApiError({error: r.error}, 'Recall failed.')) + '</p>').join('');
 }

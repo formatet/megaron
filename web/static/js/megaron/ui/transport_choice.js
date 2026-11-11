@@ -1,4 +1,4 @@
-import {esc} from './format.js';
+import {esc, playerError} from './format.js';
 import {fetchAuth} from '../api.js';
 import {State} from '../state.js';
 import {fmtDays} from './fmt_num.js';
@@ -27,6 +27,6 @@ export async function loadTransportChoices(id,origin,destination,quantity=0,pref
   const r=await fetchAuth(`/api/v1/worlds/${world}/settlements/${encodeURIComponent(origin)}/transport-options?destination_id=${encodeURIComponent(destination)}&quantity=${encodeURIComponent(quantity)}`);
   const d=await r.json();
   if(requests.get(el)!==seq||State.WORLD_ID!==world||document.getElementById(id)!==el)return;
-  el.innerHTML=r.ok?transportChoicesHTML(d,id,preferred):`<p>${esc(d.error||'Could not check routes.')}</p>`;
+  el.innerHTML=r.ok?transportChoicesHTML(d,id,preferred):`<p>${esc(playerError(r,d,'Could not check routes.'))}</p>`;
  }catch(_){if(requests.get(el)===seq&&document.getElementById(id)===el)el.textContent='Could not check routes.';}
 }

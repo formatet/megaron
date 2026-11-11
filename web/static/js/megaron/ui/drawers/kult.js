@@ -3,7 +3,7 @@ import { confirmInline, showInlineResult } from '../inline_result.js';
 import { State, ownCapital } from '../../state.js';
 import { fetchAuth } from '../../api.js';
 import { registerDrawerTab } from '../codex.js';
-import { esc } from '../format.js';
+import { esc, playerError, errorDetail } from '../format.js';
 import { fmtEta } from '../time.js';
 import { fmtDays } from '../fmt_num.js';
 import { serverNow } from '../../clock.js';
@@ -61,7 +61,7 @@ async function setRichOffering(templeID,good){
  const url='/api/v1/worlds/'+State.WORLD_ID+'/temples/'+templeID+'/rich-offering';
  try{
   const res=await fetchAuth(url,good?{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({good})}:{method:'DELETE'});
-  if(!res.ok){const r=await res.json().catch(()=>({}));showInlineResult('kult-body',r.error||'Could not change the rich offering',true);return;}
+  if(!res.ok){const r=await res.json().catch(()=>({}));showInlineResult('kult-body',playerError(res,r,'Could not change the rich offering'),true,errorDetail(res,r));return;}
   await loadKultDrawer();
  }catch(_){showInlineResult('kult-body','Could not change the rich offering. Try again.',true);}
 }
@@ -76,7 +76,7 @@ async function demolishCultTemple(temple){
   if(!building?.demolition_kharis){showInlineResult(host,'Temple consequences are unavailable. Try again.',true);return;}
   confirmInline(host,demolishPrompt(temple.name+' in '+temple.city_name,building.demolition_kharis),async()=>{
    const res=await fetchAuth(url+'/'+temple.id,{method:'DELETE'});const result=await res.json();
-   if(!res.ok){showInlineResult(host,result.error||'Could not demolish',true);return;}
+   if(!res.ok){showInlineResult(host,playerError(res,result,'Could not demolish'),true,errorDetail(res,result));return;}
    await loadKultDrawer();showInlineResult('kult-body',demolishResultLine(temple.name,result.citizens_lifted,result.demolition_kharis));
   },{confirmLabel:'Demolish',cancelLabel:'Keep it'});
  }catch(_){showInlineResult(host,'Could not load demolition consequences. Try again.',true);}
@@ -222,7 +222,7 @@ async function castRite(prayerID, offering, host, target = {}) {
     await loadKultDrawer();
     showInlineResult('kult-body', prayerResultText(d, prayerCatalog.find(p => p.action_id === prayerID || p.id === prayerID)));
   } else {
-    showInlineResult(host || 'kult-body', d.error || 'Rite failed', true);
+    showInlineResult(host || 'kult-body', playerError(r, d, 'Rite failed'), true, errorDetail(r, d));
   }
 }
 

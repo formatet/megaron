@@ -618,7 +618,7 @@ function renderMarchUnitList() {
 let hiketeiaConfirmed = false;
 export function hiketeiaRefusalHTML(failed) {
   const r = failed.find(f => f.data && f.data.hiketeia);
-  return r ? esc(r.data.error) + ' <button class="btn-small" id="mctx-hiketeia-go">March anyway</button>' : '';
+  return r ? esc(formatApiError(r.data, '')) + ' <button class="btn-small" id="mctx-hiketeia-go">March anyway</button>' : '';
 }
 
 export async function sendMarch() {
