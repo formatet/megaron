@@ -142,3 +142,9 @@ test('the old armed empty menu strings are gone', async () => {
   const src = fs.readFileSync(new URL('./marchctx.js', import.meta.url), 'utf8');
   assert.doesNotMatch(src, /mctx-hint'\)\.textContent = 'Choose a destination/);
 });
+
+test('chooseMarchTarget answers null when the pick is cancelled and the hex when it opens the menu', async () => {
+  State.unitsData = [{ id: 'u1', display_name: 'Chariots' }];
+  assert.equal(await chooseMarchTarget('u1', 'March', fakeEnv({ answer: null }).env), null);
+  assert.deepEqual(await chooseMarchTarget('u1', 'March', fakeEnv().env), { q: 3, r: 4 });
+});

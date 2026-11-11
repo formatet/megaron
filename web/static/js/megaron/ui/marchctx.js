@@ -365,13 +365,14 @@ export async function chooseMarchTarget(unitID, verb = 'March', env = defaultPic
   }).catch(() => {});
   const hex = await picking;
   State.marchCtxUnitID = null;
-  if (!hex) return;
+  if (!hex) return null; // cancelled: the caller may put back what it closed
   const tile = env.tileAt(hex.q, hex.r);
-  if (!tile) return;
+  if (!tile) return null;
   const target = (State.provinceData || []).find(p => p.q === hex.q && p.r === hex.r);
   const at = env.hexClientPos(hex.q, hex.r);
   State.marchCtxUnitID = unitID;
   env.openMarchCtx(env.destFromHex(hex, tile, target), menuXBesideHex(at.x), Math.max(8, at.y - 60));
+  return hex;
 }
 
 export function marchDefaultQuantity(group, index) {
