@@ -1747,4 +1747,5 @@ h4.cx-h { font-size: var(--fs-base); }
 .build-row-reason { color: var(--accent); font-size: var(--fs-xs); }
 .build-pick-bar { margin: .3rem 0; padding: .3rem .5rem; border: 2px solid var(--accent); background: var(--bg-panel); font-size: var(--fs-sm); }
 .build-city-link { margin-top: .5rem; font-size: var(--fs-sm); }
+.build-pick-bar button, .build-city-link button { min-height: 32px; }
 .gubbe-refusal.gubbe-built { color: var(--safe-text); }
