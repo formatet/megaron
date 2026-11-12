@@ -29,3 +29,17 @@ test('new receipt names the selected first destination; saved missions make no f
  e.first_to_area=true;
  assert.match(expeditionMissionText(e),/first to \(24,20\), then explores around it/);
 });
+
+test('SMAFEL5: a duration refusal opens "More" and focuses the field once; focus selects its content', async () => {
+  const { revealRefusedDuration, selectOnFocus } = await import('./expedition.js');
+  let focused = 0, selected = 0, handler;
+  const input = { focus() { focused++; }, select() { selected++; }, addEventListener(ev, fn) { if (ev === 'focus') handler = fn; } };
+  const more = { open: false };
+  const refusal = '<div>1st: Forecast unavailable: An expedition of 10 game days is not enough to reach the chosen area</div>';
+  assert.equal(revealRefusedDuration(refusal, more, input), true);
+  assert.equal(more.open, true); assert.equal(focused, 1);
+  assert.equal(revealRefusedDuration(refusal, more, input), false); // already open: do not steal focus while typing
+  assert.equal(focused, 1);
+  assert.equal(revealRefusedDuration('<div>Arrives in 3 game days</div>', { open: false }, input), false);
+  selectOnFocus(input); handler(); assert.equal(selected, 1);
+});

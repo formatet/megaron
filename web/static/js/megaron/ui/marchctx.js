@@ -9,7 +9,7 @@ import { arrivalHTML, fmtArrival } from './time.js';
 import { stanceSentLine } from './stance.js';
 import { MusicPlayer } from './misc.js';
 import { playWarHorn } from './sfx.js';
-import { configureExpedition, expeditionTicks, expeditionMissionText } from './expedition.js';
+import { configureExpedition, expeditionTicks, expeditionMissionText, revealRefusedDuration, selectOnFocus } from './expedition.js';
 import { createMarchPreview, loadMarchPreview } from './march_preview.js';
 import { destinationCities, destinationCityOptions, destinationFromCity, cityDestinationLabel } from './city_targets.js';
 import { canvas, tileAt, destFromHex, hexClientPos } from '../render/map.js';
@@ -69,6 +69,7 @@ document.getElementById('mctx-city')?.addEventListener('change', event => {
 const marchPreview = createMarchPreview(html => {
   const el = document.getElementById('mctx-eta');
   if (el) { el.innerHTML = html; el.style.display = html ? 'block' : 'none'; }
+  revealRefusedDuration(html, document.getElementById('mctx-more'), document.getElementById('mctx-ticks'));
   repositionMarchCtx();
 }, fetchAuth);
 
@@ -100,6 +101,7 @@ function updateMarchPreview() {
     ticks,
   });
 }
+selectOnFocus(document.getElementById('mctx-ticks'));
 marchCtx.addEventListener('input', updateMarchPreview);
 marchCtx.addEventListener('change', updateMarchPreview);
 
