@@ -1609,6 +1609,12 @@ h4.cx-h { font-size: var(--fs-base); }
 .offer-target-unit { margin-top:.2rem; font-family:var(--mono); }
 .offer-target-city, .offer-target-place { max-width:100%; }
 .offer-note { margin:.2rem 0 .4rem; font-size:var(--fs-sm); color:var(--text-dim); font-family:var(--mono); }
+.offer-gifts { margin-bottom:.4rem; }
+.offer-step { display:flex; flex-wrap:wrap; align-items:center; gap:.3rem; min-height:44px; padding:.2rem 0; font-size:var(--fs-sm); font-family:var(--mono); color:var(--text); }
+.offer-step:has(input:disabled) { color:var(--text-dim); }
+.offer-step .btn-reason { flex-basis:auto; margin-left:0; }
+.offer-other { margin-top:.5rem; font-size:var(--fs-sm); font-family:var(--mono); }
+.offer-other > summary { cursor:pointer; color:var(--text-dim); min-height:44px; display:flex; align-items:center; }
 
 /* A whole unit is one figure and one action, including damaged cohorts. */
 .disband-unit { display:flex; align-items:center; gap:.5rem; padding:.5rem 0; border-bottom:1px solid var(--border-in); }

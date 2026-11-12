@@ -10,7 +10,7 @@ import { serverNow } from '../../clock.js';
 import { renderLockedActions } from '../misc.js';
 import { demolishPrompt, demolishResultLine } from '../demolish.js';
 import { realmKultHTML, prayerActionID } from './kult_realm.js';
-import { offerRowHTML, offeringFromEntries, offerFoodText, chosenTarget, scopeFactor, scaledRecipe, stormHexRefusal, stormHexText } from './kult_offer.js';
+import { offerRowHTML, giftStepsHTML, giftSteps, checkedStep, offeringFromEntries, offerFoodText, chosenTarget, scopeFactor, scaledRecipe, stormHexRefusal, stormHexText } from './kult_offer.js';
 import { pickHex } from '../hexpick.js';
 import { kharisNetView, kharisDecayHTML, kharisRulesHTML, kharisStandingHTML } from './kult_kharis.js';
 
@@ -153,12 +153,24 @@ export async function okRite(prayerID) {
     if (foodLine) foodLine.textContent = offerFoodText(offering, stock, prayerFood.get(prayerID), prayer.city_name);
   };
   inputs.forEach(i => i.addEventListener('input', update));
-  // A wider blessing asks a larger gift: the fields follow the chosen step.
-  host.querySelectorAll('input[type=radio]').forEach(radio => radio.addEventListener('change', () => {
-    const recipe = scaledRecipe(prayer.offering, scopeFactor(prayer, radio.value));
-    inputs.forEach(i => { i.value = recipe[i.dataset.good] || 0; });
-    update();
+  // The fields mirror the checked gift step. A wider blessing re-prices the steps; a changed
+  // field in "Offer other goods" is what is sent (bringOffering compares the fields to the recipe).
+  const gifts = host.querySelector('[data-offer-gifts]');
+  const fill = goods => { inputs.forEach(i => { i.value = goods[i.dataset.good] || 0; }); update(); };
+  const refresh = keepN => {
+    const scope = prayer.targets ? chosenTarget(host).target_scope : undefined;
+    if (gifts) gifts.innerHTML = giftStepsHTML(prayer, scope, stock, keepN);
+    const step = checkedStep(giftSteps(prayer, scope, stock), keepN);
+    if (step) fill(step.goods);
+    else if (!(prayer.can_prepare_offering && !prayer.affordable)) fill(scaledRecipe(prayer.offering, prayer.targets ? scopeFactor(prayer, scope) : 1));
+  };
+  host.querySelectorAll('.offer-scope input[type=radio]').forEach(radio => radio.addEventListener('change', () => {
+    const kept = gifts?.querySelector('.offer-step-radio:checked');
+    refresh(kept ? Number(kept.value) : undefined);
   }));
+  if (gifts) gifts.addEventListener('change', e => {
+    if (e.target?.classList?.contains('offer-step-radio')) refresh(Number(e.target.value));
+  });
   update();
 }
 

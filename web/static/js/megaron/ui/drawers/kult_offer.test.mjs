@@ -72,11 +72,13 @@ test('offer row names the food the gift takes and warns when a game day is not l
   assert.doesNotMatch(plenty, /less than/);
 });
 
-test('Bönegrund: a lasting prayer names its base length and says a larger gift lasts longer', () => {
+test('Bönegrund: a lasting prayer shows its length per step and says the temple rests longer after a larger gift', () => {
+  // Changed 2026-11-12 (bon-gavosteg): the "Lasts N ... a larger gift lasts longer" note is now the step list.
   const html = offerRowHTML({ ...prayer, god_id: 'potnia', base_duration_game_days: 6 }, stock);
-  assert.match(html, /Lasts 6 game days with the traditional gift; a larger gift lasts longer\./);
-  assert.match(html, /larger gift makes the temple rest longer/);
-  assert.doesNotMatch(offerRowHTML({ ...prayer, god_id: 'potnia' }, stock), /Lasts/);
+  assert.match(html, /6 game days · 10 grain \+ 3 silver/);
+  assert.match(html, /12 game days/);
+  assert.match(html, /The temple rests longer after a larger gift\./);
+  assert.doesNotMatch(offerRowHTML({ ...prayer, god_id: 'potnia' }, stock), /How much do you give|rests longer/);
 });
 
 // Blessing prayers (steg 2a): the offer row carries a target chooser with the price of each step.
@@ -370,7 +372,7 @@ test('gift steps: one the city cannot pay is disabled and says why in text', () 
 });
 
 test('gift steps: the first affordable step is checked, and a kept choice survives a scope change', () => {
-  assert.match(giftStepsHTML(lasting, 'city', { fish: 40, oil: 40 }), /value="1" disabled[^]*value="2" checked/);
+  assert.match(giftStepsHTML(lasting, 'city', { fish: 40, oil: 40 }), /value="1" checked[^]*value="3" disabled/);
   assert.match(giftStepsHTML(lasting, 'unit', rich, 3), /value="3" checked/);
   assert.doesNotMatch(giftStepsHTML(lasting, 'unit', { fish: 9, oil: 9 }, 3), /value="3" checked/);
 });
