@@ -4,7 +4,7 @@ A rite is a request made at the temple of its god.
 - [[kharis]] is a minimum you must hold, never spent; the offering is.
 - Bring the traditional recipe, or a composed offering worth at least as much.
 - An answered prayer makes **that temple** rest, and only while it is fully staffed.
-- A larger gift makes a lasting prayer last longer. <!-- src: reference.json prayers -->
+- Twice the gift, twice the length and twice the temple's rest, up to five times. <!-- src: reference.json prayers -->
 
 ## Temples required by prayers {#rites-details}
 
@@ -14,7 +14,7 @@ A rite is a request made at the temple of its god.
 
 A prayer answers when you meet its standing, have its god's temple and can bring its offering. Waiting time, an active gift or an unused departure gift can still prevent a new prayer.
 
-Without the traditional gift, **Compose offering** opens empty fields for other goods you hold. In Keryx, `rite --offer good=amount` chooses the gift. A smaller gift is refused without taking goods. A larger gift does not change whether the god answers, but a lasting prayer lasts longer (up to five times) and the temple rests longer.
+A lasting prayer offers the gift as 1, 2, 3 or 5 times the traditional one; the length and the temple's rest grow the same way, up to five times. Other goods go under **Offer other goods**; a smaller gift is refused without taking goods. In Keryx, `rite --offer good=amount` chooses the gift.
 
 ### Waiting between prayers {#prayer-requirements-2}
 

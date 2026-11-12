@@ -634,7 +634,7 @@ func riteCmd() *cobra.Command {
 	cmd.Flags().StringVar(&scope, "scope", "", "how wide a blessing reaches: unit | city | realm, or permanent (one named unit, for ever, ×20) — the wider, the dearer (see --list)")
 	cmd.Flags().BoolVar(&yes, "yes", false, "skip the pre-cast confirmation (required for non-interactive/agent use)")
 	cmd.Flags().StringVar(&offer, "offer", "",
-		"composed offering, e.g. --offer wine=20,oil=10 — worth at least the traditional offering; the gods value what the world is short of")
+		"composed offering, e.g. --offer wine=20,oil=10 — worth at least the traditional offering; the gods value what the world is short of. N times the traditional gift lasts N times as long and the temple rests N times as long (at most 5)")
 	return cmd
 }
 
