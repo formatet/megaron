@@ -1764,6 +1764,7 @@ h4.cx-h { font-size: var(--fs-base); }
 .build-row-sub { color: var(--text-dim); font-size: var(--fs-xs); }
 .build-row.locked { opacity: .65; }
 .build-row-reason { color: var(--accent); font-size: var(--fs-xs); }
+.build-row-btn:disabled { opacity: .45; cursor: not-allowed; }
 .build-row > .btn-reason { margin-left: 0; overflow-wrap: anywhere; }
 .build-row-result { padding: .35rem 0 .35rem .5rem; border-bottom: 1px solid var(--border-in); border-left: 3px solid var(--accent); font-size: var(--fs-sm); overflow-wrap: anywhere; }
 .build-row-result.build-row-refused { color: var(--accent); }

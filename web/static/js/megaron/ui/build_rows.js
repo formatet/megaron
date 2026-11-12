@@ -106,7 +106,7 @@ export function buildRows(catalogue, ctx = {}) {
       r.payable = short.length === 0;
       r.shortReason = shortfallText(short);
     }
-    if (!r.locked && afford && afford.can_afford === false && !afford.at_max_level) { r.locked = true; r.reason = 'not enough goods in store'; }
+    if (!r.locked && r.payable !== false && afford && afford.can_afford === false && !afford.at_max_level) { r.locked = true; r.reason = 'not enough goods in store'; }
     rows.push(r);
   };
   for (const entry of catalogue || []) {
