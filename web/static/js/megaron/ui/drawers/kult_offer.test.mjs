@@ -339,3 +339,75 @@ test('Wake the Storm: a picked hex fills the field as q,r and the rite target is
   assert.equal(stormHexText({ q: 7, r: -3 }), '7,-3');
   assert.deepEqual(chosenTarget({ querySelector: q => q === '.offer-target-hex' ? { value: stormHexText({ q: 7, r: -3 }) } : null }), { target: '7,-3' });
 });
+
+// ── Gift steps (bon-gavosteg 2026-11-12): the size of the gift as 1, 2, 3, 5 times ──
+const { giftSteps, giftStepsHTML, GIFT_STEPS } = await import('./kult_offer.js');
+const lasting = { id: 'minoan_stillness_hull', god_id: 'sea_daimons_stillness', base_duration_game_days: 6, offering: { fish: 8, oil: 4 },
+  scope_cost_factors: { unit: 1, city: 2, realm: 4, permanent: 20 },
+  targets: { unit: [{ id: 'u1', name: 'Argo', where: 'in Knossos' }], city: { name: 'Knossos', count: 2 }, realm: { count: 3 } } };
+const rich = { fish: 500, oil: 500 };
+
+test('gift steps: 1, 2, 3 and 5 times; length and price follow the scope', () => {
+  assert.deepEqual(GIFT_STEPS, [1, 2, 3, 5]);
+  const unit = giftSteps(lasting, 'unit', rich);
+  assert.deepEqual(unit.map(s => [s.n, s.days]), [[1, 6], [2, 12], [3, 18], [5, 30]]);
+  assert.deepEqual(unit[1].goods, { fish: 16, oil: 8 });
+  const city = giftSteps(lasting, 'city', rich);
+  assert.deepEqual(city.map(s => s.days), [6, 12, 18, 30]);
+  assert.deepEqual(city[3].goods, { fish: 80, oil: 40 });
+  assert.ok(unit.every(s => s.payable && !s.reason));
+});
+
+test('gift steps: one the city cannot pay is disabled and says why in text', () => {
+  const steps = giftSteps(lasting, 'unit', { fish: 9, oil: 100 });
+  assert.deepEqual(steps.map(s => s.payable), [true, false, false, false]);
+  assert.equal(steps[1].reason, 'needs 16 fish, city has 9');
+  const html = giftStepsHTML(lasting, 'unit', { fish: 9, oil: 100 });
+  assert.match(html, /12 game days · 16 fish \+ 8 oil[^]*needs 16 fish, city has 9/);
+  assert.match(html, /value="2" disabled/);
+  assert.match(html, /value="1" checked/);
+  assert.match(html, /How much do you give\?/);
+});
+
+test('gift steps: the first affordable step is checked, and a kept choice survives a scope change', () => {
+  assert.match(giftStepsHTML(lasting, 'city', { fish: 40, oil: 40 }), /value="1" disabled[^]*value="2" checked/);
+  assert.match(giftStepsHTML(lasting, 'unit', rich, 3), /value="3" checked/);
+  assert.doesNotMatch(giftStepsHTML(lasting, 'unit', { fish: 9, oil: 9 }, 3), /value="3" checked/);
+});
+
+test('gift steps: an instant prayer and the permanent step have no steps, only one line with the price', () => {
+  const instant = { ...lasting, base_duration_game_days: 0 };
+  assert.deepEqual(giftSteps(instant, 'unit', rich), []);
+  assert.match(giftStepsHTML(instant, 'unit', rich), /Gift: 8 fish \+ 4 oil/);
+  assert.doesNotMatch(giftStepsHTML(instant, 'unit', rich), /type="radio"/);
+  assert.deepEqual(giftSteps(lasting, 'permanent', rich), []);
+  const html = giftStepsHTML(lasting, 'permanent', rich);
+  assert.match(html, /Gift: 160 fish \+ 80 oil/);
+  assert.doesNotMatch(html, /type="radio"/);
+});
+
+test('offer row: steps under the chooser, the fields tucked into a closed "Offer other goods"', () => {
+  const html = offerRowHTML(lasting, rich);
+  assert.match(html, /data-offer-gifts/);
+  assert.match(html, /name="gift-minoan_stillness_hull"/);
+  assert.match(html, /The temple rests longer after a larger gift\./);
+  assert.match(html, /<details class="offer-other">\s*<summary>Offer other goods<\/summary>[^]*data-good="fish"/);
+  assert.doesNotMatch(html, /<details class="offer-other" open/);
+  assert.doesNotMatch(html, /Lasts 6 game days with the traditional gift/);
+  assert.doesNotMatch(html, /tick/i);
+});
+
+test('offer row: when the city lacks the recipe the other goods are open from the start', () => {
+  const html = offerRowHTML({ ...lasting, can_prepare_offering: true, affordable: false }, { fish: 1, oil: 1 });
+  assert.match(html, /<details class="offer-other" open/);
+});
+
+test('step 1 sends no offering, step 3 sends the exact goods, a changed field wins (fields mirror the checked step)', () => {
+  const recipe = scaledRecipe(lasting.offering, 1);
+  const entries = goods => Object.entries(goods).map(([good, value]) => ({ good, value: String(value) }));
+  assert.equal(offeringFromEntries(entries(giftSteps(lasting, 'unit', rich)[0].goods), recipe), null);
+  assert.deepEqual(offeringFromEntries(entries(giftSteps(lasting, 'unit', rich)[2].goods), recipe), { fish: 24, oil: 12 });
+  const cityRecipe = scaledRecipe(lasting.offering, 2);
+  assert.deepEqual(offeringFromEntries(entries(giftSteps(lasting, 'city', rich)[1].goods), cityRecipe), { fish: 32, oil: 16 });
+  assert.deepEqual(offeringFromEntries([{ good: 'fish', value: '8' }, { good: 'oil', value: '4' }, { good: 'wine', value: '5' }], recipe), { fish: 8, oil: 4, wine: 5 });
+});
