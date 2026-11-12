@@ -5,7 +5,7 @@ import { State } from '../state.js';
 import { fetchAuth } from '../api.js';
 import { playerError, esc } from './format.js';
 import { isNavigable } from '../terrain.js';
-import { getBuildingCatalogue, hexRowsHTML, pickHexes } from './build_rows.js';
+import { getBuildingCatalogue, hexRowsHTML, loadStock, pickHexes, showBuildResult } from './build_rows.js';
 import { BUILDING_LABELS } from './building_names.js';
 
 // Who sends a build (city.js registers startBuild here; citygrid cannot import
@@ -278,6 +278,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
   if (!silent) { liveSelection.delete(containerEl); containerEl.innerHTML = '<div class="loading" style="font-size:.8rem">Loading…</div>'; }
 
   let opts;
+  const stockP = loadStock(provinceID); // what the city holds, for the Build here rows
   try {
     const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${provinceID}/placement-options`);
     if (!res.ok) throw new Error('placement-options ' + res.status);
@@ -295,6 +296,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
   const buildings = opts.buildings || [];
   // Null when the catalogue cannot be loaded: then no build rows, the grid still works.
   const catalogue = await getBuildingCatalogue();
+  const stock = await stockP;
   if (mySeq !== renderSeq) return;
   // Pick mode: hex "q,r" -> level step, for every hex that can take pick.type now.
   const pickable = pick ? pickHexes(pick.type, opts) : null;
@@ -390,9 +392,12 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
     const stale = containerEl.querySelector('.gubbe-refusal');
     if (stale) stale.remove();
     btn.disabled = true;
-    const out = await buildHandler({ type: btn.dataset.buildType, hex_q: Number(btn.dataset.buildQ), hex_r: Number(btn.dataset.buildR) });
-    if (out.ok) { await rerender({ pick: null }); showRefusal(out.text, true); }
-    else { btn.disabled = false; showRefusal(out.text); }
+    const spec = { type: btn.dataset.buildType, hex_q: Number(btn.dataset.buildQ), hex_r: Number(btn.dataset.buildR) };
+    const out = await buildHandler(spec);
+    if (out.ok) await rerender({ pick: null });
+    else btn.disabled = false;
+    // Under the clicked row; if that row is gone (built, redrawn) the old place at the end.
+    if (!showBuildResult(containerEl, spec, out.text, out.ok, out.detail)) showRefusal(out.text, out.ok);
   };
 
   const doAction = async (verb, targetBody, good, cap) => {
@@ -427,7 +432,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
     if (pick) {
       // Pick mode: only the build row for the chosen type, on an eligible hex.
       const hex = g.dataset.target === 'hex' && hexes.find(h => h.hex_ordinal === Number(g.dataset.ordinal));
-      const rows = hex ? hexRowsHTML(catalogue, opts, hex.hex_q, hex.hex_r, pick.type) : '';
+      const rows = hex ? hexRowsHTML(catalogue, opts, hex.hex_q, hex.hex_r, pick.type, stock) : '';
       detail.innerHTML = hex
         ? `<div class="dsec-title">(${hex.hex_q},${hex.hex_r}) — ${terrainLabel(hex.terrain)}</div>${rows || `<p class="empty-state">A ${esc(pickName)} cannot be built here.</p>`}`
         : `<p class="empty-state">A ${esc(pickName)} is built on a catchment hex, not in the city.</p>`;
@@ -437,7 +442,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
       const ordinal = Number(g.dataset.ordinal);
       const hex = hexes.find(h => h.hex_ordinal === ordinal);
       if (!hex) return;
-      const buildHere = hexRowsHTML(catalogue, opts, hex.hex_q, hex.hex_r);
+      const buildHere = hexRowsHTML(catalogue, opts, hex.hex_q, hex.hex_r, undefined, stock);
       detail.innerHTML = `
         <div class="dsec-title">(${hex.hex_q},${hex.hex_r}) — ${terrainLabel(hex.terrain)}</div>
         ${isNavigable(hex.terrain)?stormHexPanelHTML(hex.hex_q,hex.hex_r):''}
