@@ -1,12 +1,12 @@
 package religion
 
-// The gods' hand in battle — R2 battle, mild (Timothy 2026-10-30,
+// The gods' hand in battle — R2 battle (Timothy 2026-10-30; raised from 5% to 15% 2026-11-12,
 // megaron_religion_talforslag_20261030 §R2). A Favorable realm's men fight
 // BattleFavorFactor stronger, a Wrathful realm's BattleWrathFactor weaker. The
 // mood is fixed when a unit enters the battle and named in the outcome.
 const (
-	BattleFavorFactor = 1.05
-	BattleWrathFactor = 0.95
+	BattleFavorFactor = 1.15
+	BattleWrathFactor = 0.85
 )
 
 // BattleDivine returns the gods' hand a unit carries into battle for the

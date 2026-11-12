@@ -48,10 +48,10 @@ func TestBattleParticipationFixedAcrossCityAndKharis(t *testing.T) {
 				t.Fatal(err)
 			}
 			// Commitment stays fixed; the dice carry the gods' hand (R2 battle,
-			// 2026-10-30): 45 × 0.95 Wrathful, 45 × 1.05 Favorable, fraction by a roll.
-			lo, hi := 42, 43
+			// 2026-10-30): 45 × 0.85 Wrathful, 45 × 1.15 Favorable, fraction by a roll.
+			lo, hi := 38, 39
 			if balance == 100 {
-				lo, hi = 47, 48
+				lo, hi = 51, 52
 			}
 			if result.ActiveCombatants != 90 || result.DiceRolled < lo || result.DiceRolled > hi {
 				t.Errorf("first round kharis%d result=%+v want 90 active and %d–%d dice", balance, result, lo, hi)

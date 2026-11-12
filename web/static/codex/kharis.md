@@ -64,10 +64,10 @@ Where your kharis stands decides the risk and the favour you meet.
 
 | Mood | Meaning |
 |---|---|
-| **Favorable** (60 and above) | Blessings: a harvest a quarter richer for 25 game days ([[fish|fish]] excepted) or unexpected recruits. At sea a 15% chance that a [[storms|storm]]'s blow is held back. In [[battle]], about 5% more dice. |
+| **Favorable** (60 and above) | Blessings: a harvest a quarter richer for 25 game days ([[fish|fish]] excepted) or unexpected recruits. At sea a 15% chance that a [[storms|storm]]'s blow is held back. In [[battle]], about 15% more dice. |
 | **Indifferent** (30 to below 60) | They have noticed you and do nothing. |
 | **Suspicious** (5 to below 30) | The risk of punishment begins ([[divine-wrath]]). |
-| **Wrathful** (below 5) | Punishment is likelier: [[war-chariot|chariots]] break, ships are lost, food rots or plague takes a garrison. At sea a 15% chance that a [[storms|storm]] takes one more hull. In [[battle]], about 5% fewer dice. |
+| **Wrathful** (below 5) | Punishment is likelier: [[war-chariot|chariots]] break, ships are lost, food rots or plague takes a garrison. At sea a 15% chance that a [[storms|storm]] takes one more hull. In [[battle]], about 15% fewer dice. |
 
 ### Starting standing and true omens {#kharis-details-2}
 

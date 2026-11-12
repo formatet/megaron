@@ -31,10 +31,10 @@ func TestRollSide_GodsHandScalesTheDice(t *testing.T) {
 		floats int
 	}{
 		{"no hand: 60 dice, no roll drawn", 20, "", .0, 60, 0},
-		{"favor: 60 → 63", 20, "favor", .99, 63, 1},
-		{"wrath: 60 → 57", 20, "wrath", .99, 57, 1},
-		{"favor on 9 dice, lucky fraction: 10", 3, "favor", .44, 10, 1},
-		{"favor on 9 dice, unlucky fraction: 9", 3, "favor", .46, 9, 1},
+		{"favor: 60 → 69", 20, "favor", .99, 69, 1},
+		{"wrath: 60 → 51", 20, "wrath", .99, 51, 1},
+		{"favor on 9 dice, lucky fraction: 11", 3, "favor", .34, 11, 1},
+		{"favor on 9 dice, unlucky fraction: 10", 3, "favor", .36, 10, 1},
 	} {
 		p := []battleParticipant{{utype: "elite_infantry", divine: c.divine}}
 		d := &fracDice{f: c.f}
@@ -91,13 +91,13 @@ func TestBattle_GodsHandFixedAtJoinAndNamedInOutcome(t *testing.T) {
 	if got := divineOf(f.attacker); got != "favor" {
 		t.Fatalf("attacker divine after kharis change = %q, want favor", got)
 	}
-	// …and their dice still carry it: 200 spearmen → 180 active → 90 dice → ×1.05.
+	// …and their dice still carry it: 200 spearmen → 180 active → 90 dice → ×1.15.
 	var first BattleSideRoundResult
 	if err := json.Unmarshal(loadBattleRounds(t, pool, battleID)[0].attacker, &first); err != nil {
 		t.Fatal(err)
 	}
-	if first.DiceRolled < 94 || first.DiceRolled > 95 {
-		t.Fatalf("attacker first-round dice = %d, want 94–95 (favor frozen at join)", first.DiceRolled)
+	if first.DiceRolled < 103 || first.DiceRolled > 104 {
+		t.Fatalf("attacker first-round dice = %d, want 103–104 (favor frozen at join)", first.DiceRolled)
 	}
 
 	want := map[string]string{"BattleWon": "favor", "BattleLost": "wrath"}
