@@ -3,7 +3,7 @@ Buildings provide workplaces, defences and the facilities needed for recruitment
 - One building is built at a time; two more wait in the queue.
 - Farm, Lumbermill, Mine and Stone Quarry stand on one catchment hex, one per hex, with 4 workplaces each.
 - Levels go to 3; each raises every worker's rate on that hex by 70 %.
-- The wall sets the population ceiling: 2 000, then 5 000, 10 000, 20 000. <!-- src: server/internal/economy/population_cap.go populationCaps; hex_rules.go -->
+- The wall sets the population ceiling: 20 citizens, then 50, 100, 200 (a citizen is 100 people). <!-- src: server/internal/economy/population_cap.go populationCaps; hex_rules.go -->
 - Demolishing refunds nothing.
 
 ## All buildings {#buildings-details}
@@ -33,7 +33,7 @@ Buildings provide workplaces, defences and the facilities needed for recruitment
 
 ### Walls, population and coastal access {#buildings-details-3}
 
-**The wall is the ceiling.** No wall: 2 000 people; Palisade 5 000; [[walls|Stone Wall]] 10 000; [[bronze|Bronze]] Wall 20 000. At the ceiling a city stops growing, losing no one. Each wall needs a [[granary]] of the same level first. See [[growth]].
+**The wall is the ceiling.** No wall: 20 citizens; Palisade 50; [[walls|Stone Wall]] 100; [[bronze|Bronze]] Wall 200. At the ceiling a city stops growing, losing no one. Each wall needs a [[granary]] of the same level first. See [[growth]].
 
 **The coast rule.** A Harbour or Shipyard needs the city's own hex to border the sea or a [[rivers|river]]; an inland city needs a coastal colony ([[colonies]]).
 

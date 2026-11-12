@@ -38,3 +38,21 @@ test('yard sharing shows on building and repair lines, only when more than one s
   assert.match(renderUnitCard(r, {}), /being repaired — ready .* · 3 workers shared by 2 ships/);
   assert.doesNotMatch(renderUnitCard({ ...r, shipyard_sharing: 1 }, {}), /shared by/);
 });
+
+test('SMAFEL3: a marching unit past its arrival time says it has arrived, never "arrives arrived"', () => {
+  const m = { id: 'm1', type: 'spearman', category: 'land', status: 'marching', size: 50, target_q: 10, target_r: 59, arrives_at: new Date(Date.now() - 60e3).toISOString() };
+  const html = renderUnitCard(m, {});
+  assert.match(html, /→ \(10,59\) · has arrived/);
+  assert.doesNotMatch(html, /arrives arrived/);
+  const later = renderUnitCard({ ...m, arrives_at: new Date(Date.now() + 3600e3).toISOString() }, {});
+  assert.match(later, /→ \(10,59\) arrives /);
+});
+
+test('SMAFEL11: the stance dropdown shows the unit\'s current stance, not "stance…"', () => {
+  const base = { id: 'g1', type: 'spearman', category: 'land', status: 'garrison', size: 100, deployable: true };
+  const sentry = renderUnitCard({ ...base, stance: 'sentry' }, {});
+  assert.match(sentry, /<option value="sentry" selected>stance: sentry<\/option>/);
+  assert.doesNotMatch(sentry, /stance…/);
+  const none = renderUnitCard(base, {});
+  assert.match(none, /<option value="none" selected>stance: no stance<\/option>/);
+});

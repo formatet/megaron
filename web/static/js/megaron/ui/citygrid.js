@@ -62,6 +62,20 @@ export function shipyardShareNote(workers, sharing) {
   return `${workers} worker${workers === 1 ? '' : 's'} shared by ${sharing} ships`;
 }
 
+// The line under a hex's title: where this city's own citizens stand on the hex, so a row with none
+// ("None of yours") is read against the hex's real workers.
+export function hexWorkersLine(goods) {
+  const here = (goods || []).map(g => [g.good_key, (g.placed_ordinals || []).length]).filter(([, k]) => k > 0).sort((a, b) => a[0].localeCompare(b[0], 'en'));
+  return here.length ? `Your citizens here: ${here.map(([k, c]) => `${k} ${fmtNum(c)}`).join(', ')}` : '';
+}
+
+// The one free-citizen count on screen is placement-options' pool_size; the city panel's top
+// row (loaded with the drawer) is rewritten from it after every grid render.
+export function syncFreeToWork(root, pool) {
+  const el = root?.querySelector?.('#city-free-to-work .sr-val');
+  if (el) el.textContent = fmtNum(pool);
+}
+
 export function terrainLabel(t) {
   return (t || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
@@ -72,7 +86,7 @@ export function terrainLabel(t) {
 export function takeLabel(hex) {
   if (!hex || !hex.held_by || !hex.takeable) return null;
   const n = hex.held_workers || 0;
-  const bld = hex.held_building ? `, its ${hex.held_building.type} becomes yours` : '';
+  const bld = hex.held_building ? `, its ${buildingLabel(hex.held_building.type)} becomes yours` : '';
   return `Take: ${hex.held_by}'s ${fmtNum(n)} worker${n === 1 ? ' goes' : 's go'} home${bld}`;
 }
 
@@ -121,9 +135,9 @@ export function goodRowHTML(target, good, take) {
         ${take
           ? `<button class="btn-small gubbe-act gubbe-take" data-verb="place1">${esc(take)}</button>`
           : `<button class="btn-small gubbe-act" data-verb="place1" ${full ? 'disabled' : ''}>+1</button>
-        ${full ? '' : `<button class="btn-small gubbe-act" data-verb="fill">Fill</button>`}
+        <button class="btn-small gubbe-act" data-verb="fill" ${full ? 'disabled' : ''}>Fill</button>
         <button class="btn-small gubbe-act" data-verb="unplace1" ${mine > 0 ? '' : 'disabled'}>−1</button>
-        ${[full ? 'All places are staffed' : '', mine > 0 ? '' : 'None of yours to take off'].filter(Boolean).map(r => `<span class="btn-reason">${r}</span>`).join('')}`}
+        <span class="btn-reason gubbe-reason">${[full ? 'Full' : '', mine > 0 ? '' : 'None of yours'].filter(Boolean).join(' · ') || '&nbsp;'}</span>`}
       </div>
     </div>`;
 }
@@ -362,6 +376,8 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
       <p class="empty-state">Click a catchment hex, or the city hex for buildings.</p>
     </div>`;
 
+  syncFreeToWork(document, opts.pool_size);
+
   // What the player has open right now. Updated by selectTarget and handed to
   // the next render so +1/−1 does not close the panel they are clicking in.
   let openKey = silent && liveSelection.has(containerEl) ? liveSelection.get(containerEl) : placementTargetKey(hexes,targetHex,selected);
@@ -446,6 +462,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
       detail.innerHTML = `
         <div class="dsec-title">(${hex.hex_q},${hex.hex_r}) — ${terrainLabel(hex.terrain)}</div>
         ${isNavigable(hex.terrain)?stormHexPanelHTML(hex.hex_q,hex.hex_r):''}
+        ${hexWorkersLine(hex.goods) ? `<p class="gubbe-hex-workers">${esc(hexWorkersLine(hex.goods))}</p>` : ''}
         ${hex.held_by ? `<p class="gubbe-held-note">Held by ${esc(hex.held_by)} — already worked by another city${hex.takeable ? '' : ' — stand a unit there in fortify or sentry to take it'}</p>` : ''}
         ${(hex.goods || []).length
           ? sortGoods(hex.goods, { target_kind: 'hex', hex_ordinal: hex.hex_ordinal }).map(good => goodRowHTML({ target_kind: 'hex', hex_ordinal: hex.hex_ordinal }, good, takeLabel(hex))).join('')

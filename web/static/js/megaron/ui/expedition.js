@@ -25,3 +25,16 @@ export function expeditionMissionText(e) {
   const destination = e.first_to_area ? `first to (${e.area_q},${e.area_r}), then explores around it` : `around (${e.area_q},${e.area_r})`;
   return `Expedition ${destination}, ${fmtDays(e.length_ticks)}; ${state}; home by ${fmtTickTime(e.home_by_tick)}.`;
 }
+// When the forecast is refused for the duration, the field that fixes it must not hide under "More":
+// open it and focus it once (not again while the player is already typing in it).
+export function revealRefusedDuration(html, more, input) {
+  if (!more || !input || !/expedition of [^<]*? is not enough/i.test(html || '')) return false;
+  if (more.open) return false;
+  more.open = true;
+  input.focus?.();
+  return true;
+}
+// Typing replaces the default instead of appending to it ("10" + "30" = 1030).
+export function selectOnFocus(input) {
+  input?.addEventListener?.('focus', () => input.select?.());
+}

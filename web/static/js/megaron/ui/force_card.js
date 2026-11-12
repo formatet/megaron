@@ -87,7 +87,7 @@ export function renderUnitCard(u, options = {}) {
     // arrival_tick is the authoritative arrival (K4) — the stored arrives_at
     // stamp lies across server downtime; the tick self-corrects.
     const arrival = arrivalHTML(u.arrives_at, u.arrival_tick);
-    loc = pickupPrefix + '→ (' + u.target_q + ',' + u.target_r + ')' + (arrival ? ' arrives ' + arrival : '');
+    loc = pickupPrefix + '→ (' + u.target_q + ',' + u.target_r + ')' + (arrival ? (arrival === 'arrived' ? ' · has arrived' : ' arrives ' + arrival) : '');
   } else if (u.q != null) {
     loc = '(' + u.q + ',' + u.r + ')';
   }
@@ -222,11 +222,8 @@ export function renderUnitCard(u, options = {}) {
   // up with it (megaron_styrande_beslut §11, canTakeStance mirrors the server).
   if (canTakeStance(u)) {
     actions += '<select id="ustance-' + u.id + '" style="font-size:.65rem;padding:.1rem;border:1px solid var(--border);background:var(--warm-white)">'
-      + '<option value="none">stance…</option>'
-      + '<option value="fortify">fortify</option>'
-      + '<option value="storm">storm</option>'
-      + '<option value="sentry">sentry</option>'
-      + (u.stance ? '<option value="none">— clear</option>' : '')
+      + [['none', 'no stance'], ['fortify', 'fortify'], ['storm', 'storm'], ['sentry', 'sentry']]
+        .map(([v, label]) => '<option value="' + v + '"' + ((u.stance || 'none') === v ? ' selected' : '') + '>' + (((u.stance || 'none') === v) ? 'stance: ' : '') + label + '</option>').join('')
       + '</select> '
       + '<button onclick="unitStance(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Set</button> ';
 

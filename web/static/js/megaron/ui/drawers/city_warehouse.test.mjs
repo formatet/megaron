@@ -66,9 +66,9 @@ test('Warehouse: net per game day per good, food runway from the forecast, stead
  const fc={goods:[{good_key:'grain',net:-3.04},{good_key:'timber',net:2}],food:{days:18.2,net:-3,flows:[{label:'Army rations',amount:-2},{label:'Citizens\' meals',amount:-1}]}};
  let html=warehouseHTML(pd({forecast:fc}),goods);
  assert.match(html,/Food<\/span><span class="sr-val">\u22123 per game day · lasts 18.2 game days/);
- assert.match(html,/Grain<\/span><span class="sr-val">463 \/ 2,000 · \u22123 per game day/);
+ assert.match(html,/Grain<\/span><span class="sr-val neg">463 \/ 2,000 · \u22123 per game day/);
  assert.match(html,/Timber<\/span><span class="sr-val">120 · \+2 per game day/);
- assert.match(html,/Army rations<\/span><span class="sr-val">−2/);
+ assert.match(html,/Army rations<\/span><span class="sr-val neg">−2/);
  html=warehouseHTML(pd({forecast:{goods:[],food:{days:null,net:1.5,flows:[]}}}),goods);
  assert.match(html,/Food<\/span><span class="sr-val">\+1.5 per game day</);
  assert.doesNotMatch(html,/lasts|game days</,'not running down: no day count at all');
@@ -88,4 +88,13 @@ test('Warehouse: the Storehouse row is "Stores X / Y"; its goods carry no cap of
  const built=warehouseHTML(pd({storehouse:{level:2,capacity:2500,amount:2500}}),sg);
  assert.match(built,/wh-full[^>]*><span class="sr-label">Stores<\/span><span class="sr-val">2,500 \/ 2,500 · full/);
  assert.doesNotMatch(built,/No Storehouse built/);
+});
+
+test('SMAFEL7: red (sr-val neg) marks a loss only; a positive net and a plain amount stay neutral', () => {
+  const html = warehouseHTML({ forecast: { goods: [{ good_key: 'stone', net: 5.6 }, { good_key: 'timber', net: -1 }], food: { flows: [{ label: 'Production', amount: 5.6 }, { label: 'Citizens’ meals', amount: -5 }] } } },
+    [{ key: 'stone', name: 'Stone', amount: 10, cap: 0 }, { key: 'timber', name: 'Timber', amount: 3, cap: 0 }]);
+  assert.match(html, /sr-val neg">−5</);
+  assert.match(html, /sr-val">\+5\.6</);
+  assert.match(html, /Timber<\/span><span class="sr-val neg">/);
+  assert.match(html, /Stone<\/span><span class="sr-val">/);
 });

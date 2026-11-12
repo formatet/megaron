@@ -237,7 +237,7 @@ func TestMarchPreview_ReadOnlyAndTiming(t *testing.T) {
 	shortReq.Header.Set("Authorization", "Bearer "+accessToken)
 	shortRec := httptest.NewRecorder()
 	r.ServeHTTP(shortRec, shortReq)
-	if budgetPreview.Code != 422 || shortRec.Code != 422 || !strings.Contains(budgetPreview.Body.String(), "duration is too short") || snapshot() != before {
+	if budgetPreview.Code != 422 || shortRec.Code != 422 || !strings.Contains(budgetPreview.Body.String(), "6 game days is not enough to reach the chosen area") || snapshot() != before {
 		t.Fatalf("budget preview/dispatch mismatch: %d %s / %d %s", budgetPreview.Code, budgetPreview.Body.String(), shortRec.Code, shortRec.Body.String())
 	}
 	if strings.Contains(budgetPreview.Body.String(), "at least") || strings.Contains(budgetPreview.Body.String(), "away") || strings.Contains(budgetPreview.Body.String(), "duration_ticks") {
