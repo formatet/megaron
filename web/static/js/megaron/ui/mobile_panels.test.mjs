@@ -58,3 +58,51 @@ test('sheetPanDelta: 0 when the hex is already above the sheet, else the upward 
  // a hex above the top edge is not dragged down by the sheet logic
  assert.equal(sheetPanDelta(-20,600,300,48),0);
 });
+
+// ── Desktop: a window that opens on top of another closes it (through that window's own close) ──
+const {rectsOverlap}=await import('./mobile_panels.js');
+const box=(l,t,r,b)=>({left:l,top:t,right:r,bottom:b,width:r-l,height:b-t});
+const placed=(rect)=>{const e=element();e.getBoundingClientRect=()=>rect;return e;};
+const settle=()=>new Promise(r=>setTimeout(r,0));
+test('rectsOverlap: touching edges and empty boxes do not overlap',()=>{
+ assert.equal(rectsOverlap(box(0,0,10,10),box(5,5,15,15)),true);
+ assert.equal(rectsOverlap(box(0,0,10,10),box(10,0,20,10)),false);
+ assert.equal(rectsOverlap(box(0,0,10,10),box(0,10,10,20)),false);
+ assert.equal(rectsOverlap(box(0,0,0,0),box(0,0,10,10)),false);
+ assert.equal(rectsOverlap(null,box(0,0,10,10)),false);
+});
+test('desktop: an opener that covers an open window closes it through its own callback; a window apart stays',async()=>{
+ width=1280;const hexPanel=placed(box(1060,0,1280,700)),codex=placed(box(0,34,440,766)),drawer=placed(box(860,34,1280,766));
+ let closedHex=0,closedCodex=0;
+ openMobilePanel(hexPanel,()=>{closedHex++;closeMobilePanel(hexPanel)},{sheet:true});
+ openMobilePanel(codex,()=>{closedCodex++;closeMobilePanel(codex)});
+ await settle();assert.equal(closedHex,0,'codex is apart from the hex panel');assert.equal(closedCodex,0);
+ openMobilePanel(drawer,()=>closeMobilePanel(drawer));
+ await settle();assert.equal(closedHex,1,'the drawer covers the hex panel');assert.equal(closedCodex,0,'the drawer is apart from the codex');
+ closeMobilePanel(codex);closeMobilePanel(drawer);
+});
+test('desktop: the newest window wins even when it sits beneath the old one (hex click while a drawer is open)',async()=>{
+ width=1280;const drawer=placed(box(860,34,1280,766)),hexPanel=placed(box(1060,0,1280,700));let closed=0;
+ openMobilePanel(drawer,()=>{closed++;closeMobilePanel(drawer)});await settle();
+ openMobilePanel(hexPanel,()=>closeMobilePanel(hexPanel),{sheet:true});await settle();
+ assert.equal(closed,1);closeMobilePanel(hexPanel);
+});
+test('desktop: a window closed before the check runs is not judged; an element without geometry never overlaps',async()=>{
+ width=1280;const a=placed(box(0,0,100,100)),b=placed(box(0,0,100,100)),c=element();let closed=0;
+ openMobilePanel(a,()=>{closed++;closeMobilePanel(a)});openMobilePanel(b,()=>closeMobilePanel(b));closeMobilePanel(b);
+ openMobilePanel(c,()=>{});await settle();assert.equal(closed,0);closeMobilePanel(a);closeMobilePanel(c);
+});
+test('phone: opening a panel does not run the desktop overlap check',async()=>{
+ width=390;const a=placed(box(0,0,100,100)),b=placed(box(0,0,100,100));let closed=0;
+ openMobilePanel(a,()=>{closed++;closeMobilePanel(a)});openMobilePanel(b,()=>closeMobilePanel(b));
+ assert.equal(closed,1,'phone closes the predecessor synchronously, as before');await settle();assert.equal(closed,1);
+ closeMobilePanel(b);width=1000;
+});
+test('desktop: a popup menu (march menu) covers what it sits on without closing it, but a window opened over it closes it',async()=>{
+ width=1280;const drawer=placed(box(860,34,1280,766)),menu=placed(box(900,300,1110,500)),dlg=placed(box(850,100,1100,400));let closedDrawer=0,closedMenu=0;
+ openMobilePanel(drawer,()=>{closedDrawer++;closeMobilePanel(drawer)});await settle();
+ openMobilePanel(menu,()=>{closedMenu++;closeMobilePanel(menu)},{popup:true});await settle();
+ assert.equal(closedDrawer,0);assert.equal(closedMenu,0);
+ openMobilePanel(dlg,()=>closeMobilePanel(dlg));await settle();
+ assert.equal(closedMenu,1);assert.equal(closedDrawer,1);closeMobilePanel(dlg);
+});
