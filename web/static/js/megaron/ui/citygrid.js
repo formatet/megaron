@@ -86,7 +86,7 @@ export function terrainLabel(t) {
 export function takeLabel(hex) {
   if (!hex || !hex.held_by || !hex.takeable) return null;
   const n = hex.held_workers || 0;
-  const bld = hex.held_building ? `, its ${hex.held_building.type} becomes yours` : '';
+  const bld = hex.held_building ? `, its ${buildingLabel(hex.held_building.type)} becomes yours` : '';
   return `Take: ${hex.held_by}'s ${fmtNum(n)} worker${n === 1 ? ' goes' : 's go'} home${bld}`;
 }
 

@@ -4119,7 +4119,7 @@ export function initMap() {
         const deposits = [tile.copper_deposit ? '⚒ Copper' : null, tile.tin_deposit ? '⚒ Tin' : null,
                           tile.silver_deposit ? '⚒ Silver' : null, tile.cedar_deposit ? '⚒ Cedar' : null,
                           tile.incense_deposit ? '⚒ Incense' : null].filter(Boolean).join(' · ');
-        const tl = tile.terrain.charAt(0).toUpperCase() + tile.terrain.slice(1);
+        const tl = terrainLabel(tile.terrain);
         // display_name är serverformaterat ("2nd Spearmen of Knossos") — webben
         // bygger aldrig om den grammatiken (se unit.go:DisplayName). Två fall som
         // en naiv u.q-jämförelse får fel: garnisonerade förband saknar helt

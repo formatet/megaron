@@ -111,7 +111,7 @@ export async function loadCityDrawer() {
     if (siegeBanner) {
       if (pd && pd.besieged) {
         const who = (pd.besieged_by || [])
-          .map(b => `${b.size} ${b.unit_type} (${b.owner_name || 'unknown'})`)
+          .map(b => `${b.size} ${unitTypeLabel(b.unit_type)} (${b.owner_name || 'unknown'})`)
           .join(', ') || 'an unseen enemy';
         siegeBanner.innerHTML = `<div class="attack-warn">⚔ BESIEGED — a chokepoint is held by ${who}. Catchment production is cut off.</div>`;
       } else {

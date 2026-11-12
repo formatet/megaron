@@ -175,7 +175,7 @@ test('CG11: insufficient_goods is delegated to formatApiError, the same helper e
 test('takeLabel says what taking does, building part only when one stands there', () => {
   assert.equal(
     takeLabel({ held_by: 'Petras', takeable: true, held_workers: 3, held_building: { type: 'farm', level: 2 } }),
-    "Take: Petras's 3 workers go home, its farm becomes yours",
+    "Take: Petras's 3 workers go home, its Farm becomes yours",
   );
   assert.equal(
     takeLabel({ held_by: 'Petras', takeable: true, held_workers: 1 }),
@@ -328,4 +328,10 @@ test('SMAFEL2: a hex names the citizens of yours standing on it, and a row with 
   assert.equal(hexWorkersLine([{ good_key: 'copper' }]), '');
   const html = goodRowHTML({ target_kind: 'hex', hex_ordinal: 1 }, { good_key: 'copper', placed: 0, cap: 1, marginal_yield: 1, rate_per_tick: 0, placed_ordinals: [] });
   assert.match(html, /None of yours on this good/);
+});
+
+test('SMAFEL6: the take button names a held building by its player-facing label, not the raw key', () => {
+  const t = takeLabel({ held_by: 'Rival', takeable: true, held_workers: 1, held_building: { type: 'olive_press' } });
+  assert.match(t, /its Olive Press becomes yours/);
+  assert.doesNotMatch(t, /olive_press/);
 });
