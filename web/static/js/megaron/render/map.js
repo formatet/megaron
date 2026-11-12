@@ -1,6 +1,6 @@
 import {renderUnitCard,renderForeignUnitCard,unitStatusLabel} from '../ui/force_card.js';
 import {riverFlowLines,drawRiverFlow} from '../ui/river_flow.js';
-import { openMobilePanel, closeMobilePanel } from '../ui/mobile_panels.js';
+import { openMobilePanel, closeMobilePanel, sheetPanDelta } from '../ui/mobile_panels.js';
 import { pickActive, pickTap } from '../ui/hexpick.js';
 import { physicalHostState, hostStatusText } from '../ui/host_state.js';
 import { State, ownCapital, activeCitySettlement } from '../state.js';
@@ -3512,7 +3512,7 @@ function openFogPanel(h) {
   document.getElementById('ip-deposits-row').style.display = 'none';
   document.getElementById('ip-produces').textContent = '—';
   document.getElementById('ip-foot').innerHTML = '<p class="empty-state">Sail or march nearby to reveal.</p>';
-  openMobilePanel(document.getElementById('inspect-panel'), closeInspect);
+  showInspect();
   document.getElementById('inspect-panel').style.display = 'flex';
 }
 
@@ -3583,7 +3583,7 @@ function openCityPanel(h, tile, marker, units, foreignUnits) {
     })
     .catch(() => {});
 
-  openMobilePanel(document.getElementById('inspect-panel'), closeInspect);
+  showInspect();
   document.getElementById('inspect-panel').style.display = 'flex';
 }
 
@@ -3612,7 +3612,7 @@ function openTerrainPanel(h, tile, isMountain, isSea, units, foreignUnits) {
     footHtml += '<p class="empty-state">Impassable — armies cannot go here.</p>';
     foot.innerHTML = footHtml;
     bindUnitButtons(foot);
-    openMobilePanel(document.getElementById('inspect-panel'), closeInspect);
+    showInspect();
     document.getElementById('inspect-panel').style.display = 'flex';
     return;
   }
@@ -3683,7 +3683,7 @@ function openTerrainPanel(h, tile, isMountain, isSea, units, foreignUnits) {
     });
   }
 
-  openMobilePanel(document.getElementById('inspect-panel'), closeInspect);
+  showInspect();
   document.getElementById('inspect-panel').style.display = 'flex';
 }
 
@@ -3721,7 +3721,7 @@ function openRuralPanel(h, tile, rural, units, foreignUnits) {
     window.openDrawer('city');
   });
 
-  openMobilePanel(document.getElementById('inspect-panel'), closeInspect);
+  showInspect();
   document.getElementById('inspect-panel').style.display = 'flex';
 }
 
@@ -3794,7 +3794,7 @@ async function openHostPanel(h, tile) {
     document.getElementById('ip-body-extra').textContent=hostState
       ? `The Host is now at (${hostState.q},${hostState.r}). Select its marker again.` : 'The Host has moved. Select its marker again.';
     document.getElementById('ip-foot').replaceChildren();
-    openMobilePanel(document.getElementById('inspect-panel'), closeInspect);
+    showInspect();
     document.getElementById('inspect-panel').style.display='flex';
     return;
   }
@@ -3839,7 +3839,7 @@ async function openHostPanel(h, tile) {
   if (settleMsg) settleMsg.addEventListener('input', () => {
     document.getElementById('ip-settle-count').textContent = settleMessageCount(settleMsg.value);
   });
-  openMobilePanel(document.getElementById('inspect-panel'), closeInspect);
+  showInspect();
   document.getElementById('inspect-panel').style.display = 'flex';
 
   // Glow the 7 catchment hexes the host would found on, for as long as the Host
@@ -3966,6 +3966,29 @@ function openHexPanel(h) {
 // Re-render the open hex panel from fresh State (e.g. after a storm has been named).
 export function reopenSelectedHex() {
   if (State.selectedHex) openHexPanel(State.selectedHex);
+}
+
+// If the selected hex sits under the bottom sheet, pan just enough to clear it. Also runs when the sheet grows (a card is expanded).
+function clearSheet() {
+  const el = document.getElementById('inspect-panel');
+  const h = State.selectedHex;
+  if (!h || !el.classList?.contains?.('mobile-sheet') || el.style.display === 'none') return;
+  const rect = canvas.getBoundingClientRect();
+  const y = hexClientPos(h.q, h.r).y - rect.top;
+  const dy = sheetPanDelta(y, rect.height, el.getBoundingClientRect().height, S * State.camera.zoom * SCALE * Math.sqrt(3) / 2 + 8);
+  if (!dy) return;
+  State.camera.y += dy;
+  clampCamera();
+  State.dirty = true;
+}
+let sheetWatch = null;
+// Show the inspect panel (a bottom sheet on a phone).
+function showInspect() {
+  const el = document.getElementById('inspect-panel');
+  openMobilePanel(el, closeInspect, { sheet: true });
+  el.style.display = 'flex';
+  if (!sheetWatch && typeof ResizeObserver !== 'undefined') { sheetWatch = new ResizeObserver(clearSheet); sheetWatch.observe(el); }
+  clearSheet();
 }
 
 export function closeInspect() {

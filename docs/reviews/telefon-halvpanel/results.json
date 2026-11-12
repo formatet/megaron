@@ -1,0 +1,74 @@
+[
+ [
+  "a tap upper hex: sheet, hex visible, map live",
+  "hex={'q': 2, 'r': 63} hexY=257 sheetTop=574 h=202 inert=False close=[44, 44]",
+  true,
+  "a-tap-upper-half-sheet.png"
+ ],
+ [
+  "c second hex replaces content, still one sheet",
+  "hex={'q': 3, 'r': 61} sel={'q': 3, 'r': 61} sheetTop=574",
+  true,
+  "c-tap-second-hex-sheet-open.png"
+ ],
+ [
+  "b lower hex: map panned, hex above sheet",
+  "hex={'q': 2, 'r': 69} y_before=644 y_after=535 sheetTop=581 cam {'x': 63, 'y': -4664}->{'x': 63, 'y': -4844.054942481001}",
+  true,
+  "b-tap-lower-half-panned.png"
+ ],
+ [
+  "b2 already-visible hex does not move the map",
+  "cam {'x': 63, 'y': -4844.054942481001}->{'x': 63, 'y': -4844.054942481001}",
+  true,
+  ""
+ ],
+ [
+  "drag above the sheet pans the map",
+  "cam {'x': 63, 'y': -4844.054942481001}->{'x': 127, 'y': -4804.054942481001}",
+  true,
+  ""
+ ],
+ [
+  "e1 force hex opens sheet",
+  "{'vis': True, 'top': 408.683349609375, 'h': 367.316650390625, 'cls': 'inspect-panel mobile-sheet', 'bottomNav': 776, 'close': [44, 44]} text='Olive Grove (1,65)\\n\u2715\\nTERRAIN\\nOlive Grove\\nFORCES HERE\\n1st Spearmen of Mochlos \u00b7 in the field\\n2nd Spearmen of Mochlos \u00b7 in the field\\nPRODUCES\\noil, timber, fish\\nMa'",
+  true,
+  "e1-force-hex-sheet.png"
+ ],
+ [
+  "d long content scrolls inside the sheet, header and close stay",
+  "{'sh': 481, 'ch': 269, 'st': 212, 'ov': 'auto'} sheet={'vis': True, 'top': 354, 'h': 422, 'cls': 'inspect-panel mobile-sheet', 'bottomNav': 776, 'close': [44, 44]} hexY=308 sel={'q': 1, 'r': 65}",
+  true,
+  "d-long-content-scrolled.png"
+ ],
+ [
+  "d2 hex still above the sheet after the cards were expanded",
+  "hexY=308 sheetTop=354",
+  true,
+  ""
+ ],
+ [
+  "e2 March: pick bar, sheet hidden",
+  "panels=[] body=map-mode hex-picking bar=1",
+  true,
+  "e2-march-pressed-pick-bar.png"
+ ],
+ [
+  "f drawer from sheet: drawer full screen, sheet gone",
+  "panels=['drawer-city']",
+  true,
+  "f2-drawer-full-screen-sheet-gone.png"
+ ],
+ [
+  "console errors",
+  "[]",
+  true,
+  ""
+ ],
+ [
+  "g desktop 1280 unchanged vs master (panel strip x>=1040; the water animates)",
+  "{'master': 'g-desktop-master.png', 'worktree': 'g-desktop-worktree.png'} diff_bbox=None",
+  true,
+  "g-desktop-worktree.png"
+ ]
+]
