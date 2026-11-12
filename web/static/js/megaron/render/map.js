@@ -3974,7 +3974,7 @@ function showInspect() {
   openMobilePanel(el, closeInspect, { sheet: true });
   el.style.display = 'flex';
   const h = State.selectedHex;
-  if (!h || !el.classList.contains('mobile-sheet')) return;
+  if (!h || !el.classList?.contains?.('mobile-sheet')) return;
   const rect = canvas.getBoundingClientRect();
   const y = hexClientPos(h.q, h.r).y - rect.top;
   const dy = sheetPanDelta(y, rect.height, el.getBoundingClientRect().height, S * State.camera.zoom * SCALE * Math.sqrt(3) / 2 + 8);
