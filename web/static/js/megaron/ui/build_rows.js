@@ -47,6 +47,38 @@ export function fmtBuildCost(entry) {
   return costs.sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => `${Math.round(v)} ${k}`).join(' ');
 }
 
+// What the city lacks for a cost, against the stock the client loaded (GET .../goods,
+// as {good: amount}). Same rule as the server: spare cedar covers timber, a 1e-6
+// residue is forgiven. Silver is a good too. Null stock = nothing known, no claim.
+export function shortfalls(costs, silver, stock) {
+  if (!stock) return [];
+  const need = { ...(costs || {}) };
+  if (silver > 0) need.silver = silver;
+  const out = [];
+  for (const [good, per] of Object.entries(need)) {
+    if (!(per > 0)) continue;
+    let have = stock[good] || 0;
+    if (good === 'timber') have += Math.max(0, (stock.cedar || 0) - (need.cedar || 0));
+    if (per - have > 1e-6) out.push({ good, need: Math.ceil(per - 1e-6), have: Math.floor(have + 1e-6) });
+  }
+  return out.sort((a, b) => a.good.localeCompare(b.good));
+}
+export const shortfallText = list => list.map(s => `needs ${s.need} ${s.good}, city has ${s.have}`).join('; ');
+export function stockFromGoods(goods) {
+  if (!Array.isArray(goods)) return null;
+  const m = {};
+  for (const g of goods) m[g.key] = Number(g.amount) || 0;
+  return m;
+}
+// Fetch the city's stock once (the way kult.js okRite does); null if it cannot be read.
+export async function loadStock(provinceID) {
+  try {
+    const r = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${provinceID}/goods`);
+    return r.ok ? stockFromGoods(await r.json()) : null;
+  } catch (_) { return null; }
+}
+const reasonSpan = text => text ? `<span class="btn-reason">${esc(text)}</span>` : '';
+
 const WALL_STATIC = 'upgrade (Palisade→Stone Wall→Bronze Wall)';
 const step = q => `L${q.current_level} → L${q.next_level}`;
 
@@ -69,6 +101,11 @@ export function buildRows(catalogue, ctx = {}) {
     const r = { hexBound: false, god: '', level: '', locked: false, reason: '', ...row,
       cost: fmtBuildCost(src), days: Number.isFinite(src.duration_game_days) ? src.duration_game_days : null };
     if (!r.locked && ctx.queueFull) { r.locked = true; r.reason = 'the build queue is full'; }
+    if (!r.locked && ctx.stock) {
+      const short = shortfalls(src.costs, src.cost_silver, ctx.stock);
+      r.payable = short.length === 0;
+      r.shortReason = shortfallText(short);
+    }
     if (!r.locked && afford && afford.can_afford === false && !afford.at_max_level) { r.locked = true; r.reason = 'not enough goods in store'; }
     rows.push(r);
   };
@@ -121,9 +158,10 @@ function rowText(r) {
 export function buildRowHTML(r) {
   const attrs = `data-build-type="${esc(r.type)}"${r.god ? ` data-build-god="${esc(r.god)}"` : ''}`;
   const eta = !r.locked && r.days != null ? readyIfStarted(r.days) : '';
+  const poor = !r.locked && r.payable === false;
   const button = r.locked ? ''
-    : r.hexBound ? `<button class="btn-small btn-primary build-row-btn" data-build-act="pick" ${attrs}>Choose a hex →</button>`
-    : `<button class="btn-small btn-primary build-row-btn" data-build-act="build" ${attrs}>Build</button>`;
+    : r.hexBound ? `<button class="btn-small btn-primary build-row-btn" data-build-act="pick" ${attrs}>Choose a hex →</button>${reasonSpan(r.shortReason)}`
+    : `<button class="btn-small btn-primary build-row-btn" data-build-act="build" ${attrs}${poor ? ' disabled' : ''}>Build</button>${poor ? reasonSpan(r.shortReason) : ''}`;
   return `<div class="build-row${r.locked ? ' locked' : ''}" ${attrs}>
     <div class="build-row-text">${rowText(r)}${eta ? `<div class="build-row-sub">${esc(eta)}</div>` : ''}${r.locked ? `<div class="build-row-reason">${esc(r.reason)}</div>` : ''}</div>${button}</div>`;
 }
@@ -170,20 +208,49 @@ export function pickHexes(buildingType, placementOpts) {
 }
 
 // One row for building `type` on hex (c.q,c.r).
-export function hexBuildRowHTML(type, c) {
+export function hexBuildRowHTML(type, c, stock) {
+  const short = c.quote ? shortfalls(c.quote.costs, c.quote.cost_silver, stock) : [];
   const label = esc(_BLD_LBL[type] || type);
   const price = c.quote ? `${esc(fmtBuildCost(c.quote))} · ${fmtDuration(c.quote.duration_game_days)}` : 'price unavailable';
   const eta = c.quote ? readyIfStarted(c.quote.duration_game_days) : '';
   return `<div class="build-row" data-build-type="${esc(type)}" data-build-q="${c.q}" data-build-r="${c.r}">
     <div class="build-row-text"><b>${label}</b> ${esc(hexStepLabel(c))} · ${price}${c.effect ? `<div class="build-row-sub">${esc(c.effect)}</div>` : ''}${eta ? `<div class="build-row-sub">${esc(eta)}</div>` : ''}</div>
-    <button class="btn-small btn-primary build-row-btn" data-build-act="build-hex" data-build-type="${esc(type)}" data-build-q="${c.q}" data-build-r="${c.r}">Build</button></div>`;
+    <button class="btn-small btn-primary build-row-btn" data-build-act="build-hex" data-build-type="${esc(type)}" data-build-q="${c.q}" data-build-r="${c.r}"${short.length ? ' disabled' : ''}>Build</button>${reasonSpan(shortfallText(short))}</div>`;
 }
 
 // The rows for one hex: every hex-bound type from the catalogue that hex accepts.
-export function hexRowsHTML(catalogue, placementOpts, q, r, onlyType) {
+export function hexRowsHTML(catalogue, placementOpts, q, r, onlyType, stock) {
   const quotes = placementOpts?.build_quotes || [];
   return (catalogue || []).filter(e => e.hex_bound && (!onlyType || e.type === onlyType))
     .sort((a, b) => (_BLD_LBL[a.type] || a.type).localeCompare(_BLD_LBL[b.type] || b.type, 'en'))
-    .flatMap(e => hexBuildChoices(e.type, placementOpts, quotes).filter(c => c.q === q && c.r === r && !c.maxed).map(c => hexBuildRowHTML(e.type, c)))
+    .flatMap(e => hexBuildChoices(e.type, placementOpts, quotes).filter(c => c.q === q && c.r === r && !c.maxed).map(c => hexBuildRowHTML(e.type, c, stock)))
     .join('');
+}
+
+// ── The answer at the button ─────────────────────────────────────────────────
+// ONE mechanism for every build row (Construct list and hex rows): the result of
+// a click goes directly under the row that was clicked and is scrolled into view.
+export function buildRowSelector(spec) {
+  let sel = `.build-row[data-build-type="${spec.type}"]`;
+  if (spec.god) sel += `[data-build-god="${spec.god}"]`;
+  if (spec.hex_q != null && spec.hex_r != null) sel += `[data-build-q="${spec.hex_q}"][data-build-r="${spec.hex_r}"]`;
+  else sel += ':not([data-build-q])';
+  return sel;
+}
+
+// Returns the result element, or null when the row is no longer there (the caller
+// then falls back to its own place). `text` is already a player line (playerError).
+export function showBuildResult(root, spec, text, ok, detail = '') {
+  const row = root?.querySelector?.(buildRowSelector(spec));
+  if (!row) return null;
+  const next = row.nextElementSibling;
+  if (next && /\bbuild-row-result\b/.test(next.className || '')) next.remove();
+  const el = row.ownerDocument.createElement('div');
+  el.className = 'build-row-result ' + (ok ? 'build-row-ok' : 'build-row-refused');
+  el.setAttribute('role', 'status');
+  el.textContent = text;
+  if (detail) el.title = detail;
+  row.after(el);
+  el.scrollIntoView?.({ block: 'nearest' });
+  return el;
 }

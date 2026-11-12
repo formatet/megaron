@@ -8,6 +8,8 @@ import { herdHTML } from './city_production.js';
 // only lists them. Every store is the same row shape, so a new one (e.g. a
 // Storehouse) is one more row in the same list, not a new section.
 const FOOD_KEYS = ['fish', 'grain', 'oil'];
+// Building takes these; shown at 0 so the player sees what is missing where they build.
+const BUILD_GOODS = ['stone', 'timber'];
 const NOT_GOODS = new Set([...FOOD_KEYS, 'livestock']);
 
 const signed = v => `${v >= 0 ? '+' : '\u2212'}${fmtNum(Math.abs(Number(Number(v).toFixed(1))))}`;
@@ -43,9 +45,10 @@ export function warehouseHTML(pd, goods) {
     + (foodRows || '<p class="empty-state">No food stored.</p>') + '</div>';
   const herdLine = herdHTML(pd?.food?.herd);
   const herd = herdLine ? `<div class="dsec"><div class="dsec-title">Herd</div>${herdLine}</div>` : '';
-  const others = list.filter(g => !NOT_GOODS.has(g.key) && g.amount > 0)
+  const withBuild = [...list, ...BUILD_GOODS.filter(k => !list.some(g => g.key === k)).map(k => ({ key: k, name: k[0].toUpperCase() + k.slice(1), amount: 0, cap: 0 }))];
+  const others = withBuild.filter(g => !NOT_GOODS.has(g.key) && (g.amount > 0 || BUILD_GOODS.includes(g.key)))
     .sort((a, b) => labelOf(a).localeCompare(labelOf(b)));
-  const goodsRows = others.length ? others.map(g => storeRow(labelOf(g), g.amount, g.cap, net[g.key], g.stored_in === 'storehouse')).join('') : '<p class="empty-state">No goods stored.</p>';
+  const goodsRows = (others.some(g => g.amount > 0) ? '' : '<p class="empty-state">No goods stored.</p>') + others.map(g => storeRow(labelOf(g), g.amount, g.cap, net[g.key], g.stored_in === 'storehouse')).join('');
   const sh = pd?.storehouse;
   const storesRow = sh ? storeRow('Stores', sh.amount, sh.capacity, undefined)
     + (sh.level < 1 ? '<p class="empty-state">No Storehouse built: everything but food and the herd shares room for 500. Build a Storehouse in Construct to raise it.</p>' : '') : '';

@@ -61,7 +61,7 @@ function fakeDoc() {
 
 test('BA5: buildRowSelector addresses the clicked row by type, god and hex', () => {
   assert.equal(buildRowSelector({ type: 'silo' }), '.build-row[data-build-type="silo"]:not([data-build-q])');
-  assert.equal(buildRowSelector({ type: 'temple', god: 'potnia' }), '.build-row[data-build-type="temple"][data-build-god="potnia"]');
+  assert.equal(buildRowSelector({ type: 'temple', god: 'potnia' }), '.build-row[data-build-type="temple"][data-build-god="potnia"]:not([data-build-q])');
   assert.equal(buildRowSelector({ type: 'farm', hex_q: 1, hex_r: -2 }), '.build-row[data-build-type="farm"][data-build-q="1"][data-build-r="-2"]');
 });
 

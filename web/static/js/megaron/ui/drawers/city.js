@@ -11,7 +11,7 @@ import { esc, formatApiError, playerError, errorDetail } from '../format.js';
 import { unitTypeLabel } from '../actornames.js';
 import { startCityAnim } from '../../render/city.js';
 import { renderGubbeGrid, shipyardShareNote, setBuildHandler } from '../citygrid.js';
-import { buildBody, constructListHTML, getBuildingCatalogue, templeName } from '../build_rows.js';
+import { buildBody, constructListHTML, getBuildingCatalogue, loadStock, showBuildResult, templeName } from '../build_rows.js';
 import { productionSectionsHTML, populationHTML, blessingsSectionHTML, foodSummaryHTML, foodDetailsHTML, storageWarningsHTML } from './city_production.js';
 import { warehouseHTML } from './city_warehouse.js';
 import { fmtNum, fmtDays, fmtDuration } from '../fmt_num.js';
@@ -210,9 +210,9 @@ export async function startBuild(spec) {
     }
     return { ok: true, text: receipt };
   }
-  const text = formatApiError(d, 'Build failed.');
+  const text = playerError(r, d, 'Build failed.');
   if (resultEl) { resultEl.style.color = 'var(--accent)'; resultEl.textContent = text; }
-  return { ok: false, text };
+  return { ok: false, text, detail: errorDetail(r, d) };
 }
 // The placement grid builds through the same function.
 setBuildHandler(startBuild);
@@ -378,7 +378,7 @@ async function refreshCityBuildings(provinceID) {
     // Recipes are fetched once regardless of whether a foundry is built —
     // also needed below for the Construct dropdown's foundry purpose label,
     // so a recipe change never leaves a stale string there either.
-    const [recipes, buildingCatalogue] = await Promise.all([getRecipes(), getBuildingCatalogue()]);
+    const [recipes, buildingCatalogue, stock] = await Promise.all([getRecipes(), getBuildingCatalogue(), loadStock(provinceID)]);
     const foundryRecipe = recipes ? recipes.find(rc => rc.building_type === 'foundry') : null;
 
     if (blds.some(b => b.type === 'foundry')) {
@@ -402,17 +402,22 @@ async function refreshCityBuildings(provinceID) {
     }
     const queueFull = pd.build_queue_max != null && bq.length >= pd.build_queue_max;
     const constructHTML = constructListHTML(buildingCatalogue, {
-      walls: pd.walls, siloLevel: pd.silo_level, buildQuotes: pd.build_quotes, canAfford: pd.can_afford, queueFull,
+      walls: pd.walls, siloLevel: pd.silo_level, buildQuotes: pd.build_quotes, canAfford: pd.can_afford, queueFull, stock,
     });
     h2 += `
       <div class="dsec-title" style="margin-top:.8rem">Construct</div>
-      ${constructHTML}
-      <div id="city-build-result" class="action-result" role="status"></div>`;
+      ${constructHTML}`;
     bldSec.innerHTML = h2;
-    bldSec.querySelectorAll('[data-build-act]').forEach(btn => btn.addEventListener('click', () => {
+    bldSec.querySelectorAll('[data-build-act]').forEach(btn => btn.addEventListener('click', async () => {
       const { buildType: type, buildGod: god } = btn.dataset;
-      if (btn.dataset.buildAct === 'pick') pickBuildHex(type);
-      else startBuild(type === 'temple' ? { type, god } : { type });
+      if (btn.dataset.buildAct === 'pick') { pickBuildHex(type); return; }
+      const spec = type === 'temple' ? { type, god } : { type };
+      btn.disabled = true;
+      const out = await startBuild(spec);
+      btn.disabled = false;
+      // The answer goes under the row that was clicked (the list was redrawn on success).
+      const host = document.getElementById('city-bld-sec');
+      if (!showBuildResult(host, spec, out.text, out.ok, out.detail)) showInlineResult('city-bld-sec', out.text, !out.ok, out.detail);
     }));
   } catch(e) { console.error('refreshCityBuildings', e); }
 }
