@@ -1662,6 +1662,16 @@ h4.cx-h { font-size: var(--fs-base); }
   .mobile-fullscreen .inspect-header { flex-shrink: 0; }
   .mobile-fullscreen .drawer-close, .mobile-fullscreen .inspect-close,
   .mobile-fullscreen .mctx-close, .mobile-fullscreen .si-esc { min-width: 44px; min-height: 44px; flex-shrink: 0; }
+  /* Inspect panel as a half-height bottom sheet: the map above it stays live. */
+  .inspect-panel.mobile-sheet {
+    position: absolute; top: auto; right: 0; left: 0; bottom: 0; width: 100%;
+    max-height: 50dvh; box-sizing: border-box;
+    border-left: 0; border-top: 2px solid var(--border); box-shadow: none;
+    padding-bottom: env(safe-area-inset-bottom); z-index: 40;
+  }
+  .mobile-sheet .inspect-header { flex-shrink: 0; }
+  .mobile-sheet .inspect-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+  .mobile-sheet .inspect-close { min-width: 44px; min-height: 44px; flex-shrink: 0; }
   .march-ctx.mobile-fullscreen { overflow-y: auto; overscroll-behavior: contain; }
   .mobile-fullscreen .mctx-header { position: sticky; top: env(safe-area-inset-top); z-index: 1; }
   .mobile-fullscreen .search-input-row .si-input { min-width: 0; }
