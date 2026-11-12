@@ -474,7 +474,7 @@ export async function openMarchCtx(dest, screenX, screenY) {
 
   onColonizeToggle();
 
-  openMobilePanel(marchCtx, closeMarchCtx);
+  openMobilePanel(marchCtx, closeMarchCtx, { popup: true });
   marchCtx.style.display = 'block';
   positionMarchCtx(screenX, screenY);
 

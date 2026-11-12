@@ -1,6 +1,7 @@
 // Mobile window ownership. Each surface retains its own close/cleanup lifecycle.
 const panels = new Map();
 const sheets = new Set();
+const popups = new Set();
 let active = null;
 const mark = (el, name, on) => el?.classList?.[on ? 'add' : 'remove']?.(name);
 const narrow = () => typeof window !== 'undefined' && window.matchMedia?.('(max-width: 480px)').matches;
@@ -19,9 +20,10 @@ function sync() {
   if (canvas) canvas.inert = blocked;
   mark(document.body, 'mobile-panel-open', blocked);
 }
-const clear = el => { sheets.delete(el); mark(el, 'mobile-fullscreen', false); mark(el, 'mobile-sheet', false); };
+const clear = el => { sheets.delete(el); popups.delete(el); mark(el, 'mobile-fullscreen', false); mark(el, 'mobile-sheet', false); };
 // { sheet: true } = half-height bottom sheet on a phone: the map stays live above it.
-export function openMobilePanel(el, close, { sheet = false } = {}) {
+// { popup: true } = a small menu at the pointer (the march menu): on desktop it covers what it sits on without closing it.
+export function openMobilePanel(el, close, { sheet = false, popup = false } = {}) {
   if (!el) return;
   if (narrow()) {
     for (const [other, cleanup] of [...panels]) {
@@ -29,8 +31,37 @@ export function openMobilePanel(el, close, { sheet = false } = {}) {
     }
   }
   if (sheet) sheets.add(el); else sheets.delete(el);
+  if (popup) popups.add(el); else popups.delete(el);
   panels.set(el, close);
   active = el;
+  sync();
+  // Desktop: the caller shows `el` right after this returns, so judge the overlap once it has its place.
+  if (!narrow()) queueMicrotask(() => closeCovered(el));
+}
+// ── Desktop: a window that opens on top of another closes it ───────────────────────────────────────────
+// Two windows that do not overlap both stay. The covered one goes through its own close callback, so its
+// state is really cleared (a hidden-not-closed panel comes back later). The newest window wins, also when
+// it sits beneath the old one (z-index) — a stale window must not cover what the player just opened.
+export function rectsOverlap(a, b) {
+  if (!a || !b || !(a.right > a.left) || !(a.bottom > a.top) || !(b.right > b.left) || !(b.bottom > b.top)) return false;
+  return a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+}
+// The visible box: the dialog inside a modal overlay (not its backdrop), a sliding drawer at its resting place.
+function boxOf(el) {
+  const t = el?.querySelector?.(':scope > .search-box, :scope > .dispatch-window') || el;
+  const r = t?.getBoundingClientRect?.();
+  if (!r) return null;
+  let dx = 0;
+  try { if (typeof getComputedStyle === 'function') dx = new DOMMatrix(getComputedStyle(t).transform).m41 || 0; } catch (_) { /* no transform */ }
+  return { left: r.left - dx, right: r.right - dx, top: r.top, bottom: r.bottom };
+}
+function closeCovered(el) {
+  if (!panels.has(el) || popups.has(el) || narrow()) return;
+  const mine = boxOf(el);
+  for (const [other, close] of [...panels]) {
+    if (other === el || !rectsOverlap(mine, boxOf(other))) continue;
+    close(); panels.delete(other); clear(other);
+  }
   sync();
 }
 export function closeMobilePanel(el) {
