@@ -15,7 +15,7 @@ test('AK1: kharis_net_known true draws a Net row, distinct from Passive, signed,
 
 test('AK1b: a negative net is signed with a minus, not a double sign', () => {
   const view = kharisNetView({ kharis_net_per_tick: -1.5, kharis_net_known: true });
-  assert.match(view.netHtml, /sr-val">-1\.5</);
+  assert.match(view.netHtml, /sr-val neg">-1\.5</);
   assert.doesNotMatch(view.netHtml, /\+-/);
 });
 
@@ -53,11 +53,11 @@ test('realm upkeep is one short line from the authoritative total, including tem
     kharis_net_known: true, kharis_net_per_tick: -1.1, temple_offers: []};
   // With a known net, upkeep sits inside the game-day block; alone it stands on its own row.
   assert.equal(kharisDecayHTML(pd), '');
-  assert.match(kharisNetView(pd).netHtml, /Upkeep<\/span><span class="sr-val">−1.1</);
-  assert.match(kharisNetView(pd).netHtml, /Net<\/span><span class="sr-val">-1.1</);
+  assert.match(kharisNetView(pd).netHtml, /Upkeep<\/span><span class="sr-val neg">−1.1</);
+  assert.match(kharisNetView(pd).netHtml, /Net<\/span><span class="sr-val neg">-1.1</);
   assert.doesNotMatch(kharisNetView(pd).netHtml + kharisDecayHTML(pd), /residents|base \+|Demand|Given/);
   // Deliberately unlike today's rule: display values, never recalculate the formula.
-  assert.match(kharisDecayHTML({kharis_daily_decay: 9.3}), /Upkeep<\/span><span class="sr-val">−9.3 \/ game day/);
+  assert.match(kharisDecayHTML({kharis_daily_decay: 9.3}), /Upkeep<\/span><span class="sr-val neg">−9.3 \/ game day/);
 });
 
 test('missing or partial realm decay never claims zero cost', () => {
@@ -91,8 +91,8 @@ test('R2 punishment curve: the Kult rules name both tiers', async () => {
 
 test('above ceiling is a label with the ceiling; no worker yield is promised', () => {
  const view = kharisNetView({kharis:80,kharis_cap:50,kharis_net_known:true,kharis_net_per_tick:-.2,kharis_per_temple_worker:1.05});
- assert.match(view.netHtml,/Above ceiling<\/span><span class="sr-val">50</);assert.doesNotMatch(view.netHtml,/Once below|declines through/);
- assert.match(view.netHtml,/sr-val">-0.2</);
+ assert.match(view.netHtml,/Above ceiling<\/span><span class="sr-val warn">50</);assert.doesNotMatch(view.netHtml,/Once below|declines through/);
+ assert.match(view.netHtml,/sr-val neg">-0.2</);
  assert.doesNotMatch(view.netHtml,/Per extra temple worker/);
  const normal=kharisNetView({kharis:50,kharis_cap:50,kharis_per_temple_worker:1.05});
  assert.doesNotMatch(normal.netHtml,/standing drifts down/);
@@ -102,7 +102,7 @@ test('above ceiling is a label with the ceiling; no worker yield is promised', (
 test('ORDER29: empty temple slots above the ceiling do not invite staffing to raise kharis', () => {
  const view = kharisNetView({kharis:80,kharis_cap:50,kharis_devotion_idle:true,kharis_per_temple_worker:1.05});
  assert.equal(view.idleHtml,'');
- assert.match(view.netHtml,/Above ceiling<\/span><span class="sr-val">50</);
+ assert.match(view.netHtml,/Above ceiling<\/span><span class="sr-val warn">50</);
  assert.doesNotMatch(view.netHtml,/Per extra temple worker|place citizens/);
 });
 

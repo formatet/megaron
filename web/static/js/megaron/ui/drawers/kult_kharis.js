@@ -16,7 +16,7 @@ const kx = (x) => (Math.abs(x * 10 - Math.round(x * 10)) < 1e-9 ? x.toFixed(1) :
 export function kharisDecayHTML(pd) {
   if (!Number.isFinite(pd?.kharis_daily_decay)) return '<p class="empty-state">Cult upkeep not reported.</p>';
   if (pd.kharis_net_known === true) return ''; // shown inside the game-day block of kharisNetView
-  return '<div class="stat-row"><span class="sr-label">Upkeep</span><span class="sr-val">−' + kx(pd.kharis_daily_decay) + ' / game day</span></div>';
+  return '<div class="stat-row"><span class="sr-label">Upkeep</span><span class="sr-val neg">−' + kx(pd.kharis_daily_decay) + ' / game day</span></div>';
 }
 
 export function kharisNetView(pd, scope = 'city') {
@@ -32,8 +32,8 @@ export function kharisNetView(pd, scope = 'city') {
     // One heading carries the unit; the rows are plain signed numbers.
     out.netHtml = '<p>Kharis each game day</p>' +
       (Number.isFinite(pd.kharis_production_per_tick) ? '<div class="stat-row"><span class="sr-label">Temple production</span><span class="sr-val">+' + kx(pd.kharis_production_per_tick) + '</span></div>' : '') +
-      (Number.isFinite(pd.kharis_daily_decay) ? '<div class="stat-row"><span class="sr-label">Upkeep</span><span class="sr-val">−' + kx(pd.kharis_daily_decay) + '</span></div>' : '') +
-      '<div class="stat-row"><span class="sr-label">Net</span><span class="sr-val">' + (v >= 0 ? '+' : '') + kx(v) + '</span></div>';
+      (Number.isFinite(pd.kharis_daily_decay) ? '<div class="stat-row"><span class="sr-label">Upkeep</span><span class="sr-val neg">−' + kx(pd.kharis_daily_decay) + '</span></div>' : '') +
+      '<div class="stat-row"><span class="sr-label">Net</span><span class="sr-val' + (v < 0 ? ' neg' : '') + '">' + (v >= 0 ? '+' : '') + kx(v) + '</span></div>';
   }
 
   if (Number.isInteger(pd.temple_staffed) && Number.isInteger(pd.temple_capacity)) {
@@ -44,7 +44,7 @@ export function kharisNetView(pd, scope = 'city') {
   }
 
   const aboveCap = Number.isFinite(pd.kharis) && Number.isFinite(pd.kharis_cap) && pd.kharis > pd.kharis_cap;
-  if (aboveCap) out.netHtml += '<div class="stat-row"><span class="sr-label">Above ceiling</span><span class="sr-val">' + pd.kharis_cap + '</span></div>';
+  if (aboveCap) out.netHtml += '<div class="stat-row"><span class="sr-label">Above ceiling</span><span class="sr-val warn">' + pd.kharis_cap + '</span></div>';
   if (!aboveCap && Number.isFinite(pd.kharis_per_temple_worker)) {
     out.netHtml += '<div class="stat-row"><span class="sr-label">Per extra temple worker</span><span class="sr-val">+' + pd.kharis_per_temple_worker.toFixed(2) + '</span></div>';
   }

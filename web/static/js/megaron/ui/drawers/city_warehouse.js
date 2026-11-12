@@ -20,7 +20,7 @@ function storeRow(label, amount, cap, net, shared) {
   if (shared) cap = 0;
   const full = atStorageCeiling(amount || 0, cap || 0);
   const netText = Number.isFinite(net) ? ` · ${signed(net)} per game day` : '';
-  return `<div class="stat-row${full ? ' wh-full' : ''}"${full ? ' title="Full: anything produced past the cap is discarded."' : ''}><span class="sr-label">${esc(label)}</span><span class="sr-val">${stored(amount, cap)}${full ? ' · full' : ''}${netText}</span></div>`;
+  return `<div class="stat-row${full ? ' wh-full' : ''}"${full ? ' title="Full: anything produced past the cap is discarded."' : ''}><span class="sr-label">${esc(label)}</span><span class="sr-val${net < 0 ? ' neg' : ''}">${stored(amount, cap)}${full ? ' · full' : ''}${netText}</span></div>`;
 }
 const labelOf = g => g.name || g.key;
 
@@ -36,7 +36,7 @@ export function warehouseHTML(pd, goods) {
     .map(g => storeRow(labelOf(g), g.amount, g.cap, net[g.key])).join('');
   const answer = foodAnswer(pd);
   const foodFor = answer ? `<div class="stat-row"><span class="sr-label">Food</span><span class="sr-val">${foodAnswerValue(answer)}</span></div>` : '';
-  const foodFlows = (fc?.food?.flows || []).map(f => `<div class="stat-row wh-flow"><span class="sr-label">${esc(f.label)}</span><span class="sr-val">${signed(f.amount)}</span></div>`).join('');
+  const foodFlows = (fc?.food?.flows || []).map(f => `<div class="stat-row wh-flow"><span class="sr-label">${esc(f.label)}</span><span class="sr-val${f.amount < 0 ? ' neg' : ''}">${signed(f.amount)}</span></div>`).join('');
   const food = `<div class="dsec"><div class="dsec-title">Food <button class="btn-small" onclick="openCodex('granary')" title="Read the Codex" aria-label="Read the Codex">?</button></div>`
     + foodFor + foodFlows
     + (foodRows || '<p class="empty-state">No food stored.</p>') + '</div>';
