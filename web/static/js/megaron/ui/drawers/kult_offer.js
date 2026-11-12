@@ -142,7 +142,7 @@ export function chosenTarget(host) {
   const hex = host.querySelector('.offer-target-hex');
   if (hex) return { target: (hex.value || '').trim() };
   const radio = host.querySelector('input[type=radio]:checked');
-  if (!radio) return {};
+  if (!radio || (radio.name || '').startsWith('gift-')) return {};
   const scope = radio.value;
   const out = { target_scope: scope };
   if (scope === 'unit' || scope === 'permanent') {
@@ -160,25 +160,68 @@ function favouredText(favours) {
   return liked.length ? 'Favours: ' + liked.slice(0, 4).join(', ') : '';
 }
 
+// The size of the gift as fixed steps: N times the traditional gift (times the
+// scope's factor) lasts N times as long and the temple rests N times as long.
+export const GIFT_STEPS = [1, 2, 3, 5];
+
+const goodsText = goods => Object.entries(goods).filter(([, n]) => n > 0).map(([g, n]) => Math.round(n) + ' ' + g).join(' + ');
+
+// [{n, days, goods, payable, reason}] for a lasting prayer; [] for an instant one or for "For ever".
+export function giftSteps(prayer, scope, stock) {
+  if (!(prayer.base_duration_game_days > 0) || scope === 'permanent') return [];
+  const factor = prayer.targets ? scopeFactor(prayer, scope) : 1;
+  const held = stock || {};
+  return GIFT_STEPS.map(n => {
+    const goods = scaledRecipe(prayer.offering, factor * n);
+    const lacking = Object.entries(goods).filter(([g, need]) => need > 0 && (held[g] || 0) < need)
+      .map(([g, need]) => 'needs ' + Math.round(need) + ' ' + g + ', city has ' + Math.floor(held[g] || 0));
+    return { n, days: prayer.base_duration_game_days * n, goods, payable: !lacking.length, reason: lacking.join('; ') };
+  });
+}
+
+// The step that stands checked: the kept one if the city can still pay it, else the first it can pay.
+export function checkedStep(steps, keepN) {
+  return steps.find(s => s.n === keepN && s.payable) || steps.find(s => s.payable) || null;
+}
+
+// The "How much do you give?" block, or one "Gift:" line for an instant prayer and for "For ever".
+export function giftStepsHTML(prayer, scope, stock, keepN) {
+  const steps = giftSteps(prayer, scope, stock);
+  if (!steps.length) {
+    if (prayer.can_prepare_offering && !prayer.affordable) return '<p class="offer-note">The city does not hold the traditional gift.</p>';
+    const factor = prayer.targets ? scopeFactor(prayer, scope) : 1;
+    return '<p class="offer-note">Gift: ' + esc(goodsText(scaledRecipe(prayer.offering, factor))) + '</p>';
+  }
+  const on = checkedStep(steps, keepN);
+  const id = esc(prayer.id);
+  return '<p class="offer-note">How much do you give?</p>' + steps.map(s =>
+    '<label class="offer-step"><input type="radio" class="offer-step-radio" name="gift-' + id + '" value="' + s.n + '"' +
+    (on && on.n === s.n ? ' checked' : '') + (s.payable ? '' : ' disabled') + '> ' +
+    esc(fmtDays(s.days)) + ' · ' + esc(goodsText(s.goods)) +
+    (s.payable ? '' : ' <span class="btn-reason">' + esc(s.reason) + '</span>') + '</label>').join('');
+}
+
 export function offerRowHTML(prayer, stock) {
-  const fields = offerFields(prayer, stock, prayer.targets ? scopeFactor(prayer, defaultScope(prayer)) : 1).map(f =>
+  const scope0 = prayer.targets ? defaultScope(prayer) : undefined;
+  // The fields mirror the checked step, so what is sent is always what the fields show.
+  const first = checkedStep(giftSteps(prayer, scope0, stock));
+  const fields = offerFields(prayer, stock, prayer.targets ? scopeFactor(prayer, scope0) : 1).map(f => first && first.goods[f.good] !== undefined ? { ...f, amount: first.goods[f.good] } : f).map(f =>
     '<label class="offer-field">' + esc(f.good) +
     ' <input type="number" class="offer-input" min="0" step="1" data-good="' + esc(f.good) + '" value="' + esc(String(f.amount)) + '">' +
     ' <span class="offer-stock">/ ' + esc(String(Math.floor(f.stock))) + '</span></label>').join('');
   const note = esc(favouredText(prayer.favours));
   const id = esc(prayer.id);
-  // The client does not value a gift (the gods' reckoning is server-side), so it
-  // names the base length and says that a larger gift lasts longer.
-  const length = prayer.base_duration_game_days > 0
-    ? '<p class="offer-note">Lasts ' + esc(fmtDays(prayer.base_duration_game_days)) + ' with the traditional gift; a larger gift lasts longer.</p>'
-    : '';
-  const restNote = prayer.god_id ? '<p class="offer-note">A larger gift makes the temple rest longer; a higher temple level shortens the rest.</p>' : '';
-  return targetChooserHTML(prayer) + '<div class="offer-fields">' + fields + '</div>' +
+  const lasting = prayer.base_duration_game_days > 0;
+  const open = prayer.can_prepare_offering && !prayer.affordable ? ' open' : '';
+  return targetChooserHTML(prayer) + '<div class="offer-gifts" data-offer-gifts>' + giftStepsHTML(prayer, scope0, stock) + '</div>' +
     '<p class="offer-note" data-offer-food></p>' +
-    length + restNote +
-    (note ? '<p class="offer-note">' + note + '</p>' : '') +
+    (lasting ? '<p class="offer-note">The temple rests longer after a larger gift.</p>' : '') +
     '<button class="obj-cta btn-small" onclick="bringOffering(\'' + id + '\')">Bring the offering</button> ' +
-    '<button class="btn-small btn-secondary" onclick="cancelOffering(\'' + id + '\')">Cancel</button>';
+    '<button class="btn-small btn-secondary" onclick="cancelOffering(\'' + id + '\')">Cancel</button>' +
+    '<details class="offer-other"' + open + '><summary>Offer other goods</summary>' +
+    '<div class="offer-fields">' + fields + '</div>' +
+    (note ? '<p class="offer-note">' + note + '</p>' : '') +
+    '<p class="offer-note">A gift smaller than the traditional one is refused.' + (prayer.god_id ? ' A higher temple level shortens the rest.' : '') + '</p></details>';
 }
 
 // What the gift takes from the city's food, and whether a day's eating is
