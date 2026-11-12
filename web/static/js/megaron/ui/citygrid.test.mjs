@@ -19,7 +19,7 @@ globalThis.document ??= {
 globalThis.window ??= { addEventListener() {}, matchMedia: () => ({ matches: false, addEventListener() {} }) };
 globalThis.localStorage ??= { getItem: () => null, setItem() {}, removeItem() {} };
 
-const { placementOutcome, refusalText, selectionKey, takeLabel, goodRowHTML, cityBuildingsHTML,placementTargetKey, sortGoods, shipyardShareNote } = await import('./citygrid.js');
+const { placementOutcome, refusalText, selectionKey, takeLabel, goodRowHTML, cityBuildingsHTML,placementTargetKey, sortGoods, shipyardShareNote, hexWorkersLine, syncFreeToWork } = await import('./citygrid.js');
 
 // The refusal sentences below are copied verbatim from the server
 // (api/handlers/settlement_placement.go) — they are the actual bodies this
@@ -313,4 +313,19 @@ test('shipyardShareNote says how the yard divides its workers, only when ships s
   assert.equal(shipyardShareNote(3, 1), '');
   assert.equal(shipyardShareNote(0, 2), '');
   assert.equal(shipyardShareNote(undefined, undefined), '');
+});
+
+test('SMAFEL1: the city panel Free to work is rewritten from the grid pool_size', () => {
+  const el = { textContent: '7' };
+  syncFreeToWork({ querySelector: (sel) => (sel === '#city-free-to-work .sr-val' ? el : null) }, 5);
+  assert.equal(el.textContent, '5');
+  syncFreeToWork({ querySelector: () => null }, 5); // no city panel open: nothing to throw
+});
+
+test('SMAFEL2: a hex names the citizens of yours standing on it, and a row with none says so plainly', () => {
+  const goods = [{ good_key: 'stone', placed_ordinals: [3, 4] }, { good_key: 'timber', placed_ordinals: [5] }, { good_key: 'copper', placed_ordinals: [] }];
+  assert.equal(hexWorkersLine(goods), 'Your citizens here: stone 2, timber 1');
+  assert.equal(hexWorkersLine([{ good_key: 'copper' }]), '');
+  const html = goodRowHTML({ target_kind: 'hex', hex_ordinal: 1 }, { good_key: 'copper', placed: 0, cap: 1, marginal_yield: 1, rate_per_tick: 0, placed_ordinals: [] });
+  assert.match(html, /None of yours on this good/);
 });

@@ -69,7 +69,7 @@ export function populationHTML(pd, idle, livestock, provinceID) {
   // server sent no cap. Counted in citizens like the rows under it (Timothy 2026-10-24: "Walls hold
   // 2,000" beside "Citizens 111" read as two different scales).
   const cap = Number(pd?.population_cap);
-  return (g ? `<p class="growth-line">${g}</p>` : '') + (cap > 0 ? row('Walls hold', n(Math.floor(cap / 100))) : '') + row('Citizens', n(Math.floor(pd.population / 100))) + nextCitizenHTML(pd) + row('Free to work', n(Math.floor(idle / 100))) +
+  return (g ? `<p class="growth-line">${g}</p>` : '') + (cap > 0 ? row('Walls hold', n(Math.floor(cap / 100))) : '') + row('Citizens', n(Math.floor(pd.population / 100))) + nextCitizenHTML(pd) + row('Free to work', n(Math.floor(idle / 100))).replace('class="stat-row"', 'class="stat-row" id="city-free-to-work"') +
     row('Livestock', n(Math.floor(livestock)));
 }
 

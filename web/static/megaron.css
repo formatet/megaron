@@ -1036,6 +1036,7 @@ body:has(.auth-page) main {
 .gubbe-hex.held { stroke: var(--danger); stroke-width: 2; stroke-dasharray: 3 2; }
 .gubbe-hex.takeable { stroke: var(--accent-war); stroke-width: 3; stroke-dasharray: 3 2; }
 .gubbe-held-note { font-size: var(--fs-xs); color: var(--danger); margin: 0 0 0.3rem; }
+.gubbe-hex-workers { font-size: var(--fs-xs); color: var(--text-dim); margin: 0 0 0.3rem; }
 .gubbe-take { color: var(--accent-war); text-align: left; white-space: normal; }
 .gubbe-hex.pick-ok { stroke: var(--accent); stroke-width: 3; }
 .gubbe-hex.pick-dim { opacity: 0.35; }
