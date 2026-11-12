@@ -47,3 +47,12 @@ test('SMAFEL3: a marching unit past its arrival time says it has arrived, never 
   const later = renderUnitCard({ ...m, arrives_at: new Date(Date.now() + 3600e3).toISOString() }, {});
   assert.match(later, /→ \(10,59\) arrives /);
 });
+
+test('SMAFEL11: the stance dropdown shows the unit\'s current stance, not "stance…"', () => {
+  const base = { id: 'g1', type: 'spearman', category: 'land', status: 'garrison', size: 100, deployable: true };
+  const sentry = renderUnitCard({ ...base, stance: 'sentry' }, {});
+  assert.match(sentry, /<option value="sentry" selected>stance: sentry<\/option>/);
+  assert.doesNotMatch(sentry, /stance…/);
+  const none = renderUnitCard(base, {});
+  assert.match(none, /<option value="none" selected>stance: no stance<\/option>/);
+});

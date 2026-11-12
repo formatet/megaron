@@ -222,11 +222,8 @@ export function renderUnitCard(u, options = {}) {
   // up with it (megaron_styrande_beslut §11, canTakeStance mirrors the server).
   if (canTakeStance(u)) {
     actions += '<select id="ustance-' + u.id + '" style="font-size:.65rem;padding:.1rem;border:1px solid var(--border);background:var(--warm-white)">'
-      + '<option value="none">stance…</option>'
-      + '<option value="fortify">fortify</option>'
-      + '<option value="storm">storm</option>'
-      + '<option value="sentry">sentry</option>'
-      + (u.stance ? '<option value="none">— clear</option>' : '')
+      + [['none', 'no stance'], ['fortify', 'fortify'], ['storm', 'storm'], ['sentry', 'sentry']]
+        .map(([v, label]) => '<option value="' + v + '"' + ((u.stance || 'none') === v ? ' selected' : '') + '>' + (((u.stance || 'none') === v) ? 'stance: ' : '') + label + '</option>').join('')
       + '</select> '
       + '<button onclick="unitStance(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Set</button> ';
 
