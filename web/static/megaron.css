@@ -532,7 +532,7 @@ body:has(.auth-page) main {
 .dispatch-chip {
   display: flex;
   align-items: center;
-  height: 30px;
+  height: 36px;
   max-width: 200px;
   min-width: 0;
   overflow: hidden;
@@ -597,10 +597,12 @@ body:has(.auth-page) main {
 .dispatch-chip.dc-urg-routine .dc-dot   { background: var(--accent-system); }
 
 .dc-glyph { font-size: var(--fs-sm); line-height: 1; }
-.dc-text  { flex: 1; overflow: hidden; text-overflow: ellipsis; color: var(--chip-text); padding-right: 4px; min-width: 0; }
-.dc-time  { font-size: var(--fs-xs); color: rgba(28,28,28,0.55); margin-right: 4px; flex-shrink: 0; }
+.dc-text  { flex: 1; overflow: hidden; text-overflow: ellipsis; color: var(--chip-text); padding-right: 4px; min-width: 0;
+  /* Two lines when the strip has room (Timothy 2026-11-12: banners were cut mid-sentence); full text in the tooltip and on click. */
+  white-space: normal; line-height: 1.1; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.dc-time  { font-size: var(--fs-xs); color: rgba(28,28,28,0.55); margin-right: 4px; flex-shrink: 0; white-space: nowrap; }
 .dc-x {
-  background: none; border: none; color: rgba(233,225,210,0.4);
+  background: none; border: none; color: var(--text-dim);
   cursor: pointer; padding: 0 6px 0 2px; font-size: var(--fs-xs); flex-shrink: 0;
 }
 .dc-x:hover { color: var(--chip-text); }
