@@ -3968,13 +3968,11 @@ export function reopenSelectedHex() {
   if (State.selectedHex) openHexPanel(State.selectedHex);
 }
 
-// Show the inspect panel (a bottom sheet on a phone) and, if the selected hex would sit under it, pan just enough to clear it.
-function showInspect() {
+// If the selected hex sits under the bottom sheet, pan just enough to clear it. Also runs when the sheet grows (a card is expanded).
+function clearSheet() {
   const el = document.getElementById('inspect-panel');
-  openMobilePanel(el, closeInspect, { sheet: true });
-  el.style.display = 'flex';
   const h = State.selectedHex;
-  if (!h || !el.classList?.contains?.('mobile-sheet')) return;
+  if (!h || !el.classList?.contains?.('mobile-sheet') || el.style.display === 'none') return;
   const rect = canvas.getBoundingClientRect();
   const y = hexClientPos(h.q, h.r).y - rect.top;
   const dy = sheetPanDelta(y, rect.height, el.getBoundingClientRect().height, S * State.camera.zoom * SCALE * Math.sqrt(3) / 2 + 8);
@@ -3982,6 +3980,15 @@ function showInspect() {
   State.camera.y += dy;
   clampCamera();
   State.dirty = true;
+}
+let sheetWatch = null;
+// Show the inspect panel (a bottom sheet on a phone).
+function showInspect() {
+  const el = document.getElementById('inspect-panel');
+  openMobilePanel(el, closeInspect, { sheet: true });
+  el.style.display = 'flex';
+  if (!sheetWatch && typeof ResizeObserver !== 'undefined') { sheetWatch = new ResizeObserver(clearSheet); sheetWatch.observe(el); }
+  clearSheet();
 }
 
 export function closeInspect() {
