@@ -508,8 +508,8 @@ func TestGrowthLine(t *testing.T) {
 		net   float64
 		want  string
 	}{
-		{"holding", -1.67, "Population 1000 — not growing: food net -1.7 per game day (needs more than 0)"},
-		{"growing", 30.8, "Population 1000 — growing: food net +30.8 per game day"},
+		{"holding", -1.67, "Population 1000 — not growing: growth surplus -1.7 per game day before army (needs more than 0)"},
+		{"growing", 30.8, "Population 1000 — growing: growth surplus +30.8 per game day before army"},
 		{"shrinking", -5, "Population 1000 — shrinking: hunger"},
 		{"", 3, ""},
 	}

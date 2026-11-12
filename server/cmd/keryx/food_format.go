@@ -1,7 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"math"
+	"strconv"
 	"strings"
 )
 
@@ -26,18 +29,75 @@ func foodGoodsText(goods map[string]any) string {
 	return strings.Join(parts, ", ")
 }
 
+// foodAnswerLine is the one answer to "is this city's food going up or down, and how
+// long does it last?": the forecast's net after everything that eats (citizens, army,
+// temples, herd) and, when it is falling, the days left. The web says the same words
+// (food_line.js foodAnswerValue). "" when the server sent no forecast.
+// foodAnswer reads forecast.food (net, and the days left when falling) out of a
+// /provinces/{id} settlement. ok is false when the server sent no forecast.
+func foodAnswer(sett map[string]any) (net float64, left *float64, ok bool) {
+	raw, err := json.Marshal(sett["forecast"])
+	if err != nil {
+		return 0, nil, false
+	}
+	var forecast struct {
+		Food *struct {
+			Net  *float64 `json:"net"`
+			Days *float64 `json:"days"`
+		} `json:"food"`
+	}
+	if json.Unmarshal(raw, &forecast) != nil || forecast.Food == nil || forecast.Food.Net == nil {
+		return 0, nil, false
+	}
+	return *forecast.Food.Net, forecast.Food.Days, true
+}
+
+func foodAnswerNet(sett map[string]any) (float64, bool) {
+	net, _, ok := foodAnswer(sett)
+	return net, ok
+}
+
+// foodAnswerLine is the one answer to "is this city's food going up or down, and how
+// long does it last?": the forecast's net after everything that eats (citizens, army,
+// temples, herd) and, when it is falling, the days left. The web says the same words
+// (food_line.js foodAnswerValue). "" when the server sent no forecast.
+func foodAnswerLine(sett map[string]any) string {
+	net, left, ok := foodAnswer(sett)
+	if !ok {
+		return ""
+	}
+	shown := math.Round(math.Abs(net)*10) / 10
+	if shown == 0 {
+		return "Food about even"
+	}
+	sign := "+"
+	if net < 0 {
+		sign = "\u2212"
+	}
+	line := fmt.Sprintf("Food %s%s per game day", sign, strconv.FormatFloat(shown, 'f', -1, 64))
+	if left != nil && net < 0 {
+		if *left > 1000 {
+			return line + " · lasts over 1,000 game days"
+		}
+		line += " · lasts " + formatDays(*left, "%g")
+	}
+	return line
+}
+
 func cityFoodLine(sett map[string]any) string {
 	food, _ := sett["food"].(map[string]any)
-	cov, ok := food["coverage_ticks"].(float64)
-	if !ok {
-		return "Food stores not reported."
-	}
 	goods, _ := food["goods"].(map[string]any)
 	detail := foodGoodsText(goods)
-	if detail == "" {
-		detail = "city fish + grain stocks"
+	answer := foodAnswerLine(sett)
+	switch {
+	case answer != "" && detail != "":
+		return answer + " (stocks: " + detail + ")"
+	case answer != "":
+		return answer
+	case detail != "":
+		return "Food stocks: " + detail
 	}
-	return fmt.Sprintf("Food for %s at current consumption (%s)", formatDays(cov, "%.1f"), detail)
+	return "Food stores not reported."
 }
 
 func peopleFoodLine(sett map[string]any) string {
@@ -53,7 +113,7 @@ func peopleFoodLine(sett map[string]any) string {
 	if surplus, _ := herd["surplus_rate"].(float64); surplus > 0 {
 		herdPart = fmt.Sprintf(" + herd %.2f", surplus)
 	}
-	return fmt.Sprintf("  Food     production %.1f%s − people eat %.1f = net %s per game day (before army)", production, herdPart, consumption, formatNetPerTick(net))
+	return fmt.Sprintf("  Growth   production %.1f%s − people eat %.1f = growth surplus %s per game day before army", production, herdPart, consumption, formatNetPerTick(net))
 }
 
 func upkeepFood(up map[string]any) (float64, string) {

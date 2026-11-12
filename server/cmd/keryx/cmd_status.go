@@ -539,7 +539,8 @@ func wallsHoldLine(popCap, walls, siloLevel float64) string {
 // growthLine says in one sentence what the population is doing and why. state
 // and net are the server's growth_state / food_net_per_tick (the tick gate's
 // own inputs); "" when the server did not report a state. The web drawer
-// (city_production.js growthLineText) says the same words.
+// (city_production.js growthLineText) says the same words. This is the growth
+// surplus (before the army), not the food answer (foodAnswerLine).
 func growthLine(pop float64, state string, net float64) string {
 	display := fmt.Sprintf("%+.1f", net)
 	if math.Abs(net) < 0.05 && net != 0 {
@@ -547,9 +548,9 @@ func growthLine(pop float64, state string, net float64) string {
 	}
 	switch state {
 	case "growing":
-		return fmt.Sprintf("Population %.0f — growing: food net %s per game day", pop, display)
+		return fmt.Sprintf("Population %.0f — growing: growth surplus %s per game day before army", pop, display)
 	case "holding":
-		return fmt.Sprintf("Population %.0f — not growing: food net %s per game day (needs more than 0)", pop, display)
+		return fmt.Sprintf("Population %.0f — not growing: growth surplus %s per game day before army (needs more than 0)", pop, display)
 	case "capped":
 		return fmt.Sprintf("Population %.0f — not growing: the walls are full", pop)
 	case "shrinking":
@@ -866,7 +867,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 							}
 						}
 						if peopleFoodLine(sett) == "" {
-							fmt.Printf("  Food     fish %.1f + grain %.1f − people eat %.1f = net %s per game day (before army)\n", fish, prodTick, consumTick, formatNetPerTick(netTick))
+							fmt.Printf("  Growth   fish %.1f + grain %.1f − people eat %.1f = growth surplus %s per game day before army\n", fish, prodTick, consumTick, formatNetPerTick(netTick))
 						}
 						line := fmt.Sprintf("  %-8s %6s  production %.1f per game day",
 							"Grain", resource(gAmt), prodTick)
@@ -915,7 +916,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 							amount, _ := stocks[good].(float64)
 							stock += amount
 						}
-						if net, known := sett["food_net_per_tick_after_upkeep"].(float64); known {
+						if net, known := foodAnswerNet(sett); known {
 							warn = strings.ReplaceAll(armyUpkeepWarning(net, netS, stock, silverStock), "grain", "food")
 						} else {
 							warn = ""
@@ -1411,16 +1412,7 @@ func cohortLines(cohorts []unitRow) []string {
 func armyFoodLine(sett map[string]any) string {
 	up, _ := sett["army_upkeep"].(map[string]any)
 	grain, label := upkeepFood(up)
-	net, ok := sett["food_net_per_tick_after_upkeep"].(float64)
-	if !ok {
-		food, _ := sett["food"].(map[string]any)
-		before, known := food["food_net_per_tick"].(float64)
-		if !known {
-			return "  Army food balance not reported"
-		}
-		net = before - grain
-	}
-	return fmt.Sprintf("  Army     eats %s %s per game day → food net %s per game day after army", trimFloat(grain), label, formatNetPerTick(net))
+	return fmt.Sprintf("  Army     eats %s %s per game day", trimFloat(grain), label)
 }
 
 // kharisDecayLine renders the server's realm projection without a client formula.

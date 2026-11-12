@@ -6,7 +6,7 @@ const body={innerHTML:'',querySelectorAll:()=>[]},goods={innerHTML:''};
 globalThis.document={getElementById:id=>id==='economy-body'?body:id==='ectab-goods'?goods:null};
 globalThis.localStorage={getItem:()=>null};
 const provinces=[{id:'province-a',settlement_id:'settlement-a',name:'Same name',own:true,is_capital:true},{id:'province-b',settlement_id:'settlement-b',name:'Same name',own:true}];
-const overview=[{id:'settlement-b',population:2000,grain_prod_rate:5,grain_consum_rate:10,food:{coverage_ticks:5,food_net_per_tick:-5}},{id:'settlement-a',population:1000,grain_prod_rate:20,grain_consum_rate:5,food:{coverage_ticks:40,food_net_per_tick:15}}];
+const overview=[{id:'settlement-b',population:2000,grain_prod_rate:5,grain_consum_rate:10,food:{coverage_ticks:5,food_net_per_tick:-5},forecast:{food:{net:-5,days:5},goods:[{good_key:'grain',net:-4}]}},{id:'settlement-a',population:1000,grain_prod_rate:20,grain_consum_rate:5,food:{coverage_ticks:40,food_net_per_tick:15},forecast:{food:{net:15,days:null},goods:[{good_key:'grain',net:14}]}}];
 async function render(rows,status=200){
  State.WORLD_ID='world';State.provinceData=provinces;
  const calls=[];globalThis.fetch=async(url)=>{
@@ -18,7 +18,7 @@ async function render(rows,status=200){
 test('Economy id: actual drawer joins settlement ids while links and goods keep province ids',async()=>{
  const {html,calls}=await render(overview);
  assert.match(html,/1,000/,'settlement overview must join settlement id');assert.match(html,/2,000/);
- assert.doesNotMatch(html,/no data/);assert.match(html,/40 game days/);assert.match(html,/5 game days/);
+ assert.doesNotMatch(html,/no data/);assert.match(html,/5 game days/);assert.match(html,/not running down/);assert.match(html,/\+14 per game day/,'goods row is the forecast net of that city');assert.match(html,/\u22124 per game day/);assert.doesNotMatch(html,/40 game days/);
  assert.match(html,/openCitySettlement\('province-a'\)/,'city link keeps province id');assert.match(html,/openCitySettlement\('province-b'\)/);
  assert.ok(calls.some(p=>p.endsWith('/provinces/province-a/goods')));assert.ok(calls.some(p=>p.endsWith('/provinces/province-b/goods')));
  assert.equal(calls.filter(p=>p.endsWith('/settlements/overview')).length,1,'one overview request');

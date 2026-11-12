@@ -163,6 +163,9 @@ func (h *SettlementHandler) SettlementsOverview(w http.ResponseWriter, r *http.R
 		ArmyUpkeep         upkeepAmount          `json:"army_upkeep"`
 		FoodNetAfterUpkeep float64               `json:"food_net_per_tick_after_upkeep"`
 		Food               foodRow               `json:"food"`
+		// The city forecast: the one owner of the food answer (net after everything that
+		// eats, and how long it lasts) and of each good's net. Same value as GET /provinces/{id}.
+		Forecast *economy.CityForecast `json:"forecast"`
 	}
 
 	type settRow struct {
@@ -188,7 +191,15 @@ func (h *SettlementHandler) SettlementsOverview(w http.ResponseWriter, r *http.R
 			writeError(w, http.StatusInternalServerError, "could not compute army upkeep")
 			return
 		}
+		var forecast *economy.CityForecast
+		if tx, txErr := h.pool.Begin(r.Context()); txErr == nil {
+			if fc, fcErr := NewCityForecaster().CityForecast(r.Context(), tx, s.id); fcErr == nil {
+				forecast = &fc
+			}
+			tx.Rollback(r.Context())
+		}
 		result = append(result, item{
+			Forecast:           forecast,
 			ID:                 s.id,
 			Name:               s.name,
 			IsCapital:          s.isCapital,

@@ -6,6 +6,7 @@ import { serverNow } from '../../clock.js';
 import { esc, byGoodName } from '../format.js';
 import { renderLockedActions } from '../misc.js';
 import { loadSendGoods } from './send_goods.js';
+import { foodAnswer, foodNetText } from '../food_line.js';
 
 // A good at its storage ceiling is a silent off-switch: everything produced
 // past the cap is discarded, so labour sitting on it earns nothing. Mirror
@@ -23,42 +24,48 @@ export function atStorageCeiling(amount, cap) {
 // sees exactly how much labour is earning nothing.
 export function goodsRateCell(g) {
   const rate = g.rate_per_tick || 0;
+  // g.net is the city forecast's net for this good (production less what is eaten,
+  // paid, tithed): the change the stock really sees, not the gross production.
   if (atStorageCeiling(g.amount || 0, g.cap || 0)) {
     const lost = rate > 0 ? ` · +${fmtNum(Number(rate.toFixed(1)))} lost per game day` : '';
     const title = `Storage full (${fmtNum(Math.floor(g.amount || 0))} of ${fmtNum(Math.floor(g.cap || 0))}). `
       + 'Everything produced past the cap is discarded — move this labour or trade it away.';
     return `<td class="goods-atcap" title="${esc(title)}">full${lost}</td>`;
   }
+  if (Number.isFinite(g.net)) {
+    const shown = Math.round(Math.abs(g.net) * 10) / 10;
+    if (shown === 0) return '<td></td>';
+    return g.net > 0 ? `<td style="color:var(--safe-text)">+${fmtNum(shown)} per game day</td>` : `<td style="color:var(--danger)">\u2212${fmtNum(shown)} per game day</td>`;
+  }
   return rate > 0 ? `<td style="color:var(--safe-text)">+${fmtNum(Number(rate.toFixed(1)))} per game day</td>` : '<td></td>';
 }
 
-// Compare the single city food stocks and authoritative food net, including army
-// upkeep when reported. Hunger follows the server growth state, never a local
-// stock threshold: low coverage alone does not mean a city is starving.
+// Compare cities on the one food answer (food_line.js: the forecast's net after
+// everything that eats, and how long the food lasts). Hunger follows the server
+// growth state, never a local stock threshold.
 const FOOD_RANK = { starving: 0, declining: 1, growing: 2, stable: 3, unknown: 5 };
 const FOOD_LABEL = { starving: 'starving', declining: 'stocks falling', growing: 'stocks growing', stable: 'stable', unknown: 'no data' };
 
 export function settlementFoodRow(s, pd) {
   if (!pd) {
     return { id: s.id, name: s.name, isCapital: !!s.is_capital, population: 0,
-      grainRate: null, coverage: null, severity: 'unknown', label: 'no data', rank: 5 };
+      grainRate: null, coverage: null, runningDown: false, severity: 'unknown', label: 'no data', rank: 5 };
   }
   const food = pd.food;
-  const cov = food?.coverage_ticks;
-  const net = pd.food_net_per_tick_after_upkeep ?? food?.food_net_per_tick;
-  const coverageKnown = cov != null && Number.isFinite(cov);
-  const netKnown = net != null && Number.isFinite(net);
-  const known = coverageKnown && netKnown;
+  const answer = foodAnswer(pd);
+  const net = answer?.net;
+  const known = answer != null;
   const cannotFeed = pd.food_self_sufficient === false;
-  const severity = !known ? 'unknown' : food.growth_state === 'shrinking' ? 'starving'
+  const severity = !known ? 'unknown' : food?.growth_state === 'shrinking' ? 'starving'
     : net < 0 ? 'declining' : net > 0 ? 'growing' : 'stable';
   return {
     id: s.id,
     name: s.name,
     isCapital: !!s.is_capital,
     population: pd.population || 0,
-    grainRate: netKnown ? net : null,
-    coverage: coverageKnown ? cov : null,
+    grainRate: known ? net : null,
+    coverage: answer?.days ?? null,
+    runningDown: known && answer.days != null,
     severity: cannotFeed ? 'starving' : severity,
     label: cannotFeed ? 'cannot feed itself' : (FOOD_LABEL[severity] || severity),
     rank: cannotFeed ? -1 : (FOOD_RANK[severity] ?? 3),
@@ -69,7 +76,7 @@ const SETTLEMENT_SORT_KEYS = {
   name:       r => r.name.toLowerCase(),
   population: r => r.population,
   grainRate:  r => r.grainRate,
-  coverage:   r => r.coverage,
+  coverage:   r => r.coverage ?? Infinity,
   brist:      r => r.rank,
 };
 
@@ -101,18 +108,17 @@ export function renderSettlementsOverviewHTML(rows, sortKey, sortDir) {
     <tr style="color:var(--text-dim);font-size:.7rem">
       ${th('name', 'Settlement')}
       ${th('population', 'Pop', 'right')}
-      ${th('grainRate', 'Food after army', 'right')}
-      ${th('coverage', 'Food lasts', 'right')}
+      ${th('grainRate', 'Food', 'right')}
+      ${th('coverage', 'Lasts', 'right')}
       ${th('brist', 'Status')}
     </tr>
     ${rows.map(r => {
       const rateColor = r.grainRate < 0 ? 'var(--danger)' : (r.grainRate > 0 ? 'var(--safe-text)' : 'var(--text-dim)');
-      const rateSign = r.grainRate > 0 ? '+' : '';
       return `<tr onclick="openCitySettlement('${r.id}')" style="cursor:pointer">
         <td>${esc(r.name)}${r.isCapital ? ' ★' : ''}</td>
         <td style="text-align:right">${fmtNum(Math.floor(r.population))}</td>
-        <td style="text-align:right;color:${rateColor}">${r.grainRate == null ? 'not reported' : rateSign + fmtNum(Number(r.grainRate.toFixed(1))) + ' per game day'}</td>
-        <td style="text-align:right">${r.coverage == null ? 'not reported' : fmtDays(Number(r.coverage.toFixed(1)))}</td>
+        <td style="text-align:right;color:${rateColor}">${r.grainRate == null ? 'not reported' : foodNetText(r.grainRate)}</td>
+        <td style="text-align:right">${r.grainRate == null ? 'not reported' : r.runningDown ? fmtDays(Number(r.coverage.toFixed(1))) : 'not running down'}</td>
         <td><span class="food-state-${r.severity}">${esc(r.label)}</span></td>
       </tr>`;
     }).join('')}
@@ -193,10 +199,16 @@ async function loadEconomyGoods(mySettlements) {
     ]);
 
     const overviewByID = new Map();
+    const goodNets = new Map();
     if (overviewResult.ok) {
       for (const pd of await overviewResult.json()) overviewByID.set(pd.id, pd);
     }
     // Province rows carry both ids: overview is settlement-scoped; links and goods stay province-scoped.
+    for (const s of mySettlements) {
+      const net = {};
+      for (const g of overviewByID.get(s.settlement_id)?.forecast?.goods || []) net[g.good_key] = g.net;
+      goodNets.set(s.id, net);
+    }
     _settlementRows = mySettlements.map(s => settlementFoodRow(s, overviewByID.get(s.settlement_id) || null));
     const overviewHtml =
       `<div class="dsec-title">Settlements</div>` +
@@ -224,7 +236,7 @@ async function loadEconomyGoods(mySettlements) {
       }
       if (others.length) {
         html += `<table class="goods-mini"><tr style="color:var(--text-dim);font-size:.7rem"><td>Good</td><td>Amount</td><td>Rate</td></tr>${others.map(g =>
-          `<tr><td>${g.name||g.key}</td><td>${fmtNum(Math.floor(g.amount||0))}</td>${goodsRateCell(g)}</tr>`
+          `<tr><td>${g.name||g.key}</td><td>${fmtNum(Math.floor(g.amount||0))}</td>${goodsRateCell({ ...g, net: goodNets.get(s.id)?.[g.key] })}</tr>`
         ).join('')}</table>`;
       }
     }

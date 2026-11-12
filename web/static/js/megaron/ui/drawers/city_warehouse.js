@@ -1,7 +1,8 @@
-import { fmtNum, fmtDays } from '../fmt_num.js';
+import { fmtNum } from '../fmt_num.js';
 import { esc } from '../format.js';
 import { atStorageCeiling } from './economy.js';
 import { herdHTML } from './city_production.js';
+import { foodAnswer, foodAnswerValue } from '../food_line.js';
 
 // City → Warehouse: what the city holds and how much room it has. Amounts and
 // caps are the server's (goods endpoint `amount`/`cap`, province `food`); this
@@ -18,14 +19,13 @@ function storeRow(label, amount, cap, net, shared) {
   // A good in the Storehouse has no cap of its own: only the store row shows X / Y.
   if (shared) cap = 0;
   const full = atStorageCeiling(amount || 0, cap || 0);
-  const netText = Number.isFinite(net) ? ` · net ${signed(net)} a game day` : '';
+  const netText = Number.isFinite(net) ? ` · ${signed(net)} per game day` : '';
   return `<div class="stat-row${full ? ' wh-full' : ''}"${full ? ' title="Full: anything produced past the cap is discarded."' : ''}><span class="sr-label">${esc(label)}</span><span class="sr-val">${stored(amount, cap)}${full ? ' · full' : ''}${netText}</span></div>`;
 }
 const labelOf = g => g.name || g.key;
 
 export function warehouseHTML(pd, goods) {
   const list = Array.isArray(goods) ? goods : [];
-  const cov = pd?.food?.coverage_ticks;
   // One forecast owner (server): expected net per game day for every good, and how
   // long the food lasts at the net, with all known posts (citizens, army, temples).
   const fc = pd?.forecast;
@@ -34,11 +34,8 @@ export function warehouseHTML(pd, goods) {
   const foodRows = FOOD_KEYS.map(k => list.find(g => g.key === k))
     .filter(g => g && (g.amount > 0 || g.cap > 0))
     .map(g => storeRow(labelOf(g), g.amount, g.cap, net[g.key])).join('');
-  const foodFor = fc?.food
-    ? (fc.food.days != null
-      ? `<div class="stat-row"><span class="sr-label">Food for</span><span class="sr-val">${fmtDays(fc.food.days)} · net ${signed(fc.food.net)} a game day</span></div>`
-      : `<div class="stat-row"><span class="sr-label">Food for</span><span class="sr-val">not running down · net ${signed(fc.food.net)} a game day</span></div>`)
-    : (cov != null && Number.isFinite(Number(cov)) ? `<div class="stat-row"><span class="sr-label">Food for</span><span class="sr-val">${fmtDays(cov)}</span></div>` : '');
+  const answer = foodAnswer(pd);
+  const foodFor = answer ? `<div class="stat-row"><span class="sr-label">Food</span><span class="sr-val">${foodAnswerValue(answer)}</span></div>` : '';
   const foodFlows = (fc?.food?.flows || []).map(f => `<div class="stat-row wh-flow"><span class="sr-label">${esc(f.label)}</span><span class="sr-val">${signed(f.amount)}</span></div>`).join('');
   const food = `<div class="dsec"><div class="dsec-title">Food <button class="btn-small" onclick="openCodex('granary')" title="Read the Codex" aria-label="Read the Codex">?</button></div>`
     + foodFor + foodFlows
