@@ -16,7 +16,7 @@ These can wait: [[offerings|offering sizes]], [[routes]] (standing orders), [[na
 
 ## The opening dispatch {#welcome-your-opening-dispatch}
 
-Open **Your people await you** in Notifications for your first steps, starting supplies and the world's pace. If you begin again after losing your realm, look for **Begin again**.
+Open **Your people await you** in Notifications for your first steps and the world's pace. The rest is in this Codex: what your Host carries ([[horde]]), how fast armies cross the ground ([[marching]]), food ([[food]]), the gods ([[kharis]]), Runners ([[runners]]) and [[bronze]]. If you begin again after losing your realm, look for **Begin again**.
 
 Your [[horde|Host]] lives on subsistence while you search for a home. Once you found a city, put people to work producing [[food]].
 

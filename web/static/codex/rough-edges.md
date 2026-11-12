@@ -8,4 +8,4 @@ Honest notes on the current build, so you do not mistake a gap for your own mist
 
 **Kingdoms** — formal alliances, elected leaders, shared armies — are built but switched off, and will return once the foundations are proven. For now, diplomacy is [[messengers|letters]] and [[trade]].
 
-Found something that is not on this list? [[report|Report it.]]
+Found something that is not on this list? [[report|Send feedback.]]

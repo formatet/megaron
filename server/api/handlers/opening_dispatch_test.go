@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -13,10 +12,7 @@ import (
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
-	"formatet/megaron/server/internal/kharis"
-	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/tick"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -86,10 +82,10 @@ func TestOpeningDispatchJoinConcurrentRetryRiseAndPrivacy(t *testing.T) {
 		return out
 	}
 	opening := read(token)
-	if len(opening) != 1 || !strings.Contains(strings.Join(opening[0].Paragraphs, " "), fmt.Sprintf("starts at %g Kharis", kharis.StartingKharis)) {
-		t.Fatalf("archived join dispatch must describe the current starting standing: %+v", opening)
+	if len(opening) != 1 || !strings.Contains(strings.Join(opening[0].Paragraphs, " "), "You are a Wanax") {
+		t.Fatalf("archived join dispatch must say who the player is: %+v", opening)
 	}
-	if len(opening) != 1 || opening[0].Returning || len(opening[0].Paragraphs) != 9 {
+	if len(opening) != 1 || opening[0].Returning || len(opening[0].Paragraphs) != 2 || len(opening[0].Steps) != 5 {
 		t.Fatalf("join notice %+v", opening)
 	}
 	if len(read(otherToken)) != 0 {
@@ -135,7 +131,7 @@ func TestOpeningDispatchJoinConcurrentRetryRiseAndPrivacy(t *testing.T) {
 	for _, n := range all {
 		if n.Returning {
 			returning++
-			if n.Title != "Begin again" || n.HostID == opening[0].HostID || !strings.Contains(strings.Join(n.Paragraphs, " "), "60 silver") {
+			if n.Title != "Begin again" || n.HostID == opening[0].HostID || !strings.Contains(strings.Join(n.Paragraphs, " "), "standing with the gods is kept") {
 				t.Fatalf("rise notice %+v", n)
 			}
 		}
@@ -145,7 +141,9 @@ func TestOpeningDispatchJoinConcurrentRetryRiseAndPrivacy(t *testing.T) {
 	}
 }
 
-func TestOpeningDispatchFactsFromActiveRules(t *testing.T) {
+// The opening dispatch is a short list, not a wall (first-hour playtest 2026-11-13): who you are, at most
+// five first steps, the game-day line. Every rule it used to carry now lives in the Codex.
+func TestOpeningDispatchIsAShortList(t *testing.T) {
 	h := &JoinHandler{startWanaxes: 3}
 	old := tick.TickSeconds
 	t.Cleanup(func() { tick.TickSeconds = old })
@@ -154,18 +152,29 @@ func TestOpeningDispatchFactsFromActiveRules(t *testing.T) {
 		label   string
 	}{{1, "1 second"}, {60, "1 minute"}, {1800, "30 minutes"}, {3600, "1 hour"}} {
 		tick.TickSeconds = tc.seconds
-		body := h.openingDispatch(uuid.New(), newcomerHost, true)
-		text := strings.Join(body.Paragraphs, "\n")
-		for _, want := range []string{tc.label, "3 Wanaxes", fmt.Sprintf("%g grain", float64(nomadicHostDowryGrain)), fmt.Sprintf("%g silver", nomadicHostStartingSilver), fmt.Sprintf("starts at %g Kharis", kharis.StartingKharis), fmt.Sprintf("temple takes %d game days", province.BuildingSpecs[province.BuildingTemple].DurationTicks), fmt.Sprintf("below %d people", economy.CollapseBelowPopulation), fmt.Sprintf("olive woodland in %g", province.TerrainMoveTicks("forest_olive_grove")), "reserves do not drain"} {
-			if !strings.Contains(text, want) {
-				t.Fatalf("opening missing%q: %s", want, text)
+		for _, spec := range []hostSpec{newcomerHost, {refugee: true}} {
+			body := h.openingDispatch(uuid.New(), spec, true)
+			text := strings.Join(append(append([]string{}, body.Paragraphs...), body.Steps...), "\n")
+			if len(body.Steps) == 0 || len(body.Steps) > 5 {
+				t.Fatalf("steps %d, want 1..5: %s", len(body.Steps), text)
+			}
+			if n := len(strings.Fields(text)); n > 110 {
+				t.Fatalf("%d words, want <= 110: %s", n, text)
+			}
+			last := body.Paragraphs[len(body.Paragraphs)-1]
+			if !strings.Contains(last, "A game day passes every "+tc.label) || !strings.Contains(last, "3 Wanaxes") {
+				t.Fatalf("game-day line: %q", last)
+			}
+			for _, bad := range []string{"tick", "144", "grain", "Kharis", "Bronze"} {
+				if strings.Contains(text, bad) {
+					t.Fatalf("rules belong in the Codex, not %q here: %s", bad, text)
+				}
+			}
+			if spec.refugee != strings.Contains(body.Paragraphs[0], "standing with the gods is kept") {
+				t.Fatalf("returning text: %q", body.Paragraphs[0])
 			}
 		}
-		if strings.Contains(text, "144") || strings.Contains(text, "grace") || strings.Contains(text, "no punishment") || strings.Contains(text, "tick") || strings.Contains(text, "pay for") || len(strings.Fields(text)) > 250 {
-			t.Fatalf("wrong/too long opening %s", text)
-		}
 	}
-	t.Logf("actual starting kharis %g, temple duration%d", kharis.StartingKharis, province.BuildingSpecs[province.BuildingTemple].DurationTicks)
 }
 
 func TestOpeningDispatchArchiveFailureRollsBackHost(t *testing.T) {
@@ -212,8 +221,8 @@ func TestOpeningDispatchArchiveFailureRollsBackHost(t *testing.T) {
 func TestOpeningDispatch_ActiveWorldDoesNotWaitForJoiners(t *testing.T) {
 	h := &JoinHandler{startWanaxes: 4}
 	body := h.openingDispatch(uuid.New(), newcomerHost, false)
-	text := strings.Join(body.Paragraphs, " ")
-	if strings.Contains(text, "game days begin after") || !strings.Contains(text, "Place citizens") || !strings.Contains(text, "stone") {
+	text := strings.Join(append(append([]string{}, body.Paragraphs...), body.Steps...), " ")
+	if strings.Contains(text, "Game days begin after") || !strings.Contains(text, "citizens to work") {
 		t.Fatal(text)
 	}
 }

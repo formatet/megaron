@@ -1,4 +1,5 @@
 import { BUILDING_LABELS as _BLD_LBL } from '../building_names.js';
+import { noCityText } from '../no_city.js';
 import { disbandUnitsHTML } from '../disband.js';
 import { showInlineResult, confirmInline } from '../inline_result.js';
 import { demolishLabel, demolishPrompt, demolishResultLine } from '../demolish.js';
@@ -49,7 +50,7 @@ export async function loadCityDrawer() {
 
   const body = document.getElementById('city-body');
   if (!capital) {
-    body.innerHTML = '<p class="empty-state" style="padding:1rem">No city founded yet. Click a hex to colonize.</p>';
+    body.innerHTML = `<p class="empty-state" style="padding:1rem">${noCityText('No city founded yet.', State.founderPhase)}</p>`;
     return;
   }
 

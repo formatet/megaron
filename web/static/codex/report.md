@@ -1,6 +1,6 @@
 Megaron is being built while you play it. When something is wrong, the most useful thing you can do is tell us — from inside the game.
 
-Open **Report (✎)** and choose:
+Open **Feedback (✎)** (the bottom bar; what happened in your world is under the bell, in Notifications) and choose:
 
 - **Bug — something is broken**,
 - **Design — this feels wrong**, or

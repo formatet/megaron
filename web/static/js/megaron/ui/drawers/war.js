@@ -1,3 +1,4 @@
+import { noCityText } from '../no_city.js';
 import {renderUnitCard,unitStatusLabel,readyWord} from '../force_card.js';
 export {renderUnitCard,unitStatusLabel} from '../force_card.js';
 import { disbandReceipt } from '../disband.js';
@@ -155,7 +156,7 @@ export async function loadWarDrawer() {
       document.getElementById('wtab-army').innerHTML = armyHtml;
       applyUnitFocus();
       document.getElementById('wtab-recruit').innerHTML =
-        '<p class="empty-state" style="padding:1rem">No capital yet — found a settlement to train troops.</p>';
+        `<p class="empty-state" style="padding:1rem">${noCityText('No capital yet, so no troops can be trained.', State.founderPhase)}</p>`;
       return;
     }
 

@@ -14,6 +14,7 @@ export const State = {
   WORLD_ID: null,
   MY_SETTLEMENT_ID: null,
   MY_PLAYER_ID: null,
+  USERNAME: null,       // the sign-in name (the top-left name is the Wanax name)
 
   // Tick anchor (Tid & kalender Fas B): the world's current_tick as of the
   // instant TICK_ANCHOR_MS (serverNow-frame), advancing at TICK_SECONDS real
@@ -73,7 +74,7 @@ export const State = {
   cityViewID: null, // province ID of the settlement the City drawer currently shows
   activeDrawer: null,
   previousDrawer: null, // name of the drawer closeDrawer() last closed — lets
-                        // the Report drawer (ui/drawers/report.js) say what the
+                        // the Feedback drawer (ui/drawers/report.js) say what the
                         // player was looking at when something confused them.
 
   // March context menu (ui/marchctx.js).

@@ -51,11 +51,12 @@
 
     <!-- Zoom toolbar overlay -->
     <div class="map-zoom-overlay">
-      <button onclick="zoom(1.25)" class="mzo-btn" title="Zoom in">+</button>
-      <button onclick="zoom(0.8)"  class="mzo-btn" title="Zoom out">−</button>
-      <button onclick="resetView()" class="mzo-btn" title="Centre map (drag or WASD/arrows to pan)">⌂</button>
-      <button id="music-btn" class="mzo-btn" onclick="toggleMusic()" title="Music">♫</button>
-      <button id="activity-btn" class="mzo-btn" onclick="toggleActivityOverlay()" title="Activity overlay">⚒</button>
+      <button onclick="zoom(1.25)" class="mzo-btn" title="Zoom in" aria-label="Zoom in">+</button>
+      <button onclick="zoom(0.8)"  class="mzo-btn" title="Zoom out" aria-label="Zoom out">−</button>
+      <button onclick="resetView()" class="mzo-btn" title="Centre map (drag or WASD/arrows to pan)" aria-label="Centre map">⌂</button>
+      <button id="legend-btn" class="mzo-btn" onclick="toggleLegendWindow()" title="Legend: what the symbols on the map mean" aria-label="Legend: what the symbols on the map mean">▤</button>
+      <button id="music-btn" class="mzo-btn" onclick="toggleMusic()" title="Music and sounds on or off" aria-label="Music and sounds on or off">♫</button>
+      <button id="activity-btn" class="mzo-btn" onclick="toggleActivityOverlay()" title="Show what each of your cities is doing: building, training or idle (highlighted while on)" aria-label="Show what each of your cities is doing: building, training or idle">⚒</button>
     </div>
 
 
@@ -104,7 +105,7 @@
       <span class="wt-glyph">⛩</span>Kult
     </div>
     <div class="win-trigger" id="trig-report"     onclick="toggleDrawer('report')">
-      <span class="wt-glyph">✎</span>Report
+      <span class="wt-glyph">✎</span>Feedback
     </div>
   </nav>
 
@@ -190,7 +191,7 @@
 <!-- ── REPORT DRAWER ────────────────────────────────────────────────────── -->
 <div class="drawer" id="drawer-report">
   <div class="drawer-header">
-    <span class="drawer-title">Report</span>
+    <span class="drawer-title">Feedback</span>
     <button class="drawer-help" onclick="openCodexForDrawer('report')" title="Read about this in the Codex">?</button>
     <button class="drawer-close" onclick="closeDrawer('report')">✕</button>
   </div>
@@ -251,6 +252,17 @@
       <button class="drawer-close" onclick="closeAccountWindow()">✕</button>
     </div>
     <div class="dw-body" id="account-window-body"></div>
+  </div>
+</div>
+
+<!-- ── LEGEND WINDOW — what the map symbols mean (ui/legend_window.js). ─── -->
+<div class="dispatch-window-overlay" id="legend-window-overlay" onclick="closeLegendWindow(event)">
+  <div class="dispatch-window" onclick="event.stopPropagation()">
+    <div class="dw-header">
+      <span class="drawer-title">Legend</span>
+      <button class="drawer-close" onclick="closeLegendWindow()">✕</button>
+    </div>
+    <div class="dw-body" id="legend-window-body"></div>
   </div>
 </div>
 

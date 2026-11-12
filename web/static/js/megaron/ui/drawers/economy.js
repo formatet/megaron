@@ -1,3 +1,4 @@
+import { noCityText } from '../no_city.js';
 import { fmtNum, fmtDays } from '../fmt_num.js';
 import { fmtTickTime } from '../fmt_clock.js';
 import { State } from '../../state.js';
@@ -156,7 +157,7 @@ export function openCitySettlement(provinceId) {
 export async function loadEconomyDrawer() {
   const body = document.getElementById('economy-body');
   const mySettlements = State.provinceData.filter(p => p.own && !p.is_outpost);
-  if (!mySettlements.length) { body.innerHTML = '<p class="empty-state" style="padding:1rem">No settlements.</p>'; return; }
+  if (!mySettlements.length) { body.innerHTML = `<p class="empty-state" style="padding:1rem">${noCityText('No settlements yet.', State.founderPhase)}</p>`; return; }
 
   body.innerHTML =
     '<div class="drawer-tabs">' +

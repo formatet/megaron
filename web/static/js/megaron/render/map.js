@@ -15,6 +15,7 @@ import {
 } from '../config.js';
 import { isTypingTarget, esc, playerError, errorDetail, setErrorText } from '../ui/format.js';
 import { fmtNum, fmtDays } from '../ui/fmt_num.js';
+import { forecastRows } from '../ui/forecast_rows.js';
 import { canonicalUnitType, actorName } from '../ui/actornames.js';
 import { drawActor, spriteRuns, FOREIGN_ACCENT, FOREIGN_OUTLINE } from './actorsprites.js';
 import { eyeSees } from './sight.js';
@@ -1818,13 +1819,19 @@ function drawPeaks(ctx, cx, cy, q, r, terrain) {
 }
 
 // ── Deposit resource icons (Sprint 4.5) — tiny pixel markers ────────────
-function drawDepositIcons(ctx, cx, cy, tile) {
-  const types = [];
-  if (tile.copper_deposit) types.push('cu');
-  if (tile.tin_deposit)    types.push('sn');
-  if (tile.cedar_deposit)  types.push('cd');
-  if (tile.silver_deposit) types.push('ag');
-  if (tile.incense_deposit) types.push('in');
+// The deposit kinds, in drawing order: tile field → marker key → name. The
+// legend (render/legend.js) reads THIS table, so a new deposit shows up there.
+export const DEPOSIT_KINDS = [
+  { field: 'copper_deposit',  key: 'cu', label: 'Copper' },
+  { field: 'tin_deposit',     key: 'sn', label: 'Tin' },
+  { field: 'cedar_deposit',   key: 'cd', label: 'Cedar' },
+  { field: 'silver_deposit',  key: 'ag', label: 'Silver' },
+  { field: 'incense_deposit', key: 'in', label: 'Incense' },
+];
+// `forceLive` lets the legend draw the live-hex look (incense sparkles) for a
+// tile that is not on the map.
+export function drawDepositIcons(ctx, cx, cy, tile, forceLive = false) {
+  const types = DEPOSIT_KINDS.filter(k => tile[k.field]).map(k => k.key);
   if (!types.length) return;
   ctx.save();
   // Charcoal outline on every marker. These are game information sitting on
@@ -1893,7 +1900,7 @@ function drawDepositIcons(ctx, cx, cy, tile) {
         ctx.beginPath(); ctx.moveTo(ox, oy - 4.5); ctx.lineTo(ox + 3, oy); ctx.arc(ox, oy + 0.5, 3, 0, Math.PI); ctx.lineTo(ox - 3, oy); ctx.closePath(); ctx.fill(); ctx.stroke();
         ctx.fillStyle = '#FFF6C8';
         ctx.fillRect(Math.round(ox - 1.5), Math.round(oy - 1), 1, 2);
-        if (tileTier(tile.q, tile.r) === 'live') {
+        if (forceLive || tileTier(tile.q, tile.r) === 'live') {
           ctx.fillStyle = '#FFE680';
           for (const [dx, dy] of [[5, -5], [-5, -3], [5, 3]]) {
             const sx = Math.round(ox + dx), sy = Math.round(oy + dy);
@@ -2056,7 +2063,7 @@ function provinceIcon(p) {
   return cityIcon(p.size_tier ? 1 : 0, Math.min(3, p.walls || 0), p.culture || 'akhaier',
                   provinceSeed(p) % 997, coastal, ruin);
 }
-function drawProvinceIcon(ctx, cx, cy, p) {
+export function drawProvinceIcon(ctx, cx, cy, p) {
   const ruin = p.state === 'razed' || p.state === 'collapsed';
   const ic = provinceIcon(p);
   const { ox, oy } = drawCityIcon(ctx, ic, cx, cy);
@@ -2456,7 +2463,7 @@ const RURAL_SPRITES = { farm: drawFarm, mine: drawMine, lumbermill: drawLumbermi
 // hex. Drawn bottom-left of centre so it clears the rural building sprite
 // (centre) and the deposit icons (top-right); 1px charcoal outline, saturated
 // fill, no AA — temenos_designprinciper.
-function drawWorkerMarker(ctx, cx, cy) {
+export function drawWorkerMarker(ctx, cx, cy) {
   const x = cx - 7, y = cy + 6;
   ctx.save();
   ctx.strokeStyle = RURAL_OUTLINE; ctx.lineWidth = 0.7; ctx.lineJoin = 'round';
@@ -2529,6 +2536,12 @@ export function panDelta(held, dtMs, speedPxPerSec = PAN_SPEED_PX_PER_SEC) {
 }
 
 // ── Main renderer ─────────────────────────────────────────────────────────
+
+// One storm hex drawn by the map's own storm code, for the legend.
+export function drawStormSample(ctx, x, y) {
+  drawStorm(ctx, { tier: 'live', hexes: [{ q: 0, r: 0 }] },
+            { S, hexPx: () => ({ x, y }), hexPts, frame: 0 });
+}
 
 export function toggleActivityOverlay() {
   State.activityOverlay = !State.activityOverlay;
@@ -3757,24 +3770,16 @@ export function settleMessageHTML(fp) {
      <div id="ip-settle-count" class="ip-settle-msg-label">${settleMessageCount('')}</div>`;
 }
 
-// Summarize the same existing forecast. Do not round before deciding yes/no.
+// Summarize the same existing forecast as whole numbers (ui/forecast_rows.js):
+// two different sites must read differently.
 export function hostForecastSummaryHTML(p) {
-  const net = p?.grain?.food_net_per_tick ?? p?.grain?.est_net_per_tick;
-  const feeds = typeof net === 'number' && Number.isFinite(net) ? (net >= 0 ? 'yes' : 'no') : 'unknown';
-  const potential = good => {
-    if (!p?.goods || typeof p.goods !== 'object') return 'unknown';
-    const rate = p.goods[good] ?? 0;
-    return typeof rate === 'number' && Number.isFinite(rate) ? (rate > 0 ? 'yes' : 'no') : 'unknown';
-  };
-  // The harbour rule is the one irreversible geography fact: an inland
-  // metropolis never gets ships. It must not hide behind Details.
-  const ships = typeof p?.harbour_note === 'string' ? (p.harbour_note.startsWith('Coastal') ? 'yes' : 'never — inland') : 'unknown';
-  return `<div class="inspect-row"><span class="ir-label">Feeds itself:</span><span> ${feeds}</span></div>`
-    + `<div class="inspect-row"><span class="ir-label">Timber:</span><span> ${potential('timber')}</span></div>`
-    + `<div class="inspect-row"><span class="ir-label">Stone:</span><span> ${potential('stone')}</span></div>`
-    + `<div class="inspect-row"><span class="ir-label">Ships:</span><span> ${ships}</span></div>`
-    + (p?.timber_warning ? `<div class="dim">${esc(p.timber_warning)}</div>` : '');
+  const rows = forecastRows(p, terrainLabel).map(r =>
+    `<div class="inspect-row"><span class="ir-label">${r.label}:</span><span> ${esc(r.value)}</span></div>`).join('');
+  return rows + (p?.timber_warning ? `<div class="dim">${esc(p.timber_warning)}</div>` : '');
 }
+
+// First use of the three words a newcomer meets before founding.
+export const HOST_GLOSS = 'You are the Wanax (ruler). The Host is your nation on the move. The metropolis is your first city.';
 
 async function openHostPanel(h, tile) {
   // Refresh the store numbers on every open — they drain per tick.
@@ -3816,7 +3821,8 @@ async function openHostPanel(h, tile) {
   // past the panel. The forecast is unbounded by nature; the button must not
   // share a container with it.
   document.getElementById('ip-body-extra').innerHTML =
-    placePanelHTML(tile, {showName:true}) + `<div class="inspect-row" id="ip-host-state">${esc(hostStatusText(hostState))} · (${hostState.q},${hostState.r})</div><div id="ip-found-summary">Fetching founding forecast…</div>
+    `<p class="ip-gloss">${HOST_GLOSS} <button type="button" class="ip-gloss-link" id="ip-host-codex" title="Read about the Host in the Codex">? Codex</button></p>`
+    + placePanelHTML(tile, {showName:true}) + `<div class="inspect-row" id="ip-host-state">${esc(hostStatusText(hostState))} · (${hostState.q},${hostState.r})</div><div id="ip-found-summary">Fetching founding forecast…</div>
      <details id="ip-host-details" class="dsec"><summary class="dsec-title">Details</summary>
      <div style="margin-bottom:.5rem;line-height:1.5">
        <div>Deposits: ${esc(deposits)}</div>
@@ -3835,6 +3841,7 @@ async function openHostPanel(h, tile) {
     `${settleMessageHTML(fp)}
      <button id="ip-settle-btn" style="${MARCH_BTN_STYLE}">⚒ Found the metropolis here</button>
      <div id="ip-settle-err"></div>`;
+  document.getElementById('ip-host-codex')?.addEventListener('click', () => window.openCodex?.('horde'));
   const settleMsg = document.getElementById('ip-settle-msg');
   if (settleMsg) settleMsg.addEventListener('input', () => {
     document.getElementById('ip-settle-count').textContent = settleMessageCount(settleMsg.value);
