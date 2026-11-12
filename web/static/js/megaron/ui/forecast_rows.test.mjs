@@ -21,8 +21,8 @@ const text = rows => rows.map(r => `${r.label}: ${r.value}`).join(' | ');
 
 test('forecast rows give whole numbers, not yes/no', () => {
   const t = text(forecastRows(siteA, s => s));
-  assert.match(t, /Timber: about 7 a game day/);
-  assert.match(t, /Stone: about 25 a game day/);
+  assert.match(t, /Timber: up to 7 a game day, fully worked/);
+  assert.match(t, /Stone: up to 25 a game day, fully worked/);
   assert.match(t, /Copper: 2 hexes/);
   assert.match(t, /Tin: none seen/);
   assert.match(t, /Silver: none seen/);

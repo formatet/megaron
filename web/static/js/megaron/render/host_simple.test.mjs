@@ -48,7 +48,7 @@ test('Q actual Host: only site assessment is primary and all existing detail sta
  assert.equal((html.match(/<details/g)||[]).length,1);assert.doesNotMatch(html,/<details[^>]*\bopen\b/,'Details must begin closed');
  const [primary,details]=html.split('<details');
  assert.match(element('ip-found-summary').innerHTML,/Food:<\/span><span> [^<]*eaten</,'Food row shows made against eaten');
- assert.match(element('ip-found-summary').innerHTML,/Timber:<\/span><span> about \d+ a game day</,'positive timber potential gives a number');
+ assert.match(element('ip-found-summary').innerHTML,/Timber:<\/span><span> up to \d+ a game day, fully worked</,'positive timber potential gives a number');
  assert.match(element('ip-found-summary').innerHTML,/Stone:<\/span><span> none</,'zero stone says none');
  assert.doesNotMatch(primary,/Food lasts|Silver reserve|people|Spearmen|Produces|Deposits|Full forecast/,'only summary belongs before Details');
  for(const text of ['people','Food lasts','Silver reserve lasts','Spearmen','Messengers free','Produces','Deposits'])assert.ok(details.includes(text),text+' detail must remain');
@@ -60,7 +60,7 @@ test('Q actual Host: only site assessment is primary and all existing detail sta
 test('Q actual Host: the summary is whole numbers from the forecast, unknown when it is missing',async()=>{
  forecast={grain:{base_per_tick:7.5,fish_per_tick:0,consumption_per_tick:20},goods:{timber:0,stone:25.4},catchment:[{known:true,terrain:'hills',copper_deposit:true}]};
  await click({city:null,host:true});let html=element('ip-found-summary').innerHTML;
- assert.match(html,/Food:<\/span><span> 8 grain \+ 0 fish a game day, 20 eaten/);assert.match(html,/Timber:<\/span><span> none</);assert.match(html,/Stone:<\/span><span> about 25 a game day/);
+ assert.match(html,/Food:<\/span><span> 8 grain \+ 0 fish a game day, 20 eaten/);assert.match(html,/Timber:<\/span><span> none</);assert.match(html,/Stone:<\/span><span> up to 25 a game day, fully worked/);
  assert.match(html,/Copper:<\/span><span> 1 hex</);assert.doesNotMatch(html,/>yes</);
  forecast={};await click({city:null,host:true});html=element('ip-found-summary').innerHTML;
  assert.equal((html.match(/unknown/g)||[]).length,8,'missing forecast values must remain unknown');
@@ -87,7 +87,7 @@ test('Q actual Host: archived real colonize-preview with timber 8 must show Timb
  assert.equal(real.forecast.goods.timber,8,'fixture preserves the real API commodity key');
  assert.equal(Object.hasOwn(real.forecast.goods,'lumber'),false,'real endpoint never renamed timber to lumber');
  forecast=real.forecast;await click({city:null,host:true});
- assert.match(element('ip-found-summary').innerHTML,/Timber:<\/span><span> about 8 a game day/,'real forecast timber must show the number');
+ assert.match(element('ip-found-summary').innerHTML,/Timber:<\/span><span> up to 8 a game day, fully worked/,'real forecast timber must show the number');
 });
 test('Host panel glosses Wanax, Host and metropolis before Details, with a Codex link',async()=>{
  await click({city:null,host:true});const [primary]=element('ip-body-extra').innerHTML.split('<details');

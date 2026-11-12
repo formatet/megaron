@@ -17,7 +17,7 @@ export function forecastRows(p, label = t => t) {
     if (!hasGoods) return 'unknown';
     const r = p.goods[good];
     const n = Math.round(Number.isFinite(r) ? r : 0);
-    return n > 0 ? `about ${n} a game day` : 'none';
+    return n > 0 ? `up to ${n} a game day, fully worked` : 'none';
   };
   const known = (p.catchment || []).filter(c => c.known);
   const deposit = field => {
