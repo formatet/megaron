@@ -3778,6 +3778,9 @@ export function hostForecastSummaryHTML(p) {
   return rows + (p?.timber_warning ? `<div class="dim">${esc(p.timber_warning)}</div>` : '');
 }
 
+// First use of the three words a newcomer meets before founding.
+export const HOST_GLOSS = 'You are the Wanax (ruler). The Host is your nation on the move. The metropolis is your first city.';
+
 async function openHostPanel(h, tile) {
   // Refresh the store numbers on every open — they drain per tick.
   try {
@@ -3818,7 +3821,8 @@ async function openHostPanel(h, tile) {
   // past the panel. The forecast is unbounded by nature; the button must not
   // share a container with it.
   document.getElementById('ip-body-extra').innerHTML =
-    placePanelHTML(tile, {showName:true}) + `<div class="inspect-row" id="ip-host-state">${esc(hostStatusText(hostState))} · (${hostState.q},${hostState.r})</div><div id="ip-found-summary">Fetching founding forecast…</div>
+    `<p class="ip-gloss">${HOST_GLOSS} <button type="button" class="ip-gloss-link" id="ip-host-codex" title="Read about the Host in the Codex">? Codex</button></p>`
+    + placePanelHTML(tile, {showName:true}) + `<div class="inspect-row" id="ip-host-state">${esc(hostStatusText(hostState))} · (${hostState.q},${hostState.r})</div><div id="ip-found-summary">Fetching founding forecast…</div>
      <details id="ip-host-details" class="dsec"><summary class="dsec-title">Details</summary>
      <div style="margin-bottom:.5rem;line-height:1.5">
        <div>Deposits: ${esc(deposits)}</div>
@@ -3837,6 +3841,7 @@ async function openHostPanel(h, tile) {
     `${settleMessageHTML(fp)}
      <button id="ip-settle-btn" style="${MARCH_BTN_STYLE}">⚒ Found the metropolis here</button>
      <div id="ip-settle-err"></div>`;
+  document.getElementById('ip-host-codex')?.addEventListener('click', () => window.openCodex?.('horde'));
   const settleMsg = document.getElementById('ip-settle-msg');
   if (settleMsg) settleMsg.addEventListener('input', () => {
     document.getElementById('ip-settle-count').textContent = settleMessageCount(settleMsg.value);

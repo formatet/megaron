@@ -65,6 +65,7 @@ import { installErrorCapture } from './ui/diagnostics.js';
 import { playWarHorn, playBattleClash, playArrival, playDispatchChime } from './ui/sfx.js';
 import { closeDispatchWindow } from './ui/dispatch_window.js';
 import { closeAccountWindow, toggleAccountWindow } from './ui/account_window.js';
+import { signedInAsText } from './ui/account_profile.js';
 import { closeLegendWindow, toggleLegendWindow } from './ui/legend_window.js';
 import { initCodex, openCodex, openCodexForDrawer, closeCodex, codexBack } from './ui/codex.js';
 
@@ -309,6 +310,8 @@ async function bootstrap() {
   // empty for an authenticated player (megaron_plan_wanaxnamn_tilltal.md).
   const wanaxEl = document.getElementById('gt-wanax');
   if (wanaxEl && me.wanax_name) wanaxEl.textContent = 'Wanax ' + me.wanax_name;
+  State.USERNAME = me.username || null;
+  if (wanaxEl) wanaxEl.title = signedInAsText(State.USERNAME) + ' Click for your account.';
 
   try {
     const [world, provinces] = await Promise.all([

@@ -89,3 +89,8 @@ test('Q actual Host: archived real colonize-preview with timber 8 must show Timb
  forecast=real.forecast;await click({city:null,host:true});
  assert.match(element('ip-found-summary').innerHTML,/Timber:<\/span><span> about 8 a game day/,'real forecast timber must show the number');
 });
+test('Host panel glosses Wanax, Host and metropolis before Details, with a Codex link',async()=>{
+ await click({city:null,host:true});const [primary]=element('ip-body-extra').innerHTML.split('<details');
+ for(const w of ['Wanax (ruler)','Host','metropolis'])assert.ok(primary.includes(w),w);
+ assert.match(primary,/id="ip-host-codex"/);
+});

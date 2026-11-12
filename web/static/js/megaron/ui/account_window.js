@@ -2,7 +2,7 @@ import { openMobilePanel, closeMobilePanel } from './mobile_panels.js';
 import { fetchAuth } from '../api.js';
 import { formatApiError, esc } from './format.js';
 import { State } from '../state.js';
-import { accountProfileHTML } from './account_profile.js';
+import { accountProfileHTML, signedInAsText } from './account_profile.js';
 
 // ── Account window — every keryx verb lives in the web too (Timothy
 // 2026-09-25, CLAUDE.md "A verb lives on FOUR surfaces"). `keryx password`
@@ -47,6 +47,7 @@ export function openAccountWindow() {
   if (!body) return;
 
   body.innerHTML = `
+    <p class="account-delete-note" id="acc-whoami"></p>
     <section id="acc-profile" class="account-profile" aria-label="Your realm"></section>
     <form id="acc-pw-form">
       <div class="field">
@@ -75,6 +76,7 @@ export function openAccountWindow() {
     <p class="account-delete-note">To delete your account, write to <a href="mailto:timothy@formatet.se">timothy@formatet.se</a>.</p>
     <button class="dw-goto-btn" id="acc-signout-btn">Sign out</button>
   `;
+  document.getElementById('acc-whoami').textContent = signedInAsText(State.USERNAME);
   openMobilePanel(overlay, closeAccountWindow);
   overlay.classList.add('open');
 

@@ -97,3 +97,9 @@ test('profile error does not invent zero-valued statistics', async t => {
   assert.equal(h.nodes.get('acc-profile').innerHTML, '');
 });
 
+
+import { signedInAsText } from './account_profile.js';
+test('the Wanax name is explained next to the username', () => {
+  assert.equal(signedInAsText('Kalchas'), "Your Wanax's name. You signed in as Kalchas.");
+  assert.equal(signedInAsText(null), "Your Wanax's name.");
+});

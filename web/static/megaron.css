@@ -1597,6 +1597,10 @@ h4.cx-h { font-size: var(--fs-base); }
 #account-window-overlay .dw-header { flex-shrink: 0; }
 #account-window-overlay .dw-body { min-height: 0; overflow-y: auto; }
 
+/* World entry card: the world name is body text, not the gold heading colour (pale on cream). */
+.join-panel h2 { color: var(--text); }
+.ip-gloss { margin: 0 0 .5rem; font-size: var(--fs-sm); color: var(--text-dim); line-height: 1.4; }
+.ip-gloss-link { background: none; border: 0; padding: 0; font: inherit; color: var(--accent-city-text); text-decoration: underline; cursor: pointer; }
 #legend-window-overlay { padding-top: 12dvh; padding-inline: .5rem; }
 #legend-window-overlay .dispatch-window { display: flex; flex-direction: column; max-height: calc(88dvh - 1rem); }
 #legend-window-overlay .dw-header { flex-shrink: 0; }

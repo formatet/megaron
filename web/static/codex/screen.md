@@ -18,7 +18,7 @@ The map, drawers and dispatches show your realm and let you give orders.
 | ✉ | **Diplomacy** | Letters, [[trade|trade offers]], known cities and rulers — [[messengers]] |
 | ⚖ | **Economy** | Goods across all cities, [[transfers|transfers]], [[routes|standing orders]] — [[goods]] |
 | ⛩ | **Kult** | The [[gods|gods]] — [[kharis]] |
-| ✎ | **Report** | Tell the builders something is wrong — [[report]] |
+| ✎ | **Feedback** | Tell the builders something is wrong — [[report]] |
 
 Every drawer has a **?** in its header that opens its article here.
 
