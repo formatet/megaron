@@ -9,8 +9,8 @@ import (
 func openingNotice(t *testing.T, title string, returning bool) notificationItem {
 	t.Helper()
 	body, err := json.Marshal(map[string]any{"title": title, "returning": returning, "host_id": "private-host-id", "paragraphs": []string{
-		"Time. A game day passes every 7 minutes.", "An army crosses a plains hex in 3 game days.", "Your Host carries 987 grain and 654 silver.", "Food first. Below 321 people it falls.", "The gods. You are safe for 43 game days.", "Orders travel with a Runner.", "Bronze needs copper and tin.", "Rules: ? (Codex). Problems: Report.",
-	}})
+		"You are a Wanax, a ruler.", "A game day passes every 7 minutes.",
+	}, "steps": []string{"Look at the land.", "Click your Host on the map.", "Found your city.", "Put your citizens to work.", "Read the Codex (?)."}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -28,14 +28,18 @@ func TestOpeningDispatchSummaryAndArchiveWatchDetails(t *testing.T) {
 		detail := capturePrint(t, func() { printNotificationDetail(nil, n) })
 		var b struct {
 			Paragraphs []string `json:"paragraphs"`
+			Steps      []string `json:"steps"`
 		}
 		if err := json.Unmarshal(n.Body, &b); err != nil {
 			t.Fatal(err)
 		}
-		for _, p := range b.Paragraphs {
+		for _, p := range append(b.Paragraphs, b.Steps...) {
 			if strings.Count(detail, p) != 1 {
 				t.Errorf("%q must appear once in %q", p, detail)
 			}
+		}
+		if !strings.Contains(detail, "1. Look at the land.") || !strings.Contains(detail, "5. Read the Codex (?).") {
+			t.Fatalf("steps must print as a numbered list: %q", detail)
 		}
 		if strings.Contains(detail, "private-host-id") || strings.Contains(detail, "\"paragraphs\"") {
 			t.Fatalf("raw JSON leaked: %s", detail)

@@ -14,7 +14,6 @@ import (
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/kharis"
-	"formatet/megaron/server/internal/province"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
@@ -93,17 +92,14 @@ func TestKharisPlayerRulesSourceParity(t *testing.T) {
 			t.Errorf("Codex missing active rule %q", want)
 		}
 	}
+	// The opening dispatch no longer carries kharis numbers; the rule lives only in the Codex (checked above).
 	h := &JoinHandler{startWanaxes: 3}
 	for _, spec := range []hostSpec{newcomerHost, hostSpec{refugee: true}} {
-		text := strings.Join(h.openingDispatch(uuid.New(), spec, false).Paragraphs, " ")
-		if strings.Contains(text, "holds for") || strings.Contains(text, "144") || strings.Contains(text, "no punishment falls") {
+		text := strings.Join(append(h.openingDispatch(uuid.New(), spec, false).Paragraphs, h.openingDispatch(uuid.New(), spec, false).Steps...), " ")
+		if strings.Contains(text, "holds for") || strings.Contains(text, "144") || strings.Contains(text, "no punishment falls") || strings.Contains(text, "Kharis") {
 			t.Fatal(text)
 		}
-		if !strings.Contains(text, "falls about 10 points in 30 game days") || !strings.Contains(text, "below 30 the gods may punish you") || strings.Contains(text, "fades slowly") ||
-			!strings.Contains(text, fmt.Sprintf("takes %d game days to build", province.BuildingSpecs[province.BuildingTemple].DurationTicks)) {
-			t.Fatal(text)
-		}
-		if spec.refugee && (strings.Contains(text, "starts at") || !strings.Contains(text, "standing is kept")) {
+		if spec.refugee && !strings.Contains(text, "standing with the gods is kept") {
 			t.Fatal(text)
 		}
 	}

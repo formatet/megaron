@@ -102,10 +102,16 @@ func printNotificationDetail(c *Client, n notificationItem) {
 	if n.Kind == "OpeningDispatch" {
 		var body struct {
 			Paragraphs []string `json:"paragraphs"`
+			Steps      []string `json:"steps"`
 		}
 		if json.Unmarshal(n.Body, &body) == nil {
-			for _, paragraph := range body.Paragraphs {
+			for i, paragraph := range body.Paragraphs {
 				fmt.Println("      " + paragraph)
+				if i == 0 {
+					for j, step := range body.Steps {
+						fmt.Printf("        %d. %s\n", j+1, step)
+					}
+				}
 			}
 		}
 	}

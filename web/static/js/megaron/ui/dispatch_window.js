@@ -273,9 +273,15 @@ function wireOccupationBlock(choices, settlementID) {
 }
 
 // Live dispatch and archive both render the immutable server paragraphs here.
+// New dispatches: who you are, a numbered list of first steps, the game-day line. Older stored ones carry
+// only `paragraphs` and render as before.
 export function openingDispatchHTML(payload) {
-  const paragraphs = Array.isArray(payload.paragraphs) ? payload.paragraphs : [];
-  return paragraphs.filter(p => typeof p === 'string').map(p => `<p class="dw-text">${esc(p)}</p>`).join('');
+  const paragraphs = (Array.isArray(payload.paragraphs) ? payload.paragraphs : []).filter(p => typeof p === 'string');
+  const steps = (Array.isArray(payload.steps) ? payload.steps : []).filter(p => typeof p === 'string');
+  const para = p => `<p class="dw-text">${esc(p)}</p>`;
+  if (!steps.length) return paragraphs.map(para).join('');
+  return para(paragraphs[0] || '') + `<ol class="dw-steps">${steps.map(t => `<li>${esc(t)}</li>`).join('')}</ol>`
+    + paragraphs.slice(1).map(para).join('');
 }
 
 export async function openDispatchWindow(kind, payload, timeLabel) {

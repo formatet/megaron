@@ -122,6 +122,8 @@ test('opening dispatch preserves all archived paragraphs and escapes text', () =
   assert.match(html, /&lt;script&gt;not markup&lt;\/script&gt; &amp; Report/);
   assert.doesNotMatch(html, /<script>|hidden-host-id|"paragraphs"/);
   assert.equal(openingDispatchHTML({}), '');
+  const list = openingDispatchHTML({ paragraphs: ['Who.', 'A game day passes every 2 minutes.'], steps: ['One.', 'Two <b>.'] });
+  assert.match(list, /^<p class="dw-text">Who\.<\/p><ol class="dw-steps"><li>One\.<\/li><li>Two &lt;b&gt;\.<\/li><\/ol><p class="dw-text">A game day/, 'new dispatch: who, list, time');
 });
 
 test('opening dispatch destination resolves the current own Host from its id', () => {

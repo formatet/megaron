@@ -4,12 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math"
 
-	"formatet/megaron/server/internal/economy"
-	"formatet/megaron/server/internal/kharis"
 	"formatet/megaron/server/internal/notify"
-	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/tick"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -19,7 +15,8 @@ const openingDispatchKind = "OpeningDispatch"
 
 type openingDispatchBody struct {
 	Title      string    `json:"title"`
-	Paragraphs []string  `json:"paragraphs"`
+	Paragraphs []string  `json:"paragraphs"` // who you are, then the game-day line
+	Steps      []string  `json:"steps"`      // what to do first, shown as a list; older dispatches have none
 	Returning  bool      `json:"returning"`
 	HostID     uuid.UUID `json:"host_id"`
 }
@@ -37,33 +34,29 @@ func openingDayLength(seconds int) string {
 	return fmt.Sprintf("%g %s", value, unit)
 }
 
+// openingDispatch is the first thing a new Wanax reads: who you are, five things to do first, how long a
+// game day is. Every rule it used to carry (movement times, reserves, food, gods, runners, bronze) lives in
+// the Codex (welcome, horde, marching, food, kharis, runners, bronze) and nowhere else.
 func (h *JoinHandler) openingDispatch(hostID uuid.UUID, spec hostSpec, forming bool) openingDispatchBody {
 	body := openingDispatchBody{Title: "Your people await you", Returning: spec.refugee, HostID: hostID}
-	host := fmt.Sprintf("Your Host carries %g grain and %g silver. It lives on subsistence until founding; these reserves do not drain. Find your place — founding is final.", float64(nomadicHostDowryGrain), spec.silver)
+	who := "You are a Wanax, a ruler. Your people are a wandering Host until you found a city."
+	found := "Found your city where the ground suits you. It cannot be undone."
 	if spec.refugee {
 		body.Title = "Begin again"
-		host = fmt.Sprintf("Your survivors gather into a new Host, with %g grain and %g silver. Your standing with the gods is kept. You live on subsistence until founding; find a new home.", float64(nomadicHostDowryGrain), spec.silver)
+		who = "Your survivors gather into a new Host and your standing with the gods is kept. You are still a Wanax, a ruler."
+		found = "Found a new city where the ground suits you. It cannot be undone."
 	}
-	templeDays := province.BuildingSpecs[province.BuildingTemple].DurationTicks
-	fadePoints := kharis.StartingKharis - kharis.WrathThreshold
-	godsPace := fmt.Sprintf("Without a temple your Kharis falls about %g points in %g game days; below %g the gods may punish you, and each additional city raises the daily cost, even with a temple. A temple takes %d game days to build \u2014 start one early, then staff and feed it to earn favour.", fadePoints, math.Round(fadePoints/kharis.KharisPerDemand), float64(kharis.WrathThreshold), templeDays)
-	timeLine := fmt.Sprintf("Time. A game day passes every %s.", openingDayLength(tick.TickSeconds))
+	timeLine := fmt.Sprintf("A game day passes every %s in this world.", openingDayLength(tick.TickSeconds))
 	if forming {
 		timeLine += fmt.Sprintf(" Game days begin after %d Wanaxes join.", h.startWanaxes)
 	}
-	body.Paragraphs = []string{
-		timeLine,
-		fmt.Sprintf("Foot soldiers cross a plains hex in %g game day, olive woodland in %g, hills or cedar forest in %g, desert in %g. Chariots cross plains in %g game day but need %g in olive woodland and %g in hills, cedar forest or desert. A full-crewed galley crosses %g coastal or %g open-sea hexes a game day.", province.TerrainMoveTicks("plains"), province.TerrainMoveTicks("forest_olive_grove"), province.TerrainMoveTicks("hills"), province.TerrainMoveTicks("semi_desert"), province.TerrainMoveTicksFor("plains", province.CategoryWarChariot), province.TerrainMoveTicksFor("forest_olive_grove", province.CategoryWarChariot), province.TerrainMoveTicksFor("hills", province.CategoryWarChariot), 1/province.TerrainMoveTicksFor("coastal_sea", "naval"), 1/province.TerrainMoveTicksFor("deep_sea", "naval")),
-		host,
-		fmt.Sprintf("Food first. A city must feed itself. Starvation makes it shrink; below %d people it falls.", economy.CollapseBelowPopulation),
-		fmt.Sprintf("The gods. A new Wanax starts at %g Kharis. %s", kharis.StartingKharis, godsPace),
-		"Place citizens on olive woodland or cedar forest for timber, and on stone-bearing ground for stone; idle citizens produce nothing.",
-		"Orders travel. A Runner must reach a unit in the field before it follows your new order.",
-		"Bronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.",
-		"Rules: ? (Codex). Problems: Report. Community: the Megaron Discord, linked under Account.",
-	}
-	if spec.refugee {
-		body.Paragraphs[4] = fmt.Sprintf("The gods. Your standing is kept. %s", godsPace)
+	body.Paragraphs = []string{who, timeLine}
+	body.Steps = []string{
+		"Look at the land: click a hex to see what lies on it.",
+		"Click your Host on the map.",
+		found,
+		"Put your citizens to work, food first.",
+		"Read the Codex (?) for the rest.",
 	}
 	return body
 }
