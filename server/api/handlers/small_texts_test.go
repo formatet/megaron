@@ -14,11 +14,15 @@ func TestNoCitizensLeftMsgNamesTheFreeingVerbs(t *testing.T) {
 	}
 }
 
-// The expedition-budget preview refusal names the public floor (4 game days) but
-// never a route-specific minimum.
-func TestExpeditionBudgetMsgNamesFloorOnly(t *testing.T) {
-	if !strings.Contains(expeditionBudgetMsg, "shortest expedition is 4 game days") || !strings.Contains(expeditionBudgetMsg, "too short") {
-		t.Fatal(expeditionBudgetMsg)
+// The expedition-budget preview refusal names the duration the player gave and the public range, never
+// a route-specific minimum, and never says "too short" about a duration longer than the floor.
+func TestExpeditionBudgetMsgNamesAskedDuration(t *testing.T) {
+	got := expeditionBudgetMsg(10)
+	if !strings.Contains(got, "an expedition of 10 game days is not enough") || !strings.Contains(got, "4 to 365 game days") || strings.Contains(got, "too short") {
+		t.Fatal(got)
+	}
+	if def := expeditionBudgetMsg(0); !strings.Contains(def, "of 10 game days") {
+		t.Fatal(def)
 	}
 }
 

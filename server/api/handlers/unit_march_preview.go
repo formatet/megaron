@@ -16,10 +16,16 @@ import (
 	"github.com/google/uuid"
 )
 
-// expeditionBudgetMsg names only the public floor of an expedition (the shortest expedition is
-// ExpeditionMinTicks), never the route's own minimum: the route may cross unseen terrain.
-var expeditionBudgetMsg = "the expedition duration is too short to reach the chosen area and return home — the shortest expedition is " +
-	tick.FormatDays(combat.ExpeditionMinTicks) + ", and this one needs longer: choose a longer duration or a nearer area"
+// expeditionBudgetMsg refuses the duration the player gave without exposing the route's own minimum
+// (the route may cross unseen terrain). It names the asked duration, so it never reads as "10 is below 4":
+// the 4..365 range is the public floor and ceiling, not what this destination needs.
+func expeditionBudgetMsg(asked int) string {
+	if asked == 0 {
+		asked = combat.ExpeditionDefaultTicks
+	}
+	return "an expedition of " + tick.FormatDays(asked) + " is not enough to reach the chosen area and return home — choose a longer duration or a nearer area (any expedition may last " +
+		strconv.Itoa(combat.ExpeditionMinTicks) + " to " + tick.FormatDays(combat.ExpeditionMaxTicks) + ")"
+}
 
 // MarchPreview estimates arrival without dispatching an order. Timing describes
 // current conditions, not a reservation or a guarantee that dispatch will succeed.
@@ -114,7 +120,7 @@ func (h *UnitHandler) MarchPreview(w http.ResponseWriter, r *http.Request) {
 				// Route costs may cross unseen terrain. Refuse the selected budget
 				// without exposing its minimum duration or either leg's timing.
 				if rej.Code == combat.RejectExpeditionBudget {
-					writeError(w, rej.Status, expeditionBudgetMsg)
+					writeError(w, rej.Status, expeditionBudgetMsg(order.ExpeditionTicks))
 					return
 				}
 				writeError(w, rej.Status, rej.Reason)
