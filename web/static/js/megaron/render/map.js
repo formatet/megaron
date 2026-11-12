@@ -15,6 +15,7 @@ import {
 } from '../config.js';
 import { isTypingTarget, esc, playerError, errorDetail, setErrorText } from '../ui/format.js';
 import { fmtNum, fmtDays } from '../ui/fmt_num.js';
+import { forecastRows } from '../ui/forecast_rows.js';
 import { canonicalUnitType, actorName } from '../ui/actornames.js';
 import { drawActor, spriteRuns, FOREIGN_ACCENT, FOREIGN_OUTLINE } from './actorsprites.js';
 import { eyeSees } from './sight.js';
@@ -3769,23 +3770,12 @@ export function settleMessageHTML(fp) {
      <div id="ip-settle-count" class="ip-settle-msg-label">${settleMessageCount('')}</div>`;
 }
 
-// Summarize the same existing forecast. Do not round before deciding yes/no.
+// Summarize the same existing forecast as whole numbers (ui/forecast_rows.js):
+// two different sites must read differently.
 export function hostForecastSummaryHTML(p) {
-  const net = p?.grain?.food_net_per_tick ?? p?.grain?.est_net_per_tick;
-  const feeds = typeof net === 'number' && Number.isFinite(net) ? (net >= 0 ? 'yes' : 'no') : 'unknown';
-  const potential = good => {
-    if (!p?.goods || typeof p.goods !== 'object') return 'unknown';
-    const rate = p.goods[good] ?? 0;
-    return typeof rate === 'number' && Number.isFinite(rate) ? (rate > 0 ? 'yes' : 'no') : 'unknown';
-  };
-  // The harbour rule is the one irreversible geography fact: an inland
-  // metropolis never gets ships. It must not hide behind Details.
-  const ships = typeof p?.harbour_note === 'string' ? (p.harbour_note.startsWith('Coastal') ? 'yes' : 'never — inland') : 'unknown';
-  return `<div class="inspect-row"><span class="ir-label">Feeds itself:</span><span> ${feeds}</span></div>`
-    + `<div class="inspect-row"><span class="ir-label">Timber:</span><span> ${potential('timber')}</span></div>`
-    + `<div class="inspect-row"><span class="ir-label">Stone:</span><span> ${potential('stone')}</span></div>`
-    + `<div class="inspect-row"><span class="ir-label">Ships:</span><span> ${ships}</span></div>`
-    + (p?.timber_warning ? `<div class="dim">${esc(p.timber_warning)}</div>` : '');
+  const rows = forecastRows(p, terrainLabel).map(r =>
+    `<div class="inspect-row"><span class="ir-label">${r.label}:</span><span> ${esc(r.value)}</span></div>`).join('');
+  return rows + (p?.timber_warning ? `<div class="dim">${esc(p.timber_warning)}</div>` : '');
 }
 
 async function openHostPanel(h, tile) {
