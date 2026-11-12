@@ -1818,13 +1818,19 @@ function drawPeaks(ctx, cx, cy, q, r, terrain) {
 }
 
 // ── Deposit resource icons (Sprint 4.5) — tiny pixel markers ────────────
-function drawDepositIcons(ctx, cx, cy, tile) {
-  const types = [];
-  if (tile.copper_deposit) types.push('cu');
-  if (tile.tin_deposit)    types.push('sn');
-  if (tile.cedar_deposit)  types.push('cd');
-  if (tile.silver_deposit) types.push('ag');
-  if (tile.incense_deposit) types.push('in');
+// The deposit kinds, in drawing order: tile field → marker key → name. The
+// legend (render/legend.js) reads THIS table, so a new deposit shows up there.
+export const DEPOSIT_KINDS = [
+  { field: 'copper_deposit',  key: 'cu', label: 'Copper' },
+  { field: 'tin_deposit',     key: 'sn', label: 'Tin' },
+  { field: 'cedar_deposit',   key: 'cd', label: 'Cedar' },
+  { field: 'silver_deposit',  key: 'ag', label: 'Silver' },
+  { field: 'incense_deposit', key: 'in', label: 'Incense' },
+];
+// `forceLive` lets the legend draw the live-hex look (incense sparkles) for a
+// tile that is not on the map.
+export function drawDepositIcons(ctx, cx, cy, tile, forceLive = false) {
+  const types = DEPOSIT_KINDS.filter(k => tile[k.field]).map(k => k.key);
   if (!types.length) return;
   ctx.save();
   // Charcoal outline on every marker. These are game information sitting on
@@ -1893,7 +1899,7 @@ function drawDepositIcons(ctx, cx, cy, tile) {
         ctx.beginPath(); ctx.moveTo(ox, oy - 4.5); ctx.lineTo(ox + 3, oy); ctx.arc(ox, oy + 0.5, 3, 0, Math.PI); ctx.lineTo(ox - 3, oy); ctx.closePath(); ctx.fill(); ctx.stroke();
         ctx.fillStyle = '#FFF6C8';
         ctx.fillRect(Math.round(ox - 1.5), Math.round(oy - 1), 1, 2);
-        if (tileTier(tile.q, tile.r) === 'live') {
+        if (forceLive || tileTier(tile.q, tile.r) === 'live') {
           ctx.fillStyle = '#FFE680';
           for (const [dx, dy] of [[5, -5], [-5, -3], [5, 3]]) {
             const sx = Math.round(ox + dx), sy = Math.round(oy + dy);
@@ -2056,7 +2062,7 @@ function provinceIcon(p) {
   return cityIcon(p.size_tier ? 1 : 0, Math.min(3, p.walls || 0), p.culture || 'akhaier',
                   provinceSeed(p) % 997, coastal, ruin);
 }
-function drawProvinceIcon(ctx, cx, cy, p) {
+export function drawProvinceIcon(ctx, cx, cy, p) {
   const ruin = p.state === 'razed' || p.state === 'collapsed';
   const ic = provinceIcon(p);
   const { ox, oy } = drawCityIcon(ctx, ic, cx, cy);
@@ -2456,7 +2462,7 @@ const RURAL_SPRITES = { farm: drawFarm, mine: drawMine, lumbermill: drawLumbermi
 // hex. Drawn bottom-left of centre so it clears the rural building sprite
 // (centre) and the deposit icons (top-right); 1px charcoal outline, saturated
 // fill, no AA — temenos_designprinciper.
-function drawWorkerMarker(ctx, cx, cy) {
+export function drawWorkerMarker(ctx, cx, cy) {
   const x = cx - 7, y = cy + 6;
   ctx.save();
   ctx.strokeStyle = RURAL_OUTLINE; ctx.lineWidth = 0.7; ctx.lineJoin = 'round';
@@ -2529,6 +2535,12 @@ export function panDelta(held, dtMs, speedPxPerSec = PAN_SPEED_PX_PER_SEC) {
 }
 
 // ── Main renderer ─────────────────────────────────────────────────────────
+
+// One storm hex drawn by the map's own storm code, for the legend.
+export function drawStormSample(ctx, x, y) {
+  drawStorm(ctx, { tier: 'live', hexes: [{ q: 0, r: 0 }] },
+            { S, hexPx: () => ({ x, y }), hexPts, frame: 0 });
+}
 
 export function toggleActivityOverlay() {
   State.activityOverlay = !State.activityOverlay;

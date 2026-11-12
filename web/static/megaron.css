@@ -1597,6 +1597,14 @@ h4.cx-h { font-size: var(--fs-base); }
 #account-window-overlay .dw-header { flex-shrink: 0; }
 #account-window-overlay .dw-body { min-height: 0; overflow-y: auto; }
 
+#legend-window-overlay { padding-top: 12dvh; padding-inline: .5rem; }
+#legend-window-overlay .dispatch-window { display: flex; flex-direction: column; max-height: calc(88dvh - 1rem); }
+#legend-window-overlay .dw-header { flex-shrink: 0; }
+#legend-window-overlay .dw-body { min-height: 0; overflow-y: auto; }
+.legend-group { margin: .8rem 0 .3rem; font-size: var(--fs-sm); color: var(--text-dim); text-transform: uppercase; }
+.legend-row { display: flex; align-items: center; gap: .6rem; padding: .15rem 0; }
+.legend-sym { width: 64px; height: 60px; flex-shrink: 0; image-rendering: pixelated; background: var(--bg-raised); border: 1px solid var(--border); }
+
 /* A whole sealed letter/order fits the dispatch on narrow screens too. */
 .dw-envelope { white-space: pre-wrap; overflow-wrap: anywhere; max-width: 100%; margin: .8rem 0; font: inherit; line-height: 1.5; }
 #dispatch-window-overlay .dispatch-window { display: flex; flex-direction: column; max-height: calc(88dvh - 1rem); }

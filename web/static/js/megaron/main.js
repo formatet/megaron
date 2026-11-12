@@ -65,6 +65,7 @@ import { installErrorCapture } from './ui/diagnostics.js';
 import { playWarHorn, playBattleClash, playArrival, playDispatchChime } from './ui/sfx.js';
 import { closeDispatchWindow } from './ui/dispatch_window.js';
 import { closeAccountWindow, toggleAccountWindow } from './ui/account_window.js';
+import { closeLegendWindow, toggleLegendWindow } from './ui/legend_window.js';
 import { initCodex, openCodex, openCodexForDrawer, closeCodex, codexBack } from './ui/codex.js';
 
 // ── Drawer system (generic chrome — per-drawer content lives in ui/drawers/) ─
@@ -116,6 +117,7 @@ document.addEventListener('keydown', e => {
     if (State.activeDrawer) { closeDrawer(State.activeDrawer); return; }
     closeDispatchWindow();
     closeAccountWindow();
+    closeLegendWindow();
     closeSearch();
   }
 });
@@ -179,6 +181,7 @@ Object.assign(window, {
   demolishBuilding,
   centreOn,
   closeAccountWindow,
+  closeLegendWindow,
   closeCodex,
   closeDispatchWindow,
   closeDrawer,
@@ -227,6 +230,7 @@ Object.assign(window, {
   sortEconomySettlements,
   submitReport,
   toggleAccountWindow,
+  toggleLegendWindow,
   toggleActivityOverlay,
   toggleCodex,
   toggleDrawer,
