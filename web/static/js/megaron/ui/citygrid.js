@@ -63,7 +63,7 @@ export function shipyardShareNote(workers, sharing) {
 }
 
 // The line under a hex's title: where this city's own citizens stand on the hex, so a row with none
-// ("None of yours on this good") is read against the hex's real workers.
+// ("None of yours") is read against the hex's real workers.
 export function hexWorkersLine(goods) {
   const here = (goods || []).map(g => [g.good_key, (g.placed_ordinals || []).length]).filter(([, k]) => k > 0).sort((a, b) => a[0].localeCompare(b[0], 'en'));
   return here.length ? `Your citizens here: ${here.map(([k, c]) => `${k} ${fmtNum(c)}`).join(', ')}` : '';
@@ -135,9 +135,9 @@ export function goodRowHTML(target, good, take) {
         ${take
           ? `<button class="btn-small gubbe-act gubbe-take" data-verb="place1">${esc(take)}</button>`
           : `<button class="btn-small gubbe-act" data-verb="place1" ${full ? 'disabled' : ''}>+1</button>
-        ${full ? '' : `<button class="btn-small gubbe-act" data-verb="fill">Fill</button>`}
+        <button class="btn-small gubbe-act" data-verb="fill" ${full ? 'disabled' : ''}>Fill</button>
         <button class="btn-small gubbe-act" data-verb="unplace1" ${mine > 0 ? '' : 'disabled'}>−1</button>
-        ${[full ? 'All places are staffed' : '', mine > 0 ? '' : 'None of yours on this good'].filter(Boolean).map(r => `<span class="btn-reason">${r}</span>`).join('')}`}
+        <span class="btn-reason gubbe-reason">${[full ? 'Full' : '', mine > 0 ? '' : 'None of yours'].filter(Boolean).join(' · ') || '&nbsp;'}</span>`}
       </div>
     </div>`;
 }

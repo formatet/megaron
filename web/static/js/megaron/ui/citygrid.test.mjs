@@ -205,7 +205,7 @@ test('CG fishing: zero places disables adding; coast, bay and harbour capacities
   });
   const locked = row(0, 0);
   assert.match(locked, /data-verb="place1" disabled/);
-  assert.doesNotMatch(locked, /data-verb="fill"/);
+  assert.match(locked, /data-verb="fill" disabled/); // kept in place, disabled: buttons never shift under the finger
   assert.doesNotMatch(locked, /gubbe-pip/);
   for (const [cap, rate] of [[2, 1], [2, 2], [1, 1], [4, 1]]) {
     const html = row(cap, rate);
@@ -327,7 +327,7 @@ test('SMAFEL2: a hex names the citizens of yours standing on it, and a row with 
   assert.equal(hexWorkersLine(goods), 'Your citizens here: stone 2, timber 1');
   assert.equal(hexWorkersLine([{ good_key: 'copper' }]), '');
   const html = goodRowHTML({ target_kind: 'hex', hex_ordinal: 1 }, { good_key: 'copper', placed: 0, cap: 1, marginal_yield: 1, rate_per_tick: 0, placed_ordinals: [] });
-  assert.match(html, /None of yours on this good/);
+  assert.match(html, /None of yours</);
 });
 
 test('SMAFEL6: the take button names a held building by its player-facing label, not the raw key', () => {

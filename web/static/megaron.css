@@ -1051,8 +1051,11 @@ body:has(.auth-page) main {
 .gubbe-fow-list { font-size: var(--fs-xs); color: var(--text-dim); margin-top: 0.3rem; }
 .gubbe-fow-note { display: inline-block; margin-right: 0.6rem; }
 .gubbe-detail-panel { margin-top: 0.5rem; padding: 0.5rem; background: var(--bg-panel); border: 1px solid var(--border); min-height: 3rem; }
-.gubbe-good-row { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; padding: 0.3rem 0; border-bottom: 1px solid var(--border-in); font-size: var(--fs-sm); }
+.gubbe-good-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; padding: 0.3rem 0; border-bottom: 1px solid var(--border-in); font-size: var(--fs-sm); }
 .gubbe-good-row:last-child { border-bottom: none; }
+/* The reason line is always one reserved line, so buttons and rows below never move when its text changes. */
+.gubbe-reason { min-height: 1.3em; white-space: nowrap; }
+.gubbe-good-row .btn-small { min-width: 3.2rem; }
 .gubbe-pip { display: inline-block; width: 0.55rem; height: 0.55rem; border-radius: 50%; background: var(--safe); margin: 0.15rem 0.1rem 0 0; }
 .gubbe-pip.empty { background: var(--bg-raised); border: 1px solid var(--border-in); }
 /* A refused placement, in the server's own words, under the buttons that were
