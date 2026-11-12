@@ -8,19 +8,19 @@ import (
 
 func TestEqualFoodCityUsesServerTotalsAndGoods(t *testing.T) {
 	var sett map[string]any
-	err := json.Unmarshal([]byte(`{"grain_prod_rate":999,"grain_consum_rate":999,"army_upkeep":{"grain":999,"food":2,"silver":0},"food_net_per_tick_after_upkeep":5,"food":{"coverage_ticks":12.5,"production_per_tick":10,"consumption_per_tick":3,"food_net_per_tick":7,"goods":{"grain":100,"fish":900,"oil":40,"wine":60}}}`), &sett)
+	err := json.Unmarshal([]byte(`{"grain_prod_rate":999,"grain_consum_rate":999,"army_upkeep":{"grain":999,"food":2,"silver":0},"food_net_per_tick_after_upkeep":5,"forecast":{"food":{"net":4.4,"days":null}},"food":{"coverage_ticks":12.5,"production_per_tick":10,"consumption_per_tick":3,"food_net_per_tick":7,"goods":{"grain":100,"fish":900,"oil":40,"wine":60}}}`), &sett)
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, text := range []string{"Food for 12.5 game days", "900 fish, 100 grain, 40 oil"} {
+	for _, text := range []string{"Food +4.4 per game day", "900 fish, 100 grain, 40 oil"} {
 		if !strings.Contains(cityFoodLine(sett), text) {
 			t.Fatal(cityFoodLine(sett))
 		}
 	}
-	if line := peopleFoodLine(sett); !strings.Contains(line, "production 10.0 − people eat 3.0 = net +7.0") || strings.Contains(line, "999") {
+	if line := peopleFoodLine(sett); !strings.Contains(line, "production 10.0 − people eat 3.0 = growth surplus +7.0") || strings.Contains(line, "999") {
 		t.Fatal(line)
 	}
-	if line := armyFoodLine(sett); !strings.Contains(line, "eats 2 food") || !strings.Contains(line, "+5.0") || strings.Contains(line, "grain") {
+	if line := armyFoodLine(sett); !strings.Contains(line, "eats 2 food") || strings.Contains(line, "net") || strings.Contains(line, "grain") {
 		t.Fatal(line)
 	}
 	food := sett["food"].(map[string]any)

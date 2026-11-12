@@ -43,9 +43,9 @@ To learn what another city needs or can spare, ask its Wanax in a [[messengers|l
 
 The gods weigh goods differently: one bronze counts for 33 grain. The fixed table is in [[rites]]; a god values the goods it favours higher still. Wanaxes agree their own trade prices.
 
-Production per game day is output before meals and other uses. Food net combines fish, grain and oil production minus population demand. The city has one stock of each good; food coverage counts these three goods together. Shortfall waiting estimates assume current production continues, before other use.
+Production per game day is output before meals and other uses. A good's line in the Warehouse and the Economy table shows its net: what the stock really gains or loses each game day. The city has one stock of each good; the three food goods are counted together.
 
-Food for people combines the three food goods minus the population’s meal. **Food after army** subtracts the food supplied by this city to its supported troops as well. The army shares fish, grain and oil in the same proportions; its silver pay is shown separately. Population growth still uses the population-only food balance.
+**Food** is the one answer to whether a city's food is rising or falling: the net per game day after everything that eats — the people's meals, the army's rations, the temples' tithe — with the herd's overflow added. When it is falling, the same line says how long the food lasts ("Food −2 per game day · lasts 18 game days"). City, Warehouse, Economy and `keryx status` all say it the same way. The army shares fish, grain and oil in the same proportions; its silver pay is shown separately. Population growth reads a different figure, the **growth surplus**: the food made, with the herd's overflow, less the people's meals, before the army.
 
 ## Storage capacity and forecasts {#goods-storage-capacity}
 

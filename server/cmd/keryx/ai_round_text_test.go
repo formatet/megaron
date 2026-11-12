@@ -160,7 +160,7 @@ func TestAIRound_StatusUsesSingleFoodStock(t *testing.T) {
 		t.Run(fmt.Sprint(net), func(t *testing.T) {
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if r.URL.Path == "/api/v1/worlds/world/provinces/city" {
-					fmt.Fprintf(w, `{"settlement":{"name":"Coast","population":1000,"labor_pool":1000,"grain_prod_rate":0.5,"grain_consum_rate":5,"resources":{"grain":{"amount":10000,"rate":0.5},"fish":{"amount":10,"rate":5},"timber":{"amount":1,"rate":1}},"food":{"food_net_per_tick":%g,"coverage_ticks":2002,"growth_state":"holding"},"last_tick":{"tick":42,"production":{"grain":0.5,"fish":5},"consumption":{"grain":5}}}}`, net)
+					fmt.Fprintf(w, `{"settlement":{"name":"Coast","population":1000,"labor_pool":1000,"grain_prod_rate":0.5,"grain_consum_rate":5,"resources":{"grain":{"amount":10000,"rate":0.5},"fish":{"amount":10,"rate":5},"timber":{"amount":1,"rate":1}},"food":{"food_net_per_tick":%g,"coverage_ticks":2002,"growth_state":"holding","goods":{"grain":10000,"fish":10}},"forecast":{"food":{"net":%g,"days":%s}},"last_tick":{"tick":42,"production":{"grain":0.5,"fish":5},"consumption":{"grain":5}}}}`, net, net, map[bool]string{true: "100", false: "null"}[net < 0])
 				} else if strings.HasSuffix(r.URL.Path, "/placements") {
 					fmt.Fprint(w, `{"placements":[{"good_key":"grain"},{"good_key":"grain"}]}`)
 				} else {
@@ -177,7 +177,7 @@ func TestAIRound_StatusUsesSingleFoodStock(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if !strings.Contains(out, "fish 5.0 + grain 0.5") || !strings.Contains(out, "net "+formatNetPerTick(net)) || !strings.Contains(out, "Food for 2002.0 game days") {
+			if !strings.Contains(out, "fish 5.0 + grain 0.5") || !strings.Contains(out, "growth surplus "+formatNetPerTick(net)) || !strings.Contains(out, foodAnswerLine(map[string]any{"forecast": map[string]any{"food": map[string]any{"net": net, "days": 100.0}}})+" (stocks: ") || strings.Contains(out, "Food for") {
 				t.Fatal(out)
 			}
 			if !strings.Contains(out, growthLine(1000, "holding", net)) || !strings.Contains(out, "2 goods produced, 1 consumed") {

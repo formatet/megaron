@@ -14,7 +14,7 @@ A city grows when it has a **surplus of food** — when it produces more food ea
 
 ### When population growth stops {#growth-details-2}
 
-In short: a city grows only while it makes more food than it eats; it holds steady when it does not; and it shrinks when it goes hungry. The city screen and `keryx status` say which of the three it is, and the food net behind it, for example "not growing: food net -1.7 per game day (needs more than 0)".
+In short: a city grows only while it makes more food than it eats; it holds steady when it does not; and it shrinks when it goes hungry. The city screen and `keryx status` say which of the three it is, and the growth surplus behind it, for example "not growing: growth surplus -1.7 per game day before army (needs more than 0)".
 
 More people eat more, so a growing city eats into its own surplus until the balance reaches zero and growth stops — unless you put the new citizens to work on food.
 

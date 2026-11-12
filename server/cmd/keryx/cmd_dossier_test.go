@@ -63,7 +63,7 @@ func fullDossierReplies(notifs string) map[string]string {
 		"":                                dossierWorld,
 		"/notifications":                  `{"notifications":[` + notifs + `],"unread":0}`,
 		"/provinces":                      `[{"id":"p1","settlement_id":"aaaaaaaa-0001","name":"Aigina","q":7,"r":46,"own":true,"is_capital":true}]`,
-		"/provinces/p1":                   `{"settlement":{"name":"Aigina","population":1005,"resources":{"silver":{"amount":120},"grain":{"amount":1194},"copper":{"amount":0}},"food":{"coverage_ticks":237.6,"food_net_per_tick":0.8},"build_queue":[],"temples":[{"name":"Poseidon","level":1,"staffed":2,"capacity":3}]}}`,
+		"/provinces/p1":                   `{"settlement":{"name":"Aigina","population":1005,"resources":{"silver":{"amount":120},"grain":{"amount":1194},"copper":{"amount":0}},"food":{"coverage_ticks":237.6,"food_net_per_tick":0.8},"forecast":{"food":{"net":-5,"days":238}},"build_queue":[],"temples":[{"name":"Poseidon","level":1,"staffed":2,"capacity":3}]}}`,
 		"/provinces/p1/placement-options": `{"hexes":[],"buildings":[],"total_gubbar":10,"pool_size":4}`,
 		"/provinces/p1/actions":           `[{"name":"build","category":"province","available":true},{"name":"march","category":"military","available":true},{"name":"gift","category":"trade","available":false}]`,
 		"/units":                          `{"units":[{"id":"u1","type":"spearman","category":"land","size":100,"status":"garrison","display_name":"1st Spearmen of Aigina","settlement_id":"aaaaaaaa-0001"},{"id":"u2","type":"galley","category":"naval","size":1,"crew":20,"status":"garrison","display_name":"Potnia, Galley of Aigina","settlement_id":"aaaaaaaa-0001"}]}`,
@@ -248,7 +248,7 @@ func TestDossierCityBlockAndContent(t *testing.T) {
 	for _, want := range []string{
 		"### Aigina (capital)",
 		"Stock: grain 1.2k, silver 120",
-		"Food for 238 game days",
+		"Food \u22125 per game day · lasts 238 game days",
 		"Citizens: 4 idle of 10",
 		"Building: nothing queued.",
 		"Temples: Poseidon level 1, staffed 2/3",

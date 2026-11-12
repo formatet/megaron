@@ -120,7 +120,7 @@ type Post struct {
 }
 
 var labels = map[string]string{
-	"production": "Production", "overflow": "Lost: store full", "meal": "Citizens' meals", "army_ration": "Army rations",
+	"production": "Production", "herd_surplus": "Herd", "overflow": "Lost: store full", "meal": "Citizens' meals", "army_ration": "Army rations",
 	"army_wages": "Army wages", "herd_births": "Calves born", "herd_feed": "Calves fed", "reinforce": "Reinforcements",
 	"punishment": "Divine punishment", "ship_provisions": "Ship provisions", "hospitality": "Hospitality aboard",
 	"build_cost": "Building costs", "build_cost_silver": "Building costs (silver)", "recruit_cost": "Recruitment costs",

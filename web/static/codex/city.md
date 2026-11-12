@@ -8,7 +8,7 @@ Three sections show the essentials:
 
 - **Population** — whole citizen groups, those free to work, and [[livestock|livestock]]. One citizen represents 100 people; fewer than 100 remaining people do not make a free worker. The exact population is under **More**.
 - **[[catchment]] & workplaces** — the placement grid, where you put people to work. See [[citizens]].
-- **Food** — today’s food net per game day, and whether the fields can feed everyone. See [[food]].
+- **Food** — whether the food is rising or falling per game day, how long it lasts when falling, and whether the fields can feed everyone. See [[food]].
 
 Open **More** for people in service and the labour pool, **Devotion** ([[temples]]), **Food details** ([[food]]), **Last game day**, and **Daily history → Show recent game days**, which shows the books for the last game day and then the events of each recent game day. For every good the books list what really happened to the store, one line per cause: production, citizens' meals, army rations and wages, each temple's tithe, calves, gifts and trade, goods lost because the store was full, and so on. A line called **Other** appears only when a change of the store has no cause listed; it should normally be absent.
 

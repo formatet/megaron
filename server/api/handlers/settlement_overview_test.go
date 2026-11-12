@@ -228,6 +228,12 @@ func TestSettlementsOverviewParity_MatchesProvinceGet(t *testing.T) {
 
 				FoodNetPerTick float64 `json:"food_net_per_tick"`
 			} `json:"food"`
+			Forecast *struct {
+				Food struct {
+					Net  float64  `json:"net"`
+					Days *float64 `json:"days"`
+				} `json:"food"`
+			} `json:"forecast"`
 		} `json:"settlement"`
 	}
 	if err := json.Unmarshal(getRec.Body.Bytes(), &getResp); err != nil {
@@ -259,6 +265,12 @@ func TestSettlementsOverviewParity_MatchesProvinceGet(t *testing.T) {
 
 			FoodNetPerTick float64 `json:"food_net_per_tick"`
 		} `json:"food"`
+		Forecast *struct {
+			Food struct {
+				Net  float64  `json:"net"`
+				Days *float64 `json:"days"`
+			} `json:"food"`
+		} `json:"forecast"`
 	}
 	if err := json.Unmarshal(ovRec.Body.Bytes(), &ovResult); err != nil {
 		t.Fatalf("parse overview response: %v", err)
@@ -274,6 +286,12 @@ func TestSettlementsOverviewParity_MatchesProvinceGet(t *testing.T) {
 
 			FoodNetPerTick float64 `json:"food_net_per_tick"`
 		} `json:"food"`
+		Forecast *struct {
+			Food struct {
+				Net  float64  `json:"net"`
+				Days *float64 `json:"days"`
+			} `json:"food"`
+		} `json:"forecast"`
 	}
 	for i := range ovResult {
 		if ovResult[i].ID == settlementID {
@@ -299,6 +317,13 @@ func TestSettlementsOverviewParity_MatchesProvinceGet(t *testing.T) {
 	}
 	if ov.Food.CoverageTicks != getResp.Settlement.Food.CoverageTicks {
 		t.Errorf("food.coverage_ticks parity broken: overview=%.4f province=%.4f", ov.Food.CoverageTicks, getResp.Settlement.Food.CoverageTicks)
+	}
+	// One owner of the food answer: the overview carries the SAME forecast the province carries.
+	if ov.Forecast == nil || getResp.Settlement.Forecast == nil {
+		t.Fatalf("forecast missing: overview=%v province=%v", ov.Forecast, getResp.Settlement.Forecast)
+	}
+	if ov.Forecast.Food.Net != getResp.Settlement.Forecast.Food.Net {
+		t.Errorf("forecast.food.net parity broken: overview=%v province=%v", ov.Forecast.Food.Net, getResp.Settlement.Forecast.Food.Net)
 	}
 	if ov.Food.FoodNetPerTick != getResp.Settlement.Food.FoodNetPerTick {
 		t.Errorf("food.food_net_per_tick parity broken: overview=%.4f province=%.4f", ov.Food.FoodNetPerTick, getResp.Settlement.Food.FoodNetPerTick)

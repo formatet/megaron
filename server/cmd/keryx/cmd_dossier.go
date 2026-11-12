@@ -374,13 +374,8 @@ func dossierCityBlock(c *Client, worldID string, ct dossierCity) []string {
 	}
 	out = append(out, "- Stock: "+strings.Join(stock, ", "))
 
-	food, _ := sett["food"].(map[string]any)
-	if cov, ok := food["coverage_ticks"].(float64); ok {
-		line := fmt.Sprintf("- Food for %s at current consumption", formatDays(cov, "%.0f"))
-		if net, ok := food["food_net_per_tick"].(float64); ok {
-			line += fmt.Sprintf(" (net %s per game day)", formatNetPerTick(net))
-		}
-		out = append(out, line)
+	if line := foodAnswerLine(sett); line != "" {
+		out = append(out, "- "+line)
 	} else {
 		out = append(out, "- Food stores not reported.")
 	}
