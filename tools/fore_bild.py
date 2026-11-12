@@ -9,7 +9,7 @@ from playwright.sync_api import sync_playwright
 TAG = sys.argv[1]
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'docs/reviews/fore-grundningen'; OUT.mkdir(parents=True, exist_ok=True)
-cfg = json.load(open('/tmp/claude-1000/kx-fg.json')); W = cfg['world_id']; T = cfg['token']; B = 'http://localhost:8097'
+cfg = json.load(open(sys.argv[3] if len(sys.argv) > 3 else "/tmp/claude-1000/kx-fg.json")); W = cfg['world_id']; T = cfg['token']; B = 'http://localhost:8097'
 
 def page(b, w, h, path=None):
     c = b.new_context(viewport=dict(width=w, height=h), device_scale_factor=1, has_touch=w < 500)
@@ -53,10 +53,19 @@ with sync_playwright() as pw:
         p.evaluate("window.toggleAccountWindow&&window.toggleAccountWindow()"); p.wait_for_timeout(1500)
         shot(p, f'account-{tagw}')
         p.close()
-    # dispatch: the notification archive
-    p = page(b, 1280, 900)
-    p.evaluate("window.toggleDrawer('notif')"); p.wait_for_timeout(2500); shot(p, 'notif-1280')
-    p.evaluate("document.querySelector('#notif-body .notif-row, .notif-row')?.click()"); p.wait_for_timeout(1500); shot(p, 'dispatch-1280')
-    # world entry card
-    p = page(b, 1280, 900, '/'); shot(p, 'worlds-1280')
+    # dispatch: the notification archive (opened for the player whose config is CFG2: before = an old stored
+    # dispatch, after = one made by the new code)
+    cfg2 = json.load(open(sys.argv[2])) if len(sys.argv) > 2 else cfg
+    T = cfg2['token']
+    for (w, h, tagw) in ((1280, 900, '1280'), (390, 844, '390')):
+        p = page(b, w, h)
+        p.evaluate("window.toggleDrawer('notif')"); p.wait_for_timeout(2500)
+        p.click('text=Your people await you'); p.wait_for_timeout(1500); shot(p, f'dispatch-{tagw}')
+        p.close()
+    # world entry card: an account that has not joined
+    import urllib.request, time
+    req = urllib.request.Request(f'{B}/api/v1/auth/register', method='POST', headers={'Content-Type': 'application/json'},
+        data=json.dumps(dict(username=f'Gast{int(time.time())}', email=f'g{int(time.time())}@acceptance.local', password='acceptance-pw-123')).encode())
+    reg = json.load(urllib.request.urlopen(req)); T = reg.get('access_token') or reg['token']
+    p = page(b, 1280, 900, f'/world/{W}/join'); shot(p, 'join-1280')
     b.close()
