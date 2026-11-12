@@ -87,7 +87,7 @@ export function renderUnitCard(u, options = {}) {
     // arrival_tick is the authoritative arrival (K4) — the stored arrives_at
     // stamp lies across server downtime; the tick self-corrects.
     const arrival = arrivalHTML(u.arrives_at, u.arrival_tick);
-    loc = pickupPrefix + '→ (' + u.target_q + ',' + u.target_r + ')' + (arrival ? ' arrives ' + arrival : '');
+    loc = pickupPrefix + '→ (' + u.target_q + ',' + u.target_r + ')' + (arrival ? (arrival === 'arrived' ? ' · has arrived' : ' arrives ' + arrival) : '');
   } else if (u.q != null) {
     loc = '(' + u.q + ',' + u.r + ')';
   }
