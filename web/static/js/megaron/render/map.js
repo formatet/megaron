@@ -4245,6 +4245,7 @@ export function initMap() {
   setInterval(() => {
     if (document.hidden) return;
     refreshTiles();
+    window.refreshCityStock?.(); // an open City drawer's build rows follow the stock
     pollJSON(`/api/v1/worlds/${State.WORLD_ID}/provinces`).then(d => { if (!d) return; State.provinceData = d; State.dirty = true; window.MusicPlayer.update(); });
     pollJSON(`/api/v1/worlds/${State.WORLD_ID}/marches`).then(d => { if (!d) return; State.marchData = d; State.dirty = true; window.MusicPlayer.update(); });
     pollJSON(`/api/v1/worlds/${State.WORLD_ID}/messengers`).then(d => { if (!d) return; State.messengerData = d; State.dirty = true; });

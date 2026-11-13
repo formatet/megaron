@@ -346,6 +346,28 @@ export async function demolishBuilding(provinceID, buildingID, label) {
   }, { confirmLabel: 'Demolish', cancelLabel: 'Keep it' });
 }
 
+// Item E: the build rows read the city's stock when they were drawn, and nothing redrew them as the
+// stock moved. The map's existing 30 s poll calls this: ONE goods fetch, and the Buildings section is
+// redrawn only when a number actually changed (scroll position kept).
+let lastBuildStock = '';
+export async function refreshCityStock() {
+  const bldSec = document.getElementById('city-bld-sec');
+  const capital = activeCitySettlement();
+  if (!bldSec || !capital || State.activeDrawer !== 'city') return;
+  const stock = await loadStock(capital.id);
+  if (!stock) return;
+  const key = capital.id + JSON.stringify(Object.entries(stock).map(([k, v]) => [k, Math.floor(v)]).sort());
+  if (key === lastBuildStock) return;
+  const hadBefore = lastBuildStock.startsWith(capital.id);
+  lastBuildStock = key;
+  if (!hadBefore) return; // first sight: the drawer was drawn from the same numbers
+  const body = document.getElementById('city-body');
+  const scroller = body?.closest('.drawer-body') || body;
+  const top = scroller ? scroller.scrollTop : 0;
+  await refreshCityBuildings(capital.id);
+  if (scroller) scroller.scrollTop = top;
+}
+
 // Re-fetch province data and update only the buildings/queue section of the city drawer.
 async function refreshCityBuildings(provinceID) {
   const bldSec = document.getElementById('city-bld-sec');
@@ -399,6 +421,7 @@ async function refreshCityBuildings(provinceID) {
     // also needed below for the Construct dropdown's foundry purpose label,
     // so a recipe change never leaves a stale string there either.
     const [recipes, buildingCatalogue, stock] = await Promise.all([getRecipes(), getBuildingCatalogue(), loadStock(provinceID)]);
+    if (stock) lastBuildStock = provinceID + JSON.stringify(Object.entries(stock).map(([k, v]) => [k, Math.floor(v)]).sort());
     const foundryRecipe = recipes ? recipes.find(rc => rc.building_type === 'foundry') : null;
 
     if (blds.some(b => b.type === 'foundry')) {
