@@ -111,6 +111,11 @@ export function sortGoods(goods, target) {
 // placesNote is the line that says the land caps a good: how many places the hex has, how many are
 // worked, and what building would add more. Empty when no unbuilt building raises the good here
 // (the numbers come from placement-options: cap, placed, raised_by, extra_places).
+// freeHint: with every citizen placed there is no +1 to press; say how a worker is moved.
+export function freeHint(opts) {
+  return opts && opts.total_gubbar > 0 && opts.pool_size === 0 ? ' · To move one, press −1 where they stand, then +1 here.' : '';
+}
+
 export function placesNote(good) {
   if (!good || !good.raised_by || !(good.extra_places > 0) || good.cap == null) return '';
   const n = good.cap;
@@ -377,7 +382,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
   containerEl.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.3rem">
       <span>Citizens: <b>${fmtNum(opts.total_gubbar - opts.pool_size)} of ${fmtNum(opts.total_gubbar)}</b> placed</span>
-      <span style="color:var(--text-dim)">${fmtNum(opts.pool_size)} free</span>
+      <span style="color:var(--text-dim)">${fmtNum(opts.pool_size)} free${freeHint(opts)}</span>
     </div>
     ${pick ? `<div class="build-pick-bar">${pickable.size ? `Choose a hex for the ${esc(pickName)}` : `No hex in your catchment can take a ${esc(pickName)} now`} · <button class="btn-small" data-pick-cancel>Cancel</button></div>` : ''}
     <svg class="gubbe-svg" viewBox="${minX} ${minY} ${maxX - minX} ${maxY - minY}" preserveAspectRatio="xMidYMid meet">${cells}</svg>

@@ -19,7 +19,7 @@ globalThis.document ??= {
 globalThis.window ??= { addEventListener() {}, matchMedia: () => ({ matches: false, addEventListener() {} }) };
 globalThis.localStorage ??= { getItem: () => null, setItem() {}, removeItem() {} };
 
-const { placementOutcome, refusalText, selectionKey, takeLabel, goodRowHTML, cityBuildingsHTML,placementTargetKey, sortGoods, shipyardShareNote, hexWorkersLine, syncFreeToWork, placesNote } = await import('./citygrid.js');
+const { placementOutcome, refusalText, selectionKey, takeLabel, goodRowHTML, cityBuildingsHTML,placementTargetKey, sortGoods, shipyardShareNote, hexWorkersLine, syncFreeToWork, placesNote, freeHint } = await import('./citygrid.js');
 
 // The refusal sentences below are copied verbatim from the server
 // (api/handlers/settlement_placement.go) — they are the actual bodies this
@@ -342,4 +342,9 @@ test('placesNote says the land caps the good and what raises it, from the server
   assert.equal(placesNote({ good_key: 'oil', cap: 2, placed: 0 }), '');
   const html = goodRowHTML({ target_kind: 'hex', hex_ordinal: 3 }, { good_key: 'timber', cap: 1, placed: 0, rate_per_tick: 1, marginal_yield: 1, raised_by: 'lumbermill', extra_places: 4 });
   assert.match(html, /gubbe-places-note/);
+});
+
+test('freeHint explains moving a worker only when none are free', () => {
+  assert.match(freeHint({ total_gubbar: 10, pool_size: 0 }), /press −1 where they stand, then \+1 here/);
+  assert.equal(freeHint({ total_gubbar: 10, pool_size: 2 }), '');
 });
