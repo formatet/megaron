@@ -1,0 +1,28 @@
+item 6 @ 1280x800
+   marches list (explore): ['⚔', '1st Spearmen of CityVarv3 · exploring → (39,23)']
+  [PASS] item 6 · a 1280: marches list (explore) shows no raw intent word — raw=[] text='YOUR MARCHES\n⚔\n1st Spearmen of CityVarv3 · exploring → (39,23)\nArrives ≈ today 07:05 · recall/redirect in the Forces tab'
+   marches list (explore_return): ['⚔', '1st Spearmen of CityVarv3 · on the way home from exploring → (39,23)']
+  [PASS] item 6 · a 1280: marches list (explore_return) shows no raw intent word — raw=[] text='YOUR MARCHES\n⚔\n1st Spearmen of CityVarv3 · on the way home from exploring → (39,23)\nArrives ≈ today 07:05 · recall/redirect in the Forces tab'
+   naming lines: {'hills': ('these hills', 'No one has named them yet. Give them a name (once, 2–30 characters)'), 'plain': ('this plain', 'No one has named it yet. Give it a name (once, 2–30 characters)'), 'strait': ('this strait', 'No one has named it yet. Give it a name (once, 2–30 characters)'), 'cape': ('this cape', 'No one has named it yet. Give it a name (once, 2–30 characters)'), 'desert': ('this desert', 'No one has named it yet. Give it a name (once, 2–30 characters)'), 'massif': ('this mountain massif', 'No one has named it yet. Give it a name (once, 2–30 characters)')}
+  [PASS] item 6 · b 1280: naming line for "hills" is grammatical and says nobody has named it — 'these hills' / 'No one has named them yet. Give them a name (once, 2–30 characters)'
+  [PASS] item 6 · b 1280: naming line for "plain" is grammatical and says nobody has named it — 'this plain' / 'No one has named it yet. Give it a name (once, 2–30 characters)'
+  [PASS] item 6 · b 1280: naming line for "strait" is grammatical and says nobody has named it — 'this strait' / 'No one has named it yet. Give it a name (once, 2–30 characters)'
+  [PASS] item 6 · b 1280: naming line for "cape" is grammatical and says nobody has named it — 'this cape' / 'No one has named it yet. Give it a name (once, 2–30 characters)'
+  [PASS] item 6 · b 1280: naming line for "desert" is grammatical and says nobody has named it — 'this desert' / 'No one has named it yet. Give it a name (once, 2–30 characters)'
+  [PASS] item 6 · b 1280: naming line for "massif" is grammatical and says nobody has named it — 'this mountain massif' / 'No one has named it yet. Give it a name (once, 2–30 characters)'
+  [PASS] item 6 · b 1280: hills was among the kinds met
+item 6 @ 390x844
+   marches list (explore): ['⚔', '2nd Spearmen of CityVarv3 · exploring → (39,23)']
+  [PASS] item 6 · a 390: marches list (explore) shows no raw intent word — raw=[] text='YOUR MARCHES\n⚔\n2nd Spearmen of CityVarv3 · exploring → (39,23)\nArrives ≈ today 07:06 · recall/redirect in the Forces tab'
+   marches list (explore_return): ['⚔', '2nd Spearmen of CityVarv3 · on the way home from exploring → (39,23)']
+  [PASS] item 6 · a 390: marches list (explore_return) shows no raw intent word — raw=[] text='YOUR MARCHES\n⚔\n2nd Spearmen of CityVarv3 · on the way home from exploring → (39,23)\nArrives ≈ today 07:06 · recall/redirect in the Forces tab'
+   naming lines: {'hills': ('these hills', 'No one has named them yet. Give them a name (once, 2–30 characters)'), 'plain': ('this plain', 'No one has named it yet. Give it a name (once, 2–30 characters)'), 'strait': ('this strait', 'No one has named it yet. Give it a name (once, 2–30 characters)'), 'cape': ('this cape', 'No one has named it yet. Give it a name (once, 2–30 characters)'), 'desert': ('this desert', 'No one has named it yet. Give it a name (once, 2–30 characters)'), 'massif': ('this mountain massif', 'No one has named it yet. Give it a name (once, 2–30 characters)')}
+  [PASS] item 6 · b 390: naming line for "hills" is grammatical and says nobody has named it — 'these hills' / 'No one has named them yet. Give them a name (once, 2–30 characters)'
+  [PASS] item 6 · b 390: naming line for "plain" is grammatical and says nobody has named it — 'this plain' / 'No one has named it yet. Give it a name (once, 2–30 characters)'
+  [PASS] item 6 · b 390: naming line for "strait" is grammatical and says nobody has named it — 'this strait' / 'No one has named it yet. Give it a name (once, 2–30 characters)'
+  [PASS] item 6 · b 390: naming line for "cape" is grammatical and says nobody has named it — 'this cape' / 'No one has named it yet. Give it a name (once, 2–30 characters)'
+  [PASS] item 6 · b 390: naming line for "desert" is grammatical and says nobody has named it — 'this desert' / 'No one has named it yet. Give it a name (once, 2–30 characters)'
+  [PASS] item 6 · b 390: naming line for "massif" is grammatical and says nobody has named it — 'this mountain massif' / 'No one has named it yet. Give it a name (once, 2–30 characters)'
+  [PASS] item 6 · b 390: hills was among the kinds met
+
+18 passed, 0 failed

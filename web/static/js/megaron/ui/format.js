@@ -14,6 +14,11 @@ import { serverNow } from '../clock.js';
 import { msUntilWorldTick } from '../world_time.js';
 // Goods lists are shown alphabetically by displayed name.
 export const byGoodName = (a, b) => (a.name || a.key).localeCompare(b.name || b.key, 'en');
+// "this lake", "these hills": the one place that knows hills is plural (round three, item 6).
+const PLACE_WORDS = { river: 'river', massif: 'mountain massif', desert: 'desert', forest: 'cedar forest', lake: 'lake', island: 'island', strait: 'strait', bay: 'bay', cape: 'cape', plain: 'plain', hills: 'hills', delta: 'delta' };
+export function thisPlace(kind) { return kind === 'hills' ? 'these hills' : 'this ' + (PLACE_WORDS[kind] || 'place'); }
+export function placePronoun(kind) { return kind === 'hills' ? 'them' : 'it'; }
+
 export function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 
 // passageNote (megaron_plan_budet_liftar.md): appended to any dispatch/order
@@ -455,8 +460,8 @@ export function notifText(kind, body) {
              (from ? ` from ${from}` : '');
     }
     case 'PlaceFirstReached': {
-      const place = { river: 'river', massif: 'mountain massif', desert: 'desert', forest: 'cedar forest', lake: 'lake', island: 'island', strait: 'strait', bay: 'bay', cape: 'cape', plain: 'plain', hills: 'hills', delta: 'delta' }[body.kind] || 'place';
-      return `Your ${esc(body.unit_name || unitTypeLabel(body.unit_type) || 'unit')} is the first to reach this ${place} — you may name it. Click it at (${body.q},${body.r}) on the map.`;
+      const place = thisPlace(body.kind);
+      return `Your ${esc(body.unit_name || unitTypeLabel(body.unit_type) || 'unit')} is the first to reach ${place} — you may name ${placePronoun(body.kind)}. Click ${placePronoun(body.kind)} at (${body.q},${body.r}) on the map.`;
     }
     case 'PlacesInNewCity': {
       // One notice per founding: the unnamed places in the new city's own catchment.

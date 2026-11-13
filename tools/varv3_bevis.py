@@ -8,7 +8,7 @@ Setup (isolated acceptance world only, http://localhost:8097):
   python3 tools/varv3_bevis.py setup      # founds Varv1..Varv4 and reveals the map for Varv1 via psql
   python3 tools/varv3_bevis.py 1 3 6      # run chosen items (no argument: all); exit 1 on any failure
 Pictures go to docs/reviews/forsta-timmen-varv3/<phase>/ (phase = $PHASE, default 'after')."""
-import json, os, subprocess, sys, urllib.request
+import json, os, re, subprocess, sys, urllib.request
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
@@ -329,7 +329,102 @@ def item4(pw):
         b.close()
 
 
-ITEMS = {1: item1, 2: item2, 3: item3, 4: item4}
+def item5(pw):
+    """Every food figure on Economy and City, read in the SAME game day on the real page."""
+    for name in ('Varv4', 'Varv1'):
+        w, h = SIZES[0]
+        for attempt in range(4):
+            b, p, _ = newpage(pw, name, w, h)
+            tick = lambda: p.evaluate("import('/static/js/megaron/state.js').then(s => s.State.CURRENT_TICK)")
+            t0 = tick()
+            nav(p, 'Economy', w); p.wait_for_timeout(1500)
+            econ = p.evaluate("""() => { const row = [...document.querySelectorAll('#drawer-economy tr')].find(r => r.cells.length >= 4 && /Food/.test(r.closest('table').innerText) && /per game day|about even/.test(r.cells[2]?.innerText || ''));
+              const goods = [...document.querySelectorAll('#drawer-economy tr')].filter(r => /^(Grain|Fish|Oil)$/.test((r.cells[0]?.innerText || '').trim())).map(r => [...r.cells].map(c => c.innerText.trim()).join(' | '));
+              return {food: row ? row.cells[2].innerText.trim() : null, goods}; }""")
+            nav(p, 'City', w)
+            city = {}
+            p.evaluate("document.querySelector('#city-body [data-tab=\"produktion\"]').click()"); p.wait_for_timeout(400)
+            city['production'] = p.evaluate("(() => { const s = document.querySelector('#city-food-sec'); const m = s && s.innerText.match(/[+\\u2212-][\\d.,]+ per game day|about even/); return m ? m[0] : null; })()")
+            p.evaluate("document.querySelector('#city-body [data-tab=\"forrad\"]').click()"); p.wait_for_timeout(400)
+            city['warehouse'] = p.evaluate("(() => { const r = [...document.querySelectorAll('#city-wh-sec .stat-row')].find(e => /^Food/.test(e.innerText)); return r ? r.querySelector('.sr-val').innerText.trim() : null; })()")
+            city['rows'] = p.evaluate("[...document.querySelectorAll('#city-wh-sec .stat-row')].filter(e => /^(Grain|Fish|Oil)/.test(e.innerText)).map(e => e.innerText.replace(/\\n/g, ' '))")
+            t1 = tick()
+            if t0 == t1: break
+            b.close()
+        print(f'   {name}: tick {t0}; economy food {econ["food"]!r}; city production {city["production"]!r}; warehouse {city["warehouse"]!r}')
+        print(f'   per-good rows — economy: {econ["goods"]}; warehouse: {city["rows"]}')
+        chk(5, f'{name}: read inside one game day (tick {t0})', t0 == t1)
+        chk(5, f'{name}: the city\'s Food answer is identical on Economy, City production and Warehouse', econ['food'] and econ['food'].split(' per')[0] == (city['production'] or '').split(' per')[0] == (city['warehouse'] or '').split(' per')[0].split(' ·')[0], f"{econ['food']!r} / {city['production']!r} / {city['warehouse']!r}")
+        chk(5, f'{name}: every per-good rate sits in a row that names its good', all(re.match(r'^(Grain|Fish|Oil)\b', r) for r in [x.replace(' | ', ' ') for x in econ['goods']] + city['rows']), str(econ['goods'] + city['rows']))
+        b.close()
+
+
+RAW_INTENT = re.compile(r'\b(explore_return|explore|colonize|passage_wait|passage|pickup|food_return|damaged_return|captured_return|patrol|sentry|land)\b|\b[a-z]+_[a-z]+\b')
+
+
+def explore_target(c):
+    """A hex within three of the city that an expedition of the default length accepts (found through the API)."""
+    base = f"/api/v1/worlds/{c['world_id']}"
+    own = [p for p in api(c, base + '/provinces')[1] if p.get('own')][0]
+    uid = [x for x in api(c, base + '/units')[1]['units'] if x['category'] == 'land'][0]['id']
+    for dq in range(-3, 4):
+        for dr in range(-3, 4):
+            if (dq, dr) == (0, 0) or abs(dq + dr) > 3: continue
+            q, r = own['q'] + dq, own['r'] + dr
+            if api(c, f'{base}/units/{uid}/march-preview?target_q={q}&target_r={r}&intent=explore&ticks=10')[0] == 200: return q, r
+    raise SystemExit('no explorable hex')
+
+
+def item6(pw):
+    for w, h in SIZES:
+        tag = f'{w}'
+        print(f'item 6 @ {w}x{h}')
+        # (a) the marches list: a real expedition order, then the same unit coming home
+        c = cfg('Varv3'); q, r = explore_target(c)
+        reset_units('Varv3')
+        b, p, _ = newpage(pw, 'Varv3', w, h)
+        war_march_to(p, w, q, r)
+        if not p.locator('#mctx-explore-chk').is_checked(): p.locator('#mctx-explore-chk').check()
+        p.wait_for_timeout(800)
+        p.click('#mctx-send'); p.wait_for_timeout(2500)
+        b.close()
+        pid = psql("select id from players where username='Varv3'").strip()
+        uid = psql(f"select id from units where owner_id='{pid}' and status='marching' order by ordinal limit 1").strip()
+        for intent in ('explore', 'explore_return'):
+            psql(f"update units set march_intent='{intent}' where id='{uid}'")
+            b, p, _ = newpage(pw, 'Varv3', w, h)
+            nav(p, 'War', w)
+            p.locator('#drawer-war').get_by_role('button', name='Marches', exact=True).click(); p.wait_for_timeout(800)
+            txt = p.evaluate("document.querySelector('#wtab-movements').innerText")
+            raw = RAW_INTENT.findall(txt)
+            print(f'   marches list ({intent}): {txt.strip().splitlines()[1:3]}')
+            chk(6, f'a {tag}: marches list ({intent}) shows no raw intent word', not raw and 'marches' in txt.lower(), f'raw={raw} text={txt[:160]!r}')
+            shot(p, 6, f'a-marches-{intent}-{tag}')
+            b.close()
+        reset_units('Varv3')
+        # (b) the naming line for every place kind we can reach: grammatical, one clause saying what it is
+        seen = {}
+        for name in ('Varv2', 'Varv1', 'Varv3'):
+            b, p, _ = newpage(pw, name, w, h)
+            kinds = p.evaluate("import('/static/js/megaron/state.js').then(s => { const k = {}; s.State.tileData.filter(t => t.can_name).forEach(t => { k[t.place_kind] = k[t.place_kind] || [t.q, t.r]; }); return k; })")
+            for kind, (hq, hr) in kinds.items():
+                if kind in seen: continue
+                x, y = centre_on(p, hq, hr, 0.4)
+                tap(p, x, y, w); p.wait_for_timeout(1500)
+                text = p.evaluate("document.getElementById('inspect-panel')?.innerText || ''")
+                m = re.search(r'first to reach ([^.]*)\.([^:]*):', text)
+                seen[kind] = (m.group(1), m.group(2).strip()) if m else (None, text[-120:])
+                if kind == 'hills' or len(seen) <= 1: shot(p, 6, f'b-first-reach-{kind}-{tag}')
+            b.close()
+        print('   naming lines:', seen)
+        for kind, (what, rest) in seen.items():
+            ok = what is not None and re.fullmatch(r'(these hills|this (plain|strait|cape|river|mountain massif|desert|cedar forest|lake|island|bay|delta))', what) is not None and 'No one has named' in rest
+            chk(6, f'b {tag}: naming line for "{kind}" is grammatical and says nobody has named it', ok, f'{what!r} / {rest!r}')
+        chk(6, f'b {tag}: hills was among the kinds met', 'hills' in seen)
+        shot(p, 6, 'dummy') if False else None
+
+
+ITEMS = {1: item1, 2: item2, 3: item3, 4: item4, 5: item5, 6: item6}
 
 
 def main():

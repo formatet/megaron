@@ -1,0 +1,44 @@
+item 6 @ 1280x800
+   marches list (explore): ['⚔', '1st Spearmen of CityVarv3 · explore → (39,23)']
+  [FAIL] item 6 · a 1280: marches list (explore) shows no raw intent word — raw=['explore'] text='YOUR MARCHES\n⚔\n1st Spearmen of CityVarv3 · explore → (39,23)\nArrives ≈ today 07:00 · recall/redirect in the Forces tab'
+   marches list (explore_return): ['⚔', '1st Spearmen of CityVarv3 · explore_return → (39,23)']
+  [FAIL] item 6 · a 1280: marches list (explore_return) shows no raw intent word — raw=['explore_return'] text='YOUR MARCHES\n⚔\n1st Spearmen of CityVarv3 · explore_return → (39,23)\nArrives ≈ today 07:00 · recall/redirect in the Forces tab'
+   naming lines: {'hills': ('this hills', 'Give it a name (once, 2–30 characters)'), 'plain': ('this plain', 'Give it a name (once, 2–30 characters)'), 'strait': ('this strait', 'Give it a name (once, 2–30 characters)'), 'cape': ('this cape', 'Give it a name (once, 2–30 characters)'), 'desert': ('this desert', 'Give it a name (once, 2–30 characters)'), 'massif': ('this mountain massif', 'Give it a name (once, 2–30 characters)')}
+  [FAIL] item 6 · b 1280: naming line for "hills" is grammatical and says nobody has named it — 'this hills' / 'Give it a name (once, 2–30 characters)'
+  [FAIL] item 6 · b 1280: naming line for "plain" is grammatical and says nobody has named it — 'this plain' / 'Give it a name (once, 2–30 characters)'
+  [FAIL] item 6 · b 1280: naming line for "strait" is grammatical and says nobody has named it — 'this strait' / 'Give it a name (once, 2–30 characters)'
+  [FAIL] item 6 · b 1280: naming line for "cape" is grammatical and says nobody has named it — 'this cape' / 'Give it a name (once, 2–30 characters)'
+  [FAIL] item 6 · b 1280: naming line for "desert" is grammatical and says nobody has named it — 'this desert' / 'Give it a name (once, 2–30 characters)'
+  [FAIL] item 6 · b 1280: naming line for "massif" is grammatical and says nobody has named it — 'this mountain massif' / 'Give it a name (once, 2–30 characters)'
+  [PASS] item 6 · b 1280: hills was among the kinds met
+item 6 @ 390x844
+   marches list (explore): ['⚔', '1st Spearmen of CityVarv3 · explore → (39,23)']
+  [FAIL] item 6 · a 390: marches list (explore) shows no raw intent word — raw=['explore'] text='YOUR MARCHES\n⚔\n1st Spearmen of CityVarv3 · explore → (39,23)\nArrives ≈ today 07:01 · recall/redirect in the Forces tab'
+   marches list (explore_return): ['⚔', '1st Spearmen of CityVarv3 · explore_return → (39,23)']
+  [FAIL] item 6 · a 390: marches list (explore_return) shows no raw intent word — raw=['explore_return'] text='YOUR MARCHES\n⚔\n1st Spearmen of CityVarv3 · explore_return → (39,23)\nArrives ≈ today 07:01 · recall/redirect in the Forces tab'
+   naming lines: {'hills': ('this hills', 'Give it a name (once, 2–30 characters)'), 'plain': ('this plain', 'Give it a name (once, 2–30 characters)'), 'strait': ('this strait', 'Give it a name (once, 2–30 characters)'), 'cape': ('this cape', 'Give it a name (once, 2–30 characters)'), 'desert': ('this desert', 'Give it a name (once, 2–30 characters)'), 'massif': ('this mountain massif', 'Give it a name (once, 2–30 characters)')}
+  [FAIL] item 6 · b 390: naming line for "hills" is grammatical and says nobody has named it — 'this hills' / 'Give it a name (once, 2–30 characters)'
+  [FAIL] item 6 · b 390: naming line for "plain" is grammatical and says nobody has named it — 'this plain' / 'Give it a name (once, 2–30 characters)'
+  [FAIL] item 6 · b 390: naming line for "strait" is grammatical and says nobody has named it — 'this strait' / 'Give it a name (once, 2–30 characters)'
+  [FAIL] item 6 · b 390: naming line for "cape" is grammatical and says nobody has named it — 'this cape' / 'Give it a name (once, 2–30 characters)'
+  [FAIL] item 6 · b 390: naming line for "desert" is grammatical and says nobody has named it — 'this desert' / 'Give it a name (once, 2–30 characters)'
+  [FAIL] item 6 · b 390: naming line for "massif" is grammatical and says nobody has named it — 'this mountain massif' / 'Give it a name (once, 2–30 characters)'
+  [PASS] item 6 · b 390: hills was among the kinds met
+
+2 passed, 16 failed
+  FAILED item 6 a 1280: marches list (explore) shows no raw intent word
+  FAILED item 6 a 1280: marches list (explore_return) shows no raw intent word
+  FAILED item 6 b 1280: naming line for "hills" is grammatical and says nobody has named it
+  FAILED item 6 b 1280: naming line for "plain" is grammatical and says nobody has named it
+  FAILED item 6 b 1280: naming line for "strait" is grammatical and says nobody has named it
+  FAILED item 6 b 1280: naming line for "cape" is grammatical and says nobody has named it
+  FAILED item 6 b 1280: naming line for "desert" is grammatical and says nobody has named it
+  FAILED item 6 b 1280: naming line for "massif" is grammatical and says nobody has named it
+  FAILED item 6 a 390: marches list (explore) shows no raw intent word
+  FAILED item 6 a 390: marches list (explore_return) shows no raw intent word
+  FAILED item 6 b 390: naming line for "hills" is grammatical and says nobody has named it
+  FAILED item 6 b 390: naming line for "plain" is grammatical and says nobody has named it
+  FAILED item 6 b 390: naming line for "strait" is grammatical and says nobody has named it
+  FAILED item 6 b 390: naming line for "cape" is grammatical and says nobody has named it
+  FAILED item 6 b 390: naming line for "desert" is grammatical and says nobody has named it
+  FAILED item 6 b 390: naming line for "massif" is grammatical and says nobody has named it

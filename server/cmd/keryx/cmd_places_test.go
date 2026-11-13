@@ -88,10 +88,10 @@ func TestPlacesCommandsActualRequestsAndJSON(t *testing.T) {
 }
 
 func TestPlaceFirstReachedReadableNotificationAllKinds(t *testing.T) {
-	for _, kind := range []string{"river", "massif", "desert", "forest"} {
+	for _, kind := range []string{"river", "massif", "desert", "forest", "hills", "lake"} {
 		raw, _ := json.Marshal(map[string]any{"kind": kind, "unit_name": "Bronze Guard", "place_id": "6,79", "q": 6, "r": 80})
 		out := capturePrint(t, func() { printNotificationDetail(nil, notificationItem{Kind: "PlaceFirstReached", Body: raw}) })
-		want := fmt.Sprintf("Your Bronze Guard is the first to reach this %s", placeKindLabel(kind))
+		want := fmt.Sprintf("Your Bronze Guard is the first to reach %s", thisPlaceLabel(kind))
 		if !strings.Contains(out, want) || !strings.Contains(out, fmt.Sprintf(`keryx places name %s 6,79 "<name>"`, kind)) {
 			t.Fatalf("missing readable naming right: %s", out)
 		}

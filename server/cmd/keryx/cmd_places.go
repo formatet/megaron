@@ -29,6 +29,14 @@ func placeKindLabel(kind string) string {
 	}
 }
 
+// thisPlaceLabel is "this lake" or, for the one plural kind, "these hills".
+func thisPlaceLabel(kind string) string {
+	if kind == "hills" {
+		return "these hills"
+	}
+	return "this " + placeKindLabel(kind)
+}
+
 func placesCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "places", Short: "Known rivers, lakes, mountain massifs, deserts, cedar forests, islands, straits, bays, capes, plains, hills and deltas",

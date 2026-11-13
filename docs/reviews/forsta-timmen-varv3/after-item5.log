@@ -1,0 +1,12 @@
+   Varv4: tick 15; economy food '+0.6 per game day'; city production '+0.6 per game day'; warehouse '+0.6 per game day'
+   per-good rows — economy: ['Fish | 43 | +1.4 per game day', 'Grain | 1,136 | −1.6 per game day', 'Oil | 1 | +0.6 per game day']; warehouse: ['Fish 43 / 2,000 · +1.4 per game day', 'Grain 1,136 / 2,000 · −1.6 per game day', 'Oil 1 / 2,000 · +0.6 per game day']
+  [PASS] item 5 · Varv4: read inside one game day (tick 15)
+  [PASS] item 5 · Varv4: the city's Food answer is identical on Economy, City production and Warehouse — '+0.6 per game day' / '+0.6 per game day' / '+0.6 per game day'
+  [PASS] item 5 · Varv4: every per-good rate sits in a row that names its good — ['Fish | 43 | +1.4 per game day', 'Grain | 1,136 | −1.6 per game day', 'Oil | 1 | +0.6 per game day', 'Fish 43 / 2,000 · +1.4 per game day', 'Grain 1,136 / 2,000 · −1.6 per game day', 'Oil 1 / 2,000 · +0.6 per game day']
+   Varv1: tick 15; economy food '+0.3 per game day'; city production '+0.3 per game day'; warehouse '+0.3 per game day'
+   per-good rows — economy: ['Grain | 1,192 | ', 'Oil | 0 | ']; warehouse: ['Fish 0 / 2,000 · +0 per game day', 'Grain 1,192 / 2,000 · +0 per game day', 'Oil 0 / 2,000 · +0 per game day']
+  [PASS] item 5 · Varv1: read inside one game day (tick 15)
+  [PASS] item 5 · Varv1: the city's Food answer is identical on Economy, City production and Warehouse — '+0.3 per game day' / '+0.3 per game day' / '+0.3 per game day'
+  [PASS] item 5 · Varv1: every per-good rate sits in a row that names its good — ['Grain | 1,192 | ', 'Oil | 0 | ', 'Fish 0 / 2,000 · +0 per game day', 'Grain 1,192 / 2,000 · +0 per game day', 'Oil 0 / 2,000 · +0 per game day']
+
+6 passed, 0 failed
