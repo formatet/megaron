@@ -1,0 +1,18 @@
+item 8 @ 1280x800
+   food row: 1 grain + 5 fish a game day, 5 eaten
+  [FAIL] item 8 · 1280: the forecast says "your people eat N", not "N eaten" — '1 grain + 5 fish a game day, 5 eaten'
+   confirm: Found the metropolis here? The host dissolves — forever. |  | FOUND THE METROPOLISKEEP TRAVELLING
+  [FAIL] item 8 · 1280: the confirmation says what survives (citizens and spearmen) — 'Found the metropolis here? The host dissolves — forever.\n\nFOUND THE METROPOLISKEEP TRAVELLING'
+  [PASS] item 8 · 1280: the confirmation is visible where the player pressed — {'exists': True, 'visible': True, 'rect': [1074, 632, 1268, 754], 'clip': [1062, 426, 1280, 766], 'text': 'Found the metropolis here? The host dissolves — forever.\n\nFOUND THE METROPOLISKEEP TRAVELLING'}
+item 8 @ 390x844
+   food row: 1 grain + 5 fish a game day, 5 eaten
+  [FAIL] item 8 · 390: the forecast says "your people eat N", not "N eaten" — '1 grain + 5 fish a game day, 5 eaten'
+   confirm: Found the metropolis here? The host dissolves — forever. |  | FOUND THE METROPOLISKEEP TRAVELLING
+  [FAIL] item 8 · 390: the confirmation says what survives (citizens and spearmen) — 'Found the metropolis here? The host dissolves — forever.\n\nFOUND THE METROPOLISKEEP TRAVELLING'
+  [PASS] item 8 · 390: the confirmation is visible where the player pressed — {'exists': True, 'visible': True, 'rect': [12, 682, 378, 764], 'clip': [0, 532, 390, 776], 'text': 'Found the metropolis here? The host dissolves — forever.\n\nFOUND THE METROPOLISKEEP TRAVELLING'}
+
+2 passed, 4 failed
+  FAILED item 8 1280: the forecast says "your people eat N", not "N eaten"
+  FAILED item 8 1280: the confirmation says what survives (citizens and spearmen)
+  FAILED item 8 390: the forecast says "your people eat N", not "N eaten"
+  FAILED item 8 390: the confirmation says what survives (citizens and spearmen)

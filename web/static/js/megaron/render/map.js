@@ -3883,7 +3883,7 @@ async function openHostPanel(h, tile) {
   let pending = false;
   settleButton.addEventListener('click', () => {
     if (pending) return;
-    confirmInline(result, 'Found the metropolis here? The host dissolves — forever.', async () => {
+    confirmInline(result, 'Found the metropolis here? The host dissolves — forever. Your people become the city\'s citizens; your spearmen stay yours, and those standing here become its garrison.', async () => {
       pending = true;
       settleButton.disabled = true;
       try {

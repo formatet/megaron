@@ -47,7 +47,7 @@ test('Q actual Host: only site assessment is primary and all existing detail sta
  assert.match(html,/<details id="ip-host-details"/,'Host keeps all secondary information in one Details');
  assert.equal((html.match(/<details/g)||[]).length,1);assert.doesNotMatch(html,/<details[^>]*\bopen\b/,'Details must begin closed');
  const [primary,details]=html.split('<details');
- assert.match(element('ip-found-summary').innerHTML,/Food:<\/span><span> [^<]*eaten</,'Food row shows made against eaten');
+ assert.match(element('ip-found-summary').innerHTML,/Food:<\/span><span> [^<]*your people eat \d+</,'Food row shows made against eaten');
  assert.match(element('ip-found-summary').innerHTML,/Timber:<\/span><span> up to \d+ a game day, fully worked</,'positive timber potential gives a number');
  assert.match(element('ip-found-summary').innerHTML,/Stone:<\/span><span> none</,'zero stone says none');
  assert.doesNotMatch(primary,/Food lasts|Silver reserve|people|Spearmen|Produces|Deposits|Full forecast/,'only summary belongs before Details');
@@ -60,7 +60,7 @@ test('Q actual Host: only site assessment is primary and all existing detail sta
 test('Q actual Host: the summary is whole numbers from the forecast, unknown when it is missing',async()=>{
  forecast={grain:{base_per_tick:7.5,fish_per_tick:0,consumption_per_tick:20},goods:{timber:0,stone:25.4},catchment:[{known:true,terrain:'hills',copper_deposit:true}]};
  await click({city:null,host:true});let html=element('ip-found-summary').innerHTML;
- assert.match(html,/Food:<\/span><span> 8 grain \+ 0 fish a game day, 20 eaten/);assert.match(html,/Timber:<\/span><span> none</);assert.match(html,/Stone:<\/span><span> up to 25 a game day, fully worked/);
+ assert.match(html,/Food:<\/span><span> 8 grain \+ 0 fish a game day, your people eat 20/);assert.match(html,/Timber:<\/span><span> none</);assert.match(html,/Stone:<\/span><span> up to 25 a game day, fully worked/);
  assert.match(html,/Copper:<\/span><span> 1 hex</);assert.doesNotMatch(html,/>yes</);
  forecast={};await click({city:null,host:true});html=element('ip-found-summary').innerHTML;
  assert.equal((html.match(/unknown/g)||[]).length,8,'missing forecast values must remain unknown');

@@ -449,7 +449,27 @@ def item7(pw):
         b.close()
 
 
-ITEMS = {1: item1, 2: item2, 3: item3, 4: item4, 5: item5, 6: item6, 7: item7}
+def item8(pw):
+    for w, h in SIZES:
+        tag = f'{w}'
+        print(f'item 8 @ {w}x{h}')
+        b, p, _ = newpage(pw, 'Varv5', w, h)   # Varv5 never founds: the player stays in the founder phase
+        hs = p.evaluate("import('/static/js/megaron/ui/host_state.js').then(m => import('/static/js/megaron/state.js').then(s => m.physicalHostState(s.State.founderPhase, s.State.unitsData)))")
+        x, y = centre_on(p, hs['q'], hs['r'], 0.4); tap(p, x, y, w); p.wait_for_timeout(2500)
+        food = p.evaluate("(() => { const t = document.getElementById('ip-found-summary').innerText; const m = t.match(/FOOD:\\s*\\n([^\\n]*)/i); return m ? m[1] : t.slice(0, 120); })()")
+        print('   food row:', food)
+        chk(8, f'{tag}: the forecast says "your people eat N", not "N eaten"', re.search(r'your people eat \d+', food) is not None and 'eaten' not in food, repr(food))
+        p.locator('#ip-settle-btn').scroll_into_view_if_needed(); p.click('#ip-settle-btn'); p.wait_for_timeout(800)
+        conf = p.evaluate("document.getElementById('ip-settle-err').innerText")
+        print('   confirm:', conf.replace('\n', ' | '))
+        chk(8, f'{tag}: the confirmation says what survives (citizens and spearmen)', 'become the city' in conf and 'spearmen' in conf and 'dissolves' in conf, repr(conf[:260]))
+        v = in_view(p, '#ip-settle-err')
+        chk(8, f'{tag}: the confirmation is visible where the player pressed', v.get('visible'), str(v))
+        shot(p, 8, f'confirm-{tag}')
+        b.close()
+
+
+ITEMS = {1: item1, 2: item2, 3: item3, 4: item4, 5: item5, 6: item6, 7: item7, 8: item8}
 
 
 def main():

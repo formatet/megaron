@@ -30,7 +30,7 @@ export function forecastRows(p, label = t => t) {
   const net = g.food_net_per_tick ?? g.est_net_per_tick ?? 0;
   const eaten = g.consumption_per_tick ?? ((g.base_per_tick || 0) - net);
   const food = p.grain && typeof p.grain === 'object'
-    ? `${Math.round(g.base_per_tick || 0)} grain + ${Math.round(g.fish_per_tick || 0)} fish a game day, ${Math.round(eaten)} eaten`
+    ? `${Math.round(g.base_per_tick || 0)} grain + ${Math.round(g.fish_per_tick || 0)} fish a game day, your people eat ${Math.round(eaten)}`
     : 'unknown';
 
   const counts = new Map();

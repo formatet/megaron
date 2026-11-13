@@ -26,7 +26,7 @@ test('forecast rows give whole numbers, not yes/no', () => {
   assert.match(t, /Copper: 2 hexes/);
   assert.match(t, /Tin: none seen/);
   assert.match(t, /Silver: none seen/);
-  assert.match(t, /Food: 8 grain \+ 0 fish a game day, 20 eaten/);
+  assert.match(t, /Food: 8 grain \+ 0 fish a game day, your people eat 20/);
   assert.match(t, /Ships: no ships ever — inland/);
   assert.doesNotMatch(t, /\byes\b/);
 });
