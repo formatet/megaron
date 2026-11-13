@@ -29,7 +29,7 @@ globalThis.document ??= {
 globalThis.window ??= { addEventListener() {}, matchMedia: () => ({ matches: false, addEventListener() {} }) };
 globalThis.localStorage ??= { getItem: () => null, setItem() {}, removeItem() {} };
 
-const { groupMarchUnits, marchGroupLabelHTML, marchGroupNamesHTML, resolveMarchIntent, exploreRowVisible, hiketeiaRefusalHTML } =
+const { groupMarchUnits, marchGroupLabelHTML, marchGroupNamesHTML, resolveMarchIntent, exploreRowVisible, hiketeiaRefusalHTML, waterRefusal, WATER_REFUSAL } =
   await import('./marchctx.js');
 
 const spearman = (id, ordinal, q, r) => ({
@@ -465,4 +465,16 @@ test('I: the march popup labels the optional city picker as optional', async () 
   const html = readFileSync(new URL('../../../map.html', import.meta.url), 'utf8');
   assert.match(html, /<label for="mctx-city">Or pick a known city \(optional\)<\/label>/);
   assert.doesNotMatch(html, /Destination city/);
+});
+
+test('V3-1b: soldiers aimed at water get the one plain sentence; ships and fog get none', () => {
+  const spear = { id: 's', category: 'land', deployable: true, status: 'garrison' };
+  const galley = { id: 'g', category: 'naval', deployable: true, status: 'garrison' };
+  const lake = { isSea: true, known: true };
+  assert.equal(waterRefusal(lake, [spear], 's'), WATER_REFUSAL);
+  assert.equal(waterRefusal(lake, [spear]), WATER_REFUSAL);
+  assert.equal(waterRefusal(lake, [spear, galley]), null);
+  assert.equal(waterRefusal(lake, [galley], 'g'), null);
+  assert.equal(waterRefusal({ isSea: true, known: false }, [spear], 's'), null);
+  assert.equal(waterRefusal({ isSea: false }, [spear], 's'), null);
 });

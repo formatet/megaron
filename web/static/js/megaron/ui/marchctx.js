@@ -115,6 +115,7 @@ export function closeMarchCtx() {
   State.marchCtxUnitID = null;
   State.marchCtxDest   = null;
   State.marchCtxUnits  = [];
+  State.marchCtxAll    = [];
   State.marchCtxGroups = [];
   document.getElementById('mctx-err').textContent = '';
   const etaEl = document.getElementById('mctx-eta');
@@ -282,6 +283,38 @@ export function renderColonizePreviewHTML(p) {
 // in the whole canvas renderer) — same fallback shape as its terrainLabel().
 function catchmentTerrainLabel(t) {
   return t.charAt(0).toUpperCase() + t.slice(1).replaceAll('_', ' ');
+}
+
+// The answer to a press of March (refusal or confirmation) is read where the button is: whatever the
+// dialog holds, the line is scrolled into the visible part of it (first-hour round three, item 1a).
+function setMarchErr(text, html = false) {
+  const el = document.getElementById('mctx-err');
+  if (html) el.innerHTML = text; else el.textContent = text;
+  el.scrollIntoView?.({ block: 'nearest' });
+}
+
+// The map's own quiet notice line (the pick bar's look): on a phone the march sheet closes on success
+// and the confirmation is shown here, over the map.
+export function showMapNotice(text) {
+  document.getElementById('map-notice')?.remove();
+  const bar = document.createElement('div');
+  bar.id = 'map-notice'; bar.className = 'hexpick-bar map-notice'; bar.setAttribute('role', 'status');
+  const msg = document.createElement('span'); msg.className = 'hexpick-prompt'; msg.textContent = text;
+  const x = document.createElement('button'); x.type = 'button'; x.className = 'hexpick-cancel'; x.textContent = '✕'; x.title = 'Dismiss';
+  x.addEventListener('click', () => bar.remove());
+  bar.append(msg, x);
+  (document.getElementById('map-root') || document.body).appendChild(bar);
+  setTimeout(() => bar.remove(), 15000);
+}
+
+// A land force aimed at water: ships carry soldiers, soldiers do not walk on it. Null when the order is fine.
+export const WATER_REFUSAL = 'Soldiers cannot cross water. They need a ship: build one in a coastal city.';
+export function waterRefusal(dest, units, unitID = null) {
+  if (!dest || !dest.isSea || dest.known === false) return null;
+  if (marchEligibleUnits(units, dest, unitID).length) return null;
+  const pinned = unitID && units.find(u => u.id === unitID);
+  const landForce = pinned ? pinned.category !== 'naval' : units.some(u => u.category !== 'naval' && marchCtxOrderMode(u) !== null);
+  return landForce ? WATER_REFUSAL : null;
 }
 
 let lastCtxPos = null;
@@ -454,6 +487,8 @@ export async function openMarchCtx(dest, screenX, screenY) {
   else if (ownPortDestination(dest)) hint = 'Sail ships here to dock and stay. Everyone aboard joins this city’s garrison; land forces reinforce it. Ships take their next voyage’s provisions from this harbour.';
   else if (dest.isSettlement) hint = dest.allied ? 'March land forces here to reinforce the garrison on arrival.' : 'March land forces here, or send a laden ship to assault this coastal city on arrival.';
   else                        hint = 'March land forces to this hex, found a new settlement here, or explore and return home.';
+  const waterNo = waterRefusal(dest, State.unitsData || [], State.marchCtxUnitID);
+  if (waterNo) hint = waterNo;
   document.getElementById('mctx-hint').textContent = hint;
 
   // Colonize option only for empty, ALREADY-SEEN land tiles — and never in
@@ -489,6 +524,7 @@ export async function openMarchCtx(dest, screenX, screenY) {
   expeditionRules = unitResponse.expedition_rules;
   configureExpedition(document.getElementById('mctx-ticks'), expeditionRules);
   const all = unitResponse.units || [];
+  State.marchCtxAll = all;
 
   // Eligible: garrisoned/positioned units start a march; a unit already
   // MARCHING is eligible too — right-clicking a new destination sends it a
@@ -498,6 +534,8 @@ export async function openMarchCtx(dest, screenX, screenY) {
   // (terrain is unseen by definition), so the category filter is skipped and
   // the server sorts out a wrong-category pick (formatApiError shows why).
   State.marchCtxUnits = marchEligibleUnits(all, dest, State.marchCtxUnitID);
+  const waterNoNow = waterRefusal(dest, all, State.marchCtxUnitID);
+  if (waterNoNow) document.getElementById('mctx-hint').textContent = waterNoNow;
   const landing = landingSelected();
   if (landing) {
     document.getElementById('mctx-hint').textContent = ownPortDestination(dest)
@@ -600,9 +638,10 @@ function renderMarchUnitList() {
   if (!State.marchCtxUnits.length) {
     const dest = State.marchCtxDest;
     let empty = 'No land forces ready to march.';
-    if (dest && dest.isSea) empty = 'No galleys available. Build ships in a coastal city first.';
+    if (waterRefusal(dest, State.marchCtxAll || [], State.marchCtxUnitID)) empty = '';
+    else if (dest && dest.isSea) empty = 'No galleys available. Build ships in a coastal city first.';
     else if (dest && dest.known === false) empty = 'No forces ready to explore.';
-    el.innerHTML = '<p style="font-size:.73rem;color:var(--text-dim);margin:.3rem 0">' + empty + '</p>';
+    el.innerHTML = empty ? '<p style="font-size:.73rem;color:var(--text-dim);margin:.3rem 0">' + empty + '</p>' : '';
     stanceRow.style.display = 'none';
     return;
   }
@@ -632,7 +671,9 @@ export async function sendMarch() {
   // same send.
   const picks = selectedMarchPicks(State.marchCtxGroups, (i,k)=>document.getElementById(`mg-${i}-${k}`)?.checked);
   if (!picks.length) {
-    document.getElementById('mctx-err').textContent = 'Choose the forces to send by name.';
+    // An empty list never asks the player to choose from it: say why there is nothing to send.
+    setMarchErr(State.marchCtxGroups.length ? 'Choose the forces to send by name.'
+      : waterRefusal(State.marchCtxDest, State.marchCtxAll || [], State.marchCtxUnitID) || 'No forces are ready to send there.');
     return;
   }
   // Naval fleets carry no stance.
@@ -651,7 +692,7 @@ export async function sendMarch() {
   const intent = options.intent || '';
   let ticks;
   try { if (picks.some(p => p.order.intent === 'explore')) ticks = expeditionTicks(document.getElementById('mctx-ticks')); }
-  catch (error) { document.getElementById('mctx-err').textContent = error.message; return; }
+  catch (error) { setMarchErr(error.message); return; }
 
   marchPreview.cancel();
   const canceledForecast = document.getElementById('mctx-eta');
@@ -667,7 +708,7 @@ export async function sendMarch() {
       loadMarchPreview(world,p,{target_q:destination.q,target_r:destination.r,...p.order,ticks,unit_ids:picks.map(p=>p.id).join(',')},fetchAuth)));
   } catch(error) {
     if(selectionVersion===marchSelectionVersion&&world===State.WORLD_ID){
-      document.getElementById('mctx-err').textContent='Nothing sent — '+error.message;
+      setMarchErr('Nothing sent — '+error.message);
     }
     if(world===State.WORLD_ID&&destination===State.marchCtxDest)document.getElementById('mctx-send').disabled=false;
     return;
@@ -775,20 +816,20 @@ export async function sendMarch() {
       etaEl.innerHTML += '<br>' + esc(stanceSentLine(sd, fmtArrival(sd.courier_arrives_at, sd.courier_due_tick)));
     }
     etaEl.style.display = 'block';
+    etaEl.scrollIntoView?.({ block: 'nearest' });
   }
   // A redirect that went out but whose stance order was refused is sent, not
   // failed — the refusal still has to be read.
   const stanceRefused = results.filter(r => r.ok && r.err);
   const hiketeia = hiketeiaConfirmed ? '' : hiketeiaRefusalHTML(failed);
   if (hiketeia) {
-    const errEl = document.getElementById('mctx-err');
-    errEl.innerHTML = hiketeia;
+    setMarchErr(hiketeia, true);
     document.getElementById('mctx-hiketeia-go').addEventListener('click', () => { hiketeiaConfirmed = true; sendMarch(); });
   } else if (failed.length) {
     const okCount = results.length - failed.length;
-    document.getElementById('mctx-err').textContent = (okCount ? fmtNum(okCount) + ' sent · ' : '') + failed[0].err;
+    setMarchErr((okCount ? fmtNum(okCount) + ' sent · ' : '') + failed[0].err);
   } else if (stanceRefused.length) {
-    document.getElementById('mctx-err').textContent = stanceRefused[0].err;
+    setMarchErr(stanceRefused[0].err);
   } else if (showEta) {
     // All sent — collapse the order form into a confirmation so a second
     // "March →" can't re-send the same (now marching) units. Escape/click-away
@@ -801,6 +842,12 @@ export async function sendMarch() {
     document.getElementById('mctx-colonize-row').style.display = 'none';
     if (exploreRow) exploreRow.style.display = 'none';
     document.getElementById('mctx-send').style.display = 'none';
+    // A phone shows the sheet full-screen: nothing is left on it but the receipt. Back to the map, receipt there.
+    if (window.matchMedia?.('(max-width: 480px)').matches) {
+      const receipt = etaEl.innerText || etaEl.textContent;
+      closeMarchCtx();
+      showMapNotice(receipt.replace(/\s*\n\s*/g, ' · ').trim());
+    }
   } else {
     closeMarchCtx();
   }
