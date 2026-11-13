@@ -29,9 +29,11 @@ test('BA2: a Construct row the city cannot pay has a disabled Build and a btn-re
   assert.equal(buildRows([silo], ctx({ timber: 2, stone: 0 }))[0].payable, false);
 });
 
-test('BA3: hex-bound Construct row keeps its Choose a hex button but tells the shortage', () => {
+test('BA3: hex-bound Construct row is disabled like Build when short, and tells the shortage (round two item D)', () => {
   const html = constructListHTML([farm], { stock: { timber: 2, stone: 0 }, buildQuotes: [{ type: 'farm', new_site: true, current_level: 0, next_level: 1, costs: { timber: 6, stone: 4 }, duration_game_days: 4 }] });
-  assert.match(html, /data-build-act="pick"/); assert.doesNotMatch(html, /disabled/);
+  assert.match(html, /data-build-act="pick"[^>]* disabled/);
+  const rich = constructListHTML([farm], { stock: { timber: 6, stone: 4 }, buildQuotes: [{ type: 'farm', new_site: true, current_level: 0, next_level: 1, costs: { timber: 6, stone: 4 }, duration_game_days: 4 }] });
+  assert.doesNotMatch(rich, /disabled/);
   assert.match(html, /btn-reason">needs 4 stone, city has 0; needs 6 timber, city has 2/);
 });
 

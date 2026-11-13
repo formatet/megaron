@@ -160,7 +160,7 @@ export function buildRowHTML(r) {
   const eta = !r.locked && r.days != null ? readyIfStarted(r.days) : '';
   const poor = !r.locked && r.payable === false;
   const button = r.locked ? ''
-    : r.hexBound ? `<button class="btn-small btn-primary build-row-btn" data-build-act="pick" ${attrs}>Choose a hex →</button>${reasonSpan(r.shortReason)}`
+    : r.hexBound ? `<button class="btn-small btn-primary build-row-btn" data-build-act="pick" ${attrs}${poor ? ' disabled' : ''}>Choose a hex →</button>${reasonSpan(r.shortReason)}`
     : `<button class="btn-small btn-primary build-row-btn" data-build-act="build" ${attrs}${poor ? ' disabled' : ''}>Build</button>${poor ? reasonSpan(r.shortReason) : ''}`;
   return `<div class="build-row${r.locked ? ' locked' : ''}" ${attrs}>
     <div class="build-row-text">${rowText(r)}${eta ? `<div class="build-row-sub">${esc(eta)}</div>` : ''}${r.locked ? `<div class="build-row-reason">${esc(r.reason)}</div>` : ''}</div>${button}</div>`;

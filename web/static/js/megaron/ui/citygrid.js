@@ -301,9 +301,15 @@ const liveSelection = new WeakMap();
 //                  never collapse the widget to a one-line box and grow back:
 //                  that flicker is what made the panel appear to jump away on
 //                  every click (Timothy 2026-09-10).
+// The pick mode the live grid is in (null outside it): a drawer rebuilt by a live update asks this to
+// put the player's pending "choose a hex" back where it was.
+let livePick = null;
+export function currentPick() { return livePick; }
+
 export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR, renderOpts = {}) {
   const { selected = null, silent = false, targetHex=null, buildingType=null, god=null, pick=null } = renderOpts;
   const mySeq = ++renderSeq;
+  livePick = pick;
   if (!silent) { liveSelection.delete(containerEl); containerEl.innerHTML = '<div class="loading" style="font-size:.8rem">Loading…</div>'; }
 
   let opts;

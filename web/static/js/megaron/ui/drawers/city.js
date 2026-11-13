@@ -11,7 +11,7 @@ import { renderLockedActions } from '../misc.js';
 import { esc, formatApiError, playerError, errorDetail } from '../format.js';
 import { unitTypeLabel } from '../actornames.js';
 import { startCityAnim } from '../../render/city.js';
-import { renderGubbeGrid, shipyardShareNote, setBuildHandler } from '../citygrid.js';
+import { renderGubbeGrid, shipyardShareNote, setBuildHandler, currentPick } from '../citygrid.js';
 import { buildBody, constructListHTML, getBuildingCatalogue, loadStock, showBuildResult, templeName } from '../build_rows.js';
 import { productionSectionsHTML, populationHTML, blessingsSectionHTML, foodSummaryHTML, foodDetailsHTML, storageWarningsHTML } from './city_production.js';
 import { warehouseHTML } from './city_warehouse.js';
@@ -33,6 +33,19 @@ export function cycleCityView(dir) {
 
 
 let cityLoadSeq = 0;
+
+// A drawer rebuilt by a live update must leave the player where they were: same tab, same scroll
+// position, and a pending "choose a hex" still pending (first-hour round two, item D).
+function cityViewSnapshot(body, cityID) {
+  if (!body || body.dataset.cityId !== cityID || !body.children.length) return null;
+  const scroller = body.closest('.drawer-body') || body;
+  return { top: scroller.scrollTop, tab: body.querySelector('.dtab.active')?.dataset.tab || null, pick: currentPick() };
+}
+function restoreCityView(body, snap) {
+  if (!snap) return;
+  const scroller = body.closest('.drawer-body') || body;
+  scroller.scrollTop = snap.top;
+}
 export async function loadCityDrawer() {
   const seq = ++cityLoadSeq;
   const capital = activeCitySettlement();
@@ -49,6 +62,7 @@ export async function loadCityDrawer() {
   document.querySelectorAll('#drawer-city .drawer-nav').forEach(b => b.disabled = mineCount < 2);
 
   const body = document.getElementById('city-body');
+  const snap = capital ? cityViewSnapshot(body, capital.id) : null;
   if (!capital) {
     body.innerHTML = `<p class="empty-state" style="padding:1rem">${noCityText('No city founded yet.', State.founderPhase)}</p>`;
     return;
@@ -74,6 +88,7 @@ export async function loadCityDrawer() {
     <div id="ctab-byggnader" class="city-tab" style="display:none"><div id="city-bld-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
     <div id="ctab-garnison"  class="city-tab" style="display:none"><div id="city-gar-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>`;
 
+  body.dataset.cityId = capital.id;
   body.querySelectorAll('.dtab').forEach(tab => {
     tab.addEventListener('click', function() {
       body.querySelectorAll('.dtab').forEach(t => t.classList.remove('active'));
@@ -84,6 +99,7 @@ export async function loadCityDrawer() {
     });
   });
 
+  if (snap?.tab && snap.tab !== 'produktion') body.querySelector(`.dtab[data-tab="${snap.tab}"]`)?.click();
   const capitalTile2 = State.tileData.find(t => t.q === capital.q && t.r === capital.r);
 
   try {
@@ -158,12 +174,12 @@ export async function loadCityDrawer() {
 
     // ── Gubbe placement (P5) ────────────────────────────────────────────────
     const gridEl = document.getElementById('city-gubbe-grid');
-    if (gridEl) renderGubbeGrid(gridEl, capital.id, capital.q, capital.r);
+    const gridP = gridEl ? renderGubbeGrid(gridEl, capital.id, capital.q, capital.r, snap?.pick ? { pick: snap.pick } : {}) : null;
 
     // ── Byggnader ───────────────────────────────────────────────────────────
     // Delegate to refreshCityBuildings so startBuild() can call it too
     // without resetting the active drawer tab.
-    refreshCityBuildings(capital.id);
+    const bldP = refreshCityBuildings(capital.id);
 
     // ── Garnison ────────────────────────────────────────────────────────────
     if (pd) {
@@ -176,6 +192,9 @@ export async function loadCityDrawer() {
     const locked = await renderLockedActions('province', capital.id);
     if (seq !== cityLoadSeq) return;
     document.getElementById('city-gar-sec').insertAdjacentHTML('beforeend', locked);
+    // The grid and the build rows fill in asynchronously; put the scroll back once they stand.
+    await Promise.all([gridP, bldP]);
+    if (seq === cityLoadSeq) restoreCityView(body, snap);
 
   } catch(e) { console.error('city drawer', e); }
 }
