@@ -1,0 +1,32 @@
+item 4 @ 1280x800
+   warehouse before: FOOD ? | Food | +0.6 per game day | Army rations | −1 | Herd | +0.3 | Citizens' meals | −5.3 | Production | +6.7 | Fish | 0 / 2,000 · +0 per game day | Grain | 
+   farm row before :  |     Farm L0 → L1 · 4 stone 6 timber · 4 game days · about 8 minutesif started now, ready ≈ today 06:48Choose a hex →needs 4 stone, city has 3; needs 6 timber
+  [FAIL] item 4 · 1280: the Warehouse stock line changed by itself within one refresh interval — FOOD ?
+Food
++0.6 per game day
+Army rations
+−1
+Herd
++0.3
+Citizens' meals
+−5.3
+Pro
+  [PASS] item 4 · 1280: the Farm row's reason changed by itself ("city has 3" -> nothing short) — after 24000 ms; now: '\n    Farm L0 → L1 · 4 stone 6 timber · 4 game days · about 8 minutesif started now, ready ≈ today 06:48Choose a hex →'
+item 4 @ 390x844
+   warehouse before: FOOD ? | Food | +0.6 per game day | Army rations | −1 | Herd | +0.3 | Citizens' meals | −5.3 | Production | +6.7 | Fish | 0 / 2,000 · +0 per game day | Grain | 
+   farm row before :  |     Farm L0 → L1 · 4 stone 6 timber · 4 game days · about 8 minutesif started now, ready ≈ today 06:49Choose a hex →needs 4 stone, city has 3; needs 6 timber
+  [FAIL] item 4 · 390: the Warehouse stock line changed by itself within one refresh interval — FOOD ?
+Food
++0.6 per game day
+Army rations
+−1
+Herd
++0.3
+Citizens' meals
+−5.3
+Pro
+  [PASS] item 4 · 390: the Farm row's reason changed by itself ("city has 3" -> nothing short) — after 24000 ms; now: '\n    Farm L0 → L1 · 4 stone 6 timber · 4 game days · about 8 minutesif started now, ready ≈ today 06:49Choose a hex →'
+
+2 passed, 2 failed
+  FAILED item 4 1280: the Warehouse stock line changed by itself within one refresh interval
+  FAILED item 4 390: the Warehouse stock line changed by itself within one refresh interval

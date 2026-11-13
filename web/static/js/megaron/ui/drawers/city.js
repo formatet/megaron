@@ -32,6 +32,48 @@ export function cycleCityView(dir) {
 }
 
 
+// POP_COSTS: capitalized keys match province API's ArmyComposition struct field names.
+const POP_COSTS = { Spearman:5, EliteInfantry:10, WarChariot:8, Ship:10, WarGalley:12, Merchantman:8 };
+
+// Every number section of the City drawer, painted from one province read + one goods read. The drawer load uses it
+// and so does the 30 s refresh, so what the player reads is never older than one interval (round three, item 4).
+// A section is rewritten only when its text changed (no churn under the pointer).
+function paintCityFigures(pd, goods) {
+  const set = (id, html) => {
+    const el = document.getElementById(id);
+    if (el && el.dataset.paint !== html) { el.innerHTML = html; el.dataset.paint = html; }
+  };
+  if (pd) {
+    const army    = pd.army || {};
+    const armyPop = Object.entries(POP_COSTS).reduce((s,[k,c]) => s + (army[k]||0)*c, 0);
+    const idle    = goods[0] ? (goods[0].idle_citizens || 0) : 0;
+    // S1c (megaron_plan_foda_konsistens.md): livestock's strongest sink is a
+    // deliberate Wanax choice, never automatic — trade one animal for +10
+    // population right now. Button disabled at 0 rather than hidden, so the
+    // herd's role as a growth lever stays visible even when empty.
+    const livestockGood = goods.find(g => g.key === 'livestock');
+    const livestock = livestockGood ? livestockGood.amount : 0;
+    set('city-pop-sec', populationHTML(pd, idle, livestock, activeCitySettlement()?.id));
+    set('city-people-details', `<div class="stat-row"><span class="sr-label">In service <span class="sr-gloss">people serving in forces</span></span><span class="sr-val">${fmtNum(armyPop)}</span></div><div class="stat-row"><span class="sr-label">People <span class="sr-gloss">everyone in the city</span></span><span class="sr-val">${fmtNum(pd.population)}</span></div>`);
+  } else {
+    set('city-pop-sec', '<p class="empty-state">—</p>');
+  }
+  set('city-food-sec', foodSummaryHTML(pd));
+  set('city-blessings-sec', blessingsSectionHTML(pd));
+  set('city-wh-sec', warehouseHTML(pd, goods));
+  set('city-food-details-sec', foodDetailsHTML(pd));
+  if (pd && pd.last_tick) {
+    const lt = pd.last_tick;
+    const prodRows = Object.entries(lt.production || {}).sort(([a],[b]) => a.localeCompare(b)).map(([k,v]) => `<tr><td>${k}</td><td style="color:var(--safe-text)">+${fmtNum(Number(v.toFixed(2)))}</td></tr>`).join('');
+    const consRows = Object.entries(lt.consumption || {}).sort(([a],[b]) => a.localeCompare(b)).map(([k,v]) => `<tr><td>${k}</td><td style="color:var(--accent)">−${fmtNum(Number(v.toFixed(2)))}</td></tr>`).join('');
+    set('city-lasttick-sec', `
+        <div class="stat-row"><span class="sr-label">Counted</span><span class="sr-val">${esc(fmtTickTime(lt.tick))}</span></div>
+        ${(prodRows||consRows) ? `<table class="goods-mini" style="margin-top:.3rem">${prodRows}${consRows}</table>` : ''}`);
+  } else {
+    set('city-lasttick-sec', '<p class="empty-state">—</p>');
+  }
+}
+
 let cityLoadSeq = 0;
 
 // A drawer rebuilt by a live update must leave the player where they were: same tab, same scroll
@@ -68,8 +110,6 @@ export async function loadCityDrawer() {
     return;
   }
 
-  // Capitalized keys match province API's ArmyComposition struct field names.
-  const POP_COSTS = { Spearman:5, EliteInfantry:10, WarChariot:8, Ship:10, WarGalley:12, Merchantman:8 };
   const UNIT_DP   = { Spearman:1, EliteInfantry:3,  WarChariot:4, Ship:1,  WarGalley:3,  Merchantman:0 };
 
   body.innerHTML = `
@@ -137,37 +177,7 @@ export async function loadCityDrawer() {
     }
 
     // ── Produktion ──────────────────────────────────────────────────────────
-    if (pd) {
-      const army    = pd.army || {};
-      const armyPop = Object.entries(POP_COSTS).reduce((s,[k,c]) => s + (army[k]||0)*c, 0);
-      const idle    = goods[0] ? (goods[0].idle_citizens || 0) : 0;
-      // S1c (megaron_plan_foda_konsistens.md): livestock's strongest sink is a
-      // deliberate Wanax choice, never automatic — trade one animal for +10
-      // population right now. Button disabled at 0 rather than hidden, so the
-      // herd's role as a growth lever stays visible even when empty.
-      const livestockGood = goods.find(g => g.key === 'livestock');
-      const livestock = livestockGood ? livestockGood.amount : 0;
-      document.getElementById('city-pop-sec').innerHTML = populationHTML(pd, idle, livestock, capital.id);
-      document.getElementById('city-people-details').innerHTML = `<div class="stat-row"><span class="sr-label">In service <span class="sr-gloss">people serving in forces</span></span><span class="sr-val">${fmtNum(armyPop)}</span></div><div class="stat-row"><span class="sr-label">People <span class="sr-gloss">everyone in the city</span></span><span class="sr-val">${fmtNum(pd.population)}</span></div>`;
-    } else {
-      document.getElementById('city-pop-sec').innerHTML = '<p class="empty-state">—</p>';
-    }
-
-    document.getElementById('city-food-sec').innerHTML = foodSummaryHTML(pd);
-    document.getElementById('city-blessings-sec').innerHTML = blessingsSectionHTML(pd);
-    document.getElementById('city-wh-sec').innerHTML = warehouseHTML(pd, goods);
-    document.getElementById('city-food-details-sec').innerHTML = foodDetailsHTML(pd);
-    if (pd && pd.last_tick) {
-      const lt = pd.last_tick;
-      const prodRows = Object.entries(lt.production || {}).sort(([a],[b]) => a.localeCompare(b)).map(([k,v]) => `<tr><td>${k}</td><td style="color:var(--safe-text)">+${fmtNum(Number(v.toFixed(2)))}</td></tr>`).join('');
-      const consRows = Object.entries(lt.consumption || {}).sort(([a],[b]) => a.localeCompare(b)).map(([k,v]) => `<tr><td>${k}</td><td style="color:var(--accent)">−${fmtNum(Number(v.toFixed(2)))}</td></tr>`).join('');
-      document.getElementById('city-lasttick-sec').innerHTML = `
-        <div class="stat-row"><span class="sr-label">Counted</span><span class="sr-val">${esc(fmtTickTime(lt.tick))}</span></div>
-        ${(prodRows||consRows) ? `<table class="goods-mini" style="margin-top:.3rem">${prodRows}${consRows}</table>` : ''}`;
-    } else {
-      document.getElementById('city-lasttick-sec').innerHTML = '<p class="empty-state">—</p>';
-    }
-
+    paintCityFigures(pd, goods);
 
     document.getElementById('city-prod-sec').innerHTML = storageWarningsHTML(pd) + '<div id="city-gubbe-grid"><div class="loading">Loading…</div></div>';
 
@@ -365,6 +375,18 @@ export async function refreshCityStock() {
   const bldSec = document.getElementById('city-bld-sec');
   const capital = activeCitySettlement();
   if (!bldSec || !capital || State.activeDrawer !== 'city') return;
+  // The figures on every tab (stock line, food, population) follow the world too, not only the build rows.
+  const seq = cityLoadSeq;
+  try {
+    const [settResp, goodsResp] = await Promise.all([
+      fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${capital.id}`),
+      fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${capital.id}/goods`),
+    ]);
+    if (settResp.ok && goodsResp.ok) {
+      const pd = (await settResp.json()).settlement, goods = await goodsResp.json();
+      if (seq === cityLoadSeq && activeCitySettlement()?.id === capital.id && State.activeDrawer === 'city') paintCityFigures(pd, goods);
+    }
+  } catch (_) { /* the next poll tries again */ }
   const stock = await loadStock(capital.id);
   if (!stock) return;
   const key = capital.id + JSON.stringify(Object.entries(stock).map(([k, v]) => [k, Math.floor(v)]).sort());

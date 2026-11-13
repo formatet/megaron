@@ -302,7 +302,34 @@ def item3(pw):
         b.close()
 
 
-ITEMS = {1: item1, 2: item2, 3: item3}
+def item4(pw):
+    for w, h in SIZES:
+        tag = f'{w}'
+        print(f'item 4 @ {w}x{h}')
+        give_stock('Varv3', stone=3, timber=2)
+        b, p, _ = newpage(pw, 'Varv3', w, h)
+        open_city(p, w, 'forrad')
+        wh0 = p.evaluate("document.querySelector('#city-wh-sec').innerText")
+        row0 = p.evaluate("(document.querySelector('#city-bld-sec .build-row[data-build-type=\"farm\"]') || {}).innerText")
+        print('   warehouse before:', wh0.replace('\n', ' | ')[:160]); print('   farm row before :', (row0 or '').replace('\n', ' | ')[:160])
+        # the world moves: stone and timber arrive (the player touches nothing)
+        give_stock('Varv3', stone=60, timber=60)
+        t = 0; changed_wh = changed_row = None
+        while t < 42000:
+            p.wait_for_timeout(3000); t += 3000
+            wh = p.evaluate("document.querySelector('#city-wh-sec').innerText")
+            row = p.evaluate("(document.querySelector('#city-bld-sec .build-row[data-build-type=\"farm\"]') || {}).innerText")
+            if changed_wh is None and wh != wh0: changed_wh = t
+            if changed_row is None and row != row0: changed_row = t
+            if changed_wh is not None and changed_row is not None: break
+        row1 = p.evaluate("(document.querySelector('#city-bld-sec .build-row[data-build-type=\"farm\"]') || {}).innerText")
+        chk(4, f'{tag}: the Warehouse stock line changed by itself within one refresh interval', changed_wh is not None, f'after {changed_wh} ms' if changed_wh else wh0[:80])
+        chk(4, f'{tag}: the Farm row\'s reason changed by itself ("city has 3" -> nothing short)', changed_row is not None and 'city has 3' not in (row1 or ''), f'after {changed_row} ms; now: {(row1 or "")[:120]!r}')
+        shot(p, 4, f'warehouse-after-wait-{tag}')
+        b.close()
+
+
+ITEMS = {1: item1, 2: item2, 3: item3, 4: item4}
 
 
 def main():
