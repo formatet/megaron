@@ -108,6 +108,15 @@ export function sortGoods(goods, target) {
   return [...(goods || [])].sort((a, b) => goodLabel(target, a).localeCompare(goodLabel(target, b), 'en'));
 }
 
+// placesNote is the line that says the land caps a good: how many places the hex has, how many are
+// worked, and what building would add more. Empty when no unbuilt building raises the good here
+// (the numbers come from placement-options: cap, placed, raised_by, extra_places).
+export function placesNote(good) {
+  if (!good || !good.raised_by || !(good.extra_places > 0) || good.cap == null) return '';
+  const n = good.cap;
+  return `${fmtNum(n)} place${n === 1 ? '' : 's'} here, ${fmtNum(good.placed)} worked · a ${buildingLabel(good.raised_by)} adds ${fmtNum(good.extra_places)}`;
+}
+
 export function goodRowHTML(target, good, take) {
   // −1 keys off THIS city's own gubbar (placed_ordinals), never `placed` —
   // `placed` is the hex's global occupancy, and on a hex another city holds it
@@ -130,6 +139,7 @@ export function goodRowHTML(target, good, take) {
         <b>${goodLabel(target, good)}</b>
         <span style="color:var(--text-dim)"> ${good.staffing_only ? fmtNum(good.placed) + (shipyard ? ' shipyard workers' : workshop ? ' builders' : ' temple workers') : fmtNum(Number(good.rate_per_tick.toFixed(1))) + ' per game day total'} · ${nextLabel}</span>
         <div>${pipsHTML}</div>
+        ${placesNote(good) ? `<div class="gubbe-places-note">${esc(placesNote(good))}</div>` : ''}
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:.3rem">
         ${take

@@ -34,6 +34,12 @@ type HexOption struct {
 	// enforces at write time.
 	PlaceCapPerGood map[string]int
 
+	// RaisedByPerGood names, per good, the hex-bound building that would add
+	// BuildingExtraPlaces worker places here and is NOT built yet. Absent for a
+	// good no building raises, or whose building already stands (first-hour
+	// round two, item A: the land caps timber, and the panel should say so).
+	RaisedByPerGood map[string]string
+
 	// CapPerGood is PlaceCapPerGood again — the field the API reads to show a cap.
 	CapPerGood map[string]int
 
@@ -266,6 +272,7 @@ func loadHexOptionsForHexes(ctx context.Context, tx Tx, worldID uuid.UUID, ring 
 				CapPerGood:       make(map[string]int),
 				MultPerGood:      make(map[string]float64),
 				PlaceCapPerGood:  make(map[string]int),
+				RaisedByPerGood:  make(map[string]string),
 			}
 			byCoord[c] = opt
 			order = append(order, c)
@@ -299,6 +306,11 @@ func loadHexOptionsForHexes(ctx context.Context, tx Tx, worldID uuid.UUID, ring 
 			opt.PlaceCapPerGood[good] = places
 			opt.CapPerGood[good] = places
 			opt.MultPerGood[good] = mult
+			for _, rule := range tiles[c].rules {
+				if rule.good == good && rule.building != "" && rule.basePlaces > 0 && !(good == "fish") && levels[rule.building] <= 0 {
+					opt.RaisedByPerGood[good] = rule.building
+				}
+			}
 		}
 		for good := range opt.RatePerGood {
 			fill(good)

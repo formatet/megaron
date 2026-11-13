@@ -223,6 +223,10 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 		Placed         int     `json:"placed"`
 		PlacedOrdinals []int   `json:"placed_ordinals,omitempty"`
 		MarginalYield  float64 `json:"marginal_yield"`
+		// RaisedBy is the not-yet-built hex building that would add ExtraPlaces
+		// worker places to this good on this hex (economy.BuildingExtraPlaces).
+		RaisedBy    string `json:"raised_by,omitempty"`
+		ExtraPlaces int    `json:"extra_places,omitempty"`
 	}
 	// buildGoods reports Form B's FILLABLE cap (megaron_plan_byggnadsniva_takt.md,
 	// 2026-08-24): PlaceCapPerGood, not the level-grown CapPerGood. Place() now
@@ -356,6 +360,12 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 			Goods: buildGoods(opt.RatePerGood, func(good string, rate float64) float64 {
 				return economy.HexYieldPerWorker(rate, opt.MultPerGood[good])
 			}, opt.PlaceCapPerGood, globalHexOccupancy[opt.Coord], placedOrdinals.Hex[opt.Coord]),
+		}
+		for i := range ho.Goods {
+			if b := opt.RaisedByPerGood[ho.Goods[i].GoodKey]; b != "" {
+				ho.Goods[i].RaisedBy = b
+				ho.Goods[i].ExtraPlaces = economy.BuildingExtraPlaces
+			}
 		}
 		if hold, held := holds[opt.Coord]; held {
 			t := hold.Takeable()
