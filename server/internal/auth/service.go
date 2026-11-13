@@ -54,12 +54,16 @@ type Service struct {
 	activitySweep time.Time
 }
 
+// AccessTokenTTL is how long an access token lives. The page cookie (handlers.setTokenCookie) must live
+// exactly as long, or a reload after 15 minutes lands on the sign-in page with a still-valid token.
+const AccessTokenTTL = 24 * time.Hour
+
 // NewService creates a Service with the given pool and JWT secret.
 func NewService(pool *pgxpool.Pool, jwtSecret string) *Service {
 	return &Service{
 		pool:       pool,
 		jwtSecret:  []byte(jwtSecret),
-		accessTTL:  24 * time.Hour,
+		accessTTL:  AccessTokenTTL,
 		refreshTTL: 7 * 24 * time.Hour,
 	}
 }
