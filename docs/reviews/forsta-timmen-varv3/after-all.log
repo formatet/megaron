@@ -1,0 +1,188 @@
+item 1 @ 1280x800
+  [PASS] item 1 · b 1280: soldiers aimed at a lake get the one plain sentence — 'Lake (11,58)\n✕\nSoldiers cannot cross water. They need a ship: build one in a coastal city.\nOr pick a known city (optional)\nMore\nMarch →'
+  [PASS] item 1 · b 1280: no sea-exploration text for soldiers
+  [PASS] item 1 · b 1280: pressing March never asks to choose forces from an empty list — 'Soldiers cannot cross water. They need a ship: build one in a coastal city.'
+  [PASS] item 1 · b 1280: whatever March answered is inside the visible part of the dialog — {'exists': True, 'visible': True, 'rect': [688, 731, 874, 789], 'clip': [676, 497, 886, 792], 'text': 'Soldiers cannot cross water. They need a ship: build one in a coastal city.'}
+  [PASS] item 1 · a 1280: the refusal exists ("Nothing sent — No route") — "Nothing sent — No route from this unit's current position to the chosen hex (38,"
+  [PASS] item 1 · a 1280: the refusal is inside the visible part of the dialog and the viewport — {'exists': True, 'visible': True, 'rect': [688, 672, 874, 790], 'clip': [676, 345, 886, 792], 'text': "Nothing sent — No route from this unit's current position to the chosen hex (38,43) — an expedition goes there first, th"}
+  [PASS] item 1 · a 1280: it sits next to the March button — send=[688, 635, 776, 664] err=[688, 672, 874, 790]
+  [PASS] item 1 · c 1280: desktop keeps the confirmation in the dialog, visible — {'exists': True, 'visible': True, 'rect': [678, 503, 884, 556], 'clip': [676, 367, 886, 558], 'text': '✓ Forces marching — arrives ≈ today 07:21'}
+item 1 @ 390x844
+  [PASS] item 1 · b 390: soldiers aimed at a lake get the one plain sentence — 'Lake (11,58)\n✕\nSoldiers cannot cross water. They need a ship: build one in a coastal city.\nOr pick a known city (optional)\nMore\nMarch →'
+  [PASS] item 1 · b 390: no sea-exploration text for soldiers
+  [PASS] item 1 · b 390: pressing March never asks to choose forces from an empty list — 'Soldiers cannot cross water. They need a ship: build one in a coastal city.'
+  [PASS] item 1 · b 390: whatever March answered is inside the visible part of the dialog — {'exists': True, 'visible': True, 'rect': [10, 252, 380, 272], 'clip': [0, 0, 390, 844], 'text': 'Soldiers cannot cross water. They need a ship: build one in a coastal city.'}
+  [PASS] item 1 · a 390: the refusal exists ("Nothing sent — No route") — "Nothing sent — No route from this unit's current position to the chosen hex (38,"
+  [PASS] item 1 · a 390: the refusal is inside the visible part of the dialog and the viewport — {'exists': True, 'visible': True, 'rect': [10, 352, 380, 410], 'clip': [0, 0, 390, 844], 'text': "Nothing sent — No route from this unit's current position to the chosen hex (38,43) — an expedition goes there first, th"}
+  [PASS] item 1 · a 390: it sits next to the March button — send=[10, 314, 98, 343] err=[10, 352, 380, 410]
+  [PASS] item 1 · c 390: the sheet is closed and the map is back
+  [PASS] item 1 · c 390: the confirmation is visible on the map ("Forces marching") — {'exists': True, 'visible': True, 'rect': [0, 44, 390, 71], 'clip': [0, 44, 390, 776], 'text': '✓ Forces marching — arrives ≈ today 07:21\n✕'}
+item 2 @ 1280x800
+  [PASS] item 2 · a 1280: after "Choose a hex →" the picker (hex grid) is inside the visible panel — {'exists': True, 'visible': True, 'rect': [876, 254, 1266, 509], 'clip': [862, 78, 1280, 766], 'text': ''}
+  [PASS] item 2 · a 1280: the chosen hex shows its Build button inside the visible panel — {'exists': True, 'visible': True, 'rect': [1173, 605, 1257, 637], 'clip': [862, 78, 1280, 766], 'text': 'BUILD'}
+  [PASS] item 2 · b 1280: a refusal is visible where the player is — {'exists': True, 'visible': True, 'rect': [885, 681, 1257, 761], 'clip': [862, 78, 1280, 766], 'text': 'Building Farm at (42,23) at level 1 needs stone (need 4, have 0, 4 short), timber (need 6, have 0, 6 short) [cedar count'}
+  [PASS] item 2 · b 1280: the confirmation "Farm queued at (42,23)" is visible after the re-render — {'exists': True, 'visible': True, 'rect': [885, 510, 1257, 558], 'clip': [862, 78, 1280, 766], 'text': 'Farm queued at (42,23) · 4 game days · about 8 minutes · ready ≈ today 07:15.'}
+  [PASS] item 2 · b 1280: it stays until the player acts again — {'exists': True, 'visible': True, 'rect': [885, 510, 1257, 558], 'clip': [862, 78, 1280, 766], 'text': 'Farm queued at (42,23) · 4 game days · about 8 minutes · ready ≈ today 07:15.'}
+item 2 @ 390x844
+  [PASS] item 2 · a 390: after "Choose a hex →" the picker (hex grid) is inside the visible panel — {'exists': True, 'visible': True, 'rect': [14, 287, 376, 542], 'clip': [0, 63, 390, 844], 'text': ''}
+  [PASS] item 2 · a 390: the chosen hex shows its Build button inside the visible panel — {'exists': True, 'visible': True, 'rect': [283, 632, 367, 676], 'clip': [0, 63, 390, 844], 'text': 'BUILD'}
+  [PASS] item 2 · b 390: a refusal is visible where the player is — {'exists': True, 'visible': True, 'rect': [23, 714, 367, 794], 'clip': [0, 63, 390, 844], 'text': 'Building Farm at (42,23) at level 1 needs stone (need 4, have 0, 4 short), timber (need 6, have 0, 6 short) [cedar count'}
+  [PASS] item 2 · b 390: the confirmation "Farm queued at (42,23)" is visible after the re-render — {'exists': True, 'visible': True, 'rect': [23, 543, 367, 591], 'clip': [0, 63, 390, 844], 'text': 'Farm queued at (42,23) · 4 game days · about 8 minutes · ready ≈ today 07:17.'}
+  [PASS] item 2 · b 390: it stays until the player acts again — {'exists': True, 'visible': True, 'rect': [23, 543, 367, 591], 'clip': [0, 63, 390, 844], 'text': 'Farm queued at (42,23) · 4 game days · about 8 minutes · ready ≈ today 07:17.'}
+item 3 @ 1280x800
+   measuring hex ordinal 12, good grain (4 places)
+   first +1: workers line '\xa0' -> 'Your citizens here: grain 1' (h 20.8 -> 20.8); 'Citizens: 0 of 11 placed | 11 free | \xa0' -> 'Citizens: 1 of 11 placed | 10 free | \xa0'; refusal None
+  [PASS] item 3 · 1280: first +1 - the press took effect
+  [PASS] item 3 · 1280: first +1 - every button rect unchanged (9 buttons) — {}
+   second +1: workers line 'Your citizens here: grain 1' -> 'Your citizens here: grain 2' (h 20.8 -> 20.8); 'Citizens: 1 of 11 placed | 10 free | \xa0' -> 'Citizens: 2 of 11 placed | 9 free | \xa0'; refusal None
+  [PASS] item 3 · 1280: second +1 - the press took effect
+  [PASS] item 3 · 1280: second +1 - every button rect unchanged (9 buttons) — {}
+   -1: workers line 'Your citizens here: grain 2' -> 'Your citizens here: grain 1' (h 20.8 -> 20.8); 'Citizens: 2 of 11 placed | 9 free | \xa0' -> 'Citizens: 1 of 11 placed | 10 free | \xa0'; refusal None
+  [PASS] item 3 · 1280: -1 - the press took effect
+  [PASS] item 3 · 1280: -1 - every button rect unchanged (9 buttons) — {}
+   last -1 to zero: workers line 'Your citizens here: grain 1' -> '\xa0' (h 20.8 -> 20.8); 'Citizens: 1 of 11 placed | 10 free | \xa0' -> 'Citizens: 0 of 11 placed | 11 free | \xa0'; refusal None
+  [PASS] item 3 · 1280: last -1 to zero - the press took effect
+  [PASS] item 3 · 1280: last -1 to zero - every button rect unchanged (9 buttons) — {}
+   FILL: workers line '\xa0' -> 'Your citizens here: grain 4' (h 20.8 -> 20.8); 'Citizens: 0 of 11 placed | 11 free | \xa0' -> 'Citizens: 4 of 11 placed | 7 free | \xa0'; refusal None
+  [PASS] item 3 · 1280: FILL - the press took effect
+  [PASS] item 3 · 1280: FILL - every button rect unchanged (9 buttons) — {}
+   measuring hex ordinal 8, good copper (1 places)
+   one-place hex: first +1: workers line '\xa0' -> 'Your citizens here: copper 1' (h 20.8 -> 20.8); 'Citizens: 4 of 11 placed | 7 free | \xa0' -> 'Citizens: 5 of 11 placed | 6 free | \xa0'; refusal None
+  [PASS] item 3 · 1280: one-place hex: first +1 - the press took effect
+  [PASS] item 3 · 1280: one-place hex: first +1 - every button rect unchanged (18 buttons) — {}
+   one-place hex: last -1 to zero: workers line 'Your citizens here: copper 1' -> '\xa0' (h 20.8 -> 20.8); 'Citizens: 5 of 11 placed | 6 free | \xa0' -> 'Citizens: 4 of 11 placed | 7 free | \xa0'; refusal None
+  [PASS] item 3 · 1280: one-place hex: last -1 to zero - the press took effect
+  [PASS] item 3 · 1280: one-place hex: last -1 to zero - every button rect unchanged (18 buttons) — {}
+   header: {'count': {'t': 'Citizens: 11 of 11 placed', 'top': 612.8499755859375, 'bottom': 640.0499725341797}, 'hint': {'t': 'To move one, press −1 where they stand, then +1 here.', 'top': 640.0499877929688, 'bottom': 660.8499908447266}}
+  [PASS] item 3 · 1280: "Citizens: N of N placed" and the move hint stand on separate lines — {'count': {'t': 'Citizens: 11 of 11 placed', 'top': 612.8499755859375, 'bottom': 640.0499725341797}, 'hint': {'t': 'To move one, press −1 where they stand, then +1 here.', 'top': 640.0499877929688, 'bottom': 660.8499908447266}}
+  [PASS] item 3 · 1280: the move hint is shown when everybody is placed — {'count': {'t': 'Citizens: 11 of 11 placed', 'top': 612.8499755859375, 'bottom': 640.0499725341797}, 'hint': {'t': 'To move one, press −1 where they stand, then +1 here.', 'top': 640.0499877929688, 'bottom': 660.8499908447266}}
+item 3 @ 390x844
+   measuring hex ordinal 12, good grain (4 places)
+   first +1: workers line '\xa0' -> 'Your citizens here: grain 1' (h 20.8 -> 20.8); 'Citizens: 0 of 11 placed | 11 free | \xa0' -> 'Citizens: 1 of 11 placed | 10 free | \xa0'; refusal None
+  [PASS] item 3 · 390: first +1 - the press took effect
+  [PASS] item 3 · 390: first +1 - every button rect unchanged (9 buttons) — {}
+   second +1: workers line 'Your citizens here: grain 1' -> 'Your citizens here: grain 2' (h 20.8 -> 20.8); 'Citizens: 1 of 11 placed | 10 free | \xa0' -> 'Citizens: 2 of 11 placed | 9 free | \xa0'; refusal None
+  [PASS] item 3 · 390: second +1 - the press took effect
+  [PASS] item 3 · 390: second +1 - every button rect unchanged (9 buttons) — {}
+   -1: workers line 'Your citizens here: grain 2' -> 'Your citizens here: grain 1' (h 20.8 -> 20.8); 'Citizens: 2 of 11 placed | 9 free | \xa0' -> 'Citizens: 1 of 11 placed | 10 free | \xa0'; refusal None
+  [PASS] item 3 · 390: -1 - the press took effect
+  [PASS] item 3 · 390: -1 - every button rect unchanged (9 buttons) — {}
+   last -1 to zero: workers line 'Your citizens here: grain 1' -> '\xa0' (h 20.8 -> 20.8); 'Citizens: 1 of 11 placed | 10 free | \xa0' -> 'Citizens: 0 of 11 placed | 11 free | \xa0'; refusal None
+  [PASS] item 3 · 390: last -1 to zero - the press took effect
+  [PASS] item 3 · 390: last -1 to zero - every button rect unchanged (9 buttons) — {}
+   FILL: workers line '\xa0' -> 'Your citizens here: grain 4' (h 20.8 -> 20.8); 'Citizens: 0 of 11 placed | 11 free | \xa0' -> 'Citizens: 4 of 11 placed | 7 free | \xa0'; refusal None
+  [PASS] item 3 · 390: FILL - the press took effect
+  [PASS] item 3 · 390: FILL - every button rect unchanged (9 buttons) — {}
+   measuring hex ordinal 8, good copper (1 places)
+   one-place hex: first +1: workers line '\xa0' -> 'Your citizens here: copper 1' (h 20.8 -> 20.8); 'Citizens: 4 of 11 placed | 7 free | \xa0' -> 'Citizens: 5 of 11 placed | 6 free | \xa0'; refusal None
+  [PASS] item 3 · 390: one-place hex: first +1 - the press took effect
+  [PASS] item 3 · 390: one-place hex: first +1 - every button rect unchanged (18 buttons) — {}
+   one-place hex: last -1 to zero: workers line 'Your citizens here: copper 1' -> '\xa0' (h 20.8 -> 20.8); 'Citizens: 5 of 11 placed | 6 free | \xa0' -> 'Citizens: 4 of 11 placed | 7 free | \xa0'; refusal None
+  [PASS] item 3 · 390: one-place hex: last -1 to zero - the press took effect
+  [PASS] item 3 · 390: one-place hex: last -1 to zero - every button rect unchanged (18 buttons) — {}
+   header: {'count': {'t': 'Citizens: 11 of 11 placed', 'top': 597.75, 'bottom': 624.9499969482422}, 'hint': {'t': 'To move one, press −1 where they stand, then +1 here.', 'top': 624.9500122070312, 'bottom': 658.7500152587891}}
+  [PASS] item 3 · 390: "Citizens: N of N placed" and the move hint stand on separate lines — {'count': {'t': 'Citizens: 11 of 11 placed', 'top': 597.75, 'bottom': 624.9499969482422}, 'hint': {'t': 'To move one, press −1 where they stand, then +1 here.', 'top': 624.9500122070312, 'bottom': 658.7500152587891}}
+  [PASS] item 3 · 390: the move hint is shown when everybody is placed — {'count': {'t': 'Citizens: 11 of 11 placed', 'top': 597.75, 'bottom': 624.9499969482422}, 'hint': {'t': 'To move one, press −1 where they stand, then +1 here.', 'top': 624.9500122070312, 'bottom': 658.7500152587891}}
+item 4 @ 1280x800
+   warehouse before: FOOD ? | Food | −2.5 per game day · lasts 472.8 game days | Army rations | −1 | Herd | +0.3 | Citizens' meals | −5.7 | Production | +3.9 | Fish | 0 / 2,000 · +0
+   farm row before :  |     Farm L0 → L1 · 4 stone 6 timber · 4 game days · about 8 minutesif started now, ready ≈ today 07:19Choose a hex →needs 4 stone, city has 3; needs 6 timber
+  [PASS] item 4 · 1280: the Warehouse stock line changed by itself within one refresh interval — after 24000 ms
+  [PASS] item 4 · 1280: the Farm row's reason changed by itself ("city has 3" -> nothing short) — after 24000 ms; now: '\n    Farm L0 → L1 · 4 stone 6 timber · 4 game days · about 8 minutesif started now, ready ≈ today 07:20Choose a hex →'
+item 4 @ 390x844
+   warehouse before: FOOD ? | Food | −2.5 per game day · lasts 471.7 game days | Army rations | −1 | Herd | +0.3 | Citizens' meals | −5.7 | Production | +3.9 | Fish | 0 / 2,000 · +0
+   farm row before :  |     Farm L0 → L1 · 4 stone 6 timber · 4 game days · about 8 minutesif started now, ready ≈ today 07:20Choose a hex →needs 4 stone, city has 3; needs 6 timber
+  [PASS] item 4 · 390: the Warehouse stock line changed by itself within one refresh interval — after 24000 ms
+  [PASS] item 4 · 390: the Farm row's reason changed by itself ("city has 3" -> nothing short) — after 24000 ms; now: '\n    Farm L0 → L1 · 4 stone 6 timber · 4 game days · about 8 minutesif started now, ready ≈ today 07:20Choose a hex →'
+   Varv4: tick 29; economy food '+1 per game day'; city production '+1 per game day'; warehouse '+1 per game day'
+   per-good rows — economy: ['Fish | 62 | +2 per game day', 'Grain | 1,117 | −1.9 per game day', 'Oil | 10 | +0.6 per game day']; warehouse: ['Fish 62 / 2,000 · +2 per game day', 'Grain 1,117 / 2,000 · −1.9 per game day', 'Oil 10 / 2,000 · +0.6 per game day']
+  [PASS] item 5 · Varv4: read inside one game day (tick 29)
+  [PASS] item 5 · Varv4: the city's Food answer is identical on Economy, City production and Warehouse — '+1 per game day' / '+1 per game day' / '+1 per game day'
+  [PASS] item 5 · Varv4: every per-good rate sits in a row that names its good — ['Fish | 62 | +2 per game day', 'Grain | 1,117 | −1.9 per game day', 'Oil | 10 | +0.6 per game day', 'Fish 62 / 2,000 · +2 per game day', 'Grain 1,117 / 2,000 · −1.9 per game day', 'Oil 10 / 2,000 · +0.6 per game day']
+   Varv1: tick 29; economy food '−0.5 per game day'; city production '−0.5 per game day'; warehouse '−0.5 per game day · lasts over 1,000 game days'
+   per-good rows — economy: ['Grain | 1,193 | −0.8 per game day', 'Oil | 0 | ']; warehouse: ['Fish 0 / 2,000 · +0 per game day', 'Grain 1,193 / 2,000 · −0.8 per game day', 'Oil 0 / 2,000 · +0 per game day']
+  [PASS] item 5 · Varv1: read inside one game day (tick 29)
+  [PASS] item 5 · Varv1: the city's Food answer is identical on Economy, City production and Warehouse — '−0.5 per game day' / '−0.5 per game day' / '−0.5 per game day · lasts over 1,000 game days'
+  [PASS] item 5 · Varv1: every per-good rate sits in a row that names its good — ['Grain | 1,193 | −0.8 per game day', 'Oil | 0 | ', 'Fish 0 / 2,000 · +0 per game day', 'Grain 1,193 / 2,000 · −0.8 per game day', 'Oil 0 / 2,000 · +0 per game day']
+item 6 @ 1280x800
+   marches list (explore): ['⚔', '1st Spearmen of CityVarv3 · exploring → (39,23)']
+  [PASS] item 6 · a 1280: marches list (explore) shows no raw intent word — raw=[] text='YOUR MARCHES\n⚔\n1st Spearmen of CityVarv3 · exploring → (39,23)\nArrives ≈ today 07:23 · recall/redirect in the Forces tab'
+   marches list (explore_return): ['⚔', '1st Spearmen of CityVarv3 · on the way home from exploring → (39,23)']
+  [PASS] item 6 · a 1280: marches list (explore_return) shows no raw intent word — raw=[] text='YOUR MARCHES\n⚔\n1st Spearmen of CityVarv3 · on the way home from exploring → (39,23)\nArrives ≈ today 07:23 · recall/redirect in the Forces tab'
+   naming lines: {'hills': ('these hills', 'No one has named them yet. Give them a name (once, 2–30 characters)'), 'plain': ('this plain', 'No one has named it yet. Give it a name (once, 2–30 characters)'), 'strait': ('this strait', 'No one has named it yet. Give it a name (once, 2–30 characters)'), 'cape': ('this cape', 'No one has named it yet. Give it a name (once, 2–30 characters)'), 'desert': ('this desert', 'No one has named it yet. Give it a name (once, 2–30 characters)'), 'massif': ('this mountain massif', 'No one has named it yet. Give it a name (once, 2–30 characters)')}
+  [PASS] item 6 · b 1280: naming line for "hills" is grammatical and says nobody has named it — 'these hills' / 'No one has named them yet. Give them a name (once, 2–30 characters)'
+  [PASS] item 6 · b 1280: naming line for "plain" is grammatical and says nobody has named it — 'this plain' / 'No one has named it yet. Give it a name (once, 2–30 characters)'
+  [PASS] item 6 · b 1280: naming line for "strait" is grammatical and says nobody has named it — 'this strait' / 'No one has named it yet. Give it a name (once, 2–30 characters)'
+  [PASS] item 6 · b 1280: naming line for "cape" is grammatical and says nobody has named it — 'this cape' / 'No one has named it yet. Give it a name (once, 2–30 characters)'
+  [PASS] item 6 · b 1280: naming line for "desert" is grammatical and says nobody has named it — 'this desert' / 'No one has named it yet. Give it a name (once, 2–30 characters)'
+  [PASS] item 6 · b 1280: naming line for "massif" is grammatical and says nobody has named it — 'this mountain massif' / 'No one has named it yet. Give it a name (once, 2–30 characters)'
+  [PASS] item 6 · b 1280: hills was among the kinds met
+item 6 @ 390x844
+   marches list (explore): ['⚔', '2nd Spearmen of CityVarv3 · exploring → (39,23)']
+  [PASS] item 6 · a 390: marches list (explore) shows no raw intent word — raw=[] text='YOUR MARCHES\n⚔\n2nd Spearmen of CityVarv3 · exploring → (39,23)\nArrives ≈ today 07:24 · recall/redirect in the Forces tab'
+   marches list (explore_return): ['⚔', '2nd Spearmen of CityVarv3 · on the way home from exploring → (39,23)']
+  [PASS] item 6 · a 390: marches list (explore_return) shows no raw intent word — raw=[] text='YOUR MARCHES\n⚔\n2nd Spearmen of CityVarv3 · on the way home from exploring → (39,23)\nArrives ≈ today 07:24 · recall/redirect in the Forces tab'
+   naming lines: {'hills': ('these hills', 'No one has named them yet. Give them a name (once, 2–30 characters)'), 'plain': ('this plain', 'No one has named it yet. Give it a name (once, 2–30 characters)'), 'strait': ('this strait', 'No one has named it yet. Give it a name (once, 2–30 characters)'), 'cape': ('this cape', 'No one has named it yet. Give it a name (once, 2–30 characters)'), 'desert': ('this desert', 'No one has named it yet. Give it a name (once, 2–30 characters)'), 'massif': ('this mountain massif', 'No one has named it yet. Give it a name (once, 2–30 characters)')}
+  [PASS] item 6 · b 390: naming line for "hills" is grammatical and says nobody has named it — 'these hills' / 'No one has named them yet. Give them a name (once, 2–30 characters)'
+  [PASS] item 6 · b 390: naming line for "plain" is grammatical and says nobody has named it — 'this plain' / 'No one has named it yet. Give it a name (once, 2–30 characters)'
+  [PASS] item 6 · b 390: naming line for "strait" is grammatical and says nobody has named it — 'this strait' / 'No one has named it yet. Give it a name (once, 2–30 characters)'
+  [PASS] item 6 · b 390: naming line for "cape" is grammatical and says nobody has named it — 'this cape' / 'No one has named it yet. Give it a name (once, 2–30 characters)'
+  [PASS] item 6 · b 390: naming line for "desert" is grammatical and says nobody has named it — 'this desert' / 'No one has named it yet. Give it a name (once, 2–30 characters)'
+  [PASS] item 6 · b 390: naming line for "massif" is grammatical and says nobody has named it — 'this mountain massif' / 'No one has named it yet. Give it a name (once, 2–30 characters)'
+  [PASS] item 6 · b 390: hills was among the kinds met
+item 7 @ 1280x800
+   economy: old line None; new summary 'Not open to you yet: 5 orders'
+  [PASS] item 7 · 1280: economy: no "Unavailable: ..." debris line — None
+  [PASS] item 7 · 1280: economy: one quiet line "Not open to you yet: N order(s)" — 'Not open to you yet: 5 orders'
+  [PASS] item 7 · 1280: economy: expanding lists every order with a plain reason (5) — ['Trade offer: March or send a messenger to scout a neighbour before contacting it', 'Trade accept: Wait for a Wanax to send a trade offer, or check your letters', 'Trade decline: Wait for a Wanax to send a trade offer, or check your letters', 'Trade cancel: Send a trade offer first, or check your s
+   war: old line None; new summary 'Not open to you yet: 4 orders'
+  [PASS] item 7 · 1280: war: no "Unavailable: ..." debris line — None
+  [PASS] item 7 · 1280: war: one quiet line "Not open to you yet: N order(s)" — 'Not open to you yet: 4 orders'
+  [PASS] item 7 · 1280: war: expanding lists every order with a plain reason (4) — ['Recall: March a unit first — recall only applies to forces already in transit', 'Redirect: March a unit first — redirect only applies to forces already in transit', 'Unload: Load a land unit onto a ship here first', 'Land: Load a land unit onto a ship here first']
+   kult: old line None; new summary 'Not open to you yet: 1 order'
+  [PASS] item 7 · 1280: kult: no "Unavailable: ..." debris line — None
+  [PASS] item 7 · 1280: kult: one quiet line "Not open to you yet: N order(s)" — 'Not open to you yet: 1 order'
+  [PASS] item 7 · 1280: kult: expanding lists every order with a plain reason (1) — ['Rite: Build the Temple of Potnia']
+item 7 @ 390x844
+   economy: old line None; new summary 'Not open to you yet: 5 orders'
+  [PASS] item 7 · 390: economy: no "Unavailable: ..." debris line — None
+  [PASS] item 7 · 390: economy: one quiet line "Not open to you yet: N order(s)" — 'Not open to you yet: 5 orders'
+  [PASS] item 7 · 390: economy: expanding lists every order with a plain reason (5) — ['Trade offer: March or send a messenger to scout a neighbour before contacting it', 'Trade accept: Wait for a Wanax to send a trade offer, or check your letters', 'Trade decline: Wait for a Wanax to send a trade offer, or check your letters', 'Trade cancel: Send a trade offer first, or check your s
+   war: old line None; new summary 'Not open to you yet: 4 orders'
+  [PASS] item 7 · 390: war: no "Unavailable: ..." debris line — None
+  [PASS] item 7 · 390: war: one quiet line "Not open to you yet: N order(s)" — 'Not open to you yet: 4 orders'
+  [PASS] item 7 · 390: war: expanding lists every order with a plain reason (4) — ['Recall: March a unit first — recall only applies to forces already in transit', 'Redirect: March a unit first — redirect only applies to forces already in transit', 'Unload: Load a land unit onto a ship here first', 'Land: Load a land unit onto a ship here first']
+   kult: old line None; new summary 'Not open to you yet: 1 order'
+  [PASS] item 7 · 390: kult: no "Unavailable: ..." debris line — None
+  [PASS] item 7 · 390: kult: one quiet line "Not open to you yet: N order(s)" — 'Not open to you yet: 1 order'
+  [PASS] item 7 · 390: kult: expanding lists every order with a plain reason (1) — ['Rite: Build the Temple of Potnia']
+item 8 @ 1280x800
+   food row: 1 grain + 5 fish a game day, your people eat 5
+  [PASS] item 8 · 1280: the forecast says "your people eat N", not "N eaten" — '1 grain + 5 fish a game day, your people eat 5'
+   confirm: Found the metropolis here? The host dissolves — forever. Your people become the city's citizens; your spearmen stay yours, and those standing here become its garrison. |  | FOUND THE METROPOLISKEEP TRAVELLING
+  [PASS] item 8 · 1280: the confirmation says what survives (citizens and spearmen) — "Found the metropolis here? The host dissolves — forever. Your people become the city's citizens; your spearmen stay yours, and those standing here become its garrison.\n\nFOUND THE METROPOLISKEEP TRAVELLING"
+  [PASS] item 8 · 1280: the confirmation is visible where the player pressed — {'exists': True, 'visible': True, 'rect': [1074, 539, 1268, 754], 'clip': [1062, 333, 1280, 766], 'text': "Found the metropolis here? The host dissolves — forever. Your people become the city's citizens; your spearmen stay your"}
+item 8 @ 390x844
+   food row: 1 grain + 5 fish a game day, your people eat 5
+  [PASS] item 8 · 390: the forecast says "your people eat N", not "N eaten" — '1 grain + 5 fish a game day, your people eat 5'
+   confirm: Found the metropolis here? The host dissolves — forever. Your people become the city's citizens; your spearmen stay yours, and those standing here become its garrison. |  | FOUND THE METROPOLISKEEP TRAVELLING
+  [PASS] item 8 · 390: the confirmation says what survives (citizens and spearmen) — "Found the metropolis here? The host dissolves — forever. Your people become the city's citizens; your spearmen stay yours, and those standing here become its garrison.\n\nFOUND THE METROPOLISKEEP TRAVELLING"
+  [PASS] item 8 · 390: the confirmation is visible where the player pressed — {'exists': True, 'visible': True, 'rect': [12, 636, 378, 764], 'clip': [0, 486, 390, 776], 'text': "Found the metropolis here? The host dissolves — forever. Your people become the city's citizens; your spearmen stay your"}
+item 9 @ 1280x800
+   forecast: 2nd Spearmen of CityVarv3: Arrival not yet known — unexplored terrain. | Planned expedition: 10 game days · about 20 minutes; first to (39,23), then explores around it — with immediate departure, home by today 07:35 at the latest (sooner if there is nothing more to see). First-leg arrival remains un
+  [PASS] item 9 · 1280: the forecast before sending calls the home time an upper bound — '2nd Spearmen of CityVarv3: Arrival not yet known — unexplored terrain.\nPlanned expedition: 10 game days · about 20 minutes; first to (39,23), then explores around it — with immediate departure, home by today 07:35 at the latest (sooner if there is nothing more to see). First-leg arrival remains unkn'
+   receipt: ✓ Forces marching — arrives ≈ today 07:25 | Expedition first to (39,23), then explores around it, 10 game days; turns home by today 07:25; home by today 07:35 at the latest (sooner if there is nothing more to see).
+  [PASS] item 9 · 1280: the mission line in the receipt says "home by ... at the latest (sooner ...)", unclipped — '✓ Forces marching — arrives ≈ today 07:25\nExpedition first to (39,23), then explores around it, 10 game days; turns home by today 07:25; home by today 07:35 at the latest (sooner if there is nothing more to see).' clipped=False
+item 9 @ 390x844
+   forecast: 2nd Spearmen of CityVarv3: Arrival not yet known — unexplored terrain. | Planned expedition: 10 game days · about 20 minutes; first to (39,23), then explores around it — with immediate departure, home by today 07:35 at the latest (sooner if there is nothing more to see). First-leg arrival remains un
+  [PASS] item 9 · 390: the forecast before sending calls the home time an upper bound — '2nd Spearmen of CityVarv3: Arrival not yet known — unexplored terrain.\nPlanned expedition: 10 game days · about 20 minutes; first to (39,23), then explores around it — with immediate departure, home by today 07:35 at the latest (sooner if there is nothing more to see). First-leg arrival remains unkn'
+   receipt: ✓ Forces marching — arrives ≈ today 07:25 · Expedition first to (39,23), then explores around it, 10 game days; turns home by today 07:25; home by today 07:35 at the latest (sooner if there is nothing more to see). | ✕
+  [PASS] item 9 · 390: the mission line in the receipt says "home by ... at the latest (sooner ...)", unclipped — '✓ Forces marching — arrives ≈ today 07:25 · Expedition first to (39,23), then explores around it, 10 game days; turns home by today 07:25; home by today 07:35 at the latest (sooner if there is nothing more to see).\n✕' clipped=False
+item 10 @ 1280x800
+   labels: [{'text': 'L0 → L1', 'spillX': 0, 'tw': 28, 'hw': 63}, {'text': 'L0 → L1', 'spillX': 0, 'tw': 28, 'hw': 63}]
+  [PASS] item 10 · 1280: 2 pick labels, none wider than its hex (worst spill 0.0px) — [{'text': 'L0 → L1', 'spillX': 0, 'tw': 28, 'hw': 63}, {'text': 'L0 → L1', 'spillX': 0, 'tw': 28, 'hw': 63}]
+item 10 @ 390x844
+   labels: [{'text': 'L1', 'spillX': 0, 'tw': 15, 'hw': 63}, {'text': 'L1', 'spillX': 0, 'tw': 15, 'hw': 63}]
+  [PASS] item 10 · 390: 2 pick labels, none wider than its hex (worst spill 0.0px) — [{'text': 'L1', 'spillX': 0, 'tw': 15, 'hw': 63}, {'text': 'L1', 'spillX': 0, 'tw': 15, 'hw': 63}]
+  [PASS] item 10 · 390: a phone label is the level it becomes ("L1") — ['L1', 'L1']
+
+118 passed, 0 failed

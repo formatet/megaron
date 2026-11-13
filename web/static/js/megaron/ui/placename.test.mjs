@@ -7,7 +7,7 @@ import { State } from '../state.js';
 test('place naming form is rights-gated for every kind and excludes fog', () => {
   for (const kind of Object.keys(PLACE_LABELS)) {
     const tile = { terrain: 'river', place_kind: kind, place_id: '-6,79', can_name: true };
-    assert.match(placePanelHTML(tile), new RegExp(`this ${PLACE_LABELS[kind]}`));
+    assert.match(placePanelHTML(tile), new RegExp(`(this|these) ${PLACE_LABELS[kind]}\\. No one has named (it|them) yet`));
     assert.ok(placePanelHTML(tile).includes(`namePlace('${kind}','-6,79')`));
     for (const patch of [{ can_name: false }, { terrain: 'fog' }, { tier: 'fog' }, { visible: false }, { place_id: "x');alert(1)//" }, { place_kind: 'city' }]) {
       assert.equal(placePanelHTML({ ...tile, ...patch }), '', 'unknown place or spent right has no form');
@@ -19,7 +19,7 @@ test('place first reached notification puts named unit before place and offers n
   for (const [kind, label] of Object.entries(PLACE_LABELS)) {
     const text = notifText('PlaceFirstReached', { unit_name: 'Bronze Guard', kind, q: 6, r: 79 });
     assert.ok(text.startsWith('Your Bronze Guard is the first to reach'));
-    assert.ok(text.includes(`this ${label} — you may name it`));
+    assert.ok(text.includes(`${kind === 'hills' ? 'these hills' : 'this ' + label} — you may name ${kind === 'hills' ? 'them' : 'it'}`));
     assert.doesNotMatch(text, /ticks?|\{"/);
   }
 });
