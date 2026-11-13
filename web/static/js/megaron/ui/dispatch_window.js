@@ -275,8 +275,13 @@ function wireOccupationBlock(choices, settlementID) {
 // Live dispatch and archive both render the immutable server paragraphs here.
 // New dispatches: who you are, a numbered list of first steps, the game-day line. Older stored ones carry
 // only `paragraphs` and render as before.
-export function openingDispatchHTML(payload) {
-  const paragraphs = (Array.isArray(payload.paragraphs) ? payload.paragraphs : []).filter(p => typeof p === 'string');
+// The "Game days begin after N Wanaxes join." sentence is stored with the dispatch, true on the day it was
+// written; it is shown only while the world still has not begun (round two, item N).
+const BEGIN_AFTER = /\s*Game days begin after \d+ Wanaxes join\./;
+export function openingDispatchHTML(payload, state = State) {
+  const forming = state.WORLD_STATE === 'forming';
+  const paragraphs = (Array.isArray(payload.paragraphs) ? payload.paragraphs : []).filter(p => typeof p === 'string')
+    .map(p => forming ? p : p.replace(BEGIN_AFTER, ''));
   const steps = (Array.isArray(payload.steps) ? payload.steps : []).filter(p => typeof p === 'string');
   const para = p => `<p class="dw-text">${esc(p)}</p>`;
   if (!steps.length) return paragraphs.map(para).join('');
