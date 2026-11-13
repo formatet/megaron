@@ -611,7 +611,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		}
 		if !leg.Found {
 			return nil, reject(http.StatusUnprocessableEntity,
-				"no route from this unit's current position to unseen ground within %d hexes of (%d,%d) — try another area with reachable unseen ground",
+				noReachableUnseenFmt,
 				ExpeditionAreaRadius, targetQ, targetR)
 		}
 		expeditionPlan = &ExpeditionPlan{AreaQ: targetQ, AreaR: targetR, LengthTicks: length}
@@ -1512,3 +1512,7 @@ func CurrentUnitPosition(ctx context.Context, db interface {
 	}
 	return province.MapPosition{}, reject(422, "the Runner could not locate this unit on its route")
 }
+
+// noReachableUnseenFmt is the refusal when the chosen area holds unseen ground the unit cannot get to
+// (first-hour round two, item H): said as a player would, with the radius from the constant.
+const noReachableUnseenFmt = "Nothing to explore there: everything within %d hexes of (%d,%d) that these men can reach is already seen. Pick ground nearer the unknown."
