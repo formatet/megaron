@@ -160,6 +160,15 @@ func (h *WebHandler) render(w http.ResponseWriter, name string, data any) {
 
 // Index serves the login/register page.
 func (h *WebHandler) Index(w http.ResponseWriter, r *http.Request) {
+	// Signed in already (a valid page cookie) and a world to go to: straight to the game, not the
+	// sign-in form again. Play sends its own failures back here, so both conditions are checked
+	// before redirecting; the map page leaves through /logout when its API token is gone.
+	if _, ok := auth.PlayerIDFromContext(r.Context()); ok {
+		if _, err := h.resolveWorldID(r.Context()); err == nil {
+			http.Redirect(w, r, "/play", http.StatusSeeOther)
+			return
+		}
+	}
 	h.render(w, "index.html", nil)
 }
 

@@ -301,7 +301,9 @@ async function bootstrap() {
   try {
     me = await get('/api/v1/auth/me');
   } catch (e) {
-    location.href = '/';
+    // Through /logout, so the page cookie goes too: the start page sends a signed-in Wanax
+    // straight back here, and a stale cookie without an API token would loop.
+    location.href = '/logout';
     return false;
   }
   State.MY_PLAYER_ID = me.id;

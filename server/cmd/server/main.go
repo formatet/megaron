@@ -315,7 +315,8 @@ func main() {
 	r.With(auth.OptionalMiddleware(authSvc)).Get("/ws/{worldID}", wsH.Connect)
 
 	// Web (HTML) routes.
-	r.Get("/", webH.Index)
+	// Optional auth: a Wanax who is already signed in goes straight to the game (webH.Index).
+	r.With(auth.OptionalMiddleware(authSvc)).Get("/", webH.Index)
 	registerAlfatestInfoRoute(r, webH.AlfatestInfo)
 	r.Get("/logout", webH.Logout)
 	r.With(auth.WebMiddleware(authSvc)).Get("/play", webH.Play)
