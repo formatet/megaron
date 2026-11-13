@@ -469,7 +469,31 @@ def item8(pw):
         b.close()
 
 
-ITEMS = {1: item1, 2: item2, 3: item3, 4: item4, 5: item5, 6: item6, 7: item7, 8: item8}
+def item9(pw):
+    for w, h in SIZES:
+        tag = f'{w}'
+        print(f'item 9 @ {w}x{h}')
+        c = cfg('Varv3'); q, r = explore_target(c)
+        reset_units('Varv3')
+        b, p, _ = newpage(pw, 'Varv3', w, h)
+        war_march_to(p, w, q, r)
+        if not p.locator('#mctx-explore-chk').is_checked(): p.locator('#mctx-explore-chk').check()
+        p.wait_for_timeout(2500)
+        plan = p.evaluate("document.getElementById('mctx-eta').innerText")
+        print('   forecast:', plan.replace('\n', ' | ')[:300])
+        chk(9, f'{tag}: the forecast before sending calls the home time an upper bound', 'at the latest' in plan and 'nothing more to see' in plan, repr(plan[:300]))
+        p.click('#mctx-send'); p.wait_for_timeout(2500)
+        sel = '#map-notice' if w < 500 else '#mctx-eta'
+        rec = p.evaluate("s => (document.querySelector(s) || {}).innerText || ''", sel)
+        print('   receipt:', rec.replace('\n', ' | ')[:360])
+        clipped = p.evaluate("s => { const e = document.querySelector(s + ' .hexpick-prompt') || document.querySelector(s); return e.scrollHeight > e.clientHeight + 1; }", sel)
+        chk(9, f'{tag}: the mission line in the receipt says "home by ... at the latest (sooner ...)", unclipped', 'home by' in rec and 'at the latest' in rec and 'nothing more to see' in rec and not clipped, repr(rec[:360]) + f' clipped={clipped}')
+        shot(p, 9, f'receipt-{tag}')
+        b.close()
+        reset_units('Varv3')
+
+
+ITEMS = {1: item1, 2: item2, 3: item3, 4: item4, 5: item5, 6: item6, 7: item7, 8: item8, 9: item9}
 
 
 def main():

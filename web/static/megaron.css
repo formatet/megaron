@@ -1850,8 +1850,8 @@ body.hex-picking .mobile-panel-blocked { pointer-events: auto; touch-action: aut
 body.hex-picking .map-zoom-overlay { top: 72px; }
 
 @media (max-width: 480px) { .build-row-btn { min-height: 44px; min-width: 44px; } }
-.map-notice { z-index: 31; border-bottom-color: var(--safe); max-height: 5.5rem; }
-.map-notice .hexpick-prompt { flex: 1 1 0; -webkit-line-clamp: 3; }
+.map-notice { z-index: 31; border-bottom-color: var(--safe); max-height: 10rem; }
+.map-notice .hexpick-prompt { flex: 1 1 0; -webkit-line-clamp: 7; }
 .locked-orders { display: flex; align-items: flex-start; gap: .4rem; }
 .locked-orders details { flex: 1 1 auto; min-width: 0; font-size: var(--fs-xs); color: var(--text-dim); }
 .locked-list { margin: .2rem 0 .3rem; padding-left: 1.1rem; }

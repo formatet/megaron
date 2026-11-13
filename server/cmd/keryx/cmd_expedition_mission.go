@@ -26,7 +26,11 @@ func expeditionMissionText(e *expeditionMission, clients ...*Client) string {
 	if e.FirstToArea {
 		destination = fmt.Sprintf("first to (%d,%d), then explores around it", e.AreaQ, e.AreaR)
 	}
-	return fmt.Sprintf("Expedition %s, %s; %s; home by %s", destination, formatDays(e.LengthTicks, "%d"), state, formatWorldTime(c, e.HomeByTick))
+	bound := ""
+	if !e.Homeward {
+		bound = " at the latest (sooner if there is nothing more to see)" // before the turn the home time is an upper bound
+	}
+	return fmt.Sprintf("Expedition %s, %s; %s; home by %s%s", destination, formatDays(e.LengthTicks, "%d"), state, formatWorldTime(c, e.HomeByTick), bound)
 }
 func expeditionReason(reason string) string {
 	switch reason {
