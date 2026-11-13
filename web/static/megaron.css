@@ -1040,7 +1040,7 @@ body:has(.auth-page) main {
 .gubbe-hex.held { stroke: var(--danger); stroke-width: 2; stroke-dasharray: 3 2; }
 .gubbe-hex.takeable { stroke: var(--accent-war); stroke-width: 3; stroke-dasharray: 3 2; }
 .gubbe-held-note { font-size: var(--fs-xs); color: var(--danger); margin: 0 0 0.3rem; }
-.gubbe-hex-workers { font-size: var(--fs-xs); color: var(--text-dim); margin: 0 0 0.3rem; }
+.gubbe-hex-workers { min-height: 1.3em; font-size: var(--fs-xs); color: var(--text-dim); margin: 0 0 0.3rem; }
 .gubbe-take { color: var(--accent-war); text-align: left; white-space: normal; }
 .gubbe-hex.pick-ok { stroke: var(--accent); stroke-width: 3; }
 .gubbe-hex.pick-dim { opacity: 0.35; }
@@ -1054,6 +1054,12 @@ body:has(.auth-page) main {
 .gubbe-good-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; padding: 0.3rem 0; border-bottom: 1px solid var(--border-in); font-size: var(--fs-sm); }
 .gubbe-good-row:last-child { border-bottom: none; }
 /* The reason line is always one reserved line, so buttons and rows below never move when its text changes. */
+.gubbe-good-text { flex: 1 1 auto; min-width: 0; }
+/* The three buttons always sit on one row of fixed width, so a longer text on the left (or a reason line
+   that changes) can never re-wrap them: +1, Fill and -1 stay where the finger left them. */
+.gubbe-actions { flex: 0 0 auto; display: grid; grid-template-columns: repeat(3, auto); gap: 0.3rem; align-content: start; }
+.gubbe-actions .gubbe-take { grid-column: 1 / -1; }
+.gubbe-actions .gubbe-reason { grid-column: 1 / -1; }
 .gubbe-places-note { font-size: var(--fs-xs); color: var(--text-dim); }
 .gubbe-reason { min-height: 1.3em; white-space: nowrap; }
 .gubbe-good-row .btn-small { min-width: 3.2rem; }

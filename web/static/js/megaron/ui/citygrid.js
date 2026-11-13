@@ -135,13 +135,13 @@ export function goodRowHTML(target, good, take) {
   const targetAttr = JSON.stringify(target).replace(/"/g, '&quot;');
   return `
     <div class="gubbe-good-row" data-good="${good.good_key}" data-cap="${good.cap ?? ''}" data-target="${targetAttr}">
-      <div>
+      <div class="gubbe-good-text">
         <b>${goodLabel(target, good)}</b>
         <span style="color:var(--text-dim)"> ${good.staffing_only ? fmtNum(good.placed) + (shipyard ? ' shipyard workers' : workshop ? ' builders' : ' temple workers') : fmtNum(Number(good.rate_per_tick.toFixed(1))) + ' per game day total'} · ${nextLabel}</span>
         <div>${pipsHTML}</div>
         ${placesNote(good) ? `<div class="gubbe-places-note">${esc(placesNote(good))}</div>` : ''}
       </div>
-      <div style="display:flex;flex-wrap:wrap;gap:.3rem">
+      <div class="gubbe-actions">
         ${take
           ? `<button class="btn-small gubbe-act gubbe-take" data-verb="place1">${esc(take)}</button>`
           : `<button class="btn-small gubbe-act" data-verb="place1" ${full ? 'disabled' : ''}>+1</button>
@@ -472,7 +472,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
       detail.innerHTML = `
         <div class="dsec-title">(${hex.hex_q},${hex.hex_r}) — ${terrainLabel(hex.terrain)}</div>
         ${isNavigable(hex.terrain)?stormHexPanelHTML(hex.hex_q,hex.hex_r):''}
-        ${hexWorkersLine(hex.goods) ? `<p class="gubbe-hex-workers">${esc(hexWorkersLine(hex.goods))}</p>` : ''}
+        <p class="gubbe-hex-workers">${esc(hexWorkersLine(hex.goods)) || '&nbsp;'}</p>
         ${hex.held_by ? `<p class="gubbe-held-note">Held by ${esc(hex.held_by)} — already worked by another city${hex.takeable ? '' : ' — stand a unit there in fortify or sentry to take it'}</p>` : ''}
         ${(hex.goods || []).length
           ? sortGoods(hex.goods, { target_kind: 'hex', hex_ordinal: hex.hex_ordinal }).map(good => goodRowHTML({ target_kind: 'hex', hex_ordinal: hex.hex_ordinal }, good, takeLabel(hex))).join('')
