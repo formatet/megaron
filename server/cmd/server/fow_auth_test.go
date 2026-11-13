@@ -20,7 +20,9 @@ func TestNoAnonymousFogOfWarReads(t *testing.T) {
 		t.Fatal(err)
 	}
 	re := regexp.MustCompile(`auth\.OptionalMiddleware\(authSvc\)\)\.(Get|Post|Put|Delete)\("([^"]+)"`)
-	allowed := map[string]bool{"/ws/{worldID}": true}
+	// "/" is the start page: it renders the sign-in form (no world data at all) or, for a caller whose
+	// page cookie is valid, redirects to /play (2026-11-13). It reads no map, province or unit.
+	allowed := map[string]bool{"/ws/{worldID}": true, "/": true}
 	for _, m := range re.FindAllStringSubmatch(string(src), -1) {
 		if !allowed[m[2]] {
 			t.Errorf("route %s %s accepts anonymous callers (OptionalMiddleware) — fog-of-war reads must require a token", m[1], m[2])
