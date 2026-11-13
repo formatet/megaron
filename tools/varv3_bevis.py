@@ -196,7 +196,7 @@ def item2(pw):
         tag = f'{w}'
         print(f'item 2 @ {w}x{h}')
         psql("delete from build_queue where settlement_id=(select s.id from settlements s join players p on p.id=s.owner_id where p.username='Varv3')")
-        psql("delete from buildings where settlement_id=(select s.id from settlements s join players p on p.id=s.owner_id where p.username='Varv3') and type='farm'")
+        psql("delete from buildings where settlement_id=(select s.id from settlements s join players p on p.id=s.owner_id where p.username='Varv3') and building_type='farm'")
         give_stock('Varv3', stone=100, timber=100)
         b, p, _ = newpage(pw, 'Varv3', w, h)
         open_city(p, w, 'byggnader')
@@ -493,7 +493,28 @@ def item9(pw):
         reset_units('Varv3')
 
 
-ITEMS = {1: item1, 2: item2, 3: item3, 4: item4, 5: item5, 6: item6, 7: item7, 8: item8, 9: item9}
+def item10(pw):
+    for w, h in SIZES:
+        tag = f'{w}'
+        print(f'item 10 @ {w}x{h}')
+        psql("delete from build_queue where settlement_id=(select s.id from settlements s join players p on p.id=s.owner_id where p.username='Varv3')")
+        psql("delete from buildings where settlement_id=(select s.id from settlements s join players p on p.id=s.owner_id where p.username='Varv3') and building_type='farm'")
+        give_stock('Varv3', stone=100, timber=100)
+        b, p, _ = newpage(pw, 'Varv3', w, h)
+        open_city(p, w, 'byggnader')
+        p.locator('#city-bld-sec .build-row[data-build-type="farm"] [data-build-act="pick"]').click(); p.wait_for_timeout(2000)
+        res = p.evaluate("""() => [...document.querySelectorAll('.gubbe-hex-g')].filter(g => g.querySelector('.pick-step')).map(g => {
+          const t = g.querySelector('.pick-step').getBoundingClientRect(), hx = g.querySelector('polygon').getBoundingClientRect();
+          return {text: g.querySelector('.pick-step').textContent, spillX: Math.max(hx.left - t.left, t.right - hx.right, 0), tw: Math.round(t.width), hw: Math.round(hx.width)}; })""")
+        print('   labels:', res[:4])
+        worst = max([x['spillX'] for x in res] or [0])
+        chk(10, f'{tag}: {len(res)} pick labels, none wider than its hex (worst spill {worst:.1f}px)', len(res) > 0 and worst <= 0.5, str(res[:3]))
+        if w < 500: chk(10, f'{tag}: a phone label is the level it becomes ("L1")', all(re.fullmatch(r'L\d+', x['text']) for x in res), str([x['text'] for x in res[:3]]))
+        shot(p, 10, f'picker-{tag}')
+        b.close()
+
+
+ITEMS = {1: item1, 2: item2, 3: item3, 4: item4, 5: item5, 6: item6, 7: item7, 8: item8, 9: item9, 10: item10}
 
 
 def main():

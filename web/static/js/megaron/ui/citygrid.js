@@ -76,6 +76,12 @@ export function syncFreeToWork(root, pool) {
   if (el) el.textContent = fmtNum(pool);
 }
 
+// On a phone the hexes are small: the pick label is the level the building becomes ("L1"), not "L0 → L1".
+export function shortStep(step) {
+  const narrow = typeof window !== 'undefined' && window.matchMedia?.('(max-width: 480px)').matches;
+  return narrow ? String(step).replace(/^.*→\s*/, '') : step;
+}
+
 export function terrainLabel(t) {
   return (t || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
@@ -369,7 +375,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
     return `<g class="gubbe-hex-g" data-target="hex" data-ordinal="${h.hex_ordinal}">
       <polygon class="${cls}" points="${hexCorners(p.x, p.y, HEX_SIZE)}"></polygon>
       <text x="${p.x}" y="${p.y - 4}" class="gubbe-hex-label">${h.hex_q},${h.hex_r}</text>
-      <text x="${p.x}" y="${p.y + 9}" class="gubbe-hex-sub${step ? ' pick-step' : ''}">${step ? step : `${fmtNum((h.goods || []).length)} good${(h.goods || []).length === 1 ? '' : 's'}`}</text>
+      <text x="${p.x}" y="${p.y + 9}" class="gubbe-hex-sub${step ? ' pick-step' : ''}">${step ? shortStep(step) : `${fmtNum((h.goods || []).length)} good${(h.goods || []).length === 1 ? '' : 's'}`}</text>
     </g>`;
   }).join('');
 

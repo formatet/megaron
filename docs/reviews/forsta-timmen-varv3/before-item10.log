@@ -1,0 +1,10 @@
+item 10 @ 1280x800
+   labels: [{'text': 'L0 → L1', 'spillX': 0, 'tw': 28, 'hw': 63}, {'text': 'L0 → L1', 'spillX': 0, 'tw': 28, 'hw': 63}]
+  [PASS] item 10 · 1280: 2 pick labels, none wider than its hex (worst spill 0.0px) — [{'text': 'L0 → L1', 'spillX': 0, 'tw': 28, 'hw': 63}, {'text': 'L0 → L1', 'spillX': 0, 'tw': 28, 'hw': 63}]
+item 10 @ 390x844
+   labels: [{'text': 'L0 → L1', 'spillX': 0, 'tw': 46, 'hw': 63}, {'text': 'L0 → L1', 'spillX': 0, 'tw': 46, 'hw': 63}]
+  [PASS] item 10 · 390: 2 pick labels, none wider than its hex (worst spill 0.0px) — [{'text': 'L0 → L1', 'spillX': 0, 'tw': 46, 'hw': 63}, {'text': 'L0 → L1', 'spillX': 0, 'tw': 46, 'hw': 63}]
+  [FAIL] item 10 · 390: a phone label is the level it becomes ("L1") — ['L0 → L1', 'L0 → L1']
+
+2 passed, 1 failed
+  FAILED item 10 390: a phone label is the level it becomes ("L1")
