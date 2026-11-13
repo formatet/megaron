@@ -367,7 +367,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
     return `<g class="gubbe-hex-g" data-target="hex" data-ordinal="${h.hex_ordinal}">
       <polygon class="${cls}" points="${hexCorners(p.x, p.y, HEX_SIZE)}"></polygon>
       <text x="${p.x}" y="${p.y - 4}" class="gubbe-hex-label">${h.hex_q},${h.hex_r}</text>
-      <text x="${p.x}" y="${p.y + 9}" class="gubbe-hex-sub">${step ? step : `${fmtNum((h.goods || []).length)} good${(h.goods || []).length === 1 ? '' : 's'}`}</text>
+      <text x="${p.x}" y="${p.y + 9}" class="gubbe-hex-sub${step ? ' pick-step' : ''}">${step ? step : `${fmtNum((h.goods || []).length)} good${(h.goods || []).length === 1 ? '' : 's'}`}</text>
     </g>`;
   }).join('');
 

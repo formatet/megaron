@@ -1048,6 +1048,14 @@ body:has(.auth-page) main {
 .gubbe-city-hex { fill: var(--sandstone); stroke: var(--gold); stroke-width: 2; }
 .gubbe-hex-label { font-family: var(--mono); font-size: 9px; fill: var(--text); text-anchor: middle; pointer-events: none; }
 .gubbe-hex-sub { font-family: var(--mono); font-size: 7px; fill: var(--text-dim); text-anchor: middle; pointer-events: none; }
+/* Phone (round two, item R): the grid is scaled to fit its 15rem height (about 0.87), which made the 9px/7px labels
+   7.9px/6.1px on screen. Here a label is at least about 11px or it is not drawn: the coordinates stay (and the tap panel
+   names everything else); the "N goods" line goes; a pick-mode step keeps a 10.5px line. */
+@media (max-width: 480px) {
+  .gubbe-hex-label { font-size: 13px; transform: translateY(4px); }
+  .gubbe-hex-sub { display: none; }
+  .gubbe-hex-sub.pick-step { display: block; font-size: 12px; transform: translateY(4px); }
+}
 .gubbe-fow-list { font-size: var(--fs-xs); color: var(--text-dim); margin-top: 0.3rem; }
 .gubbe-fow-note { display: inline-block; margin-right: 0.6rem; }
 .gubbe-detail-panel { margin-top: 0.5rem; padding: 0.5rem; background: var(--bg-panel); border: 1px solid var(--border); min-height: 3rem; }

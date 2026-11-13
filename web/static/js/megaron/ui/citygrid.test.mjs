@@ -348,3 +348,12 @@ test('freeHint explains moving a worker only when none are free', () => {
   assert.match(freeHint({ total_gubbar: 10, pool_size: 0 }), /press −1 where they stand, then \+1 here/);
   assert.equal(freeHint({ total_gubbar: 10, pool_size: 2 }), '');
 });
+
+test('R: at phone width the hex labels are at least 11px on screen and the goods-count line is dropped', async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync(new URL('../../../megaron.css', import.meta.url), 'utf8');
+  const m = css.match(/@media \(max-width: 480px\) \{\s*\.gubbe-hex-label \{ font-size: (\d+)px;[\s\S]*?\.gubbe-hex-sub \{ display: none; \}/);
+  assert.ok(m, 'phone rule present');
+  assert.ok(Number(m[1]) * 0.87 >= 11, 'label font x the grid scale (0.87) is at least 11px');
+  assert.match(goodRowHTML({ target_kind: 'hex', hex_ordinal: 1 }, { good_key: 'grain', cap: 1, placed: 0, rate_per_tick: 1, marginal_yield: 1 }), /gubbe-actions/);
+});
