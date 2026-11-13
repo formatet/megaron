@@ -346,6 +346,16 @@ export async function demolishBuilding(provinceID, buildingID, label) {
   }, { confirmLabel: 'Demolish', cancelLabel: 'Keep it' });
 }
 
+// Item P: with something in the queue the built list does not claim "no buildings"; it says nothing is
+// finished yet and names the build under way and when it is ready (the active one; the rest wait).
+export function emptyBuiltHTML(bq, pd) {
+  if (!bq || !bq.length) return '<p class="empty-state">No buildings yet.</p>';
+  const active = bq.find(b => b.active !== false && b.complete_at) || bq[0];
+  const name = esc(active.name || _BLD_LBL[active.type] || active.type);
+  const when = active.active !== false && active.complete_at ? `, ready ${arrivalHTML(active.complete_at, undefined, 'ready')}` : ' — next in line';
+  return `<p class="empty-state">Nothing finished yet. ${name}${active.hex_q != null ? ` at (${active.hex_q},${active.hex_r})` : ''} is being built${when}.</p>`;
+}
+
 // Item E: the build rows read the city's stock when they were drawn, and nothing redrew them as the
 // stock moved. The map's existing 30 s poll calls this: ONE goods fetch, and the Buildings section is
 // redrawn only when a number actually changed (scroll position kept).
@@ -388,7 +398,7 @@ async function refreshCityBuildings(provinceID) {
             (b.id ? `<td style="text-align:right"><button class="btn-small" onclick="demolishBuilding('${provinceID}','${b.id}','${esc(demolishLabel(b.name||_BLD_LBL[b.type]||b.type, b.hex_q, b.hex_r))}')" style="padding:.05rem .3rem;font-size:.68rem;cursor:pointer">Demolish</button></td>` : '') +
             `</tr>`).join('')
         }</table><div id="city-demolish-res"></div>`
-      : '<p class="empty-state">No buildings yet.</p>';
+      : emptyBuiltHTML(bq, pd);
     if (pd.market_board) h2 += await ownBoardSection(pd.market_board, pd.id);
     if (pd.build_queue_max != null) h2 += `<p class="empty-state">Queue: ${bq.length}/${pd.build_queue_max} — one building at a time, the rest wait their turn. Builders in a Workshop speed the active build up (up to 3x). Finish or cancel a build to free a place.</p>`;
     if (bq.length) h2 += `<div class="dsec-title" style="margin-top:.8rem">Build queue</div><table class="goods-mini">${

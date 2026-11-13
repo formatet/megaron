@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { startBuild } from './city.js';
+import { startBuild, emptyBuiltHTML } from './city.js';
 
 // The build list and hex rows live in ../build_rows.test.mjs. Here: the one
 // function that sends a build, and the receipt line.
@@ -34,4 +34,12 @@ test('startBuild shows the server refusal and reports not ok',async t=>{
  globalThis.fetch=async()=>new Response('{"error":"needs a harbour"}',{status:422});
  const out=await startBuild({type:'shipyard'});
  assert.equal(out.ok,false);assert.match(out.text,/harbour/);assert.match(result.textContent,/harbour/);
+});
+
+test('P: an empty built list with a queue says nothing is finished and names the build', () => {
+  assert.equal(emptyBuiltHTML([], {}), '<p class="empty-state">No buildings yet.</p>');
+  const html = emptyBuiltHTML([{ type: 'farm', active: true, complete_at: new Date(Date.now() + 3600e3).toISOString() }], {});
+  assert.match(html, /Nothing finished yet\. Farm is being built, ready /);
+  assert.doesNotMatch(html, /No buildings yet/);
+  assert.match(emptyBuiltHTML([{ type: 'farm', active: false }], {}), /next in line/);
 });
