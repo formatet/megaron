@@ -13,7 +13,7 @@ export function richOfferingControlHTML(t) {
 export const prayerActionID = p => p.settlement_id + '__' + p.id;
 const goods = (value, separator = ' + ') => Object.entries(value||{}).sort(([a],[b])=>a.localeCompare(b)).map(([g,n])=>esc(String(Number(Number(n).toPrecision(4))))+' '+esc(g)).join(separator)||'—';
 
-export function realmKultHTML(view,active='kharis',statusHTML=()=> '') {
+export function realmKultHTML(view,active='kharis',statusHTML=()=> '',templeInfo=()=> '') {
  const pd=view.kharis||{}, net=kharisNetView(pd,'realm');
  const kharis=kharisStandingHTML(pd)+net.netHtml+kharisDecayHTML(pd)+net.idleHtml+kharisRulesHTML(pd);
  const prayers=(view.prayers||[]).map(p=>{
@@ -21,7 +21,7 @@ export function realmKultHTML(view,active='kharis',statusHTML=()=> '') {
   return `<div class="dsec" data-cult-prayer="${esc(id)}"><div class="dsec-title">${esc(p.name)} — ${esc(p.city_name)}</div><p>${esc(p.temple||p.god)} · Required kharis: ${esc(String(p.min_kharis))}</p><p>${esc(p.effect||'')}</p><p>Offering: ${goods(p.offering)}</p>${statusHTML({...p,id})}<div class="offer-row" id="offer-row-${esc(id)}"></div></div>`;
  }).join('')||'<p class="empty-state">No cities</p>';
  const temples=(view.temples||[]).map(t=>`<div class="dsec" data-cult-temple="${esc(t.id)}"><div class="dsec-title">${esc(t.name)} — ${esc(t.city_name)}</div><p>Level ${esc(String(t.level))} · Temple workers ${esc(String(t.staffed))}/${esc(String(t.capacity))}</p><p>Reference: ${goods(t.offer?.required_goods)} per game day<br>Stock: ${goods(t.offer?.stock)}<br>Next gift: ${(t.offer?.paid_fraction>0 || t.offer?.fed)?goods(t.offer.offering):'unfunded (nothing taken)'}${templeTitheHTML(t.offer)}</p>${richOfferingControlHTML(t)}<button class="btn-small" data-cult-city="${esc(t.province_id)}">Manage in City</button> <button class="btn-small" data-cult-demolish="${esc(t.id)}">Demolish</button><div id="cult-demolish-${esc(t.id)}"></div></div>`).join('')||'<p class="empty-state">No temples</p>';
- const unbuilt=(view.unbuilt_temples||[]).map(t=>`<div class="stat-row"><span class="sr-label">${esc(t.name)} — ${esc(t.city_name)}</span><span class="sr-val"><button class="btn-small" data-cult-city="${esc(t.province_id)}">Open City to build</button></span></div>`).join('');
+ const unbuilt=(view.unbuilt_temples||[]).map(t=>`<div class="stat-row"><span class="sr-label">${esc(t.name)} — ${esc(t.city_name)}${templeInfo(t.god_id)?`<div class="build-row-sub">${esc(templeInfo(t.god_id))}</div>`:''}</span><span class="sr-val"><button class="btn-small" data-cult-city="${esc(t.province_id)}">Open City to build</button></span></div>`).join('');
  const panels={kharis,prayers,temples:temples+(unbuilt?'<div class="dsec"><div class="dsec-title">Not built</div>'+unbuilt+'</div>':'')};
  return '<div class="drawer-tabs" role="tablist">'+Object.keys(panels).map(key=>`<button class="dtab${active===key?' active':''}" data-cult-tab="${key}" role="tab" aria-selected="${active===key}">${key[0].toUpperCase()+key.slice(1)}</button>`).join('')+'</div>'+Object.entries(panels).map(([key,html])=>`<div class="city-tab" data-cult-panel="${key}"${active!==key?' hidden':''}>${html}</div>`).join('');
 }

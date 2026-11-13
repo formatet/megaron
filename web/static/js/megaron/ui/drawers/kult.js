@@ -10,6 +10,7 @@ import { serverNow } from '../../clock.js';
 import { renderLockedActions } from '../misc.js';
 import { demolishPrompt, demolishResultLine } from '../demolish.js';
 import { realmKultHTML, prayerActionID } from './kult_realm.js';
+import { getBuildingCatalogue, templeInfoLine } from '../build_rows.js';
 import { offerRowHTML, giftStepsHTML, giftSteps, checkedStep, offeringFromEntries, offerFoodText, chosenTarget, scopeFactor, scaledRecipe, stormHexRefusal, stormHexText } from './kult_offer.js';
 import { pickHex } from '../hexpick.js';
 import { kharisNetView, kharisDecayHTML, kharisRulesHTML, kharisStandingHTML } from './kult_kharis.js';
@@ -39,10 +40,11 @@ export async function loadKultDrawer() {
   if(!response.ok)throw new Error('cult unavailable');
   const view=await response.json();
   const locked=await renderLockedActions('cult');
+  const catalogue=(view.unbuilt_temples||[]).length?await getBuildingCatalogue():null;
   if(seq!==kultLoadSeq||world!==State.WORLD_ID)return;
   prayerFood.clear();
   prayerCatalog=(view.prayers||[]).map(p=>({...p,action_id:prayerActionID(p)}));
-  el.innerHTML=realmKultHTML(view,kultTab,prayerStatusHTML)+locked;
+  el.innerHTML=realmKultHTML(view,kultTab,prayerStatusHTML,god=>templeInfoLine(god,catalogue))+locked;
   el.querySelectorAll?.('[data-cult-tab]').forEach(button=>button.addEventListener('click',()=>{
    kultTab=button.dataset.cultTab;
    el.querySelectorAll('[data-cult-tab]').forEach(b=>{b.classList.toggle('active',b===button);b.setAttribute('aria-selected',b===button?'true':'false');});

@@ -12,6 +12,15 @@ import { serverNow } from '../clock.js';
 // placement-options) -- no rules are derived here.
 
 export const TEMPLE_GODS = { potnia:'Potnia', velchanos:'Velchanos', asterion:'Asterion', sea_daimons_stillness:'the Sea Daimons of Stillness' };
+// One line per god, from the Codex articles (potnia, velchanos, asterion, sea-daimons).
+export const GOD_DOMAIN = { potnia: 'Mistress of animals and the sea', velchanos: 'The young god: the bull, the seasons, death and rebirth', asterion: 'Lord of the labyrinth, of ways and of finding them', sea_daimons_stillness: 'Wind, wave and the deep: calm water' };
+// What the Kult tab says under an unbuilt temple: the god's domain, then the cost and build time
+// from the same catalogue entry the Construct list prices it by. Empty cost part without a catalogue.
+export function templeInfoLine(god, catalogue) {
+  const entry = (catalogue || []).find(e => e.type === 'temple');
+  const bits = [GOD_DOMAIN[god], entry && fmtBuildCost(entry), entry && Number.isFinite(entry.duration_game_days) && fmtDuration(entry.duration_game_days)].filter(Boolean);
+  return bits.join(' · ');
+}
 export function templeName(god) { return `Temple of ${TEMPLE_GODS[god] || god}`; }
 
 // The one request body every build sends. Key order is the wire format.
