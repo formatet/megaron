@@ -683,14 +683,23 @@ func (h *UnitArrivalHandler) arriveGarrison(
 	// peaceful march (no combat, no colonize) only ever wrote the audit event
 	// above, so a Wanax had to poll `unit list`/`map` to learn a march landed.
 	if h.hub != nil {
-		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "UnitArrived", 4, map[string]any{
+		payload := map[string]any{
 			"unit_id": u.id,
 			"type":    u.utype,
 			"name":    unit.LoadDisplayName(ctx, tx, u.id),
 			"q":       destQ,
 			"r":       destR,
 			"status":  newStatus,
-		})
+		}
+		// Garrisoning in the unit's own city is coming home: the notice names the city
+		// (first-hour round two, item O) instead of the bare status word "garrison".
+		if settlementID != nil {
+			var cityName string
+			if err := tx.QueryRow(ctx, `SELECT name FROM settlements WHERE id = $1 AND owner_id = $2`, *settlementID, u.ownerID).Scan(&cityName); err == nil && cityName != "" {
+				payload["home_city"] = cityName
+			}
+		}
+		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "UnitArrived", 4, payload)
 	}
 
 	slog.Info("unit arrived (garrison)", "unit", u.id, "q", destQ, "r", destR, "status", newStatus)

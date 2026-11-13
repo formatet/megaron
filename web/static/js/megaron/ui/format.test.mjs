@@ -848,3 +848,10 @@ test('steg 5a: DivinePunishmentAverted says the goat bore it and nothing was los
   assert.match(line, /Protected from further divine punishment until/);
   assert.doesNotMatch(notifText('DivinePunishmentAverted', { would_have: 'ship_loss' }), /undefined/);
 });
+
+test('O: a unit arriving in its own city is home in it; no bare "garrison" in the notice', () => {
+  assert.equal(notifText('UnitArrived', { name: 'Salt and Myrrh', q: 2, r: 59, status: 'garrison', home_city: 'Pylos' }), 'Salt and Myrrh is home in Pylos (2, 59)');
+  const old = notifText('UnitArrived', { name: 'Salt and Myrrh', q: 2, r: 59, status: 'garrison' });
+  assert.doesNotMatch(old, /garrison/);
+  assert.match(notifText('UnitArrived', { name: 'Scouts', q: 1, r: 1, status: 'positioned' }), /positioned/);
+});

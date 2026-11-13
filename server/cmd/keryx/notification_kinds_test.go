@@ -463,3 +463,15 @@ func TestNotificationWordsAndArchiveSemantics(t *testing.T) {
 		}
 	}
 }
+
+func TestUnitArrivedHomeNamesTheCity(t *testing.T) {
+	line := func(body string) string {
+		return capturePrint(t, func() { printNotificationSummary(nil, notificationItem{Kind: "UnitArrived", Body: []byte(body)}) })
+	}
+	if got := line(`{"name":"Salt and Myrrh","q":2,"r":59,"status":"garrison","home_city":"Pylos"}`); !strings.Contains(got, "Salt and Myrrh is home in Pylos (2, 59)") {
+		t.Fatalf("got %q", got)
+	}
+	if bare := line(`{"name":"Salt and Myrrh","q":2,"r":59,"status":"garrison"}`); strings.Contains(bare, "garrison") {
+		t.Fatalf("bare garrison in %q", bare)
+	}
+}
