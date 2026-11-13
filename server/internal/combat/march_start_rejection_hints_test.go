@@ -174,7 +174,10 @@ func TestStartMarch_NoRouteRejectionNamesLoadNotEmbark(t *testing.T) {
 	if strings.Contains(got, "(embark)") {
 		t.Errorf("no-route rejection = %q — still names \"embark\", which is not a verb this CLI has", got)
 	}
-	for _, cond := range []string{"settlement", "garrison", "coastal"} {
+	if strings.Contains(got, "keryx") {
+		t.Errorf("no-route rejection = %q — a server refusal is surface-neutral; keryx adds its own command", got)
+	}
+	for _, cond := range []string{"same city", "garrison", "coastal"} {
 		if !strings.Contains(got, cond) {
 			t.Errorf("no-route rejection = %q — want it to state the %q condition for loading", got, cond)
 		}

@@ -683,7 +683,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	if targetKnown != nil && !colonizeInPlace && o.Intent != "explore" {
 		if !targetKnown(ctx, province.MapPosition{Q: targetQ, R: targetR}, destTerrain) {
 			return nil, reject(http.StatusUnprocessableEntity,
-				"none of your men have ever seen (%d,%d) — only an explorer goes into unknown land: march there with intent \"explore\" (keryx: --intent explore), and it returns home afterwards",
+				"none of your men have ever seen (%d,%d) — only an explorer goes into unknown land: march there with intent \"explore\", and it returns home afterwards",
 				targetQ, targetR)
 		}
 	}
@@ -801,7 +801,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 			return nil, reject(http.StatusInternalServerError, "pathfinding error")
 		}
 		if !pathOK {
-			hint := "a sea crossing needs a ship — load the land unit aboard first: keryx unit load --ship <id> --unit <id> (ship and unit in the same settlement, both garrisoned, settlement coastal or with a harbour); mountains must be routed around"
+			hint := "a sea crossing needs a ship — load the unit aboard a ship in the same city first (both garrisoned, the city coastal or with a harbour); mountains must be routed around"
 			if unit.CategoryOf(u.Type) == unit.CategoryNaval {
 				hint = "the sea is blocked by land — no open-water route reaches it from this settlement's shore (building a harbour will not change this)"
 			}

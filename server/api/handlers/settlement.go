@@ -813,8 +813,8 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 				"temple is still finishing here — it becomes usable within a game day of completion; retry shortly")
 		} else if spec.GodID != "" {
 			writeError(w, http.StatusBadRequest,
-				fmt.Sprintf("%s is prayed at the %s — build it here first (`keryx build --type temple --god %s`)",
-					spec.Name, religion.TempleName(spec.GodID), spec.GodID))
+				fmt.Sprintf("%s is prayed at the %s — build it here first",
+					spec.Name, religion.TempleName(spec.GodID)))
 		} else {
 			writeError(w, http.StatusBadRequest,
 				"temple required — build a temple here first (rites are performed at a temple)")

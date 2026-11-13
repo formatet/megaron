@@ -5,12 +5,16 @@ import (
 	"testing"
 )
 
-// The "pool empty" 409 must tell the player how to free a citizen.
+// The "pool empty" 409 must tell the player how to free a citizen, in words every surface can show;
+// the terminal command is keryx's own hint (cmd/keryx refusalHint), never the server's.
 func TestNoCitizensLeftMsgNamesTheFreeingVerbs(t *testing.T) {
-	for _, want := range []string{"no citizens left in the pool", "keryx place <good> -1", "keryx staff <building> -1"} {
+	for _, want := range []string{"no citizens left in the pool", "take one off another place first"} {
 		if !strings.Contains(noCitizensLeftMsg, want) {
 			t.Fatalf("missing %q in %q", want, noCitizensLeftMsg)
 		}
+	}
+	if strings.Contains(noCitizensLeftMsg, "keryx") {
+		t.Fatalf("a server refusal must not name a keryx command: %q", noCitizensLeftMsg)
 	}
 }
 

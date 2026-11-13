@@ -27,7 +27,7 @@ func canMarch(cc checkContext) Verb {
 	return verb("march", CategoryMilitary,
 		"Order a garrisoned unit to march to a hex you have seen (live or remembered). "+
 			"A plain march leaves the unit standing where it arrives — that is how you gain "+
-			"ground you keep seeing; add stance \"sentry\" (or use `keryx unit post`) to post "+
+			"ground you keep seeing; add stance \"sentry\" (or post the unit) to post "+
 			"it as a forward watch. Intent \"explore\" is the opposite order: it may push into "+
 			"unseen land, but the unit turns for home the moment it arrives.",
 		[]Requirement{

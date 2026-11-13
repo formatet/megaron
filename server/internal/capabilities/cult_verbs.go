@@ -19,10 +19,10 @@ func canRite(cc checkContext) Verb {
 	}
 	// The default prayer is said at its own god's temple (ORDER 15).
 	hasTemple := cc.hasTempleOf(spec.GodID)
-	templeName, buildHint := "temple", "build a temple (`keryx build --type temple`)"
+	templeName, buildHint := "temple", "build a temple"
 	if spec.GodID != "" {
 		templeName = religion.TempleName(spec.GodID)
-		buildHint = fmt.Sprintf("build the %s (`keryx build --type temple --god %s`)", templeName, spec.GodID)
+		buildHint = fmt.Sprintf("build the %s", templeName)
 	}
 	kharis := cc.kharisAmount()
 	kharisOK := kharis >= minKharis
