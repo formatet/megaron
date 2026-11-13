@@ -266,6 +266,7 @@ func printNotificationSummary(c *Client, n notificationItem) {
 		Note              string             `json:"note"`
 		Status            string             `json:"status"`
 		Stance            string             `json:"stance"`
+		HomeCity          string             `json:"home_city"`
 		DestName          string             `json:"dest_name"`
 		ForeignOwner      string             `json:"foreign_owner"`
 		ForeignType       string             `json:"foreign_type"`
@@ -394,6 +395,11 @@ func printNotificationSummary(c *Client, n notificationItem) {
 		line = fmt.Sprintf("%s lost at sea — %s, %d men gone", subject, cause, b.Lost)
 	case "UnitArrived":
 		line = fmt.Sprintf("%s arrived at %s — %s", subject, at, notificationWords(firstNotificationText(b.Status, "positioned")))
+		if b.HomeCity != "" {
+			line = fmt.Sprintf("%s is home in %s %s", subject, b.HomeCity, at)
+		} else if b.Status == "garrison" {
+			line = fmt.Sprintf("%s arrived at %s — in the city", subject, at)
+		}
 		if b.Stance != "" {
 			line += ", standing " + notificationWords(b.Stance)
 		}

@@ -51,3 +51,16 @@ test('urgencyTier: colour follows the server level, not the domain (Timothy 2026
   assert.equal(urgencyTier(undefined), 'routine');
   assert.equal(urgencyTier('1'), 'urgent');
 });
+
+test('M: chipLayout keeps every visible chip readable and collapses the oldest instead of squeezing', async () => {
+  const { chipLayout, READ_W } = await import('./chips.js');
+  // three chips in 600 px: 250 each does not fit, so two stay at full width and one is collapsed
+  const l = chipLayout(3, 600);
+  assert.deepEqual([l.visible, l.hidden, l.width], [2, 1, READ_W]);
+  // room for all: nobody hidden, width capped at READ_W
+  const roomy = chipLayout(2, 1000);
+  assert.deepEqual([roomy.hidden, roomy.width], [0, READ_W]);
+  // a strip narrower than one chip still shows one, never zero
+  const tiny = chipLayout(5, 120);
+  assert.equal(tiny.visible, 1); assert.equal(tiny.hidden, 4);
+});

@@ -54,3 +54,13 @@ test('rich offering: off shows a good picker and one button, on shows status and
  const missing=realmKultHTML({temples:[{...base,offer:{parts:[{good:'grain',paid:true}],stock:{},rich_offering_good:'fish',rich_offering_amount:.0625,rich_offering_paid:false}}]},'temples');
  assert.ok(missing.includes('fish — not paid'));
 });
+
+test('L: an unbuilt temple row carries the god domain, cost and build time', async () => {
+  const { templeInfoLine } = await import('../build_rows.js');
+  const cat = [{ type: 'temple', costs: { timber: 10, stone: 20 }, duration_game_days: 6 }];
+  const line = templeInfoLine('potnia', cat);
+  assert.match(line, /^Mistress of animals and the sea · 20 stone 10 timber · 6 game days/);
+  assert.equal(templeInfoLine('potnia', null), 'Mistress of animals and the sea');
+  const html = realmKultHTML({ unbuilt_temples: [{ god_id: 'potnia', name: 'Temple of Potnia', city_name: 'Pylos', province_id: 'p' }] }, 'temples', undefined, g => templeInfoLine(g, cat));
+  assert.match(html, /build-row-sub">Mistress of animals/);
+});

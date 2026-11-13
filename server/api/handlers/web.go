@@ -213,7 +213,7 @@ func (h *WebHandler) JoinView(w http.ResponseWriter, r *http.Request) {
 	var players int
 	_ = h.pool.QueryRow(r.Context(),
 		`SELECT w.name, w.state,
-		        (SELECT COUNT(*) FROM settlements WHERE world_id = w.id AND owner_id IS NOT NULL)
+		        (SELECT COUNT(*) FROM player_world_records WHERE world_id = w.id AND status = 'active')
 		 FROM worlds w WHERE w.id = $1`,
 		wid,
 	).Scan(&name, &state, &players)

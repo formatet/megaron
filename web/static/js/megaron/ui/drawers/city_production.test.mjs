@@ -27,7 +27,7 @@ test('J: food-worker warning survives; missing net is honestly unavailable',()=>
  for(const x of [null,{},pd({food:null}),pd({food:{}})])assert.match(foodSummaryHTML(x),/not reported/);
 });
 test('J: population keeps input-free player words; no slaughter button',()=>{
- assert.match(populationHTML(pd(),700,10,'p'),/Citizens<\/span><span class="sr-val">10</);assert.match(populationHTML(pd(),700,10,'p'),/Free to work<\/span><span class="sr-val">7</);
+ assert.match(populationHTML(pd(),700,10,'p'),/Citizens<\/span><span class="sr-val">10</);assert.match(populationHTML(pd(),700,10,'p'),/Free to work <span class="sr-gloss">[^<]+<\/span><\/span><span class="sr-val">7</);
  assert.match(populationHTML(pd(),700,10,'p'),/Livestock/);
  assert.doesNotMatch(populationHTML(pd(),700,10,'p'),/<button|[Ss]laughter/);
 });
@@ -128,15 +128,16 @@ test('population only offers whole citizen groups, never remainder people',()=>{
  for(const [pop,idle,total,free] of [[1005,5,10,0],[1099,99,10,0],[1100,100,11,1],[1205,205,12,2]]){
   const html=populationHTML(pd({population:pop,food:{growth_state:'growing',food_net_per_tick:1}}),idle,0,'p');
   assert.match(html,new RegExp('Citizens</span><span class="sr-val">'+total+'<'));
-  assert.match(html,new RegExp('Free to work</span><span class="sr-val">'+free+'<'));
+  assert.match(html,new RegExp('Free to work <span class="sr-gloss">[^<]+</span></span><span class="sr-val">'+free+'<'));
   assert.doesNotMatch(html,/Population [0-9]|1,005|1,099|1,100|1,205/);
  }
 });
 
-test('Walls hold is counted in citizens, like the Citizens row beside it', () => {
+test('J (round two): the panel leads with citizens of the walls, counted in citizens, with the 100-people rule', () => {
   const html = populationHTML(pd({ population: 11165, population_cap: 2000 }), 4700, 0, 'p');
-  assert.match(html, /Walls hold<\/span><span class="sr-val">20</);
-  assert.match(html, /Citizens<\/span><span class="sr-val">111</);
+  assert.match(html, /^<div class="stat-row"><span class="sr-label">Citizens<\/span><span class="sr-val">111 of 20 the walls hold</);
+  assert.match(html, /1 citizen = 100 people/);
+  assert.doesNotMatch(html, /Walls hold<|In service|People</);
 });
 
 test('storm over a fishing ground is named in the food section (D.1)', () => {

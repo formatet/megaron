@@ -62,6 +62,7 @@ export function nextCitizenHTML(pd) {
   return `<div class="next-citizen"><span>Next citizen</span><span class="citizen-progress" role="progressbar" aria-label="Progress toward next citizen" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress}">${steps}</span><span class="citizen-progress-text">${esc(text)}</span></div>`;
 }
 
+const gloss = (label, text) => `${label} <span class="sr-gloss">${text}</span>`;
 export function populationHTML(pd, idle, livestock, provinceID) {
   const growth = growthLineText(pd, false);
   const g = growth ? growth.charAt(0).toUpperCase() + growth.slice(1) : '';
@@ -69,8 +70,13 @@ export function populationHTML(pd, idle, livestock, provinceID) {
   // server sent no cap. Counted in citizens like the rows under it (Timothy 2026-10-24: "Walls hold
   // 2,000" beside "Citizens 111" read as two different scales).
   const cap = Number(pd?.population_cap);
-  return (g ? `<p class="growth-line">${g}</p>` : '') + (cap > 0 ? row('Walls hold', n(Math.floor(cap / 100))) : '') + row('Citizens', n(Math.floor(pd.population / 100))) + nextCitizenHTML(pd) + row('Free to work', n(Math.floor(idle / 100))).replace('class="stat-row"', 'class="stat-row" id="city-free-to-work"') +
-    row('Livestock', n(Math.floor(livestock)));
+  // Round two, item J: the panel leads with citizens, the one number a player works with; the rest
+  // follows, each with a short gloss. Counted in citizens like the rows under it.
+  const citizens = n(Math.floor(pd.population / 100));
+  const lead = row('Citizens', cap > 0 ? `${citizens} of ${n(Math.floor(cap / 100))} the walls hold` : citizens)
+    + '<p class="empty-state">1 citizen = 100 people</p>';
+  return (g ? `<p class="growth-line">${g}</p>` : '') + lead + nextCitizenHTML(pd) + row(gloss('Free to work', 'not at a place yet'), n(Math.floor(idle / 100))).replace('class="stat-row"', 'class="stat-row" id="city-free-to-work"') +
+    row(gloss('Livestock', 'animals in the herd'), n(Math.floor(livestock)));
 }
 
 function harvestBlessingHTML(pd) {

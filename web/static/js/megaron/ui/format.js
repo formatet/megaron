@@ -868,7 +868,8 @@ export function notifText(kind, body) {
     case 'UnitArrived': {
       const subject = body.name || unitTypeLabel(body.type) || 'A unit';
       const stance = body.stance ? `, standing ${body.stance}` : '';
-      return `${subject} arrived at (${body.q}, ${body.r}) — ${body.status || 'positioned'}${stance}`;
+      if (body.home_city) return `${subject} is home in ${body.home_city} (${body.q}, ${body.r})`;
+      return `${subject} arrived at (${body.q}, ${body.r}) — ${body.status === 'garrison' ? 'in the city' : (body.status || 'positioned')}${stance}`;
     }
     case 'UnitExploreReturned': {
       // da660376 (megaron_plan_dispatches.md §4): "'Scout returning home' —

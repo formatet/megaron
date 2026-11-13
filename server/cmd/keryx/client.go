@@ -259,13 +259,28 @@ func (c *Client) delete(path string) ([]byte, error) {
 // returned untouched.
 func refusalHint(err error) error {
 	msg := err.Error()
-	switch {
-	case strings.Contains(msg, "no passable route"):
-		return fmt.Errorf("%w — try `keryx map --radius 12` around the target, or `keryx storms` if the way is by sea", err)
-	case strings.Contains(msg, "carries no passengers"), strings.Contains(msg, "Choose a ship docked in"):
-		return fmt.Errorf("%w — `keryx unit list` lists your ships and where they lie", err)
+	// The server words its refusals for every surface (web, keryx, Codex); the command that does it
+	// from a terminal is added here (first-hour round two, item G).
+	var hints []string
+	if strings.Contains(msg, "no passable route") {
+		hints = append(hints, "try `keryx map --radius 12` around the target, or `keryx storms` if the way is by sea")
 	}
-	return err
+	if strings.Contains(msg, "load the unit aboard a ship in the same city first") {
+		hints = append(hints, "`keryx unit load --ship <id> --unit <id>` does it")
+	}
+	if strings.Contains(msg, "carries no passengers") || strings.Contains(msg, "Choose a ship docked in") {
+		hints = append(hints, "`keryx unit list` lists your ships and where they lie")
+	}
+	if strings.Contains(msg, "only an explorer goes into unknown land") {
+		hints = append(hints, "keryx: --intent explore")
+	}
+	if strings.Contains(msg, "every citizen is already placed") {
+		hints = append(hints, "free one with `keryx place <good> -1` or `keryx staff <building> -1`")
+	}
+	if len(hints) == 0 {
+		return err
+	}
+	return fmt.Errorf("%w — %s", err, strings.Join(hints, "; "))
 }
 
 func apiError(body []byte, status int) error {

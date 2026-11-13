@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -71,4 +72,20 @@ func TestClient401RefreshesOnceAndRetries(t *testing.T) {
 func readBody(r *http.Request) string {
 	b, _ := io.ReadAll(r.Body)
 	return string(b)
+}
+
+func TestRefusalHintAddsTheTerminalCommand(t *testing.T) {
+	cases := map[string]string{
+		"no passable route to (1,61) for this unit — a sea crossing needs a ship — load the unit aboard a ship in the same city first (both garrisoned)": "keryx unit load --ship <id> --unit <id>",
+		"none of your men have ever seen (1,2) — only an explorer goes into unknown land: march there with intent \"explore\"":                           "--intent explore",
+		"no citizens left in the pool — every citizen is already placed; take one off another place first":                                               "keryx place <good> -1",
+	}
+	for msg, want := range cases {
+		if got := refusalHint(errors.New(msg)).Error(); !strings.Contains(got, want) {
+			t.Errorf("%q: hint %q missing from %q", msg, want, got)
+		}
+	}
+	if got := refusalHint(errors.New("nothing to add")).Error(); got != "nothing to add" {
+		t.Errorf("unrelated error changed: %q", got)
+	}
 }

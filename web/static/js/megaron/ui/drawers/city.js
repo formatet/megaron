@@ -11,7 +11,7 @@ import { renderLockedActions } from '../misc.js';
 import { esc, formatApiError, playerError, errorDetail } from '../format.js';
 import { unitTypeLabel } from '../actornames.js';
 import { startCityAnim } from '../../render/city.js';
-import { renderGubbeGrid, shipyardShareNote, setBuildHandler } from '../citygrid.js';
+import { renderGubbeGrid, shipyardShareNote, setBuildHandler, currentPick } from '../citygrid.js';
 import { buildBody, constructListHTML, getBuildingCatalogue, loadStock, showBuildResult, templeName } from '../build_rows.js';
 import { productionSectionsHTML, populationHTML, blessingsSectionHTML, foodSummaryHTML, foodDetailsHTML, storageWarningsHTML } from './city_production.js';
 import { warehouseHTML } from './city_warehouse.js';
@@ -33,6 +33,19 @@ export function cycleCityView(dir) {
 
 
 let cityLoadSeq = 0;
+
+// A drawer rebuilt by a live update must leave the player where they were: same tab, same scroll
+// position, and a pending "choose a hex" still pending (first-hour round two, item D).
+function cityViewSnapshot(body, cityID) {
+  if (!body || body.dataset.cityId !== cityID || !body.children.length) return null;
+  const scroller = body.closest('.drawer-body') || body;
+  return { top: scroller.scrollTop, tab: body.querySelector('.dtab.active')?.dataset.tab || null, pick: currentPick() };
+}
+function restoreCityView(body, snap) {
+  if (!snap) return;
+  const scroller = body.closest('.drawer-body') || body;
+  scroller.scrollTop = snap.top;
+}
 export async function loadCityDrawer() {
   const seq = ++cityLoadSeq;
   const capital = activeCitySettlement();
@@ -49,6 +62,7 @@ export async function loadCityDrawer() {
   document.querySelectorAll('#drawer-city .drawer-nav').forEach(b => b.disabled = mineCount < 2);
 
   const body = document.getElementById('city-body');
+  const snap = capital ? cityViewSnapshot(body, capital.id) : null;
   if (!capital) {
     body.innerHTML = `<p class="empty-state" style="padding:1rem">${noCityText('No city founded yet.', State.founderPhase)}</p>`;
     return;
@@ -74,6 +88,7 @@ export async function loadCityDrawer() {
     <div id="ctab-byggnader" class="city-tab" style="display:none"><div id="city-bld-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
     <div id="ctab-garnison"  class="city-tab" style="display:none"><div id="city-gar-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>`;
 
+  body.dataset.cityId = capital.id;
   body.querySelectorAll('.dtab').forEach(tab => {
     tab.addEventListener('click', function() {
       body.querySelectorAll('.dtab').forEach(t => t.classList.remove('active'));
@@ -84,6 +99,7 @@ export async function loadCityDrawer() {
     });
   });
 
+  if (snap?.tab && snap.tab !== 'produktion') body.querySelector(`.dtab[data-tab="${snap.tab}"]`)?.click();
   const capitalTile2 = State.tileData.find(t => t.q === capital.q && t.r === capital.r);
 
   try {
@@ -132,7 +148,7 @@ export async function loadCityDrawer() {
       const livestockGood = goods.find(g => g.key === 'livestock');
       const livestock = livestockGood ? livestockGood.amount : 0;
       document.getElementById('city-pop-sec').innerHTML = populationHTML(pd, idle, livestock, capital.id);
-      document.getElementById('city-people-details').innerHTML = `<div class="stat-row"><span class="sr-label">In service</span><span class="sr-val">${fmtNum(armyPop)}</span></div><div class="stat-row"><span class="sr-label">People</span><span class="sr-val">${fmtNum(pd.population)}</span></div>`;
+      document.getElementById('city-people-details').innerHTML = `<div class="stat-row"><span class="sr-label">In service <span class="sr-gloss">people serving in forces</span></span><span class="sr-val">${fmtNum(armyPop)}</span></div><div class="stat-row"><span class="sr-label">People <span class="sr-gloss">everyone in the city</span></span><span class="sr-val">${fmtNum(pd.population)}</span></div>`;
     } else {
       document.getElementById('city-pop-sec').innerHTML = '<p class="empty-state">—</p>';
     }
@@ -158,12 +174,12 @@ export async function loadCityDrawer() {
 
     // ── Gubbe placement (P5) ────────────────────────────────────────────────
     const gridEl = document.getElementById('city-gubbe-grid');
-    if (gridEl) renderGubbeGrid(gridEl, capital.id, capital.q, capital.r);
+    const gridP = gridEl ? renderGubbeGrid(gridEl, capital.id, capital.q, capital.r, snap?.pick ? { pick: snap.pick } : {}) : null;
 
     // ── Byggnader ───────────────────────────────────────────────────────────
     // Delegate to refreshCityBuildings so startBuild() can call it too
     // without resetting the active drawer tab.
-    refreshCityBuildings(capital.id);
+    const bldP = refreshCityBuildings(capital.id);
 
     // ── Garnison ────────────────────────────────────────────────────────────
     if (pd) {
@@ -176,6 +192,9 @@ export async function loadCityDrawer() {
     const locked = await renderLockedActions('province', capital.id);
     if (seq !== cityLoadSeq) return;
     document.getElementById('city-gar-sec').insertAdjacentHTML('beforeend', locked);
+    // The grid and the build rows fill in asynchronously; put the scroll back once they stand.
+    await Promise.all([gridP, bldP]);
+    if (seq === cityLoadSeq) restoreCityView(body, snap);
 
   } catch(e) { console.error('city drawer', e); }
 }
@@ -327,6 +346,38 @@ export async function demolishBuilding(provinceID, buildingID, label) {
   }, { confirmLabel: 'Demolish', cancelLabel: 'Keep it' });
 }
 
+// Item P: with something in the queue the built list does not claim "no buildings"; it says nothing is
+// finished yet and names the build under way and when it is ready (the active one; the rest wait).
+export function emptyBuiltHTML(bq, pd) {
+  if (!bq || !bq.length) return '<p class="empty-state">No buildings yet.</p>';
+  const active = bq.find(b => b.active !== false && b.complete_at) || bq[0];
+  const name = esc(active.name || _BLD_LBL[active.type] || active.type);
+  const when = active.active !== false && active.complete_at ? `, ready ${arrivalHTML(active.complete_at, undefined, 'ready')}` : ' — next in line';
+  return `<p class="empty-state">Nothing finished yet. ${name}${active.hex_q != null ? ` at (${active.hex_q},${active.hex_r})` : ''} is being built${when}.</p>`;
+}
+
+// Item E: the build rows read the city's stock when they were drawn, and nothing redrew them as the
+// stock moved. The map's existing 30 s poll calls this: ONE goods fetch, and the Buildings section is
+// redrawn only when a number actually changed (scroll position kept).
+let lastBuildStock = '';
+export async function refreshCityStock() {
+  const bldSec = document.getElementById('city-bld-sec');
+  const capital = activeCitySettlement();
+  if (!bldSec || !capital || State.activeDrawer !== 'city') return;
+  const stock = await loadStock(capital.id);
+  if (!stock) return;
+  const key = capital.id + JSON.stringify(Object.entries(stock).map(([k, v]) => [k, Math.floor(v)]).sort());
+  if (key === lastBuildStock) return;
+  const hadBefore = lastBuildStock.startsWith(capital.id);
+  lastBuildStock = key;
+  if (!hadBefore) return; // first sight: the drawer was drawn from the same numbers
+  const body = document.getElementById('city-body');
+  const scroller = body?.closest('.drawer-body') || body;
+  const top = scroller ? scroller.scrollTop : 0;
+  await refreshCityBuildings(capital.id);
+  if (scroller) scroller.scrollTop = top;
+}
+
 // Re-fetch province data and update only the buildings/queue section of the city drawer.
 async function refreshCityBuildings(provinceID) {
   const bldSec = document.getElementById('city-bld-sec');
@@ -347,7 +398,7 @@ async function refreshCityBuildings(provinceID) {
             (b.id ? `<td style="text-align:right"><button class="btn-small" onclick="demolishBuilding('${provinceID}','${b.id}','${esc(demolishLabel(b.name||_BLD_LBL[b.type]||b.type, b.hex_q, b.hex_r))}')" style="padding:.05rem .3rem;font-size:.68rem;cursor:pointer">Demolish</button></td>` : '') +
             `</tr>`).join('')
         }</table><div id="city-demolish-res"></div>`
-      : '<p class="empty-state">No buildings yet.</p>';
+      : emptyBuiltHTML(bq, pd);
     if (pd.market_board) h2 += await ownBoardSection(pd.market_board, pd.id);
     if (pd.build_queue_max != null) h2 += `<p class="empty-state">Queue: ${bq.length}/${pd.build_queue_max} — one building at a time, the rest wait their turn. Builders in a Workshop speed the active build up (up to 3x). Finish or cancel a build to free a place.</p>`;
     if (bq.length) h2 += `<div class="dsec-title" style="margin-top:.8rem">Build queue</div><table class="goods-mini">${
@@ -380,6 +431,7 @@ async function refreshCityBuildings(provinceID) {
     // also needed below for the Construct dropdown's foundry purpose label,
     // so a recipe change never leaves a stale string there either.
     const [recipes, buildingCatalogue, stock] = await Promise.all([getRecipes(), getBuildingCatalogue(), loadStock(provinceID)]);
+    if (stock) lastBuildStock = provinceID + JSON.stringify(Object.entries(stock).map(([k, v]) => [k, Math.floor(v)]).sort());
     const foundryRecipe = recipes ? recipes.find(rc => rc.building_type === 'foundry') : null;
 
     if (blds.some(b => b.type === 'foundry')) {

@@ -13,7 +13,7 @@ const labels=html=>[...html.matchAll(/sr-label">([^<]*)</g)].map(m=>m[1]);
 
 test('Warehouse: food with granary cap, herd with pen cap, goods alphabetical with caps',()=>{
  const html=warehouseHTML(pd(),goods);
- assert.match(html,/Food<\/span><span class="sr-val">\u22120.5 per game day · lasts 104.8 game days/);
+ assert.match(html,/Food<\/span><span class="sr-val neg">\u22120.5 per game day · lasts 104.8 game days/);
  assert.doesNotMatch(html,/240|Food for/,'the people-only coverage is not shown');
  assert.match(html,/Grain<\/span><span class="sr-val">463 \/ 2,000/);
  assert.match(html,/Fish<\/span><span class="sr-val">88 \/ 2,000/);
@@ -65,8 +65,8 @@ test('Garrison: Recruit link opens War on the Recruit tab for that city',async()
 test('Warehouse: net per game day per good, food runway from the forecast, steady food says so',()=>{
  const fc={goods:[{good_key:'grain',net:-3.04},{good_key:'timber',net:2}],food:{days:18.2,net:-3,flows:[{label:'Army rations',amount:-2},{label:'Citizens\' meals',amount:-1}]}};
  let html=warehouseHTML(pd({forecast:fc}),goods);
- assert.match(html,/Food<\/span><span class="sr-val">\u22123 per game day · lasts 18.2 game days/);
- assert.match(html,/Grain<\/span><span class="sr-val neg">463 \/ 2,000 · \u22123 per game day/);
+ assert.match(html,/Food<\/span><span class="sr-val neg">\u22123 per game day · lasts 18.2 game days/);
+ assert.match(html,/Grain<\/span><span class="sr-val">463 \/ 2,000 · \u22123 per game day/);
  assert.match(html,/Timber<\/span><span class="sr-val">120 · \+2 per game day/);
  assert.match(html,/Army rations<\/span><span class="sr-val neg">−2/);
  html=warehouseHTML(pd({forecast:{goods:[],food:{days:null,net:1.5,flows:[]}}}),goods);
@@ -97,4 +97,14 @@ test('SMAFEL7: red (sr-val neg) marks a loss only; a positive net and a plain am
   assert.match(html, /sr-val">\+5\.6</);
   assert.match(html, /Timber<\/span><span class="sr-val neg">/);
   assert.match(html, /Stone<\/span><span class="sr-val">/);
+});
+
+test('F: per-good food rows are never red; only the Food line is, and only when food runs down', () => {
+  const goods = [{ key: 'grain', name: 'Grain', amount: 50, cap: 100 }, { key: 'fish', name: 'Fish', amount: 20, cap: 100 }];
+  const pd = (net) => ({ forecast: { goods: [{ good_key: 'grain', net: -5.9 }, { good_key: 'fish', net: 6.4 }], food: { net, days: net < 0 ? 8 : null, flows: [] } } });
+  const up = warehouseHTML(pd(0.5), goods);
+  assert.doesNotMatch(up, /sr-val neg/);
+  const down = warehouseHTML(pd(-0.5), goods);
+  assert.equal((down.match(/sr-val neg/g) || []).length, 1);
+  assert.match(down, /<span class="sr-label">Food<\/span><span class="sr-val neg">/);
 });

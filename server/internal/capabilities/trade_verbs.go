@@ -84,7 +84,7 @@ func canTradeAccept(cc checkContext) Verb {
 	reqs := []Requirement{
 		req("a pending inbound trade offer", ok,
 			boolDetail(ok, "an offer is waiting", "no pending inbound offer"),
-			"wait for a Wanax to send a trade offer, or check `keryx inbox`"),
+			"wait for a Wanax to send a trade offer, or check your letters"),
 	}
 	if ok {
 		solvent, detail := cc.pendingOfferAffordable()
@@ -149,7 +149,7 @@ func canTradeDecline(cc checkContext) Verb {
 		[]Requirement{
 			req("a pending inbound trade offer", ok,
 				boolDetail(ok, "an offer is waiting", "no pending inbound offer"),
-				"wait for a Wanax to send a trade offer, or check `keryx inbox`"),
+				"wait for a Wanax to send a trade offer, or check your letters"),
 		})
 }
 
@@ -160,7 +160,7 @@ func canTradeCancel(cc checkContext) Verb {
 		[]Requirement{
 			req("a pending outgoing trade offer", ok,
 				boolDetail(ok, "an offer is outstanding", "no pending outbound offer"),
-				"send a trade offer first, or check `keryx outbox`"),
+				"send a trade offer first, or check your sent letters"),
 		})
 }
 

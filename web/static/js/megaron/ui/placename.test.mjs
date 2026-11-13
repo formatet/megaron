@@ -31,13 +31,13 @@ function harness(t, responses) {
     for (const [k,v] of Object.entries(globals)) v === undefined ? delete globalThis[k] : globalThis[k] = v;
     State.tileData = state.tiles; State.WORLD_ID = state.world; State.dirty = state.dirty;
   });
-  const error = { style: {}, textContent: '' }, calls = []; let reopened = 0;
-  globalThis.document = { getElementById: id => id.startsWith('place-name-err-') ? error : id.startsWith('place-name-') ? { value: ' Alpheios ' } : null };
+  const error = { style: {}, textContent: '' }, calls = [], note = { innerHTML: '' }; let reopened = 0;
+  globalThis.document = { getElementById: id => id.startsWith('place-name-err-') ? error : id.startsWith('place-name-') ? { value: ' Alpheios ', closest: () => note } : null };
   globalThis.window = { reopenSelectedHex: () => reopened++ };
   globalThis.localStorage = { getItem: () => 'token' };
   globalThis.fetch = async (url, opts) => { calls.push({url,opts}); return responses.shift(); };
   State.WORLD_ID = 'world'; State.tileData = [{terrain:'fog'}]; State.dirty = false;
-  return { error, calls, reopened: () => reopened };
+  return { error, calls, note, reopened: () => reopened };
 }
 
 test('naming POST uses Bearer then authoritative FOW map before reopening', async t => {
@@ -50,6 +50,12 @@ test('naming POST uses Bearer then authoritative FOW map before reopening', asyn
   assert.deepEqual(JSON.parse(h.calls[0].opts.body),{name:' Alpheios '});
   assert.equal(h.calls[1].url,'/api/v1/worlds/world/map');
   assert.deepEqual(State.tileData,tiles); assert.equal(State.dirty,true); assert.equal(h.reopened(),1);
+  assert.equal(h.note.innerHTML, 'Named: <strong>Alpheios</strong> — river', 'the field is replaced at once');
+});
+
+test('K: Enter in the name field names the place', () => {
+  const html = placePanelHTML({ terrain: 'river', place_kind: 'cape', place_id: '1,2', can_name: true });
+  assert.match(html, /onkeydown="if\(event\.key==='Enter'\)namePlace\('cape','1,2'\)"/);
 });
 
 for (const status of [400,403,409]) test(`naming ${status} shows server reason without stale success`, async t => {
@@ -81,7 +87,7 @@ test('first-reached WS notice refreshes naming rights mid-route without waiting 
 
 test('actor/city panels show a spent place name safely, terrain titles avoid repeating it',()=>{
  const tile={terrain:'river',place_kind:'river',place_id:'6,79',place_name:'<Ariadne>',can_name:false};
- assert.equal(placePanelHTML(tile),'');assert.match(placePanelHTML(tile,{showName:true}),/<strong>&lt;Ariadne&gt;<\/strong>/);assert.doesNotMatch(placePanelHTML(tile,{showName:true}),/namePlace\(/);
+ assert.equal(placePanelHTML(tile),'');assert.match(placePanelHTML(tile,{showName:true}),/Named: <strong>&lt;Ariadne&gt;<\/strong>/);assert.doesNotMatch(placePanelHTML(tile,{showName:true}),/namePlace\(/);
  assert.equal(placePanelHTML({...tile,tier:'fog'},{showName:true}),'');
 });
 

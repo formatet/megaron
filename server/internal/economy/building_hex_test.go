@@ -182,3 +182,41 @@ func TestHexBuildingCap_MineOnCopperHexEnablesCopperNotSilver(t *testing.T) {
 		t.Errorf("copper hex with its own mine: copper cap = %d, want 5 (1 + %d)", optCopper.CapPerGood["copper"], BuildingExtraPlaces)
 	}
 }
+
+// TestRaisedByPerGood_NamesTheUnbuiltBuilding is first-hour round two item A: a
+// hex tells which building would add places, and stops saying so once it stands.
+func TestRaisedByPerGood_NamesTheUnbuiltBuilding(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	_, center, settlementID := foundingForecastFixture(t, 500, "plains")
+	hex := hexgrid.Ring(center, hexgrid.CatchmentRadius)[0]
+
+	opts, err := LoadHexProductionOptions(ctx, pool, settlementID, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	find := func() *HexOption {
+		for i := range opts {
+			if opts[i].Coord == hex {
+				return &opts[i]
+			}
+		}
+		t.Fatalf("hex %v missing", hex)
+		return nil
+	}
+	if got := find().RaisedByPerGood["grain"]; got != "farm" {
+		t.Fatalf("unbuilt plains: grain raised by %q, want farm", got)
+	}
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO buildings (settlement_id, building_type, level, hex_q, hex_r) VALUES ($1, 'farm', 1, $2, $3)`,
+		settlementID, hex.Q, hex.R); err != nil {
+		t.Fatal(err)
+	}
+	opts, err = LoadHexProductionOptions(ctx, pool, settlementID, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := find().RaisedByPerGood["grain"]; got != "" {
+		t.Fatalf("farm stands: grain raised by %q, want nothing", got)
+	}
+}

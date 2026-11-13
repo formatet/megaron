@@ -7,6 +7,7 @@ package combat
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -434,5 +435,13 @@ func TestExpedition_ShipPrefersUnseenCoastOverNearerDeepSea(t *testing.T) {
 	}
 	if g[[2]int{leg.Target.Q, leg.Target.R}] != "coastal_sea" {
 		t.Fatalf("ship's next leg %v is %s, want the unseen coast", leg.Target, g[[2]int{leg.Target.Q, leg.Target.R}])
+	}
+}
+
+func TestNoReachableUnseenRefusalSpeaksLikeAPlayer(t *testing.T) {
+	got := fmt.Sprintf(noReachableUnseenFmt, ExpeditionAreaRadius, 0, 58)
+	want := fmt.Sprintf("Nothing to explore there: everything within %d hexes of (0,58) that these men can reach is already seen. Pick ground nearer the unknown.", ExpeditionAreaRadius)
+	if got != want || strings.Contains(got, "Nothing sent") || strings.Contains(got, "keryx") {
+		t.Fatalf("got %q", got)
 	}
 }

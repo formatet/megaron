@@ -64,21 +64,41 @@ const GAP   = 3;
 // control is just noise on the top bar. Tunable, not a rule.
 const DISMISS_ALL_FROM = 3;
 
+// Round two, item M: a chip is never squeezed below what ~18 characters of its text need
+// (icon + 18 mono characters + time + x). When the strip cannot hold them all at that width the OLDEST
+// chips leave the strip and the "x all" button counts them, instead of every chip shrinking to "Ty li".
+export const READ_W = 250;
+// Pure: how many of n chips fit, and the width each visible one gets. available is the strip width
+// left for chips; the newest chips are the ones kept.
+export function chipLayout(n, available, gap = GAP, readW = READ_W) {
+  const fit = Math.max(1, Math.floor((available + gap) / (readW + gap)));
+  const visible = Math.min(n, fit);
+  const width = Math.min(readW, Math.floor((available - (visible - 1) * gap) / visible));
+  return { visible, hidden: n - visible, width: Math.max(width, MIN_W) };
+}
+
 function recomputeChips() {
   const strip = document.getElementById('gt-dispatch-strip');
   const chips = [...strip.querySelectorAll('.dispatch-chip:not(.dismissing)')];
+  const allBtn = document.getElementById('dc-dismiss-all');
+  const n = chips.length;
   // Toggled BEFORE the empty-strip early return below — otherwise the button
   // would survive the dismissal of the last chip it belongs to.
-  const allBtn = document.getElementById('dc-dismiss-all');
-  if (allBtn) allBtn.style.display = chips.length >= DISMISS_ALL_FROM ? '' : 'none';
-  if (!chips.length) return;
-  const n         = chips.length;
-  const available = strip.clientWidth - 12 - (n - 1) * GAP;
-  const totalW    = (n * (n + 1)) / 2;
-  const extra     = Math.max(0, available - n * MIN_W);
+  if (allBtn) allBtn.style.display = n >= DISMISS_ALL_FROM ? '' : 'none';
+  if (!n) return;
+  const btnW = allBtn && allBtn.style.display !== 'none' ? (allBtn.offsetWidth || 70) + GAP : 0;
+  const layout = chipLayout(n, strip.clientWidth - 12 - btnW);
+  if (layout.hidden > 0 && allBtn) {
+    allBtn.style.display = '';
+    allBtn.textContent = `✕ all (+${layout.hidden} older)`;
+  } else if (allBtn) {
+    allBtn.textContent = '✕ all';
+  }
   chips.forEach((chip, i) => {
-    const weight = i + 1;
-    const width  = Math.round(MIN_W + (weight / totalW) * extra);
+    const shown = i >= layout.hidden;
+    chip.style.display = shown ? '' : 'none';
+    if (!shown) return;
+    const width = layout.width;
     chip.style.maxWidth = width + 'px';
     const textEl = chip.querySelector('.dc-text');
     const timeEl = chip.querySelector('.dc-time');

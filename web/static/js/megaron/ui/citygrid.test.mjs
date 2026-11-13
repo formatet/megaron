@@ -19,7 +19,7 @@ globalThis.document ??= {
 globalThis.window ??= { addEventListener() {}, matchMedia: () => ({ matches: false, addEventListener() {} }) };
 globalThis.localStorage ??= { getItem: () => null, setItem() {}, removeItem() {} };
 
-const { placementOutcome, refusalText, selectionKey, takeLabel, goodRowHTML, cityBuildingsHTML,placementTargetKey, sortGoods, shipyardShareNote, hexWorkersLine, syncFreeToWork } = await import('./citygrid.js');
+const { placementOutcome, refusalText, selectionKey, takeLabel, goodRowHTML, cityBuildingsHTML,placementTargetKey, sortGoods, shipyardShareNote, hexWorkersLine, syncFreeToWork, placesNote, freeHint } = await import('./citygrid.js');
 
 // The refusal sentences below are copied verbatim from the server
 // (api/handlers/settlement_placement.go) — they are the actual bodies this
@@ -334,4 +334,26 @@ test('SMAFEL6: the take button names a held building by its player-facing label,
   const t = takeLabel({ held_by: 'Rival', takeable: true, held_workers: 1, held_building: { type: 'olive_press' } });
   assert.match(t, /its Olive Press becomes yours/);
   assert.doesNotMatch(t, /olive_press/);
+});
+
+test('placesNote says the land caps the good and what raises it, from the server numbers', () => {
+  assert.equal(placesNote({ good_key: 'timber', cap: 1, placed: 1, raised_by: 'lumbermill', extra_places: 4 }),
+    '1 place here, 1 worked · a Lumbermill adds 4');
+  assert.equal(placesNote({ good_key: 'oil', cap: 2, placed: 0 }), '');
+  const html = goodRowHTML({ target_kind: 'hex', hex_ordinal: 3 }, { good_key: 'timber', cap: 1, placed: 0, rate_per_tick: 1, marginal_yield: 1, raised_by: 'lumbermill', extra_places: 4 });
+  assert.match(html, /gubbe-places-note/);
+});
+
+test('freeHint explains moving a worker only when none are free', () => {
+  assert.match(freeHint({ total_gubbar: 10, pool_size: 0 }), /press −1 where they stand, then \+1 here/);
+  assert.equal(freeHint({ total_gubbar: 10, pool_size: 2 }), '');
+});
+
+test('R: at phone width the hex labels are at least 11px on screen and the goods-count line is dropped', async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync(new URL('../../../megaron.css', import.meta.url), 'utf8');
+  const m = css.match(/@media \(max-width: 480px\) \{\s*\.gubbe-hex-label \{ font-size: (\d+)px;[\s\S]*?\.gubbe-hex-sub \{ display: none; \}/);
+  assert.ok(m, 'phone rule present');
+  assert.ok(Number(m[1]) * 0.87 >= 11, 'label font x the grid scale (0.87) is at least 11px');
+  assert.match(goodRowHTML({ target_kind: 'hex', hex_ordinal: 1 }, { good_key: 'grain', cap: 1, placed: 0, rate_per_tick: 1, marginal_yield: 1 }), /gubbe-actions/);
 });

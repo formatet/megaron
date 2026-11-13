@@ -36,7 +36,7 @@ import {
   renderColonizePreviewHTML,
 } from './ui/marchctx.js';
 import {
-  loadCityDrawer, cycleCityView,
+  loadCityDrawer, cycleCityView, refreshCityStock,
   loadTicklog, cancelBuild, demolishBuilding,
 } from './ui/drawers/city.js';
 import { saveMarketBoard } from './ui/market_board.js';
@@ -274,6 +274,7 @@ Object.assign(window, {
   refreshTiles,
   startOmen,
   reloadActiveDrawer,
+  refreshCityStock,
   renderColonizePreviewHTML,
   updateNotifBadge,
   warFocusUnit,

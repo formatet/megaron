@@ -16,7 +16,7 @@ If a [[messengers|messenger]] must first deliver the order, or the destination i
 
 Keryx: `march --unit <id> --to q,r --preview`; omit `--preview` to send. `--unit` also accepts an exact unit name.
 
-**Destination city** lists your own cities, then cities you have seen, remembered or contacted; a city known only by rumour is not a destination.
+**Or pick a known city (optional)** lists your own cities, then cities you have seen, remembered or contacted; a city known only by rumour is not a destination.
 
 ### City destinations in Keryx {#marching-giving-a-march-order-3}
 

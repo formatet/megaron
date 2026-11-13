@@ -51,7 +51,7 @@ function makeChipEl() {
 function makeStrip() {
   const children = [];
   return {
-    clientWidth: 400,
+    clientWidth: 800,
     children,
     appendChild(chip) { children.push(chip); },
     querySelectorAll(sel) {

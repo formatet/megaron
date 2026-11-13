@@ -611,7 +611,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		}
 		if !leg.Found {
 			return nil, reject(http.StatusUnprocessableEntity,
-				"no route from this unit's current position to unseen ground within %d hexes of (%d,%d) — try another area with reachable unseen ground",
+				noReachableUnseenFmt,
 				ExpeditionAreaRadius, targetQ, targetR)
 		}
 		expeditionPlan = &ExpeditionPlan{AreaQ: targetQ, AreaR: targetR, LengthTicks: length}
@@ -683,7 +683,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	if targetKnown != nil && !colonizeInPlace && o.Intent != "explore" {
 		if !targetKnown(ctx, province.MapPosition{Q: targetQ, R: targetR}, destTerrain) {
 			return nil, reject(http.StatusUnprocessableEntity,
-				"none of your men have ever seen (%d,%d) — only an explorer goes into unknown land: march there with intent \"explore\" (keryx: --intent explore), and it returns home afterwards",
+				"none of your men have ever seen (%d,%d) — only an explorer goes into unknown land: march there with intent \"explore\", and it returns home afterwards",
 				targetQ, targetR)
 		}
 	}
@@ -801,7 +801,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 			return nil, reject(http.StatusInternalServerError, "pathfinding error")
 		}
 		if !pathOK {
-			hint := "a sea crossing needs a ship — load the land unit aboard first: keryx unit load --ship <id> --unit <id> (ship and unit in the same settlement, both garrisoned, settlement coastal or with a harbour); mountains must be routed around"
+			hint := "a sea crossing needs a ship — load the unit aboard a ship in the same city first (both garrisoned, the city coastal or with a harbour); mountains must be routed around"
 			if unit.CategoryOf(u.Type) == unit.CategoryNaval {
 				hint = "the sea is blocked by land — no open-water route reaches it from this settlement's shore (building a harbour will not change this)"
 			}
@@ -1512,3 +1512,7 @@ func CurrentUnitPosition(ctx context.Context, db interface {
 	}
 	return province.MapPosition{}, reject(422, "the Runner could not locate this unit on its route")
 }
+
+// noReachableUnseenFmt is the refusal when the chosen area holds unseen ground the unit cannot get to
+// (first-hour round two, item H): said as a player would, with the radius from the constant.
+const noReachableUnseenFmt = "Nothing to explore there: everything within %d hexes of (%d,%d) that these men can reach is already seen. Pick ground nearer the unknown."

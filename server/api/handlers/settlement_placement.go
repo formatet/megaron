@@ -24,7 +24,7 @@ import (
 
 // noCitizensLeftMsg is the 409 when every citizen already has a placement; the tip
 // names the two verbs that free one (hex placements and building workplaces).
-const noCitizensLeftMsg = "no citizens left in the pool — every citizen is already placed; free one with `keryx place <good> -1` or `keryx staff <building> -1`"
+const noCitizensLeftMsg = "no citizens left in the pool — every citizen is already placed; take one off another place first"
 
 // parsePositiveInt parses a URL path param as a positive integer (gubbe
 // ordinals are always ≥1, settlement_placement's own CHECK constraint).
@@ -223,6 +223,10 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 		Placed         int     `json:"placed"`
 		PlacedOrdinals []int   `json:"placed_ordinals,omitempty"`
 		MarginalYield  float64 `json:"marginal_yield"`
+		// RaisedBy is the not-yet-built hex building that would add ExtraPlaces
+		// worker places to this good on this hex (economy.BuildingExtraPlaces).
+		RaisedBy    string `json:"raised_by,omitempty"`
+		ExtraPlaces int    `json:"extra_places,omitempty"`
 	}
 	// buildGoods reports Form B's FILLABLE cap (megaron_plan_byggnadsniva_takt.md,
 	// 2026-08-24): PlaceCapPerGood, not the level-grown CapPerGood. Place() now
@@ -356,6 +360,12 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 			Goods: buildGoods(opt.RatePerGood, func(good string, rate float64) float64 {
 				return economy.HexYieldPerWorker(rate, opt.MultPerGood[good])
 			}, opt.PlaceCapPerGood, globalHexOccupancy[opt.Coord], placedOrdinals.Hex[opt.Coord]),
+		}
+		for i := range ho.Goods {
+			if b := opt.RaisedByPerGood[ho.Goods[i].GoodKey]; b != "" {
+				ho.Goods[i].RaisedBy = b
+				ho.Goods[i].ExtraPlaces = economy.BuildingExtraPlaces
+			}
 		}
 		if hold, held := holds[opt.Coord]; held {
 			t := hold.Takeable()

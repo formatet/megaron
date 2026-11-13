@@ -176,3 +176,11 @@ test('a delayed route lookup cannot replace a newer dispatch or reopen a closed 
   assert.equal(classes.has('open'),false,'late route lookup reopened dismissed dispatch');
  }finally{closeDispatchWindow();Object.assign(globalThis,saved);}
 });
+
+test('N: the begin-after sentence shows only while the world is forming', () => {
+  const payload = { paragraphs: ['You are a Wanax.', 'A game day passes every 30 minutes in this world. Game days begin after 4 Wanaxes join.'], steps: ['Look.'] };
+  assert.match(openingDispatchHTML(payload, { WORLD_STATE: 'forming' }), /Game days begin after 4 Wanaxes join\./);
+  const running = openingDispatchHTML(payload, { WORLD_STATE: 'active' });
+  assert.doesNotMatch(running, /begin after/);
+  assert.match(running, /A game day passes every 30 minutes in this world\./);
+});

@@ -459,3 +459,10 @@ test('march receipt: a following Runner gives a meeting estimate and waits for p
   assert.doesNotMatch(control('mctx-eta').innerHTML,/reaches the unit|until then/);
  }finally{menu.closeMarchCtx();globalThis.fetch=originalFetch;document.getElementById=originalGet;Object.assign(State,before);}
 });
+
+test('I: the march popup labels the optional city picker as optional', async () => {
+  const { readFileSync } = await import('node:fs');
+  const html = readFileSync(new URL('../../../map.html', import.meta.url), 'utf8');
+  assert.match(html, /<label for="mctx-city">Or pick a known city \(optional\)<\/label>/);
+  assert.doesNotMatch(html, /Destination city/);
+});

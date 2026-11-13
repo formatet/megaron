@@ -43,7 +43,7 @@ func setTokenCookie(w http.ResponseWriter, token string) {
 		Path:     "/",
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
-		Expires:  time.Now().Add(15 * time.Minute),
+		Expires:  time.Now().Add(auth.AccessTokenTTL),
 	})
 }
 
