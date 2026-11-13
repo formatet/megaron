@@ -227,7 +227,82 @@ def item2(pw):
         b.close()
 
 
-ITEMS = {1: item1, 2: item2}
+RECTS = """() => [...document.querySelectorAll('#gubbe-detail .gubbe-good-row')].flatMap(row => [...row.querySelectorAll('button')].map(b => {
+  const r = b.getBoundingClientRect(); return [row.dataset.good + ':' + (b.dataset.verb || b.textContent.trim()), Math.round(r.left * 10) / 10, Math.round(r.top * 10) / 10, Math.round(r.width * 10) / 10, Math.round(r.height * 10) / 10]; }))"""
+
+
+STATE = """() => { const l = document.querySelector('#gubbe-detail .gubbe-hex-workers'); const f = document.querySelector('#city-gubbe-grid > div'); return [l ? l.innerText : null, l ? Math.round(l.getBoundingClientRect().height * 10) / 10 : null, f ? f.innerText.replace(/\\n/g, ' | ') : null, (document.querySelector('#gubbe-detail .gubbe-refusal') || {}).innerText]; }"""
+
+
+HEAD = """() => { const g = document.querySelector('#city-gubbe-grid'); const smallest = t => { let best = null; for (const e of g.querySelectorAll('*')) { if (e.closest('svg')) continue; if (e.innerText && e.innerText.includes(t) && (!best || best.innerText.length > e.innerText.length)) best = e; } if (!best) return null; const r = best.getBoundingClientRect(); return {t: best.innerText.slice(0, 80), top: r.top, bottom: r.bottom}; };
+  return {count: smallest('Citizens:'), hint: smallest('To move one')}; }"""
+
+
+def press(p, w, sel):
+    """Press a button the way a finger does: at its coordinates, no auto-scroll."""
+    r = p.evaluate("s => { const b = document.querySelector(s); const r = b.getBoundingClientRect(); const x = r.left + r.width / 2, y = r.top + r.height / 2; const e = document.elementFromPoint(x, y); return [x, y, e === b || b.contains(e) ? '' : (e ? e.outerHTML.slice(0, 120) : 'nothing')]; }", sel)
+    if r[2]: print('   press target covered by:', r[2])
+    tap(p, r[0], r[1], w)
+
+
+def settle(p): p.wait_for_timeout(2200)
+
+
+def item3(pw):
+    for w, h in SIZES:
+        tag = f'{w}'
+        print(f'item 3 @ {w}x{h}')
+        psql("delete from settlement_placement where settlement_id=(select s.id from settlements s join players p on p.id=s.owner_id where p.username='Varv4')")
+        b, p, _ = newpage(pw, 'Varv4', w, h)
+        open_city(p, w, 'produktion')
+        # the (hex, good) with the most places (so that +1, +1, -1, -1 and FILL can all take effect), none of mine on it
+        ords = p.evaluate("[...document.querySelectorAll('.gubbe-hex-g[data-target=\"hex\"]')].map(e => e.dataset.ordinal)")
+        best = None; small = None
+        for o in ords:
+            p.locator(f'.gubbe-hex-g[data-ordinal="{o}"]').click(); p.wait_for_timeout(200)
+            rows = p.evaluate("[...document.querySelectorAll('#gubbe-detail .gubbe-good-row')].map(r => [r.dataset.good, r.dataset.cap === '' ? 99 : Number(r.dataset.cap), r.querySelector('[data-verb=place1]')?.disabled === false])")
+            for good, cap, enabled in rows:
+                if enabled and (best is None or cap > best[2]) and cap >= 3: best = (o, good, cap)
+                if enabled and cap == 1 and not small: small = (o, good, cap)
+        if not best:
+            chk(3, f'{tag}: a hex with a good of at least 3 places to measure', False); b.close(); continue
+        targets = [(best, [('first +1', 'place1'), ('second +1', 'place1'), ('-1', 'unplace1'), ('last -1 to zero', 'unplace1'), ('FILL', 'fill')])]
+        if small: targets.append((small, [('one-place hex: first +1', 'place1'), ('one-place hex: last -1 to zero', 'unplace1')]))
+        for (picked, GOOD, cap), steps in targets:
+            print(f'   measuring hex ordinal {picked}, good {GOOD} ({cap} places)')
+            p.locator(f'.gubbe-hex-g[data-ordinal="{picked}"]').click(); p.wait_for_timeout(300)
+            p.evaluate("document.querySelector('#gubbe-detail').scrollIntoView({block:'center'})"); p.wait_for_timeout(400)
+            for name, verb in steps:
+                sel = f'#gubbe-detail .gubbe-good-row[data-good="{GOOD}"] button[data-verb="{verb}"]'
+                p.evaluate("s => document.querySelector(s).scrollIntoView({block: 'center'})", sel); p.wait_for_timeout(400)
+                before = p.evaluate(RECTS)
+                st0 = p.evaluate(STATE)
+                press(p, w, sel); settle(p)
+                after = p.evaluate(RECTS)
+                st1 = p.evaluate(STATE)
+                print(f'   {name}: workers line {st0[0]!r} -> {st1[0]!r} (h {st0[1]} -> {st1[1]}); {st0[2]!r} -> {st1[2]!r}; refusal {st1[3]!r}')
+                chk(3, f'{tag}: {name} - the press took effect', st0 != st1, '')
+                bm, am = {k: v for k, *v in before}, {k: v for k, *v in after}
+                moved = {k: (bm[k], am.get(k)) for k in bm if am.get(k) is None or max(abs(a - c) for a, c in zip(bm[k], am[k])) > 1}
+                chk(3, f'{tag}: {name} - every button rect unchanged ({len(bm)} buttons)', not moved and set(bm) == set(am), str(moved)[:200])
+                if moved: shot(p, 3, f'moved-{name.replace(" ", "_").replace("+", "p").replace("-", "m")}-{tag}')
+        # everybody placed: count and hint on separate lines, hint at both widths
+        p.evaluate("""async () => { const [{ State }, { fetchAuth }] = await Promise.all([import('/static/js/megaron/state.js'), import('/static/js/megaron/api.js')]);
+          const prov = State.provinceData.find(x => x.own); const base = `/api/v1/worlds/${State.WORLD_ID}/provinces/${prov.id}`;
+          const opts = await (await fetchAuth(base + '/placement-options')).json();
+          for (const h of opts.hexes) for (let i = 0; i < 40; i++) { const r = await fetchAuth(base + '/placements', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ target_kind: 'hex', hex_ordinal: h.hex_ordinal, good_key: (h.goods[0] || {}).good_key }) }); if (!r.ok) break; } }""")
+        p.reload(); p.wait_for_timeout(4000)
+        open_city(p, w, 'produktion'); p.wait_for_timeout(1500)
+        info = p.evaluate(HEAD)
+        print('   header:', info)
+        ok_sep = bool(info and info['count'] and info['hint']) and (info['count']['bottom'] <= info['hint']['top'] + 1)
+        chk(3, f'{tag}: "Citizens: N of N placed" and the move hint stand on separate lines', ok_sep, str(info))
+        chk(3, f'{tag}: the move hint is shown when everybody is placed', bool(info and info['hint']), str(info))
+        shot(p, 3, f'header-{tag}')
+        b.close()
+
+
+ITEMS = {1: item1, 2: item2, 3: item3}
 
 
 def main():

@@ -1,0 +1,56 @@
+item 3 @ 1280x800
+   measuring hex ordinal 12, good grain (4 places)
+   first +1: workers line '\xa0' -> 'Your citizens here: grain 1' (h 20.8 -> 20.8); 'Citizens: 0 of 10 placed | 10 free | \xa0' -> 'Citizens: 1 of 10 placed | 9 free | \xa0'; refusal None
+  [PASS] item 3 · 1280: first +1 - the press took effect
+  [PASS] item 3 · 1280: first +1 - every button rect unchanged (9 buttons) — {}
+   second +1: workers line 'Your citizens here: grain 1' -> 'Your citizens here: grain 2' (h 20.8 -> 20.8); 'Citizens: 1 of 10 placed | 9 free | \xa0' -> 'Citizens: 2 of 10 placed | 8 free | \xa0'; refusal None
+  [PASS] item 3 · 1280: second +1 - the press took effect
+  [PASS] item 3 · 1280: second +1 - every button rect unchanged (9 buttons) — {}
+   -1: workers line 'Your citizens here: grain 2' -> 'Your citizens here: grain 1' (h 20.8 -> 20.8); 'Citizens: 2 of 10 placed | 8 free | \xa0' -> 'Citizens: 1 of 10 placed | 9 free | \xa0'; refusal None
+  [PASS] item 3 · 1280: -1 - the press took effect
+  [PASS] item 3 · 1280: -1 - every button rect unchanged (9 buttons) — {}
+   last -1 to zero: workers line 'Your citizens here: grain 1' -> '\xa0' (h 20.8 -> 20.8); 'Citizens: 1 of 10 placed | 9 free | \xa0' -> 'Citizens: 0 of 10 placed | 10 free | \xa0'; refusal None
+  [PASS] item 3 · 1280: last -1 to zero - the press took effect
+  [PASS] item 3 · 1280: last -1 to zero - every button rect unchanged (9 buttons) — {}
+   FILL: workers line '\xa0' -> 'Your citizens here: grain 4' (h 20.8 -> 20.8); 'Citizens: 0 of 10 placed | 10 free | \xa0' -> 'Citizens: 4 of 10 placed | 6 free | \xa0'; refusal None
+  [PASS] item 3 · 1280: FILL - the press took effect
+  [PASS] item 3 · 1280: FILL - every button rect unchanged (9 buttons) — {}
+   measuring hex ordinal 8, good copper (1 places)
+   one-place hex: first +1: workers line '\xa0' -> 'Your citizens here: copper 1' (h 20.8 -> 20.8); 'Citizens: 4 of 10 placed | 6 free | \xa0' -> 'Citizens: 5 of 10 placed | 5 free | \xa0'; refusal None
+  [PASS] item 3 · 1280: one-place hex: first +1 - the press took effect
+  [PASS] item 3 · 1280: one-place hex: first +1 - every button rect unchanged (18 buttons) — {}
+   one-place hex: last -1 to zero: workers line 'Your citizens here: copper 1' -> '\xa0' (h 20.8 -> 20.8); 'Citizens: 5 of 10 placed | 5 free | \xa0' -> 'Citizens: 4 of 10 placed | 6 free | \xa0'; refusal None
+  [PASS] item 3 · 1280: one-place hex: last -1 to zero - the press took effect
+  [PASS] item 3 · 1280: one-place hex: last -1 to zero - every button rect unchanged (18 buttons) — {}
+   header: {'count': {'t': 'Citizens: 10 of 10 placed', 'top': 612.8499755859375, 'bottom': 640.0499725341797}, 'hint': {'t': 'To move one, press −1 where they stand, then +1 here.', 'top': 640.0499877929688, 'bottom': 660.8499908447266}}
+  [PASS] item 3 · 1280: "Citizens: N of N placed" and the move hint stand on separate lines — {'count': {'t': 'Citizens: 10 of 10 placed', 'top': 612.8499755859375, 'bottom': 640.0499725341797}, 'hint': {'t': 'To move one, press −1 where they stand, then +1 here.', 'top': 640.0499877929688, 'bottom': 660.8499908447266}}
+  [PASS] item 3 · 1280: the move hint is shown when everybody is placed — {'count': {'t': 'Citizens: 10 of 10 placed', 'top': 612.8499755859375, 'bottom': 640.0499725341797}, 'hint': {'t': 'To move one, press −1 where they stand, then +1 here.', 'top': 640.0499877929688, 'bottom': 660.8499908447266}}
+item 3 @ 390x844
+   measuring hex ordinal 12, good grain (4 places)
+   first +1: workers line '\xa0' -> 'Your citizens here: grain 1' (h 20.8 -> 20.8); 'Citizens: 0 of 10 placed | 10 free | \xa0' -> 'Citizens: 1 of 10 placed | 9 free | \xa0'; refusal None
+  [PASS] item 3 · 390: first +1 - the press took effect
+  [PASS] item 3 · 390: first +1 - every button rect unchanged (9 buttons) — {}
+   second +1: workers line 'Your citizens here: grain 1' -> 'Your citizens here: grain 2' (h 20.8 -> 20.8); 'Citizens: 1 of 10 placed | 9 free | \xa0' -> 'Citizens: 2 of 10 placed | 8 free | \xa0'; refusal None
+  [PASS] item 3 · 390: second +1 - the press took effect
+  [PASS] item 3 · 390: second +1 - every button rect unchanged (9 buttons) — {}
+   -1: workers line 'Your citizens here: grain 2' -> 'Your citizens here: grain 1' (h 20.8 -> 20.8); 'Citizens: 2 of 10 placed | 8 free | \xa0' -> 'Citizens: 1 of 10 placed | 9 free | \xa0'; refusal None
+  [PASS] item 3 · 390: -1 - the press took effect
+  [PASS] item 3 · 390: -1 - every button rect unchanged (9 buttons) — {}
+   last -1 to zero: workers line 'Your citizens here: grain 1' -> '\xa0' (h 20.8 -> 20.8); 'Citizens: 1 of 10 placed | 9 free | \xa0' -> 'Citizens: 0 of 10 placed | 10 free | \xa0'; refusal None
+  [PASS] item 3 · 390: last -1 to zero - the press took effect
+  [PASS] item 3 · 390: last -1 to zero - every button rect unchanged (9 buttons) — {}
+   FILL: workers line '\xa0' -> 'Your citizens here: grain 4' (h 20.8 -> 20.8); 'Citizens: 0 of 10 placed | 10 free | \xa0' -> 'Citizens: 4 of 10 placed | 6 free | \xa0'; refusal None
+  [PASS] item 3 · 390: FILL - the press took effect
+  [PASS] item 3 · 390: FILL - every button rect unchanged (9 buttons) — {}
+   measuring hex ordinal 8, good copper (1 places)
+   one-place hex: first +1: workers line '\xa0' -> 'Your citizens here: copper 1' (h 20.8 -> 20.8); 'Citizens: 4 of 10 placed | 6 free | \xa0' -> 'Citizens: 5 of 10 placed | 5 free | \xa0'; refusal None
+  [PASS] item 3 · 390: one-place hex: first +1 - the press took effect
+  [PASS] item 3 · 390: one-place hex: first +1 - every button rect unchanged (18 buttons) — {}
+   one-place hex: last -1 to zero: workers line 'Your citizens here: copper 1' -> '\xa0' (h 20.8 -> 20.8); 'Citizens: 5 of 10 placed | 5 free | \xa0' -> 'Citizens: 4 of 10 placed | 6 free | \xa0'; refusal None
+  [PASS] item 3 · 390: one-place hex: last -1 to zero - the press took effect
+  [PASS] item 3 · 390: one-place hex: last -1 to zero - every button rect unchanged (18 buttons) — {}
+   header: {'count': {'t': 'Citizens: 10 of 10 placed', 'top': 597.75, 'bottom': 624.9499969482422}, 'hint': {'t': 'To move one, press −1 where they stand, then +1 here.', 'top': 624.9500122070312, 'bottom': 658.7500152587891}}
+  [PASS] item 3 · 390: "Citizens: N of N placed" and the move hint stand on separate lines — {'count': {'t': 'Citizens: 10 of 10 placed', 'top': 597.75, 'bottom': 624.9499969482422}, 'hint': {'t': 'To move one, press −1 where they stand, then +1 here.', 'top': 624.9500122070312, 'bottom': 658.7500152587891}}
+  [PASS] item 3 · 390: the move hint is shown when everybody is placed — {'count': {'t': 'Citizens: 10 of 10 placed', 'top': 597.75, 'bottom': 624.9499969482422}, 'hint': {'t': 'To move one, press −1 where they stand, then +1 here.', 'top': 624.9500122070312, 'bottom': 658.7500152587891}}
+
+32 passed, 0 failed
