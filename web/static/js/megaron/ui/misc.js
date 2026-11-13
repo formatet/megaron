@@ -545,8 +545,11 @@ export function lockedActionsHTML(category, verbs) {
     const hints = (v.requirements || []).filter(req => !req.satisfied).map(req => req.hint || '').filter(Boolean);
     hintsByName.set(v.name, [...new Set([...(hintsByName.get(v.name) || []), ...hints])]);
   }
-  return '<div class="dsec"><p class="empty-state">Unavailable: ' + [...hintsByName].map(([name, hints]) => {
-    const label = name.replace(/[-_]/g, ' ');
-    return '<span tabindex="0" title="' + esc(hints.join(' · ')) + '">' + esc(label) + '</span>';
-  }).join(', ') + ' ' + (drawer ? drawerHelpHTML(drawer) : '') + '</p></div>';
+  // One quiet line; the list and each order's reason open under it (round three, item 7).
+  const plain = t => t.replace(/\s*\(`[^`]*`\)/g, '').replace(/`/g, '');
+  const cap1 = t => t.charAt(0).toUpperCase() + t.slice(1);
+  const items = [...hintsByName].map(([name, hints]) =>
+    '<li><b>' + esc(cap1(name.replace(/[-_]/g, ' '))) + '</b>: ' + esc(hints.length ? cap1(plain(hints.join(' · '))) : 'Not open yet.') + '</li>').join('');
+  const n = hintsByName.size;
+  return '<div class="dsec locked-orders"><details class="offer-other"><summary>Not open to you yet: ' + n + ' order' + (n === 1 ? '' : 's') + '</summary><ul class="locked-list">' + items + '</ul></details>' + (drawer ? drawerHelpHTML(drawer) : '') + '</div>';
 }

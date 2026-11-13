@@ -424,7 +424,32 @@ def item6(pw):
         shot(p, 6, 'dummy') if False else None
 
 
-ITEMS = {1: item1, 2: item2, 3: item3, 4: item4, 5: item5, 6: item6}
+def item7(pw):
+    for w, h in SIZES:
+        tag = f'{w}'
+        print(f'item 7 @ {w}x{h}')
+        b, p, _ = newpage(pw, 'Varv4', w, h)
+        for drawer, label in (('economy', 'Economy'), ('war', 'War'), ('kult', 'Kult')):
+            nav(p, label, w); p.wait_for_timeout(1500)
+            if drawer == 'war': p.locator('#drawer-war').get_by_role('button', name='Recruit', exact=True).click(); p.wait_for_timeout(600)
+            raw = p.evaluate(f"(() => {{ const d = document.querySelector('#drawer-{drawer}'); const m = d.innerText.match(/Unavailable:[^\\n]*/); return m ? m[0] : null; }})()")
+            sm = p.evaluate(f"(() => {{ const s = document.querySelector('#drawer-{drawer} .locked-orders summary'); return s ? s.innerText.trim() : null; }})()")
+            print(f'   {drawer}: old line {raw!r}; new summary {sm!r}')
+            chk(7, f'{tag}: {drawer}: no "Unavailable: ..." debris line', raw is None, repr(raw))
+            chk(7, f'{tag}: {drawer}: one quiet line "Not open to you yet: N order(s)"', bool(sm) and re.fullmatch(r'Not open to you yet: \d+ orders?', sm) is not None, repr(sm))
+            if sm:
+                p.locator(f'#drawer-{drawer} .locked-orders summary').scroll_into_view_if_needed(); p.locator(f'#drawer-{drawer} .locked-orders summary').click(); p.wait_for_timeout(500)
+                items = p.evaluate(f"[...document.querySelectorAll('#drawer-{drawer} .locked-orders li')].map(l => l.innerText.replace(/\\n/g, ' '))")
+                vis = in_view(p, f'#drawer-{drawer} .locked-orders li')
+                chk(7, f'{tag}: {drawer}: expanding lists every order with a plain reason ({len(items)})', len(items) > 0 and all(': ' in i and not re.search(r'[`_]', i) for i in items), str(items)[:300])
+                shot(p, 7, f'{drawer}-open-{tag}')
+            else:
+                shot(p, 7, f'{drawer}-old-{tag}')
+            p.keyboard.press('Escape'); p.wait_for_timeout(300)
+        b.close()
+
+
+ITEMS = {1: item1, 2: item2, 3: item3, 4: item4, 5: item5, 6: item6, 7: item7}
 
 
 def main():
