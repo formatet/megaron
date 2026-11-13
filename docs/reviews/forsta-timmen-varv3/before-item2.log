@@ -1,0 +1,21 @@
+item 2 @ 1280x800
+  [FAIL] item 2 · a 1280: after "Choose a hex →" the picker (hex grid) is inside the visible panel — {'exists': True, 'visible': False, 'rect': [876, 658, 1266, 913], 'clip': [862, 78, 1280, 766], 'text': ''}
+  [PASS] item 2 · a 1280: the chosen hex shows its Build button inside the visible panel — {'exists': True, 'visible': True, 'rect': [1173, 669, 1257, 701], 'clip': [862, 78, 1280, 766], 'text': 'BUILD'}
+  [PASS] item 2 · b 1280: a refusal is visible where the player is — {'exists': True, 'visible': True, 'rect': [885, 685, 1257, 765], 'clip': [862, 78, 1280, 766], 'text': 'Building Farm at (42,23) at level 1 needs stone (need 4, have 0, 4 short), timber (need 6, have 0, 6 short) [cedar count'}
+  [FAIL] item 2 · b 1280: the confirmation "Farm queued @ (42,23)" is visible after the re-render — {'exists': True, 'visible': False, 'rect': [885, 1063, 1257, 1112], 'clip': [862, 78, 1280, 766], 'text': 'Farm queued @ (42,23) · 4 game days · about 8 minutes · ready ≈ today 06:31.'}
+  [FAIL] item 2 · b 1280: it stays until the player acts again — {'exists': True, 'visible': False, 'rect': [885, 1063, 1257, 1112], 'clip': [862, 78, 1280, 766], 'text': 'Farm queued @ (42,23) · 4 game days · about 8 minutes · ready ≈ today 06:31.'}
+item 2 @ 390x844
+  [FAIL] item 2 · a 390: after "Choose a hex →" the picker (hex grid) is inside the visible panel — {'exists': True, 'visible': False, 'rect': [14, 681, 376, 936], 'clip': [0, 63, 390, 844], 'text': ''}
+  [FAIL] item 2 · a 390: the chosen hex shows its Build button inside the visible panel — {'exists': True, 'visible': False, 'rect': [283, 1026, 367, 1070], 'clip': [0, 63, 390, 844], 'text': 'BUILD'}
+  [PASS] item 2 · b 390: a refusal is visible where the player is — {'exists': True, 'visible': True, 'rect': [23, 665, 367, 745], 'clip': [0, 63, 390, 844], 'text': 'Building Farm at (42,23) at level 1 needs stone (need 4, have 0, 4 short), timber (need 6, have 0, 6 short) [cedar count'}
+  [FAIL] item 2 · b 390: the confirmation "Farm queued @ (42,23)" is visible after the re-render — {'exists': True, 'visible': False, 'rect': [23, 1133, 367, 1181], 'clip': [0, 63, 390, 844], 'text': 'Farm queued @ (42,23) · 4 game days · about 8 minutes · ready ≈ today 06:31.'}
+  [FAIL] item 2 · b 390: it stays until the player acts again — {'exists': True, 'visible': False, 'rect': [23, 1133, 367, 1181], 'clip': [0, 63, 390, 844], 'text': 'Farm queued @ (42,23) · 4 game days · about 8 minutes · ready ≈ today 06:31.'}
+
+3 passed, 7 failed
+  FAILED item 2 a 1280: after "Choose a hex →" the picker (hex grid) is inside the visible panel
+  FAILED item 2 b 1280: the confirmation "Farm queued @ (42,23)" is visible after the re-render
+  FAILED item 2 b 1280: it stays until the player acts again
+  FAILED item 2 a 390: after "Choose a hex →" the picker (hex grid) is inside the visible panel
+  FAILED item 2 a 390: the chosen hex shows its Build button inside the visible panel
+  FAILED item 2 b 390: the confirmation "Farm queued @ (42,23)" is visible after the re-render
+  FAILED item 2 b 390: it stays until the player acts again

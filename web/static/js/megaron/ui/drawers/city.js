@@ -212,7 +212,7 @@ export async function startBuild(spec) {
   const { type: btype, god } = spec;
   const resultEl = document.getElementById('city-build-result');
   if (resultEl) resultEl.textContent = '';
-  const hexLabel = spec.hex_q != null ? ` @ (${spec.hex_q},${spec.hex_r})` : '';
+  const hexLabel = spec.hex_q != null ? ` at (${spec.hex_q},${spec.hex_r})` : '';
   const r = await fetchAuth(
     `/api/v1/worlds/${State.WORLD_ID}/provinces/${capital.id}/build`,
     { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(buildBody(spec)) }
@@ -243,8 +243,9 @@ export function pickBuildHex(type) {
   const gridEl = document.getElementById('city-gubbe-grid');
   if (!capital || !gridEl) return;
   document.querySelector('#city-body [data-tab="produktion"]')?.click();
-  renderGubbeGrid(gridEl, capital.id, capital.q, capital.r, { pick: { type } });
-  gridEl.scrollIntoView?.({ block: 'start' });
+  // Scroll once the picker stands: before that the grid is a one-line "Loading…" and the hexes land below the fold.
+  renderGubbeGrid(gridEl, capital.id, capital.q, capital.r, { pick: { type } })
+    .then(() => (gridEl.querySelector('.build-pick-bar') || gridEl).scrollIntoView?.({ block: 'start' }));
 }
 
 

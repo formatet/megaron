@@ -304,6 +304,8 @@ const liveSelection = new WeakMap();
 // The pick mode the live grid is in (null outside it): a drawer rebuilt by a live update asks this to
 // put the player's pending "choose a hex" back where it was.
 let livePick = null;
+// The last build answer given in the grid's detail panel: it stays through the redraws until the player acts again.
+let gridNote = null;
 export function currentPick() { return livePick; }
 
 export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR, renderOpts = {}) {
@@ -410,16 +412,21 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
   // nothing changed on the server, so rebuilding the widget would only throw
   // away the selected hex and leave the player with no way back to the button
   // they pressed. On success we re-render as before.
-  const showRefusal = (msg, ok = false) => {
+  const showRefusal = (msg, ok = false, { top = false } = {}) => {
     const detail = containerEl.querySelector('#gubbe-detail');
     if (!detail) return;
     let el = detail.querySelector('.gubbe-refusal');
     if (!el) {
       el = document.createElement('div');
-      detail.appendChild(el);
+      // A build answer sits right under the hex's title (its rows were just redrawn); a placement refusal stays
+      // at the end so the +1/−1 buttons never move under the pointer (round three, items 2 and 3).
+      const title = top && detail.querySelector('.dsec-title');
+      if (title) title.after(el); else detail.appendChild(el);
     }
     el.className = ok ? 'gubbe-refusal gubbe-built' : 'gubbe-refusal';
     el.textContent = msg;
+    el.scrollIntoView?.({ block: 'nearest' });
+    if (top) gridNote = { key: openKey, msg, ok };
   };
 
   // [Build] on a hex row: same function as the Construct list. Success leaves
@@ -428,13 +435,14 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
     if (!buildHandler) return;
     const stale = containerEl.querySelector('.gubbe-refusal');
     if (stale) stale.remove();
+    gridNote = null;
     btn.disabled = true;
     const spec = { type: btn.dataset.buildType, hex_q: Number(btn.dataset.buildQ), hex_r: Number(btn.dataset.buildR) };
     const out = await buildHandler(spec);
     if (out.ok) await rerender({ pick: null });
     else btn.disabled = false;
     // Under the clicked row; if that row is gone (built, redrawn) the old place at the end.
-    if (!showBuildResult(containerEl, spec, out.text, out.ok, out.detail)) showRefusal(out.text, out.ok);
+    if (!showBuildResult(containerEl, spec, out.text, out.ok, out.detail)) showRefusal(out.text, out.ok, { top: true });
   };
 
   const doAction = async (verb, targetBody, good, cap) => {
@@ -491,6 +499,13 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
         ${buildHere ? `<div class="dsec-title">Build here</div>${buildHere}` : ''}`;
     }
 
+    if (gridNote && gridNote.key === openKey && !detail.querySelector('.gubbe-refusal')) {
+      const el = document.createElement('div');
+      el.className = gridNote.ok ? 'gubbe-refusal gubbe-built' : 'gubbe-refusal';
+      el.textContent = gridNote.msg;
+      const title = detail.querySelector('.dsec-title');
+      if (title) title.after(el); else detail.prepend(el);
+    }
     detail.querySelectorAll('[data-build-act="build-hex"]').forEach(btn => btn.addEventListener('click', () => buildOnHex(btn)));
     detail.querySelector('[data-goto-buildings]')?.addEventListener('click', () => document.querySelector('#city-body [data-tab="byggnader"]')?.click());
 
@@ -510,7 +525,12 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
 
   containerEl.querySelector('[data-pick-cancel]')?.addEventListener('click', () => rerender());
   const groups = Array.from(containerEl.querySelectorAll('.gubbe-hex-g'));
-  groups.forEach(g => g.addEventListener('click', () => selectTarget(g)));
+  groups.forEach(g => g.addEventListener('click', () => {
+    gridNote = null; // the player acts again: the last answer has been read
+    selectTarget(g);
+    // Picking a hex for a building: its Build button must be in view, not below the fold.
+    if (pick) containerEl.querySelector('#gubbe-detail .build-row')?.scrollIntoView?.({ block: 'nearest' });
+  }));
 
   // Put the player back on the hex they were working on. A hex that vanished
   // between renders (fog, ownership) simply leaves the panel closed rather

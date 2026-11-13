@@ -180,7 +180,54 @@ def item1(pw):
         b.close()
 
 
-ITEMS = {1: item1}
+def give_stock(name, **goods):
+    """Acceptance world only: put goods into the city store through psql (the start store has no timber or stone)."""
+    for g, n in goods.items():
+        psql(f"update settlement_goods set amount={n} where good_key='{g}' and settlement_id=(select s.id from settlements s join players p on p.id=s.owner_id where p.username='{name}' limit 1)")
+
+
+def open_city(p, w, tab=None):
+    nav(p, 'City', w)
+    if tab: p.evaluate("t => document.querySelector(`#city-body [data-tab=\"${t}\"]`).click()", tab); p.wait_for_timeout(700)
+
+
+def item2(pw):
+    for w, h in SIZES:
+        tag = f'{w}'
+        print(f'item 2 @ {w}x{h}')
+        psql("delete from build_queue where settlement_id=(select s.id from settlements s join players p on p.id=s.owner_id where p.username='Varv3')")
+        psql("delete from buildings where settlement_id=(select s.id from settlements s join players p on p.id=s.owner_id where p.username='Varv3') and type='farm'")
+        give_stock('Varv3', stone=100, timber=100)
+        b, p, _ = newpage(pw, 'Varv3', w, h)
+        open_city(p, w, 'byggnader')
+        p.locator('#city-bld-sec .build-row[data-build-type="farm"] [data-build-act="pick"]').click(); p.wait_for_timeout(1800)
+        v = in_view(p, '.gubbe-svg')
+        chk(2, f'a {tag}: after "Choose a hex →" the picker (hex grid) is inside the visible panel', v.get('visible'), str(v))
+        shot(p, 2, f'a-picker-{tag}')
+        poly = p.locator('.gubbe-hex.pick-ok').first
+        label = p.evaluate("document.querySelector('.gubbe-hex.pick-ok').parentElement.querySelector('.gubbe-hex-label').textContent")
+        poly.click(); p.wait_for_timeout(900)
+        row = in_view(p, '#gubbe-detail .build-row-btn')
+        chk(2, f'a {tag}: the chosen hex shows its Build button inside the visible panel', row.get('visible'), str(row))
+        # a refusal first: the store is emptied behind the open picker, then BUILD
+        give_stock('Varv3', stone=0, timber=0)
+        p.locator('#gubbe-detail .build-row-btn').click(); p.wait_for_timeout(2500)
+        res = in_view(p, '.build-row-result, .gubbe-refusal')
+        chk(2, f'b {tag}: a refusal is visible where the player is', res.get('visible'), str(res))
+        shot(p, 2, f'b-refusal-{tag}')
+        give_stock('Varv3', stone=100, timber=100)
+        p.locator('#gubbe-detail .build-row-btn').click(); p.wait_for_timeout(3000)
+        res = in_view(p, '.build-row-result, .gubbe-refusal')
+        q, r = label.split(',')
+        chk(2, f'b {tag}: the confirmation "Farm queued at ({label})" is visible after the re-render', res.get('visible') and 'Farm queued' in res.get('text', '') and f'({q},{r})' in res.get('text', ''), str(res))
+        shot(p, 2, f'b-confirmation-{tag}')
+        p.wait_for_timeout(4000)
+        res2 = in_view(p, '.build-row-result, .gubbe-refusal')
+        chk(2, f'b {tag}: it stays until the player acts again', res2.get('visible') and 'Farm queued' in res2.get('text', ''), str(res2))
+        b.close()
+
+
+ITEMS = {1: item1, 2: item2}
 
 
 def main():
