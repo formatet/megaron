@@ -1,0 +1,16 @@
+item 9 @ 1280x800
+   forecast: 1st Spearmen of CityVarv3: Arrival not yet known — unexplored terrain. | Planned expedition: 10 game days · about 20 minutes; first to (39,23), then explores around it — with immediate departure, home by today 07:21. First-leg arrival remains unknown. | Pay: 0 → 0 silver per game day in the field · 
+  [FAIL] item 9 · 1280: the forecast before sending calls the home time an upper bound — '1st Spearmen of CityVarv3: Arrival not yet known — unexplored terrain.\nPlanned expedition: 10 game days · about 20 minutes; first to (39,23), then explores around it — with immediate departure, home by today 07:21. First-leg arrival remains unknown.\nPay: 0 → 0 silver per game day in the field · no s'
+   receipt: ✓ Forces marching — arrives ≈ today 07:11 | Expedition first to (39,23), then explores around it, 10 game days; turns home by today 07:11; home by today 07:21.
+  [FAIL] item 9 · 1280: the mission line in the receipt says "home by ... at the latest (sooner ...)" — '✓ Forces marching — arrives ≈ today 07:11\nExpedition first to (39,23), then explores around it, 10 game days; turns home by today 07:11; home by today 07:21.'
+item 9 @ 390x844
+   forecast: 2nd Spearmen of CityVarv3: Arrival not yet known — unexplored terrain. | Planned expedition: 10 game days · about 20 minutes; first to (39,23), then explores around it — with immediate departure, home by today 07:21. First-leg arrival remains unknown. | Pay: 0 → 0 silver per game day in the field · 
+  [FAIL] item 9 · 390: the forecast before sending calls the home time an upper bound — '2nd Spearmen of CityVarv3: Arrival not yet known — unexplored terrain.\nPlanned expedition: 10 game days · about 20 minutes; first to (39,23), then explores around it — with immediate departure, home by today 07:21. First-leg arrival remains unknown.\nPay: 0 → 0 silver per game day in the field · no s'
+   receipt: ✓ Forces marching — arrives ≈ today 07:11 · Expedition first to (39,23), then explores around it, 10 game days; turns home by today 07:11; home by today 07:21. | ✕
+  [FAIL] item 9 · 390: the mission line in the receipt says "home by ... at the latest (sooner ...)" — '✓ Forces marching — arrives ≈ today 07:11 · Expedition first to (39,23), then explores around it, 10 game days; turns home by today 07:11; home by today 07:21.\n✕'
+
+0 passed, 4 failed
+  FAILED item 9 1280: the forecast before sending calls the home time an upper bound
+  FAILED item 9 1280: the mission line in the receipt says "home by ... at the latest (sooner ...)"
+  FAILED item 9 390: the forecast before sending calls the home time an upper bound
+  FAILED item 9 390: the mission line in the receipt says "home by ... at the latest (sooner ...)"

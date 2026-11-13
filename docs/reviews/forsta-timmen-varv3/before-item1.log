@@ -1,0 +1,15 @@
+$ PHASE=before python3 tools/varv3_bevis.py 1      (master 21f2316a, acceptance world, Firefox)
+item 1 @ 1280x800
+  [FAIL] b 1280: soldiers aimed at a lake get the one plain sentence — dialog text: 'Lake (11,58) / Explore reachable sea nearby, then sail home. / ... / No galleys available. Build ships in a coastal city first.'
+  [FAIL] b 1280: no sea-exploration text for soldiers
+  [FAIL] b 1280: pressing March never asks to choose forces from an empty list — 'Choose the forces to send by name.'
+  [FAIL] b 1280: answer inside the visible part of the dialog — rect [688,790,874,810], clip [676,489,886,792]  (20 px below the edge)
+  [FAIL] a 1280: the refusal is inside the visible part of the dialog — rect [688,758,874,876], clip [676,345,886,792]  ("Nothing sent — No route ... (38,43)" 84 px below the edge)
+  [PASS] a 1280: the refusal exists; it sits next to the March button
+  [PASS] c 1280: desktop keeps the confirmation in the dialog, visible
+item 1 @ 390x844
+  [FAIL] b 390: one plain sentence / no sea text / empty-list "Choose the forces to send by name."
+  [PASS] a 390: refusal visible (the full-screen sheet is tall enough)
+  [FAIL] c 390: the sheet is closed and the map is back   (the sheet stays open, "✓ Forces marching" on an almost empty page)
+  [FAIL] c 390: confirmation visible on the map   (#map-notice does not exist)
+7 passed, 10 failed

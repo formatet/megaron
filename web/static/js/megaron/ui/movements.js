@@ -12,6 +12,17 @@ import { unitTypeLabel, actorName } from './actornames.js';
 
 function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
 
+// What a march is for, in words. The server's intent names are plumbing; an unknown one still never shows an
+// underscore (round three, item 6).
+const INTENT_WORDS = {
+  explore: 'exploring', explore_return: 'on the way home from exploring', colonize: 'to found a settlement',
+  land: 'landing troops', passage: 'carrying a messenger', passage_wait: 'waiting to carry a messenger home',
+  pickup: 'fetching a force', food_return: 'bringing food home', damaged_return: 'sailing home damaged',
+  captured_return: 'sailing home', patrol: 'on patrol', sentry: 'on sentry', attack: 'attack', recall: 'recall',
+  reinforce: 'reinforcing', support: 'reinforcing', dock: 'docking',
+};
+export function marchIntentWords(intent) { return INTENT_WORDS[intent] || String(intent || '').replace(/_/g, ' '); }
+
 // warMovements returns { outgoing, incoming }, each a list of
 // { title, target_q, target_r, origin_q, origin_r, arrives_at }.
 // title is the unit/column line without the place name — the caller names
@@ -24,7 +35,7 @@ export function warMovements({ units = [], foreign = [], marches = [], provinces
   const outgoing = units
     .filter(u => u.status === 'marching' && !u.bound_route_id && u.target_q != null && u.target_r != null)
     .map(u => ({
-      title: actorName(u) + (u.march_intent ? ' · ' + u.march_intent : ''),
+      title: actorName(u) + (u.march_intent ? ' · ' + marchIntentWords(u.march_intent) : ''),
       target_q: u.target_q, target_r: u.target_r,
       origin_q: u.q, origin_r: u.r,
       arrives_at: u.arrives_at,
@@ -52,7 +63,7 @@ export function warMovements({ units = [], foreign = [], marches = [], provinces
   for (const m of marches) {
     if (freight.has(m.intent)) continue;
     const row = {
-      title: cap(m.intent),
+      title: cap(marchIntentWords(m.intent)),
       target_q: m.target_q, target_r: m.target_r,
       origin_q: m.origin_q, origin_r: m.origin_r,
       arrives_at: m.arrives_at,

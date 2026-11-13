@@ -1,0 +1,14 @@
+item 8 @ 1280x800
+   food row: 1 grain + 5 fish a game day, your people eat 5
+  [PASS] item 8 · 1280: the forecast says "your people eat N", not "N eaten" — '1 grain + 5 fish a game day, your people eat 5'
+   confirm: Found the metropolis here? The host dissolves — forever. Your people become the city's citizens; your spearmen stay yours, and those standing here become its garrison. |  | FOUND THE METROPOLISKEEP TRAVELLING
+  [PASS] item 8 · 1280: the confirmation says what survives (citizens and spearmen) — "Found the metropolis here? The host dissolves — forever. Your people become the city's citizens; your spearmen stay yours, and those standing here become its garrison.\n\nFOUND THE METROPOLISKEEP TRAVELLING"
+  [PASS] item 8 · 1280: the confirmation is visible where the player pressed — {'exists': True, 'visible': True, 'rect': [1074, 539, 1268, 754], 'clip': [1062, 333, 1280, 766], 'text': "Found the metropolis here? The host dissolves — forever. Your people become the city's citizens; your spearmen stay your"}
+item 8 @ 390x844
+   food row: 1 grain + 5 fish a game day, your people eat 5
+  [PASS] item 8 · 390: the forecast says "your people eat N", not "N eaten" — '1 grain + 5 fish a game day, your people eat 5'
+   confirm: Found the metropolis here? The host dissolves — forever. Your people become the city's citizens; your spearmen stay yours, and those standing here become its garrison. |  | FOUND THE METROPOLISKEEP TRAVELLING
+  [PASS] item 8 · 390: the confirmation says what survives (citizens and spearmen) — "Found the metropolis here? The host dissolves — forever. Your people become the city's citizens; your spearmen stay yours, and those standing here become its garrison.\n\nFOUND THE METROPOLISKEEP TRAVELLING"
+  [PASS] item 8 · 390: the confirmation is visible where the player pressed — {'exists': True, 'visible': True, 'rect': [12, 636, 378, 764], 'clip': [0, 486, 390, 776], 'text': "Found the metropolis here? The host dissolves — forever. Your people become the city's citizens; your spearmen stay your"}
+
+6 passed, 0 failed

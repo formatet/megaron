@@ -130,7 +130,7 @@ func printNotificationDetail(c *Client, n notificationItem) {
 			if name == "" {
 				name = "unit"
 			}
-			fmt.Printf("      Your %s is the first to reach this %s — you may name it. `keryx places name %s %s \"<name>\"`\n", name, placeKindLabel(body.Kind), body.Kind, body.PlaceID)
+			fmt.Printf("      Your %s is the first to reach %s — you may name it. `keryx places name %s %s \"<name>\"`\n", name, thisPlaceLabel(body.Kind), body.Kind, body.PlaceID)
 		}
 	}
 	if n.Kind == "PlacesInNewCity" {

@@ -25,7 +25,7 @@ test('K: drawer help link is drawn; no Lawagetas brief;  locked reasons stay aut
  for(const name of ['city','war','diplomacy','economy','kult','notif']){assert.match(drawerHelpHTML(name),new RegExp("openCodexForDrawer\\('"+name+"'\\)"));}
  assert.equal(misc.LAWAGETAS_BRIEFS,undefined);assert.equal(misc.showLawagatasBrief,undefined);assert.equal(misc.dismissBrief,undefined);
  const html=lockedActionsHTML('trade',[{name:'trade-offer',requirements:[{satisfied:true,hint:'irrelevant'},{satisfied:false,hint:'Send a messenger <first>'}]},{name:'trade-offer',requirements:[{satisfied:false,hint:'Meet another city'}]}]);
- assert.match(html,/Unavailable: /);assert.equal((html.match(/>trade offer</g)||[]).length,1,'one label, all reasons retained');assert.match(html,/title="Send a messenger &lt;first&gt; · Meet another city"/,'keep server reason');assert.match(html,/openCodexForDrawer\('economy'\)/);assert.doesNotMatch(html,/irrelevant/);assert.equal(lockedActionsHTML('trade',[]),'');
+ assert.match(html,/Not open to you yet: 1 order</);assert.equal((html.match(/<b>Trade offer<\/b>/g)||[]).length,1,'one label, all reasons retained');assert.match(html,/Send a messenger &lt;first&gt; · Meet another city/,'keep server reason');assert.match(html,/openCodexForDrawer\('economy'\)/);assert.doesNotMatch(html,/irrelevant/);assert.equal(lockedActionsHTML('trade',[]),'');
 });
 test('calendar BILD alternatives keep the date with or without month ordinal',()=>{
  const cal={day:1,month:1,monthName:'Pithoi',year:1};

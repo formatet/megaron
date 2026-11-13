@@ -2,7 +2,7 @@ import { acceptMapTiles } from '../map_data.js';
 // The server grants a place's naming right to its first physical arrival.
 import { State } from '../state.js';
 import { fetchAuth } from '../api.js';
-import { esc, setErrorText } from './format.js';
+import { esc, setErrorText, thisPlace, placePronoun } from './format.js';
 
 export const PLACE_LABELS = { river: 'river', massif: 'mountain massif', desert: 'desert', forest: 'cedar forest', lake: 'lake', island: 'island', strait: 'strait', bay: 'bay', cape: 'cape', plain: 'plain', hills: 'hills', delta: 'delta' };
 
@@ -26,7 +26,7 @@ function placeNameHTML(tile, showName) {
   }
   const key = kind + '-' + id;
   return `<div class="place-note" style="font-size:.73rem;border-top:1px solid var(--border);padding:.4rem 0">`
-    + `<div style="margin-top:.3rem">Your unit was the first to reach this ${PLACE_LABELS[kind]}. Give it a name (once, 2–30 characters):</div>`
+    + `<div style="margin-top:.3rem">Your unit was the first to reach ${thisPlace(kind)}. No one has named ${placePronoun(kind)} yet. Give ${placePronoun(kind)} a name (once, 2–30 characters):</div>`
     + `<input id="place-name-${esc(key)}" aria-label="Place name" maxlength="30" style="width:60%" onkeydown="if(event.key==='Enter')namePlace('${kind}','${id}')"> `
     + `<button onclick="namePlace('${kind}','${id}')">Name it</button> <span id="place-name-err-${esc(key)}" role="status"></span></div>`;
 }

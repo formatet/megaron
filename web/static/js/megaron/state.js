@@ -82,6 +82,7 @@ export const State = {
   marchCtxUnitID: null, // War → March pins one unit while choosing a map target
   marchCtxDest: null,   // { q, r, terrain, isSea, name, isSettlement, allied }
   marchCtxUnits: [],    // eligible units currently listed
+  marchCtxAll: [],      // every unit the march menu was opened with (for the empty-list reason)
   marchCtxGroups: [],   // eligible units grouped by type+origin (quantity picker)
 
   // Search overlay (ui/search.js).

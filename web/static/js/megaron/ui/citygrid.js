@@ -76,6 +76,12 @@ export function syncFreeToWork(root, pool) {
   if (el) el.textContent = fmtNum(pool);
 }
 
+// On a phone the hexes are small: the pick label is the level the building becomes ("L1"), not "L0 → L1".
+export function shortStep(step) {
+  const narrow = typeof window !== 'undefined' && window.matchMedia?.('(max-width: 480px)').matches;
+  return narrow ? String(step).replace(/^.*→\s*/, '') : step;
+}
+
 export function terrainLabel(t) {
   return (t || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
@@ -113,7 +119,7 @@ export function sortGoods(goods, target) {
 // (the numbers come from placement-options: cap, placed, raised_by, extra_places).
 // freeHint: with every citizen placed there is no +1 to press; say how a worker is moved.
 export function freeHint(opts) {
-  return opts && opts.total_gubbar > 0 && opts.pool_size === 0 ? ' · To move one, press −1 where they stand, then +1 here.' : '';
+  return opts && opts.total_gubbar > 0 && opts.pool_size === 0 ? 'To move one, press −1 where they stand, then +1 here.' : '';
 }
 
 export function placesNote(good) {
@@ -141,10 +147,10 @@ export function goodRowHTML(target, good, take) {
   return `
     <div class="gubbe-good-row" data-good="${good.good_key}" data-cap="${good.cap ?? ''}" data-target="${targetAttr}">
       <div class="gubbe-good-text">
-        <b>${goodLabel(target, good)}</b>
-        <span style="color:var(--text-dim)"> ${good.staffing_only ? fmtNum(good.placed) + (shipyard ? ' shipyard workers' : workshop ? ' builders' : ' temple workers') : fmtNum(Number(good.rate_per_tick.toFixed(1))) + ' per game day total'} · ${nextLabel}</span>
+        <div class="gubbe-good-line"><b>${goodLabel(target, good)}</b> <span style="color:var(--text-dim)">${good.staffing_only ? fmtNum(good.placed) + (shipyard ? ' shipyard workers' : workshop ? ' builders' : ' temple workers') : fmtNum(Number(good.rate_per_tick.toFixed(1))) + ' per game day total'}</span></div>
+        <div class="gubbe-good-line gubbe-good-next" style="color:var(--text-dim)">${nextLabel}</div>
         <div>${pipsHTML}</div>
-        ${placesNote(good) ? `<div class="gubbe-places-note">${esc(placesNote(good))}</div>` : ''}
+        ${placesNote(good) ? `<div class="gubbe-places-note" title="${esc(placesNote(good))}">${esc(placesNote(good))}</div>` : ''}
       </div>
       <div class="gubbe-actions">
         ${take
@@ -304,6 +310,8 @@ const liveSelection = new WeakMap();
 // The pick mode the live grid is in (null outside it): a drawer rebuilt by a live update asks this to
 // put the player's pending "choose a hex" back where it was.
 let livePick = null;
+// The last build answer given in the grid's detail panel: it stays through the redraws until the player acts again.
+let gridNote = null;
 export function currentPick() { return livePick; }
 
 export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR, renderOpts = {}) {
@@ -367,7 +375,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
     return `<g class="gubbe-hex-g" data-target="hex" data-ordinal="${h.hex_ordinal}">
       <polygon class="${cls}" points="${hexCorners(p.x, p.y, HEX_SIZE)}"></polygon>
       <text x="${p.x}" y="${p.y - 4}" class="gubbe-hex-label">${h.hex_q},${h.hex_r}</text>
-      <text x="${p.x}" y="${p.y + 9}" class="gubbe-hex-sub${step ? ' pick-step' : ''}">${step ? step : `${fmtNum((h.goods || []).length)} good${(h.goods || []).length === 1 ? '' : 's'}`}</text>
+      <text x="${p.x}" y="${p.y + 9}" class="gubbe-hex-sub${step ? ' pick-step' : ''}">${step ? shortStep(step) : `${fmtNum((h.goods || []).length)} good${(h.goods || []).length === 1 ? '' : 's'}`}</text>
     </g>`;
   }).join('');
 
@@ -386,9 +394,9 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
   }
 
   containerEl.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.3rem">
-      <span>Citizens: <b>${fmtNum(opts.total_gubbar - opts.pool_size)} of ${fmtNum(opts.total_gubbar)}</b> placed</span>
-      <span style="color:var(--text-dim)">${fmtNum(opts.pool_size)} free${freeHint(opts)}</span>
+    <div class="gubbe-head">
+      <div class="gubbe-head-row"><span>Citizens: <b>${fmtNum(opts.total_gubbar - opts.pool_size)} of ${fmtNum(opts.total_gubbar)}</b> placed</span><span class="gubbe-head-free">${fmtNum(opts.pool_size)} free</span></div>
+      <div class="gubbe-head-hint">${esc(freeHint(opts)) || '&nbsp;'}</div>
     </div>
     ${pick ? `<div class="build-pick-bar">${pickable.size ? `Choose a hex for the ${esc(pickName)}` : `No hex in your catchment can take a ${esc(pickName)} now`} · <button class="btn-small" data-pick-cancel>Cancel</button></div>` : ''}
     <svg class="gubbe-svg" viewBox="${minX} ${minY} ${maxX - minX} ${maxY - minY}" preserveAspectRatio="xMidYMid meet">${cells}</svg>
@@ -410,16 +418,21 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
   // nothing changed on the server, so rebuilding the widget would only throw
   // away the selected hex and leave the player with no way back to the button
   // they pressed. On success we re-render as before.
-  const showRefusal = (msg, ok = false) => {
+  const showRefusal = (msg, ok = false, { top = false } = {}) => {
     const detail = containerEl.querySelector('#gubbe-detail');
     if (!detail) return;
     let el = detail.querySelector('.gubbe-refusal');
     if (!el) {
       el = document.createElement('div');
-      detail.appendChild(el);
+      // A build answer sits right under the hex's title (its rows were just redrawn); a placement refusal stays
+      // at the end so the +1/−1 buttons never move under the pointer (round three, items 2 and 3).
+      const title = top && detail.querySelector('.dsec-title');
+      if (title) title.after(el); else detail.appendChild(el);
     }
     el.className = ok ? 'gubbe-refusal gubbe-built' : 'gubbe-refusal';
     el.textContent = msg;
+    el.scrollIntoView?.({ block: 'nearest' });
+    if (top) gridNote = { key: openKey, msg, ok };
   };
 
   // [Build] on a hex row: same function as the Construct list. Success leaves
@@ -428,13 +441,14 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
     if (!buildHandler) return;
     const stale = containerEl.querySelector('.gubbe-refusal');
     if (stale) stale.remove();
+    gridNote = null;
     btn.disabled = true;
     const spec = { type: btn.dataset.buildType, hex_q: Number(btn.dataset.buildQ), hex_r: Number(btn.dataset.buildR) };
     const out = await buildHandler(spec);
     if (out.ok) await rerender({ pick: null });
     else btn.disabled = false;
     // Under the clicked row; if that row is gone (built, redrawn) the old place at the end.
-    if (!showBuildResult(containerEl, spec, out.text, out.ok, out.detail)) showRefusal(out.text, out.ok);
+    if (!showBuildResult(containerEl, spec, out.text, out.ok, out.detail)) showRefusal(out.text, out.ok, { top: true });
   };
 
   const doAction = async (verb, targetBody, good, cap) => {
@@ -483,7 +497,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
       detail.innerHTML = `
         <div class="dsec-title">(${hex.hex_q},${hex.hex_r}) — ${terrainLabel(hex.terrain)}</div>
         ${isNavigable(hex.terrain)?stormHexPanelHTML(hex.hex_q,hex.hex_r):''}
-        <p class="gubbe-hex-workers">${esc(hexWorkersLine(hex.goods)) || '&nbsp;'}</p>
+        <p class="gubbe-hex-workers" title="${esc(hexWorkersLine(hex.goods))}">${esc(hexWorkersLine(hex.goods)) || '&nbsp;'}</p>
         ${hex.held_by ? `<p class="gubbe-held-note">Held by ${esc(hex.held_by)} — already worked by another city${hex.takeable ? '' : ' — stand a unit there in fortify or sentry to take it'}</p>` : ''}
         ${(hex.goods || []).length
           ? sortGoods(hex.goods, { target_kind: 'hex', hex_ordinal: hex.hex_ordinal }).map(good => goodRowHTML({ target_kind: 'hex', hex_ordinal: hex.hex_ordinal }, good, takeLabel(hex))).join('')
@@ -491,6 +505,13 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
         ${buildHere ? `<div class="dsec-title">Build here</div>${buildHere}` : ''}`;
     }
 
+    if (gridNote && gridNote.key === openKey && !detail.querySelector('.gubbe-refusal')) {
+      const el = document.createElement('div');
+      el.className = gridNote.ok ? 'gubbe-refusal gubbe-built' : 'gubbe-refusal';
+      el.textContent = gridNote.msg;
+      const title = detail.querySelector('.dsec-title');
+      if (title) title.after(el); else detail.prepend(el);
+    }
     detail.querySelectorAll('[data-build-act="build-hex"]').forEach(btn => btn.addEventListener('click', () => buildOnHex(btn)));
     detail.querySelector('[data-goto-buildings]')?.addEventListener('click', () => document.querySelector('#city-body [data-tab="byggnader"]')?.click());
 
@@ -510,7 +531,12 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
 
   containerEl.querySelector('[data-pick-cancel]')?.addEventListener('click', () => rerender());
   const groups = Array.from(containerEl.querySelectorAll('.gubbe-hex-g'));
-  groups.forEach(g => g.addEventListener('click', () => selectTarget(g)));
+  groups.forEach(g => g.addEventListener('click', () => {
+    gridNote = null; // the player acts again: the last answer has been read
+    selectTarget(g);
+    // Picking a hex for a building: its Build button must be in view, not below the fold.
+    if (pick) containerEl.querySelector('#gubbe-detail .build-row')?.scrollIntoView?.({ block: 'nearest' });
+  }));
 
   // Put the player back on the hex they were working on. A hex that vanished
   // between renders (fog, ownership) simply leaves the panel closed rather

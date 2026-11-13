@@ -1,0 +1,34 @@
+item 7 @ 1280x800
+   economy: old line 'Unavailable: trade offer, trade accept, trade decline, trade cancel, transfer ?'; new summary None
+  [FAIL] item 7 · 1280: economy: no "Unavailable: ..." debris line — 'Unavailable: trade offer, trade accept, trade decline, trade cancel, transfer ?'
+  [FAIL] item 7 · 1280: economy: one quiet line "Not open to you yet: N order(s)" — None
+   war: old line 'Unavailable: recall, redirect, unload, land ?'; new summary None
+  [FAIL] item 7 · 1280: war: no "Unavailable: ..." debris line — 'Unavailable: recall, redirect, unload, land ?'
+  [FAIL] item 7 · 1280: war: one quiet line "Not open to you yet: N order(s)" — None
+   kult: old line 'Unavailable: rite ?'; new summary None
+  [FAIL] item 7 · 1280: kult: no "Unavailable: ..." debris line — 'Unavailable: rite ?'
+  [FAIL] item 7 · 1280: kult: one quiet line "Not open to you yet: N order(s)" — None
+item 7 @ 390x844
+   economy: old line 'Unavailable: trade offer, trade accept, trade decline, trade cancel, transfer ?'; new summary None
+  [FAIL] item 7 · 390: economy: no "Unavailable: ..." debris line — 'Unavailable: trade offer, trade accept, trade decline, trade cancel, transfer ?'
+  [FAIL] item 7 · 390: economy: one quiet line "Not open to you yet: N order(s)" — None
+   war: old line 'Unavailable: recall, redirect, unload, land ?'; new summary None
+  [FAIL] item 7 · 390: war: no "Unavailable: ..." debris line — 'Unavailable: recall, redirect, unload, land ?'
+  [FAIL] item 7 · 390: war: one quiet line "Not open to you yet: N order(s)" — None
+   kult: old line 'Unavailable: rite ?'; new summary None
+  [FAIL] item 7 · 390: kult: no "Unavailable: ..." debris line — 'Unavailable: rite ?'
+  [FAIL] item 7 · 390: kult: one quiet line "Not open to you yet: N order(s)" — None
+
+0 passed, 12 failed
+  FAILED item 7 1280: economy: no "Unavailable: ..." debris line
+  FAILED item 7 1280: economy: one quiet line "Not open to you yet: N order(s)"
+  FAILED item 7 1280: war: no "Unavailable: ..." debris line
+  FAILED item 7 1280: war: one quiet line "Not open to you yet: N order(s)"
+  FAILED item 7 1280: kult: no "Unavailable: ..." debris line
+  FAILED item 7 1280: kult: one quiet line "Not open to you yet: N order(s)"
+  FAILED item 7 390: economy: no "Unavailable: ..." debris line
+  FAILED item 7 390: economy: one quiet line "Not open to you yet: N order(s)"
+  FAILED item 7 390: war: no "Unavailable: ..." debris line
+  FAILED item 7 390: war: one quiet line "Not open to you yet: N order(s)"
+  FAILED item 7 390: kult: no "Unavailable: ..." debris line
+  FAILED item 7 390: kult: one quiet line "Not open to you yet: N order(s)"

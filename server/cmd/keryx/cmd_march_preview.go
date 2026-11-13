@@ -51,7 +51,7 @@ func showMarchPreview(c *Client, path string, order map[string]any) error {
 			fmt.Printf("; first to (%d,%d), then explores around it", *forecast.PlannedFirstTargetQ, *forecast.PlannedFirstTargetR)
 		}
 		if forecast.PlannedHomeByTick != nil {
-			fmt.Printf(" — with immediate departure, home by %s", formatWorldTime(c, *forecast.PlannedHomeByTick))
+			fmt.Printf(" — with immediate departure, home by %s at the latest (sooner if there is nothing more to see)", formatWorldTime(c, *forecast.PlannedHomeByTick))
 		}
 		fmt.Println(". First-leg arrival remains unknown.")
 	}

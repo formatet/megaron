@@ -300,7 +300,7 @@ Never where the city stands.`,
 					if !stdinIsTerminal() {
 						return errNeedYes("keryx founding settle", "the irreversible founding")
 					}
-					ok, aerr := askYesNo("Found the metropolis here? The host dissolves — forever.")
+					ok, aerr := askYesNo("Found the metropolis here? The host dissolves — forever. Your people become the city's citizens; your spearmen stay yours, and those standing here become its garrison.")
 					if aerr != nil {
 						return aerr
 					}

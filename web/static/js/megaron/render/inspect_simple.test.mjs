@@ -77,7 +77,7 @@ test('river hex and rural panel name appears only in title, terrain row stays ge
 
  test('first-reaching Host exposes generic naming form without hiding founding action',async()=>{
   await click({city:null,host:true,terrain:'river_delta',place:{place_kind:'river',place_id:'0,0',can_name:true}});
-  assert.match(element('ip-body-extra').innerHTML,/Your unit was the first to reach this river/);
+  assert.match(element('ip-body-extra').innerHTML,/Your unit was the first to reach this river. No one has named it yet/);
   assert.match(element('ip-body-extra').innerHTML,/aria-label="Place name"/);
   assert.match(element('ip-foot').innerHTML,/Found the metropolis here/);
  });

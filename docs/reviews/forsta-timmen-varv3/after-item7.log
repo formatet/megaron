@@ -1,0 +1,28 @@
+item 7 @ 1280x800
+   economy: old line None; new summary 'Not open to you yet: 5 orders'
+  [PASS] item 7 · 1280: economy: no "Unavailable: ..." debris line — None
+  [PASS] item 7 · 1280: economy: one quiet line "Not open to you yet: N order(s)" — 'Not open to you yet: 5 orders'
+  [PASS] item 7 · 1280: economy: expanding lists every order with a plain reason (5) — ['Trade offer: March or send a messenger to scout a neighbour before contacting it', 'Trade accept: Wait for a Wanax to send a trade offer, or check your letters', 'Trade decline: Wait for a Wanax to send a trade offer, or check your letters', 'Trade cancel: Send a trade offer first, or check your s
+   war: old line None; new summary 'Not open to you yet: 4 orders'
+  [PASS] item 7 · 1280: war: no "Unavailable: ..." debris line — None
+  [PASS] item 7 · 1280: war: one quiet line "Not open to you yet: N order(s)" — 'Not open to you yet: 4 orders'
+  [PASS] item 7 · 1280: war: expanding lists every order with a plain reason (4) — ['Recall: March a unit first — recall only applies to forces already in transit', 'Redirect: March a unit first — redirect only applies to forces already in transit', 'Unload: Load a land unit onto a ship here first', 'Land: Load a land unit onto a ship here first']
+   kult: old line None; new summary 'Not open to you yet: 1 order'
+  [PASS] item 7 · 1280: kult: no "Unavailable: ..." debris line — None
+  [PASS] item 7 · 1280: kult: one quiet line "Not open to you yet: N order(s)" — 'Not open to you yet: 1 order'
+  [PASS] item 7 · 1280: kult: expanding lists every order with a plain reason (1) — ['Rite: Build the Temple of Potnia']
+item 7 @ 390x844
+   economy: old line None; new summary 'Not open to you yet: 5 orders'
+  [PASS] item 7 · 390: economy: no "Unavailable: ..." debris line — None
+  [PASS] item 7 · 390: economy: one quiet line "Not open to you yet: N order(s)" — 'Not open to you yet: 5 orders'
+  [PASS] item 7 · 390: economy: expanding lists every order with a plain reason (5) — ['Trade offer: March or send a messenger to scout a neighbour before contacting it', 'Trade accept: Wait for a Wanax to send a trade offer, or check your letters', 'Trade decline: Wait for a Wanax to send a trade offer, or check your letters', 'Trade cancel: Send a trade offer first, or check your s
+   war: old line None; new summary 'Not open to you yet: 4 orders'
+  [PASS] item 7 · 390: war: no "Unavailable: ..." debris line — None
+  [PASS] item 7 · 390: war: one quiet line "Not open to you yet: N order(s)" — 'Not open to you yet: 4 orders'
+  [PASS] item 7 · 390: war: expanding lists every order with a plain reason (4) — ['Recall: March a unit first — recall only applies to forces already in transit', 'Redirect: March a unit first — redirect only applies to forces already in transit', 'Unload: Load a land unit onto a ship here first', 'Land: Load a land unit onto a ship here first']
+   kult: old line None; new summary 'Not open to you yet: 1 order'
+  [PASS] item 7 · 390: kult: no "Unavailable: ..." debris line — None
+  [PASS] item 7 · 390: kult: one quiet line "Not open to you yet: N order(s)" — 'Not open to you yet: 1 order'
+  [PASS] item 7 · 390: kult: expanding lists every order with a plain reason (1) — ['Rite: Build the Temple of Potnia']
+
+18 passed, 0 failed
