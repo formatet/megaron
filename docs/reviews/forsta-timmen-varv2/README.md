@@ -30,4 +30,4 @@ Rig: worktree's own `tools/acceptance.sh`, 4 players, one founded city (Teststad
 - Item N: the "true number" is the world's start constant; the sentence does not say how many remain.
 - Desktop hex-grid labels (7.9 px) were left as they are: the order named phone only.
 - Capability hint `province_verbs.go:32` ("see `keryx build --list`") is an action description for `keryx actions` and was left.
-- Pre-existing, unrelated: `TestCodexGrowthValues` (economy) fails on base too (growth.md number format); two handler tests (`TestShipyardDeployTransition...`, `TestWorldMe_OwnWorldIsolation`) fail only in the full-package run and pass alone, also on base.
+- Pre-existing, unrelated: `TestCodexGrowthValues` (economy) fails (growth.md is untouched by this branch; base not re-run). Two handler tests (`TestShipyardDeployTransition...`, `TestWorldMe_OwnWorldIsolation`) failed once in the full-package run and pass alone on base and on this branch.
