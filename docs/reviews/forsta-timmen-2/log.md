@@ -1,0 +1,33 @@
+# Playtest log (first hour, round 2)
+- 0002 start page: Sign in / New player tabs. Fine. Created "Nestor2".
+- 0010 After sign-up: card "Acceptance", FORMING, "0 Wanaxes (rulers)", ENTER THE WORLD. Never asked for a name; later top-left says "Wanax Komawes" (auto-name?).
+- 0012 Map: black fog, a dark-orange circle, Host figure, notification "Your people await you". ? button opens CODEX with START HERE list - good.
+- 0017 Dispatch: 5 numbered steps. Says "Game days begin after 4 Wanaxes join" while world shows 0 Wanaxes -> unsure if clock runs.
+- 0019 Click hex: forecast panel (food/timber/stone/copper/tin/silver/ground "Based on 11 of 19 hexes known").
+- 0020 Host panel: "Can found here", Found button; confirm pushes text down, "KEEP TRAVELLING" button. Founded: Tylissos (0024). Notices truncated "Tylissos lies beside places no…".
+- 0026 City drawer: big picture takes half the panel; tabs under it. "Walls hold 20 / Citizens 10 / Free to work 5 / Livestock 50". Text box "Your unit was the first to reach this cape. Give it a name" - odd.
+- 0030 +1 on a hex places a citizen; buttons shift position after each click.
+- 0033 MORE: "In service 1,010 / People 1,000" unexplained. Food surplus +0.8.
+- 0039 Buildings: city has 0 stone 0 timber; BUILD disabled; "CHOOSE A HEX" enabled for Farm even though "needs 4 stone, city has 0".
+- 0044-0051 placed workers on stone/timber hexes (0,59 maquis; 0,58 hills with copper, stone 1/day).
+- 0056 WAR: forces, March button. 0058 "tap the destination". 0062 popup "Destination city: Choose a city…" unclear if required. Explore ticked -> "Nothing sent — No route ... unseen ground within 5 hexes". Unticked -> marching, arrives 01:20 (4 game days for adjacent hex).
+- 0071 Economy: goods table; Food +0.2/day in top table but Grain -6.1/day, Fish +6. Silver 120. "Unavailable: trade offer, trade accept, ... transfer [?]" unexplained.
+- 0073 Kult: "Kharis 39.7 · Indifferent", upkeep -0.33, "Wrath risk below 30". Never explained what kharis is on this screen. Temples tab: four temples, "OPEN CITY TO BUILD", no cost/which god.
+- 0077 Diplomacy: letters / runners empty ("No runners... none of anyone else's that you know of"). Nobody to write to.
+- 0081 Feedback form fine. 0084 Notifications: "DAY 2 OF THE PITHOI (1), YEAR 1".
+- 0087 search ⌕ works. 0090 Legend good (explains worker figures).
+- 0094 hammer button on map toggles something (dotted marker near city), no label.
+- 0099 city: 10/10 placed; had to remove stone workers to place timber; timber 0.3/hex per worker, slow.
+- 0112-0116 galley march: sea expedition text is clear, shows return time. New land appeared SE.
+- 0129 Notification strip at top gets crowded and truncated ("Ty li", "x all").
+- 0133 Codex Buildings article is genuinely helpful.
+- 0137-0151 Waited. Timber from catchment is ~0.3/day per place and each hex has ONE timber place -> total 0.7/day; Farm (6 timber) took ~20 real minutes. Nothing on screen said timber is capped; I only learned by trying to rebalance workers (all 10 placed, had to remove stone workers).
+- 0147 Garrison tab: DISBAND button next to unit, no confirm known (did not click).
+- 0149 Warehouse: "Grain -5.9 per game day" in red although Food +0.5 overall. Alarming/confusing.
+- 0153 CHOOSE A HEX for Farm jumps to Production tab; valid hexes highlighted. Good. But the drawer live-refresh wiped my pending selection and scrolled to top (0159); had to redo.
+- 0164 Build here: "needs 6 timber, city has 5" clear.
+- Typed "Cape Salt" in the name field of the city drawer + Enter: no visible result (0182); do not know if it was saved.
+- Phone 0189: goto reloaded start page -> logged out, had to sign in again (expected on reload, but note).
+- Phone 0197 tap hex: bottom sheet, ok. 0199 city drawer is full screen, covers map and nav. Hex diagram tiny (7px labels).
+- Phone 0219: March to hex across water -> "No passable route ... keryx unit load --ship <id> --unit <id> (ship and unit in the same settlement, both garrisoned...)" - command-line jargon for a web player.
+- Phone 0223: march popup covers whole screen; works. Farm still in build queue at 01:37 while Buildings says "No buildings yet."
