@@ -240,8 +240,14 @@ func TestMarchPreview_ReadOnlyAndTiming(t *testing.T) {
 	if budgetPreview.Code != 422 || shortRec.Code != 422 || !strings.Contains(budgetPreview.Body.String(), "6 game days is not enough to reach the chosen area") || snapshot() != before {
 		t.Fatalf("budget preview/dispatch mismatch: %d %s / %d %s", budgetPreview.Code, budgetPreview.Body.String(), shortRec.Code, shortRec.Body.String())
 	}
-	if strings.Contains(budgetPreview.Body.String(), "at least") || strings.Contains(budgetPreview.Body.String(), "away") || strings.Contains(budgetPreview.Body.String(), "duration_ticks") {
-		t.Fatalf("garrison expedition rejection leaks hidden route timing: %s", budgetPreview.Body.String())
+	for _, body := range []string{budgetPreview.Body.String(), shortRec.Body.String()} {
+		if strings.Contains(body, "at least") || strings.Contains(body, "away") || strings.Contains(body, "duration_ticks") {
+			t.Fatalf("garrison expedition rejection leaks hidden route timing: %s", body)
+		}
+	}
+	// Timothy 2026-11-15: the real order refuses with the preview's words, so it hides the route's minimum too.
+	if shortRec.Body.String() != budgetPreview.Body.String() {
+		t.Fatalf("dispatch refusal differs from preview: %s / %s", shortRec.Body.String(), budgetPreview.Body.String())
 	}
 	// A valid but too-short field expedition is refused by preview before a
 	// physical Runner is sent. Its nearby first leg fits half the allowance,

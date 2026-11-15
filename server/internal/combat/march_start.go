@@ -100,10 +100,22 @@ type OrderReject struct {
 	Reason string
 }
 
-func rejectExpeditionBudget(format string, args ...any) *OrderReject {
-	r := reject(http.StatusUnprocessableEntity, format, args...)
+// rejectExpeditionBudget refuses the duration the player gave without exposing the route's own minimum
+// (the route may cross unseen terrain) — the same words in the preview and the real order (Timothy 2026-11-15).
+func rejectExpeditionBudget(asked int) *OrderReject {
+	r := reject(http.StatusUnprocessableEntity, "%s", ExpeditionBudgetMessage(asked))
 	r.Code = RejectExpeditionBudget
 	return r
+}
+
+// ExpeditionBudgetMessage names the asked duration, so it never reads as "10 is below 4":
+// the 4..365 range is the public floor and ceiling, not what this destination needs.
+func ExpeditionBudgetMessage(asked int) string {
+	if asked == 0 {
+		asked = ExpeditionDefaultTicks
+	}
+	return fmt.Sprintf("an expedition of %s is not enough to reach the chosen area and return home — choose a longer duration or a nearer area (any expedition may last %d to %s)",
+		tick.FormatDays(asked), ExpeditionMinTicks, tick.FormatDays(ExpeditionMaxTicks))
 }
 
 func (e *OrderReject) Error() string { return e.Reason }
@@ -905,7 +917,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		expeditionPlan.TurnTick = ExpeditionTurnTick(currentTick, expeditionPlan.LengthTicks)
 		expeditionPlan.HomeByTick = currentTick + expeditionPlan.LengthTicks
 		if currentTick+travelTicks > expeditionPlan.TurnTick {
-			return nil, rejectExpeditionBudget("the chosen hex (%d,%d) is %s away — more than half of the %s you gave, so it could not get back in time; give it at least %s", expeditionPlan.AreaQ, expeditionPlan.AreaR, tick.FormatDays(travelTicks), tick.FormatDays(expeditionPlan.LengthTicks), tick.FormatDays(2*travelTicks))
+			return nil, rejectExpeditionBudget(expeditionPlan.LengthTicks)
 		}
 		// Entered-terrain costs and tick rounding are asymmetric: reserve the
 		// actual route home, rather than assuming it costs the outbound leg.
@@ -918,7 +930,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		}
 		returnTicks := legTravelTicks(u.Type, u.Crew, u.CargoUnitID != nil, home.cost)
 		if travelTicks+returnTicks > expeditionPlan.LengthTicks {
-			return nil, rejectExpeditionBudget("the expedition needs at least %s for its outward and return routes", tick.FormatDays(travelTicks+returnTicks))
+			return nil, rejectExpeditionBudget(expeditionPlan.LengthTicks)
 		}
 		exploreHomeID = &home.id
 	}

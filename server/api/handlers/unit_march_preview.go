@@ -10,22 +10,13 @@ import (
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/combat"
 	"formatet/megaron/server/internal/province"
-	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/unit"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
 
-// expeditionBudgetMsg refuses the duration the player gave without exposing the route's own minimum
-// (the route may cross unseen terrain). It names the asked duration, so it never reads as "10 is below 4":
-// the 4..365 range is the public floor and ceiling, not what this destination needs.
-func expeditionBudgetMsg(asked int) string {
-	if asked == 0 {
-		asked = combat.ExpeditionDefaultTicks
-	}
-	return "an expedition of " + tick.FormatDays(asked) + " is not enough to reach the chosen area and return home — choose a longer duration or a nearer area (any expedition may last " +
-		strconv.Itoa(combat.ExpeditionMinTicks) + " to " + tick.FormatDays(combat.ExpeditionMaxTicks) + ")"
-}
+// expeditionBudgetMsg is the combat owner's public refusal; the real order uses the same words.
+func expeditionBudgetMsg(asked int) string { return combat.ExpeditionBudgetMessage(asked) }
 
 // MarchPreview estimates arrival without dispatching an order. Timing describes
 // current conditions, not a reservation or a guarantee that dispatch will succeed.
