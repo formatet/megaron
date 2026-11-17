@@ -104,11 +104,6 @@ func insertRow(ctx context.Context, tx pgx.Tx, p DispatchParams) (uuid.UUID, err
 	if err != nil {
 		return uuid.Nil, err
 	}
-	if p.ShipUnitID != nil {
-		if _, err := tx.Exec(ctx, `UPDATE units SET stillness_depart_tick=$2,stillness_arrive_tick=$3,stillness_owner_id=$4 WHERE id=$1`, *p.ShipUnitID, nullableBlessingTick(p.Journey.Stillness, p.DepartedTick), nullableBlessingTick(p.Journey.Stillness, p.DueTick), p.OwnerID); err != nil {
-			return uuid.Nil, err
-		}
-	}
 	// A destination that is a HEX, not a city (kind "road_stone"), has no
 	// dest_id: store NULL, never the zero UUID (FK to settlements).
 	var destID any = p.DestID

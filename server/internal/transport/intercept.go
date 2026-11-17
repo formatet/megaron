@@ -265,12 +265,12 @@ func (h *InterceptScanHandler) ScanAt(ctx context.Context, e events.ScheduledEve
 }
 
 // scanRadius is how close a sentry must stand to take the caravan: ordinary two hexes, one
-// for a caravan under the Thread (the prayer now) or carrying the retired departure thread.
+// for a caravan under the Thread.
 func scanRadius(t inFlightTransport, threaded map[uuid.UUID]int) int {
 	if _, ok := threaded[t.id]; ok {
-		return min(religion.ThreadInterceptRadius, departureInterceptRadius(t))
+		return religion.ThreadInterceptRadius
 	}
-	return departureInterceptRadius(t)
+	return interceptRadius
 }
 
 // seize marks the caravan intercepted and moves its manifest to the interceptor's

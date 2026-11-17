@@ -136,9 +136,9 @@ test('Umami retains only known public category values', async t => {
     ['provinces/:id/build', { building_type: 'farm' }],
     ['provinces/:id/recruit', { unit_type: 'galley', name: 'SECRET' }],
     ['units/:id/march', { intent: 'explore', ticks: 40 }],
-    ['settlements/:id/rite', { prayer: 'minoan_harvest_blessing' }],
+    ['settlements/:id/rite', { prayer: 'minoan_velchanos_green_shoots' }],
   ]) await fetchAuth(W + route.replace(':id', ID), { method: 'POST', body: JSON.stringify(body) });
-  assert.deepEqual(events.map(event => event.props), [{ building: 'farm' }, { unit: 'galley' }, { intent: 'explore' }, { rite: 'minoan_harvest_blessing' }]);
+  assert.deepEqual(events.map(event => event.props), [{ building: 'farm' }, { unit: 'galley' }, { intent: 'explore' }, { rite: 'minoan_velchanos_green_shoots' }]);
 });
 test('Umami refusal reason_code is whitelisted server token, never response prose or IDs', async t => {
   const replies = [

@@ -12,15 +12,13 @@ import (
 
 func TestStormEnteredHexesActualScan(t *testing.T) {
 	for _, tc := range []struct {
-		name      string
-		qs        []int
-		protected bool
-		want      int
+		name string
+		qs   []int
+		want int
 	}{
-		{"intermediate storm", []int{2}, false, 3},
-		{"same storm adjacent hexes", []int{1, 2}, false, 3},
-		{"different storms same tick", []int{2, 4}, false, 1},
-		{"Stillness", []int{2, 4}, true, 5},
+		{"intermediate storm", []int{2}, 3},
+		{"same storm adjacent hexes", []int{1, 2}, 3},
+		{"different storms same tick", []int{2, 4}, 1},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			pool, wid, owner, route := seaStormWorld(t)
@@ -32,11 +30,6 @@ func TestStormEnteredHexesActualScan(t *testing.T) {
 				t.Fatal(err)
 			}
 			stormsOverHexes(t, pool, wid, tc.qs...)
-			if tc.protected {
-				if _, err := pool.Exec(context.Background(), `UPDATE units SET stillness_depart_tick=0,stillness_arrive_tick=1,stillness_owner_id=owner_id WHERE id=$1`, ship); err != nil {
-					t.Fatal(err)
-				}
-			}
 			h := NewSeaStormScanHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), nil)
 			h.Dice = newStormDice(1)
 			runStormDay(t, h, wid, 0)

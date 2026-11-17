@@ -2,7 +2,6 @@ package transport
 
 import (
 	"context"
-	"encoding/json"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/religion"
 	"github.com/google/uuid"
@@ -23,21 +22,6 @@ func BlessDeparture(ctx context.Context, tx pgx.Tx, world, owner, city uuid.UUID
 		return nil
 	}
 	return blessSpeed(ctx, tx, world, owner, city, j)
-}
-
-func nullableBlessingTick(blessed bool, t int) *int {
-	if !blessed {
-		return nil
-	}
-	return &t
-}
-
-func departureInterceptRadius(t inFlightTransport) int {
-	var j province.TradeJourney
-	if t.category == "land" && json.Unmarshal(t.journey, &j) == nil && j.Thread {
-		return 1
-	}
-	return interceptRadius
 }
 
 // blessSpeed lets a live speed prayer shorten a departing journey (steg 2b): the

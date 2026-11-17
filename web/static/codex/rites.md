@@ -12,13 +12,13 @@ A rite is a request made at the temple of its god.
 
 ## Standing and offerings for prayers {#prayer-requirements}
 
-A prayer answers when you meet its standing, have its god's temple and can bring its offering. Waiting time, an active gift or an unused departure gift can still prevent a new prayer.
+A prayer answers when you meet its standing, have its god's temple and can bring its offering. Waiting time or an active gift can still prevent a new prayer.
 
 A lasting prayer offers the gift as 1, 2, 3 or 5 times the traditional one; the length and the temple's rest grow the same way, up to five times. Other goods go under **Offer other goods**; a smaller gift is refused without taking goods. In Keryx, `rite --offer good=amount` chooses the gift.
 
 ### Waiting between prayers {#prayer-requirements-2}
 
-An answered prayer makes **that temple** rest, not the god or your other temples. The rest grows with the gift and shrinks with temple level: level 2 rests half as long as level 1, level 3 a third. **A temple recovers only while fully staffed**. Potnia's prayers share her temple's rest. An active gift, or one awaiting departure, cannot be renewed before it ends or is used.
+An answered prayer makes **that temple** rest, not the god or your other temples. The rest grows with the gift and shrinks with temple level: level 2 rests half as long as level 1, level 3 a third. **A temple recovers only while fully staffed**. Potnia's prayers share her temple's rest. An active gift cannot be renewed before it ends.
 
 ## Prayer answers and active blessings {#rites-the-prayers}
 
@@ -61,7 +61,7 @@ You choose **the city where you pray** (twice the offering) or **the whole realm
 - **[[swift-feet|Swift Feet]]**: named Runners and land caravans take a quarter less time over what is left of their road, for 12 game days.
 - **[[following-seas|Following Seas]]**: named ships take a quarter less time over what is left of their voyage, for 12 game days. A journey is shortened once, however many prayers are said.
 
-Ares' Fury (Akhaier) works like Mistress of the Walls. Green Shoots requires 30 kharis; the rest at least 5.
+Green Shoots requires 30 kharis; the rest at least 5.
 
 `rite --prayer <id>` chooses a prayer; omitting it uses the culture's default (Mistress of the Walls for Minoans).
 

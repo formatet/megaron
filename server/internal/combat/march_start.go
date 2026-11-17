@@ -998,8 +998,6 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 
 	// The departure transaction and blessing were locked before itinerary
 	// checks, so preview and execution use the same outward speed rule.
-	// Never set since the departure prayers were removed; the units.stillness_* columns await their own migration.
-	var stillnessDepart, stillnessArrive *int
 
 	// The colonist purse (B3, mig 107). A founding used to MINT the colony's
 	// starting silver; now the expedition carries it from the city that sent it.
@@ -1244,12 +1242,11 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		   pickup_unit_id = $19,
 		   pickup_wait_ticks = $20,
 		   march_route  = $21,
-   stillness_depart_tick=$22, stillness_arrive_tick=$23, stillness_owner_id=$24,
 		   updated_at   = now()
 		 WHERE id = $1`,
 		o.UnitID, originQ, originR, targetQ, targetR, now, arrivesAt, stanceArg, intentArg, nameArg, homeSettlementArg, captureMode,
 		currentTick, currentTick+travelTicks, landTargetQArg, landTargetRArg, landCargoIntentArg, passageMessengerArg,
-		pickupUnitArg, pickupWaitArg, marchRoute, stillnessDepart, stillnessArrive, o.PlayerID,
+		pickupUnitArg, pickupWaitArg, marchRoute,
 	); err != nil {
 		return nil, reject(http.StatusInternalServerError, "could not update unit")
 	}

@@ -22,13 +22,12 @@ func SpeedUpMarchingUnit(ctx context.Context, tx pgx.Tx, scheduler *events.Sched
 	var status string
 	var depart, arrive *int
 	var raw []byte
-	var stillness *int
 	var expedition bool
-	if err := tx.QueryRow(ctx, `SELECT status,depart_tick,arrive_tick,march_route,stillness_depart_tick,EXISTS(SELECT 1 FROM unit_expeditions e WHERE e.unit_id=units.id) FROM units WHERE id=$1 FOR UPDATE`, unitID).
-		Scan(&status, &depart, &arrive, &raw, &stillness, &expedition); err != nil {
+	if err := tx.QueryRow(ctx, `SELECT status,depart_tick,arrive_tick,march_route,EXISTS(SELECT 1 FROM unit_expeditions e WHERE e.unit_id=units.id) FROM units WHERE id=$1 FOR UPDATE`, unitID).
+		Scan(&status, &depart, &arrive, &raw, &expedition); err != nil {
 		return nil, err
 	}
-	if status != string(unit.StatusMarching) || stillness != nil || expedition {
+	if status != string(unit.StatusMarching) || expedition {
 		return nil, nil
 	}
 	r, ok := LoadActiveRoute(raw, status, depart, arrive)

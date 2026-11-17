@@ -1,78 +1,16 @@
 package religion
 
-import "math"
-
 // An offering is composed, not prescribed: the Wanax decides what to carry to
-// the altar. What it is worth follows from three things multiplied together —
-// how much you brought, its fixed divine value (FixedDivineValues), and whether
-// this particular god wants it at all (affinity).
+// the altar. What it is worth is amount x the good's fixed divine value
+// (FixedDivineValues) x the god's taste for it (affinity). That worth sets the
+// gift step of the prayer (how many times the baseline the gift reaches).
 //
-// The god's taste is what makes composition a decision rather than arithmetic.
-// Without it, "compose an offering" is just addition with extra steps.
+// The god's taste is what makes composition a decision rather than arithmetic:
+// incense, for one, weighs more in the favours tables of prayers.go.
 
-const (
-	// affinityDefault applies to any good a god has no stated opinion about.
-	// Not zero: an unfavoured gift is a lesser gift, never an insult.
-	affinityDefault = 1.0
-
-	// Bounds on how far the offering can move the odds. Unchanged from the
-	// fixed-recipe era (riteOfferModFat/Stingy in api/handlers) so every
-	// calibration made against the old formula carries over untouched.
-	offerModMax = 0.10
-	offerModMin = -0.15
-
-	// stingyRatioFloor is the fraction of the baseline at which the penalty
-	// bottoms out — the old riteOfferMultiplierMin, kept so the two eras agree
-	// on what "a stingy offering" costs.
-	stingyRatioFloor = 0.5
-
-	// offerModSlope converts "worth relative to what the god expects" into odds.
-	// Saturating rather than linear, and that is the point: an offering can
-	// never buy what standing must earn. Kharis is the relationship; the
-	// offering is a courtesy.
-	offerModSlope = 0.20
-
-	// A gift of many kinds pleases more than a heap of one — and the only way to
-	// assemble many kinds is to trade for them. Small on purpose: it should
-	// tilt the decision, never dictate it.
-	varietyBonusPerGood = 0.015
-	varietyBonusMax     = 0.045
-
-	// IncenseKey is the one good the ceiling bends for (Timothy 2026-10-19:
-	// incense should give more than other offerings).
-	IncenseKey = "incense"
-
-	// incenseCapLift is how far the ceiling rises when the whole offering is
-	// incense: cap = offerModMax + incenseCapLift * (incense share of worth), so
-	// a pure incense gift tops out at +0.25 and a grain gift stays at +0.10.
-	// Generous on purpose (alpha). Only the ceiling moves: the floor, the slope
-	// and the baseline are untouched, and a gift still never buys what kharis
-	// must earn.
-	incenseCapLift = 0.15
-)
-
-// OfferModCap is the ceiling on an offering's nudge given the fraction (0..1) of
-// its worth that is incense.
-func OfferModCap(incenseShare float64) float64 {
-	if incenseShare < 0 {
-		incenseShare = 0
-	}
-	if incenseShare > 1 {
-		incenseShare = 1
-	}
-	return offerModMax + incenseCapLift*incenseShare
-}
-
-// IncenseShare is incense's fraction of the offering's total worth (0 when the
-// offering is worth nothing).
-func IncenseShare(offering map[string]float64, divineValues map[string]float64, favours map[string]float64) float64 {
-	total := OfferingWorth(offering, divineValues, favours)
-	if total <= 0 {
-		return 0
-	}
-	only := OfferingWorth(map[string]float64{IncenseKey: offering[IncenseKey]}, divineValues, favours)
-	return only / total
-}
+// affinityDefault applies to any good a god has no stated opinion about.
+// Not zero: an unfavoured gift is a lesser gift, never an insult.
+const affinityDefault = 1.0
 
 // OfferingWorth values a composed offering in divine terms.
 //
@@ -97,82 +35,6 @@ func OfferingWorth(offering map[string]float64, divineValues map[string]float64,
 		worth += amount * value * affinity
 	}
 	return worth
-}
-
-// DistinctGoods counts the kinds actually brought (positive amounts only).
-func DistinctGoods(offering map[string]float64) int {
-	n := 0
-	for _, amount := range offering {
-		if amount > 0 {
-			n++
-		}
-	}
-	return n
-}
-
-// ComposedOfferMod is what the rite handler calls for a composed offering: the
-// nudge on the odds and the ceiling that applied to it (the verdict text needs
-// the ceiling to tell "more would be wasted" truthfully).
-func ComposedOfferMod(offering, divineValues, favours map[string]float64, baseline float64) (mod, ceiling float64) {
-	share := IncenseShare(offering, divineValues, favours)
-	worth := OfferingWorth(offering, divineValues, favours)
-	return OfferModWithIncense(worth, baseline, DistinctGoods(offering), share), OfferModCap(share)
-}
-
-// OfferMod turns an offering's worth into a nudge on the success chance.
-//
-// baseline is what this god expects for this prayer, in the same divine units.
-// An offering exactly at the baseline is neutral (mod 0) — it neither impresses
-// nor offends. Above it saturates toward offerModMax; below it falls toward
-// offerModMin, which is the steeper direction: the gods notice stinginess more
-// keenly than generosity.
-func OfferMod(worth, baseline float64, distinctGoods int) float64 {
-	return OfferModWithIncense(worth, baseline, distinctGoods, 0)
-}
-
-// OfferModWithIncense is OfferMod with the ceiling lifted by incenseShare (see
-// OfferModCap). With share 0 it is exactly OfferMod.
-func OfferModWithIncense(worth, baseline float64, distinctGoods int, incenseShare float64) float64 {
-	if baseline <= 0 {
-		return 0
-	}
-	ratio := worth / baseline
-	ceiling := OfferModCap(incenseShare)
-
-	var mod float64
-	switch {
-	case ratio >= 1:
-		// Saturating: doubling a generous offering does not double the favour.
-		mod = ceiling * (1 - math.Exp(-(ratio-1)/offerModSlope*0.5))
-	default:
-		// Below baseline the floor is reached at HALF the baseline, not at an
-		// empty altar. That preserves the old scale's anchor points exactly:
-		// riteOfferMultiplier 0.5 (the old minimum) was the full −0.15, and
-		// 2.0 the full +0.10. Mapping the floor to ratio 0 instead would have
-		// made a halved offering cost less than a doubled one gains — measured,
-		// and the reason this branch is not a plain (1 − ratio).
-		shortfall := (1 - ratio) / (1 - stingyRatioFloor)
-		if shortfall > 1 {
-			shortfall = 1
-		}
-		mod = offerModMin * shortfall
-	}
-
-	if distinctGoods > 1 {
-		bonus := float64(distinctGoods-1) * varietyBonusPerGood
-		if bonus > varietyBonusMax {
-			bonus = varietyBonusMax
-		}
-		mod += bonus
-	}
-
-	if mod > ceiling {
-		mod = ceiling
-	}
-	if mod < offerModMin {
-		mod = offerModMin
-	}
-	return mod
 }
 
 // OfferingShortfall reports how far short of the baseline an offering fell, as a
