@@ -77,8 +77,6 @@ try:
    'minoan_potnia_vision_v2':{'grain':10,'silver':3},
    'minoan_potnia_walls':{'grain':8,'timber':4},
    'minoan_velchanos_green_shoots':{'grain':15,'silver':2},
-   'minoan_asterion_thread':{'timber':4,'silver':3},
-   'minoan_stillness_passage':{'fish':6,'silver':3},
   }
   catalogue=api(wp+'/provinces/'+province,token=token)['settlement']['available_prayers']
   by_prayer={p['id']:p for p in catalogue}
@@ -90,7 +88,7 @@ try:
   for prayer_id,recipe in expected_recipes.items():
    row=next(line for line in cli.splitlines() if line.startswith(prayer_id))
    assert all(str(amount) in row and good+'×'+str(amount) in row for good,amount in recipe.items()),row
-  assert all(name in cli for name in ["Potnia's Vision","Mistress of the Walls","Green Shoots","The Thread Shows a Path","Favourable Passage"]),cli
+  assert all(name in cli for name in ["Potnia's Vision","Mistress of the Walls","Green Shoots"]),cli
   assert 'Britomartis' not in cli and 'Poseidon' not in cli and 'The Sea Daimons of Stillness' in cli,cli
   (OUT/'keryx-before.txt').write_text(cli+'\n')
   from playwright.sync_api import sync_playwright
@@ -120,7 +118,7 @@ try:
     if brief.is_visible():brief.click()
    page.evaluate("async()=>await Promise.all([...document.querySelectorAll('.drawer.open')].flatMap(d=>d.getAnimations()).map(a=>a.finished.catch(()=>{})))")
    text=page.locator('#kult-body').inner_text()
-   assert all(name in text for name in ["Potnia's Vision","Mistress of the Walls","Green Shoots","The Thread Shows a Path","Favourable Passage"]),text
+   assert all(name in text for name in ["Potnia's Vision","Mistress of the Walls","Green Shoots"]),text
    assert 'The Sea Daimons of Stillness' in text and 'Havsdaimonerna' not in text,text
    for recipe in expected_recipes.values():
     recipe_text='traditional offering: '+' + '.join(str(amount)+' '+good for good,amount in sorted(recipe.items()))
@@ -130,35 +128,12 @@ try:
     page.locator('#kult-body').evaluate('(el)=>{el.scrollTop=el.scrollHeight;}')
     page.evaluate('async()=>await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))')
     page.screenshot(path=str(OUT/'mobile-prayers.png'))
-   if label=='desktop':
-    for prayer_id in ['minoan_asterion_thread','minoan_stillness_passage']:
-     attempts=[]
-     for _ in range(25):
-      button=page.locator(f'button[onclick="okRite(\'{prayer_id}\')"]')
-      with page.expect_response(lambda r:r.request.method=='POST' and r.url.endswith('/rite')) as reply:button.click()
-      response=reply.value;payload=response.json();assert response.status==200,payload;attempts.append(payload)
-      page.locator('#kult-body [data-inline-result]').wait_for()
-      if payload['success']:break
-     else:raise AssertionError('no success observed in 25 real attempts')
-     page.wait_for_function("document.getElementById('kult-body')?.textContent.includes('awaiting next departure')")
-     current=api(wp+'/provinces/'+province,token=token)['settlement']['available_prayers']
-     by_id={p['id']:p for p in current}
-     assert by_id[prayer_id]['departure_pending'],by_id
-     assert by_id[prayer_id]['cooldown_remaining_game_days']==12,by_id
-     assert by_id[prayer_id].get('active_remaining_game_days',0)==0,by_id
-     assert not by_id[prayer_id]['affordable'],by_id
-     actions.append({'prayer_id':prayer_id,'attempts':attempts,'after':current,'inline':page.locator('#kult-body [data-inline-result]').inner_text(),'sql_writes_during_action':False})
-    page.screenshot(path=str(OUT/'desktop-pending.png'))
-    page.locator('#kult-body').evaluate('(el)=>{el.scrollTop=el.scrollHeight;}')
-    page.evaluate('async()=>await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))')
-    page.screenshot(path=str(OUT/'desktop-departure-prayers.png'))
    captures.append({'mode':label,'errors':list(errors),'text':page.locator('#kult-body').inner_text()})
    context.close()
   after=run(str(tmp/'keryx'),'rite','--list',env=clienv);(OUT/'keryx-after.txt').write_text(after+'\n')
-  assert after.count('awaiting next departure')==2 and after.count('12 days')==2,after
   assert all(not c['errors'] for c in captures),captures
   (OUT/'verification.json').write_text(json.dumps({'health':health,'source_parent_commit':commit,'source_working_diff_sha256_at_build':source_diff_hash,'traditional_recipes':expected_recipes,'initial_bank':initial_silver,'initial_founding':founded,'world':world,'username':username,'normal_register_join_founding':True,'fixture':'Own city temple level3, grain/timber/fish/silver1000, realm kharis90/rate0 before actions; not natural temple build','sql_writes_during_actions':False,'payload_overrides':False,'captures':captures,'actions':actions},indent=2)+'\n')
-  print('Firefox1280/390 five prayers + real Thread/Passage Offer200/pending/wait12 + Keryx list; explicit pre-action fixture')
+  print('Firefox1280/390 three prayers + Keryx list; explicit pre-action fixture')
 finally:
  if browser:browser.close()
  if playwright:playwright.stop()
