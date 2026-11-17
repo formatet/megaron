@@ -26,8 +26,6 @@ type TradeJourney struct {
 	TravelTicks      int                  `json:"travel_ticks"`
 	Distance         int                  `json:"distance"`
 	TimeFactorMilli  int                  `json:"time_factor_milli,omitempty"`
-	Thread           bool                 `json:"asterion_thread,omitempty"`
-	Stillness        bool                 `json:"stillness,omitempty"`
 	DepartureChecked bool                 `json:"departure_checked,omitempty"`
 	// SpeedBlessing is the id of the speed prayer that shortened this journey (steg 2b).
 	// A marked journey keeps its StepCosts as real milli lengths, so the 1.5x calibration
@@ -126,11 +124,8 @@ func (j TradeJourney) Validate() error {
 	if factor == 0 {
 		factor = 1000
 	}
-	if factor != 1000 && factor != 750 {
+	if factor != 1000 {
 		return fmt.Errorf("invalid saved departure factor")
-	}
-	if (j.Thread || j.Stillness) != (factor == 750) || (j.Thread && j.Category != "land") || (j.Stillness && j.Category != "naval") {
-		return fmt.Errorf("invalid saved departure blessing")
 	}
 	if j.SpeedBlessing != "" {
 		if factor != 1000 && factor != 0 {

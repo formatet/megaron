@@ -292,10 +292,6 @@ func (h *SeaStormScanHandler) sail(ctx context.Context, worldID uuid.UUID, dueTi
 		return tx.Commit(ctx)
 	}
 
-	var protected bool
-	if err := tx.QueryRow(ctx, `SELECT COALESCE(stillness_depart_tick=$2 AND stillness_arrive_tick=$3 AND stillness_owner_id=$4 AND owner_id=$4,false) FROM units WHERE id=$1`, v.shipID, v.departTick, v.arriveTick, v.owner).Scan(&protected); err != nil {
-		return err
-	}
 	var encounters []stormEncounter
 	if v.route.Version == 2 {
 		var from *int64
@@ -328,7 +324,7 @@ func (h *SeaStormScanHandler) sail(ctx context.Context, worldID uuid.UUID, dueTi
 		encounters = stormEncounters(v.route, enter, graph, occupied, last, dueTick)
 	}
 	var storms []SeaStormPayload
-	if !protected && len(encounters) > 0 {
+	if len(encounters) > 0 {
 		// No realm record: no standing with the gods, so no tilt (never "kharis 0").
 		var spare, wrath float64
 		var kharis float64

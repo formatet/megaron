@@ -132,9 +132,8 @@ func TestBlessedHull_WardDrawsNoDie(t *testing.T) {
 	}
 }
 
-// A storm met before the prayer was said is not covered; Favourable Passage's own
-// protection spends no ward.
-func TestBlessedHull_NotBackwardsAndNotWhenProtected(t *testing.T) {
+// A storm met before the prayer was said is not covered.
+func TestBlessedHull_NotBackwards(t *testing.T) {
 	t.Run("storm before the prayer", func(t *testing.T) {
 		pool, world, owner, route := seaStormWorld(t)
 		ship, _ := mkStormFleet(t, pool, world, owner, route)
@@ -143,23 +142,6 @@ func TestBlessedHull_NotBackwardsAndNotWhenProtected(t *testing.T) {
 		got := stormPayloads(t, ship)
 		if len(got) != 3 || got[0].Divine == "warded" || got[0].Damage != StormDamage || got[2].Divine != "warded" {
 			t.Fatalf("the ward must go to the first storm met after the prayer (tick>=5), not the first one ever: %+v", got)
-		}
-	})
-	t.Run("protected voyage keeps the ward", func(t *testing.T) {
-		pool, world, owner, route := seaStormWorld(t)
-		ship, _ := mkStormFleet(t, pool, world, owner, route)
-		if _, err := pool.Exec(context.Background(), `UPDATE units SET stillness_depart_tick=0,stillness_arrive_tick=10,stillness_owner_id=$2 WHERE id=$1`, ship, owner); err != nil {
-			t.Fatal(err)
-		}
-		stormBless(t, world, owner, religion.ScopeUnit, &ship, 0, 20)
-		runThreeStorms(t, world, nil)
-		if _, hull := shipState(t, pool, ship); hull != 5 {
-			t.Fatalf("hull %d, want 5 (Stillness protected)", hull)
-		}
-		var used int
-		_ = pool.QueryRow(context.Background(), `SELECT count(*) FROM prayer_blessing_wards_used WHERE unit_id=$1`, ship).Scan(&used)
-		if used != 0 {
-			t.Fatalf("a protected voyage spent %d wards", used)
 		}
 	})
 }
