@@ -1,0 +1,16 @@
+# Log forsta-timmen-4
+- 1-8 actions: signed up as Kalchas4 via NEW PLAYER tab
+- ~20 actions: onboarding dispatch OK, found city Siteia (confirm step), 2 notices appear
+- ~38 actions: City panel. Placed 2nd fisher on 42,50: 'Your citizens here: fish 2' but still 'fish 1 per game day total' and Food -0.3 unchanged (stale or capped?). Dispatch said 'Poseidon grants a Galley' unexplained.
+- ~62 actions: All 10 placed. Warehouse: Silver 120 +0/day, Grain 1,200 -5.6/day, Fish +6/day (but hex panel said 'fish 1 per game day total' with 2 fishers: disagree, shots 0038 vs 0065). Farm needs 4 stone 6 timber.
+- ~75 actions: Kult tabs read. Kharis 39.7 Indifferent, net -0.33/day, wrath below 30. Temples all 'OPEN CITY TO BUILD', cost 24 stone 8 timber. Purple starry hex appeared east of the island on the map.
+- ~92 actions: March dialog: ticking 'Explore the surrounding area, then return home' -> red 'Nothing sent — The unseen ground within 5 hexes of (43,52) is water or mountain this unit cannot enter — explore it with a ship.' (shot 0092). March panel is a floating popup that shifts when error text appears so my 2nd click missed the March button.
+- ~108 actions: Codex (?) is good: 'How do I...?' is a task-ordered page. Clock: 22:54 wall at founding+4min. Click mountain: 'Impassable — armies cannot go here.' clear.
+- ~114 actions: Sent galley on sea expedition toward storm hex (44,50); popup text clear ('turns home by today 23:04'). Storm tooltip 'Storm — drifting E'. Hex panel for storm hex says only 'Storm — in sight' + button 'Send galleys ->' (invites sending ship into storm, no warning).
+- ~130 actions: reload OK (stayed logged in, same state). Now waiting for stone.
+- ~138 actions: 23:01 Farm needed 4 stone; had 3 at 22:58 -> 4 later. Chose hex via 'Choose a hex' then BUILD at 23:01-ish ('ready ≈ 23:09'). Notifs: 1st Spearmen arrived 22:58, 'Mission complete' 23:00 (galley). Hex 43,52 farm 'grain output x1.7'.
+- ~154 actions: 1st Spearmen 'arrived at (43,52) — positioned' ('positioned' unexplained). Marched back: 'Order sent to Siteia — Runner following the unit — next meeting ≈ today 23:02. The order applies when they meet.' Clear but surprising for newcomer (army doesn't move at once).
+- ~169 actions: left toolbar: ▤ = Legend OK; ⚒ turned red when clicked, nothing visible changed, no label (unclear). Economy Send goods: 'To No other city known yet'.
+- ~185 actions: Farm built 23:08. Food +1.2 after farm. +1 with 0 free: red text at panel bottom 'No citizens left in the pool — every citizen is already placed; take one off another place first.' Moved 1 timber worker to farm.
+- ~192 actions desktop done. Search (⌕) works. Diplomacy Runners: 'No runners on the road, and none of anyone else’s that you know of.' Switching to phone.
+- ~229 actions total (about 35 on phone). Phone ok: home button needed to re-centre map after resize; panels full-screen; march works. Done, driver quit.
