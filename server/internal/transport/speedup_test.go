@@ -98,29 +98,6 @@ func TestSpeedUpTransport_RemainingTimeIdempotentAndInPlace(t *testing.T) {
 	}
 }
 
-// A journey that left under a departure prayer (factor 0.75) is never sped again.
-func TestSpeedUpTransport_DepartureSpedIsLeftAlone(t *testing.T) {
-	ctx := context.Background()
-	pool := testPool(t)
-	f := newFixture(t, pool)
-	tx, _ := pool.Begin(ctx)
-	defer tx.Rollback(ctx)
-	defer tx.Rollback(ctx)
-	if _, err := tx.Exec(ctx, `INSERT INTO departure_prayers(settlement_id,owner_id,effect) VALUES($1,$2,'next_land_departure')`, f.sourceID, f.owner); err != nil {
-		t.Fatal(err)
-	}
-	id, err := Dispatch(ctx, tx, events.NewScheduler(pool, clock.NewTestClock(time.Now())), DispatchParams{WorldID: f.worldID, OwnerID: f.owner, OriginID: f.sourceID, DestID: f.destID, Kind: "transfer", Category: "land", DestQ: 3, DepartsAt: time.Now(), Manifest: Manifest{"grain": 1}})
-	if err != nil {
-		t.Fatal(err)
-	}
-	got, err := SpeedUpTransport(ctx, tx, id, uuid.New(), time.Now())
-	if err != nil || got != nil {
-		t.Fatalf("a departure-sped caravan was sped again: %v %v", got, err)
-	}
-}
-
-// A live speed prayer over the departing city shortens the whole journey; it does not
-// stack on a pending departure prayer; after until_tick the time is normal.
 func TestBlessDeparture_SpeedPrayerHoldsOnlyWhileItLasts(t *testing.T) {
 	ctx := context.Background()
 	pool := testPool(t)

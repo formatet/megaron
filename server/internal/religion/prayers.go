@@ -19,7 +19,7 @@ package religion
 type PrayerSpec struct {
 	ID            string
 	GodID         string             // stable cooldown key; empty preserves legacy per-temple prayers
-	EffectType    string             // "oracle_reveal_deposits" | "battle_frenzy" | "harvest_blessing"
+	EffectType    string             // see the Effect* constants
 	MinKharis     float64            // tier-gate (required divine standing, NOT a cost)
 	Offering      map[string]float64 // good_key→amount, consumed on cast regardless of outcome
 	CooldownTicks int                // minimum world ticks between casts; 0 = no cooldown
@@ -48,11 +48,6 @@ func FavoursFor(spec PrayerSpec) map[string]float64 {
 // favoursByEffect keeps the catalogue honest: 18 hand-written taste maps would
 // drift apart within a month. Weights are strawman — tune against soak data.
 var favoursByEffect = map[string]map[string]float64{
-	EffectOracleRevealDeposits: {
-		// The seer wants what is dug and worked — like calls to like.
-		"oil": 1.5, "silver": 1.4, "bronze": 1.3,
-		"grain": 0.6, "fish": 0.5, "stone": 0.4, "incense": 2.1, // plan said 3.0; held under the sea-god fish weight (2.2) so fish stays the favourite
-	},
 	EffectHarvestBlessing: {
 		// The one who feeds a people wants what grows and what is poured out.
 		"wine": 2.0, "oil": 1.6, "grain": 1.3, "livestock": 1.3, "fish": 0.9,
@@ -90,9 +85,6 @@ var (
 // grandest prayers demand trade goods you must acquire: religion drives trade.
 // Kharis is NEVER part of an offering — it is standing, gated by MinKharis.
 
-// EffectOracleRevealDeposits reveals an unseen ore deposit anywhere in the world to the caster.
-const EffectOracleRevealDeposits = "oracle_reveal_deposits"
-
 // EffectBattleFrenzy applies a combat strength buff.
 const EffectBattleFrenzy = "battle_frenzy"
 
@@ -104,46 +96,18 @@ const EffectHarvestBlessing = "harvest_blessing"
 // New prayers = new map entries, no logic changes.
 //
 // Kharis is NEVER spent. MinKharis = required standing, not a cost.
-var PrayerSpecs = map[string]PrayerSpec{
-	// ── Minoan ───────────────────────────────────────────────────────────
-	"minoan_oracle_deposits": {
-		ID: "minoan_oracle_deposits", EffectType: EffectOracleRevealDeposits,
-		MinKharis: MoodSuspicious, Offering: map[string]float64{"oil": 20, "wine": 15},
-		CooldownTicks: 24, TargetKind: "",
-		God: "Potnia", Name: "Potnia's Vision",
-		Description: "Reveals one ore deposit you have never seen — copper, tin or silver, somewhere in the world.",
-		Favours:     potniaTheronOracleFavours,
-	},
-	"minoan_harvest_blessing": {
-		ID: "minoan_harvest_blessing", EffectType: EffectHarvestBlessing,
-		MinKharis: MoodIndifferent, Offering: map[string]float64{"wine": 15, "oil": 10},
-		CooldownTicks: 12, TargetKind: "",
-		God: "Britomartis", Name: "Britomartis' Gift",
-		Description: "Blesses the harvest — grain, oil and wine yield a quarter more for 25 game days.",
-	},
-	"minoan_battle_frenzy": {
-		ID: "minoan_battle_frenzy", EffectType: EffectBattleFrenzy,
-		MinKharis: MoodSuspicious, Offering: map[string]float64{"grain": 10, "wine": 10},
-		CooldownTicks: 6, TargetKind: "",
-		God: "Poseidon", Name: "Poseidon's Storm",
-		Description: "Your own garrison defending this city fights a quarter stronger for 6 game days.",
-		Favours:     havsdaimonernaBattleFrenzyFavours,
-	},
-}
+var PrayerSpecs = map[string]PrayerSpec{}
 
 // Alpha IDs never reinterpret a historical RiteCast prayer/effect.
 const (
 	PrayerPotniaVision = "minoan_potnia_vision_v2"
 	PrayerPotniaWalls  = "minoan_potnia_walls"
 	PrayerGreenShoots  = "minoan_velchanos_green_shoots"
-	// Retired 2b (replaced by the two prayers of speed): the ids stay so an old RiteCast is still readable
-	// and a departure_prayers row left pending is still honoured at departure.
-	PrayerAsterionThread    = "minoan_asterion_thread"
-	PrayerStillnessPassage  = "minoan_stillness_passage"
-	EffectOracleMemory      = "oracle_memory_v2"
-	EffectGarrisonDefense   = "garrison_defense"
-	EffectNextLandDeparture = "next_land_departure"
-	EffectNextShipDeparture = "next_ship_departure"
+	// Retired 2b (replaced by the two prayers of speed): the ids stay so an old RiteCast is still readable.
+	PrayerAsterionThread   = "minoan_asterion_thread"
+	PrayerStillnessPassage = "minoan_stillness_passage"
+	EffectOracleMemory     = "oracle_memory_v2"
+	EffectGarrisonDefense  = "garrison_defense"
 
 	// Stormbönerna (steg 3b): the Sea Daimons of Stillness still a named storm or wake an ordinary one.
 	// Not blessings: no scope, no duration; the effect is done by combat.CalmStorm / combat.WakeStorm.

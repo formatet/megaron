@@ -280,7 +280,7 @@ test('codex: ? in the Kult drawer opens rites on Prayers, temples on Temples, kh
 // five bullets (<= 90 words), stay under 60 % of their former length, and keep every anchor they had.
 // Caps and anchor lists are literals taken from master at 9aaf99aa.
 const ruleFirst = {
-  'rites': { cap: 1761, anchors: ['rites-details', 'prayer-requirements', 'prayer-requirements-2', 'rites-the-prayers', 'minoan-prayers', 'minoan-prayers-2', 'minoan-prayers-3', 'offerings'] },
+  'rites': { cap: 1761, anchors: ['rites-details', 'prayer-requirements', 'prayer-requirements-2', 'rites-the-prayers', 'minoan-prayers', 'minoan-prayers-2', 'offerings'] },
   'runners': { cap: 1490, anchors: ['runners-details', 'runners-why-this-is-good-for-you', 'runners-when-an-order-fails', 'runners-catching-up-with-a-moving-unit', 'runners-catching-up-with-a-moving-unit-2', 'runners-crossing-the-sea', 'runners-the-runners-tab', 'runners-runner-speed', 'arrange-passage', 'arrange-passage-2', 'runner-lost-at-sea', 'runner-lost-at-sea-details', 'runner-lost-at-sea-details-2', 'runner-passage', 'runner-passage-2', 'runner-passage-3', 'runner-passage-on-map', 'runner-rescued-at-sea', 'runner-rescued-at-sea-details', 'runner-return', 'runner-waiting'] },
   'kharis': { cap: 1247, anchors: ['kharis-numbers', 'kharis-details', 'kharis-details-2', 'raising-kharis', 'raising-kharis-2', 'raising-kharis-3', 'divine-wrath', 'divine-wrath-warning-before-danger', 'divine-wrath-seven-game-days-after-punishment', 'divine-wrath-temple-levels'] },
   'ship-types': { cap: 1076, anchors: ['fetch-by-ship', 'fetch-by-ship-2', 'landing-in-own-city', 'landing-in-own-city-2', 'sailing-time', 'ship-food-return', 'ship-loss', 'ship-missions', 'ship-missions-2', 'ship-missions-3', 'ship-types-2'] },

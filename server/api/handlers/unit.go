@@ -461,11 +461,7 @@ func (h *UnitHandler) sendOrderCourierTx(w http.ResponseWriter, ctx context.Cont
 	defer tx.Rollback(ctx)
 
 	if origin.settlementID != nil {
-		courierArrivesAt, dueTick, err = messenger.BlessRunner(ctx, tx, payload.WorldID, payload.PlayerID, *origin.settlementID, now, currentTick, dueTick)
-		if err != nil {
-			writeError(w, 500, "could not prepare Runner departure")
-			return
-		}
+		courierArrivesAt = messenger.RunnerArrival(now, currentTick, dueTick)
 		if passage != nil {
 			passageSinceTick = dueTick
 			passageSinceTickArg = &passageSinceTick

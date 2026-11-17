@@ -40,7 +40,10 @@ func RestTicks(cooldown int, r float64, level int) int {
 	if cooldown <= 0 || level < 1 {
 		return 0
 	}
-	return int(math.Ceil(float64(cooldown) * min(MaxGiftFactor, max(1, r)) / float64(level)))
+	// Round before ceil: r = worth/baseline carries float noise (3.0000000000000004),
+	// and ceil of 36.00000000000001 would add a tick of rest.
+	rest := float64(cooldown) * min(MaxGiftFactor, max(1, r)) / float64(level)
+	return int(math.Ceil(math.Round(rest*1e9) / 1e9))
 }
 
 // TempleRestRemaining is the ticks a temple still rests (0 = ready). The row
@@ -67,13 +70,6 @@ func SetTempleRest(ctx context.Context, db PrayerDB, building uuid.UUID, ticks, 
 // PrayerActiveRemaining is shared by the cast guard and the prayer catalogue.
 // The owner stamp prevents the new city's owner inheriting a defensive gift.
 func PrayerActiveRemaining(ctx context.Context, db PrayerDB, settlement, player uuid.UUID, effect string, nowTick int) (int, error) {
-	if effect == EffectNextLandDeparture || effect == EffectNextShipDeparture {
-		pending, err := DeparturePending(ctx, db, settlement, player, effect)
-		if pending {
-			return 1, err
-		}
-		return 0, err
-	}
 	var until int
 	err := db.QueryRow(ctx, `SELECT CASE
  WHEN $3 IN ('garrison_defense','battle_frenzy') AND owner_id=$2 AND garrison_defense_owner_id=$2 THEN COALESCE(garrison_defense_until_tick,0)

@@ -19,7 +19,6 @@ type waitReasonPrayer struct {
 	Reason     string `json:"unavailable_reason"`
 	Wait       int    `json:"cooldown_remaining_game_days"`
 	Active     int    `json:"active_remaining_game_days"`
-	Pending    bool   `json:"departure_pending"`
 	Affordable bool   `json:"affordable"`
 }
 

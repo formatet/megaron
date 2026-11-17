@@ -19,7 +19,6 @@ import (
 type riteAvailablePrayer struct {
 	CanPrepareOffering    bool               `json:"can_prepare_offering"`
 	GodID                 string             `json:"god_id"`
-	DeparturePending      bool               `json:"departure_pending"`
 	Default               bool               `json:"is_default"`
 	ActiveRemainingDays   int                `json:"active_remaining_game_days"`
 	ID                    string             `json:"id"`
@@ -814,20 +813,13 @@ func restOrWait(pr riteAvailablePrayer) string {
 // gameDaysRemaining uses the shared Keryx unit formatter.
 func gameDaysRemaining(days int) string { return formatDays(days) + " remaining" }
 
-// prayerReadiness keeps a pending one-use gift distinct from a timed effect.
+// prayerReadiness tells whether a prayer can be offered now, is active, or waits.
 func prayerReadiness(pr riteAvailablePrayer) (string, string) {
 	if pr.CanPrepareOffering && !pr.Affordable {
 		return "compose", "traditional gift unavailable; use --offer"
 	}
 	if pr.UnavailableReason != "" {
 		return "no: " + pr.UnavailableReason, "—"
-	}
-	if pr.DeparturePending {
-		status := "awaiting next departure"
-		if pr.CooldownRemainingDays > 0 {
-			status += "; " + restOrWait(pr)
-		}
-		return "pending", status
 	}
 	if pr.ActiveRemainingDays > 0 {
 		status := gameDaysRemaining(pr.ActiveRemainingDays) + " active"

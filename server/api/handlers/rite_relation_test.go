@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"formatet/megaron/server/internal/auth"
 	"github.com/go-chi/chi/v5"
 	"net/http"
@@ -59,7 +58,7 @@ func TestRelationEverydayExactThresholdNoDiceOrStandingDebit(t *testing.T) {
 			dice := &relationDice{roll: 99}
 			f.h.RiteDice = dice
 			before := relationTuple(t, f)
-			r := relationCast(f, f.cities[0], map[string]any{"prayer": prayer, "offer_multiplier": 2})
+			r := relationCast(f, f.cities[0], map[string]any{"prayer": prayer, "offer_multiplier": 2}) // a stray field from an old client is ignored
 			if r.Code != 200 || !strings.Contains(r.Body.String(), `"success":true`) {
 				t.Fatalf("exact threshold response %d %s", r.Code, r.Body.String())
 			}
@@ -79,12 +78,12 @@ func TestRelationEverydayExactThresholdNoDiceOrStandingDebit(t *testing.T) {
 				}
 			}
 			var success bool
-			var spent, mult float64
-			if err := f.pool.QueryRow(ctx, `SELECT (payload->>'success')::boolean,(payload->>'kharis_spent')::float8,(payload->>'offer_multiplier')::float8 FROM events WHERE world_id=$1 AND event_type='RiteCast'`, f.world).Scan(&success, &spent, &mult); err != nil {
+			var spent float64
+			if err := f.pool.QueryRow(ctx, `SELECT (payload->>'success')::boolean,(payload->>'kharis_spent')::float8 FROM events WHERE world_id=$1 AND event_type='RiteCast'`, f.world).Scan(&success, &spent); err != nil {
 				t.Fatal(err)
 			}
-			if !success || spent != 0 || mult != 1 {
-				t.Errorf("wrong event outcome: %v spent %g multiplier %g", success, spent, mult)
+			if !success || spent != 0 {
+				t.Errorf("wrong event outcome: %v spent %g", success, spent)
 			}
 			if !strings.Contains(r.Body.String(), `"kharis_spent":0`) {
 				t.Error("response must retain zero standing spend")
@@ -134,38 +133,6 @@ func TestRelationComposedOfferingThresholdAndRollback(t *testing.T) {
 		})
 	}
 }
-func TestRelationLegacyRollAndMultiplierWithoutStandingDebit(t *testing.T) {
-	for _, roll := range []int{0, 99} {
-		t.Run(fmt.Sprintf("roll_%d", roll), func(t *testing.T) {
-			f := newAlphaFixture(t)
-			ctx := context.Background()
-			if _, err := f.pool.Exec(ctx, `UPDATE settlements SET culture_id='akhaier' WHERE id=$1`, f.cities[0]); err != nil {
-				t.Fatal(err)
-			}
-			dice := &relationDice{roll: roll}
-			f.h.RiteDice = dice
-			before := relationTuple(t, f)
-			r := relationCast(f, f.cities[0], map[string]any{"prayer": "akhaier_oracle_deposits", "offer_multiplier": .5})
-			want := `"success":true`
-			if roll == 99 {
-				want = `"success":false`
-			}
-			if r.Code != 200 || !strings.Contains(r.Body.String(), want) {
-				t.Fatalf("legacy response %d %s", r.Code, r.Body.String())
-			}
-			if dice.calls != 1 {
-				t.Errorf("legacy dice calls %d", dice.calls)
-			}
-			if relationTuple(t, f) != before {
-				t.Error("legacy prayer debited standing")
-			}
-			if f.stock(t, f.cities[0], "oil") != 90 || f.stock(t, f.cities[0], "wine") != 95 {
-				t.Error("legacy multiplier not applied")
-			}
-		})
-	}
-}
-
 func TestRelationBelowThresholdPreservesAllState(t *testing.T) {
 	f := newAlphaFixture(t)
 	ctx := context.Background()

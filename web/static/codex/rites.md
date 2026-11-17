@@ -63,9 +63,7 @@ You choose **the city where you pray** (twice the offering) or **the whole realm
 
 Ares' Fury (Akhaier) works like Mistress of the Walls. Green Shoots requires 30 kharis; the rest at least 5.
 
-### Gifts awaiting departure {#minoan-prayers-3}
-
-A departure gift stays in the city where you offered until an eligible journey physically leaves. It is used once, and cannot change a journey underway or bless a return leg. **Awaiting next departure** shows beside the prayer until then. `rite --prayer <id>` chooses a prayer; omitting it uses the culture's default (Mistress of the Walls for Minoans).
+`rite --prayer <id>` chooses a prayer; omitting it uses the culture's default (Mistress of the Walls for Minoans).
 
 ## The value of an offering {#offerings}
 

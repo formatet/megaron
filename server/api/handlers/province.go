@@ -47,7 +47,6 @@ type prayerRow struct {
 	UnavailableReason   string             `json:"unavailable_reason,omitempty"`
 	Affordable          bool               `json:"affordable"`
 	Default             bool               `json:"is_default"`
-	DeparturePending    bool               `json:"departure_pending,omitempty"`
 	ActiveRemainingDays int                `json:"active_remaining_game_days,omitempty"`
 	// Game-days, not wall-clock minutes: CooldownTicks is a TICK count
 	// and one tick IS one day (megaron_plan_ticket_ar_dygnet). The old
