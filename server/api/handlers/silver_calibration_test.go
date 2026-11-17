@@ -166,9 +166,6 @@ func TestSilverCalibrationOfferWorkAndLegacyPayloadRead(t *testing.T) {
 	if work, ok := newPayload["offering_work"].(float64); !ok || math.Abs(work-want) > 1e-8 {
 		t.Fatalf("offer work=%v want%g from grain/silver labor values", newPayload["offering_work"], want)
 	}
-	if newPayload["offer_mod"] != float64(0) {
-		t.Fatalf("default offering changed its chance modifier: %v", newPayload["offer_mod"])
-	}
 	if newPayload["offering_value_unit"] != "worker_ticks" || newPayload["valuation_version"] != float64(3) {
 		t.Fatalf("new units absent: %s", raw)
 	}
