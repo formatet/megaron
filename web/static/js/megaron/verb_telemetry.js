@@ -75,7 +75,7 @@ const routes = VERB_EVENTS.map(entry => ({ ...entry,
 }));
 const BUILDINGS = ["farm", "barracks", "mine", "lumbermill", "stonequarry", "market", "wall", "harbour", "shipyard", "foundry", "stable", "temple", "olive_press", "winery", "pen", "silo", "storehouse", "workshop"];
 const UNITS = ["spearman", "elite_infantry", "war_chariot", "galley", "war_galley", "merchantman", "nomadic_host"];
-const RITES = ["akhaier_oracle_deposits", "akhaier_harvest_blessing", "akhaier_battle_frenzy", "khemetiu_oracle_deposits", "khemetiu_harvest_blessing", "khemetiu_battle_frenzy", "knaani_oracle_deposits", "knaani_harvest_blessing", "knaani_battle_frenzy", "thrakes_oracle_deposits", "thrakes_harvest_blessing", "thrakes_battle_frenzy", "minoan_oracle_deposits", "minoan_harvest_blessing", "minoan_battle_frenzy", "hatti_oracle_deposits", "hatti_harvest_blessing", "hatti_battle_frenzy"];
+const RITES = ["minoan_asterion_bird_oracle", "minoan_asterion_horns", "minoan_asterion_swift", "minoan_asterion_thread_v2", "minoan_potnia_fertility", "minoan_potnia_scapegoat", "minoan_potnia_vision_v2", "minoan_potnia_walls", "minoan_potnia_walls_fall", "minoan_stillness_calm", "minoan_stillness_hull", "minoan_stillness_swift", "minoan_stillness_wake", "minoan_velchanos_building", "minoan_velchanos_green_shoots", "minoan_velchanos_strength"];
 const GOODS = ['grain', 'fish', 'livestock', 'timber', 'stone', 'copper', 'tin', 'bronze', 'silver', 'oil', 'wine'];
 const INTENTS = ['march', 'colonize', 'explore', 'landing', 'fortify', 'sentry', 'raid', 'support', 'besiege'];
 const REASON_CODES = ['insufficient_goods'];
