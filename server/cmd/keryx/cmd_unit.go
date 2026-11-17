@@ -238,7 +238,7 @@ long as it stands out there. A watch is a standing expense, not a free eye.`,
 	cmd.Flags().IntVar(&q, "q", 0, "target hex Q — axial coordinate, read it off 'keryx map'")
 	cmd.Flags().IntVar(&r, "r", 0, "target hex R — axial coordinate, read it off 'keryx map'")
 	cmd.Flags().StringVar(&target, "target", "", "target hex as q,r — alternative to --q/--r (e.g. 5,-3)")
-	cmd.Flags().StringVar(&cityTo, "to", "", "destination: a known city name or a hex as q,r (read hexes off 'keryx map')")
+	cmd.Flags().StringVar(&cityTo, "to", "", "destination: city name or hex q,r (see keryx map)")
 	hideHexFlags(cmd)
 	_ = cmd.MarkFlagRequired("unit")
 	return cmd
@@ -848,22 +848,8 @@ func locationStr(c *Client, u unitRow, homes map[string]settlementPos) string {
 
 // ---- unit march --------------------------------------------------------------
 
-func unitMarchCmd() *cobra.Command {
-	var unitID string
-	var targetQ, targetR int
-	var target, cityTo string
-	var stance string
-	var intent, name string
-	var mode string
-	var yes, confirmHiketeia bool
-	var landColonize bool
-	var previewOnly bool
-	var expeditionTicks int
-
-	cmd := &cobra.Command{
-		Use:   "march",
-		Short: "Order a unit to march to a hex — or explore, colonize or land (--intent)",
-		Long: `Order a unit to march to a destination: --to <city name | q,r>.
+// marchLongHelp is the long form of `march --help`, shown by `keryx help march`.
+const marchLongHelp = `Order a unit to march to a destination: --to <city name | q,r>.
 
 Use --preview to estimate arrival without sending an order. The estimate uses
 the current state; courier orders and unknown routes cannot promise an arrival.
@@ -917,8 +903,10 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
   sack (default) — loot goods (silver + a share of the rest, weighted by
     portability) and raze the settlement; the loot is carried home as a
     physical, interceptable caravan. annex — keep today's behaviour: take
-    the settlement outright (a captured capital becomes an ordinary colony).`,
-		Example: `  keryx unit march --unit <id> --to 5,-3
+    the settlement outright (a captured capital becomes an ordinary colony).
+
+Examples:
+  keryx unit march --unit <id> --to 5,-3
   keryx unit march --unit <id> --to 5,-3 --stance fortify
   keryx unit march --unit <id> --to 5,-3 --intent colonize --name Thapsos --yes
   # Colonize the hex the unit already stands on (no coords needed):
@@ -934,7 +922,29 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
   # ...and found a colony there with no further order:
   keryx unit march --unit <ship-id> --to 20,-5 --intent land --colonize --name Thapsos
   # Attack an enemy settlement and annex it instead of the sack default:
-  keryx unit march --unit <id> --to 5,-3 --mode annex`,
+  keryx unit march --unit <id> --to 5,-3 --mode annex`
+
+func unitMarchCmd() *cobra.Command {
+	var unitID string
+	var targetQ, targetR int
+	var target, cityTo string
+	var stance string
+	var intent, name string
+	var mode string
+	var yes, confirmHiketeia bool
+	var landColonize bool
+	var previewOnly bool
+	var expeditionTicks int
+
+	cmd := &cobra.Command{
+		Use:         "march",
+		Short:       "Order a unit to march to a hex — or explore, colonize or land (--intent)",
+		Long:        "Order a unit to march, explore, land or sail: --to <city name | q,r>.\nTerrain: keryx codex marching. A ship at sea takes no new orders (storms: keryx storms).",
+		Annotations: map[string]string{"long": marchLongHelp},
+		Example: `  keryx march --unit <id> --to 5,-3
+  keryx march --unit <id> --to 12,-8 --intent explore --ticks 12
+  keryx march --unit <ship> --to "Petras"            # dock, everyone disembarks
+  keryx march --unit <ship> --to 20,-5 --intent land --colonize --name Thapsos`,
 		Args: rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if cmd.Flags().Changed("ticks") && (intent != "explore" || expeditionTicks <= 0) {
@@ -1160,14 +1170,15 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 	cmd.Flags().IntVar(&targetR, "r", 0, "target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)")
 	cmd.Flags().StringVar(&target, "target", "", "target hex as q,r — alternative to --q/--r (e.g. 5,-3)")
 	cmd.Flags().StringVar(&stance, "stance", "", "stance on arrival: fortify|storm|sentry")
-	cmd.Flags().StringVar(&intent, "intent", "", "arrival intent: colonize (found a new colony — use --name to name it; omit --to to colonize the hex the unit is on) | explore (first to the selected hex, then explores around it; turns home by half the chosen duration) | land (land everyone aboard in your own coastal city and stay docked, or on open ground and sail home; add --colonize only on open ground)")
-	cmd.Flags().StringVar(&name, "name", "", "colony name (with --intent colonize, or --intent land --colonize)")
-	cmd.Flags().StringVar(&mode, "mode", "", "conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)")
-	cmd.Flags().BoolVar(&yes, "yes", false, "skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)")
-	cmd.Flags().BoolVar(&confirmHiketeia, "confirm", false, "send the order after the hiketeia warning (attacking a fallen Wanax's risen host)")
-	cmd.Flags().BoolVar(&landColonize, "colonize", false, "with --intent land: found a colony on arrival with no further order (use --name to name it)")
-	cmd.Flags().StringVar(&cityTo, "to", "", "destination: a known city name or a hex as q,r (read hexes off 'keryx map')")
+	cmd.Flags().StringVar(&intent, "intent", "", "colonize | explore | land (details: keryx help march)")
+	cmd.Flags().StringVar(&name, "name", "", "colony name (colonize, or land --colonize)")
+	cmd.Flags().StringVar(&mode, "mode", "", "vs an enemy settlement: sack (default) | annex")
+	cmd.Flags().BoolVar(&yes, "yes", false, "skip the colonize confirmation (needed for agents)")
+	cmd.Flags().BoolVar(&confirmHiketeia, "confirm", false, "send after the hiketeia warning (a fallen Wanax's risen host)")
+	cmd.Flags().BoolVar(&landColonize, "colonize", false, "with --intent land: found a colony on arrival")
+	cmd.Flags().StringVar(&cityTo, "to", "", "destination: city name or hex q,r (see keryx map)")
 	hideHexFlags(cmd)
+	cmd.SetUsageTemplate(strings.TrimRight(cmd.UsageTemplate(), "\n") + "\n\nLong form: keryx help march\n")
 	_ = cmd.MarkFlagRequired("unit")
 	return cmd
 }
@@ -1608,7 +1619,7 @@ with its reason.`,
 	cmd.Flags().StringVar(&target, "target", "", "new target hex as q,r — axial coordinates, read them off 'keryx map' (alternative to --q/--r)")
 	cmd.Flags().IntVar(&q, "q", 0, "new target hex Q — axial coordinate, alternative to --target")
 	cmd.Flags().IntVar(&r, "r", 0, "new target hex R — axial coordinate, alternative to --target")
-	cmd.Flags().StringVar(&cityTo, "to", "", "destination: a known city name or a hex as q,r (read hexes off 'keryx map')")
+	cmd.Flags().StringVar(&cityTo, "to", "", "destination: city name or hex q,r (see keryx map)")
 	hideHexFlags(cmd)
 	cmd.Flags().StringVar(&intent, "intent", "", "explore: turn the unit onto an expedition — first to the hex (seen or not), then around it, then home")
 	cmd.Flags().IntVar(&ticks, "ticks", 0, "with --intent explore: expedition duration in game days (omit for server default)")
