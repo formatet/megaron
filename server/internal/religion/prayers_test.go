@@ -1,7 +1,6 @@
 package religion
 
 import (
-	"strings"
 	"testing"
 )
 
@@ -79,8 +78,8 @@ func TestSeaGods_FavourFishAboveEverything(t *testing.T) {
 		prayerID string
 		effect   string
 	}{
-		{"minoan_oracle_deposits", EffectOracleRevealDeposits},
-		{"minoan_battle_frenzy", EffectBattleFrenzy},
+		{PrayerPotniaVision, EffectOracleMemory}, // no shared archetype any more: the seer's own table
+		{PrayerStillnessHull, EffectBattleFrenzy},
 	}
 	for _, c := range cases {
 		spec, ok := PrayerSpecs[c.prayerID]
@@ -98,8 +97,8 @@ func TestSeaGods_FavourFishAboveEverything(t *testing.T) {
 					c.prayerID, fishWeight, good, w)
 			}
 		}
-		archetypeFish := favoursByEffect[c.effect]["fish"]
-		if fishWeight <= archetypeFish {
+		archetypeFish, hasArchetype := favoursByEffect[c.effect]["fish"]
+		if hasArchetype && fishWeight <= archetypeFish {
 			t.Errorf("%s: fish weight %.2f must exceed the shared archetype's %.2f — a favourite offering, not the default",
 				c.prayerID, fishWeight, archetypeFish)
 		}
@@ -115,8 +114,7 @@ func TestSeaGods_OnlyFishChanged(t *testing.T) {
 		prayerID string
 		effect   string
 	}{
-		{"minoan_oracle_deposits", EffectOracleRevealDeposits},
-		{"minoan_battle_frenzy", EffectBattleFrenzy},
+		{PrayerStillnessHull, EffectBattleFrenzy},
 	}
 	for _, c := range cases {
 		favours := FavoursFor(PrayerSpecs[c.prayerID])
@@ -137,7 +135,7 @@ func TestSeaGods_OnlyFishChanged(t *testing.T) {
 // prayer must keep reading the shared (unfavoured) archetype weight for fish.
 func TestOtherCultures_FishStaysAtArchetypeWeight(t *testing.T) {
 	for id, spec := range PrayerSpecs {
-		if spec.GodID != "" || id == "minoan_oracle_deposits" || id == "minoan_battle_frenzy" {
+		if spec.GodID != "" {
 			continue
 		}
 		favours := FavoursFor(spec)
@@ -180,14 +178,6 @@ func TestPrayerSpecsHaveRequiredFields(t *testing.T) {
 			if amt <= 0 {
 				t.Errorf("PrayerSpecs[%q].Offering[%q] = %v, want > 0", key, good, amt)
 			}
-		}
-	}
-}
-
-func TestOracleDepositsDescriptionNotNearby(t *testing.T) {
-	for key, spec := range PrayerSpecs {
-		if spec.EffectType == EffectOracleRevealDeposits && strings.Contains(spec.Description, "nearby") {
-			t.Errorf("%s: description says nearby but the reveal is world-wide", key)
 		}
 	}
 }

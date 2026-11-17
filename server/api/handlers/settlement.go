@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log/slog"
 	"math"
-	"math/rand"
 	"net/http"
 	"sort"
 	"strings"
@@ -621,74 +620,6 @@ func (h *SettlementHandler) ReturnArmy(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// riteFloor and riteCeil are the "heligt golv/tak" (holy floor/ceiling) — a rite
-// never has a 0% or 100% chance; the gods are not machines (Timothy 2026-07-09
-// kharis omdesign, temenos_kharis.md §"KANONISK OMDESIGN" FAS 1). Strawman —
-// temenos_balans_spakar.md §9.
-const (
-	riteFloor = 0.10
-	riteCeil  = 0.98
-)
-
-// Offer-multiplier bounds and the offerMod it produces at each end. A "fett
-// offer" (offer_multiplier > 1, more goods than the prayer's baseline) nudges
-// success up; a "snålt offer" (< 1, cheaper than baseline) nudges it down.
-// offer_multiplier omitted or <= 0 defaults to 1.0 (exactly the baseline
-// Offering, offerMod = 0) — fully backward compatible with callers that never
-// send the field. Strawman constants — temenos_balans_spakar.md §9.
-const (
-	riteOfferMultiplierMin = 0.5
-	riteOfferMultiplierMax = 2.0
-	riteOfferModFat        = 0.10  // bonus at riteOfferMultiplierMax
-	riteOfferModStingy     = -0.15 // penalty at riteOfferMultiplierMin
-)
-
-// riteOfferMultiplier clamps a requested offer multiplier into
-// [riteOfferMultiplierMin, riteOfferMultiplierMax], defaulting to 1.0 (baseline,
-// no modifier) for the JSON zero-value / omitted-field / invalid (<=0) case.
-func riteOfferMultiplier(raw float64) float64 {
-	if raw <= 0 {
-		return 1.0
-	}
-	if raw < riteOfferMultiplierMin {
-		return riteOfferMultiplierMin
-	}
-	if raw > riteOfferMultiplierMax {
-		return riteOfferMultiplierMax
-	}
-	return raw
-}
-
-// riteOfferMod maps an offer multiplier to the success-chance modifier: linear
-// on each side of 1.0 (baseline), hitting riteOfferModFat exactly at
-// riteOfferMultiplierMax and riteOfferModStingy exactly at
-// riteOfferMultiplierMin, continuous (0) at multiplier == 1.0.
-func riteOfferMod(multiplier float64) float64 {
-	switch {
-	case multiplier > 1.0:
-		return (multiplier - 1.0) / (riteOfferMultiplierMax - 1.0) * riteOfferModFat
-	case multiplier < 1.0:
-		return (multiplier - 1.0) / (1.0 - riteOfferMultiplierMin) * (-riteOfferModStingy)
-	default:
-		return 0
-	}
-}
-
-// riteSuccessChance is the FAS 1 continuous rite formula: the kharis level
-// (0-100) IS the success percentage, nudged by offerMod and clamped to the holy
-// floor/ceiling. Replaces the old 4-tier lookup (95/80/60/25 at 800/400/100
-// kharis) — "talet ÄR mätaren", not a tier.
-func riteSuccessChance(kharisNow, offerMod float64) float64 {
-	c := kharisNow/100.0 + offerMod
-	if c < riteFloor {
-		return riteFloor
-	}
-	if c > riteCeil {
-		return riteCeil
-	}
-	return c
-}
-
 // insufficientKharisMessage formats the kharis-tier-gate refusal for Rite.
 // Rad D, megaron_plan_cli_sanning.md: the old format (%.0f on both numbers)
 // let a Wanax at 4.6 kharis against a 5.0 requirement read "requires 5 (you
@@ -703,19 +634,15 @@ func insufficientKharisMessage(prayerID string, required, current float64) strin
 
 // Rite handles POST /worlds/:worldID/settlements/:settlementID/rite.
 // Performs a cultural prayer — requires a temple, costs a material offering.
-// Body: {"prayer":"<prayer_id>","target":"<optional uuid>","offer_multiplier":<optional float>}.
-// Omitting prayer defaults to the culture's battle_frenzy prayer (backward compat).
-// offer_multiplier (default 1.0, clamped to [0.5, 2.0]) scales the prayer's
-// material offering up ("fett offer") or down ("snålt offer") and nudges the
-// success chance accordingly — see riteOfferMod.
+// Body: {"prayer":"<prayer_id>","target":"<optional uuid>","offering":{good:amount}}.
+// Omitting prayer defaults to the culture's default prayer (backward compat).
 //
-// Everyday prayers (GodID set) answer when standing and offering requirements
-// are met. Legacy prayers retain the continuous, hidden success probability.
-// Standing is a requirement for every prayer, never a payment.
+// Every prayer is an everyday prayer (GodID set): it answers when standing and
+// offering requirements are met. Standing is a requirement, never a payment.
 //
 // The prayer must belong to the settlement's culture (403 otherwise).
-// The prayer must be off cooldown (409 otherwise).
-// Legacy outcomes are rolled once; every outcome is stored in the RiteCast event.
+// The temple it is said at must be rested (409 otherwise).
+// The outcome is stored in the RiteCast event.
 func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
@@ -738,12 +665,11 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		Prayer string `json:"prayer"`
 		// Target is a unit id (target_scope "unit") for the blessing prayers; TargetScope
 		// is how wide the blessing reaches: "unit" | "city" | "realm" (religion.ScopeCostFactor).
-		Target          string  `json:"target"`
-		TargetScope     string  `json:"target_scope"`
-		OfferMultiplier float64 `json:"offer_multiplier"`
+		Target      string `json:"target"`
+		TargetScope string `json:"target_scope"`
 		// Offering is the composed sacrifice: good_key→amount, the Wanax's own
 		// choice of what to carry to the altar. Omitted → the prayer's
-		// traditional recipe scaled by OfferMultiplier (unchanged behaviour).
+		// traditional recipe.
 		Offering map[string]float64 `json:"offering"`
 	}
 	_ = json.NewDecoder(r.Body).Decode(&body)
@@ -956,68 +882,23 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	// Cooldown check: query last successful RiteCast for this (player, prayer, temple) from events table.
-	// Column-free: uses the existing event log, no new schema.
-	// Keyed on stream_id = settlementID so the cooldown is per TEMPLE, not per Wanax:
-	// a Wanax with temples in five cities can cast five prayers per cycle (one per city).
-	if spec.GodID == "" && spec.CooldownTicks > 0 {
-		var lastCast time.Time
-		cooldownErr := h.pool.QueryRow(r.Context(),
-			`SELECT created_at FROM events
-			 WHERE world_id = $1
-			   AND event_type = 'RiteCast'
-			   AND payload->>'player_id' = $2
-			   AND payload->>'prayer' = $3
-			   AND (payload->>'success')::boolean = true
-			   AND stream_id = $4
-			 ORDER BY created_at DESC LIMIT 1`,
-			worldID, playerID.String(), prayerID, settlementID,
-		).Scan(&lastCast)
-		if cooldownErr == nil {
-			elapsed := h.clk.Now().Sub(lastCast)
-			remaining := tick.RealUntil(spec.CooldownTicks, 0) - elapsed
-			if remaining > 0 {
-				writeError(w, http.StatusConflict,
-					// Game-days, not wall-clock minutes: PrayerSpec.CooldownTicks is
-					// a TICK count and one tick IS one day, so "another 1440
-					// minutes" was both unreadable and hid the unit the player
-					// counts in. Same class as cli-sanning row K's ETA fix, one
-					// surface that round missed.
-					fmt.Sprintf("prayer %q is on cooldown for another %s",
-						prayerID, tick.FormatDays(tick.GameDaysLeft(remaining))))
-				return
-			}
-		}
-		// ErrNoRows = never cast before = allowed.
-	}
-
-	// Determine success probability — continuous (FAS 1), not tiered: the kharis
-	// level IS the success percentage, nudged by how much was offered.
-	offerMultiplier := riteOfferMultiplier(body.OfferMultiplier)
 	// An everyday prayer (one with a god, R4 Timothy 2026-10-22) is answered
 	// whenever its kharis requirement is met: it takes its traditional gift or
 	// one worth as much, never a fatter or stingier one.
-	everyday := spec.GodID != ""
-	if everyday {
-		offerMultiplier = 1.0
-	}
 	// Composed offering (Timothy 2026-07-22): the Wanax may bring whatever they
 	// judge worthy instead of the prayer's inherited recipe. What it is worth is
 	// the gods' fixed price list (religion.FixedDivineValues, 2026-10-31)
 	// times this god's taste — and it is weighed against the SAME god's
-	// traditional recipe valued the same way, so bringing exactly the old recipe
-	// still lands on offerMod 0. Omitting `offering` keeps the old
-	// offer_multiplier path untouched: no client breaks.
+	// traditional recipe valued the same way.
 	// temenos_prayers_komposition_plan.md
-	offering := scaleOffering(spec.Offering, offerMultiplier*scopeFactor)
-	offerMod := riteOfferMod(offerMultiplier)
+	offering := scaleOffering(spec.Offering, scopeFactor)
 	divineValues, dvErr := religion.LoadDivineValues(r.Context(), h.pool, worldID)
 	if dvErr != nil {
 		writeError(w, http.StatusInternalServerError, "could not read the gods' reckoning")
 		return
 	}
 	composed := len(body.Offering) > 0 && len(divineValues) > 0
-	if everyday && len(body.Offering) > 0 {
+	if len(body.Offering) > 0 {
 		if len(divineValues) == 0 {
 			writeError(w, http.StatusServiceUnavailable, "the temple cannot value a composed offering yet — use the traditional offering")
 			return
@@ -1035,37 +916,27 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	favours := religion.FavoursFor(spec)
 	offeringWorth := religion.OfferingWorth(offering, divineValues, favours)
 	offeringBaseline := religion.TraditionalBaseline(spec, divineValues) * scopeFactor
-	offerCap := riteOfferModFat
-	if composed && !everyday {
-		offerMod, offerCap = religion.ComposedOfferMod(offering, divineValues, favours, offeringBaseline)
-	}
 	// r: how much larger than the traditional gift this one is. The gift sets
 	// how long a lasting prayer holds and how long the temple rests.
 	giftFactor := 1.0
-	if everyday && composed {
+	if composed {
 		giftFactor = religion.GiftFactor(offeringWorth, offeringBaseline)
 	}
-	if everyday && composed && offeringWorth < offeringBaseline*(1-1e-9) {
+	if composed && offeringWorth < offeringBaseline*(1-1e-9) {
 		writeError(w, http.StatusBadRequest,
 			fmt.Sprintf("%s asks for a gift worth at least the traditional offering (%s)", spec.God, formatOffering(scaleOffering(spec.Offering, scopeFactor))))
 		return
 	}
 
-	successChance := riteSuccessChance(kharisNow, offerMod)
-	chance := int(successChance*100 + 0.5) // percentage, rounded — for the roll ONLY.
-	// DESIGN INVARIANT (Timothy 2026-07-11, HARD): `chance` never leaves this handler —
-	// the gods are not machines. It is used below purely to weight rand.Intn(100) and
-	// must NOT be added to `resp`. Gynnsamhet is communicated via `mood` instead.
 	mood := kharisToMood(kharisNow)
 
-	// Affordability check + deduct the material offering, scaled by
-	// offerMultiplier (a "fett offer" costs proportionally more goods; a "snålt
-	// offer" costs less). The gods take the sacrifice regardless of outcome.
+	// Affordability check + deduct the material offering, scaled by the
+	// blessing's scope. The gods take the sacrifice regardless of outcome.
 	// The offering is in trade goods (wine/oil/silver/…), the deliberate economic
 	// sink that makes religion drive trade. The MinKharis gate above checks
 	// eligibility; neither a success nor a refusal spends standing.
 	// `offering` was resolved above: either the composed one the Wanax brought or
-	// the prayer's traditional recipe scaled by offer_multiplier.
+	// the prayer's traditional recipe scaled by the scope.
 	for good, need := range offering {
 		var have float64
 		if scanErr := tx.QueryRow(r.Context(),
@@ -1096,17 +967,8 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	// Kharis is the relationship, not a currency (R1 Timothy 2026-10-22): a
 	// prayer pays in goods and waiting time; standing is a requirement, never spent.
 
-	// Everyday prayers never consult the dice. Legacy outcomes are rolled once.
-	success := everyday
-	if !everyday {
-		var roll int
-		if h.RiteDice != nil {
-			roll = h.RiteDice.Intn(100)
-		} else {
-			roll = rand.Intn(100)
-		}
-		success = roll < chance
-	}
+	// Every prayer is answered: the dice are gone.
+	const success = true
 
 	// Apply effect on success.
 	effectPayload := map[string]any{}
@@ -1156,8 +1018,6 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 			recordedEffect, effectPayload, message = h.applyWallsFall(wallsTarget, nowTick)
 		case religion.EffectBirdOracle:
 			effectPayload, message, err = h.applyBirdOracle(r.Context(), tx, worldID, playerID, oracleTarget, nowTick)
-		case religion.EffectOracleRevealDeposits:
-			effectPayload, message, err = h.applyOracleRevealDeposits(r.Context(), tx, settlementID, worldID, playerID, spec)
 		case religion.EffectHarvestBlessing:
 			durationTicks = religion.DurationTicks(economy.HarvestBlessingTicks, giftFactor)
 			effectPayload, message, err = h.applyHarvestBlessing(r.Context(), tx, settlementID, spec, durationTicks)
@@ -1171,20 +1031,17 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusInternalServerError, "could not apply effect")
 			return
 		}
-	} else {
-		message = "The gods are silent. Your offering was received, but they do not answer."
 	}
 
 	// Effect, successful-only waiting time and outcome are one transaction.
 	// Payload carries the full outcome (Fas 2.3).
 	eventPayload := map[string]any{
-		"player_id":        playerID.String(),
-		"prayer":           prayerID,
-		"effect_type":      spec.EffectType,
-		"success":          success,
-		"offering":         offering,
-		"offer_multiplier": offerMultiplier,
-		"effect":           effectPayload,
+		"player_id":   playerID.String(),
+		"prayer":      prayerID,
+		"effect_type": spec.EffectType,
+		"success":     success,
+		"offering":    offering,
+		"effect":      effectPayload,
 		// What the gods made of the gift. New fields on an existing event
 		// (Fas 2.4: old fields keep their meaning) — without them a composed
 		// offering leaves no trace of WHY the odds were what they were, and the
@@ -1193,7 +1050,6 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		"offering_work_baseline": offeringBaseline,
 		"offering_value_unit":    religion.LaborValueUnit,
 		"valuation_version":      religion.LaborValuationVersion,
-		"offer_mod":              offerMod,
 		"kharis_spent":           0.0,
 	}
 	if recordedEffect != nil {
@@ -1249,12 +1105,11 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := map[string]any{
-		"success":          success,
-		"mood":             mood,
-		"offer_multiplier": offerMultiplier,
-		"prayer":           prayerID,
-		"message":          message,
-		"kharis_spent":     0.0,
+		"success":      success,
+		"mood":         mood,
+		"prayer":       prayerID,
+		"message":      message,
+		"kharis_spent": 0.0,
 	}
 	// What the offering achieved. A playtester tripled a gift (oil 150 → 500)
 	// across three casts and saw the identical failure line every time, because
@@ -1269,26 +1124,10 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		resp["offering_value_unit"] = religion.LaborValueUnit
 		resp["valuation_version"] = religion.LaborValuationVersion
 		resp["offering_expected"] = offeringBaseline
-		switch {
-		case everyday:
-			if durationTicks > 0 {
-				resp["offering_verdict"] = "worthy — a larger gift lasts longer, and the temple rests longer"
-			} else {
-				resp["offering_verdict"] = "worthy — meets the prayer's requirement; more will not improve the answer, only lengthen the temple's rest"
-			}
-		case offerMod >= offerCap:
-			resp["offering_verdict"] = "as generous as the gods will notice — more would be wasted"
-		case math.Abs(offeringWorth-offeringBaseline) < 1e-9:
-			resp["offering_verdict"] = "worthy — meets what this god expects"
-		case offeringWorth > offeringBaseline:
-			resp["offering_verdict"] = "worthy — beyond what this god expects"
-		default:
-			// Same rounding lie as row D and the need/have pairs (helpers.go
-			// shortfall): with %.0f on both figures an offering worth 4,6
-			// against an expected 5,0 read "worth 5 of the ~5" and the verdict
-			// "short" looked like a bug. Name the gap.
-			resp["offering_verdict"] = fmt.Sprintf("short — worth %.1f of the ~%.0f this god expects, %.1f short",
-				offeringWorth, offeringBaseline, offeringBaseline-offeringWorth)
+		if durationTicks > 0 {
+			resp["offering_verdict"] = "worthy — a larger gift lasts longer, and the temple rests longer"
+		} else {
+			resp["offering_verdict"] = "worthy — meets the prayer's requirement; more will not improve the answer, only lengthen the temple's rest"
 		}
 	}
 	if success {
@@ -2016,9 +1855,8 @@ func (h *SettlementHandler) Gossip(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, result)
 }
 
-// scaleOffering returns a prayer's traditional recipe scaled by the legacy
-// offer_multiplier. Kept as the fallback path so every client that never learns
-// about composed offerings keeps working exactly as before.
+// scaleOffering returns a prayer's traditional recipe scaled by a factor (the
+// blessing's scope). It is the offering when the Wanax names none.
 func scaleOffering(recipe map[string]float64, multiplier float64) map[string]float64 {
 	scaled := make(map[string]float64, len(recipe))
 	for good, amount := range recipe {

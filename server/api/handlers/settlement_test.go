@@ -41,7 +41,7 @@ func TestRiteCultureGate_MinoanCanCastOwnPrayer(t *testing.T) {
 // (Was 100 on the pre-2026-07-09 0-2000 scale.)
 func TestRiteTierGate_OraclePrayerRequires5Kharis(t *testing.T) {
 	for id, spec := range religion.PrayerSpecs {
-		if spec.EffectType == religion.EffectOracleRevealDeposits || spec.EffectType == religion.EffectOracleMemory {
+		if spec.EffectType == religion.EffectOracleMemory {
 			if spec.MinKharis < 5 {
 				t.Errorf("prayer %q: oracle MinKharis = %.0f, want >= 5 (tier gate)", id, spec.MinKharis)
 			}
@@ -82,7 +82,7 @@ func TestInsufficientKharisMessage_ShowsFractionalDifference(t *testing.T) {
 }
 
 // TestRiteOraclePrayerExistsPerCulture verifies that every culture has an oracle prayer
-// with EffectType "oracle_reveal_deposits" — the keystone mechanic.
+// with EffectType "oracle_memory_v2" — the keystone mechanic.
 func TestRiteOraclePrayerExistsPerCulture(t *testing.T) {
 	cultures := []string{"minoan"}
 	for _, culture := range cultures {
@@ -90,14 +90,14 @@ func TestRiteOraclePrayerExistsPerCulture(t *testing.T) {
 		found := false
 		for _, id := range ids {
 			if spec, ok := religion.PrayerSpecs[id]; ok {
-				if spec.EffectType == religion.EffectOracleRevealDeposits || spec.EffectType == religion.EffectOracleMemory {
+				if spec.EffectType == religion.EffectOracleMemory {
 					found = true
 					break
 				}
 			}
 		}
 		if !found {
-			t.Errorf("culture %q has no oracle_reveal_deposits prayer", culture)
+			t.Errorf("culture %q has no oracle prayer", culture)
 		}
 	}
 }
@@ -162,7 +162,7 @@ func TestRiteAffordableFlag_SufficientKharisIsAffordable(t *testing.T) {
 // duplicate effects: the prayer has a Cooldown that prevents rapid re-submission.
 func TestRiteIdempotencyContract_OracleCooldownPreventsDoubleReveal(t *testing.T) {
 	for id, spec := range religion.PrayerSpecs {
-		if spec.EffectType == religion.EffectOracleRevealDeposits || spec.EffectType == religion.EffectOracleMemory {
+		if spec.EffectType == religion.EffectOracleMemory {
 			if spec.CooldownTicks <= 0 {
 				t.Errorf("oracle prayer %q has zero cooldown — double-reveal is possible", id)
 			}
