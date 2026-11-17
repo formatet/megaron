@@ -40,7 +40,10 @@ func RestTicks(cooldown int, r float64, level int) int {
 	if cooldown <= 0 || level < 1 {
 		return 0
 	}
-	return int(math.Ceil(float64(cooldown) * min(MaxGiftFactor, max(1, r)) / float64(level)))
+	// Round before ceil: r = worth/baseline carries float noise (3.0000000000000004),
+	// and ceil of 36.00000000000001 would add a tick of rest.
+	rest := float64(cooldown) * min(MaxGiftFactor, max(1, r)) / float64(level)
+	return int(math.Ceil(math.Round(rest*1e9) / 1e9))
 }
 
 // TempleRestRemaining is the ticks a temple still rests (0 = ready). The row

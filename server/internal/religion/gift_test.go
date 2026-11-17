@@ -60,10 +60,8 @@ func TestGiftStepsGiveNTimesTheLength(t *testing.T) {
 				if got := DurationTicks(6, r); got != 6*n {
 					t.Fatalf("%s N=%d: duration %d want %d", spec.ID, n, got, 6*n)
 				}
-				// ceil() turns float noise (r = 3.0000000000000004) into one extra tick
-				// of rest at most; found 2026-11-12, left as is (no server change in this slice).
-				if got, want := RestTicks(24, r, 2), 12*n; got < want || got > want+1 {
-					t.Fatalf("%s N=%d: rest %d want %d (+1 at most)", spec.ID, n, got, want)
+				if got, want := RestTicks(24, r, 2), 12*n; got != want {
+					t.Fatalf("%s N=%d: rest %d want %d", spec.ID, n, got, want)
 				}
 				checked++
 			}
@@ -71,5 +69,22 @@ func TestGiftStepsGiveNTimesTheLength(t *testing.T) {
 	}
 	if checked == 0 {
 		t.Fatal("no prayer was checked")
+	}
+}
+
+// The gift steps are 1, 2, 3 and 5. r comes out of worth/baseline with float
+// noise (one ulp above N); the rest must still be exactly ceil(cooldown*N/level).
+func TestRestTicksGiftStepsExactDespiteFloatNoise(t *testing.T) {
+	for _, cd := range []int{6, 12, 24, 25} {
+		for _, n := range []int{1, 2, 3, 5} {
+			for level := 1; level <= 3; level++ {
+				want := (cd*n + level - 1) / level // ceil by hand, integers only
+				for _, r := range []float64{float64(n), math.Nextafter(float64(n), math.Inf(1)), math.Nextafter(float64(n), 0)} {
+					if got := RestTicks(cd, r, level); got != want {
+						t.Errorf("RestTicks(%d, %v, %d) = %d, want %d (gift step %dx)", cd, r, level, got, want, n)
+					}
+				}
+			}
+		}
 	}
 }
