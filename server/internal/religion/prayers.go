@@ -103,14 +103,11 @@ const (
 	PrayerPotniaVision = "minoan_potnia_vision_v2"
 	PrayerPotniaWalls  = "minoan_potnia_walls"
 	PrayerGreenShoots  = "minoan_velchanos_green_shoots"
-	// Retired 2b (replaced by the two prayers of speed): the ids stay so an old RiteCast is still readable
-	// and a departure_prayers row left pending is still honoured at departure.
-	PrayerAsterionThread    = "minoan_asterion_thread"
-	PrayerStillnessPassage  = "minoan_stillness_passage"
-	EffectOracleMemory      = "oracle_memory_v2"
-	EffectGarrisonDefense   = "garrison_defense"
-	EffectNextLandDeparture = "next_land_departure"
-	EffectNextShipDeparture = "next_ship_departure"
+	// Retired 2b (replaced by the two prayers of speed): the ids stay so an old RiteCast is still readable.
+	PrayerAsterionThread   = "minoan_asterion_thread"
+	PrayerStillnessPassage = "minoan_stillness_passage"
+	EffectOracleMemory     = "oracle_memory_v2"
+	EffectGarrisonDefense  = "garrison_defense"
 
 	// Stormbönerna (steg 3b): the Sea Daimons of Stillness still a named storm or wake an ordinary one.
 	// Not blessings: no scope, no duration; the effect is done by combat.CalmStorm / combat.WakeStorm.

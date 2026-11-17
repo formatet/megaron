@@ -766,10 +766,6 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if active > 0 {
-			if spec.EffectType == religion.EffectNextLandDeparture || spec.EffectType == religion.EffectNextShipDeparture {
-				writeError(w, http.StatusConflict, "prayer awaits your next eligible departure from this city")
-				return
-			}
 			if spec.EffectType == religion.EffectBattleFrenzy {
 				writeError(w, http.StatusConflict, "battle frenzy already active — wait for it to expire")
 				return
@@ -979,13 +975,6 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		switch spec.EffectType {
 		case religion.EffectOracleMemory:
 			effectPayload, message, err = h.applyOracleMemory(r.Context(), tx, worldID, playerID, spec)
-		case religion.EffectNextLandDeparture, religion.EffectNextShipDeparture:
-			_, err = tx.Exec(r.Context(), `INSERT INTO departure_prayers(settlement_id,owner_id,effect) VALUES($1,$2,$3) ON CONFLICT(settlement_id,effect) DO UPDATE SET owner_id=EXCLUDED.owner_id`, settlementID, playerID, spec.EffectType)
-			effectPayload = map[string]any{"departure_pending": true, "time_factor": religion.DepartureTimeFactor}
-			message = "Asterion's thread waits for your next land caravan or Runner from this city."
-			if spec.EffectType == religion.EffectNextShipDeparture {
-				message = "The Sea Daimons of Stillness shelter the next ship departing this port — faster sailing and no storm damage on its outward leg."
-			}
 		case religion.EffectGarrisonDefense, religion.EffectBattleFrenzy:
 			durationTicks = religion.DurationTicks(combat.GarrisonDefenseTicks, giftFactor)
 			until := nowTick + durationTicks

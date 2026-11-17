@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"formatet/megaron/server/internal/events"
-	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/tick"
 	"net/http/httptest"
 	"testing"
@@ -24,9 +23,6 @@ func TestTransportOptionsBothModesAnchoredAndReadOnly(t *testing.T) {
 		f.mapTile(t, q, 1, "plains")
 	}
 	ship := f.ship(t, origin, "merchantman")
-	if _, err := f.pool.Exec(ctx, `INSERT INTO departure_prayers(settlement_id,owner_id,effect) VALUES($1,$2,'next_land_departure')`, origin, f.playerID); err != nil {
-		t.Fatal(err)
-	}
 	h := NewProvinceHandler(f.pool, f.scheduler, f.clk, events.NewStore(f.pool), nil)
 	f.router.Get("/worlds/{worldID}/settlements/{settlementID}/transport-options", h.TransportOptions)
 	f.router.Get("/worlds/{worldID}/provinces/{provinceID}/trade/preview", h.TradePreview)
@@ -65,9 +61,6 @@ func TestTransportOptionsBothModesAnchoredAndReadOnly(t *testing.T) {
 				t.Fatalf("preview clock drift %+v want%v", o, want)
 			}
 		}
-	}
-	if pending, err := religion.DeparturePending(ctx, f.pool, origin, f.playerID, religion.EffectNextLandDeparture); err != nil || !pending {
-		t.Fatalf("preview consumed prayer pending%v err%v", pending, err)
 	}
 	var status string
 	_ = f.pool.QueryRow(ctx, `SELECT status FROM units WHERE id=$1`, ship).Scan(&status)

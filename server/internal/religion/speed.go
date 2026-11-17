@@ -11,6 +11,9 @@ import (
 // faster, also when it is already under way: what is LEFT of the journey takes
 // DepartureTimeFactor of its time. A journey is sped up at most once.
 const (
+	// DepartureTimeFactor is the share of its time a sped journey takes (also the builder's blessing).
+	DepartureTimeFactor = 0.75
+
 	EffectBlessedSpeedLand = "blessed_speed_land" // Asterion: Runners and land caravans
 	EffectBlessedSpeedSea  = "blessed_speed_sea"  // the Sea Daimons: ships and sea freight
 

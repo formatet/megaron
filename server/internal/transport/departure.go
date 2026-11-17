@@ -7,11 +7,10 @@ import (
 	"formatet/megaron/server/internal/religion"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"math"
 )
 
 // BlessDeparture is called before ETA/scheduling. prepareJourney also calls it
-// for Dispatch writers; DepartureChecked prevents a second consumption.
+// for Dispatch writers; DepartureChecked prevents a second pass.
 func BlessDeparture(ctx context.Context, tx pgx.Tx, world, owner, city uuid.UUID, j *province.TradeJourney, outward bool) error {
 	if j.DepartureChecked {
 		return nil
@@ -23,26 +22,7 @@ func BlessDeparture(ctx context.Context, tx pgx.Tx, world, owner, city uuid.UUID
 	if !outward {
 		return nil
 	}
-	effect := religion.EffectNextLandDeparture
-	if j.Category == "naval" {
-		effect = religion.EffectNextShipDeparture
-	}
-	blessed, err := religion.ConsumeDeparture(ctx, tx, world, owner, city, effect)
-	if err != nil {
-		return err
-	}
-	if !blessed {
-		return blessSpeed(ctx, tx, world, owner, city, j)
-	}
-	j.TimeFactorMilli = int(math.Round(religion.DepartureTimeFactor * 1000))
-	j.Thread = j.Category == "land"
-	j.Stillness = j.Category == "naval"
-	var total int64
-	for _, cost := range j.StepCosts {
-		total += cost
-	}
-	j.TravelTicks = max(1, int((total*3*int64(j.TimeFactorMilli)+1000000)/2000000))
-	return j.Validate()
+	return blessSpeed(ctx, tx, world, owner, city, j)
 }
 
 func nullableBlessingTick(blessed bool, t int) *int {
@@ -61,8 +41,7 @@ func departureInterceptRadius(t inFlightTransport) int {
 }
 
 // blessSpeed lets a live speed prayer shorten a departing journey (steg 2b): the
-// whole journey takes DepartureTimeFactor of its time. A journey already sped by a
-// departure prayer is not sped again.
+// whole journey takes DepartureTimeFactor of its time. A journey already sped is not sped again.
 // The realm and the departing city are covered; a ship named alone is not (no ship is known here).
 func blessSpeed(ctx context.Context, tx pgx.Tx, world, owner, city uuid.UUID, j *province.TradeJourney) error {
 	if j.TimeFactorMilli == 750 || j.SpeedBlessing != "" {

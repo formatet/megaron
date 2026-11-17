@@ -258,10 +258,6 @@ export function prayerStatusHTML(p, frenzyActive = false, frenzyUntil = null) {
     return `<button class="obj-cta btn-small" onclick="okRite('${p.id}')">Compose offering</button> <span class="empty-state">Gift unavailable</span>`;
   }
   if (p.unavailable_reason) return `<span class="empty-state">${esc(p.unavailable_reason)}</span>`;
-  if (p.departure_pending) {
-    const waiting = rest ? `; ${esc(rest)}` : waitDays > 0 ? `; god waits ${esc(fmtDays(waitDays))}` : '';
-    return `<span class="empty-state">awaiting next departure${waiting}</span>`;
-  }
   if (p.active_remaining_game_days > 0) {
     return `<span class="empty-state">active — ${esc(fmtDays(p.active_remaining_game_days))} left</span>`;
   }

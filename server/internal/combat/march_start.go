@@ -847,7 +847,6 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	var tx pgx.Tx
 	var departureDB province.Queryer = pool
 	var currentStatus string
-	stillness := false
 	departureFactor := 1.0
 	if !preview {
 		tx, err = pool.Begin(ctx)
@@ -885,23 +884,10 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		now := clk.Now()
 		return &MarchStarted{UnitID: o.UnitID, OriginQ: originQ, OriginR: originR, TargetQ: targetQ, TargetR: targetR, DepartsAt: now, ArrivesAt: now, ArrivalTick: currentTick}, nil
 	}
-	if unit.CategoryOf(u.Type) == unit.CategoryNaval && u.SettlementID != nil {
-		if preview {
-			stillness, err = religion.DeparturePending(ctx, pool, *u.SettlementID, o.PlayerID, religion.EffectNextShipDeparture)
-		} else {
-			stillness, err = religion.ConsumeDeparture(ctx, tx, o.WorldID, o.PlayerID, *u.SettlementID, religion.EffectNextShipDeparture)
-		}
-		if err != nil {
-			return nil, reject(http.StatusInternalServerError, "could not prepare ship departure")
-		}
-		if stillness {
-			departureFactor = religion.DepartureTimeFactor
-		}
-	}
 	// A ship that leaves while a speed prayer holds sails at DepartureTimeFactor of its
-	// time (steg 2b); one already sped by a departure prayer is not sped again.
+	// time (steg 2b).
 	speedBlessing := uuid.Nil
-	if unit.CategoryOf(u.Type) == unit.CategoryNaval && !stillness {
+	if unit.CategoryOf(u.Type) == unit.CategoryNaval {
 		var support *uuid.UUID
 		_ = pool.QueryRow(ctx, `SELECT support_settlement_id FROM units WHERE id=$1`, o.UnitID).Scan(&support)
 		id, ok, bErr := religion.SpeedBlessingFor(ctx, pool, o.PlayerID, religion.EffectBlessedSpeedSea, o.UnitID, support, currentTick)
@@ -1012,11 +998,8 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 
 	// The departure transaction and blessing were locked before itinerary
 	// checks, so preview and execution use the same outward speed rule.
+	// Never set since the departure prayers were removed; the units.stillness_* columns await their own migration.
 	var stillnessDepart, stillnessArrive *int
-	if stillness {
-		d, a := currentTick, currentTick+travelTicks
-		stillnessDepart, stillnessArrive = &d, &a
-	}
 
 	// The colonist purse (B3, mig 107). A founding used to MINT the colony's
 	// starting silver; now the expedition carries it from the city that sent it.

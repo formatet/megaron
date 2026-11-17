@@ -11,7 +11,7 @@ Ships you name take **a quarter less time** over what is left of their voyage, w
 
 **For ever.** At twenty times the gift, one named ship sails every voyage she ever begins in three quarters of the time, and a voyage already under way is shortened at once. It is for one ship only, never a city or the realm, and cannot be said twice over her. [[swift-feet|Swift Feet]] has no such step: a Runner or a [[transfers|caravan]] makes one journey.
 
-A voyage is shortened **once**: a second prayer, or a ship that already left under a departure prayer, takes no further time off. A ship on an expedition keeps its schedule. A [[runners|Runner]] aboard travels at the ship's actual speed. Only your own ships can be named, and the same ship cannot be blessed twice at once. [[storms]] are another matter: see [[stout-hulls]].
+A voyage is shortened **once**: a second prayer takes no further time off. A ship on an expedition keeps its schedule. A [[runners|Runner]] aboard travels at the ship's actual speed. Only your own ships can be named, and the same ship cannot be blessed twice at once. [[storms]] are another matter: see [[stout-hulls]].
 
 <!-- facts: prayer minoan_stillness_swift -->
 | Reference | Current rule |

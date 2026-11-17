@@ -455,11 +455,7 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	arrivesAt, msgArrivalDueTick, err = messenger.BlessRunner(r.Context(), tx, worldID, playerID, originID, now, msgSendCurrentTick, msgArrivalDueTick)
-	if err != nil {
-		writeError(w, 500, "could not prepare Runner departure")
-		return
-	}
+	arrivesAt = messenger.RunnerArrival(now, msgSendCurrentTick, msgArrivalDueTick)
 	if passage != nil {
 		passageSinceTick = msgArrivalDueTick
 	}

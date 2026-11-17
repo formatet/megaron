@@ -70,13 +70,6 @@ func SetTempleRest(ctx context.Context, db PrayerDB, building uuid.UUID, ticks, 
 // PrayerActiveRemaining is shared by the cast guard and the prayer catalogue.
 // The owner stamp prevents the new city's owner inheriting a defensive gift.
 func PrayerActiveRemaining(ctx context.Context, db PrayerDB, settlement, player uuid.UUID, effect string, nowTick int) (int, error) {
-	if effect == EffectNextLandDeparture || effect == EffectNextShipDeparture {
-		pending, err := DeparturePending(ctx, db, settlement, player, effect)
-		if pending {
-			return 1, err
-		}
-		return 0, err
-	}
 	var until int
 	err := db.QueryRow(ctx, `SELECT CASE
  WHEN $3 IN ('garrison_defense','battle_frenzy') AND owner_id=$2 AND garrison_defense_owner_id=$2 THEN COALESCE(garrison_defense_until_tick,0)

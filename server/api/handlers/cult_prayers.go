@@ -118,10 +118,6 @@ func (h *ProvinceHandler) loadPrayerRows(ctx context.Context, sett *settlement.S
 				canPrepareOffering = false
 			}
 		}
-		departurePending := activeRemainingDays > 0 && (spec.EffectType == religion.EffectNextLandDeparture || spec.EffectType == religion.EffectNextShipDeparture)
-		if departurePending {
-			activeRemainingDays = 0
-		}
 		reason := ""
 		temple := ""
 		if spec.GodID != "" {
@@ -134,12 +130,12 @@ func (h *ProvinceHandler) loadPrayerRows(ctx context.Context, sett *settlement.S
 			}
 		} else if kharisNow < spec.MinKharis {
 			reason = "insufficient kharis"
-		} else if !afford && cooldownRemainingDays == 0 && activeRemainingDays == 0 && !departurePending {
+		} else if !afford && cooldownRemainingDays == 0 && activeRemainingDays == 0 {
 			// Timed/pending states already have precise structured fields.
 			// A generic reason would hide them in the prayer list.
 			reason = "insufficient offering"
 		}
-		prayers = append(prayers, prayerRow{DeparturePending: departurePending, CanPrepareOffering: canPrepareOffering,
+		prayers = append(prayers, prayerRow{CanPrepareOffering: canPrepareOffering,
 			GodID: spec.GodID, ID: spec.ID, Name: spec.Name, God: spec.God, Temple: temple, EffectType: spec.EffectType,
 			Default: spec.ID == religion.DefaultBattleFrenzyFor(string(sett.CultureID)), ActiveRemainingDays: activeRemainingDays,
 			Effect:    spec.Description,

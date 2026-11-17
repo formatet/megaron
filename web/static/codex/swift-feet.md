@@ -8,7 +8,7 @@ Runners and land [[transfers|caravans]] you name take **a quarter less time** ov
 | Every Runner and caravan of the city where you pray, now and while the prayer lasts | twice the traditional offering |
 | Every Runner and caravan in your realm, now and while the prayer lasts | four times the traditional offering |
 
-A journey is shortened **once**: a second prayer, or a journey that already left under a departure prayer, takes no further time off. A Runner aboard a ship follows the ship (see [[following-seas]]); its walk on land afterwards is a new journey. Only your own Runners and caravans can be named, and the same one cannot be blessed twice at once.
+A journey is shortened **once**: a second prayer takes no further time off. A Runner aboard a ship follows the ship (see [[following-seas]]); its walk on land afterwards is a new journey. Only your own Runners and caravans can be named, and the same one cannot be blessed twice at once.
 
 <!-- facts: prayer minoan_asterion_swift -->
 | Reference | Current rule |
