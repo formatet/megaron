@@ -68,6 +68,7 @@ func applyHelpGroups(root *cobra.Command) {
 			c.GroupID = g.id
 		}
 	}
+	root.SetHelpCommand(longHelpCmd(root))
 	defaultHelp := root.HelpFunc()
 	root.SetHelpFunc(func(cmd *cobra.Command, args []string) {
 		if cmd != root {
@@ -132,5 +133,26 @@ func printWrapped(w io.Writer, items []string) {
 	}
 	if len(line) > 1 {
 		fmt.Fprintln(w, line)
+	}
+}
+
+// longHelpCmd replaces cobra's `help` command: for a command that carries a
+// long form (Annotations["long"]) `keryx help <cmd>` prints it; `<cmd> --help`
+// stays the short form. Any other command behaves as cobra's default.
+func longHelpCmd(root *cobra.Command) *cobra.Command {
+	return &cobra.Command{
+		Use:   "help [command]",
+		Short: "Help about any command; `keryx help march` prints the long form",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			target, _, err := root.Find(args)
+			if target == nil || err != nil {
+				return fmt.Errorf("unknown help topic %q", strings.Join(args, " "))
+			}
+			if long := target.Annotations["long"]; long != "" {
+				fmt.Fprintln(cmd.OutOrStdout(), target.Long+"\n\n"+long)
+				return nil
+			}
+			return target.Help()
+		},
 	}
 }

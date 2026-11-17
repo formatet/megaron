@@ -40,7 +40,7 @@ func newRootCommand() *cobra.Command {
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
-			if cmd.Name() == "login" || cmd.Name() == "version" {
+			if cmd.Name() == "login" || cmd.Name() == "version" || cmd.Name() == "help" {
 				return nil
 			}
 			var err error

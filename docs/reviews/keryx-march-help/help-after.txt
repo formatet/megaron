@@ -1,0 +1,30 @@
+Order a unit to march, explore, land or sail: --to <city name | q,r>.
+Terrain: keryx codex marching. A ship at sea takes no new orders (storms: keryx storms).
+
+Usage:
+  keryx march [flags]
+
+Examples:
+  keryx march --unit <id> --to 5,-3
+  keryx march --unit <id> --to 12,-8 --intent explore --ticks 12
+  keryx march --unit <ship> --to "Petras"            # dock, everyone disembarks
+  keryx march --unit <ship> --to 20,-5 --intent land --colonize --name Thapsos
+
+Flags:
+      --colonize        with --intent land: found a colony on arrival
+      --confirm         send after the hiketeia warning (a fallen Wanax's risen host)
+  -h, --help            help for march
+      --intent string   colonize | explore | land (details: keryx help march)
+      --mode string     vs an enemy settlement: sack (default) | annex
+      --name string     colony name (colonize, or land --colonize)
+      --preview         estimate arrival without sending an order
+      --stance string   stance on arrival: fortify|storm|sentry
+      --ticks int       explore duration in game days (omit for server default)
+      --to string       destination: city name or hex q,r (see keryx map)
+      --unit string     exact unit name or UUID prefix (required)
+      --yes             skip the colonize confirmation (needed for agents)
+
+Global Flags:
+  -j, --json   output as JSON (for scripts and MCP)
+
+Long form: keryx help march
