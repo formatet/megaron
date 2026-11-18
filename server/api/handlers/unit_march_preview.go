@@ -171,6 +171,11 @@ func (h *UnitHandler) MarchPreview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
+	if unit.CategoryOf(u.Type) == unit.CategoryNaval {
+		if warn := stormForecast(ctx, h.pool, h.clk, worldID, playerID, stormHullWarning(u), result.Path); warn != "" {
+			finance["storm_warning"] = warn
+		}
+	}
 	finance["available"] = true
 	finance["arrival_tick"] = result.ArrivalTick
 	finance["duration_ticks"] = result.DurationTicks

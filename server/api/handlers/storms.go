@@ -3,14 +3,17 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"sort"
 
 	"formatet/megaron/server/internal/auth"
+	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/combat"
 	"formatet/megaron/server/internal/province"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // stormHexView / stormView are the wire shape of GET /worlds/{id}/storms.
@@ -51,14 +54,31 @@ func (h *WorldHandler) Storms(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusUnauthorized, "authentication required")
 		return
 	}
-	ctx := r.Context()
-
-	var tick int
-	if err := h.pool.QueryRow(ctx, `SELECT current_tick FROM worlds WHERE id = $1`, worldID).Scan(&tick); err != nil {
-		writeError(w, http.StatusNotFound, "world not found")
+	tick, out, err := knownStorms(r.Context(), h.pool, h.clk, worldID, playerID)
+	if err != nil {
+		if errors.Is(err, errStormWorldMissing) {
+			writeError(w, http.StatusNotFound, "world not found")
+		} else {
+			writeError(w, http.StatusInternalServerError, err.Error())
+		}
 		return
 	}
-	eyes := loadLiveEyes(ctx, h.pool, worldID, playerID, h.clk.Now())
+	writeJSONETag(w, r, map[string]any{"tick": tick, "storms": out})
+}
+
+// errStormWorldMissing: the world row is gone (the endpoint answers 404).
+var errStormWorldMissing = errors.New("world not found")
+
+// knownStorms is the ONE reader of what a Wanax may know about storms: live where an eye of
+// theirs sees one now (and the sighting is written to memory), remembered where last seen
+// otherwise, stale memory forgotten. GET /storms and every sea-voyage forecast read it here;
+// nothing else may load sea_storms for a player surface.
+func knownStorms(ctx context.Context, pool *pgxpool.Pool, clk clock.Clock, worldID, playerID uuid.UUID) (int, []stormView, error) {
+	var tick int
+	if err := pool.QueryRow(ctx, `SELECT current_tick FROM worlds WHERE id = $1`, worldID).Scan(&tick); err != nil {
+		return 0, nil, errStormWorldMissing
+	}
+	eyes := loadLiveEyes(ctx, pool, worldID, playerID, clk.Now())
 
 	type current struct {
 		heading int
@@ -66,15 +86,14 @@ func (h *WorldHandler) Storms(w http.ResponseWriter, r *http.Request) {
 	}
 	order := []uuid.UUID{}
 	now := map[uuid.UUID]*current{}
-	rows, err := h.pool.Query(ctx,
+	rows, err := pool.Query(ctx,
 		`SELECT s.id, s.heading, t.q, t.r
 		   FROM sea_storms s
 		   JOIN sea_storm_track t ON t.storm_id = s.id
 		    AND t.tick = (SELECT max(tick) FROM sea_storm_track WHERE storm_id = s.id)
 		  WHERE s.world_id = $1 AND s.died_tick IS NULL AND s.dies_tick > $2 ORDER BY s.id, t.slot`, worldID, tick)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not load storms")
-		return
+		return 0, nil, errors.New("could not load storms")
 	}
 	for rows.Next() {
 		var id uuid.UUID
@@ -82,8 +101,7 @@ func (h *WorldHandler) Storms(w http.ResponseWriter, r *http.Request) {
 		var hx stormHexView
 		if err := rows.Scan(&id, &heading, &hx.Q, &hx.R); err != nil {
 			rows.Close()
-			writeError(w, http.StatusInternalServerError, "could not read storms")
-			return
+			return 0, nil, errors.New("could not read storms")
 		}
 		c := now[id]
 		if c == nil {
@@ -99,12 +117,11 @@ func (h *WorldHandler) Storms(w http.ResponseWriter, r *http.Request) {
 		seen  int
 		hexes []stormHexView
 	}{}
-	srows, err := h.pool.Query(ctx,
+	srows, err := pool.Query(ctx,
 		`SELECT p.storm_id, p.seen_tick, p.hexes FROM player_storm_sightings p
 		   JOIN sea_storms s ON s.id = p.storm_id WHERE p.player_id = $1 AND s.world_id = $2`, playerID, worldID)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not load storm memory")
-		return
+		return 0, nil, errors.New("could not load storm memory")
 	}
 	for srows.Next() {
 		var id uuid.UUID
@@ -136,7 +153,7 @@ func (h *WorldHandler) Storms(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if len(qs) > 0 {
-		trows, err := h.pool.Query(ctx,
+		trows, err := pool.Query(ctx,
 			`SELECT t.q, t.r, t.terrain FROM map_tiles t
 			   JOIN unnest($2::int[], $3::int[]) AS p(q, r) ON t.q = p.q AND t.r = p.r WHERE t.world_id = $1`, worldID, qs, rs)
 		if err == nil {
@@ -175,7 +192,7 @@ func (h *WorldHandler) Storms(w http.ResponseWriter, r *http.Request) {
 		}
 		if live {
 			out = append(out, stormView{ID: id, Tier: "live", Hexes: c.hexes, Heading: combat.StormHeadingName(c.heading), SeenTick: tick})
-			h.rememberStorm(ctx, playerID, id, tick, c.hexes)
+			rememberStorm(ctx, pool, playerID, id, tick, c.hexes)
 			continue
 		}
 		m, ok := remembered[id]
@@ -189,21 +206,21 @@ func (h *WorldHandler) Storms(w http.ResponseWriter, r *http.Request) {
 		if anyInSight {
 			// A storm moves as one body: you see a place it was and it is not there, so it
 			// has moved on — even if its other remembered hexes lie beyond sight.
-			_, _ = h.pool.Exec(ctx, `DELETE FROM player_storm_sightings WHERE player_id = $1 AND storm_id = $2`, playerID, id)
+			_, _ = pool.Exec(ctx, `DELETE FROM player_storm_sightings WHERE player_id = $1 AND storm_id = $2`, playerID, id)
 			continue
 		}
 		out = append(out, stormView{ID: id, Tier: "remembered", Hexes: m.hexes, SeenTick: m.seen, LastKnown: true})
 	}
-	h.nameStorms(ctx, worldID, playerID, out)
-	writeJSONETag(w, r, map[string]any{"tick": tick, "storms": out})
+	nameStorms(ctx, pool, worldID, playerID, out)
+	return tick, out, nil
 }
 
-func (h *WorldHandler) rememberStorm(ctx context.Context, playerID, stormID uuid.UUID, tick int, hexes []stormHexView) {
+func rememberStorm(ctx context.Context, pool *pgxpool.Pool, playerID, stormID uuid.UUID, tick int, hexes []stormHexView) {
 	raw, err := json.Marshal(hexes)
 	if err != nil {
 		return
 	}
-	_, _ = h.pool.Exec(ctx,
+	_, _ = pool.Exec(ctx,
 		`INSERT INTO player_storm_sightings (player_id, storm_id, seen_tick, hexes) VALUES ($1, $2, $3, $4)
 		 ON CONFLICT (player_id, storm_id) DO UPDATE SET seen_tick = EXCLUDED.seen_tick, hexes = EXCLUDED.hexes`,
 		playerID, stormID, tick, raw)
@@ -211,7 +228,7 @@ func (h *WorldHandler) rememberStorm(ctx context.Context, playerID, stormID uuid
 
 // nameStorms adds each listed storm's name and whether this Wanax may still name it. Only
 // storms already in the FOW-filtered list are touched, so a name never reveals a storm.
-func (h *WorldHandler) nameStorms(ctx context.Context, worldID, playerID uuid.UUID, out []stormView) {
+func nameStorms(ctx context.Context, pool *pgxpool.Pool, worldID, playerID uuid.UUID, out []stormView) {
 	if len(out) == 0 {
 		return
 	}
@@ -221,7 +238,7 @@ func (h *WorldHandler) nameStorms(ctx context.Context, worldID, playerID uuid.UU
 		named     bool
 	}
 	byID := map[uuid.UUID]nm{}
-	rows, err := h.pool.Query(ctx, `SELECT id, COALESCE(name, ''), claimed_by, named_tick IS NOT NULL FROM sea_storms WHERE world_id = $1`, worldID)
+	rows, err := pool.Query(ctx, `SELECT id, COALESCE(name, ''), claimed_by, named_tick IS NOT NULL FROM sea_storms WHERE world_id = $1`, worldID)
 	if err != nil {
 		return
 	}

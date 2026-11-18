@@ -146,6 +146,9 @@ type MarchStarted struct {
 	// the unit turns and is home at the latest. TargetQ/TargetR above is the
 	// first leg's hex (also the area centre for new expeditions).
 	Expedition *ExpeditionPlan
+	// Path is the hex route FindPath already found (nil for colonize-in-place). Read-only
+	// for the storm forecast on a sea voyage; never shown to the player as a route.
+	Path []province.MapPosition
 }
 
 // ExpeditionPlan is the readable mission line of an area expedition.
@@ -993,6 +996,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 			UnitID: o.UnitID, DepartsAt: now, ArrivesAt: arrivesAt,
 			ArrivalTick: currentTick + travelTicks, DurationTicks: travelTicks,
 			OriginQ: originQ, OriginR: originR, TargetQ: targetQ, TargetR: targetR,
+			Path: path,
 		}, nil
 	}
 
@@ -1314,6 +1318,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		CarriedSilver:  purse,
 		PurseShortfall: purseShortfall,
 		Expedition:     expeditionPlan,
+		Path:           path,
 	}, nil
 }
 

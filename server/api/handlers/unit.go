@@ -239,7 +239,11 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 
 	stormWarning := ""
 	if su, sErr := h.store.Get(ctx, unitID); sErr == nil {
-		stormWarning = stormHullWarning(su)
+		var route []province.MapPosition
+		if req.Intent != "explore" { // an expedition's route stays hidden
+			route = res.Path
+		}
+		stormWarning = stormForecast(ctx, h.pool, h.clk, worldID, playerID, stormHullWarning(su), route)
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)

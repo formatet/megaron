@@ -176,7 +176,7 @@ func (h *ProvinceHandler) TradePreview(w http.ResponseWriter, r *http.Request) {
 						name = *ship.Name
 					}
 					o["ship_name"] = unit.ShipDisplayName(ship.Type, name, originName).DisplayName
-					if w := stormShipWarning(ship.Type, ship.Hull, ship.HullBonus); w != "" {
+					if w := stormForecast(r.Context(), h.pool, h.clk, worldID, playerID, stormShipWarning(ship.Type, ship.Hull, ship.HullBonus), j.Path); w != "" {
 						o["storm_warning"] = w
 					}
 					if quantity > ship.Capacity {
