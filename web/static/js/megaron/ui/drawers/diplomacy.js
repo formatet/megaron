@@ -320,7 +320,8 @@ export async function dipArrangePassage(id, selId, btn, blockId = 'dip-passage-'
   const data = await res.json().catch(() => ({}));
   const block = document.getElementById(blockId);
   if (res.ok) {
-    if (block) block.outerHTML = '<div style="font-size:.72rem;color:var(--safe-text);margin-top:.3rem;text-align:right">✓ Passage arranged — arrives ' + arrivalHTML(data.arrives_at) + '</div>';
+    if (block) block.outerHTML = '<div style="font-size:.72rem;color:var(--safe-text);margin-top:.3rem;text-align:right">✓ Passage arranged — arrives ' + arrivalHTML(data.arrives_at) + '</div>'
+      + (data.storm_warning ? '<div class="stat-warn">' + esc(data.storm_warning) + '</div>' : '');
   } else {
     btn.disabled = false;
     showInlineResult(block || btn.parentElement, formatApiError(data, 'Arrange passage failed'), true);

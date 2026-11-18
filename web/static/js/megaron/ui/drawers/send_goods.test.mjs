@@ -89,3 +89,11 @@ test('routeChoices: available only', () => {
   assert.deepEqual(routeChoices(both).map(o => o.by), ['land', 'sea']);
   assert.deepEqual(routeChoices(landOnly).map(o => o.by), ['land']);
 });
+
+test('storm_warning of the chosen sea route shows as a stat-warn line, and only then', () => {
+  const sea = { options: [{ by: 'sea', available: true, travel_ticks: 4, storm_warning: 'Storm on this route at (2, 1), drifting NE. A storm takes 2 hull.' }] };
+  const html = sendFormHTML({ ...base, to: 'k1', preview: sea, by: 'sea' });
+  assert.match(html, /<div class="stat-warn">Storm on this route at \(2, 1\), drifting NE\./);
+  const calm = { options: [{ by: 'sea', available: true, travel_ticks: 4 }] };
+  assert.doesNotMatch(sendFormHTML({ ...base, to: 'k1', preview: calm, by: 'sea' }), /stat-warn/);
+});

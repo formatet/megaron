@@ -42,3 +42,26 @@ func TestPassageReceiptPrintsStormWarning(t *testing.T) {
 		t.Fatalf("err %v out %q", err, out)
 	}
 }
+
+const routeWarnText = "Storm on this route at (12, 7), drifting NE. A storm takes 2 hull."
+
+func TestMarchPreviewAndReceiptPrintRouteStormWarning(t *testing.T) {
+	round3Client(t, func(w http.ResponseWriter, r *http.Request) {
+		if testWorldTimeResponse(w, r) {
+			return
+		}
+		if strings.HasSuffix(r.URL.Path, "/march-preview") {
+			json.NewEncoder(w).Encode(map[string]any{"available": true, "arrival_tick": 42, "duration_ticks": 3, "arrives_at_utc": "2026-10-06T15:00:00Z", "storm_warning": routeWarnText})
+			return
+		}
+		json.NewEncoder(w).Encode(map[string]any{"unit_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", "arrives_at": "2026-11-04T18:34:00Z", "arrival_tick": 42, "duration_ticks": 3, "target_q": 5, "target_r": -3, "storm_warning": routeWarnText})
+	})
+	for name, extra := range map[string][]string{"preview": {"--preview"}, "receipt": {"--yes"}} {
+		cmd := unitCmd()
+		cmd.SetArgs(append([]string{"march", "--unit", "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", "--target", "5,-3", "--intent", "patrol"}, extra...))
+		out, err := captureStdout(t, cmd.Execute)
+		if err != nil || !strings.Contains(out, "⚠ "+routeWarnText) {
+			t.Fatalf("%s: err %v out %q", name, err, out)
+		}
+	}
+}

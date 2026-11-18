@@ -88,6 +88,8 @@ export function sendFormHTML(s) {
     else if (!ch.length) route = `<div class="sg-line">${esc((s.preview.options || []).map(x => x.reason).filter(Boolean)[0] || 'No route to this city')}</div>`;
     else if (ch.length === 1) route = `<div class="sg-line">${esc(routeFacts(ch[0]))}</div>`;
     else route = '<div class="sg-group">' + ch.map(x => `<button type="button" class="btn-small sg-btn${x.by === s.by ? ' active' : ''}" data-act="by" data-by="${esc(x.by)}">${esc(routeFacts(x))}</button>`).join('') + '</div>';
+    const warn = (selectedOption(s) || (ch.length === 1 ? ch[0] : null))?.storm_warning;
+    if (warn) route += `<div class="stat-warn">${esc(warn)}</div>`;
     route += `<div class="sg-line sg-over" id="sg-over">${esc(overText(s))}</div>`;
   }
   const giftLine = foreign ? '<div class="sg-line">A gift: nothing comes back.</div>' : '';
@@ -188,6 +190,7 @@ async function send() {
     text = d.ship_name ? `${cargo} sent aboard ${d.ship_name} — can be intercepted en route, and sails home empty afterward.`
       : `${cargo} sent — can be intercepted en route.`;
     if (d.kind === 'gift') text = 'Gift: ' + text;
+    if (d.storm_warning) text += ' ' + d.storm_warning;
     if (Number.isInteger(d.arrival_tick)) text += ` Arrives ${fmtTickTime(d.route_version === 2 ? null : d.arrival_tick, d.arrives_at)} (journey: ${fmtDays(d.travel_ticks)}).`;
   }
   S.result = { ok: true, text, rowHTML: '' };
