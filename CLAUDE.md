@@ -6,6 +6,8 @@ If code and this file conflict, trust the code, then fix this file.
 read from code or vault on demand. A `≥3` beside the word "invariant" makes an agent refuse to tune it.
 
 - **Before a task:** read the relevant vault doc(s) — index at `~/Dokument/myltavault/megaron_moc.md` (**start here**).
+  The vault root holds only current docs; finished plans, dated reports, research and snapshots live in
+  `~/Dokument/myltavault/Arkiv/megaron/` under their old filenames (moved 2026-11-18) — history, not current state.
   **Decisions live in the topic doc for their mechanic** (registry: `megaron_styrande_beslut.md`, one line + link);
   architecture work (ownership, duplicates, guards) lives in `megaron_arkitekturprogram.md`.
   **And run `git status` + `git worktree list` first** — a session that died mid-slice leaves its work
