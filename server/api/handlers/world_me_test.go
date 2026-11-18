@@ -38,7 +38,10 @@ func TestWorldMe_OwnWorldIsolation(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	exec(`UPDATE players SET wanax_name='Nestor' WHERE id=$1`, a)
+	// wanax_name is unique across the whole DB; other packages' fixtures leave a
+	// "Nestor" behind on a shared test DB (combat/battle_begun_test.go), so own a unique one.
+	wanax := "Nestor-" + uuid.NewString()[:8]
+	exec(`UPDATE players SET wanax_name=$2 WHERE id=$1`, a, wanax)
 	exec(`INSERT INTO player_world_records (player_id,world_id,founded_tick,kharis_amount,kharis_rate,kharis_calc_tick) VALUES ($1,$3,42,12.5,0.25,990),($2,$3,900,70,0,1000)`, a, b, worldID)
 	exec(`INSERT INTO founder_phase (world_id,owner_id,population,grain_amount,grain_rate,silver_amount,silver_rate,active,founded_tick) VALUES ($1,$2,4000,0,0,0,0,false,10)`, worldID, a)
 	settlementsOverviewSeedSettlement(t, pool, ctx, worldID, a, "Petras", true, 0, 0)
@@ -87,7 +90,7 @@ func TestWorldMe_OwnWorldIsolation(t *testing.T) {
 	if first.KharisStanding.Summary == "" || first.KharisStanding.Band != "Suspicious" {
 		t.Fatalf("missing profile meaning: %+v", first)
 	}
-	if first.WanaxName != "Nestor" || first.FoundedTick == nil || *first.FoundedTick != 42 || first.Cities != 2 || first.Population != 1600 || first.Kharis != 15 {
+	if first.WanaxName != wanax || first.FoundedTick == nil || *first.FoundedTick != 42 || first.Cities != 2 || first.Population != 1600 || first.Kharis != 15 {
 		t.Fatalf("own profile includes foreign/stale data or raw kharis: %+v", first)
 	}
 	exec(`UPDATE settlements SET population=98765 WHERE id=$1`, rival)

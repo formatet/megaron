@@ -152,6 +152,28 @@ func TestShipyardDeployTransitionPreservesDeadlineWithoutFreeStaff(t *testing.T)
 	if _, err := f.pool.Exec(ctx, `INSERT INTO scheduled_events(world_id,event_type,payload,process_after,due_tick) VALUES($1,'ShipRepairComplete',$2,now(),12)`, f.worldID, payload); err != nil {
 		t.Fatal(err)
 	}
+	// The cutover is global and one-shot: it covers every world's legacy job.
+	// Fixtures from earlier packages on a shared test DB leave synthetic
+	// deadline-less 'repairing' ships behind (combat rower rations, march silver …);
+	// they are not this test's subject, so fence them out for its duration.
+	var fenced []uuid.UUID
+	rows, err := f.pool.Query(ctx, `UPDATE units SET shipyard_work_remaining=0 WHERE category='naval' AND status IN ('forming','repairing') AND shipyard_work_remaining IS NULL AND world_id<>$1 RETURNING id`, f.worldID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for rows.Next() {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			t.Fatal(err)
+		}
+		fenced = append(fenced, id)
+	}
+	rows.Close()
+	t.Cleanup(func() {
+		if _, err := f.pool.Exec(context.Background(), `UPDATE units SET shipyard_work_remaining=NULL WHERE id=ANY($1)`, fenced); err != nil {
+			t.Errorf("unfence foreign legacy jobs: %v", err)
+		}
+	})
 	if err := economy.CompleteShipyardWorkTransition(ctx, f.pool); err != nil {
 		t.Fatal(err)
 	}
