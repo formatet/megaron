@@ -22,11 +22,14 @@ package handlers
 import (
 	"context"
 	"formatet/megaron/server/internal/clock"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"testing"
 	"time"
 
 	"formatet/megaron/server/internal/events"
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -272,5 +275,55 @@ func TestEscortAdoption_HordeEatsNothingBeforeFounding(t *testing.T) {
 	}
 	if settledGrain != grainAmount {
 		t.Errorf("settled grain after 500 ticks = %v, want unchanged %v — the horde drained a store it should be carrying", settledGrain, grainAmount)
+	}
+}
+
+// TestEscortAdoption_FoundingEscortCanReinforce: the escort adopted at founding
+// gets origin_settlement_id = the metropolis (mig 126 gate: reinforce needs
+// garrison AND settlement_id = origin_settlement_id), so a new Wanax can
+// reinforce the first cohorts (player report e60fa369).
+func TestEscortAdoption_FoundingEscortCanReinforce(t *testing.T) {
+	pool := escortTestPool(t)
+	ctx := context.Background()
+	worldID, playerID := seedEscortWorld(t, pool)
+	eventStore := events.NewStore(pool)
+
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		t.Fatalf("begin tx: %v", err)
+	}
+	defer tx.Rollback(ctx)
+
+	if _, err := seedNomadicHost(ctx, tx, eventStore, worldID, playerID, 0, 0); err != nil {
+		t.Fatalf("seedNomadicHost: %v", err)
+	}
+	founded, err := foundMetropolisFromNomadicHost(ctx, tx, eventStore, clock.NewTestClock(time.Unix(0, 0)), worldID, playerID, "Iolkos-"+uuid.New().String(), "achaean", nil)
+	if err != nil {
+		t.Fatalf("foundMetropolisFromNomadicHost: %v", err)
+	}
+	var unitID uuid.UUID
+	var origin *uuid.UUID
+	if err := tx.QueryRow(ctx,
+		`UPDATE units SET size = 60 WHERE id = (SELECT id FROM units WHERE world_id = $1 AND owner_id = $2 AND status = 'garrison' AND category = 'land' LIMIT 1)
+		 RETURNING id, origin_settlement_id`, worldID, playerID,
+	).Scan(&unitID, &origin); err != nil {
+		t.Fatalf("pick garrisoned escort cohort: %v", err)
+	}
+	if origin == nil || *origin != founded.SettlementID {
+		t.Errorf("escort origin_settlement_id = %v, want %v", origin, founded.SettlementID)
+	}
+	if err := tx.Commit(ctx); err != nil {
+		t.Fatalf("commit: %v", err)
+	}
+
+	clk := clock.NewTestClock(time.Now())
+	uh := NewUnitHandler(pool, events.NewScheduler(pool, clk), eventStore, clk)
+	r := chi.NewRouter()
+	r.Post("/worlds/{worldID}/units/{unitID}/reinforce", asPlayer(playerID, uh.Reinforce))
+	req := httptest.NewRequest(http.MethodPost, "/worlds/"+worldID.String()+"/units/"+unitID.String()+"/reinforce", nil)
+	rec := httptest.NewRecorder()
+	r.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("Reinforce(founding escort) = %d %q, want 200", rec.Code, rec.Body.String())
 	}
 }

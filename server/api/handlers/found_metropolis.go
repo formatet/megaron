@@ -181,6 +181,10 @@ func foundMetropolisFromNomadicHost(
 	// each other and with the WHERE clause below on the same "is this unit on
 	// the founding hex" test.
 	//
+	// origin_settlement_id is set alongside the payer so the first cohorts can
+	// reinforce (reinforce needs settlement_id = origin_settlement_id, mig 126).
+	// COALESCE on purpose: origin is set once and never overwritten.
+	//
 	// status <> 'disbanded' rather than an allow-list of statuses: an
 	// allow-list that forgets a value (e.g. 'embarked') reintroduces exactly
 	// the silent orphaning this fix exists to close. Status enum: garrison,
@@ -188,6 +192,7 @@ func foundMetropolisFromNomadicHost(
 	escortRows, err := tx.Query(ctx,
 		`UPDATE units SET
 		   support_settlement_id = $1,
+		   origin_settlement_id = COALESCE(origin_settlement_id, $1),
 		   settlement_id = CASE WHEN status = 'positioned' AND q = $5 AND r = $6
 		                        THEN $1 ELSE settlement_id END,
 		   status        = CASE WHEN status = 'positioned' AND q = $5 AND r = $6
