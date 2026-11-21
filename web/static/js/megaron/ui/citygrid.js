@@ -315,7 +315,7 @@ let gridNote = null;
 export function currentPick() { return livePick; }
 
 export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR, renderOpts = {}) {
-  const { selected = null, silent = false, targetHex=null, buildingType=null, god=null, pick=null } = renderOpts;
+  const { selected = null, silent = false, targetHex=null, buildingType=null, god=null, pick=null, rates=null } = renderOpts;
   const mySeq = ++renderSeq;
   livePick = pick;
   if (!silent) { liveSelection.delete(containerEl); containerEl.innerHTML = '<div class="loading" style="font-size:.8rem">Loading…</div>'; }
@@ -412,7 +412,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
   let openKey = silent && liveSelection.has(containerEl) ? liveSelection.get(containerEl) : placementTargetKey(hexes,targetHex,selected);
 
   const rerender = (extra = {}) => renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
-    { selected: openKey, silent: true, ...extra });
+    { selected: openKey, silent: true, rates, ...extra });
 
   // A refusal is shown where the player just clicked and does NOT re-render:
   // nothing changed on the server, so rebuilding the widget would only throw
@@ -483,7 +483,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
     if (pick) {
       // Pick mode: only the build row for the chosen type, on an eligible hex.
       const hex = g.dataset.target === 'hex' && hexes.find(h => h.hex_ordinal === Number(g.dataset.ordinal));
-      const rows = hex ? hexRowsHTML(catalogue, opts, hex.hex_q, hex.hex_r, pick.type, stock) : '';
+      const rows = hex ? hexRowsHTML(catalogue, opts, hex.hex_q, hex.hex_r, pick.type, stock, rates) : '';
       detail.innerHTML = hex
         ? `<div class="dsec-title">(${hex.hex_q},${hex.hex_r}) — ${terrainLabel(hex.terrain)}</div>${rows || `<p class="empty-state">A ${esc(pickName)} cannot be built here.</p>`}`
         : `<p class="empty-state">A ${esc(pickName)} is built on a catchment hex, not in the city.</p>`;
@@ -493,7 +493,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
       const ordinal = Number(g.dataset.ordinal);
       const hex = hexes.find(h => h.hex_ordinal === ordinal);
       if (!hex) return;
-      const buildHere = hexRowsHTML(catalogue, opts, hex.hex_q, hex.hex_r, undefined, stock);
+      const buildHere = hexRowsHTML(catalogue, opts, hex.hex_q, hex.hex_r, undefined, stock, rates);
       detail.innerHTML = `
         <div class="dsec-title">(${hex.hex_q},${hex.hex_r}) — ${terrainLabel(hex.terrain)}</div>
         ${isNavigable(hex.terrain)?stormHexPanelHTML(hex.hex_q,hex.hex_r):''}

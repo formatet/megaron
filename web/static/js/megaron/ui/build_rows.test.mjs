@@ -100,3 +100,25 @@ test('HX3: "Build here" rows for a hex come from the same data (price, step, eff
   assert.match(hexBuildRowHTML('farm', { q: 1, r: 1, effect: '<b>x</b>', quote: quotes[0] }), /&lt;b&gt;x&lt;\/b&gt;/);
   assert.match(hexRowsHTML(cat, opts, 2, 2), /Mine<\/b> L0 → L1/);
 });
+
+// ── "nobody makes X" tail (playtest 4: a new city has 0 stone and 0 timber) ──
+const stoneRow = (rates, stock = { stone: 0, timber: 10 }) =>
+  buildRows([{ type: 'mine', costs: { stone: 4 } }], { stock, rates })[0].shortReason;
+
+test('NM1: rates {stone: 0} adds the tail; positive rate or no rates keeps today\'s text', () => {
+  assert.equal(stoneRow({ stone: 0 }), 'needs 4 stone, city has 0 — nobody makes stone');
+  assert.equal(stoneRow({ stone: 0.5 }), 'needs 4 stone, city has 0');
+  assert.equal(stoneRow(undefined), 'needs 4 stone, city has 0');
+});
+
+test('NM2: timber made as cedar gets no tail; neither made does', () => {
+  const rows = rates => buildRows([{ type: 'house', costs: { timber: 4 } }], { stock: { timber: 0, cedar: 0 }, rates })[0].shortReason;
+  assert.equal(rows({ timber: 0, cedar: 0.3 }), 'needs 4 timber, city has 0');
+  assert.equal(rows({ timber: 0, cedar: 0 }), 'needs 4 timber, city has 0 — nobody makes timber');
+});
+
+test('NM3: the hex row path carries the tail too', () => {
+  const c = { q: 1, r: 2, maxed: false, quote: { costs: { stone: 4 }, duration_game_days: 2 } };
+  assert.match(hexBuildRowHTML('mine', c, { stone: 0 }, { stone: 0 }), /nobody makes stone/);
+  assert.doesNotMatch(hexBuildRowHTML('mine', c, { stone: 0 }), /nobody makes/);
+});

@@ -72,7 +72,22 @@ export function shortfalls(costs, silver, stock) {
   }
   return out.sort((a, b) => a.good.localeCompare(b.good));
 }
-export const shortfallText = list => list.map(s => `needs ${s.need} ${s.good}, city has ${s.have}`).join('; ');
+// rates = {good: net per game day} from the city forecast (optional). A missing good
+// that the city makes none of (net <= 0; for timber, cedar counts too) ends "— nobody makes X".
+const nobodyMakes = (good, rates) => {
+  if (!rates || !Number.isFinite(rates[good])) return false;
+  if (good === 'timber' && rates.cedar > 0) return false;
+  return rates[good] <= 0;
+};
+export const shortfallText = (list, rates) => list.map(s => `needs ${s.need} ${s.good}, city has ${s.have}${nobodyMakes(s.good, rates) ? ` — nobody makes ${s.good}` : ''}`).join('; ');
+// {good: net} from a province answer's forecast (null when it carries none).
+export function ratesFromForecast(pd) {
+  const goods = pd?.forecast?.goods;
+  if (!Array.isArray(goods)) return null;
+  const m = {};
+  for (const g of goods) m[g.good_key] = g.net;
+  return m;
+}
 export function stockFromGoods(goods) {
   if (!Array.isArray(goods)) return null;
   const m = {};
@@ -113,7 +128,7 @@ export function buildRows(catalogue, ctx = {}) {
     if (!r.locked && ctx.stock) {
       const short = shortfalls(src.costs, src.cost_silver, ctx.stock);
       r.payable = short.length === 0;
-      r.shortReason = shortfallText(short);
+      r.shortReason = shortfallText(short, ctx.rates);
     }
     if (!r.locked && r.payable !== false && afford && afford.can_afford === false && !afford.at_max_level) { r.locked = true; r.reason = 'not enough goods in store'; }
     rows.push(r);
@@ -217,22 +232,22 @@ export function pickHexes(buildingType, placementOpts) {
 }
 
 // One row for building `type` on hex (c.q,c.r).
-export function hexBuildRowHTML(type, c, stock) {
+export function hexBuildRowHTML(type, c, stock, rates) {
   const short = c.quote ? shortfalls(c.quote.costs, c.quote.cost_silver, stock) : [];
   const label = esc(_BLD_LBL[type] || type);
   const price = c.quote ? `${esc(fmtBuildCost(c.quote))} · ${fmtDuration(c.quote.duration_game_days)}` : 'price unavailable';
   const eta = c.quote ? readyIfStarted(c.quote.duration_game_days) : '';
   return `<div class="build-row" data-build-type="${esc(type)}" data-build-q="${c.q}" data-build-r="${c.r}">
     <div class="build-row-text"><b>${label}</b> ${esc(hexStepLabel(c))} · ${price}${c.effect ? `<div class="build-row-sub">${esc(c.effect)}</div>` : ''}${eta ? `<div class="build-row-sub">${esc(eta)}</div>` : ''}</div>
-    <button class="btn-small btn-primary build-row-btn" data-build-act="build-hex" data-build-type="${esc(type)}" data-build-q="${c.q}" data-build-r="${c.r}"${short.length ? ' disabled' : ''}>Build</button>${reasonSpan(shortfallText(short))}</div>`;
+    <button class="btn-small btn-primary build-row-btn" data-build-act="build-hex" data-build-type="${esc(type)}" data-build-q="${c.q}" data-build-r="${c.r}"${short.length ? ' disabled' : ''}>Build</button>${reasonSpan(shortfallText(short, rates))}</div>`;
 }
 
 // The rows for one hex: every hex-bound type from the catalogue that hex accepts.
-export function hexRowsHTML(catalogue, placementOpts, q, r, onlyType, stock) {
+export function hexRowsHTML(catalogue, placementOpts, q, r, onlyType, stock, rates) {
   const quotes = placementOpts?.build_quotes || [];
   return (catalogue || []).filter(e => e.hex_bound && (!onlyType || e.type === onlyType))
     .sort((a, b) => (_BLD_LBL[a.type] || a.type).localeCompare(_BLD_LBL[b.type] || b.type, 'en'))
-    .flatMap(e => hexBuildChoices(e.type, placementOpts, quotes).filter(c => c.q === q && c.r === r && !c.maxed).map(c => hexBuildRowHTML(e.type, c, stock)))
+    .flatMap(e => hexBuildChoices(e.type, placementOpts, quotes).filter(c => c.q === q && c.r === r && !c.maxed).map(c => hexBuildRowHTML(e.type, c, stock, rates)))
     .join('');
 }
 

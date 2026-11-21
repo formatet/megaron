@@ -12,7 +12,7 @@ import { esc, formatApiError, playerError, errorDetail } from '../format.js';
 import { unitTypeLabel } from '../actornames.js';
 import { startCityAnim } from '../../render/city.js';
 import { renderGubbeGrid, shipyardShareNote, setBuildHandler, currentPick } from '../citygrid.js';
-import { buildBody, constructListHTML, getBuildingCatalogue, loadStock, showBuildResult, templeName } from '../build_rows.js';
+import { buildBody, constructListHTML, getBuildingCatalogue, loadStock, ratesFromForecast, showBuildResult, templeName } from '../build_rows.js';
 import { productionSectionsHTML, populationHTML, blessingsSectionHTML, foodSummaryHTML, foodDetailsHTML, storageWarningsHTML } from './city_production.js';
 import { warehouseHTML } from './city_warehouse.js';
 import { fmtNum, fmtDays, fmtDuration } from '../fmt_num.js';
@@ -184,7 +184,7 @@ export async function loadCityDrawer() {
 
     // ── Gubbe placement (P5) ────────────────────────────────────────────────
     const gridEl = document.getElementById('city-gubbe-grid');
-    const gridP = gridEl ? renderGubbeGrid(gridEl, capital.id, capital.q, capital.r, snap?.pick ? { pick: snap.pick } : {}) : null;
+    const gridP = gridEl ? renderGubbeGrid(gridEl, capital.id, capital.q, capital.r, { rates: ratesFromForecast(pd), ...(snap?.pick ? { pick: snap.pick } : {}) }) : null;
 
     // ── Byggnader ───────────────────────────────────────────────────────────
     // Delegate to refreshCityBuildings so startBuild() can call it too
@@ -478,7 +478,7 @@ async function refreshCityBuildings(provinceID) {
     }
     const queueFull = pd.build_queue_max != null && bq.length >= pd.build_queue_max;
     const constructHTML = constructListHTML(buildingCatalogue, {
-      walls: pd.walls, siloLevel: pd.silo_level, buildQuotes: pd.build_quotes, canAfford: pd.can_afford, queueFull, stock,
+      walls: pd.walls, siloLevel: pd.silo_level, buildQuotes: pd.build_quotes, canAfford: pd.can_afford, queueFull, stock, rates: ratesFromForecast(pd),
     });
     h2 += `
       <div class="dsec-title" style="margin-top:.8rem">Construct</div>
