@@ -3,7 +3,7 @@ package kharis
 import "testing"
 
 // Unit tests for the FAS 3 offer-underhåll gain-scaling formula (Timothy
-// 2026-07-09 kharis omdesign, temenos_kharis.md §"KANONISK OMDESIGN" §4).
+// 2026-07-09 kharis omdesign, temenos_kharis.md; that section was retired 2026-11-18, current rules are in the doc itself).
 // Criteria per megaron_kharis_plan.md: "med offer i lager -> gain; utan ->
 // ingen/svag gain + netto-drift nedåt."
 

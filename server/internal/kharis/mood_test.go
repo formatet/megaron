@@ -23,7 +23,7 @@ func TestDeriveMood_MatchesLowestPrayerTier(t *testing.T) {
 }
 
 // TestDeriveMood_0_100_Thresholds verifies the FAS 0 rescale (Timothy 2026-07-09
-// kharis omdesign, temenos_kharis.md §"KANONISK OMDESIGN"): the four mood tiers on
+// kharis omdesign, temenos_kharis.md; that section was retired 2026-11-18, current rules are in the doc itself): the four mood tiers on
 // the new 0-100 scale (60/30/5, religion.MoodFavorable/MoodIndifferent/
 // MoodSuspicious — lowered from 10 to 5 on 2026-08-25, megaron_plan_kultbrunnen.md
 // §6, to match the lowest prayer gate).

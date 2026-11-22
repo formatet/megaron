@@ -36,16 +36,9 @@ import (
 //   - fortify: holds ground; combat participation stays fixed.
 //   - storm:   arriving unit with storm stance halves the wall-level bonus of the target.
 //
-// TODO C5-sentry: sentry interception is NOT yet active.
-// Design: a periodic scan (e.g. ScheduledSentryScan every ~30 s, or a ticker
-// in main.go mirroring kharis seedDailyTicks) iterates all marching units,
-// computes their interpolated hex from departs_at/arrives_at on a straight line,
-// and for each active sentry unit (status='positioned', stance='sentry') within
-// 3 hex of sentry_q/r triggers an UnitIntercepted combat using resolveCombat.
-// Guard: intercepted_at column on units (or a separate table) prevents the same
-// march from being intercepted twice by the same sentry. Stub wired to
-// SetStance (stance can be set to 'sentry', sentry_q/r is persisted), but no
-// scan goroutine is started yet.
+// Sentry interception is active: UnitInterceptScanHandler
+// (unit_intercept_scan.go) sweeps marching units and acts on each visible
+// enemy sentry whose reaction_policy says "intercept" or "alert".
 type UnitArrivalHandler struct {
 	battleOutcomes     *battleBegunOutcomes
 	carrierOutcomes    *[]*events.Event

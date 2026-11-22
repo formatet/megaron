@@ -22,7 +22,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// Kharis omdesign (Timothy 2026-07-09, temenos_kharis.md §"KANONISK OMDESIGN"):
+// Kharis omdesign (Timothy 2026-07-09, temenos_kharis.md; that section was retired 2026-11-18, current rules are in the doc itself):
 // the pool moved from a 0–2000 scale to a single hidden 0–100 number. All
 // thresholds below are STRAWMAN — balance is calibrated later
 // (temenos_balans_spakar.md §9). See megaron_kharis_plan.md FAS 0.
