@@ -36,6 +36,6 @@ Every drawer has a **?** in its header that opens its article here.
 
 - **♫** silences all sound: the sign-in screen's opening theme, the music, the horn when troops receive a march order, the clash of a resolved [[battle|battle]], a short call when your forces arrive, and a soft chime for each new dispatch while you are playing.
 
-- **⚒** toggles an activity overlay.
+- A city of yours shows a hammer while it builds and a spear while it trains.
 
 On mobile, windows fill the screen. Use the close button at the top right to return to the map. Opening another window closes the previous one.

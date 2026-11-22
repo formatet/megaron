@@ -190,19 +190,21 @@ export function drawCityIcon(ctx, ic, cx, cy) {
   return { ox, oy };
 }
 
-// Statusstämplar (provets ACTIVITY): hammare = bygger, spjut = tränar,
-// prickad ram = gör ingenting. Form, inte bara färg.
+// Statusstämplar (provets ACTIVITY): hammare = bygger, spjut = tränar.
+// En stad som inte gör något visar ingenting. Form, inte bara färg.
 export const ACTIVITY_ICONS = {
   build: ['KKKKK', 'KWWWK', 'KKKKK', '.KWK.', '.KWK.', '.KKK.'],
   train: ['....K', '...KA', '..KW.', '.KW..', 'KW...'],
-  idle:  ['K.K.K', '.....', 'K...K', '.....', 'K.K.K'],
 };
-export function drawStamp(ctx, rows, x, y, pal = CITY_ICON_PALETTE) {
+export function activityStamp(p) {
+  return p.build_active ? ACTIVITY_ICONS.build : p.train_active ? ACTIVITY_ICONS.train : null;
+}
+export function drawStamp(ctx, rows, x, y, pal = CITY_ICON_PALETTE, scale = 1) {
   rows.forEach((row, dy) => {
     for (let dx = 0; dx < row.length; dx++) {
       if (row[dx] === '.') continue;
       ctx.fillStyle = pal[row[dx]];
-      ctx.fillRect(x + dx, y + dy, 1, 1);
+      ctx.fillRect(x + dx * scale, y + dy * scale, scale, scale);
     }
   });
 }

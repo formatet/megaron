@@ -24,7 +24,7 @@ import { omenOverlay, drawOmen, beginOmen, omenMap } from './omen.js';
 import { acceptMapTiles, pollMapTiles } from '../map_data.js';
 import { drawFire, FIRE_FRAMES } from './doomfire.js';
 import { drawCityMass, citySprite, cityTop, cityFoot } from './citysprites.js';
-import { cityIcon, drawCityIcon, drawStamp, ACTIVITY_ICONS, CITY_ICON_PALETTE } from './cityicons.js';
+import { cityIcon, drawCityIcon, drawStamp, activityStamp, CITY_ICON_PALETTE } from './cityicons.js';
 import { zoomStep, clampPan, visibleWidth } from './camera.js';
 import { bindMapInput } from './map_input.js';
 import { confirmInline, showInlineResult } from '../ui/inline_result.js';
@@ -2251,8 +2251,9 @@ function drawActivityBadge(ctx, cx, cy, p) {
   ctx.save();
   if (CITYICONS) {
     const ic = provinceIcon(p);
-    const rows = p.build_active ? ACTIVITY_ICONS.build : p.train_active ? ACTIVITY_ICONS.train : ACTIVITY_ICONS.idle;
-    drawStamp(ctx, rows, Math.round(cx) - 9, Math.round(cy) + 14 - ic.h - 6);
+    // 2×: hela pixlar, 10×12. Ovanför stadens överkant (oy = cy+14-ic.h), strax
+    // vänster om flaggstången (cx+2), så flagga och sprite förblir fria.
+    drawStamp(ctx, activityStamp(p), Math.round(cx) - 9, Math.round(cy) + 14 - ic.h - 13, CITY_ICON_PALETTE, 2);
     ctx.restore();
     return;
   }
@@ -2261,31 +2262,21 @@ function drawActivityBadge(ctx, cx, cy, p) {
   // inne i en palatsstads takrader, och ett märke placerat vid massans
   // vänstra kant svävar i tomrummet ovanför den lägre flygeln.
   const sprite = citySprite(p.size_tier || 0, p.walls || 0);
-  const bx = cx - 9, by = cy + cityTop(sprite) - 5;
+  const bx = Math.round(cx) - 9, by = Math.round(cy + cityTop(sprite)) - 5;
+  // Hela pixlar i 2×, samma placering som stämpeln ovan.
+  const by2 = by - 8;
   if (p.build_active) {
-    // Hammer head (orange)
     ctx.fillStyle = '#D4780A';
-    ctx.fillRect(bx, by, 5, 3);
+    ctx.fillRect(bx, by2, 10, 6);
     ctx.fillStyle = '#7A5030';
-    ctx.fillRect(bx + 2, by + 2, 1, 3);
-  } else if (p.train_active) {
-    // Sword point (grey-blue)
-    ctx.fillStyle = '#A8B8C8';
-    ctx.beginPath();
-    ctx.moveTo(bx + 2, by);
-    ctx.lineTo(bx + 4, by + 5);
-    ctx.lineTo(bx + 2, by + 4);
-    ctx.lineTo(bx, by + 5);
-    ctx.closePath();
-    ctx.fill();
-    ctx.fillStyle = '#7A5030';
-    ctx.fillRect(bx + 1, by + 4, 2, 2);
+    ctx.fillRect(bx + 4, by2 + 4, 2, 8);
   } else {
-    // Idle — dim grey dot
-    ctx.fillStyle = '#606060';
-    ctx.beginPath();
-    ctx.arc(bx + 2, by + 2, 2, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.fillStyle = '#A8B8C8';
+    ctx.fillRect(bx + 4, by2, 2, 2);
+    ctx.fillRect(bx + 2, by2 + 4, 6, 2);
+    ctx.fillRect(bx, by2 + 8, 10, 2);
+    ctx.fillStyle = '#7A5030';
+    ctx.fillRect(bx + 2, by2 + 8, 4, 4);
   }
   ctx.restore();
 }
@@ -2541,12 +2532,6 @@ export function panDelta(held, dtMs, speedPxPerSec = PAN_SPEED_PX_PER_SEC) {
 export function drawStormSample(ctx, x, y) {
   drawStorm(ctx, { tier: 'live', hexes: [{ q: 0, r: 0 }] },
             { S, hexPx: () => ({ x, y }), hexPts, frame: 0 });
-}
-
-export function toggleActivityOverlay() {
-  State.activityOverlay = !State.activityOverlay;
-  document.getElementById('activity-btn').classList.toggle('active', State.activityOverlay);
-  State.dirty = true;
 }
 
 export const canvas = document.getElementById('hex-canvas');
@@ -3036,10 +3021,10 @@ export function render() {
   }
   pass('cities');
 
-  // 4b. Activity overlay badges (own non-outpost cities, zoom >= ACTIVITY_BADGE_ZOOM)
-  if (State.activityOverlay && State.camera.zoom >= ACTIVITY_BADGE_ZOOM) {
+  // 4b. Activity badges (own non-outpost cities that build or train, zoom >= ACTIVITY_BADGE_ZOOM)
+  if (State.camera.zoom >= ACTIVITY_BADGE_ZOOM) {
     for (const p of State.provinceData) {
-      if (p.is_outpost || !p.own) continue;
+      if (p.is_outpost || !p.own || !(p.build_active || p.train_active)) continue;
       const {x, y} = hexPx(p.q, p.r);
       drawActivityBadge(ctx, x, y, p);
     }

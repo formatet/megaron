@@ -63,7 +63,6 @@ export const State = {
   lastBlinkTick: -1,
   lastStormTick: -1,
   lastFireTick: -1,
-  activityOverlay: false,
 
   // WebSocket liveness — timestamp (ms) of the last frame received on the WS,
   // heartbeats included. The ws.js watchdog closes a socket that goes silent
