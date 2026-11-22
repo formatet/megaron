@@ -42,6 +42,10 @@ func TestL1TempleClimbsToFirstPrayerAndCaps(t *testing.T) {
 				t.Fatalf("L%d ordinary net%g want weakly positive L1", level, net)
 			}
 			h := newTestTickHandler(pool)
+			// The climb is measured, not the dice: a wrath roll near the floor halves the
+			// grain (harvest_failure), and five of them starve the L1 tithe near tick 215,
+			// which failed this test at random (11-05, 11-22). 1 never hits a probability.
+			h.randomFloat = func() float64 { return 1 }
 			amount := Floor
 			firstPrayer, firstCap := 0, 0
 			for tick := 1; tick <= 260; tick++ {
