@@ -49,4 +49,4 @@ Place citizens on [[hills|hills]], [[maquis|maquis]], [[olive-grove|olive groves
 
 ### Farms on grain-bearing hills {#founding-settling-4}
 
-On grain-bearing hills, a Farm at level 1 makes 0.5 × 1.7 grain per worker per game day, with room for five workers. Plain hills give 0.5 per worker. With another grain-bearing hill in reach, six food workers can feed a new city of 1,000 people; leave the rest for stone and timber. Check the forecast for your actual site.
+On grain-bearing hills, a Farm at level 1 makes about 0.9 grain per worker per game day, with room for five workers. Plain hills give 0.5 per worker. With another grain-bearing hill in reach, six food workers can feed a new city of 1,000 people; leave the rest for stone and timber. Check the forecast for your actual site.
