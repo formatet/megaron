@@ -2,11 +2,11 @@ Soldiers eat **food: [[fish|fish]], [[grain|grain]] and [[oil|oil]]**, shared in
 
 ## Soldiers’ and crews’ pay {#military-pay}
 
-**Field pay starts at 1 silver per 100 people per game day**, the wage of a worker. [[spearmen]] draw **0 silver**. A full hundred-man [[elite-infantry]] cohort draws **1.5 silver in the field and 0.75 at home**; a full [[war-chariot|chariot]] cohort draws **4 in the field and 2 at home**. Remaining men determine the bill, so a half-strength cohort draws half the pay.
+**Field pay starts at 1 silver per 100 people per game day**, the wage of a worker. [[spearmen]] draw **0 silver**. A full hundred-man [[elite-infantry]] cohort draws **1.5 silver in the field and 3/4 at home**; a full [[war-chariot|chariot]] cohort draws **4 in the field and 2 at home**. Remaining men determine the bill, so a half-strength cohort draws half the pay.
 
 **Home pay is always half field pay.** Garrison, repairs and fitting out count as home. Marching, posted troops, freight missions and soldiers embarked aboard a ship count as field service. Soldiers’ pay does not flow back into the city: the stated silver bill is what the city loses.
 
-**Only [[war-galley]] rowers draw silver pay**, per surviving crew member at 1 silver per hundred in the field and half at home. A full War Galley (50 rowers) draws **0.5 silver in the field / 0.25 at home**. [[galley|Galleys]] and [[emporos|Emporoi]] draw **0 silver**, in port and at sea, and cannot [[semi-desert|desert]] for lack of silver. Carried soldiers draw their own field pay in addition to their ship’s crew.
+**Only [[war-galley]] rowers draw silver pay**, per surviving crew member at 1 silver per hundred in the field and half at home. A full War Galley (50 rowers) draws **0.5 silver in the field / 1/4 at home**. [[galley|Galleys]] and [[emporos|Emporoi]] draw **0 silver**, in port and at sea, and cannot [[semi-desert|desert]] for lack of silver. Carried soldiers draw their own field pay in addition to their ship’s crew.
 
 ### Unpaid forces and laid-up crews {#military-pay-2}
 
@@ -18,7 +18,7 @@ An empty ship **Laid up** in its own [[harbour|Harbour]] costs **0 silver and 0 
 
 Soldiers use the same three [[food|food goods]] as the people. [[livestock]] remains emergency food for civilians, not an army ration. A full spearman cohort uses **0.5 food per game day in garrison**, or **1 food in the field**. A unit in garrison eats from its city. **A unit in the field eats double**, and there is nothing to forage — so a long march, a [[sieges|siege]] line or a posted watch is a real cost ([[stances]]). <!-- src: server/internal/combat/upkeep.go upkeepFieldGrainFactor -->
 
-**Rowers eat like soldiers.** A ship feeds its actual surviving crew: each rower uses the same food as a spearman. A full Galley (20 rowers) uses **0.10 food per game day in port** or **0.20 on a mission**; a War Galley (50) uses **0.25 / 0.50**, and an Emporos (10) **0.05 / 0.10**. Fewer surviving rowers eat less. Garrisoned ships, repairs and fitting out use the port ration. Marching, posted and freighting ships use the field ration, including a freight route's wait between legs. A laid-up hull has no ship ration because its crew has returned to the city. Ship pay follows the home and field rates above.
+**Rowers eat like soldiers.** A ship feeds its actual surviving crew: each rower uses the same food as a spearman. A full Galley (20 rowers) uses **0.1 food per game day in port** or **0.2 on a mission**; a War Galley (50) uses **1/4 / 0.5**, and an Emporos (10) **1/20 / 0.1**. Fewer surviving rowers eat less. Garrisoned ships, repairs and fitting out use the port ration. Marching, posted and freighting ships use the field ration, including a freight route's wait between legs. A laid-up hull has no ship ration because its crew has returned to the city. Ship pay follows the home and field rates above.
 
 ### Military hunger and early ship returns {#military-food-2}
 

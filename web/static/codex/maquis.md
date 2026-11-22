@@ -21,7 +21,7 @@ Per hex, without buildings or mineral deposits. Each worker is one citizen group
 | Good | Worker places | Per worker per game day |
 |---|---|---|
 | [[stone]] | 1 | 0.5 |
-| [[timber]] | 1 | 0.33 |
+| [[timber]] | 1 | 0.3 |
 <!-- /terrain-production -->
 
 Buildings, deposits and refining can change these values. Check City production for this hex's actual output. See [[hex-production-buildings]].

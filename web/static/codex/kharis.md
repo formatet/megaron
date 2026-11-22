@@ -36,12 +36,12 @@ Kharis is never spent on a prayer; it is only a minimum you must hold.
 <!-- kharis-demand -->
 | Active cities | Realm demand | Upkeep per game day | Temple weight to hold steady |
 |---|---|---|---|
-| 1 | 1 | 0.33 | 0.57 |
-| 2 | 3 | 1.00 | 1.71 |
-| 3 | 6 | 2.00 | 3.43 |
-| 4 | 10 | 3.33 | 5.71 |
-| 5 | 15 | 5.00 | 8.57 |
-| 6 | 21 | 7.00 | 12.00 |
+| 1 | 1 | 0.3 | 0.6 |
+| 2 | 3 | 1.0 | 1.7 |
+| 3 | 6 | 2.0 | 3.4 |
+| 4 | 10 | 3.3 | 5.7 |
+| 5 | 15 | 5.0 | 8.6 |
+| 6 | 21 | 7.0 | 12.0 |
 <!-- /kharis-demand -->
 
 Where your kharis stands decides the risk and the favour you meet.

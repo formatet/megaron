@@ -6,7 +6,7 @@ The **Emporos** is the merchant hull: broad, slow, [[cedar|cedar]]-built, made t
 | **Cost for one ship** | 90 cedar · no silver, no timber |
 | **Crew** | 10 rowers, drafted from the city |
 | **Build time** | 4 game days |
-| **Food** | 0.05 per game day in port, 0.1 at sea |
+| **Food** | 1/20 per game day in port, 0.1 at sea |
 | **Pay** | none |
 | **Cargo** | 120 goods of any kind ([[transfers]]) |
 | **Troops** | up to three land forces at once — passengers, not fighters: they roll no dice at sea and drown if she founders |

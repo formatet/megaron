@@ -48,9 +48,9 @@ A temple does not remove its city from the demand ([[kharis]]), nor protect low 
 <!-- temple-levels -->
 | Level | Workplaces | Weight | Kharis per game day, full staff and tithe | With rich offering | Kharis ceiling | Daily tithe |
 |---|---|---|---|---|---|---|
-| 1 | 2 | 1 | 0.58 | 0.88 | 50 | 0.25 [[grain|grain]] (100%) |
-| 2 | 4 | 4 | 2.33 | 3.50 | 75 | 0.75 [[grain|grain]] (75%) + 0.1 [[silver|silver]] (25%) |
-| 3 | 8 | 9 | 5.25 | 7.88 | 100 | 1.75 [[grain|grain]] (70%) + 0.25 [[silver|silver]] (20%) + 0.1 [[incense|incense]] (10%) |
+| 1 | 2 | 1 | 0.6 | 0.9 | 50 | 1/4 [[grain|grain]] (100%) |
+| 2 | 4 | 4 | 2.3 | 3.5 | 75 | 3/4 [[grain|grain]] (75%) + 0.1 [[silver|silver]] (25%) |
+| 3 | 8 | 9 | 5.3 | 7.9 | 100 | 1 3/4 [[grain|grain]] (70%) + 1/4 [[silver|silver]] (20%) + 0.1 [[incense|incense]] (10%) |
 <!-- /temple-levels -->
 
 **Your best temple sets your kharis ceiling**; with no temple it is the lowest (table above). Spontaneous blessings need 60 kharis and a maintained temple. Levelling a temple further needs [[cedar|cedar]].

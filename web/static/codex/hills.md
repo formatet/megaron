@@ -21,9 +21,9 @@ Per hex, without buildings or mineral deposits. Each worker is one citizen group
 | Good | Worker places | Per worker per game day |
 |---|---|---|
 | [[grain]] | 1 | 0.5 |
-| [[oil]] | 2 | 0.33 |
+| [[oil]] | 2 | 0.3 |
 | [[stone]] | 2 | 1 |
-| [[timber]] | 1 | 0.33 |
+| [[timber]] | 1 | 0.3 |
 | [[wine]] | 2 | 1 |
 <!-- /terrain-production -->
 

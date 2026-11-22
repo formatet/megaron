@@ -75,7 +75,7 @@ When founding, the first loaded unit settles and the others stand beside it ([[c
 
 - **Sight.** A ship reads the open sea out to four hexes but sees only one hex inland.
 
-- **Crew pay.** Only War Galley rowers draw silver: 1 silver per hundred rowers per game day in the field, half at home — **0.5 / 0.25** for a full crew. Galley and Emporos crews draw no silver pay. Repairs and fitting out count as home; marching, posted and freight missions (waits included) as field service. A laid-up ship draws no pay ([[upkeep]]).
+- **Crew pay.** Only War Galley rowers draw silver: 1 silver per hundred rowers per game day in the field, half at home — **0.5 / 1/4** for a full crew. Galley and Emporos crews draw no silver pay. Repairs and fitting out count as home; marching, posted and freight missions (waits included) as field service. A laid-up ship draws no pay ([[upkeep]]).
 
 ### Voyage provisions {#ship-missions-3}
 

@@ -61,8 +61,8 @@ Keryx: `unit march --unit <id> --to q,r --intent explore --ticks N` (`--preview`
 For foot soldiers, each [[river-delta|delta]], plain or [[river-valley|river valley]] takes **1 game day**; [[maquis|maquis]]
 and [[olive-grove|olive groves]] **1.5 game days**; [[cedar-forest|cedar forest]] and [[hills|hills]] **2 game days**; [[semi-desert|semi-desert]] **3 game days**.
 A [[river-ford|ford]] takes **2.5 game days** on foot. Mountains cannot be crossed.
-[[war-chariot|Chariots]] are fast on the flat and slow elsewhere: **0.67 game days** on a
-delta, plain or river valley, **2** in maquis and olive groves, **3** in cedar forest, hills and semi-desert, 2.5 at a ford.
+[[war-chariot|Chariots]] are fast on the flat and slow elsewhere: **67%** of a game day on a
+delta, plain or river valley, **2** in maquis and olive groves, **3** in cedar forest, hills and semi-desert, 2.5 at fords.
 The [[horde|Nomadic Host]] needs twice the foot soldiers' time. A Runner takes half the foot time on land.
 
 ### Ship speed and expedition forecasts {#marching-terrain-and-journey-time-2}

@@ -29,7 +29,7 @@ Every cohort is numbered by its home city: **2nd Spearmen of Knossos**. A lost r
 
 ## Drafting and supporting forces {#units-recruits-are-your-own-people}
 
-A cohort is drafted out of your city's population and stays out until disbanded. Soldiers still eat. **Emporoi, Galleys and Spearmen draw 0 silver per game day**. Bronze Guard, chariots and War Galleys draw pay in [[silver]], half at home: a full elite cohort draws 0.75 / 1.5 silver per game day at home / in the field, a full chariot cohort 2 / 4, a full War Galley 0.25 / 0.5 ([[upkeep]]). Rowers eat like spearmen: a port ration at home, double on a mission. An army bigger than your city can feed and pay is a famine with spears.
+A cohort is drafted out of your city's population and stays out until disbanded. Soldiers still eat. **Emporoi, Galleys and Spearmen draw 0 silver per game day**. Bronze Guard, chariots and War Galleys draw pay in [[silver]], half at home: a full elite cohort draws 3/4 / 1.5 silver per game day at home / in the field, a full chariot cohort 2 / 4, a full War Galley 1/4 / 0.5 ([[upkeep]]). Rowers eat like spearmen: a port ration at home, double on a mission. An army bigger than your city can feed and pay is a famine with spears.
 
 ### Disbanding and supporting city stores {#units-recruits-are-your-own-people-2}
 

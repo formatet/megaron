@@ -9,7 +9,7 @@ See [[catchment]], [[citizens]] and [[marching]].
 | Force | Base game days per hex |
 |---|---|
 | Foot soldiers | 1 |
-| [[war-chariot|Chariots]] | 0.67 |
+| [[war-chariot|Chariots]] | 67 % of a game day |
 
 Before roads and journey rounding. Check the march preview for your arrival time. See [[marching]].
 
@@ -20,9 +20,9 @@ Per hex, without buildings or mineral deposits. Each worker is one citizen group
 <!-- terrain-production -->
 | Good | Worker places | Per worker per game day |
 |---|---|---|
-| [[grain]] | 2 | 1.67 |
+| [[grain]] | 2 | 1.7 |
 | [[stone]] | 1 | 0.5 |
-| [[timber]] | 1 | 0.33 |
+| [[timber]] | 1 | 0.3 |
 <!-- /terrain-production -->
 
 Buildings, deposits and refining can change these values. Check City production for this hex's actual output. See [[hex-production-buildings]].

@@ -9,10 +9,10 @@ On a road, every hex you **enter** takes the same time **whatever the ground** â
 
 | Traveller | Time per hex on a road |
 |---|---|
-| [[war-chariot|Chariots]] | 0.4 game day |
-| Caravans | 0.6 game day |
-| Foot soldiers | 0.75 game day |
-| Runners and messengers | 0.35 game day |
+| [[war-chariot|Chariots]] | 40 % of a game day |
+| Caravans | 60 % of a game day |
+| Foot soldiers | 75 % of a game day |
+| Runners and messengers | 35 % of a game day |
 | Ships | no effect |
 
 (Off the road a foot soldier needs 1 game day on [[plains|plains]], 2 on [[hills|hills]] and 3 in semi-desert, so a road helps most where the ground is hardest.)
