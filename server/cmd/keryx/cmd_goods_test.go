@@ -59,3 +59,12 @@ func TestCapFootnote_NamesLaborShareOnlyWhenAllocated(t *testing.T) {
 		t.Errorf("footnote must explain the mechanism and the fix, got %q", got)
 	}
 }
+
+func TestSilverTailOnlyOnSilver(t *testing.T) {
+	if got := silverTail("silver"); got != "  pays professional forces · from a silver mine or trade" {
+		t.Fatalf("silver tail: %q", got)
+	}
+	if got := silverTail("grain"); got != "" {
+		t.Fatalf("grain tail: %q", got)
+	}
+}

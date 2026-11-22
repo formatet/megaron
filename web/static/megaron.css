@@ -1076,6 +1076,7 @@ body:has(.auth-page) main {
 .gubbe-actions { flex: 0 0 auto; display: grid; grid-template-columns: repeat(3, auto); gap: 0.3rem; align-content: start; }
 .gubbe-actions .gubbe-take { grid-column: 1 / -1; }
 .gubbe-actions .gubbe-reason { grid-column: 1 / -1; }
+.gubbe-dim { color: var(--text-dim); }
 .gubbe-places-note { font-size: var(--fs-xs); color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .gubbe-reason { min-height: 1.3em; white-space: nowrap; }
 .gubbe-good-row .btn-small { min-width: 3.2rem; }
@@ -1121,6 +1122,7 @@ body:has(.auth-page) main {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
+  flex-wrap: wrap;
   padding: 0.5rem 0.6rem;
   background: var(--bg-raised);
   border: 1px solid var(--border);
@@ -1128,6 +1130,7 @@ body:has(.auth-page) main {
 }
 .sb-label { font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-dim); font-family: var(--mono); }
 .sb-val   { font-size: var(--fs-md); font-family: var(--mono); color: var(--text); }
+.sb-note  { flex-basis: 100%; font-size: var(--fs-xs); color: var(--text-dim); }
 .sb-rate  { font-size: var(--fs-sm); color: var(--safe-text); font-family: var(--mono); }
 
 /* ── Notification list items ─────────────────────────────────────────────── */

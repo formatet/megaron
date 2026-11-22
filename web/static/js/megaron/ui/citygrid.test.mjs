@@ -357,3 +357,9 @@ test('R: at phone width the hex labels are at least 11px on screen and the goods
   assert.ok(Number(m[1]) * 0.87 >= 11, 'label font x the grid scale (0.87) is at least 11px');
   assert.match(goodRowHTML({ target_kind: 'hex', hex_ordinal: 1 }, { good_key: 'grain', cap: 1, placed: 0, rate_per_tick: 1, marginal_yield: 1 }), /gubbe-actions/);
 });
+
+test('hex row rate says it is for this hex, not the city, and carries no inline colour', () => {
+  const html = goodRowHTML({ target_kind: 'hex', hex_ordinal: 8 }, { good_key: 'grain', cap: 2, placed: 1, placed_ordinals: [1], rate_per_tick: 2.5, marginal_yield: 1 });
+  assert.match(html, /2\.5 per game day on this hex/);
+  assert.doesNotMatch(html, /per game day total|color:var\(--text-dim\)">[^<]*per game day on/);
+});

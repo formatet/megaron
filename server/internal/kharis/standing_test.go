@@ -34,7 +34,7 @@ func TestStandingCurrentConsequences(t *testing.T) {
 // The panel shows band + number, not the prose (kultpanel enkel 2026-10-31).
 func TestStandingShortIsBandAndNumberOnly(t *testing.T) {
 	s := DescribeStanding(5, true, 0)
-	if s.Short != "Kharis 5.0 · Suspicious" || strings.Contains(s.Short, "chance") {
+	if s.Short != "Kharis 5.0 · Suspicious (Indifferent at 30)" || strings.Contains(s.Short, "chance") {
 		t.Fatalf("short: %q", s.Short)
 	}
 	if !strings.Contains(s.Summary, "chance") {
@@ -66,6 +66,25 @@ func TestStandingNamesTheGodsHandInBattle(t *testing.T) {
 	for _, k := range []float64{5, 30, 59.9} {
 		if s := DescribeStanding(k, true, 0); s.BattleStrengthFactor != 1 || strings.Contains(s.Summary, "battle") {
 			t.Fatalf("kharis %g: %+v", k, s)
+		}
+	}
+}
+
+func TestStandingShortNamesNextBandUp(t *testing.T) {
+	for _, c := range []struct {
+		amount float64
+		want   string
+	}{
+		{4.9, "Kharis 4.9 · Wrathful (Suspicious at 5)"},
+		{5, "Kharis 5.0 · Suspicious (Indifferent at 30)"},
+		{29.9, "Kharis 29.9 · Suspicious (Indifferent at 30)"},
+		{30, "Kharis 30.0 · Indifferent (Favorable at 60)"},
+		{39.7, "Kharis 39.7 · Indifferent (Favorable at 60)"},
+		{60, "Kharis 60.0 · Favorable"},
+		{90, "Kharis 90.0 · Favorable"},
+	} {
+		if got := DescribeStanding(c.amount, true, 0).Short; got != c.want {
+			t.Errorf("kharis %v: got %q want %q", c.amount, got, c.want)
 		}
 	}
 }

@@ -26,10 +26,25 @@ type Standing struct {
 	// The gods' hand in battle (religion.BattleDivine): strength multiplier a
 	// unit entering a battle now would carry; 1 is none.
 	BattleStrengthFactor float64 `json:"battle_strength_factor"`
-	// Short is the band and the number only ("Kharis 5.0 · Indifferent"), what a
+	// Short is the band and the number only ("Kharis 5.0 · Indifferent (Favorable at 60)"), what a
 	// panel shows; Summary stays the long prose for older clients.
 	Short   string `json:"short"`
 	Summary string `json:"summary"`
+}
+
+// nextBandTail names the next band up and the kharis it starts at, so a bare
+// band word has a scale. Favorable is the top: no tail. Read from religion.Mood*.
+func nextBandTail(amount float64) string {
+	switch {
+	case amount >= religion.MoodFavorable:
+		return ""
+	case amount >= religion.MoodIndifferent:
+		return fmt.Sprintf(" (Favorable at %.0f)", religion.MoodFavorable)
+	case amount >= religion.MoodSuspicious:
+		return fmt.Sprintf(" (Indifferent at %.0f)", religion.MoodIndifferent)
+	default:
+		return fmt.Sprintf(" (Suspicious at %.0f)", religion.MoodSuspicious)
+	}
 }
 
 // DescribeStanding describes today's rules, not tomorrow's projected kharis.
@@ -39,7 +54,7 @@ func DescribeStanding(amount float64, maintained bool, protectionTicks int) Stan
 	if protectionTicks <= 0 {
 		s.PunishmentProbability = PunishmentProbability(amount, maintained)
 	}
-	s.Short = fmt.Sprintf("Kharis %.1f · %s", amount, s.Band)
+	s.Short = fmt.Sprintf("Kharis %.1f · %s%s", amount, s.Band, nextBandTail(amount))
 	effect := "no spontaneous blessing or punishment at this standing"
 	if protectionTicks > 0 && PunishmentProbability(amount, maintained) > 0 {
 		effect = "protected from divine punishment for now"

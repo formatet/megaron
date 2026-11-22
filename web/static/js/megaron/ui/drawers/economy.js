@@ -9,6 +9,18 @@ import { renderLockedActions } from '../misc.js';
 import { loadSendGoods } from './send_goods.js';
 import { foodAnswer, foodNetText } from '../food_line.js';
 
+// Silver card: balance, rate, and one dim line on what silver is for and where it comes from.
+export function silverBalanceHTML(silver) {
+  return `<div class="silver-balance">
+          <div>
+            <div class="sb-label">Silver</div>
+            <div class="sb-val">${fmtNum(Math.floor(silver.amount))}</div>
+          </div>
+          ${silver.rate_per_tick ? `<div class="sb-rate">+${fmtNum(Number(silver.rate_per_tick.toFixed(1)))} per game day</div>` : ''}
+          <div class="sb-note">pays professional forces · from a silver mine or trade</div>
+        </div>`;
+}
+
 // A good at its storage ceiling is a silent off-switch: everything produced
 // past the cap is discarded, so labour sitting on it earns nothing. Mirror
 // keryx's atStorageCeiling (cmd_goods.go) exactly — >=99% of cap, since a
@@ -227,13 +239,7 @@ async function loadEconomyGoods(mySettlements) {
       const others = goods.filter(g => g.key !== 'silver' && (g.amount > 0 || g.producible)).sort(byGoodName);
       html += `<div class="dsec-title" id="economy-city-${esc(s.id)}" style="margin-top:.8rem">${esc(s.name)}${s.is_capital?' ★':''}</div>`;
       if (silver) {
-        html += `<div class="silver-balance">
-          <div>
-            <div class="sb-label">Silver</div>
-            <div class="sb-val">${fmtNum(Math.floor(silver.amount))}</div>
-          </div>
-          ${silver.rate_per_tick ? `<div class="sb-rate">+${fmtNum(Number(silver.rate_per_tick.toFixed(1)))} per game day</div>` : ''}
-        </div>`;
+        html += silverBalanceHTML(silver);
       }
       if (others.length) {
         html += `<table class="goods-mini"><tr style="color:var(--text-dim);font-size:.7rem"><td>Good</td><td>Amount</td><td>Rate</td></tr>${others.map(g =>

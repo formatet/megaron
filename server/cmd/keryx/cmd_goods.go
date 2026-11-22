@@ -109,8 +109,8 @@ func goodsCmd() *cobra.Command {
 					stockStr += "*"
 					capNotes = append(capNotes, capNote{key: key, percent: percent})
 				}
-				fmt.Printf("%-10s  %9s  %8.1f  %6s  %10s  %8s\n",
-					key, stockStr, rateT, lvlStr, workersStr, yieldStr)
+				fmt.Printf("%-10s  %9s  %8.1f  %6s  %10s  %8s%s\n",
+					key, stockStr, rateT, lvlStr, workersStr, yieldStr, silverTail(key))
 			}
 			if sawUnserved {
 				fmt.Println("\n! = citizens allocated beyond what the workplace can employ. They produce")
@@ -579,4 +579,13 @@ func cargoPhysicalPosition(m map[string]any) string {
 		return "position unknown"
 	}
 	return fmt.Sprintf("(%d,%d)", int(q), int(r))
+}
+
+// silverTail is the one dim line on the silver row: what silver pays and where it
+// comes from (the web Economy card says the same).
+func silverTail(key string) string {
+	if key != "silver" {
+		return ""
+	}
+	return "  pays professional forces · from a silver mine or trade"
 }

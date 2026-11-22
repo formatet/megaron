@@ -337,7 +337,7 @@ func printNotificationSummary(c *Client, n notificationItem) {
 			line += fmt.Sprintf(" — %d/%d catchment hexes known", *b.KnownHexes, *b.KnownHexes+b.UnknownHexes)
 		}
 		if len(b.PoseidonGift) > 0 && string(b.PoseidonGift) != "false" && string(b.PoseidonGift) != "null" {
-			line += " — Poseidon grants a Galley"
+			line += " — Poseidon grants a Galley (keryx army)"
 		}
 	case "OutpostEstablished":
 		line = "Your outpost was established"

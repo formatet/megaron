@@ -147,7 +147,7 @@ export function goodRowHTML(target, good, take) {
   return `
     <div class="gubbe-good-row" data-good="${good.good_key}" data-cap="${good.cap ?? ''}" data-target="${targetAttr}">
       <div class="gubbe-good-text">
-        <div class="gubbe-good-line"><b>${goodLabel(target, good)}</b> <span style="color:var(--text-dim)">${good.staffing_only ? fmtNum(good.placed) + (shipyard ? ' shipyard workers' : workshop ? ' builders' : ' temple workers') : fmtNum(Number(good.rate_per_tick.toFixed(1))) + ' per game day total'}</span></div>
+        <div class="gubbe-good-line"><b>${goodLabel(target, good)}</b> <span class="gubbe-dim">${good.staffing_only ? fmtNum(good.placed) + (shipyard ? ' shipyard workers' : workshop ? ' builders' : ' temple workers') : fmtNum(Number(good.rate_per_tick.toFixed(1))) + ' per game day on this hex'}</span></div>
         <div class="gubbe-good-line gubbe-good-next" style="color:var(--text-dim)">${nextLabel}</div>
         <div>${pipsHTML}</div>
         ${placesNote(good) ? `<div class="gubbe-places-note" title="${esc(placesNote(good))}">${esc(placesNote(good))}</div>` : ''}

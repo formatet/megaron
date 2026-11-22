@@ -494,7 +494,7 @@ export function notifText(kind, body) {
       // (colonyFoundedGrainLine reads the same grain_* fields).
       const parts = [`Your metropolis is founded: ${body.name || ''}`];
       if (body.known_hexes != null) parts.push(`${body.known_hexes}/${(body.known_hexes || 0) + (body.unknown_hexes || 0)} catchment hexes known`);
-      if (body.poseidon_gift) parts.push('Poseidon grants a Galley');
+      if (body.poseidon_gift) parts.push('Poseidon grants a Galley (War › Ships)');
       return parts.join(' — ');
     }
     case 'OutpostEstablished': return 'Outpost established';

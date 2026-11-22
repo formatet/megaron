@@ -726,7 +726,7 @@ test('battle notices: the gods\' hand is named in the outcome (R2)', () => {
 
 test('playtest: internal delivery has a neutral delivery name and UUID founding gift remains readable', () => {
   assert.equal(notifText('TradeDelivery', {quantity: 20, good_key: 'grain'}), 'Delivery arrived: 20 grain');
-  assert.match(notifText('MetropolisFounded', {name: 'Knossos', poseidon_gift: 'de291886-44cb-4f4e-8b52-6d488f8fd053'}), /Knossos.*Poseidon grants a Galley/);
+  assert.match(notifText('MetropolisFounded', {name: 'Knossos', poseidon_gift: 'de291886-44cb-4f4e-8b52-6d488f8fd053'}), /Knossos.*Poseidon grants a Galley \(War › Ships\)/);
 });
 
 

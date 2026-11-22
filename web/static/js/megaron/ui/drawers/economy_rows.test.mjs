@@ -56,3 +56,10 @@ test('cargo rows carry the prayers over the owner\'s own caravan (the Thread)', 
   const html = economy.renderCargoHTML([{ id: 't1', good_key: 'grain', quantity: 10, role: 'sender', arrival_tick: 5, arrives_at: '2026-01-01T00:00:00Z', blessings: ['the Thread, 12 game days'] }], 0);
   assert.match(html, /the Thread, 12 game days/);
 });
+
+test('silver card says what silver pays and where it comes from, on one dim line', () => {
+  const html = economy.silverBalanceHTML({ amount: 120.7, rate_per_tick: 1.25 });
+  assert.match(html, /<div class="sb-note">pays professional forces · from a silver mine or trade<\/div>/);
+  assert.match(html, /\+1\.3 per game day|\+1\.2 per game day/);
+  assert.doesNotMatch(html, /style=/);
+});
