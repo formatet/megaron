@@ -607,6 +607,7 @@ func nextGameDayLine(c *Client, now time.Time) string {
 
 func statusCmd() *cobra.Command {
 	var provinceID string
+	var brief bool
 	cmd := &cobra.Command{
 		Use:   "status [city]",
 		Short: "Show your province status (defaults to your capital; --city inspects another city)",
@@ -631,6 +632,7 @@ field — looking one up there returns nothing, not a real null from the server.
 Some derived figures DO live at the settlement top level: grain_prod_rate,
 grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_upkeep.`,
 		Example: `  keryx status
+  keryx status --brief         # one screen: stocks, warnings, what is under way
   keryx status --city <name>   # inspect a colony
   keryx status --json | jq '.settlement.resources.silver.amount'`,
 		Args: cobra.MaximumNArgs(1),
@@ -722,23 +724,25 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				settlementsNote = fmt.Sprintf("  Settlements: %.0f/%.0f", used, max)
 				settlementsUsed = used
 			}
-			fmt.Println(citizenScaleNote)
+			if !brief {
+				fmt.Println(citizenScaleNote)
+			}
 			fmt.Printf("%s [%s]  Pop: %s people  Labor: %s  Walls: %.0f/3%s%s\n",
 				name, culture, resource(pop), citizenCount(int(math.Floor(labor/100))), walls, settlementsNote, coastalNote)
-			if line := wallsHoldLine(popCap, walls, siloLevel); line != "" {
+			if line := wallsHoldLine(popCap, walls, siloLevel); line != "" && !brief {
 				fmt.Println(line)
 			}
-			if line := storehouseLine(sett); line != "" {
+			if line := storehouseLine(sett); line != "" && !brief {
 				fmt.Println(line)
 			}
 			if food, ok := sett["food"].(map[string]any); ok {
 				gs, _ := food["growth_state"].(string)
 				net, _ := food["food_net_per_tick"].(float64)
-				if line := growthLine(pop, gs, net); line != "" {
+				if line := growthLine(pop, gs, net); line != "" && !brief {
 					fmt.Println(line)
 				}
 			}
-			if line := nextCitizenLine(c, sett); line != "" {
+			if line := nextCitizenLine(c, sett); line != "" && !brief {
 				fmt.Println(line)
 			}
 			if besieged, _ := sett["besieged"].(bool); besieged {
@@ -754,7 +758,9 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			// the existing way to get one. Reuses the /actions endpoint's "message"
 			// verb gate (see noTradeContactsHint in cmd_actions.go) rather than
 			// adding a new field — best-effort, never blocks `status`.
-			printNoTradeContactsHint(c, cfg.WorldID, prov)
+			if !brief {
+				printNoTradeContactsHint(c, cfg.WorldID, prov)
+			}
 
 			if line := harvestBlessingLine(sett); line != "" {
 				fmt.Println(line)
@@ -781,7 +787,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 
 			// "Last tick" summary: summarizes the journal (keryx ticklog)
 			// without replacing it.
-			if lt, ok := sett["last_tick"].(map[string]any); ok {
+			if lt, ok := sett["last_tick"].(map[string]any); ok && !brief {
 				tk, _ := lt["tick"].(float64)
 				prodN := 0
 				if p, ok := lt["production"].(map[string]any); ok {
@@ -801,7 +807,9 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			// print when present so a colony's tin/copper output is visible here, not
 			// only via `goods`.
 			fmt.Println("Resources")
-			fmt.Println("  (per game day; food and army balances are itemized below)")
+			if !brief {
+				fmt.Println("  (per game day; food and army balances are itemized below)")
+			}
 			if res, ok := sett["resources"].(map[string]any); ok {
 				printRes := func(label, key string, always bool) {
 					rd, ok := res[key].(map[string]any)
@@ -837,9 +845,11 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				// the status endpoint's own economy.GrainBalance (D6) split, not a
 				// re-derivation of the mechanic here.
 				if line := peopleFoodLine(sett); line != "" {
-					fmt.Println(line)
+					if !brief {
+						fmt.Println(line)
+					}
 					food, _ := sett["food"].(map[string]any)
-					if tick, known := food["consumed_tick"].(float64); known {
+					if tick, known := food["consumed_tick"].(float64); known && !brief {
 						consumed, _ := food["consumed"].(map[string]any)
 						detail := foodGoodsText(consumed)
 						if detail == "" {
@@ -866,7 +876,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 								netTick = full
 							}
 						}
-						if peopleFoodLine(sett) == "" {
+						if peopleFoodLine(sett) == "" && !brief {
 							fmt.Printf("  Growth   fish %.1f + grain %.1f − people eat %.1f = growth surplus %s per game day before army\n", fish, prodTick, consumTick, formatNetPerTick(netTick))
 						}
 						line := fmt.Sprintf("  %-8s %6s  production %.1f per game day",
@@ -879,7 +889,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 							placed, _ := sett["food_gubbar_placed"].(float64)
 							suff, _ := sett["food_self_sufficient"].(bool)
 							line += foodGubbarLine(int(req), int(placed), suff)
-							if automatic := automaticFoodLine(sett); automatic != "" {
+							if automatic := automaticFoodLine(sett); automatic != "" && !brief {
 								line += "\n  " + automatic
 							}
 						}
@@ -1071,21 +1081,21 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 					fmt.Println("  " + short)
 				}
 			}
-			if line := kharisDecayLine(sett); line != "" {
+			if line := kharisDecayLine(sett); line != "" && !brief {
 				fmt.Println("  " + line)
 			}
-			if production, ok := sett["kharis_production_per_tick"].(float64); ok {
+			if production, ok := sett["kharis_production_per_tick"].(float64); ok && !brief {
 				if netKnown {
 					fmt.Printf("  Temple production: %s kharis per game day\n", tenths(production))
 				}
 			}
-			if worker, ok := sett["kharis_per_temple_worker"].(float64); ok && !(kcap > 0 && kv > kcap) {
+			if worker, ok := sett["kharis_per_temple_worker"].(float64); ok && !brief && !(kcap > 0 && kv > kcap) {
 				fmt.Printf("  Per extra temple worker: +%s\n", tenths(worker))
 			}
-			if threshold, ok := sett["kharis_blessing_threshold"].(float64); ok {
+			if threshold, ok := sett["kharis_blessing_threshold"].(float64); ok && !brief {
 				fmt.Printf("  Blessings from kharis %.0f\n", threshold)
 			}
-			if wrath, ok := sett["kharis_wrath"].(map[string]any); ok {
+			if wrath, ok := sett["kharis_wrath"].(map[string]any); ok && !brief {
 				threshold, _ := wrath["threshold"].(float64)
 				probability, _ := wrath["daily_probability"].(float64)
 				wrathful := ""
@@ -1105,11 +1115,14 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 					}
 				}
 			}
-			if line := kharisCapLine(sett); line != "" {
+			if line := kharisCapLine(sett); line != "" && !brief {
 				fmt.Print(line)
 			}
 
-			realmCultShown := printRealmTemples(c)
+			realmCultShown := brief // --brief hides the temple overview
+			if !brief {
+				realmCultShown = printRealmTemples(c)
+			}
 
 			// Kult: each temple city's reference, stock and planned local gift — answers
 			// direkt på "kommer min kharis klättra idag" utan att vänta på tick.
@@ -1153,8 +1166,10 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 					v, _ := army[u.jsonKey].(float64)
 					if v > 0 {
 						fmt.Printf("  %-10s %4.0f\n", unit.DisplayName(u.dbType), v)
-						for _, line := range cohortLines(cohortsByType[u.dbType]) {
-							fmt.Println(line)
+						if !brief {
+							for _, line := range cohortLines(cohortsByType[u.dbType]) {
+								fmt.Println(line)
+							}
 						}
 					}
 				}
@@ -1164,7 +1179,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				if up, ok := sett["army_upkeep"].(map[string]any); ok {
 					g, label := upkeepFood(up)
 					s, _ := up["silver"].(float64)
-					if g > 0 || s > 0 {
+					if (g > 0 || s > 0) && !brief {
 						// Say what the figure covers. It sits directly under a list of
 						// the units STANDING here, but since mig 100 it is the bill for
 						// everything this city supports — so a Wanax with half the army
@@ -1175,11 +1190,13 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				}
 				// Legibilitet (2026-07-24): namnge att detta bara är garnisonen HÄR —
 				// `unit list` räknar hela rostret (fält, andra städer, ockuperade ruiner).
-				fmt.Println("  Field forces and other cities are shown in `keryx unit list`.")
+				if !brief {
+					fmt.Println("  Field forces and other cities are shown in `keryx unit list`.")
+				}
 			}
 
 			// Completed buildings — so the agent doesn't re-queue what already exists.
-			if bs, ok := sett["buildings"].([]any); ok && len(bs) > 0 {
+			if bs, ok := sett["buildings"].([]any); ok && len(bs) > 0 && !brief {
 				fmt.Println("\nBuildings")
 				for _, it := range bs {
 					m, _ := it.(map[string]any)
@@ -1230,10 +1247,18 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 					}
 				}
 			}
+			if brief {
+				full := "keryx status"
+				if provinceID != "" {
+					full += " --city " + commandArgument(provinceID)
+				}
+				fmt.Println("\nFull detail: " + full)
+			}
 			return nil
 		},
 	}
 	cmd.Flags().SortFlags = false
+	cmd.Flags().BoolVar(&brief, "brief", false, "one screen: stocks, warnings, what is under way")
 	cmd.Flags().StringVar(&provinceID, "province", "", "province ID to inspect (default: your capital)")
 	addCityFlag(cmd, &provinceID, false, "province")
 	return cmd

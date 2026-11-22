@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"sort"
 	"strings"
 )
@@ -28,8 +29,11 @@ func listCityBuilds(c *Client, world, prov string) error {
 	}
 	var city struct {
 		Settlement struct {
-			Name   string           `json:"name"`
-			Quotes []buildListQuote `json:"build_quotes"`
+			Name      string           `json:"name"`
+			Quotes    []buildListQuote `json:"build_quotes"`
+			Resources map[string]struct {
+				Amount float64 `json:"amount"`
+			} `json:"resources"`
 		} `json:"settlement"`
 	}
 	if err = json.Unmarshal(data, &city); err != nil {
@@ -63,7 +67,7 @@ func listCityBuilds(c *Client, world, prov string) error {
 	fmt.Println("Build the same building again to raise its level. Hex rows refer to that exact site; a new hex starts at L1.")
 	fmt.Println("Build queue: `build --queue` shows remaining queue slots.")
 	fmt.Println("A temple is built for one god, one temple per god: `build --type temple --god <god>` (the Site column names the god).")
-	fmt.Printf("%-15s %-12s %-7s %-7s %-42s %-5s %s\n", "Type", "Site", "Current", "Next", "Costs (next level)", "game days", "Purpose / requires")
+	fmt.Printf("%-15s %-12s %-7s %-7s %-42s %-30s %-5s %s\n", "Type", "Site", "Current", "Next", "Costs (next level)", "Afford", "game days", "Purpose / requires")
 	for _, b := range catalogue {
 		for _, q := range city.Settlement.Quotes {
 			if b["type"] != q.Type {
@@ -77,7 +81,7 @@ func listCityBuilds(c *Client, world, prov string) error {
 			} else if q.Q != nil && q.R != nil {
 				site = fmt.Sprintf("(%d,%d)", *q.Q, *q.R)
 			}
-			next, days, cost := "max", "—", "—"
+			next, days, cost, afford := "max", "—", "—", "—"
 			if q.Next != nil {
 				next = fmt.Sprintf("L%d", *q.Next)
 				days = fmt.Sprint(q.Duration)
@@ -90,6 +94,9 @@ func listCityBuilds(c *Client, world, prov string) error {
 					parts = append(parts, fmt.Sprintf("silver×%g", q.Silver))
 				}
 				cost = strings.Join(parts, " ")
+				afford = affordText(q, city.Settlement.Resources != nil, func(good string) float64 {
+					return city.Settlement.Resources[good].Amount
+				})
 			}
 			requires := fmt.Sprint(b["purpose"])
 			if coastal, _ := b["requires_coastal"].(bool); coastal {
@@ -104,7 +111,7 @@ func listCityBuilds(c *Client, world, prov string) error {
 			if typ == "silo" { // the player's word; build --type granary maps it back
 				typ = "granary"
 			}
-			row := fmt.Sprintf("%-15s %-12s L%-6d %-7s %-42s %-5s %s", typ, site, q.Current, next, cost, days, requires)
+			row := fmt.Sprintf("%-15s %-12s L%-6d %-7s %-42s %-30s %-5s %s", typ, site, q.Current, next, cost, afford, days, requires)
 			if q.Next != nil { // at max level there is nothing to build
 				row += "  → " + buildCommandLine(city.Settlement.Name, typ, q)
 			}
@@ -126,4 +133,43 @@ func buildCommandLine(cityName, typ string, q buildListQuote) string {
 		line += fmt.Sprintf(" --hex %d,%d", *q.Q, *q.R)
 	}
 	return line
+}
+
+// affordText says whether the city holds the quoted cost: "yes", the web's
+// "needs 4 stone, city has 1" (build_rows.js shortfalls: spare cedar covers
+// timber, silver is a good), or "?" when the server reported no stock.
+func affordText(q buildListQuote, known bool, stock func(string) float64) string {
+	if !known {
+		return "?"
+	}
+	need := map[string]float64{}
+	for good, n := range q.Costs {
+		need[good] = n
+	}
+	if q.Silver > 0 {
+		need["silver"] = q.Silver
+	}
+	goods := make([]string, 0, len(need))
+	for good := range need {
+		goods = append(goods, good)
+	}
+	sort.Strings(goods)
+	var lacks []string
+	for _, good := range goods {
+		per := need[good]
+		if !(per > 0) {
+			continue
+		}
+		have := stock(good)
+		if good == "timber" {
+			have += math.Max(0, stock("cedar")-need["cedar"])
+		}
+		if per-have > 1e-6 {
+			lacks = append(lacks, fmt.Sprintf("needs %d %s, city has %d", int(math.Ceil(per-1e-6)), good, int(math.Floor(have+1e-6))))
+		}
+	}
+	if len(lacks) == 0 {
+		return "yes"
+	}
+	return strings.Join(lacks, "; ")
 }

@@ -95,3 +95,15 @@ func TestNotificationCivilianAndGarrisonHungerIndependent(t *testing.T) {
 		}
 	}
 }
+
+func TestKharisBandChangedNamesCommands(t *testing.T) {
+	body := json.RawMessage(`{"from_band":"Indifferent","to_band":"Wrathful","kharis":3}`)
+	text := capturePrint(t, func() {
+		printNotificationSummary(testTimeClient(), notificationItem{Kind: "KharisBandChanged", Body: body})
+	})
+	for _, want := range []string{"keryx staff temple +1 --god <god>", "keryx rite --list", "keryx build --list"} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q: %s", want, text)
+		}
+	}
+}

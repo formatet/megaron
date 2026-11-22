@@ -218,7 +218,7 @@ func printNotificationSummary(c *Client, n notificationItem) {
 				fmt.Printf("      %s: people were fed again.\n", b.Name)
 			}
 		case "KharisBandChanged":
-			fmt.Printf("      Kharis: %s → %s (%.1f). Check `keryx status` for decay and temple support; staff and feed your temples.\n", b.FromBand, b.ToBand, b.Kharis)
+			fmt.Printf("      Kharis: %s → %s (%.1f). Check `keryx status` for decay and temple support; staff and feed your temples (`keryx staff temple +1 --god <god>`, `keryx rite --list`); no temple yet: `keryx build --list`.\n", b.FromBand, b.ToBand, b.Kharis)
 		}
 		return
 	}
