@@ -12,3 +12,7 @@ Order: `.agents/order-oforklarade-extra-20261122.md`. BILD efter merge i accepta
 
 Prov: rött före/grönt efter (Sonnet) · mutanter: kharis `>=`→`>` (Sonnet), silversvansen bort (Opus), båda dödade · webb 1052/0 · Go-svit grön.
 Bifynd för NU 4: Kult-fliken visar "−0.33" (två decimaler).
+
+## ⚒ åtgärdad (LIVE 75dc435, 2026-11-22)
+Timothy: "kör på omdömet, nittiotal". Knappen är borttagen. Egna städer visar alltid en hammare när de bygger och ett spjut när de tränar, ritat i 2×. En stad som står stilla visar inget.
+`e1-stamp-building.png` (1:1) och `e2-stamp-building-zoom4x.png`: Hagia Triada bygger ett Granary, och hammaren (10×12 px) står till vänster om flaggan. Skript: `bild_hammare.py`. Helsviten körd av Opus: rc=0.
