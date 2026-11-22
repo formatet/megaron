@@ -89,7 +89,7 @@ Go (minimum version in `server/go.mod`) · chi · PostgreSQL 16 (pgx/v5) · Redi
 - **Never call `time.Now()` directly** in game/tick logic. All game time goes through `clock.Clock.Now()`.
   Inject `clock.Clock` via constructor; use `clock.TestClock` in tests. Only `internal/events` and `main.go`
   may hold a `*clock.WallClock`.
-- **Sanctioned wall-clock exceptions** (non-game time, deliberately outside `clock.Clock`): WS I/O deadlines
+- **Sanctioned wall-clock exceptions** (non-game time, deliberately outside `clock.Clock`): handler timing in `internal/events` · WS I/O deadlines
   (`internal/notify/hub.go`) · auth token/cookie expiry and authenticated-contact telemetry (`internal/auth`, `api/handlers/auth.go`) ·
   `internal/chronicle` · `cmd/create-world` seed · CLI display in `cmd/keryx` · the client-version cache (`cmd/server/webversion.go`).
   **No new exceptions without updating this list.**
@@ -104,8 +104,10 @@ Go (minimum version in `server/go.mod`) · chi · PostgreSQL 16 (pgx/v5) · Redi
   say "check if X happened" — it says "X happened" or doesn't exist.
 - **Semantics are frozen forever.** Never change how an existing event type is interpreted; create a new type
   (`MessengerArrivedV2`) instead. Old handlers keep reading old types.
-- **Handler timeouts (G2):** `events.Worker` wraps every handler in `context.WithTimeout` (default 5 s), so
-  handlers **must** pass `ctx` to every DB call. Three consecutive failures → dead-lettered.
+- **Handler timeouts (G2):** `events.Worker` wraps every handler in `context.WithTimeout` (default 5 s; the
+  per-world daily ticks that walk every city — KharisTick, UpkeepTick, FoodTick — get `WorldTickHandlerTimeout`
+  via `RegisterWithTimeout`, measured 2026-11-22), so handlers **must** pass `ctx` to every DB call. Three
+  consecutive failures → dead-lettered. A handler past a fifth of its timeout logs `slow scheduled event handler`.
 
 ### Package dependency order (G1 — strict, no exceptions)
 ```

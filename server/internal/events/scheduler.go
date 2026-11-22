@@ -345,8 +345,22 @@ func (s *Scheduler) EnsurePendingTickTx(ctx context.Context, tx pgx.Tx, worldID 
 // Handler processes a single scheduled event. It must propagate ctx to all DB calls.
 type Handler func(ctx context.Context, e ScheduledEvent) error
 
-// DefaultHandlerTimeout is applied to every handler unless overridden via WithHandlerTimeout.
+// DefaultHandlerTimeout is applied to every handler unless registered with
+// RegisterWithTimeout.
 const DefaultHandlerTimeout = 5 * time.Second
+
+// WorldTickHandlerTimeout is for the per-world daily handlers that walk every
+// city or unit in one run (KharisTick, UpkeepTick, FoodTick). Measured
+// 2026-11-22 at 230×230 with 100 one-city realms: KharisTick 1.6–3.9 s, about
+// 14 ms per city — the 5 s default would time out near 350 cities, i.e. a full
+// world of small realms. Dispatch is sequential, so this only delays the next
+// events of the same tick; at a 30–60 min tick that is harmless.
+const WorldTickHandlerTimeout = 60 * time.Second
+
+// slowHandlerFraction: a handler past this share of its own timeout is logged,
+// so one creeping toward the wall as a world fills up shows in the log long
+// before it times out and dead-letters (2026-11-22).
+const slowHandlerFraction = 5
 
 // DeadLetterAttempts is the number of consecutive failures before an event is dead-lettered.
 const DeadLetterAttempts = 3
@@ -358,6 +372,7 @@ type Worker struct {
 	pool            *pgxpool.Pool
 	clock           clock.Clock
 	handlers        map[ScheduledEventType]Handler
+	timeouts        map[ScheduledEventType]time.Duration
 	deadLetterHooks map[ScheduledEventType]Handler
 	pollInterval    time.Duration
 }
@@ -373,6 +388,7 @@ func NewWorker(pool *pgxpool.Pool, clk clock.Clock) *Worker {
 		pool:            pool,
 		clock:           clk,
 		handlers:        make(map[ScheduledEventType]Handler),
+		timeouts:        make(map[ScheduledEventType]time.Duration),
 		deadLetterHooks: make(map[ScheduledEventType]Handler),
 		pollInterval:    defaultWorkerPoll,
 	}
@@ -393,6 +409,21 @@ func (w *Worker) SetPollInterval(d time.Duration) {
 // Register binds a handler to a scheduled event type using the default timeout.
 func (w *Worker) Register(t ScheduledEventType, h Handler) {
 	w.handlers[t] = h
+}
+
+// RegisterWithTimeout binds a handler with its own timeout instead of
+// DefaultHandlerTimeout (see WorldTickHandlerTimeout).
+func (w *Worker) RegisterWithTimeout(t ScheduledEventType, h Handler, d time.Duration) {
+	w.handlers[t] = h
+	w.timeouts[t] = d
+}
+
+// timeoutFor is the handler timeout for t: its registered one, else the default.
+func (w *Worker) timeoutFor(t ScheduledEventType) time.Duration {
+	if d, ok := w.timeouts[t]; ok && d > 0 {
+		return d
+	}
+	return DefaultHandlerTimeout
 }
 
 // RegisterDeadLetterHook binds a best-effort callback invoked when an event of
@@ -509,10 +540,18 @@ func (w *Worker) dispatch(ctx context.Context, e ScheduledEvent) {
 		return
 	}
 
-	hCtx, cancel := context.WithTimeout(ctx, DefaultHandlerTimeout)
+	timeout := w.timeoutFor(e.EventType)
+	hCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	if err := h(hCtx, e); err != nil {
+	start := time.Now() // wall time on purpose: measures the handler, not the game
+	err := h(hCtx, e)
+	if elapsed := time.Since(start); elapsed >= timeout/slowHandlerFraction {
+		slog.Warn("slow scheduled event handler",
+			"type", e.EventType, "id", e.ID, "world", e.WorldID,
+			"elapsed_ms", elapsed.Milliseconds(), "timeout_ms", timeout.Milliseconds())
+	}
+	if err != nil {
 		slog.Error("scheduled event handler failed",
 			"type", e.EventType, "id", e.ID, "attempt", e.Attempts, "err", err)
 		if e.Attempts >= DeadLetterAttempts {
