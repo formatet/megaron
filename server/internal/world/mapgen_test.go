@@ -403,7 +403,7 @@ func TestOracleReveal_EastTileFindsTinCatchment(t *testing.T) {
 }
 
 // TestSpawnOreCatchmentScore_BiasSelection verifies that SpawnOreCatchmentScore
-// returns 1 for tiles whose 6-hex catchment contains the hemisphere's ore and 0
+// returns 1 for tiles whose catchment ring contains the hemisphere's ore and 0
 // for tiles that do not. This mirrors the ORDER BY ore-bias CASE in join.go: when
 // both a biased and an unbiased tile are viable, the biased one sorts first.
 //
@@ -459,10 +459,10 @@ func TestSpawnOreCatchmentScore_BiasSelection(t *testing.T) {
 		}
 	})
 
-	t.Run("ore neighbour not adjacent scores 0", func(t *testing.T) {
-		// q=5 west candidate, copper 2 hexes away (not a direct neighbour).
+	t.Run("ore outside the catchment ring scores 0", func(t *testing.T) {
+		// q=5 west candidate, copper 3 hexes away (one past the radius-2 ring).
 		candidateW := MapTile{Q: 5, R: 0, Terrain: TerrainPlains}
-		farCopper := MapTile{Q: 7, R: 0, Terrain: TerrainHills, CopperDeposit: true}
+		farCopper := MapTile{Q: 8, R: 0, Terrain: TerrainHills, CopperDeposit: true}
 		tm := makeTileMap([]MapTile{candidateW, farCopper})
 		if got := SpawnOreCatchmentScore(candidateW, tm, halfQ); got != 0 {
 			t.Errorf("far copper: SpawnOreCatchmentScore = %d, want 0", got)

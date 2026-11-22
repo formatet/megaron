@@ -1,0 +1,211 @@
+package combat
+
+// TEMPORARY Monte Carlo harness — not for commit. Mirrors resolveTick's round
+// loop (participation, wall budget per tick, storm, rout, wipe) using the real
+// rollSide / distributeLosses / sideRouts.
+
+import (
+	"fmt"
+	"math/rand"
+	"testing"
+
+	"formatet/megaron/server/internal/economy"
+)
+
+type mcUnit struct {
+	utype   string
+	size    int
+	boost   bool // garrison defense
+	blessed bool
+	horns   bool
+	divine  string
+}
+
+type mcResult struct{ attWin, defWin, draw, ticks, attLoss, defLoss float64 }
+
+func mcBattle(att, def []mcUnit, wall int, storm bool, seed int64) (winner string, ticks, attLoss, defLoss int) {
+	var parts []battleParticipant
+	var sizes, initial []int
+	orders := [][]byte{}
+	bySide := map[string][]int{}
+	add := func(u mcUnit, side string) {
+		parts = append(parts, battleParticipant{utype: u.utype, side: side, defenseBoost: u.boost, blessedStrength: u.blessed, blessedHorns: u.horns, divine: u.divine, hull: HullMax})
+		sizes = append(sizes, u.size)
+		initial = append(initial, u.size)
+		orders = append(orders, []byte("{}"))
+		bySide[side] = append(bySide[side], len(parts)-1)
+	}
+	for _, u := range att {
+		add(u, "attacker")
+	}
+	for _, u := range def {
+		add(u, "defender")
+	}
+	a0, d0 := sumSizes(sizes, bySide["attacker"]), sumSizes(sizes, bySide["defender"])
+	for t := 0; t < 200; t++ {
+		budget := wallAbsorbPerLevel * wall
+		st := storm && wall > 0
+		if st {
+			budget /= stormWallAbsorbDivisor
+		}
+		for round := 1; round <= battleRoundsPerTick; round++ {
+			dice := economy.NewSeededDice(battleRoundSeed(seed, t, round))
+			for i := range parts {
+				parts[i].hornsNow = t == 0 && round == 1 && parts[i].blessedHorns
+			}
+			_, _, ah := rollSide(parts, sizes, bySide["attacker"], combatParticipation, dice)
+			_, _, dh := rollSide(parts, sizes, bySide["defender"], combatParticipation, dice)
+			eff := ah
+			if budget > 0 {
+				ab := ah
+				if ab > budget {
+					ab = budget
+				}
+				eff -= ab
+				budget -= ab
+			}
+			effD := dh
+			if st {
+				effD = int(float64(dh)*stormAttackerLossMultiplier + 0.5)
+			}
+			dl := distributeLosses(sizes, bySide["defender"], eff)
+			al := distributeLosses(sizes, bySide["attacker"], effD)
+			for i, l := range al {
+				sizes[i] -= l
+			}
+			for i, l := range dl {
+				sizes[i] -= l
+			}
+			if sumSizes(sizes, bySide["attacker"]) <= 0 || sumSizes(sizes, bySide["defender"]) <= 0 {
+				break
+			}
+		}
+		at, dt := sumSizes(sizes, bySide["attacker"]), sumSizes(sizes, bySide["defender"])
+		attLoss, defLoss = a0-at, d0-dt
+		aOut := at <= 0 || sideRouts(bySide["attacker"], initial, sizes, orders)
+		dOut := dt <= 0 || sideRouts(bySide["defender"], initial, sizes, orders)
+		switch {
+		case aOut && dOut:
+			return "draw", t + 1, attLoss, defLoss
+		case aOut:
+			return "def", t + 1, attLoss, defLoss
+		case dOut:
+			return "att", t + 1, attLoss, defLoss
+		}
+	}
+	return "draw", 200, attLoss, defLoss
+}
+
+func mcRun(att, def []mcUnit, wall int, storm bool, n int) mcResult {
+	r := rand.New(rand.NewSource(1))
+	var res mcResult
+	for i := 0; i < n; i++ {
+		w, t, al, dl := mcBattle(att, def, wall, storm, r.Int63())
+		switch w {
+		case "att":
+			res.attWin++
+		case "def":
+			res.defWin++
+		default:
+			res.draw++
+		}
+		res.ticks += float64(t)
+		res.attLoss += float64(al)
+		res.defLoss += float64(dl)
+	}
+	f := float64(n)
+	return mcResult{res.attWin / f * 100, res.defWin / f * 100, res.draw / f * 100, res.ticks / f, res.attLoss / f, res.defLoss / f}
+}
+
+func inf(n int) []mcUnit {
+	var out []mcUnit
+	for n > 0 {
+		s := n
+		if s > 100 {
+			s = 100
+		}
+		out = append(out, mcUnit{utype: "spearman", size: s})
+		n -= s
+	}
+	return out
+}
+
+func with(us []mcUnit, f func(*mcUnit)) []mcUnit {
+	out := append([]mcUnit(nil), us...)
+	for i := range out {
+		f(&out[i])
+	}
+	return out
+}
+
+func TestZZMonteCarlo(t *testing.T) {
+	const n = 4000
+	type sc struct {
+		name     string
+		att, def []mcUnit
+		wall     int
+		storm    bool
+	}
+	boost := func(u *mcUnit) { u.boost = true }
+	scs := []sc{
+		{"sp 100 v 100", inf(100), inf(100), 0, false},
+		{"sp 110 v 100", inf(110), inf(100), 0, false},
+		{"sp 130 v 100", inf(130), inf(100), 0, false},
+		{"sp 150 v 100", inf(150), inf(100), 0, false},
+		{"sp 200 v 100", inf(200), inf(100), 0, false},
+		{"sp 300 v 300", inf(300), inf(300), 0, false},
+		{"sp 330 v 300", inf(330), inf(300), 0, false},
+		{"sp 10 v 10", inf(10), inf(10), 0, false},
+		{"sp 3 v 2", inf(3), inf(2), 0, false},
+		{"sp 100 v 100 garrisonboost", inf(100), with(inf(100), boost), 0, false},
+		{"sp 2 v 2 garrisonboost", inf(2), with(inf(2), boost), 0, false},
+		{"sp 1 v 1 garrisonboost", inf(1), with(inf(1), boost), 0, false},
+		{"sp 100 v 100 wall1", inf(100), inf(100), 1, false},
+		{"sp 200 v 100 wall1", inf(200), inf(100), 1, false},
+		{"sp 200 v 100 wall2", inf(200), inf(100), 2, false},
+		{"sp 200 v 100 wall3", inf(200), inf(100), 3, false},
+		{"sp 300 v 100 wall3", inf(300), inf(100), 3, false},
+		{"sp 300 v 100 wall3 storm", inf(300), inf(100), 3, true},
+		{"sp 200 v 100 wall2 storm", inf(200), inf(100), 2, true},
+		{"sp 100 v 30 wall1", inf(100), inf(30), 1, false},
+		{"sp 100 v 30 wall3", inf(100), inf(30), 3, false},
+		{"elite 100 v sp 300", []mcUnit{{utype: "elite_infantry", size: 100}}, inf(300), 0, false},
+		{"elite 100 v sp 500", []mcUnit{{utype: "elite_infantry", size: 100}}, inf(500), 0, false},
+		{"elite 100 v sp 600", []mcUnit{{utype: "elite_infantry", size: 100}}, inf(600), 0, false},
+		{"chariot 20 v sp 200", []mcUnit{{utype: "war_chariot", size: 20}}, inf(200), 0, false},
+		{"inf(1die) 100 v sp 100", []mcUnit{{utype: "infantry", size: 100}}, inf(100), 0, false},
+		{"sp 500 v 100 wall1", inf(500), inf(100), 1, false},
+		{"sp 500 v 100 wall1 storm", inf(500), inf(100), 1, true},
+		{"sp 100 v 100 wall1 storm", inf(100), inf(100), 1, true},
+		{"elite 100 v sp 100 wall2", []mcUnit{{utype: "elite_infantry", size: 100}}, inf(100), 2, false},
+		{"elite 50 v inf 100", []mcUnit{{utype: "elite_infantry", size: 50}}, inf(100), 0, false},
+		{"chariot 20 v inf 100", []mcUnit{{utype: "war_chariot", size: 20}}, inf(100), 0, false},
+		{"chariot 40 v inf 100", []mcUnit{{utype: "war_chariot", size: 40}}, inf(100), 0, false},
+		{"inf(1die) 100 v sp 100 dup", []mcUnit{{utype: "infantry", size: 100}}, inf(100), 0, false},
+		{"sp 100 favor v 100", with(inf(100), func(u *mcUnit) { u.divine = "favor" }), inf(100), 0, false},
+		{"sp 100 wrath v 100", with(inf(100), func(u *mcUnit) { u.divine = "wrath" }), inf(100), 0, false},
+		{"sp 100 blessed v 100", with(inf(100), func(u *mcUnit) { u.blessed = true }), inf(100), 0, false},
+		{"sp 100 horns v 100", with(inf(100), func(u *mcUnit) { u.horns = true }), inf(100), 0, false},
+	}
+	fmt.Printf("%-32s %6s %6s %6s %6s %7s %7s\n", "scenario", "att%", "def%", "draw%", "ticks", "attLoss", "defLoss")
+	for _, s := range scs {
+		r := mcRun(s.att, s.def, s.wall, s.storm, n)
+		fmt.Printf("%-32s %6.1f %6.1f %6.1f %6.1f %7.1f %7.1f\n", s.name, r.attWin, r.defWin, r.draw, r.ticks, r.attLoss, r.defLoss)
+	}
+}
+
+func TestZZWallThreshold(t *testing.T) {
+	for _, def := range []int{30, 100, 300, 600} {
+		for wall := 1; wall <= 3; wall++ {
+			lo := 0
+			for att := def; att <= def*12; att += def / 10 {
+				r := mcRun(inf(att), inf(def), wall, false, 400)
+				if r.attWin >= 50 {
+					lo = att
+					break
+				}
+			}
+			fmt.Printf("def %4d wall %d: attacker needs %5d (%.1f:1)\n", def, wall, lo, float64(lo)/float64(def))
+		}
+	}
+}

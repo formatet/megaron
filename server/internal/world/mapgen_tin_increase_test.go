@@ -1,14 +1,9 @@
 package world
 
 import (
-	"crypto/sha256"
-	"encoding/json"
 	"fmt"
-	"os"
 	"reflect"
 	"testing"
-
-	"github.com/google/uuid"
 )
 
 func TestTinAdditionalBudgetScalesWithArea(t *testing.T) {
@@ -20,96 +15,50 @@ func TestTinAdditionalBudgetScalesWithArea(t *testing.T) {
 	}
 }
 
-// legacyTile is MapTile as it was when testdata/tin-increase-2be784c2.json was
-// recorded: without IncenseDeposit (order 32), whose own placement is covered by
-// mapgen_incense_test.go. Hashing this shape keeps the recording valid and still
-// proves the incense pass moved no other field.
-type legacyTile struct {
-	WorldID                                                uuid.UUID
-	Q, R                                                   int
-	Terrain                                                Terrain
-	Coastal                                                bool
-	Fertility, Mineral                                     float64
-	CopperDeposit, TinDeposit, SilverDeposit, CedarDeposit bool
-}
-
-// Recorded unmodified 2be784c2 maps, with exact candidate counts measured in
-// isolated source copies BEFORE implementation. This checks geography rather
-// than comparing two calls through the same new helper.
+// The tin pass may only ADD tin: every other field of the finished map, and
+// every tin deposit the base generator placed, is unchanged by addTinSources.
+// Until 2026-11-22 this compared against maps recorded at 2be784c2 (the
+// slice's own proof that existing worlds kept their geography); the channel
+// meander changed every map on purpose, so the invariant is now checked within
+// one run — the base map before the pass against the same map after it.
 func TestGenerateMap_TinIncreasePreservesGeography(t *testing.T) {
 	t.Parallel()
-	raw, err := os.ReadFile("testdata/tin-increase-2be784c2.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	var cases []struct {
-		Size      int      `json:"size"`
-		Requested int64    `json:"requested_seed"`
-		Effective int64    `json:"effective_seed"`
-		Hash      string   `json:"non_tin_sha256"`
-		OldTin    [][3]int `json:"tin"`
-		Hexes     int      `json:"expected_tin_hexes"`
-		Sources   int      `json:"expected_tin_sources"`
-	}
-	if err := json.Unmarshal(raw, &cases); err != nil {
-		t.Fatal(err)
-	}
-	if len(cases) != 40 {
-		t.Fatalf("golden maps=%d want40", len(cases))
-	}
-	for _, tc := range cases {
-		t.Run(fmt.Sprintf("%d/seed%d", tc.Size, tc.Requested), func(t *testing.T) {
-			tiles, eff := GenerateMap(stubID{}, tc.Requested, tc.Size, tc.Size)
-			if eff != tc.Effective {
-				t.Fatalf("effective seed%d want%d", eff, tc.Effective)
-			}
-			if err := validateMap(tiles, tc.Size, tc.Size); err != nil {
-				t.Fatal(err)
-			}
-			// The golden predates lakes (insjöar slice 2): hash the map before
-			// MarkLakes relabels enclosed sea, and prove that is the only step.
-			pre := generateMapOnce(stubID{}, eff, tc.Size, tc.Size)
-			addTinSources(pre, eff, tc.Size, tc.Size)
-			AddIncenseSources(pre, eff, tc.Size, tc.Size)
-			PopulateRiverMetadata(pre, tc.Size, tc.Size)
-			relabelled := append([]MapTile(nil), pre...)
-			MarkLakes(relabelled, tc.Size, tc.Size)
-			if !reflect.DeepEqual(relabelled, tiles) {
-				t.Fatal("GenerateMap differs from the pre-lake map beyond MarkLakes")
-			}
-			tiles = pre
-			h := sha256.New()
-			enc := json.NewEncoder(h)
-			tin := map[[2]int]bool{}
-			hexes := 0
-			for _, tile := range tiles {
-				if tile.TinDeposit {
-					tin[[2]int{tile.Q, tile.R}] = true
-					hexes++
-					if tile.Terrain != TerrainMountainLimestone {
-						t.Fatal("tin on wrong terrain")
-					}
-				}
-				tile.TinDeposit = false
-				if err := enc.Encode(legacyTile{tile.WorldID, tile.Q, tile.R, tile.Terrain, tile.Coastal, tile.Fertility, tile.Mineral,
-					tile.CopperDeposit, tile.TinDeposit, tile.SilverDeposit, tile.CedarDeposit}); err != nil {
+	for _, size := range []int{64, 128} {
+		for i := int64(1); i <= 20; i++ {
+			requested := 1009 * i
+			t.Run(fmt.Sprintf("%d/seed%d", size, requested), func(t *testing.T) {
+				tiles, eff := GenerateMap(stubID{}, requested, size, size)
+				if err := validateMap(tiles, size, size); err != nil {
 					t.Fatal(err)
 				}
-			}
-			if hash := fmt.Sprintf("%x", h.Sum(nil)); hash != tc.Hash {
-				t.Fatal("a non-tin field changed from recorded master")
-			}
-			for _, old := range tc.OldTin {
-				if !tin[[2]int{old[0], old[1]}] {
-					t.Fatal("an old tin deposit was moved/removed")
+				base := generateMapOnce(stubID{}, eff, size, size)
+				pre := append([]MapTile(nil), base...)
+				addTinSources(pre, eff, size, size)
+				added := 0
+				for k := range base {
+					before, after := base[k], pre[k]
+					if after.TinDeposit && !before.TinDeposit {
+						added++
+						if after.Terrain != TerrainMountainLimestone {
+							t.Fatal("added tin on wrong terrain")
+						}
+					}
+					if before.TinDeposit && !after.TinDeposit {
+						t.Fatal("an old tin deposit was moved/removed")
+					}
+					after.TinDeposit = before.TinDeposit
+					if !reflect.DeepEqual(before, after) {
+						t.Fatalf("tin pass changed a non-tin field at (%d,%d)", before.Q, before.R)
+					}
 				}
-			}
-			if hexes != tc.Hexes {
-				t.Fatalf("tin hexes=%d want measured%d", hexes, tc.Hexes)
-			}
-			if sources := depositSourceCount(tiles, func(t MapTile) bool { return t.TinDeposit }); sources != tc.Sources {
-				t.Fatalf("tin sources=%d want measured%d", sources, tc.Sources)
-			}
-		})
+				// GenerateMap = this pre-lake map plus incense, river metadata and lakes.
+				AddIncenseSources(pre, eff, size, size)
+				PopulateRiverMetadata(pre, size, size)
+				MarkLakes(pre, size, size)
+				if !reflect.DeepEqual(pre, tiles) {
+					t.Fatal("GenerateMap differs from base + tin + incense + rivers + lakes")
+				}
+			})
+		}
 	}
 }

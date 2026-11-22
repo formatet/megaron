@@ -74,7 +74,7 @@ const (
 	// corridor with ragged coasts instead of a ruler-straight canal.
 	channelBandMin        = 2.0 // narrowest half-width of the depressed band, in columns
 	channelBandMax        = 6.0 // widest half-width — also the early-out distance
-	channelBandWavelength = 8.0 // hexes along r between band-width wobbles
+	channelBandWavelength = 4.0 // hexes along r between band-width wobbles (8 until 2026-11-22: coasts ran straight for ~12 rows)
 	// Raw 1D Perlin amplitude is well under ±1, which left the half-width
 	// pinned near its midpoint (≈ a straight coast 3 columns off the column,
 	// the seam Timothy flagged). The gain stretches the wobble across the
@@ -84,6 +84,14 @@ const (
 	// The fBm blend spans roughly ±1.2, so 1.6 pushes near-column cells far
 	// below any land percentile — land almost never touches the straight edge.
 	channelDepressionDepth = 1.6
+
+	// Channel meander (ögonkoll 2026-11-22: the straight trough still read as
+	// a ruler cut at 230×230 — both coasts mirror one straight line). The
+	// trough's centre wanders off the hard column; see channelMeanderFor.
+	channelMeanderAmpMin        = 2.0
+	channelMeanderWidthDivisor  = 20.0
+	channelMeanderWavelengthMin = 10.0
+	channelMeanderHeightDivisor = 6.0
 
 	// remoteIsleMaxTiles: a land component smaller than this (and not the
 	// hemisphere's mainland/anatolia) is eligible as the "remote isle" that
@@ -1016,13 +1024,13 @@ func validateMap(tiles []MapTile, width, height int) error {
 	//
 	// "Buildable" mirrors the terrain exclusion list in join.go capital placement:
 	//   NOT IN (coastal_sea, deep_sea, river, river_ford, mountain_limestone, mountain_red, semi_desert)
-	// "Catchment" = the 6 axial neighbours RecomputeProduction reads (same as production logic).
+	// "Catchment" = every hex within spawnCatchmentRadius, the city's own hex excluded —
+	// the same ring join.go's spawn bias and production read (hexgrid.CatchmentRadius).
 	// "West" = q <= maxQ/2; "East" = q > maxQ/2 (east hemisphere, where tin is placed).
 	//
-	// A tile with a deposit that has ≥1 buildable neighbour is sufficient: that neighbour is
-	// a valid colony site and the deposit tile is in its 6-hex catchment.
+	// A buildable tile with a deposit inside its catchment ring is sufficient: that tile is
+	// a valid colony site and the deposit is worked from it.
 	halfQ := maxQ / 2
-	dirs6 := [6][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
 	isBuildable := func(t MapTile) bool {
 		switch t.Terrain {
 		case TerrainCoastalSea, TerrainDeepSea, TerrainLake, TerrainRiver, TerrainRiverFord,
@@ -1040,7 +1048,7 @@ func validateMap(tiles []MapTile, width, height int) error {
 			continue
 		}
 		var hasCopperNeighbour, hasTinNeighbour bool
-		for _, d := range dirs6 {
+		for _, d := range catchmentOffsets {
 			nb, ok := tileMap[[2]int{t.Q + d[0], t.R + d[1]}]
 			if !ok {
 				continue
@@ -1064,10 +1072,10 @@ func validateMap(tiles []MapTile, width, height int) error {
 	}
 
 	if !westCopperCatchment {
-		fails = append(fails, "no buildable west tile (q <= maxQ/2) has copper in its 6-hex catchment")
+		fails = append(fails, "no buildable west tile (q <= maxQ/2) has copper in its catchment")
 	}
 	if !eastTinCatchment {
-		fails = append(fails, "no buildable east tile (q > maxQ/2) has tin in its 6-hex catchment")
+		fails = append(fails, "no buildable east tile (q > maxQ/2) has tin in its catchment")
 	}
 
 	fails = append(fails, riverInvariantFailures(tiles, width, height)...)
@@ -2332,9 +2340,10 @@ func seaChannels(width int) (chanW, chanE int) {
 // between the sea channels — though in the primary mode both use the same
 // weights (see the blend-weight consts for the alternative).
 //
-// Around each channel column the field is depressed in a band whose
-// half-width wobbles noisily along r (channelDepressionAt), so the coast
-// facing a channel is ragged instead of tracing the ruler-straight column.
+// Around each channel column the field is depressed in a trough that
+// meanders off the column and whose half-width wobbles noisily along r
+// (channelDepressionAt), so the channel winds and its coasts are ragged
+// instead of tracing the ruler-straight column.
 //
 // Domain: the same sheared-rectangle generation domain as the rest of the
 // file (rowOrigin/inMap), but noise is sampled on axis-aligned (q, row)
@@ -2343,10 +2352,13 @@ func seaChannels(width int) (chanW, chanE int) {
 func heightField(rng *rand.Rand, width, height int) map[cell]float64 {
 	// Independent Perlin permutation tables, seeded from the map's own rng
 	// so the whole field stays deterministic per seed.
-	low := perlin.NewPerlin(2, 2, 3, rng.Int63())   // 3 octaves: a little fractal roughness at continent scale
-	high := perlin.NewPerlin(2, 2, 2, rng.Int63())  // 2 octaves: cheap, high-frequency scatter
-	bandW := perlin.NewPerlin(2, 2, 1, rng.Int63()) // 1D band-width wobble, western channel
-	bandE := perlin.NewPerlin(2, 2, 1, rng.Int63()) // 1D band-width wobble, eastern channel
+	low := perlin.NewPerlin(2, 2, 3, rng.Int63())      // 3 octaves: a little fractal roughness at continent scale
+	high := perlin.NewPerlin(2, 2, 2, rng.Int63())     // 2 octaves: cheap, high-frequency scatter
+	bandW := perlin.NewPerlin(2, 2, 3, rng.Int63())    // 1D band-width wobble, western channel
+	bandE := perlin.NewPerlin(2, 2, 3, rng.Int63())    // 1D band-width wobble, eastern channel
+	meanderW := perlin.NewPerlin(2, 2, 2, rng.Int63()) // 1D course of the western channel's trough
+	meanderE := perlin.NewPerlin(2, 2, 2, rng.Int63()) // 1D course of the eastern channel's trough
+	meanderAmp, meanderWavelength := channelMeanderFor(width, height)
 
 	chanW, chanE := seaChannels(width)
 	lowWavelength := float64(width) / lowFreqDivisor
@@ -2363,8 +2375,8 @@ func heightField(rng *rand.Rand, width, height int) map[cell]float64 {
 			lowVal := low.Noise2D(float64(q)/lowWavelength, row/lowWavelength)
 			highVal := high.Noise2D(float64(q)/highFreqWavelength, row/highFreqWavelength)
 			v := wLow*lowVal + wHigh*highVal
-			v -= channelDepressionAt(q, row, chanW, bandW)
-			v -= channelDepressionAt(q, row, chanE, bandE)
+			v -= channelDepressionAt(q, row, chanW, bandW, meanderW, meanderAmp, meanderWavelength)
+			v -= channelDepressionAt(q, row, chanE, bandE, meanderE, meanderAmp, meanderWavelength)
 			field[cell{q, r}] = v
 		}
 	}
@@ -2372,15 +2384,33 @@ func heightField(rng *rand.Rand, width, height int) map[cell]float64 {
 }
 
 // channelDepressionAt returns how much the height field is lowered at column
-// q by the sea channel at chanQ. The depression is channelDepressionDepth at
-// the column itself and fades linearly to zero at a half-width that wobbles
+// q by the sea channel at chanQ. The depression is channelDepressionDepth
+// across a trough running from the column to a centre that meanders off it
+// (channelMeanderFor), and fades linearly to zero at a half-width that wobbles
 // between channelBandMin and channelBandMax columns, driven by 1D noise
-// along the channel — so the channel-facing coastline lands at a different
-// distance on every row and never traces the straight column. The percentile
+// along the channel — so the channel winds and its coastline lands at a
+// different distance on every row instead of tracing the column. The percentile
 // land threshold is applied AFTER this, so total land share is untouched;
 // the land simply migrates away from the channels.
-func channelDepressionAt(q int, row float64, chanQ int, band *perlin.Perlin) float64 {
-	dist := float64(iAbs(q - chanQ))
+func channelDepressionAt(q int, row float64, chanQ int, band, meander *perlin.Perlin, meanderAmp, meanderWavelength float64) float64 {
+	// The trough's centre wanders up to meanderAmp columns off the hard
+	// column; everything between the two is at full depth, so the hard
+	// all-sea column always sits inside the trough and is never left as a
+	// one-hex ruler cut through land.
+	m := channelBandNoiseGain * meander.Noise1D(row/meanderWavelength)
+	if m > 1 {
+		m = 1
+	} else if m < -1 {
+		m = -1
+	}
+	centre := float64(chanQ) + meanderAmp*m
+	lo, hi := math.Min(float64(chanQ), centre), math.Max(float64(chanQ), centre)
+	dist := 0.0
+	if fq := float64(q); fq < lo {
+		dist = lo - fq
+	} else if fq > hi {
+		dist = fq - hi
+	}
 	if dist >= channelBandMax {
 		return 0
 	}
@@ -2397,6 +2427,15 @@ func channelDepressionAt(q int, row float64, chanQ int, band *perlin.Perlin) flo
 		return 0
 	}
 	return channelDepressionDepth * (1 - dist/halfWidth)
+}
+
+// channelMeanderFor scales the trough's wander with the map: a fixed few
+// columns vanish against a 230-wide world's continents and the channel reads
+// as a straight cut again. Amplitude in columns, wavelength in rows.
+func channelMeanderFor(width, height int) (amp, wavelength float64) {
+	amp = math.Max(channelMeanderAmpMin, float64(width)/channelMeanderWidthDivisor)
+	wavelength = math.Max(channelMeanderWavelengthMin, float64(height)/channelMeanderHeightDivisor)
+	return amp, wavelength
 }
 
 // landCutoff sorts every height-field value and returns the elevation at the
@@ -4040,18 +4079,37 @@ func iAbs(x int) int {
 	return x
 }
 
+// spawnCatchmentRadius mirrors hexgrid.CatchmentRadius (P1, radius 2). world
+// may not import hexgrid (G1: world has zero internal deps), so the value is
+// repeated here and pinned by TestSpawnCatchmentRadiusMatchesHexgrid.
+const spawnCatchmentRadius = 2
+
+// catchmentOffsets are the axial offsets of every hex within
+// spawnCatchmentRadius of a city, the city's own hex excluded (18 at radius 2).
+var catchmentOffsets = func() [][2]int {
+	var out [][2]int
+	for dq := -spawnCatchmentRadius; dq <= spawnCatchmentRadius; dq++ {
+		for dr := -spawnCatchmentRadius; dr <= spawnCatchmentRadius; dr++ {
+			if ds := -dq - dr; ds < -spawnCatchmentRadius || ds > spawnCatchmentRadius || (dq == 0 && dr == 0) {
+				continue
+			}
+			out = append(out, [2]int{dq, dr})
+		}
+	}
+	return out
+}()
+
 // SpawnOreCatchmentScore returns 1 when a candidate spawn tile has the
-// hemisphere's strategic ore in its 6-hex catchment, 0 otherwise. This
+// hemisphere's strategic ore in its catchment ring, 0 otherwise. This
 // mirrors the ORDER BY ore-bias CASE expression in join.go: west tiles
-// (q <= halfQ) score 1 if a copper-deposit neighbour exists; east tiles
-// (q > halfQ) score 1 if a tin-deposit neighbour exists. A score of 1
+// (q <= halfQ) score 1 if copper lies in the ring; east tiles
+// (q > halfQ) score 1 if tin lies in the ring. A score of 1
 // sorts ahead of 0 so the first joiners prefer ore-catchment tiles.
 //
 // The function is deliberately side-effect-free and DB-free — it exists so
 // the spawn-bias contract can be unit-tested without a real database.
 func SpawnOreCatchmentScore(candidate MapTile, tileMap map[[2]int]MapTile, halfQ int) int {
-	dirs6 := [6][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
-	for _, d := range dirs6 {
+	for _, d := range catchmentOffsets {
 		nb, ok := tileMap[[2]int{candidate.Q + d[0], candidate.R + d[1]}]
 		if !ok {
 			continue
