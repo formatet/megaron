@@ -79,16 +79,16 @@ func TestUnsustainableReason_FallsBackWhenNeitherMarginIsNegative(t *testing.T) 
 }
 
 func TestRecruitPayKeepsSmallCrewWagesAndShortfalls(t *testing.T) {
-	if got := recruitUpkeepLine(0.05, 0.05); got != "0.05 grain, 0.05 silver" {
+	if got := recruitUpkeepLine(0.05, 0.05); got != "0.1 grain, 0.1 silver" {
 		t.Fatal(got)
 	}
-	if got := recruitUpkeepLine(0.005, 0.005); got != "0.005 grain, 0.005 silver" {
+	if got := recruitUpkeepLine(0.005, 0.005); got != "<0.1 grain, <0.1 silver" {
 		t.Fatal(got)
 	}
-	if got := unsustainableReason(1, 0, 0, 0.005, 0, 0); !strings.Contains(got, "needs 0.005 more") {
+	if got := unsustainableReason(1, 0, 0, 0.005, 0, 0); !strings.Contains(got, "needs <0.1 more") {
 		t.Fatal(got)
 	}
-	if got := unsustainableReason(0, 0, 0.005, 0.005, 0, 0); !strings.Contains(got, "0.005 more grain") || !strings.Contains(got, "0.005 more silver") {
+	if got := unsustainableReason(0, 0, 0.005, 0.005, 0, 0); !strings.Contains(got, "<0.1 more grain") || !strings.Contains(got, "<0.1 more silver") {
 		t.Fatal(got)
 	}
 }

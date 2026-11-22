@@ -25,10 +25,15 @@ func TestShortfall_NeverHidesItsOwnDifference(t *testing.T) {
 			notEqual:  true,
 		},
 		{
-			name: "sub-tenth gap falls back to two decimals rather than '0.0 short'",
+			name: "sub-tenth gap rounds need up and stock down: '0.1 short', never '0.0'",
 			need: 5, have: 4.97,
-			wantParts: []string{"need 5", "have 4.97", "0.03 short"},
+			wantParts: []string{"need 5", "have 4.9", "0.1 short"},
 			notEqual:  true,
+		},
+		{
+			name: "need 2, have 1.96",
+			need: 2, have: 1.96,
+			wantParts: []string{"need 2", "have 1.9", "0.1 short"},
 		},
 		{
 			name: "whole numbers still read cleanly",

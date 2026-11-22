@@ -23,7 +23,11 @@ func TestCodexTerrainTravel(t *testing.T) {
 			t.Fatal(err)
 		}
 		for _, force := range []struct{ label, category string }{{"Foot soldiers", "land"}, {"Chariots", CategoryWarChariot}} {
-			want := fmt.Sprintf("| %s | %g |", force.label, TerrainMoveTicksFor(row.terrain, force.category))
+			ticks := TerrainMoveTicksFor(row.terrain, force.category)
+			want := fmt.Sprintf("| %s | %g |", force.label, ticks)
+			if ticks < 1 { // player text: one decimal at most, so a share of a day is a percent
+				want = fmt.Sprintf("| %s | %.0f %% of a game day |", force.label, ticks*100)
+			}
 			if !strings.Contains(regexp.MustCompile(`\[\[[^|\]]+\|([^\]]+)\]\]`).ReplaceAllString(string(raw), "$1"), want) {
 				t.Errorf("%s missing %s", row.article, want)
 			}

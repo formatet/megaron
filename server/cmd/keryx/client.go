@@ -341,19 +341,18 @@ func apiErrorPlain(body []byte, status int) error {
 // cannot import the handlers package; the two are pinned to the same output by
 // client_shortfall_test.go.
 func shortfall(need, have float64) string {
-	diff := need - have
+	needT := math.Ceil(need*10 - 1e-9)
+	haveT := math.Floor(have*10 + 1e-9)
+	diffT := needT - haveT
 	prec := 1
-	if diff < 0.1 {
-		prec = 2
-	}
-	if have == math.Trunc(have) && diff == math.Trunc(diff) {
+	if math.Mod(haveT, 10) == 0 && math.Mod(diffT, 10) == 0 {
 		prec = 0
 	}
-	needStr := strconv.FormatFloat(need, 'f', 0, 64)
-	if need != math.Trunc(need) {
-		needStr = strconv.FormatFloat(need, 'f', 1, 64)
+	needStr := strconv.FormatFloat(needT/10, 'f', 0, 64)
+	if math.Mod(needT, 10) != 0 {
+		needStr = strconv.FormatFloat(needT/10, 'f', 1, 64)
 	}
-	return fmt.Sprintf("need %s, have %.*f, %.*f short", needStr, prec, have, prec, diff)
+	return fmt.Sprintf("need %s, have %.*f, %.*f short", needStr, prec, haveT/10, prec, diffT/10)
 }
 
 // WorldTickETA projects an arrival with the same freshly fetched world anchor

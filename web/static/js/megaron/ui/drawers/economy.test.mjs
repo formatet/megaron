@@ -252,7 +252,7 @@ test('standing route list shows configured stock targets and return floors, incl
  const empty=renderStandingOrdersHTML([{id:'empty',from_name:'Source',to_name:'Other',status:'paused',outbound:[{good_key:'grain',threshold:0}],return:[]}]);
  assert.match(empty,/Keep at destination: grain 0/);assert.match(empty,/Return cargo: none/);
  const small=renderStandingOrdersHTML([{id:'small',from_name:'Source',to_name:'Other',status:'active',outbound:[{good_key:'fish',threshold:0.04}],return:[{good_key:'silver',floor:0.125}]}]);
- assert.match(small,/fish 0\.04/);assert.match(small,/silver 0\.125/);
+ assert.match(small,/fish <0\.1/);assert.match(small,/silver 0\.1/);
  const escaped=renderStandingOrdersHTML([{id:'escape',from_name:'Source',to_name:'Other',status:'active',outbound:[{good_key:'<script>',threshold:2}]}]);
  assert.ok(!escaped.includes('<script>'));assert.match(escaped,/&lt;script&gt;/);
 });

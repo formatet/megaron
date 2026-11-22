@@ -84,7 +84,7 @@ func TestKharisPlayerRulesSourceParity(t *testing.T) {
 		fmt.Sprintf("| %g | The ceiling set by a level 3 temple.", kharis.EffectiveKharisCap(100, 3)),
 		fmt.Sprintf("a %.0f%% chance", 100*kharis.PunishmentProbability(kharis.WrathThreshold-1, false)),
 		// The rates live in the generated tables (tools/codex_facts.py), not in prose.
-		fmt.Sprintf("| %.2f |", kharis.KharisPerTempleWeight), fmt.Sprintf("| %.2f |", kharis.KharisPerDemand),
+		fmt.Sprintf("| %.1f |", kharis.KharisPerTempleWeight), fmt.Sprintf("| %.1f |", kharis.KharisPerDemand),
 		"Population does not contribute", "random eligible city",
 		"with or without a temple",
 	} {

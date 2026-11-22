@@ -85,10 +85,10 @@ func formatDuration(c *Client, value any, precision ...string) string {
 	if hours < 1 {
 		quantity, unit = hours*60, "minute"
 	}
-	rounded := math.Round(quantity*100) / 100
+	rounded := math.Round(quantity*10) / 10
 	number := strconv.FormatFloat(rounded, 'f', -1, 64)
 	if rounded == 0 && quantity > 0 {
-		number = "less than 0.01"
+		number = "less than 0.1"
 	}
 	if rounded != 1 {
 		unit += "s"
@@ -237,6 +237,26 @@ func printSupersededOrderNote(resp map[string]any) {
 		return
 	}
 	fmt.Printf("  %d earlier unboarded orders withdrawn; their Runners are walking home.\n", len(ids))
+}
+
+// tenths prints a quantity with at most one decimal, and never lets a real
+// non-zero amount read as "0": 0.04 -> "<0.1", -0.04 -> "−<0.1", 0.333 -> "0.3".
+func tenths(v float64) string {
+	if v != 0 && math.Abs(v) < 0.05 {
+		if v < 0 {
+			return "−<0.1"
+		}
+		return "<0.1"
+	}
+	return oneDecimal(v)
+}
+
+// signedTenths is tenths with an explicit "+" on positive amounts.
+func signedTenths(v float64) string {
+	if v > 0 {
+		return "+" + tenths(v)
+	}
+	return tenths(v)
 }
 
 // oneDecimal prints a quantity with at most one decimal: 12 -> "12", 359.9999 -> "360", 2.54 -> "2.5".

@@ -1,5 +1,5 @@
 import { esc } from '../format.js';
-import { fmtDuration } from '../fmt_num.js';
+import { fmtDuration, fmtTenths } from '../fmt_num.js';
 import { fmtClock } from '../fmt_clock.js';
 // kult_kharis.js — pure formatting for the kharis NET figure and the
 // devotion-idle warning shown in the Kult drawer. No DOM, no fetch: kult.js
@@ -10,8 +10,8 @@ import { fmtClock } from '../fmt_clock.js';
 // Net and decay are authoritative server projections, including templeless realms.
 // Missing data stays unavailable; this formatter never derives the city formula.
 
-// One decimal when it is exact, otherwise two: the 1/3 and 7/12 kharis pace (2026-11-04) would read 0.3/0.6.
-const kx = (x) => (Math.abs(x * 10 - Math.round(x * 10)) < 1e-9 ? x.toFixed(1) : x.toFixed(2));
+// At most one decimal (Timothy 2026-11-18); "1.0" prints as "1", a tiny non-zero amount as "<0.1".
+export const kx = fmtTenths;
 
 export function kharisDecayHTML(pd) {
   if (!Number.isFinite(pd?.kharis_daily_decay)) return '<p class="empty-state">Cult upkeep not reported.</p>';
@@ -46,7 +46,7 @@ export function kharisNetView(pd, scope = 'city') {
   const aboveCap = Number.isFinite(pd.kharis) && Number.isFinite(pd.kharis_cap) && pd.kharis > pd.kharis_cap;
   if (aboveCap) out.netHtml += '<div class="stat-row"><span class="sr-label">Above ceiling</span><span class="sr-val warn">' + pd.kharis_cap + '</span></div>';
   if (!aboveCap && Number.isFinite(pd.kharis_per_temple_worker)) {
-    out.netHtml += '<div class="stat-row"><span class="sr-label">Per extra temple worker</span><span class="sr-val">+' + pd.kharis_per_temple_worker.toFixed(2) + '</span></div>';
+    out.netHtml += '<div class="stat-row"><span class="sr-label">Per extra temple worker</span><span class="sr-val">+' + fmtTenths(pd.kharis_per_temple_worker) + '</span></div>';
   }
   return out;
 }

@@ -1,5 +1,5 @@
 import { esc, formatApiError } from './format.js';
-import { fmtNum, fmtDays, fmtDuration } from './fmt_num.js';
+import { fmtNum, fmtTenths, fmtDays, fmtDuration } from './fmt_num.js';
 import { fmtTickTime } from './fmt_clock.js';
 import { arrivalHTML } from './time.js';
 
@@ -19,7 +19,7 @@ export async function loadMarchPreview(worldID, pick, order, read) {
 export function marchSilverLine(data) {
   if (!Number.isFinite(data.upkeep_silver_home) || !Number.isFinite(data.upkeep_silver_field)
       || !Object.hasOwn(data, 'silver_runway_ticks')) return '';
-  const rate = value => value.toLocaleString('en-US', {maximumFractionDigits: 4});
+  const rate = fmtTenths;
   const runway = data.silver_runway_ticks === null ? 'no silver drain'
     : Number.isFinite(data.silver_runway_ticks) ? (data.silver_payer_count > 1 ? 'shortest treasury lasts ' : 'treasury lasts ') + fmtDays(data.silver_runway_ticks)
     : 'treasury duration unknown';

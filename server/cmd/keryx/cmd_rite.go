@@ -853,7 +853,7 @@ func printDivineValues(values map[string]float64) {
 		fmt.Println("  Current offering values unavailable.")
 	}
 	for _, key := range keys {
-		fmt.Printf("  %-12s %.4g\n", key, values[key])
+		fmt.Printf("  %-12s %s\n", key, tenths(values[key]))
 	}
 	fmt.Println()
 }

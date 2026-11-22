@@ -13,9 +13,9 @@ func TestStatusRealmKharisDecay(t *testing.T) {
 		cities, base, burden, total float64
 		want                        string
 	}{
-		{"capital without temple", 1, .1, 0, .35, "Upkeep: −0.35 / game day"},
-		{"five cities", 5, .1, 1, 1.35, "Upkeep: −1.35 / game day"},
-		{"server values rather than client formula", 5, .7, 8.6, 9.55, "Upkeep: −9.55 / game day"},
+		{"capital without temple", 1, .1, 0, .35, "Upkeep: −0.4 / game day"},
+		{"five cities", 5, .1, 1, 1.35, "Upkeep: −1.4 / game day"},
+		{"server values rather than client formula", 5, .7, 8.6, 9.55, "Upkeep: −9.6 / game day"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			round3Client(t, func(w http.ResponseWriter, r *http.Request) {
@@ -35,7 +35,7 @@ func TestStatusRealmKharisDecay(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			for _, want := range []string{tc.want, "net -", "ceiling 40", "Temples: none", "Temple production: 2.10", "Per extra temple worker: +1.05"} {
+			for _, want := range []string{tc.want, "net -", "ceiling 40", "Temples: none", "Temple production: 2.1", "Per extra temple worker: +1"} {
 				if !strings.Contains(out, want) {
 					t.Fatalf("missing %q: %s", want, out)
 				}

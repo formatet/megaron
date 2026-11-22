@@ -15,7 +15,7 @@ import { renderGubbeGrid, shipyardShareNote, setBuildHandler, currentPick } from
 import { buildBody, constructListHTML, getBuildingCatalogue, loadStock, ratesFromForecast, showBuildResult, templeName } from '../build_rows.js';
 import { productionSectionsHTML, populationHTML, blessingsSectionHTML, foodSummaryHTML, foodDetailsHTML, storageWarningsHTML } from './city_production.js';
 import { warehouseHTML } from './city_warehouse.js';
-import { fmtNum, fmtDays, fmtDuration } from '../fmt_num.js';
+import { fmtNum, fmtTenths, fmtDays, fmtDuration } from '../fmt_num.js';
 import { ownBoardSection } from '../market_board.js';
 
 // The settlement the City drawer currently shows: cycle via the drawer's
@@ -64,8 +64,8 @@ function paintCityFigures(pd, goods) {
   set('city-food-details-sec', foodDetailsHTML(pd));
   if (pd && pd.last_tick) {
     const lt = pd.last_tick;
-    const prodRows = Object.entries(lt.production || {}).sort(([a],[b]) => a.localeCompare(b)).map(([k,v]) => `<tr><td>${k}</td><td style="color:var(--safe-text)">+${fmtNum(Number(v.toFixed(2)))}</td></tr>`).join('');
-    const consRows = Object.entries(lt.consumption || {}).sort(([a],[b]) => a.localeCompare(b)).map(([k,v]) => `<tr><td>${k}</td><td style="color:var(--accent)">−${fmtNum(Number(v.toFixed(2)))}</td></tr>`).join('');
+    const prodRows = Object.entries(lt.production || {}).sort(([a],[b]) => a.localeCompare(b)).map(([k,v]) => `<tr><td>${k}</td><td style="color:var(--safe-text)">+${fmtTenths(v)}</td></tr>`).join('');
+    const consRows = Object.entries(lt.consumption || {}).sort(([a],[b]) => a.localeCompare(b)).map(([k,v]) => `<tr><td>${k}</td><td style="color:var(--accent)">−${fmtTenths(v)}</td></tr>`).join('');
     set('city-lasttick-sec', `
         <div class="stat-row"><span class="sr-label">Counted</span><span class="sr-val">${esc(fmtTickTime(lt.tick))}</span></div>
         ${(prodRows||consRows) ? `<table class="goods-mini" style="margin-top:.3rem">${prodRows}${consRows}</table>` : ''}`);

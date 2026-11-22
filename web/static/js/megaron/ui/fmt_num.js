@@ -9,6 +9,13 @@ export function fmtNum(value) {
   return (Object.is(rounded, -0) ? 0 : rounded).toLocaleString('en-US', { maximumFractionDigits: 1 });
 }
 
+// fmtNum, but a real non-zero amount never reads as "0": 0.04 -> "<0.1".
+export function fmtTenths(value) {
+  const n = Number(value);
+  if (Number.isFinite(n) && n !== 0 && Math.abs(n) < 0.05) return n < 0 ? '−<0.1' : '<0.1';
+  return fmtNum(n);
+}
+
 // Durations are days of the world; absolute instants use the shared clock formatter.
 export function fmtDays(value, qualifier = '') {
   const number = fmtNum(value);
@@ -24,7 +31,7 @@ export function fmtDuration(value, tickSeconds = State.TICK_SECONDS, qualifier =
   const hours = count * cadence / 3600;
   const quantity = hours >= 1 ? hours : hours * 60;
   const unit = hours >= 1 ? 'hour' : 'minute';
-  const rounded = Number(quantity.toFixed(2));
-  const wall = rounded > 0 || quantity === 0 ? rounded.toLocaleString('en-US', {maximumFractionDigits: 2}) : 'less than 0.01';
+  const rounded = Number(quantity.toFixed(1));
+  const wall = rounded > 0 || quantity === 0 ? rounded.toLocaleString('en-US', {maximumFractionDigits: 1}) : 'less than 0.1';
   return `${days} · about ${wall} ${unit}${rounded === 1 ? '' : 's'}`;
 }

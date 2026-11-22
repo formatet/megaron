@@ -14,7 +14,7 @@ func TestPeopleFoodLine_ShowsHerdSurplus(t *testing.T) {
 			"herd": map[string]any{"count": 50.0, "cap": 50.0, "surplus_rate": surplus},
 		}}
 	}
-	if got := peopleFoodLine(sett(0.25)); !strings.Contains(got, "production 5.0 + herd 0.25") {
+	if got := peopleFoodLine(sett(0.25)); !strings.Contains(got, "production 5.0 + herd 0.3") {
 		t.Errorf("line = %q, want the herd term", got)
 	}
 	if got := peopleFoodLine(sett(0)); strings.Contains(got, "herd") {

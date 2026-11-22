@@ -92,7 +92,7 @@ func goodsCmd() *cobra.Command {
 				if wpLevel > 0 {
 					lvlStr = fmt.Sprintf("L%d", int(wpLevel))
 				}
-				yieldStr := fmt.Sprintf("%.4f", yieldW)
+				yieldStr := tenths(yieldW)
 				if !producible {
 					// Terrain cannot produce this good — grey it out for the agent.
 					workersStr = "—"

@@ -19,10 +19,7 @@ func foodGoodsText(goods map[string]any) string {
 	parts := []string{}
 	for _, good := range foodListGoods {
 		if qty, ok := goods[good].(float64); ok {
-			amount := strings.TrimRight(strings.TrimRight(fmt.Sprintf("%.4f", qty), "0"), ".")
-			if qty > 0 && qty < 0.0001 {
-				amount = "<0.0001"
-			}
+			amount := tenths(qty)
 			parts = append(parts, fmt.Sprintf("%s %s", amount, good))
 		}
 	}
@@ -111,7 +108,7 @@ func peopleFoodLine(sett map[string]any) string {
 	herdPart := ""
 	herd, _ := food["herd"].(map[string]any)
 	if surplus, _ := herd["surplus_rate"].(float64); surplus > 0 {
-		herdPart = fmt.Sprintf(" + herd %.2f", surplus)
+		herdPart = fmt.Sprintf(" + herd %s", tenths(surplus))
 	}
 	return fmt.Sprintf("  Growth   production %.1f%s − people eat %.1f = growth surplus %s per game day before army", production, herdPart, consumption, formatNetPerTick(net))
 }

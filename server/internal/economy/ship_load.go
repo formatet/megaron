@@ -15,7 +15,7 @@ import (
 type ProvisionShortage struct{ Needed, Available float64 }
 
 func (e *ProvisionShortage) Error() string {
-	return fmt.Sprintf("not enough food in the departure port: voyage needs %.2f, available %.2f", e.Needed, e.Available)
+	return fmt.Sprintf("not enough food in the departure port: voyage needs %.1f, available %.1f", math.Ceil(e.Needed*10-1e-9)/10, math.Floor(e.Available*10+1e-9)/10)
 }
 
 // LoadProvisions tops up to need using food physically available at the caller-verified

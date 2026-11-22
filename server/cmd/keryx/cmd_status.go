@@ -167,7 +167,7 @@ func templeGoodsText(raw any, separator string) string {
 	for _, good := range keys {
 		amount, ok := goods[good].(float64)
 		if ok {
-			parts = append(parts, fmt.Sprintf("%.4g %s", amount, good))
+			parts = append(parts, fmt.Sprintf("%s %s", tenths(amount), good))
 		}
 	}
 	if len(parts) == 0 {
@@ -1076,11 +1076,11 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			}
 			if production, ok := sett["kharis_production_per_tick"].(float64); ok {
 				if netKnown {
-					fmt.Printf("  Temple production: %.2f kharis per game day\n", production)
+					fmt.Printf("  Temple production: %s kharis per game day\n", tenths(production))
 				}
 			}
 			if worker, ok := sett["kharis_per_temple_worker"].(float64); ok && !(kcap > 0 && kv > kcap) {
-				fmt.Printf("  Per extra temple worker: +%.2f\n", worker)
+				fmt.Printf("  Per extra temple worker: +%s\n", tenths(worker))
 			}
 			if threshold, ok := sett["kharis_blessing_threshold"].(float64); ok {
 				fmt.Printf("  Blessings from kharis %.0f\n", threshold)
@@ -1422,7 +1422,7 @@ func kharisDecayLine(sett map[string]any) string {
 	if !totalOK {
 		return "Cult upkeep not reported"
 	}
-	return fmt.Sprintf("Upkeep: −%.2f / game day", total)
+	return fmt.Sprintf("Upkeep: −%s / game day", tenths(total))
 
 }
 

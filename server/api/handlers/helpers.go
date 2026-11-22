@@ -102,23 +102,23 @@ type insufficientGoodsError struct {
 // has to subtract two rounded numbers to learn what is missing.
 //
 // Decimals appear only where they carry information: a whole 50 prints as "50",
-// not "50.0". Sub-0,1 shortfalls fall back to two decimals rather than the
-// self-contradictory "have 12.0, 0.0 short" — at that distance the exact figure
-// IS the information.
+// not "50.0". Need rounds up and stock rounds down to a tenth, so a sub-0,1 gap
+// reads "0.1 short", never the self-contradictory "have 12.0, 0.0 short".
 // ⚠️ The precision is driven by the GAP, never by the stock figure on its own.
 // The first version of this helper picked one decimal per value and promptly
 // reintroduced the very lie it exists to remove: 4,97 against a required 5
 // rendered as "have 5.0" and read as equal again. Its own test caught it.
 func shortfall(need, have float64) string {
-	diff := need - have
+	// Need rounds UP and stock rounds DOWN to a tenth, so the gap never
+	// shows as 0.0 while the player genuinely lacks something.
+	needT := math.Ceil(need*10 - 1e-9)
+	haveT := math.Floor(have*10 + 1e-9)
+	diffT := needT - haveT
 	prec := 1
-	if diff < 0.1 {
-		prec = 2 // the gap itself would round away to "0.0"
-	}
-	if have == math.Trunc(have) && diff == math.Trunc(diff) {
+	if math.Mod(haveT, 10) == 0 && math.Mod(diffT, 10) == 0 {
 		prec = 0 // nothing fractional to show — "50" beats "50.0"
 	}
-	return fmt.Sprintf("need %s, have %.*f, %.*f short", trimNum(need), prec, have, prec, diff)
+	return fmt.Sprintf("need %s, have %.*f, %.*f short", trimNum(needT/10), prec, haveT/10, prec, diffT/10)
 }
 
 // trimNum prints a whole float bare and anything else at one decimal. Used for

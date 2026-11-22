@@ -5,6 +5,13 @@ import json,re,sys
 ROOT=Path(__file__).resolve().parents[1];D=ROOT/'web/static/codex';reference=json.loads((D/'reference.json').read_text());check='--check' in sys.argv
 units={x['type']:x for x in reference['units']};buildings={x['type']:x for x in reference['buildings']};changed=[]
 def amount(x):return f'{x:g}'
+def qty(x):
+ # exact amount without a second decimal: tenths stay decimal, quarters read as fractions (0.25 -> 1/4, 1.75 -> 1 3/4)
+ if abs(x*10-round(x*10))<1e-9:return amount(x)
+ q=round(x*4)
+ if abs(x*4-q)<1e-9:return (str(q//4)+' ' if q>=4 else '')+f'{q%4}/4'
+ return f'{x:.1f}'
+def tenth(x):return f'{int(x*10+0.5+1e-9)/10:.1f}'  # one decimal, half up (Timothy 2026-11-18)
 def days(x):return amount(x)+' game '+('day' if x==1 else 'days')
 def costs(values,linked=False):
  # Alphabetical by good: a cost is an enumeration with no inherent order.
@@ -45,7 +52,7 @@ def kharis_prayers():
 def kharis_demand():
  k=reference['kharis'];rows=[]
  for d in k['demand']:
-  up=k['per_demand']*d['demand'];rows.append('| '+str(d['cities'])+' | '+amount(d['demand'])+f' | {up:.2f} | {up/k["per_temple_weight"]:.2f} |')
+  up=k['per_demand']*d['demand'];rows.append('| '+str(d['cities'])+' | '+amount(d['demand'])+f' | {tenth(up)} | {tenth(up/k["per_temple_weight"])} |')
  return '| Active cities | Realm demand | Upkeep per game day | Temple weight to hold steady |\n|---|---|---|---|\n'+'\n'.join(rows)
 def pct(x):return f'{x*100:g}%'
 def kharis_standing():
@@ -65,8 +72,8 @@ def temple_levels():
  link=lambda g:('[['+goods[g]+'|'+g+']]') if g in goods else g
  for l in k['levels']:
   r=l['weight']*k['per_temple_weight']
-  tithe=' + '.join(amount(p['amount'])+' '+link(p['good'])+' ('+pct(p['share'])+')' for p in l['tithe'])
-  rows.append('| '+str(l['level'])+' | '+str(l['workplaces'])+' | '+amount(l['weight'])+f' | {r:.2f} | {r*k["rich_offering_bonus"]:.2f} | '+amount(l['ceiling'])+' | '+tithe+' |')
+  tithe=' + '.join(qty(p['amount'])+' '+link(p['good'])+' ('+pct(p['share'])+')' for p in l['tithe'])
+  rows.append('| '+str(l['level'])+' | '+str(l['workplaces'])+' | '+amount(l['weight'])+f' | {tenth(r)} | {tenth(r*k["rich_offering_bonus"])} | '+amount(l['ceiling'])+' | '+tithe+' |')
  return '| Level | Workplaces | Weight | Kharis per game day, full staff and tithe | With rich offering | Kharis ceiling | Daily tithe |\n|---|---|---|---|---|---|---|\n'+'\n'.join(rows)
 def tastes():
  # Each god's rich-offering taste from reference.json (religion.TempleGods), dearest first; gods alphabetical.

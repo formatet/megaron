@@ -2,7 +2,7 @@ import { fmtTickTime } from '../fmt_clock.js';
 import { foodGoodsText } from '../food.js';
 import { foodAnswer, foodAnswerValue } from '../food_line.js';
 import { esc } from '../format.js';
-import { fmtNum, fmtDays, fmtDuration } from '../fmt_num.js';
+import { fmtNum, fmtTenths, fmtDays, fmtDuration } from '../fmt_num.js';
 import { State } from '../../state.js';
 import { placePanelHTML } from '../placename.js';
 const n = value => fmtNum(Math.round(Number(value) * 100) / 100);
@@ -82,7 +82,7 @@ export function populationHTML(pd, idle, livestock, provinceID) {
 function harvestBlessingHTML(pd) {
   const b = pd?.harvest_blessing;
   if (!b || !(b.remaining_ticks > 0) || !(b.yield_bonus > 0) || !b.goods?.length) return '';
-  const percent = Number((b.yield_bonus * 100).toFixed(6));
+  const percent = fmtNum(b.yield_bonus * 100);
   return `<p class="harvest-blessing">Blessed harvest: +${percent}% ${esc(b.goods.join(', '))} yield · ${fmtNum(b.remaining_ticks)} ${b.remaining_ticks === 1 ? 'game day' : 'game days'} left</p>`;
 }
 
@@ -143,7 +143,7 @@ export function foodDetailsHTML(pd) {
   if (!s) return grain + army + '<p class="empty-state">Food details not reported.</p>';
   const note = pd.food_gubbar_required == null ? '' : row('Food citizens', `${n(pd.food_gubbar_required)} needed · ${n(pd.food_gubbar_placed || 0)} placed`) + '<p class="empty-state">1 citizen = 100 people. Estimate uses the best food slots for people; the army shares the food stocks and is itemized separately.</p>';
   const a = pd.automatic_food;
-  const automatic = a ? `<p class="empty-state">Automatic food: ${Number(a.nearjord_grain_per_tick + a.remainder_grain_per_tick).toFixed(2)} grain + ${Number(a.remainder_fish_per_tick || 0).toFixed(2)} fish per game day without placed citizens (nearby ground ${Number(a.nearjord_grain_per_tick).toFixed(2)} grain; ${a.remainder_people} people outside whole citizens: ${Number(a.remainder_grain_per_tick).toFixed(2)} grain + ${Number(a.remainder_fish_per_tick || 0).toFixed(2)} fish, a fraction of the best food worker).</p>` : '';
+  const automatic = a ? `<p class="empty-state">Automatic food: ${fmtTenths(a.nearjord_grain_per_tick + a.remainder_grain_per_tick)} grain + ${fmtTenths(a.remainder_fish_per_tick || 0)} fish per game day without placed citizens (nearby ground ${fmtTenths(a.nearjord_grain_per_tick)} grain; ${a.remainder_people} people outside whole citizens: ${fmtTenths(a.remainder_grain_per_tick)} grain + ${fmtTenths(a.remainder_fish_per_tick || 0)} fish, a fraction of the best food worker).</p>` : '';
   const coverage = s.goods
     ? row('City stocks', foodGoodsText(s.goods))
     : '<p class="empty-state">Food stores not reported.</p>';

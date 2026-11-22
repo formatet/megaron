@@ -6,8 +6,8 @@ test('AK1: kharis_net_known true draws a Net row, distinct from Passive, signed,
   const view = kharisNetView({ kharis_net_per_tick: 2.34, kharis_net_known: true, kharis_devotion_idle: false });
   assert.match(view.netHtml, /sr-label">Net</, 'label must not be "Passive" — a distinct row');
   assert.match(view.netHtml, /Kharis each game day/, 'one heading carries the unit');
-  assert.match(view.netHtml, /Net<\/span><span class="sr-val">\+2\.34</, 'signed, two decimals when one would round');
-  assert.match(kharisNetView({ kharis_net_per_tick: 0.25, kharis_net_known: true }).netHtml, /sr-val">\+0\.25</, 'L1 pace 7/12 - 1/3 stays readable');
+  assert.match(view.netHtml, /Net<\/span><span class="sr-val">\+2\.3</, 'signed, one decimal');
+  assert.match(kharisNetView({ kharis_net_per_tick: 0.25, kharis_net_known: true }).netHtml, /sr-val">\+0\.3</, 'L1 pace 7/12 - 1/3 reads one decimal');
   assert.match(kharisNetView({ kharis_net_per_tick: 1.2, kharis_net_known: true }).netHtml, /sr-val">\+1\.2</, 'exact one decimal stays one decimal');
   assert.equal((view.netHtml.match(/game day/g) || []).length, 1, 'the unit is said once, not per row');
   assert.equal(view.idleHtml, '', 'idle not flagged — no warning');
@@ -70,7 +70,7 @@ test('missing or partial realm decay never claims zero cost', () => {
 test('production and extra worker yield are server-owned; yield is conditional, not a staffing recommendation', () => {
  const view=kharisNetView({kharis_net_known:true,kharis_net_per_tick:1.35,kharis_production_per_tick:2.1,kharis_per_temple_worker:1.05});
  assert.match(view.netHtml,/Temple production/);assert.match(view.netHtml,/Temple production<\/span><span class="sr-val">\+2.1</);
- assert.match(view.netHtml,/Per extra temple worker<\/span><span class="sr-val">\+1.05</);
+ assert.match(view.netHtml,/Per extra temple worker<\/span><span class="sr-val">\+1.1</);
  assert.doesNotMatch(view.netHtml,/Requires a free citizen|reference offering/);
 });
 

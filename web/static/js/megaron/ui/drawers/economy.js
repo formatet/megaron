@@ -1,5 +1,5 @@
 import { noCityText } from '../no_city.js';
-import { fmtNum, fmtDays } from '../fmt_num.js';
+import { fmtNum, fmtTenths, fmtDays } from '../fmt_num.js';
 import { fmtTickTime } from '../fmt_clock.js';
 import { State } from '../../state.js';
 import { fetchAuth } from '../../api.js';
@@ -338,7 +338,7 @@ export function renderStandingOrdersHTML(orders, trades, nowMs = 0) {
       // naval route locks a real ship for its whole lifetime — name it.
       const shipNote = o.ship_name ? ` <span style="color:var(--text-dim)">⛵ ${esc(o.ship_name)}</span>` : '';
       const stockAmount = value => Number.isFinite(Number(value))
-        ? Number(value).toLocaleString('en-US', { maximumFractionDigits: 20 }) : 'unknown';
+        ? fmtTenths(value) : 'unknown';
       const outbound = (o.outbound || []).map(g => `${esc(g.good_key)} ${stockAmount(g.threshold)}`).join(', ');
       const returning = (o.return || []).map(g => `${esc(g.good_key)} ${stockAmount(g.floor)}`).join(', ');
       const travelling = trades === undefined ? '' : trades === null ? '<p class="empty-state">Could not load cargo.</p>' : routeCargoHTML(trades.filter(t => t.standing_order_id === o.id), nowMs);

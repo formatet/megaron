@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math"
 	"net/url"
-	"strconv"
 )
 
 // Preview shares the order's resolved arguments, but never dispatches it.
@@ -96,8 +95,6 @@ func marchSilverLine(f marchSilverForecast) string {
 		}
 		runway = prefix + formatDays(math.Round(*f.SilverRunwayTicks*10)/10, "%g")
 	}
-	rate := func(value float64) string {
-		return strconv.FormatFloat(math.Round(value*10000)/10000, 'f', -1, 64)
-	}
+	rate := tenths
 	return fmt.Sprintf("Pay: %s → %s silver per game day in the field · %s", rate(*f.UpkeepSilverHome), rate(*f.UpkeepSilverField), runway)
 }

@@ -79,7 +79,7 @@ test('sold uses authoritative rates, includes explicit zero and avoids infinite 
  assert.equal(marchSilverLine({upkeep_silver_home:0,upkeep_silver_field:0,silver_runway_ticks:null}), 'Pay: 0 → 0 silver per game day in the field · no silver drain');
  assert.equal(marchSilverLine({upkeep_silver_home:0.6,upkeep_silver_field:2,silver_runway_ticks:25}), 'Pay: 0.6 → 2 silver per game day in the field · treasury lasts 25 game days');
  assert.equal(marchSilverLine({upkeep_silver_home:0.6,upkeep_silver_field:2,silver_runway_ticks:0}), 'Pay: 0.6 → 2 silver per game day in the field · treasury lasts 0 game days');
- assert.equal(marchSilverLine({upkeep_silver_home:0.45,upkeep_silver_field:1.5,silver_runway_ticks:1}), 'Pay: 0.45 → 1.5 silver per game day in the field · treasury lasts 1 game day');
+ assert.equal(marchSilverLine({upkeep_silver_home:0.45,upkeep_silver_field:1.5,silver_runway_ticks:1}), 'Pay: 0.5 → 1.5 silver per game day in the field · treasury lasts 1 game day');
  assert.equal(marchSilverLine({available:true}), '');
 });
 
@@ -171,7 +171,7 @@ test('expedition preview names exact first target without disclosing its ETA',()
 });
 
 test('pay forecast preserves authoritative half-home and full-field figures',()=>{
- assert.match(marchSilverLine({upkeep_silver_home:0.75,upkeep_silver_field:1.5,silver_runway_ticks:12}), /0.75 → 1.5 silver per game day/);
+ assert.match(marchSilverLine({upkeep_silver_home:0.75,upkeep_silver_field:1.5,silver_runway_ticks:12}), /0.8 → 1.5 silver per game day/);
  assert.match(marchSilverLine({upkeep_silver_home:0.1,upkeep_silver_field:0.2,silver_runway_ticks:12}), /0.1 → 0.2 silver per game day/);
 });
 

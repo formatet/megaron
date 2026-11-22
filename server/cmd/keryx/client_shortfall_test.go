@@ -17,7 +17,8 @@ func TestShortfall_MirrorsServerFormat(t *testing.T) {
 		want       string
 	}{
 		{12, 11.7, "need 12, have 11.7, 0.3 short"},
-		{5, 4.97, "need 5, have 4.97, 0.03 short"},
+		{5, 4.97, "need 5, have 4.9, 0.1 short"},
+		{2, 1.96, "need 2, have 1.9, 0.1 short"},
 		{40, 12, "need 40, have 12, 28 short"},
 		{200, 50, "need 200, have 50, 150 short"},
 	}

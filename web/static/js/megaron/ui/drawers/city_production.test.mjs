@@ -103,7 +103,7 @@ test('AIRound3: population food and army food use different explicit balances',(
 
 test('AIRound4: Scheria remainder fish is separate from nearby grain',()=>{
  const html=foodDetailsHTML(pd({food_gubbar_required:5,food_gubbar_placed:5,automatic_food:{nearjord_grain_per_tick:0.5,remainder_people:42,remainder_grain_per_tick:0,remainder_fish_per_tick:0.42}}));
- assert.match(html,/0.50 grain \+ 0.42 fish per game day without placed citizens/);assert.match(html,/nearby ground 0.50 grain; 42 people outside whole citizens: 0.00 grain \+ 0.42 fish/);assert.doesNotMatch(html,/could move/);
+ assert.match(html,/0.5 grain \+ 0.4 fish per game day without placed citizens/);assert.match(html,/nearby ground 0.5 grain; 42 people outside whole citizens: 0 grain \+ 0.4 fish/);assert.doesNotMatch(html,/could move/);
 });
 
 test('equal food: four stocks and actual meal use server totals, never grain-only estimates',()=>{

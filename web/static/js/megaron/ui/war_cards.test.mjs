@@ -106,10 +106,10 @@ test('B: Army card shows server rations and explicit zero spearman silver withou
   [{upkeep_context:'active',upkeep_grain_per_tick:0.5,upkeep_silver_per_tick:0},'0.5 grain, 0 silver per game day'],
   [{status:'marching',upkeep_grain_per_tick:1,upkeep_silver_per_tick:0},'1 grain, 0 silver per game day'],
   [{type:'elite_infantry',upkeep_grain_per_tick:0.6,upkeep_silver_per_tick:2},'0.6 grain, 2 silver per game day'],
-  [{category:'naval',type:'galley',upkeep_grain_per_tick:0.02,upkeep_silver_per_tick:1.5},'0.02 grain, 1.5 silver per game day'],
+  [{category:'naval',type:'galley',upkeep_grain_per_tick:0.02,upkeep_silver_per_tick:1.5},'<0.1 grain, 1.5 silver per game day'],
  ]) {
   const html=renderUnitCard(unit(extra));
-  assert.ok(html.includes('Upkeep: '+want));
+  assert.ok(html.includes('Upkeep: '+want.replace('<','&lt;')) || html.includes('Upkeep: '+want), html);
   assert.match(html,/class="unit-upkeep"/);
  }
  assert.doesNotMatch(renderUnitCard(unit()),/unit-upkeep/,'missing authoritative rates must not become guessed zero');
@@ -148,17 +148,17 @@ test('equal food: roster food alias wins and ship manifest preserves each good',
 });
 
 test('B: Army pay preserves server home, field and surviving-crew amounts',()=>{
- for(const [state,pay] of [
-  [{type:'elite_infantry',status:'garrison'},0.75],
-  [{type:'elite_infantry',status:'marching'},1.5],
-  [{type:'war_chariot',status:'positioned'},2],
-  [{category:'naval',type:'galley',status:'garrison',crew:20},0.1],
-  [{category:'naval',type:'galley',status:'freighting',crew:11},0.11],
-  [{category:'naval',type:'war_galley',status:'repairing',crew:50},0.25],
-  [{category:'naval',type:'emporos',status:'fitting_out',crew:10},0.05],
+ for(const [state,pay,shown] of [
+  [{type:'elite_infantry',status:'garrison'},0.75,'0.8'],
+  [{type:'elite_infantry',status:'marching'},1.5,'1.5'],
+  [{type:'war_chariot',status:'positioned'},2,'2'],
+  [{category:'naval',type:'galley',status:'garrison',crew:20},0.1,'0.1'],
+  [{category:'naval',type:'galley',status:'freighting',crew:11},0.11,'0.1'],
+  [{category:'naval',type:'war_galley',status:'repairing',crew:50},0.25,'0.3'],
+  [{category:'naval',type:'emporos',status:'fitting_out',crew:10},0.05,'0.1'],
  ]) {
   const html=renderUnitCard(unit({...state,upkeep_context:'active',upkeep_food_per_tick:0.1,upkeep_silver_per_tick:pay}));
-  assert.ok(html.includes(pay+' silver per game day'), JSON.stringify(state));
+  assert.ok(html.includes(shown+' silver per game day'), JSON.stringify(state));
  }
 });
 

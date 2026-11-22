@@ -564,7 +564,7 @@ func notificationGoodAmounts(goods map[string]float64) string {
 // Resource's whole-unit display must not turn a real small transfer into zero.
 func notificationAmount(n float64) string {
 	if n != 0 && n > -1 && n < 1 {
-		return fmt.Sprintf("%.3g", n)
+		return tenths(n)
 	}
 	return resource(n)
 }

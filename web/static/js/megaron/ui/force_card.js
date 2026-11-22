@@ -4,7 +4,7 @@ import { esc } from './format.js';
 import { fmtArrival, arrivalHTML } from './time.js';
 import { actorName, unitTypeLabel } from './actornames.js';
 import { foodGoodsText } from './food.js';
-import { fmtNum, fmtDays } from './fmt_num.js';
+import { fmtNum, fmtTenths, fmtDays } from './fmt_num.js';
 import { fmtTickTime } from './fmt_clock.js';
 import { canTakeStance } from './stance.js';
 import { unitRetreatControlHTML } from './retreat.js';
@@ -134,8 +134,8 @@ export function renderUnitCard(u, options = {}) {
   const foodLabel = u.upkeep_food_per_tick != null ? 'food' : 'grain';
   const upkeep = u.upkeep_context !== 'none' && Number.isFinite(foodRate) && Number.isFinite(u.upkeep_silver_per_tick)
     ? '<div class="unit-upkeep" style="font-size:.65rem;color:var(--text-dim)">' + upkeepLabel + ': '
-      + foodRate.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' ' + foodLabel + ', '
-      + u.upkeep_silver_per_tick.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' silver per game day</div>'
+      + fmtTenths(foodRate) + ' ' + foodLabel + ', '
+      + fmtTenths(u.upkeep_silver_per_tick) + ' silver per game day</div>'
     : '';
 
   // Pending order (Fas 5): a Runner is en route to this unit — the order

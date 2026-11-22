@@ -380,7 +380,7 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 }
 
 func recruitUpkeepLine(grain, silver float64) string {
-	return fmt.Sprintf("%.4g grain, %.4g silver", grain, silver)
+	return fmt.Sprintf("%s grain, %s silver", tenths(grain), tenths(silver))
 }
 
 // trimFloat formats a quantity with up to 2 decimals, trimming trailing zeros
@@ -416,14 +416,14 @@ func unsustainableReason(netGrain, netSilver, unitGrain, unitSilver, grainStock,
 	}
 	switch {
 	case grainShort < 0 && silverShort < 0:
-		return fmt.Sprintf("upkeep exceeds this city: needs %.4g more grain per game day and %.4g more silver per game day%s%s",
-			-grainShort, -silverShort, runway("grain", grainStock, grainShort), runway("silver", silverStock, silverShort))
+		return fmt.Sprintf("upkeep exceeds this city: needs %s more grain per game day and %s more silver per game day%s%s",
+			tenths(-grainShort), tenths(-silverShort), runway("grain", grainStock, grainShort), runway("silver", silverStock, silverShort))
 	case silverShort < 0:
-		return fmt.Sprintf("silver upkeep: net is %+.4g silver per game day, needs %.4g more per game day%s",
-			netSilver, -silverShort, runway("silver", silverStock, silverShort))
+		return fmt.Sprintf("silver upkeep: net is %s silver per game day, needs %s more per game day%s",
+			signedTenths(netSilver), tenths(-silverShort), runway("silver", silverStock, silverShort))
 	case grainShort < 0:
-		return fmt.Sprintf("grain upkeep: net is %+.4g grain per game day, needs %.4g more per game day%s",
-			netGrain, -grainShort, runway("grain", grainStock, grainShort))
+		return fmt.Sprintf("grain upkeep: net is %s grain per game day, needs %s more per game day%s",
+			signedTenths(netGrain), tenths(-grainShort), runway("grain", grainStock, grainShort))
 	default:
 		// sustainable was false but neither margin is negative — the server saw a
 		// state this client's numbers no longer reflect. Say so rather than invent.

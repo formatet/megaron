@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"formatet/megaron/server/internal/hexgrid"
 	"github.com/google/uuid"
+	"math"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -58,7 +60,7 @@ func TestCodexTerrainProduction(t *testing.T) {
 			sort.Strings(keys)
 			table := start + "\n| Good | Worker places | Per worker per game day |\n|---|---|---|\n"
 			for _, good := range keys {
-				table += fmt.Sprintf("| [[%s]] | %d | %.3g |\n", good, opt.PlaceCapPerGood[good], hexYield(opt.RatePerGood[good], opt.PlaceCapPerGood[good], opt.MultPerGood[good], 1))
+				table += fmt.Sprintf("| [[%s]] | %d | %s |\n", good, opt.PlaceCapPerGood[good], strconv.FormatFloat(math.Round(10*hexYield(opt.RatePerGood[good], opt.PlaceCapPerGood[good], opt.MultPerGood[good], 1))/10, 'f', -1, 64))
 			}
 			if len(keys) == 0 {
 				table += "| No workplaces without a building | — | — |\n"

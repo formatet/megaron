@@ -157,11 +157,11 @@ func renderTickEvent(etype string, payload json.RawMessage) string {
 		case "tax":
 			return fmt.Sprintf("Sitos: tax +%.1f silver → the fund", p.SilverDelta)
 		case "buy":
-			return fmt.Sprintf("Sitos: bought %.1f %s (ref %.2f), city +%.1f silver",
-				-p.GoodDelta, p.Good, p.RefPrice, -p.SilverDelta)
+			return fmt.Sprintf("Sitos: bought %.1f %s (ref %s), city +%.1f silver",
+				-p.GoodDelta, p.Good, tenths(p.RefPrice), -p.SilverDelta)
 		case "sell":
-			return fmt.Sprintf("Sitos: sold %.1f %s (ref %.2f), city −%.1f silver",
-				p.GoodDelta, p.Good, p.RefPrice, p.SilverDelta)
+			return fmt.Sprintf("Sitos: sold %.1f %s (ref %s), city −%.1f silver",
+				p.GoodDelta, p.Good, tenths(p.RefPrice), p.SilverDelta)
 		default:
 			return "Sitos: " + p.Kind
 		}
