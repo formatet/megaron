@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 
@@ -386,10 +385,7 @@ func recruitUpkeepLine(grain, silver float64) string {
 // trimFloat formats a quantity with up to 2 decimals, trimming trailing zeros
 // (30 -> "30", 6.25 -> "6.25") so batch costs read cleanly.
 func trimFloat(v float64) string {
-	s := strconv.FormatFloat(v, 'f', 2, 64)
-	s = strings.TrimRight(s, "0")
-	s = strings.TrimRight(s, ".")
-	return s
+	return tenths(v) // at most one decimal on the player surface (Timothy 2026-11-18)
 }
 
 // unsustainableReason names the resource that actually blocks a recruit, and by

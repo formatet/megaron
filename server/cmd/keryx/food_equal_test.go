@@ -69,10 +69,11 @@ func TestEqualFoodNoticesPreserveHistoricalGrainMeaning(t *testing.T) {
 	}
 }
 
-// Haiku-8: two units at 0.05 + 0.2 summed to "eats 0.2" (0.25 rounded at one decimal).
+// Haiku-8: two units at 0.05 + 0.2 summed to "eats 0.2" (0.25 rounded down).
+// Since 2026-11-18 one decimal at most: 0.25 rounds half up to 0.3, never down.
 func TestArmyFoodLineKeepsSmallDecimals(t *testing.T) {
 	sett := map[string]any{"army_upkeep": map[string]any{"food": 0.25, "grain": 0.25}, "food_net_per_tick_after_upkeep": 5.0}
-	if line := armyFoodLine(sett); !strings.Contains(line, "eats 0.25 food") {
+	if line := armyFoodLine(sett); !strings.Contains(line, "eats 0.3 food") {
 		t.Fatal(line)
 	}
 }

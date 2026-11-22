@@ -6,7 +6,6 @@ import (
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/unit"
 	"sort"
-	"strconv"
 	"strings"
 )
 
@@ -596,7 +595,7 @@ func printLetterReplyHint(n notificationItem) {
 // godsAngeredText matches the web's GodsAngered line (Timothy 2026-10-29).
 func godsAngeredText(lost float64) string {
 	if lost > 0 {
-		return fmt.Sprintf("The gods heard what was written in your name. Your realm loses %s kharis.", strconv.FormatFloat(lost, 'f', -1, 64))
+		return fmt.Sprintf("The gods heard what was written in your name. Your realm loses %s kharis.", tenths(lost))
 	}
 	return "The gods heard what was written in your name. Your realm's kharis is already at its floor."
 }
