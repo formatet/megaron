@@ -67,7 +67,7 @@ func listCityBuilds(c *Client, world, prov string) error {
 	fmt.Println("Build the same building again to raise its level. Hex rows refer to that exact site; a new hex starts at L1.")
 	fmt.Println("Build queue: `build --queue` shows remaining queue slots.")
 	fmt.Println("A temple is built for one god, one temple per god: `build --type temple --god <god>` (the Site column names the god).")
-	fmt.Printf("%-15s %-12s %-7s %-7s %-42s %-30s %-5s %s\n", "Type", "Site", "Current", "Next", "Costs (next level)", "Afford", "game days", "Purpose / requires")
+	fmt.Printf("%-15s %-12s %-7s %-7s %-42s %-5s %s\n", "Type", "Site", "Current", "Next", "Costs (next level)", "game days", "Purpose / requires · afford")
 	for _, b := range catalogue {
 		for _, q := range city.Settlement.Quotes {
 			if b["type"] != q.Type {
@@ -111,9 +111,10 @@ func listCityBuilds(c *Client, world, prov string) error {
 			if typ == "silo" { // the player's word; build --type granary maps it back
 				typ = "granary"
 			}
-			row := fmt.Sprintf("%-15s %-12s L%-6d %-7s %-42s %-30s %-5s %s", typ, site, q.Current, next, cost, afford, days, requires)
+			row := fmt.Sprintf("%-15s %-12s L%-6d %-7s %-42s %-5s %s", typ, site, q.Current, next, cost, days, requires)
 			if q.Next != nil { // at max level there is nothing to build
-				row += "  → " + buildCommandLine(city.Settlement.Name, typ, q)
+				// Afford goes last: its width varies, so a column would push the rest out of line.
+				row += "  · afford: " + afford + "  → " + buildCommandLine(city.Settlement.Name, typ, q)
 			}
 			fmt.Println(row)
 		}

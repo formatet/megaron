@@ -60,8 +60,13 @@ func TestBuildListAfford(t *testing.T) {
 	if !strings.Contains(store, "—") || strings.Contains(store, " yes ") {
 		t.Fatalf("max-level row: %s", store)
 	}
-	if !strings.Contains(out, "Afford") {
-		t.Fatalf("no Afford header: %s", out)
+	if !strings.Contains(out, "· afford") {
+		t.Fatalf("no afford header: %s", out)
+	}
+	// The row's own cedar need is not spare: cedar 4 − 2 = 2 counts as timber, short of 3.
+	own := buildListRows(t, map[string]any{"stone": map[string]any{"amount": 9.0}, "cedar": map[string]any{"amount": 4.0}})
+	if !strings.Contains(own, "needs 3 timber, city has 2") {
+		t.Fatalf("own cedar need counted as spare: %s", own)
 	}
 	if unknown := buildListRows(t, nil); !strings.Contains(unknown, " ? ") {
 		t.Fatalf("missing stock should print ?: %s", unknown)
