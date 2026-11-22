@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildRows, constructListHTML, buildBody, hexBuildChoices, pickHexes, hexRowsHTML, hexBuildRowHTML, fmtBuildCost } from './build_rows.js';
+import { buildRows, nobodyMakesLine, constructListHTML, buildBody, hexBuildChoices, pickHexes, hexRowsHTML, hexBuildRowHTML, fmtBuildCost } from './build_rows.js';
 
 const names = html => [...html.matchAll(/<b>([^<]+)<\/b>/g)].map(m => m[1]);
 
@@ -105,20 +105,49 @@ test('HX3: "Build here" rows for a hex come from the same data (price, step, eff
 const stoneRow = (rates, stock = { stone: 0, timber: 10 }) =>
   buildRows([{ type: 'mine', costs: { stone: 4 } }], { stock, rates })[0].shortReason;
 
-test('NM1: rates {stone: 0} adds the tail; positive rate or no rates keeps today\'s text', () => {
-  assert.equal(stoneRow({ stone: 0 }), 'needs 4 stone, city has 0 — nobody makes stone');
+test('NM1: rows carry no tail, whatever the rates', () => {
+  assert.equal(stoneRow({ stone: 0 }), 'needs 4 stone, city has 0');
   assert.equal(stoneRow({ stone: 0.5 }), 'needs 4 stone, city has 0');
   assert.equal(stoneRow(undefined), 'needs 4 stone, city has 0');
 });
 
-test('NM2: timber made as cedar gets no tail; neither made does', () => {
+test('NM2: rows say the same with or without cedar', () => {
   const rows = rates => buildRows([{ type: 'house', costs: { timber: 4 } }], { stock: { timber: 0, cedar: 0 }, rates })[0].shortReason;
   assert.equal(rows({ timber: 0, cedar: 0.3 }), 'needs 4 timber, city has 0');
-  assert.equal(rows({ timber: 0, cedar: 0 }), 'needs 4 timber, city has 0 — nobody makes timber');
+  assert.equal(rows({ timber: 0, cedar: 0 }), 'needs 4 timber, city has 0');
 });
 
-test('NM3: the hex row path carries the tail too', () => {
+test('NM3: the hex row carries no tail', () => {
   const c = { q: 1, r: 2, maxed: false, quote: { costs: { stone: 4 }, duration_game_days: 2 } };
-  assert.match(hexBuildRowHTML('mine', c, { stone: 0 }, { stone: 0 }), /nobody makes stone/);
-  assert.doesNotMatch(hexBuildRowHTML('mine', c, { stone: 0 }), /nobody makes/);
+  assert.doesNotMatch(hexBuildRowHTML('mine', c, { stone: 0 }, { stone: 0 }), /nobody makes/);
+});
+
+const NOBODY = /<p class="empty-state">Nobody here makes ([^<]+)<\/p>/g;
+const cat2 = [{ type: 'mine', costs: { stone: 4 } }, { type: 'farm', costs: { stone: 2 } }, { type: 'house', costs: { timber: 4 } }];
+const list = (rates, cat = cat2) => constructListHTML(cat, { stock: { stone: 0, timber: 0, cedar: 0 }, rates });
+
+test('NM4: two rows missing stone give ONE line, above the list', () => {
+  const html = list({ stone: 0, timber: 1 });
+  assert.deepEqual([...html.matchAll(NOBODY)].map(m => m[1]), ['stone.']);
+  assert.ok(html.indexOf('Nobody here makes') < html.indexOf('build-row'));
+});
+
+test('NM5: stone and timber read "stone or timber"; cedar covers timber; no rates no line', () => {
+  assert.deepEqual([...list({ stone: 0, timber: 0 }).matchAll(NOBODY)].map(m => m[1]), ['stone or timber.']);
+  assert.deepEqual([...list({ stone: 0, timber: 0, cedar: 0.3 }).matchAll(NOBODY)].map(m => m[1]), ['stone.']);
+  assert.equal(list(undefined).includes('Nobody here'), false);
+  assert.equal(nobodyMakesLine(['stone', 'timber', 'copper'], { stone: 0, timber: 0, copper: 0 }), 'Nobody here makes stone, timber or copper.');
+  assert.equal(nobodyMakesLine(['stone'], undefined), '');
+});
+
+test('NM6: hex rows get the line once on top', () => {
+  const cat = [{ type: 'mine', hex_bound: true, costs: { stone: 4 } }, { type: 'farm', hex_bound: true, costs: { stone: 2 } }];
+  const quotes = [
+    { type: 'mine', new_site: true, current_level: 0, next_level: 1, costs: { stone: 4 }, duration_game_days: 2 },
+    { type: 'farm', new_site: true, current_level: 0, next_level: 1, costs: { stone: 2 }, duration_game_days: 2 }];
+  const opts = { build_quotes: quotes, hexes: [], valid_hexes_for_building: { mine: [{ q: 1, r: 1 }], farm: [{ q: 1, r: 1 }] } };
+  const html = hexRowsHTML(cat, opts, 1, 1, undefined, { stone: 0 }, { stone: 0 });
+  assert.equal([...html.matchAll(NOBODY)].length, 1);
+  assert.equal(html.startsWith('<p class="empty-state">Nobody here makes stone.</p>'), true);
+  assert.equal(hexRowsHTML(cat, opts, 1, 1, undefined, { stone: 0 }).includes('Nobody here'), false);
 });

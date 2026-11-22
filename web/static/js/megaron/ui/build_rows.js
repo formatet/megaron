@@ -73,13 +73,21 @@ export function shortfalls(costs, silver, stock) {
   return out.sort((a, b) => a.good.localeCompare(b.good));
 }
 // rates = {good: net per game day} from the city forecast (optional). A missing good
-// that the city makes none of (net <= 0; for timber, cedar counts too) ends "— nobody makes X".
+// that the city makes none of (net <= 0; for timber, cedar counts too) is named ONCE above the list
+// by nobodyMakesLine.
 const nobodyMakes = (good, rates) => {
   if (!rates || !Number.isFinite(rates[good])) return false;
   if (good === 'timber' && rates.cedar > 0) return false;
   return rates[good] <= 0;
 };
-export const shortfallText = (list, rates) => list.map(s => `needs ${s.need} ${s.good}, city has ${s.have}${nobodyMakes(s.good, rates) ? ` — nobody makes ${s.good}` : ''}`).join('; ');
+export const shortfallText = list => list.map(s => `needs ${s.need} ${s.good}, city has ${s.have}`).join('; ');
+// "Nobody here makes stone or timber." for the missing goods the city makes none of; '' if none.
+export function nobodyMakesLine(goods, rates) {
+  const g = [...new Set(goods)].filter(x => nobodyMakes(x, rates));
+  if (!g.length) return '';
+  return `Nobody here makes ${g.length === 1 ? g[0] : g.slice(0, -1).join(', ') + ' or ' + g[g.length - 1]}.`;
+}
+const nobodyMakesP = (goods, rates) => { const t = nobodyMakesLine(goods, rates); return t ? `<p class="empty-state">${esc(t)}</p>` : ''; };
 // {good: net} from a province answer's forecast (null when it carries none).
 export function ratesFromForecast(pd) {
   const goods = pd?.forecast?.goods;
@@ -128,7 +136,8 @@ export function buildRows(catalogue, ctx = {}) {
     if (!r.locked && ctx.stock) {
       const short = shortfalls(src.costs, src.cost_silver, ctx.stock);
       r.payable = short.length === 0;
-      r.shortReason = shortfallText(short, ctx.rates);
+      r.shortReason = shortfallText(short);
+      r.shortGoods = short.map(x => x.good);
     }
     if (!r.locked && r.payable !== false && afford && afford.can_afford === false && !afford.at_max_level) { r.locked = true; r.reason = 'not enough goods in store'; }
     rows.push(r);
@@ -193,7 +202,8 @@ export function buildRowHTML(r) {
 // The Construct list. A catalogue that could not be loaded is one honest line.
 export function constructListHTML(catalogue, ctx) {
   if (!catalogue) return '<p class="empty-state">Could not load the building list. Reopen the city to retry.</p>';
-  return `<div class="build-list">${buildRows(catalogue, ctx).map(buildRowHTML).join('')}</div>`;
+  const rows = buildRows(catalogue, ctx);
+  return `<div class="build-list">${nobodyMakesP(rows.flatMap(r => r.shortGoods || []), ctx?.rates)}${rows.map(buildRowHTML).join('')}</div>`;
 }
 
 // Hexes where a hex-bound type can be built or levelled, from ONE
@@ -239,16 +249,17 @@ export function hexBuildRowHTML(type, c, stock, rates) {
   const eta = c.quote ? readyIfStarted(c.quote.duration_game_days) : '';
   return `<div class="build-row" data-build-type="${esc(type)}" data-build-q="${c.q}" data-build-r="${c.r}">
     <div class="build-row-text"><b>${label}</b> ${esc(hexStepLabel(c))} · ${price}${c.effect ? `<div class="build-row-sub">${esc(c.effect)}</div>` : ''}${eta ? `<div class="build-row-sub">${esc(eta)}</div>` : ''}</div>
-    <button class="btn-small btn-primary build-row-btn" data-build-act="build-hex" data-build-type="${esc(type)}" data-build-q="${c.q}" data-build-r="${c.r}"${short.length ? ' disabled' : ''}>Build</button>${reasonSpan(shortfallText(short, rates))}</div>`;
+    <button class="btn-small btn-primary build-row-btn" data-build-act="build-hex" data-build-type="${esc(type)}" data-build-q="${c.q}" data-build-r="${c.r}"${short.length ? ' disabled' : ''}>Build</button>${reasonSpan(shortfallText(short))}</div>`;
 }
 
 // The rows for one hex: every hex-bound type from the catalogue that hex accepts.
 export function hexRowsHTML(catalogue, placementOpts, q, r, onlyType, stock, rates) {
   const quotes = placementOpts?.build_quotes || [];
-  return (catalogue || []).filter(e => e.hex_bound && (!onlyType || e.type === onlyType))
+  const picks = (catalogue || []).filter(e => e.hex_bound && (!onlyType || e.type === onlyType))
     .sort((a, b) => (_BLD_LBL[a.type] || a.type).localeCompare(_BLD_LBL[b.type] || b.type, 'en'))
-    .flatMap(e => hexBuildChoices(e.type, placementOpts, quotes).filter(c => c.q === q && c.r === r && !c.maxed).map(c => hexBuildRowHTML(e.type, c, stock, rates)))
-    .join('');
+    .flatMap(e => hexBuildChoices(e.type, placementOpts, quotes).filter(c => c.q === q && c.r === r && !c.maxed).map(c => [e.type, c]));
+  const goods = picks.flatMap(([, c]) => c.quote ? shortfalls(c.quote.costs, c.quote.cost_silver, stock).map(x => x.good) : []);
+  return nobodyMakesP(goods, rates) + picks.map(([type, c]) => hexBuildRowHTML(type, c, stock, rates)).join('');
 }
 
 // ── The answer at the button ─────────────────────────────────────────────────
