@@ -135,9 +135,10 @@ func computeFirstSteps(ctx context.Context, pool *pgxpool.Pool, worldID, playerI
 
 		// explore: a march ordered by one of the Wanax's units on or after the founding
 		// tick. Branch (a) walks the player's own units into the (stream_id, world_tick)
-		// index. Branch (b) only matters for units since deleted (a colonist is disbanded
-		// on arrival): UnitFormed events of this world since the player joined, owner in
-		// the payload, then the same indexed lookup per stream.
+		// index. Branch (b) covers the colonist, which is disbanded on arrival: a colony
+		// (a non-capital city) cannot exist without a march after the founding. It reads
+		// settlements, never a world-wide scan of events. A scout lost at sea simply
+		// leaves the step open until the next march.
 		if err := pool.QueryRow(ctx, `
 			SELECT EXISTS (
 			  SELECT 1 FROM units u
@@ -146,12 +147,8 @@ func computeFirstSteps(ctx context.Context, pool *pgxpool.Pool, worldID, playerI
 			   WHERE u.owner_id = $2 AND u.world_id = $1
 			     AND pwr.founded_tick IS NOT NULL AND e.world_tick >= pwr.founded_tick)
 			OR EXISTS (
-			  SELECT 1 FROM player_world_records pwr
-			    JOIN events f ON f.world_id = $1 AND f.created_at >= pwr.joined_at
-			                 AND f.event_type = 'UnitFormed' AND f.payload->>'owner_id' = $2::text
-			    JOIN events e ON e.stream_id = f.stream_id AND e.event_type = 'UnitMarchOrdered'
-			   WHERE pwr.player_id = $2 AND pwr.world_id = $1
-			     AND pwr.founded_tick IS NOT NULL AND e.world_tick >= pwr.founded_tick)`,
+			  SELECT 1 FROM settlements s
+			   WHERE s.world_id = $1 AND s.owner_id = $2 AND NOT s.is_capital)`,
 			worldID, playerID).Scan(&exploreDone); err != nil {
 			return out, err
 		}

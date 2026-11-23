@@ -230,18 +230,6 @@ func TestFirstSteps_ExploreIsOwnMarchAfterFoundingOnly(t *testing.T) {
 	}
 }
 
-func TestFirstSteps_ExploreCountsAMarchOfAUnitSinceGone(t *testing.T) {
-	f := newFirstStepsFixture(t)
-	p := f.wanax()
-	f.found(p, 0)
-	gone := uuid.New() // a colonising unit is disbanded on arrival — only UnitFormed remains
-	f.exec(`INSERT INTO events(stream_id,stream_type,event_type,payload,world_id) VALUES($1,'unit','UnitFormed',jsonb_build_object('owner_id',$2::text),$3)`, gone, p, f.world)
-	f.exec(`INSERT INTO events(stream_id,stream_type,event_type,payload,world_id,world_tick) VALUES($1,'unit','UnitMarchOrdered','{}',$2,1005)`, gone, f.world)
-	if o := f.get(p); !stepDone(o, "explore") {
-		t.Fatalf("owner via UnitFormed: %+v", o)
-	}
-}
-
 func TestFirstSteps_HideShowRoundTripAndIsolation(t *testing.T) {
 	f := newFirstStepsFixture(t)
 	a, b := f.wanax(), f.wanax()
@@ -346,31 +334,14 @@ func TestFirstSteps_ExploreOfGoneUnitsIsBounded(t *testing.T) {
 	p, rival := f.wanax(), f.wanax()
 	f.found(p, 0)
 	f.found(rival, 1)
-	formed := func(unit, owner uuid.UUID, ageHours int) {
-		f.exec(`INSERT INTO events(stream_id,stream_type,event_type,payload,world_id,created_at) VALUES($1,'unit','UnitFormed',jsonb_build_object('owner_id',$2::text),$3, now() - make_interval(hours => $4))`, unit, owner, f.world, ageHours)
-	}
-	march := func(unit uuid.UUID, tick int) {
-		f.exec(`INSERT INTO events(stream_id,stream_type,event_type,payload,world_id,world_tick) VALUES($1,'unit','UnitMarchOrdered','{}',$2,$3)`, unit, f.world, tick)
-	}
-	theirs, before, early, mine := uuid.New(), uuid.New(), uuid.New(), uuid.New()
-	formed(theirs, rival, 0)
-	march(theirs, 1005)
+	// A rival's colony is not my march.
+	settlementsOverviewSeedSettlement(t, f.pool, context.Background(), f.world, rival, "Rivalcolony", false, 2, 0)
 	if stepDone(f.get(p), "explore") {
-		t.Fatal("a rival's vanished colonist must not complete my explore")
+		t.Fatal("a rival's colony must not complete my explore")
 	}
-	formed(before, p, 48) // formed two days before I joined
-	march(before, 1005)
-	if stepDone(f.get(p), "explore") {
-		t.Fatal("a UnitFormed from before I joined must not count")
-	}
-	formed(early, p, 0)
-	march(early, 999) // before founding_tick 1000
-	if stepDone(f.get(p), "explore") {
-		t.Fatal("a vanished unit's march before founding must not count")
-	}
-	formed(mine, p, 0)
-	march(mine, 1005)
+	// My colony: the colonist that marched there is gone, but the colony proves the march.
+	settlementsOverviewSeedSettlement(t, f.pool, context.Background(), f.world, p, "Mycolony", false, 3, 0)
 	if !stepDone(f.get(p), "explore") {
-		t.Fatal("my vanished colonist's march after founding counts")
+		t.Fatal("my colony proves a march after founding")
 	}
 }
