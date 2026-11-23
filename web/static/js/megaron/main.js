@@ -29,6 +29,7 @@ import {
   initCelestial, initMusicAutostart, initMusicVisibility, initSoundPrefs,
   initMusicIntroHandoff,
 } from './ui/misc.js';
+import { initFirstSteps } from './ui/first_steps.js';
 import { updateNotifBadge, initNotifications, addDispatch, dismissAllChips } from './ui/chips.js';
 import { toggleSearch, closeSearch, centreOn } from './ui/search.js';
 import {
@@ -386,5 +387,6 @@ async function bootstrap() {
   initWS();            // websocket connect + reconnect loop
   initCelestial();     // celestial clock + its tick-scaled repaint interval
   initNotifications(); // unread badge + rebuild the Dispatches strip from the archive
+  initFirstSteps();    // the Lawagetas' one-line card (ends when the first steps are done)
   initCodex();         // Codex index, so dispatch/drawer links know which articles exist
 })();

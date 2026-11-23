@@ -38,6 +38,15 @@ export function noteServerVersion(v) {
   if (el) el.classList.add('visible');
 }
 
+// Listeners told after every successful mutating call on a world route (the
+// Lawagetas card refreshes on them). A listener must never break a request.
+const worldMutationListeners = [];
+export function onWorldMutation(fn) { worldMutationListeners.push(fn); }
+function noteWorldMutation(url, method, res) {
+  if (method === 'GET' || !res.ok || !url.startsWith('/api/v1/worlds/')) return;
+  for (const fn of worldMutationListeners) { try { fn(url); } catch (_) { /* ignore */ } }
+}
+
 export async function fetchAuth(url, opts = {}) {
   const token = localStorage.getItem('poleia_token');
   const headers = Object.assign(token ? {'Authorization': 'Bearer ' + token} : {}, opts.headers || {});
@@ -73,6 +82,7 @@ export async function fetchAuth(url, opts = {}) {
         } catch (_) { /* clone unsupported or body already gone — skip silently */ }
       }
       trackVerbResponse(url, opts, res);
+      noteWorldMutation(url, method, res);
       return res;
     } catch (e) {
       if (attempt < backoffs.length) {

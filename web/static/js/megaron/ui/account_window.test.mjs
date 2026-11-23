@@ -103,3 +103,16 @@ test('the Wanax name is explained next to the username', () => {
   assert.equal(signedInAsText('Kalchas'), "Your Wanax's name. You signed in as Kalchas.");
   assert.equal(signedInAsText(null), "Your Wanax's name.");
 });
+
+test('first-steps checkbox mirrors the server flag and posts hide/show', async t => {
+  const h = harness(t, url => url.includes('/first-steps') ? response({ hidden: true, done_count: 0, total: 4, next: 'found', steps: [] }) : response({}));
+  State.WORLD_ID = 'w1';
+  openAccountWindow(); await settle();
+  const box = h.nodes.get('acc-steps');
+  assert.equal(box.checked, false, 'hidden on the server = unchecked');
+  assert.equal(box.disabled, false);
+  box.checked = true;
+  await box.events.change();
+  const post = h.requests.find(r => r.options?.method === 'POST' && r.url.includes('/first-steps/'));
+  assert.ok(post && post.url.endsWith('/first-steps/show'), 'checking it calls show');
+});

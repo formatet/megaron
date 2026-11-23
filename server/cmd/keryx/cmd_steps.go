@@ -15,10 +15,10 @@ func stepsCmd() *cobra.Command {
 	var hide, show bool
 	cmd := &cobra.Command{
 		Use:   "steps",
-		Short: "The Lawagetas' first steps — what to do next in your first days",
+		Short: "The Lawagetas' first steps — what to do next at the start",
 		Long: `Show the four first steps the Lawagetas, your war-leader, sets before a new
 Wanax: found a city, put the people to work, order a building, send people out
-to look. Each is ticked when done. The advice ends when the steps are done.
+to look. Each is marked when done. The advice ends when the steps are done.
 
   --hide   stop showing the Lawagetas' card on the map (it is only hidden, not lost)
   --show   bring it back`,
