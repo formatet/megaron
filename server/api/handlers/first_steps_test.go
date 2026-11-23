@@ -284,3 +284,57 @@ func TestFirstSteps_AnAbandonedCityIsNotAHome(t *testing.T) {
 		t.Fatalf("only an active settlement counts as founded: %+v", o)
 	}
 }
+
+// Timothy: the advice covers only the first steps and ends when they are done.
+// Growth leaves a free citizen later (kharis applyDecay); that must not bring
+// the card back, and a lost city must not either.
+func TestFirstSteps_CompletionIsLatched(t *testing.T) {
+	f := newFirstStepsFixture(t)
+	p := f.wanax()
+	city := f.found(p, 0)
+	f.place(city, 8)
+	f.exec(`INSERT INTO events(stream_id,stream_type,event_type,payload,world_id) VALUES($1,'province','BuildComplete','{}',$2)`, city, f.world)
+	f.exec(`INSERT INTO scheduled_events(world_id,event_type,payload,process_after,due_tick,priority,processed_at)
+	        VALUES($1,'BuildComplete',jsonb_build_object('settlement_id',$2::uuid,'build_queue_id',$3::uuid,'building_type','granary'),now(),1010,10,now())`, f.world, city, uuid.New())
+	unit := uuid.New()
+	f.exec(`INSERT INTO units(id,world_id,owner_id,type,category) VALUES($1,$2,$3,'infantry','land')`, unit, f.world, p)
+	f.exec(`INSERT INTO events(stream_id,stream_type,event_type,payload,world_id,world_tick) VALUES($1,'unit','UnitMarchOrdered','{}',$2,1005)`, unit, f.world)
+	if o := f.get(p); o.Next != "" || o.DoneCount != 4 {
+		t.Fatalf("all four done: closing, got %+v", o)
+	}
+	f.exec(`UPDATE settlements SET population = population + 100 WHERE id=$1`, city) // a free citizen appears
+	o := f.get(p)
+	if o.Next != "" || o.DoneCount != 4 || !stepDone(o, "work") {
+		t.Fatalf("growth must not bring the advice back: %+v", o)
+	}
+	f.exec(`UPDATE settlements SET state='abandoned' WHERE id=$1`, city) // city lost
+	if o = f.get(p); o.Next != "" || !stepDone(o, "found") {
+		t.Fatalf("a lost city must not bring the advice back: %+v", o)
+	}
+}
+
+// Before completion a step that flips back stays useful.
+func TestFirstSteps_StepsMayFlipBackBeforeCompletion(t *testing.T) {
+	f := newFirstStepsFixture(t)
+	p := f.wanax()
+	city := f.found(p, 0)
+	f.place(city, 8)
+	if !stepDone(f.get(p), "work") {
+		t.Fatal("work done with 8 placed")
+	}
+	f.exec(`UPDATE settlements SET population = population + 100 WHERE id=$1`, city)
+	if o := f.get(p); stepDone(o, "work") || o.Next != "work" {
+		t.Fatalf("not yet complete: a new free citizen reopens work, got %+v", o)
+	}
+}
+
+// A completed player costs no step queries: the latched answer is returned from
+// the record alone (proved by deleting everything the rules would read).
+func TestFirstSteps_CompletedPlayerReadsNoState(t *testing.T) {
+	f := newFirstStepsFixture(t)
+	p := f.wanax()
+	f.exec(`UPDATE player_world_records SET first_steps_completed = true WHERE player_id=$1 AND world_id=$2`, p, f.world)
+	if o := f.get(p); o.Next != "" || o.DoneCount != 4 || len(o.Steps) != 4 {
+		t.Fatalf("completed: %+v", o)
+	}
+}

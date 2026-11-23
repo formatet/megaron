@@ -1,1 +1,1 @@
-ALTER TABLE player_world_records DROP COLUMN first_steps_hidden;
+ALTER TABLE player_world_records DROP COLUMN first_steps_completed, DROP COLUMN first_steps_hidden;

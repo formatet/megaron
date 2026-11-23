@@ -59,9 +59,19 @@ type firstStepsOut struct {
 // computeFirstSteps evaluates the four rules, in order, for one Wanax.
 func computeFirstSteps(ctx context.Context, pool *pgxpool.Pool, worldID, playerID uuid.UUID) (firstStepsOut, error) {
 	out := firstStepsOut{Total: 4, ClosingText: firstStepsClosing}
+	var completed bool
 	_ = pool.QueryRow(ctx,
-		`SELECT first_steps_hidden FROM player_world_records WHERE player_id = $1 AND world_id = $2`,
-		playerID, worldID).Scan(&out.Hidden)
+		`SELECT first_steps_hidden, first_steps_completed FROM player_world_records WHERE player_id = $1 AND world_id = $2`,
+		playerID, worldID).Scan(&out.Hidden, &completed)
+	// The advice ends for good once every step was done: no step queries at all,
+	// and growth (a free citizen) or a lost city cannot bring the card back.
+	if completed {
+		out.DoneCount = out.Total
+		for _, key := range []string{"found", "work", "build", "explore"} {
+			out.Steps = append(out.Steps, firstStep{Key: key, Done: true})
+		}
+		return out, nil
+	}
 
 	// found: the Wanax owns an active settlement; the capital is "the city".
 	var cityID uuid.UUID
@@ -123,16 +133,25 @@ func computeFirstSteps(ctx context.Context, pool *pgxpool.Pool, worldID, playerI
 			}
 		}
 
-		// explore: a march ordered by one of the Wanax's units on or after the founding tick.
+		// explore: a march ordered by one of the Wanax's units on or after the founding
+		// tick. Branch (a) walks the player's own units into the (stream_id, world_tick)
+		// index. Branch (b) only matters for units since deleted (a colonist is disbanded
+		// on arrival): UnitFormed events of this world since the player joined, owner in
+		// the payload, then the same indexed lookup per stream.
 		if err := pool.QueryRow(ctx, `
 			SELECT EXISTS (
-			  SELECT 1 FROM events e
-			    JOIN player_world_records pwr ON pwr.player_id = $2 AND pwr.world_id = $1
-			   WHERE e.world_id = $1 AND e.event_type = 'UnitMarchOrdered'
-			     AND pwr.founded_tick IS NOT NULL AND e.world_tick >= pwr.founded_tick
-			     AND (EXISTS (SELECT 1 FROM units u WHERE u.id = e.stream_id AND u.owner_id = $2)
-			       OR EXISTS (SELECT 1 FROM events f WHERE f.stream_id = e.stream_id
-			                   AND f.event_type = 'UnitFormed' AND f.payload->>'owner_id' = $2::text)))`,
+			  SELECT 1 FROM units u
+			    JOIN player_world_records pwr ON pwr.player_id = u.owner_id AND pwr.world_id = u.world_id
+			    JOIN events e ON e.stream_id = u.id AND e.event_type = 'UnitMarchOrdered'
+			   WHERE u.owner_id = $2 AND u.world_id = $1
+			     AND pwr.founded_tick IS NOT NULL AND e.world_tick >= pwr.founded_tick)
+			OR EXISTS (
+			  SELECT 1 FROM player_world_records pwr
+			    JOIN events f ON f.world_id = $1 AND f.created_at >= pwr.joined_at
+			                 AND f.event_type = 'UnitFormed' AND f.payload->>'owner_id' = $2::text
+			    JOIN events e ON e.stream_id = f.stream_id AND e.event_type = 'UnitMarchOrdered'
+			   WHERE pwr.player_id = $2 AND pwr.world_id = $1
+			     AND pwr.founded_tick IS NOT NULL AND e.world_tick >= pwr.founded_tick)`,
 			worldID, playerID).Scan(&exploreDone); err != nil {
 			return out, err
 		}
@@ -162,6 +181,14 @@ func computeFirstSteps(ctx context.Context, pool *pgxpool.Pool, worldID, playerI
 	}
 	if out.Next == "" && readyTick != nil {
 		out.Next = "build"
+	}
+	if out.Next == "" {
+		// All done and nothing left to wait for: the advice is over, for good.
+		if _, err := pool.Exec(ctx,
+			`UPDATE player_world_records SET first_steps_completed = true WHERE player_id = $1 AND world_id = $2`,
+			playerID, worldID); err != nil {
+			return out, err
+		}
 	}
 	return out, nil
 }
