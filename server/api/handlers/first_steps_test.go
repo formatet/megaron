@@ -168,6 +168,13 @@ func TestFirstSteps_BuildNeedsAnOrderNotTheStartFarm(t *testing.T) {
 	if o.DoneCount != 4 || o.Next != "build" {
 		t.Fatalf("all done but building still going up: show the wait line, got next=%q done=%d", o.Next, o.DoneCount)
 	}
+	// Another Wanax finishing a building must not close my wait line.
+	rival := f.wanax()
+	rcity := f.found(rival, 5)
+	f.exec(`INSERT INTO events(stream_id,stream_type,event_type,payload,world_id) VALUES($1,'province','BuildComplete','{}',$2)`, rcity, f.world)
+	if o = f.get(p); o.Next != "build" {
+		t.Fatalf("a rival's completed building must not count as mine: next=%q", o.Next)
+	}
 	// Completed: closing line.
 	f.exec(`INSERT INTO events(stream_id,stream_type,event_type,payload,world_id) VALUES($1,'province','BuildComplete','{}',$2)`, city, f.world)
 	f.exec(`UPDATE scheduled_events SET processed_at=now() WHERE event_type='BuildComplete' AND world_id=$1`, f.world)
@@ -262,5 +269,15 @@ func TestFirstSteps_HideShowRoundTripAndIsolation(t *testing.T) {
 	stranger, _ := settlementsOverviewRegisterPlayer(t, f.svc, context.Background(), "fs-x-"+uuid.New().String())
 	if code, _ := f.do(stranger, http.MethodPost, "/hide"); code != http.StatusNotFound {
 		t.Fatalf("hide without a record: want 404, got %d", code)
+	}
+}
+
+func TestFirstSteps_AnAbandonedCityIsNotAHome(t *testing.T) {
+	f := newFirstStepsFixture(t)
+	p := f.wanax()
+	city := f.found(p, 0)
+	f.exec(`UPDATE settlements SET state='abandoned' WHERE id=$1`, city)
+	if o := f.get(p); stepDone(o, "found") || o.Next != "found" {
+		t.Fatalf("only an active settlement counts as founded: %+v", o)
 	}
 }
