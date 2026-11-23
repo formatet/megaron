@@ -33,6 +33,7 @@ const coverage = {
   'call back (väntande bud i egen hamn)': ['call back'],
   '**standing order**': ['standing order', 'standing order pause', 'standing order resume', 'standing order delete'],
   'report': ['report'], 'notification-preferences': ['notification-preferences'],
+  'first-steps': ['steps --hide', 'steps --show'],
   'mark letter read': ['mark letter read'],
   'mark notifications read (all)': ['mark notifications read (all)'],
   'mark notification read (one)': ['mark notification read (one)'],

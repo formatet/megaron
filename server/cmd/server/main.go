@@ -359,6 +359,7 @@ func main() {
 	ph := handlers.NewProvinceHandler(pool, scheduler, gameClock, eventStore, hub)
 	soh := handlers.NewStandingOrderHandler(pool)
 	rdh := handlers.NewRetreatDefaultHandler(pool)
+	fsh := handlers.NewFirstStepsHandler(pool)
 	sh := handlers.NewSettlementHandler(pool, eventStore, scheduler, gameClock)
 	sh.Hub = hub
 	mh := handlers.NewMessengerHandler(pool, scheduler, gameClock, hub)
@@ -534,6 +535,9 @@ func main() {
 			// battle participant this Wanax's units get from now on.
 			r.Get("/worlds/{worldID}/retreat-default", rdh.Get)
 			r.Put("/worlds/{worldID}/retreat-default", rdh.Put)
+			r.Get("/worlds/{worldID}/first-steps", fsh.Get)
+			r.Post("/worlds/{worldID}/first-steps/hide", fsh.Hide)
+			r.Post("/worlds/{worldID}/first-steps/show", fsh.Show)
 			r.Post("/worlds/{worldID}/units/{unitID}/load", uh.Load)
 			r.Post("/worlds/{worldID}/units/{unitID}/unload", uh.Unload)
 			// R1 (megaron_plan_hamta_hem.md, slice 2b): send a ship to fetch a

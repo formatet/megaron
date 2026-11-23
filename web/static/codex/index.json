@@ -284,6 +284,30 @@
       ]
     },
     {
+      "id": "lawagetas",
+      "title": "The Lawagetas and your first steps",
+      "category": "Start here",
+      "related": [
+        "founding",
+        "account",
+        "keryx"
+      ],
+      "sections": [
+        {
+          "id": "lawagetas-the-four-steps",
+          "title": "The four steps"
+        },
+        {
+          "id": "lawagetas-when-it-ends",
+          "title": "When the advice ends"
+        },
+        {
+          "id": "lawagetas-hide-and-show",
+          "title": "Hiding and bringing him back"
+        }
+      ]
+    },
+    {
       "id": "horde",
       "title": "The Nomadic Host",
       "category": "Founding",

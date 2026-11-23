@@ -461,7 +461,7 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 	// Naval uses its bound ship and actual crew rather than reserving a land
 	// caravan gubbe; the ship ration above is still provisioned at dispatch.
 	if category == "land" {
-		idle, err := idleGubbar(ctx, tx, o.crewID)
+		idle, err := IdleGubbar(ctx, tx, o.crewID)
 		if err != nil {
 			return fmt.Errorf("load idle gubbar: %w", err)
 		}
@@ -815,16 +815,21 @@ func settlementHex(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID) (q, r
 	return q, r, err
 }
 
-func settlementPopulation(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID) (int, error) {
+// rowQuerier is what IdleGubbar needs: a pgx.Tx or a *pgxpool.Pool both satisfy it.
+type rowQuerier interface {
+	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
+}
+
+func settlementPopulation(ctx context.Context, tx rowQuerier, settlementID uuid.UUID) (int, error) {
 	var pop int
 	err := tx.QueryRow(ctx, `SELECT population FROM settlements WHERE id = $1`, settlementID).Scan(&pop)
 	return pop, err
 }
 
-// idleGubbar is how many unplaced gubbar (Placements' own "pool_size", P4)
+// IdleGubbar is how many unplaced gubbar (Placements' own "pool_size", P4)
 // the settlement has — population/100 minus every settlement_placement row,
 // regardless of what good they're working.
-func idleGubbar(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID) (int, error) {
+func IdleGubbar(ctx context.Context, tx rowQuerier, settlementID uuid.UUID) (int, error) {
 	pop, err := settlementPopulation(ctx, tx, settlementID)
 	if err != nil {
 		return 0, err

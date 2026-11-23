@@ -20,7 +20,7 @@ type helpGroup struct {
 // helpGroups is the order and content of the root help. "Start here" is
 // printed with one-line glosses, the rest as wrapped name lists.
 var helpGroups = []helpGroup{
-	{"start", "Start here", []string{"dossier", "actions", "city", "codex"}},
+	{"start", "Start here", []string{"dossier", "actions", "city", "steps", "codex"}},
 	{"build", "Build and work", []string{"build", "cancel-build", "demolish", "place", "staff", "recruit", "abandon"}},
 	{"move", "Move and fight", []string{"unit", "march", "recall", "redirect", "reinforce", "build-road", "disband", "retreat-default", "occupation"}},
 	{"goods", "Goods and talk", []string{"transfer", "route", "routes", "route-pause", "route-resume", "route-delete", "trade-offer", "trade-accept", "trade-decline", "trade-cancel", "message", "reply", "inbox", "outbox", "market-board", "cargo", "passage", "call-back", "runners"}},
@@ -34,6 +34,7 @@ var startGlosses = map[string]string{
 	"actions": "what you can do now and what is locked",
 	"city":    "one city in detail (--city <name>)",
 	"codex":   "the rules",
+	"steps":   "your first steps, from the Lawagetas",
 }
 
 // hiddenFromHelp: still working, not listed. Everything here either repeats

@@ -1865,3 +1865,23 @@ body.hex-picking .map-zoom-overlay { top: 72px; }
 .locked-orders details { flex: 1 1 auto; min-width: 0; font-size: var(--fs-xs); color: var(--text-dim); }
 .locked-list { margin: .2rem 0 .3rem; padding-left: 1.1rem; }
 .locked-list li { margin-bottom: .2rem; }
+
+/* ── The Lawagetas' first steps: one line on the map (megaron_radgivaren) ─── */
+.lawagetas-card { position: absolute; left: .6rem; bottom: .6rem; z-index: 6; box-sizing: border-box; max-width: min(34rem, calc(100% - 1.2rem));
+  display: flex; align-items: center; gap: .5rem; padding: .3rem .4rem .3rem .6rem;
+  background: var(--bg-panel); border: 2px solid var(--border); font-size: var(--fs-sm); line-height: 1.3; }
+.lawagetas-card[hidden] { display: none; }
+.lawagetas-who { flex: 0 0 auto; color: var(--accent); text-transform: uppercase; letter-spacing: .08em; font-size: var(--fs-xs); }
+.lawagetas-text { flex: 1 1 auto; min-width: 0; color: var(--text); }
+.lawagetas-progress { flex: 0 0 auto; color: var(--text-dim); font-family: var(--mono); }
+.lawagetas-close { flex: 0 0 auto; width: 30px; min-height: 30px; margin: 0; padding: 0; cursor: pointer; background: transparent; border: 0; color: var(--text-dim); font: inherit; }
+.lawagetas-close:hover { color: var(--accent); }
+.lawagetas-closing { border-color: var(--accent); }
+@media (max-width: 480px) {
+  .lawagetas-card { left: .4rem; right: .4rem; bottom: .4rem; max-width: none; }
+  .lawagetas-who { writing-mode: vertical-rl; transform: rotate(180deg); letter-spacing: .05em; }
+  .lawagetas-close { width: 44px; min-height: 44px; }
+}
+.account-steps { margin: .8rem 0 0; }
+.account-steps label { display: flex; align-items: center; gap: .5rem; text-transform: none; letter-spacing: 0; font-size: var(--fs-sm); color: var(--text); cursor: pointer; }
+.account-steps input { width: auto; margin: 0; }

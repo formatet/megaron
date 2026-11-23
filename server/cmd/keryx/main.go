@@ -136,6 +136,7 @@ func newRootCommand() *cobra.Command {
 		briefCmd(),
 		unitCmd(),
 		retreatDefaultCmd(),
+		stepsCmd(),
 		marketBoardCmd(),
 		meCmd(),
 		dispatchesCmd(),

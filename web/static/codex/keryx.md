@@ -37,6 +37,7 @@ keryx notifications --all    # every kind, each event shown separately (latest 1
 keryx occupation order ...   # sack, burn or annex an occupied city
 keryx password               # change your password
 keryx status                 # your realm at a glance
+keryx steps                  # the Lawagetas's first steps (--hide / --show the card)
 ```
 
 `notifications --all` includes the historical kinds normally hidden or grouped in the default feed. It shows the latest 100 notifications; combine it with `--unread` for unread rows only. It does not mark anything read. Use `--kind` or `--exclude` separately to select kinds.

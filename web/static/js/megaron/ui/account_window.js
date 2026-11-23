@@ -3,6 +3,7 @@ import { fetchAuth } from '../api.js';
 import { formatApiError, esc } from './format.js';
 import { State } from '../state.js';
 import { accountProfileHTML, signedInAsText } from './account_profile.js';
+import { setFirstStepsHidden, refreshFirstSteps } from './first_steps.js';
 
 // ── Account window — every keryx verb lives in the web too (Timothy
 // 2026-09-25, CLAUDE.md "A verb lives on FOUR surfaces"). `keryx password`
@@ -69,6 +70,9 @@ export function openAccountWindow() {
       </div>
       <button type="submit" class="btn-primary">Change password</button>
     </form>
+    <div class="field account-steps">
+      <label><input type="checkbox" id="acc-steps" disabled> Show the Lawagetas' first steps</label>
+    </div>
     <section id="acc-community" class="account-chat" aria-labelledby="acc-community-title">
       <h3 id="acc-community-title">Community</h3>
       <p>Questions, stories and alpha news: <a href="https://discord.gg/NxtftQUMYW" target="_blank" rel="noopener noreferrer">Megaron Discord</a>.</p>
@@ -86,6 +90,28 @@ export function openAccountWindow() {
   });
   document.getElementById('acc-signout-btn').addEventListener('click', signOut);
   loadProfile(generation, State.WORLD_ID);
+  loadFirstStepsToggle(generation, State.WORLD_ID);
+}
+
+// The checkbox mirrors the server flag; flipping it calls hide/show and redraws the card.
+async function loadFirstStepsToggle(generation, worldID) {
+  const box = document.getElementById('acc-steps');
+  if (!box || !worldID) return;
+  try {
+    const response = await fetchAuth(`/api/v1/worlds/${encodeURIComponent(worldID)}/first-steps`);
+    if (!response.ok || !accountIsCurrent(generation)) return;
+    const data = await response.json();
+    box.checked = !data.hidden;
+    box.disabled = false;
+    box.addEventListener('change', async () => {
+      box.disabled = true;
+      try {
+        if (!(await setFirstStepsHidden(!box.checked))) box.checked = !box.checked;
+        else await refreshFirstSteps();
+      } catch (_) { box.checked = !box.checked; }
+      box.disabled = false;
+    });
+  } catch (_) { /* the checkbox stays disabled; nothing else depends on it */ }
 }
 
 async function submitPasswordChange() {

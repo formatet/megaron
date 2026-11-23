@@ -67,6 +67,8 @@ export const VERB_EVENTS = [
   {"verb": "rich-offering", "method": "PUT", "route": "/api/v1/worlds/:world/temples/:temple/rich-offering", "event": "rich_offering_set"},
   {"verb": "rich-offering", "method": "DELETE", "route": "/api/v1/worlds/:world/temples/:temple/rich-offering", "event": "rich_offering_cleared"},
   {"verb": "notification-preferences", "method": "PUT", "route": "/api/v1/notification-preferences/:kind", "event": "notification_preferences_changed"},
+  {"verb": "steps --hide", "method": "POST", "route": "/api/v1/worlds/:world/first-steps/hide", "event": "first_steps_hidden"},
+  {"verb": "steps --show", "method": "POST", "route": "/api/v1/worlds/:world/first-steps/show", "event": "first_steps_shown"},
   {"verb": "notification-preferences", "method": "DELETE", "route": "/api/v1/notification-preferences/:kind", "event": "notification_preferences_changed"},
 ];
 
