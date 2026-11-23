@@ -1878,7 +1878,10 @@ body.hex-picking .map-zoom-overlay { top: 72px; }
 .lawagetas-close:hover { color: var(--accent); }
 .lawagetas-closing { border-color: var(--accent); }
 @media (max-width: 480px) {
-  .lawagetas-card { left: .4rem; right: .4rem; bottom: .4rem; max-width: none; flex-wrap: wrap; }
-  .lawagetas-who { flex-basis: 100%; }
+  .lawagetas-card { left: .4rem; right: .4rem; bottom: .4rem; max-width: none; }
+  .lawagetas-who { writing-mode: vertical-rl; transform: rotate(180deg); letter-spacing: .05em; }
   .lawagetas-close { width: 44px; min-height: 44px; }
 }
+.account-steps { margin: .8rem 0 0; }
+.account-steps label { display: flex; align-items: center; gap: .5rem; text-transform: none; letter-spacing: 0; font-size: var(--fs-sm); color: var(--text); cursor: pointer; }
+.account-steps input { width: auto; margin: 0; }
