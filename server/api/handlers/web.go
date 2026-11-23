@@ -16,6 +16,7 @@ import (
 	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/religion"
+	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/unit"
 	"formatet/megaron/server/internal/world"
 	"github.com/go-chi/chi/v5"
@@ -169,7 +170,7 @@ func (h *WebHandler) Index(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	h.render(w, "index.html", nil)
+	h.render(w, "index.html", map[string]any{"GameDayLength": openingDayLength(tick.TickSeconds)})
 }
 
 // Play is the post-login landing. Redirects to the map if the player has a

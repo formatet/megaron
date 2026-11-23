@@ -9,6 +9,13 @@
     <button id="auth-music-btn" class="auth-music-btn" onclick="toggleIntroMusic()" title="Music">♫</button>
 
     <div class="auth-forms">
+      <div class="auth-intro">
+        <p class="auth-intro-lead">A slow strategy game in a mythic Bronze Age.</p>
+        <p>You are a Wanax: found a city, feed your people, and meet other rulers by messenger.
+        The world keeps going while you are away. A game day passes every {{.GameDayLength}}.</p>
+        <p class="auth-intro-more">New here? Choose New Player. A short dispatch tells you what to do first.
+        <a href="/alfatestinfo">What is Megaron?</a></p>
+      </div>
       <div class="tabs" id="auth-tabs">
         <button class="tab active" onclick="showTab('login')">Sign In</button>
         <button class="tab" onclick="showTab('register')">New Player</button>
@@ -166,6 +173,9 @@ async function doAuth(url, body, errorEl) {
     errorEl.textContent = 'Network error.';
   }
 }
+
+// A browser that has never signed in here opens on New Player.
+try { if (!localStorage.getItem('poleia_refresh')) showTab('register'); } catch (e) { /* no storage: keep Sign In */ }
 
 document.getElementById('login-form').addEventListener('submit', e => {
   e.preventDefault();

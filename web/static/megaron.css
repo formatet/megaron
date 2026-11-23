@@ -227,6 +227,12 @@ body:has(.auth-page) main {
   padding: 1.5rem;
 }
 
+.auth-intro { font-size: var(--fs-sm); line-height: 1.5; color: var(--text-dim); margin-bottom: 1rem; }
+.auth-intro p { margin: 0 0 0.5rem; }
+.auth-intro-lead { color: var(--text); font-size: var(--fs-base); }
+.auth-intro-more { margin-bottom: 0; }
+.auth-intro a { color: var(--accent); }
+
 .tabs { display: flex; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border); }
 .tab {
   flex: 1;
