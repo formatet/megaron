@@ -106,6 +106,9 @@ func TestFirstSteps_BeforeFoundingOnlyFoundIsOpen(t *testing.T) {
 	if stepDone(o, "work") || stepDone(o, "build") || stepDone(o, "explore") {
 		t.Fatalf("nothing but found can be done before founding: %+v", o.Steps)
 	}
+	if strings.Contains(o.Steps[1].Text, "in .") || !strings.Contains(o.Steps[1].Text, "your city") {
+		t.Fatalf("no empty city name before founding: %q", o.Steps[1].Text)
+	}
 }
 
 func TestFirstSteps_WorkIsDoneWhenNoIdleGubbarRemain(t *testing.T) {

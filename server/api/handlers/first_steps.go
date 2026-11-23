@@ -65,7 +65,7 @@ func computeFirstSteps(ctx context.Context, pool *pgxpool.Pool, worldID, playerI
 
 	// found: the Wanax owns an active settlement; the capital is "the city".
 	var cityID uuid.UUID
-	var cityName string
+	cityName := "your city"
 	err := pool.QueryRow(ctx,
 		`SELECT id, name FROM settlements
 		  WHERE world_id = $1 AND owner_id = $2 AND state = 'active'
