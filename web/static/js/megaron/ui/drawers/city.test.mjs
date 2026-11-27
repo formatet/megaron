@@ -11,16 +11,15 @@ test('startBuild sends the unchanged POST bodies: city building, hex building, t
  const g={document:globalThis.document,fetch:globalThis.fetch,localStorage:globalThis.localStorage};globalThis.localStorage={getItem:()=>null,setItem(){},removeItem(){}};
  t.after(()=>{Object.assign(State,saved);for(const [k,v] of Object.entries(g))v===undefined?delete globalThis[k]:globalThis[k]=v;});
  Object.assign(State,{WORLD_ID:'w',MY_SETTLEMENT_ID:'c',provinceData:[{id:'p',own:true,is_capital:true,settlement_id:'c'}]});
- const result={textContent:'',style:{}};
- globalThis.document={getElementById:id=>id==='city-build-result'?result:null,addEventListener(){}};
+ globalThis.document={getElementById:()=>null,addEventListener(){}};
  const bodies=[];
  globalThis.fetch=async(url,o)=>{if(o&&o.method==='POST'){bodies.push(o.body);return new Response('{"duration_game_days":4}',{status:200});}return new Response('{}',{status:404});};
  const a=await startBuild({type:'silo'});
  await startBuild({type:'farm',hex_q:3,hex_r:-1});
- await startBuild({type:'temple',god:'velchanos'});
+ const c=await startBuild({type:'temple',god:'velchanos'});
  assert.deepEqual(bodies,['{"building_type":"silo"}','{"building_type":"farm","hex_q":3,"hex_r":-1}','{"building_type":"temple","god":"velchanos"}']);
  assert.equal(a.ok,true);assert.match(a.text,/Granary queued/);
- assert.match(result.textContent,/Temple of Velchanos queued/);
+ assert.match(c.text,/Temple of Velchanos queued/);
 });
 
 test('startBuild shows the server refusal and reports not ok',async t=>{
@@ -29,11 +28,10 @@ test('startBuild shows the server refusal and reports not ok',async t=>{
  const g={document:globalThis.document,fetch:globalThis.fetch,localStorage:globalThis.localStorage};globalThis.localStorage={getItem:()=>null,setItem(){},removeItem(){}};
  t.after(()=>{Object.assign(State,saved);for(const [k,v] of Object.entries(g))v===undefined?delete globalThis[k]:globalThis[k]=v;});
  Object.assign(State,{WORLD_ID:'w',provinceData:[{id:'p',own:true,is_capital:true,settlement_id:'c'}]});
- const result={textContent:'',style:{}};
- globalThis.document={getElementById:id=>id==='city-build-result'?result:null,addEventListener(){}};
+ globalThis.document={getElementById:()=>null,addEventListener(){}};
  globalThis.fetch=async()=>new Response('{"error":"needs a harbour"}',{status:422});
  const out=await startBuild({type:'shipyard'});
- assert.equal(out.ok,false);assert.match(out.text,/harbour/);assert.match(result.textContent,/harbour/);
+ assert.equal(out.ok,false);assert.match(out.text,/harbour/);
 });
 
 test('P: an empty built list with a queue says nothing is finished and names the build', () => {

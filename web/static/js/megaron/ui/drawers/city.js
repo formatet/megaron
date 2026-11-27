@@ -216,12 +216,9 @@ export async function loadCityDrawer() {
 // Construct list's [Build] and from the placement grid's rows. Returns
 // { ok, text } so the caller can show the outcome where the player clicked.
 export async function startBuild(spec) {
-  const world = State.WORLD_ID;
   const capital = activeCitySettlement();
   if (!capital || !spec || !spec.type) return { ok: false, text: 'No city to build in.' };
   const { type: btype, god } = spec;
-  const resultEl = document.getElementById('city-build-result');
-  if (resultEl) resultEl.textContent = '';
   const hexLabel = spec.hex_q != null ? ` at (${spec.hex_q},${spec.hex_r})` : '';
   const r = await fetchAuth(
     `/api/v1/worlds/${State.WORLD_ID}/provinces/${capital.id}/build`,
@@ -230,18 +227,12 @@ export async function startBuild(spec) {
   const d = await r.json().catch(() => ({}));
   if (r.ok) {
     const receipt = `${btype === 'temple' ? templeName(god) : (_BLD_LBL[btype]||btype)} queued${hexLabel}${d.duration_game_days != null ? ' · ' + fmtDuration(d.duration_game_days) : ''}${d.complete_at ? ' · ready ' + fmtArrival(d.complete_at, d.complete_tick, 'ready') : d.active === false ? ' · starts when the current build is done' : ''}.`;
-    if (resultEl) { resultEl.style.color = 'var(--safe-text)'; resultEl.textContent = receipt; }
-    // Refresh only the buildings section — avoids resetting the active tab
+    // Refresh only the buildings section — avoids resetting the active tab.
+    // The caller shows the receipt under the clicked row.
     await refreshCityBuildings(capital.id);
-    // Refresh replaces this section, including its receipt node.
-    if (State.WORLD_ID === world && activeCitySettlement()?.id === capital.id) {
-      const currentResult = document.getElementById('city-build-result');
-      if (currentResult) { currentResult.style.color = 'var(--safe-text)'; currentResult.textContent = receipt; }
-    }
     return { ok: true, text: receipt };
   }
   const text = playerError(r, d, 'Build failed.');
-  if (resultEl) { resultEl.style.color = 'var(--accent)'; resultEl.textContent = text; }
   return { ok: false, text, detail: errorDetail(r, d) };
 }
 // The placement grid builds through the same function.
