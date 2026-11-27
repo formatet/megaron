@@ -541,11 +541,16 @@ func wallsHoldLine(popCap, walls, siloLevel float64) string {
 // own inputs); "" when the server did not report a state. The web drawer
 // (city_production.js growthLineText) says the same words. This is the growth
 // surplus (before the army), not the food answer (foodAnswerLine).
-func growthLine(pop float64, state string, net float64) string {
-	display := fmt.Sprintf("%+.1f", net)
+// growthNet is the growth surplus as the web shows it: always one decimal.
+func growthNet(net float64) string {
 	if math.Abs(net) < 0.05 && net != 0 {
-		display = "about even"
+		return "about even"
 	}
+	return fmt.Sprintf("%+.1f", net)
+}
+
+func growthLine(pop float64, state string, net float64) string {
+	display := growthNet(net)
 	switch state {
 	case "growing":
 		return fmt.Sprintf("Population %.0f — growing: growth surplus %s per game day before army", pop, display)
@@ -877,7 +882,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 							}
 						}
 						if peopleFoodLine(sett) == "" && !brief {
-							fmt.Printf("  Growth   fish %.1f + grain %.1f − people eat %.1f = growth surplus %s per game day before army\n", fish, prodTick, consumTick, formatNetPerTick(netTick))
+							fmt.Printf("  Growth   fish %.1f + grain %.1f − people eat %.1f = growth surplus %s per game day before army\n", fish, prodTick, consumTick, growthNet(netTick))
 						}
 						line := fmt.Sprintf("  %-8s %6s  production %.1f per game day",
 							"Grain", resource(gAmt), prodTick)

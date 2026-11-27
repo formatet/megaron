@@ -177,7 +177,7 @@ func TestAIRound_StatusUsesSingleFoodStock(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if !strings.Contains(out, "fish 5.0 + grain 0.5") || !strings.Contains(out, "growth surplus "+formatNetPerTick(net)) || !strings.Contains(out, foodAnswerLine(map[string]any{"forecast": map[string]any{"food": map[string]any{"net": net, "days": 100.0}}})+" (stocks: ") || strings.Contains(out, "Food for") {
+			if !strings.Contains(out, "fish 5.0 + grain 0.5") || !strings.Contains(out, "growth surplus "+growthNet(net)) || !strings.Contains(out, foodAnswerLine(map[string]any{"forecast": map[string]any{"food": map[string]any{"net": net, "days": 100.0}}})+" (stocks: ") || strings.Contains(out, "Food for") {
 				t.Fatal(out)
 			}
 			if !strings.Contains(out, growthLine(1000, "holding", net)) || !strings.Contains(out, "2 goods produced, 1 consumed") {
