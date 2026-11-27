@@ -87,8 +87,9 @@ func TestGarrisonTransitionOwnerAndCityIsolation(t *testing.T) {
 	}
 	other := uuid.New()
 	exec(`INSERT INTO players(id,username,password_hash) VALUES($1,$2,'x')`, other, "notice-owner-"+other.String())
-	hungry := uuid.MustParse("ffffffff-ffff-ffff-ffff-fffffffffff1")
-	calm := uuid.MustParse("00000000-0000-0000-0000-000000000001")
+	// Hungry sorts after calm by id; fresh ids keep that order and let the test run with -count>1.
+	hungry, calm := uuid.New(), uuid.New()
+	hungry[0], calm[0] = 0xff, 0x00
 	for i, sid := range []uuid.UUID{hungry, calm} {
 		pid := uuid.New()
 		exec(`INSERT INTO provinces(id,world_id,map_q,map_r,terrain_type) VALUES($1,$2,$3,0,'plains')`, pid, wid, 30+i)
